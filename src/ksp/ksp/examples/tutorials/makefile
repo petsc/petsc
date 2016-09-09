@@ -593,7 +593,7 @@ runex9:
 	   else printf "${PWD}\nPossible problem with ex9_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex9_1.tmp
 runex10:
-	-@${MPIEXEC} -n 2 ./ex10 -f0 ${PETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int${PETSC_INDEX_SIZE}-float${PETSC_SCALAR_SIZE} > ex10_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex10 -f0 ${wPETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int${PETSC_INDEX_SIZE}-float${PETSC_SCALAR_SIZE} > ex10_1.tmp 2>&1; \
 	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex10_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10_1.tmp
@@ -973,7 +973,7 @@ runex10_zeropivot_3:
 	   ${RM} -f ex10.tmp
 
 runex10_asm_viennacl:
-	-@${MPIEXEC} -n 2 ./ex10 -pc_type asm -pc_asm_sub_mat_type aijviennacl -f0 ${PETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int${PETSC_INDEX_SIZE}-float${PETSC_SCALAR_SIZE} > ex10_asm_viennacl.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex10 -pc_type asm -pc_asm_sub_mat_type aijviennacl -f0 ${wPETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int${PETSC_INDEX_SIZE}-float${PETSC_SCALAR_SIZE} > ex10_asm_viennacl.tmp 2>&1; \
 	   if (${DIFF} output/ex10_asm_viennacl.out ex10_asm_viennacl.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex10_asm_viennacl, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10_asm_viennacl.tmp
@@ -1577,13 +1577,13 @@ runex62_superlu_dist_4:
 	    ${RM} -f ex62.tmp
 
 runex63:
-	-@${MPIEXEC} -n 1 ./ex63 --filedir=${PETSC_DIR}/share/petsc/datafiles/matrices/ --filename=amesos2_test_mat0.mtx --solver=SuperLU --print-residual=true -ksp_monitor -pc_type lu -pc_factor_mat_solver_package superlu -ksp_view -ksp_converged_reason  > ex63_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex63 --filedir=${wPETSC_DIR}/share/petsc/datafiles/matrices/ --filename=amesos2_test_mat0.mtx --solver=SuperLU --print-residual=true -ksp_monitor -pc_type lu -pc_factor_mat_solver_package superlu -ksp_view -ksp_converged_reason  > ex63_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex63_1.out ex63_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with with ex63_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex63_1.tmp
 
 runex63_2:
-	-@${MPIEXEC} -n 1 ./ex63 --filedir=${PETSC_DIR}/share/petsc/datafiles/matrices/ --filename=amesos2_test_mat0.mtx --solver=SuperLUDist --print-residual=true -ksp_monitor -pc_type lu -pc_factor_mat_solver_package superlu_dist -ksp_view -ksp_converged_reason  > ex63_2.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex63 --filedir=${wPETSC_DIR}/share/petsc/datafiles/matrices/ --filename=amesos2_test_mat0.mtx --solver=SuperLUDist --print-residual=true -ksp_monitor -pc_type lu -pc_factor_mat_solver_package superlu_dist -ksp_view -ksp_converged_reason  > ex63_2.tmp 2>&1;	  \
 	   if (${DIFF} output/ex63_2.out ex63_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with with ex63_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex63_2.tmp

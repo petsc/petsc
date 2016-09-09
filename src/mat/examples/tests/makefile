@@ -1373,7 +1373,7 @@ runex40:
 	   else printf "${PWD}\nPossible problem with ex40_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex40_1.tmp ex40_12.tmp
 runex40_2:
-	-@${MPIEXEC} -n 3 ./ex40 -f ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -mat_increase_overlap_scalable 1 -nd 7 -ov 2 > ex40_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex40 -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -mat_increase_overlap_scalable 1 -nd 7 -ov 2 > ex40_2.tmp 2>&1; \
 	   grep -v "flg =1" ex40_2.tmp > ex40_22.tmp; \
 	   if (${DIFF} output/ex40_2.out ex40_22.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex40_2, diffs above\n=========================================\n"; fi; \
@@ -2394,24 +2394,24 @@ runex164:
 	   ${RM} -f ex164.tmp
 
 runex169:
-	-@${MPIEXEC} -n 4 ./ex169   -f0 ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump > ex169.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex169   -f0 ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump > ex169.tmp 2>&1; \
 	   ${DIFF} output/ex169_1.out ex169.tmp || printf "${PWD}\nPossible problem with ex169, diffs above\n=========================================\n"; \
 	   ${RM} -f ex169.tmp
 
 runex171:
-	-@${MPIEXEC} -n 4 ./ex171   -f ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump > ex171.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex171   -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump > ex171.tmp 2>&1; \
 	   ${DIFF} output/ex171_1.out ex171.tmp || printf "${PWD}\nPossible problem with ex171, diffs above\n=========================================\n"; \
 	   ${RM} -f ex171.tmp
 
 
 runex180:
-	-@${MPIEXEC} -n 1 ./ex180 -mat_type aij  -f ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump > ex180.tmp 2>&1; \
-	  ${MPIEXEC} -n 2 ./ex180 -mat_type aij  -f ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump >> ex180.tmp 2>&1; \
-	  ${MPIEXEC} -n 1 ./ex180 -mat_type baij  -f ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump >> ex180.tmp 2>&1; \
-	  ${MPIEXEC} -n 2 ./ex180 -mat_type baij  -f ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump >> ex180.tmp 2>&1; \
-	  ${MPIEXEC} -n 1 ./ex180 -mat_type sbaij  -f ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump >> ex180.tmp 2>&1; \
-	  ${MPIEXEC} -n 2 ./ex180 -mat_type sbaij  -f ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump >> ex180.tmp 2>&1; \
-	  ${MPIEXEC} -n 1 ./ex180 -mat_type sbaij -matload_block_size 4 -f ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump >> ex180.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex180 -mat_type aij  -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump > ex180.tmp 2>&1; \
+	  ${MPIEXEC} -n 2 ./ex180 -mat_type aij  -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump >> ex180.tmp 2>&1; \
+	  ${MPIEXEC} -n 1 ./ex180 -mat_type baij  -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump >> ex180.tmp 2>&1; \
+	  ${MPIEXEC} -n 2 ./ex180 -mat_type baij  -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump >> ex180.tmp 2>&1; \
+	  ${MPIEXEC} -n 1 ./ex180 -mat_type sbaij  -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump >> ex180.tmp 2>&1; \
+	  ${MPIEXEC} -n 2 ./ex180 -mat_type sbaij  -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump >> ex180.tmp 2>&1; \
+	  ${MPIEXEC} -n 1 ./ex180 -mat_type sbaij -matload_block_size 4 -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump >> ex180.tmp 2>&1; \
 	   ${DIFF} output/ex180_1.out ex180.tmp || printf "${PWD}\nPossible problem with ex180, diffs above\n=========================================\n"; \
 	   ${RM} -f ex180.tmp
 
@@ -2476,7 +2476,7 @@ runex172_mpisbaij:
 	   ${DIFF} output/ex172.out ex172.tmp || printf "${PWD}\nPossible problem with ex172_mpisbaij, diffs above\n=========================================\n"; \
 	   ${RM} -f ex172.tmp
 runex173:
-	-@${MPIEXEC} -n 1 ./ex173 -f0 ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 > ex173.tmp 3>&1; \
+	-@${MPIEXEC} -n 1 ./ex173 -f0 ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 > ex173.tmp 3>&1; \
 	   ${DIFF} output/ex173_1.out ex173.tmp || printf "${PWD}\nPossible problem with ex173, diffs above\n=========================================\n"; \
 	   ${RM} -f ex173.tmp
 
@@ -2568,9 +2568,9 @@ runex182_6:
 
 
 runex190:
-	  -@${MPIEXEC} -n 2 ./ex190 -mat_type aij -mat_view -f ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64  > ex190.tmp 2>&1; \
-	  ${MPIEXEC} -n 2 ./ex190 -mat_type baij -mat_view -f ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64  >> ex190.tmp 2>&1; \
-	  ${MPIEXEC} -n 2 ./ex190 -mat_type sbaij -mat_view -f ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64  >> ex190.tmp 2>&1; \
+	  -@${MPIEXEC} -n 2 ./ex190 -mat_type aij -mat_view -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64  > ex190.tmp 2>&1; \
+	  ${MPIEXEC} -n 2 ./ex190 -mat_type baij -mat_view -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64  >> ex190.tmp 2>&1; \
+	  ${MPIEXEC} -n 2 ./ex190 -mat_type sbaij -mat_view -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64  >> ex190.tmp 2>&1; \
 	   ${DIFF} output/ex190_1.out ex190.tmp || printf "${PWD}\nPossible problem with ex190, diffs above\n=========================================\n"; \
 	   ${RM} -f ex190.tmp
 
@@ -2609,7 +2609,7 @@ runex195:
 	   ${RM} -f ex195.tmp
 
 runex196f90:
-	-@${MPIEXEC} -n 1 ./ex196f90  -f ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump >> ex196f.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex196f90  -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump >> ex196f.tmp 2>&1; \
 	   ${DIFF} output/ex196f90_1.out ex196f.tmp || printf "${PWD}\nPossible problem with ex196f90, diffs above\n=========================================\n"; \
 	   ${RM} -f ex196f.tmp
 
