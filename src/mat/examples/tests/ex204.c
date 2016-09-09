@@ -66,18 +66,15 @@ int main(int argc,char **args)
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
     ierr = PetscObjectSetName((PetscObject)A,"Sequential CPU Matrix");CHKERRQ(ierr);
-    /* ierr = MatView(A,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr); */
 
     ierr = VecCreateSeq(PETSC_COMM_SELF,n,&v);CHKERRQ(ierr);
     ierr = VecCreateSeq(PETSC_COMM_SELF,m,&r);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject)r,"CPU result vector");CHKERRQ(ierr);
     ierr = VecSet(v,val);CHKERRQ(ierr);
     ierr = MatMult(A,v,r);CHKERRQ(ierr);
-    /* ierr = VecView(r,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr); */
 
     ierr = MatConvert(A,MATSEQAIJVIENNACL,MAT_INITIAL_MATRIX,&A_vcl);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject)A_vcl,"New ViennaCL Matrix");CHKERRQ(ierr);
-    /* aierr = MatView(A_vcl,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr); */
 
     ierr = VecCreateSeqViennaCL(PETSC_COMM_SELF,n,&v_vcl);CHKERRQ(ierr);
     ierr = VecCreateSeqViennaCL(PETSC_COMM_SELF,m,&r_vcl);CHKERRQ(ierr);
