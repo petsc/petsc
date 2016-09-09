@@ -94,6 +94,25 @@ typedef struct {
   PetscObjectState mat_nonzerostate;               /* non-zero state when inodes were checked for */
 } Mat_SeqAIJ_Inode;
 
+typedef struct { /* used by MatGetSubMatrices_MPIAIJ_SingleIS_Local() */
+  PetscInt   nrqs,nrqr;
+  PetscInt   **rbuf1,**rbuf2,**rbuf3,**sbuf1,**sbuf2;
+  PetscInt   **ptr;
+  PetscInt   *tmp;
+  PetscInt   *ctr;
+  PetscInt   *pa; /* proc array */
+  PetscInt   *req_size,*req_source1,*req_source2;
+  PetscBool  allcolumns;
+#if defined(PETSC_USE_CTABLE)
+  PetscTable     cmap,rmap;
+  PetscInt       *cmap_loc,*rmap_loc;
+#else
+  PetscInt       *cmap,*rmap;
+#endif
+
+  PetscErrorCode (*destroy)(Mat);
+} Mat_SubMat;
+
 PETSC_INTERN PetscErrorCode MatView_SeqAIJ_Inode(Mat,PetscViewer);
 PETSC_INTERN PetscErrorCode MatAssemblyEnd_SeqAIJ_Inode(Mat,MatAssemblyType);
 PETSC_INTERN PetscErrorCode MatDestroy_SeqAIJ_Inode(Mat);
@@ -122,6 +141,9 @@ typedef struct {
   Mat_MatMatMatMult *matmatmatmult;      /* used by MatMatMatMult() */
   Mat_RARt          *rart;               /* used by MatRARt() */
   Mat_MatMatTransMult *abt;              /* used by MatMatTransposeMult() */
+
+  /* used by MatGetSubMatrices_MPIAIJ_SingleIS_Local */
+  Mat_SubMat       *submatis1;
 } Mat_SeqAIJ;
 
 /*

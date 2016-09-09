@@ -274,6 +274,8 @@ PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op,PetscBool flg)
   case MAT_GETROW_UPPERTRIANGULAR:
     a->getrow_utriangular = flg;
     break;
+  case MAT_SUBMAT_SINGLEIS:
+    break;
   default:
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"unknown option %d",op);
   }

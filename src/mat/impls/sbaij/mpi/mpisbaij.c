@@ -1662,6 +1662,7 @@ PetscErrorCode MatSetOption_MPISBAIJ(Mat A,MatOption op,PetscBool flg)
   case MAT_NEW_NONZERO_ALLOCATION_ERR:
   case MAT_UNUSED_NONZERO_LOCATION_ERR:
   case MAT_KEEP_NONZERO_PATTERN:
+  case MAT_SUBMAT_SINGLEIS:
   case MAT_NEW_NONZERO_LOCATION_ERR:
     MatCheckPreallocated(A,1);
     ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
