@@ -273,6 +273,20 @@ cdef class DM(Object):
             hierarchy.append(dmc)
         return hierarchy
 
+    def getRefineLevel(self):
+        cdef PetscInt n = 0
+        CHKERR( DMGetRefineLevel(self.dm, &n) )
+        return toInt(n)
+
+    def setRefineLevel(self, level):
+        cdef PetscInt clevel = asInt(level)
+        CHKERR( DMSetRefineLevel(self.dm, clevel) )
+
+    def getCoarsenLevel(self):
+        cdef PetscInt n = 0
+        CHKERR( DMGetCoarsenLevel(self.dm, &n) )
+        return toInt(n)
+
     #
 
     def setDefaultSection(self, Section sec not None):
