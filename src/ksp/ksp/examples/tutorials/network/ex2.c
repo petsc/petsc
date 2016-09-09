@@ -1,11 +1,10 @@
-static char help[] = "This example is based on ex1.c but generates a random network of chosen sizes and parameters. Usage: -n determines number of nodes. The nonnegative seed can be specified with the flag -seed, otherwise the program generates a random seed.\n\n";
-
+static char help[] = "This example is based on ex1.c, but generates a random network of chosen sizes and parameters. \n\
+  Usage: -n determines number of nodes. The nonnegative seed can be specified with the flag -seed, otherwise the program generates a random seed.\n\n";
 
 /* T
   Concepts: DMNetwork
   Concepts: KSP
 */
-
 
 #include <petscdmnetwork.h>
 #include <petscksp.h>
@@ -32,10 +31,10 @@ typedef struct Edge {
 
 #undef __FUNCT__
 #define __FUNCT__ "distance"
-PetscScalar distance(PetscScalar x1, PetscScalar x2, PetscScalar y1, PetscScalar y2) {
-    return PetscSqrtScalar(PetscPowScalar(x2-x1,2.0) + PetscPowScalar(y2-y1,2.0));
+PetscScalar distance(PetscScalar x1, PetscScalar x2, PetscScalar y1, PetscScalar y2)
+{
+  return PetscSqrtScalar(PetscPowScalar(x2-x1,2.0) + PetscPowScalar(y2-y1,2.0));
 }
-
 
 /* 
   The algorithm for network formation is based on the paper:
@@ -46,19 +45,17 @@ PetscScalar distance(PetscScalar x1, PetscScalar x2, PetscScalar y1, PetscScalar
 #define __FUNCT__ "random_network"
 PetscErrorCode random_network(int nvertex,int *pnbranch,Node **pnode,Branch **pbranch,int **pedgelist,int seed)
 {
-  PetscFunctionBeginUser;
-  
   PetscErrorCode ierr;
   PetscInt       i, j, nedges = 0, *edgelist;
   PetscInt       nbat, ncurr, fr, to;
   PetscReal      *x, *y, value, xmax = 10.0; /* generate points in square */
-  PetscScalar    maxdist = 0.0, dist, alpha, beta;
-  PetscScalar    prob;
+  PetscScalar    maxdist = 0.0, dist, alpha, beta, prob;
   PetscRandom    rnd;
   Branch         *branch;
   Node           *node;
   Edge           *head = NULL, *new, *aux;
 
+  PetscFunctionBeginUser;
   ierr = PetscRandomCreate(PETSC_COMM_SELF,&rnd);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rnd);CHKERRQ(ierr);
 
@@ -88,8 +85,7 @@ PetscErrorCode random_network(int nvertex,int *pnbranch,Node **pnode,Branch **pb
   for (i=0; i<nvertex; i++) {
     for (j=0; j<nvertex; j++) {
       dist = distance(x[i],x[j],y[i],y[j]);
-      if (dist >= maxdist)
-          maxdist = dist;
+      if (dist >= maxdist) maxdist = dist;
     }
   }
 
@@ -170,20 +166,17 @@ PetscErrorCode random_network(int nvertex,int *pnbranch,Node **pnode,Branch **pb
     ierr = PetscRandomGetValue(rnd,&value);CHKERRQ(ierr);
     branch[(int)value].bat += 1.0;
   }
-  
+
   ierr = PetscFree2(x,y);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&rnd);CHKERRQ(ierr);
-  
+
   /* assign pointers */
   *pnbranch  = nedges;
   *pedgelist = edgelist;
   *pbranch   = branch;
   *pnode     = node;
-  
   PetscFunctionReturn(ierr);
 }
-
-
 
 #undef __FUNCT__
 #define __FUNCT__ "FormOperator"
