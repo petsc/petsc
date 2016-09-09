@@ -4,7 +4,6 @@ static char help[] = "Tests various DMComposite routines.\n\n";
 #include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdmcomposite.h>
-//#include <petscdraw.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -14,11 +13,8 @@ int main(int argc,char **argv)
   PetscErrorCode         ierr;
   DM                     da1,da2,packer;
   Vec                    local,global,globals[2],buffer;
-//  PetscInt               i;
   PetscScalar            value;
   PetscViewer            viewer;
-//  PetscBool              flg = PETSC_FALSE;
-//  ISLocalToGlobalMapping is;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
@@ -43,7 +39,7 @@ int main(int argc,char **argv)
   ierr = VecScale(globals[1], value);CHKERRQ(ierr);
   ierr = DMCompositeRestoreAccessArray(packer,global,2,NULL,globals);CHKERRQ(ierr);
 
-  // Test GlobalToLocal in insert mode
+  /* Test GlobalToLocal in insert mode */
   ierr = DMGlobalToLocalBegin(packer,global,INSERT_VALUES,local);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(packer,global,INSERT_VALUES,local);CHKERRQ(ierr);
 
@@ -55,13 +51,13 @@ int main(int argc,char **argv)
   ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  // Test LocalToGlobal in insert mode
+  /* Test LocalToGlobal in insert mode */
   ierr = DMLocalToGlobalBegin(packer,local,INSERT_VALUES,global);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(packer,local,INSERT_VALUES,global);CHKERRQ(ierr);
 
   ierr = VecView(global,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  // Test LocalToLocal in insert mode
+  /* Test LocalToLocal in insert mode */
   ierr = DMLocalToLocalBegin(packer,local,INSERT_VALUES,buffer);CHKERRQ(ierr);
   ierr = DMLocalToLocalEnd(packer,local,INSERT_VALUES,buffer);CHKERRQ(ierr);
 
