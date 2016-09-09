@@ -256,6 +256,7 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
                           "Warning: Cannot tell what pointer points to, assuming global memory space",
                           "warning C4003: not enough actual parameters for macro 'PETSC_PASTE3_'",
                           "warning: linker scope was specified more than once",
+                          "cl : Command line warning D9024 : unrecognized source file type",
                           "thrust/detail/vector_base.inl", "thrust/detail/tuple_transform.h", "detail/tuple.inl", "detail/launch_closure.inl"]
       for line in open(logfile_make_full):
         if re.search(r'[Ww]arning[: ]', line):
