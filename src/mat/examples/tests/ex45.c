@@ -12,8 +12,7 @@
 
 /*
   Demonstrates dumping matrix/vector from heritage code for PETSc.
-   Note does not do bit swapping, so will not generate proper
-PETSc files on Paragon/Dec Alpha.
+   Note does not do bit swapping, so will not generate proper PETSc files on some systems.
 */
 
 void Store2DArray(int,int,double*,const char*,int*);
@@ -42,10 +41,11 @@ int main(int argc,char **args)
 #define __FUNCT__ "Store2DArray"
 void Store2DArray(int m,int n,double *a,const char *filename,int *fdd)
 {
-  int    fd = *fdd;
-  int    i,j;
-  int    nz = -1,classid = 1211216;
-  double *vals;
+  int     fd = *fdd;
+  int     i,j;
+  int     nz = -1,classid = 1211216;
+  double  *vals;
+  ssize_t nb;
 
   if (!fd) {
     fd = creat(filename,0666);
@@ -55,10 +55,10 @@ void Store2DArray(int m,int n,double *a,const char *filename,int *fdd)
     }
     *fdd = fd;
   }
-  (void)write(fd,&classid,sizeof(int));
-  (void)write(fd,&m,sizeof(int));
-  (void)write(fd,&n,sizeof(int));
-  (void)write(fd,&nz,sizeof(int));
+  nb = write(fd,&classid,sizeof(int));if (nb != sizeof(int)) abort();
+  nb = write(fd,&m,sizeof(int));if (nb != sizeof(int)) abort();
+  nb = write(fd,&n,sizeof(int));if (nb != sizeof(int)) abort();
+  nb = write(fd,&nz,sizeof(int));if (nb != sizeof(int)) abort();
 
   /*
      transpose the matrix, since it is stored by rows on the disk
@@ -73,7 +73,7 @@ void Store2DArray(int m,int n,double *a,const char *filename,int *fdd)
       vals[i+m*j] = a[j+i*n];
     }
   }
-  (void)write(fd,vals,m*n*sizeof(double));
+  nb = write(fd,vals,m*n*sizeof(double));if (nb != m*n*sizeof(double)) abort();
   free(vals);
 
 }
@@ -82,8 +82,9 @@ void Store2DArray(int m,int n,double *a,const char *filename,int *fdd)
 #define __FUNCT__ "Store1DArray"
 void Store1DArray(int m,double *a,const char *filename,int *fdd)
 {
-  int fd      = *fdd;
-  int classid = 1211214;  /* classid for vectors */
+  int     fd = *fdd;
+  ssize_t nb;
+  int     classid = 1211214;  /* classid for vectors */
 
   if (fd == -1) {
     fd = creat(filename,0666);
@@ -93,9 +94,9 @@ void Store1DArray(int m,double *a,const char *filename,int *fdd)
     }
     *fdd = fd;
   }
-  (void)write(fd,&classid,sizeof(int));
-  (void)write(fd,&m,sizeof(int));
-  (void)write(fd,a,m*sizeof(double));
+  nb = write(fd,&classid,sizeof(int));if (nb != sizeof(int)) abort();
+  nb = write(fd,&m,sizeof(int));if (nb != sizeof(int)) abort();
+  nb = write(fd,a,m*sizeof(double));if (nb != m*sizeof(double)) abort();
 }
 
 
