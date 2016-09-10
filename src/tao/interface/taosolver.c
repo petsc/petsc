@@ -122,8 +122,8 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
 #endif
   tao->crtol       = 0.0;
   tao->catol       = 0.0;
-  tao->steptol     = 0.0;
   tao->gttol       = 0.0;
+  tao->steptol     = 0.0;
   tao->trust0      = PETSC_INFINITY;
   tao->fmin        = PETSC_NINFINITY;
   tao->hist_malloc = PETSC_FALSE;

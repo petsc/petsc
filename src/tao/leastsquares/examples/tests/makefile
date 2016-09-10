@@ -28,13 +28,18 @@ runchwirut1:
 
 runchwirut1_2:
 	-@${MPIEXEC} -n 1 ./chwirut1 -tao_smonitor -tao_max_it 100 -wtype 1 -tao_type pounders > chwirut1_2.tmp 2>&1;\
-        ${DIFF} output/chwirut1_1.out chwirut1_1.tmp || printf '${PWD}\nPossible problem with chwirut1_2 stdout, diffs above \n=====================================\n';\
+        ${DIFF} output/chwirut1_2.out chwirut1_2.tmp || printf '${PWD}\nPossible problem with chwirut1_2 stdout, diffs above \n=====================================\n';\
 	${RM} -f chwirut1_2.tmp
 
 runchwirut1_3:
 	-@${MPIEXEC} -n 1 ./chwirut1 -tao_smonitor -tao_max_it 100 -wtype 2 -tao_type pounders > chwirut1_3.tmp 2>&1;\
-        ${DIFF} output/chwirut1_1.out chwirut1_1.tmp || printf '${PWD}\nPossible problem with chwirut1_3 stdout, diffs above \n=====================================\n';\
+        ${DIFF} output/chwirut1_3.out chwirut1_3.tmp || printf '${PWD}\nPossible problem with chwirut1_3 stdout, diffs above \n=====================================\n';\
 	${RM} -f chwirut1_3.tmp
+
+runchwirut1_4:
+	-@${MPIEXEC} -n 1 ./chwirut1 -tao_smonitor -tao_max_it 100 -tao_type pounders -pounders_subsolver_tao_type blmvm > chwirut1_4.tmp 2>&1;\
+	${DIFF} output/chwirut1_4.out chwirut1_4.tmp || printf '${PWD}\nPossible problem with chwirut1_4 stdout, diffs above \n=====================================\n';\
+	${RM} -f chwirut1_4.tmp
 
 runchwirut2:
 	-@${MPIEXEC} -n 2 ./chwirut2 -tao_smonitor -tao_max_it 100 -tao_type pounders > chwirut2_1.tmp 2>&1;\
@@ -43,17 +48,18 @@ runchwirut2:
 
 runchwirut2_2:
 	-@${MPIEXEC} -n 2 ./chwirut2 -tao_smonitor -tao_max_it 100 -wtype 1 -tao_type pounders > chwirut2_2.tmp 2>&1;\
-        ${DIFF} output/chwirut2_1.out chwirut2_1.tmp || printf '${PWD}\nPossible problem with chwirut2_2 stdout, diffs above \n=====================================\n';\
+        ${DIFF} output/chwirut2_2.out chwirut2_2.tmp || printf '${PWD}\nPossible problem with chwirut2_2 stdout, diffs above \n=====================================\n';\
 	${RM} -f chwirut2_2.tmp
 
 runchwirut2_3:
 	-@${MPIEXEC} -n 2 ./chwirut2 -tao_smonitor -tao_max_it 100 -wtype 2 -tao_type pounders > chwirut2_3.tmp 2>&1;\
-        ${DIFF} output/chwirut2_1.out chwirut2_1.tmp || printf '${PWD}\nPossible problem with chwirut2_3 stdout, diffs above \n=====================================\n';\
+        ${DIFF} output/chwirut2_3.out chwirut2_3.tmp || printf '${PWD}\nPossible problem with chwirut2_3 stdout, diffs above \n=====================================\n';\
 	${RM} -f chwirut2_3.tmp
 
 
 
-TESTEXAMPLES_C             = chwirut1.PETSc runchwirut1 chwirut1.rm chwirut2.PETSc runchwirut2 chwirut.rm
+TESTEXAMPLES_C             = chwirut1.PETSc runchwirut1 chwirut1.rm
+# 			     chwirut2.PETSc runchwirut2 chwirut2.rm
 TESTEXAMPLES_C_X_MPIUNI    = chwirut1.PETSc runchwirut1 chwirut1.rm
 
 

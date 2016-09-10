@@ -29,16 +29,3 @@ iter =  27, Function value 2384.48, Residual: 0.0166487
 iter =  28, Function value 2384.48, Residual: 0.00413971 
 iter =  29, Function value 2384.48, Residual: 0.000142352 
 iter =  30, Function value 2384.48, Residual: 1.75231e-05 
-Tao Object: 1 MPI processes
-  type: pounders
-      initial delta: 0.1
-      final delta: 0.00078125
-      model points: 5
-      subproblem solver: tron
-      total subproblem iterations: 62
-  convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=1.75231e-05
-  Objective value=2384.48
-  total number of iterations=30,                          (max: 100)
-  total number of function evaluations=33,                  max: 4000
-  Solution converged:    ||g(X)||/|f(X)| <= grtol

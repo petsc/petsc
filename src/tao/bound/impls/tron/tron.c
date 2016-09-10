@@ -354,14 +354,8 @@ PETSC_EXTERN PetscErrorCode TaoCreate_TRON(Tao tao)
 
   /* Override default settings (unless already changed) */
   if (!tao->max_it_changed) tao->max_it = 50;
-
-#if defined(PETSC_USE_REAL_SINGLE)
-  if (!tao->steptol_changed) tao->steptol = 1.0e-6;
-#else
-  if (!tao->steptol_changed) tao->steptol = 1.0e-12;
-#endif
-
   if (!tao->trust0_changed) tao->trust0 = 1.0;
+  if (!tao->steptol_changed) tao->steptol = 0.0;
 
   /* Initialize pointers and variables */
   tron->n            = 0;

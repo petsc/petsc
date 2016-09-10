@@ -1,17 +1,19 @@
-#ifndef __TAO_BQPIP_H
+/*
+  Private data structure used for bqpip method
+*/
+
+#if !defined(__TAO_BQPIP_H)
 #define __TAO_BQPIP_H
 
 #include <petsc/private/taoimpl.h>
 
-typedef struct{
-
+typedef struct {
   /* Parameters */
   PetscInt predcorr;
-  PetscReal ksp_tol;
 
   /* Problem variables, vectors and index sets */
   PetscInt n;   /* Dimension of the Problem */
-  PetscInt m;  /* Number of constraints */
+  PetscInt m;   /* Number of constraints */
 
   /* Problem statistics */
   PetscReal dinfeas;
@@ -21,9 +23,7 @@ typedef struct{
   PetscReal gap;
   PetscReal rgap;
   PetscReal mu;
-  PetscReal sigma;
   PetscReal pathnorm;
-  PetscReal pre_sigma;
   PetscReal psteplength;
   PetscReal dsteplength;
   PetscReal rnorm;
@@ -51,30 +51,10 @@ typedef struct{
   Vec RHS;
   Vec RHS2;
 
-
   /* Data */
-  Vec B;
-  Vec C0;
-  PetscReal c;
+  Vec C;
+  PetscReal d;
+} TAO_BQPIP;
 
-}TAO_BQPIP;
-
-static PetscErrorCode QPIPSetInitialPoint(TAO_BQPIP *, Tao);
-static PetscErrorCode QPComputeStepDirection(TAO_BQPIP *, Tao);
-static PetscErrorCode QPIPComputeResidual(TAO_BQPIP *, Tao);
-static PetscErrorCode QPStepLength(TAO_BQPIP *);
-static PetscErrorCode QPIPComputeNormFromCentralPath(TAO_BQPIP *,PetscReal *);
-
-#endif
-
-
-
-
-
-
-
-
-
-
-
+#endif  /* if !defined(__TAO_BQPIP_H) */
 
