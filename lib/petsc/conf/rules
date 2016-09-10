@@ -265,6 +265,8 @@ tree: ${ACTION}
             ${OMAKE} tree ACTION=${ACTION}  PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} DATAFILESPATH=${DATAFILESPATH} BASE_DIR=${BASE_DIR} PRINT_PROGRESS=${PRINT_PROGRESS});\
 	  done
 
+printdot: 
+	-@if [ ${PRINT_PROGRESS}foo = dotfoo ] ; then printf "."; fi;
 
 # Performs the specified action throughout the directory tree
 tree_basic: ${ACTION}
