@@ -59,13 +59,8 @@ PetscErrorCode random_network(int nvertex,int *pnbranch,Node **pnode,Branch **pb
   ierr = PetscRandomCreate(PETSC_COMM_SELF,&rnd);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rnd);CHKERRQ(ierr);
 
-  if (seed != -1) {
-    ierr = PetscRandomSetSeed(rnd, seed);CHKERRQ(ierr);
-    ierr = PetscRandomSeed(rnd);
-  } else {
-    ierr = PetscRandomSetSeed(rnd, time(NULL));CHKERRQ(ierr);
-    ierr = PetscRandomSeed(rnd);
-  }
+  ierr = PetscRandomSetSeed(rnd, seed);CHKERRQ(ierr);
+  ierr = PetscRandomSeed(rnd);
 
   /* These parameters might be modified for experimentation */
   nbat  = (PetscInt)(0.1*nvertex);
@@ -291,7 +286,7 @@ int main(int argc,char ** argv)
 {
   PetscErrorCode    ierr;
   PetscInt          i, nbranch = 0, eStart, eEnd, vStart, vEnd;
-  PetscInt          seed = -1, nnode;
+  PetscInt          seed = 0, nnode = 0;
   PetscMPIInt       size, rank;
   DM                networkdm;
   Vec               x, b;
