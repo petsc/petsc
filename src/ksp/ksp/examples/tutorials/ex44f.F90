@@ -51,7 +51,7 @@
      &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, &
      &     PETSC_NULL_INTEGER,ierr);CHKERRQ(ierr)
       call DMDAGetCorners(da,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr);CHKERRQ(ierr)
-      hx     = 1.0/(mx-1)
+      hx     = 1.0_PETSC_REAL_KIND/(mx-1)
       call DMDAVecGetArrayF90(da,x,xx,ierr);CHKERRQ(ierr)
       do i=xs,xs+xm-1
        xx(i) = i*hx
@@ -74,7 +74,7 @@
      &  PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,   &
      &  PETSC_NULL_INTEGER,ierr);CHKERRQ(ierr)
       call DMDAGetCorners(da,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr);CHKERRQ(ierr)
-      hx     = 1.0/(mx-1)
+      hx     = 1.0_PETSC_REAL_KIND/(mx-1)
       do i=xs,xs+xm-1
         if ((i .eq. 0) .or. (i .eq. mx-1)) then
           call MatSetValue(J,i,i,one,INSERT_VALUES,ierr);CHKERRQ(ierr)
