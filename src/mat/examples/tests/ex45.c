@@ -73,7 +73,7 @@ void Store2DArray(int m,int n,double *a,const char *filename,int *fdd)
       vals[i+m*j] = a[j+i*n];
     }
   }
-  nb = write(fd,vals,m*n*sizeof(double));if (nb != m*n*sizeof(double)) abort();
+  nb = write(fd,vals,m*n*sizeof(double));if (nb != (ssize_t) m*n*sizeof(double)) abort();
   free(vals);
 
 }
@@ -96,7 +96,7 @@ void Store1DArray(int m,double *a,const char *filename,int *fdd)
   }
   nb = write(fd,&classid,sizeof(int));if (nb != sizeof(int)) abort();
   nb = write(fd,&m,sizeof(int));if (nb != sizeof(int)) abort();
-  nb = write(fd,a,m*sizeof(double));if (nb != m*sizeof(double)) abort();
+  nb = write(fd,a,m*sizeof(double));if (nb != (ssize_t)m*sizeof(double)) abort();
 }
 
 
