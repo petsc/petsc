@@ -502,44 +502,44 @@ void readinput(struct in *put)
 
   ifp = fopen("ex5_control.txt", "r");
 
-  for (i=0; i<110; i++) (void)fscanf(ifp, "%c", &x);
-  (void)fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<110; i++) { if (fscanf(ifp, "%c", &x) != 1) abort();}
+  if (fscanf(ifp, "%lf", &tmp) != 1) abort();
   put->Ts = tmp;
 
-  for (i=0; i<43; i++) (void)fscanf(ifp, "%c", &x);
-  (void)fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<43; i++) { if (fscanf(ifp, "%c", &x) != 1) abort();}
+  if (fscanf(ifp, "%lf", &tmp) != 1) abort();
   put->Td = tmp;
 
-  for (i=0; i<43; i++) (void)fscanf(ifp, "%c", &x);
-  (void)fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<43; i++) { if (fscanf(ifp, "%c", &x) != 1) abort();}
+  if (fscanf(ifp, "%lf", &tmp) != 1) abort();
   put->Ta = tmp;
 
-  for (i=0; i<43; i++) (void)fscanf(ifp, "%c", &x);
-  (void)fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<43; i++) { if (fscanf(ifp, "%c", &x) != 1) abort();}
+  if (fscanf(ifp, "%lf", &tmp)!= 1) abort();
   put->Tc = tmp;
 
-  for (i=0; i<43; i++) (void)fscanf(ifp, "%c", &x);
-  (void)fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<43; i++) { if (fscanf(ifp, "%c", &x) != 1) abort();}
+  if (fscanf(ifp, "%lf", &tmp) != 1) abort();
   put->fr = tmp;
 
-  for (i=0; i<43; i++) (void)fscanf(ifp, "%c", &x);
-  (void)fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<43; i++) {if (fscanf(ifp, "%c", &x) != 1) abort();}
+  if (fscanf(ifp, "%lf", &tmp) != 1) abort();
   put->wnd = tmp;
 
-  for (i=0; i<43; i++) (void)fscanf(ifp, "%c", &x);
-  (void)fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<43; i++) {if (fscanf(ifp, "%c", &x) != 1) abort();}
+  if (fscanf(ifp, "%lf", &tmp) != 1) abort();  
   put->pwt = tmp;
 
-  for (i=0; i<43; i++) (void)fscanf(ifp, "%c", &x);
-  (void)fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<43; i++) {if (fscanf(ifp, "%c", &x) != 1) abort();}
+  if (fscanf(ifp, "%lf", &tmp) != 1) abort();  
   put->wndDir = tmp;
 
-  for (i=0; i<43; i++) (void)fscanf(ifp, "%c", &x);
-  (void)fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<43; i++) {if (fscanf(ifp, "%c", &x) != 1) abort();}
+  if (fscanf(ifp, "%lf", &tmp) != 1) abort();  
   put->time = tmp;
 
-  for (i=0; i<63; i++) (void)fscanf(ifp, "%c", &x);
-  (void)fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<63; i++) {if (fscanf(ifp, "%c", &x) != 1) abort();}
+  if (fscanf(ifp, "%lf", &tmp) != 1) abort();
   put->init = tmp;
 
 }
