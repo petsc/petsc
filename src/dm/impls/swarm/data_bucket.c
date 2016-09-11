@@ -731,7 +731,7 @@ PetscErrorCode _DataBucketRegisterFieldFromFile(FILE *fp,DataBucket db)
   /* add field */
   ierr = DataFieldCreate( registeration_function, field_name, atomic_size, L, &gfield );CHKERRQ(ierr);
   /* copy contents of file */
-  if (fread(gfield->data, gfield->atomic_size, gfield->L, fp) != gfield->L) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Incorrect file format");
+  if (fread(gfield->data, gfield->atomic_size, gfield->L, fp) != (size_t) gfield->L) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Incorrect file format");
 #ifdef DATA_BUCKET_LOG
   ierr = PetscPrintf(PETSC_COMM_SELF,"  ** read %zu bytes for DataField \"%s\" \n", gfield->atomic_size * gfield->L, field_name);CHKERRQ(ierr);
 #endif
