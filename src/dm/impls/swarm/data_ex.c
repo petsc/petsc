@@ -384,9 +384,9 @@ PetscErrorCode DataExTopologyFinalize(DataEx d)
   d->n_neighbour_procs = symm_nn;
   d->neighbour_procs   = symm_procs;
   /* allocates memory */
-  if (!d->messages_to_be_sent) {ierr = PetscMalloc1(d->n_neighbour_procs, &d->messages_to_be_sent);CHKERRQ(ierr);}
-  if (!d->message_offsets) {ierr = PetscMalloc1(d->n_neighbour_procs, &d->message_offsets);CHKERRQ(ierr);}
-  if (!d->messages_to_be_recvieved) {ierr = PetscMalloc1(d->n_neighbour_procs, &d->messages_to_be_recvieved);CHKERRQ(ierr);}
+  if (!d->messages_to_be_sent) {ierr = PetscMalloc1(d->n_neighbour_procs+1, &d->messages_to_be_sent);CHKERRQ(ierr);}
+  if (!d->message_offsets) {ierr = PetscMalloc1(d->n_neighbour_procs+1, &d->message_offsets);CHKERRQ(ierr);}
+  if (!d->messages_to_be_recvieved) {ierr = PetscMalloc1(d->n_neighbour_procs+1, &d->messages_to_be_recvieved);CHKERRQ(ierr);}
   if (!d->pack_cnt) {ierr = PetscMalloc(sizeof(PetscInt) * d->n_neighbour_procs, &d->pack_cnt);CHKERRQ(ierr);}
   if (!d->_stats) {ierr = PetscMalloc(sizeof(MPI_Status) * 2*d->n_neighbour_procs, &d->_stats);CHKERRQ(ierr);}
   if (!d->_requests) {ierr = PetscMalloc(sizeof(MPI_Request) * 2*d->n_neighbour_procs, &d->_requests);CHKERRQ(ierr);}
@@ -493,12 +493,15 @@ PetscErrorCode _DataExInitializeTmpStorage(DataEx de)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (de->n_neighbour_procs < 0) {
+  /*if (de->n_neighbour_procs < 0) {
     SETERRQ( PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of neighbour procs < 0");
   }
+  */
+  /*
   if (!de->neighbour_procs) {
     SETERRQ( PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Neighbour proc list is NULL" );
   }
+  */
   np = de->n_neighbour_procs;
   for (i = 0; i < np; ++i) {
     /*	de->messages_to_be_sent[i] = -1; */
@@ -689,7 +692,7 @@ PetscErrorCode DataExEnd(DataEx de)
   if (!de->recv_message) SETERRQ( de->comm, PETSC_ERR_ORDER, "recv_message has not been initialized. Must call DataExPackFinalize() first" );
   ierr = PetscLogEventBegin(PTATIN_DataExchangerEnd,0,0,0,0);CHKERRQ(ierr);
   np = de->n_neighbour_procs;
-  ierr = PetscMalloc1(np, &message_recv_offsets);CHKERRQ(ierr);
+  ierr = PetscMalloc1(np+1, &message_recv_offsets);CHKERRQ(ierr);
   message_recv_offsets[0] = 0;
   total = de->messages_to_be_recvieved[0];
   for (i = 1; i < np; ++i) {
