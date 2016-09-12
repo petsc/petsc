@@ -300,7 +300,6 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
   MPI_Comm       interface_comm;
   PetscMPIInt    size;
   PetscInt       i;
-  PetscBool      twodim;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -526,18 +525,6 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
     ierr = PetscBTDestroy(&subset_cc_adapt);CHKERRQ(ierr);
   }
 
-  /* Determine if we are in 2D or 3D */
-  twodim  = PETSC_TRUE;
-  for (i=0;i<graph->ncc;i++) {
-    PetscInt repdof = graph->queue[graph->cptr[i]];
-    if (graph->cptr[i+1]-graph->cptr[i] > graph->custom_minimal_size) {
-      if (graph->count[repdof] > 1 || graph->special_dof[repdof] == PCBDDCGRAPH_NEUMANN_MARK) {
-        twodim = PETSC_FALSE;
-        break;
-      }
-    }
-  }
-  ierr = MPIU_Allreduce(&twodim,&graph->twodim,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)graph->l2gmap));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -697,7 +684,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   PetscInt       n_neigh,*neigh,*n_shared,**shared,*queue_global;
   PetscInt       i,j,k,s,total_counts,nodes_touched,is_size;
   PetscMPIInt    commsize;
-  PetscBool      same_set,mirrors_found;
+  PetscBool      same_set,mirrors_found,twodim;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1109,6 +1096,19 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   ierr = PetscMemcpy(graph->subset_ref_node,is_indices,graph->ncc*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = ISRestoreIndices(subset_n,&is_indices);CHKERRQ(ierr);
   ierr = ISDestroy(&subset_n);CHKERRQ(ierr);
+
+  /* Determine if we are in 2D or 3D */
+  twodim  = PETSC_TRUE;
+  for (i=0;i<graph->ncc;i++) {
+    PetscInt repdof = graph->queue[graph->cptr[i]];
+    if (graph->cptr[i+1]-graph->cptr[i] > graph->custom_minimal_size) {
+      if (graph->count[repdof] > 1 || graph->special_dof[repdof] == PCBDDCGRAPH_NEUMANN_MARK) {
+        twodim = PETSC_FALSE;
+        break;
+      }
+    }
+  }
+  ierr = MPIU_Allreduce(&twodim,&graph->twodim,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)graph->l2gmap));CHKERRQ(ierr);
 
   /* free workspace */
   ierr = VecDestroy(&local_vec);CHKERRQ(ierr);
