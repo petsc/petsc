@@ -149,6 +149,7 @@ PetscErrorCode PCGAMGCreateGraph(Mat Amat, Mat *a_Gmat)
       }
 
     } else {
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Require AIJ matrix type");
       /*
 
        This is O(nloc*nloc/bs) work!
@@ -186,7 +187,7 @@ PetscErrorCode PCGAMGCreateGraph(Mat Amat, Mat *a_Gmat)
       ierr = PetscFree(blockmask);CHKERRQ(ierr);
     }
 
-    /* get scalar copy (norms) of matrix -- AIJ specific!!! */
+    /* get scalar copy (norms) of matrix */
     ierr = MatGetType(Amat,&mtype);CHKERRQ(ierr);
     ierr = MatCreate(comm, &Gmat);CHKERRQ(ierr);
     ierr = MatSetSizes(Gmat,nloc,nloc,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
@@ -260,18 +261,19 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
 
   if (vfilter < 0.0 && !symm) {
     /* Just use the provided matrix as the graph but make all values positive */
-    Mat_MPIAIJ  *aij = (Mat_MPIAIJ*)Gmat->data;
     MatInfo     info;
     PetscScalar *avals;
-    PetscMPIInt size;
-
-    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)Gmat),&size);CHKERRQ(ierr);
-    if (size == 1) {
+    PetscBool isaij,ismpiaij;
+    ierr = PetscObjectTypeCompare((PetscObject)Gmat,MATSEQAIJ,&isaij);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)Gmat,MATMPIAIJ,&ismpiaij);CHKERRQ(ierr);
+    if (!isaij && !ismpiaij) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Require (MPI)AIJ matrix type");
+    if (isaij) {
       ierr = MatGetInfo(Gmat,MAT_LOCAL,&info);CHKERRQ(ierr);
       ierr = MatSeqAIJGetArray(Gmat,&avals);CHKERRQ(ierr);
       for (jj = 0; jj<info.nz_used; jj++) avals[jj] = PetscAbsScalar(avals[jj]);
       ierr = MatSeqAIJRestoreArray(Gmat,&avals);CHKERRQ(ierr);
     } else {
+      Mat_MPIAIJ  *aij = (Mat_MPIAIJ*)Gmat->data;
       ierr = MatGetInfo(aij->A,MAT_LOCAL,&info);CHKERRQ(ierr);
       ierr = MatSeqAIJGetArray(aij->A,&avals);CHKERRQ(ierr);
       for (jj = 0; jj<info.nz_used; jj++) avals[jj] = PetscAbsScalar(avals[jj]);
@@ -365,7 +367,7 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCGAMGGetDataWithGhosts - hacks into Mat MPIAIJ so this must have > 1 pe
+   PCGAMGGetDataWithGhosts - hacks into Mat MPIAIJ so this must have npe > 1
 
    Input Parameter:
    . Gmat - MPIAIJ matrix for scattters
