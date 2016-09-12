@@ -8385,45 +8385,6 @@ PetscErrorCode MatICCFactor(Mat mat,IS row,const MatFactorInfo *info)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatSetValuesAdifor"
-/*@
-   MatSetValuesAdifor - Sets values computed with automatic differentiation into a matrix.
-
-   Not Collective
-
-   Input Parameters:
-+  mat - the matrix
-.  nl - leading dimension of v
--  v - the values compute with ADIFOR
-
-   Level: developer
-
-   Notes:
-     Must call MatSetColoring() before using this routine. Also this matrix must already
-     have its nonzero pattern determined.
-
-.seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal(),
-          MatSetValues(), MatSetColoring()
-@*/
-PetscErrorCode MatSetValuesAdifor(Mat mat,PetscInt nl,void *v)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidType(mat,1);
-  PetscValidPointer(v,3);
-
-  if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Matrix must be already assembled");
-  ierr = PetscLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
-  if (!mat->ops->setvaluesadifor) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
-  ierr = (*mat->ops->setvaluesadifor)(mat,nl,v);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "MatDiagonalScaleLocal"
 /*@
    MatDiagonalScaleLocal - Scales columns of a matrix given the scaling values including the

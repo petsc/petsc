@@ -2629,9 +2629,9 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                 /*69*/ MatGetRowMaxAbs_MPIAIJ,
                                        MatGetRowMinAbs_MPIAIJ,
                                        0,
-                                       MatSetColoring_MPIAIJ,
                                        0,
-                                       MatSetValuesAdifor_MPIAIJ,
+                                       0,
+                                       0,
                                 /*75*/ MatFDColoringApply_AIJ,
                                        MatSetFromOptions_MPIAIJ,
                                        0,
@@ -3760,80 +3760,6 @@ PetscErrorCode  MatMPIAIJGetSeqAIJ(Mat A,Mat *Ad,Mat *Ao,const PetscInt *colmap[
   if (Ad)     *Ad     = a->A;
   if (Ao)     *Ao     = a->B;
   if (colmap) *colmap = a->garray;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatSetColoring_MPIAIJ"
-PetscErrorCode MatSetColoring_MPIAIJ(Mat A,ISColoring coloring)
-{
-  PetscErrorCode ierr;
-  PetscInt       i;
-  Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
-
-  PetscFunctionBegin;
-  if (coloring->ctype == IS_COLORING_GLOBAL) {
-    ISColoringValue *allcolors,*colors;
-    ISColoring      ocoloring;
-
-    /* set coloring for diagonal portion */
-    ierr = MatSetColoring_SeqAIJ(a->A,coloring);CHKERRQ(ierr);
-
-    /* set coloring for off-diagonal portion */
-    ierr = ISAllGatherColors(PetscObjectComm((PetscObject)A),coloring->n,coloring->colors,NULL,&allcolors);CHKERRQ(ierr);
-    ierr = PetscMalloc1(a->B->cmap->n+1,&colors);CHKERRQ(ierr);
-    for (i=0; i<a->B->cmap->n; i++) {
-      colors[i] = allcolors[a->garray[i]];
-    }
-    ierr = PetscFree(allcolors);CHKERRQ(ierr);
-    ierr = ISColoringCreate(MPI_COMM_SELF,coloring->n,a->B->cmap->n,colors,PETSC_OWN_POINTER,&ocoloring);CHKERRQ(ierr);
-    ierr = MatSetColoring_SeqAIJ(a->B,ocoloring);CHKERRQ(ierr);
-    ierr = ISColoringDestroy(&ocoloring);CHKERRQ(ierr);
-  } else if (coloring->ctype == IS_COLORING_LOCAL) {
-    ISColoringValue *colors;
-    PetscInt        *larray;
-    ISColoring      ocoloring;
-
-    /* set coloring for diagonal portion */
-    ierr = PetscMalloc1(a->A->cmap->n+1,&larray);CHKERRQ(ierr);
-    for (i=0; i<a->A->cmap->n; i++) {
-      larray[i] = i + A->cmap->rstart;
-    }
-    ierr = ISGlobalToLocalMappingApply(A->cmap->mapping,IS_GTOLM_MASK,a->A->cmap->n,larray,NULL,larray);CHKERRQ(ierr);
-    ierr = PetscMalloc1(a->A->cmap->n+1,&colors);CHKERRQ(ierr);
-    for (i=0; i<a->A->cmap->n; i++) {
-      colors[i] = coloring->colors[larray[i]];
-    }
-    ierr = PetscFree(larray);CHKERRQ(ierr);
-    ierr = ISColoringCreate(PETSC_COMM_SELF,coloring->n,a->A->cmap->n,colors,PETSC_OWN_POINTER,&ocoloring);CHKERRQ(ierr);
-    ierr = MatSetColoring_SeqAIJ(a->A,ocoloring);CHKERRQ(ierr);
-    ierr = ISColoringDestroy(&ocoloring);CHKERRQ(ierr);
-
-    /* set coloring for off-diagonal portion */
-    ierr = PetscMalloc1(a->B->cmap->n+1,&larray);CHKERRQ(ierr);
-    ierr = ISGlobalToLocalMappingApply(A->cmap->mapping,IS_GTOLM_MASK,a->B->cmap->n,a->garray,NULL,larray);CHKERRQ(ierr);
-    ierr = PetscMalloc1(a->B->cmap->n+1,&colors);CHKERRQ(ierr);
-    for (i=0; i<a->B->cmap->n; i++) {
-      colors[i] = coloring->colors[larray[i]];
-    }
-    ierr = PetscFree(larray);CHKERRQ(ierr);
-    ierr = ISColoringCreate(MPI_COMM_SELF,coloring->n,a->B->cmap->n,colors,PETSC_OWN_POINTER,&ocoloring);CHKERRQ(ierr);
-    ierr = MatSetColoring_SeqAIJ(a->B,ocoloring);CHKERRQ(ierr);
-    ierr = ISColoringDestroy(&ocoloring);CHKERRQ(ierr);
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support ISColoringType %d",(int)coloring->ctype);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatSetValuesAdifor_MPIAIJ"
-PetscErrorCode MatSetValuesAdifor_MPIAIJ(Mat A,PetscInt nl,void *advalues)
-{
-  Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MatSetValuesAdifor_SeqAIJ(a->A,nl,advalues);CHKERRQ(ierr);
-  ierr = MatSetValuesAdifor_SeqAIJ(a->B,nl,advalues);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
