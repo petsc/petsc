@@ -706,15 +706,15 @@ PetscErrorCode _DataBucketRegisterFieldFromFile(FILE *fp,DataBucket db)
    }
    */
   /* read file contents */
-  fgets(dummy,99,fp);
-  fscanf(fp, "%" PetscInt_FMT "\n",&L);
-  fscanf(fp, "%zu\n",&atomic_size);
-  fgets(registeration_function,4999,fp);
+  (void)fgets(dummy,99,fp);
+  (void)fscanf(fp, "%" PetscInt_FMT "\n",&L);
+  (void)fscanf(fp, "%zu\n",&atomic_size);
+  (void)fgets(registeration_function,4999,fp);
   strL = strlen(registeration_function);
   if (strL > 1) {
     registeration_function[strL-1] = 0;
   }
-  fgets(field_name,4999,fp);
+  (void)fgets(field_name,4999,fp);
   strL = strlen(field_name);
   if (strL > 1) {
     field_name[strL-1] = 0;
@@ -731,13 +731,13 @@ PetscErrorCode _DataBucketRegisterFieldFromFile(FILE *fp,DataBucket db)
   /* add field */
   ierr = DataFieldCreate( registeration_function, field_name, atomic_size, L, &gfield );CHKERRQ(ierr);
   /* copy contents of file */
-  fread(gfield->data, gfield->atomic_size, gfield->L, fp);
+  (void)fread(gfield->data, gfield->atomic_size, gfield->L, fp);
 #ifdef DATA_BUCKET_LOG
   ierr = PetscPrintf(PETSC_COMM_SELF,"  ** read %zu bytes for DataField \"%s\" \n", gfield->atomic_size * gfield->L, field_name);CHKERRQ(ierr);
 #endif
   /* finish reading meta data */
-  fgets(dummy,99,fp);
-  fgets(dummy,99,fp);
+  (void)fgets(dummy,99,fp);
+  (void)fgets(dummy,99,fp);
   db->field[db->nfields] = gfield;
   db->nfields++;
   PetscFunctionReturn(0);
@@ -770,26 +770,26 @@ PetscErrorCode _DataBucketViewAscii_HeaderRead_v00(FILE *fp)
 
   PetscFunctionBegin;
   /* header open */
-  fgets(dummy,99,fp);
+  (void)fgets(dummy,99,fp);
 
   /* type */
-  fgets(dummy,99,fp);
+  (void)fgets(dummy,99,fp);
   strL = strlen(dummy);
   if (strL > 1) {dummy[strL-1] = 0;}
   ierr = PetscStrcmp(dummy, "type=DataBucket", &flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Data file doesn't contain a DataBucket type");
   /* format */
-  fgets(dummy,99,fp);
+  (void)fgets(dummy,99,fp);
   /* version */
-  fgets(dummy,99,fp);
+  (void)fgets(dummy,99,fp);
   strL = strlen(dummy);
   if (strL > 1) { dummy[strL-1] = 0; }
   ierr = PetscStrcmp(dummy, "version=0.0", &flg);CHKERRQ(ierr);
   if (!flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"DataBucket file must be parsed with version=0.0 : You tried %s", dummy);
   /* options */
-  fgets(dummy,99,fp);
+  (void)fgets(dummy,99,fp);
   /* header close */
-  fgets(dummy,99,fp);
+  (void)fgets(dummy,99,fp);
   PetscFunctionReturn(0);
 }
 
@@ -811,7 +811,7 @@ PetscErrorCode _DataBucketLoadFromFileBinary_SEQ(const char filename[],DataBucke
   if (fp == NULL) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file with name %s", filename);
   /* read header */
   ierr = _DataBucketViewAscii_HeaderRead_v00(fp);CHKERRQ(ierr);
-  fscanf(fp,"%" PetscInt_FMT "\n%" PetscInt_FMT "\n%" PetscInt_FMT "\n",&L,&buffer,&nfields);
+  (void)fscanf(fp,"%" PetscInt_FMT "\n%" PetscInt_FMT "\n%" PetscInt_FMT "\n",&L,&buffer,&nfields);
   ierr = DataBucketCreate(&db);CHKERRQ(ierr);
   for (f = 0; f < nfields; ++f) {
     ierr = _DataBucketRegisterFieldFromFile(fp,db);CHKERRQ(ierr);
