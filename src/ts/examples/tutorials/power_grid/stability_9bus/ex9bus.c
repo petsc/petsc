@@ -1053,6 +1053,12 @@ int main(int argc,char **argv)
   Vec            Xdot;
   PetscScalar    *x,*mat,*amat;
   Vec            vatol;
+  PetscInt       *direction;
+  PetscBool      *terminate;
+  const PetscInt *idx3;
+  PetscScalar    *vatoli;
+  PetscInt       k;
+
 
   ierr = PetscInitialize(&argc,&argv,"petscoptions",help);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -1181,10 +1187,8 @@ int main(int argc,char **argv)
   ierr = TSSetPostStep(ts,SaveSolution);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,X);CHKERRQ(ierr);
 
-  PetscInt *direction;
-  PetscBool *terminate;
-  ierr = PetscMalloc((2*ngen+2)*sizeof(PetscInt),&direction);CHKERRQ(ierr);
-  ierr = PetscMalloc((2*ngen+2)*sizeof(PetscBool),&terminate);CHKERRQ(ierr);
+  ierr = PetscMalloc1((2*ngen+2),&direction);CHKERRQ(ierr);
+  ierr = PetscMalloc1((2*ngen+2),&terminate);CHKERRQ(ierr);
   direction[0] = direction[1] = 1;
   terminate[0] = terminate[1] = PETSC_FALSE;
   for (i=0; i < ngen;i++) {
@@ -1205,15 +1209,12 @@ int main(int argc,char **argv)
 
 
   if(user.setisdiff) {
-    const PetscInt *idx;
-    PetscScalar *vatoli;
-    PetscInt k;
     /* Create vector of absolute tolerances and set the algebraic part to infinity */
     ierr = VecDuplicate(X,&vatol);CHKERRQ(ierr);
     ierr = VecSet(vatol,100000.0);CHKERRQ(ierr);
     ierr = VecGetArray(vatol,&vatoli);CHKERRQ(ierr);
-    ierr = ISGetIndices(user.is_diff,&idx);CHKERRQ(ierr);
-    for(k=0; k < 7*ngen; k++) vatoli[idx[k]] = 1e-2;
+    ierr = ISGetIndices(user.is_diff,&idx3);CHKERRQ(ierr);
+    for(k=0; k < 7*ngen; k++) vatoli[idx3[k]] = 1e-2;
     ierr = VecRestoreArray(vatol,&vatoli);CHKERRQ(ierr);
   }
 
