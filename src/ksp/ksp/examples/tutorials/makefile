@@ -1608,7 +1608,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc run
                                  runex2_chebyest_1 runex2_chebyest_2 runex2_fbcgs runex2_fbcgs_2 runex2_telescope runex2_pipecg runex2_pipecr runex2_groppcg runex2_pipecgrr ex2.rm \
                                  ex4.PETSc ex4.rm ex7.PETSc runex7 runex7_2 ex7.rm ex4.PETSc ex4.rm ex5.PETSc runex5 runex5_2 \
                                  runex5_redundant_0 runex5_redundant_1 runex5_redundant_2 runex5_redundant_3 runex5_redundant_4 ex5.rm \
-                                 ex6.PETSc runex6 runex6_1 runex6_2 ex6.rm \
+                                 ex6.PETSc runex6 runex6_1 runex6_2 ex6.rm printdot \
                                  ex9.PETSc runex9 ex9.rm ex12.PETSc runex12 ex12.rm ex13.PETSc runex13 ex13.rm \
                                  ex15.PETSc runex15 ex15.rm ex16.PETSc runex16 ex16.rm \
                                  ex23.PETSc runex23 runex23_2 ex23.rm ex25.PETSc runex25_2 ex25.rm \
@@ -1616,7 +1616,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc run
                                  ex27.PETSc ex27.rm ex28.PETSc ex28.rm ex29.PETSc runex29_telescope ex29.rm \
                                  ex31.PETSc ex31.rm ex32.PETSc runex32 ex32.rm ex34.PETSc runex34 ex34.rm ex42.PETSc ex42.rm \
                                  ex43.PETSc runex43 runex43_2 runex43_bjacobi runex43_bjacobi_baij runex43_nested_gmg runex43_6 ex43.rm \
-                                 ex45.PETSc runex45 runex45_2 runex45_telescope runex45_telescope_2 ex45.rm \
+                                 ex45.PETSc runex45 runex45_2 runex45_telescope runex45_telescope_2 ex45.rm printdot \
                                  ex49.PETSc runex49 runex49_2 runex49_3 runex49_5 ex49.rm \
                                  ex51.PETSc runex51 ex51.rm \
                                  ex53.PETSc runex53 ex53.rm \
@@ -1635,7 +1635,7 @@ TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE = ex23.PETSc runex23_3 ex23.rm  ex15.PETSc ru
                                  ex60.PETSc runex60_4 runex60_5 runex60_6 runex60_7 runex60_8 runex60_9 ex60.rm
 TESTEXAMPLES_C_X	       = ex2.PETSc runex2_5 ex2.rm ex5.PETSc runex5_5 ex5.rm ex8.PETSc ex8.rm ex28.PETSc runex28 ex28.rm
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f runex2f_2 ex2f.rm ex6f.PETSc ex6f.rm \
-                                 ex15f.PETSc runex15f ex15f.rm \
+                                 printdot ex15f.PETSc runex15f ex15f.rm \
                                   ex45f.PETSc runex45f ex45f.rm
 TESTEXAMPLES_FORTRAN_NOTSINGLE  = ex14f.PETSc runex14f  ex14f.rm  ex22f.PETSc runex22f ex22f.rm ex21f.PETSc runex21f ex21f.rm  ex54f.PETSc runex54f ex54f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex1f.PETSc runex1f ex1f.rm ex6f.PETSc runex6f ex6f.rm
