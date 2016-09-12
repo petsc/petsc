@@ -10,7 +10,7 @@
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       if (ierr .ne. 0) then
         print*,'Unable to initialize PETSc'
-        return
+        stop
       endif
       call PetscOptionsGetString(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-f',filename,flg,ierr);CHKERRQ(ierr)
       if (flg) then

@@ -42,7 +42,7 @@ program main
   call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
   if (ierr .ne. 0) then
     print*,'Unable to initialize PETSc'
-    return
+    stop
   endif
   comm = PETSC_COMM_WORLD
   call MPI_Comm_rank(comm,rank,ierr);CHKERRQ(ierr)

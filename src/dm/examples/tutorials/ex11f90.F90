@@ -1,3 +1,4 @@
+      program main
 !-----------------------------------------------------------------------
 !
 !    Tests DMDAGetVecGetArray()
@@ -44,7 +45,7 @@
       CALL PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       if (ierr .ne. 0) then
         print*,'Unable to initialize PETSc'
-        return
+        stop
       endif
       call DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,m,dof,1,PETSC_NULL_INTEGER,ada,ierr);CHKERRQ(ierr)
       call DMGetGlobalVector(ada,g,ierr);CHKERRQ(ierr)

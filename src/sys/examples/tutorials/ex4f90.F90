@@ -33,7 +33,7 @@
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       if (ierr .ne. 0) then
          print*,'Unable to initialize PETSc'
-         return
+         stop
       endif
 
 !     The following MPI calls return the number of processes being used

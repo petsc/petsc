@@ -12,7 +12,7 @@
       Call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       if (ierr .ne. 0) then
         print*,'Unable to initialize PETSc'
-        return
+        stop
       endif
       list1(1) = 'a123'
       list1(2) = 'b456'

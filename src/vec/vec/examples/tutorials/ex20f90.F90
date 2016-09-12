@@ -62,7 +62,7 @@
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       if (ierr .ne. 0) then
          print*,'Unable to initialize PETSc'
-         return
+         stop
       endif
 
       tol   = 1.e-10_PETSC_REAL_KIND

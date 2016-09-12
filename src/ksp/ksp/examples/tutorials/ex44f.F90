@@ -14,7 +14,7 @@
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       if (ierr .ne. 0) then
         print*,'Unable to initialize PETSc'
-        return
+        stop
       endif
       call DMDACreate1d(MPI_COMM_WORLD,DM_BOUNDARY_NONE,eight,one,one,PETSC_NULL_INTEGER,da,ierr);CHKERRQ(ierr)
       call DMCreateGlobalVector(da,x,ierr);CHKERRQ(ierr)
