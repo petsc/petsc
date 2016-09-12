@@ -150,41 +150,6 @@ PetscErrorCode PCGAMGCreateGraph(Mat Amat, Mat *a_Gmat)
 
     } else {
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Require AIJ matrix type");
-      /*
-
-       This is O(nloc*nloc/bs) work!
-
-       This is accurate for the "diagonal" block of the matrix but will be grossly high for the
-       off diagonal block most of the time but could be too low for the off-diagonal.
-
-       This should be fixed to be accurate for the off-diagonal portion. Cannot just use a mask
-       for the off-diagonal portion since for huge matrices that would require too much memory per
-       MPI process.
-      */
-      ierr = PetscMalloc1(nloc, &blockmask);CHKERRQ(ierr);
-      for (Ii = Istart, jj = 0; Ii < Iend; Ii += bs, jj++) {
-        o_nnz[jj] = 0;
-        ierr = PetscMemzero(blockmask,nloc*sizeof(PetscInt));CHKERRQ(ierr);
-        for (kk=0; kk<bs; kk++) { /* rows that get collapsed to a single row */
-          ierr = MatGetRow(Amat,Ii+kk,&ncols,&idx,0);CHKERRQ(ierr);
-          for (i=0; i<ncols; i++) {
-            if (idx[i] >= Istart && idx[i] < Iend) {
-              blockmask[(idx[i] - Istart)/bs] = 1;
-            }
-          }
-          if (ncols > o_nnz[jj]) {
-            o_nnz[jj] = ncols;
-            if (o_nnz[jj] > (NN/bs-nloc)) o_nnz[jj] = NN/bs-nloc;
-          }
-          ierr = MatRestoreRow(Amat,Ii+kk,&ncols,&idx,0);CHKERRQ(ierr);
-        }
-        maskcnt = 0;
-        for (i=0; i<nloc; i++) {
-          if (blockmask[i]) maskcnt++;
-        }
-        d_nnz[jj] = maskcnt;
-      }
-      ierr = PetscFree(blockmask);CHKERRQ(ierr);
     }
 
     /* get scalar copy (norms) of matrix */
