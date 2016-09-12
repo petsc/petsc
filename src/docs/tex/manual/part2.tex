@@ -2890,67 +2890,110 @@ coalesced multi-rank subdomains. The \trl{runex62_2D_*} examples illustrate the 
 %----------------------------------------------------------------------
 \subsection{Algebraic Multigrid (AMG) Preconditioners}
 
-PETSc provides a native algebraic multigrid preconditioner PCGAMG -- {\it ``gamg''} -- and interfaces to two
+PETSc has a native algebraic multigrid preconditioner PCGAMG -- {\it gamg} -- and interfaces to two
 external AMG packages: {\it hypre} and {\it ML}.
-
-PETSc provides a (smoothed) aggregation AMG, (\trl{-pc_type gamg -pc_gamg_type agg} or  PCSetType(pc,PCGAMG) and PCGAMGSetType(pc,PCGAMGAgg).
-There are also less developed implementations of a classical AMG method (\trl{-pc_gamg_type classical})  and a hybrid geometric AMG method (\trl{-pc_gamg_type geo}).
+{\it Hypre}  is relatively monolithic in that a PETSc matrix is into a hypre matrix and then {\it hypre} is called to do the entire solve.
+{\it ML} is more modular in that PETSc only has {\it ML} generate the coarse grid spaces (columns of the prolongation operator), which is core of an AMG method, and then constructs a PCMG with Galerkin coarse grid operator construction. 
+GAMG is designed from the beginning to be modular, to allow for new components to be added easily and also populates a multigrid preconditioner PCMG so generic multigrid parameters are used.
+PETSc provides a fully supported (smoothed) aggregation AMG, (\trl{-pc_type gamg -pc_gamg_type agg} or  PCSetType(pc,PCGAMG) and PCGAMGSetType(pc,PCGAMGAGG), as well as reference implementations of a classical AMG method (\trl{-pc_gamg_type classical}), a hybrid geometric AMG method (\trl{-pc_gamg_type geo}), and a 2.5D AMG method DofColumns \cite{IsaacStadlerGhattas2015}.
+GAMG does require the use of (MPI)AIJ matrices.
+For instance, BAIJ matrices are not supported.
+One can use AIJ instead of BAIJ without changing any code other than the constructor (or the \trl{-mat_type} from the command line).
+For instance, MatSetValuesBlocked works with AIJ matrices.
 
 GAMG provides unsmoothed aggregation (\trl{-pc_gamg_agg_nsmooths 0}) and smoothed aggregation (\trl{-pc_gamg_agg_nsmooths 1} or PCGAMGSetNSmooths(pc,1)).
 Smoothed aggregation is recommended for symmetric positive definite
-systems;  unsmoothed aggregation can be useful for asymmetric
-problems and problems where highest eigen estimates are problematic. Try \trl{-pc_gamg_agg_nsmooths 0}  if poor convergence rates are observed using the smoothed version.
+systems.
+Unsmoothed aggregation can be useful for asymmetric
+problems and problems where highest eigen estimates are problematic. 
+If poor convergence rates are observed using the smoothed version one can test unsmoothed aggregation.
 AMG methods requires knowledge of the number of degrees of
-freedom per vertex, the default is one (a scalar problem) but vector problems like elasticity should set the block size of the matrix appropriately with MatSetBlockSize(mat,bs).
-Smoothed aggregation relies an explicit representation of the (near) null space of the operator.
-One can provide this with MatSetNearNullSpace().
-For elasticity, where rotational rigid body modes define the near null space you can call PCSetCoordinates() instead of MatSetNearNullSpace() and it will set the near null space for you.
+freedom per vertex, the default is one (a scalar problem).
+Vector problems like elasticity should set the block size of the matrix appropriately with \trl{-mat_block_size bs}  or MatSetBlockSize(mat,bs).
 
-Other options for GAMG include PCGAMGSetProcEqLim(),
-PCGAMGSetCoarseEqLim(), PCGAMGSetRepartition(),
-PCGAMGRegister(), PCGAMGSetReuseInterpolation(),
-PCGAMGASMSetUseAggs(), PCGAMGSetNlevels(),
-PCGAMGSetThreshold(), and PCGAMGGetType(),
-PCGAMGSetUseParallelCoarseGridSolve.
+Smoothed aggregation requires an explicit representation of the (near) null space of the operator for optimal performance.
+One can provide this with MatSetNearNullSpace.
+The one vector is the default, for each variable given by the block size (e.g., the translational rigid  body modes).
+For elasticity, where rotational rigid body modes are required to complete the near null space you can use MatNullSpaceCreateRigidBody to create the null space vectors and then MatSetNearNullSpace.
 
+There are several options to provide parameters to the coarsening algorithm and parallel data layout.
+Run a code that uses GAMG with \trl{-help} to get full listing of GAMG parameters with short parameter descriptions.
 
-{\bf Trouble shooting algebraic multigrid methods:}  If GAMG, ML, or hypre does not perform well the
-first thing to try is the other methods.
-You can also try  \trl{-mg_levels_ksp_type richardson -mg_levels_pc_type sor}.
-AMG methods are sensitive to coarsening rates and methods; for GAMG use
-\trl{-pc_gamg_threshold} $x$ to regulate coarsening rates (PCGAMGSetThreshold()).
-A high threshold (eg, $x=0.08$) will result in an expensive but potentially
-powerful preconditioner; a low threshold (eg, $x=0.0$) will result in
-faster coarsening, fewer levels, cheaper solves, and generally worse
-convergence rates.
-\trl{-pc_gamg_threshold} $0.0$ is the most robust option (the reason for
-this is not obvious) and is recommended if poor convergence rates are
-observed, at least until the source of the problem is discovered.
-Optimizing parameters for AMG is tricky; we can help.
-To get help with your problem, first tell us the PDE that you are solving and any other useful information like discretizations, stretched grids, high contrast media, etc.
-Run with \trl{-info} and pipe the output, which will be large, to \trl{grep GAMG}, and send us the output (about 20 lines).
-This will give us useful high level information that will often give us a direction to start optimizing parameters.
+{\bf Trouble shooting algebraic multigrid methods:}  
+If {\it GAMG}, {\it ML}, or {\it hypre} does not perform well the first thing to try is one of 
+the other methods. Often the default parameters or just the strengths of different algorithms can fix performance problems or provide useful information to guide further debugging.
 
-Finally, there are several sources of poor performance of
+There are several sources of poor performance of
 AMG solvers and often special purpose methods must be developed to
 achieve the full potential of multigrid.
 To name just a few sources of performance degradation that
-may not be fixed with parameters or bug fixes in PETSc currently: non-elliptic
+may not be fixed with parameters in PETSc currently: non-elliptic
 operators, curl/curl operators, highly stretched grids or highly anisotropic problems,
 large jumps in material coefficients with complex geometry (AMG is
 particularly well suited to jumps in coefficients but it is not a
 perfect solution), highly incompressible elasticity, not to mention
-ill-posed problems, and many others. For div/div and curl/curl operators,
+ill-posed problems, and many others. For Grad-Div and Curl-Curl operators,
 you may want to try the Auxilary Maxwell Space (AMS, \trl{-pc_type hypre -pc_hypre_set_type ams})
 or the Auxilary Divergence Space (ADS, \trl{-pc_type hypre -pc_hypre_set_type ads}) solvers.
 These solvers need some additional information on the underlying mesh;
-specifically, AMS needs the so-called discrete gradient operator, which can be specified via
+specifically, AMS needs the discrete gradient operator, which can be specified via
 PCHYPRESetDiscreteGradient(). In addition to the discrete gradient, ADS also needs the
 specification of the discrete curl operator, which can be set using PCHYPRESetDiscreteCurl().
 
+{\bf I am converging slowly, what do I do?}
+AMG methods are sensitive to coarsening rates and methods; for GAMG
+use \trl{-pc_gamg_threshold <x>} to regulate coarsening rates and
+PCGAMGSetThreshold, higher values decrease coarsening rate.
+Squaring the graph is the second mechanism for increasing coarsening
+rate.
+Use \trl{-pc_gamg_square_graph <N>,}, or PCGAMGSetSquareGraph(pc,N), to square the graph on the
+finest N levels.  A high threshold (e.g., $x=0.08$) will result in an
+expensive but potentially powerful preconditioner, and a low threshold
+(e.g., $x=0.0$) will result in faster coarsening, fewer levels,
+cheaper solves, and generally worse convergence rates.
+
+One can run with \trl{-info} and grep for ``GAMG'' to get some statistics on each
+level, which can be used to see if you are coarsening at an
+appropriate rate.  With smoothed aggregation you generally want to
+coarse at about a rate of 3:1 in each dimension.  Coarsening too slow
+will result in large numbers of non-zeros per row on coarse grids
+(this is reported).  The number of non-zeros can go up very high, say
+about 300 (times the degrees-of-freedom per vertex) on a 3D hex mesh.
+One can also look at the grid complexity, which is also reported (the ration of the total number of matrix entries for all levels to the number of matrix entries on the fine level).  
+Grid complexity should be well under 2.0 and preferably around $1.3$ or lower.  If
+convergence is poor and the Galerkin coarse grid construction is much
+smaller than the time for each solve then one can safely decrease the
+coarsening rate.  \trl{-pc_gamg_threshold} $0.0$ is the simplest and most robust
+option, and is recommended if poor
+convergence rates are observed, at least until the source of the
+problem is discovered.
+In conclusion, if convergence is slow then decreasing the coarsening rate (increasing the threshold) should be tried.
+
+{\bf A note on Chebyshev smoothers.} Chebyshev solvers are attractive as multigrid smoothers because they can target a specific interval of the spectrum which is the purpose of a smoother.
+The spectral bounds for Chebyshev solvers are simple to compute because they rely on the highest eigenvalue of your (diagonally preconditioned) operator, which is conceptually simple to compute.
+However, if this highest eigenvalue estimate is not accurate (too low) then the solvers can fail with and indefinite preconditioner message.
+One can run with \trl{-info} and grep for ``GAMG'' to get these estimates or use \trl{-ksp_view}.
+These highest eigenvalues are generally between 1.5-3.0.
+For symmetric positive definite systems CG is a better eigenvalue estimator \trl{-mg_levels_esteig_ksp_type cg}.
+Indefinite matrix messages are often caused by bad Eigen estimates.
+Explicitly damped Jacobi or Krylov smoothers can provide an alternative to Chebyshev and {\it hypre} has alternative smoothers.
+
+{\bf Now am I solving alright, can I expect better?}
+If you find that you are getting nearly on digit in reduction
+of the residual per iteration and are using a modest number of point
+smoothing steps (e.g., 1-4 iterations of SOR), then you may be fairly
+close to textbook multigrid efficiency.  Although you also need to
+check the setup costs.  This can be determined by running with
+\trl{-log_view} and check that the time for the Galerkin coarse grid
+construction (MatPtAP) is not (much) more than the time spent in each
+solve (KSPSolve).  If the MatPtAP time is too large then one can increase the
+coarsening rate by decreasing the threshold and squaring the coarsening
+graph (\trl{-pc_gamg_square_graph <N>}, squares the graph on the finest N levels).
+Likewise if your MatPtAP time is small and your convergence rate is not ideal then you could decrease the coarsening rate.
+
 PETSc's AMG solver is constructed as a framework for developers to
-easily add AMG capabilities, like a new AMG algorithm or a new matrix
-triple product, etc. Contact us directly if you are interested in extending/improving PETSc's algebraic multigrid solvers.
+easily add AMG capabilities, like a new AMG methods or anAMG component like a matrix
+triple product. Contact us directly if you are interested in contributing.
 
 %----------------------------------------------------------------------
 \subsection{Balancing Domain Decomposition by Constraints}
