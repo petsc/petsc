@@ -1635,7 +1635,7 @@ TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE = ex23.PETSc runex23_3 ex23.rm  ex15.PETSc ru
                                  ex60.PETSc runex60_4 runex60_5 runex60_6 runex60_7 runex60_8 runex60_9 ex60.rm
 TESTEXAMPLES_C_X	       = ex2.PETSc runex2_5 ex2.rm ex5.PETSc runex5_5 ex5.rm ex8.PETSc ex8.rm ex28.PETSc runex28 ex28.rm
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f runex2f_2 ex2f.rm ex6f.PETSc ex6f.rm \
-                                 ex15f.PETSc runex15f ex15f.rm \
+                                 printdot ex15f.PETSc runex15f ex15f.rm \
                                   ex45f.PETSc runex45f ex45f.rm
 TESTEXAMPLES_FORTRAN_NOTSINGLE  = ex14f.PETSc runex14f  ex14f.rm  ex22f.PETSc runex22f ex22f.rm ex21f.PETSc runex21f ex21f.rm  ex54f.PETSc runex54f ex54f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex1f.PETSc runex1f ex1f.rm ex6f.PETSc runex6f ex6f.rm
