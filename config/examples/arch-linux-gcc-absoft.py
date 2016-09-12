@@ -2,7 +2,7 @@
 
 configure_options = [
   '--with-cc=gcc',
-  '--with-fc=f90',
+  '--with-fc=Fx3', #switch to Fortran 203 compiler to allow longer than 132 character Fortran lines in examples
   'FFLAGS=-M1643', #suppress warnings about unused 'parameter' variables defined in fortran includes
   '--with-cxx=g++',
   '--with-clanguage=c++',
