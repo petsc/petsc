@@ -53,13 +53,15 @@ struct _p_PetscDS {
   /* Computed sizes */
   PetscInt     totDim, totDimBd;       /* Total system dimension */
   PetscInt     totComp;                /* Total field components */
-  /* Work space */
   PetscInt    *Nc;                     /* Number of components for each field */
   PetscInt    *Nb;                     /* Number of basis functions for each field */
   PetscInt    *off,       *offBd;      /* Offsets for each field */
   PetscInt    *offDer,    *offDerBd;   /* Derivative offsets for each field */
   PetscReal  **basis,    **basisBd;    /* Default basis tabulation for each field */
   PetscReal  **basisDer, **basisDerBd; /* Default basis derivative tabulation for each field */
+  PetscReal  **basisFace;              /* Basis tabulation for each local face and field */
+  PetscReal  **basisDerFace;           /* Basis derivative tabulation for each local face and field */
+  /* Work space */
   PetscScalar *u;                      /* Field evaluation */
   PetscScalar *u_t;                    /* Field time derivative evaluation */
   PetscScalar *u_x;                    /* Field gradient evaluation */

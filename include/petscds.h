@@ -272,6 +272,7 @@ PETSC_EXTERN PetscErrorCode PetscDSSetBdJacobian(PetscDS, PetscInt, PetscInt,
                                                           const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                           PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscScalar[]));
 PETSC_EXTERN PetscErrorCode PetscDSGetTabulation(PetscDS, PetscReal ***, PetscReal ***);
+PETSC_EXTERN PetscErrorCode PetscDSGetFaceTabulation(PetscDS, PetscReal ***, PetscReal ***);
 PETSC_EXTERN PetscErrorCode PetscDSGetBdTabulation(PetscDS, PetscReal ***, PetscReal ***);
 PETSC_EXTERN PetscErrorCode PetscDSGetEvaluationArrays(PetscDS, PetscScalar **, PetscScalar **, PetscScalar **);
 PETSC_EXTERN PetscErrorCode PetscDSGetWeakFormArrays(PetscDS, PetscScalar **, PetscScalar **, PetscScalar **, PetscScalar **, PetscScalar **, PetscScalar **);

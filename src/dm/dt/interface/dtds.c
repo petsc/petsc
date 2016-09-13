@@ -303,7 +303,7 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
   prob->totDim = prob->totDimBd = prob->totComp = 0;
   ierr = PetscMalloc2(Nf,&prob->Nc,Nf,&prob->Nb);CHKERRQ(ierr);
   ierr = PetscCalloc4(Nf+1,&prob->off,Nf+1,&prob->offDer,Nf+1,&prob->offBd,Nf+1,&prob->offDerBd);CHKERRQ(ierr);
-  ierr = PetscMalloc4(Nf,&prob->basis,Nf,&prob->basisDer,Nf,&prob->basisBd,Nf,&prob->basisDerBd);CHKERRQ(ierr);
+  ierr = PetscMalloc6(Nf,&prob->basis,Nf,&prob->basisDer,Nf,&prob->basisBd,Nf,&prob->basisDerBd,Nf,&prob->basisFace,Nf,&prob->basisDerFace);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {
     PetscFE         feBd = (PetscFE) prob->discBd[f];
     PetscObject     obj;
@@ -320,6 +320,7 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
       ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
       ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
       ierr = PetscFEGetDefaultTabulation(fe, &prob->basis[f], &prob->basisDer[f], NULL);CHKERRQ(ierr);
+      ierr = PetscFEGetFaceTabulation(fe, &prob->basisFace[f], &prob->basisDerFace[f], NULL);CHKERRQ(ierr);
     } else if (id == PETSCFV_CLASSID) {
       PetscFV fv = (PetscFV) obj;
 
@@ -327,6 +328,7 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
       Nb   = 1;
       ierr = PetscFVGetNumComponents(fv, &Nc);CHKERRQ(ierr);
       ierr = PetscFVGetDefaultTabulation(fv, &prob->basis[f], &prob->basisDer[f], NULL);CHKERRQ(ierr);
+      /* TODO: should PetscFV also have face tabulation? Otherwise there will be a null pointer in prob->basisFace */
     } else SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", f);
     prob->Nc[f]       = Nc;
     prob->Nb[f]       = Nb;
@@ -364,7 +366,7 @@ static PetscErrorCode PetscDSDestroyStructs_Static(PetscDS prob)
   PetscFunctionBegin;
   ierr = PetscFree2(prob->Nc,prob->Nb);CHKERRQ(ierr);
   ierr = PetscFree4(prob->off,prob->offDer,prob->offBd,prob->offDerBd);CHKERRQ(ierr);
-  ierr = PetscFree4(prob->basis,prob->basisDer,prob->basisBd,prob->basisDerBd);CHKERRQ(ierr);
+  ierr = PetscFree6(prob->basis,prob->basisDer,prob->basisBd,prob->basisDerBd,prob->basisFace,prob->basisDerFace);CHKERRQ(ierr);
   ierr = PetscFree5(prob->u,prob->u_t,prob->u_x,prob->x,prob->refSpaceDer);CHKERRQ(ierr);
   ierr = PetscFree6(prob->f0,prob->f1,prob->g0,prob->g1,prob->g2,prob->g3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2482,6 +2484,37 @@ PetscErrorCode PetscDSGetTabulation(PetscDS prob, PetscReal ***basis, PetscReal 
   if (basisDer) {PetscValidPointer(basisDer, 3); *basisDer = prob->basisDer;}
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDSGetFaceTabulation"
+/*@C
+  PetscDSGetFaceTabulation - Return the basis tabulation at quadrature points on the faces
+
+  Not collective
+
+  Input Parameter:
+. prob - The PetscDS object
+
+  Output Parameters:
++ basisFace - The basis function tabulation at quadrature points
+- basisDerFace - The basis function derivative tabulation at quadrature points
+
+  Level: intermediate
+
+.seealso: PetscDSGetTabulation(), PetscDSCreate()
+@*/
+PetscErrorCode PetscDSGetFaceTabulation(PetscDS prob, PetscReal ***basis, PetscReal ***basisDer)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  ierr = PetscDSSetUp(prob);CHKERRQ(ierr);
+  if (basis)    {PetscValidPointer(basis, 2);    *basis    = prob->basisFace;}
+  if (basisDer) {PetscValidPointer(basisDer, 3); *basisDer = prob->basisDerFace;}
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSGetBdTabulation"
