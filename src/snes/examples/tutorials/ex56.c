@@ -322,18 +322,15 @@ int main(int argc,char **args)
     const PetscInt Nfid = 1, Npid = 1;
     const PetscInt fid[] = {1}; /* The fixed faces (x=0) */
     const PetscInt pid[] = {2}; /* The faces with loading (x=L_x) */
-    PetscFE         feBd,fe;
+    PetscFE         fe;
     PetscDS         prob;
     DM              cdm = dm;
 
     ierr = PetscFECreateDefault(dm, dim, dim, PETSC_FALSE, NULL, 2, &fe);CHKERRQ(ierr); /* elasticity */
     ierr = PetscObjectSetName((PetscObject) fe, "deformation");CHKERRQ(ierr);
-    ierr = PetscFECreateDefault(dm, dim-1, dim, PETSC_FALSE, NULL, -1, &feBd);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) feBd, "bc");CHKERRQ(ierr);
     /* FEM prob */
     ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
     ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
-    ierr = PetscDSSetBdDiscretization(prob, 0, (PetscObject) feBd);CHKERRQ(ierr);
     /* setup problem */
     ierr = PetscDSSetResidual(prob, 0, f0_u, f1_u_3d);CHKERRQ(ierr);
     ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu_3d);CHKERRQ(ierr);
@@ -346,7 +343,6 @@ int main(int argc,char **args)
       ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
     }
     ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
-    ierr = PetscFEDestroy(&feBd);CHKERRQ(ierr);
   }
   /* vecs & mat */
   ierr = DMCreateGlobalVector(dm,&xx);CHKERRQ(ierr);
