@@ -22,7 +22,7 @@
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       if (ierr .ne. 0) then
          print*,'PetscInitialize failed'
-         return
+         stop
       endif
 
       ten = 10

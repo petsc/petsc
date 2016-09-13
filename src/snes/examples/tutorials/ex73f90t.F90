@@ -127,7 +127,7 @@
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
      if (ierr .ne. 0) then
          print*,'PetscInitialize failed'
-         return
+         stop
       endif
       call MPI_Comm_rank(PETSC_COMM_WORLD,solver%rank,ierr);CHKERRQ(ierr)
 
