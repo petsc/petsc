@@ -768,7 +768,7 @@ static PetscErrorCode MSA_Plate(Vec XL,Vec XU,void *ctx){
 
   user->bmy = PetscMax(0,user->bmy);user->bmy = PetscMin(my,user->bmy);
   user->bmx = PetscMax(0,user->bmx);user->bmx = PetscMin(mx,user->bmx);
-  bmy=user->bmy, bmx=user->bmx;
+  bmy=user->bmy; bmx=user->bmx;
 
   ierr = DMDAGetCorners(user->dm,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
 

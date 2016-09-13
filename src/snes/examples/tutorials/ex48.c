@@ -443,7 +443,7 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
   }
   ierr          = PetscOptionsEnd();CHKERRQ(ierr);
   units->Pascal = units->kilogram / (units->meter * PetscSqr(units->second));
-  units->year   = 31556926. * units->second, /* seconds per year */
+  units->year   = 31556926. * units->second; /* seconds per year */
 
   thi->Lx              = 10.e3;
   thi->Ly              = 10.e3;
