@@ -19,12 +19,12 @@ ex2: ex2.o chkopts
 	${RM} ex2.o
 #---------------------------------------------------------------------------
 runex1:
-	-@${MPIEXEC} -n 1 ./ex1 -ksp_monitor > ex1_1.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex1 -ksp_monitor_short > ex1_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex1_1.tmp
 runex1_2:
-	-@${MPIEXEC} -n 2 ./ex1 -ksp_monitor > ex1_2.tmp 2>&1;   \
+	-@${MPIEXEC} -n 2 ./ex1 -petscpartitioner_type simple -ksp_converged_reason > ex1_2.tmp 2>&1;   \
 	   if (${DIFF} output/ex1_2.out ex1_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex1_2.tmp
@@ -35,12 +35,12 @@ runex2:
 	   else printf "${PWD}\nPossible problem with ex2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex2.tmp
 runex2_2:
-	-@${MPIEXEC} -n 2 ./ex2 -pc_type asm -sub_pc_type ilu -ksp_converged_reason > ex2_2.tmp 2>&1;   \
+	-@${MPIEXEC} -n 2 ./ex2 -petscpartitioner_type simple -pc_type asm -sub_pc_type ilu -ksp_converged_reason > ex2_2.tmp 2>&1;   \
 	   if (${DIFF} output/ex2_2.out ex2_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex2_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex2_2.tmp
 runex2_3:
-	-@${MPIEXEC} -n 4 ./ex2 -pc_type asm -sub_pc_type lu -sub_pc_factor_shift_type nonzero -ksp_monitor_short -ksp_max_it 10 > ex2.tmp 2>&1;   \
+	-@${MPIEXEC} -n 4 ./ex2 -petscpartitioner_type simple -pc_type asm -sub_pc_type lu -sub_pc_factor_shift_type nonzero -ksp_converged_reason > ex2.tmp 2>&1;   \
 	   if (${DIFF} output/ex2_3.out ex2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex2_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex2.tmp
