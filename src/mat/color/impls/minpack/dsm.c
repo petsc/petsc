@@ -103,7 +103,8 @@ PetscErrorCode MINPACKdsm(PetscInt *m,PetscInt *n,PetscInt *npairs,PetscInt *ind
   i__1    = *m;
   for (i = 1; i <= i__1; ++i) {
     /* Computing MAX */
-    i__2    = *mingrp,i__3 = ipntr[i + 1] - ipntr[i];
+    i__2    = *mingrp;
+    i__3    = ipntr[i + 1] - ipntr[i];
     *mingrp = PetscMax(i__2,i__3);
   }
 
