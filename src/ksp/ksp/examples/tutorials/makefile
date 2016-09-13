@@ -9,7 +9,7 @@ EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                 ex41.c ex42.c ex43.c \
                 ex45.c ex46.c  ex49.c ex50.c ex51.c ex52.c ex53.c \
                 ex54.c ex55.c ex56.c ex58.c ex62.c ex63.cxx ex64.c ex65.c
-EXAMPLESF        = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F ex21f.F ex22f.F ex44f.F90 ex45f.F \
+EXAMPLESF        = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F90 ex14f.F ex15f.F ex21f.F ex22f.F ex44f.F90 ex45f.F \
                    ex52f.F ex54f.F ex61f.F90
 MANSEC           = KSP
 CLEANFILES       = rhs.vtk solution.vtk
@@ -1647,7 +1647,7 @@ TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE = ex23.PETSc runex23_3 ex23.rm  ex15.PETSc ru
 TESTEXAMPLES_C_X	       = ex2.PETSc runex2_5 ex2.rm ex5.PETSc runex5_5 ex5.rm ex8.PETSc ex8.rm ex28.PETSc runex28 ex28.rm
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f runex2f_2 ex2f.rm ex6f.PETSc ex6f.rm \
                                  ex15f.PETSc runex15f ex15f.rm \
-                                 ex44f.PETSc runex44f ex44f.rm ex45f.PETSc runex45f ex45f.rm
+                                 ex45f.PETSc runex45f ex45f.rm
 TESTEXAMPLES_FORTRAN_NOTSINGLE  = ex14f.PETSc runex14f  ex14f.rm  ex22f.PETSc runex22f ex22f.rm ex21f.PETSc runex21f ex21f.rm  ex54f.PETSc runex54f ex54f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex1f.PETSc runex1f ex1f.rm ex6f.PETSc runex6f ex6f.rm
 TESTEXAMPLES_C_X_MPIUNI      = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_3 ex2.rm \
@@ -1662,7 +1662,7 @@ TESTEXAMPLES_DATAFILESPATH     = ex10.PETSc runex10_xxt runex10_xyt runex10_2 ru
 # we list it with the fortran examples
 TESTEXAMPLES_FORTRAN_NOCOMPLEX =
 TESTEXAMPLES_FORTRAN_COMPLEX            = ex11f.PETSc runex11f ex11f.rm
-TESTEXAMPLES_F90	                = ex13f90.PETSc runex13f90 ex13f90.rm
+TESTEXAMPLES_F90	                = ex13f90.PETSc runex13f90 ex13f90.rm ex44f.PETSc runex44f ex44f.rm 
 TESTEXAMPLES_F90_THREADSAFETY           = ex61f.PETSc runex61f ex61f.rm
 TESTEXAMPLES_13		                = ex3.PETSc ex3.rm ex14f.PETSc ex14f.rm
 TESTEXAMPLES_MATLAB_ENGINE              = ex10.PETSc runex10_12  ex10.rm

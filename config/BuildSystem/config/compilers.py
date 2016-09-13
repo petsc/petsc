@@ -1130,9 +1130,10 @@ class Configure(config.base.Configure):
     return
 
   def checkFortran90(self):
-    '''Determine whether the Fortran compiler handles F90'''
+    '''Determine whether the Fortran compiler handles F90
+       We also require that the compiler handles lines longer than 132 characters'''
     self.pushLanguage('FC')
-    if self.checkLink(body = '      INTEGER, PARAMETER :: int = SELECTED_INT_KIND(8)\n      INTEGER (KIND=int) :: ierr\n\n      ierr = 1'):
+    if self.checkLink(body = '      INTEGER, PARAMETER ::        int = SELECTED_INT_KIND(8);              INTEGER (KIND=int) :: ierr;       ierr                            = 1'):
       self.addDefine('USING_F90', 1)
       self.fortranIsF90 = 1
       self.logPrint('Fortran compiler supports F90')
@@ -1143,9 +1144,10 @@ class Configure(config.base.Configure):
     return
 
   def checkFortran2003(self):
-    '''Determine whether the Fortran compiler handles F2003'''
+    '''Determine whether the Fortran compiler handles F2003
+       We also require that the compiler handles lines longer than 132 characters'''
     self.pushLanguage('FC')
-    if self.checkLink(body = '''
+    if self.fortranIsF90 and self.checkLink(body = '''
       use,intrinsic :: iso_c_binding
       Type(C_Ptr),Dimension(:),Pointer :: CArray
       character(kind=c_char),pointer   :: nullc => null()

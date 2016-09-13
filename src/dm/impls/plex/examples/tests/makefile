@@ -200,6 +200,6 @@ TESTEXAMPLES_C        = ex3.PETSc runex3_constraints runex3_nonconforming_tensor
 TESTEXAMPLES_HDF5     = ex15.PETSc runex15_0 ex15.rm
 TESTEXAMPLES_TRIANGLE = ex3.PETSc runex3_nonconforming_simplex_2 runex3_nonconforming_simplex_2_hi runex3_nonconforming_simplex_2_fv ex3.rm ex20.PETSc runex20_2d ex20.rm
 TESTEXAMPLES_CTETGEN  = ex1.PETSc runex1 runex1_2 runex1_test_shape ex1.rm ex3.PETSc runex3 runex3_nonconforming_simplex_3 runex3_nonconforming_simplex_3_hi runex3_nonconforming_simplex_3_fv ex3.rm ex20.PETSc runex20_3d ex20.rm
-TESTEXAMPLES_FORTRAN  = ex1f90.PETSc runex1f90 ex1f90.rm ex2f90.PETSc runex2f90 ex2f90.rm
+TESTEXAMPLES_F90  = ex1f90.PETSc runex1f90 ex1f90.rm ex2f90.PETSc runex2f90 ex2f90.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test

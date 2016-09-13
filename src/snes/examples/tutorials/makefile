@@ -16,7 +16,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c  ex5.c ex5s.c ex9.c \
                 ex56.c ex58.c ex59.c \
                 ex62.c ex70.c ex77.c\
                 ex47cu.cu
-EXAMPLESF	 = ex1f.F ex5f.F ex5f90.F ex5f90t.F ex5fs.F ex40f90.F90
+EXAMPLESF	 = ex1f.F ex5f.F ex5f90.F90 ex5f90t.F90 ex5fs.F ex40f90.F90 ex73f90t.F90
 EXAMPLESCH	 =
 EXAMPLESFH       = ex5f.h
 EXAMPLESMATLAB   = ex5m.m  ex61genm.m ex61m.m
@@ -1315,13 +1315,14 @@ TESTEXAMPLES_PARMS             = ex19.PETSc runex19_parms ex19.rm
 TESTEXAMPLES_PARMETIS          = ex56.PETSc runex56 ex56.rm
 TESTEXAMPLES_C_X	       = ex1.PETSc runex1_X ex1.rm ex19.PETSc runex19_draw runex19_18 runex19_drawports ex19.rm
 TESTEXAMPLES_F90_DATATYPES     = ex5f90t.PETSc runex5f90t ex5f90t.rm
-TESTEXAMPLES_FORTRAN_NOTSINGLE = ex1f.PETSc runex1f ex1f.rm ex40f90.PETSc runex40f90 ex40f90.rm  ex73f90t.PETSc runex73f90t  ex73f90t.rm
+TESTEXAMPLES_FORTRAN_NOTSINGLE = ex1f.PETSc runex1f ex1f.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex30.PETSc ex30.rm
 TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE  = ex9.PETSc runex9 runex9_2 runex9_3 runex9_4 runex9_5 runex9_5_2 runex9_6 ex9.rm ex19.PETSc runex19_ibcgs ex19.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX_NOTSINGLE = ex5f.PETSc runex5f runex5f_3 ex5f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex1f.PETSc runex1f ex1f.rm
 TESTEXAMPLES_C_X_MPIUNI        = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm  ex14.PETSc ex14.rm
-TESTEXAMPLES_F90_NOTSINGLE     = ex5f90.PETSc runex5f90 runex5f90_2 runex5f90_3 runex5f90_4 runex5f90_5 ex5f90.rm
+TESTEXAMPLES_F90_NOTSINGLE     = ex5f90.PETSc runex5f90 runex5f90_2 runex5f90_3 runex5f90_4 runex5f90_5 ex5f90.rm  ex40f90.PETSc runex40f90 ex40f90.rm  \
+                                  ex73f90t.PETSc runex73f90t  ex73f90t.rm
 TESTEXAMPLES_13		       =
 TESTEXAMPLES_MATLAB_ENGINE     =
 TESTEXAMPLES_SAWS	       =
