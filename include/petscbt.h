@@ -49,10 +49,10 @@ PETSC_STATIC_INLINE char PetscBTLookup(PetscBT array,PetscInt index)
   char      BT_mask,BT_c;
   PetscInt  BT_idx;
 
- return  (BT_idx        = index/PETSC_BITS_PER_BYTE,
-          BT_c          = array[BT_idx],
-          BT_mask       = (char)(1 << index%PETSC_BITS_PER_BYTE),
-          (char)(BT_c & BT_mask));
+  BT_idx        = index/PETSC_BITS_PER_BYTE;
+  BT_c          = array[BT_idx];
+  BT_mask       = (char)(1 << index%PETSC_BITS_PER_BYTE);
+  return (char)(BT_c & BT_mask);
 }
 
 PETSC_STATIC_INLINE PetscErrorCode PetscBTView(PetscInt m,const PetscBT bt,PetscViewer viewer)
@@ -80,11 +80,11 @@ PETSC_STATIC_INLINE char PetscBTLookupSet(PetscBT array,PetscInt index)
   char      BT_mask,BT_c;
   PetscInt  BT_idx;
 
-  return (BT_idx        = index/PETSC_BITS_PER_BYTE,
-          BT_c          = array[BT_idx],
-          BT_mask       = (char)(1 << index%PETSC_BITS_PER_BYTE),
-          array[BT_idx] = (char)(BT_c | BT_mask),
-          (char)(BT_c & BT_mask));
+  BT_idx        = index/PETSC_BITS_PER_BYTE;
+  BT_c          = array[BT_idx];
+  BT_mask       = (char)(1 << index%PETSC_BITS_PER_BYTE);
+  array[BT_idx] = (char)(BT_c | BT_mask);
+  return        (char)(BT_c & BT_mask);
 }
 
 PETSC_STATIC_INLINE PetscErrorCode PetscBTSet(PetscBT array,PetscInt index)
@@ -113,11 +113,11 @@ PETSC_STATIC_INLINE char PetscBTLookupClear(PetscBT array,PetscInt index)
   char      BT_mask,BT_c;
   PetscInt  BT_idx;
 
-  return (BT_idx        = index/PETSC_BITS_PER_BYTE,
-          BT_c          = array[BT_idx],
-          BT_mask       = (char)(1 << index%PETSC_BITS_PER_BYTE),
-          array[BT_idx] = (char)(BT_c & ~BT_mask),
-          (char)(BT_c & BT_mask));
+  BT_idx        = index/PETSC_BITS_PER_BYTE;
+  BT_c          = array[BT_idx];
+  BT_mask       = (char)(1 << index%PETSC_BITS_PER_BYTE);
+  array[BT_idx] = (char)(BT_c & ~BT_mask);
+  return (char)(BT_c & BT_mask);
 }
 
 PETSC_STATIC_INLINE PetscErrorCode PetscBTClear(PetscBT array,PetscInt index)
