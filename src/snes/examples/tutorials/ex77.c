@@ -58,14 +58,6 @@ typedef struct {
   PetscReal     p_wall;            /* The wall pressure */
 } AppCtx;
 
-/* Kronecker-delta */
-static const PetscInt delta2D[2*2] = {1,0,0,1};
-static const PetscInt delta3D[3*3] = {1,0,0,0,1,0,0,0,1};
-
-/* Levi-Civita symbol */
-static const PetscInt epsilon2D[2*2] = {0,1,-1,0};
-static const PetscInt epsilon3D[3*3*3] = {0,0,0,0,0,1,0,-1,0,0,0,-1,0,0,0,1,0,0,0,1,0,-1,0,0,0,0,0};
-
 PETSC_STATIC_INLINE void Det2D(PetscReal *detJ, const PetscReal J[])
 {
   *detJ = J[0]*J[3] - J[1]*J[2];
@@ -186,12 +178,16 @@ void g3_uu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   pm = p/detu_x;
 
   /* g3 is the first elasticity tensor, i.e. A_i^I_j^J = S^{IJ} g_{ij} + C^{KILJ} F^k_K F^l_L g_{kj} g_{li} */
-  PetscInt compI, compJ, compK, d1, d2, d3;
+  PetscInt compI, compJ, d1, d2;
   for (compI = 0; compI < Ncomp; ++compI) {
     for (compJ = 0; compJ < Ncomp; ++compJ) {
+      const PetscReal G = (compI == compJ) ? 1.0 : 0.0;
+
       for (d1 = 0; d1 < dim; ++d1) {
         for (d2 = 0; d2 < dim; ++d2) {
-          g3[((compI*Ncomp+compJ)*dim+d1)*dim+d2] += pp * cofu_x[compI*dim+d1] * cofu_x[compJ*dim+d2] - pm * cofu_x[compI*dim+d2] * cofu_x[compJ*dim+d1] + delta3D[compI*Ncomp+compJ] * delta3D[d1*dim+d2] * mu;
+          const PetscReal g = (d1 == d2) ? 1.0 : 0.0;
+
+          g3[((compI*Ncomp+compJ)*dim+d1)*dim+d2] = g * G * mu + pp * cofu_x[compI*dim+d1] * cofu_x[compJ*dim+d2] - pm * cofu_x[compI*dim+d2] * cofu_x[compJ*dim+d1];
         }
       }
     }
@@ -235,21 +231,20 @@ void g1_bd_uu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
     PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscScalar g1[])
 {
-  const PetscInt    Ncomp = dim;
-  const PetscScalar p = a[aOff[1]];
+  const PetscInt Ncomp = dim;
+  PetscScalar    p = a[aOff[1]];
+  PetscReal      cofu_x[Ncomp*dim], m[Ncomp], detu_x;
 
-  PetscInt compI, compJ, compK, d1, d2, d3;
+  Cof3D(cofu_x, u_x);
+  Det3D(&detu_x, u_x);
+  p /= detu_x;
+
+  PetscInt comp, compI, compJ, d;
+  for (comp = 0; comp < Ncomp; ++comp) for (d = 0, m[comp] = 0.0; d < dim; ++d) m[comp] += cofu_x[comp*dim+d] * n[d];
   for (compI = 0; compI < Ncomp; ++compI) {
     for (compJ = 0; compJ < Ncomp; ++compJ) {
-      for (d2 = 0; d2 < dim; ++d2) {
-        for (compK = 0; compK < Ncomp; ++compK) {
-          for (d3 = 0; d3 < dim; ++d3) {
-            for (d1 = 0; d1 < dim; ++d1) {
-              g1[(compI*Ncomp+compJ)*dim+d2] += epsilon3D[(compI*Ncomp+compJ)*Ncomp+compK] * epsilon3D[(d2*dim+d3)*dim+d1] * u_x[compK*dim+d3] * n[d1];
-            }
-          }
-        }
-        g1[(compI*Ncomp+compJ)*dim+d2] *= p;
+      for (d = 0; d < dim; ++d) {
+        g1[(compI*Ncomp+compJ)*dim+d] = p * (m[compI] * cofu_x[compJ*dim+d] - cofu_x[compI*dim+d] * m[compJ]);
       }
     }
   }
@@ -388,7 +383,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMGetLabel(*dm, "boundary", &label);CHKERRQ(ierr);
     ierr = DMPlexMarkBoundaryFaces(*dm, label);CHKERRQ(ierr);
     ierr = DMGetStratumIS(*dm, "boundary", 1,  &is);CHKERRQ(ierr);
-    ierr = DMCreateLabel(*dm, "Faces");CHKERRQ(ierr);
     if (is) {
       ierr = ISGetLocalSize(is, &Nf);CHKERRQ(ierr);
       ierr = ISGetIndices(is, &faces);CHKERRQ(ierr);
@@ -419,8 +413,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       ierr = ISRestoreIndices(is, &faces);CHKERRQ(ierr);
     }
     ierr = ISDestroy(&is);CHKERRQ(ierr);
-    ierr = DMGetLabel(*dm, "Faces", &label);CHKERRQ(ierr);
-    ierr = DMPlexLabelComplete(*dm, label);CHKERRQ(ierr);
   }
   {
     DM refinedMesh     = NULL;
@@ -528,13 +520,32 @@ PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "SetupNearNullSpace"
+PetscErrorCode SetupNearNullSpace(DM dm, AppCtx *user)
+{
+  /* Set up the near null space (a.k.a. rigid body modes) that will be used by the multigrid preconditioner */
+  DM             subdm;
+  MatNullSpace   nearNullSpace;
+  PetscInt       fields = 0;
+  PetscObject    deformation;
+  PetscErrorCode ierr;
+
+  ierr = DMCreateSubDM(dm, 1, &fields, NULL, &subdm);CHKERRQ(ierr);
+  ierr = DMPlexCreateRigidBody(subdm, &nearNullSpace);CHKERRQ(ierr);
+  ierr = DMGetField(dm, 0, &deformation);CHKERRQ(ierr);
+  ierr = PetscObjectCompose(deformation, "nearnullspace", (PetscObject) nearNullSpace);CHKERRQ(ierr);
+  ierr = DMDestroy(&subdm);CHKERRQ(ierr);
+  ierr = MatNullSpaceDestroy(&nearNullSpace);CHKERRQ(ierr);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "SetupDiscretization"
 PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 {
-  DM              cdm   = dm, coordDM, dmAux;
-  const PetscInt  dim   = user->dim, bdim = dim - 1;
+  DM              cdm   = dm, dmAux;
+  const PetscInt  dim   = user->dim;
   const PetscBool simplex = user->simplex;
-  PetscFE         fe[2], feBd[2], feAux[2], feAuxBd[2];
+  PetscFE         fe[2], feAux[2];
   PetscQuadrature q;
   PetscDS         prob, probAux;
   PetscInt        order;
@@ -548,39 +559,26 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   ierr = PetscQuadratureGetOrder(q, &order);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(dm, dim, 1, simplex, "pres_", order, &fe[1]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[1], "pressure");CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dm, bdim, dim, simplex, "bd_def_", order, &feBd[0]);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) feBd[0], "deformation");CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dm, bdim, 1, simplex, "bd_pres_", order, &feBd[1]);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) feBd[1], "pressure");CHKERRQ(ierr);
 
   ierr = PetscFECreateDefault(dm, dim, 1, simplex, "elastMat_", order, &feAux[0]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) feAux[0], "elasticityMaterial");CHKERRQ(ierr);
+  /* It is not yet possible to define a field on a submesh (e.g. a boundary), so we will use a normal finite element */
   ierr = PetscFECreateDefault(dm, dim, 1, simplex, "wall_pres_", order, &feAux[1]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) feAux[1], "wall_pressure");CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dm, bdim, 1, simplex, "bd_elastMat_", order, &feAuxBd[0]);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) feAuxBd[0], "elasticityMaterial");CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dm, bdim, 1, simplex, "bd_wall_pres_", order, &feAuxBd[1]);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) feAuxBd[1], "wallPressure");CHKERRQ(ierr);
 
   /* Set discretization and boundary conditions for each mesh */
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe[0]);CHKERRQ(ierr);
   ierr = PetscDSSetDiscretization(prob, 1, (PetscObject) fe[1]);CHKERRQ(ierr);
-  ierr = PetscDSSetBdDiscretization(prob, 0, (PetscObject) feBd[0]);CHKERRQ(ierr);
-  ierr = PetscDSSetBdDiscretization(prob, 1, (PetscObject) feBd[1]);CHKERRQ(ierr);
   ierr = SetupProblem(prob, dim, user);CHKERRQ(ierr);
   ierr = PetscDSSetFromOptions(prob);CHKERRQ(ierr);
   ierr = PetscDSCreate(PetscObjectComm((PetscObject)dm),&probAux);CHKERRQ(ierr);
   ierr = PetscDSSetDiscretization(probAux, 0, (PetscObject) feAux[0]);CHKERRQ(ierr);
   ierr = PetscDSSetDiscretization(probAux, 1, (PetscObject) feAux[1]);CHKERRQ(ierr);
-  ierr = PetscDSSetBdDiscretization(probAux, 0, (PetscObject) feAuxBd[0]);CHKERRQ(ierr);
-  ierr = PetscDSSetBdDiscretization(probAux, 1, (PetscObject) feAuxBd[1]);CHKERRQ(ierr);
   ierr = PetscDSSetFromOptions(probAux);CHKERRQ(ierr);
   while (cdm) {
     ierr = DMSetDS(cdm, prob);CHKERRQ(ierr);
     ierr = DMClone(cdm, &dmAux);CHKERRQ(ierr);
-    ierr = DMGetCoordinateDM(cdm, &coordDM);CHKERRQ(ierr);
-    ierr = DMSetCoordinateDM(dmAux, coordDM);CHKERRQ(ierr);
     ierr = DMSetDS(dmAux, probAux);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject) cdm, "dmAux", (PetscObject) dmAux);CHKERRQ(ierr);
     ierr = SetupMaterial(cdm, dmAux, user);CHKERRQ(ierr);
@@ -589,29 +587,10 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
     ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
   ierr = PetscDSDestroy(&probAux);CHKERRQ(ierr);
-
-  {
-    /* Set up the near null space (a.k.a. rigid body modes) that will be used by the multigrid preconditioner */
-    DM           subdm;
-    MatNullSpace nearNullSpace;
-    PetscInt     fields = 0;
-    PetscObject  deformation;
-    ierr = DMCreateSubDM(dm, 1, &fields, NULL, &subdm);CHKERRQ(ierr);
-    ierr = DMPlexCreateRigidBody(subdm, &nearNullSpace);CHKERRQ(ierr);
-    ierr = DMGetField(dm, 0, &deformation);CHKERRQ(ierr);
-    ierr = PetscObjectCompose(deformation, "nearnullspace", (PetscObject) nearNullSpace);CHKERRQ(ierr);
-    ierr = DMDestroy(&subdm);CHKERRQ(ierr);
-    ierr = MatNullSpaceDestroy(&nearNullSpace);CHKERRQ(ierr);
-  }
-
   ierr = PetscFEDestroy(&fe[0]);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe[1]);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&feBd[0]);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&feBd[1]);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&feAux[0]);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&feAux[1]);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&feAuxBd[0]);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&feAuxBd[1]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -638,6 +617,7 @@ int main(int argc, char **argv)
 
   ierr = SetupDiscretization(dm, &user);CHKERRQ(ierr);
   ierr = DMPlexCreateClosureIndex(dm, NULL);CHKERRQ(ierr);
+  ierr = SetupNearNullSpace(dm, &user);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(dm, &u);CHKERRQ(ierr);
   ierr = VecDuplicate(u, &r);CHKERRQ(ierr);
