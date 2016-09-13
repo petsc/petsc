@@ -1,10 +1,14 @@
 
+CFLAGS	         =
+FFLAGS	         =
+CPPFLAGS         =
+FPPFLAGS         =
+EXAMPLESC        = ex1.c ex2.c
 LOCDIR		 = src/ksp/ksp/examples/tutorials/network
 MANSEC           = KSP
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
-include ${PETSC_DIR}/lib/petsc/conf/test
 
 ex1: ex1.o chkopts
 	-${CLINKER} -o ex1 ex1.o ${PETSC_KSP_LIB}
@@ -42,4 +46,6 @@ runex2_3:
 	   ${RM} -f ex2.tmp
 
 
-TESTEXAMPLES_C	                        = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 ex2.rm
+TESTEXAMPLES_C	= ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 ex2.rm
+
+include ${PETSC_DIR}/lib/petsc/conf/test
