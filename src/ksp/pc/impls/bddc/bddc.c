@@ -987,6 +987,10 @@ static PetscErrorCode PCBDDCSetLocalAdjacencyGraph_BDDC(PC pc, PetscInt nvtxs,co
 
   PetscFunctionBegin;
   if (!nvtxs) {
+    if (copymode == PETSC_OWN_POINTER) {
+      ierr = PetscFree(xadj);CHKERRQ(ierr);
+      ierr = PetscFree(adjncy);CHKERRQ(ierr);
+    }
     ierr = PCBDDCGraphResetCSR(mat_graph);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
