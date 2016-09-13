@@ -72,7 +72,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatCollapseRows(Mat Amat,PetscInt start,Petsc
 PetscErrorCode PCGAMGCreateGraph(Mat Amat, Mat *a_Gmat)
 {
   PetscErrorCode ierr;
-  PetscInt       Istart,Iend,Ii,i,jj,kk,ncols,nloc,NN,MM,bs;
+  PetscInt       Istart,Iend,Ii,jj,kk,ncols,nloc,NN,MM,bs;
   MPI_Comm       comm;
   Mat            Gmat;
   MatType        mtype;
@@ -91,7 +91,7 @@ PetscErrorCode PCGAMGCreateGraph(Mat Amat, Mat *a_Gmat)
   if (bs > 1) {
     const PetscScalar *vals;
     const PetscInt    *idx;
-    PetscInt          *d_nnz, *o_nnz,*blockmask = NULL,maskcnt,*w0,*w1,*w2;
+    PetscInt          *d_nnz, *o_nnz,*w0,*w1,*w2;
     PetscBool         ismpiaij,isseqaij;
 
     /*
