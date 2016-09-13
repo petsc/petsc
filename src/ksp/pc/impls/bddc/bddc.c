@@ -1507,6 +1507,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   /* For BDDC we need to define a local "Neumann" problem different to that defined in PCISSetup
      Also, BDDC builds its own KSP for the Dirichlet problem */
   if (pc->setupcalled && pc->flag != SAME_NONZERO_PATTERN) pcbddc->recompute_topography = PETSC_TRUE;
+  if (pcbddc->recompute_topography) pcbddc->graphanalyzed = PETSC_FALSE;
   computeconstraintsmatrix = PETSC_FALSE;
 
   /* check parameters' compatibility */
@@ -1617,7 +1618,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   }
 
   /* Analyze interface */
-  if (pcbddc->recompute_topography) {
+  if (!pcbddc->graphanalyzed) {
     ierr = PCBDDCAnalyzeInterface(pc);CHKERRQ(ierr);
     computeconstraintsmatrix = PETSC_TRUE;
     if (pcbddc->adaptive_selection && !pcbddc->use_deluxe_scaling && !pcbddc->mat_graph->twodim) {
