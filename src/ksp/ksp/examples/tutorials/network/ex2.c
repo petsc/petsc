@@ -53,7 +53,7 @@ PetscErrorCode random_network(int nvertex,int *pnbranch,Node **pnode,Branch **pb
   PetscRandom    rnd;
   Branch         *branch;
   Node           *node;
-  Edge           *head = NULL, *new, *aux;
+  Edge           *head = NULL, *new= NULL, *aux= NULL;
 
   PetscFunctionBeginUser;
   ierr = PetscRandomCreate(PETSC_COMM_SELF,&rnd);CHKERRQ(ierr);
@@ -124,7 +124,7 @@ PetscErrorCode random_network(int nvertex,int *pnbranch,Node **pnode,Branch **pb
   while (aux != NULL) {
     new = aux;
     aux = aux->next;
-    ierr = PetscFree(new);
+    ierr = PetscFree(new);CHKERRQ(ierr);
   }
 
   ierr = PetscCalloc2(nvertex,&node,nedges,&branch);CHKERRQ(ierr);
