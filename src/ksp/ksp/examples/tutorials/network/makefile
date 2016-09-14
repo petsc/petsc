@@ -46,6 +46,6 @@ runex2_3:
 	   ${RM} -f ex2.tmp
 
 
-TESTEXAMPLES_C	= ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 ex2.rm
+TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 ex2.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test
