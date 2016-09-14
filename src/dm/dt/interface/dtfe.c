@@ -4052,7 +4052,7 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE fem, PetscDS prob, PetscIn
       if (probAux) EvaluateFieldJets(dim, NfAux, NbAux, NcAux, q, BAux, DAux, refSpaceDerAux, invJ, &coefficientsAux[cOffsetAux], NULL, a, a_x, NULL);
       if (f0_func) f0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, x, &f0[q*NcI]);
       if (f1_func) f1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, x, refSpaceDer);
-      TransformF(dim, NcI, q, invJ, detJ, quadWeights, refSpaceDer, f0, f1);
+      TransformF(dim, NcI, q, invJ, detJ, quadWeights, refSpaceDer, f0_func ? f0 : NULL, f1_func ? f1 : NULL);
     }
     UpdateElementVec(dim, Nq, NbI, NcI, BI, DI, f0, f1, &elemVec[cOffset+fOffset]);
     cOffset    += totDim;
@@ -4134,7 +4134,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscFE fem, PetscDS prob, Petsc
        if (probAux) EvaluateFieldJets(dim, NfAux, NbAux, NcAux, face*Nq+q, BAux, DAux, refSpaceDerAux, invJ, &coefficientsAux[cOffsetAux], NULL, a, a_x, NULL);
        if (f0_func) f0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, x, n, &f0[q*NcI]);
        if (f1_func) f1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, x, n, refSpaceDer);
-       TransformF(dim, NcI, q, invJ, detJ, quadWeights, refSpaceDer, f0, f1);
+       TransformF(dim, NcI, q, invJ, detJ, quadWeights, refSpaceDer, f0_func ? f0 : NULL, f1_func ? f1 : NULL);
      }
      UpdateElementVec(dim, Nq, NbI, NcI, &BI[face*Nq*NbI*NcI], &DI[face*Nq*NbI*NcI*dim], f0, f1, &elemVec[cOffset+fOffset]);
      cOffset    += totDim;
@@ -4221,6 +4221,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscFE fem, PetscDS prob, PetscFE
     for (q = 0; q < Nq; ++q) {
       const PetscReal *BIq = &BI[q*NbI*NcI], *BJq = &BJ[q*NbJ*NcJ];
       const PetscReal *DIq = &DI[q*NbI*NcI*dim], *DJq = &DJ[q*NbJ*NcJ*dim];
+      const PetscReal  w = detJ*quadWeights[q];
       PetscInt f, g, fc, gc, c;
 
       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
@@ -4230,7 +4231,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscFE fem, PetscDS prob, PetscFE
       if (g0_func) {
         ierr = PetscMemzero(g0, NcI*NcJ * sizeof(PetscScalar));CHKERRQ(ierr);
         g0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, g0);
-        for (c = 0; c < NcI*NcJ; ++c) {g0[c] *= detJ*quadWeights[q];}
+        for (c = 0; c < NcI*NcJ; ++c) g0[c] *= w;
       }
       if (g1_func) {
         PetscInt d, d2;
@@ -4241,7 +4242,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscFE fem, PetscDS prob, PetscFE
             for (d = 0; d < dim; ++d) {
               g1[(fc*NcJ+gc)*dim+d] = 0.0;
               for (d2 = 0; d2 < dim; ++d2) g1[(fc*NcJ+gc)*dim+d] += invJ[d*dim+d2]*refSpaceDer[(fc*NcJ+gc)*dim+d2];
-              g1[(fc*NcJ+gc)*dim+d] *= detJ*quadWeights[q];
+              g1[(fc*NcJ+gc)*dim+d] *= w;
             }
           }
         }
@@ -4255,7 +4256,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscFE fem, PetscDS prob, PetscFE
             for (d = 0; d < dim; ++d) {
               g2[(fc*NcJ+gc)*dim+d] = 0.0;
               for (d2 = 0; d2 < dim; ++d2) g2[(fc*NcJ+gc)*dim+d] += invJ[d*dim+d2]*refSpaceDer[(fc*NcJ+gc)*dim+d2];
-              g2[(fc*NcJ+gc)*dim+d] *= detJ*quadWeights[q];
+              g2[(fc*NcJ+gc)*dim+d] *= w;
             }
           }
         }
@@ -4274,7 +4275,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscFE fem, PetscDS prob, PetscFE
                     g3[((fc*NcJ+gc)*dim+d)*dim+dp] += invJ[d*dim+d2]*refSpaceDer[((fc*NcJ+gc)*dim+d2)*dim+d3]*invJ[dp*dim+d3];
                   }
                 }
-                g3[((fc*NcJ+gc)*dim+d)*dim+dp] *= detJ*quadWeights[q];
+                g3[((fc*NcJ+gc)*dim+d)*dim+dp] *= w;
               }
             }
           }
@@ -4403,6 +4404,7 @@ PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscFE fem, PetscDS prob, Petsc
     for (q = 0; q < Nq; ++q) {
       const PetscReal *BIq = &BI[(face*Nq+q)*NbI*NcI], *BJq = &BJ[(face*Nq+q)*NbJ*NcJ];
       const PetscReal *DIq = &DI[(face*Nq+q)*NbI*NcI*dim], *DJq = &DJ[(face*Nq+q)*NbJ*NcJ*dim];
+      const PetscReal  w = detJ*quadWeights[q];
       PetscInt f, g, fc, gc, c;
 
       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
@@ -4412,7 +4414,7 @@ PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscFE fem, PetscDS prob, Petsc
       if (g0_func) {
         ierr = PetscMemzero(g0, NcI*NcJ * sizeof(PetscScalar));CHKERRQ(ierr);
         g0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, n, g0);
-        for (c = 0; c < NcI*NcJ; ++c) {g0[c] *= detJ*quadWeights[q];}
+        for (c = 0; c < NcI*NcJ; ++c) g0[c] *= w;
       }
       if (g1_func) {
         PetscInt d, d2;
@@ -4423,7 +4425,7 @@ PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscFE fem, PetscDS prob, Petsc
             for (d = 0; d < dim; ++d) {
               g1[(fc*NcJ+gc)*dim+d] = 0.0;
               for (d2 = 0; d2 < dim; ++d2) g1[(fc*NcJ+gc)*dim+d] += invJ[d*dim+d2]*refSpaceDer[(fc*NcJ+gc)*dim+d2];
-              g1[(fc*NcJ+gc)*dim+d] *= detJ*quadWeights[q];
+              g1[(fc*NcJ+gc)*dim+d] *= w;
             }
           }
         }
@@ -4437,7 +4439,7 @@ PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscFE fem, PetscDS prob, Petsc
             for (d = 0; d < dim; ++d) {
               g2[(fc*NcJ+gc)*dim+d] = 0.0;
               for (d2 = 0; d2 < dim; ++d2) g2[(fc*NcJ+gc)*dim+d] += invJ[d*dim+d2]*refSpaceDer[(fc*NcJ+gc)*dim+d2];
-              g2[(fc*NcJ+gc)*dim+d] *= detJ*quadWeights[q];
+              g2[(fc*NcJ+gc)*dim+d] *= w;
             }
           }
         }
@@ -4456,7 +4458,7 @@ PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscFE fem, PetscDS prob, Petsc
                     g3[((fc*NcJ+gc)*dim+d)*dim+dp] += invJ[d*dim+d2]*refSpaceDer[((fc*NcJ+gc)*dim+d2)*dim+d3]*invJ[dp*dim+d3];
                   }
                 }
-                g3[((fc*NcJ+gc)*dim+d)*dim+dp] *= detJ*quadWeights[q];
+                g3[((fc*NcJ+gc)*dim+d)*dim+dp] *= w;
               }
             }
           }
@@ -4709,7 +4711,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Nonaffine(PetscFE fem, PetscDS prob, P
        if (probAux) EvaluateFieldJets(dim, NfAux, NbAux, NcAux, face*Nq+q, BAux, DAux, refSpaceDerAux, invJ, &coefficientsAux[cOffsetAux], NULL, a, a_x, NULL);
        if (f0_func) f0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, x, n, &f0[q*NcI]);
        if (f1_func) f1_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, x, n, refSpaceDer);
-       TransformF(dim, NcI, q, invJ, detJ, quadWeights, refSpaceDer, f0, f1);
+       TransformF(dim, NcI, q, invJ, detJ, quadWeights, refSpaceDer, f0_func ? f0 : NULL, f1_func ? f1 : NULL);
      }
      UpdateElementVec(dim, Nq, NbI, NcI, &BI[face*Nq*NbI*NcI], &DI[face*Nq*NbI*NcI*dim], f0, f1, &elemVec[cOffset+fOffset]);
      cOffset    += totDim;
@@ -4794,6 +4796,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Nonaffine(PetscFE fem, PetscDS prob, Pet
       const PetscReal  detJ = cgeom[e*Nq+q].detJ;
       const PetscReal *BIq = &BI[q*NbI*NcI], *BJq = &BJ[q*NbJ*NcJ];
       const PetscReal *DIq = &DI[q*NbI*NcI*dim], *DJq = &DJ[q*NbJ*NcJ*dim];
+      const PetscReal  w = detJ*quadWeights[q];
       PetscInt         f, g, fc, gc, c;
 
       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
@@ -4803,7 +4806,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Nonaffine(PetscFE fem, PetscDS prob, Pet
       if (g0_func) {
         ierr = PetscMemzero(g0, NcI*NcJ * sizeof(PetscScalar));CHKERRQ(ierr);
         g0_func(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, x, g0);
-        for (c = 0; c < NcI*NcJ; ++c) {g0[c] *= detJ*quadWeights[q];}
+        for (c = 0; c < NcI*NcJ; ++c) g0[c] *= w;
       }
       if (g1_func) {
         PetscInt d, d2;
@@ -4814,7 +4817,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Nonaffine(PetscFE fem, PetscDS prob, Pet
             for (d = 0; d < dim; ++d) {
               g1[(fc*NcJ+gc)*dim+d] = 0.0;
               for (d2 = 0; d2 < dim; ++d2) g1[(fc*NcJ+gc)*dim+d] += invJ[d*dim+d2]*refSpaceDer[(fc*NcJ+gc)*dim+d2];
-              g1[(fc*NcJ+gc)*dim+d] *= detJ*quadWeights[q];
+              g1[(fc*NcJ+gc)*dim+d] *= w;
             }
           }
         }
@@ -4828,7 +4831,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Nonaffine(PetscFE fem, PetscDS prob, Pet
             for (d = 0; d < dim; ++d) {
               g2[(fc*NcJ+gc)*dim+d] = 0.0;
               for (d2 = 0; d2 < dim; ++d2) g2[(fc*NcJ+gc)*dim+d] += invJ[d*dim+d2]*refSpaceDer[(fc*NcJ+gc)*dim+d2];
-              g2[(fc*NcJ+gc)*dim+d] *= detJ*quadWeights[q];
+              g2[(fc*NcJ+gc)*dim+d] *= w;
             }
           }
         }
@@ -4847,7 +4850,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Nonaffine(PetscFE fem, PetscDS prob, Pet
                     g3[((fc*NcJ+gc)*dim+d)*dim+dp] += invJ[d*dim+d2]*refSpaceDer[((fc*NcJ+gc)*dim+d2)*dim+d3]*invJ[dp*dim+d3];
                   }
                 }
-                g3[((fc*NcJ+gc)*dim+d)*dim+dp] *= detJ*quadWeights[q];
+                g3[((fc*NcJ+gc)*dim+d)*dim+dp] *= w;
               }
             }
           }

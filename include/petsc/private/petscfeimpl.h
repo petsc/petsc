@@ -257,14 +257,17 @@ PETSC_STATIC_INLINE PetscErrorCode EvaluateFaceFields(PetscDS prob, PetscInt fie
 #define __FUNCT__ "TransformF"
 PETSC_STATIC_INLINE void TransformF(PetscInt dim, PetscInt Nc, PetscInt q, const PetscReal invJ[], PetscReal detJ, const PetscReal quadWeights[], PetscScalar refSpaceDer[], PetscScalar f0[], PetscScalar f1[])
 {
-  PetscInt c, d, e;
+  const PetscReal w = detJ*quadWeights[q];
+  PetscInt        c, d, e;
 
-  for (c = 0; c < Nc; ++c) f0[q*Nc+c] *= detJ*quadWeights[q];
-  for (c = 0; c < Nc; ++c) {
-    for (d = 0; d < dim; ++d) {
-      f1[(q*Nc + c)*dim+d] = 0.0;
-      for (e = 0; e < dim; ++e) f1[(q*Nc + c)*dim+d] += invJ[d*dim+e]*refSpaceDer[c*dim+e];
-      f1[(q*Nc + c)*dim+d] *= detJ*quadWeights[q];
+  if (f0) for (c = 0; c < Nc; ++c) f0[q*Nc+c] *= w;
+  if (f1) {
+    for (c = 0; c < Nc; ++c) {
+      for (d = 0; d < dim; ++d) {
+        f1[(q*Nc + c)*dim+d] = 0.0;
+        for (e = 0; e < dim; ++e) f1[(q*Nc + c)*dim+d] += invJ[d*dim+e]*refSpaceDer[c*dim+e];
+        f1[(q*Nc + c)*dim+d] *= w;
+      }
     }
   }
 #if 0
