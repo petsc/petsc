@@ -4038,6 +4038,23 @@ PetscErrorCode PCBDDCComputeLocalMatrix(PC pc, Mat ChangeOfBasisMatrix)
     ierr = VecScatterBegin(matis->cctx,x,matis->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(matis->cctx,x,matis->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = MatMult(new_mat,matis->x,matis->y);CHKERRQ(ierr);
+    if (!pcbddc->change_interior) {
+      const PetscScalar *x,*y,*v;
+      PetscReal         lerror = 0.;
+      PetscInt          i;
+
+      ierr = VecGetArrayRead(matis->x,&x);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(matis->y,&y);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(matis->counter,&v);CHKERRQ(ierr);
+      for (i=0;i<local_size;i++)
+        if (PetscRealPart(v[i]) < 1.5 && PetscAbsScalar(x[i]-y[i]) > lerror)
+          lerror = PetscAbsScalar(x[i]-y[i]);
+      ierr = VecRestoreArrayRead(matis->x,&x);CHKERRQ(ierr);
+      ierr = VecRestoreArrayRead(matis->y,&y);CHKERRQ(ierr);
+      ierr = VecRestoreArrayRead(matis->counter,&v);CHKERRQ(ierr);
+      ierr = MPIU_Allreduce(&lerror,&error,1,MPIU_REAL,MPI_MAX,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Error global vs local change on I: %1.6e\n",error);CHKERRQ(ierr);
+    }
     ierr = VecScatterBegin(matis->rctx,matis->y,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(matis->rctx,matis->y,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecAXPY(x,-1.0,x_change);CHKERRQ(ierr);
