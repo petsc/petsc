@@ -1234,6 +1234,7 @@ PetscErrorCode PCBDDCGraphDestroy(PCBDDCGraph* graph)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PCBDDCGraphResetCSR(*graph);CHKERRQ(ierr);
   ierr = PCBDDCGraphReset(*graph);CHKERRQ(ierr);
   ierr = PetscFree(*graph);CHKERRQ(ierr);
   PetscFunctionReturn(0);
