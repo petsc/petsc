@@ -792,6 +792,10 @@ ex202: ex202.o chkopts
 ex203: ex203.o chkopts
 	-${CLINKER} -o ex203 ex203.o ${PETSC_MAT_LIB}
 	${RM} ex203.o
+	
+ex204: ex204.o chkopts
+	-${CLINKER} -o ex204 ex204.o ${PETSC_MAT_LIB}
+	${RM} ex204.o
 
 ex205: ex205.o chkopts
 	-${CLINKER} -o ex205 ex205.o ${PETSC_MAT_LIB}
@@ -2666,8 +2670,20 @@ runex203:
 	   ${DIFF} output/ex203.out ex203.tmp || printf "${PWD}\nPossible problem with ex203, diffs above\n=========================================\n"; \
 	   ${RM} -f ex203.tmp
 
+runex204:
+	-@${MPIEXEC} -n 1 ./ex204 > ex204.tmp 2>&1; \
+	   if (${DIFF} output/ex204.out ex204.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex204, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex204.tmp
+
+runex204_2:
+	-@${MPIEXEC} -n 2 ./ex204 > ex204.tmp 2>&1; \
+	   if (${DIFF} output/ex204.out ex204.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex204_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex204.tmp	 
+
 runex205:
-	  -@${MPIEXEC} -n 1 ./ex205 -malloc_dump > ex205.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex205 -malloc_dump > ex205.tmp 2>&1; \
 	   ${DIFF} output/ex205.out ex205.tmp || printf "${PWD}\nPossible problem with ex205, diffs above\n=========================================\n"; \
 	   ${RM} -f ex205.tmp
 

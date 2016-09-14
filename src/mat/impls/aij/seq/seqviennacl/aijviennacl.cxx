@@ -20,6 +20,8 @@
 
 #include "viennacl/linalg/prod.hpp"
 
+PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJViennaCL(Mat A, MatType type, MatReuse reuse, Mat *newmat);
+
 #undef __FUNCT__
 #define __FUNCT__ "MatViennaCLCopyToGPU"
 PetscErrorCode MatViennaCLCopyToGPU(Mat A)
@@ -278,9 +280,6 @@ PetscErrorCode MatAssemblyEnd_SeqAIJViennaCL(Mat A,MatAssemblyType mode)
   PetscFunctionBegin;
   ierr = MatAssemblyEnd_SeqAIJ(A,mode);CHKERRQ(ierr);
   ierr = MatViennaCLCopyToGPU(A);CHKERRQ(ierr);
-  if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
-  A->ops->mult    = MatMult_SeqAIJViennaCL;
-  A->ops->multadd = MatMultAdd_SeqAIJViennaCL;
   PetscFunctionReturn(0);
 }
 
@@ -363,6 +362,9 @@ PetscErrorCode MatDestroy_SeqAIJViennaCL(Mat A)
   } catch(std::exception const & ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
   }
+
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqaij_seqaijviennacl_C",NULL);CHKERRQ(ierr);
+
   /* this next line is because MatDestroy tries to PetscFree spptr if it is not zero, and PetscFree only works if the memory was allocated with PetscNew or PetscMalloc, which don't call the constructor */
   A->spptr = 0;
   ierr     = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
@@ -375,12 +377,34 @@ PetscErrorCode MatDestroy_SeqAIJViennaCL(Mat A)
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJViennaCL(Mat B)
 {
   PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatCreate_SeqAIJ(B);CHKERRQ(ierr);
+  ierr = MatConvert_SeqAIJ_SeqAIJViennaCL(B,MATSEQAIJVIENNACL,MAT_INPLACE_MATRIX,&B);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatConvert_SeqAIJ_SeqAIJViennaCL"
+PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJViennaCL(Mat A,MatType type,MatReuse reuse,Mat *newmat)
+{
+  PetscErrorCode ierr;
+  Mat            B;
   Mat_SeqAIJ     *aij;
 
   PetscFunctionBegin;
-  ierr            = MatCreate_SeqAIJ(B);CHKERRQ(ierr);
+
+  if (reuse == MAT_REUSE_MATRIX) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"MAT_REUSE_MATRIX is not supported. Consider using MAT_INPLACE_MATRIX instead");
+
+  if (reuse == MAT_INITIAL_MATRIX) {
+    ierr = MatDuplicate(A,MAT_COPY_VALUES,newmat);CHKERRQ(ierr);
+  }
+
+  B = *newmat;
+
   aij             = (Mat_SeqAIJ*)B->data;
   aij->inode.use  = PETSC_FALSE;
+
   B->ops->mult    = MatMult_SeqAIJViennaCL;
   B->ops->multadd = MatMultAdd_SeqAIJViennaCL;
   B->spptr        = new Mat_SeqAIJViennaCL();
@@ -395,7 +419,15 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJViennaCL(Mat B)
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJVIENNACL);CHKERRQ(ierr);
 
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqaij_seqaijviennacl_C",MatConvert_SeqAIJ_SeqAIJViennaCL);CHKERRQ(ierr);
+
   B->valid_GPU_matrix = PETSC_VIENNACL_UNALLOCATED;
+
+  /* If the source matrix is already assembled, copy the destination matrix to the GPU */
+  if (B->assembled) {
+    ierr = MatViennaCLCopyToGPU(B);CHKERRQ(ierr);
+  }
+
   PetscFunctionReturn(0);
 }
 
