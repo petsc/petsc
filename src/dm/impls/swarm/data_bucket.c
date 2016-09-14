@@ -401,6 +401,7 @@ PetscErrorCode DataFieldGetAccess(const DataField gfield)
 PetscErrorCode DataFieldAccessPoint(const DataField gfield,const PetscInt pid,void **ctx_p)
 {
   PetscFunctionBegin;
+  *ctx_p = NULL;
 #ifdef DATAFIELD_POINT_ACCESS_GUARD
   /* debug mode */
   /* check point is valid */
