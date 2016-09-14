@@ -8228,7 +8228,6 @@ PetscErrorCode MatMPIAIJRestrict(Mat A, MPI_Comm ccomm, Mat *B)
 {
   Mat            At;
   IS             rows;
-  MPI_Comm       comm;
   PetscInt       rst,ren;
   PetscErrorCode ierr;
   PetscLayout    rmap;
@@ -8242,7 +8241,7 @@ PetscErrorCode MatMPIAIJRestrict(Mat A, MPI_Comm ccomm, Mat *B)
     ierr = PetscLayoutSetUp(rmap);CHKERRQ(ierr);
     ierr = PetscLayoutGetRange(rmap,&rst,&ren);CHKERRQ(ierr);
   }
-  ierr = ISCreateStride(comm,ren-rst,rst,1,&rows);CHKERRQ(ierr);
+  ierr = ISCreateStride(PetscObjectComm((PetscObject)A),ren-rst,rst,1,&rows);CHKERRQ(ierr);
   ierr = MatGetSubMatrix(A,rows,NULL,MAT_INITIAL_MATRIX,&At);CHKERRQ(ierr);
   ierr = ISDestroy(&rows);CHKERRQ(ierr);
 
