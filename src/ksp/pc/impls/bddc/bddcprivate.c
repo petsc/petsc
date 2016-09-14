@@ -6957,7 +6957,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   ncoarse = PetscMax(1,ncoarse);
   if (!pcbddc->coarse_subassembling) {
     if (pcbddc->coarsening_ratio > 1) {
-      ierr = MatISGetSubassemblingPattern(t_coarse_mat_is,&ncoarse,pcbddc->coarse_adj_red,&pcbddc->coarse_subassembling,&have_void);CHKERRQ(ierr);
+      ierr = MatISGetSubassemblingPattern(pc->pmat,&ncoarse,pcbddc->coarse_adj_red,&pcbddc->coarse_subassembling,&have_void);CHKERRQ(ierr);
     } else {
       PetscMPIInt size,rank;
       ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
