@@ -58,7 +58,7 @@ class Configure(config.base.Configure):
         jobs.append('Fortran')
         if not self.scalartypes.precision == 'single':
           jobs.append('Fortran_NotSingle')
-        if self.compilers.fortranIsF90:
+        if self.compilers.fortranIsF90FreeForm and self.compilers.fortranIsF90:
           rjobs.append('F90')
           if self.libraryOptions.useThreadSafety:
             jobs.append('F90_Threadsafety')
@@ -68,7 +68,7 @@ class Configure(config.base.Configure):
             rjobs.append('F90_Complex')
           else:
             rjobs.append('F90_NoComplex')
-        if self.compilers.fortranIsF2003:
+        if self.compilers.fortranIsF90FreeForm and self.compilers.fortranIsF2003:
           rjobs.append('F2003')
         if self.scalartypes.scalartype.lower() == 'complex':
           rjobs.append('Fortran_Complex')

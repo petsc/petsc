@@ -1130,10 +1130,9 @@ class Configure(config.base.Configure):
     return
 
   def checkFortran90(self):
-    '''Determine whether the Fortran compiler handles F90
-       We also require that the compiler handles lines longer than 132 characters'''
+    '''Determine whether the Fortran compiler handles F90'''
     self.pushLanguage('FC')
-    if self.checkLink(body = '      INTEGER, PARAMETER ::        int = SELECTED_INT_KIND(8);              INTEGER (KIND=int) :: ierr;       ierr                            = 1'):
+    if self.checkLink(body = '      INTEGER, PARAMETER :: int = SELECTED_INT_KIND(8)\n      INTEGER (KIND=int) :: ierr\n\n      ierr = 1'):
       self.addDefine('USING_F90', 1)
       self.fortranIsF90 = 1
       self.logPrint('Fortran compiler supports F90')
@@ -1143,9 +1142,22 @@ class Configure(config.base.Configure):
     self.popLanguage()
     return
 
-  def checkFortran2003(self):
-    '''Determine whether the Fortran compiler handles F2003
+  def checkFortran90FreeForm(self):
+    '''Determine whether the Fortran compiler handles F90FreeForm
        We also require that the compiler handles lines longer than 132 characters'''
+    self.pushLanguage('FC')
+    if self.checkLink(body = '      INTEGER, PARAMETER ::        int = SELECTED_INT_KIND(8);              INTEGER (KIND=int) :: ierr;       ierr                            = 1'):
+      self.addDefine('USING_F90FREEFORM', 1)
+      self.fortranIsF90FreeForm = 1
+      self.logPrint('Fortran compiler supports F90FreeForm')
+    else:
+      self.fortranIsF90FreeForm = 0
+      self.logPrint('Fortran compiler does not support F90FreeForm')
+    self.popLanguage()
+    return
+
+  def checkFortran2003(self):
+    '''Determine whether the Fortran compiler handles F2003'''
     self.pushLanguage('FC')
     if self.fortranIsF90 and self.checkLink(body = '''
       use,intrinsic :: iso_c_binding
@@ -1468,6 +1480,7 @@ class Configure(config.base.Configure):
       if hasattr(self.setCompilers, 'CXX'):
         self.executeTest(self.checkFortranLinkingCxx)
       self.executeTest(self.checkFortran90)
+      self.executeTest(self.checkFortran90FreeForm)
       self.executeTest(self.checkFortran2003)
       self.executeTest(self.checkFortran90Array)
       self.executeTest(self.checkFortranModuleInclude)
