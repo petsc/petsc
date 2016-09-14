@@ -129,17 +129,6 @@ PetscErrorCode wallPressure(PetscInt dim, PetscReal time, const PetscReal x[], P
   return 0;
 }
 
-void f0_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-          const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-          const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-          PetscReal t, const PetscReal x[], PetscScalar f0[])
-{
-  const PetscInt Ncomp = dim;
-
-  PetscInt comp;
-  for (comp = 0; comp < Ncomp; ++comp) f0[comp] = 0.0;
-}
-
 void f1_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
           const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -211,21 +200,6 @@ void f0_bd_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   }
 }
 
-void f1_bd_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-                const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-                const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f1[])
-{
-  const PetscInt Ncomp = dim;
-
-  PetscInt       comp, d;
-  for (comp = 0; comp < Ncomp; ++comp) {
-    for (d = 0; d < dim; ++d) {
-      f1[comp*dim+d] = 0.0;
-    }
-  }
-}
-
 void g1_bd_uu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -258,15 +232,6 @@ void f0_p_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   PetscReal detu_x;
   Det3D(&detu_x, u_x);
   f0[0] = detu_x - 1.0;
-}
-
-void f1_p(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-          const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-          const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-          PetscReal t, const PetscReal x[], PetscScalar f1[])
-{
-  PetscInt d;
-  for (d = 0; d < dim; ++d) f1[d] = 0.0;
 }
 
 void g1_pu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -488,13 +453,13 @@ PetscErrorCode SetupProblem(PetscDS prob, PetscInt dim, AppCtx *user)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscDSSetResidual(prob, 0, f0_u, f1_u_3d);CHKERRQ(ierr);
-  ierr = PetscDSSetResidual(prob, 1, f0_p_3d, f1_p);CHKERRQ(ierr);
+  ierr = PetscDSSetResidual(prob, 0, NULL, f1_u_3d);CHKERRQ(ierr);
+  ierr = PetscDSSetResidual(prob, 1, f0_p_3d, NULL);CHKERRQ(ierr);
   ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL,  NULL,  g3_uu_3d);CHKERRQ(ierr);
   ierr = PetscDSSetJacobian(prob, 0, 1, NULL, NULL,  g2_up_3d, NULL);CHKERRQ(ierr);
   ierr = PetscDSSetJacobian(prob, 1, 0, NULL, g1_pu_3d, NULL,  NULL);CHKERRQ(ierr);
 
-  ierr = PetscDSSetBdResidual(prob, 0, f0_bd_u_3d, f1_bd_u);CHKERRQ(ierr);
+  ierr = PetscDSSetBdResidual(prob, 0, f0_bd_u_3d, NULL);CHKERRQ(ierr);
   ierr = PetscDSSetBdJacobian(prob, 0, 0, NULL, g1_bd_uu_3d, NULL, NULL);CHKERRQ(ierr);
 
   ierr = PetscDSAddBoundary(prob, PETSC_TRUE, "fixed", "Faces", 0, 0, NULL, (void (*)()) coordinates, 0, NULL, user);CHKERRQ(ierr);
