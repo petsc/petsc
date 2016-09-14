@@ -125,6 +125,9 @@ typedef struct {
   PetscInt  nedorder;
   PetscBool conforming;
   PetscInt  nedfield;
+  PetscBool nedglobal;
+  Mat       nedcG;
+  IS        nedclocal;
 
   /* local disconnected subdomains */
   PetscBool detect_disconnected;

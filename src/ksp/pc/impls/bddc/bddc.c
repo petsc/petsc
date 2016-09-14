@@ -212,7 +212,7 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetDiscreteGradient_BDDC"
-static PetscErrorCode PCBDDCSetDiscreteGradient_BDDC(PC pc, Mat G, PetscInt order, PetscInt field, PetscBool conforming)
+static PetscErrorCode PCBDDCSetDiscreteGradient_BDDC(PC pc, Mat G, PetscInt order, PetscInt field, PetscBool global, PetscBool conforming)
 {
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
   PetscErrorCode ierr;
@@ -222,8 +222,9 @@ static PetscErrorCode PCBDDCSetDiscreteGradient_BDDC(PC pc, Mat G, PetscInt orde
   ierr = MatDestroy(&pcbddc->discretegradient);CHKERRQ(ierr);
   pcbddc->discretegradient = G;
   pcbddc->nedorder         = order > 0 ? order : -order;
-  pcbddc->conforming       = conforming;
   pcbddc->nedfield         = field;
+  pcbddc->nedglobal        = global;
+  pcbddc->conforming       = conforming;
   PetscFunctionReturn(0);
 }
 
@@ -239,27 +240,33 @@ static PetscErrorCode PCBDDCSetDiscreteGradient_BDDC(PC pc, Mat G, PetscInt orde
 .  G          - the discrete gradient matrix (should be in AIJ format)
 .  order      - the order of the Nedelec space (1 for the lowest order)
 .  field      - the field id of the Nedelec dofs (not used if the fields have not been specified)
+.  global     - the type of global ordering for the rows of G
 -  conforming - whether the mesh is conforming or not
 
    Level: advanced
 
    Notes: The discrete gradient matrix G is used to analyze the subdomain edges, and it should not contain any zero entry.
           For variable order spaces, the order should be set to zero.
-          The discrete gradient matrix is modified by PCBDDC.
+          If global is true, the rows of G should be given in global ordering for the whole dofs;
+          if false, the ordering should be global for the Nedelec field.
+          In the latter case, it should hold gid[i] < gid[j] iff geid[i] < geid[j], with gid the global orderding for all the dofs
+          and geid the one for the Nedelec field.
 
 .seealso: PCBDDC,PCBDDCSetDofsSplitting(),PCBDDCSetDofsSplittingLocal()
 @*/
-PetscErrorCode PCBDDCSetDiscreteGradient(PC pc, Mat G, PetscInt order, PetscInt field, PetscBool conforming)
+PetscErrorCode PCBDDCSetDiscreteGradient(PC pc, Mat G, PetscInt order, PetscInt field, PetscBool global, PetscBool conforming)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(G,MAT_CLASSID,2);
-  PetscCheckSameComm(pc,1,G,2);
   PetscValidLogicalCollectiveInt(pc,order,3);
-  PetscValidLogicalCollectiveBool(pc,conforming,4);
-  ierr = PetscTryMethod(pc,"PCBDDCSetDiscreteGradient_C",(PC,Mat,PetscInt,PetscInt,PetscBool),(pc,G,order,field,conforming));CHKERRQ(ierr);
+  PetscValidLogicalCollectiveInt(pc,field,4);
+  PetscValidLogicalCollectiveBool(pc,global,5);
+  PetscValidLogicalCollectiveBool(pc,conforming,6);
+  PetscCheckSameComm(pc,1,G,2);
+  ierr = PetscTryMethod(pc,"PCBDDCSetDiscreteGradient_C",(PC,Mat,PetscInt,PetscInt,PetscBool,PetscBool),(pc,G,order,field,global,conforming));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2600,6 +2607,10 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->benign_p0_lidx             = NULL;
   pcbddc->benign_p0_gidx             = NULL;
   pcbddc->benign_null                = PETSC_FALSE;
+
+  /* Nedelec */
+  pcbddc->nedfield  = -1;
+  pcbddc->nedglobal = PETSC_TRUE;
 
   /* create local graph structure */
   ierr = PCBDDCGraphCreate(&pcbddc->mat_graph);CHKERRQ(ierr);
