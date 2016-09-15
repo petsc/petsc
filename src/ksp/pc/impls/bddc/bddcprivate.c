@@ -1246,7 +1246,6 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
 
         cols[0] = 2*i;
         cols[1] = 2*i+1;
-        if (print) PetscPrintf(PETSC_COMM_SELF,"INSERT at local row %d, cols (%d,%d), cvals (%g,%g)\n",i,cols[0],cols[1],cvals[0],cvals[1]);
         ierr = MatSetValuesLocal(pcbddc->nedcG,1,&i,2,cols,cvals,INSERT_VALUES);CHKERRQ(ierr);
       }
       ierr = ISRestoreIndices(eedges[i],&cols);CHKERRQ(ierr);
