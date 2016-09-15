@@ -99,11 +99,10 @@
 !     DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
 !  By placing code between these two statements, computations can
 !  be done while messages are in transition.
-      call SNESGetDM(snes,da,ierr)
-      call DMGetLocalVector(da,localX,ierr)
-      call DMGlobalToLocalBegin(da,X,INSERT_VALUES,                     &
-     &     localX,ierr)
-      call DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr)
+      call SNESGetDM(snes,da,ierr);CHKERRQ(ierr)
+      call DMGetLocalVector(da,localX,ierr);CHKERRQ(ierr)
+      call DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr);CHKERRQ(ierr)
+      call DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr);CHKERRQ(ierr)
 
 !  Get a pointer to vector data.
 !    - For default PETSc vectors, VecGetArray90() returns a pointer to
@@ -113,19 +112,19 @@
 !    - Note that the interface to VecGetArrayF90() differs from VecGetArray(),
 !      and is useable from Fortran-90 Only.
 
-      call VecGetArrayF90(localX,lx_v,ierr)
-      call VecGetArrayF90(F,lf_v,ierr)
+      call VecGetArrayF90(localX,lx_v,ierr);CHKERRQ(ierr)
+      call VecGetArrayF90(F,lf_v,ierr);CHKERRQ(ierr)
 
 !  Compute function over the locally owned part of the grid
-      call FormFunctionLocal(lx_v,lf_v,user,ierr)
+      call FormFunctionLocal(lx_v,lf_v,user,ierr);CHKERRQ(ierr)
 
 !  Restore vectors
-      call VecRestoreArrayF90(localX,lx_v,ierr)
-      call VecRestoreArrayF90(F,lf_v,ierr)
+      call VecRestoreArrayF90(localX,lx_v,ierr);CHKERRQ(ierr)
+      call VecRestoreArrayF90(F,lf_v,ierr);CHKERRQ(ierr)
 
 !  Insert values into global vector
 
-      call DMRestoreLocalVector(da,localX,ierr)
+      call DMRestoreLocalVector(da,localX,ierr);CHKERRQ(ierr)
       call PetscLogFlops(11.0d0*user%ym*user%xm,ierr)
 
 !      call VecView(X,PETSC_VIEWER_STDOUT_WORLD,ierr)
@@ -204,6 +203,10 @@
 !  Initialize program
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
       call MPI_Comm_rank(PETSC_COMM_WORLD,user%rank,ierr)
 
 !  Initialize problem parameters
@@ -212,10 +215,8 @@
       user%lambda = 6.0
       ione = 1
       nfour = -4
-      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,      &
-     &                        '-par',user%lambda,flg,ierr)
-      if (user%lambda .ge. lambda_max .or. user%lambda .le. lambda_min) &
-     &     then
+      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-par',user%lambda,flg,ierr);CHKERRQ(ierr)
+      if (user%lambda .ge. lambda_max .or. user%lambda .le. lambda_min) then
          if (user%rank .eq. 0) write(6,*) 'Lambda is out of range'
          SETERRQ(PETSC_COMM_SELF,1,' ',ierr)
       endif
@@ -223,7 +224,7 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create nonlinear solver context
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      call SNESCreate(PETSC_COMM_WORLD,snes,ierr)
+      call SNESCreate(PETSC_COMM_WORLD,snes,ierr);CHKERRQ(ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create vector data structures; set function evaluation routine
@@ -233,17 +234,9 @@
 
 ! This really needs only the star-type stencil, but we use the box
 ! stencil temporarily.
-      call DMDACreate2d(PETSC_COMM_WORLD,                               &
-     &     DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,                          &
-     &     DMDA_STENCIL_BOX,nfour,nfour,PETSC_DECIDE,PETSC_DECIDE,          &
-     &     ione,ione,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
-      call DMDAGetInfo(da,PETSC_NULL_INTEGER,user%mx,user%my,           &
-     &               PETSC_NULL_INTEGER,                                &
-     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
-     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
-     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
-     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
-     &               PETSC_NULL_INTEGER,ierr)
+      call DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nfour,nfour,PETSC_DECIDE,PETSC_DECIDE,ione,ione,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr);CHKERRQ(ierr)
+      call DMDAGetInfo(da,PETSC_NULL_INTEGER,user%mx,user%my,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,   &
+     &                 PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr);CHKERRQ(ierr)
 
 !
 !   Visualize the distribution of the array across the processors
@@ -252,15 +245,12 @@
 
 !  Extract global and local vectors from DMDA; then duplicate for remaining
 !  vectors that are the same types
-      call DMCreateGlobalVector(da,x,ierr)
-      call VecDuplicate(x,r,ierr)
+      call DMCreateGlobalVector(da,x,ierr);CHKERRQ(ierr)
+      call VecDuplicate(x,r,ierr);CHKERRQ(ierr)
 
 !  Get local grid boundaries (for 2-dimensional DMDA)
-      call DMDAGetCorners(da,user%xs,user%ys,PETSC_NULL_INTEGER,        &
-     &     user%xm,user%ym,PETSC_NULL_INTEGER,ierr)
-      call DMDAGetGhostCorners(da,user%gxs,user%gys,                    &
-     &     PETSC_NULL_INTEGER,user%gxm,user%gym,                        &
-     &     PETSC_NULL_INTEGER,ierr)
+      call DMDAGetCorners(da,user%xs,user%ys,PETSC_NULL_INTEGER,user%xm,user%ym,PETSC_NULL_INTEGER,ierr);CHKERRQ(ierr)
+      call DMDAGetGhostCorners(da,user%gxs,user%gys,PETSC_NULL_INTEGER,user%gxm,user%gym,PETSC_NULL_INTEGER,ierr);CHKERRQ(ierr)
 
 !  Here we shift the starting indices up by one so that we can easily
 !  use the Fortran convention of 1-based indices (rather 0-based indices).
@@ -274,10 +264,10 @@
       user%gye = user%gys+user%gym-1
       user%gxe = user%gxs+user%gxm-1
 
-      call SNESSetApplicationContext(snes,user,ierr)
+      call SNESSetApplicationContext(snes,user,ierr);CHKERRQ(ierr)
 
 !  Set function evaluation routine and vector
-      call SNESSetFunction(snes,r,FormFunction,user,ierr)
+      call SNESSetFunction(snes,r,FormFunction,user,ierr);CHKERRQ(ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create matrix data structure; set Jacobian evaluation routine
@@ -303,20 +293,19 @@
 !     Jacobian.  See the users manual for a discussion of better techniques
 !     for preallocating matrix memory.
 
-      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,           &
-     &                         '-snes_mf',matrix_free,ierr)
+      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-snes_mf',matrix_free,ierr);CHKERRQ(ierr)
       if (.not. matrix_free) then
-        call DMSetMatType(da,MATAIJ,ierr)
-        call DMCreateMatrix(da,J,ierr)
-        call SNESSetJacobian(snes,J,J,FormJacobian,user,ierr)
+        call DMSetMatType(da,MATAIJ,ierr);CHKERRQ(ierr)
+        call DMCreateMatrix(da,J,ierr);CHKERRQ(ierr)
+        call SNESSetJacobian(snes,J,J,FormJacobian,user,ierr);CHKERRQ(ierr)
       endif
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Customize nonlinear solver; set runtime options
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Set runtime options (e.g., -snes_monitor -snes_rtol <rtol> -ksp_type <type>)
-      call SNESSetDM(snes,da,ierr)
-      call SNESSetFromOptions(snes,ierr)
+      call SNESSetDM(snes,da,ierr);CHKERRQ(ierr)
+      call SNESSetFromOptions(snes,ierr);CHKERRQ(ierr)
 
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -327,9 +316,9 @@
 !  to employ an initial guess of zero, the user should explicitly set
 !  this vector to zero by calling VecSet().
 
-      call FormInitialGuess(snes,x,ierr)
-      call SNESSolve(snes,PETSC_NULL_OBJECT,x,ierr)
-      call SNESGetIterationNumber(snes,its,ierr);
+      call FormInitialGuess(snes,x,ierr);CHKERRQ(ierr)
+      call SNESSolve(snes,PETSC_NULL_OBJECT,x,ierr);CHKERRQ(ierr)
+      call SNESGetIterationNumber(snes,its,ierr);;CHKERRQ(ierr)
       if (user%rank .eq. 0) then
          write(6,100) its
       endif
@@ -339,11 +328,11 @@
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      if (.not. matrix_free) call MatDestroy(J,ierr)
-      call VecDestroy(x,ierr)
-      call VecDestroy(r,ierr)
-      call SNESDestroy(snes,ierr)
-      call DMDestroy(da,ierr)
+      if (.not. matrix_free) call MatDestroy(J,ierr);CHKERRQ(ierr)
+      call VecDestroy(x,ierr);CHKERRQ(ierr)
+      call VecDestroy(r,ierr);CHKERRQ(ierr)
+      call SNESDestroy(snes,ierr);CHKERRQ(ierr)
+      call DMDestroy(da,ierr);CHKERRQ(ierr)
 
       call PetscFinalize(ierr)
       end
@@ -393,8 +382,8 @@
       PetscScalar,pointer :: lx_v(:)
 
       ierr = 0
-      call SNESGetDM(snes,da,ierr)
-      call SNESGetApplicationContext(snes,puser,ierr)
+      call SNESGetDM(snes,da,ierr);CHKERRQ(ierr)
+      call SNESGetApplicationContext(snes,puser,ierr);CHKERRQ(ierr)
 !  Get a pointer to vector data.
 !    - For default PETSc vectors, VecGetArray90() returns a pointer to
 !      the data array. Otherwise, the routine is implementation dependent.
@@ -403,13 +392,13 @@
 !    - Note that the interface to VecGetArrayF90() differs from VecGetArray(),
 !      and is useable from Fortran-90 Only.
 
-      call VecGetArrayF90(X,lx_v,ierr)
+      call VecGetArrayF90(X,lx_v,ierr);CHKERRQ(ierr)
 
 !  Compute initial guess over the locally owned part of the grid
-      call InitialGuessLocal(puser,lx_v,ierr)
+      call InitialGuessLocal(puser,lx_v,ierr);CHKERRQ(ierr)
 
 !  Restore vector
-      call VecRestoreArrayF90(X,lx_v,ierr)
+      call VecRestoreArrayF90(X,lx_v,ierr);CHKERRQ(ierr)
 
 !  Insert values into global vector
 
@@ -447,8 +436,7 @@
 
 !  Input/output variables:
       type (userctx)         user
-      PetscScalar  x(user%xs:user%xe,                                         &
-     &              user%ys:user%ye)
+      PetscScalar  x(user%xs:user%xe,user%ys:user%ye)
       PetscErrorCode ierr
 
 !  Local variables:
@@ -467,12 +455,10 @@
       do 20 j=user%ys,user%ye
          temp = min(j-1,user%my-j)*hy
          do 10 i=user%xs,user%xe
-            if (i .eq. 1 .or. j .eq. 1                                  &
-     &             .or. i .eq. user%mx .or. j .eq. user%my) then
+            if (i .eq. 1 .or. j .eq. 1 .or. i .eq. user%mx .or. j .eq. user%my) then
               x(i,j) = 0.0
             else
-              x(i,j) = temp1 *                                          &
-     &          sqrt(min(hx*min(i-1,user%mx-i),temp))
+              x(i,j) = temp1 * sqrt(min(hx*min(i-1,user%mx-i),temp))
             endif
  10      continue
  20   continue
@@ -502,10 +488,8 @@
 
 !  Input/output variables:
       type (userctx) user
-      PetscScalar  x(user%gxs:user%gxe,                                         &
-     &              user%gys:user%gye)
-      PetscScalar  f(user%xs:user%xe,                                           &
-     &              user%ys:user%ye)
+      PetscScalar  x(user%gxs:user%gxe,user%gys:user%gye)
+      PetscScalar  f(user%xs:user%xe,user%ys:user%ye)
       PetscErrorCode ierr
 
 !  Local variables:
@@ -525,13 +509,11 @@
 
       do 20 j=user%ys,user%ye
          do 10 i=user%xs,user%xe
-            if (i .eq. 1 .or. j .eq. 1                                  &
-     &             .or. i .eq. user%mx .or. j .eq. user%my) then
+            if (i .eq. 1 .or. j .eq. 1 .or. i .eq. user%mx .or. j .eq. user%my) then
                f(i,j) = x(i,j)
             else
                u = x(i,j)
-               uxx = hydhx * (two*u                                     &
-     &                - x(i-1,j) - x(i+1,j))
+               uxx = hydhx * (two*u - x(i-1,j) - x(i+1,j))
                uyy = hxdhy * (two*u - x(i,j-1) - x(i,j+1))
                f(i,j) = uxx + uyy - sc*exp(u)
             endif
@@ -617,39 +599,37 @@
 !  Computations can be done while messages are in transition,
 !  by placing code between these two statements.
 
-      call SNESGetDM(snes,da,ierr)
-      call DMGetLocalVector(da,localX,ierr)
-      call DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX,              &
-     &     ierr)
-      call DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr)
+      call SNESGetDM(snes,da,ierr);CHKERRQ(ierr)
+      call DMGetLocalVector(da,localX,ierr);CHKERRQ(ierr)
+      call DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr);CHKERRQ(ierr)
+      call DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr);CHKERRQ(ierr)
 
 !  Get a pointer to vector data
-      call VecGetArrayF90(localX,lx_v,ierr)
+      call VecGetArrayF90(localX,lx_v,ierr);CHKERRQ(ierr)
 
 !  Compute entries for the locally owned part of the Jacobian preconditioner.
-      call FormJacobianLocal(lx_v,jac_prec,user,ierr)
+      call FormJacobianLocal(lx_v,jac_prec,user,ierr);CHKERRQ(ierr)
 
 !  Assemble matrix, using the 2-step process:
 !     MatAssemblyBegin(), MatAssemblyEnd()
 !  Computations can be done while messages are in transition,
 !  by placing code between these two statements.
 
-      call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr)
+      call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
       if (jac .ne. jac_prec) then
-         call MatAssemblyBegin(jac_prec,MAT_FINAL_ASSEMBLY,ierr)
+         call MatAssemblyBegin(jac_prec,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
       endif
-      call VecRestoreArrayF90(localX,lx_v,ierr)
-      call DMRestoreLocalVector(da,localX,ierr)
-      call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
+      call VecRestoreArrayF90(localX,lx_v,ierr);CHKERRQ(ierr)
+      call DMRestoreLocalVector(da,localX,ierr);CHKERRQ(ierr)
+      call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
       if (jac .ne. jac_prec) then
-        call MatAssemblyEnd(jac_prec,MAT_FINAL_ASSEMBLY,ierr)
+        call MatAssemblyEnd(jac_prec,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
       endif
 
 !  Tell the matrix we will never add a new nonzero location to the
 !  matrix. If we do it will generate an error.
 
-      call MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE,      &
-     &                  ierr)
+      call MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE,ierr);CHKERRQ(ierr)
 
       return
       end
@@ -705,8 +685,7 @@
 
 !  Input/output variables:
       type (userctx) user
-      PetscScalar    x(user%gxs:user%gxe,                                      &
-     &               user%gys:user%gye)
+      PetscScalar    x(user%gxs:user%gxe,user%gys:user%gye)
       Mat            jac_prec
       PetscErrorCode ierr
 
@@ -744,18 +723,15 @@
          do 10 i=user%xs,user%xe
             row = row + 1
 !           boundary points
-            if (i .eq. 1 .or. j .eq. 1                                  &
-     &             .or. i .eq. user%mx .or. j .eq. user%my) then
+            if (i .eq. 1 .or. j .eq. 1 .or. i .eq. user%mx .or. j .eq. user%my) then
                col(1) = row
                v(1)   = one
-               call MatSetValuesLocal(jac_prec,ione,row,ione,col,v,          &
-     &                           INSERT_VALUES,ierr)
+               call MatSetValuesLocal(jac_prec,ione,row,ione,col,v,INSERT_VALUES,ierr);CHKERRQ(ierr)
 !           interior grid points
             else
                v(1) = -hxdhy
                v(2) = -hydhx
-               v(3) = two*(hydhx + hxdhy)                               &
-     &                  - sc*user%lambda*exp(x(i,j))
+               v(3) = two*(hydhx + hxdhy) - sc*user%lambda*exp(x(i,j))
                v(4) = -hydhx
                v(5) = -hxdhy
                col(1) = row - user%gxm
@@ -763,8 +739,7 @@
                col(3) = row
                col(4) = row + 1
                col(5) = row + user%gxm
-               call MatSetValuesLocal(jac_prec,ione,row,ifive,col,v,         &
-     &                                INSERT_VALUES,ierr)
+               call MatSetValuesLocal(jac_prec,ione,row,ifive,col,v,INSERT_VALUES,ierr);CHKERRQ(ierr)
             endif
  10      continue
  20   continue

@@ -8,30 +8,26 @@
       PetscSection :: section
       PetscInt :: dim,numCells,numFields,numBC
       PetscInt :: i,val
-      PetscInt, target, dimension(3) ::                                 &
-     &     numComp
+      PetscInt, target, dimension(3) ::  numComp
       PetscInt, pointer :: pNumComp(:)
-      PetscInt, target, dimension(12) ::                                &
-     &     numDof
+      PetscInt, target, dimension(12) ::  numDof
       PetscInt, pointer :: pNumDof(:)
-      PetscInt, target, dimension(1) ::                                 &
-     &     bcField
+      PetscInt, target, dimension(1) ::  bcField
       PetscInt, pointer :: pBcField(:)
-      IS, target, dimension(1) ::                                       &
-     &     bcCompIS
-      IS, target, dimension(1) ::                                       &
-     &     bcPointIS
+      IS, target, dimension(1) ::   bcCompIS
+      IS, target, dimension(1) ::   bcPointIS
       IS, pointer :: pBcCompIS(:)
       IS, pointer :: pBcPointIS(:)
       PetscBool :: interpolate
       PetscErrorCode :: ierr
 
       call PetscInitialize(PETSC_NULL_CHARACTER, ierr)
-      CHKERRQ(ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
       dim = 2
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,   &
-     &                        '-dim', dim,PETSC_NULL_BOOL, ierr)
-      CHKERRQ(ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-dim', dim,PETSC_NULL_BOOL, ierr);CHKERRQ(ierr)
       interpolate = PETSC_TRUE
 !     Create a mesh
       if (dim .eq. 2) then
@@ -39,9 +35,7 @@
       else
          numCells = 1
       endif
-      call DMPlexCreateBoxMesh(PETSC_COMM_WORLD, dim, numCells,         &
-     &     interpolate, dm, ierr)
-      CHKERRQ(ierr)
+      call DMPlexCreateBoxMesh(PETSC_COMM_WORLD, dim, numCells,interpolate, dm, ierr);CHKERRQ(ierr)
 !     Create a scalar field u, a vector field v, and a surface vector field w
       numFields  = 3
       numComp(1) = 1
@@ -61,15 +55,12 @@
 !     Setup boundary conditions
       numBC = 1
 !     Test label retrieval
-      call DMGetLabel(dm, 'marker', label, ierr)
-      CHKERRQ(ierr)
-      call DMLabelGetValue(label, 0, val, ierr)
-      CHKERRQ(ierr)
+      call DMGetLabel(dm, 'marker', label, ierr);CHKERRQ(ierr)
+      call DMLabelGetValue(label, 0, val, ierr);CHKERRQ(ierr)
       if (val .ne. -1) then
         CHKERRQ(1)
       endif
-      call DMLabelGetValue(label, 8, val, ierr)
-      CHKERRQ(ierr)
+      call DMLabelGetValue(label, 8, val, ierr);CHKERRQ(ierr)
       if (val .ne. 1) then
         CHKERRQ(1)
       endif
@@ -77,56 +68,33 @@
 !       Label "marker" is made by the mesh creation routine
       bcField(1) = 0
       pBcField => bcField
-      call ISCreateStride(PETSC_COMM_WORLD, 1, 0, 1, bcCompIS(1), ierr)
-      CHKERRQ(ierr)
+      call ISCreateStride(PETSC_COMM_WORLD, 1, 0, 1, bcCompIS(1), ierr);CHKERRQ(ierr)
       pBcCompIS => bcCompIS
-      call DMGetStratumIS(dm, 'marker', 1, bcPointIS(1),
-     &    ierr)
-      CHKERRQ(ierr)
+      call DMGetStratumIS(dm, 'marker', 1, bcPointIS(1),ierr);CHKERRQ(ierr)
       pBcPointIS => bcPointIS
 !     Create a PetscSection with this data layout
-      call DMPlexCreateSection(dm, dim, numFields, pNumComp,
-     &     pNumDof, numBC, pBcField, pBcCompIS, pBcPointIS,
-     &     PETSC_NULL_OBJECT, section, ierr)
-      CHKERRQ(ierr)
-      call ISDestroy(bcCompIS(1), ierr)
-      CHKERRQ(ierr)
-      call ISDestroy(bcPointIS(1), ierr)
-      CHKERRQ(ierr)
+      call DMPlexCreateSection(dm,dim,numFields,pNumComp,pNumDof,numBC,pBcField,pBcCompIS,pBcPointIS,PETSC_NULL_OBJECT,section,ierr);CHKERRQ(ierr)
+      call ISDestroy(bcCompIS(1), ierr);CHKERRQ(ierr)
+      call ISDestroy(bcPointIS(1), ierr);CHKERRQ(ierr)
 !     Name the Field variables
-      call PetscSectionSetFieldName(section, 0, 'u', ierr)
-      CHKERRQ(ierr)
-      call PetscSectionSetFieldName(section, 1, 'v', ierr)
-      CHKERRQ(ierr)
-      call PetscSectionSetFieldName(section, 2, 'w', ierr)
-      CHKERRQ(ierr)
-      call PetscSectionView(section, PETSC_VIEWER_STDOUT_WORLD, ierr)
-      CHKERRQ(ierr)
+      call PetscSectionSetFieldName(section, 0, 'u', ierr);CHKERRQ(ierr)
+      call PetscSectionSetFieldName(section, 1, 'v', ierr);CHKERRQ(ierr)
+      call PetscSectionSetFieldName(section, 2, 'w', ierr);CHKERRQ(ierr)
+      call PetscSectionView(section, PETSC_VIEWER_STDOUT_WORLD, ierr);CHKERRQ(ierr)
 !     Tell the DM to use this data layout
-      call DMSetDefaultSection(dm, section, ierr)
-      CHKERRQ(ierr)
+      call DMSetDefaultSection(dm, section, ierr);CHKERRQ(ierr)
 !     Create a Vec with this layout and view it
-      call DMGetGlobalVector(dm, u, ierr)
-      CHKERRQ(ierr)
-      call PetscViewerCreate(PETSC_COMM_WORLD, viewer, ierr)
-      CHKERRQ(ierr)
-      call PetscViewerSetType(viewer, PETSCVIEWERVTK, ierr)
-      CHKERRQ(ierr)
-      call PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK, ierr)
-      CHKERRQ(ierr)
-      call PetscViewerFileSetName(viewer, 'sol.vtk', ierr)
-      CHKERRQ(ierr)
-      call VecView(u, viewer, ierr)
-      CHKERRQ(ierr)
-      call PetscViewerDestroy(viewer, ierr)
-      CHKERRQ(ierr)
-      call DMRestoreGlobalVector(dm, u, ierr)
-      CHKERRQ(ierr)
+      call DMGetGlobalVector(dm, u, ierr);CHKERRQ(ierr)
+      call PetscViewerCreate(PETSC_COMM_WORLD, viewer, ierr);CHKERRQ(ierr)
+      call PetscViewerSetType(viewer, PETSCVIEWERVTK, ierr);CHKERRQ(ierr)
+      call PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK, ierr);CHKERRQ(ierr)
+      call PetscViewerFileSetName(viewer, 'sol.vtk', ierr);CHKERRQ(ierr)
+      call VecView(u, viewer, ierr);CHKERRQ(ierr)
+      call PetscViewerDestroy(viewer, ierr);CHKERRQ(ierr)
+      call DMRestoreGlobalVector(dm, u, ierr);CHKERRQ(ierr)
 !     Cleanup
-      call PetscSectionDestroy(section, ierr)
-      CHKERRQ(ierr)
-      call DMDestroy(dm, ierr)
-      CHKERRQ(ierr)
+      call PetscSectionDestroy(section, ierr);CHKERRQ(ierr)
+      call DMDestroy(dm, ierr);CHKERRQ(ierr)
 
       call PetscFinalize(ierr)
       end program DMPlexTestField

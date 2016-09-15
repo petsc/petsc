@@ -21,6 +21,10 @@
 !     for MPI
 
       call MPI_Init(ierr)
+      if (ierr .ne. 0) then
+         print*,'Unable to initialize MPI'
+         stop
+      endif
 
 !     We can now change the communicator universe for PETSc
 
@@ -30,11 +34,7 @@
 !     Every PETSc routine should begin with the PetscInitialize()
 !     routine.
 
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      if (ierr .ne. 0) then
-         print*,'Unable to initialize PETSc'
-         stop
-      endif
+      call PetscInitialize(PETSC_NULL_CHARACTER,ierr);CHKERRQ(ierr)
 
 !     The following MPI calls return the number of processes being used
 !     and the rank of this process in the group.

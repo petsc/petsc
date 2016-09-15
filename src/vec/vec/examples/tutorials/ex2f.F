@@ -40,6 +40,10 @@
       PetscScalar  one
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'PetscInitialize failed'
+        stop
+      endif
       one   = 1.0
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 

@@ -13,23 +13,17 @@
       PetscInt, dimension(2) :: numPoints
       PetscInt, dimension(14) :: coneSize
       PetscInt, dimension(16) :: cones
-      PetscInt, dimension(16) ::                                        &
-     & coneOrientations
+      PetscInt, dimension(16) :: coneOrientations
       PetscScalar, dimension(36) :: vertexCoords
       PetscReal ::  vol = 0.
-      PetscReal, target, dimension(dim)  ::                             &
-     & centroid
-      PetscReal, target, dimension(dim)  ::                             &
-     & normal
+      PetscReal, target, dimension(dim)  :: centroid
+      PetscReal, target, dimension(dim)  :: normal
       PetscReal, pointer :: pcentroid(:)
       PetscReal, pointer :: pnormal(:)
 
-      PetscReal, target, dimension(dim)  ::                             &
-     & v0
-      PetscReal, target, dimension(dim*dim)  ::                         &
-     & J
-      PetscReal, target, dimension(dim*dim)  ::                         &
-     & invJ
+      PetscReal, target, dimension(dim)  :: v0
+      PetscReal, target, dimension(dim*dim)  :: J
+      PetscReal, target, dimension(dim*dim)  :: invJ
       PetscReal, pointer :: pv0(:)
       PetscReal, pointer :: pJ(:)
       PetscReal, pointer :: pinvJ(:)
@@ -53,50 +47,34 @@
       pinvJ => invJ
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      CHKERRQ(ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
 
-      call DMPlexCreate(PETSC_COMM_WORLD, dm, ierr)
-      CHKERRQ(ierr)
-      call PetscObjectSetName(dm, 'testplex', ierr)
-      CHKERRQ(ierr)
-      call DMSetDimension(dm, dim, ierr)
-      CHKERRQ(ierr)
+      call DMPlexCreate(PETSC_COMM_WORLD, dm, ierr);CHKERRQ(ierr)
+      call PetscObjectSetName(dm, 'testplex', ierr);CHKERRQ(ierr)
+      call DMSetDimension(dm, dim, ierr);CHKERRQ(ierr)
 
-      call DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones,   &
-     &  coneOrientations, vertexCoords, ierr)
-      CHKERRQ(ierr)
+      call DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones,coneOrientations, vertexCoords, ierr);CHKERRQ(ierr)
 
-      call DMPlexInterpolate(dm, dmi, ierr)
-      CHKERRQ(ierr)
-      call DMPlexCopyCoordinates(dm, dmi, ierr)
-      CHKERRQ(ierr)
-      call DMDestroy(dm, ierr)
-      CHKERRQ(ierr)
+      call DMPlexInterpolate(dm, dmi, ierr);CHKERRQ(ierr)
+      call DMPlexCopyCoordinates(dm, dmi, ierr);CHKERRQ(ierr)
+      call DMDestroy(dm, ierr);CHKERRQ(ierr)
       dm = dmi
 
-      call DMView(dm, PETSC_VIEWER_STDOUT_WORLD, ierr)
-      CHKERRQ(ierr)
+      call DMView(dm, PETSC_VIEWER_STDOUT_WORLD, ierr);CHKERRQ(ierr)
 
       do i = 0, 1
-        call DMPlexComputeCellGeometryFVM(dm, i, vol, pcentroid, pnormal&
-     &  , ierr)
-        CHKERRQ(ierr)
-        write(*, '(a, i2, a, f8.4, a, 3(f8.4, 1x))'),                   &
-     &           'cell: ', i, ' volume: ', vol, ' centroid: ',          &
-     &           pcentroid(1), pcentroid(2), pcentroid(3)
-        call DMPlexComputeCellGeometryAffineFEM(dm, i, pv0, pJ, pinvJ,  &
-     &  detJ, ierr)
+        call DMPlexComputeCellGeometryFVM(dm, i, vol, pcentroid, pnormal, ierr);CHKERRQ(ierr)
+        write(*, '(a, i2, a, f8.4, a, 3(f8.4, 1x))'),'cell: ', i, ' volume: ', vol, ' centroid: ',pcentroid(1), pcentroid(2), pcentroid(3)
+        call DMPlexComputeCellGeometryAffineFEM(dm, i, pv0, pJ, pinvJ,detJ, ierr);CHKERRQ(ierr)
       end do
 
-      call PetscFVCreate(PETSC_COMM_WORLD, fvm, ierr)
-      CHKERRQ(ierr)
-      call PetscFVSetUp(fvm, ierr)
-      CHKERRQ(ierr)
-      call PetscFVDestroy(fvm, ierr)
-      CHKERRQ(ierr)
+      call PetscFVCreate(PETSC_COMM_WORLD, fvm, ierr);CHKERRQ(ierr)
+      call PetscFVSetUp(fvm, ierr);CHKERRQ(ierr)
+      call PetscFVDestroy(fvm, ierr);CHKERRQ(ierr)
 
-      call DMDestroy(dm, ierr)
-      CHKERRQ(ierr)
+      call DMDestroy(dm, ierr);CHKERRQ(ierr)
       call PetscFinalize(ierr)
-      CHKERRQ(ierr)
       end program main

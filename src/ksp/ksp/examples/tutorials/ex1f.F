@@ -76,6 +76,10 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
       if (size .ne. 1) then
          call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)

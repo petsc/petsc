@@ -20,6 +20,10 @@
 
       n=8
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
       if (size .gt. 1) then
         print*,'Example for one processor only'

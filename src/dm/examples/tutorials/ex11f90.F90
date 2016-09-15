@@ -100,7 +100,6 @@
 !  Same tests but now with DOF > 1, so dimensions of array are one higher
 !
       dof = 2
-      CALL PetscInitialize(PETSC_NULL_CHARACTER,ierr);CHKERRQ(ierr)
       call DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,m,dof,1,PETSC_NULL_INTEGER,ada,ierr);CHKERRQ(ierr)
       call DMGetGlobalVector(ada,g,ierr);CHKERRQ(ierr)
       call DMDAGetCorners(ada,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xl,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr);CHKERRQ(ierr)

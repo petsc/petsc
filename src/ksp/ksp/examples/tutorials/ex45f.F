@@ -20,6 +20,10 @@
        three = 3
 
        call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+       if (ierr .ne. 0) then
+         print*,'Unable to initialize PETSc'
+         stop
+       endif
        call KSPCreate(MPI_COMM_WORLD,ksp,ierr)
        call DMDACreate2D(MPI_COMM_WORLD, DM_BOUNDARY_NONE,              &
      &    DM_BOUNDARY_NONE, DMDA_STENCIL_STAR,-three,-three,            &

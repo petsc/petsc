@@ -56,6 +56,10 @@
       pone = one / 10
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+         print*,'Unable to initialize PETSc'
+         stop
+      endif
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create distributed array (DMDA) to manage parallel grid and vectors

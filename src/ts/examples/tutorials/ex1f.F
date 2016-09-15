@@ -65,6 +65,10 @@
       param_min = 0
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+         print*,'Unable to initialize PETSc'
+         stop
+      endif
       user(lmx)        = 4
       user(lmy)        = 4
       user(param)      = 6.0

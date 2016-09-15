@@ -33,6 +33,10 @@
 
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
 
       m = 3
       n = 2
@@ -40,8 +44,7 @@
 !
 !      Create a parallel dense matrix shared by all processors
 !
-      call MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,                   &
-     &                       PETSC_DECIDE,m,n,PETSC_NULL_SCALAR,A,ierr)
+      call MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,PETSC_NULL_SCALAR,A,ierr);CHKERRQ(ierr)
 
 !
 !     Set values into the matrix. All processors set all values.
@@ -51,25 +54,25 @@
         do 20, j=0,n-1
           jar(1) = j
           v(1)   = 9.0/(i+j+1)
-          call MatSetValues(A,one,iar,one,jar,v,INSERT_VALUES,ierr)
+          call MatSetValues(A,one,iar,one,jar,v,INSERT_VALUES,ierr);CHKERRQ(ierr)
  20     continue
  10   continue
 
-      call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
-      call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
+      call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
+      call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
 
 !
 !       Print the matrix to the screen
 !
-      call MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr)
+      call MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr);CHKERRQ(ierr)
 
 
 !
 !      Print the local portion of the matrix to the screen
 !
-      call MatDenseGetArrayF90(A,array,ierr)
-      call MatGetOwnershipRange(A,rstart,rend,ierr)
-      call PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1,ierr)
+      call MatDenseGetArrayF90(A,array,ierr);CHKERRQ(ierr)
+      call MatGetOwnershipRange(A,rstart,rend,ierr);CHKERRQ(ierr)
+      call PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1,ierr);CHKERRQ(ierr)
 !
 !   Fortran IO may not come out in the correct order since each process
 !   is individually doing IO
@@ -78,13 +81,13 @@
 ! 30   continue
 ! 100  format(2F6.2)
 
-      call PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1,ierr)
+      call PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1,ierr);CHKERRQ(ierr)
 
-      call MatDenseRestoreArrayF90(A,array,ierr)
+      call MatDenseRestoreArrayF90(A,array,ierr);CHKERRQ(ierr)
 !
 !      Free the space used by the matrix
 !
-      call MatDestroy(A,ierr)
+      call MatDestroy(A,ierr);CHKERRQ(ierr)
       call PetscFinalize(ierr)
       end
 

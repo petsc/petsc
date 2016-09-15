@@ -25,6 +25,10 @@
       IS          is
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
 !  Create an index set with 5 entries. Each processor creates

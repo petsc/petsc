@@ -14,7 +14,11 @@
       PetscOffset iis
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
+      
 !     Test IS of size 0
       ssize = 0
       stride = 0
