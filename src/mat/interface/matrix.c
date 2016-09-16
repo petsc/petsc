@@ -10379,14 +10379,11 @@ PetscErrorCode MatTransposeColoringDestroy(MatTransposeColoring *c)
     Output Parameter:
 .   Btdense - dense matrix B^T
 
-    Options Database Keys:
-+    -mat_transpose_coloring_view - Activates basic viewing or coloring
-.    -mat_transpose_coloring_view_draw - Activates drawing of coloring
--    -mat_transpose_coloring_view_info - Activates viewing of coloring info
+    Level: advanced
 
-    Level: intermediate
+     Notes: These are used internally for some implementations of MatRARt()
 
-.seealso: MatTransposeColoringCreate(), MatTransposeColoringDestroy()
+.seealso: MatTransposeColoringCreate(), MatTransposeColoringDestroy(), MatTransColoringApplyDenToSp()
 
 .keywords: coloring
 @*/
@@ -10421,12 +10418,9 @@ PetscErrorCode MatTransColoringApplySpToDen(MatTransposeColoring coloring,Mat B,
     Output Parameter:
 .   Csp - sparse matrix
 
-    Options Database Keys:
-+    -mat_multtranspose_coloring_view - Activates basic viewing or coloring
-.    -mat_multtranspose_coloring_view_draw - Activates drawing of coloring
--    -mat_multtranspose_coloring_view_info - Activates viewing of coloring info
+    Level: advanced
 
-    Level: intermediate
+     Notes: These are used internally for some implementations of MatRARt()
 
 .seealso: MatTransposeColoringCreate(), MatTransposeColoringDestroy(), MatTransColoringApplySpToDen()
 
@@ -10462,8 +10456,8 @@ PetscErrorCode MatTransColoringApplyDenToSp(MatTransposeColoring matcoloring,Mat
 
     Level: intermediate
 
-.seealso: MatTransposeColoringDestroy(), MatTransposeColoringSetFromOptions(), MatTransColoringApplySpToDen(),
-           MatTransColoringApplyDenToSp(), MatTransposeColoringView(),
+.seealso: MatTransposeColoringDestroy(),  MatTransColoringApplySpToDen(),
+           MatTransColoringApplyDenToSp()
 @*/
 PetscErrorCode MatTransposeColoringCreate(Mat mat,ISColoring iscoloring,MatTransposeColoring *color)
 {
