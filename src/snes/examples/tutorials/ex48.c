@@ -75,11 +75,15 @@ There are two compile-time options:
 #endif
 
 /* The SSE2 kernels are only for PetscScalar=double on architectures that support it */
-#define USE_SSE2_KERNELS (!defined NO_SSE2                              \
-                          && !defined PETSC_USE_COMPLEX                 \
-                          && !defined PETSC_USE_REAL_SINGLE             \
-                          && !defined PETSC_USE_REAL___FLOAT128         \
-                          && defined __SSE2__)
+#if !defined NO_SSE2                           \
+     && !defined PETSC_USE_COMPLEX             \
+     && !defined PETSC_USE_REAL_SINGLE         \
+     && !defined PETSC_USE_REAL___FLOAT128     \
+     && defined __SSE2__
+#define USE_SSE2_KERNELS 1
+#else
+#define USE_SSE2_KERNELS 0
+#endif
 
 static PetscClassId THI_CLASSID;
 
@@ -443,7 +447,7 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
   }
   ierr          = PetscOptionsEnd();CHKERRQ(ierr);
   units->Pascal = units->kilogram / (units->meter * PetscSqr(units->second));
-  units->year   = 31556926. * units->second, /* seconds per year */
+  units->year   = 31556926. * units->second; /* seconds per year */
 
   thi->Lx              = 10.e3;
   thi->Ly              = 10.e3;

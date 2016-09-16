@@ -148,10 +148,12 @@ PetscErrorCode  PetscSortSplit(PetscInt ncut,PetscInt n,PetscScalar a[],PetscInt
 
   while (1) {
     mid    = first;
-    abskey = (d = a[mid],PetscAbsScalar(d));
+    d      = a[mid];
+    abskey = PetscAbsScalar(d);
     i      = last;
     for (j = first + 1; j <= i; ++j) {
-      if ((d = a[j],PetscAbsScalar(d)) >= abskey) {
+      d = a[j];
+      if (PetscAbsScalar(d) >= abskey) {
         ++mid;
         /* interchange */
         tmp = a[mid];  itmp = idx[mid];
@@ -211,10 +213,12 @@ PetscErrorCode  PetscSortSplitReal(PetscInt ncut,PetscInt n,PetscReal a[],PetscI
 
   while (1) {
     mid    = first;
-    abskey = (d = a[mid],PetscAbsReal(d));
+    d      = a[mid];
+    abskey = PetscAbsReal(d);
     i      = last;
     for (j = first + 1; j <= i; ++j) {
-      if ((d = a[j],PetscAbsReal(d)) >= abskey) {
+      d = a[j];
+      if (PetscAbsReal(d) >= abskey) {
         ++mid;
         /* interchange */
         tmp = a[mid];  itmp = idx[mid];
