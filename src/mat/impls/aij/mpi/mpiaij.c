@@ -22,7 +22,7 @@
 
   Level: beginner
 
-.seealso: MatCreateAIJ(), MatCreateSeqAIJ(), MATSEQAIJ,MATMPIAIJ
+.seealso: MatCreateAIJ(), MatCreateSeqAIJ(), MATSEQAIJ, MATMPIAIJ
 M*/
 
 /*MC
@@ -2854,10 +2854,10 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
   if (!rank) {
     ierr = PetscBinaryRead(fd,(char*)header,4,PETSC_INT);CHKERRQ(ierr);
     if (header[0] != MAT_FILE_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"not matrix object");
-    if (header[3] < 0) SETERRQ(PetscObjectComm((PetscObject)newMat),PETSC_ERR_FILE_UNEXPECTED,"Matrix stored in special format on disk,cannot load as MPIAIJ");
+    if (header[3] < 0) SETERRQ(PetscObjectComm((PetscObject)newMat),PETSC_ERR_FILE_UNEXPECTED,"Matrix stored in special format on disk,cannot load as MATMPIAIJ");
   }
 
-  ierr = PetscOptionsBegin(comm,NULL,"Options for loading MPIAIJ matrix","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm,NULL,"Options for loading MATMPIAIJ matrix","Mat");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-matload_block_size","Set the blocksize used to store the matrix","MatLoad",bs,&bs,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (bs < 0) bs = 1;
@@ -3326,7 +3326,7 @@ $        v =  {4,5,6}  [size = 3]
 
 .keywords: matrix, aij, compressed row, sparse, parallel
 
-.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIAIJSetPreallocation(), MatCreateAIJ(), MPIAIJ,
+.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIAIJSetPreallocation(), MatCreateAIJ(), MATMPIAIJ,
           MatCreateSeqAIJWithArrays(), MatCreateMPIAIJWithSplitArrays()
 @*/
 PetscErrorCode  MatMPIAIJSetPreallocationCSR(Mat B,const PetscInt i[],const PetscInt j[], const PetscScalar v[])
@@ -3469,7 +3469,7 @@ PetscErrorCode  MatMPIAIJSetPreallocationCSR(Mat B,const PetscInt i[],const Pets
 .keywords: matrix, aij, compressed row, sparse, parallel
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateAIJ(), MatMPIAIJSetPreallocationCSR(),
-          MPIAIJ, MatGetInfo(), PetscSplitOwnership()
+          MATMPIAIJ, MatGetInfo(), PetscSplitOwnership()
 @*/
 PetscErrorCode  MatMPIAIJSetPreallocation(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
@@ -3536,7 +3536,7 @@ $        v =  {4,5,6}  [size = 3]
 .keywords: matrix, aij, compressed row, sparse, parallel
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIAIJSetPreallocation(), MatMPIAIJSetPreallocationCSR(),
-          MPIAIJ, MatCreateAIJ(), MatCreateMPIAIJWithSplitArrays()
+          MATMPIAIJ, MatCreateAIJ(), MatCreateMPIAIJWithSplitArrays()
 @*/
 PetscErrorCode  MatCreateMPIAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,const PetscInt i[],const PetscInt j[],const PetscScalar a[],Mat *mat)
 {
@@ -3635,7 +3635,7 @@ PetscErrorCode  MatCreateMPIAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pe
    If o_nnz, d_nnz are specified, then o_nz, and d_nz are ignored.
 
    When calling this routine with a single process communicator, a matrix of
-   type SEQAIJ is returned.  If a matrix of type MPIAIJ is desired for this
+   type SEQAIJ is returned.  If a matrix of type MATMPIAIJ is desired for this
    type of communicator, use the construction mechanism:
      MatCreate(...,&A); MatSetType(A,MATMPIAIJ); MatSetSizes(A, m,n,M,N); MatMPIAIJSetPreallocation(A,...);
 
@@ -3725,7 +3725,7 @@ PetscErrorCode  MatCreateMPIAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pe
 .keywords: matrix, aij, compressed row, sparse, parallel
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIAIJSetPreallocation(), MatMPIAIJSetPreallocationCSR(),
-          MPIAIJ, MatCreateMPIAIJWithArrays()
+          MATMPIAIJ, MatCreateMPIAIJWithArrays()
 @*/
 PetscErrorCode  MatCreateAIJ(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[],Mat *A)
 {
@@ -3756,7 +3756,7 @@ PetscErrorCode  MatMPIAIJGetSeqAIJ(Mat A,Mat *Ad,Mat *Ao,const PetscInt *colmap[
   
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"This function requires a MPIAIJ matrix as input");
+  if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"This function requires a MATMPIAIJ matrix as input");
   if (Ad)     *Ad     = a->A;
   if (Ao)     *Ao     = a->B;
   if (colmap) *colmap = a->garray;
@@ -4273,7 +4273,7 @@ PetscErrorCode  MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm comm,Mat seqmat,PetscI
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateMPIAIJSumSeqAIJ"
 /*@C
-      MatCreateMPIAIJSumSeqAIJ - Creates a MPIAIJ matrix by adding sequential
+      MatCreateMPIAIJSumSeqAIJ - Creates a MATMPIAIJ matrix by adding sequential
                  matrices from each processor
 
     Collective on MPI_Comm
@@ -4324,7 +4324,7 @@ PetscErrorCode  MatCreateMPIAIJSumSeqAIJ(MPI_Comm comm,Mat seqmat,PetscInt m,Pet
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIAIJGetLocalMat"
 /*@
-     MatMPIAIJGetLocalMat - Creates a SeqAIJ from a MPIAIJ matrix by taking all its local rows and putting them into a sequential vector with
+     MatMPIAIJGetLocalMat - Creates a SeqAIJ from a MATMPIAIJ matrix by taking all its local rows and putting them into a sequential vector with
           mlocal rows and n columns. Where mlocal is the row count obtained with MatGetLocalSize() and n is the global column count obtained
           with MatGetSize()
 
@@ -4358,7 +4358,7 @@ PetscErrorCode  MatMPIAIJGetLocalMat(Mat A,MatReuse scall,Mat *A_loc)
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&match);CHKERRQ(ierr);
-  if (!match) SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_SUP,"Requires MPIAIJ matrix as input");
+  if (!match) SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_SUP,"Requires MATMPIAIJ matrix as input");
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size == 1 && scall == MAT_REUSE_MATRIX) PetscFunctionReturn(0);
@@ -4438,7 +4438,7 @@ PetscErrorCode  MatMPIAIJGetLocalMat(Mat A,MatReuse scall,Mat *A_loc)
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIAIJGetLocalMatCondensed"
 /*@C
-     MatMPIAIJGetLocalMatCondensed - Creates a SeqAIJ matrix from an MPIAIJ matrix by taking all its local rows and NON-ZERO columns
+     MatMPIAIJGetLocalMatCondensed - Creates a SeqAIJ matrix from an MATMPIAIJ matrix by taking all its local rows and NON-ZERO columns
 
     Not Collective
 
@@ -4466,7 +4466,7 @@ PetscErrorCode  MatMPIAIJGetLocalMatCondensed(Mat A,MatReuse scall,IS *row,IS *c
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&match);CHKERRQ(ierr);
-  if (!match) SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_SUP,"Requires MPIAIJ matrix as input");
+  if (!match) SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_SUP,"Requires MATMPIAIJ matrix as input");
   ierr = PetscLogEventBegin(MAT_Getlocalmatcondensed,A,0,0,0);CHKERRQ(ierr);
   if (!row) {
     start = A->rmap->rstart; end = A->rmap->rend;
@@ -5049,7 +5049,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B)
 .keywords: matrix, aij, compressed row, sparse, parallel
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIAIJSetPreallocation(), MatMPIAIJSetPreallocationCSR(),
-          MPIAIJ, MatCreateAIJ(), MatCreateMPIAIJWithArrays()
+          MATMPIAIJ, MatCreateAIJ(), MatCreateMPIAIJWithArrays()
 @*/
 PetscErrorCode  MatCreateMPIAIJWithSplitArrays(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt i[],PetscInt j[],PetscScalar a[],PetscInt oi[], PetscInt oj[],PetscScalar oa[],Mat *mat)
 {
