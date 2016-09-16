@@ -22,7 +22,9 @@ class Configure(config.package.CMakePackage):
       raise RuntimeError('CMake > 2.5 is needed to build METIS\nSuggest adding --download-cmake to ./configure arguments')
 
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
-    args.append('-DGKLIB_PATH=../GKlib') 
+    args.append('-DGKLIB_PATH=../GKlib')
+    # force metis/parmetis to use a portable random number generator that will produce the same partitioning results on all systems
+    args.append('-DGKRAND=1')
     if self.checkSharedLibrariesEnabled():
       args.append('-DSHARED=1')
     if self.compilerFlags.debugging:
