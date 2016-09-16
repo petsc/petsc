@@ -1518,8 +1518,12 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   /* For BDDC we need to define a local "Neumann" problem different to that defined in PCISSetup
      Also, BDDC builds its own KSP for the Dirichlet problem */
   if (pc->setupcalled && pc->flag != SAME_NONZERO_PATTERN) pcbddc->recompute_topography = PETSC_TRUE;
-  if (pcbddc->recompute_topography) pcbddc->graphanalyzed = PETSC_FALSE;
-  computeconstraintsmatrix = PETSC_FALSE;
+  if (pcbddc->recompute_topography) {
+    pcbddc->graphanalyzed    = PETSC_FALSE;
+    computeconstraintsmatrix = PETSC_TRUE;
+  } else {
+    computeconstraintsmatrix = PETSC_FALSE;
+  }
 
   /* check parameters' compatibility */
   if (!pcbddc->use_deluxe_scaling) pcbddc->deluxe_zerorows = PETSC_FALSE;
@@ -1553,6 +1557,15 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   /* process topology information */
   if (pcbddc->recompute_topography) {
     ierr = PCBDDCComputeLocalTopologyInfo(pc);CHKERRQ(ierr);
+    /* detect local disconnected subdomains if requested (use matis->A) */
+    if (pcbddc->detect_disconnected) {
+      PetscInt i;
+      for (i=0;i<pcbddc->n_local_subs;i++) {
+        ierr = ISDestroy(&pcbddc->local_subs[i]);CHKERRQ(ierr);
+      }
+      ierr = PetscFree(pcbddc->local_subs);CHKERRQ(ierr);
+      ierr = MatDetectDisconnectedComponents(matis->A,PETSC_FALSE,&pcbddc->n_local_subs,&pcbddc->local_subs);CHKERRQ(ierr);
+    }
     if (pcbddc->discretegradient) {
       ierr = PCBDDCNedelecSupport(pc);CHKERRQ(ierr);
     }
@@ -1567,16 +1580,6 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject)matis->A);CHKERRQ(ierr);
     pcbddc->local_mat = matis->A;
-  }
-
-  /* detect local disconnected subdomains if requested */
-  if (pcbddc->detect_disconnected && pcbddc->recompute_topography) {
-    PetscInt i;
-    for (i=0;i<pcbddc->n_local_subs;i++) {
-      ierr = ISDestroy(&pcbddc->local_subs[i]);CHKERRQ(ierr);
-    }
-    ierr = PetscFree(pcbddc->local_subs);CHKERRQ(ierr);
-    ierr = MatDetectDisconnectedComponents(pcbddc->local_mat,PETSC_FALSE,&pcbddc->n_local_subs,&pcbddc->local_subs);CHKERRQ(ierr);
   }
 
   /*
