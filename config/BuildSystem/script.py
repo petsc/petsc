@@ -32,7 +32,7 @@ else:
 
 useSelect = nargs.Arg.findArgument('useSelect', sys.argv[1:])
 if useSelect is None:
-  useSelect = 0 # workaround issue with parallel configure
+  useSelect = 1
 elif useSelect == 'no' or useSelect == '0':
   useSelect = 0
 elif useSelect == 'yes' or useSelect == '1':
