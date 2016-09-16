@@ -65,9 +65,13 @@ import os
 import sys
 useThreads = nargs.Arg.findArgument('useThreads', sys.argv[1:])
 if useThreads is None:
+  useThreads = 0 # workaround issue with parallel configure
+elif useThreads == 'no' or useThreads == '0':
+  useThreads = 0
+elif useThreads == 'yes' or useThreads == '1':
   useThreads = 1
 else:
-  useThreads = int(useThreads)
+  raise RuntimeError('Unknown option value for --useThreads ',useThreads)
 
 class RDict(dict):
   '''An RDict is a typed dictionary, which may be hierarchically composed. All elements derive from the
