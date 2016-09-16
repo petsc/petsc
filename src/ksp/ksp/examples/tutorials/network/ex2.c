@@ -43,17 +43,18 @@ PetscScalar distance(PetscScalar x1, PetscScalar x2, PetscScalar y1, PetscScalar
 
 #undef __FUNCT__
 #define __FUNCT__ "random_network"
-PetscErrorCode random_network(int nvertex,int *pnbranch,Node **pnode,Branch **pbranch,int **pedgelist,int seed)
+PetscErrorCode random_network(PetscInt nvertex,PetscInt *pnbranch,Node **pnode,Branch **pbranch,int **pedgelist,PetscInt seed)
 {
   PetscErrorCode ierr;
-  PetscInt       i, j, nedges = 0, *edgelist;
+  PetscInt       i, j, nedges = 0;
+  int            *edgelist;
   PetscInt       nbat, ncurr, fr, to;
   PetscReal      *x, *y, value, xmax = 10.0; /* generate points in square */
   PetscScalar    maxdist = 0.0, dist, alpha, beta, prob;
   PetscRandom    rnd;
   Branch         *branch;
   Node           *node;
-  Edge           *head = NULL, *new= NULL, *aux= NULL;
+  Edge           *head = NULL, *nnew= NULL, *aux= NULL;
 
   PetscFunctionBeginUser;
   ierr = PetscRandomCreate(PETSC_COMM_SELF,&rnd);CHKERRQ(ierr);
@@ -292,7 +293,8 @@ int main(int argc,char ** argv)
   Vec               x, b;
   Mat               A;
   KSP               ksp;
-  int               *edgelist,componentkey[2];
+  int               *edgelist;
+  PetscInt          componentkey[2];
   Node              *node;
   Branch            *branch;
 #if defined(PETSC_USE_LOG)
