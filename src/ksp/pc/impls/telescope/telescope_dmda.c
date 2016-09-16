@@ -9,6 +9,27 @@
 
 #include "../src/ksp/pc/impls/telescope/telescope.h"
 
+static PetscBool  cited = PETSC_FALSE;
+static const char citation[] =
+"@inproceedings{MaySananRuppKnepleySmith2016,\n"
+"  title     = {Extreme-Scale Multigrid Components within PETSc},\n"
+"  author    = {Dave A. May and Patrick Sanan and Karl Rupp and Matthew G. Knepley and Barry F. Smith},\n"
+"  booktitle = {Proceedings of the Platform for Advanced Scientific Computing Conference},\n"
+"  series    = {PASC '16},\n"
+"  isbn      = {978-1-4503-4126-4},\n"
+"  location  = {Lausanne, Switzerland},\n"
+"  pages     = {5:1--5:12},\n"
+"  articleno = {5},\n"
+"  numpages  = {12},\n"
+"  url       = {http://doi.acm.org/10.1145/2929908.2929913},\n"
+"  doi       = {10.1145/2929908.2929913},\n"
+"  acmid     = {2929913},\n"
+"  publisher = {ACM},\n"
+"  address   = {New York, NY, USA},\n"
+"  keywords  = {GPU, HPC, agglomeration, coarse-level solver, multigrid, parallel computing, preconditioning},\n"
+"  year      = {2016}\n"
+"}\n";
+
 #undef __FUNCT__
 #define __FUNCT__ "_DMDADetermineRankFromGlobalIJK"
 PetscErrorCode _DMDADetermineRankFromGlobalIJK(PetscInt dim,PetscInt i,PetscInt j,PetscInt k,
@@ -933,6 +954,7 @@ PetscErrorCode PCApply_Telescope_dmda(PC pc,Vec x,Vec y)
   xp    = ctx->xp;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister(citation,&cited);CHKERRQ(ierr);
 
   /* permute vector into ordering associated with re-partitioned dmda */
   ierr = MatMultTranspose(perm,x,xp);CHKERRQ(ierr);
