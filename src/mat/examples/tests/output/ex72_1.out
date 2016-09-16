@@ -1,0 +1,4 @@
+m = 6, n = 6, nnz = 12
+Read file completes.
+Assemble SBAIJ matrix completes.
+Write the entire matrix in AIJ format to file outputfile
