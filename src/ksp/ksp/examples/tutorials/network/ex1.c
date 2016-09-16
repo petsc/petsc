@@ -60,7 +60,7 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "read_data"
-PetscErrorCode read_data(int *pnnode,int *pnbranch,Node **pnode,Branch **pbranch,int **pedgelist)
+PetscErrorCode read_data(PetscInt *pnnode,PetscInt *pnbranch,Node **pnode,Branch **pbranch,int **pedgelist)
 {
   PetscErrorCode    ierr;
   PetscInt          nnode, nbranch, i;
@@ -102,7 +102,7 @@ PetscErrorCode read_data(int *pnnode,int *pnbranch,Node **pnode,Branch **pbranch
       edgelist[2*i] = from node
       edgelist[2*i + 1] = to node
   */
-  ierr = PetscCalloc1(2*nbranch*sizeof(int), &edgelist);CHKERRQ(ierr);
+  ierr = PetscCalloc1(2*nbranch, &edgelist);CHKERRQ(ierr);
 
   for (i = 0; i < nbranch; i++) {
     switch (i) {
@@ -262,7 +262,8 @@ int main(int argc,char ** argv)
   Vec               x, b;
   Mat               A;
   KSP               ksp;
-  int               *edgelist,componentkey[2];
+  int               *edgelist;
+  PetscInt          componentkey[2];
   Node              *node;
   Branch            *branch;
 
