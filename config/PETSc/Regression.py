@@ -52,7 +52,7 @@ class Configure(config.base.Configure):
         rjobs.append('Cxx')
       if self.x.found:
         jobs.append('C_X')
-      if hasattr(self.compilers, 'FC') and self.fortrancpp.fortranDatatypes:
+      if hasattr(self.compilers, 'FC') and self.fortrancpp.fortranDatatypes and self.compilers.fortranIsF90FreeForm:
         jobs.append('F90_DataTypes')
       elif hasattr(self.compilers, 'FC'):
         jobs.append('Fortran')
