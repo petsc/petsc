@@ -1,33 +1,104 @@
-	[0]main 1944 equations in vector, 648 vertices
-	[0]main 192 local equations
-    0 KSP Residual norm 1310.72 
-    1 KSP Residual norm 300.426 
-    2 KSP Residual norm 141.46 
-    3 KSP Residual norm 9.83553 
-    4 KSP Residual norm 1.34403 
-    5 KSP Residual norm 0.623664 
-    6 KSP Residual norm 0.415168 
-    7 KSP Residual norm 0.302962 
-    8 KSP Residual norm 0.0721403 
-    9 KSP Residual norm 0.0119596 
-   10 KSP Residual norm 0.00395636 
-   11 KSP Residual norm 0.00209275 
-   12 KSP Residual norm 0.00014175 
-   13 KSP Residual norm 8.22754e-06 
+	[0]main 180 equations in vector, 60 vertices
+	[0]main 18 local equations
+    0 KSP Residual norm 596.026 
+    1 KSP Residual norm 149.215 
+    2 KSP Residual norm 22.8083 
+    3 KSP Residual norm 1.37337 
+    4 KSP Residual norm 0.137714 
+    5 KSP Residual norm 0.0462611 
+    6 KSP Residual norm 0.0076302 
+    7 KSP Residual norm 0.000452596 
+    8 KSP Residual norm 0.000154732 
+    9 KSP Residual norm 2.73186e-05 
+   10 KSP Residual norm 1.85938e-06 
+  Linear solve converged due to CONVERGED_RTOL iterations 10
+    0 KSP Residual norm 1.85937e-06 
+    1 KSP Residual norm 2.21627e-07 
+    2 KSP Residual norm 9.03829e-08 
+    3 KSP Residual norm 1.26032e-08 
+    4 KSP Residual norm 1.09196e-09 
+    5 KSP Residual norm 3.624e-10 
+    6 KSP Residual norm 4.305e-11 
+    7 KSP Residual norm < 1.e-11
+    8 KSP Residual norm < 1.e-11
+    9 KSP Residual norm < 1.e-11
+   10 KSP Residual norm < 1.e-11
+   11 KSP Residual norm < 1.e-11
+  Linear solve converged due to CONVERGED_RTOL iterations 11
+	[0]main 1080 equations in vector, 360 vertices
+	[0]main 180 local equations
+    0 KSP Residual norm 905.933 
+    1 KSP Residual norm 222.883 
+    2 KSP Residual norm 139.817 
+    3 KSP Residual norm 18.3562 
+    4 KSP Residual norm 3.20999 
+    5 KSP Residual norm 2.02444 
+    6 KSP Residual norm 0.406656 
+    7 KSP Residual norm 0.139952 
+    8 KSP Residual norm 0.0742445 
+    9 KSP Residual norm 0.0210613 
+   10 KSP Residual norm 0.00140002 
+   11 KSP Residual norm 0.000101215 
+   12 KSP Residual norm 1.1163e-05 
+   13 KSP Residual norm 1.48798e-06 
   Linear solve converged due to CONVERGED_RTOL iterations 13
-    0 KSP Residual norm 8.22748e-06 
-    1 KSP Residual norm 1.09019e-06 
-    2 KSP Residual norm 2.38483e-07 
-    3 KSP Residual norm 1.363e-07 
-    4 KSP Residual norm 3.50868e-08 
-    5 KSP Residual norm 4.69623e-09 
-    6 KSP Residual norm 1.5578e-09 
-    7 KSP Residual norm 7.478e-10 
-    8 KSP Residual norm 9.395e-11 
-    9 KSP Residual norm 6.725e-11 
-   10 KSP Residual norm 3.548e-11 
+    0 KSP Residual norm 1.48819e-06 
+    1 KSP Residual norm 2.38055e-07 
+    2 KSP Residual norm 1.25781e-08 
+    3 KSP Residual norm 1.23284e-09 
+    4 KSP Residual norm 1.649e-10 
+    5 KSP Residual norm 2.936e-11 
+    6 KSP Residual norm 1.555e-11 
+    7 KSP Residual norm < 1.e-11
+    8 KSP Residual norm < 1.e-11
+    9 KSP Residual norm < 1.e-11
+   10 KSP Residual norm < 1.e-11
    11 KSP Residual norm < 1.e-11
    12 KSP Residual norm < 1.e-11
-   13 KSP Residual norm < 1.e-11
-   14 KSP Residual norm < 1.e-11
-  Linear solve converged due to CONVERGED_RTOL iterations 14
+  Linear solve converged due to CONVERGED_RTOL iterations 12
+	[0]main 7344 equations in vector, 2448 vertices
+	[0]main 1512 local equations
+    0 KSP Residual norm 1567.96 
+    1 KSP Residual norm 348.502 
+    2 KSP Residual norm 241.327 
+    3 KSP Residual norm 160.504 
+    4 KSP Residual norm 32.0886 
+    5 KSP Residual norm 8.87338 
+    6 KSP Residual norm 2.24026 
+    7 KSP Residual norm 1.01757 
+    8 KSP Residual norm 0.584903 
+    9 KSP Residual norm 0.331879 
+   10 KSP Residual norm 0.101662 
+   11 KSP Residual norm 0.0299743 
+   12 KSP Residual norm 0.00978257 
+   13 KSP Residual norm 0.00452475 
+   14 KSP Residual norm 0.00227755 
+   15 KSP Residual norm 0.00133456 
+   16 KSP Residual norm 0.000483032 
+   17 KSP Residual norm 0.000192492 
+   18 KSP Residual norm 5.0435e-05 
+   19 KSP Residual norm 1.03714e-05 
+  Linear solve converged due to CONVERGED_RTOL iterations 19
+    0 KSP Residual norm 1.03721e-05 
+    1 KSP Residual norm 3.1375e-06 
+    2 KSP Residual norm 9.34894e-07 
+    3 KSP Residual norm 2.71541e-07 
+    4 KSP Residual norm 1.05305e-07 
+    5 KSP Residual norm 6.72341e-08 
+    6 KSP Residual norm 3.68557e-08 
+    7 KSP Residual norm 1.52181e-08 
+    8 KSP Residual norm 5.27227e-09 
+    9 KSP Residual norm 1.46113e-09 
+   10 KSP Residual norm 4.700e-10 
+   11 KSP Residual norm 2.132e-10 
+   12 KSP Residual norm 1.546e-10 
+   13 KSP Residual norm 6.969e-11 
+   14 KSP Residual norm 2.147e-11 
+   15 KSP Residual norm < 1.e-11
+   16 KSP Residual norm < 1.e-11
+   17 KSP Residual norm < 1.e-11
+   18 KSP Residual norm < 1.e-11
+   19 KSP Residual norm < 1.e-11
+  Linear solve converged due to CONVERGED_RTOL iterations 19
+[0]main 1) N=1080/180, max displacement = 164.224, disp diff = 10.5591, rate = 1.35034
+[0]main 2) N=7344/1080, max displacement = 166.823, disp diff = 2.59887, rate = 0.69299
