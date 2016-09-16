@@ -40,14 +40,14 @@ class Configure(config.package.Package):
     g.write('MPIINC       = '+self.headers.toString(self.mpi.include)+'\n')
     # this mangling information is for both BLAS and the Fortran compiler so cannot use the BlasLapack mangling flag
     if self.compilers.fortranManglingDoubleUnderscore:
-      blah = 'f77IsF2C'
+      fdef = '-Df77IsF2C -DFortranIsF2C'
     elif self.compilers.fortranMangling == 'underscore':
-      blah = 'Add_'
+      fdef = '-DAdd_'
     elif self.compilers.fortranMangling == 'caps':
-      blah = 'UpCase'
+      fdef = '-DUpCase'
     else:
-      blah = 'NoChange'
-    g.write('CDEFS        =-D'+blah+'\n')
+      fdef = '-DNoChange'
+    g.write('CDEFS        = '+fdef+'\n')
     self.setCompilers.pushLanguage('FC')
     g.write('FC           = '+self.setCompilers.getCompiler()+'\n')
     g.write('FCFLAGS      = '+self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','').replace('-Mfree','')+'\n')

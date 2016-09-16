@@ -1361,14 +1361,14 @@ PetscErrorCode MatSetValuesRowLocal(Mat mat,PetscInt row,const PetscScalar v[])
    Input Parameters:
 +  mat - the matrix
 .  row - the (block) row to set
--  v - a logically two-dimensional array of values
+-  v - a logically two-dimensional (column major) array of values for  block matrices with blocksize larger than one, otherwise a one dimensional array of values
 
    Notes:
    The values, v, are column-oriented for the block version.
 
    All the nonzeros in the row must be provided
 
-   THE MATRIX MUSAT HAVE PREVIOUSLY HAD ITS COLUMN INDICES SET. IT IS RARE THAT THIS ROUTINE IS USED, usually MatSetValues() is used.
+   THE MATRIX MUST HAVE PREVIOUSLY HAD ITS COLUMN INDICES SET. IT IS RARE THAT THIS ROUTINE IS USED, usually MatSetValues() is used.
 
    The row must belong to this process
 
