@@ -92,16 +92,16 @@ PetscErrorCode random_network(int nvertex,int *pnbranch,Node **pnode,Branch **pb
         prob = beta*PetscExpScalar(-dist/(maxdist*alpha));
         ierr = PetscRandomGetValue(rnd,&value);CHKERRQ(ierr);
         if (value <= prob) {
-          ierr = PetscMalloc1(1,&new);CHKERRQ(ierr);
+          ierr = PetscMalloc1(1,&nnew);CHKERRQ(ierr);
           if (head == NULL) {
-            head       = new;
+            head       = nnew;
             head->next = NULL;
             head->n    = nedges;
             head->i    = i;
             head->j    = j;
           } else {
             aux = head;
-            head = new;
+            head = nnew;
             head->n    = nedges;
             head->next = aux;
             head->i    = i;
@@ -122,9 +122,9 @@ PetscErrorCode random_network(int nvertex,int *pnbranch,Node **pnode,Branch **pb
 
   aux = head;
   while (aux != NULL) {
-    new = aux;
+    nnew = aux;
     aux = aux->next;
-    ierr = PetscFree(new);CHKERRQ(ierr);
+    ierr = PetscFree(nnew);CHKERRQ(ierr);
   }
 
   ierr = PetscCalloc2(nvertex,&node,nedges,&branch);CHKERRQ(ierr);
