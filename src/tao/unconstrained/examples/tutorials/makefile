@@ -144,7 +144,7 @@ TESTEXAMPLES_C    = rosenbrock1.PETSc runrosenbrock1_2 rosenbrock1.rm \
                     minsurf2.PETSc runminsurf2 runminsurf2_2 runminsurf2_3 minsurf2.rm \
                     eptorsion1.PETSc runeptorsion1 runeptorsion1_2 runeptorsion1_3 eptorsion1.rm \
                     eptorsion2.PETSc runeptorsion2 runeptorsion2_2 eptorsion2.rm
-TESTEXAMPLES_C_NOTSINGLE   = rosenbrock1.PETSc runrosenbrock1 runrosenbrock1_3 rosenbrock1.rm\
+TESTEXAMPLES_C_NOTSINGLE   = rosenbrock1.PETSc runrosenbrock1 runrosenbrock1_3 rosenbrock1.rm printdot \
                              minsurf1.PETSc runminsurf1 runminsurf1_2 runminsurf1_3 minsurf1.rm minsurf2.PETSc runminsurf2_5 minsurf2.rm
 TESTEXAMPLES_FORTRAN_NOTSINGLE =  rosenbrock1f.PETSc runrosenbrock1f rosenbrock1f.rm
 TESTEXAMPLES_FORTRAN =  eptorsion2f.PETSc runeptorsion2f runeptorsion2f_2 eptorsion2f.rm
