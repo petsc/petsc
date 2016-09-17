@@ -570,7 +570,7 @@ PetscErrorCode KSPPIPEFCGGetNprealloc(KSP ksp,PetscInt *nprealloc)
   Level: intermediate
 
   Options Database:
-. -ksp_pipefcg_truncation_type
+.  -ksp_pipefcg_truncation_type <standard,notay> - which stored search directions to orthogonalize against
 
 .seealso: KSPPIPEFCG, KSPPIPEFCGGetTruncationType, KSPFCDTruncationType
 @*/
@@ -599,7 +599,7 @@ PetscErrorCode KSPPIPEFCGSetTruncationType(KSP ksp,KSPFCDTruncationType truncstr
 .  truncstrat - the strategy type
 
   Options Database:
-. -ksp_pipefcg_truncation_type
+. -ksp_pipefcg_truncation_type <standard,notay> - which stored basis vectors to orthogonalize against
 
    Level: intermediate
 
@@ -644,7 +644,7 @@ static PetscErrorCode KSPSetFromOptions_PIPEFCG(PetscOptionItems *PetscOptionsOb
   Options Database Keys:
 .   -ksp_pipefcg_mmax <N> - The number of previous search directions to store
 .   -ksp_pipefcg_nprealloc <N> - The number of previous search directions to preallocate
-.   -ksp_pipefcg_truncation_type <standard,notay> - Which stored search directions to orthogonalize against
+.   -ksp_pipefcg_truncation_type <standard,notay> - which stored search directions to orthogonalize against
 
   Notes:
    Supports left preconditioning only.

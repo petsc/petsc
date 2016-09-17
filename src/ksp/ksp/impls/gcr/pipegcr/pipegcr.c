@@ -691,7 +691,7 @@ PetscErrorCode KSPPIPEGCRGetNprealloc(KSP ksp,PetscInt *nprealloc)
   Level: intermediate
 
   Options Database:
-. -ksp_pipegcr_truncation_type
+. -ksp_pipegcr_truncation_type <standard,notay> - which stored basis vectors to orthogonalize against
 
 .seealso: KSPPIPEGCR, KSPPIPEGCRSetTruncationType, KSPPIPEGCRTruncationType, KSPFCDTruncationType
 @*/
@@ -723,7 +723,7 @@ PetscErrorCode KSPPIPEGCRSetTruncationType(KSP ksp,KSPFCDTruncationType truncstr
 .  truncstrat - the strategy type
 
   Options Database:
-. -ksp_pipegcr_truncation_type
+. -ksp_pipegcr_truncation_type <standard,notay> - which stored basis vectors to orthogonalize against
 
    Level: intermediate
 
