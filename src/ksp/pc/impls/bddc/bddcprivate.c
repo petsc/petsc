@@ -115,7 +115,8 @@ PetscErrorCode PCBDDCComputeNedelecChangeEdge(Mat lG, IS edge, IS extrow, IS ext
     ierr = MatGetSubMatrix(lG,edge,corners,MAT_INITIAL_MATRIX,&GEc);CHKERRQ(ierr);
     ierr = MatTransposeMatMult(GEc,*GKins,MAT_INITIAL_MATRIX,1.0,&GEd);CHKERRQ(ierr);
     ierr = MatDenseGetArray(GEd,&vals);CHKERRQ(ierr);
-    v    = PetscAbsScalar(vals[0]);
+    /* v    = PetscAbsScalar(vals[0]) */;
+    v    = 1.;
     cvals[0] = vals[0]/v;
     cvals[1] = vals[1]/v;
     ierr = MatDenseRestoreArray(GEd,&vals);CHKERRQ(ierr);
@@ -166,6 +167,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   PetscInt               *extrow,*extrowcum,*marks,*vmarks,*gidxs;
   PetscInt               *sfvleaves,*sfvroots;
   PetscInt               *corners,*cedges;
+  PetscInt               *ecount,**eneighs,*vcount,**vneighs;
 #if defined(PETSC_USE_DEBUG)
   PetscInt               *emarks;
 #endif
@@ -418,21 +420,67 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
     }
   }
 
+  /* count neighs per dof */
+  ierr = PetscCalloc1(ne,&ecount);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ne,&eneighs);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetInfo(el2g,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
+  for (i=1,cum=0;i<n_neigh;i++) {
+    cum += n_shared[i];
+    for (j=0;j<n_shared[i];j++) {
+      ecount[shared[i][j]]++;
+    }
+  }
+  if (ne) {
+    ierr = PetscMalloc1(cum,&eneighs[0]);CHKERRQ(ierr);
+  }
+  for (i=1;i<ne;i++) eneighs[i] = eneighs[i-1] + ecount[i-1];
+  ierr = PetscMemzero(ecount,ne*sizeof(PetscInt));CHKERRQ(ierr);
+  for (i=1;i<n_neigh;i++) {
+    for (j=0;j<n_shared[i];j++) {
+      PetscInt k = shared[i][j];
+      eneighs[k][ecount[k]] = neigh[i];
+      ecount[k]++;
+    }
+  }
+  for (i=0;i<ne;i++) {
+    ierr = PetscSortRemoveDupsInt(&ecount[i],eneighs[i]);CHKERRQ(ierr);
+  }
+  ierr = ISLocalToGlobalMappingRestoreInfo(el2g,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
+  ierr = PetscCalloc1(nv,&vcount);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nv,&vneighs);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetInfo(vl2g,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
+  for (i=1,cum=0;i<n_neigh;i++) {
+    cum += n_shared[i];
+    for (j=0;j<n_shared[i];j++) {
+      vcount[shared[i][j]]++;
+    }
+  }
+  if (nv) {
+    ierr = PetscMalloc1(cum,&vneighs[0]);CHKERRQ(ierr);
+  }
+  for (i=1;i<nv;i++) vneighs[i] = vneighs[i-1] + vcount[i-1];
+  ierr = PetscMemzero(vcount,nv*sizeof(PetscInt));CHKERRQ(ierr);
+  for (i=1;i<n_neigh;i++) {
+    for (j=0;j<n_shared[i];j++) {
+      PetscInt k = shared[i][j];
+      vneighs[k][vcount[k]] = neigh[i];
+      vcount[k]++;
+    }
+  }
+  for (i=0;i<nv;i++) {
+    ierr = PetscSortRemoveDupsInt(&vcount[i],vneighs[i]);CHKERRQ(ierr);
+  }
+  ierr = ISLocalToGlobalMappingRestoreInfo(vl2g,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
+
   /* need to remove coarse faces' dofs to ensure the
      proper detection of coarse edges' endpoints */
-  ierr = PetscCalloc1(ne,&marks);CHKERRQ(ierr);
   ierr = PetscBTCreate(ne,&btee);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetInfo(el2g,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
-  for (i=1;i<n_neigh;i++)
-    for (j=0;j<n_shared[i];j++)
-      marks[shared[i][j]]++;
-  ierr = ISLocalToGlobalMappingRestoreInfo(el2g,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
   for (i=0;i<ne;i++) {
-    if (marks[i] > 1 || (marks[i] == 1 && PetscBTLookup(btb,i))) {
+    if (ecount[i] > 1 || (ecount[i] == 1 && PetscBTLookup(btb,i))) {
       ierr = PetscBTSet(btee,i);CHKERRQ(ierr);
     }
   }
-
+  ierr = PetscMalloc1(ne,&marks);CHKERRQ(ierr);
   if (!conforming) {
     ierr = MatTranspose(lGe,MAT_INITIAL_MATRIX,&lGt);CHKERRQ(ierr);
     ierr = MatGetRowIJ(lGt,0,PETSC_FALSE,PETSC_FALSE,&i,&iit,&jjt,&done);CHKERRQ(ierr);
@@ -493,6 +541,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
     ierr = MatDestroy(&lGt);CHKERRQ(ierr);
   }
   ierr = MatZeroRows(lGe,cum,marks,0.,NULL,NULL);CHKERRQ(ierr);
+
   /* identify splitpoints and corner candidates */
   ierr = MatTranspose(lGe,MAT_INITIAL_MATRIX,&lGt);CHKERRQ(ierr);
   if (print) {
@@ -504,7 +553,8 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   ierr = MatGetRowIJ(lGt,0,PETSC_FALSE,PETSC_FALSE,&i,&ii,&jj,&done);CHKERRQ(ierr);
   ierr = MatSeqAIJGetArray(lGt,&vals);CHKERRQ(ierr);
   for (i=0;i<nv;i++) {
-    PetscInt ord = order, test = ii[i+1]-ii[i];
+    PetscInt  ord = order, test = ii[i+1]-ii[i], vc = vcount[i];
+    PetscBool sneighs = PETSC_TRUE;
     if (!order) { /* variable order */
       PetscReal vorder = 0.;
 
@@ -516,8 +566,21 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
 #if defined(PETSC_USE_DEBUG)
     if (test%ord) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected number of edge dofs %d connected with nodal dof %d with order %d",test,i,ord);
 #endif
-    if (test >= 3*ord) { /* splitpoints */
-      if (print) PetscPrintf(PETSC_COMM_SELF,"SPLITPOINT %d\n",i);
+    for (j=ii[i];j<ii[i+1] && sneighs;j++) {
+      if (vc != ecount[jj[j]]) {
+        sneighs = PETSC_FALSE;
+      } else {
+        PetscInt k,*vn = vneighs[i], *en = eneighs[jj[j]];
+        for (k=0;k<vc;k++) {
+          if (vn[k] != en[k]) {
+            sneighs = PETSC_FALSE;
+            break;
+          }
+        }
+      }
+    }
+    if (!sneighs || test >= 3*ord) { /* splitpoints */
+      if (print) PetscPrintf(PETSC_COMM_SELF,"SPLITPOINT %d (%d %d)\n",i,!sneighs,test >= 3*ord);
       ierr = PetscBTSet(btv,i);CHKERRQ(ierr);
     } else if (test == ord) {
       if (order == 1 || (!order && ii[i+1]-ii[i] == 1)) {
@@ -529,6 +592,16 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
       }
     }
   }
+  ierr = PetscFree(ecount);CHKERRQ(ierr);
+  ierr = PetscFree(vcount);CHKERRQ(ierr);
+  if (ne) {
+    ierr = PetscFree(eneighs[0]);CHKERRQ(ierr);
+  }
+  if (nv) {
+    ierr = PetscFree(vneighs[0]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(eneighs);CHKERRQ(ierr);
+  ierr = PetscFree(vneighs);CHKERRQ(ierr);
 
   /* a candidate is valid if it is connected to another candidate via a non-primal edge dof */
   if (order != 1) {
@@ -4288,14 +4361,25 @@ PetscErrorCode PCBDDCComputeLocalMatrix(PC pc, Mat ChangeOfBasisMatrix)
       ierr = VecRestoreArrayRead(matis->y,&y);CHKERRQ(ierr);
       ierr = VecRestoreArrayRead(matis->counter,&v);CHKERRQ(ierr);
       ierr = MPIU_Allreduce(&lerror,&error,1,MPIU_REAL,MPI_MAX,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Error global vs local change on I: %1.6e\n",error);CHKERRQ(ierr);
+      if (error > PETSC_SMALL) {
+        if (!pcbddc->user_ChangeOfBasisMatrix || pcbddc->current_level) {
+          SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"Error global vs local change on I: %1.6e\n",error);
+        } else {
+          SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"Error global vs local change on I: %1.6e\n",error);
+        }
+      }
     }
     ierr = VecScatterBegin(matis->rctx,matis->y,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(matis->rctx,matis->y,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecAXPY(x,-1.0,x_change);CHKERRQ(ierr);
     ierr = VecNorm(x,NORM_INFINITY,&error);CHKERRQ(ierr);
-    ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Error global vs local change on N: %1.6e\n",error);CHKERRQ(ierr);
+    if (error > PETSC_SMALL) {
+      if (!pcbddc->user_ChangeOfBasisMatrix || pcbddc->current_level) {
+        SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"Error global vs local change on N: %1.6e\n",error);
+      } else {
+        SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"Error global vs local change on N: %1.6e\n",error);
+      }
+    }
     ierr = VecDestroy(&x);CHKERRQ(ierr);
     ierr = VecDestroy(&x_change);CHKERRQ(ierr);
   }
@@ -5990,8 +6074,9 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
         ierr = MatMult(pcbddc->ChangeOfBasisMatrix,pcis->vec1_global,x_change);CHKERRQ(ierr);
         ierr = VecAXPY(x,-1.0,x_change);CHKERRQ(ierr);
         ierr = VecNorm(x,NORM_INFINITY,&error);CHKERRQ(ierr);
-        ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Error global vs local change: %1.6e\n",error);CHKERRQ(ierr);
+        if (error > PETSC_SMALL) {
+          SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"Error global vs local change on N: %1.6e\n",error);
+        }
         ierr = VecDestroy(&x);CHKERRQ(ierr);
         ierr = VecDestroy(&x_change);CHKERRQ(ierr);
       }
