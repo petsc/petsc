@@ -1,11 +1,6 @@
-static char help[] = "3D, tri-linear quadrilateral (Q1), displacement finite element formulation\n\
+static char help[] = "3D, tri-quadradic (Q2), displacement finite element formulation\n\
 of linear elasticity.  E=1.0, nu=1/3.\n\
-Unit cube domain with Dirichlet boundary condition at x=0 for run_type==0 and entire boundary for run_type==1\n\
-run_type==0: Traction load of [1, -z, y] at x=1.\n\
-run_type==1: Load of (x^4-x^2)*(y^4-y^2)*(z^4-z^2) on (0,1]^3 domain\n\
-  -cells <n1,n2,n3> : number of cells in each dimension\n               \
-  -alpha <v>        : scaling of material coeficient in embedded sphere (run_type==0)\n\
-  -lx <v>           : Domain length in x (-.5-.5)^2 in y & z (run_type==0)\n\n";
+Unit cube domain with Dirichlet boundary condition.\n\n";
 
 #include <petscdmplex.h>
 #include <petscsnes.h>
@@ -230,9 +225,9 @@ int main(int argc,char **args)
   MPI_Comm       comm;
   PetscMPIInt    npe,rank;
   PetscLogStage  stage[7];
-  PetscBool      test_nonzero_cols=PETSC_FALSE,use_nearnullspace=PETSC_TRUE;
+  PetscBool      test_nonzero_cols=PETSC_FALSE,use_nearnullspace=PETSC_TRUE,new_test=PETSC_TRUE;
   Vec            xx,bb;
-  PetscInt       iter,i,N,dim=3,cells[3]={1,1,1},max_conv_its,local_sizes[7],run_type=1;
+  PetscInt       iter,i,N,dim=3,cells[3]={1,1,1},max_conv_its,local_sizes[7];
   DM             dm,distdm,newdm;
   PetscBool      flg;
   char           convType[256];
@@ -266,7 +261,7 @@ int main(int argc,char **args)
     ierr = PetscOptionsReal("-alpha","material coefficient inside circle","",s_soft_alpha,&s_soft_alpha,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-test_nonzero_cols","nonzero test","",test_nonzero_cols,&test_nonzero_cols,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-use_mat_nearnullspace","MatNearNullSpace API test","",use_nearnullspace,&use_nearnullspace,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-run_type","0: twisting load on cantalever, 1: 3rd order accurate convergence test","",run_type,&run_type,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-new_test","3rd order accurate convergence test","",new_test,&new_test,NULL);CHKERRQ(ierr);
     i = 3;
     ierr = PetscOptionsInt("-mat_block_size","","",i,&i,&flg);CHKERRQ(ierr);
     if (!flg || i!=3) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_USER, "'-mat_block_size 3' must be set (%D) and = 3 (%D)",flg,flg? i : 3);
@@ -288,7 +283,7 @@ int main(int argc,char **args)
       ierr = DMCreateLabel(dm, "boundary");CHKERRQ(ierr);
       ierr = DMGetLabel(dm, "boundary", &label);CHKERRQ(ierr);
       ierr = DMPlexMarkBoundaryFaces(dm, label);CHKERRQ(ierr);
-      if (run_type==0) {
+      if (!new_test) {
         ierr = DMGetStratumIS(dm, "boundary", 1,  &is);CHKERRQ(ierr);
         ierr = DMCreateLabel(dm,"Faces");CHKERRQ(ierr);
         if (is) {
@@ -335,7 +330,7 @@ int main(int argc,char **args)
       PetscInt nCoords;
       PetscScalar *coords,bounds[] = {0,Lx,-.5,.5,-.5,.5,}; /* x_min,x_max,y_min,y_max */
       Vec coordinates;
-      if (run_type==1) {
+      if (new_test) {
         for (i = 0; i < 2*dim; i++) bounds[i] = (i%2) ? 1 : 0;
       }
       ierr = DMGetCoordinatesLocal(dm,&coordinates);CHKERRQ(ierr);
@@ -405,7 +400,7 @@ int main(int argc,char **args)
       ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
       ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
       /* setup problem */
-      if (run_type==1) {
+      if (new_test) {
         ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu_3d);CHKERRQ(ierr);
         ierr = PetscDSSetResidual(prob, 0, f0_u_x4, f1_u_3d);CHKERRQ(ierr);
       } else {
@@ -414,7 +409,7 @@ int main(int argc,char **args)
         ierr = PetscDSSetBdResidual(prob, 0, f0_bd_u_3d, f1_bd_u);CHKERRQ(ierr);
       }
       /* bcs */
-      if (run_type==1) {
+      if (new_test) {
         PetscInt id = 1;
         ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "boundary", 0, 0, NULL, (void (*)()) zero, 1, &id, NULL);CHKERRQ(ierr);
       } else {
@@ -502,20 +497,20 @@ int main(int argc,char **args)
     ierr = VecDestroy(&bb);CHKERRQ(ierr);
     ierr = MatDestroy(&Amat);CHKERRQ(ierr);
   }
-  if (run_type==1) {
-    err[0] = 59.97521 - mdisp[0]; /* error with what I think is the exact solution */
+  if (new_test) {
+    err[0] = 59.9753 - mdisp[0]; /* error with what I think is the exact solution */
   } else {
     err[0] = 171.038 - mdisp[0];
   }
   for (iter=1 ; iter<max_conv_its ; iter++) {
-    if (run_type==1) {
-      err[iter] = 59.97521 - mdisp[iter];
+    if (new_test) {
+      err[iter] = 59.9753 - mdisp[0];
     } else {
-      err[iter] = 171.038 - mdisp[iter];
+      err[iter] = 171.038 - mdisp[0];
     }
-    PetscPrintf(PETSC_COMM_WORLD,"[%d]%s %D) N=%12D, max displ=%6.5e, disp diff=%9.2e, error=%4.3e, rate=%3.2g\n",
-                rank,__FUNCT__,iter,local_sizes[iter],mdisp[iter],
-                mdisp[iter]-mdisp[iter-1],err[iter],log(err[iter-1]/err[iter])/log(2.));
+    PetscPrintf(PETSC_COMM_WORLD,"[%d]%s %d) N=%D/%D, max displacement = %24.13g, disp diff = %24.13g, rate = %g\n",
+                rank,__FUNCT__,iter,local_sizes[iter],local_sizes[iter-1],mdisp[iter],
+                mdisp[iter]-mdisp[iter-1],log(err[iter-1]/err[iter])/log(2.));
   }
 
   ierr = PetscFinalize();
