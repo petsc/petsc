@@ -137,7 +137,7 @@ PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level,
   for (i=0;i<graph->ncc;i++) {
     PetscInt node_num=graph->queue[graph->cptr[i]];
     PetscBool printcc = PETSC_FALSE;
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  %d (neighs:",i);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  cc %d (size %d, fid %d, neighs:",i,graph->cptr[i+1]-graph->cptr[i],graph->which_dof[node_num]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
     for (j=0;j<graph->count[node_num];j++) {
       ierr = PetscViewerASCIISynchronizedPrintf(viewer," %d",graph->neighbours_set[node_num][j]);CHKERRQ(ierr);
