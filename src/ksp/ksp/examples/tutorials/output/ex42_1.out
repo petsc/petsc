@@ -1,7 +1,11 @@
-  0 KSP Residual norm 0.288565 
-  1 KSP Residual norm 0.0689491 
-  2 KSP Residual norm 0.0071172 
-  3 KSP Residual norm 0.000355411 
-  4 KSP Residual norm 3.13889e-05 
-  5 KSP Residual norm 3.87253e-06 
-  6 KSP Residual norm 4.19164e-07 
+  Residual norms for stokes_ solve.
+  0 KSP Residual norm 0.22197 
+  1 KSP Residual norm 0.21605 
+  2 KSP Residual norm 0.0293134 
+  3 KSP Residual norm 0.00350483 
+  4 KSP Residual norm 0.000562632 
+  5 KSP Residual norm 9.0992e-05 
+  6 KSP Residual norm 1.73119e-05 
+  7 KSP Residual norm 2.92073e-06 
+  8 KSP Residual norm 4.15421e-07 
+Linear stokes_ solve converged due to CONVERGED_RTOL iterations 8

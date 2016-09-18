@@ -1885,7 +1885,7 @@ PetscErrorCode  PCFieldSplitGetSubKSP(PC pc,PetscInt *n,KSP *subksp[])
 #undef __FUNCT__
 #define __FUNCT__ "PCFieldSplitSetSchurPre"
 /*@
-    PCFieldSplitSetSchurPre -  Indicates if the Schur complement is preconditioned by a preconditioner constructed by the
+    PCFieldSplitSetSchurPre -  Indicates what operator is used to construct the preconditioner for the Schur complement.
       A11 matrix. Otherwise no preconditioner is used.
 
     Collective on PC
@@ -1902,7 +1902,7 @@ PetscErrorCode  PCFieldSplitGetSubKSP(PC pc,PetscInt *n,KSP *subksp[])
     Notes:
 $    If ptype is
 $        a11 then the preconditioner for the Schur complement is generated from the block diagonal part of the preconditioner
-$             matrix associated with the Schur complement (i.e. A11), not he Schur complement matrix
+$             matrix associated with the Schur complement (i.e. A11), not the Schur complement matrix
 $        self the preconditioner for the Schur complement is generated from the symbolic representation of the Schur complement matrix:
 $             The only preconditioner that currently works with this symbolic respresentation matrix object is the PCLSC
 $             preconditioner

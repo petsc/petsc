@@ -537,21 +537,10 @@ PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat M, Mat *S)
 #endif
     ierr = MatDestroy(&Ainv);CHKERRQ(ierr);
   }
-
-  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
-  ierr = MatView(*S, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
   if (D) {
-    MatInfo   info;
-    PetscReal norm;
-
-    ierr = MatGetInfo(D, MAT_GLOBAL_SUM, &info);CHKERRQ(ierr);
-    if (info.nz_used) {
-      ierr = MatNorm(D, NORM_INFINITY, &norm);CHKERRQ(ierr);
-      if (norm > PETSC_MACHINE_EPSILON) SETERRQ(PetscObjectComm((PetscObject) M), PETSC_ERR_SUP, "Not yet implemented for Schur complements with non-vanishing D");
-    }
-  }
+    ierr = MatAXPY(*S, -1.0, D, DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+   }
+  ierr = MatScale(*S,-1.0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
