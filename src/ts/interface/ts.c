@@ -1785,6 +1785,145 @@ PetscErrorCode  TS2GetSolution(TS ts,Vec *u,Vec *v)
 }
 
 /*@C
+ TSSetRHSFunctionSplit2w - Set the split right-hand-side functions which are based on two-way component partitioning.
+
+ Logically Collective on TS
+
+ Input Parameters:
+ +  ts  - the TS context obtained from TSCreate()
+ .  r   - vector to hold the residual (or NULL to have it created internally)
+ .  fun1 - the first function evaluation routine corresponding
+ .  fun2 - the second function evaluation routine corresponding
+ -  ctx - user-defined context for private data for the function evaluation routine (may be NULL)
+
+ Calling sequence of fun:
+ $  fun(TS ts,PetscReal t,Vec u,Vec f,ctx);
+
+ +  t    - time at step/stage being solved
+ .  u    - state vector
+ .  f    - function vector
+ -  ctx  - [optional] user-defined context for matrix evaluation routine (may be NULL)
+
+ Level: beginner
+
+ .keywords: TS, timestep, set, ODE, Hamiltonian, Function
+
+ .seealso: TSGetRHSFunctionSplit2w()
+ @*/
+PetscErrorCode TSSetRHSFunctionSplit2w(TS ts,Vec r,TSRHSFunctionSplit2w fun1,TSRHSFunctionSplit2w fun2,void *ctx)
+{
+  DM             dm;
+  SNES           snes;
+  Vec            ralloc = NULL;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (r) PetscValidHeaderSpecific(r,VEC_CLASSID,2);
+
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr = DMTSSetRHSFunctionSplit2w(dm,fun1,fun2,ctx);CHKERRQ(ierr);
+
+  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  if (!r && !ts->dm && ts->vec_sol) {
+    ierr = VecDuplicate(ts->vec_sol,&ralloc);CHKERRQ(ierr);
+    r = ralloc;
+  }
+  ierr = SNESSetFunction(snes,r,SNESTSFormFunction,ts);CHKERRQ(ierr);
+  ierr = VecDestroy(&ralloc);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+ TSGetRHSFunctionSplit2w - Returns the vector where the RHS residual is stored and the functions to compute it.
+
+ Not Collective
+
+ Input Parameter:
+ . ts - the TS context
+
+ Output Parameter:
+ + r - vector to hold residual (or NULL)
+ . fun1 - the function to compute part of the residual (or NULL)
+ . fun2 - the function to compute part of the residual (or NULL)
+ - ctx - the function context (or NULL)
+
+ Level: advanced
+
+ .keywords: TS, nonlinear, get, function
+
+ .seealso: TSSetRHSFunctionSplit2w(), SNESGetFunction()
+ @*/
+PetscErrorCode TSGetRHSFunctionSplit2w(TS ts,Vec *r,TSRHSFunctionSplit2w *fun1,TSRHSFunctionSplit2w *fun2,void **ctx)
+{
+  PetscErrorCode ierr;
+  SNES           snes;
+  DM             dm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  ierr = SNESGetFunction(snes,r,NULL,NULL);CHKERRQ(ierr);
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr = DMTSGetRHSFunctionSplit2w(dm,fun1,fun2,ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+ TSComputeRHSFunctionSplit2w - Evaluates the right-hand-side function.
+
+ Collective on TS and Vec
+
+ Input Parameters:
+ +  ts - the TS context
+ .  t - current time
+ -  U - state vector
+
+ Output Parameter:
+ .  y - right hand side
+
+ Note:
+ Most users should not need to explicitly call this routine, as it
+ is used internally within the nonlinear solvers.
+
+ Level: developer
+
+ .keywords: TS, compute
+
+ .seealso: TSSetRHSFunctionSplit2w()
+ @*/
+PetscErrorCode TSComputeRHSFunctionSplit2w(TS ts,PetscReal t,Vec U,Vec y,PetscInt component)
+{
+  PetscErrorCode       ierr;
+  TSRHSFunctionSplit2w rhsfunction1,rhsfunction2;
+  void                 *ctx;
+  DM                   dm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(U,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(y,VEC_CLASSID,4);
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+
+  ierr = DMTSGetRHSFunctionSplit2w(dm,&rhsfunction1,&rhsfunction2,&ctx);CHKERRQ(ierr);
+
+  if (!rhsfunction1 || !rhsfunction2) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must call TSSetRHSFunctionSplit2w()");
+
+  ierr = PetscLogEventBegin(TS_FunctionEval,ts,U,y,0);CHKERRQ(ierr);
+
+  PetscStackPush("TS user right-hand-side function");
+  if (component==1) {
+    ierr = (*rhsfunction1)(ts,t,U,y,ctx);CHKERRQ(ierr);
+  } else if (component==2) {
+    ierr = (*rhsfunction2)(ts,t,U,y,ctx);CHKERRQ(ierr);
+  }
+  PetscStackPop;
+
+  ierr = PetscLogEventEnd(TS_FunctionEval,ts,U,y,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
   TSLoad - Loads a KSP that has been stored in binary  with KSPView().
 
   Collective on PetscViewer

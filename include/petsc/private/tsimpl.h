@@ -272,6 +272,10 @@ struct _DMTSOps {
   TSI2Function i2function;
   TSI2Jacobian i2jacobian;
 
+  /* needed by symplectic integrators to solve separable Hamiltonian systems */
+  TSRHSFunctionSplit2w rhsfunction1;
+  TSRHSFunctionSplit2w rhsfunction2;
+
   TSSolutionFunction solution;
   TSForcingFunction  forcing;
 

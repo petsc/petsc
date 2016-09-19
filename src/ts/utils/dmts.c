@@ -870,3 +870,72 @@ PetscErrorCode DMTSSetIJacobianSerialize(DM dm,PetscErrorCode (*view)(void*,Pets
   tsdm->ops->ijacobianload = load;
   PetscFunctionReturn(0);
 }
+
+/*@C
+   DMTSSetRHSFunctionSplit2w - set TS explicit residual evaluation functions based on two-way component partitioning
+
+   Not Collective
+
+   Input Arguments:
++  dm - DM to be used with TS
+.  fun1 - RHS function evaluation function, see TSSetRHSFunctionSplit2w() for calling sequence
+.  fun2 - RHS function evaluation function, see TSSetRHSFunctionSplit2w() for calling sequence
+-  ctx - context for residual evaluation
+
+   Level: advanced
+
+   Note:
+   TSSetRSHFunctionSplit2w() is normally used, but it calls this function internally because the user context is actually
+   associated with the DM.  This makes the interface consistent regardless of whether the user interacts with a DM or
+   not. If DM took a more central role at some later date, this could become the primary method of setting the residual.
+
+.seealso: DMTSSetContext(), TSSetFunctioniSplit2w(), DMTSSetJacobianSplit2w()
+@*/
+PetscErrorCode DMTSSetRHSFunctionSplit2w(DM dm,TSRHSFunctionSplit2w fun1,TSRHSFunctionSplit2w fun2,void *ctx)
+{
+  PetscErrorCode ierr;
+  DMTS           tsdm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMTSWrite(dm,&tsdm);CHKERRQ(ierr);
+  if (fun1) tsdm->ops->rhsfunction1 = fun1;
+  if (fun2) tsdm->ops->rhsfunction2 = fun2;
+  if (ctx)  tsdm->rhsfunctionctx = ctx;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   DMTSGetRHSFunctionSplit2w - get TS explicit residual evaluation functions based on two-way partitioning
+
+   Not Collective
+
+   Input Argument:
+.  dm - DM to be used with TS
+
+   Output Arguments:
++  fun1 - residual evaluation function, see TSSetRHSFunctionSplit2w() for calling sequence
+.  fun2 - residual evaluation function, see TSSetRHSFunctionSplit2w() for calling sequence
+-  ctx - context for residual evaluation
+
+   Level: advanced
+
+   Note:
+   TSGetFunctionSplit2w() is normally used, but it calls this function internally because the user context is actually
+   associated with the DM.
+
+.seealso: DMTSSetContext(), DMTSSetFunctionSplit2w(), TSSetFunctionSplit2w()
+@*/
+PetscErrorCode DMTSGetRHSFunctionSplit2w(DM dm,TSRHSFunction *fun1,TSRHSFunction *fun2,void **ctx)
+{
+  PetscErrorCode ierr;
+  DMTS           tsdm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMTS(dm,&tsdm);CHKERRQ(ierr);
+  if (fun1) *fun1 = tsdm->ops->rhsfunction1;
+  if (fun2) *fun2 = tsdm->ops->rhsfunction2;
+  if (ctx)  *ctx = tsdm->rhsfunctionctx;
+  PetscFunctionReturn(0);
+}

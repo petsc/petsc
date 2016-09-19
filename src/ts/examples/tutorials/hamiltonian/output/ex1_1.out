@@ -1,0 +1,23 @@
+Energy = 8.192000e+01 at time  0.000000
+Energy = 8.192000e+01 at time  0.010000
+Energy = 8.192000e+01 at time  0.020000
+Energy = 8.192000e+01 at time  0.030000
+Energy = 8.192000e+01 at time  0.040000
+Energy = 8.192000e+01 at time  0.050000
+Energy = 8.192000e+01 at time  0.060000
+Energy = 8.192000e+01 at time  0.070000
+Energy = 8.192000e+01 at time  0.080000
+Energy = 8.192000e+01 at time  0.090000
+Energy = 8.192000e+01 at time  0.100000
+Vec Object: 1 MPI processes
+  type: nest
+  VecNest, rows=2,  structure: 
+  (0) : type=seq, rows=1 
+    Vec Object: 1 MPI processes
+      type: seq
+    -1.49198
+  (1) : type=seq, rows=1 
+    Vec Object: 1 MPI processes
+      type: seq
+    0.198562
+The exact solution is [-1.491830 0.198637]

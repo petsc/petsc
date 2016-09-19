@@ -27,6 +27,7 @@ J*/
 typedef const char* TSType;
 #define TSEULER           "euler"
 #define TSBEULER          "beuler"
+#define TSSIEULER         "sieuler"
 #define TSPSEUDO          "pseudo"
 #define TSCN              "cn"
 #define TSSUNDIALS        "sundials"
@@ -422,6 +423,10 @@ PETSC_EXTERN PetscErrorCode TSGetI2Function(TS,Vec*,TSI2Function*,void**);
 PETSC_EXTERN PetscErrorCode TSSetI2Jacobian(TS,Mat,Mat,TSI2Jacobian,void*);
 PETSC_EXTERN PetscErrorCode TSGetI2Jacobian(TS,Mat*,Mat*,TSI2Jacobian*,void**);
 
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSRHSFunctionSplit2w)(TS,PetscReal,Vec,Vec,void*);
+PETSC_EXTERN PetscErrorCode TSSetRHSFunctionSplit2w(TS,Vec,TSRHSFunctionSplit2w,TSRHSFunctionSplit2w,void*);
+PETSC_EXTERN PetscErrorCode TSGetRHSFunctionSplit2w(TS,Vec*,TSRHSFunctionSplit2w*,TSRHSFunctionSplit2w*,void**);
+
 PETSC_EXTERN PetscErrorCode TSComputeRHSFunctionLinear(TS,PetscReal,Vec,Vec,void*);
 PETSC_EXTERN PetscErrorCode TSComputeRHSJacobianConstant(TS,PetscReal,Vec,Mat,Mat,void*);
 PETSC_EXTERN PetscErrorCode TSComputeIFunctionLinear(TS,PetscReal,Vec,Vec,Vec,void*);
@@ -472,6 +477,7 @@ PETSC_EXTERN PetscErrorCode TSComputeIFunction(TS,PetscReal,Vec,Vec,Vec,PetscBoo
 PETSC_EXTERN PetscErrorCode TSComputeIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,PetscBool);
 PETSC_EXTERN PetscErrorCode TSComputeI2Function(TS,PetscReal,Vec,Vec,Vec,Vec);
 PETSC_EXTERN PetscErrorCode TSComputeI2Jacobian(TS,PetscReal,Vec,Vec,Vec,PetscReal,PetscReal,Mat,Mat);
+PETSC_EXTERN PetscErrorCode TSComputeRHSFunctionSplit2w(TS,PetscReal,Vec,Vec,PetscInt);
 PETSC_EXTERN PetscErrorCode TSComputeLinearStability(TS,PetscReal,PetscReal,PetscReal*,PetscReal*);
 
 PETSC_EXTERN PetscErrorCode TSVISetVariableBounds(TS,Vec,Vec);
@@ -489,6 +495,8 @@ PETSC_EXTERN PetscErrorCode DMTSSetI2Function(DM,TSI2Function,void*);
 PETSC_EXTERN PetscErrorCode DMTSGetI2Function(DM,TSI2Function*,void**);
 PETSC_EXTERN PetscErrorCode DMTSSetI2Jacobian(DM,TSI2Jacobian,void*);
 PETSC_EXTERN PetscErrorCode DMTSGetI2Jacobian(DM,TSI2Jacobian*,void**);
+PETSC_EXTERN PetscErrorCode DMTSSetRHSFunctionSplit2w(DM,TSRHSFunctionSplit2w,TSRHSFunctionSplit2w,void*);
+PETSC_EXTERN PetscErrorCode DMTSGetRHSFunctionSplit2w(DM,TSRHSFunctionSplit2w*,TSRHSFunctionSplit2w*,void**);
 
 PETSC_EXTERN PetscErrorCode DMTSSetSolutionFunction(DM,TSSolutionFunction,void*);
 PETSC_EXTERN PetscErrorCode DMTSGetSolutionFunction(DM,TSSolutionFunction*,void**);
