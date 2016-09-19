@@ -68,6 +68,7 @@ t_FINDEX           = r'\\findex\{'
 t_SINDEX           = r'\\sindex\{'
 t_TRL              = r'\\trl\{'
 t_LSTINLINE        = r'\\lstinline\{'
+t_LSTINLINEMOD     = r'\\lstinline\|'
 t_BVERB            = r'\\begin\{verbatim\}'
 t_EVERB            = r'\\end\{verbatim\}'
 t_BLSTLISTING      = r'\\begin\{lstlisting\}'
@@ -238,6 +239,7 @@ if __name__ == "__main__":
     bracket  = 0
     vbracket = 0
     lstinline_bracket = 0
+    lstinlinemod_bracket = 0
     lstlisting_bracket = 0 
     outputlisting_bracket = 0
     bashlisting_bracket = 0
@@ -269,6 +271,10 @@ if __name__ == "__main__":
                 lstinline_bracket = lstinline_bracket + 1
                 if lstinline_bracket > 1 :
                     raise Exception('Nested \\lstinline detected')
+            elif value in ['\\lstinline|'] and vbracket == 0 and lstlisting_bracket == 0 and outputlisting_bracket==0 and bashlisting_bracket==0 and tikzpicture_bracket==0:
+                lstinlinemod_bracket = lstinlinemod_bracket + 1
+                if lstinlinemod_bracket > 1 :
+                    raise Exception('Nested \\lstinline (mod) detected')
             if bracket == 0 and vbracket == 0 and outputlisting_bracket == 0 and bashlisting_bracket == 0 and tikzpicture_bracket==0:
 		value = token.value
 		if mappedstring.has_key(value):
@@ -280,6 +286,8 @@ if __name__ == "__main__":
                         value = '$\\href{'+'http://www.mcs.anl.gov/petsc/petsc-'+version+'/docs/'+mappedlink[value]+'}{'+mvalue+'}\\findex{'+value+'}$'
                     elif lstinline_bracket > 0 :
                         value = '}\\href{'+'http://www.mcs.anl.gov/petsc/petsc-'+version+'/docs/'+mappedlink[value]+'}{\\lstinline{'+mvalue+'}}\\findex{'+value+'}\\lstinline{' #end and start a new inside href
+                    elif lstinlinemod_bracket > 0 :
+                        value = '|\\href{'+'http://www.mcs.anl.gov/petsc/petsc-'+version+'/docs/'+mappedlink[value]+'}{\\lstinline|'+mvalue+'|}\\findex{'+value+'}\\lstinline|' #end and start a new inside href
                     else :
                         value = '\\href{'+'http://www.mcs.anl.gov/petsc/petsc-'+version+'/docs/'+mappedlink[value]+'}{'+mvalue+'}\\findex{'+value+'}'
             else:
@@ -288,6 +296,10 @@ if __name__ == "__main__":
                 if bracket > 0 or vbracket > 0 or lstlisting_bracket > 0 or outputlisting_bracket > 0 or bashlisting_bracket > 0 or tikzpicture_bracket > 0:
                     raise Exception("Unexpected to have anything nested inside of lstinline")
                 lstinline_bracket = lstinline_bracket-1
+            elif token.value[0] == '|' and lstinlinemod_bracket > 0 :
+                if bracket > 0 or vbracket > 0 or lstlisting_bracket > 0 or outputlisting_bracket > 0 or bashlisting_bracket > 0 or tikzpicture_bracket > 0:
+                    raise Exception("Unexpected to have anything nested inside of lstinline (mod)")
+                lstinlinemod_bracket = lstinlinemod_bracket-1
 	    elif token.value[0] == '}' and bracket and vbracket == 0 and lstlisting_bracket == 0 and outputlisting_bracket==0 and bashlisting_bracket==0 and tikzpicture_bracket == 0:
 		bracket = bracket - 1;
             elif value == '\\end{verbatim}' and vbracket:

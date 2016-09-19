@@ -30,9 +30,14 @@
 \definecolor{somewhatdarkgray}{gray}{0.3}
 
 % General/default listing settings are for C code
-% Note that $ (not used in C) is an escape character,
+
+% Note : $ (not used in C) is an escape character,
 % so using this for languages that include this will give some 
 % strange errors as you escape to LaTeX
+
+% Note : When using \lstinline inside a table,
+% use pipes as delimiters, like \lstinline|VecCopy()|
+% This is hardcoded into mapnameslatex.py
 \lstset{
   language=C,
   basicstyle=\ttfamily,
