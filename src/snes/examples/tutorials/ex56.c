@@ -469,6 +469,7 @@ int main(int argc,char **args)
       ierr = VecSet(bb,1.0);CHKERRQ(ierr);
       ierr = SNESSolve(snes, bb, xx);CHKERRQ(ierr);
       ierr = KSPSetTolerances(ksp,krtol,katol,kdtol,kmit);CHKERRQ(ierr);
+      ierr = VecSet(bb,0.0);CHKERRQ(ierr);
     }
     ierr = PetscLogStagePop();CHKERRQ(ierr);
     /* 1st solve */
