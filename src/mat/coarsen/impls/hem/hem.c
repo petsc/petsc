@@ -821,7 +821,7 @@ static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscCoarsenData **a_
           PetscMPIInt flag,count;
           PetscInt    rbuff[BF_SZ],*pt,*pt2,*pt3,count2,*sbuff,count3;
           MPI_Request *request;
-          
+
           ierr = MPI_Iprobe(MPI_ANY_SOURCE, tag1, comm, &flag, &status);CHKERRQ(ierr);
           if (!flag) break;
           ierr = MPI_Get_count(&status, MPIU_INT, &count);CHKERRQ(ierr);
