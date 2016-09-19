@@ -261,7 +261,7 @@ int main(int argc,char **args)
     ierr = PetscOptionsReal("-alpha","material coefficient inside circle","",s_soft_alpha,&s_soft_alpha,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-test_nonzero_cols","nonzero test","",test_nonzero_cols,&test_nonzero_cols,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-use_mat_nearnullspace","MatNearNullSpace API test","",use_nearnullspace,&use_nearnullspace,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-new_test","3rd order accurate convergence test","",new_test,&new_test,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-run_type","0: twisting load on cantalever, 1: 3rd order accurate convergence test","",run_type,&run_type,NULL);CHKERRQ(ierr);
     i = 3;
     ierr = PetscOptionsInt("-mat_block_size","","",i,&i,&flg);CHKERRQ(ierr);
     if (!flg || i!=3) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_USER, "'-mat_block_size 3' must be set (%D) and = 3 (%D)",flg,flg? i : 3);
@@ -283,7 +283,7 @@ int main(int argc,char **args)
       ierr = DMCreateLabel(dm, "boundary");CHKERRQ(ierr);
       ierr = DMGetLabel(dm, "boundary", &label);CHKERRQ(ierr);
       ierr = DMPlexMarkBoundaryFaces(dm, label);CHKERRQ(ierr);
-      if (!new_test) {
+      if (run_type==0) {
         ierr = DMGetStratumIS(dm, "boundary", 1,  &is);CHKERRQ(ierr);
         ierr = DMCreateLabel(dm,"Faces");CHKERRQ(ierr);
         if (is) {
@@ -330,7 +330,7 @@ int main(int argc,char **args)
       PetscInt nCoords;
       PetscScalar *coords,bounds[] = {0,Lx,-.5,.5,-.5,.5,}; /* x_min,x_max,y_min,y_max */
       Vec coordinates;
-      if (new_test) {
+      if (run_type==1) {
         for (i = 0; i < 2*dim; i++) bounds[i] = (i%2) ? 1 : 0;
       }
       ierr = DMGetCoordinatesLocal(dm,&coordinates);CHKERRQ(ierr);
@@ -400,7 +400,7 @@ int main(int argc,char **args)
       ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
       ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
       /* setup problem */
-      if (new_test) {
+      if (run_type==1) {
         ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu_3d);CHKERRQ(ierr);
         ierr = PetscDSSetResidual(prob, 0, f0_u_x4, f1_u_3d);CHKERRQ(ierr);
       } else {
@@ -409,7 +409,7 @@ int main(int argc,char **args)
         ierr = PetscDSSetBdResidual(prob, 0, f0_bd_u_3d, f1_bd_u);CHKERRQ(ierr);
       }
       /* bcs */
-      if (new_test) {
+      if (run_type==1) {
         PetscInt id = 1;
         ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", "boundary", 0, 0, NULL, (void (*)()) zero, 1, &id, NULL);CHKERRQ(ierr);
       } else {
@@ -469,7 +469,6 @@ int main(int argc,char **args)
       ierr = VecSet(bb,1.0);CHKERRQ(ierr);
       ierr = SNESSolve(snes, bb, xx);CHKERRQ(ierr);
       ierr = KSPSetTolerances(ksp,krtol,katol,kdtol,kmit);CHKERRQ(ierr);
-      ierr = VecSet(bb,0.0);CHKERRQ(ierr);
     }
     ierr = PetscLogStagePop();CHKERRQ(ierr);
     /* 1st solve */

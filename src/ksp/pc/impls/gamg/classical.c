@@ -138,7 +138,7 @@ PetscErrorCode PCGAMGGraph_Classical(PC pc,Mat A,Mat *G)
     gidx = 0;
     /* create the local and global sparsity patterns */
     for (c = 0; c < ncols; c++) {
-      if (PetscRealPart(-rval[c]) > gamg->threshold*PetscRealPart(Amax[r-s]) || rcol[c] == r) {
+      if (PetscRealPart(-rval[c]) > gamg->threshold[0]*PetscRealPart(Amax[r-s]) || rcol[c] == r) {
         if (rcol[c] < f && rcol[c] >= s) {
           lidx++;
         } else {
@@ -163,7 +163,7 @@ PetscErrorCode PCGAMGGraph_Classical(PC pc,Mat A,Mat *G)
     idx = 0;
     for (c = 0; c < ncols; c++) {
       /* classical strength of connection */
-      if (PetscRealPart(-rval[c]) > gamg->threshold*PetscRealPart(Amax[r-s]) || rcol[c] == r) {
+      if (PetscRealPart(-rval[c]) > gamg->threshold[0]*PetscRealPart(Amax[r-s]) || rcol[c] == r) {
         gcol[idx] = rcol[c];
         gval[idx] = rval[c];
         idx++;
@@ -305,7 +305,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, Mat G, PetscCoar
       ierr = MatGetRow(lA,i,&ncols,&rcol,&rval);CHKERRQ(ierr);
       for (j = 0;j < ncols;j++) {
         col = rcol[j];
-        if (lcid[col] >= 0 && (PetscRealPart(rval[j]) > gamg->threshold*Amax_pos[i] || PetscRealPart(-rval[j]) > gamg->threshold*Amax_neg[i])) {
+        if (lcid[col] >= 0 && (PetscRealPart(rval[j]) > gamg->threshold[0]*Amax_pos[i] || PetscRealPart(-rval[j]) > gamg->threshold[0]*Amax_neg[i])) {
           lsparse[i] += 1;
         }
       }
@@ -315,7 +315,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, Mat G, PetscCoar
         ierr = MatGetRow(gA,i,&ncols,&rcol,&rval);CHKERRQ(ierr);
         for (j = 0; j < ncols; j++) {
           col = rcol[j];
-          if (gcid[col] >= 0 && (PetscRealPart(rval[j]) > gamg->threshold*Amax_pos[i] || PetscRealPart(-rval[j]) > gamg->threshold*Amax_neg[i])) {
+          if (gcid[col] >= 0 && (PetscRealPart(rval[j]) > gamg->threshold[0]*Amax_pos[i] || PetscRealPart(-rval[j]) > gamg->threshold[0]*Amax_neg[i])) {
             gsparse[i] += 1;
           }
         }
@@ -351,7 +351,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, Mat G, PetscCoar
       ierr = MatGetRow(lA,i,&ncols,&rcol,&rval);CHKERRQ(ierr);
       for (j = 0; j < ncols; j++) {
         col = rcol[j];
-        if (lcid[col] >= 0 && (PetscRealPart(rval[j]) > gamg->threshold*Amax_pos[i] || PetscRealPart(-rval[j]) > gamg->threshold*Amax_neg[i])) {
+        if (lcid[col] >= 0 && (PetscRealPart(rval[j]) > gamg->threshold[0]*Amax_pos[i] || PetscRealPart(-rval[j]) > gamg->threshold[0]*Amax_neg[i])) {
           if (PetscRealPart(rval[j]) > 0.) {
             g_pos += rval[j];
           } else {
@@ -375,7 +375,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, Mat G, PetscCoar
         ierr = MatGetRow(gA,i,&ncols,&rcol,&rval);CHKERRQ(ierr);
         for (j = 0; j < ncols; j++) {
           col = rcol[j];
-          if (gcid[col] >= 0 && (PetscRealPart(rval[j]) > gamg->threshold*Amax_pos[i] || PetscRealPart(-rval[j]) > gamg->threshold*Amax_neg[i])) {
+          if (gcid[col] >= 0 && (PetscRealPart(rval[j]) > gamg->threshold[0]*Amax_pos[i] || PetscRealPart(-rval[j]) > gamg->threshold[0]*Amax_neg[i])) {
             if (PetscRealPart(rval[j]) > 0.) {
               g_pos += rval[j];
             } else {
@@ -411,7 +411,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, Mat G, PetscCoar
       idx = 0;
       for (j = 0;j < ncols;j++) {
         col = rcol[j];
-        if (lcid[col] >= 0 && (PetscRealPart(rval[j]) > gamg->threshold*Amax_pos[i] || PetscRealPart(-rval[j]) > gamg->threshold*Amax_neg[i])) {
+        if (lcid[col] >= 0 && (PetscRealPart(rval[j]) > gamg->threshold[0]*Amax_pos[i] || PetscRealPart(-rval[j]) > gamg->threshold[0]*Amax_neg[i])) {
           row_f = i + fs;
           row_c = lcid[col];
           /* set the values for on-processor ones */
@@ -433,7 +433,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, Mat G, PetscCoar
         ierr = MatGetRow(gA,i,&ncols,&rcol,&rval);CHKERRQ(ierr);
         for (j = 0; j < ncols; j++) {
           col = rcol[j];
-          if (gcid[col] >= 0 && (PetscRealPart(rval[j]) > gamg->threshold*Amax_pos[i] || PetscRealPart(-rval[j]) > gamg->threshold*Amax_neg[i])) {
+          if (gcid[col] >= 0 && (PetscRealPart(rval[j]) > gamg->threshold[0]*Amax_pos[i] || PetscRealPart(-rval[j]) > gamg->threshold[0]*Amax_neg[i])) {
             row_f = i + fs;
             row_c = gcid[col];
             /* set the values for on-processor ones */
