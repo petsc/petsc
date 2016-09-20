@@ -157,7 +157,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   MPI_Comm               comm;
   IS                     lned,primals,allprimals,nedfieldlocal;
   IS                     *eedges,*extrows,*extcols,*alleedges;
-  PetscBT                btv,bte,btvc,btb,btvcand,btvi,btee,bter;
+  PetscBT                btv,bte,btvc,btb,btbd,btvcand,btvi,btee,bter;
   PetscScalar            *vals,*work;
   PetscReal              *rwork;
   const PetscInt         *idxs,*ii,*jj,*iit,*jjt;
@@ -376,6 +376,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   ierr = PetscBTCreate(nv,&btv);CHKERRQ(ierr);
   ierr = PetscBTCreate(ne,&bte);CHKERRQ(ierr);
   ierr = PetscBTCreate(ne,&btb);CHKERRQ(ierr);
+  ierr = PetscBTCreate(ne,&btbd);CHKERRQ(ierr);
   ierr = PetscBTCreate(nv,&btvcand);CHKERRQ(ierr);
   /* need to import the boundary specification to ensure the
      proper detection of coarse edges' endpoints */
@@ -392,6 +393,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
     for (i=0;i<cum;i++) {
       if (idxs[i] >= 0) {
         ierr = PetscBTSet(btb,idxs[i]);CHKERRQ(ierr);
+        ierr = PetscBTSet(btbd,idxs[i]);CHKERRQ(ierr);
       }
     }
     ierr = ISRestoreIndices(is,&idxs);CHKERRQ(ierr);
@@ -472,11 +474,11 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   }
   ierr = ISLocalToGlobalMappingRestoreInfo(vl2g,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
 
-  /* need to remove coarse faces' dofs to ensure the
-     proper detection of coarse edges' endpoints */
+  /* need to remove coarse faces' dofs and coarse edges' dirichlet dofs
+     for proper detection of coarse edges' endpoints */
   ierr = PetscBTCreate(ne,&btee);CHKERRQ(ierr);
   for (i=0;i<ne;i++) {
-    if (ecount[i] > 1 || (ecount[i] == 1 && PetscBTLookup(btb,i))) {
+    if ((ecount[i] > 1 && !PetscBTLookup(btbd,i)) || (ecount[i] == 1 && PetscBTLookup(btb,i))) {
       ierr = PetscBTSet(btee,i);CHKERRQ(ierr);
     }
   }
@@ -554,7 +556,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   ierr = MatSeqAIJGetArray(lGt,&vals);CHKERRQ(ierr);
   for (i=0;i<nv;i++) {
     PetscInt  ord = order, test = ii[i+1]-ii[i], vc = vcount[i];
-    PetscBool sneighs = PETSC_TRUE;
+    PetscBool sneighs = PETSC_TRUE, bdir = PETSC_FALSE;
     if (!order) { /* variable order */
       PetscReal vorder = 0.;
 
@@ -567,6 +569,10 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
     if (test%ord) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected number of edge dofs %d connected with nodal dof %d with order %d",test,i,ord);
 #endif
     for (j=ii[i];j<ii[i+1] && sneighs;j++) {
+      if (PetscBTLookup(btbd,jj[j])) {
+        bdir = PETSC_TRUE;
+        break;
+      }
       if (vc != ecount[jj[j]]) {
         sneighs = PETSC_FALSE;
       } else {
@@ -579,8 +585,8 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
         }
       }
     }
-    if (!sneighs || test >= 3*ord) { /* splitpoints */
-      if (print) PetscPrintf(PETSC_COMM_SELF,"SPLITPOINT %d (%d %d)\n",i,!sneighs,test >= 3*ord);
+    if (!sneighs || test >= 3*ord || bdir) { /* splitpoints */
+      if (print) PetscPrintf(PETSC_COMM_SELF,"SPLITPOINT %d (%d %d %d)\n",i,!sneighs,test >= 3*ord,bdir);
       ierr = PetscBTSet(btv,i);CHKERRQ(ierr);
     } else if (test == ord) {
       if (order == 1 || (!order && ii[i+1]-ii[i] == 1)) {
@@ -602,6 +608,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   }
   ierr = PetscFree(eneighs);CHKERRQ(ierr);
   ierr = PetscFree(vneighs);CHKERRQ(ierr);
+  ierr = PetscBTDestroy(&btbd);CHKERRQ(ierr);
 
   /* a candidate is valid if it is connected to another candidate via a non-primal edge dof */
   if (order != 1) {
@@ -1093,9 +1100,9 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   ierr = MatRestoreRowIJ(lG,0,PETSC_FALSE,PETSC_FALSE,&i,&ii,&jj,&done);CHKERRQ(ierr);
   ierr = PetscFree2(extrow,gidxs);CHKERRQ(ierr);
   ierr = PetscBTDestroy(&bter);CHKERRQ(ierr);
+  if (print) { ierr = PCBDDCGraphASCIIView(pcbddc->mat_graph,5,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr); }
   /* an error should not occur at this point */
   if (eerr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected SIZE OF EDGE > EXTCOL SECOND PASS");
-  if (print) { ierr = PCBDDCGraphASCIIView(pcbddc->mat_graph,5,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr); }
 
   /* Check the number of endpoints */
   ierr = MatGetRowIJ(lG,0,PETSC_FALSE,PETSC_FALSE,&i,&ii,&jj,&done);CHKERRQ(ierr);
