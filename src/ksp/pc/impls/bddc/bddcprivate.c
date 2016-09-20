@@ -6376,17 +6376,17 @@ PetscErrorCode PCBDDCOrthonormalizeVecs(PetscInt n, Vec vecs[])
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatISGetSubassemblingPattern"
-PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt *n_subdomains, PetscInt redprocs, IS* is_sends, PetscBool *have_void)
+#define __FUNCT__ "PCBDDCMatISGetSubassemblingPattern"
+PetscErrorCode PCBDDCMatISGetSubassemblingPattern(Mat mat, PetscInt *n_subdomains, PetscInt redprocs, IS* is_sends, PetscBool *have_void)
 {
   Mat            A;
   PetscInt       n_neighs,*neighs,*n_shared,**shared;
   PetscMPIInt    size,rank,color;
   PetscInt       *xadj,*adjncy;
   PetscInt       *adjncy_wgt,*v_wgt,*ranks_send_to_idx;
-  PetscInt       im_active,active_procs,n,i,j,local_size,threshold = 2;
+  PetscInt       im_active,active_procs,N,n,i,j,threshold = 2;
   PetscInt       void_procs,*procs_candidates = NULL;
-  PetscInt       xadj_count, *count;
+  PetscInt       xadj_count,*count;
   PetscBool      ismatis,use_vwgt=PETSC_FALSE;
   PetscSubcomm   psubcomm;
   MPI_Comm       subcomm;
@@ -6405,7 +6405,7 @@ PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt *n_subdomains, Pet
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)mat),&rank);CHKERRQ(ierr);
   ierr = MatISGetLocalMat(mat,&A);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&n,NULL);CHKERRQ(ierr);
-  im_active = !!(n);
+  im_active = !!n;
   ierr = MPIU_Allreduce(&im_active,&active_procs,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
   void_procs = size - active_procs;
   /* get ranks of of non-active processes in mat communicator */
@@ -6424,9 +6424,10 @@ PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt *n_subdomains, Pet
     *n_subdomains = PetscMin(void_procs,*n_subdomains);
   }
 
-  /* number of subdomains requested greater than active processes -> just shift the matrix
+  /* number of subdomains requested greater than active processes or matrix size -> just shift the matrix
      number of subdomains requested 1 -> send to master or first candidate in voids  */
-  if (active_procs < *n_subdomains || *n_subdomains == 1) {
+  ierr = MatGetSize(mat,&N,NULL);CHKERRQ(ierr);
+  if (active_procs < *n_subdomains || *n_subdomains == 1 || N <= *n_subdomains) {
     PetscInt issize,isidx,dest;
     if (*n_subdomains == 1) dest = 0;
     else dest = rank;
@@ -6441,7 +6442,7 @@ PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt *n_subdomains, Pet
       issize = 0;
       isidx = -1;
     }
-    *n_subdomains = active_procs;
+    if (*n_subdomains != 1) *n_subdomains = active_procs;
     ierr = ISCreateGeneral(PetscObjectComm((PetscObject)mat),issize,&isidx,PETSC_COPY_VALUES,is_sends);CHKERRQ(ierr);
     ierr = PetscFree(procs_candidates);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -6451,7 +6452,6 @@ PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt *n_subdomains, Pet
   threshold = PetscMax(threshold,2);
 
   /* Get info on mapping */
-  ierr = ISLocalToGlobalMappingGetSize(mat->rmap->mapping,&local_size);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingGetInfo(mat->rmap->mapping,&n_neighs,&neighs,&n_shared,&shared);CHKERRQ(ierr);
 
   /* build local CSR graph of subdomains' connectivity */
@@ -6460,7 +6460,7 @@ PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt *n_subdomains, Pet
   xadj[1] = PetscMax(n_neighs-1,0);
   ierr = PetscMalloc1(xadj[1],&adjncy);CHKERRQ(ierr);
   ierr = PetscMalloc1(xadj[1],&adjncy_wgt);CHKERRQ(ierr);
-  ierr = PetscCalloc1(local_size,&count);CHKERRQ(ierr);
+  ierr = PetscCalloc1(n,&count);CHKERRQ(ierr);
   for (i=1;i<n_neighs;i++)
     for (j=0;j<n_shared[i];j++)
       count[shared[i][j]] += 1;
@@ -6555,7 +6555,7 @@ PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt *n_subdomains, Pet
         PetscInt          nl;
 
         ierr = MatCreateVecs(subdomain_adj,&v,NULL);CHKERRQ(ierr);
-        ierr = VecSetValue(v,row,(PetscScalar)local_size,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = VecSetValue(v,row,(PetscScalar)n,INSERT_VALUES);CHKERRQ(ierr);
         ierr = VecAssemblyBegin(v);CHKERRQ(ierr);
         ierr = VecAssemblyEnd(v);CHKERRQ(ierr);
         ierr = VecGetLocalSize(v,&nl);CHKERRQ(ierr);
@@ -6569,7 +6569,7 @@ PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt *n_subdomains, Pet
       ierr = MatCreateMPIAdj(subcomm,1,(PetscInt)size,xadj,adjncy,adjncy_wgt,&subdomain_adj);CHKERRQ(ierr);
       if (use_vwgt) {
         ierr = PetscMalloc1(1,&v_wgt);CHKERRQ(ierr);
-        v_wgt[0] = local_size;
+        v_wgt[0] = n;
       }
     }
     /* ierr = MatView(subdomain_adj,0);CHKERRQ(ierr); */
@@ -6710,7 +6710,7 @@ PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomain
   /* prepare IS for sending if not provided */
   if (!is_sends) {
     if (!n_subdomains) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"You should specify either an IS or a target number of subdomains");
-    ierr = MatISGetSubassemblingPattern(mat,&n_subdomains,0,&is_sends_internal,NULL);CHKERRQ(ierr);
+    ierr = PCBDDCMatISGetSubassemblingPattern(mat,&n_subdomains,0,&is_sends_internal,NULL);CHKERRQ(ierr);
   } else {
     ierr = PetscObjectReference((PetscObject)is_sends);CHKERRQ(ierr);
     is_sends_internal = is_sends;
@@ -7300,7 +7300,11 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   ncoarse = PetscMax(1,ncoarse);
   if (!pcbddc->coarse_subassembling) {
     if (pcbddc->coarsening_ratio > 1) {
-      ierr = MatISGetSubassemblingPattern(pc->pmat,&ncoarse,pcbddc->coarse_adj_red,&pcbddc->coarse_subassembling,&have_void);CHKERRQ(ierr);
+      if (multilevel_requested) {
+        ierr = PCBDDCMatISGetSubassemblingPattern(pc->pmat,&ncoarse,pcbddc->coarse_adj_red,&pcbddc->coarse_subassembling,&have_void);CHKERRQ(ierr);
+      } else {
+        ierr = PCBDDCMatISGetSubassemblingPattern(t_coarse_mat_is,&ncoarse,pcbddc->coarse_adj_red,&pcbddc->coarse_subassembling,&have_void);CHKERRQ(ierr);
+      }
     } else {
       PetscMPIInt size,rank;
       ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
