@@ -475,7 +475,7 @@ PetscErrorCode DMProjectFieldLocal_Plex(DM dm, Vec localU,
   PetscSection    section, sectionAux = NULL;
   PetscDualSpace *sp;
   PetscFECellGeom cgeom;
-  PetscReal     **B, **D, **BAux = NULL, **DAux = NULL;
+  PetscReal   ****B, ****D, ****BAux, ****DAux;
   PetscScalar    *values, *u, *u_x, *a, *a_x, *refSpaceDer, *refSpaceDerAux;
   PetscReal      *x;
   PetscInt       *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL, *Nb, *Nc, *NbAux = NULL, *NcAux = NULL;
@@ -489,7 +489,6 @@ PetscErrorCode DMProjectFieldLocal_Plex(DM dm, Vec localU,
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &Nf);CHKERRQ(ierr);
-  ierr = PetscMalloc1(Nf, &sp);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
   ierr = PetscDSGetDimensions(prob, &Nb);CHKERRQ(ierr);
@@ -498,7 +497,6 @@ PetscErrorCode DMProjectFieldLocal_Plex(DM dm, Vec localU,
   ierr = PetscDSGetComponentDerivativeOffsets(prob, &uOff_x);CHKERRQ(ierr);
   ierr = PetscDSGetEvaluationArrays(prob, &u, NULL, &u_x);CHKERRQ(ierr);
   ierr = PetscDSGetRefCoordArrays(prob, &x, &refSpaceDer);CHKERRQ(ierr);
-  ierr = PetscDSGetTabulation(prob, &B, &D);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) dm, "dmAux", (PetscObject *) &dmAux);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) dm, "A", (PetscObject *) &A);CHKERRQ(ierr);
   if (dmAux) {
@@ -511,7 +509,69 @@ PetscErrorCode DMProjectFieldLocal_Plex(DM dm, Vec localU,
     ierr = PetscDSGetComponentDerivativeOffsets(probAux, &aOff_x);CHKERRQ(ierr);
     ierr = PetscDSGetEvaluationArrays(probAux, &a, NULL, &a_x);CHKERRQ(ierr);
     ierr = PetscDSGetRefCoordArrays(probAux, NULL, &refSpaceDerAux);CHKERRQ(ierr);
-    ierr = PetscDSGetTabulation(probAux, &BAux, &DAux);CHKERRQ(ierr);
+  }
+  ierr = PetscMalloc1(Nf, &sp);CHKERRQ(ierr);
+  for (f = 0, v = 0; f < Nf; ++f) {
+    PetscObject  obj;
+    PetscClassId id;
+
+    ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
+    ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+    if (id == PETSCFE_CLASSID) {
+      PetscFE fe = (PetscFE) obj;
+
+      ierr = PetscFEGetDualSpace(fe, &sp[f]);CHKERRQ(ierr);
+    } else if (id == PETSCFV_CLASSID) {
+      PetscFV fv = (PetscFV) obj;
+
+      ierr = PetscFVGetDualSpace(fv, &sp[f]);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscMalloc4(Nf, &B, Nf, &D, Nf, &BAux, Nf, &DAux);CHKERRQ(ierr);
+  for (f = 0, v = 0; f < Nf; ++f) {
+    ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
+    ierr = PetscMalloc4(spDim, &B[f], spDim, &D[f], spDim, &BAux[f], spDim, &DAux[f]);CHKERRQ(ierr);
+    for (d = 0; d < spDim; ++d) {
+      PetscQuadrature  quad;
+      const PetscReal *points;
+      PetscInt         numPoints, f2;
+
+      ierr = PetscMalloc4(Nf, &B[f][d], Nf, &D[f][d], NfAux, &BAux[f][d], NfAux, &DAux[f][d]);CHKERRQ(ierr);
+      ierr = PetscDualSpaceGetFunctional(sp[f], d, &quad);CHKERRQ(ierr);
+      ierr = PetscQuadratureGetData(quad, NULL, &numPoints, &points, NULL);CHKERRQ(ierr);
+      for (f2 = 0; f2 < Nf; ++f2) {
+        PetscObject  obj;
+        PetscClassId id;
+
+        ierr = PetscDSGetDiscretization(prob, f2, &obj);CHKERRQ(ierr);
+        ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+        if (id == PETSCFE_CLASSID) {
+          PetscFE fe = (PetscFE) obj;
+
+          ierr = PetscFEGetTabulation(fe, numPoints, points, &B[f][d][f2], &D[f][d][f2], NULL);CHKERRQ(ierr);
+        } else if (id == PETSCFV_CLASSID) {
+          PetscFV fv = (PetscFV) obj;
+
+          ierr = PetscFVGetTabulation(fv, numPoints, points, &B[f][d][f2], &D[f][d][f2], NULL);CHKERRQ(ierr);
+        }
+      }
+      for (f2 = 0; f2 < NfAux; ++f2) {
+        PetscObject  obj;
+        PetscClassId id;
+
+        ierr = PetscDSGetDiscretization(probAux, f2, &obj);CHKERRQ(ierr);
+        ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+        if (id == PETSCFE_CLASSID) {
+          PetscFE fe = (PetscFE) obj;
+
+          ierr = PetscFEGetTabulation(fe, numPoints, points, &BAux[f][d][f2], &DAux[f][d][f2], NULL);CHKERRQ(ierr);
+        } else if (id == PETSCFV_CLASSID) {
+          PetscFV fv = (PetscFV) obj;
+
+          ierr = PetscFVGetTabulation(fv, numPoints, points, &BAux[f][d][f2], &DAux[f][d][f2], NULL);CHKERRQ(ierr);
+        }
+      }
+    }
   }
   ierr = DMPlexInsertBoundaryValues(dm, PETSC_TRUE, localU, 0.0, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, section, localX, cStart, &numValues, NULL);CHKERRQ(ierr);
@@ -526,20 +586,6 @@ PetscErrorCode DMProjectFieldLocal_Plex(DM dm, Vec localU,
     ierr = DMPlexVecGetClosure(dm, section, localU, c, NULL, &coefficients);CHKERRQ(ierr);
     if (dmAux) {ierr = DMPlexVecGetClosure(dmAux, sectionAux, A, c, NULL, &coefficientsAux);CHKERRQ(ierr);}
     for (f = 0, v = 0; f < Nf; ++f) {
-      PetscObject  obj;
-      PetscClassId id;
-
-      ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
-      ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
-      if (id == PETSCFE_CLASSID) {
-        PetscFE fe = (PetscFE) obj;
-
-        ierr = PetscFEGetDualSpace(fe, &sp[f]);CHKERRQ(ierr);
-      } else if (id == PETSCFV_CLASSID) {
-        PetscFV fv = (PetscFV) obj;
-
-        ierr = PetscFVGetDualSpace(fv, &sp[f]);CHKERRQ(ierr);
-      }
       ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
       for (d = 0; d < spDim; ++d) {
         PetscQuadrature  quad;
@@ -551,8 +597,8 @@ PetscErrorCode DMProjectFieldLocal_Plex(DM dm, Vec localU,
           ierr = PetscQuadratureGetData(quad, NULL, &numPoints, &points, &weights);CHKERRQ(ierr);
           for (q = 0; q < numPoints; ++q) {
             CoordinatesRefToReal(dim, dim, cgeom.v0, cgeom.J, &points[q*dim], x);
-            EvaluateFieldJets(dim, Nf, Nb, Nc, q, B, D, refSpaceDer, cgeom.invJ, coefficients, NULL, u, u_x, NULL);
-            if (probAux) EvaluateFieldJets(dim, NfAux, NbAux, NcAux, q, BAux, DAux, refSpaceDerAux, cgeom.invJ, coefficientsAux, NULL, a, a_x, NULL);
+            EvaluateFieldJets(dim, Nf, Nb, Nc, q, B[f][d], D[f][d], refSpaceDer, cgeom.invJ, coefficients, NULL, u, u_x, NULL);
+            if (probAux) EvaluateFieldJets(dim, NfAux, NbAux, NcAux, q, BAux[f][d], DAux[f][d], refSpaceDerAux, cgeom.invJ, coefficientsAux, NULL, a, a_x, NULL);
             (*funcs[f])(dim, Nf, NfAux, uOff, uOff_x, u, NULL, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, x, &values[v]);
           }
         } else {
@@ -566,6 +612,48 @@ PetscErrorCode DMProjectFieldLocal_Plex(DM dm, Vec localU,
     ierr = DMPlexVecSetClosure(dm, section, localX, c, values, mode);CHKERRQ(ierr);
   }
   ierr = DMRestoreWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
+  for (f = 0, v = 0; f < Nf; ++f) {
+    ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
+    for (d = 0; d < spDim; ++d) {
+      PetscInt f2;
+
+      for (f2 = 0; f2 < Nf; ++f2) {
+        PetscObject  obj;
+        PetscClassId id;
+
+        ierr = PetscDSGetDiscretization(prob, f2, &obj);CHKERRQ(ierr);
+        ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+        if (id == PETSCFE_CLASSID) {
+          PetscFE fe = (PetscFE) obj;
+
+          ierr = PetscFERestoreTabulation(fe, 0, NULL, &B[f][d][f2], &D[f][d][f2], NULL);CHKERRQ(ierr);
+        } else if (id == PETSCFV_CLASSID) {
+          PetscFV fv = (PetscFV) obj;
+
+          ierr = PetscFVGetTabulation(fv, 0, NULL, &B[f][d][f2], &D[f][d][f2], NULL);CHKERRQ(ierr);
+        }
+      }
+      for (f2 = 0; f2 < NfAux; ++f2) {
+        PetscObject  obj;
+        PetscClassId id;
+
+        ierr = PetscDSGetDiscretization(probAux, f2, &obj);CHKERRQ(ierr);
+        ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+        if (id == PETSCFE_CLASSID) {
+          PetscFE fe = (PetscFE) obj;
+
+          ierr = PetscFERestoreTabulation(fe, 0, NULL, &BAux[f][d][f2], &DAux[f][d][f2], NULL);CHKERRQ(ierr);
+        } else if (id == PETSCFV_CLASSID) {
+          PetscFV fv = (PetscFV) obj;
+
+          ierr = PetscFVGetTabulation(fv, 0, NULL, &BAux[f][d][f2], &DAux[f][d][f2], NULL);CHKERRQ(ierr);
+        }
+      }
+      ierr = PetscFree4(B[f][d], D[f][d], BAux[f][d], DAux[f][d]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree4(B[f], D[f], BAux[f], DAux[f]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree4(B, D, BAux, DAux);CHKERRQ(ierr);
   ierr = PetscFree(sp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
