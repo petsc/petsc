@@ -99,6 +99,7 @@ static PetscErrorCode PCSetUp_LU(PC pc)
   const MatSolverPackage stype;
 
   PetscFunctionBegin;
+  pc->failedreason = PC_NOERROR;
   if (dir->reusefill && pc->setupcalled) ((PC_Factor*)dir)->info.fill = dir->actualfill;
 
   ierr = MatSetErrorIfFailure(pc->pmat,pc->erroriffailure);CHKERRQ(ierr);
