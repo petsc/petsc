@@ -273,6 +273,20 @@ cdef class DM(Object):
             hierarchy.append(dmc)
         return hierarchy
 
+    def getRefineLevel(self):
+        cdef PetscInt n = 0
+        CHKERR( DMGetRefineLevel(self.dm, &n) )
+        return toInt(n)
+
+    def setRefineLevel(self, level):
+        cdef PetscInt clevel = asInt(level)
+        CHKERR( DMSetRefineLevel(self.dm, clevel) )
+
+    def getCoarsenLevel(self):
+        cdef PetscInt n = 0
+        CHKERR( DMGetCoarsenLevel(self.dm, &n) )
+        return toInt(n)
+
     #
 
     def setDefaultSection(self, Section sec not None):
@@ -413,6 +427,13 @@ cdef class DM(Object):
     createGlobalVector = createGlobalVec
     createLocalVector = createLocalVec
     getMatrix = createMatrix = createMat
+
+    def setKSPComputeOperators(self, operators, args=None, kargs=None):
+        if args  is None: args  = ()
+        if kargs is None: kargs = {}
+        context = (operators, args, kargs)
+        self.set_attr('__operators__', context)
+        CHKERR( DMKSPSetComputeOperators(self.dm, KSP_ComputeOps, <void*>context) )
 
 # --------------------------------------------------------------------
 

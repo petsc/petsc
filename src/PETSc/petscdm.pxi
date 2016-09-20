@@ -64,6 +64,9 @@ cdef extern from * nogil:
     int DMCoarsen(PetscDM,MPI_Comm,PetscDM*)
     int DMRefineHierarchy(PetscDM,PetscInt,PetscDM[])
     int DMCoarsenHierarchy(PetscDM,PetscInt,PetscDM[])
+    int DMGetRefineLevel(PetscDM,PetscInt*)
+    int DMSetRefineLevel(PetscDM,PetscInt)
+    int DMGetCoarsenLevel(PetscDM,PetscInt*)
 
     int DMGlobalToLocalBegin(PetscDM,PetscVec,PetscInsertMode,PetscVec)
     int DMGlobalToLocalEnd(PetscDM,PetscVec,PetscInsertMode,PetscVec)
@@ -106,6 +109,8 @@ cdef extern from * nogil:
 
     int DMShellSetGlobalVector(PetscDM,PetscVec)
     int DMShellSetLocalVector(PetscDM,PetscVec)
+
+    int DMKSPSetComputeOperators(PetscDM,PetscKSPComputeOpsFunction,void*)
 
 # --------------------------------------------------------------------
 
