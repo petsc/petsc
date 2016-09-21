@@ -101,6 +101,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
   MatFactorError         err;
 
   PetscFunctionBegin;
+  pc->failedreason = PC_NOERROR;
   /* ugly hack to change default, since it is not support by some matrix types */
   if (((PC_Factor*)ilu)->info.shifttype == (PetscReal)MAT_SHIFT_NONZERO) {
     ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATSEQAIJ,&flg);CHKERRQ(ierr);

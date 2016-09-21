@@ -65,6 +65,7 @@ static PetscErrorCode PCSetUp_LU(PC pc)
   MatFactorError         err;
 
   PetscFunctionBegin;
+  pc->failedreason = PC_NOERROR;
   if (dir->hdr.reusefill && pc->setupcalled) ((PC_Factor*)dir)->info.fill = dir->hdr.actualfill;
 
   ierr = MatSetErrorIfFailure(pc->pmat,pc->erroriffailure);CHKERRQ(ierr);
