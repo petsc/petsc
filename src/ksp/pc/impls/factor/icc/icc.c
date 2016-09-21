@@ -13,6 +13,7 @@ static PetscErrorCode PCSetUp_ICC(PC pc)
   const MatSolverPackage stype;
 
   PetscFunctionBegin;
+  pc->failedreason = PC_NOERROR;
   ierr = MatGetOrdering(pc->pmat, ((PC_Factor*)icc)->ordering,&perm,&cperm);CHKERRQ(ierr);
 
   ierr = MatSetErrorIfFailure(pc->pmat,pc->erroriffailure);CHKERRQ(ierr);
