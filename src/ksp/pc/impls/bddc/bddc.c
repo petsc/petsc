@@ -1725,9 +1725,9 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   if (computeconstraintsmatrix || new_nearnullspace_provided) {
     /* It also sets the primal space flags */
     ierr = PCBDDCConstraintsSetUp(pc);CHKERRQ(ierr);
-    /* Allocate needed local vectors (which depends on quantities defined during ConstraintsSetUp) */
-    ierr = PCBDDCSetUpLocalWorkVectors(pc);CHKERRQ(ierr);
   }
+  /* Allocate needed local vectors (which depends on quantities defined during ConstraintsSetUp) */
+  ierr = PCBDDCSetUpLocalWorkVectors(pc);CHKERRQ(ierr);
 
   if (pcbddc->use_change_of_basis) {
     PC_IS *pcis = (PC_IS*)(pc->data);

@@ -3243,8 +3243,6 @@ PetscErrorCode PCBDDCSetUpLocalWorkVectors(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!pcbddc->ConstraintMatrix) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"BDDC Constraint matrix has not been created");
-  /* get sizes */
   n_constraints = pcbddc->local_primal_size - pcbddc->benign_n - pcbddc->n_vertices;
   n_R = pcis->n - pcbddc->n_vertices;
   ierr = VecGetType(pcis->vec1_N,&impVecType);CHKERRQ(ierr);
