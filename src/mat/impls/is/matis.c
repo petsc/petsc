@@ -40,7 +40,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_IS(Mat A,MatType type,MatReuse reu
   PetscScalar            *dd,*od,*aa,*data;
   PetscInt               *di,*dj,*oi,*oj;
   PetscInt               *aux,*ii,*jj;
-  PetscInt               dr,dc,oc,str,stc,nnz,i,jd,jo,cum;
+  PetscInt               lc,dr,dc,oc,str,stc,nnz,i,jd,jo,cum;
   PetscErrorCode         ierr;
 
   PetscFunctionBeginUser;
@@ -64,10 +64,16 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_IS(Mat A,MatType type,MatReuse reu
   ierr = ISCreateStride(comm,dr,str,1,&is);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreateIS(is,&rl2g);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
-  ierr = PetscMalloc1(dc+oc,&aux);CHKERRQ(ierr);
-  for (i=0; i<dc; i++) aux[i]    = i+stc;
-  for (i=0; i<oc; i++) aux[i+dc] = aij->garray[i];
-  ierr = ISCreateGeneral(comm,dc+oc,aux,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
+  if (dr) {
+    ierr = PetscMalloc1(dc+oc,&aux);CHKERRQ(ierr);
+    for (i=0; i<dc; i++) aux[i]    = i+stc;
+    for (i=0; i<oc; i++) aux[i+dc] = aij->garray[i];
+    ierr = ISCreateGeneral(comm,dc+oc,aux,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
+    lc   = dc+oc;
+  } else {
+    ierr = ISCreateGeneral(comm,0,NULL,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
+    lc   = 0;
+  }
   ierr = ISLocalToGlobalMappingCreateIS(is,&cl2g);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
 
@@ -96,7 +102,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_IS(Mat A,MatType type,MatReuse reu
   ii   = aux;
   jj   = aux+dr+1;
   aa   = data;
-  ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,dr,dc+oc,ii,jj,aa,&lA);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,dr,lc,ii,jj,aa,&lA);CHKERRQ(ierr);
 
   /* create containers to destroy the data */
   ptrs[0] = aux;
