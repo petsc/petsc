@@ -638,7 +638,7 @@ PetscErrorCode  DMCompositeScatterArray(DM dm,Vec gvec,Vec *lvecs)
          DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(), DMCompositeGetEntries()
 
 @*/
-PetscErrorCode  DMCompositeGather(DM dm,Vec gvec,InsertMode imode,...)
+PetscErrorCode  DMCompositeGather(DM dm,InsertMode imode,Vec gvec,...)
 {
   va_list                Argp;
   PetscErrorCode         ierr;
@@ -654,7 +654,7 @@ PetscErrorCode  DMCompositeGather(DM dm,Vec gvec,InsertMode imode,...)
   }
 
   /* loop over packed objects, handling one at at time */
-  va_start(Argp,imode);
+  va_start(Argp,gvec);
   for (cnt=3,next=com->next; next; cnt++,next=next->next) {
     Vec local;
     local = va_arg(Argp, Vec);
@@ -698,7 +698,7 @@ PetscErrorCode  DMCompositeGather(DM dm,Vec gvec,InsertMode imode,...)
          DMCompositeScatter(), DMCompositeCreate(), DMCompositeGetISLocalToGlobalMappings(), DMCompositeGetAccess(),
          DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(), DMCompositeGetEntries(),
 @*/
-PetscErrorCode  DMCompositeGatherArray(DM dm,Vec gvec,InsertMode imode,Vec *lvecs)
+PetscErrorCode  DMCompositeGatherArray(DM dm,InsertMode imode,Vec gvec,Vec *lvecs)
 {
   PetscErrorCode         ierr;
   struct DMCompositeLink *next;

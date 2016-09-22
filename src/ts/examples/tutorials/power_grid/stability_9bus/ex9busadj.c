@@ -198,7 +198,7 @@ PetscErrorCode SetInitialGuess(Vec X,Userctx *user)
   ierr = VecRestoreArray(Xnet,&xnet);CHKERRQ(ierr);
 
   /* ierr = VecView(Xgen,0);CHKERRQ(ierr); */
-  ierr = DMCompositeGather(user->dmpgrid,X,INSERT_VALUES,Xgen,Xnet);CHKERRQ(ierr);
+  ierr = DMCompositeGather(user->dmpgrid,INSERT_VALUES,X,Xgen,Xnet);CHKERRQ(ierr);
   ierr = DMCompositeRestoreLocalVectors(user->dmpgrid,&Xgen,&Xnet);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -320,7 +320,7 @@ PetscErrorCode ResidualFunction(SNES snes,Vec X, Vec F, Userctx *user)
   ierr = VecRestoreArray(Fgen,&fgen);CHKERRQ(ierr);
   ierr = VecRestoreArray(Fnet,&fnet);CHKERRQ(ierr);
 
-  ierr = DMCompositeGather(user->dmpgrid,F,INSERT_VALUES,Fgen,Fnet);CHKERRQ(ierr);
+  ierr = DMCompositeGather(user->dmpgrid,INSERT_VALUES,F,Fgen,Fnet);CHKERRQ(ierr);
   ierr = DMCompositeRestoreLocalVectors(user->dmpgrid,&Xgen,&Xnet);CHKERRQ(ierr);
   ierr = DMCompositeRestoreLocalVectors(user->dmpgrid,&Fgen,&Fnet);CHKERRQ(ierr);
   PetscFunctionReturn(0);

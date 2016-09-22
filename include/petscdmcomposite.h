@@ -10,8 +10,8 @@ PETSC_EXTERN PetscErrorCode DMCompositeSetCoupling(DM,PetscErrorCode (*)(DM,Mat,
 PETSC_EXTERN PetscErrorCode DMCompositeAddVecScatter(DM,VecScatter);
 PETSC_EXTERN PetscErrorCode DMCompositeScatter(DM,Vec,...);
 PETSC_EXTERN PetscErrorCode DMCompositeScatterArray(DM,Vec,Vec*);
-PETSC_EXTERN PetscErrorCode DMCompositeGather(DM,Vec,InsertMode,...);
-PETSC_EXTERN PetscErrorCode DMCompositeGatherArray(DM,Vec,InsertMode,Vec*);
+PETSC_EXTERN PetscErrorCode DMCompositeGather(DM,InsertMode,Vec,...);
+PETSC_EXTERN PetscErrorCode DMCompositeGatherArray(DM,InsertMode,Vec,Vec*);
 PETSC_EXTERN PetscErrorCode DMCompositeGetNumberDM(DM,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMCompositeGetAccess(DM,Vec,...);
 PETSC_EXTERN PetscErrorCode DMCompositeRestoreAccess(DM,Vec,...);

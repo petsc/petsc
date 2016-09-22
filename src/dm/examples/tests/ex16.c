@@ -85,7 +85,7 @@ int main(int argc,char **argv)
   ierr = VecRestoreArray(redundant1,&redundant1a);CHKERRQ(ierr);
   ierr = VecRestoreArray(redundant2,&redundant2a);CHKERRQ(ierr);
 
-  ierr = DMCompositeGather(packer,global,gather_add ? ADD_VALUES : INSERT_VALUES,redundant1,local1,redundant2,local2);CHKERRQ(ierr);
+  ierr = DMCompositeGather(packer,gather_add ? ADD_VALUES : INSERT_VALUES,global,redundant1,local1,redundant2,local2);CHKERRQ(ierr);
   ierr = VecView(global,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* get the global numbering for each subvector element */
