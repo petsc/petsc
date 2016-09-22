@@ -32,7 +32,9 @@ enum FortranMatOperation {
   FORTRAN_MATOP_COPY = 16,
   FORTRAN_MATOP_SCALE = 17,
   FORTRAN_MATOP_SIZE = 18,
-  FORTRAN_MATOP_SET_RANDOM = 19
+  FORTRAN_MATOP_SET_RANDOM = 19,
+  FORTRAN_MATOP_ASSEMBLY_BEGIN = 20,
+  FORTRAN_MATOP_ASSEMBLY_END = 21
 };
 
 /*
@@ -198,6 +200,20 @@ static PetscErrorCode oursetrandom(Mat mat,PetscRandom ctx)
   return ierr;
 }
 
+static PetscErrorCode ourassemblybegin(Mat mat,MatAssemblyType type)
+{
+  PetscErrorCode ierr = 0;
+  (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,MatAssemblyType*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_ASSEMBLY_BEGIN]))(&mat,&type,&ierr);
+  return ierr;
+}
+
+static PetscErrorCode ourassemblyend(Mat mat,MatAssemblyType type)
+{
+  PetscErrorCode ierr = 0;
+  (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,MatAssemblyType*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_ASSEMBLY_END]))(&mat,&type,&ierr);
+  return ierr;
+}
+
 PETSC_EXTERN void PETSC_STDCALL matshellsetoperation_(Mat *mat,MatOperation *op,PetscErrorCode (PETSC_STDCALL *f)(Mat*,Vec*,Vec*,PetscErrorCode*),PetscErrorCode *ierr)
 {
   MPI_Comm comm;
@@ -281,6 +297,14 @@ PETSC_EXTERN void PETSC_STDCALL matshellsetoperation_(Mat *mat,MatOperation *op,
   case MATOP_SET_RANDOM:
     *ierr = MatShellSetOperation(*mat,*op,(PetscVoidFunction) oursetrandom);
     ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_SET_RANDOM] = (PetscVoidFunction) f;
+    break;
+  case MATOP_ASSEMBLY_BEGIN:
+    *ierr = MatShellSetOperation(*mat,*op,(PetscVoidFunction) ourassemblybegin);
+    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_ASSEMBLY_BEGIN] = (PetscVoidFunction) f;
+    break;
+  case MATOP_ASSEMBLY_END:
+    *ierr = MatShellSetOperation(*mat,*op,(PetscVoidFunction) ourassemblyend);
+    ((PetscObject)*mat)->fortran_func_pointers[FORTRAN_MATOP_ASSEMBLY_END] = (PetscVoidFunction) f;
     break;
   default:
     PetscError(comm,__LINE__,"MatShellSetOperation_Fortran",__FILE__,PETSC_ERR_ARG_WRONG,PETSC_ERROR_INITIAL,"Cannot set that matrix operation");
