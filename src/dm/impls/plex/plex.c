@@ -976,8 +976,12 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
     ierr = MPIU_Allreduce(&bsLocal, &bsMin, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
     if (bsMin != bsMax) {bs = 1;}
     else                {bs = bsMax;}
+    bs   = bs < 0 ? 1 : bs;
     if (isMatIS) {
-      ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)dm), bs < 0 ? 1 : bs, lsize, ltogidx, PETSC_OWN_POINTER, &ltog);CHKERRQ(ierr);
+      PetscInt l;
+      /* Must reduce indices by blocksize */
+      if (bs > 1) for (l = 0; l < lsize; ++l) ltogidx[l] /= bs;
+      ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)dm), bs, lsize, ltogidx, PETSC_OWN_POINTER, &ltog);CHKERRQ(ierr);
     }
     ierr = MatSetLocalToGlobalMapping(*J,ltog,ltog);CHKERRQ(ierr);
     if (isMatIS) {
