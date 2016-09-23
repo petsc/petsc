@@ -28,7 +28,7 @@
       call DMDACreate2d(PETSC_COMM_WORLD,                               &
      &     DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,                       &
      &                DMDA_STENCIL_BOX,                                 &
-     &                -ten,-ten,PETSC_DECIDE,PETSC_DECIDE,two,one,      &
+     &                ten,ten,PETSC_DECIDE,PETSC_DECIDE,two,one,        &
      &                PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
       call DMSetFromOptions(da,ierr)
       call DMSetUp(da,ierr)

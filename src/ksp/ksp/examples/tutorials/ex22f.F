@@ -37,7 +37,7 @@
 
       call  PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
-      i3 = -3
+      i3 = 3
       i1 = 1
       call KSPCreate(MPI_COMM_WORLD,ksp,ierr)
       call DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,              &

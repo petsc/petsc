@@ -211,7 +211,7 @@
       lambda_min  = 0.0
       user%lambda = 6.0
       ione = 1
-      nfour = -4
+      nfour = 4
       call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,      &
      &                        '-par',user%lambda,flg,ierr)
       if (user%lambda .ge. lambda_max .or. user%lambda .le. lambda_min) &

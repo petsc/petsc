@@ -132,7 +132,7 @@
       lambda_min  = 0.0
       solver%lambda = 6.0
       ione = 1
-      nfour = -4
+      nfour = 4
       itwo = 2
       call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
      &                         '-par', solver%lambda,flg,ierr)
@@ -150,8 +150,8 @@
      &      DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, &
      &      DMDA_STENCIL_BOX,nfour,nfour,PETSC_DECIDE,PETSC_DECIDE,       &
      &      ione,ione,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,daphi,ierr)
-      call DMSetFromOptions(da,ierr)
-      call DMSetUp(da,ierr)
+      call DMSetFromOptions(daphi,ierr)
+      call DMSetUp(daphi,ierr)
       call DMDAGetInfo(daphi,PETSC_NULL_INTEGER,solver%mx,solver%my,     &
      &      PETSC_NULL_INTEGER,                                            &
      &      PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                         &

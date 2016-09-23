@@ -76,7 +76,7 @@
 !  Initialize problem parameters
 
       i1 = 1
-      i4 = -4
+      i4 = 4
       lambda_max = 6.81
       lambda_min = 0.0
       lambda     = 6.0

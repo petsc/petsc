@@ -80,7 +80,7 @@ program main
   PetscScalar    shell_shift
   Mat            A
 
-  im11 = -11
+  im11 = 11
   i2   = 2
   zero = 0.0
   one = 1.0
