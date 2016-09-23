@@ -48,6 +48,7 @@
         stop
       endif
       call DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,m,dof,1,PETSC_NULL_INTEGER,ada,ierr);CHKERRQ(ierr)
+      call DMSetUp(ada,ierr);CHKERRQ(ierr)
       call DMGetGlobalVector(ada,g,ierr);CHKERRQ(ierr)
       call DMDAGetCorners(ada,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xl,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr);CHKERRQ(ierr)
       call DMDAVecGetArrayF90(ada,g,x1,ierr);CHKERRQ(ierr)
@@ -62,6 +63,7 @@
       call DMDestroy(ada,ierr);CHKERRQ(ierr)
 
       call DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,m,n,PETSC_DECIDE,PETSC_DECIDE,dof,s,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ada,ierr);CHKERRQ(ierr)
+      call DMSetUp(ada,ierr);CHKERRQ(ierr)
       call DMGetGlobalVector(ada,g,ierr);CHKERRQ(ierr)
       call DMDAGetCorners(ada,xs,ys,PETSC_NULL_INTEGER,xl,yl,PETSC_NULL_INTEGER,ierr);CHKERRQ(ierr)
       call DMDAVecGetArrayF90(ada,g,x2,ierr);CHKERRQ(ierr)
@@ -79,6 +81,7 @@
 
       call DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX, m,n,p,PETSC_DECIDE,PETSC_DECIDE,                     &
      &                PETSC_DECIDE,dof,s,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ada,ierr);CHKERRQ(ierr)
+      call DMSetUp(ada,ierr);CHKERRQ(ierr)
       call DMGetGlobalVector(ada,g,ierr);CHKERRQ(ierr)
       call DMDAGetCorners(ada,xs,ys,zs,xl,yl,zl,ierr);CHKERRQ(ierr)
       call DMDAVecGetArrayF90(ada,g,x3,ierr);CHKERRQ(ierr)
@@ -101,6 +104,7 @@
 !
       dof = 2
       call DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,m,dof,1,PETSC_NULL_INTEGER,ada,ierr);CHKERRQ(ierr)
+      call DMSetUp(ada,ierr);CHKERRQ(ierr)
       call DMGetGlobalVector(ada,g,ierr);CHKERRQ(ierr)
       call DMDAGetCorners(ada,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,xl,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr);CHKERRQ(ierr)
       call DMDAVecGetArrayF90(ada,g,x2,ierr);CHKERRQ(ierr)
@@ -117,6 +121,7 @@
 
       dof = 2
       call DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,m,n,PETSC_DECIDE,PETSC_DECIDE,dof,s,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ada,ierr);CHKERRQ(ierr)
+      call DMSetUp(ada,ierr);CHKERRQ(ierr)
       call DMGetGlobalVector(ada,g,ierr);CHKERRQ(ierr)
       call DMDAGetCorners(ada,xs,ys,PETSC_NULL_INTEGER,xl,yl,PETSC_NULL_INTEGER,ierr);CHKERRQ(ierr)
       call DMDAVecGetArrayF90(ada,g,x3,ierr);CHKERRQ(ierr)
@@ -136,6 +141,7 @@
       dof = 3
       call DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,m,n,p,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,s,                &
      &                PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ada,ierr);CHKERRQ(ierr)
+      call DMSetUp(ada,ierr);CHKERRQ(ierr)
       call DMGetGlobalVector(ada,g,ierr);CHKERRQ(ierr)
       call DMDAGetCorners(ada,xs,ys,zs,xl,yl,zl,ierr);CHKERRQ(ierr)
       call DMDAVecGetArrayF90(ada,g,x4,ierr);CHKERRQ(ierr)
