@@ -44,6 +44,8 @@
       CALL PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       call DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,m,dof,1,             &
      &                PETSC_NULL_INTEGER,ada,ierr)
+      call DMSetFromOptions(ada,ierr)
+      call DMSetUp(ada,ierr)
       call DMGetGlobalVector(ada,g,ierr)
       call DMDAGetCorners(ada,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,       &
      &                  xl,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
@@ -61,7 +63,9 @@
       call DMDACreate2d(PETSC_COMM_WORLD,                                   &
      &      DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,                           &
      &      DMDA_STENCIL_BOX,m,n,PETSC_DECIDE,PETSC_DECIDE,dof,s,                 &
-     &                PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ada,ierr)
+     &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ada,ierr)
+      call DMSetFromOptions(ada,ierr)
+      call DMSetUp(ada,ierr)
       call DMGetGlobalVector(ada,g,ierr)
       call DMDAGetCorners(ada,xs,ys,PETSC_NULL_INTEGER,                       &
      &                  xl,yl,PETSC_NULL_INTEGER,ierr)
@@ -83,7 +87,9 @@
      &     DMDA_STENCIL_BOX, m,n,p,PETSC_DECIDE,PETSC_DECIDE,                     &
      &                PETSC_DECIDE,dof,s,                                  &
      &                PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,               &
-     &                PETSC_NULL_INTEGER,ada,ierr)
+     &                PETSC_NULL_INTEGER,ada,ierr) 
+      call DMSetFromOptions(ada,ierr)
+      call DMSetUp(ada,ierr)
       call DMGetGlobalVector(ada,g,ierr)
       call DMDAGetCorners(ada,xs,ys,zs,                                       &
      &                  xl,yl,zl,ierr)
@@ -109,6 +115,8 @@
       CALL PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       call DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,m,dof,1,             &
      &                PETSC_NULL_INTEGER,ada,ierr)
+      call DMSetFromOptions(ada,ierr)
+      call DMSetUp(ada,ierr)
       call DMGetGlobalVector(ada,g,ierr)
       call DMDAGetCorners(ada,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,       &
      &                  xl,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
@@ -129,6 +137,8 @@
      &     DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,                           &
      &     DMDA_STENCIL_BOX,m,n,PETSC_DECIDE,PETSC_DECIDE,dof,s,                 &
      &                PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ada,ierr)
+      call DMSetFromOptions(ada,ierr)
+      call DMSetUp(ada,ierr)
       call DMGetGlobalVector(ada,g,ierr)
       call DMDAGetCorners(ada,xs,ys,PETSC_NULL_INTEGER,                       &
      &                  xl,yl,PETSC_NULL_INTEGER,ierr)
@@ -153,6 +163,8 @@
      &                PETSC_DECIDE,dof,s,                                  &
      &                PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,               &
      &                PETSC_NULL_INTEGER,ada,ierr)
+      call DMSetFromOptions(ada,ierr)
+      call DMSetUp(ada,ierr)
       call DMGetGlobalVector(ada,g,ierr)
       call DMDAGetCorners(ada,xs,ys,zs,                                       &
      &                  xl,yl,zl,ierr)

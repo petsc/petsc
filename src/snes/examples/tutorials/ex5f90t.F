@@ -218,6 +218,8 @@
      &     DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,                          &
      &     DMDA_STENCIL_BOX,nfour,nfour,PETSC_DECIDE,PETSC_DECIDE,          &
      &     ione,ione,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,user%da,ierr)
+      call DMSetFromOptions(da,ierr)
+      call DMSetUp(da,ierr)
       call DMDAGetInfo(user%da,PETSC_NULL_INTEGER,user%mx,user%my,        &
      &               PETSC_NULL_INTEGER,                                &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &

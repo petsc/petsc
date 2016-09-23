@@ -62,6 +62,8 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       call DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,im11,i2,i2,   &
      &     PETSC_NULL_INTEGER,da,ierr)
+      call DMSetFromOptions(da,ierr)
+      call DMSetUp(da,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !    Extract global vectors from DMDA;

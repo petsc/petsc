@@ -59,6 +59,8 @@ int main(int argc,char **argv)
   } else {
     ierr = DMDACreate1d(PETSC_COMM_WORLD,bx,M,dof,stencil_width,NULL,&da);CHKERRQ(ierr);
   }
+  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(da,&global1);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)global1,"Test_Vec");CHKERRQ(ierr);
@@ -88,6 +90,8 @@ int main(int argc,char **argv)
   } else {
     ierr = DMDACreate1d(PETSC_COMM_WORLD,bx,M,dof,stencil_width,NULL,&da2);CHKERRQ(ierr);
   }
+  ierr = DMSetFromOptions(da2);CHKERRQ(ierr);
+  ierr = DMSetUp(da2);CHKERRQ(ierr);
 
   if (isbinary) {
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"temp",FILE_MODE_READ,&viewer);CHKERRQ(ierr);

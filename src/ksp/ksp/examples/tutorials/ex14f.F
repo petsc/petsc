@@ -137,7 +137,8 @@
       call DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,         &
      &     DMDA_STENCIL_STAR,mx,my,Nx,Ny,one,one,                        &
      &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
-
+     call DMSetFromOptions(da,ierr)
+     call DMSetUp(da,ierr)
 !
 !  Extract global and local vectors from DMDA then duplicate for remaining
 !  vectors that are the same types

@@ -45,6 +45,8 @@
      &    DMDA_STENCIL_STAR,i3,i3,i3,PETSC_DECIDE,PETSC_DECIDE,                        &
      &    PETSC_DECIDE,i1,i1,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                        &
      &                PETSC_NULL_INTEGER,da,ierr)
+      call DMSetFromOptions(da,ierr)
+      call DMSetUp(da,ierr)
       call KSPSetDM(ksp,da,ierr)
       call KSPSetComputeRHS(ksp,ComputeRHS,ctx,ierr)
       call KSPSetComputeOperators(ksp,ComputeMatrix,ctx,ierr)

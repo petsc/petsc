@@ -30,7 +30,8 @@
      &                DMDA_STENCIL_BOX,                                 &
      &                -ten,-ten,PETSC_DECIDE,PETSC_DECIDE,two,one,      &
      &                PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
-
+      call DMSetFromOptions(da,ierr)
+      call DMSetUp(da,ierr)
 
 !       Create solver object and associate it with the unknowns (on the grid)
 

@@ -129,6 +129,8 @@
         <li>-ts_monitor binary now saves the timestep information as a REAL entry consisting of the REAL_FILE_CLASSID followed by the real value. PetscBinaryRead.m and PetscBinaryIO.py can read these in automatically.</li>
       </ul>
       <h4>DM/DA:</h4>
+      <li>Replace calls to DMDACreateXd() with DMDACreateXd(), [DMSetFromOptions()] DMSetUp()</li>
+      <li>DMDACreateXd() no longer can take negative values for dimensons, instead pass positive values and call DMSetFromOptions() immediately after</li>
       <h4>DMPlex:</h4>
       <h4>PetscViewer:</h4>
       <h4>SYS:</h4>

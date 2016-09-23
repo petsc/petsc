@@ -25,6 +25,8 @@
      &    DM_BOUNDARY_NONE, DMDA_STENCIL_STAR,-three,-three,            &
      &    PETSC_DECIDE,PETSC_DECIDE,one,one, PETSC_NULL_INTEGER,        &
      &    PETSC_NULL_INTEGER, dm, ierr)
+       call DMSetFromOptions(dm,ierr)
+       call DMSetUp(dm,ierr)
        call KSPSetDM(ksp,dm,ierr)
        call KSPSetComputeInitialGuess(ksp,ComputeInitialGuess,             &
      &                                PETSC_NULL_OBJECT,ierr)

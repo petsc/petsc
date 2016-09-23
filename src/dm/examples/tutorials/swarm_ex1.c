@@ -209,6 +209,8 @@ PetscErrorCode ex1_3(void)
   
   overlap = 2;
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,13,13,PETSC_DECIDE,PETSC_DECIDE,1,overlap,NULL,NULL,&dmcell);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(dmcell);CHKERRQ(ierr);
+  ierr = DMSetUp(dmcell);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(dmcell,-1.0,1.0,-1.0,1.0,-1.0,1.0);CHKERRQ(ierr);
   
   ierr = DMDAGetCorners(dmcell,&is,&js,NULL,&ni,&nj,NULL);CHKERRQ(ierr);
@@ -388,6 +390,8 @@ PetscErrorCode ex1_4(void)
   dx = 2.0/ (PetscReal)(nn-1);
   overlap = 0;
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nn,nn,PETSC_DECIDE,PETSC_DECIDE,1,overlap,NULL,NULL,&dmcell);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(dmcell);CHKERRQ(ierr);
+  ierr = DMSetUp(dmcell);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(dmcell,-1.0,1.0,-1.0,1.0,-1.0,1.0);CHKERRQ(ierr);
   
   ierr = DMDAGetCorners(dmcell,&is,&js,NULL,&ni,&nj,NULL);CHKERRQ(ierr);

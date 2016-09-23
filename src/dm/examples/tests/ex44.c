@@ -20,8 +20,12 @@ int main(int argc,char **argv)
 
   ierr = DMCompositeCreate(PETSC_COMM_WORLD,&packer);CHKERRQ(ierr);
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,8,1,1,NULL,&da1);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da1);CHKERRQ(ierr);
+  ierr = DMSetUp(da1);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(packer,da1);CHKERRQ(ierr);
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,6,1,1,NULL,&da2);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da2);CHKERRQ(ierr);
+  ierr = DMSetUp(da2);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(packer,da2);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(packer,&global);CHKERRQ(ierr);

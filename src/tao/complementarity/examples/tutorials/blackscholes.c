@@ -175,6 +175,8 @@ int main(int argc, char **argv)
 
   user.ms++;
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,user.ms,1,1,NULL,&user.dm);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(user.dm);CHKERRQ(ierr);
+  ierr = DMSetUp(user.dm);CHKERRQ(ierr);
   /* Create appropriate vectors and matrices */
 
   ierr = DMDAGetCorners(user.dm,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);

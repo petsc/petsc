@@ -138,6 +138,8 @@ int main(int argc,char **argv)
   } else if (dim == 3) {
     ierr = DMDACreate3d(PETSC_COMM_WORLD,bx,by,bz,stype,M,N,P,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,NULL,&dac);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"dim must be 1,2, or 3");
+  ierr = DMSetFromOptions(dac);CHKERRQ(ierr);
+  ierr = DMSetUp(dac);CHKERRQ(ierr);
 
   ierr = DMRefine(dac,PETSC_COMM_WORLD,&daf);CHKERRQ(ierr);
 

@@ -276,7 +276,9 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     } else {
       switch (user->dim) {
       case 2:
-        ierr = DMDACreate2d(comm, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, -2, -2, PETSC_DETERMINE, PETSC_DETERMINE, 1, 1, NULL, NULL, dm);CHKERRQ(ierr);
+        ierr = DMDACreate2d(comm, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 2, 2, PETSC_DETERMINE, PETSC_DETERMINE, 1, 1, NULL, NULL, dm);CHKERRQ(ierr);
+        ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+        ierr = DMSetUp(*dm);CHKERRQ(ierr);
         ierr = DMDASetVertexCoordinates(*dm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
         break;
       default:
@@ -519,6 +521,8 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
 
                                                               /* periodic x */
         ierr = DMDACreate2d(PetscObjectComm((PetscObject)dm), DM_BOUNDARY_PERIODIC, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, -2, -2, PETSC_DETERMINE, PETSC_DETERMINE, 1, 1, NULL, NULL, &dmda);CHKERRQ(ierr);
+        ierr = DMSetFromOptions(dmda);CHKERRQ(ierr);
+        ierr = DMSetUp(dmda);CHKERRQ(ierr);
         ierr = DMDASetVertexCoordinates(dmda, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
 
 

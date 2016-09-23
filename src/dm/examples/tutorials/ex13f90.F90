@@ -71,6 +71,8 @@ program main
                     PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,stw,&
                     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,&
                     SolScal,ierr)
+  call DMSetFromOptions(SolScal,ierr)
+  call DMSetUp(SolScal,ierr)
   ! Set global coordinates, get a global and a local work vector
   call DMDASetUniformCoordinates(SolScal,xgmin,xgmax,ygmin,ygmax,zgmin,zgmax,&
                                  ierr)

@@ -10,6 +10,8 @@
 
       call DMDACreate1d(MPI_COMM_WORLD,DM_BOUNDARY_NONE,8,1,1,        &
      &  PETSC_NULL_INTEGER,da,ierr)
+      call DMSetFromOptions(da,ierr)
+      call DMSetUp(da,ierr)
       call DMCreateGlobalVector(da,x,ierr)
       call VecDuplicate(x,f,ierr)
       call DMSetMatType(da,MATAIJ,ierr)

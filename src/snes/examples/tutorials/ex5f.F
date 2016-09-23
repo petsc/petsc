@@ -105,6 +105,8 @@
      &     DM_BOUNDARY_NONE,                                            &
      &     DMDA_STENCIL_STAR,i4,i4,PETSC_DECIDE,PETSC_DECIDE,i1,i1,                &
      &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
+      call DMSetFromOptions(da,ierr)
+      call DMSetUp(da,ierr)
 
 !  Extract global and local vectors from DMDA; then duplicate for remaining
 !  vectors that are the same types
