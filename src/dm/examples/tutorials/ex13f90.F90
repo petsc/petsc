@@ -71,8 +71,8 @@ program main
   call get_boundary_cond(b_x,b_y,b_z);CHKERRQ(ierr)
   call DMDACreate3d(comm,b_x,b_y,b_z,DMDA_STENCIL_STAR,igmax,jgmax,kgmax,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,stw,  &
                     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,SolScal,ierr);CHKERRQ(ierr)
-  call DMSetFromOptions(SolScal,ierr)
-  call DMSetUp(SolScal,ierr)
+  call DMSetFromOptions(SolScal,ierr);CHKERRQ(ierr)
+  call DMSetUp(SolScal,ierr);CHKERRQ(ierr)
 
   ! Set global coordinates, get a global and a local work vector
   call DMDASetUniformCoordinates(SolScal,xgmin,xgmax,ygmin,ygmax,zgmin,zgmax,ierr);CHKERRQ(ierr)
