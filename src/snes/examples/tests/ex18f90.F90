@@ -110,7 +110,11 @@ end interface
   nullify(extended)
   allocate(base)
   allocate(extended)
-  call PetscInitialize(PETSC_NULL_CHARACTER, ierr);CHKERRQ(ierr)
+  call PetscInitialize(PETSC_NULL_CHARACTER, ierr)
+  if (ierr .ne. 0) then
+    print*,'Unable to initialize PETSc'
+    stop
+  endif
   call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr);CHKERRQ(ierr)
   call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr);CHKERRQ(ierr)
 

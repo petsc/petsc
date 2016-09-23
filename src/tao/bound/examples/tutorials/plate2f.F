@@ -64,6 +64,10 @@
 
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
 
 ! Specify default dimensions of the problem
       mx = 10

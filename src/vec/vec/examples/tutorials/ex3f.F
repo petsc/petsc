@@ -37,6 +37,10 @@
       PetscBool  flg
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+         print*,'PetscInitialize failed'
+         stop
+      endif
       n = 50
       call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,      &
      &                        '-n',n,flg,ierr)

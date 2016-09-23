@@ -16,7 +16,7 @@
 
 !
 !  These routines are used internally by the C functions VecGetArrayMyStruct() and VecRestoreArrayMyStruct()
-!  Because Fortran requires "knowing" exactly what derived types the pointers to point too, these have to be 
+!  Because Fortran requires "knowing" exactly what derived types the pointers to point too, these have to be
 !  customized for exactly the derived type in question
 !
       subroutine F90Array1dCreateMyStruct(array,start,len,ptr)
@@ -24,8 +24,7 @@
       implicit none
 #include <petsc/finclude/petscsys.h>
       PetscInt start,len
-      type(MyStruct), target ::                                               &
-     &             array(start:start+len-1)
+      type(MyStruct), target :: array(start:start+len-1)
       type(MyStruct), pointer :: ptr(:)
 
       ptr => array
@@ -119,33 +118,36 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'PetscInitialize failed'
+        stop
+      endif
       n     = 30
 
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,    &
-     &                        '-n',n,flg,ierr)
-      call VecCreate(PETSC_COMM_WORLD,x,ierr)
-      call VecSetSizes(x,PETSC_DECIDE,n,ierr)
-      call VecSetFromOptions(x,ierr)
-      call VecDuplicate(x,y,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-n',n,flg,ierr);CHKERRQ(ierr)
+      call VecCreate(PETSC_COMM_WORLD,x,ierr);CHKERRQ(ierr)
+      call VecSetSizes(x,PETSC_DECIDE,n,ierr);CHKERRQ(ierr)
+      call VecSetFromOptions(x,ierr);CHKERRQ(ierr)
+      call VecDuplicate(x,y,ierr);CHKERRQ(ierr)
 
-      call VecGetArrayMyStruct(x,xarray,ierr)
+      call VecGetArrayMyStruct(x,xarray,ierr);CHKERRQ(ierr)
       do i=1,10
       xarray(i)%a = i
       xarray(i)%b = 100*i
       xarray(i)%c = 10000*i
       enddo
 
-      call VecRestoreArrayMyStruct(x,xarray,ierr)
-      call VecView(x,PETSC_VIEWER_STDOUT_SELF,ierr)
-      call VecGetArrayMyStruct(x,xarray,ierr)
+      call VecRestoreArrayMyStruct(x,xarray,ierr);CHKERRQ(ierr)
+      call VecView(x,PETSC_VIEWER_STDOUT_SELF,ierr);CHKERRQ(ierr)
+      call VecGetArrayMyStruct(x,xarray,ierr);CHKERRQ(ierr)
       do i = 1 , 10
         write(*,*) abs(xarray(i)%a),abs(xarray(i)%b),abs(xarray(i)%c)
       end do
-      call VecRestoreArrayMyStruct(x,xarray,ierr)
+      call VecRestoreArrayMyStruct(x,xarray,ierr);CHKERRQ(ierr)
 
 
-      call VecDestroy(x,ierr)
-      call VecDestroy(y,ierr)
+      call VecDestroy(x,ierr);CHKERRQ(ierr)
+      call VecDestroy(y,ierr);CHKERRQ(ierr)
       call PetscFinalize(ierr)
 
       end

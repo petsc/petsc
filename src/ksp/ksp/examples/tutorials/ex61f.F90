@@ -99,7 +99,6 @@
 
       PetscInt nrow
       PetscInt ncol
-      PetscInt blocksize
       PetscScalar, dimension(0:(n*n-1)) :: x, b
       real(8) :: err(NCASES)
 
@@ -133,12 +132,10 @@
          col_f_ksp => Mcol_f_ksp(ith)
 
 
-         call MatCreateSeqAIJ( PETSC_COMM_SELF, nrow,ncol, nz_per_row,     &
-     &           PETSC_NULL_INTEGER, col_f_mat, ierr)
+         call MatCreateSeqAIJ( PETSC_COMM_SELF, nrow,ncol, nz_per_row,PETSC_NULL_INTEGER, col_f_mat, ierr)
          call assert(ierr.eq.0,'matcreateseqaij return ',ierr)
 
-         call VecCreateSeqWithArray(PETSC_COMM_SELF,1,nrow,       &
-     &           PETSC_NULL_SCALAR, col_f_vecb, ierr)
+         call VecCreateSeqWithArray(PETSC_COMM_SELF,1,nrow,PETSC_NULL_SCALAR, col_f_vecb, ierr)
          call assert(ierr.eq.0,'veccreateseqwitharray return ierr',ierr)
 
          call VecDuplicate(col_f_vecb, col_f_vecx,ierr)
@@ -170,9 +167,9 @@
              ilist(nz) = ij
              jlist(nz) = ij2
              if (is_diag) then
-               aij = 4.0d0
+               aij = 4.0
              else
-               aij = -1.0d0
+               aij = -1.0
              endif
              alist(nz) = aij
            endif
@@ -322,5 +319,4 @@
        call PetscFinalize(ierr)
        call assert(ierr.eq.0,'petscfinalize return ierr',ierr)
 
-       stop 'all done'
        end program tpetsc

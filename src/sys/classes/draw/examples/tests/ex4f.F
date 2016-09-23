@@ -33,6 +33,10 @@
       height = 256
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
       call PetscDrawCreate(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,        &
      & 'Title',x,y,width,height,draw,ierr)
       call PetscDrawSetFromOptions(draw,ierr)

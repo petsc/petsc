@@ -64,6 +64,10 @@
 
 !     Initialize TAO, PETSc  contexts
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+         print*,'Unable to initialize PETSc'
+         stop
+      endif
 
 !     Specify default parameters
       param = 5.0

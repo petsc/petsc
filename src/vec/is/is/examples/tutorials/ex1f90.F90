@@ -29,6 +29,10 @@
 
       five = 5
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
 !  Create an index set with 5 entries. Each processor creates
@@ -39,20 +43,19 @@
       indices(3) = rank + 3
       indices(4) = rank + 4
       indices(5) = rank + 5
-      call ISCreateGeneral(PETSC_COMM_SELF,five,indices,                   &
-     &                     PETSC_COPY_VALUES,is,ierr)
+      call ISCreateGeneral(PETSC_COMM_SELF,five,indices,PETSC_COPY_VALUES,is,ierr);CHKERRQ(ierr)
 
 !  Print the index set to stdout
 
-      call ISView(is,PETSC_VIEWER_STDOUT_SELF,ierr)
+      call ISView(is,PETSC_VIEWER_STDOUT_SELF,ierr);CHKERRQ(ierr)
 
 !  Get the number of indices in the set
 
-      call ISGetLocalSize(is,n,ierr)
+      call ISGetLocalSize(is,n,ierr);CHKERRQ(ierr)
 
 !   Get the indices in the index set
 
-      call ISGetIndicesF90(is,idx,ierr)
+      call ISGetIndicesF90(is,idx,ierr);CHKERRQ(ierr)
 
       if (associated(idx)) then
          write (*,*) 'Association check passed'
@@ -72,12 +75,12 @@
 !   Once we no longer need access to the indices they should
 !   returned to the system
 
-      call ISRestoreIndicesF90(is,idx,ierr)
+      call ISRestoreIndicesF90(is,idx,ierr);CHKERRQ(ierr)
 
 !   All PETSc objects should be destroyed once they are
 !   no longer needed
 
-      call ISDestroy(is,ierr)
+      call ISDestroy(is,ierr);CHKERRQ(ierr)
       call PetscFinalize(ierr)
       end
 

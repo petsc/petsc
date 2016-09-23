@@ -29,6 +29,10 @@
       external       MyErrHandler
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
 
       call PetscPushErrorHandler(PetscTraceBackErrorHandler,               &
      &                           PETSC_NULL_INTEGER,ierr)

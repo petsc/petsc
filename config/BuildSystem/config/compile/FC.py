@@ -12,14 +12,14 @@ class Preprocessor(config.compile.C.Preprocessor):
   def __init__(self, argDB):
     config.compile.C.Preprocessor.__init__(self, argDB)
     self.language        = 'FC'
-    self.targetExtension = '.F'
+    self.targetExtension = '.F90'
     self.includeDirectories = sets.Set()
     return
 
 class Compiler(config.compile.processor.Processor):
   '''The Fortran compiler'''
   def __init__(self, argDB, usePreprocessorFlags = True):
-    config.compile.processor.Processor.__init__(self, argDB, 'FC', 'FFLAGS', '.F', '.o')
+    config.compile.processor.Processor.__init__(self, argDB, 'FC', 'FFLAGS', '.F90', '.o')
     self.language           = 'FC'
     self.requiredFlags[-1]  = '-c'
     self.outputFlag         = '-o'

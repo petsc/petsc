@@ -502,6 +502,7 @@ getautoconfargs:
 	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  $* > trashz 2>&1
 	-@grep -v EXTERNAL trashz | grep -v Wall | \
           grep -v "warning: In-place macro substitution leaves line truncated" | \
+          grep -v "Warning: Same actual argument associated with INTENT(IN) argument 'errorcode' and INTENT(OUT) argument 'ierror' at (1)" | \
           grep -v "Unused external reference" | \
           grep -v "D4024 : unrecognized" | \
           grep -v "WARNING: TOC overflow." | \

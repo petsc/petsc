@@ -9,7 +9,7 @@ EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                 ex41.c ex42.c ex43.c \
                 ex45.c ex46.c  ex49.c ex50.c ex51.c ex52.c ex53.c \
                 ex54.c ex55.c ex56.c ex58.c ex62.c ex63.cxx ex64.c ex65.c
-EXAMPLESF        = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F ex21f.F ex22f.F ex44f.F90 ex45f.F \
+EXAMPLESF        = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F90 ex14f.F ex15f.F ex21f.F ex22f.F ex44f.F90 ex45f.F \
                    ex52f.F ex54f.F ex61f.F90
 MANSEC           = KSP
 CLEANFILES       = rhs.vtk solution.vtk
@@ -218,7 +218,6 @@ ex43: ex43.o chkopts
 	-${CLINKER} -o ex43 ex43.o ${PETSC_KSP_LIB}
 	${RM} ex43.o
 
-# not tested in nightly builds because requires F90 compiler that handles long lines
 ex44f: ex44f.o  chkopts
 	-${FLINKER} -o ex44f ex44f.o  ${PETSC_KSP_LIB}
 	${RM} ex44f.o
@@ -1220,6 +1219,11 @@ runex45_telescope_2:
 	   ${DIFF} output/ex45_telescope_2.out ex45_telescope_2.tmp || printf "${PWD}\nPossible problem with ex45_telescope_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex45_telescope_2.tmp
 
+runex44f:
+	-@${MPIEXEC} -n 1 ./ex44f -ksp_converged_reason > ex44f_1.tmp 2>&1;\
+	   if (${DIFF} output/ex44f_1.out ex44f_1.tmp) then true ;  \
+	   else echo ${PWD} ; echo "Possible problem with runex44f, diffs above \n========================================="; fi ;\
+	   ${RM} -f ex44f_1.tmp
 
 runex45f:
 	-@${MPIEXEC} -n 4 ./ex45f -ksp_monitor_short -da_refine 5 -pc_type mg -pc_mg_levels 5 -mg_levels_ksp_type chebyshev -mg_levels_ksp_max_it 2 -mg_levels_pc_type jacobi -ksp_pc_side right > ex45f_1.tmp 2>&1; \
@@ -1511,6 +1515,13 @@ runex60_9 :
 	   else printf "${PWD}\nPossible problem with with ex60_9, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex60_9.tmp
 
+runex61f:
+	-@${MPIEXEC} -n 1 ./ex61f > ex61f.tmp 2>&1; \
+            if (${DIFF} output/ex61f_1.out ex61f.tmp) then true; \
+            else printf "${PWD}\nPossible problem with ex61f, diffs above\n==========================\
+===============\n"; fi; \
+            ${RM} -f ex61f.tmp
+
 NP = 1
 M  = 4
 N  = 5
@@ -1657,7 +1668,8 @@ TESTEXAMPLES_DATAFILESPATH     = ex10.PETSc runex10_xxt runex10_xyt runex10_2 ru
 # we list it with the fortran examples
 TESTEXAMPLES_FORTRAN_NOCOMPLEX =
 TESTEXAMPLES_FORTRAN_COMPLEX            = ex11f.PETSc runex11f ex11f.rm
-TESTEXAMPLES_F90	                = ex13f90.PETSc runex13f90 ex13f90.rm
+TESTEXAMPLES_F90	                = ex13f90.PETSc runex13f90 ex13f90.rm ex44f.PETSc runex44f ex44f.rm 
+TESTEXAMPLES_F90_THREADSAFETY           = ex61f.PETSc runex61f ex61f.rm
 TESTEXAMPLES_13		                = ex3.PETSc ex3.rm ex14f.PETSc ex14f.rm
 TESTEXAMPLES_MATLAB_ENGINE              = ex10.PETSc runex10_12  ex10.rm
 TESTEXAMPLES_17		                = ex10.PETSc runex10_11 ex10.rm

@@ -39,6 +39,10 @@
       izero = 0
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
 
 ! Read in matrix and RHS
       call PetscOptionsGetString(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,       &

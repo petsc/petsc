@@ -112,6 +112,10 @@ c      call flush(6)
       external         FormMonitor
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
       i1 = 1
       i0 = 0
       i3 = 3
