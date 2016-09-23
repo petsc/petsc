@@ -168,7 +168,7 @@ int main(int argc,char **argv)
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSSIEULER);CHKERRQ(ierr);
+  ierr = TSSetType(ts,TSBSI);CHKERRQ(ierr);
   ierr = TSSetRHSFunctionSplit2w(ts,NULL,RHSFunction1,RHSFunction2,&user);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ts,NULL,RHSFunction,&user);CHKERRQ(ierr);
 
@@ -205,7 +205,7 @@ int main(int argc,char **argv)
   ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
   ierr = VecView(U,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"The exact solution is [%6f %6f]",(double)-0.2*user.omega*PetscSinReal(user.omega*ftime),(double)0.2*PetscCosReal(user.omega*ftime));CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"The exact solution is [%6g %6g]\n",(double)-0.2*user.omega*PetscSinReal(user.omega*ftime),(double)0.2*PetscCosReal(user.omega*ftime));CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they

@@ -27,7 +27,7 @@ J*/
 typedef const char* TSType;
 #define TSEULER           "euler"
 #define TSBEULER          "beuler"
-#define TSSIEULER         "sieuler"
+#define TSBSI             "bsi"
 #define TSPSEUDO          "pseudo"
 #define TSCN              "cn"
 #define TSSUNDIALS        "sundials"
@@ -846,8 +846,8 @@ typedef const char* TSRosWType;
 #define TSROSWVELDD4      "veldd4"
 #define TSROSW4L          "4l"
 
-PETSC_EXTERN PetscErrorCode TSRosWGetType(TS ts,TSRosWType*);
-PETSC_EXTERN PetscErrorCode TSRosWSetType(TS ts,TSRosWType);
+PETSC_EXTERN PetscErrorCode TSRosWGetType(TS,TSRosWType*);
+PETSC_EXTERN PetscErrorCode TSRosWSetType(TS,TSRosWType);
 PETSC_EXTERN PetscErrorCode TSRosWSetRecomputeJacobian(TS,PetscBool);
 PETSC_EXTERN PetscErrorCode TSRosWRegister(TSRosWType,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],PetscInt,const PetscReal[]);
 PETSC_EXTERN PetscErrorCode TSRosWRegisterRos4(TSRosWType,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
@@ -857,6 +857,23 @@ PETSC_EXTERN PetscErrorCode TSRosWRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode TSBDFSetOrder(TS,PetscInt);
 PETSC_EXTERN PetscErrorCode TSBDFGetOrder(TS,PetscInt*);
+
+/*J
+  TSBSIType - String with the name of a basic symplectic integration method.
+
+  Level: beginner
+
+  .seealso: TSBSISetType(), TS, TSBSI, TSBSIRegister()
+J*/
+typedef const char* TSBSIType;
+#define TSSIEULER   "sieuler"
+#define TSVELVERLET "velverlet"
+PETSC_EXTERN PetscErrorCode TSBSISetType(TS,TSBSIType);
+PETSC_EXTERN PetscErrorCode TSBSIGetType(TS,TSBSIType*);
+PETSC_EXTERN PetscErrorCode TSBSIRegister(TSBSIType,PetscInt,PetscInt,const PetscReal[],const PetscReal[]);
+PETSC_EXTERN PetscErrorCode TSBSIInitializePackage(void);
+PETSC_EXTERN PetscErrorCode TSBSIFinalizePackage(void);
+PETSC_EXTERN PetscErrorCode TSBSIRegisterDestroy(void);
 
 /*
        PETSc interface to Sundials

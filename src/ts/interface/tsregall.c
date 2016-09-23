@@ -2,7 +2,6 @@
 #include <petsc/private/tsimpl.h>     /*I  "petscts.h"  I*/
 PETSC_EXTERN PetscErrorCode TSCreate_Euler(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_BEuler(TS);
-PETSC_EXTERN PetscErrorCode TSCreate_SIEuler(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_Pseudo(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_Sundials(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_Radau5(TS);
@@ -19,6 +18,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_EIMEX(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_Mimex(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_BDF(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_GLEE(TS);
+PETSC_EXTERN PetscErrorCode TSCreate_BSI(TS);
 
 /*@C
   TSRegisterAll - Registers all of the timesteppers in the TS package.
@@ -43,7 +43,6 @@ PetscErrorCode  TSRegisterAll(void)
 
   ierr = TSRegister(TSEULER,    TSCreate_Euler);CHKERRQ(ierr);
   ierr = TSRegister(TSBEULER,   TSCreate_BEuler);CHKERRQ(ierr);
-  ierr = TSRegister(TSSIEULER,  TSCreate_SIEuler);CHKERRQ(ierr);
   ierr = TSRegister(TSCN,       TSCreate_CN);CHKERRQ(ierr);
   ierr = TSRegister(TSPSEUDO,   TSCreate_Pseudo);CHKERRQ(ierr);
   ierr = TSRegister(TSGLLE,     TSCreate_GLLE);CHKERRQ(ierr);
@@ -64,6 +63,7 @@ PetscErrorCode  TSRegisterAll(void)
   ierr = TSRegister(TSEIMEX,    TSCreate_EIMEX);CHKERRQ(ierr);
   ierr = TSRegister(TSMIMEX,    TSCreate_Mimex);CHKERRQ(ierr);
   ierr = TSRegister(TSBDF,      TSCreate_BDF);CHKERRQ(ierr);
+  ierr = TSRegister(TSBSI,      TSCreate_BSI);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
