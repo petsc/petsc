@@ -6,7 +6,7 @@ cdef extern from * nogil:
     int DMCompositeAddDM(PetscDM,PetscDM)
     int DMCompositeGetNumberDM(PetscDM,PetscInt*)
     int DMCompositeScatterArray(PetscDM,PetscVec,PetscVec*)
-    int DMCompositeGatherArray(PetscDM,PetscVec,PetscInsertMode,PetscVec*)
+    int DMCompositeGatherArray(PetscDM,PetscInsertMode,PetscVec,PetscVec*)
     int DMCompositeGetEntriesArray(PetscDM,PetscDM*)
     int DMCompositeGetAccessArray(PetscDM,PetscVec,PetscInt,const_PetscInt*,PetscVec*)
     int DMCompositeRestoreAccessArray(PetscDM,PetscVec,PetscInt,const_PetscInt*,PetscVec*)

@@ -59,7 +59,7 @@ cdef class DMComposite(DM):
         cdef object tmp = oarray_p(empty_p(n), NULL, <void**>&clvecs)
         for i from 0 <= i < n:
             clvecs[i] = (<Vec?>lvecs[<Py_ssize_t>i]).vec
-        CHKERR( DMCompositeGatherArray(self.dm, gvec.vec, cimode, clvecs) )
+        CHKERR( DMCompositeGatherArray(self.dm, cimode, gvec.vec, clvecs) )
 
     def getGlobalISs(self):
         cdef PetscInt i, n = 0
