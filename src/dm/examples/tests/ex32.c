@@ -34,9 +34,13 @@ static PetscErrorCode TestQ2Q1DA(void)
   my   = 11;
   mz   = 13;
   ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,mx,my,mz,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,3,2,0,0,0,&Q2_da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(Q2_da);CHKERRQ(ierr);
+  ierr = DMSetUp(Q2_da);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(Q2_da,-1.0,1.0,-2.0,2.0,-3.0,3.0);CHKERRQ(ierr);
   ierr = DMGetCoordinates(Q2_da,&coords);CHKERRQ(ierr);
   ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,mx,my,mz,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,3,1,0,0,0,&Q1_da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(Q1_da);CHKERRQ(ierr);
+  ierr = DMSetUp(Q1_da);CHKERRQ(ierr);
   ierr = DMSetCoordinates(Q1_da,coords);CHKERRQ(ierr);
 
   /* Get ghost coordinates one way */

@@ -8,7 +8,6 @@
        character*(80) arch
 
        call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-
        if (ierr .ne. 0) then
          print*, 'Unable to begin PETSc program'
        endif

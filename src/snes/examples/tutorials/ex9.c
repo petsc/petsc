@@ -60,16 +60,11 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,
-                      DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
-                      DMDA_STENCIL_STAR,
-                      -11,-11,                   /* default to 10x10 grid */
-                      PETSC_DECIDE,PETSC_DECIDE, /* number of processors in each dimension */
-                      1,                         /* dof = 1 */
-                      1,                         /* s = 1; stencil extends out one cell */
-                      NULL,NULL,                 /* do not specify processor decomposition */
-                      &da);CHKERRQ(ierr);
-
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,11,11,/* default to 10x10 grid */
+                      PETSC_DECIDE,PETSC_DECIDE, /* number of processors in each dimension */1,/* dof = 1 */1,/* s = 1; stencil extends out one cell */
+                      NULL,NULL,/* do not specify processor decomposition */&da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&u);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&(user.uexact));CHKERRQ(ierr);
   ierr = VecDuplicate(u,&(user.psi));CHKERRQ(ierr);

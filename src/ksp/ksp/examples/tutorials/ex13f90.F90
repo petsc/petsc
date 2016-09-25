@@ -79,6 +79,10 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
       if (size .ne. 1) then
          call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
@@ -91,14 +95,12 @@
 !  The next two lines are for testing only; these allow the user to
 !  decide the grid size at runtime.
 
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,           &
-     &                        '-m',m,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,           &
-     &                        '-n',n,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-m',m,flg,ierr);CHKERRQ(ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-n',n,flg,ierr);CHKERRQ(ierr)
 
 !  Create the empty sparse matrix and linear solver data structures
 
-      call UserInitializeLinearSolver(m,n,userctx,ierr)
+      call UserInitializeLinearSolver(m,n,userctx,ierr);CHKERRQ(ierr)
 
 !  Allocate arrays to hold the solution to the linear system.  This
 !  approach is not normally done in PETSc programs, but in this case,
@@ -139,7 +141,7 @@
 !  demonstrate how one may reuse the linear solvers in each time-step.
 
       do 100 t=1,tmax
-         call UserDoLinearSolver(rho,userctx,userb,userx,ierr)
+         call UserDoLinearSolver(rho,userctx,userb,userx,ierr);CHKERRQ(ierr)
 
 !        Compute error: Note that this could (and usually should) all be done
 !        using the PETSc vector operations. Here we demonstrate using more
@@ -162,7 +164,7 @@
 
       DEALLOCATE (userx,userb,solution,rho)
 
-      call UserFinalizeLinearSolver(userctx,ierr)
+      call UserFinalizeLinearSolver(userctx,ierr);CHKERRQ(ierr)
       call PetscFinalize(ierr)
       end
 
@@ -205,21 +207,19 @@
 
 !  Create the sparse matrix. Preallocate 5 nonzeros per row.
 
-      call MatCreateSeqAIJ(PETSC_COMM_SELF,Ntot,Ntot,five,              &
-     &     PETSC_NULL_INTEGER,A,ierr)
+      call MatCreateSeqAIJ(PETSC_COMM_SELF,Ntot,Ntot,five,PETSC_NULL_INTEGER,A,ierr);CHKERRQ(ierr)
 !
 !  Create vectors. Here we create vectors with no memory allocated.
 !  This way, we can use the data structures already in the program
 !  by using VecPlaceArray() subroutine at a later stage.
 !
-      call VecCreateSeqWithArray(PETSC_COMM_SELF,one,Ntot,              &
-     &     PETSC_NULL_SCALAR,b,ierr)
-      call VecDuplicate(b,x,ierr)
+      call VecCreateSeqWithArray(PETSC_COMM_SELF,one,Ntot,PETSC_NULL_SCALAR,b,ierr);CHKERRQ(ierr)
+      call VecDuplicate(b,x,ierr);CHKERRQ(ierr)
 
 !  Create linear solver context. This will be used repeatedly for all
 !  the linear solves needed.
 
-      call KSPCreate(PETSC_COMM_SELF,ksp,ierr)
+      call KSPCreate(PETSC_COMM_SELF,ksp,ierr);CHKERRQ(ierr)
 
       userctx(1) = x
       userctx(2) = b
@@ -290,33 +290,33 @@
             if (j .gt. 1) then
                JJ = II - m
                v = -0.5*(rho(II+1) + rho(JJ+1))*hy2
-               call MatSetValues(A,one,II,one,JJ,v,INSERT_VALUES,ierr)
+               call MatSetValues(A,one,II,one,JJ,v,INSERT_VALUES,ierr);CHKERRQ(ierr)
             endif
             if (j .lt. n) then
                JJ = II + m
                v = -0.5*(rho(II+1) + rho(JJ+1))*hy2
-               call MatSetValues(A,one,II,one,JJ,v,INSERT_VALUES,ierr)
+               call MatSetValues(A,one,II,one,JJ,v,INSERT_VALUES,ierr);CHKERRQ(ierr)
             endif
             if (i .gt. 1) then
                JJ = II - 1
                v = -0.5*(rho(II+1) + rho(JJ+1))*hx2
-               call MatSetValues(A,one,II,one,JJ,v,INSERT_VALUES,ierr)
+               call MatSetValues(A,one,II,one,JJ,v,INSERT_VALUES,ierr);CHKERRQ(ierr)
             endif
             if (i .lt. m) then
                JJ = II + 1
                v = -0.5*(rho(II+1) + rho(JJ+1))*hx2
-               call MatSetValues(A,one,II,one,JJ,v,INSERT_VALUES,ierr)
+               call MatSetValues(A,one,II,one,JJ,v,INSERT_VALUES,ierr);CHKERRQ(ierr)
             endif
             v = 2*rho(II+1)*(hx2+hy2)
-            call MatSetValues(A,one,II,one,II,v,INSERT_VALUES,ierr)
+            call MatSetValues(A,one,II,one,II,v,INSERT_VALUES,ierr);CHKERRQ(ierr)
             II = II+1
  100     continue
  110  continue
 !
 !     Assemble matrix
 !
-      call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
-      call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
+      call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
+      call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
 
 !
 !     Set operators. Here the matrix that defines the linear system
@@ -324,14 +324,14 @@
 !     will have the same nonzero pattern here, we indicate this so the
 !     linear solvers can take advantage of this.
 !
-      call KSPSetOperators(ksp,A,A,ierr)
+      call KSPSetOperators(ksp,A,A,ierr);CHKERRQ(ierr)
 
 !
 !     Set linear solver defaults for this problem (optional).
 !     - Here we set it to use direct LU factorization for the solution
 !
-      call KSPGetPC(ksp,pc,ierr)
-      call PCSetType(pc,PCLU,ierr)
+      call KSPGetPC(ksp,pc,ierr);CHKERRQ(ierr)
+      call PCSetType(pc,PCLU,ierr);CHKERRQ(ierr)
 
 !
 !     Set runtime options, e.g.,
@@ -343,7 +343,7 @@
 !     Run the program with the option -help to see all the possible
 !     linear solver options.
 !
-      call KSPSetFromOptions(ksp,ierr)
+      call KSPSetFromOptions(ksp,ierr);CHKERRQ(ierr)
 
 !
 !     This allows the PETSc linear solvers to compute the solution
@@ -354,17 +354,17 @@
 !     write their entire application using PETSc vectors rather than
 !     arrays.
 !
-      call VecPlaceArray(x,userx,ierr)
-      call VecPlaceArray(b,userb,ierr)
+      call VecPlaceArray(x,userx,ierr);CHKERRQ(ierr)
+      call VecPlaceArray(b,userb,ierr);CHKERRQ(ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                      Solve the linear system
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call KSPSolve(ksp,b,x,ierr)
+      call KSPSolve(ksp,b,x,ierr);CHKERRQ(ierr)
 
-      call VecResetArray(x,ierr)
-      call VecResetArray(b,ierr)
+      call VecResetArray(x,ierr);CHKERRQ(ierr)
+      call VecResetArray(b,ierr);CHKERRQ(ierr)
 
       return
       end
@@ -399,10 +399,10 @@
       A    = userctx(3)
       ksp = userctx(4)
 
-      call VecDestroy(x,ierr)
-      call VecDestroy(b,ierr)
-      call MatDestroy(A,ierr)
-      call KSPDestroy(ksp,ierr)
+      call VecDestroy(x,ierr);CHKERRQ(ierr)
+      call VecDestroy(b,ierr);CHKERRQ(ierr)
+      call MatDestroy(A,ierr);CHKERRQ(ierr)
+      call KSPDestroy(ksp,ierr);CHKERRQ(ierr)
 
       return
       end

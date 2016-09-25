@@ -22,6 +22,10 @@
        three = 3.0
 
        call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+       if (ierr .ne. 0) then
+         print*,'Unable to initialize PETSc'
+         stop
+       endif
        call PetscOptionsCreate(options,ierr)
        call PetscOptionsGetInt(options,PETSC_NULL_CHARACTER,                  &
      &                        '-n',n,flg,ierr)

@@ -6,6 +6,16 @@
 #include "petscversion.h"
 #include "petsc/finclude/petscsysdef.h"
 
+!
+!    The following block allows one to write constants that match the
+!    precision of PetscReal as, for example,  x = .7_PETSC_REAL_KIND
+!
+       PetscReal,Parameter ::                                                 &
+     &                        PetscReal_Private = 1.0
+       Integer,Parameter   :: PETSC_REAL_KIND                                 &
+     &  = Selected_Real_Kind(Precision(PetscReal_Private))
+
+
 #if !defined(PETSC_AVOID_MPIF_H)
 #include "mpif.h"
 #endif

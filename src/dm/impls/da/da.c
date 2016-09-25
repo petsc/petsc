@@ -1053,6 +1053,41 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
   dd2->coarsen_y = dd2->refine_y = dd->refine_y;
   dd2->coarsen_z = dd2->refine_z = dd->refine_z;
 
+  if (dd->refine_z_hier) {
+    if (da->levelup - da->leveldown + 1 > -1 && da->levelup - da->leveldown + 1 < dd->refine_z_hier_n) {
+      dd2->refine_z = dd->refine_z_hier[da->levelup - da->leveldown + 1];
+    }
+    if (da->levelup - da->leveldown > -1 && da->levelup - da->leveldown < dd->refine_z_hier_n) {
+      dd2->coarsen_z = dd->refine_z_hier[da->levelup - da->leveldown];
+    }
+    dd2->refine_z_hier_n = dd->refine_z_hier_n;
+    ierr = PetscMalloc1(dd2->refine_z_hier_n,&dd2->refine_z_hier);CHKERRQ(ierr);
+    ierr = PetscMemcpy(dd2->refine_z_hier,dd->refine_z_hier,dd2->refine_z_hier_n*sizeof(PetscInt));CHKERRQ(ierr);
+  }
+  if (dd->refine_y_hier) {
+    if (da->levelup - da->leveldown + 1 > -1 && da->levelup - da->leveldown + 1 < dd->refine_y_hier_n) {
+      dd2->refine_y = dd->refine_y_hier[da->levelup - da->leveldown + 1];
+    }
+    if (da->levelup - da->leveldown > -1 && da->levelup - da->leveldown < dd->refine_y_hier_n) {
+      dd2->coarsen_y = dd->refine_y_hier[da->levelup - da->leveldown];
+    }
+    dd2->refine_y_hier_n = dd->refine_y_hier_n;
+    ierr = PetscMalloc1(dd2->refine_y_hier_n,&dd2->refine_y_hier);CHKERRQ(ierr);
+    ierr = PetscMemcpy(dd2->refine_y_hier,dd->refine_y_hier,dd2->refine_y_hier_n*sizeof(PetscInt));CHKERRQ(ierr);
+  }
+  if (dd->refine_x_hier) {
+    if (da->levelup - da->leveldown + 1 > -1 && da->levelup - da->leveldown + 1 < dd->refine_x_hier_n) {
+      dd2->refine_x = dd->refine_x_hier[da->levelup - da->leveldown + 1];
+    }
+    if (da->levelup - da->leveldown > -1 && da->levelup - da->leveldown < dd->refine_x_hier_n) {
+      dd2->coarsen_x = dd->refine_x_hier[da->levelup - da->leveldown];
+    }
+    dd2->refine_x_hier_n = dd->refine_x_hier_n;
+    ierr = PetscMalloc1(dd2->refine_x_hier_n,&dd2->refine_x_hier);CHKERRQ(ierr);
+    ierr = PetscMemcpy(dd2->refine_x_hier,dd->refine_x_hier,dd2->refine_x_hier_n*sizeof(PetscInt));CHKERRQ(ierr);
+  }
+  
+
   /* copy vector type information */
   ierr = DMSetVecType(da2,da->vectype);CHKERRQ(ierr);
 
@@ -1062,7 +1097,6 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
   da2->leveldown = da->leveldown;
   da2->levelup   = da->levelup + 1;
 
-  ierr = DMSetFromOptions(da2);CHKERRQ(ierr);
   ierr = DMSetUp(da2);CHKERRQ(ierr);
 
   /* interpolate coordinates if they are set on the coarse grid */
@@ -1183,6 +1217,40 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
   dd2->coarsen_y = dd2->refine_y = dd->coarsen_y;
   dd2->coarsen_z = dd2->refine_z = dd->coarsen_z;
 
+  if (dd->refine_z_hier) {
+    if (da->levelup - da->leveldown -1 > -1 && da->levelup - da->leveldown - 1< dd->refine_z_hier_n) {
+      dd2->refine_z = dd->refine_z_hier[da->levelup - da->leveldown - 1];
+    }
+    if (da->levelup - da->leveldown - 2 > -1 && da->levelup - da->leveldown - 2 < dd->refine_z_hier_n) {
+      dd2->coarsen_z = dd->refine_z_hier[da->levelup - da->leveldown - 2];
+    }
+    dd2->refine_z_hier_n = dd->refine_z_hier_n;
+    ierr = PetscMalloc1(dd2->refine_z_hier_n,&dd2->refine_z_hier);CHKERRQ(ierr);
+    ierr = PetscMemcpy(dd2->refine_z_hier,dd->refine_z_hier,dd2->refine_z_hier_n*sizeof(PetscInt));CHKERRQ(ierr);
+  }
+  if (dd->refine_y_hier) {
+    if (da->levelup - da->leveldown - 1 > -1 && da->levelup - da->leveldown - 1< dd->refine_y_hier_n) {
+      dd2->refine_y = dd->refine_y_hier[da->levelup - da->leveldown - 1];
+    }
+    if (da->levelup - da->leveldown - 2 > -1 && da->levelup - da->leveldown - 2 < dd->refine_y_hier_n) {
+      dd2->coarsen_y = dd->refine_y_hier[da->levelup - da->leveldown - 2];
+    }
+    dd2->refine_y_hier_n = dd->refine_y_hier_n;
+    ierr = PetscMalloc1(dd2->refine_y_hier_n,&dd2->refine_y_hier);CHKERRQ(ierr);
+    ierr = PetscMemcpy(dd2->refine_y_hier,dd->refine_y_hier,dd2->refine_y_hier_n*sizeof(PetscInt));CHKERRQ(ierr);
+  }
+  if (dd->refine_x_hier) {
+    if (da->levelup - da->leveldown - 1 > -1 && da->levelup - da->leveldown - 1 < dd->refine_x_hier_n) {
+      dd2->refine_x = dd->refine_x_hier[da->levelup - da->leveldown - 1];
+    }
+    if (da->levelup - da->leveldown - 2 > -1 && da->levelup - da->leveldown - 2 < dd->refine_x_hier_n) {
+      dd2->coarsen_x = dd->refine_x_hier[da->levelup - da->leveldown - 2];
+    }
+    dd2->refine_x_hier_n = dd->refine_x_hier_n;
+    ierr = PetscMalloc1(dd2->refine_x_hier_n,&dd2->refine_x_hier);CHKERRQ(ierr);
+    ierr = PetscMemcpy(dd2->refine_x_hier,dd->refine_x_hier,dd2->refine_x_hier_n*sizeof(PetscInt));CHKERRQ(ierr);
+  }
+
   /* copy vector type information */
   ierr = DMSetVecType(da2,da->vectype);CHKERRQ(ierr);
 
@@ -1192,7 +1260,6 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
   da2->leveldown = da->leveldown + 1;
   da2->levelup   = da->levelup;
 
-  ierr = DMSetFromOptions(da2);CHKERRQ(ierr);
   ierr = DMSetUp(da2);CHKERRQ(ierr);
 
   /* inject coordinates if they are set on the fine grid */

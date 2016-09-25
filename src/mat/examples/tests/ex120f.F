@@ -38,6 +38,10 @@
       external  mymatgetvecs
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
 
       call MatCreateShell(PETSC_COMM_SELF,12,12,12,12,0,m,ierr)
       call MatAssemblyBegin(m,MAT_FINAL_ASSEMBLY,ierr)

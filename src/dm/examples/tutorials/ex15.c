@@ -204,9 +204,10 @@ PetscErrorCode TestDMDAVec(PetscBool usempiio)
   PetscFunctionBeginUser;
   if (!usempiio) { ierr = PetscPrintf(PETSC_COMM_WORLD,"%s\n",__FUNCT__);CHKERRQ(ierr); }
   else { ierr = PetscPrintf(PETSC_COMM_WORLD,"%s [using mpi-io]\n",__FUNCT__);CHKERRQ(ierr); }
-  ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,
-                      DMDA_STENCIL_BOX,DMDA_I,DMDA_J,DMDA_K,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,DMDA_I,DMDA_J,DMDA_K,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,
                         3,2,NULL,NULL,NULL,&dm);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+  ierr = DMSetUp(dm);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(dm,&x_ref);CHKERRQ(ierr);
   ierr = DMDAVecGenerateEntries(dm,x_ref);CHKERRQ(ierr);

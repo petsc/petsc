@@ -64,6 +64,10 @@
 
 !     Initialize TAO, PETSc  contexts
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+         print*,'Unable to initialize PETSc'
+         stop
+      endif
 
 !     Specify default parameters
       param = 5.0
@@ -86,6 +90,8 @@
      &     DM_BOUNDARY_NONE,                                             &
      &     DMDA_STENCIL_BOX,mx,my,Nx,Ny,i1,i1,PETSC_NULL_INTEGER,        &
      &     PETSC_NULL_INTEGER,dm,ierr)
+      call DMSetFromOptions(dm,ierr)
+      call DMSetUp(dm,ierr)
 
 !     Create vectors
       call DMCreateGlobalVector(dm,x,ierr)

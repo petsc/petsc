@@ -164,6 +164,8 @@ PetscErrorCode ex3_1(void)
   mx = 40;
   overlap = 0;
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,mx,mx,PETSC_DECIDE,PETSC_DECIDE,1,overlap,NULL,NULL,&dmregular);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(dmregular);CHKERRQ(ierr);
+  ierr = DMSetUp(dmregular);CHKERRQ(ierr);
 
   dx = 2.0/((PetscReal)mx);
   ierr = DMDASetUniformCoordinates(dmregular,-1.0+0.5*dx,1.0-0.5*dx,-1.0+0.5*dx,1.0-0.5*dx,-1.0,1.0);CHKERRQ(ierr);

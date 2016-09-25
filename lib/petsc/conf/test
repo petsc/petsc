@@ -53,6 +53,8 @@ testexamples_C_Complex_MPIUni: ${TESTEXAMPLES_C_CCOMPLEX_MPIUNI}
 	-@ if test ${PRINT_PROGRESS}foo = debugtestfoo -a -n "${TESTEXAMPLES_C_CCOMPLEX_MPIUNI}"; then printf "Running examples in `pwd`:\n ${TESTEXAMPLES_C_CCOMPLEX_MPIUNI}\n"; fi
 testexamples_F90: ${TESTEXAMPLES_F90}
 	-@ if test ${PRINT_PROGRESS}foo = debugtestfoo -a -n "${TESTEXAMPLES_F90}"; then printf "Running examples in `pwd`:\n ${TESTEXAMPLES_F90}\n"; fi
+testexamples_F90_Threadsafety: ${TESTEXAMPLES_F90_THREADSAFETY}
+	-@ if test ${PRINT_PROGRESS}foo = debugtestfoo -a -n "${TESTEXAMPLES_F90_THREADSAFETY}"; then printf "Running examples in `pwd`:\n ${TESTEXAMPLES_F90_THREADSAFETY}\n"; fi
 testexamples_F90_NotSingle: ${TESTEXAMPLES_F90_NOTSINGLE}
 	-@ if test ${PRINT_PROGRESS}foo = debugtestfoo -a -n "${TESTEXAMPLES_F90_NOTSINGLE}"; then printf "Running examples in `pwd`:\n ${TESTEXAMPLES_F90_NOTSINGLE}\n"; fi
 testexamples_F90_Complex: ${TESTEXAMPLES_F90_COMPLEX}

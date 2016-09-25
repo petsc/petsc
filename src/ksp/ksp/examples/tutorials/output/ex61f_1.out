@@ -1,0 +1,4 @@
+ nthreads =           32  NCASES =          100
+ nz =        88804
+ total time is   0.338999987    
+ maxval(err)    6.9651395762093671E-011

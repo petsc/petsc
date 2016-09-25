@@ -31,6 +31,8 @@ int main(int argc,char **argv)
 
   /* Create distributed array and get vectors */
   ierr = DMDACreate1d(PETSC_COMM_WORLD,(DMBoundaryType)wrap,M,dof,s,NULL,&da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(da,0.0,1.0,0.0,0.0,0.0,0.0);CHKERRQ(ierr);
   for (i=0; i<dof; i++) {
     sprintf(fname,"Field %d",(int)i);

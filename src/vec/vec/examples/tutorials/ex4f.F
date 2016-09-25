@@ -51,6 +51,10 @@
        Vec         x,y
 
        call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+       if (ierr .ne. 0) then
+         print*,'PetscInitialize failed'
+         stop
+       endif
        n = 6
        isix = 6
 

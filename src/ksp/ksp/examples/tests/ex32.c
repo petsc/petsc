@@ -27,7 +27,7 @@ int main(int argc,char **argv)
   Vec            x,b;
   DM             da;
   Mat            A,Atrans;
-  PetscInt       dof=1,M=-8;
+  PetscInt       dof=1,M=8;
   PetscBool      flg,trans=PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;

@@ -19,6 +19,8 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,0,"-dof",&dof,0);CHKERRQ(ierr);
 
   ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_MIRROR,DM_BOUNDARY_MIRROR,DM_BOUNDARY_MIRROR,DMDA_STENCIL_STAR,M,N,P,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,NULL,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xstart,&ystart,&zstart,&m,&n,&p);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);

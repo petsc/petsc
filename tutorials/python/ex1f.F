@@ -22,6 +22,10 @@
       rtwo = 2.0
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'PetscInitialize failed'
+        stop
+      endif
       call PetscPythonInitialize(PETSC_NULL_CHARACTER,                  &
      &     PETSC_NULL_CHARACTER,ierr)
 

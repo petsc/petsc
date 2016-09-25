@@ -157,6 +157,8 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = SNESCreate(comm,&snes);CHKERRQ(ierr);
   ierr = DMDACreate2d(comm,grid.bx,grid.by,grid.stencil,grid.ni,grid.nj,PETSC_DECIDE,PETSC_DECIDE,grid.dof,grid.stencil_width,0,0,&da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"x-velocity");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,1,"y-velocity");CHKERRQ(ierr);

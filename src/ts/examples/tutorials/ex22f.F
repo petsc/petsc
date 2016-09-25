@@ -49,19 +49,25 @@
       PetscInt       im11,i2
       PetscBool      flg
 
-      im11 = -11
+      im11 = 11
       i2   = 2
       zero = 0.0
       one = 1.0
       pone = one / 10
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+         print*,'Unable to initialize PETSc'
+         stop
+      endif
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create distributed array (DMDA) to manage parallel grid and vectors
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       call DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,im11,i2,i2,   &
      &     PETSC_NULL_INTEGER,da,ierr)
+      call DMSetFromOptions(da,ierr)
+      call DMSetUp(da,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !    Extract global vectors from DMDA;

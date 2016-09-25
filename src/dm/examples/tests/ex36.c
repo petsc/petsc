@@ -343,13 +343,9 @@ PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
   PetscBool      output = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  ierr = DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE,
-                      mx+1,
-                      1, /* 1 dof */
-                      1, /* stencil = 1 */
-                      NULL,
-                      &dac);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE,mx+1,1, /* 1 dof */1, /* stencil = 1 */NULL,&dac);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dac);CHKERRQ(ierr);
+  ierr = DMSetUp(dac);CHKERRQ(ierr);
 
   ierr = DMRefine(dac,MPI_COMM_NULL,&daf);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,0,&Mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
@@ -436,14 +432,9 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
   PetscBool      output = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX,
-                      mx+1, my+1,
-                      PETSC_DECIDE, PETSC_DECIDE,
-                      1, /* 1 dof */
-                      1, /* stencil = 1 */
-                      NULL, NULL,
-                      &dac);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX,mx+1,my+1,PETSC_DECIDE, PETSC_DECIDE,1, /* 1 dof */1, /* stencil = 1 */NULL, NULL,&dac);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dac);CHKERRQ(ierr);
+  ierr = DMSetUp(dac);CHKERRQ(ierr);
 
   ierr = DMRefine(dac,MPI_COMM_NULL,&daf);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,0,&Mx,&My,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
@@ -538,14 +529,10 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx,PetscInt my,PetscInt mz)
   PetscBool      output = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,
-                      mx+1, my+1,mz+1,
-                      PETSC_DECIDE, PETSC_DECIDE,PETSC_DECIDE,
-                      1, /* 1 dof */
-                      1, /* stencil = 1 */
-                      NULL,NULL,NULL,
-                      &dac);CHKERRQ(ierr);
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,mx+1, my+1,mz+1,PETSC_DECIDE, PETSC_DECIDE,PETSC_DECIDE,1, /* 1 dof */
+                      1, /* stencil = 1 */NULL,NULL,NULL,&dac);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dac);CHKERRQ(ierr);
+  ierr = DMSetUp(dac);CHKERRQ(ierr);
 
   ierr = DMRefine(dac,MPI_COMM_NULL,&daf);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,0,&Mx,&My,&Mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
