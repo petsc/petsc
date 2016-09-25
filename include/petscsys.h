@@ -2423,16 +2423,16 @@ PETSC_STATIC_INLINE PetscInt PetscIntSumTruncate(PetscInt a,PetscInt b)
 -     b - the second value
 
    Output Parameter:ma
-.     c - the result as a PetscInt value
+.     c - the result as a PetscInt value, or NULL if you do not want the result, you just want to check if it overflows
 
    Use PetscInt64Mult() to compute the product of two 32 bit PetscInt and store in a PetscInt64
    Use PetscIntMultTruncate() to compute the product of two PetscInt and truncate it to fit in a PetscInt
 
-   Developers Note: We currently assume that PetscInt addition can never overflow, this is obviously wrong but requires many more checks.
+   Developers Note: We currently assume that PetscInt addition does not overflow, this is obviously wrong but requires many more checks.
 
    Level: advanced
 
-.seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast(), PetscIntMult64()
+.seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast(), PetscIntMult64(), PetscIntSumError()
 @*/
 PETSC_STATIC_INLINE PetscErrorCode PetscIntMultError(PetscInt a,PetscInt b,PetscInt *result)
 {
