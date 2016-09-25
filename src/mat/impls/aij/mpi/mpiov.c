@@ -566,7 +566,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,PetscInt imax,IS is[]
 
   /* Memory for doing local proc's work */
   {
-    PetscInt Mimax,M_BPB_imax;
+    PetscInt Mimax = 0,M_BPB_imax = 0;
     ierr = PetscIntMultError(M,imax, &Mimax);CHKERRQ(ierr);
     ierr = PetscIntMultError((M/PETSC_BITS_PER_BYTE+1),imax, &M_BPB_imax);CHKERRQ(ierr);
     ierr = PetscCalloc5(imax,&table, imax,&data, imax,&isz, Mimax,&d_p, M_BPB_imax,&t_p);CHKERRQ(ierr);
