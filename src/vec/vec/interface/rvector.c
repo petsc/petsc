@@ -389,7 +389,7 @@ PetscErrorCode  VecMax(Vec x,PetscInt *p,PetscReal *val)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecMin"
-/*@
+/*@C
    VecMin - Determines the minimum vector component and its location.
 
    Collective on Vec
