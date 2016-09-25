@@ -752,13 +752,16 @@ M*/
 .vb
      int something;
 
-     PetscFunctionBegin;
+     PetscFunctionBeginUser;
 .ve
 
    Notes:
       Final line of PETSc functions should be PetscFunctionReturn(0) except for main().
 
       Not available in Fortran
+
+      This is identical to PetscFunctionBegin except it labels the routine as a user
+      routine instead of as a PETSc library routine.
 
    Level: intermediate
 
