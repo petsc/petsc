@@ -3653,9 +3653,12 @@ PetscErrorCode  SNESSetConvergenceTest(SNES snes,PetscErrorCode (*SNESConvergenc
 .  reason - negative value indicates diverged, positive value converged, see SNESConvergedReason or the
             manual pages for the individual convergence tests for complete lists
 
+   Options Database:
+.   -snes_converged_reason - prints the reason to standard out
+
    Level: intermediate
 
-   Notes: Can only be called after the call the SNESSolve() is complete.
+   Notes: Should only be called after the call the SNESSolve() is complete, if it is called earlier it returns the value SNES__CONVERGED_ITERATING.
 
 .keywords: SNES, nonlinear, set, convergence, test
 
