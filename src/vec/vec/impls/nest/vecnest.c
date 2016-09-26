@@ -203,6 +203,22 @@ static PetscErrorCode VecAXPBY_Nest(Vec y,PetscScalar alpha,PetscScalar beta,Vec
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode VecAXPBYPCZ_Nest(Vec z,PetscScalar alpha,PetscScalar beta,PetscScalar gamma,Vec x,Vec y)
+{
+  Vec_Nest       *bx = (Vec_Nest*)x->data;
+  Vec_Nest       *by = (Vec_Nest*)y->data;
+  Vec_Nest       *bz = (Vec_Nest*)z->data;
+  PetscInt       i,nr;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  nr = bx->nb;
+  for (i=0; i<nr; i++) {
+    ierr = VecAXPBYPCZ(bz->v[i],alpha,beta,gamma,bx->v[i],by->v[i]);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode VecScale_Nest(Vec x,PetscScalar alpha)
 {
   Vec_Nest       *bx = (Vec_Nest*)x->data;
@@ -771,6 +787,7 @@ static PetscErrorCode VecNestSetOps_Private(struct _VecOps *ops)
   ops->dotnorm2                = VecDotNorm2_Nest;
   ops->getsubvector            = VecGetSubVector_Nest;
   ops->restoresubvector        = VecRestoreSubVector_Nest;
+  ops->axpbypcz                = VecAXPBYPCZ_Nest;
   PetscFunctionReturn(0);
 }
 
