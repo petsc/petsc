@@ -13,6 +13,7 @@
           USE_MAT_HIDE
           PetscInt cols(*)
           PetscInt  row,ncols
+          PetscScalar vals(*)
           PetscErrorCode ierr
           MAT_HIDE     v
         End Subroutine
@@ -23,6 +24,7 @@
           USE_MAT_HIDE
           PetscInt  cols(*)
           PetscInt  row,ncols
+          PetscScalar vals(*)
           PetscErrorCode ierr
           MAT_HIDE     v
         End Subroutine
