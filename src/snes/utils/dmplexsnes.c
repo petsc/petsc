@@ -1505,12 +1505,10 @@ PetscErrorCode DMPlexComputeBdResidual_Internal(DM dm, Vec locX, Vec locX_t, Pet
       ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
       ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
       ierr = PetscFree4(u,u_t,fgeom,elemVec);CHKERRQ(ierr);
-      if (locA) {
-        ierr = PetscFree(a);CHKERRQ(ierr);
-        ierr = DMDestroy(&plex);CHKERRQ(ierr);
-      }
+      if (locA) {ierr = PetscFree(a);CHKERRQ(ierr);}
     }
   }
+  if (plex) {ierr = DMDestroy(&plex);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -2181,12 +2179,10 @@ PetscErrorCode DMPlexComputeBdJacobian_Internal(DM dm, Vec locX, Vec locX_t, Pet
       ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
       ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
       ierr = PetscFree4(u,u_t,fgeom,elemMat);CHKERRQ(ierr);
-      if (locA) {
-        ierr = PetscFree(a);CHKERRQ(ierr);
-        ierr = DMDestroy(&plex);CHKERRQ(ierr);
-      }
+      if (locA) {ierr = PetscFree(a);CHKERRQ(ierr);}
     }
   }
+  if (plex) {ierr = DMDestroy(&plex);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
