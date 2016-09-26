@@ -2,6 +2,7 @@
   Code for Timestepping with basic symplectic integrators for separable Hamiltonian systems
 */
 #include <petsc/private/tsimpl.h>                /*I   "petscts.h"   I*/
+#include <petscdm.h>
 
 static TSBSIType TSBSIDefault = TSSIEULER;
 static PetscBool TSBSIRegisterAllCalled;
@@ -221,13 +222,39 @@ static PetscErrorCode TSStep_BSI(TS ts)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMCoarsenHook_BSI(DM fine,DM coarse,void *ctx)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMRestrictHook_BSI(DM fine,Mat restrct,Vec rscale,Mat inject,DM coarse,void *ctx)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMSubDomainHook_BSI(DM dm,DM subdm,void *ctx)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMSubDomainRestrictHook_BSI(DM dm,VecScatter gscat,VecScatter lscat,DM subdm,void *ctx)
+{
+
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode TSSetUp_BSI(TS ts)
 {
   TS_BSI               *bsi = (TS_BSI*)ts->data;
-  PetscErrorCode       ierr;
+  DM                   dm;
   VecType              vtype;
   PetscBool            isNestVec;
   TSRHSFunctionSplit2w rhsfunction1,rhsfunction2;
+  PetscErrorCode       ierr;
 
   PetscFunctionBegin;
   ierr =  TSGetRHSFunctionSplit2w(ts,NULL,&rhsfunction1,&rhsfunction2,NULL);CHKERRQ(ierr);
@@ -238,7 +265,12 @@ static PetscErrorCode TSSetUp_BSI(TS ts)
   ierr = VecDuplicate(ts->vec_sol,&bsi->update);CHKERRQ(ierr);
 
   ierr = TSGetAdapt(ts,&ts->adapt);CHKERRQ(ierr);
-  ierr = TSAdaptCandidatesClear(ts->adapt);CHKERRQ(ierr);
+  ierr = TSAdaptCandidatesClear(ts->adapt);CHKERRQ(ierr); /* make sure to use fixed time stepping */
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  if (dm) {
+    ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_BSI,DMRestrictHook_BSI,ts);CHKERRQ(ierr);
+    ierr = DMSubDomainHookAdd(dm,DMSubDomainHook_BSI,DMSubDomainRestrictHook_BSI,ts);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
