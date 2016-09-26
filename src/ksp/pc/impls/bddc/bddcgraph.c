@@ -79,6 +79,7 @@ PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level,
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Number of vertices %d\n",graph->nvtxs);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Custom minimal size %d\n",graph->custom_minimal_size);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Max count %d\n",graph->maxcount);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Topological two dim? %d\n",graph->twodim);CHKERRQ(ierr);
   if (verbosity_level > 2) {
     for (i=0;i<graph->nvtxs;i++) {
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%d:\n",i);CHKERRQ(ierr);
@@ -1071,6 +1072,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   }
   ierr = PetscFree(queue_global);CHKERRQ(ierr);
   graph->queue_sorted = PETSC_TRUE;
+
   /* save information on subsets (needed when analyzing the connected components) */
   if (graph->ncc) {
     ierr = PetscMalloc2(graph->ncc,&graph->subset_size,graph->ncc,&graph->subset_idxs);CHKERRQ(ierr);
@@ -1098,14 +1100,12 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   ierr = ISDestroy(&subset_n);CHKERRQ(ierr);
 
   /* Determine if we are in 2D or 3D */
-  twodim  = PETSC_TRUE;
+  twodim = PETSC_TRUE;
   for (i=0;i<graph->ncc;i++) {
     PetscInt repdof = graph->queue[graph->cptr[i]];
-    if (graph->cptr[i+1]-graph->cptr[i] > graph->custom_minimal_size) {
-      if (graph->count[repdof] > 1 || graph->special_dof[repdof] == PCBDDCGRAPH_NEUMANN_MARK) {
-        twodim = PETSC_FALSE;
-        break;
-      }
+    if (graph->count[repdof] > 1) {
+      twodim = PETSC_FALSE;
+      break;
     }
   }
   ierr = MPIU_Allreduce(&twodim,&graph->twodim,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)graph->l2gmap));CHKERRQ(ierr);
