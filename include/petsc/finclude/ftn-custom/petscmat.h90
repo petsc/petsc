@@ -9,9 +9,9 @@
 #define MAT_FACTORINFO_SIZE MAT_FACTORINFO_SIZE_MOD
 
       Interface
-        Subroutine MatGetRow(v,r,ncols,cols,vals,ierr)
+        Subroutine MatGetRow(v,row,ncols,cols,vals,ierr)
           USE_MAT_HIDE
-          PetscInt, pointer :: cols(:)
+          PetscInt cols(*)
           PetscInt  row,ncols
           PetscErrorCode ierr
           MAT_HIDE     v
@@ -19,9 +19,9 @@
       End Interface
 
       Interface
-        Subroutine MatRestoreRow(v,r,ncols,cols,vals,ierr)
+        Subroutine MatRestoreRow(v,row,ncols,cols,vals,ierr)
           USE_MAT_HIDE
-          PetscInt, pointer :: cols(:)
+          PetscInt  cols(*)
           PetscInt  row,ncols
           PetscErrorCode ierr
           MAT_HIDE     v
