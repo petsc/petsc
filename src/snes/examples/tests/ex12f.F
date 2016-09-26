@@ -133,7 +133,7 @@
       PetscInt i,s,n
       PetscErrorCode ierr
       PetscOffset      ixx,iff,iF2
-      PetscScalar      h,d,vf2(1),vxx(1),vff(1)
+      PetscScalar      h,d,vf2(2),vxx(2),vff(2)
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
 #include <petsc/finclude/petscdm.h>
@@ -239,7 +239,7 @@
       PetscErrorCode ierr
       PetscMPIInt rank,size
       PetscOffset      ixx
-      PetscScalar      d,A,h,vxx(1)
+      PetscScalar      d,A,h,vxx(2)
 
       i1 = 1
       h = 1.0/(real(ctx(6)) - 1.0)
