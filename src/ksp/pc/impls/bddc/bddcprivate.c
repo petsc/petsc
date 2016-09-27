@@ -6,10 +6,11 @@
 
 static PetscErrorCode MatMPIAIJRestrict(Mat,MPI_Comm,Mat*);
 
-/* returns B s.t. range(B) _|_ range(A) */
+/* if range is true,  it returns B s.t. span{B} = range(A)
+   if range is false, it returns B s.t. range(B) _|_ range(A) */
 #undef __FUNCT__
-#define __FUNCT__ "MatDense_OrthogonalComplement"
-PetscErrorCode MatDense_OrthogonalComplement(Mat A, PetscInt lw, PetscScalar *work, PetscReal *rwork, Mat *B)
+#define __FUNCT__ "MatDenseOrthogonalRangeOrComplement"
+PetscErrorCode MatDenseOrthogonalRangeOrComplement(Mat A, PetscBool range, PetscInt lw, PetscScalar *work, PetscReal *rwork, Mat *B)
 {
 #if !defined(PETSC_USE_COMPLEX)
   PetscScalar    *uwork,*data,*U, ds = 0.;
@@ -59,9 +60,15 @@ PetscErrorCode MatDense_OrthogonalComplement(Mat A, PetscInt lw, PetscScalar *wo
     ierr = PetscFree(uwork);CHKERRQ(ierr);
   }
   /* create B */
-  ierr = MatCreateSeqDense(PETSC_COMM_SELF,nr,nr-i,NULL,B);CHKERRQ(ierr);
-  ierr = MatDenseGetArray(*B,&data);CHKERRQ(ierr);
-  ierr = PetscMemcpy(data,U+nr*i,(nr-i)*nr*sizeof(PetscScalar));CHKERRQ(ierr);
+  if (!range) {
+    ierr = MatCreateSeqDense(PETSC_COMM_SELF,nr,nr-i,NULL,B);CHKERRQ(ierr);
+    ierr = MatDenseGetArray(*B,&data);CHKERRQ(ierr);
+    ierr = PetscMemcpy(data,U+nr*i,(nr-i)*nr*sizeof(PetscScalar));CHKERRQ(ierr);
+  } else {
+    ierr = MatCreateSeqDense(PETSC_COMM_SELF,nr,i,NULL,B);CHKERRQ(ierr);
+    ierr = MatDenseGetArray(*B,&data);CHKERRQ(ierr);
+    ierr = PetscMemcpy(data,U,i*nr*sizeof(PetscScalar));CHKERRQ(ierr);
+  }
   ierr = MatDenseRestoreArray(*B,&data);CHKERRQ(ierr);
   ierr = PetscFree(U);CHKERRQ(ierr);
 #else
@@ -105,7 +112,7 @@ PetscErrorCode PCBDDCComputeNedelecChangeEdge(Mat lG, IS edge, IS extrow, IS ext
   ierr = MatGetSubMatrix(lG,edge,extcol,MAT_INITIAL_MATRIX,&GE);CHKERRQ(ierr);
   ierr = MatConvert(GE,MATSEQDENSE,MAT_REUSE_MATRIX,&GEd);CHKERRQ(ierr);
   ierr = MatDestroy(&GE);CHKERRQ(ierr);
-  ierr = MatDense_OrthogonalComplement(GEd,5*esize,work,rwork,GKins);CHKERRQ(ierr);
+  ierr = MatDenseOrthogonalRangeOrComplement(GEd,PETSC_FALSE,5*esize,work,rwork,GKins);CHKERRQ(ierr);
   ierr = MatDestroy(&GEd);CHKERRQ(ierr);
 
   if (corners) {
