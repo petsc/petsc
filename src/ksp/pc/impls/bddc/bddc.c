@@ -103,7 +103,7 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
   /* ASCII viewer */
   if (isascii) {
     PetscMPIInt   color,rank,size;
-    PetscInt64    loc[6],gsum[5],gmax[5],gmin[5],totbenign;
+    PetscInt64    loc[7],gsum[6],gmax[6],gmin[6],totbenign;
     PetscScalar   interface_size;
     PetscReal     ratio1=0.,ratio2=0.;
     Vec           counter;
@@ -149,7 +149,7 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Benign subspace trick is active: %d\n",pcbddc->benign_have_null);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Algebraic computation of no-net-flux %d\n",pcbddc->compute_nonetflux);CHKERRQ(ierr);
 
-    /* compute some numbers on the domain decomposition */
+    /* compute interface size */
     ierr = VecSet(pcis->vec1_B,1.0);CHKERRQ(ierr);
     ierr = MatCreateVecs(pc->pmat,&counter,0);CHKERRQ(ierr);
     ierr = VecSet(counter,0.0);CHKERRQ(ierr);
@@ -157,20 +157,23 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
     ierr = VecScatterEnd(pcis->global_to_B,pcis->vec1_B,counter,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecSum(counter,&interface_size);CHKERRQ(ierr);
     ierr = VecDestroy(&counter);CHKERRQ(ierr);
+
+    /* compute some statistics on the domain decomposition */
     gsum[0] = 1;
-    gsum[1] = gsum[2] = gsum[3] = gsum[4] = 0;
-    loc[0] = !!pcis->n;
-    loc[1] = pcis->n - pcis->n_B;
-    loc[2] = pcis->n_B;
-    loc[3] = pcbddc->local_primal_size;
-    loc[4] = pcis->n;
-    loc[5] = pcbddc->benign_n;
-    ierr = MPI_Reduce(loc,gsum,5,MPIU_INT64,MPI_SUM,0,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
-    if (!loc[0]) loc[1] = loc[2] = loc[3] = loc[4] = -1;
-    ierr = MPI_Reduce(loc,gmax,5,MPIU_INT64,MPI_MAX,0,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
-    if (!loc[0]) loc[1] = loc[2] = loc[3] = loc[4] = PETSC_MAX_INT;
-    ierr = MPI_Reduce(loc,gmin,5,MPIU_INT64,MPI_MIN,0,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
-    ierr = MPI_Reduce(&loc[5],&totbenign,1,MPIU_INT64,MPI_SUM,0,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+    gsum[1] = gsum[2] = gsum[3] = gsum[4] = gsum[5] = 0;
+    loc[0]  = !!pcis->n;
+    loc[1]  = pcis->n - pcis->n_B;
+    loc[2]  = pcis->n_B;
+    loc[3]  = pcbddc->local_primal_size;
+    loc[4]  = pcis->n;
+    loc[5]  = pcbddc->n_local_subs > 0 ? pcbddc->n_local_subs : (pcis->n ? 1 : 0);
+    loc[6]  = pcbddc->benign_n;
+    ierr = MPI_Reduce(loc,gsum,6,MPIU_INT64,MPI_SUM,0,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+    if (!loc[0]) loc[1] = loc[2] = loc[3] = loc[4] = loc[5] = -1;
+    ierr = MPI_Reduce(loc,gmax,6,MPIU_INT64,MPI_MAX,0,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+    if (!loc[0]) loc[1] = loc[2] = loc[3] = loc[4] = loc[5] = PETSC_MAX_INT;
+    ierr = MPI_Reduce(loc,gmin,6,MPIU_INT64,MPI_MIN,0,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+    ierr = MPI_Reduce(&loc[6],&totbenign,1,MPIU_INT64,MPI_SUM,0,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
     if (pcbddc->coarse_size) {
       ratio1 = pc->pmat->rmap->N/(1.*pcbddc->coarse_size);
       ratio2 = PetscRealPart(interface_size)/pcbddc->coarse_size;
@@ -179,6 +182,7 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Global dofs sizes: all %d interface %d coarse %d\n",pc->pmat->rmap->N,(PetscInt)PetscRealPart(interface_size),pcbddc->coarse_size);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Coarsening ratios: all/coarse %d interface/coarse %d\n",(PetscInt)ratio1,(PetscInt)ratio2);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Active processes : %d\n",(PetscInt)gsum[0]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Total subdomains : %d\n",(PetscInt)gsum[5]);CHKERRQ(ierr);
     if (pcbddc->benign_have_null) {
       ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Benign subs      : %d\n",(PetscInt)totbenign);CHKERRQ(ierr);
     }
@@ -187,10 +191,11 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Interface dofs   :\t%d\t%d\t%d\n",(PetscInt)gmin[2],(PetscInt)gmax[2],(PetscInt)(gsum[2]/gsum[0]));CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Primal    dofs   :\t%d\t%d\t%d\n",(PetscInt)gmin[3],(PetscInt)gmax[3],(PetscInt)(gsum[3]/gsum[0]));CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Local     dofs   :\t%d\t%d\t%d\n",(PetscInt)gmin[4],(PetscInt)gmax[4],(PetscInt)(gsum[4]/gsum[0]));CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Local     subs   :\t%d\t%d\n",(PetscInt)gmin[5],(PetscInt)gmax[5]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: ********************************** COARSE PROBLEM DETAILS *********************************\n",pcbddc->current_level);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
 
-    /* the coarse problem can be handled with a different communicator */
+    /* the coarse problem can be handled by a different communicator */
     if (pcbddc->coarse_ksp) color = 1;
     else color = 0;
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRQ(ierr);
