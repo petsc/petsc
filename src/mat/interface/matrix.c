@@ -877,7 +877,7 @@ PetscErrorCode MatSetUp(Mat A)
          the matrix structure
 
    Options Database Keys:
-+  -mat_view ::ascii_info - Prints info on matrix at conclusion of MatEndAssembly()
++  -mat_view ::ascii_info - Prints info on matrix at conclusion of MatAssemblyEnd()
 .  -mat_view ::ascii_info_detail - Prints more detailed info
 .  -mat_view - Prints matrix in ASCII format
 .  -mat_view ::ascii_matlab - Prints matrix in Matlab format
