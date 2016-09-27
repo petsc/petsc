@@ -2006,6 +2006,8 @@ PetscErrorCode  VecReplaceArray(Vec vec,const PetscScalar array[])
 
     Example of Usage:
 .vb
+#include <petsc/finclude/petscvec.h90>
+
     Vec x
     Vec, pointer :: y(:)
     ....
@@ -2045,6 +2047,8 @@ M*/
 
     Example of Usage:
 .vb
+#include <petsc/finclude/petscvec.h90>
+
     PetscScalar, pointer :: xx_v(:)
     ....
     call VecGetArrayF90(x,xx_v,ierr)
@@ -2102,6 +2106,8 @@ M*/
 
     Example of Usage:
 .vb
+#include <petsc/finclude/petscvec.h90>
+
     PetscScalar, pointer :: xx_v(:)
     ....
     call VecGetArrayF90(x,xx_v,ierr)
@@ -2137,6 +2143,8 @@ M*/
 
     Example of Usage:
 .vb
+#include <petsc/finclude/petscvec.h90>
+
     PetscScalar, pointer :: xx_v(:)
     ....
     call VecGetArrayReadF90(x,xx_v,ierr)
@@ -2170,6 +2178,8 @@ M*/
 
     Example of Usage:
 .vb
+#include <petsc/finclude/petscvec.h90>
+
     PetscScalar, pointer :: xx_v(:)
     ....
     call VecGetArrayReadF90(x,xx_v,ierr)

@@ -6156,13 +6156,14 @@ PETSc includes limited support for direct use of Fortran90 pointers.
 Current routines include:
 \begin{tabbing}
  VecGetArrayF90(), VecRestoreArrayF90()\\
+ VecGetArrayReadF90(), VecRestoreArrayReadF90()\\
  VecDuplicateVecsF90(), VecDestroyVecsF90()\\
  DMDAVecGetArrayF90(), DMDAVecGetArrayReadF90(), ISLocalToGlobalMappingGetIndicesF90()\\
  MatDenseGetArrayF90(), MatDenseRestoreArrayF90()\\
  ISGetIndicesF90(), ISRestoreIndicesF90()
 \end{tabbing}
 See the manual pages for details and pointers to example programs.  To
-use the routines VecGetArrayF90(), VecRestoreArrayF90()
+use the routines VecGetArrayF90(), VecRestoreArrayF90(), VecGetArrayReadF90(), VecRestoreArrayReadF90(),
 VecDuplicateVecsF90(), and VecDestroyVecsF90(), one must
 use the Fortran90 vector include file,
 \begin{tabbing}
