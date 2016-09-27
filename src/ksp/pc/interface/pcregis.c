@@ -53,6 +53,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_AINVCUSP(PC);
 #endif
 #if defined(PETSC_HAVE_VIENNACL)
 PETSC_EXTERN PetscErrorCode PCCreate_SAVIENNACL(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_CHOWILUVIENNACL(PC);
 #endif
 #if defined(PETSC_HAVE_PARMS)
 PETSC_EXTERN PetscErrorCode PCCreate_PARMS(PC);
@@ -134,6 +135,7 @@ PetscErrorCode  PCRegisterAll(void)
 #endif
 #if defined(PETSC_HAVE_VIENNACL)
   ierr = PCRegister(PCSAVIENNACL   ,PCCreate_SAVIENNACL);CHKERRQ(ierr);
+  ierr = PCRegister(PCCHOWILUVIENNACL,PCCreate_CHOWILUVIENNACL);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_PARMS)
   ierr = PCRegister(PCPARMS        ,PCCreate_PARMS);CHKERRQ(ierr);
