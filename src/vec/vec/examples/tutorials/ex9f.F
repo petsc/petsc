@@ -30,7 +30,7 @@
       PetscMPIInt rank,size
       PetscInt nlocal,nghost,ifrom(2)
       PetscErrorCode ierr
-      PetscInt rstart,rend,ione
+      PetscInt i,rstart,rend,ione
       PetscBool   flag
       PetscScalar  value,tarray(20)
       Vec          lx,gx,gxs
