@@ -33,8 +33,10 @@ runex9bus_implicit:
 	   ${RM} -f ex9bus_1.tmp
 
 runex9bus_semiexplicit:
-	-@${MPIEXEC} -n 1 ./ex9bus -ts_monitor -snes_monitor_short -dae_semiexplicit -ts_rk_type 2a > ex9bus_2.tmp 2>&1;   \
-	   ${DIFF} output/ex9bus_2.out ex9bus_2.tmp || printf "${PWD}\nPossible problem with ex9bus_semiexplicit, diffs above\n=========================================\n"; \
+	-@x="bad"; ${MPIEXEC} -n 1 ./ex9bus -ts_monitor -snes_monitor_short -dae_semiexplicit -ts_rk_type 2a > ex9bus_2.tmp 2>&1;   \
+           if (${DIFF} output/ex9bus_2.out ex9bus_2.tmp > /dev/null 2>&1) then x='good'; fi ;\
+           if (${DIFF} output/ex9bus_2_alt.out ex9bus_2.tmp > /dev/null 2>&1) then x='good'; fi; \
+           if [ "$$x" = "bad" ]; then ${DIFF} output/ex9bus_2.out ex9bus_2.tmp ; ${DIFF} output/ex9bus_2_alt.out ex9bus_2.tmp ; printf "${PWD}\nPossible problem with ex9bus_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex9bus_2.tmp
 
 runex9busadj:
