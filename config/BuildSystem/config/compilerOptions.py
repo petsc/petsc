@@ -51,7 +51,10 @@ class CompilerOptions(config.base.Configure):
       # Windows Intel
       elif compiler.find('win32fe icl') >= 0:
         if bopt == '':
-          flags.extend(['-MT'])
+          if self.argDB['with-shared-libraries']:
+            flags.extend(['-MD'])
+          else:
+            flags.extend(['-MT'])
         elif bopt == 'g':
           flags.extend(['-Z7'])
         elif bopt == 'O':
@@ -59,7 +62,11 @@ class CompilerOptions(config.base.Configure):
       # Windows Microsoft
       elif compiler.find('win32fe cl') >= 0:
         if bopt == '':
-          flags.extend(['-MT','-wd4996'])
+          dir(self)
+          if self.argDB['with-shared-libraries']:
+            flags.extend(['-MD','-wd4996'])
+          else:
+            flags.extend(['-MT','-wd4996'])
         elif bopt == 'g':
           flags.extend(['-Z7'])
         elif bopt == 'O':
@@ -131,7 +138,10 @@ class CompilerOptions(config.base.Configure):
       # Windows Intel
       elif compiler.find('win32fe icl') >= 0:
         if bopt == '':
-          flags.extend(['-MT','-GX','-GR'])
+          if self.argDB['with-shared-libraries']:
+            flags.extend(['-MD','-GX','-GR'])
+          else:
+            flags.extend(['-MT','-GX','-GR'])
         elif bopt in ['g']:
           flags.extend(['-Z7'])
         elif bopt in ['O']:
@@ -139,7 +149,10 @@ class CompilerOptions(config.base.Configure):
       # Windows Microsoft
       elif compiler.find('win32fe cl') >= 0:
         if bopt == '':
-          flags.extend(['-MT','-GR','-EHsc']) # removing GX in favor of EHsc
+          if self.argDB['with-shared-libraries']:
+            flags.extend(['-MD','-GR','-EHsc'])
+          else:
+            flags.extend(['-MT','-GR','-EHsc']) # removing GX in favor of EHsc
         elif bopt == 'g':
           flags.extend(['-Z7','-Zm200'])
         elif bopt == 'O':
@@ -203,7 +216,10 @@ class CompilerOptions(config.base.Configure):
       # Windows Intel
       elif compiler.find('win32fe ifl') >= 0 or compiler.find('win32fe ifort') >= 0:
         if bopt == '':
-          flags.extend(['-MT'])
+          if self.argDB['with-shared-libraries']:
+            flags.extend(['-MD'])
+          else:
+            flags.extend(['-MT'])
         elif bopt == 'g':
           flags.extend(['-Z7'])
         elif bopt == 'O':

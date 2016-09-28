@@ -3,7 +3,8 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/PARTY_1.99.tar.gz']
+    self.gitcommit    = 'v1.99p1'
+    self.download     = ['git://https://bitbucket.org/petsc/pkg-party.git','http://ftp.mcs.anl.gov/pub/petsc/externalpackages/PARTY_1.99p1.tar.gz']
     self.functions    = ['party_lib']
     self.includes     = ['party_lib.h']
     self.liblist      = [['libparty.a']]
