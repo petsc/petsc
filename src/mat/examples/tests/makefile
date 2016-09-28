@@ -2867,7 +2867,7 @@ TESTEXAMPLES_13		       = ex58f.PETSc ex58f.rm ex70.PETSc ex70.rm
 TESTEXAMPLES_PARMETIS	       = ex73.PETSc ex73.rm
 TESTEXAMPLES_PARMETIS_DATAFILESPATH = ex152.PETSc runex152 runex152_2 ex152.rm
 TESTEXAMPLES_FFTW              = ex142.PETSc runex142 ex142.rm ex144.PETSc runex144 runex144_2 ex144.rm \
-                                 ex148.PETsc runex148 runex148_2 ex148.rm ex158.PETsc runex158 runex158_2 ex158.rm
+                                 ex148.PETSc runex148 runex148_2 ex148.rm ex158.PETSc runex158 runex158_2 ex158.rm
 TESTEXAMPLES_FFTW_COMPLEX       = ex112.PETSc runex112 runex112_3 runex112_4 ex112.rm ex121.PETSc ex121.rm \
                                  ex143.PETSc runex143 runex143_2 ex143.rm
 TESTEXAMPLES_C_COMPLEX	       = ex127.PETSc runex127 runex127_2 ex127.rm  ex175.PETSc runex175 ex175.rm ex197.PETSc runex197 runex197_2 ex197.rm
@@ -2884,7 +2884,7 @@ TESTEXAMPLES_MKL_PARDISO       = ex125.PETSc runex125_mkl_pardiso ex125.rm \
                                  ex192.PETSc runex192_mkl_pardiso ex192.rm
 TESTEXAMPLES_SUPERLU_DIST_DATAFILESPATH = ex125.PETSc runex125_superlu_dist runex125_superlu_dist_2 ex125.rm
 TESTEXAMPLES_SUPERLU_DIST_COMPLEX_DATAFILESPATH = ex125.PETSc runex125_superlu_dist_complex ex125.rm
-TESTEXAMPLES_F90               = ex196f90.PETSc ex196f90.rm
+TESTEXAMPLES_F90               = ex196f90.PETSc ex196f90.rm ex16f90.PETSc runex16f90 ex16f90.rm
 TESTEXAMPLES_VECCUDA           = ex2.PETSc runex2_aijcusparse runex2_2_aijcusparse runex2_3_aijcusparse ex2.rm \
                                  ex5.PETSc runex5_aijcusparse runex5_2_aijcusparse runex5_3_aijcusparse ex5.rm
 

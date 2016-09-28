@@ -9,7 +9,8 @@ from cmakegen import Mistakes, stripsplit, AUTODIRS, SKIPDIRS
 from cmakegen import defaultdict # collections.defaultdict, with fallback for python-2.4
 
 PKGS = 'sys vec mat dm ksp snes ts tao'.split()
-LANGS = dict(c='C', cxx='CXX', cu='CU', F='F')
+#LANGS = dict(c='C', cxx='CXX', cu='CU', F='F')
+LANGS = dict(c='C', cxx='CXX', cu='CU', F='F',F90='F90')
 
 try:
     all([True, True])
@@ -142,7 +143,7 @@ class Petsc(object):
             self.gendeps.append(self.relpath(root, 'makefile'))
         return pkgsrcs
 
-    def gen_gnumake(self, fd):
+    def gen_gnumake(self, fd,prefix='srcs-'):
         def write(stem, srcs):
             fd.write('%s :=\n' % stem)
             for lang in LANGS:
@@ -150,7 +151,7 @@ class Petsc(object):
                 fd.write('%(stem)s += $(%(stem)s.%(lang)s)\n' % dict(stem=stem, lang=lang))
         for pkg in PKGS:
             srcs = self.gen_pkg(pkg)
-            write('srcs-' + pkg, srcs)
+            write(prefix + pkg, srcs)
         return self.gendeps
 
     def gen_ninja(self, fd):

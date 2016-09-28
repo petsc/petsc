@@ -712,16 +712,6 @@ runex29:
 	   ${DIFF} output/ex29.out ex29.tmp || printf "${PWD}\nPossible problem with ex29, diffs above\n=========================================\n";  \
 	   ${RM} -f ex29.tmp
 
-runex30:
-	-@${MPIEXEC} -n 1 ./ex30 > ex30_1.tmp 2>&1;  \
-	   ${DIFF} output/ex30_1.out ex30_1.tmp || printf "${PWD}\nPossible problem with ex30_1, diffs above\n=========================================\n"; \
-	   ${RM} -f ex30_1.tmp
-
-runex30_2:
-	-@${MPIEXEC} -n 2 ./ex30 > ex30_2.tmp 2>&1;  \
-	   ${DIFF} output/ex30_2.out ex30_2.tmp || printf "${PWD}\nPossible problem with ex30_2, diffs above\n=========================================\n"; \
-	   ${RM} -f ex30_2.tmp
-
 runex31:
 	-@${MPIEXEC} -n 1 ./ex31 > ex31_1.tmp 2>&1; \
 	   ${DIFF} output/ex31_1.out ex31_1.tmp || printf "${PWD}\nPossible problem with ex31_1, diffs above\n=========================================\n";  \
@@ -742,7 +732,6 @@ runex35_2:
 	   ${DIFF} output/ex35_2.out ex35_2.tmp || printf "${PWD}\nPossible problem with ex35_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex35_2.tmp
 
-runex40: runex40_a runex40_b runex40_c runex40_d runex40_e
 
 runex40_a:
 	-@${MPIEXEC} -n 1 ./ex40 -snes_stol 1e-4 > ex40.tmp 2>&1; \
@@ -768,8 +757,6 @@ runex40_e:
 	-@${MPIEXEC} -n 1 ./ex40 -ts_type bdf -ts_bdf_adapt -ts_adapt_dt_max 0.025 -ts_max_steps 1500 > ex40.tmp 2>&1; \
 	   ${DIFF} output/ex40.out ex40.tmp || printf "${PWD}\nPossible problem with ex40_e, diffs above\n=========================================\n"; \
 	   ${RM} -f ex40.tmp
-
-runex41: runex41_a runex41_b runex41_c runex41_d runex41_e
 
 runex41_a:
 	-@${MPIEXEC} -n 2 ./ex41 -snes_stol 1e-4 > ex41.tmp 2>&1; \
@@ -811,8 +798,6 @@ runex43_b:
 	   ${DIFF} output/ex43_b.out ex43_b.tmp || printf "${PWD}\nPossible problem with ex43_b, diffs above\n=========================================\n"; \
 	   ${RM} -f ex43_b.tmp
 
-runex44: runex44_a runex44_b runex44_2
-
 runex44_a:
 	-@${MPIEXEC} -n 1 ./ex44 > ex44_a.tmp 2>&1; \
 	   ${DIFF} output/ex44.out ex44_a.tmp || printf "${PWD}\nPossible problem with ex44_a, diffs above\n=========================================\n"; \
@@ -840,10 +825,11 @@ TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex3.PETSc runex3 runex3_2 r
                             ex22.PETSc runex22_2 runex22_3 runex22_4 ex22.rm \
                             ex25.PETSc runex25 ex25.rm \
                             ex31.PETSc runex31 runex31_2 ex31.rm \
-                            ex40.PETSc runex40 ex40.rm \
-                            ex41.PETSc runex41 ex41.rm \
+                            ex40.PETSc runex40_a runex40_b runex40_c runex40_d runex40_e ex40.rm \
+                            ex41.PETSc runex41_a runex41_b runex41_c runex41_d runex41_e ex41.rm \
                             ex43.PETSc ex43.rm \
-                            ex44.PETSc runex44 ex44.rm
+                            ex44.PETSc runex44_a runex44_b runex44_2 ex44.rm
+
 TESTEXAMPLES_C_NOTSINGLE  = ex2.PETSc runex2 ex2.rm ex3.PETSc runex3_3 ex3.rm ex8.PETSc runex8_2 runex8_3 ex8.rm ex10.PETSc printdot runex10 runex10_2 runex10_3  ex10.rm \
                             printdot ex12.PETSc runex12 runex12_2 ex12.rm ex15.PETSc runex15_3 runex15_4 ex15.rm printdot \
                             ex16.PETSc runex16  ex16.rm ex17.PETSc runex17 runex17_2 ex17.rm  ex22.PETSc runex22  ex22.rm printdot \

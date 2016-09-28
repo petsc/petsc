@@ -5,6 +5,7 @@ include ./$(PETSC_ARCH)/lib/petsc/conf/petscvariables
 include ./lib/petsc/conf/variables
 
 OBJDIR := $(PETSC_ARCH)/obj
+TESTDIR := $(PETSC_ARCH)/tests
 MODDIR := $(PETSC_ARCH)/include
 LIBDIR := $(abspath $(PETSC_ARCH)/lib)
 
@@ -55,8 +56,10 @@ libpetscall := $(if $(filter-out no,$(BUILDSHAREDLIB)),$(libpetscall_shared) $(l
 generated      := $(PETSC_ARCH)/lib/petsc/conf/files
 petscconf      := $(PETSC_ARCH)/include/petscconf.h
 petscvariables := $(PETSC_ARCH)/lib/petsc/conf/petscvariables
+generatedtest      := $(PETSC_ARCH)/lib/petsc/conf/testfiles
+generatedtestargs  := $(PETSC_ARCH)/lib/petsc/conf/testargfiles
 
-all : $(generated) $(libpetscall)
+all : $(generated) $(libpetscall) 
 
 .SECONDEXPANSION:		# to expand $$(@D)/.DIR
 
@@ -78,7 +81,15 @@ endif
 $(generated) : $(petscconf) $(petscvariables)
 	$(PYTHON) ./config/gmakegen.py --petsc-arch=$(PETSC_ARCH)
 
+$(generatedtest) : $(petscconf) $(petscvariables)
+	$(PYTHON) ./config/gmakegentest.py --petsc-arch=$(PETSC_ARCH)
+
+$(generatedtestargs) : $(petscconf) $(petscvariables)
+	$(PYTHON) ./config/gmakegentest.py --petsc-arch=$(PETSC_ARCH)
+
 -include $(generated)
+-include $(generatedtest)
+-include $(generatedtestargs)
 
 ifeq ($(PETSC_LANGUAGE),CXXONLY)
   cc_name := CXX
@@ -100,6 +111,12 @@ PETSC_COMPILE.F = $(call quiet,FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DE
 langs := c cu cxx F
 concatlang = $(foreach lang, $(langs), $(srcs-$(1).$(lang):%.$(lang)=$(OBJDIR)/%.o))
 srcs.o := $(foreach pkg, $(pkgs), $(call concatlang,$(pkg)))
+testlangs := c cu cxx F F90
+concattestlang = $(foreach lang, $(testlangs), $(testsrcs-$(1).$(lang):%.$(lang)=$(TESTDIR)/%.o))
+testsrcs.o := $(foreach pkg, $(pkgs), $(call concattestlang,$(pkg)))
+
+#foo:
+#	-echo $(testsrcs.o)
 
 define SHARED_RECIPE_DLL
   @$(RM) $@ dllcmd.${PETSC_ARCH}
@@ -192,6 +209,38 @@ else
 	$(PETSC_COMPILE.F) $(abspath $<) -o $@ $(FC_MODULE_OUTPUT_FLAG)$(MODDIR)
 endif
 
+$(TESTDIR)/%.o : %.c | $$(@D)/.DIR
+	$(PETSC_COMPILE.c) $(abspath $<) -o $@
+
+$(TESTDIR)/%.o : %.cxx | $$(@D)/.DIR
+	$(PETSC_COMPILE.cxx) $(abspath $<) -o $@
+
+$(TESTDIR)/%.o : %.cu | $$(@D)/.DIR
+	$(PETSC_COMPILE.cu) $(abspath $<) -o $@ # Compile first so that if there is an error, it comes from a normal compile
+	@$(PETSC_GENDEPS.cu) $(abspath $<) -o $(@:%.o=%.d) # Generate the dependencies for later
+
+#TODO: Make the testfiles have just the *.sh: <exfile>
+#  -- but how do I get the wildcard searching to work?
+#TODO: Shell script to be invokable either in rundir or PETSC_DIR dir
+#TODO: Simplify the dependency of testparse.py? and gmakegentest.py
+# Tis is the one that runs the shell scripts
+#$(TESTDIR)/% : %.sh | $$(@D)/.DIR
+#	-@$(SHELL) $< $(if $(V),-v,)
+
+$(TESTDIR)/%.o : %.F | $$(@D)/.DIR
+ifeq ($(FC_MODULE_OUTPUT_FLAG),)
+	cd $(MODDIR) && $(FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS) $(abspath $<) -o $(abspath $@)
+else
+	$(PETSC_COMPILE.F) $(abspath $<) -o $@ $(FC_MODULE_OUTPUT_FLAG)$(MODDIR)
+endif
+
+$(TESTDIR)/%.o : %.F90 | $$(@D)/.DIR
+ifeq ($(FC_MODULE_OUTPUT_FLAG),)
+	cd $(MODDIR) && $(FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS) $(abspath $<) -o $(abspath $@)
+else
+	$(PETSC_COMPILE.F) $(abspath $<) -o $@ $(FC_MODULE_OUTPUT_FLAG)$(MODDIR)
+endif
+
 # Hack: manual dependencies on object files
 ifeq ($(MPI_IS_MPIUNI),1)
   MPIUNI_MOD := $(MODDIR)/mpi.mod
@@ -210,6 +259,10 @@ $(OBJDIR)/src/sys/classes/bag/f2003-src/fsrc/bagenum.o  : $(OBJDIR)/src/sys/f90-
 
 # all sources should get recompiled when petscvariables changes (i.e when configure is rerun or when petscvariables is manually edited.)
 $(srcs.o) : $(petscvariables)
+$(testsrcs.o) : $(petscvariables)
+
+# all test sources should be recompiled when the library changes
+$(testsrcs.o) : $(libpetscall)
 
 %/.DIR :
 	@mkdir -p $(@D)
@@ -223,16 +276,59 @@ $(srcs.o) : $(petscvariables)
 .PHONY: clean all print
 
 clean:
-	${RM} -rf $(OBJDIR) $(LIBDIR)/libpetsc* $(MODDIR)/petsc*.mod $(MPIUNI_MOD) $(generated)
+	${RM} -rf $(OBJDIR) $(TESTDIR) $(LIBDIR)/libpetsc* $(MODDIR)/petsc*.mod $(MPIUNI_MOD) $(generated)
 
 # make print VAR=the-variable
 print:
 	@echo $($(VAR))
 
 allobj.d := $(srcs.o:%.o=%.d)
+alltest.d := $(testsrcs.o:%.o=%.d)
 # Tell make that allobj.d are all up to date.  Without this, the include
 # below has quadratic complexity, taking more than one second for a
 # do-nothing build of PETSc (much worse for larger projects)
 $(allobj.d) : ;
+$(alltest.d) : ;
 
 -include $(allobj.d)
+-include $(alltest.d)
+
+
+# this allows one to generate the tests commands to run by searching
+# Note that percent is a wildcard: 
+#    make -f gmakefile testsearch search='%ex2' 
+# For args:
+#    make -f gmakefile testsearch argsearch='cuda%' 
+
+# filtertest is because normal filter command cannot search for two wildcards!!
+TESTTARGETS := $(shell grep '^[a-z]' $(generatedtest) | grep -v "+=" | cut -f1 -d':')
+TESTARGTARGETS=$(foreach testt, $(TESTTARGETS), $(testt)_ARGS)
+filtertest = $(foreach v,$(TESTTARGETS),$(if $(findstring $(searchin),$(v)),$(v)))
+filterargs = $(foreach v,$(TESTTARGETS),$(if $(findstring $(argsearch),$(v)),$(v)))
+ifdef search
+  NEW_TESTTARGETS = $(filter $(search),$(TESTTARGETS))
+  ACTUAL_RUN=$(NEW_TESTTARGETS)
+else ifdef searchin
+  NEW_TESTTARGETS = $(call filtertest)
+  ACTUAL_RUN=$(NEW_TESTTARGETS)
+else ifdef argsearch
+    NEW_TESTTARGETS=$(call filterargs)
+    ACTUAL_RUN=$(NEW_TESTTARGETS)
+else
+    ACTUAL_RUN=$(TESTTARGETS)
+endif
+
+ACTUAL_RUN += report_tests
+
+testsearch: $(ACTUAL_RUNS)
+
+.PHONY: report_tests
+
+echo_test:
+	-@echo $(TESTTARGETS)
+
+echo_testsearch:
+	-@echo $(ACTUAL_RUN)
+
+report_tests:
+	-@cd $(TESTDIR); ./report_tests.sh

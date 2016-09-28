@@ -2,6 +2,11 @@
 !
 !    Demonstrates how one may access entries of a PETSc Vec as if it was an array of Fortran derived types
 !
+!/*T
+!   Concepts: vectors^basic routines;
+!   Processors: n
+!   depends: ex21.c
+!T*/
 !
 ! -----------------------------------------------------------------------
 

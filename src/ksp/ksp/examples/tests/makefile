@@ -67,10 +67,6 @@ ex5f: ex5f.o  chkopts
 	-${FLINKER} -o ex5f ex5f.o  ${PETSC_KSP_LIB}
 	${RM} ex5f.o
 
-ex13: ex13.o  chkopts
-	-${CLINKER} -o ex13 ex13.o  ${PETSC_KSP_LIB}
-	${RM} ex13.o
-
 ex14: ex14.o  chkopts
 	-${CLINKER} -o ex14 ex14.o  ${PETSC_KSP_LIB}
 	${RM} ex14.o
@@ -259,11 +255,6 @@ runex4_5:
 	   if (${DIFF} output/ex4_5.out ex4_5.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex4_5, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex4_5.tmp
-runex5:
-	-@${MPIEXEC} -n 2 ./ex5 -ksp_monitor_short -nokspview -ksp_gmres_cgs_refinement_type refine_always > ex5_1.tmp 2>&1; \
-	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex5_1, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex5_1.tmp
 runex5f:
 	-@${MPIEXEC} -n 1 ./ex5f -ksp_monitor_short > ex5f_1.tmp 2>&1; \
 	   if (${DIFF} output/ex5f_1.out ex5f_1.tmp) then true; \
@@ -377,11 +368,6 @@ runex12f:
 	   if (${DIFF} output/ex12f_1.out ex12f_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex12f_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex12f_1.tmp
-runex13:
-	-@${MPIEXEC} -n 2  ./ex13 -ksp_gmres_cgs_refinement_type refine_always -ksp_monitor_short > ex13_1.tmp 2>&1; \
-	   if (${DIFF} output/ex13_1.out ex13_1.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex13_1, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex13_1.tmp
 runex14:
 	-@${MPIEXEC} -n 1  ./ex14  > ex14_1.tmp 2>&1; \
 	   if (${DIFF} output/ex14_1.out ex14_1.tmp) then true; \

@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/dm/examples/tests/
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex8.c ex9.c ex10.c\
+EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c\
                   ex11.c ex12.c ex12.m ex13.c ex14.c ex15.c ex16.c ex17.c ex19.c ex20.c \
 	          ex21.c ex22.c ex23.c ex24.c ex25.c ex26.c ex27.c ex28.c ex30.c \
 	          ex31.c ex32.c ex34.c ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c \
@@ -42,18 +42,6 @@ ex6: ex6.o   chkopts
 ex7: ex7.o   chkopts
 	-${CLINKER} -o ex7 ex7.o  ${PETSC_DM_LIB}
 	${RM} -f ex7.o
-
-ex8: ex8.o   chkopts
-	-${CLINKER} -o ex8 ex8.o  ${PETSC_DM_LIB}
-	${RM} -f ex8.o
-
-ex9: ex9.o   chkopts
-	-${CLINKER} -o ex9 ex9.o  ${PETSC_DM_LIB}
-	${RM} -f ex9.o
-
-ex10: ex10.o   chkopts
-	-${CLINKER} -o ex10 ex10.o  ${PETSC_DM_LIB}
-	${RM} -f ex10.o
 
 ex11: ex11.o   chkopts
 	-${CLINKER} -o ex11 ex11.o  ${PETSC_DM_LIB}
@@ -442,7 +430,6 @@ TESTEXAMPLES_C_X_MPIUNI = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4
                             ex6.PETSc ex6.rm ex12.PETSc ex12.rm
 TESTEXAMPLES_C_COMPLEX	  =
 TESTEXAMPLES_C_NOCOMPLEX  = ex16.PETSc runex16 runex16_2 ex16.rm ex42.PETSc runex42 ex42.rm
-TESTEXAMPLES_13		  = ex8.PETSc ex8.rm ex9.PETSc ex9.rm ex10.PETSc ex10.rm ex11.PETSc ex11.rm
 TESTEXAMPLES_MATLAB	  = ex12.PETSc runex12 ex12.rm
 TESTEXAMPLES_CUSP = ex1.PETSc runex1_cusp1 runex1_cusp2 ex1.rm
 
