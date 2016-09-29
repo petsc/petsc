@@ -85,8 +85,8 @@ PETSC_STATIC_INLINE PetscInt epsilon(PetscInt i, PetscInt j, PetscInt k)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexProjectRigidBody"
-static PetscErrorCode DMPlexProjectRigidBody(PetscInt dim, PetscReal t, const PetscReal X[], PetscInt Nf, PetscScalar *mode, void *ctx)
+#define __FUNCT__ "DMPlexProjectRigidBody_Private"
+static PetscErrorCode DMPlexProjectRigidBody_Private(PetscInt dim, PetscReal t, const PetscReal X[], PetscInt Nf, PetscScalar *mode, void *ctx)
 {
   PetscInt *ctxInt  = (PetscInt *) ctx;
   PetscInt  dim2    = ctxInt[0];
@@ -152,9 +152,9 @@ PetscErrorCode DMPlexCreateRigidBody(DM dm, MatNullSpace *sp)
   ierr = VecSetUp(mode[0]);CHKERRQ(ierr);
   for (i = 1; i < m; ++i) {ierr = VecDuplicate(mode[0], &mode[i]);CHKERRQ(ierr);}
   for (d = 0; d < m; d++) {
-    PetscInt ctx[2];
-    void    *voidctx = (void *) (&ctx[0]);
-    PetscErrorCode (*func)(PetscInt, PetscReal, const PetscReal *, PetscInt, PetscScalar *, void *) = DMPlexProjectRigidBody;
+    PetscInt         ctx[2];
+    PetscErrorCode (*func)(PetscInt, PetscReal, const PetscReal *, PetscInt, PetscScalar *, void *) = DMPlexProjectRigidBody_Private;
+    void            *voidctx = (void *) (&ctx[0]);
 
     ctx[0] = dimEmbed;
     ctx[1] = d;
