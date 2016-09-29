@@ -508,7 +508,7 @@ int main(int argc,char **args)
     } else {
       err[iter] = 171.038 - mdisp[0];
     }
-    PetscPrintf(PETSC_COMM_WORLD,"[%d]%s %D) N=%12D, max displ=%7.6e, disp diff=%9.2e, error=%4.3e, rate=%3.2g\n",
+    PetscPrintf(PETSC_COMM_WORLD,"[%d]%s %D) N=%12D, max displ=%6.5e, disp diff=%9.2e, error=%4.3e, rate=%3.2g\n",
                 rank,__FUNCT__,iter,local_sizes[iter],mdisp[iter],
                 mdisp[iter]-mdisp[iter-1],err[iter],log(err[iter-1]/err[iter])/log(2.));
   }
