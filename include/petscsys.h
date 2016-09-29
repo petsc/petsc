@@ -1388,6 +1388,8 @@ PETSC_EXTERN PetscErrorCode (*PetscTrFree)(void*,int,const char[],const char[]);
 PETSC_EXTERN PetscErrorCode (*PetscTrRealloc)(size_t,int,const char[],const char[],void**);
 PETSC_EXTERN PetscErrorCode PetscMallocSet(PetscErrorCode (*)(size_t,int,const char[],const char[],void**),PetscErrorCode (*)(void*,int,const char[],const char[]));
 PETSC_EXTERN PetscErrorCode PetscMallocClear(void);
+PETSC_EXTERN PetscErrorCode PetscHBWMalloc(size_t,int,const char[],const char[],void **);
+PETSC_EXTERN PetscErrorCode PetscHBWFree(void *,int,const char[],const char[]);
 
 /*
     PetscLogDouble variables are used to contain double precision numbers
