@@ -28,14 +28,9 @@ static char help[] = "Solves 2D Poisson equation using multigrid.\n\n";
 
 extern PetscErrorCode ComputeJacobian(KSP,Mat,Mat,void*);
 extern PetscErrorCode ComputeRHS(KSP,Vec,void*);
-extern PetscErrorCode ComputeTrueSolution(DM, Vec);
-extern PetscErrorCode VecView_VTK(Vec, const char [], const char []);
-
-typedef enum {DIRICHLET, NEUMANN} BCType;
 
 typedef struct {
   PetscScalar uu, tt;
-  BCType      bcType;
 } UserContext;
 
 #undef __FUNCT__
@@ -45,7 +40,6 @@ int main(int argc,char **argv)
   KSP            ksp;
   DM             da;
   UserContext    user;
-  PetscInt       bc;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
@@ -58,9 +52,6 @@ int main(int argc,char **argv)
 
   user.uu     = 1.0;
   user.tt     = 1.0;
-  bc          = (PetscInt)NEUMANN; /* Use Neumann Boundary Conditions */
-  user.bcType = (BCType)bc;
-
 
   ierr = KSPSetComputeRHS(ksp,ComputeRHS,&user);CHKERRQ(ierr);
   ierr = KSPSetComputeOperators(ksp,ComputeJacobian,&user);CHKERRQ(ierr);
@@ -83,6 +74,7 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
   PetscScalar    Hx,Hy,pi,uu,tt;
   PetscScalar    **array;
   DM             da;
+  MatNullSpace   nullspace;
 
   PetscFunctionBeginUser;
   ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
@@ -106,13 +98,9 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
 
   /* force right hand side to be consistent for singular matrix */
   /* note this is really a hack, normally the model would provide you with a consistent right handside */
-  if (user->bcType == NEUMANN) {
-    MatNullSpace nullspace;
-
-    ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace);CHKERRQ(ierr);
-    ierr = MatNullSpaceRemove(nullspace,b);CHKERRQ(ierr);
-    ierr = MatNullSpaceDestroy(&nullspace);CHKERRQ(ierr);
-  }
+  ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace);CHKERRQ(ierr);
+  ierr = MatNullSpaceRemove(nullspace,b);CHKERRQ(ierr);
+  ierr = MatNullSpaceDestroy(&nullspace);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -120,12 +108,12 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
 #define __FUNCT__ "ComputeJacobian"
 PetscErrorCode ComputeJacobian(KSP ksp,Mat J, Mat jac,void *ctx)
 {
-  UserContext    *user = (UserContext*)ctx;
   PetscErrorCode ierr;
   PetscInt       i, j, M, N, xm, ym, xs, ys, num, numi, numj;
   PetscScalar    v[5], Hx, Hy, HydHx, HxdHy;
   MatStencil     row, col[5];
   DM             da;
+  MatNullSpace   nullspace;
 
   PetscFunctionBeginUser;
   ierr  = KSPGetDM(ksp,&da);CHKERRQ(ierr);
@@ -140,29 +128,26 @@ PetscErrorCode ComputeJacobian(KSP ksp,Mat J, Mat jac,void *ctx)
       row.i = i; row.j = j;
 
       if (i==0 || j==0 || i==M-1 || j==N-1) {
-        if (user->bcType == DIRICHLET) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dirichlet boundary conditions not supported !\n");
-        else if (user->bcType == NEUMANN) {
-          num=0; numi=0; numj=0;
-          if (j!=0) {
-            v[num] = -HxdHy;              col[num].i = i;   col[num].j = j-1;
-            num++; numj++;
-          }
-          if (i!=0) {
-            v[num] = -HydHx;              col[num].i = i-1; col[num].j = j;
-            num++; numi++;
-          }
-          if (i!=M-1) {
-            v[num] = -HydHx;              col[num].i = i+1; col[num].j = j;
-            num++; numi++;
-          }
-          if (j!=N-1) {
-            v[num] = -HxdHy;              col[num].i = i;   col[num].j = j+1;
-            num++; numj++;
-          }
-          v[num] = ((PetscReal)(numj)*HxdHy + (PetscReal)(numi)*HydHx); col[num].i = i;   col[num].j = j;
-          num++;
-          ierr = MatSetValuesStencil(jac,1,&row,num,col,v,INSERT_VALUES);CHKERRQ(ierr);
+        num=0; numi=0; numj=0;
+        if (j!=0) {
+          v[num] = -HxdHy;              col[num].i = i;   col[num].j = j-1;
+          num++; numj++;
         }
+        if (i!=0) {
+          v[num] = -HydHx;              col[num].i = i-1; col[num].j = j;
+          num++; numi++;
+        }
+        if (i!=M-1) {
+          v[num] = -HydHx;              col[num].i = i+1; col[num].j = j;
+          num++; numi++;
+        }
+        if (j!=N-1) {
+          v[num] = -HxdHy;              col[num].i = i;   col[num].j = j+1;
+          num++; numj++;
+        }
+        v[num] = ((PetscReal)(numj)*HxdHy + (PetscReal)(numi)*HydHx); col[num].i = i;   col[num].j = j;
+        num++;
+        ierr = MatSetValuesStencil(jac,1,&row,num,col,v,INSERT_VALUES);CHKERRQ(ierr);
       } else {
         v[0] = -HxdHy;              col[0].i = i;   col[0].j = j-1;
         v[1] = -HydHx;              col[1].i = i-1; col[1].j = j;
@@ -175,13 +160,10 @@ PetscErrorCode ComputeJacobian(KSP ksp,Mat J, Mat jac,void *ctx)
   }
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (user->bcType == NEUMANN) {
-    MatNullSpace nullspace;
 
-    ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace);CHKERRQ(ierr);
-    ierr = MatSetNullSpace(J,nullspace);CHKERRQ(ierr);
-    ierr = MatNullSpaceDestroy(&nullspace);CHKERRQ(ierr);
-  }
+  ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace);CHKERRQ(ierr);
+  ierr = MatSetNullSpace(J,nullspace);CHKERRQ(ierr);
+  ierr = MatNullSpaceDestroy(&nullspace);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

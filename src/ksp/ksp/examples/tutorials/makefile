@@ -1287,12 +1287,12 @@ runex49_8:
 	   ${RM} -f ex49_8.tmp
 
 runex50:
-	-@${MPIEXEC} -n 1 ./ex50 -pc_type mg -pc_mg_type full -ksp_type fgmres -ksp_monitor_short -da_refine 1 -mg_levels_pc_factor_shift_type nonzero -mg_coarse_pc_factor_shift_type nonzero -ksp_view  > ex50.tmp 2>&1;         \
+	-@${MPIEXEC} -n 1 ./ex50 -pc_type mg -pc_mg_type full -ksp_type cg -ksp_monitor_short -da_refine 3  -mg_coarse_pc_type svd -ksp_view  > ex50.tmp 2>&1;         \
         ${DIFF} output/ex50.out ex50.tmp || printf "${PWD}\nPossible problem with ex50, diffs above\n=========================================\n"; \
         ${RM} -f ex50.tmp
 
 runex50_2:
-	-@${MPIEXEC} -n 2 ./ex50 -pc_type mg -pc_mg_type full -ksp_type fgmres -ksp_monitor_short -da_refine 1 -mg_levels_sub_pc_factor_shift_type nonzero -mg_coarse_pc_type redundant -mg_coarse_redundant_pc_type svd -ksp_view > ex50_2.tmp 2>&1;         \
+	-@${MPIEXEC} -n 4 ./ex50 -pc_type mg -pc_mg_type full -ksp_type cg -ksp_monitor_short -da_refine 3  -mg_coarse_pc_type redundant -mg_coarse_redundant_pc_type svd -ksp_view > ex50_2.tmp 2>&1;         \
         ${DIFF} output/ex50_2.out ex50_2.tmp || printf "${PWD}\nPossible problem with ex50_2, diffs above\n=========================================\n"; \
         ${RM} -f ex50_2.tmp
 
@@ -1649,7 +1649,7 @@ TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE = ex23.PETSc runex23_3 ex23.rm  ex15.PETSc ru
                                  ex34.PETSc runex34 runex34_2 ex34.rm \
                                  ex43.PETSc runex43_4 runex43_5 ex43.rm \
                                  ex49.PETSc runex49_6 runex49_7 runex49_8 ex49.rm \
-                                 ex50.PETSc runex50_3 ex50.rm \
+                                 ex50.PETSc runex50 runex50_2 runex50_3 ex50.rm \
                                  ex60.PETSc runex60_4 runex60_5 runex60_6 runex60_7 runex60_8 runex60_9 ex60.rm
 TESTEXAMPLES_C_X	       = ex2.PETSc runex2_5 ex2.rm ex5.PETSc runex5_5 ex5.rm ex8.PETSc ex8.rm ex28.PETSc runex28 ex28.rm
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f runex2f_2 ex2f.rm ex6f.PETSc ex6f.rm \
