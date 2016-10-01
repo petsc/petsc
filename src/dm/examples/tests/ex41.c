@@ -4,12 +4,17 @@ static char help[] = "Tests mirror boundary conditions in 3-d.\n\n";
 #include <petscdm.h>
 #include <petscdmda.h>
 
+/*
+          THIS EXAMPLE DOES NOT WORK BECAUSE MIRROR BOUNDARY IS NOT YET IMPLEMENTED FOR 3D
+              We need someone with incredible attention to detail to implement it.
+*/
+
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  PetscInt       M = -2, N = -3, P = 4,stencil_width = 1, dof = 1,m,n,p,xstart,ystart,zstart,i,j,k,c;
+  PetscInt       M = 2, N = 3, P = 4,stencil_width = 1, dof = 1,m,n,p,xstart,ystart,zstart,i,j,k,c;
   DM             da;
   Vec            global,local;
   PetscScalar    ****vglobal;

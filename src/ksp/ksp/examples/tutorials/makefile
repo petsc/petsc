@@ -9,7 +9,7 @@ EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                 ex25.c ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c ex34.c \
                 ex41.c ex42.c ex43.c \
                 ex45.c ex46.c  ex49.c ex50.c ex51.c ex52.c ex53.c \
-                ex54.c ex55.c ex56.c ex58.c ex62.c ex63.cxx ex64.c ex65.c
+                ex54.c ex55.c ex56.c ex58.c ex62.c ex63.cxx ex64.c ex65.c ex66.c
 EXAMPLESF        = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F90 ex14f.F ex15f.F ex21f.F ex22f.F ex44f.F90 ex45f.F \
                    ex52f.F ex54f.F ex61f.F90
 MANSEC           = KSP
@@ -314,6 +314,10 @@ ex64: ex64.o  chkopts
 ex65: ex65.o  chkopts
 	-${CLINKER} -o ex65 ex65.o  ${PETSC_KSP_LIB}
 	${RM} ex65.o
+
+ex66: ex66.o  chkopts
+	-${CLINKER} -o ex66 ex66.o  ${PETSC_KSP_LIB}
+	${RM} ex66.o
 
 #----------------------------------------------------------------------------
 runex1:
@@ -1618,6 +1622,15 @@ runex65:
 	   else printf "${PWD}\nPossible problem with with ex65, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex65.tmp
 
+runex66:
+	-@${MPIEXEC} -n 1 ./ex66 -pc_type mg -pc_mg_type full  -ksp_monitor_short -da_refine 3  -mg_coarse_pc_type svd -ksp_view  > ex66.tmp 2>&1;         \
+        ${DIFF} output/ex66_1.out ex66.tmp || printf "${PWD}\nPossible problem with ex66, diffs above\n=========================================\n"; \
+        ${RM} -f ex66.tmp
+
+runex66_2:
+	-@${MPIEXEC} -n 4 ./ex66 -pc_type mg -pc_mg_type full  -ksp_monitor_short -da_refine 3  -mg_coarse_pc_type redundant -mg_coarse_redundant_pc_type svd -ksp_view > ex66_2.tmp 2>&1;         \
+        ${DIFF} output/ex66_2.out ex66_2.tmp || printf "${PWD}\nPossible problem with ex66_2, diffs above\n=========================================\n"; \
+        ${RM} -f ex66_2.tmp
 
 
 
@@ -1649,8 +1662,8 @@ TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE = ex23.PETSc runex23_3 ex23.rm  ex15.PETSc ru
                                  ex34.PETSc runex34 runex34_2 ex34.rm \
                                  ex43.PETSc runex43_4 runex43_5 ex43.rm \
                                  ex49.PETSc runex49_6 runex49_7 runex49_8 ex49.rm \
-                                 ex50.PETSc runex50 runex50_2 runex50_3 ex50.rm \
-                                 ex60.PETSc runex60_4 runex60_5 runex60_6 runex60_7 runex60_8 runex60_9 ex60.rm
+                                 ex50.PETSc runex50 runex50_2 runex50_3 ex50.rm printdot \
+                                 ex60.PETSc runex60_4 runex60_5 runex60_6 runex60_7 runex60_8 runex60_9 ex60.rm ex66.PETSc runex66 runex66_2 ex66.rm
 TESTEXAMPLES_C_X	       = ex2.PETSc runex2_5 ex2.rm ex5.PETSc runex5_5 ex5.rm ex8.PETSc ex8.rm ex28.PETSc runex28 ex28.rm
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f runex2f_2 ex2f.rm ex6f.PETSc ex6f.rm \
                                  printdot ex15f.PETSc runex15f ex15f.rm \

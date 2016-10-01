@@ -399,6 +399,22 @@ runex37:
 	-@${MPIEXEC} -n 2 ./ex37 ;\
 	  ${RM} -f ex32_1.tmp
 
+runex39:
+	-@${MPIEXEC} -n 1 ./ex39  > ex39_1.tmp; \
+	  ${DIFF} output/ex39_1.out ex39_1.tmp || printf "${PWD}\nPossible problem with ex39, diffs above\n=========================================\n"; \
+	  ${RM} -f ex39_1.tmp
+runex39_2:
+	-@${MPIEXEC} -n 2 ./ex39  | ${GREP} -v Vec_  > ex39_2.tmp; \
+	  ${DIFF} output/ex39_2.out ex39_2.tmp || printf "${PWD}\nPossible problem with ex39_2, diffs above\n=========================================\n"; \
+	  ${RM} -f ex39_2.tmp
+runex40:
+	-@${MPIEXEC} -n 1 ./ex40  > ex40_1.tmp; \
+	  ${DIFF} output/ex40_1.out ex40_1.tmp || printf "${PWD}\nPossible problem with ex40, diffs above\n=========================================\n"; \
+	  ${RM} -f ex40_1.tmp
+runex40_2:
+	-@${MPIEXEC} -n 4 ./ex40 | ${GREP} -v Vec_  > ex40_2.tmp; \
+	  ${DIFF} output/ex40_2.out ex40_2.tmp || printf "${PWD}\nPossible problem with ex40_2, diffs above\n=========================================\n"; \
+	  ${RM} -f ex40_2.tmp
 runex42:
 	-@${MPIEXEC} -n 2 ./ex42 ;\
 	  ${RM} -f 2d_nocoord.vtr 2d.vtr 3d_nocoord.vtr 3d.vtr
