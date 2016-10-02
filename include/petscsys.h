@@ -2605,7 +2605,7 @@ PETSC_EXTERN PetscErrorCode PetscFindInt(PetscInt, PetscInt, const PetscInt[], P
 PETSC_EXTERN PetscErrorCode PetscSortIntWithPermutation(PetscInt,const PetscInt[],PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortStrWithPermutation(PetscInt,const char*[],PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortIntWithArray(PetscInt,PetscInt[],PetscInt[]);
-PETSC_EXTERN PetscErrorCode PetscSortIntWithArrayPair(PetscInt,PetscInt*,PetscInt*,PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscSortIntWithArrayPair(PetscInt,PetscInt[],PetscInt[],PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortMPIInt(PetscInt,PetscMPIInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortRemoveDupsMPIInt(PetscInt*,PetscMPIInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortMPIIntWithArray(PetscMPIInt,PetscMPIInt[],PetscMPIInt[]);
@@ -2617,8 +2617,8 @@ PETSC_EXTERN PetscErrorCode PetscSortRemoveDupsReal(PetscInt*,PetscReal[]);
 PETSC_EXTERN PetscErrorCode PetscSortSplit(PetscInt,PetscInt,PetscScalar[],PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortSplitReal(PetscInt,PetscInt,PetscReal[],PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscProcessTree(PetscInt,const PetscBool [],const PetscInt[],PetscInt*,PetscInt**,PetscInt**,PetscInt**,PetscInt**);
-PETSC_EXTERN PetscErrorCode PetscMergeIntArrayPair(PetscInt,const PetscInt*,const PetscInt*,PetscInt,const PetscInt*,const PetscInt*,PetscInt*,PetscInt**,PetscInt**);
-PETSC_EXTERN PetscErrorCode PetscMergeIntArray(PetscInt,const PetscInt*,PetscInt,const PetscInt*,PetscInt*,PetscInt**);
+PETSC_EXTERN PetscErrorCode PetscMergeIntArrayPair(PetscInt,const PetscInt[],const PetscInt[],PetscInt,const PetscInt[],const PetscInt[],PetscInt*,PetscInt**,PetscInt**);
+PETSC_EXTERN PetscErrorCode PetscMergeIntArray(PetscInt,const PetscInt[],PetscInt,const PetscInt[],PetscInt*,PetscInt**);
 PETSC_EXTERN PetscErrorCode PetscMergeMPIIntArray(PetscInt,const PetscMPIInt[],PetscInt,const PetscMPIInt[],PetscInt*,PetscMPIInt**);
 
 PETSC_EXTERN PetscErrorCode PetscSetDisplay(void);

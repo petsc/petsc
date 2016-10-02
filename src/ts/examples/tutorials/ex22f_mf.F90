@@ -34,6 +34,7 @@ program main
 #endif
   implicit none
 #include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscsys.h90>
 #include <petsc/finclude/petscvec.h>
 #include <petsc/finclude/petscmat.h>
 #include <petsc/finclude/petscsnes.h>
