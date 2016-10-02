@@ -194,6 +194,12 @@ runex14:
 	   ${DIFF} output/ex14.out ex14.tmp || printf "${PWD}\nPossible problem with ex14, diffs above\n=========================================\n"; \
 	   ${RM} ex14.tmp
 
+runex17f:
+	-@${MPIEXEC} -n 3 ./ex17f > ex17f.tmp 2>&1;\
+	   if (${DIFF} output/ex17f_1.out ex17f.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex17f_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex17f.tmp
+
 runex19:
 	-@${MPIEXEC} -n 1 ./ex19 > ex19_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
@@ -243,7 +249,7 @@ TESTEXAMPLES_C		       = ex4.PETSc ex4.rm \
 TESTEXAMPLES_C_COMPLEX         = ex14.PETSc runex14 ex14.rm
 
 TESTEXAMPLES_C_X	       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc ex3.rm
-TESTEXAMPLES_FORTRAN	       = ex5f.PETSc ex5f.rm ex6f.PETSc ex6f.rm ex17f.PETSc ex17f.rm
+TESTEXAMPLES_FORTRAN	       = ex5f.PETSc ex5f.rm ex6f.PETSc ex6f.rm ex17f.PETSc runex17f ex17f.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex1f.PETSc ex1f.rm
 TESTEXAMPLES_FORTRAN_COMPLEX   = ex1f.PETSc ex1f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex5f.PETSc ex5f.rm ex6f.PETSc ex6f.rm

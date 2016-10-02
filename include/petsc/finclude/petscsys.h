@@ -62,6 +62,7 @@
       PetscFortranAddr PETSC_VIEWER_BINARY_SELF
       PetscFortranAddr PETSC_VIEWER_MATLAB_WORLD
       PetscFortranAddr PETSC_VIEWER_MATLAB_SELF
+      PetscFortranAddr PETSC_STDOUT
 
 !
 !     The numbers used below should match those in
@@ -79,6 +80,7 @@
       parameter (PETSC_VIEWER_BINARY_SELF  = 13)
       parameter (PETSC_VIEWER_MATLAB_WORLD = 14)
       parameter (PETSC_VIEWER_MATLAB_SELF  = 15)
+      parameter (PETSC_STDOUT  = 0)
 !
 !     PETSc DataTypes
 !
