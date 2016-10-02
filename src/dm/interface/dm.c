@@ -1175,7 +1175,7 @@ PetscErrorCode  DMCreateColoring(DM dm,ISColoringType ctype,ISColoring *coloring
        do not need to do it yourself.
 
        By default it also sets the nonzero structure and puts in the zero entries. To prevent setting
-       the nonzero pattern call DMDASetMatPreallocateOnly()
+       the nonzero pattern call DMSetMatrixPreallocateOnly()
 
        For structured grid problems, when you call MatView() on this matrix it is displayed using the global natural ordering, NOT in the ordering used
        internally by PETSc.
