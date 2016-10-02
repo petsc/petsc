@@ -107,7 +107,7 @@ typedef enum {PETSC_INT_SIZE         = sizeof(PetscInt),
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDataTypeGetSize"
-/*@
+/*@C
      PetscDataTypeGetSize - Gets the size (in bytes) of a PETSc datatype
 
    Not collective

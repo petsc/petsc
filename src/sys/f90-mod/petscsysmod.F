@@ -7,6 +7,7 @@
 #define PETSC_AVOID_MPIF_H
 #endif
 #include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscbag.h>
 #include <petsc/finclude/petscviewer.h>
 #include <petsc/finclude/ftn-custom/petscsysdef.h90>
 #include <petsc/finclude/ftn-custom/petscviewerdef.h90>

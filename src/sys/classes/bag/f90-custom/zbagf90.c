@@ -20,6 +20,7 @@
 #define petscbagregisterboolarray_ PETSCBAGREGISTERBOOLARRAY
 #define petscbagsetname_ PETSCBAGSETNAME
 #define petscbagsetoptionsprefix_ PETSCBAGSETOPTIONSPREFIX
+#define petscbagcreate_ PETSCBAGCREATE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscbagdestroy_ petscbagdestroy
 #define petscbagview_ petscbagview
@@ -36,7 +37,13 @@
 #define petscbagregisterboolarray_ petscbagregisterboolarray
 #define petscbagsetname_ petscbagsetname
 #define petscbagsetoptionsprefix_ petscbagsetoptionsprefix
+#define petscbagcreate_ petscbagcreate
 #endif
+
+PETSC_EXTERN void PETSC_STDCALL  petscbagcreate_(MPI_Fint * comm,size_t *bagsize,PetscBag *bag, PetscErrorCode *ierr )
+{
+  *ierr = PetscBagCreate(MPI_Comm_f2c(*(comm)),*bagsize,bag);
+}
 
 PETSC_EXTERN void PETSC_STDCALL petscbagdestroy_(PetscBag *bag,PetscErrorCode *ierr)
 {

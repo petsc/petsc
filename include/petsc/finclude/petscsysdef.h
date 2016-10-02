@@ -50,6 +50,7 @@
 #endif
 #define PetscInt64 integer8
 #define PetscObjectState PetscInt64
+#define PetscObjectId PetscInt64
 
 #if (PETSC_SIZEOF_INT == 4)
 #define PetscFortranInt integer4
@@ -211,5 +212,6 @@
 #define PetscSubcommType PetscEnum
 
 #define PetscOptions PetscFortranAddr
+#define PetscFunctionList PetscFortranAddr
 
 #endif
