@@ -251,6 +251,7 @@ PetscErrorCode PetscDSSetFromOptions(PetscDS prob)
       ierr = PetscMalloc1(len, &b->ids);CHKERRQ(ierr);
       ierr = PetscMemcpy(b->ids, ids, len*sizeof(PetscInt));CHKERRQ(ierr);
     }
+    len = 1024;
     ierr = PetscSNPrintf(optname, sizeof(optname), "-bc_%s_comp", b->name);CHKERRQ(ierr);
     ierr = PetscMemzero(ids, sizeof(ids));CHKERRQ(ierr);
     ierr = PetscOptionsIntArray(optname, "List of boundary field components", "", ids, &len, &flg);CHKERRQ(ierr);
