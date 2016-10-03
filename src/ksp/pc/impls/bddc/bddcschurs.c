@@ -435,7 +435,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 
     /* check */
     ierr = PetscObjectTypeCompare((PetscObject)Ain,MATSEQAIJ,&isseqaij);CHKERRQ(ierr);
-    if (compute_Stilda && (!Ain->hermitian_set || !Ain->spd_set)) { /* these are lazy checks, maybe I should throw an error if they are not set */
+    if (!Ain->hermitian_set || !Ain->spd_set) { /* these are lazy checks, maybe I should add a command line switch */
       PetscInt lsize;
 
       ierr = MatGetSize(Ain,&lsize,NULL);CHKERRQ(ierr);
@@ -541,7 +541,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     const PetscInt*        idx_B;
     PetscInt               n_I,n_B,n_local_dofs,n_prev_added,j,layer,*local_numbering;
 
-    if (!xadj || !adjncy) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cannot request layering without adjacency");
+    if (!xadj) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cannot request layering without adjacency");
     /* get sizes */
     ierr = ISGetLocalSize(sub_schurs->is_I,&n_I);CHKERRQ(ierr);
     ierr = ISGetLocalSize(sub_schurs->is_B,&n_B);CHKERRQ(ierr);

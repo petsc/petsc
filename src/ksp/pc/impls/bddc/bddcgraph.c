@@ -110,7 +110,7 @@ PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level,
         }
       }
       if (verbosity_level > 3) {
-        if (graph->xadj && graph->adjncy) {
+        if (graph->xadj) {
           ierr = PetscViewerASCIISynchronizedPrintf(viewer,"   local adj list:");CHKERRQ(ierr);
           ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
           for (j=graph->xadj[i];j<graph->xadj[i+1];j++) {
@@ -537,7 +537,7 @@ PETSC_STATIC_INLINE PetscErrorCode PCBDDCGraphComputeCC_Private(PCBDDCGraph grap
   PetscInt       i,j,n;
   PetscInt       *xadj = graph->xadj,*adjncy = graph->adjncy;
   PetscBT        touched = graph->touched;
-  PetscBool      havecsr = (PetscBool)(xadj && adjncy);
+  PetscBool      havecsr = (PetscBool)(xadj);
   PetscBool      havesubs = (PetscBool)(!!graph->n_local_subs);
   PetscErrorCode ierr;
 
@@ -618,7 +618,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponentsLocal(PCBDDCGraph graph)
   PetscFunctionBegin;
   if (!graph->setupcalled) SETERRQ(PetscObjectComm((PetscObject)graph->l2gmap),PETSC_ERR_ORDER,"PCBDDCGraphSetUp should be called first");
   /* quiet return if there isn't any local info */
-  if ((!graph->xadj || !graph->adjncy) && !graph->n_local_subs) {
+  if (!graph->xadj && !graph->n_local_subs) {
     PetscFunctionReturn(0);
   }
 
@@ -925,7 +925,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
       if (graph->mirrors[i])
         graph->special_dof[i] = PCBDDCGRAPH_LOCAL_PERIODIC_MARK;
 
-    if (graph->xadj && graph->adjncy) {
+    if (graph->xadj) {
       PetscInt *new_xadj,*new_adjncy;
       /* sort CSR graph */
       for (i=0;i<graph->nvtxs;i++)

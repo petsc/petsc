@@ -1068,7 +1068,7 @@ PetscErrorCode PCBDDCSetLocalAdjacencyGraph(PC pc,PetscInt nvtxs,const PetscInt 
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (nvtxs) {
     PetscValidIntPointer(xadj,3);
-    PetscValidIntPointer(adjncy,4);
+    if (xadj[nvtxs]) PetscValidIntPointer(adjncy,4);
   }
   ierr = PetscTryMethod(pc,"PCBDDCSetLocalAdjacencyGraph_C",(PC,PetscInt,const PetscInt[],const PetscInt[],PetscCopyMode),(pc,nvtxs,xadj,adjncy,copymode));CHKERRQ(ierr);
   /* free arrays if PCBDDC is not the PC type */
