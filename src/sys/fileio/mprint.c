@@ -470,6 +470,8 @@ PetscErrorCode  PetscSynchronizedFPrintf(MPI_Comm comm,FILE *fp,const char forma
     If PetscSynchronizedPrintf() and/or PetscSynchronizedFPrintf() are called with
     different MPI communicators there must be an intervening call to PetscSynchronizedFlush() between the calls with different MPI communicators.
 
+    From Fortran pass PETSC_STDOUT if the flush is for standard out; otherwise pass a value obtained from PetscFOpen()
+
 .seealso: PetscSynchronizedPrintf(), PetscFPrintf(), PetscPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIISynchronizedPrintf()
 @*/

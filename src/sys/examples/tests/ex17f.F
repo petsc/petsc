@@ -30,5 +30,9 @@
 
       call PetscFClose(PETSC_COMM_WORLD,file,ierr)
 
+      call PetscSynchronizedPrintf(PETSC_COMM_WORLD,'Hi twice \n',          &
+     &                              ierr)
+      call PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT,ierr)
+
       call PetscFinalize(ierr)
       end
