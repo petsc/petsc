@@ -4,9 +4,10 @@
 #include <petsc/finclude/petsc.h90>
 !
       PetscSection   section
-      PetscInt       pStart, pEnd, p
+      PetscInt       pStart, pEnd, p,three
       PetscErrorCode ierr
 
+      three = 3
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       if (ierr .ne. 0) then
         print*,'Unable to initialize PETSc'
@@ -17,7 +18,7 @@
       pEnd   = 5
       call PetscSectionSetChart(section, pStart, pEnd, ierr);CHKERRQ(ierr)
       do p=pStart,pEnd-1
-         call PetscSectionSetDof(section, p, 3, ierr);CHKERRQ(ierr)
+         call PetscSectionSetDof(section, p, three, ierr);CHKERRQ(ierr)
       end do
       call PetscSectionSetUp(section, ierr);CHKERRQ(ierr)
       call PetscSectionView(section, PETSC_VIEWER_STDOUT_WORLD, ierr);CHKERRQ(ierr)

@@ -51,7 +51,7 @@ PetscErrorCode  PetscRandomDestroy(PetscRandom *r)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscRandomGetSeed"
-/*@
+/*@C
    PetscRandomGetSeed - Gets the random seed.
 
    Not collective
@@ -81,7 +81,7 @@ PetscErrorCode  PetscRandomGetSeed(PetscRandom r,unsigned long *seed)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscRandomSetSeed"
-/*@
+/*@C
    PetscRandomSetSeed - Sets the random seed. You MUST call PetscRandomSeed() after this call to have the new seed used.
 
    Not collective

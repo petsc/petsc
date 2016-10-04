@@ -2,8 +2,10 @@
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petscfopen_                PETSCFOPEN
+#define petscfclose_               PETSCFCLOSE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define petscfopen_                   petscfopen
+#define petscfopen_                petscfopen
+#define petscfclose_               petscfclose
 #endif
 
 PETSC_EXTERN void PETSC_STDCALL petscfopen_(MPI_Comm *comm,CHAR fname PETSC_MIXED_LEN(len1),CHAR fmode PETSC_MIXED_LEN(len2),
@@ -16,5 +18,10 @@ PETSC_EXTERN void PETSC_STDCALL petscfopen_(MPI_Comm *comm,CHAR fname PETSC_MIXE
   *ierr = PetscFOpen(MPI_Comm_f2c(*(MPI_Fint*)&*comm),c1,c2,file);
   FREECHAR(fname,c1);
   FREECHAR(fmode,c2);
+}
+
+PETSC_EXTERN void PETSC_STDCALL petscfclose_(MPI_Comm *comm,FILE **file,PetscErrorCode *ierr)
+{
+  *ierr = PetscFClose(MPI_Comm_f2c(*(MPI_Fint*)&*comm),*file);
 }
 

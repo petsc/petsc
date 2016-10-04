@@ -1,0 +1,7 @@
+#if defined(PETSC_USE_FORTRAN_DATATYPES) && !defined(PETSCOPTIONS_HIDE)
+#define USE_PETSCSYS_HIDE use petscsysdef
+#define PETSCOPTIONS_HIDE type(PetscOptions)
+#elif !defined(USE_PETSCSYS_HIDE)
+#define USE_PETSCSYS_HIDE
+#define PETSCOPTIONS_HIDE PetscOptions
+#endif

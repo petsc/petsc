@@ -7,7 +7,9 @@
 #define PETSC_AVOID_MPIF_H
 #endif
 #include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscbag.h>
 #include <petsc/finclude/petscviewer.h>
+#include <petsc/finclude/ftn-custom/petscsysdef.h90>
 #include <petsc/finclude/ftn-custom/petscviewerdef.h90>
 #include <petsc/finclude/petscdraw.h>
 #include <petsc/finclude/petsclog.h>
@@ -15,6 +17,7 @@
 
         module petscsys
         use petscsysdef
+#include <petsc/finclude/petscsys.h90>
 #include <petsc/finclude/petscviewer.h90>
         end module
 

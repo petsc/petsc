@@ -1,0 +1,12 @@
+!
+!
+!  Additional sys include file for use of PETSc with Fortran 90
+!
+
+#include "petsc/finclude/ftn-custom/petscsys.h90"
+#if defined(PETSC_USE_FORTRAN_INTERFACES)
+#include "petsc/finclude/petscbagdef.h"
+      interface
+#include "petsc/finclude/ftn-auto/petscsys.h90"
+      end interface
+#endif

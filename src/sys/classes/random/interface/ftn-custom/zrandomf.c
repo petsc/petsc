@@ -4,10 +4,23 @@
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petscrandomsettype_                PETSCRANDOMSETTYPE
 #define petscrandomgettype_                PETSCRANDOMGETTYPE
+#define petscrandomsetseed_                PETSCRANDOMSETSEED
+#define petscrandomgetseed_                PETSCRANDOMGETSEED
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscrandomsettype_                petscrandomsettype
 #define petscrandomgettype_                petscrandomgettype
+#define petscrandomsetseed_                petscrandomsetseed
+#define petscrandomgetseed_                petscrandomgetseed
 #endif
+
+PETSC_EXTERN void PETSC_STDCALL  petscrandomgetseed_(PetscRandom *r,unsigned long *seed, PetscErrorCode *ierr )
+{
+  *ierr = PetscRandomGetSeed(*r,seed);
+}
+PETSC_EXTERN void PETSC_STDCALL  petscrandomsetseed_(PetscRandom *r,unsigned long *seed, PetscErrorCode *ierr )
+{
+  *ierr = PetscRandomSetSeed(*r,*seed);
+}
 
 PETSC_EXTERN void PETSC_STDCALL petscrandomsettype_(PetscRandom *rnd,CHAR type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
