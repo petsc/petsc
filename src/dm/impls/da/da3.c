@@ -211,6 +211,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
 
   PetscFunctionBegin;
   if (stencil_type == DMDA_STENCIL_BOX && (bx == DM_BOUNDARY_MIRROR || by == DM_BOUNDARY_MIRROR || bz == DM_BOUNDARY_MIRROR)) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Mirror boundary and box stencil");
+  if ((bx == DM_BOUNDARY_MIRROR) || (by == DM_BOUNDARY_MIRROR) || (bz == DM_BOUNDARY_MIRROR)) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Mirror boundary not supported yet in 3d");
   ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
 #if !defined(PETSC_USE_64BIT_INDICES)
   if (((PetscInt64) M)*((PetscInt64) N)*((PetscInt64) P)*((PetscInt64) dof) > (PetscInt64) PETSC_MPI_INT_MAX) SETERRQ3(comm,PETSC_ERR_INT_OVERFLOW,"Mesh of %D by %D by %D (dof) is too large for 32 bit indices",M,N,dof);
@@ -1030,10 +1031,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
     n26 = sn26;
   }
 
-  if (((stencil_type == DMDA_STENCIL_STAR) ||
-      (bx != DM_BOUNDARY_PERIODIC && bx) ||
-      (by != DM_BOUNDARY_PERIODIC && by) ||
-       (bz != DM_BOUNDARY_PERIODIC && bz))) {
+  if (((stencil_type == DMDA_STENCIL_STAR) || (bx != DM_BOUNDARY_PERIODIC && bx) || (by != DM_BOUNDARY_PERIODIC && by) || (bz != DM_BOUNDARY_PERIODIC && bz))) {
     /*
         Recompute the local to global mappings, this time keeping the
       information about the cross corner processor numbers.

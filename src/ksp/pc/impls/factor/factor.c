@@ -728,7 +728,7 @@ PetscErrorCode  PCFactorSetPivotInBlocks(PC pc,PetscBool pivot)
 #undef __FUNCT__
 #define __FUNCT__ "PCFactorSetReuseFill"
 /*@
-   PCFactorSetReuseFill - When matrices with same different nonzero structure are factored,
+   PCFactorSetReuseFill - When matrices with different nonzero structure are factored,
    this causes later ones to use the fill ratio computed in the initial factorization.
 
    Logically Collective on PC
