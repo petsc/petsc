@@ -13,6 +13,7 @@ configure_options = [
   '--with-mpiexec=mpiexec --localonly',
   'DATAFILESPATH=c:/cygwin/home/sbalay/datafiles',
   '--with-shared-libraries=0',
+  '--with-fortran-interfaces=0',
   ]
 
 if __name__ == '__main__':
