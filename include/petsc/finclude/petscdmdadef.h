@@ -18,7 +18,7 @@
 !   DMDA_LOCAL_INFO_SIZE is one large than the size incase the DA is larger than an integer (on 64 bit systems).
 !   non-int fields are not accessiable from fortran.
 !
-#define DMDA_LOCAL_INFO_SIZE 22
+#define DMDA_LOCAL_INFO_SIZE 25
 #define DMDA_LOCAL_INFO_DIM 1
 #define DMDA_LOCAL_INFO_DOF 2
 #define DMDA_LOCAL_INFO_MX 4
