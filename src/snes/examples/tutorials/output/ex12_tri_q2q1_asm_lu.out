@@ -1,28 +1,26 @@
 0 SNES Function norm 8.32828 
-    0 KSP Residual norm 8.40051 
-    1 KSP Residual norm 1.89471 
-    2 KSP Residual norm 0.998639 
-    3 KSP Residual norm 0.449982 
-    4 KSP Residual norm 0.184713 
-    5 KSP Residual norm 0.047361 
-    6 KSP Residual norm 0.0100355 
-    7 KSP Residual norm 0.00275303 
-    8 KSP Residual norm 0.000812669 
-    9 KSP Residual norm 0.000157688 
-   10 KSP Residual norm 2.06584e-05 
-   11 KSP Residual norm 3.7337e-06 
-   12 KSP Residual norm 5.81441e-07 
-   13 KSP Residual norm 7.46144e-08 
-   14 KSP Residual norm 1.01423e-08 
-   15 KSP Residual norm 1.09021e-09 
-  Linear solve converged due to CONVERGED_RTOL iterations 15
-  1 SNES Function norm 2.7098e-09 
+    0 KSP Residual norm 8.24364 
+    1 KSP Residual norm 3.76271 
+    2 KSP Residual norm 0.578182 
+    3 KSP Residual norm 0.204792 
+    4 KSP Residual norm 0.0326755 
+    5 KSP Residual norm 0.012137 
+    6 KSP Residual norm 0.0029573 
+    7 KSP Residual norm 0.000465066 
+    8 KSP Residual norm 8.00795e-05 
+    9 KSP Residual norm 1.23888e-05 
+   10 KSP Residual norm 2.68256e-06 
+   11 KSP Residual norm 2.90122e-07 
+   12 KSP Residual norm 4.62505e-08 
+   13 KSP Residual norm 5.32787e-09 
+  Linear solve converged due to CONVERGED_RTOL iterations 13
+  1 SNES Function norm 2.02587e-08 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=15
+  total number of linear solver iterations=13
   total number of function evaluations=2
   norm schedule ALWAYS
   SNESLineSearch Object: 1 MPI processes
@@ -56,20 +54,20 @@ SNES Object: 1 MPI processes
           out-of-place factorization
           tolerance for zero pivot 2.22045e-14
           matrix ordering: nd
-          factor fill ratio given 5., needed 2.40723
+          factor fill ratio given 5., needed 3.47132
             Factored matrix follows:
               Mat Object: 1 MPI processes
                 type: seqaij
-                rows=69, cols=69
+                rows=223, cols=223
                 package used to perform factorization: petsc
-                total: nonzeros=999, allocated nonzeros=999
+                total: nonzeros=5023, allocated nonzeros=5023
                 total number of mallocs used during MatSetValues calls =0
                   not using I-node routines
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
-          rows=69, cols=69
-          total: nonzeros=415, allocated nonzeros=415
+          rows=223, cols=223
+          total: nonzeros=1447, allocated nonzeros=1447
           total number of mallocs used during MatSetValues calls =0
             not using I-node routines
     linear system matrix = precond matrix:
