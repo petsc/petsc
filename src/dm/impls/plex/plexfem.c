@@ -386,24 +386,24 @@ PetscErrorCode DMPlexInsertBoundaryValues(DM dm, PetscBool insertEssential, Vec 
   if (gradFVM)     {PetscValidHeaderSpecific(gradFVM, VEC_CLASSID, 6);}
   ierr = PetscDSGetNumBoundary(dm->prob, &numBd);CHKERRQ(ierr);
   for (b = 0; b < numBd; ++b) {
-    PetscBool       isEssential;
-    const char     *labelname;
-    DMLabel         label;
-    PetscInt        field;
-    PetscObject     obj;
-    PetscClassId    id;
-    void          (*func)();
-    PetscInt        numids;
-    const PetscInt *ids;
-    void           *ctx;
+    DMBoundaryConditionType type;
+    const char             *labelname;
+    DMLabel                 label;
+    PetscInt                field;
+    PetscObject             obj;
+    PetscClassId            id;
+    void                  (*func)();
+    PetscInt                numids;
+    const PetscInt         *ids;
+    void                   *ctx;
 
-    ierr = DMGetBoundary(dm, b, &isEssential, NULL, &labelname, &field, NULL, NULL, &func, &numids, &ids, &ctx);CHKERRQ(ierr);
-    if (insertEssential != isEssential) continue;
+    ierr = DMGetBoundary(dm, b, &type, NULL, &labelname, &field, NULL, NULL, &func, &numids, &ids, &ctx);CHKERRQ(ierr);
+    if (insertEssential != (type & DM_BC_ESSENTIAL)) continue;
     ierr = DMGetLabel(dm, labelname, &label);CHKERRQ(ierr);
     ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID) {
-      if (!isEssential) continue; /* for FEM, there is no insertion to be done for non-essential boundary conditions */
+      if (!(type & DM_BC_ESSENTIAL)) continue; /* for FEM, there is no insertion to be done for non-essential boundary conditions */
       ierr = DMPlexLabelAddCells(dm,label);CHKERRQ(ierr);
       ierr = DMPlexInsertBoundaryValues_FEM_Internal(dm, time, field, label, numids, ids, (PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *)) func, ctx, locX);CHKERRQ(ierr);
       ierr = DMPlexLabelClearCells(dm,label);CHKERRQ(ierr);

@@ -6001,7 +6001,7 @@ PetscErrorCode DMCopyBoundary(DM dm, DM dmNew)
 
   Input Parameters:
 + dm          - The DM, with a PetscDS that matches the problem being constrained
-. isEssential - Flag for an essential (Dirichlet) condition, as opposed to a natural (Neumann) condition
+. type        - The type of condition, e.g. DM_BC_ESSENTIAL_ANALYTIC/DM_BC_ESSENTIAL_FIELD (Dirichlet), or DM_BC_NATURAL (Neumann)
 . name        - The BC name
 . labelname   - The label defining constrained points
 . field       - The field to constrain
@@ -6020,13 +6020,13 @@ PetscErrorCode DMCopyBoundary(DM dm, DM dmNew)
 
 .seealso: DMGetBoundary()
 @*/
-PetscErrorCode DMAddBoundary(DM dm, PetscBool isEssential, const char name[], const char labelname[], PetscInt field, PetscInt numcomps, const PetscInt *comps, void (*bcFunc)(), PetscInt numids, const PetscInt *ids, void *ctx)
+PetscErrorCode DMAddBoundary(DM dm, DMBoundaryConditionType type, const char name[], const char labelname[], PetscInt field, PetscInt numcomps, const PetscInt *comps, void (*bcFunc)(), PetscInt numids, const PetscInt *ids, void *ctx)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = PetscDSAddBoundary(dm->prob,isEssential,name,labelname,field,numcomps,comps,bcFunc,numids,ids,ctx);CHKERRQ(ierr);
+  ierr = PetscDSAddBoundary(dm->prob,type,name,labelname,field,numcomps,comps,bcFunc,numids,ids,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -6065,7 +6065,7 @@ PetscErrorCode DMGetNumBoundary(DM dm, PetscInt *numBd)
 - bd          - The BC number
 
   Output Parameters:
-+ isEssential - Flag for an essential (Dirichlet) condition, as opposed to a natural (Neumann) condition
++ type        - The type of condition, e.g. DM_BC_ESSENTIAL_ANALYTIC/DM_BC_ESSENTIAL_FIELD (Dirichlet), or DM_BC_NATURAL (Neumann)
 . name        - The BC name
 . labelname   - The label defining constrained points
 . field       - The field to constrain
@@ -6084,13 +6084,13 @@ PetscErrorCode DMGetNumBoundary(DM dm, PetscInt *numBd)
 
 .seealso: DMAddBoundary()
 @*/
-PetscErrorCode DMGetBoundary(DM dm, PetscInt bd, PetscBool *isEssential, const char **name, const char **labelname, PetscInt *field, PetscInt *numcomps, const PetscInt **comps, void (**func)(), PetscInt *numids, const PetscInt **ids, void **ctx)
+PetscErrorCode DMGetBoundary(DM dm, PetscInt bd, DMBoundaryConditionType *type, const char **name, const char **labelname, PetscInt *field, PetscInt *numcomps, const PetscInt **comps, void (**func)(), PetscInt *numids, const PetscInt **ids, void **ctx)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = PetscDSGetBoundary(dm->prob,bd,isEssential,name,labelname,field,numcomps,comps,func,numids,ids,ctx);CHKERRQ(ierr);
+  ierr = PetscDSGetBoundary(dm->prob,bd,type,name,labelname,field,numcomps,comps,func,numids,ids,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

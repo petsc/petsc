@@ -2527,7 +2527,7 @@ PetscErrorCode PetscDSGetRefCoordArrays(PetscDS prob, PetscReal **x, PetscScalar
 
   Input Parameters:
 + ds          - The PetscDS object
-. isEssential - Flag for an essential (Dirichlet) condition, as opposed to a natural (Neumann) condition
+. type        - The type of condition, e.g. DM_BC_ESSENTIAL_ANALYTIC/DM_BC_ESSENTIAL_FIELD (Dirichlet), or DM_BC_NATURAL (Neumann)
 . name        - The BC name
 . labelname   - The label defining constrained points
 . field       - The field to constrain
@@ -2546,7 +2546,7 @@ PetscErrorCode PetscDSGetRefCoordArrays(PetscDS prob, PetscReal **x, PetscScalar
 
 .seealso: PetscDSGetBoundary()
 @*/
-PetscErrorCode PetscDSAddBoundary(PetscDS ds, PetscBool isEssential, const char name[], const char labelname[], PetscInt field, PetscInt numcomps, const PetscInt *comps, void (*bcFunc)(), PetscInt numids, const PetscInt *ids, void *ctx)
+PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, const char name[], const char labelname[], PetscInt field, PetscInt numcomps, const PetscInt *comps, void (*bcFunc)(), PetscInt numids, const PetscInt *ids, void *ctx)
 {
   DSBoundary     b;
   PetscErrorCode ierr;
@@ -2560,7 +2560,7 @@ PetscErrorCode PetscDSAddBoundary(PetscDS ds, PetscBool isEssential, const char 
   if (numcomps) {ierr = PetscMemcpy(b->comps, comps, numcomps*sizeof(PetscInt));CHKERRQ(ierr);}
   ierr = PetscMalloc1(numids, &b->ids);CHKERRQ(ierr);
   if (numids) {ierr = PetscMemcpy(b->ids, ids, numids*sizeof(PetscInt));CHKERRQ(ierr);}
-  b->essential       = isEssential;
+  b->type            = type;
   b->field           = field;
   b->numcomps        = numcomps;
   b->func            = bcFunc;
@@ -2608,7 +2608,7 @@ PetscErrorCode PetscDSGetNumBoundary(PetscDS ds, PetscInt *numBd)
 - bd          - The BC number
 
   Output Parameters:
-+ isEssential - Flag for an essential (Dirichlet) condition, as opposed to a natural (Neumann) condition
++ type        - The type of condition, e.g. DM_BC_ESSENTIAL_ANALYTIC/DM_BC_ESSENTIAL_FIELD (Dirichlet), or DM_BC_NATURAL (Neumann)
 . name        - The BC name
 . labelname   - The label defining constrained points
 . field       - The field to constrain
@@ -2627,7 +2627,7 @@ PetscErrorCode PetscDSGetNumBoundary(PetscDS ds, PetscInt *numBd)
 
 .seealso: PetscDSAddBoundary()
 @*/
-PetscErrorCode PetscDSGetBoundary(PetscDS ds, PetscInt bd, PetscBool *isEssential, const char **name, const char **labelname, PetscInt *field, PetscInt *numcomps, const PetscInt **comps, void (**func)(), PetscInt *numids, const PetscInt **ids, void **ctx)
+PetscErrorCode PetscDSGetBoundary(PetscDS ds, PetscInt bd, DMBoundaryConditionType *type, const char **name, const char **labelname, PetscInt *field, PetscInt *numcomps, const PetscInt **comps, void (**func)(), PetscInt *numids, const PetscInt **ids, void **ctx)
 {
   DSBoundary b    = ds->boundary;
   PetscInt   n    = 0;
@@ -2640,9 +2640,9 @@ PetscErrorCode PetscDSGetBoundary(PetscDS ds, PetscInt bd, PetscBool *isEssentia
     ++n;
   }
   if (!b) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Boundary %d is not in [0, %d)", bd, n);
-  if (isEssential) {
-    PetscValidPointer(isEssential, 3);
-    *isEssential = b->essential;
+  if (type) {
+    PetscValidPointer(type, 3);
+    *type = b->type;
   }
   if (name) {
     PetscValidPointer(name, 4);
@@ -2718,10 +2718,10 @@ PetscErrorCode PetscDSCopyBoundary(PetscDS probA, PetscDS probB)
     ierr = PetscMemcpy(bNew->ids, b->ids, bNew->numids*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscStrallocpy(b->labelname,(char **) &(bNew->labelname));CHKERRQ(ierr);
     ierr = PetscStrallocpy(b->name,(char **) &(bNew->name));CHKERRQ(ierr);
-    bNew->ctx       = b->ctx;
-    bNew->essential = b->essential;
-    bNew->field     = b->field;
-    bNew->func      = b->func;
+    bNew->ctx   = b->ctx;
+    bNew->type  = b->type;
+    bNew->field = b->field;
+    bNew->func  = b->func;
 
     *lastnext = bNew;
     lastnext = &(bNew->next);

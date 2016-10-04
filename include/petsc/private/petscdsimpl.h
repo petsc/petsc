@@ -12,7 +12,7 @@ typedef struct _n_DSBoundary *DSBoundary;
 struct _n_DSBoundary {
   const char *name;
   const char *labelname;
-  PetscBool   essential;
+  DMBoundaryConditionType type;
   PetscInt    field;
   PetscInt    numcomps;
   PetscInt   *comps;

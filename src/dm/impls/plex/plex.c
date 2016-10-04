@@ -6217,14 +6217,14 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscDSGetNumBoundary(dm->prob, &numBd);CHKERRQ(ierr);
   for (bd = 0; bd < numBd; ++bd) {
-    PetscInt    field;
-    PetscBool   isEssential;
-    const char  *labelName;
-    DMLabel     label;
+    PetscInt                field;
+    DMBoundaryConditionType type;
+    const char             *labelName;
+    DMLabel                 label;
 
-    ierr = PetscDSGetBoundary(dm->prob, bd, &isEssential, NULL, &labelName, &field, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+    ierr = PetscDSGetBoundary(dm->prob, bd, &type, NULL, &labelName, &field, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
     ierr = DMGetLabel(dm,labelName,&label);CHKERRQ(ierr);
-    if (label && isFE[field] && isEssential) ++numBC;
+    if (label && isFE[field] && (type & DM_BC_ESSENTIAL)) ++numBC;
   }
   /* Add ghost cell boundaries for FVM */
   for (f = 0; f < numFields; ++f) if (!isFE[f] && cEndInterior >= 0) ++numBC;
@@ -6241,14 +6241,15 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
   }
   /* Handle FEM Dirichlet boundaries */
   for (bd = 0; bd < numBd; ++bd) {
-    const char     *bdLabel;
-    DMLabel         label;
-    const PetscInt *comps;
-    const PetscInt *values;
-    PetscInt        bd2, field, numComps, numValues;
-    PetscBool       isEssential, duplicate = PETSC_FALSE;
+    const char             *bdLabel;
+    DMLabel                 label;
+    const PetscInt         *comps;
+    const PetscInt         *values;
+    PetscInt                bd2, field, numComps, numValues;
+    DMBoundaryConditionType type;
+    PetscBool               duplicate = PETSC_FALSE;
 
-    ierr = PetscDSGetBoundary(dm->prob, bd, &isEssential, NULL, &bdLabel, &field, &numComps, &comps, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
+    ierr = PetscDSGetBoundary(dm->prob, bd, &type, NULL, &bdLabel, &field, &numComps, &comps, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
     ierr = DMGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
     if (!isFE[field] || !label) continue;
     /* Only want to modify label once */
@@ -6263,7 +6264,7 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
       ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
     }
     /* Filter out cells, if you actually want to constrain cells you need to do things by hand right now */
-    if (isEssential) {
+    if (type & DM_BC_ESSENTIAL) {
       PetscInt       *newidx;
       PetscInt        n, newn = 0, p, v;
 
