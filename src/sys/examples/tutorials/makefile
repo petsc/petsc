@@ -143,6 +143,12 @@ runex5:
 	   else printf "${PWD}\nPossible problem with ex5_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5_1.tmp
 
+runex5_yaml:
+	-@${MPIEXEC} -n 1 ./ex5 -options_file_yaml bag.yml -options_view  > ex5_yaml.tmp 5>&1; \
+	   if (${DIFF} output/ex5_yaml.out ex5_yaml.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex5_yaml, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex5_yaml.tmp
+
 runex5f90:
 	-@${MPIEXEC} -n 1 ./ex5f90 -pbag_rarray 4,5,88 > ex5f90_1.tmp 5>&1; \
 	   if (${DIFF} output/ex5f90_1.out ex5f90_1.tmp) then true; \
@@ -218,7 +224,7 @@ TESTEXAMPLES_C_X_MPIUNI   = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
 TESTEXAMPLES_FORTRAN	  = ex3f.PETSc runex3f ex3f.rm ex4f.PETSc runex4f ex4f.rm
 TESTEXAMPLES_F90	  = ex4f90.PETSc runex4f90 ex4f90.rm
 TESTEXAMPLES_F2003        = ex5f90.PETSc runex5f90 ex5f90.rm  ex8f90.PETSc runex8f90 ex8f90.rm
-TESTEXAMPLES_YAML         = ex9.PETSc runex9_1 runex9_2 ex9.rm ex10f90.PETSc runex10f90_1 runex10f90_2 ex10f90.rm
+TESTEXAMPLES_YAML         = ex5.PETSc runex5_yaml ex5.rm ex9.PETSc runex9_1 runex9_2 ex9.rm ex10f90.PETSc runex10f90_1 runex10f90_2 ex10f90.rm
 TESTEXAMPLES_CHOMBO       = ex12.PETSc runex12 ex12.rm
 TESTEXAMPLES_TRILINOS     = ex13.PETSc runex13 ex13.rm ex14.PETSc runex14 ex14.rm
 include ${PETSC_DIR}/lib/petsc/conf/test

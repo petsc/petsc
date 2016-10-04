@@ -1,0 +1,17 @@
+pbag:
+   filename: secretfile.txt
+   rho:      1.0
+   W:        3.
+   modes:
+      x:     2
+   int:
+      array: 1,2,3
+   real:
+      array: 1.0,-1.0
+   bool:
+      array: yes,0,false
+   do_output: no
+   dt: LONG
+   x1: 1.
+   x2: .9
+   choose: THE_OTHER
