@@ -262,7 +262,12 @@ PETSC_EXTERN PetscErrorCode MatSetRandom(Mat,PetscRandom);
 
 /*S
      MatStencil - Data structure (C struct) for storing information about a single row or
-        column of a matrix as indexed on an associated grid.
+        column of a matrix as indexed on an associated grid. These are arguments to MatSetStencil() and MatSetBlockStencil()
+
+   The i,j, and k represent the logical coordinates over the entire grid (for 2 and 1 dimensional problems the k and j entries are ignored).
+   The c represents the the degrees of freedom at each grid point (the dof argument to DMDASetDOF()). If dof is 1 then this entry is ignored.
+
+   For stencil access to vectors see DMDAVecGetArray(), DMDAVecGetArrayF90().
 
    Fortran usage is different, see MatSetValuesStencil() for details.
 
@@ -270,7 +275,7 @@ PETSC_EXTERN PetscErrorCode MatSetRandom(Mat,PetscRandom);
 
   Concepts: matrix; linear operator
 
-.seealso:  MatSetValuesStencil(), MatSetStencil(), MatSetValuesBlockedStencil()
+.seealso:  MatSetValuesStencil(), MatSetStencil(), MatSetValuesBlockedStencil(), DMDAVecGetArray(), DMDAVecGetArrayF90()
 S*/
 typedef struct {
   PetscInt k,j,i,c;
@@ -282,7 +287,7 @@ PETSC_EXTERN PetscErrorCode MatSetStencil(Mat,PetscInt,const PetscInt[],const Pe
 
 /*E
     MatAssemblyType - Indicates if the matrix is now to be used, or if you plan
-     to continue to add values to it
+     to continue to add or insert values to it
 
     Level: beginner
 
