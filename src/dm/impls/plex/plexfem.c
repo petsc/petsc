@@ -250,6 +250,32 @@ static PetscErrorCode DMPlexInsertBoundaryValues_FEM_Internal(DM dm, PetscReal t
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexInsertBoundaryValues_FEM_AuxField_Internal"
+static PetscErrorCode DMPlexInsertBoundaryValues_FEM_AuxField_Internal(DM dm, PetscReal time, Vec locU, PetscInt field, DMLabel label, PetscInt numids, const PetscInt ids[],
+                                                                       void (*func)(PetscInt, PetscInt, PetscInt,
+                                                                                    const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                                                    const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                                                    PetscReal, const PetscReal[], PetscScalar[]), void *ctx, Vec locX)
+{
+  void (**funcs)(PetscInt, PetscInt, PetscInt,
+                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                 PetscReal, const PetscReal[], PetscScalar[]);
+  void            **ctxs;
+  PetscInt          numFields;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetNumFields(dm, &numFields);CHKERRQ(ierr);
+  ierr = PetscCalloc2(numFields,&funcs,numFields,&ctxs);CHKERRQ(ierr);
+  funcs[field] = func;
+  ctxs[field]  = ctx;
+  ierr = DMProjectFieldLabelLocal(dm, time, label, numids, ids, locU, funcs, INSERT_BC_VALUES, locX);CHKERRQ(ierr);
+  ierr = PetscFree2(funcs,ctxs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexInsertBoundaryValues_FVM_Internal"
 /* This ignores numcomps/comps */
 static PetscErrorCode DMPlexInsertBoundaryValues_FVM_Internal(DM dm, PetscReal time, Vec faceGeometry, Vec cellGeometry, Vec Grad,
@@ -403,10 +429,23 @@ PetscErrorCode DMPlexInsertBoundaryValues(DM dm, PetscBool insertEssential, Vec 
     ierr = DMGetField(dm, field, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID) {
-      if (!(type & DM_BC_ESSENTIAL)) continue; /* for FEM, there is no insertion to be done for non-essential boundary conditions */
-      ierr = DMPlexLabelAddCells(dm,label);CHKERRQ(ierr);
-      ierr = DMPlexInsertBoundaryValues_FEM_Internal(dm, time, field, label, numids, ids, (PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *)) func, ctx, locX);CHKERRQ(ierr);
-      ierr = DMPlexLabelClearCells(dm,label);CHKERRQ(ierr);
+      switch (type) {
+        /* for FEM, there is no insertion to be done for non-essential boundary conditions */
+      case DM_BC_ESSENTIAL:
+        ierr = DMPlexLabelAddCells(dm,label);CHKERRQ(ierr);
+        ierr = DMPlexInsertBoundaryValues_FEM_Internal(dm, time, field, label, numids, ids, (PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *)) func, ctx, locX);CHKERRQ(ierr);
+        ierr = DMPlexLabelClearCells(dm,label);CHKERRQ(ierr);
+        break;
+      case DM_BC_ESSENTIAL_FIELD:
+        ierr = DMPlexLabelAddCells(dm,label);CHKERRQ(ierr);
+        ierr = DMPlexInsertBoundaryValues_FEM_AuxField_Internal(dm, time, locX, field, label, numids, ids, (void (*)(PetscInt, PetscInt, PetscInt,
+                                                                                    const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                                                    const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                                                    PetscReal, const PetscReal[], PetscScalar[])) func, ctx, locX);CHKERRQ(ierr);
+        ierr = DMPlexLabelClearCells(dm,label);CHKERRQ(ierr);
+        break;
+      default: break;
+      }
     } else if (id == PETSCFV_CLASSID) {
       if (!faceGeomFVM) continue;
       ierr = DMPlexInsertBoundaryValues_FVM_Internal(dm, time, faceGeomFVM, cellGeomFVM, gradFVM,
