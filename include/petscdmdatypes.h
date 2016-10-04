@@ -45,8 +45,8 @@ typedef enum { DMDA_ELEMENT_P1, DMDA_ELEMENT_Q1 } DMDAElementType;
   Fortran Notes - This should be declared as
 $    DMDALocalInfo :: info(DMDA_LOCAL_INFO_SIZE)
      and the entries accessed via
-$    info(dim)
-$    info(dof) etc.
+$    info(DMDA_LOCAL_INFO_DIM)
+$    info(DMDA_LOCAL_INFO_DOF) etc.
    The entries bx,by,bz, st, and da are not accessible from Fortran.
 
 .seealso:  DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDestroy(), DM, DMDAGetLocalInfo(), DMDAGetInfo()
