@@ -256,6 +256,8 @@ if __name__ == "__main__":
 	else:
 	    value = token.value
             # various verbatim-style environments disable bracket count
+            # Note that a closing bracket inside a \trl{} will break things
+            #print value + " : " + str(bracket) + str(vbracket) + str(lstinline_bracket) + str(outputlisting_bracket) + str(bashlisting_bracket) + str(makelisting_bracket) + str(lstlisting_bracket) + str(tikzpicture_bracket)
 	    if value == '\\begin{verbatim}':
                 vbracket = vbracket + 1;
 	    if value == '\\begin{bashlisting}':
