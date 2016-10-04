@@ -56,7 +56,8 @@ typedef struct {
   Vec          W;          /* Right-hand-side for implicit stage solve */
   Vec          Ydot;       /* Work vector holding Ydot during residual evaluation */
   Vec          yGErr;      /* Vector holding the global error after a step is completed */
-  PetscScalar  *work;      /* Scalar work */
+  PetscScalar  *swork;     /* Scalar work (size of the number of stages)*/
+  PetscScalar  *rwork;     /* Scalar work (size of the number of steps)*/
   PetscReal    scoeff;     /* shift = scoeff/dt */
   PetscReal    stage_time;
   TSStepStatus status;
@@ -524,12 +525,12 @@ static PetscErrorCode TSEvaluateStep_GLEE(TS ts,PetscInt order,Vec X,PetscBool *
 {
   TS_GLEE         *glee = (TS_GLEE*) ts->data;
   GLEETableau     tab = glee->tableau;
-  PetscReal       h, *B = tab->B, *V = tab->V, 
-                  *F = tab->F, 
+  PetscReal       h, *B = tab->B, *V = tab->V,
+                  *F = tab->F,
                   *Fembed = tab->Fembed;
   PetscInt        s = tab->s, r = tab->r, i, j;
   Vec             *Y = glee->Y, *YdotStage = glee->YdotStage;
-  PetscScalar     *w = glee->work;
+  PetscScalar     *ws = glee->swork, *wr = glee->rwork;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -552,12 +553,14 @@ static PetscErrorCode TSEvaluateStep_GLEE(TS ts,PetscInt order,Vec X,PetscBool *
     if (glee->status == TS_STEP_INCOMPLETE) {
       for (i=0; i<r; i++) {
         ierr = VecZeroEntries(Y[i]); CHKERRQ(ierr);
-        ierr = VecMAXPY(Y[i],r,(V+i*r),glee->X); CHKERRQ(ierr);
-        for (j=0; j<s; j++) w[j] = h*B[i*s+j];
-        ierr = VecMAXPY(Y[i],s,w,YdotStage); CHKERRQ(ierr);
+        for (j=0; j<r; j++) wr[j] = V[i*r+j];
+        ierr = VecMAXPY(Y[i],r,wr,glee->X); CHKERRQ(ierr);
+        for (j=0; j<s; j++) ws[j] = h*B[i*s+j];
+        ierr = VecMAXPY(Y[i],s,ws,YdotStage); CHKERRQ(ierr);
       }
       ierr = VecZeroEntries(X);CHKERRQ(ierr);
-      ierr = VecMAXPY(X,r,F,Y);CHKERRQ(ierr);
+      for (j=0; j<r; j++) wr[j] = F[j];
+      ierr = VecMAXPY(X,r,wr,Y);CHKERRQ(ierr);
     } else {ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
 
@@ -566,12 +569,14 @@ static PetscErrorCode TSEvaluateStep_GLEE(TS ts,PetscInt order,Vec X,PetscBool *
     /* Complete with the embedded method (Fembed) */
     for (i=0; i<r; i++) {
       ierr = VecZeroEntries(Y[i]); CHKERRQ(ierr);
-      ierr = VecMAXPY(Y[i],r,(V+i*r),glee->X); CHKERRQ(ierr);
-      for (j=0; j<s; j++) w[j] = h*B[i*s+j];
-      ierr = VecMAXPY(Y[i],s,w,YdotStage); CHKERRQ(ierr);
+      for (j=0; j<r; j++) wr[j] = V[i*r+j];
+      ierr = VecMAXPY(Y[i],r,wr,glee->X); CHKERRQ(ierr);
+      for (j=0; j<s; j++) ws[j] = h*B[i*s+j];
+      ierr = VecMAXPY(Y[i],s,ws,YdotStage); CHKERRQ(ierr);
     }
     ierr = VecZeroEntries(X);CHKERRQ(ierr);
-    ierr = VecMAXPY(X,r,Fembed,Y);CHKERRQ(ierr);
+    for (j=0; j<r; j++) wr[j] = Fembed[j];
+    ierr = VecMAXPY(X,r,wr,Y);CHKERRQ(ierr);
 
     if (done) *done = PETSC_TRUE;
     PetscFunctionReturn(0);
@@ -596,7 +601,7 @@ static PetscErrorCode TSStep_GLEE(TS ts)
                   *YdotStage = glee->YdotStage,
                   W = glee->W;
   SNES            snes;
-  PetscScalar     *w = glee->work;
+  PetscScalar     *ws = glee->swork, *wr = glee->rwork;
   TSAdapt         adapt;
   PetscInt        i,j,reject,next_scheme,its,lits;
   PetscReal       next_time_step;
@@ -627,16 +632,18 @@ static PetscErrorCode TSStep_GLEE(TS ts)
 
       if (A[i*s+i] == 0) {  /* Explicit stage */
         ierr = VecZeroEntries(YStage[i]);CHKERRQ(ierr);
-        ierr = VecMAXPY(YStage[i],r,(U+i*r),X);CHKERRQ(ierr);
-        for (j=0; j<i; j++) w[j] = h*A[i*s+j];
-        ierr = VecMAXPY(YStage[i],i,w,YdotStage);CHKERRQ(ierr);
+        for (j=0; j<r; j++) wr[j] = U[i*r+j];
+        ierr = VecMAXPY(YStage[i],r,wr,X);CHKERRQ(ierr);
+        for (j=0; j<i; j++) ws[j] = h*A[i*s+j];
+        ierr = VecMAXPY(YStage[i],i,ws,YdotStage);CHKERRQ(ierr);
       } else {              /* Implicit stage */
         glee->scoeff = 1.0/A[i*s+i];
         /* compute right-hand-side */
         ierr = VecZeroEntries(W);CHKERRQ(ierr);
-        ierr = VecMAXPY(W,r,(U+i*r),X);CHKERRQ(ierr);
-        for (j=0; j<i; j++) w[j] = h*A[i*s+j];
-        ierr = VecMAXPY(W,i,w,YdotStage);CHKERRQ(ierr);
+        for (j=0; j<r; j++) wr[j] = U[i*r+j];
+        ierr = VecMAXPY(W,r,wr,X);CHKERRQ(ierr);
+        for (j=0; j<i; j++) ws[j] = h*A[i*s+j];
+        ierr = VecMAXPY(W,i,ws,YdotStage);CHKERRQ(ierr);
         ierr = VecScale(W,glee->scoeff/h);CHKERRQ(ierr);
         /* set initial guess */
         ierr = VecCopy(i>0 ? YStage[i-1] : ts->vec_sol,YStage[i]);CHKERRQ(ierr);
@@ -671,7 +678,8 @@ static PetscErrorCode TSStep_GLEE(TS ts)
       ierr = PetscObjectComposedDataSetReal((PetscObject)ts->vec_sol,explicit_stage_time_id,ts->ptime);CHKERRQ(ierr);
       break;
     } else {                    /* Roll back the current step */
-      ierr = VecMAXPY(ts->vec_sol,r,F,X);CHKERRQ(ierr);
+      for (j=0; j<r; j++) wr[j] = F[j];
+      ierr = VecMAXPY(ts->vec_sol,r,wr,X);CHKERRQ(ierr);
       ts->time_step = next_time_step;
       glee->status  = TS_STEP_INCOMPLETE;
     }
@@ -739,7 +747,7 @@ static PetscErrorCode TSReset_GLEE(TS ts)
   ierr = VecDestroy(&glee->Ydot);CHKERRQ(ierr);
   ierr = VecDestroy(&glee->yGErr);CHKERRQ(ierr);
   ierr = VecDestroy(&glee->W);CHKERRQ(ierr);
-  ierr = PetscFree(glee->work);CHKERRQ(ierr);
+  ierr = PetscFree2(glee->swork,glee->rwork);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -900,7 +908,7 @@ static PetscErrorCode TSSetUp_GLEE(TS ts)
   ierr = VecDuplicate(ts->vec_sol,&glee->yGErr);CHKERRQ(ierr);
   ierr = VecZeroEntries(glee->yGErr);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&glee->W);CHKERRQ(ierr);
-  ierr = PetscMalloc1(s,&glee->work);CHKERRQ(ierr);
+  ierr = PetscMalloc2(s,&glee->swork,r,&glee->rwork); CHKERRQ(ierr);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   if (dm) {
     ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_TSGLEE,DMRestrictHook_TSGLEE,ts);CHKERRQ(ierr);
@@ -1155,11 +1163,14 @@ PetscErrorCode TSGetAuxSolution_GLEE(TS ts,Vec *X)
   PetscReal       *F    = tab->Fembed;
   PetscInt        r     = tab->r;
   Vec             *Y    = glee->Y;
+  PetscScalar     *wr   = glee->rwork;
+  PetscInt        i;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = VecZeroEntries(*X);CHKERRQ(ierr);
-  ierr = VecMAXPY((*X),r,F,Y);CHKERRQ(ierr);
+  for (i=0; i<r; i++) wr[i] = F[i];
+  ierr = VecMAXPY((*X),r,wr,Y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1172,12 +1183,15 @@ PetscErrorCode TSGetTimeError_GLEE(TS ts,PetscInt n,Vec *X)
   PetscReal       *F    = tab->Ferror;
   PetscInt        r     = tab->r;
   Vec             *Y    = glee->Y;
+  PetscScalar     *wr   = glee->rwork;
+  PetscInt        i;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = VecZeroEntries(*X);CHKERRQ(ierr);
   if(n==0){
-    ierr = VecMAXPY((*X),r,F,Y);CHKERRQ(ierr);
+    for (i=0; i<r; i++) wr[i] = F[i];
+    ierr = VecMAXPY((*X),r,wr,Y);CHKERRQ(ierr);
   } else if(n==-1) {
     *X=glee->yGErr;
   }
