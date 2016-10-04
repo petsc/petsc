@@ -59,8 +59,8 @@
 % We could consider using a dedicated clisting (but be careful with the inline listings)
 
 \lstnewenvironment{outputlisting}[1][\footnotesize\ttfamily]
-{\lstset{escapechar=,language=,basicstyle=#1}}
-{\lstset{escapechar=\$,language=C,basicstyle=\ttfamily}}
+{\lstset{escapechar=,language=,basicstyle=#1,breakatwhitespace=false}}
+{\lstset{escapechar=\$,language=C,basicstyle=\ttfamily,breakatwhitespace=true}}
 
 \lstnewenvironment{bashlisting}
 {\lstset{escapechar=,language=bash,basicstyle=\ttfamily}}
