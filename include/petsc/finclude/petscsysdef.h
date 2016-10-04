@@ -13,7 +13,7 @@
 #include "petsc/finclude/petscviewerdef.h"
 #include "petsc/finclude/petscerrordef.h"
 #include "petsc/finclude/petsclogdef.h"
-#include "petsc/finclude/petscdrawdef.h"
+#include "petsc/finclude/petscbagdef.h"
 
 !
 ! The real*8,complex*16 notatiton is used so that the
@@ -211,7 +211,9 @@
 #define PetscBuildTwoSidedType PetscEnum
 #define PetscSubcommType PetscEnum
 
+#if !defined(PETSC_USE_FORTRAN_DATATYPES)
 #define PetscOptions PetscFortranAddr
+#endif
 #define PetscFunctionList PetscFortranAddr
 
 #endif

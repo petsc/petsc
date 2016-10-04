@@ -149,10 +149,12 @@
       program main
 #include <petsc/finclude/petscdmdef.h>
 #include <petsc/finclude/petscsnesdef.h>
+      use petscdmda
       use petscdm
       use petscsnes
       use f90module
       use f90moduleinterfaces
+      implicit none
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -170,11 +172,12 @@
       type(Mat)        J
       PetscErrorCode   ierr
       PetscInt         its
-      PetscBool        flg,matrix_free
+      PetscBool        flg,matrix_free,set
       PetscInt         ione,nfour
       PetscReal lambda_max,lambda_min
       type(userctx)    user
       type(userctx), pointer:: puser
+      type(PetscOptions) :: options
 
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
 !  MUST be declared as external.
@@ -191,12 +194,13 @@
       call MPI_Comm_rank(PETSC_COMM_WORLD,user%rank,ierr)
 
 !  Initialize problem parameters
+      options%v = 0
       lambda_max  = 6.81
       lambda_min  = 0.0
       user%lambda = 6.0
       ione = 1
-      nfour = -4
-      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-par',user%lambda,flg,ierr);CHKERRQ(ierr)
+      nfour = 4
+      call PetscOptionsGetReal(options,PETSC_NULL_CHARACTER,'-par',user%lambda,flg,ierr);CHKERRQ(ierr)
       if (user%lambda .ge. lambda_max .or. user%lambda .le. lambda_min) then
          if (user%rank .eq. 0) write(6,*) 'Lambda is out of range'
          SETERRQ(PETSC_COMM_SELF,1,' ',ierr)
@@ -216,8 +220,8 @@
 ! This really needs only the star-type stencil, but we use the box
 ! stencil temporarily.
       call DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nfour,nfour,PETSC_DECIDE,PETSC_DECIDE,ione,ione,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,user%da,ierr);CHKERRQ(ierr)
-      call DMSetFromOptions(da,ierr);CHKERRQ(ierr)
-      call DMSetUp(da,ierr);CHKERRQ(ierr)
+      call DMSetFromOptions(user%da,ierr);CHKERRQ(ierr)
+      call DMSetUp(user%da,ierr);CHKERRQ(ierr)
       call DMDAGetInfo(user%da,PETSC_NULL_INTEGER,user%mx,user%my,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr);CHKERRQ(ierr)
 
@@ -276,7 +280,7 @@
 !     Jacobian.  See the users manual for a discussion of better techniques
 !     for preallocating matrix memory.
 
-      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-snes_mf',matrix_free,ierr);CHKERRQ(ierr)
+      call PetscOptionsHasName(options,PETSC_NULL_CHARACTER,'-snes_mf',matrix_free,ierr);CHKERRQ(ierr)
       if (.not. matrix_free) then
         call DMSetMatType(user%da,MATAIJ,ierr);CHKERRQ(ierr)
         call DMCreateMatrix(user%da,J,ierr);CHKERRQ(ierr)
@@ -290,7 +294,7 @@
       call SNESSetFromOptions(mysnes,ierr);CHKERRQ(ierr)
 
 !     Test Fortran90 wrapper for SNESSet/Get ApplicationContext()
-      call PetscOptionsGetBool(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-test_appctx',flg,PETSC_NULL_CHARACTER,ierr);CHKERRQ(ierr)
+      call PetscOptionsGetBool(options,PETSC_NULL_CHARACTER,'-test_appctx',flg,set,ierr);CHKERRQ(ierr)
       if (flg) then
         call SNESGetApplicationContext(mysnes,puser,ierr);CHKERRQ(ierr)
       endif
