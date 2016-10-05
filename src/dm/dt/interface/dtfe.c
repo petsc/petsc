@@ -3488,6 +3488,21 @@ PetscErrorCode PetscFESetQuadrature(PetscFE fem, PetscQuadrature q)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFEGetNumDof"
+/*@C
+  PetscFEGetNumDof - Returns the number of dofs (dual basis vectors) associated to mesh points on the reference cell of a given dimension
+
+  Not collective
+
+  Input Parameter:
+. fem - The PetscFE object
+
+  Output Parameter:
+. numDof - Array with the number of dofs per dimension
+
+  Level: intermediate
+
+.seealso: PetscFECreate()
+@*/
 PetscErrorCode PetscFEGetNumDof(PetscFE fem, const PetscInt **numDof)
 {
   const PetscInt *numDofDual;
@@ -3514,6 +3529,28 @@ PetscErrorCode PetscFEGetNumDof(PetscFE fem, const PetscInt **numDof)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFEGetDefaultTabulation"
+/*@C
+  PetscFEGetDefaultTabulation - Returns the tabulation of the basis functions at the quadrature points
+
+  Not collective
+
+  Input Parameter:
+. fem - The PetscFE object
+
+  Output Parameters:
++ B - The basis function values at quadrature points
+. D - The basis function derivatives at quadrature points
+- H - The basis function second derivatives at quadrature points
+
+  Note:
+$ B[(p*pdim + i)*Nc + c] is the value at point p for basis function i and component c
+$ D[((p*pdim + i)*Nc + c)*dim + d] is the derivative value at point p for basis function i, component c, in direction d
+$ H[(((p*pdim + i)*Nc + c)*dim + d)*dim + e] is the value at point p for basis function i, component c, in directions d and e
+
+  Level: intermediate
+
+.seealso: PetscFEGetTabulation(), PetscFERestoreTabulation()
+@*/
 PetscErrorCode PetscFEGetDefaultTabulation(PetscFE fem, PetscReal **B, PetscReal **D, PetscReal **H)
 {
   PetscInt         npoints;
@@ -3565,6 +3602,30 @@ PetscErrorCode PetscFEGetFaceTabulation(PetscFE fem, PetscReal **F)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFEGetTabulation"
+/*@C
+  PetscFEGetTabulation - Tabulates the basis functions, and perhaps derivatives, at the points provided.
+
+  Not collective
+
+  Input Parameters:
++ fem     - The PetscFE object
+. npoints - The number of tabulation points
+- points  - The tabulation point coordinates
+
+  Output Parameters:
++ B - The basis function values at tabulation points
+. D - The basis function derivatives at tabulation points
+- H - The basis function second derivatives at tabulation points
+
+  Note:
+$ B[(p*pdim + i)*Nc + c] is the value at point p for basis function i and component c
+$ D[((p*pdim + i)*Nc + c)*dim + d] is the derivative value at point p for basis function i, component c, in direction d
+$ H[(((p*pdim + i)*Nc + c)*dim + d)*dim + e] is the value at point p for basis function i, component c, in directions d and e
+
+  Level: intermediate
+
+.seealso: PetscFERestoreTabulation(), PetscFEGetDefaultTabulation()
+@*/
 PetscErrorCode PetscFEGetTabulation(PetscFE fem, PetscInt npoints, const PetscReal points[], PetscReal **B, PetscReal **D, PetscReal **H)
 {
   DM               dm;
