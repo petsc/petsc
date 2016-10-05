@@ -4,7 +4,7 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = '7e10c8a' #maint/v5.2.1+ from june-16-2016
+    self.gitcommit        = 'a081941' #master/v5.2.1+ from sept-30-2016
     self.download         = ['git://https://github.com/xiaoyeli/superlu','https://github.com/xiaoyeli/superlu/archive/'+self.gitcommit+'.tar.gz']
     self.downloaddirname  = 'superlu'
     self.functions        = ['set_default_options']
@@ -37,6 +37,9 @@ class Configure(config.package.CMakePackage):
     args.append('-Denable_tests=0')
     #  CMake in SuperLU should set this; but like many other packages it does not
     args.append('-DCMAKE_INSTALL_NAME_DIR:STRING="'+os.path.join(self.installDir,self.libdir)+'"')
+
+    if not hasattr(self.compilers, 'FC'):
+      args.append('-DXSDK_ENABLE_Fortran=OFF')
 
     # Add in fortran mangling flag
     if self.blasLapack.mangling == 'underscore':
