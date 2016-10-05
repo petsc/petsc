@@ -119,7 +119,7 @@ static PetscErrorCode DMProjectPoint_Private(DM dm, DM dmAux, PetscInt h, PetscR
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &dimEmbed);CHKERRQ(ierr);
   if (hasFE) {
-    ierr = DMPlexComputeCellGeometryFEM(dm, p, NULL, fegeom.v0, fegeom.J, NULL, &fegeom.detJ);CHKERRQ(ierr);
+    ierr = DMPlexComputeCellGeometryFEM(dm, p, NULL, fegeom.v0, fegeom.J, fegeom.invJ, &fegeom.detJ);CHKERRQ(ierr);
     fegeom.dim      = dim - h;
     fegeom.dimEmbed = dimEmbed;
   }
