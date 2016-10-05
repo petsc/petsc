@@ -199,7 +199,7 @@ PETSC_STATIC_INLINE PetscErrorCode EvaluateFieldJets(PetscDS prob, PetscBool bd,
   if (bd) {ierr = PetscDSGetBdTabulation(prob, &basisField, &basisFieldDer);CHKERRQ(ierr);}
   else    {ierr = PetscDSGetTabulation(prob, &basisField, &basisFieldDer);CHKERRQ(ierr);}
   for (d = 0; d < Nc; ++d)          {u[d]   = 0.0;}
-  for (d = 0; d < dimReal*Nc; ++d)      {u_x[d] = 0.0;}
+  for (d = 0; d < dimReal*Nc; ++d)  {u_x[d] = 0.0;}
   if (u_t) for (d = 0; d < Nc; ++d) {u_t[d] = 0.0;}
   for (f = 0; f < Nf; ++f) {
     const PetscReal *basis    = basisField[f];
@@ -228,7 +228,7 @@ PETSC_STATIC_INLINE PetscErrorCode EvaluateFieldJets(PetscDS prob, PetscBool bd,
       for (c = 0; c < Ncf; ++c) {
         const PetscInt cidx = b*Ncf+c;
 
-        u[fOffset+c]   += coefficients[dOffset+cidx]*basis[q*Nb*Ncf+cidx];
+        u[fOffset+c] += coefficients[dOffset+cidx]*basis[q*Nb*Ncf+cidx];
         for (d = 0; d < dimRef; ++d) refSpaceDer[c*dimRef+d] += coefficients[dOffset+cidx]*basisDer[(q*Nb*Ncf+cidx)*dimRef+d];
       }
     }
