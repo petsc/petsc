@@ -462,8 +462,8 @@ PetscErrorCode SetupProblem(PetscDS prob, PetscInt dim, AppCtx *user)
   ierr = PetscDSSetBdResidual(prob, 0, f0_bd_u_3d, NULL);CHKERRQ(ierr);
   ierr = PetscDSSetBdJacobian(prob, 0, 0, NULL, g1_bd_uu_3d, NULL, NULL);CHKERRQ(ierr);
 
-  ierr = PetscDSAddBoundary(prob, PETSC_TRUE, "fixed", "Faces", 0, 0, NULL, (void (*)()) coordinates, 0, NULL, user);CHKERRQ(ierr);
-  ierr = PetscDSAddBoundary(prob, PETSC_FALSE, "pressure", "Faces", 0, 0, NULL, NULL, 0, NULL, user);CHKERRQ(ierr);
+  ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "fixed", "Faces", 0, 0, NULL, (void (*)()) coordinates, 0, NULL, user);CHKERRQ(ierr);
+  ierr = PetscDSAddBoundary(prob, DM_BC_NATURAL, "pressure", "Faces", 0, 0, NULL, NULL, 0, NULL, user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -495,12 +495,14 @@ PetscErrorCode SetupNearNullSpace(DM dm, AppCtx *user)
   PetscObject    deformation;
   PetscErrorCode ierr;
 
+  PetscFunctionBeginUser;
   ierr = DMCreateSubDM(dm, 1, &fields, NULL, &subdm);CHKERRQ(ierr);
   ierr = DMPlexCreateRigidBody(subdm, &nearNullSpace);CHKERRQ(ierr);
   ierr = DMGetField(dm, 0, &deformation);CHKERRQ(ierr);
   ierr = PetscObjectCompose(deformation, "nearnullspace", (PetscObject) nearNullSpace);CHKERRQ(ierr);
   ierr = DMDestroy(&subdm);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&nearNullSpace);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -522,17 +524,16 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   ierr = PetscFEGetQuadrature(fe[0], &q);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(dm, dim, 1, simplex, "pres_", PETSC_DEFAULT, &fe[1]);CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(fe[1], q);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dm, dim, 1, simplex, "elastMat_", PETSC_DEFAULT, &feAux);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) feAux, "elasticityMaterial");CHKERRQ(ierr);
-  ierr = PetscFESetQuadrature(feAux, q);CHKERRQ(ierr);
 
   ierr = PetscObjectSetName((PetscObject) fe[1], "pressure");CHKERRQ(ierr);
 
-  ierr = PetscFECreateDefault(dm, dim, 1, simplex, "elastMat_", order, &feAux[0]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(dm, dim, 1, simplex, "elastMat_", PETSC_DEFAULT, &feAux[0]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) feAux[0], "elasticityMaterial");CHKERRQ(ierr);
+  ierr = PetscFESetQuadrature(feAux[0], q);CHKERRQ(ierr);
   /* It is not yet possible to define a field on a submesh (e.g. a boundary), so we will use a normal finite element */
-  ierr = PetscFECreateDefault(dm, dim, 1, simplex, "wall_pres_", order, &feAux[1]);CHKERRQ(ierr);
+  ierr = PetscFECreateDefault(dm, dim, 1, simplex, "wall_pres_", PETSC_DEFAULT, &feAux[1]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) feAux[1], "wall_pressure");CHKERRQ(ierr);
+  ierr = PetscFESetQuadrature(feAux[1], q);CHKERRQ(ierr);
 
   /* Set discretization and boundary conditions for each mesh */
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
