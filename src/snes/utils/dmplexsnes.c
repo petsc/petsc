@@ -2073,20 +2073,20 @@ PetscErrorCode DMPlexComputeBdJacobian_Internal(DM dm, Vec locX, Vec locX_t, Pet
     ierr = PetscDSGetTotalDimension(probAux, &totDimAux);CHKERRQ(ierr);
   }
   for (bd = 0; bd < numBd; ++bd) {
-    const char     *bdLabel;
-    DMLabel         label;
-    IS              pointIS;
-    const PetscInt *points;
-    const PetscInt *values;
-    PetscInt        fieldI, fieldJ, numValues, v, numPoints, p, dep, numFaces, face;
-    PetscBool       isEssential;
-    PetscObject     obj;
-    PetscClassId    id;
+    DMBoundaryConditionType type;
+    const char             *bdLabel;
+    DMLabel                 label;
+    IS                      pointIS;
+    const PetscInt         *points;
+    const PetscInt         *values;
+    PetscInt                fieldI, fieldJ, numValues, v, numPoints, p, dep, numFaces, face;
+    PetscObject             obj;
+    PetscClassId            id;
 
-    ierr = PetscDSGetBoundary(prob, bd, &isEssential, NULL, &bdLabel, &fieldI, NULL, NULL, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
+    ierr = PetscDSGetBoundary(prob, bd, &type, NULL, &bdLabel, &fieldI, NULL, NULL, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
     ierr = PetscDSGetDiscretization(prob, fieldI, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
-    if ((id != PETSCFE_CLASSID) || isEssential) continue;
+    if ((id != PETSCFE_CLASSID) || (type & DM_BC_ESSENTIAL)) continue;
     ierr = DMGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
     for (v = 0; v < numValues; ++v) {
       ierr = DMLabelGetStratumSize(label, values[v], &numPoints);CHKERRQ(ierr);
