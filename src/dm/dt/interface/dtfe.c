@@ -6622,7 +6622,7 @@ PetscErrorCode PetscFECreateDefault(DM dm, PetscInt dim, PetscInt numComp, Petsc
   }
   ierr = PetscFESetQuadrature(*fem, q);CHKERRQ(ierr);
   ierr = PetscFESetFaceQuadrature(*fem, fq);CHKERRQ(ierr);
-  /* Also create face quadrature here ? */
   ierr = PetscQuadratureDestroy(&q);CHKERRQ(ierr);
+  ierr = PetscQuadratureDestroy(&fq);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
