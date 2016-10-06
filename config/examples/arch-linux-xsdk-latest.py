@@ -10,7 +10,7 @@ configure_options = [
   '--with-shared-libraries=1',
   #prereq packages
   '--download-triangle=1', # for hdf5 tests
-  '--download-chaco=1', # for hdf5 tests
+  #'--download-chaco=1', # for hdf5 tests?; bundled with xsdk/trilinos
   #test latest snapshot
   '--download-hypre-commit=origin/master',
   '--download-alquimia-commit=origin/master',
