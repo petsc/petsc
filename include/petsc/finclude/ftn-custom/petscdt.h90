@@ -59,25 +59,3 @@
           PETSCDS_HIDE prob
         End Subroutine
       End Interface
-
-      Interface
-        Subroutine PetscDSGetBdTabulation(prob,f,b,bDer,ierr)
-          USE_PETSCDS_HIDE
-          PetscInt     f
-          PetscReal, pointer :: b(:)
-          PetscReal, pointer :: bDer(:)
-          PetscErrorCode ierr
-          PETSCDS_HIDE prob
-        End Subroutine
-      End Interface
-
-      Interface
-        Subroutine PetscDSRestoreBdTabulation(prob,f,b,bDer,ierr)
-          USE_PETSCDS_HIDE
-          PetscInt     f
-          PetscReal, pointer :: b(:)
-          PetscReal, pointer :: bDer(:)
-          PetscErrorCode ierr
-          PETSCDS_HIDE prob
-        End Subroutine
-      End Interface
