@@ -55,7 +55,6 @@ PetscErrorCode  DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
 {
   DM_DA          *dd = (DM_DA*)da->data;
   PetscErrorCode ierr;
-  PetscMPIInt    size;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da, DM_CLASSID, 1);
@@ -63,11 +62,12 @@ PetscErrorCode  DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
   PetscValidLogicalCollectiveInt(da,n,3);
   PetscValidLogicalCollectiveInt(da,p,4);
   if (da->setupcalled) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)da),&size);CHKERRQ(ierr);
   dd->m = m;
   dd->n = n;
   dd->p = p;
   if (da->dim == 2) {
+    PetscMPIInt size;
+    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)da),&size);CHKERRQ(ierr);
     if ((dd->m > 0) && (dd->n < 0)) {
       dd->n = size/dd->m;
       if (dd->n*dd->m != size) SETERRQ2(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"%D processes in X direction not divisible into comm size %d",m,size);
@@ -76,9 +76,6 @@ PetscErrorCode  DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
       dd->m = size/dd->n;
       if (dd->n*dd->m != size) SETERRQ2(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"%D processes in Y direction not divisible into comm size %d",n,size);
     }
-    if (m*n != size) SETERRQ3(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_SIZ,"Number processes in x %D times y %D direction must each MPI_Comm_size() %d",m,n,size);
-  } else if (da->dim == 3) {
-    if (m*n*p != size) SETERRQ4(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_SIZ,"Number processes in x %D times y %D time z %D direction must each MPI_Comm_size() %d",m,n,p,size);
   }
   PetscFunctionReturn(0);
 }
