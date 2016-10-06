@@ -839,7 +839,7 @@ TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex3.PETSc runex3 runex3_2 r
                             ex19.PETSc ex19.rm \
                             ex22.PETSc runex22_2 runex22_3 runex22_4 ex22.rm \
                             ex25.PETSc runex25 ex25.rm \
-                            ex31.PETSc runex31_2 ex31.rm \
+                            ex31.PETSc runex31 runex31_2 ex31.rm \
                             ex40.PETSc runex40 ex40.rm \
                             ex41.PETSc runex41 ex41.rm \
                             ex43.PETSc ex43.rm \

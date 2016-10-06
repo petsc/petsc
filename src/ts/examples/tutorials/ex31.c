@@ -791,9 +791,9 @@ PetscErrorCode RHSFunction_Kulikov2013I(TS ts, PetscReal t, Vec Y, Vec F, void *
   ierr = VecGetArrayRead(Y,&y);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = 2.*t*PetscPowScalar(y[1],1./5.)*y[3];
-  f[1] = 10.*t*y[3]*PetscExpReal(5.0*(y[2]-1.));
+  f[1] = 10.*t*y[3]*PetscExpScalar(5.0*(y[2]-1.));
   f[2] = 2.*t*y[3];
-  f[3] = -2.*t*PetscLogReal(y[0]);
+  f[3] = -2.*t*PetscLogScalar(y[0]);
   ierr = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -807,14 +807,14 @@ PetscErrorCode RHSJacobian_Kulikov2013I(TS ts, PetscReal t, Vec Y, Mat A, Mat B,
   const PetscScalar *y;
   PetscInt          row[4] = {0,1,2,3};
   PetscScalar       value[4][4];
-  PetscReal         m1,m2;
+  PetscScalar       m1,m2;
   PetscFunctionBegin;
   ierr = VecGetArrayRead(Y,&y);CHKERRQ(ierr);
   m1=(2.*t*y[3])/(5.*PetscPowScalar(y[1],4./5.));
   m2=2.*t*PetscPowScalar(y[1],1./5.);
   value[0][0] = 0. ;        value[0][1] = m1; value[0][2] = 0.;  value[0][3] = m2;
-  m1=50.*t*y[3]*PetscExpReal(5.0*(y[2]-1.));
-  m2=10.*t*PetscExpReal(5.0*(y[2]-1.));
+  m1=50.*t*y[3]*PetscExpScalar(5.0*(y[2]-1.));
+  m2=10.*t*PetscExpScalar(5.0*(y[2]-1.));
   value[1][0] = 0.;        value[1][1] = 0. ; value[1][2] = m1; value[1][3] = m2;
   value[2][0] = 0.;        value[2][1] = 0.;  value[2][2] = 0.; value[2][3] = 2*t;
   value[3][0] = -2.*t/y[0];value[3][1] = 0.;  value[3][2] = 0.; value[3][3] = 0.;
@@ -837,9 +837,9 @@ PetscErrorCode IFunction_Kulikov2013I(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F
   ierr = VecGetArrayRead(Y,&y);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = 2.*t*PetscPowScalar(y[1],1./5.)*y[3];
-  f[1] = 10.*t*y[3]*PetscExpReal(5.0*(y[2]-1.));
+  f[1] = 10.*t*y[3]*PetscExpScalar(5.0*(y[2]-1.));
   f[2] = 2.*t*y[3];
-  f[3] = -2.*t*PetscLogReal(y[0]);
+  f[3] = -2.*t*PetscLogScalar(y[0]);
   ierr = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   /* Left hand side = ydot - f(y) */
@@ -855,15 +855,15 @@ PetscErrorCode IJacobian_Kulikov2013I(TS ts, PetscReal t, Vec Y, Vec Ydot, Petsc
   const PetscScalar *y;
   PetscInt          row[4] = {0,1,2,3};
   PetscScalar       value[4][4];
-  PetscReal         m1,m2;
+  PetscScalar       m1,m2;
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(Y,&y);CHKERRQ(ierr);
   m1=(2.*t*y[3])/(5.*PetscPowScalar(y[1],4./5.));
   m2=2.*t*PetscPowScalar(y[1],1./5.);
   value[0][0] = a ;        value[0][1] = m1;  value[0][2] = 0.; value[0][3] = m2;
-  m1=50.*t*y[3]*PetscExpReal(5.0*(y[2]-1.));
-  m2=10.*t*PetscExpReal(5.0*(y[2]-1.));
+  m1=50.*t*y[3]*PetscExpScalar(5.0*(y[2]-1.));
+  m2=10.*t*PetscExpScalar(5.0*(y[2]-1.));
   value[1][0] = 0.;        value[1][1] = a ;  value[1][2] = m1; value[1][3] = m2;
   value[2][0] = 0.;        value[2][1] = 0.;  value[2][2] = a;  value[2][3] = 2*t;
   value[3][0] = -2.*t/y[0];value[3][1] = 0.;  value[3][2] = 0.; value[3][3] = a;
@@ -1204,10 +1204,10 @@ PetscErrorCode Initialize(Vec Y, void* s)
     IJacobian   = IJacobian_Hull1972B5;
   } else if (!strcmp(p,"kulik2013i")) {
     t0=0.;
-    y[0] = PetscExpReal(PetscSinScalar(t0*t0));
-    y[1] = PetscExpReal(5.*PetscSinScalar(t0*t0));
-    y[2] = PetscSinScalar(t0*t0)+1.0;
-    y[3] = PetscCosScalar(t0*t0);
+    y[0] = PetscExpReal(PetscSinReal(t0*t0));
+    y[1] = PetscExpReal(5.*PetscSinReal(t0*t0));
+    y[2] = PetscSinReal(t0*t0)+1.0;
+    y[3] = PetscCosReal(t0*t0);
     RHSFunction = RHSFunction_Kulikov2013I;
     RHSJacobian = RHSJacobian_Kulikov2013I;
     IFunction   = IFunction_Kulikov2013I;
@@ -1267,10 +1267,10 @@ PetscErrorCode ExactSolution(Vec Y, void* s, PetscReal t, PetscBool *flag)
     ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   } else if (!strcmp(p,"kulik2013i")) {
     ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-    y[0] = PetscExpReal(PetscSinScalar(t*t));
-    y[1] = PetscExpReal(5.*PetscSinScalar(t*t));
-    y[2] = PetscSinScalar(t*t)+1.0;
-    y[3] = PetscCosScalar(t*t); 
+    y[0] = PetscExpReal(PetscSinReal(t*t));
+    y[1] = PetscExpReal(5.*PetscSinReal(t*t));
+    y[2] = PetscSinReal(t*t)+1.0;
+    y[3] = PetscCosReal(t*t);
     *flag = PETSC_TRUE;
     ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   } else {
