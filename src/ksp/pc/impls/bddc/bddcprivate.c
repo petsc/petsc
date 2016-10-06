@@ -22,7 +22,7 @@ PetscErrorCode MatDenseOrthogonalRangeOrComplement(Mat A, PetscBool range, Petsc
   PetscFunctionBegin;
 #if defined(PETSC_MISSING_LAPACK_GESVD)
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"LAPACK _GESVD not available");
-#endif
+#else
   ierr = MatGetSize(A,&nr,&nc);CHKERRQ(ierr);
   if (!nr || !nc) PetscFunctionReturn(0);
 
@@ -71,7 +71,8 @@ PetscErrorCode MatDenseOrthogonalRangeOrComplement(Mat A, PetscBool range, Petsc
   }
   ierr = MatDenseRestoreArray(*B,&data);CHKERRQ(ierr);
   ierr = PetscFree(U);CHKERRQ(ierr);
-#else
+#endif
+#else /* PETSC_USE_COMPLEX */
   PetscFunctionBegin;
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented for complexes");
 #endif
