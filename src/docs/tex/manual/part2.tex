@@ -5,12 +5,6 @@
 %  - Use \break to indicate a line break (needed to prevent long strings in
 %    \tt mode from running off of the page)
 
-% TODO once otherwise mostly done (in this order):
-%     : rebase
-%     : section moving
-%     : final look through
-%     : PR
-
 \cleardoublepage
 \chapter{Vectors and Parallel Data}
 \label{chapter_vectors}
@@ -5760,125 +5754,390 @@ or  the option
 This chapter needs to be written. For now, see the manual pages (and linked examples) for \lstinline{KSPSetDM()} and \lstinline{SNESSetDM()}.
 
 %------------------------------------------------------------------
-%TODO: Move this into Part III? [ rebase onto master before attempting these big moves!]
 \cleardoublepage
-\chapter{Using MATLAB with PETSc}
-\label{ch_matlab}\sindex{MATLAB}
+\chapter{DMPlex: Unstructured Grids in PETSc}
+\label{ch_unstructured}
 
-There are three basic ways to use MATLAB with PETSc: 
+This chapter introduces the \lstinline{DMPlex} subclass of \lstinline{DM}, which allows the user to handle unstructured grids using the generic
+\lstinline{DM} interface for hierarchy and multi-physics. \lstinline{DMPlex} was created to remedy a huge problem in all current PDE
+simulation codes, namely that the discretization was so closely tied to the data layout and solver that switching
+discretizations in the same code was not possible. Not only does this preclude the kind of comparison that is necessary
+for scientific investigation, but it makes library development (as opposed to monolithic applications) impossible.
+
+\medskip \medskip
+
+\section{Representing Unstructured Grids} \sindex{DMPlex}
+
+The main advantage of \lstinline{DMPlex} in representing topology is that it treats all the different pieces of a mesh,
+e.g. cells, faces, edges, vertices in exactly the same way. This allows the interface to be very small and simple, while
+remaining flexible and general. This also allows ``dimension independent programming'', which means that the same
+algorithm can be used unchanged for meshes of different shapes and dimensions.
+
+All pieces of the mesh are treated as \textit{points}, which are identified by \lstinline{PetscInt}s. A mesh is built by relating
+points to other points, in particular specifying a ``covering'' relation among the points. For example, an edge is
+defined by being covered by two vertices, and a triangle can be defined by begin covered by three edges (or even by
+three vertices). In fact, this structure has been known for a long time. It is a Hasse Diagram~\cite{HasseDiagram},
+which is a Directed Acyclic Graph (DAG) representing a cell complex using the covering relation. The graph edges
+represent the relation, which also encodes a poset.
+
+For example, we can encode the doublet mesh below
+\begin{figure}
+\centering
+\begin{tikzpicture}[scale=2.0]
+  \tikzstyle{vertex}  = [text=blue]
+  \tikzstyle{vertexV} = [circle,inner sep=0pt,draw=black,fill=blue,text=white]
+  \tikzstyle{edge}    = [text=red]
+  \tikzstyle{edgeV}   = [circle,inner sep=0pt,draw=black,fill=red,text=white]
+  \tikzstyle{face}    = [text=green]
+  \tikzstyle{faceV}   = [circle,inner sep=0pt,draw=black,fill=green,text=white]
+  \tikzstyle{sec}     = [->]
+  % Doublet mesh with values for P_3
+  \path (-1.732, 0.0) node[vertexV](dv0) {$v_0$};
+  \path ( 0.0,  -1.0) node[vertexV](dv1) {$v_1$};
+  \path ( 0.0,   1.0) node[vertexV](dv2) {$v_2$};
+  \path ( 1.732, 0.0) node[vertexV](dv3) {$v_3$};
+  \draw (dv0) -- (dv1) node[edgeV,pos=0.5] {$e_0$};
+  \draw (dv1) -- (dv2) node[edgeV,pos=0.5] {$e_1$};
+  \draw (dv2) -- (dv0) node[edgeV,pos=0.5] {$e_2$};
+  \draw (dv2) -- (dv3) node[edgeV,pos=0.5] {$e_3$};
+  \draw (dv3) -- (dv1) node[edgeV,pos=0.5] {$e_4$};
+  \path (-0.6667, 0.0) node[faceV](f0) {$f_0$};
+  \path ( 0.6667, 0.0) node[faceV](f1) {$f_1$};
+\end{tikzpicture}
+\caption{A 2D doublet mesh, two triangles sharing an edge.}
+\label{fig:doubletMesh}
+\end{figure}
+which can also be represented as the DAG
+\begin{figure}
+\centering
+\begin{tikzpicture}[scale=2.0]
+  \tikzstyle{vertex}  = [text=blue]
+  \tikzstyle{vertexV} = [circle,inner sep=0pt,draw=black,fill=blue,text=white]
+  \tikzstyle{edge}    = [text=red]
+  \tikzstyle{edgeV}   = [circle,inner sep=0pt,draw=black,fill=red,text=white]
+  \tikzstyle{face}    = [text=green]
+  \tikzstyle{faceV}   = [circle,inner sep=0pt,draw=black,fill=green,text=white]
+  \tikzstyle{sec}     = [->]
+  % DAG for doublet
+  \path (-1.5, 2.0) node[vertexV](dv0) {$v_0$};
+  \path (-0.5, 2.0) node[vertexV](dv1) {$v_1$};
+  \path ( 0.5, 2.0) node[vertexV](dv2) {$v_2$};
+  \path ( 1.5, 2.0) node[vertexV](dv3) {$v_3$};
+  \draw (-2.0, 1.0) node[edgeV](e0) {$e_0$};
+  \draw (-1.0, 1.0) node[edgeV](e1) {$e_1$};
+  \draw ( 0.0, 1.0) node[edgeV](e2) {$e_2$};
+  \draw ( 1.0, 1.0) node[edgeV](e3) {$e_3$};
+  \draw ( 2.0, 1.0) node[edgeV](e4) {$e_4$};
+  \path (-1.0, 0.0) node[faceV](f0) {$f_0$};
+  \path ( 1.0, 0.0) node[faceV](f1) {$f_1$};
+  \draw[sec] (dv0) -- (e0);
+  \draw[sec] (dv1) -- (e0);
+  \draw[sec] (dv1) -- (e1);
+  \draw[sec] (dv2) -- (e1);
+  \draw[sec] (dv2) -- (e2);
+  \draw[sec] (dv0) -- (e2);
+  \draw[sec] (dv2) -- (e3);
+  \draw[sec] (dv3) -- (e3);
+  \draw[sec] (dv3) -- (e4);
+  \draw[sec] (dv1) -- (e4);
+  \draw[sec] (e0)  -- (f0);
+  \draw[sec] (e1)  -- (f0);
+  \draw[sec] (e2)  -- (f0);
+  \draw[sec] (e1)  -- (f1);
+  \draw[sec] (e3)  -- (f1);
+  \draw[sec] (e4)  -- (f1);
+\end{tikzpicture}
+\caption{The Hasse diagram for our 2D doublet mesh, expressed as a DAG.}
+\label{fig:doubletSieve}
+\end{figure}
+To use the PETSc API, we first consecutively number the mesh pieces. The PETSc convention is to number first cells,
+then vertices, then faces, and then edges, but the user is free to violate this convention. First, we declare the set of
+points present in a mesh,
+\begin{lstlisting}
+DMPlexSetChart(dm, 0, 11);
+\end{lstlisting}
+We then define the covering relation, which we call the \textit{cone}, which are also the in-edges in the DAG. In order
+to preallocate correctly, we first setup sizes,
+\begin{lstlisting}
+DMPlexSetConeSize(dm, 0, 3);
+DMPlexSetConeSize(dm, 1, 3);
+DMPlexSetConeSize(dm, 6, 2);
+DMPlexSetConeSize(dm, 7, 2);
+DMPlexSetConeSize(dm, 8, 2);
+DMPlexSetConeSize(dm, 9, 2);
+DMPlexSetConeSize(dm, 10, 2);
+DMSetUp(dm);
+\end{lstlisting}
+and then point values,
+\begin{lstlisting}
+DMPlexSetCone(dm, 0, [6, 7, 8]);
+DMPlexSetCone(dm, 1, [7, 9, 10]);
+DMPlexSetCone(dm, 6, [2, 3]);
+DMPlexSetCone(dm, 7, [3, 4]);
+DMPlexSetCone(dm, 8, [4, 2]);
+DMPlexSetCone(dm, 9, [4, 5]);
+DMPlexSetCone(dm, 10, [5, 3]);
+\end{lstlisting}
+
+There is also an API for the dual relation, using \lstinline{DMPlexSetSupportSize()} and \break\lstinline{DMPlexSetSupport()}, but this can be
+calculated automatically by calling
+\begin{lstlisting}
+DMPlexSymmetrize(dm);
+\end{lstlisting}
+In order to support efficient queries, we also want to construct fast search structures, indices, for the different
+types of points, which is done using
+\begin{lstlisting}
+DMPlexStratify(dm);
+\end{lstlisting}
+
+\section{Data on Unstructured Grids} \sindex{PetscSection}
+
+The strongest links between solvers and discretizations are,
+\begin{itemize}
+  \item the layout of data over the mesh,
+  \item problem partitioning, and
+  \item ordering of unknowns.
+\end{itemize}
+To enable modularity, we encode the operations above in simple data structures that can be understood by the linear
+algebra engine in PETSc without any reference to the mesh (topology) or discretization (analysis).
+
+\subsection{Data Layout}
+
+Data is associated to a mesh using the \lstinline{PetscSection} object. A \lstinline{PetscSection} can be thought of as a generalization of
+\lstinline{PetscLayout}, in the same way that a fiber bundle is a generalization of the normal Euclidean basis used in linear
+algebra. With \lstinline{PetscLayout}, we associate a unit vector ($e_i$) with every point in the space, and just divide up points
+between processes. Using \lstinline{PetscSection}, we can associate a set of dofs, a small space $\{e_k\}$, with every point, and
+though our points must be contiguous like \lstinline{PetscLayout}, they can be in any range $[\mathrm{pStart}, \mathrm{pEnd})$.
+
+The sequence for setting up any \lstinline{PetscSection} is the following:
 \begin{enumerate}
-  \item (Section \ref{sec_matlabdump}) dumping files to be read into MATLAB,
-  \item (Section \ref{sec_matlabsocket}) automatically sending data from a running PETSc program
-to a MATLAB process where you may interactively type MATLAB commands (or run
-scripts), and 
-\item (Section \ref{sec_matlabengine}) automatically sending data back and forth between PETSc and
-MATLAB where MATLAB commands are issued not interactively but from a script or
-the PETSc program (this uses the MATLAB Engine).
+  \item Specify the chart,
+  \item Specify the number of dofs per point, and
+  \item Set up the \lstinline{PetscSection}.
+\end{enumerate}
+For example, using the mesh from Fig.~\ref{fig:doubletMesh}, we can layout data for a continuous Galerkin $P_3$ finite
+element method,
+\begin{lstlisting}
+PetscInt pStart, pEnd, cStart, cEnd, c, vStart, vEnd, v, eStart, eEnd, e;
+
+DMPlexGetChart(dm,  &pStart,  &pEnd);
+DMPlexGetHeightStratum(dm, 0,  &cStart,  &cEnd);
+DMPlexGetHeightStratum(dm, 1,  &eStart,  &eEnd);
+DMPlexGetDepthStratum(dm, 0,  &vStart, &vEnd);
+PetscSectionSetChart(s, pStart, pEnd);
+for(c = cStart; c < cEnd; ++c)
+    PetscSectionSetDof(s, c, 1);
+for(v = vStart; v < vEnd; ++v)
+    PetscSectionSetDof(s, v, 1);
+for(e = eStart; e < eEnd; ++e)
+    PetscSectionSetDof(s, e, 2);
+PetscSectionSetUp(s);
+\end{lstlisting}
+Now a PETSc local vector can be created manually using this layout,
+\begin{lstlisting}
+PetscSectionGetStorageSize(s, &n);
+VecSetSizes(localVec, n, PETSC_DETERMINE);
+VecSetFromOptions(localVec);
+\end{lstlisting}
+however it is usually easier to use the \lstinline{DM} directly, which also provides global vectors,
+\begin{lstlisting}
+DMSetDefaultSection(dm, s);
+DMGetLocalVector(dm, &localVec);
+DMGetGlobalVector(dm, &globalVec);
+\end{lstlisting}
+
+\subsection{Partitioning and Ordering}
+
+In exactly the same way as \lstinline{MatPartitioning} and \lstinline{MatOrdering}, we encode the results of a partition or order in an
+IS. However, the graph we are dealing with now is not the adjacency graph of the problem Jacobian, but the mesh
+itself. Once the mesh is partitioned and reordered, we used the data layout from a \lstinline{PetscSection} to automatically derive
+a problem partitioning/ordering.
+
+\section{Evaluating Residuals} \sindex{Residual Evaluation}
+
+The evaluation of a residual, or Jacobian, for most discretizations has the following general form:
+\begin{itemize}
+  \item Traverse the mesh, picking out pieces which in general overlap,
+
+  \item Extract some values from the solution vector, associated with this piece,
+
+  \item Calculate some values for the piece, and
+
+  \item Insert these values into the residual vector
+\end{itemize}
+\lstinline{DMPlex} separates these different concerns by passing sets of points, which are just integers, from mesh traversal
+routines to data extraction routines and back. In this way, the \lstinline{PetscSection} which structures the data inside a \lstinline{Vec} does
+not need to know anything about the mesh inside a \lstinline{DMPlex}.
+
+The most common mesh traversal is the transitive closure of a point, which is exactly the transitive closure of a point
+in the DAG using the covering relation. Note that this closure can be calculated orienting the arrows in either
+direction. For example, in a finite element calculation, we calculate an integral over the closure of each element, and
+then sum up the contributions to the basis function coefficients. The closure of the element can be expressed discretely
+as the transitive closure of the element point in the mesh DAG, where each point also has an orientation. Then we can
+retrieve the data using \lstinline{PetscSection} methods,
+\begin{lstlisting}
+PetscScalar *a;
+PetscInt     numPoints, *points = NULL, p;
+
+VecGetArray(u,&a);
+DMPlexGetTransitiveClosure(dm,cell,PETSC_TRUE,&numPoints,&points);
+for (p = 0; p <= numPoints*2; p += 2) {
+  PetscInt dof, off, d;
+
+  PetscSectionGetDof(section, points[p], &dof);
+  PetscSectionGetOffset(section, points[p], &off);
+  for=(d = 0; d <= dof; ++d) {
+    myfunc(a[off+d]);
+  }
+}
+DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &numPoints, &points);
+VecRestoreArray(u, &a);
+\end{lstlisting}
+This operation is so common, that we have built a convenience method around it which returns the values in a contiguous
+array, correctly taking into account the orientations of various mesh points,
+\begin{lstlisting}
+const PetscScalar *values;
+PetscInt           csize;
+
+DMPlexVecGetClosure(dm, section, u, cell, &csize, &values);
+/* Do integral in quadrature loop */
+DMPlexVecRestoreClosure(dm, section, u, cell, &csize, &values);
+DMPlexVecSetClosure(dm, section, residual, cell, &r, ADD_VALUES);
+\end{lstlisting}
+A simple example of this kind of calculation is in \lstinline{DMPlexComputeL2Diff()}. Note that there is no restriction on the
+type of cell or dimension of the mesh in the code above, so it will work for polyhedral cells, hybrid meshes, and meshes
+of any dimension, without change. We can also reverse the covering relation, so that the code works for finite volume
+methods where we want the data from neighboring cells for each face
+\begin{lstlisting}
+PetscScalar *a;
+PetscInt     points[2*2], numPoints, p, dofA, offA, dofB, offB;
+
+VecGetArray(u,  &a);
+DMPlexGetTransitiveClosure(dm, cell, PETSC_FALSE, &numPoints, &points);
+assert(numPoints == 2);
+PetscSectionGetDof(section, points[0*2], &dofA);
+PetscSectionGetDof(section, points[1*2], &dofB);
+assert(dofA == dofB);
+PetscSectionGetOffset(section, points[0*2], &offA);
+PetscSectionGetOffset(section, points[1*2], &offB);
+myfunc(a[offA], a[offB]);
+VecRestoreArray(u, &a);
+\end{lstlisting}
+This kind of calculation is used in \lstinline{TS} \href{http://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/ex11.c.html}{\trl{$PETSC_DIR/src/ts/examples/tutorials/ex11.c}}.
+
+\section{Networks}
+Built on top of \lstinline{DMPlex}, the \lstinline{DMNetwork} subclass provides abstractions for representing general unstructured
+networks such as communication networks, power grid, computer networks, transportation networks, electrical circuits, graphs, and others.
+
+\subsection{Application flow}
+The general flow of an application code using \lstinline{DMNetwork} is as follows:
+
+\begin{enumerate}
+  \item Create a network object and a ``component'' library:
+\begin{lstlisting}
+DMNetworkCreate(MPI_Comm, DM*);
+\end{lstlisting}
+  creates an empty network object. A ``component'' is specific application data at a node/edge of the network required for its residual evaluation. For example, components could be resistor, inductor data for circuit applications, edge weights for graph problems, generator/transmission line data for power grids. Components are registered by calling
+\begin{lstlisting}
+DMNetworkRegisterComponent(DM,const char* name, PetscInt size, PetscInt* compkey);
+\end{lstlisting}
+  Here, \lstinline{name} is the component name,\lstinline{size} is the size of component data type, and \lstinline{compkey} is an integer key that can be used for
+  setting/getting the component at a node or an edge.
+  \item Set network size (number of nodes, edges), edge connectivity.
+  \item Set the bare layout (graph) of the network
+\begin{lstlisting}
+DMNetworkLayoutSetUp(DM dm);
+\end{lstlisting}
+\begin{lstlisting}
+DMNetworkSetSizes(DM dm, PetscInt nnodes, PetscInt nedges, PetscInt Nnodes, PetscInt Nedges);
+\end{lstlisting}
+\begin{lstlisting}
+DMNetworkSetEdgeList(DM dm, int edgeconns[]);
+\end{lstlisting}
+  \item Set components and number of variables for nodes/edges.
+\begin{lstlisting}
+DMNetworkAddComponent(DM dm, PetscInt p,PetscInt component,void* component);
+\end{lstlisting}
+  Multiple components can be added at a node/edge.
+\begin{lstlisting}
+DMNetworkSetNumVariables(DM dm,PetscInt p,PetscInt nvar);
+\end{lstlisting}
+\begin{lstlisting}
+DMNetworkAddNumVariables(DM dm,PetscInt p,PetscInt nvar);
+\end{lstlisting}
+  \item Signal network ready to be distributed.
+\begin{lstlisting}
+DMSetUp(DM dm);
+\end{lstlisting}
+  \item Distribute the network (also moves components attached with nodes/edges)
+\begin{lstlisting}
+DMNetworkDistribute(DM oldDM, const char partitioner[], PetscInt overlap,DM *distDM);
+\end{lstlisting}
+\item Hook up the \lstinline{DM} with the solver: \lstinline{KSPSetDM()}, \lstinline{SNESSetDM()}, \lstinline{TSSetDM()}
 \end{enumerate}
 
-\section{Dumping Data for MATLAB}
-\label{sec_matlabdump}
-One can dump PETSc matrices and vectors to the screen (and thus save in a file via
-\trl{> filename.m}) in an ASCII format that MATLAB can read in directly. This is done with the
-command line options \trl{-vec_view ::ascii_matlab} or \trl{-mat_view ::ascii_matlab}. This causes the PETSc program
-to print the vectors and matrices every time \lstinline{VecAssemblyEnd()} or \lstinline{MatAssemblyEnd()} are called. \findex{-vec_view ::ascii_matlab} \findex{-mat_view ::ascii_matlab} 
-To provide finer control
-over when and what vectors and matrices are dumped one can use the \lstinline{VecView()} and
-\lstinline{MatView()} functions with a viewer type of ASCII (see \lstinline{PetscViewerASCIIOpen()},
-\lstinline{PETSC_VIEWER_STDOUT_WORLD}, \lstinline{PETSC_VIEWER_STDOUT_SELF}, or \lstinline{PETSC_VIEWER_STDOUT_(MPI_Comm)}). Before calling
-the viewer set the output type with, for example,
+\subsection{Utility functions}
+  \lstinline{DMNetwork} provides functions for obtaining iterators for nodes/edges, checking the ``ghost''
+  status of a node (vertex), and retrieving local/global indices of node/edge variables for inserting
+  elements in vectors/matrices.
 \begin{lstlisting}
-PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_MATLAB);
-VecView(A,PETSC_VIEWER_STDOUT_WORLD);
-PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);  
+DMNetworkGetEdgeRange(DM dm,PetscInt *eStart,PetscInt *eEnd);
 \end{lstlisting}
-The name of each PETSc variable printed for MATLAB may be set with
 \begin{lstlisting}
-PetscObjectSetName((PetscObject)A,"name");
-\end{lstlisting}\sindex{PetscObjectSetName()}
-If no name is specified, the object is given a default name using \lstinline{PetscObjectName()}.
-
-One can also read PETSc binary files directly into MATLAB via the scripts available in \lstinline{$PETSC_DIR/share/matlab}.
-This requires less disk space.
-
-\section{Sending Data to Interactive Running MATLAB Session}
-\label{sec_matlabsocket}
-
-One creates a viewer to MATLAB via
-\begin{lstlisting}
-PetscViewerSocketOpen(MPI_Comm,char *machine,int port,PetscViewer *v);
+DMNetworkGetVertexRange(DM dm,PetscInt *vStart, PetscInt *vEnd);
 \end{lstlisting}
-(port is usually set to \lstinline{PETSC_DEFAULT}; use \lstinline{NULL} for the machine if the
-MATLAB interactive session is running on the same machine as the PETSc program)
-and then sends matrices or vectors via
 \begin{lstlisting}
-VecView(Vec A,v);
-MatView(Mat B,v);
+DMNetworkIsGhostVertex(DM dm,PetscInt p,PetscBool *isghost);
 \end{lstlisting}
-One can also send arrays or integer arrays via \lstinline{PetscIntView()}, \lstinline{PetscRealView()} and \break\lstinline{PetscScalarView()}.
-One may start the MATLAB program manually or use the PETSc command
-\break \lstinline{PetscStartMATLAB(MPI_Comm,char *machine,char *script,FILE **fp)}; where machine and script may be \lstinline{NULL}.
-
-To receive the objects in MATLAB you must first make sure that \trl{${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/matlab}
-is in your MATLAB path. Use \lstinline{p = sopen;} (or \lstinline{p = sopen(portnum)} if you provided a port number in
-your call to \lstinline{PetscViewerSocketOpen()}), then \lstinline{a = PetscBinaryRead(p);} returns the object you have passed from PETSc.
-\lstinline{PetscBinaryRead()} may be called any number of times. Each call should correspond on the PETSc side with
-viewing a single vector or matrix. You many call \lstinline{sclose()} to close the connection from MATLAB.
-It is also possible to start your PETSc program from MATLAB via \lstinline{launch()}.
-
-\section{Using the MATLAB Compute Engine}
-\label{sec_matlabengine}
-
-One creates access to the MATLAB engine via
 \begin{lstlisting}
-PetscMatlabEngineCreate(MPI_Comm comm,char *machine,PetscMatlabEngine *e);
+DMNetworkGetVariableOffset(DM dm,PetscInt p,PetscInt *offset);
 \end{lstlisting}
-where \lstinline{machine} is the name of the machine hosting MATLAB (\lstinline{NULL} may be used for localhost).
-One can send objects to MATLAB via
 \begin{lstlisting}
-PetscMatlabEnginePut(PetscMatlabEngine e,PetscObject obj);
+DMNetworkGetVariableGlobalOffset(DM dm,PetscInt p,PetscInt *offsetg);
 \end{lstlisting}
-One can get objects
-via
+In network applications, one frequently needs to find the supporting edges for a node or
+the connecting nodes covering an edge. These can be obtained by the following two routines.
 \begin{lstlisting}
-PetscMatlabEngineGet(PetscMatlabEngine e,PetscObject obj);.
+DMNetworkGetConnectedNodes(DM dm,PetscInt edge,const PetscInt *vertices[]);
 \end{lstlisting}
-Similarly one can send arrays via
 \begin{lstlisting}
-PetscMatlabEnginePutArray(PetscMatlabEngine e,int m,int n,PetscScalar *array,char *name);
-\end{lstlisting}
-and get them back via
-\begin{lstlisting}
-PetscMatlabEngineGetArray(PetscMatlabEngine e,int m,int n,PetscScalar *array,char *name);
-\end{lstlisting}
-One cannot use MATLAB
-interactively in this mode but you can send MATLAB commands via
-\begin{lstlisting}
-PetscMatlabEngineEvaluate(PetscMatlabEngine,"format",...);
-\end{lstlisting}
-where \lstinline{format} has the usual \lstinline{printf()} format.
-For example,
-\begin{lstlisting}
-PetscMatlabEngineEvaluate(PetscMatlabEngine,"x = \%g *y + z;",avalue);
-\end{lstlisting}
-The name of each PETSc variable passed to Matlab may be set with
-\begin{lstlisting}
-PetscObjectSetName((PetscObject)A,"name");
+DMNetworkGetSupportingEdges(DM dm,PetscInt vertex,PetscInt *nedges,const PetscInt *edges[]) ;
 \end{lstlisting}
 
-Text responses can be returned from MATLAB via
+\subsection{Retrieving components}
+The components set at nodes/edges are stored in a container that can be accessed by
 \begin{lstlisting}
-PetscMatlabEngineGetOutput(PetscMatlabEngine,char **);
+DMNetworkGetComponentDataArray(DM dm,DMNetworkComponentGenericDataType **componentdataarray);
 \end{lstlisting}
-or
+  Using \lstinline{componentdataarray}, individual components set at a node/edge can be retrieved by
 \begin{lstlisting}
-PetscMatlabEnginedPrintOutput(PetscMatlabEngine,FILE*).
+DMNetworkGetComponentTypeOffset(DM dm,PetscInt p, PetscInt compnum, PetscInt *compkey, PetscInt *offset);
 \end{lstlisting}
-There is a short-cut to starting the MATLAB engine
-with \lstinline{PETSC_MATLAB_ENGINE_(MPI_Comm)}.
+\lstinline{compkey} is the key set by \lstinline{DMNetworkRegisterComponent}. An example of accessing and retrieving the components at nodes is:
+
+\begin{lstlisting}
+DMNetworkComponentGenericDataType *arr; 
+PetscInt Start, End, numcomps,offset,key,v,compnum; 
+
+DMNetworkGetComponentDataArray(dm,  &arr); 
+DMNetworkGetVertexRange(dm, &Start, &End); 
+for(v=Start; v  < End; v++) { 
+  DMNetworkGetNumComponents(dm,v, &numcomps); 
+  for(compnum=0; compnum < numcomps;compnum++) {
+    DMNetworkGetComponentTypeOffset(dm,v,compnum, &key, &offset); 
+    compdata = (UserCompDataType)(arr+offset); 
+  }
+}
+\end{lstlisting}
+
+% --------------------------------------------------------------------
+%                            PART 3
+% --------------------------------------------------------------------
+\cleardoublepage
+\part{Additional Information}
+\label{part_usefulstuff}
 
 %------------------------------------------------------------------
-%TODO: move this into Part III? [rebase onto master before attempting these big moves]
 \cleardoublepage
 \chapter{PETSc for Fortran Users}
 \label{ch_fortran}
@@ -6238,12 +6497,122 @@ since PETSc usage within the two languages differs only slightly.
 \label{fig_SNES-Fortran}
 \end{figure}
 
-% --------------------------------------------------------------------
-%                            PART 3
-% --------------------------------------------------------------------
+%------------------------------------------------------------------
 \cleardoublepage
-\part{Additional Information}
-\label{part_usefulstuff}
+\chapter{Using MATLAB with PETSc}
+\label{ch_matlab}\sindex{MATLAB}
+
+There are three basic ways to use MATLAB with PETSc: 
+\begin{enumerate}
+  \item (Section \ref{sec_matlabdump}) dumping files to be read into MATLAB,
+  \item (Section \ref{sec_matlabsocket}) automatically sending data from a running PETSc program
+to a MATLAB process where you may interactively type MATLAB commands (or run
+scripts), and 
+\item (Section \ref{sec_matlabengine}) automatically sending data back and forth between PETSc and
+MATLAB where MATLAB commands are issued not interactively but from a script or
+the PETSc program (this uses the MATLAB Engine).
+\end{enumerate}
+
+\section{Dumping Data for MATLAB}
+\label{sec_matlabdump}
+One can dump PETSc matrices and vectors to the screen (and thus save in a file via
+\trl{> filename.m}) in an ASCII format that MATLAB can read in directly. This is done with the
+command line options \trl{-vec_view ::ascii_matlab} or \trl{-mat_view ::ascii_matlab}. This causes the PETSc program
+to print the vectors and matrices every time \lstinline{VecAssemblyEnd()} or \lstinline{MatAssemblyEnd()} are called. \findex{-vec_view ::ascii_matlab} \findex{-mat_view ::ascii_matlab} 
+To provide finer control
+over when and what vectors and matrices are dumped one can use the \lstinline{VecView()} and
+\lstinline{MatView()} functions with a viewer type of ASCII (see \lstinline{PetscViewerASCIIOpen()},
+\lstinline{PETSC_VIEWER_STDOUT_WORLD}, \lstinline{PETSC_VIEWER_STDOUT_SELF}, or \lstinline{PETSC_VIEWER_STDOUT_(MPI_Comm)}). Before calling
+the viewer set the output type with, for example,
+\begin{lstlisting}
+PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_MATLAB);
+VecView(A,PETSC_VIEWER_STDOUT_WORLD);
+PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);  
+\end{lstlisting}
+The name of each PETSc variable printed for MATLAB may be set with
+\begin{lstlisting}
+PetscObjectSetName((PetscObject)A,"name");
+\end{lstlisting}\sindex{PetscObjectSetName()}
+If no name is specified, the object is given a default name using \lstinline{PetscObjectName()}.
+
+One can also read PETSc binary files directly into MATLAB via the scripts available in \lstinline{$PETSC_DIR/share/matlab}.
+This requires less disk space.
+
+\section{Sending Data to Interactive Running MATLAB Session}
+\label{sec_matlabsocket}
+
+One creates a viewer to MATLAB via
+\begin{lstlisting}
+PetscViewerSocketOpen(MPI_Comm,char *machine,int port,PetscViewer *v);
+\end{lstlisting}
+(port is usually set to \lstinline{PETSC_DEFAULT}; use \lstinline{NULL} for the machine if the
+MATLAB interactive session is running on the same machine as the PETSc program)
+and then sends matrices or vectors via
+\begin{lstlisting}
+VecView(Vec A,v);
+MatView(Mat B,v);
+\end{lstlisting}
+One can also send arrays or integer arrays via \lstinline{PetscIntView()}, \lstinline{PetscRealView()} and \break\lstinline{PetscScalarView()}.
+One may start the MATLAB program manually or use the PETSc command
+\break \lstinline{PetscStartMATLAB(MPI_Comm,char *machine,char *script,FILE **fp)}; where machine and script may be \lstinline{NULL}.
+
+To receive the objects in MATLAB you must first make sure that \trl{${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/matlab}
+is in your MATLAB path. Use \lstinline{p = sopen;} (or \lstinline{p = sopen(portnum)} if you provided a port number in
+your call to \lstinline{PetscViewerSocketOpen()}), then \lstinline{a = PetscBinaryRead(p);} returns the object you have passed from PETSc.
+\lstinline{PetscBinaryRead()} may be called any number of times. Each call should correspond on the PETSc side with
+viewing a single vector or matrix. You many call \lstinline{sclose()} to close the connection from MATLAB.
+It is also possible to start your PETSc program from MATLAB via \lstinline{launch()}.
+
+\section{Using the MATLAB Compute Engine}
+\label{sec_matlabengine}
+
+One creates access to the MATLAB engine via
+\begin{lstlisting}
+PetscMatlabEngineCreate(MPI_Comm comm,char *machine,PetscMatlabEngine *e);
+\end{lstlisting}
+where \lstinline{machine} is the name of the machine hosting MATLAB (\lstinline{NULL} may be used for localhost).
+One can send objects to MATLAB via
+\begin{lstlisting}
+PetscMatlabEnginePut(PetscMatlabEngine e,PetscObject obj);
+\end{lstlisting}
+One can get objects
+via
+\begin{lstlisting}
+PetscMatlabEngineGet(PetscMatlabEngine e,PetscObject obj);.
+\end{lstlisting}
+Similarly one can send arrays via
+\begin{lstlisting}
+PetscMatlabEnginePutArray(PetscMatlabEngine e,int m,int n,PetscScalar *array,char *name);
+\end{lstlisting}
+and get them back via
+\begin{lstlisting}
+PetscMatlabEngineGetArray(PetscMatlabEngine e,int m,int n,PetscScalar *array,char *name);
+\end{lstlisting}
+One cannot use MATLAB
+interactively in this mode but you can send MATLAB commands via
+\begin{lstlisting}
+PetscMatlabEngineEvaluate(PetscMatlabEngine,"format",...);
+\end{lstlisting}
+where \lstinline{format} has the usual \lstinline{printf()} format.
+For example,
+\begin{lstlisting}
+PetscMatlabEngineEvaluate(PetscMatlabEngine,"x = \%g *y + z;",avalue);
+\end{lstlisting}
+The name of each PETSc variable passed to Matlab may be set with
+\begin{lstlisting}
+PetscObjectSetName((PetscObject)A,"name");
+\end{lstlisting}
+
+Text responses can be returned from MATLAB via
+\begin{lstlisting}
+PetscMatlabEngineGetOutput(PetscMatlabEngine,char **);
+\end{lstlisting}
+or
+\begin{lstlisting}
+PetscMatlabEnginedPrintOutput(PetscMatlabEngine,FILE*).
+\end{lstlisting}
+There is a short-cut to starting the MATLAB engine
+with \lstinline{PETSC_MATLAB_ENGINE_(MPI_Comm)}.
 
 %---------------------------------------------------------------------
 \cleardoublepage
@@ -8531,383 +8900,6 @@ command
 PCDestroy(PC *pc);
 \end{lstlisting}
 
-%------------------------------------------------------------------
-% TODO: move this into part II? [rebase onto master before these rearrangements]
-\cleardoublepage
-\chapter{Unstructured Grids in PETSc}
-\label{ch_unstructured}
-
-This chapter introduces the \lstinline{DMPlex} subclass of \lstinline{DM}, which allows the user to handle unstructured grids using the generic
-\lstinline{DM} interface for hierarchy and multi-physics. \lstinline{DMPlex} was created to remedy a huge problem in all current PDE
-simulation codes, namely that the discretization was so closely tied to the data layout and solver that switching
-discretizations in the same code was not possible. Not only does this preclude the kind of comparison that is necessary
-for scientific investigation, but it makes library development (as opposed to monolithic applications) impossible.
-
-\medskip \medskip
-
-\section{Representing Unstructured Grids} \sindex{DMPlex}
-
-The main advantage of \lstinline{DMPlex} in representing topology is that it treats all the different pieces of a mesh,
-e.g. cells, faces, edges, vertices in exactly the same way. This allows the interface to be very small and simple, while
-remaining flexible and general. This also allows ``dimension independent programming'', which means that the same
-algorithm can be used unchanged for meshes of different shapes and dimensions.
-
-All pieces of the mesh are treated as \textit{points}, which are identified by \lstinline{PetscInt}s. A mesh is built by relating
-points to other points, in particular specifying a ``covering'' relation among the points. For example, an edge is
-defined by being covered by two vertices, and a triangle can be defined by begin covered by three edges (or even by
-three vertices). In fact, this structure has been known for a long time. It is a Hasse Diagram~\cite{HasseDiagram},
-which is a Directed Acyclic Graph (DAG) representing a cell complex using the covering relation. The graph edges
-represent the relation, which also encodes a poset.
-
-For example, we can encode the doublet mesh below
-\begin{figure}
-\centering
-\begin{tikzpicture}[scale=2.0]
-  \tikzstyle{vertex}  = [text=blue]
-  \tikzstyle{vertexV} = [circle,inner sep=0pt,draw=black,fill=blue,text=white]
-  \tikzstyle{edge}    = [text=red]
-  \tikzstyle{edgeV}   = [circle,inner sep=0pt,draw=black,fill=red,text=white]
-  \tikzstyle{face}    = [text=green]
-  \tikzstyle{faceV}   = [circle,inner sep=0pt,draw=black,fill=green,text=white]
-  \tikzstyle{sec}     = [->]
-  % Doublet mesh with values for P_3
-  \path (-1.732, 0.0) node[vertexV](dv0) {$v_0$};
-  \path ( 0.0,  -1.0) node[vertexV](dv1) {$v_1$};
-  \path ( 0.0,   1.0) node[vertexV](dv2) {$v_2$};
-  \path ( 1.732, 0.0) node[vertexV](dv3) {$v_3$};
-  \draw (dv0) -- (dv1) node[edgeV,pos=0.5] {$e_0$};
-  \draw (dv1) -- (dv2) node[edgeV,pos=0.5] {$e_1$};
-  \draw (dv2) -- (dv0) node[edgeV,pos=0.5] {$e_2$};
-  \draw (dv2) -- (dv3) node[edgeV,pos=0.5] {$e_3$};
-  \draw (dv3) -- (dv1) node[edgeV,pos=0.5] {$e_4$};
-  \path (-0.6667, 0.0) node[faceV](f0) {$f_0$};
-  \path ( 0.6667, 0.0) node[faceV](f1) {$f_1$};
-\end{tikzpicture}
-\caption{A 2D doublet mesh, two triangles sharing an edge.}
-\label{fig:doubletMesh}
-\end{figure}
-which can also be represented as the DAG
-\begin{figure}
-\centering
-\begin{tikzpicture}[scale=2.0]
-  \tikzstyle{vertex}  = [text=blue]
-  \tikzstyle{vertexV} = [circle,inner sep=0pt,draw=black,fill=blue,text=white]
-  \tikzstyle{edge}    = [text=red]
-  \tikzstyle{edgeV}   = [circle,inner sep=0pt,draw=black,fill=red,text=white]
-  \tikzstyle{face}    = [text=green]
-  \tikzstyle{faceV}   = [circle,inner sep=0pt,draw=black,fill=green,text=white]
-  \tikzstyle{sec}     = [->]
-  % DAG for doublet
-  \path (-1.5, 2.0) node[vertexV](dv0) {$v_0$};
-  \path (-0.5, 2.0) node[vertexV](dv1) {$v_1$};
-  \path ( 0.5, 2.0) node[vertexV](dv2) {$v_2$};
-  \path ( 1.5, 2.0) node[vertexV](dv3) {$v_3$};
-  \draw (-2.0, 1.0) node[edgeV](e0) {$e_0$};
-  \draw (-1.0, 1.0) node[edgeV](e1) {$e_1$};
-  \draw ( 0.0, 1.0) node[edgeV](e2) {$e_2$};
-  \draw ( 1.0, 1.0) node[edgeV](e3) {$e_3$};
-  \draw ( 2.0, 1.0) node[edgeV](e4) {$e_4$};
-  \path (-1.0, 0.0) node[faceV](f0) {$f_0$};
-  \path ( 1.0, 0.0) node[faceV](f1) {$f_1$};
-  \draw[sec] (dv0) -- (e0);
-  \draw[sec] (dv1) -- (e0);
-  \draw[sec] (dv1) -- (e1);
-  \draw[sec] (dv2) -- (e1);
-  \draw[sec] (dv2) -- (e2);
-  \draw[sec] (dv0) -- (e2);
-  \draw[sec] (dv2) -- (e3);
-  \draw[sec] (dv3) -- (e3);
-  \draw[sec] (dv3) -- (e4);
-  \draw[sec] (dv1) -- (e4);
-  \draw[sec] (e0)  -- (f0);
-  \draw[sec] (e1)  -- (f0);
-  \draw[sec] (e2)  -- (f0);
-  \draw[sec] (e1)  -- (f1);
-  \draw[sec] (e3)  -- (f1);
-  \draw[sec] (e4)  -- (f1);
-\end{tikzpicture}
-\caption{The Hasse diagram for our 2D doublet mesh, expressed as a DAG.}
-\label{fig:doubletSieve}
-\end{figure}
-To use the PETSc API, we first consecutively number the mesh pieces. The PETSc convention is to number first cells,
-then vertices, then faces, and then edges, but the user is free to violate this convention. First, we declare the set of
-points present in a mesh,
-\begin{lstlisting}
-DMPlexSetChart(dm, 0, 11);
-\end{lstlisting}
-We then define the covering relation, which we call the \textit{cone}, which are also the in-edges in the DAG. In order
-to preallocate correctly, we first setup sizes,
-\begin{lstlisting}
-DMPlexSetConeSize(dm, 0, 3);
-DMPlexSetConeSize(dm, 1, 3);
-DMPlexSetConeSize(dm, 6, 2);
-DMPlexSetConeSize(dm, 7, 2);
-DMPlexSetConeSize(dm, 8, 2);
-DMPlexSetConeSize(dm, 9, 2);
-DMPlexSetConeSize(dm, 10, 2);
-DMSetUp(dm);
-\end{lstlisting}
-and then point values,
-\begin{lstlisting}
-DMPlexSetCone(dm, 0, [6, 7, 8]);
-DMPlexSetCone(dm, 1, [7, 9, 10]);
-DMPlexSetCone(dm, 6, [2, 3]);
-DMPlexSetCone(dm, 7, [3, 4]);
-DMPlexSetCone(dm, 8, [4, 2]);
-DMPlexSetCone(dm, 9, [4, 5]);
-DMPlexSetCone(dm, 10, [5, 3]);
-\end{lstlisting}
-
-There is also an API for the dual relation, using \lstinline{DMPlexSetSupportSize()} and \break\lstinline{DMPlexSetSupport()}, but this can be
-calculated automatically by calling
-\begin{lstlisting}
-DMPlexSymmetrize(dm);
-\end{lstlisting}
-In order to support efficient queries, we also want to construct fast search structures, indices, for the different
-types of points, which is done using
-\begin{lstlisting}
-DMPlexStratify(dm);
-\end{lstlisting}
-
-\section{Data on Unstructured Grids} \sindex{PetscSection}
-
-The strongest links between solvers and discretizations are,
-\begin{itemize}
-  \item the layout of data over the mesh,
-  \item problem partitioning, and
-  \item ordering of unknowns.
-\end{itemize}
-To enable modularity, we encode the operations above in simple data structures that can be understood by the linear
-algebra engine in PETSc without any reference to the mesh (topology) or discretization (analysis).
-
-\subsection{Data Layout}
-
-Data is associated to a mesh using the \lstinline{PetscSection} object. A \lstinline{PetscSection} can be thought of as a generalization of
-\lstinline{PetscLayout}, in the same way that a fiber bundle is a generalization of the normal Euclidean basis used in linear
-algebra. With \lstinline{PetscLayout}, we associate a unit vector ($e_i$) with every point in the space, and just divide up points
-between processes. Using \lstinline{PetscSection}, we can associate a set of dofs, a small space $\{e_k\}$, with every point, and
-though our points must be contiguous like \lstinline{PetscLayout}, they can be in any range $[\mathrm{pStart}, \mathrm{pEnd})$.
-
-The sequence for setting up any \lstinline{PetscSection} is the following:
-\begin{enumerate}
-  \item Specify the chart,
-  \item Specify the number of dofs per point, and
-  \item Set up the \lstinline{PetscSection}.
-\end{enumerate}
-For example, using the mesh from Fig.~\ref{fig:doubletMesh}, we can layout data for a continuous Galerkin $P_3$ finite
-element method,
-\begin{lstlisting}
-PetscInt pStart, pEnd, cStart, cEnd, c, vStart, vEnd, v, eStart, eEnd, e;
-
-DMPlexGetChart(dm,  &pStart,  &pEnd);
-DMPlexGetHeightStratum(dm, 0,  &cStart,  &cEnd);
-DMPlexGetHeightStratum(dm, 1,  &eStart,  &eEnd);
-DMPlexGetDepthStratum(dm, 0,  &vStart, &vEnd);
-PetscSectionSetChart(s, pStart, pEnd);
-for(c = cStart; c < cEnd; ++c)
-    PetscSectionSetDof(s, c, 1);
-for(v = vStart; v < vEnd; ++v)
-    PetscSectionSetDof(s, v, 1);
-for(e = eStart; e < eEnd; ++e)
-    PetscSectionSetDof(s, e, 2);
-PetscSectionSetUp(s);
-\end{lstlisting}
-Now a PETSc local vector can be created manually using this layout,
-\begin{lstlisting}
-PetscSectionGetStorageSize(s, &n);
-VecSetSizes(localVec, n, PETSC_DETERMINE);
-VecSetFromOptions(localVec);
-\end{lstlisting}
-however it is usually easier to use the \lstinline{DM} directly, which also provides global vectors,
-\begin{lstlisting}
-DMSetDefaultSection(dm, s);
-DMGetLocalVector(dm, &localVec);
-DMGetGlobalVector(dm, &globalVec);
-\end{lstlisting}
-
-\subsection{Partitioning and Ordering}
-
-In exactly the same way as \lstinline{MatPartitioning} and \lstinline{MatOrdering}, we encode the results of a partition or order in an
-IS. However, the graph we are dealing with now is not the adjacency graph of the problem Jacobian, but the mesh
-itself. Once the mesh is partitioned and reordered, we used the data layout from a \lstinline{PetscSection} to automatically derive
-a problem partitioning/ordering.
-
-\section{Evaluating Residuals} \sindex{Residual Evaluation}
-
-The evaluation of a residual, or Jacobian, for most discretizations has the following general form:
-\begin{itemize}
-  \item Traverse the mesh, picking out pieces which in general overlap,
-
-  \item Extract some values from the solution vector, associated with this piece,
-
-  \item Calculate some values for the piece, and
-
-  \item Insert these values into the residual vector
-\end{itemize}
-\lstinline{DMPlex} separates these different concerns by passing sets of points, which are just integers, from mesh traversal
-routines to data extraction routines and back. In this way, the \lstinline{PetscSection} which structures the data inside a \lstinline{Vec} does
-not need to know anything about the mesh inside a \lstinline{DMPlex}.
-
-The most common mesh traversal is the transitive closure of a point, which is exactly the transitive closure of a point
-in the DAG using the covering relation. Note that this closure can be calculated orienting the arrows in either
-direction. For example, in a finite element calculation, we calculate an integral over the closure of each element, and
-then sum up the contributions to the basis function coefficients. The closure of the element can be expressed discretely
-as the transitive closure of the element point in the mesh DAG, where each point also has an orientation. Then we can
-retrieve the data using \lstinline{PetscSection} methods,
-\begin{lstlisting}
-PetscScalar *a;
-PetscInt     numPoints, *points = NULL, p;
-
-VecGetArray(u,&a);
-DMPlexGetTransitiveClosure(dm,cell,PETSC_TRUE,&numPoints,&points);
-for (p = 0; p <= numPoints*2; p += 2) {
-  PetscInt dof, off, d;
-
-  PetscSectionGetDof(section, points[p], &dof);
-  PetscSectionGetOffset(section, points[p], &off);
-  for=(d = 0; d <= dof; ++d) {
-    myfunc(a[off+d]);
-  }
-}
-DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &numPoints, &points);
-VecRestoreArray(u, &a);
-\end{lstlisting}
-This operation is so common, that we have built a convenience method around it which returns the values in a contiguous
-array, correctly taking into account the orientations of various mesh points,
-\begin{lstlisting}
-const PetscScalar *values;
-PetscInt           csize;
-
-DMPlexVecGetClosure(dm, section, u, cell, &csize, &values);
-/* Do integral in quadrature loop */
-DMPlexVecRestoreClosure(dm, section, u, cell, &csize, &values);
-DMPlexVecSetClosure(dm, section, residual, cell, &r, ADD_VALUES);
-\end{lstlisting}
-A simple example of this kind of calculation is in \lstinline{DMPlexComputeL2Diff()}. Note that there is no restriction on the
-type of cell or dimension of the mesh in the code above, so it will work for polyhedral cells, hybrid meshes, and meshes
-of any dimension, without change. We can also reverse the covering relation, so that the code works for finite volume
-methods where we want the data from neighboring cells for each face
-\begin{lstlisting}
-PetscScalar *a;
-PetscInt     points[2*2], numPoints, p, dofA, offA, dofB, offB;
-
-VecGetArray(u,  &a);
-DMPlexGetTransitiveClosure(dm, cell, PETSC_FALSE, &numPoints, &points);
-assert(numPoints == 2);
-PetscSectionGetDof(section, points[0*2], &dofA);
-PetscSectionGetDof(section, points[1*2], &dofB);
-assert(dofA == dofB);
-PetscSectionGetOffset(section, points[0*2], &offA);
-PetscSectionGetOffset(section, points[1*2], &offB);
-myfunc(a[offA], a[offB]);
-VecRestoreArray(u, &a);
-\end{lstlisting}
-This kind of calculation is used in \lstinline{TS} \href{http://www.mcs.anl.gov/petsc/petsc-current/src/ts/examples/tutorials/ex11.c.html}{\trl{$PETSC_DIR/src/ts/examples/tutorials/ex11.c}}.
-
-\section{Networks}
-Built on top of \lstinline{DMPlex}, the \lstinline{DMNetwork} subclass provides abstractions for representing general unstructured
-networks such as communication networks, power grid, computer networks, transportation networks, electrical circuits, graphs, and others.
-
-\subsection{Application flow}
-The general flow of an application code using \lstinline{DMNetwork} is as follows:
-
-\begin{enumerate}
-  \item Create a network object and a ``component'' library:
-\begin{lstlisting}
-DMNetworkCreate(MPI_Comm, DM*);
-\end{lstlisting}
-  creates an empty network object. A ``component'' is specific application data at a node/edge of the network required for its residual evaluation. For example, components could be resistor, inductor data for circuit applications, edge weights for graph problems, generator/transmission line data for power grids. Components are registered by calling
-\begin{lstlisting}
-DMNetworkRegisterComponent(DM,const char* name, PetscInt size, PetscInt* compkey);
-\end{lstlisting}
-  Here, \lstinline{name} is the component name,\lstinline{size} is the size of component data type, and \lstinline{compkey} is an integer key that can be used for
-  setting/getting the component at a node or an edge.
-  \item Set network size (number of nodes, edges), edge connectivity.
-  \item Set the bare layout (graph) of the network
-\begin{lstlisting}
-DMNetworkLayoutSetUp(DM dm);
-\end{lstlisting}
-\begin{lstlisting}
-DMNetworkSetSizes(DM dm, PetscInt nnodes, PetscInt nedges, PetscInt Nnodes, PetscInt Nedges);
-\end{lstlisting}
-\begin{lstlisting}
-DMNetworkSetEdgeList(DM dm, int edgeconns[]);
-\end{lstlisting}
-  \item Set components and number of variables for nodes/edges.
-\begin{lstlisting}
-DMNetworkAddComponent(DM dm, PetscInt p,PetscInt component,void* component);
-\end{lstlisting}
-  Multiple components can be added at a node/edge.
-\begin{lstlisting}
-DMNetworkSetNumVariables(DM dm,PetscInt p,PetscInt nvar);
-\end{lstlisting}
-\begin{lstlisting}
-DMNetworkAddNumVariables(DM dm,PetscInt p,PetscInt nvar);
-\end{lstlisting}
-  \item Signal network ready to be distributed.
-\begin{lstlisting}
-DMSetUp(DM dm);
-\end{lstlisting}
-  \item Distribute the network (also moves components attached with nodes/edges)
-\begin{lstlisting}
-DMNetworkDistribute(DM oldDM, const char partitioner[], PetscInt overlap,DM *distDM);
-\end{lstlisting}
-\item Hook up the \lstinline{DM} with the solver: \lstinline{KSPSetDM()}, \lstinline{SNESSetDM()}, \lstinline{TSSetDM()}
-\end{enumerate}
-
-\subsection{Utility functions}
-  \lstinline{DMNetwork} provides functions for obtaining iterators for nodes/edges, checking the ``ghost''
-  status of a node (vertex), and retrieving local/global indices of node/edge variables for inserting
-  elements in vectors/matrices.
-\begin{lstlisting}
-DMNetworkGetEdgeRange(DM dm,PetscInt *eStart,PetscInt *eEnd);
-\end{lstlisting}
-\begin{lstlisting}
-DMNetworkGetVertexRange(DM dm,PetscInt *vStart, PetscInt *vEnd);
-\end{lstlisting}
-\begin{lstlisting}
-DMNetworkIsGhostVertex(DM dm,PetscInt p,PetscBool *isghost);
-\end{lstlisting}
-\begin{lstlisting}
-DMNetworkGetVariableOffset(DM dm,PetscInt p,PetscInt *offset);
-\end{lstlisting}
-\begin{lstlisting}
-DMNetworkGetVariableGlobalOffset(DM dm,PetscInt p,PetscInt *offsetg);
-\end{lstlisting}
-In network applications, one frequently needs to find the supporting edges for a node or
-the connecting nodes covering an edge. These can be obtained by the following two routines.
-\begin{lstlisting}
-DMNetworkGetConnectedNodes(DM dm,PetscInt edge,const PetscInt *vertices[]);
-\end{lstlisting}
-\begin{lstlisting}
-DMNetworkGetSupportingEdges(DM dm,PetscInt vertex,PetscInt *nedges,const PetscInt *edges[]) ;
-\end{lstlisting}
-
-\subsection{Retrieving components}
-The components set at nodes/edges are stored in a container that can be accessed by
-\begin{lstlisting}
-DMNetworkGetComponentDataArray(DM dm,DMNetworkComponentGenericDataType **componentdataarray);
-\end{lstlisting}
-  Using \lstinline{componentdataarray}, individual components set at a node/edge can be retrieved by
-\begin{lstlisting}
-DMNetworkGetComponentTypeOffset(DM dm,PetscInt p, PetscInt compnum, PetscInt *compkey, PetscInt *offset);
-\end{lstlisting}
-\lstinline{compkey} is the key set by \lstinline{DMNetworkRegisterComponent}. An example of accessing and retrieving the components at nodes is:
-
-\begin{lstlisting}
-DMNetworkComponentGenericDataType *arr; 
-PetscInt Start, End, numcomps,offset,key,v,compnum; 
-
-DMNetworkGetComponentDataArray(dm,  &arr); 
-DMNetworkGetVertexRange(dm, &Start, &End); 
-for(v=Start; v  < End; v++) { 
-  DMNetworkGetNumComponents(dm,v, &numcomps); 
-  for(compnum=0; compnum < numcomps;compnum++) {
-    DMNetworkGetComponentTypeOffset(dm,v,compnum, &key, &offset); 
-    compdata = (UserCompDataType)(arr+offset); 
-  }
-}
-\end{lstlisting}
 %------------------------------------------------------------------
 
 \cleardoublepage
