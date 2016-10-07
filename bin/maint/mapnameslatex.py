@@ -17,7 +17,7 @@ tokens = (
     'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'MOD',
     'OR', 'AND', 'NOT', 'XOR', 'LSHIFT', 'RSHIFT',
     'LOR', 'LAND', 'LNOT',
-    'LT', 'LE', 'GT', 'GE', 'EQ', 'NE', 'HREF', 'FINDEX', 'SUBSECTION', 'CHAPTER', 'SECTION','CAPTION','SINDEX','TRL','BEGIN{VERBATIM}','END{VERBATIM}','LSTINLINE','BEGIN{LSTLISTING}','END{LSTLISTING}','BEGIN{OUTPUTLISTING}','END{OUTPUTLISTING}','BEGIN{BASHLISTING}','END{BASHLISTING}'
+    'LT', 'LE', 'GT', 'GE', 'EQ', 'NE', 'HREF', 'FINDEX', 'SUBSECTION', 'CHAPTER', 'SECTION','CAPTION','SINDEX','TRL','BEGIN{VERBATIM}','END{VERBATIM}','LSTINLINE','BEGIN{LSTLISTING}','END{LSTLISTING}','BEGIN{OUTPUTLISTING}','END{OUTPUTLISTING}','BEGIN{BASHLISTING}','END{BASHLISTING}','BEGIN{TIKZPICTURE}','END{TIKZPICTURE}'
 
     # Assignment (=, *=, /=, %=, +=, -=, <<=, >>=, &=, ^=, |=)
     'EQUALS', 'TIMESEQUAL', 'DIVEQUAL', 'MODEQUAL', 'PLUSEQUAL', 'MINUSEQUAL',
@@ -76,6 +76,8 @@ t_BOUTPUTLISTING   = r'\\begin\{outputlisting\}'
 t_EOUTPUTLISTING   = r'\\end\{outputlisting\}'
 t_BBASHLISTING     = r'\\begin\{bashlisting\}'
 t_EBASHLISTING     = r'\\end\{bashlisting\}'
+t_BTIKZPICTURE     = r'\\begin\{tikzpicture\}'
+t_ETIKZPICTURE     = r'\\end\{tikzpicture\}'
 t_PLUS             = r'\+'
 t_MINUS            = r'-'
 t_TIMES            = r'\*'
@@ -239,6 +241,7 @@ if __name__ == "__main__":
     lstlisting_bracket = 0 
     outputlisting_bracket = 0
     bashlisting_bracket = 0
+    tikzpicture_bracket = 0;
     while 1:
         token = lex.token()       # Get a token
         if not token: break        # No more tokens
@@ -256,15 +259,17 @@ if __name__ == "__main__":
                 outputlisting_bracket = outputlisting_bracket + 1;
 	    if value == '\\begin{lstlisting}':
                 lstlisting_bracket = lstlisting_bracket + 1;
+	    if value == '\\begin{tikzpicture}':
+                tikzpicture_bracket = tikzpicture_bracket + 1;
             # \href cannot be used in many places in Latex
-            if value in ['\\href{','\\findex{','\\sindex{','\\subsection{','\\chapter{','\\section{','\\caption{','\\trl{'] and vbracket == 0 and lstlisting_bracket == 0 and outputlisting_bracket==0 and bashlisting_bracket==0:
+            if value in ['\\href{','\\findex{','\\sindex{','\\subsection{','\\chapter{','\\section{','\\caption{','\\trl{'] and vbracket == 0 and lstlisting_bracket == 0 and outputlisting_bracket==0 and bashlisting_bracket==0 and tikzpicture_bracket==0:
 		bracket = bracket + 1;
             #We keep track of whether we are inside an inline listing
-            elif value in ['\\lstinline{'] and vbracket == 0 and lstlisting_bracket == 0 and outputlisting_bracket==0 and bashlisting_bracket==0:
+            elif value in ['\\lstinline{'] and vbracket == 0 and lstlisting_bracket == 0 and outputlisting_bracket==0 and bashlisting_bracket==0 and tikzpicture_bracket==0:
                 lstinline_bracket = lstinline_bracket + 1
                 if lstinline_bracket > 1 :
                     raise Exception('Nested \\lstinline detected')
-            if bracket == 0 and vbracket == 0 and outputlisting_bracket == 0 and bashlisting_bracket == 0:
+            if bracket == 0 and vbracket == 0 and outputlisting_bracket == 0 and bashlisting_bracket == 0 and tikzpicture_bracket==0:
 		value = token.value
 		if mappedstring.has_key(value):
                     mvalue = mappedstring[value].replace('_','\\_')
@@ -280,10 +285,10 @@ if __name__ == "__main__":
             else:
 		value = token.value
             if token.value[0] == '}' and lstinline_bracket > 0 :
-                if bracket > 0 or vbracket > 0 or lstlisting_bracket > 0 or outputlisting_bracket > 0 or bashlisting_bracket > 0:
+                if bracket > 0 or vbracket > 0 or lstlisting_bracket > 0 or outputlisting_bracket > 0 or bashlisting_bracket > 0 or tikzpicture_bracket > 0:
                     raise Exception("Unexpected to have anything nested inside of lstinline")
                 lstinline_bracket = lstinline_bracket-1
-	    elif token.value[0] == '}' and bracket and vbracket == 0 and lstlisting_bracket == 0 and outputlisting_bracket==0 and bashlisting_bracket==0:
+	    elif token.value[0] == '}' and bracket and vbracket == 0 and lstlisting_bracket == 0 and outputlisting_bracket==0 and bashlisting_bracket==0 and tikzpicture_bracket == 0:
 		bracket = bracket - 1;
             elif value == '\\end{verbatim}' and vbracket:
 	        vbracket = vbracket - 1;
@@ -293,5 +298,7 @@ if __name__ == "__main__":
 	        bashlisting_bracket = bashlisting_bracket - 1;
             elif value == '\\end{lstlisting}' and lstlisting_bracket:
 	        lstlisting_bracket = lstlisting_bracket - 1;
+            elif value == '\\end{tikzpicture}' and tikzpicture_bracket:
+	        tikzpicture_bracket = tikzpicture_bracket - 1;
 
 	    text = text+value
