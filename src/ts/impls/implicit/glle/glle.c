@@ -1053,6 +1053,7 @@ accepted:
     ts->steps++;
     ts->total_steps++;
 
+    ierr = TSPostEvaluate(ts);CHKERRQ(ierr);
     ierr = TSPostStep(ts);CHKERRQ(ierr);
     ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
 
