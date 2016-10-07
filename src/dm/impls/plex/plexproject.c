@@ -81,8 +81,6 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, DM dmAux, PetscReal ti
   }
   /* Get values for closure */
   for (f = 0, v = 0; f < Nf; ++f) {
-    void * const ctx = ctxs ? ctxs[f] : NULL;
-
     if (!sp[f]) continue;
     ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
     for (d = 0; d < spDim; ++d) {
@@ -258,7 +256,7 @@ PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec localU,
   for (h = 0; h <= maxHeight; h++) {
     PetscScalar *values;
     PetscBool   *fieldActive;
-    PetscInt     pStart, pEnd, p, spDim, totDim, d, numValues, v;
+    PetscInt     pStart, pEnd, p, spDim, totDim, numValues;
 
     ierr = DMPlexGetHeightStratum(dm, h, &pStart, &pEnd);CHKERRQ(ierr);
     if (!h) {
