@@ -530,10 +530,12 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   ierr = PetscFECreateDefault(dm, dim, 1, simplex, "elastMat_", PETSC_DEFAULT, &feAux[0]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) feAux[0], "elasticityMaterial");CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(feAux[0], q);CHKERRQ(ierr);
+  ierr = PetscFESetFaceQuadrature(feAux[0], q);CHKERRQ(ierr);
   /* It is not yet possible to define a field on a submesh (e.g. a boundary), so we will use a normal finite element */
   ierr = PetscFECreateDefault(dm, dim, 1, simplex, "wall_pres_", PETSC_DEFAULT, &feAux[1]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) feAux[1], "wall_pressure");CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(feAux[1], q);CHKERRQ(ierr);
+  ierr = PetscFESetFaceQuadrature(feAux[1], q);CHKERRQ(ierr);
 
   /* Set discretization and boundary conditions for each mesh */
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
