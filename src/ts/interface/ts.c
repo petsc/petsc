@@ -4071,6 +4071,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
       if (ts->vec_costintegral && ts->costintegralfwd) { /* Must evaluate the cost integral before event is handled. The cost integral value can also be rolled back. */
         ierr = TSForwardCostIntegral(ts);CHKERRQ(ierr);
       }
+      ierr = TSPostEvaluate(ts);CHKERRQ(ierr);
       ierr = TSEventHandler(ts);CHKERRQ(ierr); /* The right-hand side may be changed due to event. Be careful with Any computation using the RHS information after this point. */
       if (!ts->steprollback) {
         ierr = TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
@@ -7158,6 +7159,7 @@ PetscErrorCode  TSRollBack(TS ts)
   ts->ptime = ts->ptime_prev;
   ts->ptime_prev = ts->ptime_prev_rollback;
   ts->steps--; ts->total_steps--;
+  ierr = TSPostEvaluate(ts);CHKERRQ(ierr);
   ts->steprollback = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

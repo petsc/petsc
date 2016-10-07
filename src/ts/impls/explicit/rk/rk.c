@@ -382,7 +382,6 @@ static PetscErrorCode TSEvaluateStep_RK(TS ts,PetscInt order,Vec X,PetscBool *do
       ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);
       for (j=0; j<s; j++) w[j] = h*tab->b[j];
       ierr = VecMAXPY(X,s,w,rk->YdotRHS);CHKERRQ(ierr);
-      ierr = TSPostEvaluate(ts);CHKERRQ(ierr);
     } else {ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
   } else if (order == tab->order-1) {
@@ -391,7 +390,6 @@ static PetscErrorCode TSEvaluateStep_RK(TS ts,PetscInt order,Vec X,PetscBool *do
       ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);
       for (j=0; j<s; j++) w[j] = h*tab->bembed[j];
       ierr = VecMAXPY(X,s,w,rk->YdotRHS);CHKERRQ(ierr);
-      ierr = TSPostEvaluate(ts);CHKERRQ(ierr);
     } else { /* Rollback and re-complete using (be-b) */
       ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);
       for (j=0; j<s; j++) w[j] = h*(tab->bembed[j] - tab->b[j]);
@@ -478,7 +476,6 @@ static PetscErrorCode TSRollBack_RK(TS ts)
   }
   for (j=0; j<s; j++) w[j] = -h*b[j];
   ierr = VecMAXPY(ts->vec_sol,s,w,YdotRHS);CHKERRQ(ierr);
-  ierr = TSPostEvaluate(ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
