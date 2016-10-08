@@ -1375,6 +1375,7 @@ static PetscErrorCode  PCFieldSplitGetSubKSP_FieldSplit_Schur(PC pc,PetscInt *n,
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!jac->schur) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must call KSPSetUp() or PCSetUp() before calling PCFieldSplitGetSubKSP()");
   ierr = PetscMalloc1(jac->nsplits,subksp);CHKERRQ(ierr);
   ierr = MatSchurComplementGetKSP(jac->schur,*subksp);CHKERRQ(ierr);
 
