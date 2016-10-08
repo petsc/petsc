@@ -2324,8 +2324,9 @@ PetscErrorCode PetscOptionsGetEnumArray(PetscOptions options,const char pre[],co
    The Fortran interface is slightly different from the C/C++
    interface (len is not used).  Sample usage in Fortran follows
 .vb
-      character *20 string
-      integer   flg, ierr
+      character *20    string
+      PetscErrorCode   ierr
+      PetscBool        set
       call PetscOptionsGetString(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-s',string,set,ierr)
 .ve
 
