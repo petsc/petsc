@@ -121,7 +121,8 @@ int main(int argc,char **argv)
 PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
 {
   DM             da    = (DM) ctx;
-  PetscScalar    *xx,*ff,h;
+  PetscScalar    *xx,*ff;
+  PetscReal      h;
   PetscErrorCode ierr;
   PetscInt       i,M,xs,xm;
   Vec            xlocal;
