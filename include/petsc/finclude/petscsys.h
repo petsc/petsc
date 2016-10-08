@@ -321,3 +321,10 @@
       parameter(PETSC_SUBCOMM_GENERAL=0)
       parameter(PETSC_SUBCOMM_CONTIGUOUS=1)
       parameter(PETSC_SUBCOMM_INTERLACED=2)
+!
+! include other sys components
+!
+#include "petsc/finclude/petscerror.h"
+#include "petsc/finclude/petsclog.h"
+#include "petsc/finclude/petscbag.h"
+

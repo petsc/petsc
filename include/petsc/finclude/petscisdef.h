@@ -6,6 +6,7 @@
 #define __PETSCISDEF_H
 
 #include "petsc/finclude/petscsysdef.h"
+#include "petsc/finclude/petscviewerdef.h"
 
 #if !defined(PETSC_USE_FORTRAN_DATATYPES)
 #define IS PetscFortranAddr
