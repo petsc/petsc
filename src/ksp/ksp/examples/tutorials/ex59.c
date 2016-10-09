@@ -392,6 +392,7 @@ static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat
 
   ierr = MatSeqAIJSetPreallocation(temp_local_mat,i,NULL);CHKERRQ(ierr);      /* very overestimated */
   ierr = MatSeqSBAIJSetPreallocation(temp_local_mat,1,i,NULL);CHKERRQ(ierr);      /* very overestimated */
+  ierr = MatSeqBAIJSetPreallocation(temp_local_mat,1,i,NULL);CHKERRQ(ierr);      /* very overestimated */
   ierr = MatSetOption(temp_local_mat,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE);CHKERRQ(ierr);
 
   yloc = dd.p+1;
@@ -968,8 +969,6 @@ static PetscErrorCode InitializeDomainData(DomainData *dd)
   dd->gcomm = PETSC_COMM_WORLD;
   ierr      = MPI_Comm_size(dd->gcomm,&sizes);CHKERRQ(ierr);
   ierr      = MPI_Comm_rank(dd->gcomm,&rank);CHKERRQ(ierr);
-  /* test data passed in */
-  if (sizes<2) SETERRQ(dd->gcomm,PETSC_ERR_USER,"This is not a uniprocessor test");
   /* Get informations from command line */
   /* Processors/subdomains per dimension */
   /* Default is 1d problem */
