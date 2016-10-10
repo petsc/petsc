@@ -214,6 +214,24 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_RemoveNullSpace(KSP ksp,Vec y)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "KSP_RemoveNullSpaceTranspose"
+PETSC_STATIC_INLINE PetscErrorCode KSP_RemoveNullSpaceTranspose(KSP ksp,Vec y)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (ksp->pc_side == PC_LEFT) {
+    Mat          A;
+    MatNullSpace nullsp;
+    ierr = PCGetOperators(ksp->pc,&A,NULL);CHKERRQ(ierr);
+    ierr = MatGetTransposeNullSpace(A,&nullsp);CHKERRQ(ierr);
+    if (nullsp) {
+      ierr = MatNullSpaceRemove(nullsp,y);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "KSP_MatMult"
 PETSC_STATIC_INLINE PetscErrorCode KSP_MatMult(KSP ksp,Mat A,Vec x,Vec y)
 {
@@ -246,6 +264,7 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_PCApply(KSP ksp,Vec x,Vec y)
     ierr = KSP_RemoveNullSpace(ksp,y);CHKERRQ(ierr);
   } else {
     ierr = PCApplyTranspose(ksp->pc,x,y);CHKERRQ(ierr);
+    ierr = KSP_RemoveNullSpaceTranspose(ksp,y);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -258,6 +277,7 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_PCApplyTranspose(KSP ksp,Vec x,Vec y)
   PetscFunctionBegin;
   if (!ksp->transpose_solve) {
     ierr = PCApplyTranspose(ksp->pc,x,y);CHKERRQ(ierr);
+    ierr = KSP_RemoveNullSpaceTranspose(ksp,y);CHKERRQ(ierr);
   } else {
     ierr = PCApply(ksp->pc,x,y);CHKERRQ(ierr);
     ierr = KSP_RemoveNullSpace(ksp,y);CHKERRQ(ierr);
@@ -276,6 +296,7 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_PCApplyBAorAB(KSP ksp,Vec x,Vec y,Vec w)
     ierr = KSP_RemoveNullSpace(ksp,y);CHKERRQ(ierr);
   } else {
     ierr = PCApplyBAorABTranspose(ksp->pc,ksp->pc_side,x,y,w);CHKERRQ(ierr);
+    ierr = KSP_RemoveNullSpaceTranspose(ksp,y);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -288,7 +309,6 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_PCApplyBAorABTranspose(KSP ksp,Vec x,Vec 
   PetscFunctionBegin;
   if (!ksp->transpose_solve) {
     ierr = PCApplyBAorABTranspose(ksp->pc,ksp->pc_side,x,y,w);CHKERRQ(ierr);
-    ierr = KSP_RemoveNullSpace(ksp,y);CHKERRQ(ierr);
   } else {
     ierr = PCApplyBAorAB(ksp->pc,ksp->pc_side,x,y,w);CHKERRQ(ierr);
   }
