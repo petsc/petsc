@@ -34,13 +34,13 @@ PETSc currently provides two basic vector types: sequential and parallel
 (MPI-based). To create a sequential vector with \lstinline{m} components,
 one can use the command
 \begin{lstlisting}
-VecCreateSeq(PETSC_COMM_SELF,int m,Vec *x);
+VecCreateSeq(PETSC_COMM_SELF,PetscInt m,Vec *x);
 \end{lstlisting}
 To create a parallel vector one can either specify the number of
 components that will be stored on each process or let PETSc decide.
 The command
 \begin{lstlisting}
-VecCreateMPI(MPI_Comm comm,int m,int M,Vec *x);
+VecCreateMPI(MPI_Comm comm,PetscInt m,PetscInt M,Vec *x);
 \end{lstlisting}
 creates a vector distributed over all processes in the communicator,
 \lstinline{comm}, where \lstinline{m} indicates the number
@@ -51,7 +51,7 @@ dimension, but not both, can be set to \lstinline{PETSC_DECIDE} or \lstinline{PE
 More generally, one can use the routines
 \begin{lstlisting}
 VecCreate(MPI_Comm comm,Vec *v);
-VecSetSizes(Vec v, int m, int M);
+VecSetSizes(Vec v, PetscInt m, PetscInt M);
 VecSetFromOptions(Vec v);
 \end{lstlisting}
 which automatically generates the appropriate vector type
@@ -77,7 +77,7 @@ complicated, in order to make it possible to write efficient parallel
 code.  Assigning a set of components is a two-step process: one
 first calls
 \begin{lstlisting}
-VecSetValues(Vec x,int n,int *indices,PetscScalar *values,INSERT_VALUES);
+VecSetValues(Vec x,PetscInt n,PetscInt *indices,PetscScalar *values,INSERT_VALUES);
 \end{lstlisting}
 any number of times on any or all of the processes. The argument
 \lstinline{n} gives the number of components being set in this
@@ -106,7 +106,7 @@ Often, rather than inserting elements in a vector, one may wish to
 add values. This process \sindex{vector values, setting}
 is also done with the command
 \begin{lstlisting}
-VecSetValues(Vec x,int n,int *indices, PetscScalar *values,ADD_VALUES);
+VecSetValues(Vec x,PetscInt n,PetscInt *indices, PetscScalar *values,ADD_VALUES);
 \end{lstlisting}
 Again one must call the assembly routines
 \lstinline{VecAssemblyBegin()} and \lstinline{VecAssemblyEnd()} after all of the values
@@ -151,7 +151,7 @@ VecDuplicate(Vec old,Vec *new);
 To create several new vectors of the same format as an existing vector,
 one uses the command
 \begin{lstlisting}
-VecDuplicateVecs(Vec old,int n,Vec **new);
+VecDuplicateVecs(Vec old,PetscInt n,Vec **new);
 \end{lstlisting}
 This routine creates an array of pointers to vectors. The two routines
 are very useful because they allow one to write library code that does
@@ -179,11 +179,11 @@ rather than having PETSc internally allocate the array space.
 \sindex{vectors, user-supplied arrays}
 Such vectors can be created with the routines
 \begin{lstlisting}
-VecCreateSeqWithArray(PETSC_COMM_SELF,int bs,int n,PetscScalar *array,Vec *V);
+VecCreateSeqWithArray(PETSC_COMM_SELF,PetscInt bs,PetscInt n,PetscScalar *array,Vec *V);
 \end{lstlisting}
 and
 \begin{lstlisting}
-VecCreateMPIWithArray(MPI_Comm comm,int bs,int n,int N,PetscScalar *array,Vec *vv);
+VecCreateMPIWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,PetscInt N,PetscScalar *array,Vec *vv);
 \end{lstlisting}
 Note that here one must provide the value \lstinline{n}; it cannot be \lstinline{PETSC_DECIDE} and
 the user is responsible for providing enough space in the array; \lstinline{n*sizeof(PetscScalar)}.
@@ -209,11 +209,11 @@ the user is responsible for providing enough space in the array; \lstinline{n*si
 \lstinline|VecSwap(Vec x, Vec y);| & $ y = x $ while $ x = y$ \\
 \lstinline|VecPointwiseMult(Vec w,Vec x,Vec y);| & $ w_{i} = x_{i}*y_{i} $ \\
 \lstinline|VecPointwiseDivide(Vec w,Vec x,Vec y);| & $ w_{i} = x_{i}/y_{i} $ \\
-\lstinline|VecMDot(Vec x,int n,Vec y[],PetscScalar *r);| & $ r[i] = \bar{x}'*y[i]$ \\
-\lstinline|VecMTDot(Vec x,int n,Vec y[],PetscScalar *r);| & $ r[i] = x'*y[i]$ \\
-\lstinline|VecMAXPY(Vec y,int n, PetscScalar *a, Vec x[]);| \hspace{1cm} & $ y = y + \sum_i a_{i}*x[i] $ \\
-\lstinline|VecMax(Vec x, int *idx, PetscReal *r);| & $ r = \max x_{i}$ \\
-\lstinline|VecMin(Vec x, int *idx, PetscReal *r);| & $ r = \min x_{i}$ \\
+\lstinline|VecMDot(Vec x,PetscInt n,Vec y[],PetscScalar *r);| & $ r[i] = \bar{x}'*y[i]$ \\
+\lstinline|VecMTDot(Vec x,PetscInt n,Vec y[],PetscScalar *r);| & $ r[i] = x'*y[i]$ \\
+\lstinline|VecMAXPY(Vec y,PetscInt n, PetscScalar *a, Vec x[]);| \hspace{1cm} & $ y = y + \sum_i a_{i}*x[i] $ \\
+\lstinline|VecMax(Vec x, PetscInt *idx, PetscReal *r);| & $ r = \max x_{i}$ \\
+\lstinline|VecMin(Vec x, PetscInt *idx, PetscReal *r);| & $ r = \min x_{i}$ \\
 \lstinline|VecAbs(Vec x);| & $ x_i = |x_{i}|$ \\
 \lstinline|VecReciprocal(Vec x);| & $ x_i = 1/x_{i}$ \\
 \lstinline|VecShift(Vec x,PetscScalar s);| & $ x_i = s + x_{i}$ \\
@@ -239,7 +239,7 @@ For parallel vectors that are distributed across the processes by ranges,
 it is possible to determine
 a process's local range with the routine
 \begin{lstlisting}
-VecGetOwnershipRange(Vec vec,int *low,int *high);
+VecGetOwnershipRange(Vec vec,PetscInt *low,PetscInt *high);
 \end{lstlisting}
 The argument \lstinline{low} indicates the first component owned by the local
 process, while \lstinline{high} specifies {\em one more than} the
@@ -271,11 +271,11 @@ no time to call and can be used efficiently.
 
 The number of elements stored locally can be accessed with
 \begin{lstlisting}
-VecGetLocalSize(Vec v,int *size);
+VecGetLocalSize(Vec v,PetscInt *size);
 \end{lstlisting}
 The global vector length can be determined by
 \begin{lstlisting}
-VecGetSize(Vec v,int *size);
+VecGetSize(Vec v,PetscInt *size);
 \end{lstlisting}
 
 In addition to \lstinline{VecDot()} and \lstinline{VecMDot()} and \lstinline{VecNorm()}, PETSc provides
@@ -350,7 +350,7 @@ PETSc provides certain utility routines that allow one to deal cleanly
 and efficiently with the various orderings. To define a new application ordering
 (called an \lstinline{AO} in PETSc), one can call the routine
 \begin{lstlisting}
-AOCreateBasic(MPI_Comm comm,int n,const int apordering[],const int petscordering[],AO *ao);
+AOCreateBasic(MPI_Comm comm,PetscInt n,const PetscInt apordering[],const PetscInt petscordering[],AO *ao);
 \end{lstlisting}
 The arrays \lstinline{apordering} and \lstinline{petscordering}, respectively, contain a list of integers
 in the application ordering and their corresponding mapped values in the PETSc
@@ -380,8 +380,8 @@ on the other process.
 Once the application ordering has been created, it can be used
 with either of the commands
 \begin{lstlisting}
-AOPetscToApplication(AO ao,int n,int *indices);
-AOApplicationToPetsc(AO ao,int n,int *indices);
+AOPetscToApplication(AO ao,PetscInt n,PetscInt *indices);
+AOApplicationToPetsc(AO ao,PetscInt n,PetscInt *indices);
 \end{lstlisting}
 Upon input, the \lstinline{n}-dimensional array \lstinline{indices} specifies
 the indices to be mapped, while upon output, \lstinline{indices} contains
@@ -434,8 +434,8 @@ required for local computation. \sindex{ghost points} \sindex{global representat
 PETSc provides routines to help map indices from a local numbering scheme to
 the PETSc global numbering scheme. This is done via the following routines
 \begin{lstlisting}
-ISLocalToGlobalMappingCreate(MPI_Comm comm,int bs,int N,int* globalnum,PetscCopyMode mode,ISLocalToGlobalMapping* ctx);
-ISLocalToGlobalMappingApply(ISLocalToGlobalMapping ctx,int n,int *in,int *out);
+ISLocalToGlobalMappingCreate(MPI_Comm comm,PetscInt bs,PetscInt N,PetscInt* globalnum,PetscCopyMode mode,ISLocalToGlobalMapping* ctx);
+ISLocalToGlobalMappingApply(ISLocalToGlobalMapping ctx,PetscInt n,PetscInt *in,PetscInt *out);
 ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping ctx,IS isin,IS* isout);
 ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping *ctx);
 \end{lstlisting}
@@ -460,7 +460,7 @@ numbering scheme back to the global PETSc numbering can be handled with the
 
 If one is given a list of block indices in a global numbering, the routine
 \begin{lstlisting}
-ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping ctx,ISGlobalToLocalMappingType type,int nin,int idxin[],int *nout,int idxout[]);
+ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping ctx,ISGlobalToLocalMappingType type,PetscInt nin,PetscInt idxin[],PetscInt *nout,PetscInt idxout[]);
 \end{lstlisting}
 \sindex{global to local mapping} will provide
 a new list of indices in the local numbering. Again, negative values in
@@ -489,7 +489,7 @@ VecSetLocalToGlobalMapping(Vec v,ISLocalToGlobalMapping ctx);
 \sindex{vectors, setting values with local numbering}
 and then call
 \begin{lstlisting}
-VecSetValuesLocal(Vec x,int n,const int indices[],const PetscScalar values[],INSERT_VALUES);
+VecSetValuesLocal(Vec x,PetscInt n,const PetscInt indices[],const PetscScalar values[],INSERT_VALUES);
 \end{lstlisting}
 Now the \lstinline{indices} use the local numbering, rather than the global, meaning
 the entries lie in $[0,n)$ where $n$ is the local size of the vector.
@@ -537,7 +537,7 @@ proper layout.
 One creates a distributed array communication data structure
 in two dimensions with the command
 \begin{lstlisting}
-DMDACreate2d(MPI_Comm comm,DMBoundaryType xperiod,DMBoundaryType yperiod,DMDAStencilType st,int M, int N,int m,int n,int dof,int s,int *lx,int *ly,DM *da);
+DMDACreate2d(MPI_Comm comm,DMBoundaryType xperiod,DMBoundaryType yperiod,DMDAStencilType st,PetscInt M, PetscInt N,PetscInt m,PetscInt n,PetscInt dof,PetscInt s,PetscInt *lx,PetscInt *ly,DM *da);
 \end{lstlisting}
 The  \sindex{array, distributed} arguments
 \sindex{distributed array} \lstinline{M} and \lstinline{N} indicate the global
@@ -584,10 +584,8 @@ discretization technique).
 The commands for creating distributed array communication data structures
 in one and three dimensions are analogous:
 \begin{lstlisting}
-DMDACreate1d(MPI_Comm comm,DMBoundaryType xperiod,int M,int w,int s,int *lc,DM *inra);
-DMDACreate3d=(MPI_Comm comm,DMBoundaryType xperiod,DMBoundaryType yperiod, 
-              DMBoundaryType zperiod, DMDAStencilType stencil_type,
-              int M,int N,int P,int m,int n,int p,int w,int s,int *lx,int *ly,int *lz,DM *inra);
+DMDACreate1d(MPI_Comm comm,DMBoundaryType xperiod,PetscInt M,PetscInt w,PetscInt s,PetscInt *lc,DM *inra);
+DMDACreate3d=(MPI_Comm comm,DMBoundaryType xperiod,DMBoundaryType yperiod,DMBoundaryType zperiod, DMDAStencilType stencil_type,PetscInt M,PetscInt N,PetscInt P,PetscInt m,PetscInt n,PetscInt p,PetscInt w,PetscInt s,PetscInt *lx,PetscInt *ly,PetscInt *lz,DM *inra);
 \end{lstlisting}
 The routines to create distributed arrays are collective, so that all
 processes in the communicator \lstinline{comm} must call \lstinline{DACreateXXX()}.
@@ -754,8 +752,8 @@ example for a multi-component PDE.
 The global indices of the lower left corner of the local portion of the array
 as well as the local array size can be obtained with the commands
 \begin{lstlisting}
-DMDAGetCorners(DM da,int *x,int *y,int *z,int *m,int *n,int *p);
-DMDAGetGhostCorners(DM da,int *x,int *y,int *z,int *m,int *n,int *p);
+DMDAGetCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p);
+DMDAGetGhostCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p);
 \end{lstlisting}
 The first version excludes any ghost points, while the second version
 includes them.
@@ -836,7 +834,7 @@ operations on vectors and matrices.
 The following command creates an index set based on a list
 of integers:
 \begin{lstlisting}
-ISCreateGeneral(MPI_Comm comm,int n,int *indices,PetscCopyMode mode, IS *is);
+ISCreateGeneral(MPI_Comm comm,PetscInt n,PetscInt *indices,PetscCopyMode mode, IS *is);
 \end{lstlisting}
 When \lstinline{mode} is \lstinline{PETSC_COPY_VALUES}, this routine copies the \lstinline{n} indices passed
 to it by the integer array \lstinline{indices}.
@@ -848,7 +846,7 @@ processes that will be using the \lstinline{IS}.
 Another standard index set is defined by a starting point (\lstinline{first}) and a
 stride (\lstinline{step}), \sindex{stride} and can be created with the command
 \begin{lstlisting}
-ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is);
+ISCreateStride(MPI_Comm comm,PetscInt n,PetscInt first,PetscInt step,IS *is);
 \end{lstlisting}
 
 Index sets can be destroyed with the command
@@ -859,9 +857,9 @@ ISDestroy(IS &is);
 On rare occasions the user may need to access information directly from an index set.
 Several commands assist in this process:
 \begin{lstlisting}
-ISGetSize(IS is,int *size);
-ISStrideGetInfo(IS is,int *first,int *stride);
-ISGetIndices(IS is,int **indices);
+ISGetSize(IS is,PetscInt *size);
+ISStrideGetInfo(IS is,PetscInt *first,PetscInt *stride);
+ISGetIndices(IS is,PetscInt **indices);
 \end{lstlisting}
 The function \lstinline{ISGetIndices()} returns a pointer to a list of the
 indices in the index set.
@@ -870,14 +868,14 @@ temporary array of indices created specifically for a given routine.
 Thus, once the user finishes using the array of indices,
 the routine
 \begin{lstlisting}
-ISRestoreIndices(IS is, int **indices);
+ISRestoreIndices(IS is, PetscInt **indices);
 \end{lstlisting}
 should be called to ensure that the system can free the space it
 may have used to generate the list of indices.
 
 A blocked version of the index sets can be created with the command
 \begin{lstlisting}
-ISCreateBlock(MPI_Comm comm,int bs,int n,int *indices,PetscCopyMode mode, IS *is);
+ISCreateBlock(MPI_Comm comm,PetscInt bs,PetscInt n,PetscInt *indices,PetscCopyMode mode, IS *is);
 \end{lstlisting}
 This version is used for defining operations in which each element of the index
 set refers to a block of \lstinline{bs} vector entries.  Related routines analogous
@@ -974,7 +972,7 @@ Vec         p, x;         /* initial vector, destination vector */
 VecScatter  scatter;      /* scatter context */
 IS          from, to;     /* index sets that define the scatter */
 PetscScalar *values;
-int         trl{idx_from[] = {100,200}, idx_to[] = {0,1};}
+PetscInt    idx_from[] = {100,200}, idx_to[] = {0,1};
 
 VecCreateSeq(PETSC_COMM_SELF,2,&x);
 ISCreateGeneral(PETSC_COMM_SELF,2,idx_from,PETSC_COPY_VALUES,&from);
@@ -1028,11 +1026,11 @@ There are two minor drawbacks to the basic approach described above:
 An alternative approach is to allocate global vectors with space preallocated for
 the ghost values; this may be done with either
 \begin{lstlisting}
-VecCreateGhost(MPI_Comm comm,int n,int N,int nghost,int *ghosts,Vec *vv)
+VecCreateGhost(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt nghost,PetscInt *ghosts,Vec *vv)
 \end{lstlisting}
 or
 \begin{lstlisting}
-VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,int *ghosts,PetscScalar *array,Vec *vv)
+VecCreateGhostWithArray(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt nghost,PetscInt *ghosts,PetscScalar *array,Vec *vv)
 \end{lstlisting}
 Here  \lstinline{n} is the
 number of local vector entries, \lstinline{N} is the number of \sindex{vectors, with ghost values}
@@ -1113,7 +1111,7 @@ The simplest routine for forming a PETSc matrix, \lstinline{A}, is
 followed by
 \begin{lstlisting}
 MatCreate(MPI_Comm comm,Mat *A)
-MatSetSizes(Mat A,int m,int n,int M,int N)
+MatSetSizes(Mat A,PetscInt m,PetscInt n,PetscInt M,PetscInt N)
 \end{lstlisting}
 This routine generates a sequential matrix when running one
 process and a parallel matrix for two or more processes; the
@@ -1129,11 +1127,11 @@ the manual pages for further information about available matrix formats.
 
 To insert or add entries to a matrix, one can call a variant of \lstinline{MatSetValues()}, either
 \begin{lstlisting}
-MatSetValues(Mat A,int m,const int idxm[],int n,const int idxn[],const PetscScalar values[],INSERT_VALUES);
+MatSetValues(Mat A,PetscInt m,const PetscInt idxm[],PetscInt n,const PetscInt idxn[],const PetscScalar values[],INSERT_VALUES);
 \end{lstlisting}
 or
 \begin{lstlisting}
-  MatSetValues(Mat A,int m,const int idxm[],int n,const int idxn[],const PetscScalar values[],ADD_VALUES);
+  MatSetValues(Mat A,PetscInt m,const PetscInt idxm[],PetscInt n,const PetscInt idxn[],const PetscScalar values[],ADD_VALUES);
 \end{lstlisting}
 This routine inserts or adds a logically dense subblock of dimension
 \lstinline{m*n} into the
@@ -1189,7 +1187,7 @@ process where they are destined to be stored.  To help the
 application programmer with this task for matrices that are
 distributed across the processes by ranges, the routine
 \begin{lstlisting}
-MatGetOwnershipRange(Mat A,int *first_row,int *last_row);
+MatGetOwnershipRange(Mat A,PetscInt *first_row,PetscInt *last_row);
 \end{lstlisting}
 informs the user that all rows from \lstinline{first_row} to
 \lstinline{last_row-1} (since the value returned in \lstinline{last_row} is one more
@@ -1242,7 +1240,7 @@ To create a sequential AIJ sparse matrix, \lstinline{A},
 with \lstinline{m} rows and \lstinline{n} columns,
 one uses the command
 \begin{lstlisting}
-MatCreateSeqAIJ(PETSC_COMM_SELF,int m,int n,int nz,int *nnz,Mat *A);
+MatCreateSeqAIJ(PETSC_COMM_SELF,PetscInt m,PetscInt n,PetscInt nz,PetscInt *nnz,Mat *A);
 \end{lstlisting}
 where \lstinline{nz} or \lstinline{nnz} can be used to preallocate matrix memory,
 as discussed below. The user can set \lstinline{nz=0} and \lstinline{nnz=NULL} for PETSc to control all matrix memory allocation.
@@ -1285,7 +1283,7 @@ should attempt to indicate (nearly) the exact number of elements
 intended for the various rows with the optional array, \lstinline{nnz} of
 length \lstinline{m}, where \lstinline{m} is the number of rows, for example
 \begin{lstlisting}
-int nnz[m];
+PetscInt nnz[m];
 nnz[0] = <nonzeros in row 0>
 nnz[1] = <nonzeros in row 1>
 ....
@@ -1359,7 +1357,7 @@ expensive.
 Parallel sparse matrices with the AIJ
 format can be created with the command
 \begin{lstlisting}
-MatCreateAIJ=(MPI_Comm comm,int m,int n,int M,int N,int d_nz,int *d_nnz, int o_nz,int *o_nnz,Mat *A);
+MatCreateAIJ=(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,PetscInt *d_nnz, PetscInt o_nz,PetscInt *o_nnz,Mat *A);
 \end{lstlisting}
 \lstinline{A} is the newly created matrix, while the arguments \lstinline{m},
 \lstinline{M}, and \lstinline{N}, indicate the number of local rows and
@@ -1513,7 +1511,7 @@ usual Fortran style.  To create a sequential, dense PETSc matrix,
 \lstinline{A} of dimensions \lstinline{m} by \lstinline{n}, the user should
 call
 \begin{lstlisting}
-MatCreateSeqDense(PETSC_COMM_SELF,int m,int n,PetscScalar *data,Mat *A);
+MatCreateSeqDense(PETSC_COMM_SELF,PetscInt m,PetscInt n,PetscScalar *data,Mat *A);
 \end{lstlisting}
 The variable \lstinline{data} enables the user to optionally provide the
 location of the data for matrix storage (intended for Fortran users who
@@ -1521,7 +1519,7 @@ wish to allocate their own storage space).  Most users should merely
 set \lstinline{data} to \lstinline{NULL} for PETSc to control matrix memory allocation.
 To create a parallel, dense matrix, \lstinline{A}, the user should call
 \begin{lstlisting}
-MatCreateDense(MPI_Comm comm,int m,int n,int M,int N,PetscScalar *data,Mat *A)
+MatCreateDense(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscScalar *data,Mat *A)
 \end{lstlisting}
 The arguments \lstinline{m}, \lstinline{n},
 \lstinline{M}, and \lstinline{N}, indicate the number of local rows and columns and
@@ -1652,7 +1650,7 @@ page and Section~\ref{sec_viewers}.
 \lstinline|MatMultAdd(Mat A,Vec x, Vec y,Vec z);| & $ z = y + A*x $ \\
 \lstinline|MatMultTranspose(Mat A,Vec x, Vec y);| & $ y = A^{T}*x $ \\
 \lstinline|MatMultTransposeAdd(Mat A, Vec x, Vec y, Vec z);| & $ z = y + A^{T}*x $ \\
-\lstinline|MatNorm(Mat A,NormType type, double *r);| & $ r = ||A||_{type}$ \\
+\lstinline|MatNorm(Mat A,NormType type, PetscReal *r);| & $ r = ||A||_{type}$ \\
 \lstinline|MatDiagonalScale(Mat A,Vec l,Vec r);| & $ A = \hbox{diag}(l)*A*\hbox{diag}(r) $ \\
 \lstinline|MatScale(Mat A,PetscScalar a);| & $ A = a*A $ \\
 \lstinline|MatConvert(Mat A, MatType type, Mat *B);| & $ B = A $ \\
@@ -1679,7 +1677,7 @@ differential equations.  To support matrix-free methods in PETSc, one
 can use the following command to create a \lstinline{Mat} structure without
 ever actually generating the matrix:
 \begin{lstlisting}
-MatCreateShell(MPI_Comm comm,int m,int n,int M,int N,void *ctx,Mat *mat);
+MatCreateShell(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,void *ctx,Mat *mat);
 \end{lstlisting}
 Here \lstinline{M} and \lstinline{N} are the global matrix dimensions (rows and
 columns), \lstinline{m} and \lstinline{n} are the local matrix dimensions, and
@@ -1840,7 +1838,7 @@ In certain applications it may be necessary for application codes
 to directly access elements of a matrix. This may be done by using the
 the command (for local rows only)
 \begin{lstlisting}
-MatGetRow(Mat A,int row, int *ncols,const PetscInt (*cols)[],const PetscScalar (*vals)[]);
+MatGetRow(Mat A,PetscInt row, PetscInt *ncols,const PetscInt (*cols)[],const PetscScalar (*vals)[]);
 \end{lstlisting}
 The argument \lstinline{ncols} returns the number of nonzeros in that row,
 while \lstinline{cols} and \lstinline{vals} returns the column indices (with indices
@@ -1854,7 +1852,7 @@ To change the matrix entries, one must use \lstinline{MatSetValues()}.
 
 Once the user has finished using a row, he or she {\em must} call
 \begin{lstlisting}
-MatRestoreRow(Mat A,int row,int *ncols,int **cols,PetscScalar **vals);
+MatRestoreRow(Mat A,PetscInt row,PetscInt *ncols,PetscInt **cols,PetscScalar **vals);
 \end{lstlisting}
 to free any space that was allocated during the call to \lstinline{MatGetRow()}.
 
@@ -1882,7 +1880,7 @@ One first creates a parallel matrix that contains the connectivity information a
 grid (or other graph-type object) that is to be partitioned. This is done with the
 command
 \begin{lstlisting}
-MatCreateMPIAdj(MPI_Comm comm,int mlocal,int n,const int ia[],const int ja[],int *weights,Mat *Adj);
+MatCreateMPIAdj(MPI_Comm comm,int mlocal,PetscInt n,const PetscInt ia[],const PetscInt ja[],PetscInt *weights,Mat *Adj);
 \end{lstlisting}
 The argument \lstinline{mlocal} indicates the number of rows of the graph being provided
 by the given process, \lstinline{n} is the total number of columns; equal to the
@@ -2035,7 +2033,7 @@ solution vectors.  On return, the iteration number at which
 the iterative process stopped
 can be obtained using
 \begin{lstlisting}
-KSPGetIterationNumber(KSP ksp, int *its);
+KSPGetIterationNumber(KSP ksp, PetscInt *its);
 \end{lstlisting}
 Note that this does not state that the method converged at this
 iteration: it can also have reached the maximum number of iterations,
@@ -2125,9 +2123,9 @@ followed by one of the options \trl{richardson}, \trl{chebyshev}, \trl{cg}, \trl
 There are method-specific options:for instance, for the Richardson, Chebyshev,
 and GMRES methods: \sindex{GMRES} \sindex{CG}
 \begin{lstlisting}
-KSPRichardsonSetScale(KSP ksp,double damping_factor);
-KSPChebyshevSetEigenvalues(KSP ksp,double emax,double emin);
-KSPGMRESSetRestart(KSP ksp,int max_steps);
+KSPRichardsonSetScale(KSP ksp,PetscReal scale);
+KSPChebyshevSetEigenvalues(KSP ksp,PetscReal emax,PetscReal emin);
+KSPGMRESSetRestart(KSP ksp,PetscInt max_steps);
 \end{lstlisting}
 The default parameter values are \trl{damping_factor=1.0,
 emax=0.01, emin=100.0}, and \trl{max_steps=30}. The GMRES
@@ -2309,7 +2307,7 @@ where $r_k = b - A x_k$.  Divergence is detected if
 These parameters, as well as the maximum number of allowable iterations,
 can be set with the routine
 \begin{lstlisting}
-KSPSetTolerances(KSP ksp,double rtol,double atol,double dtol,int maxits);
+KSPSetTolerances(KSP ksp,PetscReal rtol,PetscReal atol,PetscReal dtol,PetscInt maxits);
 \end{lstlisting}
 The user can retain the default value of any of these parameters by
 specifying \lstinline{PETSC_DEFAULT} as the
@@ -2327,7 +2325,7 @@ customized convergence-testing routines.  \sindex{convergence tests}
 The user can specify a customized
 routine with the command
 \begin{lstlisting}
-KSPSetConvergenceTest(KSP ksp,PetscErrorCode (*test)(KSP ksp,int it,double rnorm, KSPConvergedReason *reason,void *ctx),void *ctx,PetscErrorCode (*destroy)(void *ctx));
+KSPSetConvergenceTest(KSP ksp,PetscErrorCode (*test)(KSP ksp,PetscInt it,PetscReal rnorm, KSPConvergedReason *reason,void *ctx),void *ctx,PetscErrorCode (*destroy)(void *ctx));
 \end{lstlisting}
 The final routine argument, \lstinline{ctx}, is an optional context for private
 data for the user-defined convergence routine, \lstinline{test}.  Other
@@ -2352,7 +2350,7 @@ the options must be specified. \findex{-ksp_monitor_lg_residualnorm}
 Application programmers can also provide their own routines to perform
 the monitoring by using the command
 \begin{lstlisting}
-KSPMonitorSet(KSP ksp,PetscErrorCode (*mon)(KSP ksp,int it,double rnorm,void *ctx),void *ctx,PetscErrorCode (*mondestroy)(void**));
+KSPMonitorSet(KSP ksp,PetscErrorCode (*mon)(KSP ksp,PetscInt it,PetscReal rnorm,void *ctx),void *ctx,PetscErrorCode (*mondestroy)(void**));
 \end{lstlisting}
 The final routine argument, \lstinline{ctx}, is an optional context for private
 data for the user-defined monitoring routine, \lstinline{mon}.  Other
@@ -2367,9 +2365,9 @@ for more discussion of the use of MPI communicators within PETSc.
 Several monitoring routines are supplied with PETSc,
 including
 \begin{lstlisting}
-KSPMonitorDefault(KSP,int,double, void *);
-KSPMonitorSingularValue(KSP,int,double, void *);
-KSPMonitorTrueResidualNorm(KSP,int,double, void *);
+KSPMonitorDefault(KSP,PetscInt,PetscReal, void *);
+KSPMonitorSingularValue(KSP,PetscInt,PetscReal,void *);
+KSPMonitorTrueResidualNorm(KSP,PetscInt,PetscReal, void *);
 \end{lstlisting}
 The default monitor simply prints an estimate of the $l_2$-norm of the
 residual at each iteration. The routine
@@ -2388,7 +2386,7 @@ To employ the default graphical monitor, one should use the
 commands
 \begin{lstlisting}
 PetscDrawLG lg;
-KSPMonitorLGResidualNormCreate(MPI_Comm comm,char *display,char *title,int x,int y,int w,int h,PetscDrawLG *lg);
+KSPMonitorLGResidualNormCreate(MPI_Comm comm,char *display,char *title,PetscInt x,PetscInt y,PetscInt w,PetscInt h,PetscDrawLG *lg);
 KSPMonitorSet(KSP ksp,KSPMonitorLGResidualNorm,lg,0);
 \end{lstlisting}
 When no longer needed, the line graph should be destroyed
@@ -2426,7 +2424,7 @@ KSPSetComputeEigenvalues(KSP ksp,PETSC_TRUE);
 \end{lstlisting}
 Then after the \lstinline{KSP} solve one calls
 \begin{lstlisting}
-KSPComputeEigenvalues(KSP ksp,int n,double *realpart,double *complexpart,int *neig);
+KSPComputeEigenvalues(KSP ksp,PetscInt n,PetscReal *realpart,PetscReal *complexpart,PetscInt *neig);
 \end{lstlisting}
 Here, \lstinline{n} is the size of the two arrays and the eigenvalues are
 inserted into those two arrays. \lstinline{neig} is the number of eigenvalues computed;
@@ -2434,7 +2432,7 @@ this number depends on the size of the Krylov space generated during the
 linear system solution, for GMRES it is never larger than the restart parameter.
 There is an additional routine
 \begin{lstlisting}
-KSPComputeEigenvaluesExplicitly(KSP ksp, int n,double *realpart,double *complexpart);
+KSPComputeEigenvaluesExplicitly(KSP ksp, PetscInt n,PetscReal *realpart,PetscReal *complexpart);
 \end{lstlisting}
 that is useful only for very small problems. It explicitly computes the
 full representation of the preconditioned operator and calls LAPACK to
@@ -2540,9 +2538,9 @@ just a few in the sections below.
 
 Some of the options for ILU preconditioner are
 \begin{lstlisting}
-PCFactorSetLevels(PC pc,int levels);
+PCFactorSetLevels(PC pc,PetscInt levels);
 PCFactorSetReuseOrdering(PC pc,PetscBool  flag);
-PCFactorSetDropTolerance(PC pc,double dt,double dtcol,int dtcount);
+PCFactorSetDropTolerance(PC pc,PetscReal dt,PetscReal dtcol,PetscInt dtcount);
 PCFactorSetReuseFill(PC pc,PetscBool  flag);
 PCFactorSetUseInPlace(PC pc,PetscBool flg); 
 PCFactorSetAllowDiagonalFill(PC pc,PetscBool flg);
@@ -2601,8 +2599,8 @@ ASM preconditioning (see below).
 The options for SOR \sindex{SSOR} \sindex{SOR} \sindex{relaxation}
 preconditioning with \lstinline{PCSOR} are
 \begin{lstlisting}
-PCSORSetOmega(PC pc,double omega);
-PCSORSetIterations(PC pc,int its,int lits);
+PCSORSetOmega(PC pc,PetscReal omega);
+PCSORSetIterations(PC pc,PetscInt its,PetscInt lits);
 PCSORSetSymmetric(PC pc,MatSORType type);
 \end{lstlisting}
 The
@@ -2643,7 +2641,7 @@ for conventional SSOR. The option
 (or the routine \lstinline{PCEisenstatSetNoDiagonalScaling()})
 turns off diagonal scaling in conjunction with Eisenstat SSOR method, while
 the option \trl{-pc_eisenstat_omega <omega>} (or the routine
-\lstinline{PCEisenstatSetOmega(PC pc,double omega)})
+\lstinline{PCEisenstatSetOmega(PC pc,PetscReal omega)})
 sets the SSOR relaxation coefficient, \trl{omega}, as discussed above.
 \findex{-pc_eisenstat_omega}
 
@@ -2715,8 +2713,8 @@ and \lstinline{PC} options can be applied to the subproblems by inserting the pr
 These options database commands set the particular options for {\em all}
 of the blocks within the global problem.  In addition, the routines
 \begin{lstlisting}
-PCBJacobiGetSubKSP(PC pc,int *n_local,int *first_local,KSP **subksp);
-PCASMGetSubKSP(PC pc,int *n_local,int *first_local,KSP **subksp);
+PCBJacobiGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KSP **subksp);
+PCASMGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KSP **subksp);
 \end{lstlisting}
 extract the \lstinline{KSP} context for each local
 block.  The argument \lstinline{n_local} is the number of blocks on the
@@ -2742,8 +2740,8 @@ and \trl{-pc_bgs_blocks} \trl{n}, and, within a program, the corresponding routi
 are \sindex{block Jacobi} \sindex{block Gauss-Seidel}
 \findex{-pc_bjacobi_blocks} \findex{-pc_bgs_blocks}
 \begin{lstlisting}
-PCBJacobiSetTotalBlocks(PC pc,int blocks,int *size);
-PCASMSetTotalSubdomains(PC pc,int n,IS *is,IS *islocal);
+PCBJacobiSetTotalBlocks(PC pc,PetscInt blocks,PetscInt *size);
+PCASMSetTotalSubdomains(PC pc,PetscInt n,IS *is,IS *islocal);
 PCASMSetType(PC pc,PCASMType type);
 \end{lstlisting}
 The
@@ -2780,14 +2778,14 @@ than the standard additive Schwarz method.
 The user can also set the number of blocks and sizes on a per-process
 basis with the commands
 \begin{lstlisting}
-PCBJacobiSetLocalBlocks(PC pc,int blocks,int *size);
-PCASMSetLocalSubdomains(PC pc,int N,IS *is,IS *islocal);
+PCBJacobiSetLocalBlocks(PC pc,PetscInt blocks,PetscInt *size);
+PCASMSetLocalSubdomains(PC pc,PetscInt N,IS *is,IS *islocal);
 \end{lstlisting}
 
 For the ASM preconditioner one can use the following command to set
 the overlap to compute in constructing the subdomains.
 \begin{lstlisting}
-PCASMSetOverlap(PC pc,int overlap);
+PCASMSetOverlap(PC pc,PetscInt overlap);
 \end{lstlisting}
 The overlap defaults to 1, so if one desires that no additional
 overlap be computed beyond what may have been set with a call to \lstinline{PCASMSetTotalSubdomains()} or \lstinline{PCASMSetLocalSubdomains()}, then
@@ -2816,7 +2814,7 @@ and may also be set with the options database
 \findex{PC_GASM_RESTRICT} \findex{PC_GASM_INTERPOLATE} \findex{PC_GASM_NONE}
 
 Unlike \lstinline{PCASM}, however, \lstinline{PCGASM} allows the user to define subdomains that span multiple MPI ranks.
-The simplest way to do this is using a call to \lstinline{PCGASMSetTotalSubdomains(PC pc,PetscInt N)} with the
+The simplest way to do this is using a call to \lstinline{PCGASMSetTotalSubdomains(PC pc,PetscPetscInt N)} with the
 total number of subdomains \lstinline{N} that is smaller than the MPI communicator \lstinline{size}. In this case
 \lstinline{PCGASM} will coalesce \lstinline{size/N} concecutive single-rank subdomains into a single multi-rank subdomain.
 The single-rank subdomains contain the degrees of freedom corresponding to the locally-owned rows of the
@@ -3124,7 +3122,7 @@ PCSetUseAmat(PC pc);
 The individual
 preconditioners can be accessed (in order to set options) via
 \begin{lstlisting}
-PCCompositeGetPC(PC pc,int count,PC *subpc);
+PCCompositeGetPC(PC pc,PetscInt count,PC *subpc);
 \end{lstlisting}
 For example, to set the first sub preconditioners to use ILU(1)
 \begin{lstlisting}
@@ -3184,7 +3182,7 @@ A multigrid preconditioner is created with the four commands
 KSPCreate(MPI_Comm comm,KSP *ksp);
 KSPGetPC(KSP ksp,PC *pc);
 PCSetType(PC pc,PCMG);
-PCMGSetLevels(pc,int levels,MPI_Comm *comms);
+PCMGSetLevels(pc,PetscInt levels,MPI_Comm *comms);
 \end{lstlisting}
 A large number of parameters affect the multigrid behavior. The command
 \begin{lstlisting}
@@ -3219,8 +3217,8 @@ either the options \findex{-pc_mg_smoothup} \findex{-pc_mg_smoothdown}
 \trl{-pc_mg_smoothup} \trl{m} and \trl{-pc_mg_smoothdown} \trl{n} or
 the routines
 \begin{lstlisting}
-PCMGSetNumberSmoothUp(PC pc,int m);
-PCMGSetNumberSmoothDown(PC pc,int n);
+PCMGSetNumberSmoothUp(PC pc,PetscInt m);
+PCMGSetNumberSmoothDown(PC pc,PetscInt n);
 \end{lstlisting}
 
 The multigrid routines, which determine
@@ -3234,7 +3232,7 @@ PCMGGetCoarseSolve(PC pc,KSP *ksp);
 and set the appropriate options in \lstinline{ksp}. Similarly, the
 smoothers are setcontrolled by first calling
 \begin{lstlisting}
-PCMGGetSmoother(PC pc,int level,KSP *ksp);
+PCMGGetSmoother(PC pc,PetscInt level,KSP *ksp);
 \end{lstlisting}
 and then setting the various options in the \lstinline{ksp.} For example,
 \begin{lstlisting}
@@ -3252,17 +3250,17 @@ sets SOR as the smoother to use on level 1.
 To use a different pre- or postsmoother, one should call the following
 routines instead.
 \begin{lstlisting}
-PCMGGetSmootherUp(PC pc,int level,KSP *upksp);
-PCMGGetSmootherDown(PC pc,int level,KSP *downksp);
+PCMGGetSmootherUp(PC pc,PetscInt level,KSP *upksp);
+PCMGGetSmootherDown(PC pc,PetscInt level,KSP *downksp);
 \end{lstlisting}
 
 Use
 \begin{lstlisting}
-PCMGSetInterpolation(PC pc,int level,Mat P);
+PCMGSetInterpolation(PC pc,PetscInt level,Mat P);
 \end{lstlisting}
 and
 \begin{lstlisting}
-PCMGSetRestriction(PC pc,int level,Mat R);
+PCMGSetRestriction(PC pc,PetscInt level,Mat R);
 \end{lstlisting}
 to define the intergrid transfer operations.  If only one of these is
 set, its transpose will be used for the other.
@@ -3278,7 +3276,7 @@ argument to both \lstinline{PCMGSetRestriction()} and \lstinline{PCMGSetInterpol
 On each level except the coarsest, one must also set the routine to
 compute the residual.  The following command suffices:
 \begin{lstlisting}
-PCMGSetResidual(PC pc,int level,PetscErrorCode (*residual)(Mat,Vec,Vec,Vec),Mat mat);
+PCMGSetResidual(PC pc,PetscInt level,PetscErrorCode (*residual)(Mat,Vec,Vec,Vec),Mat mat);
 \end{lstlisting}
 The \lstinline{residual()} function normally does not need to be set if
 one's operator is stored in \lstinline{Mat} format.  In certain circumstances,
@@ -3290,9 +3288,9 @@ Finally, the user may provide three work vectors for each level
 (except on the finest, where only the residual work vector is required).
 The work vectors are set with the commands
 \begin{lstlisting}
-PCMGSetRhs(PC pc,int level,Vec b);
-PCMGSetX(PC pc,int level,Vec x);
-PCMGSetR(PC pc,int level,Vec r);
+PCMGSetRhs(PC pc,PetscInt level,Vec b);
+PCMGSetX(PC pc,PetscInt level,Vec x);
+PCMGSetR(PC pc,PetscInt level,Vec r);
 \end{lstlisting}
 The \lstinline{PC} references these vectors, so you should call \lstinline{VecDestroy()}
 when you are finished with them.  If any of these vectors are not
@@ -3619,7 +3617,7 @@ First, one must know what the null space is and store it using an orthonormal ba
 in an array of PETSc Vecs. The constant functions can be handled separately, since
 they are such a common cas). Create a \lstinline{MatNullSpace} object with the command
 \begin{lstlisting}
-MatNullSpaceCreate(MPI_Comm,PetscBool hasconstants,int dim,Vec *basis,MatNullSpace *nsp);
+MatNullSpaceCreate(MPI_Comm,PetscBool hasconstants,PetscInt dim,Vec *basis,MatNullSpace *nsp);
 \end{lstlisting}
 Her, \lstinline{dim} is the number of vectors in \lstinline{basis} and \lstinline{hasconstants} indicates
 if the null space contains the constant functions. If the null space contains the constant
@@ -3804,7 +3802,7 @@ routines are discussed below.
 To provide an overview of the use of the nonlinear solvers,
 we first introduce a complete and simple example in
 Figure~\ref{fig_snesexample}, corresponding to
-\href{https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex1.c.html}{\trl{${PETSC_DIR}/src/snes/examples/tutorials/ex1.c}}.
+\href{https://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex1.c.html}{\trl{$PETSC_DIR/src/snes/examples/tutorials/ex1.c}}.
 
 \begin{figure}[H]
   \input{listing_snesex1tmp.tex}
@@ -4219,7 +4217,7 @@ norm, \lstinline{atol}, or its relative decrease, \lstinline{rtol}, from an init
 guess.  The following routine sets these parameters, which are used
 in many of the default \lstinline{SNES} convergence tests:
 \begin{lstlisting}
-SNESSetTolerances(SNES snes,double atol,double rtol,double stol, int its,int fcts);
+SNESSetTolerances(SNES snes,PetscReal atol,PetscReal rtol,PetscReal stol, PetscInt its,PetscInt fcts);
 \end{lstlisting}
 This routine also sets the maximum numbers of allowable
 nonlinear iterations, \lstinline{its}, and function evaluations, \lstinline{fcts}.
@@ -4235,13 +4233,13 @@ parameter that indicates the minimum allowable trust region radius.
 The user can set this parameter with the option \trl{-snes_trtol <trtol>}
 \findex{-snes_trtol} or with the routine
 \begin{lstlisting}
-SNESSetTrustRegionTolerance(SNES snes,double trtol);
+SNESSetTrustRegionTolerance(SNES snes,PetscReal trtol);
 \end{lstlisting}
 
 Users can set their own customized convergence tests in \lstinline{SNES} by using
 the command
 \begin{lstlisting}
-SNESSetConvergenceTest(SNES snes,PetscErrorCode (*test)(SNES snes,int it,double xnorm, double gnorm,double f,SNESConvergedReason reason, void *cctx),void *cctx,PetscErrorCode (*destroy)(void *cctx));
+SNESSetConvergenceTest(SNES snes,PetscErrorCode (*test)(SNES snes,PetscInt it,PetscReal xnorm, PetscReal gnorm,PetscReal f,SNESConvergedReason reason, void *cctx),void *cctx,PetscErrorCode (*destroy)(void *cctx));
 \end{lstlisting}
 The final argument of the convergence test routine, \lstinline{cctx},
 denotes an optional user-defined context for private data.  When
@@ -4259,7 +4257,7 @@ By default the \lstinline{SNES} solvers run silently without displaying informat
 about the iterations. The user can initiate monitoring with the
 command
 \begin{lstlisting}
-SNESMonitorSet(SNES snes,PetscErrorCode (*mon)(SNES,int its,double norm,void* mctx),void *mctx,PetscErrorCode (*monitordestroy)(void**));
+SNESMonitorSet(SNES snes,PetscErrorCode (*mon)(SNES,PetscInt its,PetscReal norm,void* mctx),void *mctx,PetscErrorCode (*monitordestroy)(void**));
 \end{lstlisting}
 The routine, \lstinline{mon}, indicates a user-defined monitoring routine,
 where \lstinline{its} and \lstinline{mctx} respectively denote the iteration
@@ -4418,11 +4416,11 @@ for users who need a matrix-free matrix but are not using \lstinline{SNES}.
 The user can set one parameter to control the Jacobian-vector
 product approximation with the command
 \begin{lstlisting}
-MatMFFDSetFunctionError(Mat mat,double rerror);
+MatMFFDSetFunctionError(Mat mat,PetscReal rerror);
 \end{lstlisting}
 The parameter \lstinline{rerror} should be set to the square root of the
 relative error in the function evaluations, $e_{rel}$; the default is the square root of machine epsilon (about $10^{-8}$ in double precision),
-which assumes that the functions are evaluated to full double precision accuracy.
+which assumes that the functions are evaluated to full floating-point precision accuracy.
 This parameter can also be set from the options database with
 \trl{-snes_mf_err <err>}
 \findex{-snes_mf_err}
@@ -4615,11 +4613,11 @@ As for the matrix-free computation of Jacobians (see Section
 \ref{sec_nlmatrixfree}), two parameters affect the accuracy of the
 finite difference Jacobian approximation.  These are set with the command
 \begin{lstlisting}
-MatFDColoringSetParameters(MatFDColoring fdcoloring,double rerror,double umin);
+MatFDColoringSetParameters(MatFDColoring fdcoloring,PetscReal rerror,PetscReal umin);
 \end{lstlisting}
 The parameter \lstinline{rerror} is the square root of
 the relative error in the function evaluations, $e_{rel}$; the default is the square root of machine epsilon (about $10^{-8}$ in double precision), which assumes 
-that the functions are evaluated to full double-precision accuracy. The
+that the functions are evaluated to full floating-point precision accuracy. The
 second parameter, \lstinline{umin}, is a bit more involved; its default is
 $ 10e^{-8} $ .  Column $i$ of the Jacobian matrix (denoted by $F_{:i}$) is
 approximated by the formula
@@ -4903,15 +4901,15 @@ error&explicit and implicit&$1-3$\\
 
 \noindent Set the initial time and timestep with the command
 \begin{lstlisting}
-TSSetInitialTimeStep(TS ts,double time,double dt);
+TSSetInitialTimeStep(TS ts,PetscReal time,PetscReal dt);
 \end{lstlisting}
 One can change the timestep with the command
 \begin{lstlisting}
-TSSetTimeStep(TS ts,double dt);
+TSSetTimeStep(TS ts,PetscReal dt);
 \end{lstlisting}
 can determine the current timestep with the routine
 \begin{lstlisting}
-TSGetTimeStep(TS ts,double* dt);
+TSGetTimeStep(TS ts,PetscReal* dt);
 \end{lstlisting}
 Here, ``current'' refers to the timestep being used to attempt to
 promote the solution form $ u^n $ to $ u^{n+1}. $
@@ -4919,13 +4917,14 @@ promote the solution form $ u^n $ to $ u^{n+1}. $
 \noindent One sets the total number of timesteps to run or the total time to run
 (whatever is first) with the command
 \begin{lstlisting}
-TSSetDuration(TS ts,int maxsteps,double maxtime);
+TSSetDuration(TS ts,PetscInt maxsteps,PetscReal maxtime);
 \end{lstlisting}
+and determines the behavior near the final time with
 \begin{lstlisting}
-TSSetExactFinalTime(TS ts,TS_EXACTFINALTIME_STEPOVER,
-                    TS_EXACTFINALTIME_INTERPOLATE,TS_EXACTFINALTIME_MATCHSTEP);
+TSSetExactFinalTime(TS ts,TSExactFinalTimeOption eftopt);
 \end{lstlisting}
-One performs the request number of time steps with
+where \lstinline{eftopt} is one of \lstinline{TS_EXACTFINALTIME_STEPOVER},\lstinline{TS_EXACTFINALTIME_INTERPOLATE},or \lstinline{TS_EXACTFINALTIME_MATCHSTEP}.
+One performs the requested number of time steps with
 \begin{lstlisting}
 TSSolve(TS ts,Vec U);
 \end{lstlisting}
@@ -5459,11 +5458,11 @@ with \trl{-ts_sundials_gramschmidt_type <modifed,unmodified>}.
 
 The routine
 \begin{lstlisting}
-TSSundialsSetGMRESRestart(TS ts,int restart);
+TSSundialsSetMaxl(TS ts,PetscInt restart);
 \end{lstlisting}
 sets the number of vectors in the Krylov subpspace used by GMRES.
 This may be set in the options
-database with \trl{-ts_sundials_gmres_restart} \trl{restart}. \findex{-ts_sundials_gmres_restart}
+database with \trl{-ts_sundials_maxl} \trl{maxl}. \findex{-ts_sundials_gmres_restart}
 
 % ---------------------------------------------------------------
 \cleardoublepage
@@ -5580,7 +5579,7 @@ For explicit methods where one does not need to provide the
 Jacobian $F_u$ for the forward solve one still does need it for the
 backward solve and thus must call
 \begin{lstlisting}
-TSSetRHSJacobian(TS ts,Mat Amat, Mat Pmat,PetscErrorCode (*f)(TS,double,Vec,Mat,Mat,void*),void *fP);
+TSSetRHSJacobian(TS ts,Mat Amat, Mat Pmat,PetscErrorCode (*f)(TS,PetscReal,Vec,Mat,Mat,void*),void *fP);
 \end{lstlisting}
 
 Examples
@@ -5685,7 +5684,7 @@ as follows.
 \begin{itemize}
 \item Provide the function \lstinline{G(u)} with the routine
 \begin{lstlisting}
- TSSetRHSFunction(TS ts,PetscErrorCode (*f)(TS,double,Vec,Vec,void*),void *fP);
+ TSSetRHSFunction(TS ts,PetscErrorCode (*f)(TS,PetscReal,Vec,Vec,void*),void *fP);
 \end{lstlisting}
 The  arguments to the function \lstinline{f()} are
 the timestep context, the current time, the input for the function,
@@ -5695,7 +5694,7 @@ variable \lstinline{fP}.
 \item Provide the (approximate) Jacobian matrix of \lstinline{G(u)} and a
 function to compute it at each Newton iteration. This is done with the command
 \begin{lstlisting}
-TSSetRHSJacobian(TS ts,Mat Amat, Mat Pmat,PetscErrorCode (*f)(TS,double,Vec,Mat,Mat,void*),void *fP);
+TSSetRHSJacobian(TS ts,Mat Amat, Mat Pmat,PetscErrorCode (*f)(TS,PetscReal,Vec,Mat,Mat,void*),void *fP);
 \end{lstlisting}
 The  arguments for the function \lstinline{f()} are
 the timestep context, the current time, the location where the
@@ -5713,11 +5712,11 @@ with location.
 \begin{itemize}
 \item For location-independent pseudo-timestepping, one uses the routine
 \begin{lstlisting}
-TSPseudoSetTimeStep(TS ts,int(*dt)(TS,double*,void*),void* dtctx);
+TSPseudoSetTimeStep(TS ts,PetscInt(*dt)(TS,PetscReal*,void*),void* dtctx);
 \end{lstlisting}
 The function \trl{dt} is a user-provided function that computes the next
 pseudo-timestep. As a default one can use
-\lstinline{TSPseudoTimeStepDefault(TS,double*,void*)} for \lstinline{dt}. This routine
+\lstinline{TSPseudoTimeStepDefault(TS,PetscReal*,void*)} for \lstinline{dt}. This routine
 updates the pseudo-timestep with one of two strategies: the default
 \[
    dt^{n} = dt_{\mathrm{increment}}*dt^{n-1}*\frac{|| F(u^{n-1}) ||}{|| F(u^{n})||}
@@ -5736,7 +5735,7 @@ the option \trl{-ts_pseudo_increment_dt_from_initial_dt}.
 The value $ dt_{\mathrm{increment}} $ is by default $ 1.1$, but can be reset with the
 call
 \begin{lstlisting}
-TSPseudoSetTimeStepIncrement(TS ts,double inc);
+TSPseudoSetTimeStepIncrement(TS ts,PetscReal inc);
 \end{lstlisting}
 or  the option
 \trl{ -ts_pseudo_increment <inc>}. \findex{-ts_pseudo_increment}
@@ -6350,7 +6349,7 @@ be used.  For example, when no options prefix is desired in the
 routine \lstinline{PetscOptionsGetInt()}, one must use the following command in
 Fortran:
 \begin{lstlisting}
-call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-name',N,flg,ierr)
+call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-name',N,flg,ierr)
 \end{lstlisting}
 
 This Fortran requirement is inconsistent with C, where the
@@ -7593,19 +7592,19 @@ Comments can be placed in the \trl{.petscrc} file by using \lstinline{#} in the 
 Any subroutine in a PETSc program can add entries to the database with the
 command
 \begin{lstlisting}
-PetscOptionsSetValue(char *name,char *value);
+PetscOptionsSetValue(PetscOptions options,char *name,char *value);
 \end{lstlisting}
 though this is rarely done.
 To locate options in the database, one should use the
 commands
 \begin{lstlisting}
-PetscOptionsHasName(char *pre,char *name,PetscBool *flg);
-PetscOptionsGetInt(PetscOptions options,char *pre,char *name,int *value,PetscBool *flg);
-PetscOptionsGetReal(char *pre,char *name,double *value,PetscBool *flg);
-PetscOptionsGetString(char *pre,char *name,char *value,int maxlen,PetscBool  *flg);
-PetscOptionsGetStringArray(char *pre,char *name,char **values,int *maxlen,PetscBool *flg);
-PetscOptionsGetIntArray(char *pre,char *name,int *value,int *nmax,PetscBool *flg);
-PetscOptionsGetRealArray(char *pre,char *name,double *value, int *nmax,PetscBool *flg);
+PetscOptionsHasName(PetscOptions options,char *pre,char *name,PetscBool *flg);
+PetscOptionsGetInt(PetscOptions options,char *pre,char *name,PetscInt *value,PetscBool *flg);
+PetscOptionsGetReal(PetscOptions options,char *pre,char *name,PetscReal *value,PetscBool *flg);
+PetscOptionsGetString(PetscOptions options,char *pre,char *name,char *value,int maxlen,PetscBool  *flg);
+PetscOptionsGetStringArray(PetscOptions options,char *pre,char *name,char **values,PetscInt *nmax,PetscBool *flg);
+PetscOptionsGetIntArray(PetscOptions options,char *pre,char *name,int *value,PetscInt *nmax,PetscBool *flg);
+PetscOptionsGetRealArray(PetscOptions options,char *pre,char *name,PetscReal *value, PetscInt *nmax,PetscBool *flg);
 \end{lstlisting}
 All of
 these
@@ -7697,7 +7696,7 @@ for a particular implementation.
 
 The routines
 \begin{lstlisting}
-PetscViewerPushFormat(PetscViewer viewer,int format);
+PetscViewerPushFormat(PetscViewer viewer,PetscViewerFormat format);
 PetscViewerPopFormat(PetscViewer viewer);
 \end{lstlisting}
 allow one to temporarily change the format of a viewer.
@@ -7828,7 +7827,7 @@ There is a separate signal handler for floating-point exceptions.
 The option \trl{-fp_trap} turns on the floating-point trap at runtime,
 and the routine \findex{-fp_trap} \findex{PETSC_FP_TRAP_ON}
 \begin{lstlisting}
-PetscSetFPTrap(int flag);
+PetscSetFPTrap(PetscFPTrap flag);
 \end{lstlisting}
 can be used in-line.
 A \lstinline{flag} of \lstinline{PETSC_FP_TRAP_ON} \findex{PETSC_FP_TRAP_OFF}
@@ -7868,9 +7867,11 @@ A simple example of usage is given below.
 \begin{lstlisting}
 #undef __FUNCT__  
 #define __FUNCT__ "MyRoutine1"
-int MyRoutine1() { 
+PetscErrorCode MyRoutine1() { 
+    /* Declarations Here */
+    PetscFunctionBeginUser;
     /* code here */
-    return 0;
+    PetscFunctionReturn(0);
 }
 \end{lstlisting}
 
@@ -8173,13 +8174,13 @@ and viewport. By default the drawing coordinates are from \trl{(0,0)} to
 window. The application program can change the window coordinates with the
 command  \sindex{coordinates}
 \begin{lstlisting}
-PetscDrawSetCoordinates(PetscDraw win,double xl,double yl,double xr,double yr);
+PetscDrawSetCoordinates(PetscDraw win,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr);
 \end{lstlisting}
 By default, graphics will be drawn in the entire window. To restrict the
 drawing to a portion of the window, one may
 use the command
 \begin{lstlisting}
-PetscDrawSetViewPort(PetscDraw win,double xl,double yl,double xr,double yr);
+PetscDrawSetViewPort(PetscDraw win,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr);
 \end{lstlisting}
 These arguments, which indicate the fraction of the window in which the
 drawing should be done, must satisfy
@@ -8188,7 +8189,7 @@ $ 0 \leq {\tt xl} \leq {\tt xr} \leq 1 $ and $ 0 \leq {\tt yl} \leq {\tt yr} \le
 To draw a line, one uses
  the command \sindex{lines, drawing}
 \begin{lstlisting}
-PetscDrawLine(PetscDraw win,double xl,double yl,double xr,double yr,int cl);
+PetscDrawLine(PetscDraw win,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int cl);
 \end{lstlisting}
 The argument \lstinline{cl} indicates the color (which is an integer between 0 and 255)
 of the line. A list of predefined colors may be found in \trl{include/petscdraw.h}
@@ -8238,7 +8239,7 @@ employs the line graph routines to draw simple line graphs.
 As shown in the program, within Figure~\ref{fig_plot}, line graphs
 are created with the command  \sindex{line graphs}
 \begin{lstlisting}
-PetscDrawLGCreate(PetscDraw win,int ncurves,PetscDrawLG *ctx);
+PetscDrawLGCreate(PetscDraw win,PetscInt ncurves,PetscDrawLG *ctx);
 \end{lstlisting}
 The argument \lstinline{ncurves} indicates how many curves are to be drawn.
 Points can be added to each of the curves with the
@@ -8250,7 +8251,7 @@ The arguments \lstinline{x} and \lstinline{y} are arrays containing the next
 point value for each curve.
 Several points for each curve may be added with
 \begin{lstlisting}
-PetscDrawLGAddPoints(PetscDrawLG ctx,int n,PetscReal **x,PetscReal **y);
+PetscDrawLGAddPoints(PetscDrawLG ctx,PetscInt n,PetscReal **x,PetscReal **y);
 \end{lstlisting}
 
 The line graph is drawn (or redrawn) with the command
@@ -8754,7 +8755,7 @@ poor stepchild substitute. After one has obtained a reordering, with
 \lstinline{MatGetOrdering(Mat A,MatOrdering type,IS *row,IS *col)} one
 may call
 \begin{lstlisting}
-MatReorderForNonzeroDiagonal(Mat A,double tol,IS row, IS col);
+MatReorderForNonzeroDiagonal(Mat A,PetscReal tol,IS row, IS col);
 \end{lstlisting}
 which will try to reorder the columns to ensure that no values along
 the diagonal are smaller than \lstinline{tol} in a absolute value. If small
@@ -8881,10 +8882,9 @@ method.
 
 Additional preconditioner routines are
 \begin{lstlisting}
-PCApplyBAorAB(PC pc,PCSide right,Vec x,Vec y,Vec work,int its);
-PCApplyBAorABTranspose(PC pc,PCSide right,Vec x,Vec y,Vec work,int its);
-PCApplyRichardson(PC pc,Vec x,Vec y,Vec work,PetscReal rtol,PetscReal atol, PetscReal dtol,PetscInt 
-     maxits,PetscBool  zeroguess,PetscInt *its,PCRichardsonConvergedReason*);
+PCApplyBAorAB(PC pc,PCSide right,Vec x,Vec y,Vec work);
+PCApplyBAorABTranspose(PC pc,PCSide right,Vec x,Vec y,Vec work);
+PCApplyRichardson(PC pc,Vec x,Vec y,Vec work,PetscReal rtol,PetscReal atol, PetscReal dtol,PetscInt maxits,PetscBool zeroguess,PetscInt *outits,PCRichardsonConvergedReason*);
 \end{lstlisting}
 The first two routines apply the action of the matrix followed by the
 preconditioner or the preconditioner followed by the matrix depending

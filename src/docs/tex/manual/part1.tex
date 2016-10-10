@@ -395,7 +395,7 @@ sequential vector, \lstinline{x}, of global dimension \lstinline{M} with the
 commands  \sindex{vectors}
 \begin{lstlisting}
 VecCreate(MPI_Comm comm,Vec *x);
-VecSetSizes(Vec x, int m, int M);
+VecSetSizes(Vec x, PetscInt m, PetscInt M);
 \end{lstlisting}
 where \lstinline{comm} denotes the MPI communicator and \lstinline{m} is the optional local size
 which may be \lstinline{PETSC_DECIDE}. The type of storage
@@ -408,7 +408,7 @@ VecDuplicate(Vec old,Vec *new);
 The commands
 \begin{lstlisting}
 VecSet(Vec x,PetscScalar value);
-VecSetValues(Vec x,int n,int *indices,PetscScalar *values,INSERT_VALUES);
+VecSetValues(Vec x,PetscInt n,PetscInt *indices,PetscScalar *values,INSERT_VALUES);
 \end{lstlisting}
 respectively set all the components of a vector to a particular scalar
 value and assign a different value to each component.  More
@@ -418,8 +418,8 @@ discussed in Chapter~\ref{chapter_vectors}.
 
 \sindex{complex numbers}
 Note the use of the PETSc variable type \lstinline{PetscScalar} in this example.
-The \lstinline{PetscScalar} is simply defined to be \trl{double} in C/C++
-(or correspondingly \trl{double} \trl{precision} in Fortran) for versions of
+The \lstinline{PetscScalar} is simply defined to be \lstinline{double} in C/C++
+(or correspondingly \lstinline{double precision} in Fortran) for versions of
 PETSc that have {\em not} been compiled for use with complex numbers.
 The \lstinline{PetscScalar} data type enables
 identical code to be used when the PETSc libraries have been compiled
@@ -433,13 +433,13 @@ The user can create a new parallel or sequential matrix, \lstinline{A}, which
 has \lstinline{M} global rows and \lstinline{N} global columns, with the routines
 \begin{lstlisting}
 MatCreate(MPI_Comm comm,Mat *A);
-MatSetSizes(Mat A,PETSC_DECIDE,PETSC_DECIDE,int M,int N);
+MatSetSizes(Mat A,PETSC_DECIDE,PETSC_DECIDE,PetscInt M,PetscInt N);
 \end{lstlisting}
 where the matrix format can be specified at runtime via the options database.  The user could
 alternatively specify each processes' number of local rows and columns
 using \trl{m} and \trl{n}.
 \begin{lstlisting}
-MatSetSizes(Mat A,int m,int n,PETSC_DETERMINE,PETSC_DETERMINE);
+MatSetSizes(Mat A,PetscInt m,PetscInt n,PETSC_DETERMINE,PETSC_DETERMINE);
 \end{lstlisting}
 Generally one then sets the ``type'' of the matrix, with, for example,
 \begin{lstlisting}
@@ -449,7 +449,7 @@ This causes the matrix \trl{A} to used the compressed sparse row storage format 
 matrix entries. See \lstinline{MatType} for a list of all matrix types.
 Values can then be set with the command
 \begin{lstlisting}
-MatSetValues(Mat A,int m,int *im,int n,int *in,PetscScalar *values,INSERT_VALUES);
+MatSetValues(Mat A,PetscInt m,PetscInt *im,PetscInt n,PetscInt *in,PetscScalar *values,INSERT_VALUES);
 \end{lstlisting}
 After all elements have been inserted into the
 matrix, it must be processed with the pair of commands
