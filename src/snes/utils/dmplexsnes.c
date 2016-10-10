@@ -1438,7 +1438,7 @@ PetscErrorCode DMPlexComputeBdResidual_Internal(DM dm, Vec locX, Vec locX_t, Pet
         const PetscInt point = points[p], *support, *cone;
         PetscScalar   *x     = NULL;
         PetscReal      dummyJ[9], dummyDetJ;
-        PetscInt       i, coneSize, faceLoc, cell;
+        PetscInt       i, coneSize, faceLoc;
 
         ierr = DMLabelGetValue(depth, points[p], &dep);CHKERRQ(ierr);
         if (dep != dim-1) continue;
@@ -2103,7 +2103,7 @@ PetscErrorCode DMPlexComputeBdJacobian_Internal(DM dm, Vec locX, Vec locX_t, Pet
         const PetscInt point = points[p], *support, *cone;
         PetscScalar   *x     = NULL;
         PetscReal      dummyJ[9], dummyDetJ;
-        PetscInt       i, coneSize, faceLoc, cell;
+        PetscInt       i, coneSize, faceLoc;
 
         ierr = DMLabelGetValue(depth, points[p], &dep);CHKERRQ(ierr);
         if (dep != dim-1) continue;
