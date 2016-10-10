@@ -537,7 +537,7 @@ proper layout.
 One creates a distributed array communication data structure
 in two dimensions with the command
 \begin{lstlisting}
-DMDACreate2d(MPI_Comm comm,DMDABoundaryType xperiod,DMDABoundaryType yperiod,DMDAStencilType st,int M, int N,int m,int n,int dof,int s,int *lx,int *ly,DM *da);
+DMDACreate2d(MPI_Comm comm,DMBoundaryType xperiod,DMBoundaryType yperiod,DMDAStencilType st,int M, int N,int m,int n,int dof,int s,int *lx,int *ly,DM *da);
 \end{lstlisting}
 The  \sindex{array, distributed} arguments
 \sindex{distributed array} \lstinline{M} and \lstinline{N} indicate the global
@@ -564,9 +564,9 @@ can be created, as specified by \lstinline{st}.
 Star-type stencils that radiate outward only in the coordinate
 directions are indicated by \lstinline{DMDA_STENCIL_STAR},
 while box-type stencils are specified by
-\lstinline{DA_STENCIL_BOX}. For example, for the
+\lstinline{DMDA_STENCIL_BOX}. For example, for the
 two-dimensional case,
-\lstinline{DA_STENCIL_STAR} with width 1 corresponds to the standard 5-point
+\lstinline{DMDA_STENCIL_STAR} with width 1 corresponds to the standard 5-point
 stencil, while \lstinline{DMDA_STENCIL_BOX} with width 1 denotes the
 standard 9-point stencil.  In both instances the ghost points are
 identical, the only difference being that with star-type stencils
@@ -584,10 +584,10 @@ discretization technique).
 The commands for creating distributed array communication data structures
 in one and three dimensions are analogous:
 \begin{lstlisting}
-DMDACreate1d(MPI_Comm comm,DMDABoundaryType xperiod,int M,int w,int s,int *lc,DM *inra);
-  DMDACreate3d=(MPI_Comm comm,DMDABoundaryType xperiod,DMDABoundaryType yperiod, 
-                DMDABoundaryType zperiod, DMDAStencilType stencil_type,
-                int M,int N,int P,int m,int n,int p,int w,int s,int *lx,int *ly,int *lz,DM *inra);
+DMDACreate1d(MPI_Comm comm,DMBoundaryType xperiod,int M,int w,int s,int *lc,DM *inra);
+DMDACreate3d=(MPI_Comm comm,DMBoundaryType xperiod,DMBoundaryType yperiod, 
+              DMBoundaryType zperiod, DMDAStencilType stencil_type,
+              int M,int N,int P,int m,int n,int p,int w,int s,int *lx,int *ly,int *lz,DM *inra);
 \end{lstlisting}
 The routines to create distributed arrays are collective, so that all
 processes in the communicator \lstinline{comm} must call \lstinline{DACreateXXX()}.
