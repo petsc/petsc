@@ -537,6 +537,8 @@ PetscErrorCode KSPReasonViewFromOptions(KSP ksp)
    Call KSPGetConvergedReason() to determine if the solver converged or failed and
    why. The number of iterations can be obtained from KSPGetIterationNumber().
 
+   If you provide a matrix that has a MatSetNullSpace() and MatSetTransposeNullSpace() this will use that information in solving singular systems. See MatNullSpaceCreate() for details.
+
    If using a direct method (e.g., via the KSP solver
    KSPPREONLY and a preconditioner such as PCLU/PCILU),
    then its=1.  See KSPSetTolerances() and KSPConvergedDefault()
@@ -552,7 +554,7 @@ PetscErrorCode KSPReasonViewFromOptions(KSP ksp)
 .keywords: KSP, solve, linear system
 
 .seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPConvergedDefault(),
-          KSPSolveTranspose(), KSPGetIterationNumber()
+          KSPSolveTranspose(), KSPGetIterationNumber(), MatNullSpaceCreate(), MatSetNullSpace(), MatSetTransposeNullSpace()
 @*/
 PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
 {
@@ -864,6 +866,8 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
 -  x - solution vector
 
    Notes: For complex numbers this solve the non-Hermitian transpose system.
+
+   This currently does NOT correctly use the null space of the operator and its transpose for solving singular systems.
 
    Developer Notes: We need to implement a KSPSolveHermitianTranspose()
 
