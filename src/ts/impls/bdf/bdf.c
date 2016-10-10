@@ -265,6 +265,7 @@ static PetscErrorCode TSEvaluateWLTE_BDF(TS ts,NormType wnormtype,PetscInt *orde
 {
   TS_BDF         *bdf = (TS_BDF*)ts->data;
   PetscInt       k = bdf->k;
+  PetscReal      wltea,wlter;
   Vec            X = bdf->work[0], Y = bdf->vec_lte;
   PetscErrorCode ierr;
 
@@ -272,7 +273,7 @@ static PetscErrorCode TSEvaluateWLTE_BDF(TS ts,NormType wnormtype,PetscInt *orde
   k = PetscMin(k,bdf->n-1);
   ierr = TSBDF_VecLTE(ts,k,Y);CHKERRQ(ierr);
   ierr = VecAXPY(Y,1,X);CHKERRQ(ierr);
-  ierr = TSErrorWeightedNorm(ts,X,Y,wnormtype,wlte);CHKERRQ(ierr);
+  ierr = TSErrorWeightedNorm(ts,X,Y,wnormtype,wlte,&wltea,&wlter);CHKERRQ(ierr);
   if (order) *order = k + 1;
   PetscFunctionReturn(0);
 }

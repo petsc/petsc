@@ -50,6 +50,11 @@ struct _TSOps {
   PetscErrorCode (*adjointsetup)(TS);
   PetscErrorCode (*adjointintegral)(TS);
   PetscErrorCode (*forwardintegral)(TS);
+  PetscErrorCode (*getsolutioncomponents)(TS,PetscInt*,Vec*);
+  PetscErrorCode (*getauxsolution)(TS,Vec*);
+  PetscErrorCode (*gettimeerror)(TS,PetscInt,Vec*);
+  PetscErrorCode (*settimeerror)(TS,Vec);
+  PetscErrorCode (*startingmethod) (TS);
 };
 
 /*
@@ -194,7 +199,7 @@ struct _p_TS {
 };
 
 struct _TSAdaptOps {
-  PetscErrorCode (*choose)(TSAdapt,TS,PetscReal,PetscInt*,PetscReal*,PetscBool*,PetscReal*);
+  PetscErrorCode (*choose)(TSAdapt,TS,PetscReal,PetscInt*,PetscReal*,PetscBool*,PetscReal*,PetscReal*,PetscReal*);
   PetscErrorCode (*destroy)(TSAdapt);
   PetscErrorCode (*reset)(TSAdapt);
   PetscErrorCode (*view)(TSAdapt,PetscViewer);

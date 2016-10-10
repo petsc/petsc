@@ -36,6 +36,7 @@ typedef const char* TSType;
 #define TSALPHA           "alpha"
 #define TSALPHA2          "alpha2"
 #define TSGLLE            "glle"
+#define TSGLEE            "glee"
 #define TSSSP             "ssp"
 #define TSARKIMEX         "arkimex"
 #define TSROSW            "rosw"
@@ -244,6 +245,11 @@ PETSC_EXTERN PetscErrorCode TSGetSolution(TS,Vec*);
 PETSC_EXTERN PetscErrorCode TS2SetSolution(TS,Vec,Vec);
 PETSC_EXTERN PetscErrorCode TS2GetSolution(TS,Vec*,Vec*);
 
+PETSC_EXTERN PetscErrorCode TSGetSolutionComponents(TS,PetscInt*,Vec*);
+PETSC_EXTERN PetscErrorCode TSGetAuxSolution(TS,Vec*);
+PETSC_EXTERN PetscErrorCode TSGetTimeError(TS,PetscInt,Vec*);
+PETSC_EXTERN PetscErrorCode TSSetTimeError(TS,Vec);
+
 /*S
      TSTrajectory - Abstract PETSc object that storing the trajectory (solution of ODE/ADE at each time step)
 
@@ -401,9 +407,12 @@ PETSC_EXTERN PetscErrorCode TSPostStep(TS);
 PETSC_EXTERN PetscErrorCode TSInterpolate(TS,PetscReal,Vec);
 PETSC_EXTERN PetscErrorCode TSSetTolerances(TS,PetscReal,Vec,PetscReal,Vec);
 PETSC_EXTERN PetscErrorCode TSGetTolerances(TS,PetscReal*,Vec*,PetscReal*,Vec*);
-PETSC_EXTERN PetscErrorCode TSErrorWeightedNormInfinity(TS,Vec,Vec,PetscReal*);
-PETSC_EXTERN PetscErrorCode TSErrorWeightedNorm2(TS,Vec,Vec,PetscReal*);
-PETSC_EXTERN PetscErrorCode TSErrorWeightedNorm(TS,Vec,Vec,NormType,PetscReal*);
+PETSC_EXTERN PetscErrorCode TSErrorWeightedNormInfinity(TS,Vec,Vec,PetscReal*,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode TSErrorWeightedNorm2(TS,Vec,Vec,PetscReal*,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode TSErrorWeightedNorm(TS,Vec,Vec,NormType,PetscReal*,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode TSErrorWeightedENormInfinity(TS,Vec,Vec,Vec,PetscReal*,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode TSErrorWeightedENorm2(TS,Vec,Vec,Vec,PetscReal*,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode TSErrorWeightedENorm(TS,Vec,Vec,Vec,NormType,PetscReal*,PetscReal*,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSSetCFLTimeLocal(TS,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetCFLTime(TS,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSSetFunctionDomainError(TS, PetscErrorCode (*)(TS,PetscReal,Vec,PetscBool*));
@@ -570,6 +579,7 @@ typedef struct _p_TSAdapt *TSAdapt;
 .seealso: TSAdaptSetType(), TS
 E*/
 typedef const char *TSAdaptType;
+#define TSADAPTGLEE  "glee"
 #define TSADAPTBASIC "basic"
 #define TSADAPTNONE  "none"
 #define TSADAPTCFL   "cfl"
@@ -698,6 +708,36 @@ PETSC_EXTERN PetscErrorCode TSRKRegister(TSRKType,PetscInt,PetscInt,const PetscR
 PETSC_EXTERN PetscErrorCode TSRKInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSRKFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSRKRegisterDestroy(void);
+
+/*J
+    TSGLEEType - String with the name of a General Linear with Error Estimation method.
+
+   Level: beginner
+
+.seealso: TSGLEESetType(), TS, TSGLEE, TSGLEERegister()
+J*/
+typedef const char* TSGLEEType;
+#define TSGLEEi1      "BE1"
+#define TSGLEE23      "23"
+#define TSGLEE24      "24"
+#define TSGLEE25I     "25i"
+#define TSGLEE35      "35"
+#define TSGLEEEXRK2A  "exrk2a"
+#define TSGLEERK32G1  "rk32g1"
+#define TSGLEERK285EX "rk285ex"
+/*J
+    TSGLEEMode - String with the mode of error estimation for a General Linear with Error Estimation method.
+
+   Level: beginner
+
+.seealso: TSGLEESetMode(), TS, TSGLEE, TSGLEERegister()
+J*/
+PETSC_EXTERN PetscErrorCode TSGLEEGetType(TS ts,TSGLEEType*);
+PETSC_EXTERN PetscErrorCode TSGLEESetType(TS ts,TSGLEEType);
+PETSC_EXTERN PetscErrorCode TSGLEERegister(TSGLEEType,PetscInt,PetscInt,PetscInt,PetscReal,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],PetscInt,const PetscReal[]);
+PETSC_EXTERN PetscErrorCode TSGLEEFinalizePackage(void);
+PETSC_EXTERN PetscErrorCode TSGLEEInitializePackage(void);
+PETSC_EXTERN PetscErrorCode TSGLEERegisterDestroy(void);
 
 /*J
     TSARKIMEXType - String with the name of an Additive Runge-Kutta IMEX method.

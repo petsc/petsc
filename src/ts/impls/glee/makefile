@@ -1,12 +1,16 @@
 
 ALL: lib
 
-DIRS     = explicit implicit pseudo python arkimex rosw eimex mimex bdf glee
-LOCDIR   = src/ts/impls/
+CFLAGS   =
+FFLAGS   =
+SOURCEC  = glee.c
+SOURCEF  =
+SOURCEH  =
+LIBBASE  = libpetscts
 MANSEC   = TS
+LOCDIR   = src/ts/impls/explicit/glee/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 include ${PETSC_DIR}/lib/petsc/conf/test
-
 

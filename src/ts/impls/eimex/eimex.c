@@ -91,7 +91,7 @@ static PetscErrorCode TSStep_EIMEX(TS ts)
   PetscInt        i,j;
   PetscBool       accept = PETSC_FALSE;
   PetscErrorCode  ierr;
-  PetscReal       alpha,local_error;
+  PetscReal       alpha,local_error,local_error_a,local_error_r;
   PetscFunctionBegin;
 
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
@@ -120,7 +120,7 @@ static PetscErrorCode TSStep_EIMEX(TS ts)
   if(ext->ord_adapt && ext->nstages < ext->max_rows){
 	accept = PETSC_FALSE;
 	while(!accept && ext->nstages < ext->max_rows){
-	  ierr = TSErrorWeightedNorm(ts,ts->vec_sol,T[Map(ext->nstages-1,ext->nstages-2,ext->nstages)],ts->adapt->wnormtype,&local_error);CHKERRQ(ierr);
+	  ierr = TSErrorWeightedNorm(ts,ts->vec_sol,T[Map(ext->nstages-1,ext->nstages-2,ext->nstages)],ts->adapt->wnormtype,&local_error,&local_error_a,&local_error_r);CHKERRQ(ierr);
 	  accept = (local_error < 1.0)? PETSC_TRUE : PETSC_FALSE;
 
 	  if(!accept){/* add one more stage*/

@@ -50,6 +50,7 @@ PetscErrorCode  TSInitializePackage(void)
   /* Inialize subpackages */
   ierr = TSGLLEInitializePackage();CHKERRQ(ierr);
   ierr = TSRKInitializePackage();CHKERRQ(ierr);
+  ierr = TSGLEEInitializePackage();CHKERRQ(ierr);
   ierr = TSARKIMEXInitializePackage();CHKERRQ(ierr);
   ierr = TSRosWInitializePackage();CHKERRQ(ierr);
   ierr = TSSSPInitializePackage();CHKERRQ(ierr);

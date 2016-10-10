@@ -727,6 +727,11 @@ runex31:
 	   ${DIFF} output/ex31_1.out ex31_1.tmp || printf "${PWD}\nPossible problem with ex31_1, diffs above\n=========================================\n";  \
 	   ${RM} -f ex31_1.tmp
 
+runex31_2:
+	-@${MPIEXEC} -n 1 ./ex31 -ts_type glee > ex31_2.tmp 2>&1; \
+	   ${DIFF} output/ex31_2.out ex31_2.tmp || printf "${PWD}\nPossible problem with ex31_2, diffs above\n=========================================\n";  \
+	   ${RM} -f ex31_2.tmp
+
 runex35:
 	-@${MPIEXEC} -n 1 ./ex35 -ts_monitor -ts_adapt_basic_reject_safety 1 > ex35_1.tmp 2>&1;  \
 	   ${DIFF} output/ex35_1.out ex35_1.tmp || printf "${PWD}\nPossible problem with ex35_1, diffs above\n=========================================\n"; \
@@ -834,7 +839,7 @@ TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex3.PETSc runex3 runex3_2 r
                             ex19.PETSc ex19.rm \
                             ex22.PETSc runex22_2 runex22_3 runex22_4 ex22.rm \
                             ex25.PETSc runex25 ex25.rm \
-                            ex31.PETSc ex31.rm \
+                            ex31.PETSc runex31 runex31_2 ex31.rm \
                             ex40.PETSc runex40 ex40.rm \
                             ex41.PETSc runex41 ex41.rm \
                             ex43.PETSc ex43.rm \
