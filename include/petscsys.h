@@ -2550,7 +2550,7 @@ $        names like PetscErrorCode, PetscInt etc. again for those you must use i
    We recommend either 2 or 3. Approaches 2 and 3 provide type checking for most PETSc function calls; 4 has type checking
 for only a few PETSc functions.
 
-   Fortran type checking with interfaces is strick, this means you cannot pass a scalar value when an array value
+   Fortran type checking with interfaces is strict, this means you cannot pass a scalar value when an array value
 is expected (even though it is legal Fortran). For example when setting a single value in a matrix with MatSetValues()
 you cannot have something like
 $      PetscInt row,col

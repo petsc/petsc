@@ -1,32 +1,4 @@
-/*MC
-      EIMEX - Time stepping with Extrapolated IMEX methods.
 
-  Notes:
-  The general system is written as
-
-  G(t,X,Xdot) = F(t,X)
-
-  where G represents the stiff part and F represents the non-stiff part. The user should provide the stiff part
-  of the equation using TSSetIFunction() and the non-stiff part with TSSetRHSFunction().
-  This method is designed to be linearly implicit on G and can use an approximate and lagged Jacobian.
-
-  Another common form for the system is
-
-  y'=f(x)+g(x)
-
-  The relationship between F,G and f,g is
-
-  G = y'-g(x), F = f(x)
-
- References
-  E. Constantinescu and A. Sandu, Extrapolated implicit-explicit time stepping, SIAM Journal on Scientific
-Computing, 31 (2010), pp. 4452-4477.
-
-      Level: beginner
-
-.seealso:  TSCreate(), TS, TSSetType(), TSEIMEXSetMaxRows(), TSEIMEXSetRowCol(), TSEIMEXSetOrdAdapt()
-
- M*/
 #include <petsc/private/tsimpl.h>                /*I   "petscts.h"   I*/
 #include <petscdm.h>
 
@@ -609,20 +581,43 @@ static PetscErrorCode TSEIMEXSetOrdAdapt_EIMEX(TS ts,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-/* ------------------------------------------------------------ */
 /*MC
-      TSEIMEX - ODE solver using extrapolated IMEX schemes
-  These methods are intended for problems with well-separated time scales, especially when a slow scale is strongly nonlinear such that it is expensive to solve with a fully implicit method. The user should provide the stiff part of the equation using TSSetIFunction() and the non-stiff part with TSSetRHSFunction().
+      TSEIMEX - Time stepping with Extrapolated IMEX methods.
+
+   These methods are intended for problems with well-separated time scales, especially when a slow scale is strongly nonlinear such that it 
+   is expensive to solve with a fully implicit method. The user should provide the stiff part of the equation using TSSetIFunction() and the 
+   non-stiff part with TSSetRHSFunction().
 
    Notes:
   The default is a 3-stage scheme, it can be changed with TSEIMEXSetMaxRows() or -ts_eimex_max_rows
 
   This method currently only works with ODE, for which the stiff part G(t,X,Xdot) has the form Xdot + Ghat(t,X).
 
-  Level: beginner
+  The general system is written as
 
-.seealso:  TSCreate(), TS
-M*/
+  G(t,X,Xdot) = F(t,X)
+
+  where G represents the stiff part and F represents the non-stiff part. The user should provide the stiff part
+  of the equation using TSSetIFunction() and the non-stiff part with TSSetRHSFunction().
+  This method is designed to be linearly implicit on G and can use an approximate and lagged Jacobian.
+
+  Another common form for the system is
+
+  y'=f(x)+g(x)
+
+  The relationship between F,G and f,g is
+
+  G = y'-g(x), F = f(x)
+
+ References
+  E. Constantinescu and A. Sandu, Extrapolated implicit-explicit time stepping, SIAM Journal on Scientific
+Computing, 31 (2010), pp. 4452-4477.
+
+      Level: beginner
+
+.seealso:  TSCreate(), TS, TSSetType(), TSEIMEXSetMaxRows(), TSEIMEXSetRowCol(), TSEIMEXSetOrdAdapt()
+
+ M*/
 #undef __FUNCT__
 #define __FUNCT__ "TSCreate_EIMEX"
 PETSC_EXTERN PetscErrorCode TSCreate_EIMEX(TS ts)
