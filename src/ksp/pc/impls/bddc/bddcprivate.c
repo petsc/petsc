@@ -6285,7 +6285,9 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
   ISLocalToGlobalMapping map;
   PC_BDDC                *pcbddc = (PC_BDDC*)pc->data;
   Mat_IS                 *matis  = (Mat_IS*)pc->pmat->data;
-  PetscInt               ierr,i,N;
+  PetscInt               i,N;
+  PetscBool              rcsr = PETSC_FALSE;
+  PetscErrorCode         ierr;
 
   PetscFunctionBegin;
   if (pcbddc->recompute_topography) {
@@ -6301,7 +6303,7 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
     if (pcbddc->mat_graph->nvtxs_csr && pcbddc->mat_graph->nvtxs_csr != pcbddc->mat_graph->nvtxs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid size of local CSR graph! Found %d, expected %d\n",pcbddc->mat_graph->nvtxs_csr,pcbddc->mat_graph->nvtxs);
 
     /* Set default CSR adjacency of local dofs if not provided by the user with PCBDDCSetLocalAdjacencyGraph */
-    if ( (!pcbddc->mat_graph->xadj || !pcbddc->mat_graph->adjncy) && pcbddc->use_local_adj) {
+    if (!pcbddc->mat_graph->xadj && pcbddc->use_local_adj) {
       PetscInt  *xadj,*adjncy;
       PetscInt  nvtxs;
       PetscBool flg_row=PETSC_FALSE;
@@ -6312,6 +6314,7 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
         pcbddc->computed_rowadj = PETSC_TRUE;
       }
       ierr = MatRestoreRowIJ(matis->A,0,PETSC_TRUE,PETSC_FALSE,&nvtxs,(const PetscInt**)&xadj,(const PetscInt**)&adjncy,&flg_row);CHKERRQ(ierr);
+      rcsr = PETSC_TRUE;
     }
     if (pcbddc->dbg_flag) {
       ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
@@ -6345,6 +6348,7 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
     ierr = PCBDDCGraphComputeConnectedComponents(pcbddc->mat_graph);CHKERRQ(ierr);
     pcbddc->graphanalyzed = PETSC_TRUE;
   }
+  if (rcsr) pcbddc->mat_graph->nvtxs_csr = 0;
   PetscFunctionReturn(0);
 }
 
