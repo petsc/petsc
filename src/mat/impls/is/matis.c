@@ -14,6 +14,57 @@
 static PetscErrorCode MatISComputeSF_Private(Mat);
 
 #undef __FUNCT__
+#define __FUNCT__ "MatGetInfo_IS"
+static PetscErrorCode MatGetInfo_IS(Mat A,MatInfoType flag,MatInfo *ginfo)
+{
+  Mat_IS         *matis = (Mat_IS*)A->data;
+  MatInfo        info;
+  PetscReal      isend[5],irecv[5];
+  PetscInt       bs;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr     = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
+  ierr     = MatGetInfo(matis->A,MAT_LOCAL,&info);CHKERRQ(ierr);
+  isend[0] = info.nz_used;
+  isend[1] = info.nz_allocated;
+  isend[2] = info.nz_unneeded;
+  isend[3] = info.memory;
+  isend[4] = info.mallocs;
+  if (flag == MAT_LOCAL) {
+    ginfo->nz_used      = isend[0];
+    ginfo->nz_allocated = isend[1];
+    ginfo->nz_unneeded  = isend[2];
+    ginfo->memory       = isend[3];
+    ginfo->mallocs      = isend[4];
+    ginfo->assemblies   = matis->A->num_ass;
+  } else if (flag == MAT_GLOBAL_MAX) {
+    ierr = MPIU_Allreduce(isend,irecv,5,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+
+    ginfo->nz_used      = irecv[0];
+    ginfo->nz_allocated = irecv[1];
+    ginfo->nz_unneeded  = irecv[2];
+    ginfo->memory       = irecv[3];
+    ginfo->mallocs      = irecv[4];
+    ginfo->assemblies   = A->num_ass;
+  } else if (flag == MAT_GLOBAL_SUM) {
+    ierr = MPIU_Allreduce(isend,irecv,5,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+
+    ginfo->nz_used      = irecv[0];
+    ginfo->nz_allocated = irecv[1];
+    ginfo->nz_unneeded  = irecv[2];
+    ginfo->memory       = irecv[3];
+    ginfo->mallocs      = irecv[4];
+    ginfo->assemblies   = A->num_ass;
+  }
+  ginfo->block_size        = bs;
+  ginfo->fill_ratio_given  = 0;
+  ginfo->fill_ratio_needed = 0;
+  ginfo->factor_mallocs    = 0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatTranspose_IS"
 PetscErrorCode MatTranspose_IS(Mat A,MatReuse reuse,Mat *B)
 {
@@ -1725,6 +1776,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
   A->ops->diagonalset             = MatDiagonalSet_IS;
   A->ops->shift                   = MatShift_IS;
   A->ops->transpose               = MatTranspose_IS;
+  A->ops->getinfo                 = MatGetInfo_IS;
 
   /* special MATIS functions */
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISGetLocalMat_C",MatISGetLocalMat_IS);CHKERRQ(ierr);
