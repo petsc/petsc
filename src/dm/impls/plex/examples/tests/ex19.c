@@ -56,6 +56,16 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user)
     ierr = DMPlexCreateFromFile(comm, user->mshNam, PETSC_TRUE, &user->dm);CHKERRQ(ierr);
     ierr = DMGetDimension(user->dm, &user->dim);CHKERRQ(ierr);
   }
+  {
+    DM distributedMesh = NULL;
+
+    /* Distribute mesh over processes */
+    ierr = DMPlexDistribute(user->dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
+    if (distributedMesh) {
+      ierr = DMDestroy(&user->dm);CHKERRQ(ierr);
+      user->dm  = distributedMesh;
+    }
+  }
   ierr = DMSetFromOptions(user->dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -127,7 +137,7 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
     }
     /* Only set the diagonal */
     ierr = DMPlexPointGlobalRef(mdm, p, met, &pmet);CHKERRQ(ierr);
-    for (d = 0; d < dim; ++d) pmet[d*(dim+1)] = lambda[d];
+    if (pmet) {for (d = 0; d < dim; ++d) pmet[d*(dim+1)] = lambda[d];}
   }
   ierr = VecRestoreArray(*metric, &met);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
