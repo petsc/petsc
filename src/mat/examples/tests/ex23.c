@@ -59,27 +59,29 @@ int main(int argc,char **args)
 
   /* test MatGetInfo */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatGetInfo\n");CHKERRQ(ierr);
+  ierr = MatISGetLocalMat(A,&B);CHKERRQ(ierr);
+  if (!PetscGlobalRank) {
+    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
   ierr = MatGetInfo(A,MAT_LOCAL,&info);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"Process  %2d: %D %D %D %D %D %D\n",PetscGlobalRank,(PetscInt)info.nz_used,
+  ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"Process  %2d: %D %D %D %D %D\n",PetscGlobalRank,(PetscInt)info.nz_used,
                                             (PetscInt)info.nz_allocated,
                                             (PetscInt)info.nz_unneeded,
-                                            (PetscInt)info.memory,
                                             (PetscInt)info.assemblies,
                                             (PetscInt)info.mallocs);CHKERRQ(ierr);
   ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatGetInfo(A,MAT_GLOBAL_MAX,&info);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"GlobalMax  : %D %D %D %D %D %D\n",(PetscInt)info.nz_used,
+  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"GlobalMax  : %D %D %D %D %D\n",(PetscInt)info.nz_used,
                                 (PetscInt)info.nz_allocated,
                                 (PetscInt)info.nz_unneeded,
-                                (PetscInt)info.memory,
                                 (PetscInt)info.assemblies,
                                 (PetscInt)info.mallocs);CHKERRQ(ierr);
   ierr = MatGetInfo(A,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"GlobalSum  : %D %D %D %D %D %D\n",(PetscInt)info.nz_used,
+  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"GlobalSum  : %D %D %D %D %D\n",(PetscInt)info.nz_used,
                                 (PetscInt)info.nz_allocated,
                                 (PetscInt)info.nz_unneeded,
-                                (PetscInt)info.memory,
                                 (PetscInt)info.assemblies,
                                 (PetscInt)info.mallocs);CHKERRQ(ierr);
 
