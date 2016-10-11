@@ -67,6 +67,7 @@ typedef const char* PCType;
 #define PCBICGSTABCUSP    "bicgstabcusp"
 #define PCAINVCUSP        "ainvcusp"
 #define PCCHOWILUVIENNACL "chowiluviennacl"
+#define PCROWSCALINGVIENNACL "rowscalingviennacl"
 #define PCSAVIENNACL      "saviennacl"
 #define PCBDDC            "bddc"
 #define PCKACZMARZ        "kaczmarz"
