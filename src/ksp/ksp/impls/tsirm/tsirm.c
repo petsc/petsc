@@ -162,8 +162,6 @@ PetscErrorCode KSPDestroy_TSIRM(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_TSIRM"
 /*MC
      KSPTSIRM - Implements the two-stage iteration with least-squares residual minimization method.
 
@@ -200,6 +198,8 @@ PetscErrorCode KSPDestroy_TSIRM(KSP ksp)
            KSPGMRESCGSRefinementType, KSPGMRESSetCGSRefinementType(), KSPGMRESGetCGSRefinementType(), KSPGMRESMonitorKrylov(), KSPSetPCSide()
 
 M*/
+#undef __FUNCT__
+#define __FUNCT__ "KSPCreate_TSIRM"
 PETSC_EXTERN PetscErrorCode KSPCreate_TSIRM(KSP ksp)
 {
   PetscErrorCode ierr;

@@ -1,14 +1,12 @@
 #!/usr/bin/env python
 #!/bin/env python
-# ----------------------------------------------------------------------
-#
-# ----------------------------------------------------------------------
 
 import sys
 from sys import *
 import lex
 import re
 import os
+
 # Reserved words
 
 tokens = (
@@ -19,7 +17,7 @@ tokens = (
     'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'MOD',
     'OR', 'AND', 'NOT', 'XOR', 'LSHIFT', 'RSHIFT',
     'LOR', 'LAND', 'LNOT',
-    'LT', 'LE', 'GT', 'GE', 'EQ', 'NE', 'HREF', 'FINDEX', 'SUBSECTION', 'CHAPTER', 'SECTION','CAPTION','SINDEX','TRL','BEGIN{VERBATIM}','END{VERBATIM}','LSTINLINE','BEGIN{LSTLISTING}','END{LSTLISTING}'
+    'LT', 'LE', 'GT', 'GE', 'EQ', 'NE', 'HREF', 'FINDEX', 'SUBSECTION', 'CHAPTER', 'SECTION','CAPTION','SINDEX','TRL','BEGIN{VERBATIM}','END{VERBATIM}','LSTINLINE','BEGIN{LSTLISTING}','END{LSTLISTING}','BEGIN{OUTPUTLISTING}','END{OUTPUTLISTING}','BEGIN{BASHLISTING}','END{BASHLISTING}','BEGIN{MAKELISING}','END{MAKELISTING}','BEGIN{TIKZPICTURE}','END{TIKZPICTURE}'
 
     # Assignment (=, *=, /=, %=, +=, -=, <<=, >>=, &=, ^=, |=)
     'EQUALS', 'TIMESEQUAL', 'DIVEQUAL', 'MODEQUAL', 'PLUSEQUAL', 'MINUSEQUAL',
@@ -70,10 +68,19 @@ t_FINDEX           = r'\\findex\{'
 t_SINDEX           = r'\\sindex\{'
 t_TRL              = r'\\trl\{'
 t_LSTINLINE        = r'\\lstinline\{'
+t_LSTINLINEMOD     = r'\\lstinline\|'
 t_BVERB            = r'\\begin\{verbatim\}'
 t_EVERB            = r'\\end\{verbatim\}'
 t_BLSTLISTING      = r'\\begin\{lstlisting\}'
 t_ELSTLISTING      = r'\\end\{lstlisting\}'
+t_BOUTPUTLISTING   = r'\\begin\{outputlisting\}'
+t_EOUTPUTLISTING   = r'\\end\{outputlisting\}'
+t_BBASHLISTING     = r'\\begin\{bashlisting\}'
+t_EBASHLISTING     = r'\\end\{bashlisting\}'
+t_BMAKELISTING     = r'\\begin\{makelisting\}'
+t_EMAKELISTING     = r'\\end\{makelisting\}'
+t_BTIKZPICTURE     = r'\\begin\{tikzpicture\}'
+t_ETIKZPICTURE     = r'\\end\{tikzpicture\}'
 t_PLUS             = r'\+'
 t_MINUS            = r'-'
 t_TIMES            = r'\*'
@@ -104,7 +111,6 @@ t_BACKQUOTE        = r'`'
 t_HAT              = r'\^'
 
 # Assignment operators
-
 t_EQUALS           = r'='
 t_TIMESEQUAL       = r'\*='
 t_DIVEQUAL         = r'/='
@@ -127,7 +133,7 @@ t_ARROW            = r'->'
 # ?
 t_CONDOP           = r'\?'
 
-# Delimeters
+# Delimiters
 t_LPAREN           = r'\('
 t_RPAREN           = r'\)'
 t_LBRACKET         = r'\['
@@ -144,7 +150,6 @@ t_SPACE            = r'\ +'
 t_NEWLINE          = r'\n'
 
 # Identifiers and reserved words
-
 def t_ID(t):
     r'[A-Za-z_][\w_]*'
     return t
@@ -160,7 +165,6 @@ t_SCONST = r'\"([^\\\n]|(\\.))*?\"'
 
 # Character constant 'c' or L'c'
 t_CCONST = r'(L)?\'([^\\\n]|(\\.))*?\''
-
 
 def t_error(t):
     print "Illegal character %s" % repr(t.value[0])
@@ -229,7 +233,6 @@ if __name__ == "__main__":
 	    mappedstring[tofind] = fl.group(2)
 	    mappedlink[tofind]   = fl.group(3)
 
-#
 #   Read in file that is to be mapped
     lines = sys.stdin.read()
     lex.input(lines)
@@ -238,7 +241,12 @@ if __name__ == "__main__":
     bracket  = 0
     vbracket = 0
     lstinline_bracket = 0
+    lstinlinemod_bracket = 0
     lstlisting_bracket = 0 
+    outputlisting_bracket = 0
+    bashlisting_bracket = 0
+    makelisting_bracket = 0
+    tikzpicture_bracket = 0;
     while 1:
         token = lex.token()       # Get a token
         if not token: break        # No more tokens
@@ -247,47 +255,71 @@ if __name__ == "__main__":
 	    text = ''
 	else:
 	    value = token.value
-            # verbatim environment disables bracket count
+            # various verbatim-style environments disable bracket count
+            # Note that a closing bracket inside a \trl{} will break things
+            #print value + " : " + str(bracket) + str(vbracket) + str(lstinline_bracket) + str(outputlisting_bracket) + str(bashlisting_bracket) + str(makelisting_bracket) + str(lstlisting_bracket) + str(tikzpicture_bracket)
 	    if value == '\\begin{verbatim}':
                 vbracket = vbracket + 1;
-            # lstlisting environment disables bracket count
+	    if value == '\\begin{bashlisting}':
+                bashlisting_bracket = bashlisting_bracket + 1;
+	    if value == '\\begin{makelisting}':
+                makelisting_bracket = makelisting_bracket + 1;
+	    if value == '\\begin{outputlisting}':
+                outputlisting_bracket = outputlisting_bracket + 1;
 	    if value == '\\begin{lstlisting}':
                 lstlisting_bracket = lstlisting_bracket + 1;
+	    if value == '\\begin{tikzpicture}':
+                tikzpicture_bracket = tikzpicture_bracket + 1;
             # \href cannot be used in many places in Latex
-            if value in ['\\href{','\\findex{','\\sindex{','\\subsection{','\\chapter{','\\section{','\\caption{','\\trl{'] and vbracket == 0 and lstlisting_bracket == 0:
+            if value in ['\\href{','\\findex{','\\sindex{','\\subsection{','\\chapter{','\\section{','\\caption{','\\trl{'] and vbracket == 0 and lstlisting_bracket == 0 and outputlisting_bracket==0 and bashlisting_bracket==0 and makelisting_bracket==0 and tikzpicture_bracket==0:
 		bracket = bracket + 1;
             #We keep track of whether we are inside an inline listing
-            elif value in ['\\lstinline{'] and vbracket == 0 and lstlisting_bracket == 0:
+            elif value in ['\\lstinline{'] and vbracket == 0 and lstlisting_bracket == 0 and outputlisting_bracket==0 and bashlisting_bracket==0 and makelisting_bracket==0 and tikzpicture_bracket==0:
                 lstinline_bracket = lstinline_bracket + 1
                 if lstinline_bracket > 1 :
                     raise Exception('Nested \\lstinline detected')
-            if bracket == 0 and vbracket == 0:
+            elif value in ['\\lstinline|'] and vbracket == 0 and lstlisting_bracket == 0 and outputlisting_bracket==0 and bashlisting_bracket==0 and makelisting_bracket==0 and tikzpicture_bracket==0:
+                lstinlinemod_bracket = lstinlinemod_bracket + 1
+                if lstinlinemod_bracket > 1 :
+                    raise Exception('Nested \\lstinline (mod) detected')
+            if bracket == 0 and vbracket == 0 and outputlisting_bracket == 0 and bashlisting_bracket == 0 and makelisting_bracket==0 and tikzpicture_bracket==0:
 		value = token.value
 		if mappedstring.has_key(value):
                     mvalue = mappedstring[value].replace('_','\\_')
                     if lstlisting_bracket > 0 :
-                        # The listings escape character is hard-coded here and must match the latex source
+                        # NOTE: The latex listings escapechar ($) is hard-coded here 
+                        # and must match the latex source 
+                        # (see src/docs/tex/manual/manualpreamble.tex)
                         value = '$\\href{'+'http://www.mcs.anl.gov/petsc/petsc-'+version+'/docs/'+mappedlink[value]+'}{'+mvalue+'}\\findex{'+value+'}$'
                     elif lstinline_bracket > 0 :
                         value = '}\\href{'+'http://www.mcs.anl.gov/petsc/petsc-'+version+'/docs/'+mappedlink[value]+'}{\\lstinline{'+mvalue+'}}\\findex{'+value+'}\\lstinline{' #end and start a new inside href
+                    elif lstinlinemod_bracket > 0 :
+                        value = '|\\href{'+'http://www.mcs.anl.gov/petsc/petsc-'+version+'/docs/'+mappedlink[value]+'}{\\lstinline|'+mvalue+'|}\\findex{'+value+'}\\lstinline|' #end and start a new inside href
                     else :
                         value = '\\href{'+'http://www.mcs.anl.gov/petsc/petsc-'+version+'/docs/'+mappedlink[value]+'}{'+mvalue+'}\\findex{'+value+'}'
             else:
 		value = token.value
             if token.value[0] == '}' and lstinline_bracket > 0 :
-                if bracket > 0 or vbracket > 0 or lstlisting_bracket > 0:
+                if bracket > 0 or vbracket > 0 or lstlisting_bracket > 0 or outputlisting_bracket > 0 or bashlisting_bracket > 0 or makelisting_bracket > 0 or tikzpicture_bracket > 0:
                     raise Exception("Unexpected to have anything nested inside of lstinline")
                 lstinline_bracket = lstinline_bracket-1
-	    elif token.value[0] == '}' and bracket and vbracket == 0 and lstlisting_bracket == 0:
+            elif token.value[0] == '|' and lstinlinemod_bracket > 0 :
+                if bracket > 0 or vbracket > 0 or lstlisting_bracket > 0 or outputlisting_bracket > 0 or bashlisting_bracket > 0 or makelisting_bracket >0 or tikzpicture_bracket > 0:
+                    raise Exception("Unexpected to have anything nested inside of lstinline (mod)")
+                lstinlinemod_bracket = lstinlinemod_bracket-1
+	    elif token.value[0] == '}' and bracket and vbracket == 0 and lstlisting_bracket == 0 and outputlisting_bracket==0 and bashlisting_bracket==0 and makelisting_bracket==0 and tikzpicture_bracket == 0:
 		bracket = bracket - 1;
             elif value == '\\end{verbatim}' and vbracket:
 	        vbracket = vbracket - 1;
+            elif value == '\\end{outputlisting}' and outputlisting_bracket:
+	        outputlisting_bracket = outputlisting_bracket - 1;
+            elif value == '\\end{bashlisting}' and bashlisting_bracket:
+	        bashlisting_bracket = bashlisting_bracket - 1;
+            elif value == '\\end{makelisting}' and makelisting_bracket:
+	        makelisting_bracket = makelisting_bracket - 1;
             elif value == '\\end{lstlisting}' and lstlisting_bracket:
 	        lstlisting_bracket = lstlisting_bracket - 1;
+            elif value == '\\end{tikzpicture}' and tikzpicture_bracket:
+	        tikzpicture_bracket = tikzpicture_bracket - 1;
 
 	    text = text+value
-
-
-
-
-

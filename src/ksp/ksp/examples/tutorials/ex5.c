@@ -54,7 +54,7 @@ int main(int argc,char **args)
 
   /*
      Register two stages for separate profiling of the two linear solves.
-     Use the runtime option -log_summary for a printout of performance
+     Use the runtime option -log_view for a printout of performance
      statistics at the program's conlusion.
   */
   ierr = PetscLogStageRegister("Original Solve",&stages[0]);CHKERRQ(ierr);

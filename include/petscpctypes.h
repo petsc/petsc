@@ -19,7 +19,7 @@ typedef struct _p_PC* PC;
 
    Level: beginner
 
-   Notes: Click on the links below to see details on a particular solver
+   Notes: Click on the links above to see details on a particular solver
 
           PCRegister() is used to register preconditioners that are then accessible via PCSetType()
 

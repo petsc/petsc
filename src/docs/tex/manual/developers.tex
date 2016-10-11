@@ -2,80 +2,15 @@
 % LATEX version of the PETSc developers manual.
 %
 
-\documentclass[twoside,11pt]{../sty/report_petsc}
+% A common preamble shared between the dev manual and the manual
+\input{manualpreamble.tex}
 
-\usepackage{makeidx,xspace}
-\usepackage[bookmarksopen,colorlinks]{hyperref}
-\usepackage[all]{hypcap}
-\usepackage{color}
-\input pdfcolor.tex
-
-\usepackage[pdftex]{graphicx}
-\usepackage{../sty/verbatim}
-\usepackage{../sty/tpage}
-\usepackage{../sty/here}
-\usepackage{../sty/anlhelper}
-
-% trl is used to refer to URLs, command line arguments, and other "mentions"
-\usepackage[obeyspaces]{../sty/trl}
-
-% Listings are used to refer to literal C code
-%   see \lstset below
-\usepackage{listings}
-\usepackage{xcolor}
-\definecolor{verylightgray}{gray}{0.95}
-\definecolor{somewhatdarkgray}{gray}{0.3}
-
-% Define a tighter itemize and enumerate
-\newenvironment{tightitemize}
-{ \begin{itemize}
-  \setlength{\itemsep}{1pt}
-  \setlength{\parskip}{1pt}
-  \setlength{\parsep}{1pt} }
-{ \end{itemize} } 
-\newenvironment{tightenumerate}
-{ \begin{enumerate}
-  \setlength{\itemsep}{1pt}
-  \setlength{\parskip}{1pt}
-  \setlength{\parsep}{1pt} }
-{ \end{enumerate} } 
-
-
-\setlength{\textwidth}{6.5in}
-\setlength{\oddsidemargin}{0.0in}
-\setlength{\evensidemargin}{0.0in}
-\setlength{\textheight}{9.2in}
-\setlength{\topmargin}{-.8in}
-
-\newcommand{\findex}[1]{\index{FUNCTION #1}}
-\newcommand{\sindex}[1]{\index{#1}}
-\newcommand{\F}{\mbox{\boldmath \(F\)}}
-\newcommand{\x}{\mbox{\boldmath \(x\)}}
-\newcommand{\rr}{\mbox{\boldmath \(r\)}}
-
-\usepackage{fancyhdr,lastpage}
 \pagestyle{fancy}
 \rhead{PETSc Developer's Manual \today}
 
 \makeindex
 
-
 \begin{document}
-
-\lstset{
-  language=C,
-  basicstyle=\ttfamily,
-  commentstyle=\color{somewhatdarkgray}\ttfamily,
-  showstringspaces=false,
-  escapechar=\$,        % Also hardcoded in /bin/main/mapnameslatex.py
-  basewidth=0.5em,      % For consistent spacing with inline listings
-  breaklines=true,
-  backgroundcolor=\color{verylightgray},
-  frame=single,
-  framexleftmargin= 3px,
-  framexrightmargin= 3px,
-  rulecolor=\color{lightgray}
-}
 
 \ANLTitle{PETSc Developers Manual}{\em The PETSc Team \\
 http://www.mcs.anl.gov/petsc
