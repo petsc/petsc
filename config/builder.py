@@ -309,7 +309,8 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                         'src/dm/impls/plex/examples/tests/ex19': [{'numProcs': 1, 'args': '-dim 2 -nbrVerEdge 5 -dm_plex_separate_marker 0 -met 2 -init_dm_view -adapt_dm_view', 'requires': ['pragmatic']},
                                                                   {'numProcs': 1, 'args': '-dim 2 -nbrVerEdge 5 -dm_plex_separate_marker 1 -bdLabel marker -met 2 -init_dm_view -adapt_dm_view', 'requires': ['pragmatic']},
                                                                   {'numProcs': 1, 'args': '-dim 3 -nbrVerEdge 5 -met 2 -init_dm_view -adapt_dm_view', 'requires': ['pragmatic']},
-                                                                  {'numProcs': 1, 'args': '-dim 3 -nbrVerEdge 5 -bdLabel marker -met 2 -init_dm_view -adapt_dm_view', 'requires': ['pragmatic']}
+                                                                  {'numProcs': 1, 'args': '-dim 3 -nbrVerEdge 5 -bdLabel marker -met 2 -init_dm_view -adapt_dm_view', 'requires': ['pragmatic']},
+                                                                  {'numProcs': 2, 'args': '-dim 2 -nbrVerEdge 5 -dm_plex_separate_marker 0 -met 2 -init_dm_view -adapt_dm_view', 'requires': ['pragmatic']}
                                                                   ],
                         'src/dm/impls/plex/examples/tests/ex1f90': [{'numProcs': 1, 'args': ''}],
                         'src/dm/impls/plex/examples/tests/ex2f90': [{'numProcs': 1, 'args': ''}],
