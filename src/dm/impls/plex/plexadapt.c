@@ -27,15 +27,15 @@ PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabel
   const char        *bdName = "_boundary_";
   DM                 udm, cdm;
   DMLabel            bdLabel = NULL, bdLabelFull;
-  IS                 bdIS;
+  IS                 bdIS, globalVertexNum;
   PetscSection       coordSection;
   Vec                coordinates;
   const PetscScalar *coords, *met;
-  const PetscInt    *bdFacesFull;
-  PetscInt          *bdFaces, *bdFaceIds;
+  const PetscInt    *bdFacesFull, *gV;
+  PetscInt          *bdFaces, *bdFaceIds, *l2gv;
   PetscReal         *x, *y, *z, *metric;
   PetscInt          *cells;
-  PetscInt           dim, cStart, cEnd, numCells, c, coff, vStart, vEnd, numVertices, v;
+  PetscInt           dim, cStart, cEnd, numCells, c, coff, vStart, vEnd, numVertices, numLocVertices, v;
   PetscInt           off, maxConeSize, numBdFaces, f, bdSize;
   PetscBool          flg;
 #ifdef PETSC_HAVE_PRAGMATIC
@@ -85,6 +85,14 @@ PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabel
     ierr = DMPlexGetCone(udm, c, &cone);CHKERRQ(ierr);
     for (cl = 0; cl < coneSize; ++cl) cells[coff++] = cone[cl] - vStart;
   }
+  ierr = PetscCalloc1(numVertices, &l2gv);CHKERRQ(ierr);
+  ierr = DMPlexGetVertexNumbering(udm, &globalVertexNum);CHKERRQ(ierr);
+  ierr = ISGetIndices(globalVertexNum, &gV);CHKERRQ(ierr);
+  for (v = 0, numLocVertices = 0; v < numVertices; ++v) {
+    if (gV[v] >= 0) ++numLocVertices;
+    l2gv[v] = gV[v] < 0 ? -(gV[v]+1) : gV[v];
+  }
+  ierr = ISRestoreIndices(globalVertexNum, &gV);CHKERRQ(ierr);
   ierr = DMDestroy(&udm);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(cdm, &coordSection);CHKERRQ(ierr);
@@ -136,14 +144,15 @@ PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabel
 #ifdef PETSC_HAVE_PRAGMATIC
   switch (dim) {
   case 2:
-    pragmatic_2d_init(&numVertices, &numCells, cells, x, y);break;
+    pragmatic_2d_mpi_init(&numVertices, &numCells, cells, x, y, l2g, numLocVertices, comm);break;
   case 3:
-    pragmatic_3d_init(&numVertices, &numCells, cells, x, y, z);break;
-  default: SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "No Pragmatic adaptation defined for dimension %d", dim);
+    pragmatic_3d_mpi_init(&numVertices, &numCells, cells, x, y, z, l2g, numLocVertices, comm);break;
+  default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No Pragmatic adaptation defined for dimension %d", dim);
   }
   pragmatic_set_boundary(&numBdFaces, bdFaces, bdFaceIds);
   pragmatic_set_metric(metric);
   pragmatic_adapt(remeshBd ? 1 : 0);
+  ierr = PetscFree(l2gv);CHKERRQ(ierr);
   /* Read out mesh */
   pragmatic_get_info(&numVerticesNew, &numCellsNew);
   ierr = PetscMalloc1(numVerticesNew*dim, &coordsNew);CHKERRQ(ierr);
