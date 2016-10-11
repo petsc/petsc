@@ -7197,11 +7197,15 @@ PetscErrorCode MatGetBlockSizes(Mat mat,PetscInt *rbs, PetscInt *cbs)
 @*/
 PetscErrorCode MatSetBlockSize(Mat mat,PetscInt bs)
 {
+  PetscBool      isbaij,issbaij;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidLogicalCollectiveInt(mat,bs,2);
+  ierr = PetscObjectTypeCompare((PetscObject)mat,MATBAIJ,&isbaij);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)mat,MATSBAIJ,&issbaij);CHKERRQ(ierr);
+  if ((isbaij || issbaij) && mat->rmap->bs != bs) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot change block size from %D to %D",mat->rmap->bs,bs);
   ierr = PetscLayoutSetBlockSize(mat->rmap,bs);CHKERRQ(ierr);
   ierr = PetscLayoutSetBlockSize(mat->cmap,bs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -7235,12 +7239,16 @@ PetscErrorCode MatSetBlockSize(Mat mat,PetscInt bs)
 @*/
 PetscErrorCode MatSetBlockSizes(Mat mat,PetscInt rbs,PetscInt cbs)
 {
+  PetscBool      isbaij,issbaij;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidLogicalCollectiveInt(mat,rbs,2);
   PetscValidLogicalCollectiveInt(mat,cbs,3);
+  ierr = PetscObjectTypeCompare((PetscObject)mat,MATBAIJ,&isbaij);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)mat,MATSBAIJ,&issbaij);CHKERRQ(ierr);
+  if ((isbaij || issbaij) && mat->rmap->bs != rbs) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot change row block size from %D to %D",mat->rmap->bs,rbs);
   ierr = PetscLayoutSetBlockSize(mat->rmap,rbs);CHKERRQ(ierr);
   ierr = PetscLayoutSetBlockSize(mat->cmap,cbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);

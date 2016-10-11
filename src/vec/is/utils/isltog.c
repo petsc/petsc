@@ -178,6 +178,56 @@ PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF sf,PetscInt start,ISLocalT
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "ISLocalToGlobalMappingSetBlockSize"
+/*@
+    ISLocalToGlobalMappingSetBlockSize - Sets the blocksize of the mapping
+
+    Not collective
+
+    Input Parameters:
+.   mapping - mapping data structure
+.   bs - the blocksize
+
+    Level: advanced
+
+    Concepts: mapping^local to global
+
+.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS()
+@*/
+PetscErrorCode  ISLocalToGlobalMappingSetBlockSize(ISLocalToGlobalMapping mapping,PetscInt bs)
+{
+  PetscInt       *nid,*oid;
+  PetscInt       i,on,obs,nn,cum;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,1);
+  if (bs < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid block size %D",bs);
+  if (bs == mapping->bs) PetscFunctionReturn(0);
+  on  = mapping->n;
+  obs = mapping->bs;
+  oid = mapping->indices;
+  nn  = (on*obs)/bs;
+  if ((on*obs)%bs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Block size %D is inconsistent with block size %D and number of block indices %D",bs,obs,on);
+  ierr = PetscMalloc1(nn,&nid);CHKERRQ(ierr);
+  for (i=0,cum=0;i<on;i++) {
+    if (!((oid[i]*obs)%bs)) {
+      if (cum==nn) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Block sizes %D and %D are incompatible with the block indices",bs,obs);
+      nid[cum++] = (oid[i]*obs)/bs;
+    }
+  }
+  if (cum != nn) {
+    ierr = PetscFree(nid);CHKERRQ(ierr);
+    SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Incompatible block sizes %D and %D (new block indices found %D != %D)",bs,obs,cum,nn);
+  }
+  mapping->n       = nn;
+  mapping->bs      = bs;
+  ierr             = PetscFree(mapping->indices);CHKERRQ(ierr);
+  mapping->indices = nid;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ISLocalToGlobalMappingGetBlockSize"
 /*@
     ISLocalToGlobalMappingGetBlockSize - Gets the blocksize of the mapping
