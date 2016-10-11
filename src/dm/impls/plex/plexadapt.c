@@ -23,6 +23,7 @@
 */
 PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabelName[], PetscBool remeshBd, DM *dmNew)
 {
+  MPI_Comm           comm;
   const char        *bdName = "_boundary_";
   DM                 udm, cdm;
   DMLabel            bdLabel = NULL, bdLabelFull;
@@ -46,6 +47,7 @@ PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabel
   PetscInt           d, numCellsNew, numVerticesNew;
   PetscInt           numCornersNew, fStart, fEnd;
 #endif
+  PetscMPIInt        numProcs;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -53,15 +55,17 @@ PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabel
   PetscValidHeaderSpecific(vertexMetric, VEC_CLASSID, 2);
   PetscValidCharPointer(bdLabelName, 3);
   PetscValidPointer(dmNew, 5);
+  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
   if (bdLabelName) {
     size_t len;
 
     ierr = PetscStrcmp(bdLabelName, bdName, &flg);CHKERRQ(ierr);
-    if (flg) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "\"%s\" cannot be used as label for boundary facets", bdLabelName);
+    if (flg) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "\"%s\" cannot be used as label for boundary facets", bdLabelName);
     ierr = PetscStrlen(bdLabelName, &len);CHKERRQ(ierr);
     if (len) {
       ierr = DMGetLabel(dm, bdLabelName, &bdLabel);CHKERRQ(ierr);
-      if (!bdLabel) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Label \"%s\" does not exist in DM", bdLabelName);
+      if (!bdLabel) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Label \"%s\" does not exist in DM", bdLabelName);
     }
   }
   /* Get mesh information */
@@ -155,12 +159,12 @@ PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabel
     pragmatic_get_coords_3d(xNew[0], xNew[1], xNew[2]);
     break;
   default:
-    SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "No Pragmatic adaptation defined for dimension %d", dim);
+    SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No Pragmatic adaptation defined for dimension %d", dim);
   }
   for (v = 0; v < numVerticesNew; ++v) {for (d = 0; d < dim; ++d) coordsNew[v*dim+d] = xNew[d][v];}
   ierr = PetscMalloc1(numCellsNew*(dim+1), &cellsNew);CHKERRQ(ierr);
   pragmatic_get_elements(cellsNew);
-  ierr = DMPlexCreateFromCellList(PetscObjectComm((PetscObject) dm), dim, numCellsNew, numVerticesNew, numCornersNew, PETSC_TRUE, cellsNew, dim, coordsNew, dmNew);CHKERRQ(ierr);
+  ierr = DMPlexCreateFromCellList(comm, dim, numCellsNew, numVerticesNew, numCornersNew, PETSC_TRUE, cellsNew, dim, coordsNew, dmNew);CHKERRQ(ierr);
   /* Read out boundary label */
   pragmatic_get_boundaryTags(&bdTags);
   ierr = DMCreateLabel(*dmNew, bdLabel ? bdLabelName : bdName);CHKERRQ(ierr);
@@ -197,7 +201,7 @@ PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabel
   ierr = PetscFree(coordsNew);CHKERRQ(ierr);
   pragmatic_finalize();
 #else
-  SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Remeshing needs external package support.\nPlease reconfigure with --download-pragmatic.");
+  SETERRQ(comm, PETSC_ERR_SUP, "Remeshing needs external package support.\nPlease reconfigure with --download-pragmatic.");
 #endif
   PetscFunctionReturn(0);
 }
