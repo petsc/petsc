@@ -537,7 +537,7 @@ PETSC_STATIC_INLINE PetscErrorCode PCBDDCGraphComputeCC_Private(PCBDDCGraph grap
   PetscInt       i,j,n;
   PetscInt       *xadj = graph->xadj,*adjncy = graph->adjncy;
   PetscBT        touched = graph->touched;
-  PetscBool      havecsr = (PetscBool)(xadj);
+  PetscBool      havecsr = (PetscBool)(!!xadj);
   PetscBool      havesubs = (PetscBool)(!!graph->n_local_subs);
   PetscErrorCode ierr;
 
