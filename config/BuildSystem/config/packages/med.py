@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download          = ['http://files.salome-platform.org/Salome/other/med-3.1.0.tar.gz']
+    self.download          = ['http://files.salome-platform.org/Salome/other/med-3.2.0.tar.gz']
     self.functions         = ['MEDfileOpen']
     self.includes          = ['med.h']
     self.liblist           = [['libmed.a']]
