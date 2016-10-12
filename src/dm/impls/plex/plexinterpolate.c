@@ -327,6 +327,7 @@ static PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF, PetscInt 
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(pointSF, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
   if (numProcs < 2 || numRoots < 0) PetscFunctionReturn(0);
+  ierr = PetscLogEventBegin(DMPLEX_InterpolateSF,dm,0,0,0);CHKERRQ(ierr);
   /* Build hashes of points in the SF for efficient lookup */
   PetscHashICreate(leafhash);
   PetscHashIJCreate(&roothash);
@@ -485,6 +486,7 @@ static PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF, PetscInt 
   ierr = PetscFree(candidates);CHKERRQ(ierr);
   ierr = PetscFree(candidatesRemote);CHKERRQ(ierr);
   ierr = PetscFree(claims);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(DMPLEX_InterpolateSF,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
