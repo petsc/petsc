@@ -218,7 +218,7 @@ never
 See item \ref{styleitem:bracenextline} for an exception.
  The closing brace should {\em always} be on its own line.
 \item \label{styleitem:bracenextline} In function declarations, the opening brace should be on the {\em next} line, not on the same line as the function name and arguments. 
-  This is an exception to item \ref{styleitem:bracesameline}.
+  This is an exception to item \ref{styleitem:bracesameline}. 
 \item Do not leave chunks of commented-out code in the source files.
 \item Do not use C++-style comments (\lstinline{// Comment}). Use only C-style comments (\lstinline{/* Comment */}).
 \item Do not include a space after a \lstinline{(} or before a \lstinline{)}. Do not write
@@ -229,8 +229,8 @@ but instead write
 \begin{lstlisting}
 ierr = PetscMalloc1(10,&a);CHKERRQ(ierr);
 \end{lstlisting}
-\item Do not use a space after the \lstinline{)} in a cast, or between the type and the \lstinline{*} in a caste.
-\item Do not include a  space before or after a comma in lists
+\item Do not use a space after the \lstinline{)} in a cast, or between the type and the \lstinline{*} in a cast.
+\item Do not include a  space before or after a comma in lists.
 That is, do not write
 \begin{lstlisting}
 int a,b,c;
@@ -247,7 +247,7 @@ ierr = func(a,22.0);CHKERRQ(ierr);
 \begin{enumerate}
 \item Array and pointer arguments where the array values are not changed should be labeled as \lstinline{const} arguments.
 \item Scalar values passed to functions should {\em never} be labeled as \lstinline{const}.
-\item Subroutines that would normally have a \lstinline{void**} argument to return a pointer to some data should actually be prototyped as \lstinline{void*}. This prevents the caller from having to put a \lstinline{(void**)} caste in each function call. See, for example, \lstinline{DMDAVecGetArray()}.
+\item Subroutines that would normally have a \lstinline{void**} argument to return a pointer to some data should actually be prototyped as \lstinline{void*}. This prevents the caller from having to put a \lstinline{(void**)} cast in each function call. See, for example, \lstinline{DMDAVecGetArray()}.
 \item Do not use the \lstinline{register} directive.
 \item Never use a local variable counter like \lstinline{PetscInt flops = 0;} to accumulate flops and then call \lstinline{PetscLogFlops();} {\em always} just
   call \lstinline{PetscLogFlops()} directly when needed.
