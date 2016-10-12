@@ -121,7 +121,6 @@ static PetscErrorCode KSPDestroy_CGLS(KSP ksp)
            KSPCGSetType(), KSPCGUseSingleReduction(), KSPPIPECG, KSPGROPPCG
 
 M*/
-
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_CGLS"
 PETSC_EXTERN PetscErrorCode KSPCreate_CGLS(KSP ksp)
