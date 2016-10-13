@@ -108,6 +108,9 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
     PetscReal     ratio1=0.,ratio2=0.;
     Vec           counter;
 
+    if (!pc->setupcalled) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Partial information available: preconditioner has not been setup yet\n");CHKERRQ(ierr);
+    }
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Use verbose output: %d\n",pcbddc->dbg_flag);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Use user-defined CSR: %d\n",!!pcbddc->mat_graph->nvtxs_csr);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Use local mat graph: %d\n",pcbddc->use_local_adj && !pcbddc->mat_graph->nvtxs_csr);CHKERRQ(ierr);
@@ -148,6 +151,7 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Benign subspace trick: %d (change explicit %d)\n",pcbddc->benign_saddle_point,pcbddc->benign_change_explicit);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Benign subspace trick is active: %d\n",pcbddc->benign_have_null);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Algebraic computation of no-net-flux %d\n",pcbddc->compute_nonetflux);CHKERRQ(ierr);
+    if (!pc->setupcalled) PetscFunctionReturn(0);
 
     /* compute interface size */
     ierr = VecSet(pcis->vec1_B,1.0);CHKERRQ(ierr);
