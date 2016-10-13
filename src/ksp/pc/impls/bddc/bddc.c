@@ -1817,7 +1817,7 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
     pcbddc->work_change = r;
     r = swap;
     /* save rhs so that we don't need to apply the change of basis for the exact dirichlet trick in PreSolve */
-    if (pcbddc->benign_apply_coarse_only && pcbddc->exact_dirichlet_trick_app && pcbddc->change_interior) {
+    if (pcbddc->benign_apply_coarse_only && pcbddc->use_exact_dirichlet_trick && pcbddc->change_interior) {
       ierr = VecCopy(r,pcis->vec1_global);CHKERRQ(ierr);
       ierr = VecLockPush(pcis->vec1_global);CHKERRQ(ierr);
     }
