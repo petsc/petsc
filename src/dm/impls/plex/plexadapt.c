@@ -144,9 +144,17 @@ PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabel
 #ifdef PETSC_HAVE_PRAGMATIC
   switch (dim) {
   case 2:
+#if 0
     pragmatic_2d_mpi_init(&numVertices, &numCells, cells, x, y, l2g, numLocVertices, comm);break;
+#else
+    pragmatic_2d_init(&numVertices, &numCells, cells, x, y);break;
+#endif
   case 3:
+#if 0
     pragmatic_3d_mpi_init(&numVertices, &numCells, cells, x, y, z, l2g, numLocVertices, comm);break;
+#else
+    pragmatic_3d_init(&numVertices, &numCells, cells, x, y, z);break;
+#endif
   default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No Pragmatic adaptation defined for dimension %d", dim);
   }
   pragmatic_set_boundary(&numBdFaces, bdFaces, bdFaceIds);
