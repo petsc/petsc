@@ -774,7 +774,7 @@ PetscErrorCode PetscPartitionerPartition_Shell(PetscPartitioner part, DM dm, Pet
     PetscInt   *sizes, *points, v;
 
     ierr = PetscRandomCreate(PETSC_COMM_SELF, &r);CHKERRQ(ierr);
-    ierr = PetscRandomSetInterval(r, 0.0, (PetscScalar) nparts+1);CHKERRQ(ierr);
+    ierr = PetscRandomSetInterval(r, 0.0, (PetscScalar) (nparts+1));CHKERRQ(ierr);
     ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
     ierr = PetscCalloc2(nparts, &sizes, numVertices, &points);CHKERRQ(ierr);
     for (v = 0; v < numVertices; ++v) {
