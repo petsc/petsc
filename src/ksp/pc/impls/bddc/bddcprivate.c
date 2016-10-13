@@ -2262,14 +2262,18 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
   }
   if (has_null_pressures) {
     IS             *subs;
-    PetscInt       nsubs,i,j,nl;
+    PetscInt       nsubs,i,j,nl,nneu;
     const PetscInt *idxs;
     PetscScalar    *array;
     Vec            *work;
     Mat_IS*        matis = (Mat_IS*)(pc->pmat->data);
 
-    subs = pcbddc->local_subs;
+    subs  = pcbddc->local_subs;
     nsubs = pcbddc->n_local_subs;
+    nneu  = 0;
+    if (pcbddc->NeumannBoundariesLocal) {
+      ierr = ISGetLocalSize(pcbddc->NeumannBoundariesLocal,&nneu);CHKERRQ(ierr);
+    }
     /* these vectors are needed to check if the constant on pressures is in the kernel of the local operator B (i.e. B(v_I,p0) should be zero) */
     if (pcbddc->current_level) {
       ierr = VecDuplicateVecs(matis->y,2,&work);CHKERRQ(ierr);
@@ -2320,13 +2324,13 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
             }
             ierr = VecRestoreArray(matis->y,&array);CHKERRQ(ierr);
           }
-          if (valid && pcbddc->NeumannBoundariesLocal) {
-            IS       t_bc;
-            PetscInt nzb;
+          if (valid && nneu) {
+            const PetscInt *idxs;
+            PetscInt       nzb;
 
-            ierr = ISGlobalToLocalMappingApplyIS(l2g,IS_GTOLM_DROP,pcbddc->NeumannBoundariesLocal,&t_bc);CHKERRQ(ierr);
-            ierr = ISGetLocalSize(t_bc,&nzb);CHKERRQ(ierr);
-            ierr = ISDestroy(&t_bc);CHKERRQ(ierr);
+            ierr = ISGetIndices(pcbddc->NeumannBoundariesLocal,&idxs);CHKERRQ(ierr);
+            ierr = ISGlobalToLocalMappingApply(l2g,IS_GTOLM_DROP,nneu,idxs,&nzb,NULL);CHKERRQ(ierr);
+            ierr = ISRestoreIndices(pcbddc->NeumannBoundariesLocal,&idxs);CHKERRQ(ierr);
             if (nzb) valid = PETSC_FALSE;
           }
           if (valid && pressures) {
@@ -2348,11 +2352,7 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
     } else { /* there's just one subdomain (or zero if they have not been detected */
       PetscBool valid = PETSC_TRUE;
 
-      if (pcbddc->NeumannBoundariesLocal) {
-        PetscInt nzb;
-        ierr = ISGetLocalSize(pcbddc->NeumannBoundariesLocal,&nzb);CHKERRQ(ierr);
-        if (nzb) valid = PETSC_FALSE;
-      }
+      if (nneu) valid = PETSC_FALSE;
       if (valid && pressures) {
         ierr = ISEqual(pressures,zerodiag,&valid);CHKERRQ(ierr);
       }
