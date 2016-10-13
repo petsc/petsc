@@ -5,7 +5,7 @@ class Configure(config.package.CMakePackage):
     import os
     config.package.CMakePackage.__init__(self, framework)
     self.download          = ['git://https://github.com/meshadaptation/pragmatic.git']
-    self.gitcommit         = '8347974a7339fe2ef4457fd622a32d21aef6dc2e'
+    self.gitcommit         = '2efa91b32a3b9954083ddf96f2ee81889906543c'
     self.functions         = ['pragmatic_2d_init']
     self.includes          = ['pragmatic.h']
     self.liblist           = [['libpragmatic.a']]
@@ -20,7 +20,8 @@ class Configure(config.package.CMakePackage):
     self.scalartypes     = framework.require('PETSc.options.scalarTypes',self)
     self.indexTypes      = framework.require('PETSc.options.indexTypes', self)
     self.metis           = framework.require('config.packages.metis', self)
-    self.deps            = [self.metis]
+    self.eigen           = framework.require('config.packages.eigen', self)
+    self.deps            = [self.metis, self.eigen]
     return
 
   def formCMakeConfigureArgs(self):
@@ -31,6 +32,7 @@ class Configure(config.package.CMakePackage):
     args.append('-DMETIS_DIR='+self.metis.getInstallDir())
     args.append('-DENABLE_VTK=OFF')
     args.append('-DENABLE_OPENMP=OFF')
+    args.append('-DEIGEN_INCLUDE_DIR='+self.eigen.include[0])
     if self.checkSharedLibrariesEnabled():
       args.append('-DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=ON')
     if self.indexTypes.integerSize == 64:
