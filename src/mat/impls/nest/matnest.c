@@ -4,6 +4,7 @@
 
 static PetscErrorCode MatSetUp_NestIS_Private(Mat,PetscInt,const IS[],PetscInt,const IS[]);
 static PetscErrorCode MatCreateVecs_Nest(Mat A,Vec *right,Vec *left);
+PETSC_INTERN PetscErrorCode MatConvert_Nest_IS(Mat,MatType,MatReuse,Mat*);
 
 /* private functions */
 #undef __FUNCT__
@@ -253,6 +254,8 @@ static PetscErrorCode MatDestroy_Nest(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestGetLocalISs_C",0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestSetVecType_C",0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestSetSubMats_C",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_nest_aij_C",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_nest_is_C",0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1700,6 +1703,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Nest(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestSetVecType_C",  MatNestSetVecType_Nest);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestSetSubMats_C",  MatNestSetSubMats_Nest);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_nest_aij_C",MatConvert_Nest_AIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_nest_is_C", MatConvert_Nest_IS);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATNEST);CHKERRQ(ierr);
   PetscFunctionReturn(0);
