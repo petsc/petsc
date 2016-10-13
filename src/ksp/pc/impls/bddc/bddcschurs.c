@@ -954,6 +954,8 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       ierr = MatDenseRestoreArray(benign_AIIm1_ones_mat,&AIIm1_data);CHKERRQ(ierr);
       ierr = VecDestroy(&v);CHKERRQ(ierr);
       ierr = MatSetOption(A,MAT_KEEP_NONZERO_PATTERN,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
       ierr = MatZeroRowsColumnsIS(A,is_p0_p,1.0,NULL,NULL);CHKERRQ(ierr);
       ierr = ISDestroy(&is_p0_p);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingDestroy(&N_to_reor);CHKERRQ(ierr);
@@ -1006,6 +1008,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 #endif
         ierr = MatLUFactorNumeric(F,A,NULL);CHKERRQ(ierr);
       }
+      ierr = MatViewFromOptions(F,(PetscObject)A,"-mat_factor_view");CHKERRQ(ierr);
 
       /* get explicit Schur Complement computed during numeric factorization */
       ierr = MatFactorGetSchurComplement(F,&S_all);CHKERRQ(ierr);
