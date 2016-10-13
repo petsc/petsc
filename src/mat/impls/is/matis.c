@@ -929,7 +929,8 @@ PETSC_EXTERN PetscErrorCode MatISSetMPIXAIJPreallocation_Private(Mat A, Mat B, P
     dnz[i] = PetscMin(dnz[i],lcols);
     onz[i] = PetscMin(onz[i],cols-lcols);
   }
-  /* set preallocation */
+
+  /* Set preallocation */
   ierr = MatMPIAIJSetPreallocation(B,0,dnz,0,onz);CHKERRQ(ierr);
   for (i=0;i<lrows/bs;i++) {
     dnz[i] = dnz[i*bs]/bs;
@@ -964,11 +965,21 @@ static PetscErrorCode MatISGetMPIXAIJ_IS(Mat mat, MatReuse reuse, Mat *M)
   /* get info from mat */
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&nsubdomains);CHKERRQ(ierr);
   if (nsubdomains == 1) {
-    if (reuse == MAT_INITIAL_MATRIX) {
-      ierr = MatDuplicate(matis->A,MAT_COPY_VALUES,&(*M));CHKERRQ(ierr);
-    } else {
-      ierr = MatCopy(matis->A,*M,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-    }
+    Mat            B;
+    IS             rows,cols;
+    const PetscInt *ridxs,*cidxs;
+
+    ierr = ISLocalToGlobalMappingGetIndices(mat->rmap->mapping,&ridxs);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetIndices(mat->cmap->mapping,&cidxs);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,mat->rmap->n,ridxs,PETSC_USE_POINTER,&rows);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,mat->cmap->n,cidxs,PETSC_USE_POINTER,&cols);CHKERRQ(ierr);
+    ierr = MatConvert(matis->A,MATAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+    ierr = MatGetSubMatrix(B,rows,cols,reuse,M);CHKERRQ(ierr);
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
+    ierr = ISDestroy(&cols);CHKERRQ(ierr);
+    ierr = ISDestroy(&rows);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingRestoreIndices(mat->rmap->mapping,&ridxs);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingRestoreIndices(mat->cmap->mapping,&cidxs);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   ierr = MatGetSize(mat,&rows,&cols);CHKERRQ(ierr);
