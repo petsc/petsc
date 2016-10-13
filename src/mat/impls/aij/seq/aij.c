@@ -76,7 +76,7 @@ PetscErrorCode MatFindZeroDiagonals_SeqAIJ_Private(Mat A,PetscInt *nrows,PetscIn
   Mat_SeqAIJ      *a  = (Mat_SeqAIJ*)A->data;
   const MatScalar *aa = a->a;
   PetscInt        i,m=A->rmap->n,cnt = 0;
-  const PetscInt  *jj = a->j,*diag;
+  const PetscInt  *ii = a->i,*jj = a->j,*diag;
   PetscInt        *rows;
   PetscErrorCode  ierr;
 
@@ -84,14 +84,14 @@ PetscErrorCode MatFindZeroDiagonals_SeqAIJ_Private(Mat A,PetscInt *nrows,PetscIn
   ierr = MatMarkDiagonal_SeqAIJ(A);CHKERRQ(ierr);
   diag = a->diag;
   for (i=0; i<m; i++) {
-    if ((jj[diag[i]] != i) || (aa[diag[i]] == 0.0)) {
+    if ((diag[i] >= ii[i+1]) || (jj[diag[i]] != i) || (aa[diag[i]] == 0.0)) {
       cnt++;
     }
   }
   ierr = PetscMalloc1(cnt,&rows);CHKERRQ(ierr);
   cnt  = 0;
   for (i=0; i<m; i++) {
-    if ((jj[diag[i]] != i) || (aa[diag[i]] == 0.0)) {
+    if ((diag[i] >= ii[i+1]) || (jj[diag[i]] != i) || (aa[diag[i]] == 0.0)) {
       rows[cnt++] = i;
     }
   }
