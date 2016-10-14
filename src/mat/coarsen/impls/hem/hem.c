@@ -74,6 +74,7 @@ PetscErrorCode PetscCDGetNewNode(PetscCoarsenData *ail, PetscCDIntNd **a_out, Pe
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  *a_out = NULL;                /* squelch -Wmaybe-uninitialized */
   if (ail->extra_nodes) {
     PetscCDIntNd *node = ail->extra_nodes;
     ail->extra_nodes = node->next;

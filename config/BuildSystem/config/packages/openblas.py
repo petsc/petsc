@@ -18,6 +18,7 @@ class Configure(config.package.Package):
     config.package.Package.setupHelp(self,help)
     import nargs
     help.addArgument('OpenBLAS', '-download-openblas-64-bit-blas-indices', nargs.ArgBool(None, 0, 'Use 64 bit integers for OpenBLAS'))
+    help.addArgument('OpenBLAS', '-download-openblas-make-options=<options>', nargs.Arg(None, None, 'additional options for sowing make'))
     return
 
   def Install(self):
@@ -30,6 +31,9 @@ class Configure(config.package.Package):
     if self.argDB['download-openblas-64-bit-blas-indices']:
       cmdline += " INTERFACE64=1 "
       self.argDB['known-64-bit-blas-indices'] = 1
+    if 'download-openblas-make-options' in self.argDB and self.argDB['download-openblas-make-options']:
+      cmdline+=" "+self.argDB['download-openblas-make-options']
+      print cmdline
 
     libdir = self.libDir
     blasDir = self.packageDir

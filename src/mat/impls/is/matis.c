@@ -145,6 +145,7 @@ static PetscErrorCode PetscLayoutMapLocal_Private(PetscLayout map,PetscInt N,con
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (on) *on = 0;              /* squelch -Wmaybe-uninitialized */
   /* Create SF where leaves are input idxs and roots are owned idxs (code adapted from MatZeroRowsMapLocal_Private) */
   ierr = MPI_Comm_rank(map->comm,&rank);CHKERRQ(ierr);
   ierr = PetscMalloc1(n,&lidxs);CHKERRQ(ierr);
