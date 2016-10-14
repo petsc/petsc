@@ -27,6 +27,7 @@ class Configure(config.package.Package):
     self.setCompilers  = framework.require('config.setCompilers', self)
     self.f2cblaslapack = framework.require('config.packages.f2cblaslapack', self)
     self.fblaslapack   = framework.require('config.packages.fblaslapack', self)
+    self.openblas      = framework.require('config.packages.openblas', self)
     return
 
 
@@ -165,6 +166,11 @@ class Configure(config.package.Package):
       self.f2c = 0
       libDir = self.fblaslapack.libDir
       yield ('fblaslapack', os.path.join(libDir,'libfblas.a'), os.path.join(libDir,'libflapack.a'), 1)
+      raise RuntimeError('--download-fblaslapack libraries cannot be used')
+    if self.openblas.found:
+      self.f2c = 0
+      libDir = self.openblas.libDir
+      yield ('openblas', None, os.path.join(libDir,'libopenblas.a'), 1)
       raise RuntimeError('--download-fblaslapack libraries cannot be used')
     if 'with-blas-lib' in self.argDB and not 'with-lapack-lib' in self.argDB:
       raise RuntimeError('If you use the --with-blas-lib=<lib> you must also use --with-lapack-lib=<lib> option')
