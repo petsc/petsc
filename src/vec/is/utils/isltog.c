@@ -197,7 +197,7 @@ PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF sf,PetscInt start,ISLocalT
 PetscErrorCode  ISLocalToGlobalMappingSetBlockSize(ISLocalToGlobalMapping mapping,PetscInt bs)
 {
   PetscInt       *nid,*oid;
-  PetscInt       i,on,obs,nn,cum;
+  PetscInt       i,cn,on,obs,nn,cum;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -210,20 +210,27 @@ PetscErrorCode  ISLocalToGlobalMappingSetBlockSize(ISLocalToGlobalMapping mappin
   nn  = (on*obs)/bs;
   if ((on*obs)%bs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Block size %D is inconsistent with block size %D and number of block indices %D",bs,obs,on);
   ierr = PetscMalloc1(nn,&nid);CHKERRQ(ierr);
-  for (i=0,cum=0;i<on;i++) {
-    if (!((oid[i]*obs)%bs)) {
-      if (cum==nn) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Block sizes %D and %D are incompatible with the block indices",bs,obs);
-      nid[cum++] = (oid[i]*obs)/bs;
+  for (i=0,cum=0,cn=0;i<on;i++) {
+    if (oid[i] < 0) cn++;
+    if (cn == bs || (oid[i] > -1 && !((oid[i]*obs)%bs))) {
+      if (cum == nn) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Block sizes %D and %D are incompatible with the block indices",bs,obs);
+      if (cn && cn != bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Block sizes %D and %D are incompatible with the block indices",bs,obs);
+      if (cn) nid[cum++] = -1;
+      else nid[cum++] = (oid[i]*obs)/bs;
+      cn = 0;
     }
   }
-  if (cum != nn) {
+  if (cum != nn || cn) {
     ierr = PetscFree(nid);CHKERRQ(ierr);
-    SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Incompatible block sizes %D and %D (new block indices found %D != %D)",bs,obs,cum,nn);
+    SETERRQ5(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Incompatible block sizes %D and %D (new block indices found %D != %D, neg %d)",bs,obs,cum,nn,cn);
   }
-  mapping->n       = nn;
-  mapping->bs      = bs;
-  ierr             = PetscFree(mapping->indices);CHKERRQ(ierr);
-  mapping->indices = nid;
+  mapping->n           = nn;
+  mapping->bs          = bs;
+  ierr                 = PetscFree(mapping->indices);CHKERRQ(ierr);
+  mapping->indices     = nid;
+  ierr                 = PetscFree(mapping->globals);CHKERRQ(ierr);
+  mapping->globalstart = 0;
+  mapping->globalend   = 0;
   PetscFunctionReturn(0);
 }
 
