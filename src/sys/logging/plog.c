@@ -192,11 +192,6 @@ PetscErrorCode  PetscLogSet(PetscErrorCode (*b)(PetscLogEvent, int, PetscObject,
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_PAPI)
-#include <papi.h>
-int PAPIEventSet = PAPI_NULL;
-#endif
-
 /*------------------------------------------- Initialization Functions ----------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "PetscLogInitialize"
@@ -229,14 +224,6 @@ PetscErrorCode  PetscLogInitialize(void)
   /* Setup default logging structures */
   ierr = PetscStageLogCreate(&petsc_stageLog);CHKERRQ(ierr);
   ierr = PetscStageLogRegister(petsc_stageLog, "Main Stage", &stage);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_PAPI)
-  ierr = PAPI_library_init(PAPI_VER_CURRENT);
-  if (ierr != PAPI_VER_CURRENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot initialize PAPI");
-  ierr = PAPI_query_event(PAPI_FP_INS);CHKERRQ(ierr);
-  ierr = PAPI_create_eventset(&PAPIEventSet);CHKERRQ(ierr);
-  ierr = PAPI_add_event(PAPIEventSet,PAPI_FP_INS);CHKERRQ(ierr);
-  ierr = PAPI_start(PAPIEventSet);CHKERRQ(ierr);
-#endif
 
   /* All processors sync here for more consistent logging */
   ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
