@@ -1504,7 +1504,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedAddSorted_fast(PetscInt nidx,
     /* entry is right after previous list */
     if (entry == lnk[prev]+lnk[prev+1]) {
       lnk[prev+1]++;
-      if (lnk[next] == entry+1) { /* combine two contiquous strings */
+      if (lnk[next] == entry+1) { /* combine two contiguous strings */
         lnk[prev+1] += lnk[next+1];
         lnk[prev+2]  = lnk[next+2];
         next         = lnk[next+2];
@@ -1524,7 +1524,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedAddSorted_fast(PetscInt nidx,
     lnk[prev+2]    = 3*((lnk[8]++)+3);      /* connect previous node to the new node */
     prev           = lnk[prev+2];
     lnk[prev]      = entry;        /* set value of the new node */
-    lnk[prev+1]    = 1;             /* number of values in contiquous string is one to start */
+    lnk[prev+1]    = 1;             /* number of values in contiguous string is one to start */
     lnk[prev+2]    = next;          /* connect new node to next node */
     lnk[0]++;
   }

@@ -1602,7 +1602,7 @@ PetscErrorCode VecRestoreLocalVector(Vec v,Vec w)
    processor's portion of the vector data. For the standard PETSc
    vectors, VecGetArray() returns a pointer to the local data array and
    does not use any copies. If the underlying vector data is not stored
-   in a contiquous array this routine will copy the data to a contiquous
+   in a contiguous array this routine will copy the data to a contiguous
    array and return a pointer to that. You MUST call VecRestoreArray()
    when you no longer need access to the array.
 
