@@ -24,13 +24,21 @@ static PetscErrorCode MatGetInfo_IS(Mat A,MatInfoType flag,MatInfo *ginfo)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr     = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
-  ierr     = MatGetInfo(matis->A,MAT_LOCAL,&info);CHKERRQ(ierr);
-  isend[0] = info.nz_used;
-  isend[1] = info.nz_allocated;
-  isend[2] = info.nz_unneeded;
-  isend[3] = info.memory;
-  isend[4] = info.mallocs;
+  ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
+  if (matis->A->ops->getinfo) {
+    ierr     = MatGetInfo(matis->A,MAT_LOCAL,&info);CHKERRQ(ierr);
+    isend[0] = info.nz_used;
+    isend[1] = info.nz_allocated;
+    isend[2] = info.nz_unneeded;
+    isend[3] = info.memory;
+    isend[4] = info.mallocs;
+  } else {
+    isend[0] = 0.;
+    isend[1] = 0.;
+    isend[2] = 0.;
+    isend[3] = 0.;
+    isend[4] = 0.;
+  }
   isend[5] = matis->A->num_ass;
   if (flag == MAT_LOCAL) {
     ginfo->nz_used      = isend[0];
