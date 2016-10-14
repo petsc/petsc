@@ -115,7 +115,7 @@ struct _MatOps {
   PetscErrorCode (*getrowmaxabs)(Mat,Vec,PetscInt[]);
   PetscErrorCode (*getrowminabs)(Mat,Vec,PetscInt[]);
   PetscErrorCode (*convert)(Mat, MatType,MatReuse,Mat*);
-  PetscErrorCode (*dummy72)(void);
+  PetscErrorCode (*latesetblocksizes)(Mat,PetscInt,PetscInt);
   PetscErrorCode (*placeholder_73)(Mat,void*);
   /*74*/
   PetscErrorCode (*setvaluesadifor)(Mat,PetscInt,void*);

@@ -43,6 +43,24 @@ M*/
 M*/
 
 #undef __FUNCT__
+#define __FUNCT__ "MatSetLateBlockSizes_MPIAIJ"
+PetscErrorCode MatSetLateBlockSizes_MPIAIJ(Mat M, PetscInt rbs, PetscInt cbs)
+{
+  PetscErrorCode ierr;
+  Mat_MPIAIJ     *mat = (Mat_MPIAIJ*)M->data;
+
+  PetscFunctionBegin;
+  if (rbs && !cbs) {
+    ierr = MatSetBlockSize(mat->A,rbs);CHKERRQ(ierr);
+    ierr = MatSetBlockSize(mat->B,rbs);CHKERRQ(ierr);
+  } else if (rbs && cbs) {
+    ierr = MatSetBlockSizes(mat->A,rbs,cbs);CHKERRQ(ierr);
+    ierr = MatSetBlockSize(mat->B,rbs);CHKERRQ(ierr);
+  } else SETERRQ2(PetscObjectComm((PetscObject)M),PETSC_ERR_ARG_WRONG,"Cannot set late block sizes %D %D",rbs,cbs);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatFindNonzeroRows_MPIAIJ"
 PetscErrorCode MatFindNonzeroRows_MPIAIJ(Mat M,IS *keptrows)
 {
@@ -2629,7 +2647,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                 /*69*/ MatGetRowMaxAbs_MPIAIJ,
                                        MatGetRowMinAbs_MPIAIJ,
                                        0,
-                                       0,
+                                       MatSetLateBlockSizes_MPIAIJ,
                                        0,
                                        0,
                                 /*75*/ MatFDColoringApply_AIJ,

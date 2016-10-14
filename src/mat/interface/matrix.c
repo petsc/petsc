@@ -7197,17 +7197,19 @@ PetscErrorCode MatGetBlockSizes(Mat mat,PetscInt *rbs, PetscInt *cbs)
 @*/
 PetscErrorCode MatSetBlockSize(Mat mat,PetscInt bs)
 {
-  PetscBool      isbaij,issbaij;
+  PetscBool      late;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidLogicalCollectiveInt(mat,bs,2);
-  ierr = PetscObjectTypeCompare((PetscObject)mat,MATBAIJ,&isbaij);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)mat,MATSBAIJ,&issbaij);CHKERRQ(ierr);
-  if ((isbaij || issbaij) && mat->rmap->bs != bs) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot change block size from %D to %D",mat->rmap->bs,bs);
+  late = (PetscBool)(mat->rmap->bs > 0 && mat->rmap->bs != bs);
+  if (late && !mat->ops->latesetblocksizes) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot change block size from %D to %D",mat->rmap->bs,bs);
   ierr = PetscLayoutSetBlockSize(mat->rmap,bs);CHKERRQ(ierr);
   ierr = PetscLayoutSetBlockSize(mat->cmap,bs);CHKERRQ(ierr);
+  if (late && mat->ops->latesetblocksizes) {
+    ierr = (*mat->ops->latesetblocksizes)(mat,bs,0);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -7239,18 +7241,22 @@ PetscErrorCode MatSetBlockSize(Mat mat,PetscInt bs)
 @*/
 PetscErrorCode MatSetBlockSizes(Mat mat,PetscInt rbs,PetscInt cbs)
 {
-  PetscBool      isbaij,issbaij;
+  PetscBool      later,latec;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidLogicalCollectiveInt(mat,rbs,2);
   PetscValidLogicalCollectiveInt(mat,cbs,3);
-  ierr = PetscObjectTypeCompare((PetscObject)mat,MATBAIJ,&isbaij);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)mat,MATSBAIJ,&issbaij);CHKERRQ(ierr);
-  if ((isbaij || issbaij) && mat->rmap->bs != rbs) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot change row block size from %D to %D",mat->rmap->bs,rbs);
+  later = (PetscBool)(mat->rmap->bs > 0 && mat->rmap->bs != rbs);
+  latec = (PetscBool)(mat->cmap->bs > 0 && mat->cmap->bs != cbs);
+  if (later && !mat->ops->latesetblocksizes) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot change row block size from %D to %D",mat->rmap->bs,rbs);
+  if (latec && !mat->ops->latesetblocksizes) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot change column block size from %D to %D",mat->cmap->bs,cbs);
   ierr = PetscLayoutSetBlockSize(mat->rmap,rbs);CHKERRQ(ierr);
   ierr = PetscLayoutSetBlockSize(mat->cmap,cbs);CHKERRQ(ierr);
+  if ((later || latec) && mat->ops->latesetblocksizes) {
+    ierr = (*mat->ops->latesetblocksizes)(mat,rbs,cbs);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
