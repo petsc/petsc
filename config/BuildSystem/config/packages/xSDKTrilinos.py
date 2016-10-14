@@ -14,6 +14,7 @@ class Configure(config.package.CMakePackage):
     self.downloadonWindows = 0
     self.hastests          = 1
     self.linkedbypetsc     = 0
+    self.useddirectly      = 0
     return
 
   def setupDependencies(self, framework):
