@@ -1961,7 +1961,9 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
   /* Generate a matrix with the correct non-zero pattern of type AIJ. This will work in parallel and serial */
   ierr = DMSetMatType(da_Stokes,MATAIJ);CHKERRQ(ierr);
   ierr = DMCreateMatrix(da_Stokes,&A);CHKERRQ(ierr);
+  ierr = MatSetBlockSize(A,dof);CHKERRQ(ierr);
   ierr = DMCreateMatrix(da_Stokes,&B);CHKERRQ(ierr);
+  ierr = MatSetBlockSize(B,dof);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da_Stokes,&X);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da_Stokes,&f);CHKERRQ(ierr);
 
@@ -1985,7 +1987,6 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
     PC             pc;
     const PetscInt ufields[] = {0,1,2},pfields[] = {3};
     ierr = KSPGetPC(ksp_S,&pc);CHKERRQ(ierr);
-    ierr = PCFieldSplitSetBlockSize(pc,4);CHKERRQ(ierr);
     ierr = PCFieldSplitSetFields(pc,"u",3,ufields,ufields);CHKERRQ(ierr);
     ierr = PCFieldSplitSetFields(pc,"p",1,pfields,pfields);CHKERRQ(ierr);
   }
