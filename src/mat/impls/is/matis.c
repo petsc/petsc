@@ -297,10 +297,8 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_IS(Mat A,MatType type,MatReuse reuse
       j = 0;
       usedmat = nest[i][j];
       while (!usedmat && j < nc) usedmat = nest[i][j++];
+      ierr  = MatISSetUpSF(usedmat);CHKERRQ(ierr);
       matis = (Mat_IS*)(usedmat->data);
-      if (!matis->sf) {
-        ierr = MatISComputeSF_Private(usedmat);CHKERRQ(ierr);
-      }
       ierr  = ISGetIndices(isrow[i],&idxs);CHKERRQ(ierr);
       ierr  = PetscSFBcastBegin(matis->sf,MPIU_INT,idxs,l2gidxs+stl);CHKERRQ(ierr);
       ierr  = PetscSFBcastEnd(matis->sf,MPIU_INT,idxs,l2gidxs+stl);CHKERRQ(ierr);
@@ -326,10 +324,8 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_IS(Mat A,MatType type,MatReuse reuse
       j = 0;
       usedmat = nest[j][i];
       while (!usedmat && j < nr) usedmat = nest[j++][i];
+      ierr  = MatISSetUpSF(usedmat);CHKERRQ(ierr);
       matis = (Mat_IS*)(usedmat->data);
-      if (!matis->sf) {
-        ierr = MatISComputeSF_Private(usedmat);CHKERRQ(ierr);
-      }
       ierr  = ISGetIndices(iscol[i],&idxs);CHKERRQ(ierr);
       ierr  = PetscSFBcastBegin(matis->csf,MPIU_INT,idxs,l2gidxs+stl);CHKERRQ(ierr);
       ierr  = PetscSFBcastEnd(matis->csf,MPIU_INT,idxs,l2gidxs+stl);CHKERRQ(ierr);
