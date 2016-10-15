@@ -115,7 +115,7 @@ struct _MatOps {
   PetscErrorCode (*getrowmaxabs)(Mat,Vec,PetscInt[]);
   PetscErrorCode (*getrowminabs)(Mat,Vec,PetscInt[]);
   PetscErrorCode (*convert)(Mat, MatType,MatReuse,Mat*);
-  PetscErrorCode (*latesetblocksizes)(Mat,PetscInt,PetscInt);
+  PetscErrorCode (*dummy72)(Mat,void*);
   PetscErrorCode (*placeholder_73)(Mat,void*);
   /*74*/
   PetscErrorCode (*setvaluesadifor)(Mat,PetscInt,void*);
@@ -599,6 +599,7 @@ typedef struct {
 
 PETSC_EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
 PETSC_INTERN PetscErrorCode MatShift_Basic(Mat,PetscScalar);
+PETSC_INTERN PetscErrorCode MatSetBlockSizes_Default(Mat,PetscInt,PetscInt);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPivotCheck_nz"

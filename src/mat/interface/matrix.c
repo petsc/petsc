@@ -7186,8 +7186,10 @@ PetscErrorCode MatGetBlockSizes(Mat mat,PetscInt *rbs, PetscInt *cbs)
 
    Notes:
     Block row formats are MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ. These formats ALWAYS have square block storage in the matrix.
+    This must be called before MatSetUp() or MatXXXSetPreallocation() (or will default to 1) and the block size cannot be changed later.
 
-     This must be called before MatSetUp() or MatXXXSetPreallocation() (or will default to 1) and the block size cannot be changed later
+    For MATMPIAIJ and MATSEQAIJ matrix formats, this function can be called at a later stage, provided that the specified block size
+    is compatible with the matrix local sizes.
 
    Level: intermediate
 
@@ -7197,19 +7199,16 @@ PetscErrorCode MatGetBlockSizes(Mat mat,PetscInt *rbs, PetscInt *cbs)
 @*/
 PetscErrorCode MatSetBlockSize(Mat mat,PetscInt bs)
 {
-  PetscBool      late;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidLogicalCollectiveInt(mat,bs,2);
-  late = (PetscBool)(mat->rmap->bs > 0 && mat->rmap->bs != bs);
-  if (late && !mat->ops->latesetblocksizes) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot change block size from %D to %D",mat->rmap->bs,bs);
+  if (mat->ops->setblocksizes) {
+    ierr = (*mat->ops->setblocksizes)(mat,bs,bs);CHKERRQ(ierr);
+  }
   ierr = PetscLayoutSetBlockSize(mat->rmap,bs);CHKERRQ(ierr);
   ierr = PetscLayoutSetBlockSize(mat->cmap,bs);CHKERRQ(ierr);
-  if (late && mat->ops->latesetblocksizes) {
-    ierr = (*mat->ops->latesetblocksizes)(mat,bs,0);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -7228,8 +7227,10 @@ PetscErrorCode MatSetBlockSize(Mat mat,PetscInt bs)
    Notes:
     Block row formats are MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ. These formats ALWAYS have square block storage in the matrix.
     If you pass a different block size for the columns than the rows, the row block size determines the square block storage.
-
     This must be called before MatSetUp() or MatXXXSetPreallocation() (or will default to 1) and the block size cannot be changed later
+
+    For MATMPIAIJ and MATSEQAIJ matrix formats, this function can be called at a later stage, provided that the specified block sizes
+    are compatible with the matrix local sizes.
 
     The row and column block size determine the blocksize of the "row" and "column" vectors returned by MatCreateVecs().
 
@@ -7241,22 +7242,17 @@ PetscErrorCode MatSetBlockSize(Mat mat,PetscInt bs)
 @*/
 PetscErrorCode MatSetBlockSizes(Mat mat,PetscInt rbs,PetscInt cbs)
 {
-  PetscBool      later,latec;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidLogicalCollectiveInt(mat,rbs,2);
   PetscValidLogicalCollectiveInt(mat,cbs,3);
-  later = (PetscBool)(mat->rmap->bs > 0 && mat->rmap->bs != rbs);
-  latec = (PetscBool)(mat->cmap->bs > 0 && mat->cmap->bs != cbs);
-  if (later && !mat->ops->latesetblocksizes) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot change row block size from %D to %D",mat->rmap->bs,rbs);
-  if (latec && !mat->ops->latesetblocksizes) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot change column block size from %D to %D",mat->cmap->bs,cbs);
+  if (mat->ops->setblocksizes) {
+    ierr = (*mat->ops->setblocksizes)(mat,rbs,cbs);CHKERRQ(ierr);
+  }
   ierr = PetscLayoutSetBlockSize(mat->rmap,rbs);CHKERRQ(ierr);
   ierr = PetscLayoutSetBlockSize(mat->cmap,cbs);CHKERRQ(ierr);
-  if ((later || latec) && mat->ops->latesetblocksizes) {
-    ierr = (*mat->ops->latesetblocksizes)(mat,rbs,cbs);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 

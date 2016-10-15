@@ -43,20 +43,17 @@ M*/
 M*/
 
 #undef __FUNCT__
-#define __FUNCT__ "MatSetLateBlockSizes_MPIAIJ"
-PetscErrorCode MatSetLateBlockSizes_MPIAIJ(Mat M, PetscInt rbs, PetscInt cbs)
+#define __FUNCT__ "MatSetBlockSizes_MPIAIJ"
+PetscErrorCode MatSetBlockSizes_MPIAIJ(Mat M, PetscInt rbs, PetscInt cbs)
 {
   PetscErrorCode ierr;
   Mat_MPIAIJ     *mat = (Mat_MPIAIJ*)M->data;
 
   PetscFunctionBegin;
-  if (rbs && !cbs) {
-    ierr = MatSetBlockSize(mat->A,rbs);CHKERRQ(ierr);
-    ierr = MatSetBlockSize(mat->B,rbs);CHKERRQ(ierr);
-  } else if (rbs && cbs) {
+  if (mat->A) {
     ierr = MatSetBlockSizes(mat->A,rbs,cbs);CHKERRQ(ierr);
-    ierr = MatSetBlockSize(mat->B,rbs);CHKERRQ(ierr);
-  } else SETERRQ2(PetscObjectComm((PetscObject)M),PETSC_ERR_ARG_WRONG,"Cannot set late block sizes %D %D",rbs,cbs);
+    ierr = MatSetBlockSizes(mat->B,rbs,1);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -2647,7 +2644,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                 /*69*/ MatGetRowMaxAbs_MPIAIJ,
                                        MatGetRowMinAbs_MPIAIJ,
                                        0,
-                                       MatSetLateBlockSizes_MPIAIJ,
+                                       0,
                                        0,
                                        0,
                                 /*75*/ MatFDColoringApply_AIJ,
@@ -2714,7 +2711,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        0,
                                        0,
                                        0,
-                                /*139*/0,
+                                /*139*/MatSetBlockSizes_MPIAIJ,
                                        0,
                                        0,
                                        MatFDColoringSetUp_MPIXAIJ,

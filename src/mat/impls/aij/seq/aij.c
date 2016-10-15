@@ -11,21 +11,6 @@
 #include <petsc/private/kernels/blocktranspose.h>
 
 #undef __FUNCT__
-#define __FUNCT__ "MatSetLateBlockSizes_SeqAIJ"
-PetscErrorCode MatSetLateBlockSizes_SeqAIJ(Mat M, PetscInt rbs, PetscInt cbs)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (rbs && !cbs) {
-    ierr = MatSetBlockSize(M,rbs);CHKERRQ(ierr);
-  } else if (rbs && cbs) {
-    ierr = MatSetBlockSizes(M,rbs,cbs);CHKERRQ(ierr);
-  } else SETERRQ2(PetscObjectComm((PetscObject)M),PETSC_ERR_ARG_WRONG,"Cannot set late block sizes %D %D",rbs,cbs);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "MatGetColumnNorms_SeqAIJ"
 PetscErrorCode MatGetColumnNorms_SeqAIJ(Mat A,NormType type,PetscReal *norms)
 {
@@ -3187,7 +3172,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqAIJ,
                                 /* 69*/ MatGetRowMaxAbs_SeqAIJ,
                                         MatGetRowMinAbs_SeqAIJ,
                                         0,
-                                        MatSetLateBlockSizes_SeqAIJ,
+                                        0,
                                         0,
                                 /* 74*/ 0,
                                         MatFDColoringApply_AIJ,

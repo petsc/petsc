@@ -261,7 +261,7 @@ int main(int argc,char **args)
   if (test_late_bs) {
     ierr = VecSetBlockSize(xx,3);CHKERRQ(ierr);
     ierr = VecSetBlockSize(bb,3);CHKERRQ(ierr);
-    ierr = MatSetBlockSize(Amat,3);CHKERRQ(ierr);
+    ierr = MatSetBlockSizes(Amat,3,3);CHKERRQ(ierr);
   }
 
   if (!PETSC_TRUE) {
