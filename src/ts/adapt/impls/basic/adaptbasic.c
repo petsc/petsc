@@ -10,11 +10,12 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "TSAdaptChoose_Basic"
-static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,PetscReal *next_h,PetscBool *accept,PetscReal *wlte)
+static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,PetscReal *next_h,PetscBool *accept,PetscReal *wlte,PetscReal *wltea,PetscReal *wlter)
 {
   TSAdapt_Basic  *basic = (TSAdapt_Basic*)adapt->data;
   PetscInt       order  = PETSC_DECIDE;
   PetscReal      enorm  = -1;
+  PetscReal      enorma,enormr;
   PetscReal      safety = basic->safety;
   PetscReal      hfac_lte,h_lte;
   PetscErrorCode ierr;
@@ -31,7 +32,7 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscI
     if (!basic->Y) {ierr = VecDuplicate(ts->vec_sol,&basic->Y);CHKERRQ(ierr);}
     order = adapt->candidates.order[0];
     ierr = TSEvaluateStep(ts,order-1,basic->Y,NULL);CHKERRQ(ierr);
-    ierr = TSErrorWeightedNorm(ts,ts->vec_sol,basic->Y,adapt->wnormtype,&enorm);CHKERRQ(ierr);
+    ierr = TSErrorWeightedNorm(ts,ts->vec_sol,basic->Y,adapt->wnormtype,&enorm,&enorma,&enormr);CHKERRQ(ierr);
   }
 
   if (enorm < 0) {
@@ -68,6 +69,9 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscI
 
   *next_h = PetscClipInterval(h_lte,adapt->dt_min,adapt->dt_max);
   *wlte   = enorm;
+  *wltea    = -1;  /* Weighted absolute local truncation error is not used */
+  *wlter    = -1;  /* Weighted relative local truncation error is not used */
+
   PetscFunctionReturn(0);
 }
 

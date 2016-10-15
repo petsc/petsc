@@ -1,9 +1,9 @@
 0 SNES Function norm 27.5941 
     0 KSP Residual norm 27.5941 
     1 KSP Residual norm 0.070164 
-    2 KSP Residual norm 6.088e-11 
+    2 KSP Residual norm 5.919e-11 
   Linear solve converged due to CONVERGED_RTOL iterations 2
-  1 SNES Function norm 6.088e-11 
+  1 SNES Function norm 5.919e-11 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
@@ -45,7 +45,7 @@ SNES Object: 1 MPI processes
           using PRECONDITIONED norm type for convergence test
         PC Object: (fieldsplit_velocity_) 1 MPI processes
           type: lu
-            LU: out-of-place factorization
+            out-of-place factorization
             tolerance for zero pivot 2.22045e-14
             matrix ordering: nd
             factor fill ratio given 5., needed 3.45047
@@ -107,7 +107,7 @@ SNES Object: 1 MPI processes
                   using PRECONDITIONED norm type for convergence test
                 PC Object: (fieldsplit_velocity_) 1 MPI processes
                   type: lu
-                    LU: out-of-place factorization
+                    out-of-place factorization
                     tolerance for zero pivot 2.22045e-14
                     matrix ordering: nd
                     factor fill ratio given 5., needed 3.45047
@@ -149,4 +149,4 @@ SNES Object: 1 MPI processes
         has attached null space
         using I-node routines: found 513 nodes, limit used is 5
 Number of SNES iterations = 1
-L_2 Error: 1.05e-12 [1.05e-12, 6.45e-14]
+L_2 Error: 1.07e-12 [1.07e-12, 2.95e-14]

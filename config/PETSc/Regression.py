@@ -30,6 +30,7 @@ class Configure(config.base.Configure):
     self.x              = framework.require('config.packages.X', self)
     self.fortrancpp     = framework.require('PETSc.options.fortranCPP', self)
     self.libraryOptions = framework.require('PETSc.options.libraryOptions', self)
+    self.veccuda        = framework.require('config.utilities.veccuda', self)
     return
 
   def configureRegression(self):
@@ -52,20 +53,23 @@ class Configure(config.base.Configure):
       if self.x.found:
         jobs.append('C_X')
       if hasattr(self.compilers, 'FC') and self.fortrancpp.fortranDatatypes:
-        jobs.append('F90_DataTypes')
+        if self.compilers.fortranIsF90FreeForm:
+          jobs.append('F90_DataTypes')
       elif hasattr(self.compilers, 'FC'):
         jobs.append('Fortran')
         if not self.scalartypes.precision == 'single':
           jobs.append('Fortran_NotSingle')
-        if self.compilers.fortranIsF90:
+        if self.compilers.fortranIsF90FreeForm and self.compilers.fortranIsF90:
           rjobs.append('F90')
+          if self.libraryOptions.useThreadSafety:
+            jobs.append('F90_Threadsafety')
           if not self.scalartypes.precision == 'single':
             jobs.append('F90_NotSingle')
           if self.scalartypes.scalartype.lower() == 'complex':
             rjobs.append('F90_Complex')
           else:
             rjobs.append('F90_NoComplex')
-        if self.compilers.fortranIsF2003:
+        if self.compilers.fortranIsF90FreeForm and self.compilers.fortranIsF2003:
           rjobs.append('F2003')
         if self.scalartypes.scalartype.lower() == 'complex':
           rjobs.append('Fortran_Complex')
@@ -113,6 +117,15 @@ class Configure(config.base.Configure):
             jobs.append(i.PACKAGE+ '_COMPLEX')
           elif i.PACKAGE in ['STRUMPACK']:
             jobs.append(i.PACKAGE)
+      if hasattr(self.compilers, 'CUDAC'):
+        if self.veccuda.defines.has_key('HAVE_VECCUDA'):
+          jobs.append('VECCUDA')
+          if self.scalartypes.scalartype.lower() == 'complex':
+            rjobs.append('VECCUDA_Complex')
+          else:
+            rjobs.append('VECCUDA_NoComplex')
+            if self.datafilespath.datafilespath and self.scalartypes.precision == 'double' and self.indextypes.integerSize == 32:
+              rjobs.append('VECCUDA_DATAFILESPATH')
 
     self.addMakeMacro('TEST_RUNS',' '.join(jobs)+' '+' '.join(ejobs)+' '+' '.join(rjobs))
     return

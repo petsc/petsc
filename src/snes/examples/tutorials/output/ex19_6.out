@@ -60,7 +60,7 @@ SNES Object: 1 MPI processes
         using NONE norm type for convergence test
       PC Object: (fieldsplit_x_velocity_) 1 MPI processes
         type: ilu
-          ILU: out-of-place factorization
+          out-of-place factorization
           0 levels of fill
           tolerance for zero pivot 2.22045e-14
           matrix ordering: natural
@@ -89,7 +89,7 @@ SNES Object: 1 MPI processes
         using NONE norm type for convergence test
       PC Object: (fieldsplit_y_velocity_) 1 MPI processes
         type: ilu
-          ILU: out-of-place factorization
+          out-of-place factorization
           0 levels of fill
           tolerance for zero pivot 2.22045e-14
           matrix ordering: natural
@@ -118,7 +118,7 @@ SNES Object: 1 MPI processes
         using NONE norm type for convergence test
       PC Object: (fieldsplit_Omega_) 1 MPI processes
         type: ilu
-          ILU: out-of-place factorization
+          out-of-place factorization
           0 levels of fill
           tolerance for zero pivot 2.22045e-14
           matrix ordering: natural
@@ -147,7 +147,7 @@ SNES Object: 1 MPI processes
         using NONE norm type for convergence test
       PC Object: (fieldsplit_temperature_) 1 MPI processes
         type: ilu
-          ILU: out-of-place factorization
+          out-of-place factorization
           0 levels of fill
           tolerance for zero pivot 2.22045e-14
           matrix ordering: natural

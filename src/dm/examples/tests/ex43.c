@@ -65,7 +65,7 @@ PetscErrorCode VecSetOwned(DM da, Vec v, PetscScalar value)
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
-  PetscInt         M = -4, N = -3;
+  PetscInt         M = 4, N = 3;
   PetscErrorCode   ierr;
   DM               da;
   Vec              local;
@@ -75,6 +75,8 @@ int main(int argc, char **argv)
 
   ierr = PetscInitialize(&argc, &argv, (char*)0, help);if (ierr) return ierr;
   ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,stype,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da, &local);CHKERRQ(ierr);
 
   ierr  = VecSet(local, value);CHKERRQ(ierr);

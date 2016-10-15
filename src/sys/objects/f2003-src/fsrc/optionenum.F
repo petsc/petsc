@@ -1,15 +1,17 @@
 
 #include "petsc/finclude/petscsysdef.h"
+#include "petsc/finclude/ftn-custom/petscsyshide.h90"
 
       Subroutine PetscOptionsGetEnum(po,pre,name,FArray,opt,set,ierr)
       use,intrinsic :: iso_c_binding
+      USE_PETSCSYS_HIDE
       implicit none
 
       character(*)                pre,name
       character(*)                FArray(*)
       PetscEnum                   :: opt
       PetscBool                   :: set
-      PetscOptions                :: po
+      PETSCOPTIONS_HIDE           :: po
       PetscErrorCode,intent(out)  :: ierr
 
       Type(C_Ptr),Dimension(:),Pointer :: CArray

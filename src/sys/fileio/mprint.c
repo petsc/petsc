@@ -330,7 +330,7 @@ int         petsc_printfqueuelength = 0;
    Level: intermediate
 
     Notes:
-    REQUIRES a intervening call to PetscSynchronizedFlush() for the information
+    REQUIRES a call to PetscSynchronizedFlush() by all the processes after the completion of the calls to PetscSynchronizedPrintf() for the information
     from all the processors to be printed.
 
     Fortran Note:
@@ -456,7 +456,7 @@ PetscErrorCode  PetscSynchronizedFPrintf(MPI_Comm comm,FILE *fp,const char forma
 #define __FUNCT__ "PetscSynchronizedFlush"
 /*@C
     PetscSynchronizedFlush - Flushes to the screen output from all processors
-    involved in previous PetscSynchronizedPrintf() calls.
+    involved in previous PetscSynchronizedPrintf()/PetscSynchronizedFPrintf() calls.
 
     Collective on MPI_Comm
 
@@ -467,8 +467,10 @@ PetscErrorCode  PetscSynchronizedFPrintf(MPI_Comm comm,FILE *fp,const char forma
     Level: intermediate
 
     Notes:
-    Usage of PetscSynchronizedPrintf() and PetscSynchronizedFPrintf() with
-    different MPI communicators REQUIRES an intervening call to PetscSynchronizedFlush().
+    If PetscSynchronizedPrintf() and/or PetscSynchronizedFPrintf() are called with
+    different MPI communicators there must be an intervening call to PetscSynchronizedFlush() between the calls with different MPI communicators.
+
+    From Fortran pass PETSC_STDOUT if the flush is for standard out; otherwise pass a value obtained from PetscFOpen()
 
 .seealso: PetscSynchronizedPrintf(), PetscFPrintf(), PetscPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIISynchronizedPrintf()

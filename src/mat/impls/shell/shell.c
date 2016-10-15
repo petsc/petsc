@@ -7,11 +7,47 @@
 
 #include <petsc/private/matimpl.h>        /*I "petscmat.h" I*/
 
-typedef struct {
-  PetscErrorCode (*destroy)(Mat);
+struct _MatShellOps {
+  /*   0 */
   PetscErrorCode (*mult)(Mat,Vec,Vec);
+  /*   5 */
   PetscErrorCode (*multtranspose)(Mat,Vec,Vec);
+  /*  10 */
+  /*  15 */
   PetscErrorCode (*getdiagonal)(Mat,Vec);
+  /*  20 */
+  /*  24 */
+  /*  29 */
+  /*  34 */
+  /*  39 */
+  PetscErrorCode (*copy)(Mat,Mat,MatStructure);
+  /*  44 */
+  PetscErrorCode (*diagonalset)(Mat,Vec,InsertMode);
+  /*  49 */
+  /*  54 */
+  /*  59 */
+  PetscErrorCode (*destroy)(Mat);
+  /*  64 */
+  /*  69 */
+  /*  74 */
+  /*  79 */
+  /*  84 */
+  /*  89 */
+  /*  94 */
+  /*  99 */
+  /* 104 */
+  /* 109 */
+  /* 114 */
+  /* 119 */
+  /* 124 */
+  /* 129 */
+  /* 134 */
+  /* 139 */
+  /* 144 */
+};
+
+typedef struct {
+  struct _MatShellOps ops[1];
 
   PetscScalar vscale,vshift;
   Vec         dshift;
@@ -56,6 +92,7 @@ typedef struct {
 static PetscErrorCode MatMult_Shell(Mat,Vec,Vec);
 static PetscErrorCode MatMultTranspose_Shell(Mat,Vec,Vec);
 static PetscErrorCode MatGetDiagonal_Shell(Mat,Vec);
+static PetscErrorCode MatCopy_Shell(Mat,Mat,MatStructure);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatShellUseScaledMethods"
@@ -65,15 +102,19 @@ static PetscErrorCode MatShellUseScaledMethods(Mat Y)
 
   PetscFunctionBegin;
   if (shell->usingscaled) PetscFunctionReturn(0);
-  shell->mult  = Y->ops->mult;
+  shell->ops->mult  = Y->ops->mult;
   Y->ops->mult = MatMult_Shell;
   if (Y->ops->multtranspose) {
-    shell->multtranspose  = Y->ops->multtranspose;
+    shell->ops->multtranspose  = Y->ops->multtranspose;
     Y->ops->multtranspose = MatMultTranspose_Shell;
   }
   if (Y->ops->getdiagonal) {
-    shell->getdiagonal  = Y->ops->getdiagonal;
+    shell->ops->getdiagonal  = Y->ops->getdiagonal;
     Y->ops->getdiagonal = MatGetDiagonal_Shell;
+  }
+  if (Y->ops->copy) {
+    shell->ops->copy  = Y->ops->copy;
+    Y->ops->copy = MatCopy_Shell;
   }
   shell->usingscaled = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -213,8 +254,8 @@ PetscErrorCode MatDestroy_Shell(Mat mat)
   Mat_Shell      *shell = (Mat_Shell*)mat->data;
 
   PetscFunctionBegin;
-  if (shell->destroy) {
-    ierr = (*shell->destroy)(mat);CHKERRQ(ierr);
+  if (shell->ops->destroy) {
+    ierr = (*shell->ops->destroy)(mat);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&shell->left_owned);CHKERRQ(ierr);
   ierr = VecDestroy(&shell->right_owned);CHKERRQ(ierr);
@@ -224,6 +265,56 @@ PetscErrorCode MatDestroy_Shell(Mat mat)
   ierr = VecDestroy(&shell->left_add_work);CHKERRQ(ierr);
   ierr = VecDestroy(&shell->right_add_work);CHKERRQ(ierr);
   ierr = PetscFree(mat->data);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatCopy_Shell"
+PetscErrorCode MatCopy_Shell(Mat A,Mat B,MatStructure str)
+{
+  Mat_Shell       *shellA = (Mat_Shell*)A->data,*shellB = (Mat_Shell*)B->data;
+  PetscBool       matflg,shellflg;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)B,MATSHELL,&matflg);CHKERRQ(ierr);
+  if(!matflg) { SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_NOTSAMETYPE,"Output matrix must be a MATSHELL"); }
+
+  ierr = MatShellUseScaledMethods(B);CHKERRQ(ierr);
+  ierr = PetscMemcmp(A->ops,B->ops,sizeof(struct _MatOps),&matflg);CHKERRQ(ierr);
+  ierr = PetscMemcmp(shellA->ops,shellB->ops,sizeof(struct _MatShellOps),&shellflg);CHKERRQ(ierr);
+  if (!matflg || !shellflg) { SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"Matrices cannot be copied because they have different operations"); }
+
+  ierr = (*shellA->ops->copy)(A,B,str);CHKERRQ(ierr);
+  shellB->vscale = shellA->vscale;
+  shellB->vshift = shellA->vshift;
+  if (shellA->dshift_owned) {
+    if (!shellB->dshift_owned) {
+      ierr = VecDuplicate(shellA->dshift_owned,&shellB->dshift_owned);CHKERRQ(ierr);
+    }
+    ierr = VecCopy(shellA->dshift_owned,shellB->dshift_owned);CHKERRQ(ierr);
+    shellB->dshift = shellB->dshift_owned;
+  } else {
+    shellB->dshift = NULL;
+  }
+  if (shellA->left_owned) {
+    if (!shellB->left_owned) {
+      ierr = VecDuplicate(shellA->left_owned,&shellB->left_owned);CHKERRQ(ierr);
+    }
+    ierr = VecCopy(shellA->left_owned,shellB->left_owned);CHKERRQ(ierr);
+    shellB->left = shellB->left_owned;
+  } else {
+    shellB->left = NULL;
+  }
+  if (shellA->right_owned) {
+    if (!shellB->right_owned) {
+      ierr = VecDuplicate(shellA->right_owned,&shellB->right_owned);CHKERRQ(ierr);
+    }
+    ierr = VecCopy(shellA->right_owned,shellB->right_owned);CHKERRQ(ierr);
+    shellB->right = shellB->right_owned;
+  } else {
+    shellB->right = NULL;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -239,7 +330,7 @@ PetscErrorCode MatMult_Shell(Mat A,Vec x,Vec y)
   PetscFunctionBegin;
   ierr = MatShellPreScaleRight(A,x,&xx);CHKERRQ(ierr);
   ierr = PetscObjectStateGet((PetscObject)y, &instate);CHKERRQ(ierr);
-  ierr = (*shell->mult)(A,xx,y);CHKERRQ(ierr);
+  ierr = (*shell->ops->mult)(A,xx,y);CHKERRQ(ierr);
   ierr = PetscObjectStateGet((PetscObject)y, &outstate);CHKERRQ(ierr);
   if (instate == outstate) {
     /* increase the state of the output vector since the user did not update its state themself as should have been done */
@@ -281,7 +372,7 @@ PetscErrorCode MatMultTranspose_Shell(Mat A,Vec x,Vec y)
   PetscFunctionBegin;
   ierr = MatShellPreScaleLeft(A,x,&xx);CHKERRQ(ierr);
   ierr = PetscObjectStateGet((PetscObject)y, &instate);CHKERRQ(ierr);
-  ierr = (*shell->multtranspose)(A,xx,y);CHKERRQ(ierr);
+  ierr = (*shell->ops->multtranspose)(A,xx,y);CHKERRQ(ierr);
   ierr = PetscObjectStateGet((PetscObject)y, &outstate);CHKERRQ(ierr);
   if (instate == outstate) {
     /* increase the state of the output vector since the user did not update its state themself as should have been done */
@@ -319,7 +410,7 @@ PetscErrorCode MatGetDiagonal_Shell(Mat A,Vec v)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = (*shell->getdiagonal)(A,v);CHKERRQ(ierr);
+  ierr = (*shell->ops->getdiagonal)(A,v);CHKERRQ(ierr);
   ierr = VecScale(v,shell->vscale);CHKERRQ(ierr);
   if (shell->dshift) {
     ierr = VecPointwiseMult(v,v,shell->dshift);CHKERRQ(ierr);
@@ -349,6 +440,26 @@ PetscErrorCode MatShift_Shell(Mat Y,PetscScalar a)
     if (shell->right) {ierr = VecPointwiseDivide(shell->dshift,shell->dshift,shell->right);CHKERRQ(ierr);}
   } else shell->vshift += a;
   ierr = MatShellUseScaledMethods(Y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatDiagonalSet_Shell"
+PetscErrorCode MatDiagonalSet_Shell(Mat A,Vec D,InsertMode ins)
+{
+  Mat_Shell      *shell = (Mat_Shell*)A->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (shell->vscale != 1.0 || shell->left || shell->right) {
+    SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE, "Operation not supported on scaled matrix");
+  }
+
+  if (shell->ops->diagonalset) {
+    ierr = (*shell->ops->diagonalset)(A,D,ins);CHKERRQ(ierr);
+  }
+  shell->vshift = 0.0;
+  if (shell->dshift) { ierr = VecZeroEntries(shell->dshift);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 
@@ -411,17 +522,21 @@ PetscErrorCode MatAssemblyEnd_Shell(Mat Y,MatAssemblyType t)
     shell->dshift = NULL;
     shell->left   = NULL;
     shell->right  = NULL;
-    if (shell->mult) {
-      Y->ops->mult = shell->mult;
-      shell->mult  = NULL;
+    if (shell->ops->mult) {
+      Y->ops->mult = shell->ops->mult;
+      shell->ops->mult  = NULL;
     }
-    if (shell->multtranspose) {
-      Y->ops->multtranspose = shell->multtranspose;
-      shell->multtranspose  = NULL;
+    if (shell->ops->multtranspose) {
+      Y->ops->multtranspose = shell->ops->multtranspose;
+      shell->ops->multtranspose = NULL;
     }
-    if (shell->getdiagonal) {
-      Y->ops->getdiagonal = shell->getdiagonal;
-      shell->getdiagonal  = NULL;
+    if (shell->ops->getdiagonal) {
+      Y->ops->getdiagonal = shell->ops->getdiagonal;
+      shell->ops->getdiagonal = NULL;
+    }
+    if (shell->ops->copy) {
+      Y->ops->copy = shell->ops->copy;
+      shell->ops->copy = NULL;
     }
     shell->usingscaled = PETSC_FALSE;
   }
@@ -486,7 +601,7 @@ static struct _MatOps MatOps_Values = {0,
                                 /*44*/ 0,
                                        MatScale_Shell,
                                        MatShift_Shell,
-                                       0,
+                                       MatDiagonalSet_Shell,
                                        0,
                                 /*49*/ 0,
                                        0,
@@ -610,9 +725,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_Shell(Mat A)
   b->ctx           = 0;
   b->vshift        = 0.0;
   b->vscale        = 1.0;
-  b->mult          = 0;
-  b->multtranspose = 0;
-  b->getdiagonal   = 0;
   A->assembled     = PETSC_TRUE;
   A->preallocated  = PETSC_FALSE;
 
@@ -791,8 +903,17 @@ PetscErrorCode  MatShellSetOperation(Mat mat,MatOperation op,void (*f)(void))
     ierr = PetscObjectTypeCompare((PetscObject)mat,MATSHELL,&flg);CHKERRQ(ierr);
     if (flg) {
       Mat_Shell *shell = (Mat_Shell*)mat->data;
-      shell->destroy = (PetscErrorCode (*)(Mat))f;
+      shell->ops->destroy = (PetscErrorCode (*)(Mat))f;
     } else mat->ops->destroy = (PetscErrorCode (*)(Mat))f;
+    break;
+  case MATOP_DIAGONAL_SET:
+    ierr = PetscObjectTypeCompare((PetscObject)mat,MATSHELL,&flg);CHKERRQ(ierr);
+    if (flg) {
+      Mat_Shell *shell = (Mat_Shell*)mat->data;
+      shell->ops->diagonalset = (PetscErrorCode (*)(Mat,Vec,InsertMode))f;
+    } else {
+      mat->ops->diagonalset = (PetscErrorCode (*)(Mat,Vec,InsertMode))f;
+    }
     break;
   case MATOP_VIEW:
     mat->ops->view = (PetscErrorCode (*)(Mat,PetscViewer))f;
@@ -854,17 +975,29 @@ PetscErrorCode  MatShellGetOperation(Mat mat,MatOperation op,void(**f)(void))
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  if (op == MATOP_DESTROY) {
+  switch (op) {
+  case MATOP_DESTROY:
     ierr = PetscObjectTypeCompare((PetscObject)mat,MATSHELL,&flg);CHKERRQ(ierr);
     if (flg) {
       Mat_Shell *shell = (Mat_Shell*)mat->data;
-      *f = (void (*)(void))shell->destroy;
+      *f = (void (*)(void))shell->ops->destroy;
     } else {
       *f = (void (*)(void))mat->ops->destroy;
     }
-  } else if (op == MATOP_VIEW) {
+    break;
+  case MATOP_DIAGONAL_SET:
+    ierr = PetscObjectTypeCompare((PetscObject)mat,MATSHELL,&flg);CHKERRQ(ierr);
+    if (flg) {
+      Mat_Shell *shell = (Mat_Shell*)mat->data;
+      *f = (void (*)(void))shell->ops->diagonalset;
+    } else {
+      *f = (void (*)(void))mat->ops->diagonalset;
+    }
+    break;
+  case MATOP_VIEW:
     *f = (void (*)(void))mat->ops->view;
-  } else {
+    break;
+  default:
     *f = (((void (**)(void))mat->ops)[op]);
   }
   PetscFunctionReturn(0);

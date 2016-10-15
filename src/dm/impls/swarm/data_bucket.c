@@ -401,6 +401,7 @@ PetscErrorCode DataFieldGetAccess(const DataField gfield)
 PetscErrorCode DataFieldAccessPoint(const DataField gfield,const PetscInt pid,void **ctx_p)
 {
   PetscFunctionBegin;
+  *ctx_p = NULL;
 #ifdef DATAFIELD_POINT_ACCESS_GUARD
   /* debug mode */
   /* check point is valid */
@@ -706,15 +707,15 @@ PetscErrorCode _DataBucketRegisterFieldFromFile(FILE *fp,DataBucket db)
    }
    */
   /* read file contents */
-  fgets(dummy,99,fp);
-  fscanf(fp, "%" PetscInt_FMT "\n",&L);
-  fscanf(fp, "%zu\n",&atomic_size);
-  fgets(registeration_function,4999,fp);
+  if (!fgets(dummy,99,fp))  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Incorrect file format");
+  if (fscanf(fp, "%" PetscInt_FMT "\n",&L) != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Incorrect file format");
+  if (fscanf(fp, "%zu\n",&atomic_size) != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Incorrect file format");
+  if (!fgets(registeration_function,4999,fp))  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Incorrect file format");
   strL = strlen(registeration_function);
   if (strL > 1) {
     registeration_function[strL-1] = 0;
   }
-  fgets(field_name,4999,fp);
+  if (!fgets(field_name,4999,fp)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Incorrect file format");
   strL = strlen(field_name);
   if (strL > 1) {
     field_name[strL-1] = 0;
@@ -731,13 +732,13 @@ PetscErrorCode _DataBucketRegisterFieldFromFile(FILE *fp,DataBucket db)
   /* add field */
   ierr = DataFieldCreate( registeration_function, field_name, atomic_size, L, &gfield );CHKERRQ(ierr);
   /* copy contents of file */
-  fread(gfield->data, gfield->atomic_size, gfield->L, fp);
+  if (fread(gfield->data, gfield->atomic_size, gfield->L, fp) != (size_t) gfield->L) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Incorrect file format");
 #ifdef DATA_BUCKET_LOG
   ierr = PetscPrintf(PETSC_COMM_SELF,"  ** read %zu bytes for DataField \"%s\" \n", gfield->atomic_size * gfield->L, field_name);CHKERRQ(ierr);
 #endif
   /* finish reading meta data */
-  fgets(dummy,99,fp);
-  fgets(dummy,99,fp);
+  if (!fgets(dummy,99,fp))  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Incorrect file format");
+  if (!fgets(dummy,99,fp)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Incorrect file format");
   db->field[db->nfields] = gfield;
   db->nfields++;
   PetscFunctionReturn(0);
@@ -770,26 +771,26 @@ PetscErrorCode _DataBucketViewAscii_HeaderRead_v00(FILE *fp)
 
   PetscFunctionBegin;
   /* header open */
-  fgets(dummy,99,fp);
+  if (!fgets(dummy,99,fp))  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Incorrect file format");
 
   /* type */
-  fgets(dummy,99,fp);
+  if (!fgets(dummy,99,fp)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Incorrect file format");
   strL = strlen(dummy);
   if (strL > 1) {dummy[strL-1] = 0;}
   ierr = PetscStrcmp(dummy, "type=DataBucket", &flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Data file doesn't contain a DataBucket type");
   /* format */
-  fgets(dummy,99,fp);
+  if (!fgets(dummy,99,fp))  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Incorrect file format");
   /* version */
-  fgets(dummy,99,fp);
+  if (!fgets(dummy,99,fp))  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Incorrect file format");
   strL = strlen(dummy);
   if (strL > 1) { dummy[strL-1] = 0; }
   ierr = PetscStrcmp(dummy, "version=0.0", &flg);CHKERRQ(ierr);
   if (!flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"DataBucket file must be parsed with version=0.0 : You tried %s", dummy);
   /* options */
-  fgets(dummy,99,fp);
+  if (!fgets(dummy,99,fp))  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Incorrect file format");
   /* header close */
-  fgets(dummy,99,fp);
+  if (!fgets(dummy,99,fp))  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Incorrect file format");
   PetscFunctionReturn(0);
 }
 
@@ -811,7 +812,7 @@ PetscErrorCode _DataBucketLoadFromFileBinary_SEQ(const char filename[],DataBucke
   if (fp == NULL) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file with name %s", filename);
   /* read header */
   ierr = _DataBucketViewAscii_HeaderRead_v00(fp);CHKERRQ(ierr);
-  fscanf(fp,"%" PetscInt_FMT "\n%" PetscInt_FMT "\n%" PetscInt_FMT "\n",&L,&buffer,&nfields);
+  if (fscanf(fp,"%" PetscInt_FMT "\n%" PetscInt_FMT "\n%" PetscInt_FMT "\n",&L,&buffer,&nfields) != 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Incorrect file format");
   ierr = DataBucketCreate(&db);CHKERRQ(ierr);
   for (f = 0; f < nfields; ++f) {
     ierr = _DataBucketRegisterFieldFromFile(fp,db);CHKERRQ(ierr);

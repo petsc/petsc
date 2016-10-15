@@ -10,4 +10,4 @@ Labels:
   depth: 4 strata of sizes (125, 604, 864, 384)
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 Number of SNES iterations = 1
-L_2 Error: 0.0304028
+L_2 Error: 0.0250782

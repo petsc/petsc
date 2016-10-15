@@ -1,7 +1,7 @@
 DMSWARM_PIC: Using method CellDM->LocatePoints
   DMSWARM_PIC: Using method CellDM->GetNeigbors
-  0 SNES Function norm 17.8197 
-    0 KSP Residual norm 17.8197 
+  0 SNES Function norm 18.1358 
+    0 KSP Residual norm 18.1358 
     1 KSP Residual norm < 1.e-11
   Linear solve converged due to CONVERGED_RTOL iterations 1
   1 SNES Function norm < 1.e-11
@@ -46,7 +46,7 @@ SNES Object: 1 MPI processes
           using PRECONDITIONED norm type for convergence test
         PC Object: (fieldsplit_velocity_) 1 MPI processes
           type: lu
-            LU: out-of-place factorization
+            out-of-place factorization
             tolerance for zero pivot 2.22045e-14
             matrix ordering: nd
             factor fill ratio given 5., needed 2.3299
@@ -108,7 +108,7 @@ SNES Object: 1 MPI processes
                   using PRECONDITIONED norm type for convergence test
                 PC Object: (fieldsplit_velocity_) 1 MPI processes
                   type: lu
-                    LU: out-of-place factorization
+                    out-of-place factorization
                     tolerance for zero pivot 2.22045e-14
                     matrix ordering: nd
                     factor fill ratio given 5., needed 2.3299
@@ -150,7 +150,7 @@ SNES Object: 1 MPI processes
         has attached null space
         using I-node routines: found 577 nodes, limit used is 5
 Number of SNES iterations = 1
-L_2 Error: 5.19e-11 [9.56e-13, 5.19e-11]
+L_2 Error: 5.26e-11 [8.34e-13, 5.26e-11]
 Timestep: 0 Np: 144
 Timestep: 1 Np: 144
 Timestep: 2 Np: 144

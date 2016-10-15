@@ -7,6 +7,7 @@ static PetscErrorCode pounders_h(Tao subtao, Vec v, Mat H, Mat Hpre, void *ctx)
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "pounders_fg"
 static PetscErrorCode  pounders_fg(Tao subtao, Vec x, PetscReal *f, Vec g, void *ctx)
@@ -28,6 +29,7 @@ static PetscErrorCode  pounders_fg(Tao subtao, Vec x, PetscReal *f, Vec g, void 
   ierr = VecAXPY(g, 1.0, mfqP->subb);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "pounders_feval"
 static PetscErrorCode pounders_feval(Tao tao, Vec x, Vec F, PetscReal *fsum)
@@ -73,7 +75,7 @@ PetscErrorCode gqtwrap(Tao tao,PetscReal *gnorm, PetscReal *qmin)
   TAO_POUNDERS   *mfqP = (TAO_POUNDERS*)tao->data;
 
   PetscFunctionBegin;
-  if (! mfqP->usegqt) {
+  if (!mfqP->usegqt) {
     PetscReal maxval;
     PetscInt  i,j;
 
@@ -96,7 +98,7 @@ PetscErrorCode gqtwrap(Tao tao,PetscReal *gnorm, PetscReal *qmin)
     ierr = MatAssemblyEnd(mfqP->subH,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
     ierr = TaoResetStatistics(mfqP->subtao);CHKERRQ(ierr);
-    ierr = TaoSetTolerances(mfqP->subtao,*gnorm,*gnorm,PETSC_DEFAULT);CHKERRQ(ierr);
+    /* ierr = TaoSetTolerances(mfqP->subtao,*gnorm,*gnorm,PETSC_DEFAULT);CHKERRQ(ierr); */
     /* enforce bound constraints -- experimental */
     if (tao->XU && tao->XL) {
       ierr = VecCopy(tao->XU,mfqP->subxu);CHKERRQ(ierr);
@@ -245,9 +247,9 @@ static PetscErrorCode pounders_update_res(Tao tao)
       }
     }
   }
-
   PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "phi2eval"
 PetscErrorCode phi2eval(PetscReal *x, PetscInt n, PetscReal *phi)

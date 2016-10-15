@@ -211,6 +211,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
 
   PetscFunctionBegin;
   if (stencil_type == DMDA_STENCIL_BOX && (bx == DM_BOUNDARY_MIRROR || by == DM_BOUNDARY_MIRROR || bz == DM_BOUNDARY_MIRROR)) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Mirror boundary and box stencil");
+  if ((bx == DM_BOUNDARY_MIRROR) || (by == DM_BOUNDARY_MIRROR) || (bz == DM_BOUNDARY_MIRROR)) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Mirror boundary not supported yet in 3d");
   ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
 #if !defined(PETSC_USE_64BIT_INDICES)
   if (((PetscInt64) M)*((PetscInt64) N)*((PetscInt64) P)*((PetscInt64) dof) > (PetscInt64) PETSC_MPI_INT_MAX) SETERRQ3(comm,PETSC_ERR_INT_OVERFLOW,"Mesh of %D by %D by %D (dof) is too large for 32 bit indices",M,N,dof);
@@ -1030,10 +1031,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
     n26 = sn26;
   }
 
-  if (((stencil_type == DMDA_STENCIL_STAR) ||
-      (bx != DM_BOUNDARY_PERIODIC && bx) ||
-      (by != DM_BOUNDARY_PERIODIC && by) ||
-       (bz != DM_BOUNDARY_PERIODIC && bz))) {
+  if (((stencil_type == DMDA_STENCIL_STAR) || (bx != DM_BOUNDARY_PERIODIC && bx) || (by != DM_BOUNDARY_PERIODIC && by) || (bz != DM_BOUNDARY_PERIODIC && bz))) {
     /*
         Recompute the local to global mappings, this time keeping the
       information about the cross corner processor numbers.
@@ -1380,8 +1378,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
 .  bx,by,bz - type of ghost nodes the array have.
          Use one of DM_BOUNDARY_NONE, DM_BOUNDARY_GHOSTED, DM_BOUNDARY_PERIODIC.
 .  stencil_type - Type of stencil (DMDA_STENCIL_STAR or DMDA_STENCIL_BOX)
-.  M,N,P - global dimension in each direction of the array (use -M, -N, and or -P to indicate that it may be set to a different value
-            from the command line with -da_grid_x <M> -da_grid_y <N> -da_grid_z <P>)
+.  M,N,P - global dimension in each direction of the array 
 .  m,n,p - corresponding number of processors in each dimension
            (or PETSC_DECIDE to have calculated)
 .  dof - number of degrees of freedom per node
@@ -1419,6 +1416,11 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
    The appropriate vector objects can be obtained with calls to DMCreateGlobalVector()
    and DMCreateLocalVector() and calls to VecDuplicate() if more are needed.
 
+   You must call DMSetUp() after this call before using this DM.
+
+   If you wish to use the options database to change values in the DMDA call DMSetFromOptions() after this call
+   but before DMSetUp().
+
 .keywords: distributed array, create, three-dimensional
 
 .seealso: DMDestroy(), DMView(), DMDACreate1d(), DMDACreate2d(), DMGlobalToLocalBegin(), DMDAGetRefinementFactor(),
@@ -1441,8 +1443,5 @@ PetscErrorCode  DMDACreate3d(MPI_Comm comm,DMBoundaryType bx,DMBoundaryType by,D
   ierr = DMDASetStencilType(*da, stencil_type);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(*da, s);CHKERRQ(ierr);
   ierr = DMDASetOwnershipRanges(*da, lx, ly, lz);CHKERRQ(ierr);
-  /* This violates the behavior for other classes, but right now users expect negative dimensions to be handled this way */
-  ierr = DMSetFromOptions(*da);CHKERRQ(ierr);
-  ierr = DMSetUp(*da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

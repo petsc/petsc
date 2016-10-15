@@ -7,7 +7,7 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "TSAdaptChoose_CFL"
-static PetscErrorCode TSAdaptChoose_CFL(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,PetscReal *next_h,PetscBool *accept,PetscReal *wlte)
+static PetscErrorCode TSAdaptChoose_CFL(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,PetscReal *next_h,PetscBool *accept,PetscReal *wlte,PetscReal *wltea,PetscReal *wlter)
 {
   TSAdapt_CFL     *cfl = (TSAdapt_CFL*)adapt->data;
   PetscErrorCode  ierr;
@@ -39,7 +39,9 @@ static PetscErrorCode TSAdaptChoose_CFL(TSAdapt adapt,TS ts,PetscReal h,PetscInt
 
   *next_sc = 0;
   *next_h  = PetscClipInterval(hcfl,adapt->dt_min,adapt->dt_max);
-  *wlte    = -1;  /* Weighted local truncation error was not evaluated */
+  *wlte    = -1;   /* Weighted local truncation error was not evaluated */
+  *wltea   = -1;   /* Weighted absolute local truncation error was not evaluated */
+  *wlter   = -1;   /* Weighted relative local truncation error was not evaluated */
   PetscFunctionReturn(0);
 }
 

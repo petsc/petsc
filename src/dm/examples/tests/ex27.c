@@ -46,14 +46,11 @@ PetscInt main(PetscInt argc,char **args)
   ierr     = PetscOptionsGetBool(NULL,NULL,"-view_z",&view_z,NULL);CHKERRQ(ierr);
   ierr     = PetscOptionsGetIntArray(NULL,NULL,"-dim",dim,&ndim,NULL);CHKERRQ(ierr);
 
+  ierr = DMDACreate3d(PETSC_COMM_SELF,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,dim[0], dim[1], dim[2],
+                      PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE,dof, stencil,NULL, NULL, NULL,&da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
 
-
-  ierr = DMDACreate3d(PETSC_COMM_SELF,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,
-                      dim[0], dim[1], dim[2],
-                      PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE,
-                      dof, stencil,
-                      NULL, NULL, NULL,
-                      &da);CHKERRQ(ierr);
   /* Coordinates */
   ierr = DMGetCoordinateDM(da, &coordsda);
   ierr = DMGetGlobalVector(coordsda, &coords);CHKERRQ(ierr);

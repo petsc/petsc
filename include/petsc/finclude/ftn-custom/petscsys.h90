@@ -1,0 +1,97 @@
+#if !defined(PETSC_USE_FORTRAN_MODULES)
+#include "petsc/finclude/ftn-custom/petscsysdef.h90"
+#endif
+#include "petsc/finclude/ftn-custom/petscsyshide.h90"
+
+      Interface 
+        Subroutine PetscOptionsGetInt(o,p,n,v,s,ierr)
+          USE_PETSCSYS_HIDE
+          PETSCOPTIONS_HIDE o
+          PetscInt v
+          character(*) p,n
+          PetscBool s
+          PetscErrorCode ierr
+        End Subroutine
+        Subroutine PetscOptionsGetReal(o,p,n,v,s,ierr)
+          USE_PETSCSYS_HIDE
+          PETSCOPTIONS_HIDE o
+          PetscReal v
+          character(*) p,n
+          PetscBool s
+          PetscErrorCode ierr
+        End Subroutine
+        Subroutine PetscOptionsGetScalar(o,p,n,v,s,ierr)
+          USE_PETSCSYS_HIDE
+          PETSCOPTIONS_HIDE o
+          PetscScalar v
+          character(*) p,n
+          PetscBool s
+          PetscErrorCode ierr
+        End Subroutine
+        Subroutine PetscOptionsGetBool(o,p,n,v,s,ierr)
+          USE_PETSCSYS_HIDE
+          PETSCOPTIONS_HIDE o
+          PetscBool v
+          character(*) p,n
+          PetscBool s
+          PetscErrorCode ierr
+        End Subroutine
+        Subroutine PetscOptionsGetString(o,p,n,v,s,ierr)
+          USE_PETSCSYS_HIDE
+          PETSCOPTIONS_HIDE o
+          character(*) v
+          character(*) p,n
+          PetscBool s
+          PetscErrorCode ierr
+        End Subroutine
+        Subroutine PetscOptionsHasName(o,p,n,s,ierr)
+          USE_PETSCSYS_HIDE
+          PETSCOPTIONS_HIDE o
+          character(*) p,n
+          PetscBool s
+          PetscErrorCode ierr
+        End Subroutine
+        Subroutine PetscOptionsGetIntArray(o,p,n,v,c,s,ierr)
+          USE_PETSCSYS_HIDE
+          PETSCOPTIONS_HIDE o
+          PetscInt v(*),c
+          character(*) p,n
+          PetscBool s
+          PetscErrorCode ierr
+        End Subroutine
+        Subroutine PetscOptionsGetScalarArray(o,p,n,v,c,s,ierr)
+          USE_PETSCSYS_HIDE
+          PETSCOPTIONS_HIDE o
+          PetscScalar v(*)
+          PetscInt c
+          character(*) p,n
+          PetscBool s
+          PetscErrorCode ierr
+        End Subroutine
+        Subroutine PetscOptionsGetRealArray(o,p,n,v,c,s,ierr)
+          USE_PETSCSYS_HIDE
+          PETSCOPTIONS_HIDE o
+          PetscReal v(*)
+          PetscInt c
+          character(*) p,n
+          PetscBool s
+          PetscErrorCode ierr
+        End Subroutine
+        Subroutine PetscOptionsSetValue(o,n,v,ierr)
+          USE_PETSCSYS_HIDE
+          PETSCOPTIONS_HIDE o
+          character(*) n,v
+          PetscErrorCode ierr
+        End Subroutine
+        Subroutine PetscOptionsClearValue(o,n,ierr)
+          USE_PETSCSYS_HIDE
+          PETSCOPTIONS_HIDE o
+          character(*) n
+          PetscErrorCode ierr
+        End Subroutine
+        Subroutine PetscOptionsClear(o,ierr)
+          USE_PETSCSYS_HIDE
+          PETSCOPTIONS_HIDE o
+          PetscErrorCode ierr
+        End Subroutine
+      End Interface

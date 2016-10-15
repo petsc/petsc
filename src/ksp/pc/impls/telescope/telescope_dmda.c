@@ -9,6 +9,27 @@
 
 #include "../src/ksp/pc/impls/telescope/telescope.h"
 
+static PetscBool  cited = PETSC_FALSE;
+static const char citation[] =
+"@inproceedings{MaySananRuppKnepleySmith2016,\n"
+"  title     = {Extreme-Scale Multigrid Components within PETSc},\n"
+"  author    = {Dave A. May and Patrick Sanan and Karl Rupp and Matthew G. Knepley and Barry F. Smith},\n"
+"  booktitle = {Proceedings of the Platform for Advanced Scientific Computing Conference},\n"
+"  series    = {PASC '16},\n"
+"  isbn      = {978-1-4503-4126-4},\n"
+"  location  = {Lausanne, Switzerland},\n"
+"  pages     = {5:1--5:12},\n"
+"  articleno = {5},\n"
+"  numpages  = {12},\n"
+"  url       = {http://doi.acm.org/10.1145/2929908.2929913},\n"
+"  doi       = {10.1145/2929908.2929913},\n"
+"  acmid     = {2929913},\n"
+"  publisher = {ACM},\n"
+"  address   = {New York, NY, USA},\n"
+"  keywords  = {GPU, HPC, agglomeration, coarse-level solver, multigrid, parallel computing, preconditioning},\n"
+"  year      = {2016}\n"
+"}\n";
+
 #undef __FUNCT__
 #define __FUNCT__ "_DMDADetermineRankFromGlobalIJK"
 PetscErrorCode _DMDADetermineRankFromGlobalIJK(PetscInt dim,PetscInt i,PetscInt j,PetscInt k,
@@ -810,12 +831,10 @@ PetscErrorCode PCTelescopeMatCreate_dmda(PC pc,PC_Telescope sred,MatReuse reuse,
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCTelescopeMatNullSpaceCreate_dmda"
-PetscErrorCode PCTelescopeMatNullSpaceCreate_dmda(PC pc,PC_Telescope sred,Mat sub_mat)
+#define __FUNCT__ "PCTelescopeSubNullSpaceCreate_dmda_Telescope"
+PetscErrorCode PCTelescopeSubNullSpaceCreate_dmda_Telescope(PC pc,PC_Telescope sred,MatNullSpace nullspace,MatNullSpace *sub_nullspace)
 {
   PetscErrorCode   ierr;
-  MatNullSpace     nullspace,sub_nullspace;
-  Mat              A,B;
   PetscBool        has_const;
   PetscInt         i,k,n = 0;
   const Vec        *vecs;
@@ -824,11 +843,6 @@ PetscErrorCode PCTelescopeMatNullSpaceCreate_dmda(PC pc,PC_Telescope sred,Mat su
   PC_Telescope_DMDACtx *ctx;
 
   PetscFunctionBegin;
-  ierr = PCGetOperators(pc,&A,&B);CHKERRQ(ierr);
-  ierr = MatGetNullSpace(B,&nullspace);CHKERRQ(ierr);
-  if (!nullspace) PetscFunctionReturn(0);
-
-  ierr = PetscInfo(pc,"PCTelescope: generating nullspace (DMDA)\n");CHKERRQ(ierr);
   ctx = (PC_Telescope_DMDACtx*)sred->dm_ctx;
   subcomm = PetscSubcommChild(sred->psubcomm);
   ierr = MatNullSpaceGetVecs(nullspace,&has_const,&n,&vecs);CHKERRQ(ierr);
@@ -853,7 +867,7 @@ PetscErrorCode PCTelescopeMatNullSpaceCreate_dmda(PC pc,PC_Telescope sred,Mat su
     ierr = VecScatterBegin(sred->scatter,ctx->xp,sred->xtmp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(sred->scatter,ctx->xp,sred->xtmp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
-    /* copy vector entires into xred */
+    /* copy vector entries into xred */
     ierr = VecGetArrayRead(sred->xtmp,&x_array);CHKERRQ(ierr);
     if (sub_vecs) {
       if (sub_vecs[k]) {
@@ -869,14 +883,50 @@ PetscErrorCode PCTelescopeMatNullSpaceCreate_dmda(PC pc,PC_Telescope sred,Mat su
   }
 
   if (isActiveRank(sred->psubcomm)) {
-    /* create new nullspace for redundant object */
-    ierr = MatNullSpaceCreate(subcomm,has_const,n,sub_vecs,&sub_nullspace);CHKERRQ(ierr);
-    sub_nullspace->remove = nullspace->remove;
-    sub_nullspace->rmctx = nullspace->rmctx;
-
-    /* attach redundant nullspace to Bred */
-    ierr = MatSetNullSpace(sub_mat,sub_nullspace);CHKERRQ(ierr);
+    /* create new (near) nullspace for redundant object */
+    ierr = MatNullSpaceCreate(subcomm,has_const,n,sub_vecs,sub_nullspace);CHKERRQ(ierr);
     ierr = VecDestroyVecs(n,&sub_vecs);CHKERRQ(ierr);
+    if (nullspace->remove) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Propagation of custom remove callbacks not supported when propagating (near) nullspaces with PCTelescope");
+    if (nullspace->rmctx) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Propagation of custom remove callback context not supported when propagating (near) nullspaces with PCTelescope");
+  }
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCTelescopeMatNullSpaceCreate_dmda"
+PetscErrorCode PCTelescopeMatNullSpaceCreate_dmda(PC pc,PC_Telescope sred,Mat sub_mat)
+{
+  PetscErrorCode   ierr;
+  Mat              B;
+
+  PetscFunctionBegin;
+  ierr = PCGetOperators(pc,NULL,&B);CHKERRQ(ierr);
+
+  {
+    MatNullSpace nullspace,sub_nullspace;
+    ierr = MatGetNullSpace(B,&nullspace);CHKERRQ(ierr);
+    if (nullspace) {
+      ierr = PetscInfo(pc,"PCTelescope: generating nullspace (DMDA)\n");CHKERRQ(ierr);
+      ierr = PCTelescopeSubNullSpaceCreate_dmda_Telescope(pc,sred,nullspace,&sub_nullspace);CHKERRQ(ierr);
+      if (isActiveRank(sred->psubcomm)) {
+        ierr = MatSetNullSpace(sub_mat,sub_nullspace);CHKERRQ(ierr);
+        ierr = MatNullSpaceDestroy(&sub_nullspace);CHKERRQ(ierr);
+      }
+    }
+  }
+
+  {
+    MatNullSpace nearnullspace,sub_nearnullspace;
+    ierr = MatGetNullSpace(B,&nearnullspace);CHKERRQ(ierr);
+    if (nearnullspace) {
+      ierr = PetscInfo(pc,"PCTelescope: generating near nullspace (DMDA)\n");CHKERRQ(ierr);
+      ierr = PCTelescopeSubNullSpaceCreate_dmda_Telescope(pc,sred,nearnullspace,&sub_nearnullspace);CHKERRQ(ierr);
+      if (isActiveRank(sred->psubcomm)) {
+        ierr = MatSetNullSpace(sub_mat,sub_nearnullspace);CHKERRQ(ierr);
+        ierr = MatNullSpaceDestroy(&sub_nearnullspace);CHKERRQ(ierr);
+      }
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -904,6 +954,7 @@ PetscErrorCode PCApply_Telescope_dmda(PC pc,Vec x,Vec y)
   xp    = ctx->xp;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister(citation,&cited);CHKERRQ(ierr);
 
   /* permute vector into ordering associated with re-partitioned dmda */
   ierr = MatMultTranspose(perm,x,xp);CHKERRQ(ierr);

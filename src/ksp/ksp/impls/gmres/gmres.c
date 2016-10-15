@@ -730,7 +730,7 @@ PetscErrorCode  KSPGMRESGetCGSRefinementType_GMRES(KSP ksp,KSPGMRESCGSRefinement
 -  type - the type of refinement
 
   Options Database:
-.  -ksp_gmres_cgs_refinement_type <never,ifneeded,always>
+.  -ksp_gmres_cgs_refinement_type <refine_never,refine_ifneeded,refine_always>
 
    Level: intermediate
 

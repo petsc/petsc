@@ -36,6 +36,8 @@ int main(int argc,char **argv)
   ierr = DMCompositeAddDM(packer,dmred1);CHKERRQ(ierr);
 
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,8,1,1,NULL,&da1);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da1);CHKERRQ(ierr);
+  ierr = DMSetUp(da1);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da1,&local1);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(packer,da1);CHKERRQ(ierr);
 
@@ -44,6 +46,8 @@ int main(int argc,char **argv)
   ierr = DMCompositeAddDM(packer,dmred2);CHKERRQ(ierr);
 
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,6,1,1,NULL,&da2);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da2);CHKERRQ(ierr);
+  ierr = DMSetUp(da2);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da2,&local2);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(packer,da2);CHKERRQ(ierr);
 
@@ -85,7 +89,7 @@ int main(int argc,char **argv)
   ierr = VecRestoreArray(redundant1,&redundant1a);CHKERRQ(ierr);
   ierr = VecRestoreArray(redundant2,&redundant2a);CHKERRQ(ierr);
 
-  ierr = DMCompositeGather(packer,global,gather_add ? ADD_VALUES : INSERT_VALUES,redundant1,local1,redundant2,local2);CHKERRQ(ierr);
+  ierr = DMCompositeGather(packer,gather_add ? ADD_VALUES : INSERT_VALUES,global,redundant1,local1,redundant2,local2);CHKERRQ(ierr);
   ierr = VecView(global,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* get the global numbering for each subvector element */

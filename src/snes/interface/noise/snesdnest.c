@@ -127,7 +127,8 @@
   d__3 = PetscMax(est1,est2);
 /* Computing MIN */
   d__4 = PetscMin(est1,est2);
-  d__1 = PetscMax(d__3,est3) - est4, d__2 = est4 - PetscMin(d__4,est3);
+  d__1 = PetscMax(d__3,est3) - est4;
+  d__2 = est4 - PetscMin(d__4,est3);
   err2 = PetscMax(d__1,d__2);
 /*      write (2,123) est1, est2, est3 */
 /* 123  format ('Second derivative estimates', 3d12.2) */
@@ -141,11 +142,13 @@
   i__1  = *nf;
   for (i__ = 2; i__ <= i__1; ++i__) {
     /* Computing MIN */
-    d__1 = f_min, d__2 = fval[i__];
+    d__1 = f_min;
+    d__2 = fval[i__];
     f_min = PetscMin(d__1,d__2);
 
     /* Computing MAX */
-    d__1 = f_max, d__2 = fval[i__];
+    d__1 = f_max;
+    d__2 = fval[i__];
     f_max = PetscMax(d__1,d__2);
   }
 /*     Construct the difference table. */
@@ -160,7 +163,9 @@
       if (fval[i__] == 0.) cancel[j - 1] = TRUE_;
 
       /* Computing MAX */
-      d__2 = scale, d__3 = (d__1 = fval[i__], PetscAbsScalar(d__1));
+      d__1 = fval[i__];
+      d__2 = scale;
+      d__3 = PetscAbsScalar(d__1);
       scale = PetscMax(d__2,d__3);
     }
 
@@ -181,9 +186,11 @@
     i__1 = *nf - j - 1;
     for (i__ = 1; i__ <= i__1; ++i__) {
       /* Computing MIN */
-      d__1 = fval[i__], d__2 = fval[i__ + 1];
+      d__1 = fval[i__];
+      d__2 = fval[i__ + 1];
       /* Computing MAX */
-      d__3 = fval[i__], d__4 = fval[i__ + 1];
+      d__3 = fval[i__];
+      d__4 = fval[i__ + 1];
       if (PetscMin(d__1,d__2) < 0. && PetscMax(d__3,d__4) > 0.) dsgn[j - 1] = TRUE_;
     }
   }
@@ -194,7 +201,8 @@
   if (f_max == f_min) *info = 2;
   else /* if (complicated condition) */ {
     /* Computing MIN */
-    d__1 = PetscAbsScalar(f_max), d__2 = PetscAbsScalar(f_min);
+    d__1 = PetscAbsScalar(f_max);
+    d__2 = PetscAbsScalar(f_min);
     if (f_max - f_min > PetscMin(d__1,d__2) * .1) *info = 3;
   }
   if (*info != 0) PetscFunctionReturn(0);

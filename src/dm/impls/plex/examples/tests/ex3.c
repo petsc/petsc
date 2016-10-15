@@ -276,7 +276,9 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     } else {
       switch (user->dim) {
       case 2:
-        ierr = DMDACreate2d(comm, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, -2, -2, PETSC_DETERMINE, PETSC_DETERMINE, 1, 1, NULL, NULL, dm);CHKERRQ(ierr);
+        ierr = DMDACreate2d(comm, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 2, 2, PETSC_DETERMINE, PETSC_DETERMINE, 1, 1, NULL, NULL, dm);CHKERRQ(ierr);
+        ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+        ierr = DMSetUp(*dm);CHKERRQ(ierr);
         ierr = DMDASetVertexCoordinates(*dm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
         break;
       default:
@@ -519,6 +521,8 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
 
                                                               /* periodic x */
         ierr = DMDACreate2d(PetscObjectComm((PetscObject)dm), DM_BOUNDARY_PERIODIC, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, -2, -2, PETSC_DETERMINE, PETSC_DETERMINE, 1, 1, NULL, NULL, &dmda);CHKERRQ(ierr);
+        ierr = DMSetFromOptions(dmda);CHKERRQ(ierr);
+        ierr = DMSetUp(dmda);CHKERRQ(ierr);
         ierr = DMDASetVertexCoordinates(dmda, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
 
 
@@ -551,9 +555,12 @@ static PetscErrorCode TestFEJacobian(DM dm, AppCtx *user)
   ierr = PetscObjectTypeCompare((PetscObject)dm,DMPLEX,&isPlex);CHKERRQ(ierr);
   if (isPlex) {
     Vec          local;
+    const Vec    *vecs;
     Mat          E;
     MatNullSpace sp;
-    PetscBool    isNullSpace;
+    PetscBool    isNullSpace, hasConst;
+    PetscInt     n, i;
+    Vec          res, localX, localRes;
     PetscDS      ds;
 
     if (user->numComponents != user->dim) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "The number of components %d must be equal to the dimension %d for this test", user->numComponents, user->dim);
@@ -563,6 +570,30 @@ static PetscErrorCode TestFEJacobian(DM dm, AppCtx *user)
     ierr = DMGetLocalVector(dm,&local);CHKERRQ(ierr);
     ierr = DMPlexSNESComputeJacobianFEM(dm,local,E,E,NULL);CHKERRQ(ierr);
     ierr = DMPlexCreateRigidBody(dm,&sp);CHKERRQ(ierr);
+    ierr = MatNullSpaceGetVecs(sp,&hasConst,&n,&vecs);CHKERRQ(ierr);
+    ierr = VecDuplicate(vecs[0],&res);CHKERRQ(ierr);
+    ierr = DMCreateLocalVector(dm,&localX);CHKERRQ(ierr);
+    ierr = DMCreateLocalVector(dm,&localRes);CHKERRQ(ierr);
+    for (i = 0; i < n; i++) { /* also test via matrix-free Jacobian application */
+      PetscReal resNorm;
+
+      ierr = VecSet(localRes,0.);CHKERRQ(ierr);
+      ierr = VecSet(localX,0.);CHKERRQ(ierr);
+      ierr = VecSet(local,0.);CHKERRQ(ierr);
+      ierr = VecSet(res,0.);CHKERRQ(ierr);
+      ierr = DMGlobalToLocalBegin(dm,vecs[i],INSERT_VALUES,localX);CHKERRQ(ierr);
+      ierr = DMGlobalToLocalEnd(dm,vecs[i],INSERT_VALUES,localX);CHKERRQ(ierr);
+      ierr = DMPlexSNESComputeJacobianActionFEM(dm,local,localX,localRes,NULL);CHKERRQ(ierr);
+      ierr = DMLocalToGlobalBegin(dm,localRes,ADD_VALUES,res);CHKERRQ(ierr);
+      ierr = DMLocalToGlobalEnd(dm,localRes,ADD_VALUES,res);CHKERRQ(ierr);
+      ierr = VecNorm(res,NORM_2,&resNorm);CHKERRQ(ierr);
+      if (resNorm > PETSC_SMALL) {
+        ierr = PetscPrintf(PetscObjectComm((PetscObject)dm),"Symmetric gradient action null space vector %D residual: %E\n",i,resNorm);CHKERRQ(ierr);
+      }
+    }
+    ierr = VecDestroy(&localRes);CHKERRQ(ierr);
+    ierr = VecDestroy(&localX);CHKERRQ(ierr);
+    ierr = VecDestroy(&res);CHKERRQ(ierr);
     ierr = MatNullSpaceTest(sp,E,&isNullSpace);CHKERRQ(ierr);
     if (isNullSpace) {
       ierr = PetscPrintf(PetscObjectComm((PetscObject)dm),"Symmetric gradient null space: PASS\n");CHKERRQ(ierr);

@@ -8,11 +8,12 @@ static char help[] = "Tests repeated VecDotBegin()/VecDotEnd().\n\n";
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  PetscInt       n   = 25,i,row0 = 0;
-  PetscScalar    one = 1.0,two = 2.0,result1,result2,results[40],value,ten = 10.0;
+  PetscInt       n = 25,i,row0 = 0;
+  PetscScalar    two = 2.0,result1,result2,results[40],value,ten = 10.0;
   PetscScalar    result1a,result2a;
   PetscReal      result3,result4,result[2],result3a,result4a,resulta[2];
   Vec            x,y,vecs[40];
+  PetscRandom    rctx;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
@@ -22,7 +23,10 @@ int main(int argc,char **argv)
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
 
-  ierr = VecSet(x,one);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
+  ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
+  ierr = VecSetRandom(x,rctx);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
   ierr = VecSet(y,two);CHKERRQ(ierr);
 
   /*
@@ -90,6 +94,7 @@ int main(int argc,char **argv)
   ierr = VecDot(y,x,&result2a);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_MAX,&result3a);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_1,&result4a);CHKERRQ(ierr);
+
   if (result1 != result1a || result2 != result2a) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Error dot: result1 %g result2 %g\n",(double)PetscRealPart(result1),(double)PetscRealPart(result2));CHKERRQ(ierr);
   }

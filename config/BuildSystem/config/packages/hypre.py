@@ -12,10 +12,11 @@ class Configure(config.package.GNUPackage):
     self.license   = 'https://computation.llnl.gov/casc/linear_solvers/sls_hypre.html'
     # Per hypre users guide section 7.5 - install manually on windows for MS compilers.
     self.downloadonWindows = 0
-    self.double            = 1
+    self.precisions        = ['double']
     self.complex           = 0
     self.hastests          = 1
     self.hastestsdatafiles = 1
+    self.needsMath         = 1
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)

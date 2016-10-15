@@ -29,7 +29,11 @@
 !     Every PETSc routine should begin with the PetscInitialize()
 !     routine.
 
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      call PetscInitializeNoArguments(ierr)
+      if (ierr .ne. 0) then
+         print*,'Unable to initialize PETSc'
+         stop
+      endif
 
 !     The following MPI calls return the number of processes being used
 !     and the rank of this process in the group.

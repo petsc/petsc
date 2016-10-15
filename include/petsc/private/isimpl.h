@@ -99,10 +99,33 @@ struct _p_PetscSection {
   PetscInt                      clSize;       /* The size of a dof closure of a cell, when it is uniform */
   PetscInt                     *clPerm;       /* A permutation of the cell dof closure, of size clSize */
   PetscInt                     *clInvPerm;    /* The inverse of clPerm */
+  PetscSectionSym               sym;          /* Symmetries of the data */
 };
 
 PETSC_EXTERN PetscErrorCode PetscSectionSetClosurePermutation_Internal(PetscSection, PetscObject, PetscInt, PetscCopyMode, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscSectionGetClosurePermutation_Internal(PetscSection, PetscObject, PetscInt *, const PetscInt *[]);
 PETSC_EXTERN PetscErrorCode PetscSectionGetClosureInversePermutation_Internal(PetscSection, PetscObject, PetscInt *, const PetscInt *[]);
 
+struct _PetscSectionSymOps {
+  PetscErrorCode (*getpoints)(PetscSectionSym,PetscSection,PetscInt,const PetscInt *,const PetscInt **,const PetscScalar **);
+  PetscErrorCode (*destroy)(PetscSectionSym);
+  PetscErrorCode (*view)(PetscSectionSym,PetscViewer);
+};
+
+typedef struct _n_SymWorkLink *SymWorkLink;
+
+struct _n_SymWorkLink
+{
+  SymWorkLink         next;
+  const PetscInt    **perms;
+  const PetscScalar **rots;
+  PetscInt           numPoints;
+};
+
+struct _p_PetscSectionSym {
+  PETSCHEADER(struct _PetscSectionSymOps);
+  void *data;
+  SymWorkLink workin;
+  SymWorkLink workout;
+};
 #endif

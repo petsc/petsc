@@ -1,29 +1,28 @@
 0 SNES Function norm 8.32828 
-    0 KSP Residual norm 8.14247 
-    1 KSP Residual norm 2.08973 
-    2 KSP Residual norm 1.0733 
-    3 KSP Residual norm 0.538831 
-    4 KSP Residual norm 0.252617 
-    5 KSP Residual norm 0.0559952 
-    6 KSP Residual norm 0.0132599 
-    7 KSP Residual norm 0.00388576 
-    8 KSP Residual norm 0.0012434 
-    9 KSP Residual norm 0.00037747 
-   10 KSP Residual norm 7.0698e-05 
-   11 KSP Residual norm 1.55941e-05 
-   12 KSP Residual norm 4.03957e-06 
-   13 KSP Residual norm 6.53701e-07 
-   14 KSP Residual norm 1.21251e-07 
-   15 KSP Residual norm 2.55012e-08 
-   16 KSP Residual norm 3.9904e-09 
-  Linear solve converged due to CONVERGED_RTOL iterations 16
-  1 SNES Function norm 1.1323e-08 
+    0 KSP Residual norm 8.40051 
+    1 KSP Residual norm 1.89471 
+    2 KSP Residual norm 0.998639 
+    3 KSP Residual norm 0.449982 
+    4 KSP Residual norm 0.184713 
+    5 KSP Residual norm 0.047361 
+    6 KSP Residual norm 0.0100355 
+    7 KSP Residual norm 0.00275303 
+    8 KSP Residual norm 0.000812669 
+    9 KSP Residual norm 0.000157688 
+   10 KSP Residual norm 2.06584e-05 
+   11 KSP Residual norm 3.7337e-06 
+   12 KSP Residual norm 5.81441e-07 
+   13 KSP Residual norm 7.46144e-08 
+   14 KSP Residual norm 1.01423e-08 
+   15 KSP Residual norm 1.09021e-09 
+  Linear solve converged due to CONVERGED_RTOL iterations 15
+  1 SNES Function norm 2.7098e-09 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=16
+  total number of linear solver iterations=15
   total number of function evaluations=2
   norm schedule ALWAYS
   SNESLineSearch Object: 1 MPI processes
@@ -54,23 +53,23 @@ SNES Object: 1 MPI processes
         using NONE norm type for convergence test
       PC Object: (sub_) 1 MPI processes
         type: lu
-          LU: out-of-place factorization
+          out-of-place factorization
           tolerance for zero pivot 2.22045e-14
           matrix ordering: nd
-          factor fill ratio given 5., needed 2.45575
+          factor fill ratio given 5., needed 2.40723
             Factored matrix follows:
               Mat Object: 1 MPI processes
                 type: seqaij
-                rows=74, cols=74
+                rows=69, cols=69
                 package used to perform factorization: petsc
-                total: nonzeros=1110, allocated nonzeros=1110
+                total: nonzeros=999, allocated nonzeros=999
                 total number of mallocs used during MatSetValues calls =0
                   not using I-node routines
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
-          rows=74, cols=74
-          total: nonzeros=452, allocated nonzeros=452
+          rows=69, cols=69
+          total: nonzeros=415, allocated nonzeros=415
           total number of mallocs used during MatSetValues calls =0
             not using I-node routines
     linear system matrix = precond matrix:
@@ -81,4 +80,4 @@ SNES Object: 1 MPI processes
       total number of mallocs used during MatSetValues calls =0
         not using I-node routines
 Number of SNES iterations = 1
-L_2 Error: 0.00173611
+L_2 Error: 0.00131794

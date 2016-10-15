@@ -7,6 +7,7 @@ class Configure(config.package.CMakePackage):
     self.download          = ['git://https://github.com/elemental/Elemental']
     self.liblist          = [['libEl.a','libElSuiteSparse.a','libpmrrr.a']]
     self.includes         = ['El.hpp']
+    self.precisions       = ['single','double']
     self.cxx              = 1
     self.requirescxx11    = 1
     self.downloadonWindows= 0

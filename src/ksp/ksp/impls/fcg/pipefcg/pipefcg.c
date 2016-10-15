@@ -4,6 +4,21 @@
 
 #include <../src/ksp/ksp/impls/fcg/pipefcg/pipefcgimpl.h>       /*I  "petscksp.h"  I*/
 
+static PetscBool  cited = PETSC_FALSE;
+static const char citation[] =
+  "@article{SSM2016,\n"
+  "  author = {P. Sanan and S.M. Schnepp and D.A. May},\n"
+  "  title = {Pipelined, Flexible Krylov Subspace Methods},\n"
+  "  journal = {SIAM Journal on Scientific Computing},\n"
+  "  volume = {38},\n"
+  "  number = {5},\n"
+  "  pages = {C441-C470},\n"
+  "  year = {2016},\n"
+  "  doi = {10.1137/15M1049130},\n"
+  "  URL = {http://dx.doi.org/10.1137/15M1049130},\n"
+  "  eprint = {http://dx.doi.org/10.1137/15M1049130}\n"
+  "}\n";
+
 #define KSPPIPEFCG_DEFAULT_MMAX 15
 #define KSPPIPEFCG_DEFAULT_NPREALLOC 5
 #define KSPPIPEFCG_DEFAULT_VECB 5
@@ -280,6 +295,8 @@ static PetscErrorCode KSPSolve_PIPEFCG(KSP ksp)
 #define VecXDot(x,y,a)         (((pipefcg->type) == (KSP_CG_HERMITIAN)) ? VecDot       (x,y,a)   : VecTDot       (x,y,a))
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister(citation,&cited);CHKERRQ(ierr);
+
   pipefcg       = (KSP_PIPEFCG*)ksp->data;
   X             = ksp->vec_sol;
   B             = ksp->vec_rhs;
@@ -553,7 +570,7 @@ PetscErrorCode KSPPIPEFCGGetNprealloc(KSP ksp,PetscInt *nprealloc)
   Level: intermediate
 
   Options Database:
-. -ksp_pipefcg_truncation, -ksp_pipefcg_truncation_restart
+.  -ksp_pipefcg_truncation_type <standard,notay> - which stored search directions to orthogonalize against
 
 .seealso: KSPPIPEFCG, KSPPIPEFCGGetTruncationType, KSPFCDTruncationType
 @*/
@@ -582,7 +599,7 @@ PetscErrorCode KSPPIPEFCGSetTruncationType(KSP ksp,KSPFCDTruncationType truncstr
 .  truncstrat - the strategy type
 
   Options Database:
-. -ksp_pipefcg_truncation, -ksp_pipefcg_truncation_restart
+. -ksp_pipefcg_truncation_type <standard,notay> - which stored basis vectors to orthogonalize against
 
    Level: intermediate
 
@@ -622,24 +639,30 @@ static PetscErrorCode KSPSetFromOptions_PIPEFCG(PetscOptionItems *PetscOptionsOb
 
 /*MC
 
- KSPPIPEFCG - A Pipelined, Flexible Conjugate Gradient method
+  KSPPIPEFCG - Implements a Pipelined, Flexible Conjugate Gradient method.
 
-    The natural norm for this method is (u,Au). This norm is available at no computational costs. Choosing norm types preconditioned or unpreconditioned involves an extra blocking global reduction, thus removing any benefit from pipelining.
+  Options Database Keys:
+.   -ksp_pipefcg_mmax <N> - The number of previous search directions to store
+.   -ksp_pipefcg_nprealloc <N> - The number of previous search directions to preallocate
+.   -ksp_pipefcg_truncation_type <standard,notay> - which stored search directions to orthogonalize against
 
- Supports left preconditioning only.
+  Notes:
+   Supports left preconditioning only.
+
+   The natural "norm" for this method is (u,Au), where u is the preconditioned residual. As with standard CG, this norm is available at no additional computational cost. Choosing preconditioned or unpreconditioned norms involve an extra blocking global reduction, thus removing any benefit from pipelining.
+
+   MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.
+   See the FAQ on the PETSc website for details.
+
   Reference:
-    Pipelined, Flexible Krylov Subspace Methods
-    Patrick Sanan, Sascha M. Schnepp, Dave A. May
-
- Options Database Keys:
-+ -ksp_pipefcg_mmax <N>
-. -ksp_pipefcg_nprealloc <N>
-. -ksp_pipefcg_truncation
-- -ksp_pipefcg_trancation_restart
+    P. Sanan, S.M. Schnepp, and D.A. May,
+    "Pipelined, Flexible Krylov Subspace Methods,"
+    SIAM Journal on Scientific Computing 2016 38:5, C441-C470,
+    DOI: 10.1137/15M1049130
 
   Level: intermediate
 
-.seealso : KSPFCG, KSPPIPECG, KSPPIPECR, KSPGCR, KSPPIPEGCR, KSPFGMRES, KSPCG, KSPPIPEFCGSetMmax(), KSPPIPEFCGGetMmax(), KSPPIPEFCGSetNprealloc(), KSPPIPEFCGGetNprealloc(), KSPPIPEFCGSetTruncationType(), KSPPIPEFCGGetTruncationType()
+.seealso: KSPFCG, KSPPIPECG, KSPPIPECR, KSPGCR, KSPPIPEGCR, KSPFGMRES, KSPCG, KSPPIPEFCGSetMmax(), KSPPIPEFCGGetMmax(), KSPPIPEFCGSetNprealloc(), KSPPIPEFCGGetNprealloc(), KSPPIPEFCGSetTruncationType(), KSPPIPEFCGGetTruncationType()
 
 M*/
 #undef __FUNCT__

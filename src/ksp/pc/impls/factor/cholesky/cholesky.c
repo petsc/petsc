@@ -8,34 +8,8 @@
 
 typedef struct {
   PC_Factor hdr;
-  PetscReal actualfill;              /* actual fill in factor */
-  PetscBool inplace;                 /* flag indicating in-place factorization */
   IS        row,col;                 /* index sets used for reordering */
-  PetscBool reuseordering;           /* reuses previous reordering computed */
-  PetscBool reusefill;               /* reuse fill from previous Cholesky */
 } PC_Cholesky;
-
-#undef __FUNCT__
-#define __FUNCT__ "PCFactorSetReuseOrdering_Cholesky"
-static PetscErrorCode  PCFactorSetReuseOrdering_Cholesky(PC pc,PetscBool flag)
-{
-  PC_Cholesky *lu = (PC_Cholesky*)pc->data;
-
-  PetscFunctionBegin;
-  lu->reuseordering = flag;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PCFactorSetReuseFill_Cholesky"
-static PetscErrorCode  PCFactorSetReuseFill_Cholesky(PC pc,PetscBool flag)
-{
-  PC_Cholesky *lu = (PC_Cholesky*)pc->data;
-
-  PetscFunctionBegin;
-  lu->reusefill = flag;
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_Cholesky"
@@ -61,14 +35,14 @@ static PetscErrorCode PCView_Cholesky(PC pc,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    if (chol->inplace) {
+    if (chol->hdr.inplace) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Cholesky: in-place factorization\n");CHKERRQ(ierr);
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"  Cholesky: out-of-place factorization\n");CHKERRQ(ierr);
     }
 
-    if (chol->reusefill)    {ierr = PetscViewerASCIIPrintf(viewer,"  Reusing fill from past factorization\n");CHKERRQ(ierr);}
-    if (chol->reuseordering) {ierr = PetscViewerASCIIPrintf(viewer,"  Reusing reordering from past factorization\n");CHKERRQ(ierr);}
+    if (chol->hdr.reusefill)    {ierr = PetscViewerASCIIPrintf(viewer,"  Reusing fill from past factorization\n");CHKERRQ(ierr);}
+    if (chol->hdr.reuseordering) {ierr = PetscViewerASCIIPrintf(viewer,"  Reusing reordering from past factorization\n");CHKERRQ(ierr);}
   }
   ierr = PCView_Factor(pc,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -85,10 +59,11 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
   MatFactorError         err;
 
   PetscFunctionBegin;
-  if (dir->reusefill && pc->setupcalled) ((PC_Factor*)dir)->info.fill = dir->actualfill;
+  pc->failedreason = PC_NOERROR;
+  if (dir->hdr.reusefill && pc->setupcalled) ((PC_Factor*)dir)->info.fill = dir->hdr.actualfill;
 
   ierr = MatSetErrorIfFailure(pc->pmat,pc->erroriffailure);CHKERRQ(ierr);
-  if (dir->inplace) {
+  if (dir->hdr.inplace) {
     if (dir->row && dir->col && (dir->row != dir->col)) {
       ierr = ISDestroy(&dir->row);CHKERRQ(ierr);
     }
@@ -127,12 +102,12 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
       if (!((PC_Factor*)dir)->fact) {
         ierr = MatGetFactor(pc->pmat,((PC_Factor*)dir)->solvertype,MAT_FACTOR_CHOLESKY,&((PC_Factor*)dir)->fact);CHKERRQ(ierr);
       }
-      ierr            = MatCholeskyFactorSymbolic(((PC_Factor*)dir)->fact,pc->pmat,dir->row,&((PC_Factor*)dir)->info);CHKERRQ(ierr);
-      ierr            = MatGetInfo(((PC_Factor*)dir)->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
-      dir->actualfill = info.fill_ratio_needed;
-      ierr            = PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)dir)->fact);CHKERRQ(ierr);
+      ierr                = MatCholeskyFactorSymbolic(((PC_Factor*)dir)->fact,pc->pmat,dir->row,&((PC_Factor*)dir)->info);CHKERRQ(ierr);
+      ierr                = MatGetInfo(((PC_Factor*)dir)->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
+      dir->hdr.actualfill = info.fill_ratio_needed;
+      ierr                = PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)dir)->fact);CHKERRQ(ierr);
     } else if (pc->flag != SAME_NONZERO_PATTERN) {
-      if (!dir->reuseordering) {
+      if (!dir->hdr.reuseordering) {
         ierr = ISDestroy(&dir->row);CHKERRQ(ierr);
         ierr = MatGetOrdering(pc->pmat,((PC_Factor*)dir)->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
         ierr = ISDestroy(&dir->col);CHKERRQ(ierr); /* only use dir->row ordering in CholeskyFactor */
@@ -146,12 +121,18 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
         }
         if (dir->row) {ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)dir->row);CHKERRQ(ierr);}
       }
-      ierr            = MatDestroy(&((PC_Factor*)dir)->fact);CHKERRQ(ierr);
-      ierr            = MatGetFactor(pc->pmat,((PC_Factor*)dir)->solvertype,MAT_FACTOR_CHOLESKY,&((PC_Factor*)dir)->fact);CHKERRQ(ierr);
-      ierr            = MatCholeskyFactorSymbolic(((PC_Factor*)dir)->fact,pc->pmat,dir->row,&((PC_Factor*)dir)->info);CHKERRQ(ierr);
-      ierr            = MatGetInfo(((PC_Factor*)dir)->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
-      dir->actualfill = info.fill_ratio_needed;
-      ierr            = PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)dir)->fact);CHKERRQ(ierr);
+      ierr                = MatDestroy(&((PC_Factor*)dir)->fact);CHKERRQ(ierr);
+      ierr                = MatGetFactor(pc->pmat,((PC_Factor*)dir)->solvertype,MAT_FACTOR_CHOLESKY,&((PC_Factor*)dir)->fact);CHKERRQ(ierr);
+      ierr                = MatCholeskyFactorSymbolic(((PC_Factor*)dir)->fact,pc->pmat,dir->row,&((PC_Factor*)dir)->info);CHKERRQ(ierr);
+      ierr                = MatGetInfo(((PC_Factor*)dir)->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
+      dir->hdr.actualfill = info.fill_ratio_needed;
+      ierr                = PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)dir)->fact);CHKERRQ(ierr);
+    } else {
+      ierr = MatFactorGetError(((PC_Factor*)dir)->fact,&err);CHKERRQ(ierr);
+      if (err == MAT_FACTOR_NUMERIC_ZEROPIVOT) {
+        ierr = MatFactorClearError(((PC_Factor*)dir)->fact);CHKERRQ(ierr);
+        pc->failedreason = PC_NOERROR;
+      }
     }
     ierr = MatFactorGetError(((PC_Factor*)dir)->fact,&err);CHKERRQ(ierr);
     if (err) { /* FactorSymbolic() fails */
@@ -183,7 +164,7 @@ static PetscErrorCode PCReset_Cholesky(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!dir->inplace && ((PC_Factor*)dir)->fact) {ierr = MatDestroy(&((PC_Factor*)dir)->fact);CHKERRQ(ierr);}
+  if (!dir->hdr.inplace && ((PC_Factor*)dir)->fact) {ierr = MatDestroy(&((PC_Factor*)dir)->fact);CHKERRQ(ierr);}
   ierr = ISDestroy(&dir->row);CHKERRQ(ierr);
   ierr = ISDestroy(&dir->col);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -212,7 +193,7 @@ static PetscErrorCode PCApply_Cholesky(PC pc,Vec x,Vec y)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (dir->inplace) {
+  if (dir->hdr.inplace) {
     ierr = MatSolve(pc->pmat,x,y);CHKERRQ(ierr);
   } else {
     ierr = MatSolve(((PC_Factor*)dir)->fact,x,y);CHKERRQ(ierr);
@@ -228,7 +209,7 @@ static PetscErrorCode PCApplyTranspose_Cholesky(PC pc,Vec x,Vec y)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (dir->inplace) {
+  if (dir->hdr.inplace) {
     ierr = MatSolveTranspose(pc->pmat,x,y);CHKERRQ(ierr);
   } else {
     ierr = MatSolveTranspose(((PC_Factor*)dir)->fact,x,y);CHKERRQ(ierr);
@@ -237,28 +218,6 @@ static PetscErrorCode PCApplyTranspose_Cholesky(PC pc,Vec x,Vec y)
 }
 
 /* -----------------------------------------------------------------------------------*/
-
-#undef __FUNCT__
-#define __FUNCT__ "PCFactorSetUseInPlace_Cholesky"
-static PetscErrorCode  PCFactorSetUseInPlace_Cholesky(PC pc,PetscBool flg)
-{
-  PC_Cholesky *dir = (PC_Cholesky*)pc->data;
-
-  PetscFunctionBegin;
-  dir->inplace = flg;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PCFactorGetUseInPlace_Cholesky"
-static PetscErrorCode  PCFactorGetUseInPlace_Cholesky(PC pc,PetscBool *flg)
-{
-  PC_Cholesky *dir = (PC_Cholesky*)pc->data;
-
-  PetscFunctionBegin;
-  *flg = dir->inplace;
-  PetscFunctionReturn(0);
-}
 
 /* -----------------------------------------------------------------------------------*/
 
@@ -331,27 +290,17 @@ PETSC_EXTERN PetscErrorCode PCCreate_Cholesky(PC pc)
   PC_Cholesky    *dir;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(pc,&dir);CHKERRQ(ierr);
-
-  ((PC_Factor*)dir)->fact = 0;
-  dir->inplace            = PETSC_FALSE;
-
-  ierr = MatFactorInfoInitialize(&((PC_Factor*)dir)->info);CHKERRQ(ierr);
+  ierr     = PetscNewLog(pc,&dir);CHKERRQ(ierr);
+  pc->data = (void*)dir;
+  ierr     = PCFactorInitialize(pc);CHKERRQ(ierr);
 
   ((PC_Factor*)dir)->factortype         = MAT_FACTOR_CHOLESKY;
   ((PC_Factor*)dir)->info.fill          = 5.0;
-  ((PC_Factor*)dir)->info.shifttype     = (PetscReal) MAT_SHIFT_NONE;
-  ((PC_Factor*)dir)->info.shiftamount   = 0.0;
-  ((PC_Factor*)dir)->info.zeropivot     = 100.0*PETSC_MACHINE_EPSILON;
-  ((PC_Factor*)dir)->info.pivotinblocks = 1.0;
 
   dir->col = 0;
   dir->row = 0;
 
   ierr = PetscStrallocpy(MATORDERINGNATURAL,(char**)&((PC_Factor*)dir)->ordering);CHKERRQ(ierr);
-  dir->reusefill        = PETSC_FALSE;
-  dir->reuseordering    = PETSC_FALSE;
-  pc->data              = (void*)dir;
 
   pc->ops->destroy           = PCDestroy_Cholesky;
   pc->ops->reset             = PCReset_Cholesky;
@@ -361,19 +310,5 @@ PETSC_EXTERN PetscErrorCode PCCreate_Cholesky(PC pc)
   pc->ops->setfromoptions    = PCSetFromOptions_Cholesky;
   pc->ops->view              = PCView_Cholesky;
   pc->ops->applyrichardson   = 0;
-  pc->ops->getfactoredmatrix = PCFactorGetMatrix_Factor;
-
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetUpMatSolverPackage_C",PCFactorSetUpMatSolverPackage_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetMatSolverPackage_C",PCFactorSetMatSolverPackage_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetMatSolverPackage_C",PCFactorGetMatSolverPackage_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetZeroPivot_C",PCFactorSetZeroPivot_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetShiftType_C",PCFactorSetShiftType_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetShiftAmount_C",PCFactorSetShiftAmount_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetFill_C",PCFactorSetFill_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetUseInPlace_C",PCFactorSetUseInPlace_Cholesky);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetUseInPlace_C",PCFactorGetUseInPlace_Cholesky);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetMatOrderingType_C",PCFactorSetMatOrderingType_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetReuseOrdering_C",PCFactorSetReuseOrdering_Cholesky);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetReuseFill_C",PCFactorSetReuseFill_Cholesky);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

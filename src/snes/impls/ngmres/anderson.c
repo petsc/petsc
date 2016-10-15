@@ -128,7 +128,7 @@ static PetscErrorCode SNESSolve_Anderson(SNES snes)
       }
       ierr = SNESGetNPCFunction(snes,FM,&fMnorm);CHKERRQ(ierr);
       if (ngmres->andersonBeta != 1.0) {
-        VecAXPBY(XM,(1.0 - ngmres->andersonBeta),ngmres->andersonBeta,X);CHKERRQ(ierr);
+        ierr = VecAXPBY(XM,(1.0 - ngmres->andersonBeta),ngmres->andersonBeta,X);CHKERRQ(ierr);
       }
     } else {
       ierr   = VecCopy(F,FM);CHKERRQ(ierr);
@@ -195,7 +195,7 @@ static PetscErrorCode SNESSolve_Anderson(SNES snes)
 
    Options Database:
 +  -snes_anderson_m                - Number of stored previous solutions and residuals
-.  -snes_anderson_beta             - Relaxation parameter; X_{update} = X + \beta F
+.  -snes_anderson_beta             - Anderson mixing parameter
 .  -snes_anderson_restart_type     - Type of restart (see SNESNGMRES)
 .  -snes_anderson_restart_it       - Number of iterations of restart conditions before restart
 .  -snes_anderson_restart          - Number of iterations before periodic restart

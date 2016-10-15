@@ -203,7 +203,7 @@ PetscErrorCode DMDAGetCoordinateName(DM dm,PetscInt nf,const char **name)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDAGetCorners"
-/*@
+/*@C
    DMDAGetCorners - Returns the global (x,y,z) indices of the lower left
    corner and size of the local region, excluding ghost points.
 
@@ -399,9 +399,9 @@ PetscErrorCode  DMDAGetReducedDMDA(DM da,PetscInt nfields,DM *nda)
   } else if (dim == 3) {
     ierr = DMDACreate3d(PetscObjectComm((PetscObject)da),bx,by,bz,stencil_type,M,N,P,m,n,p,nfields,s,lx,ly,lz,nda);CHKERRQ(ierr);
   }
+  ierr = DMSetUp(*nda);CHKERRQ(ierr);
   if (da->coordinates) {
     ierr = PetscObjectReference((PetscObject)da->coordinates);CHKERRQ(ierr);
-
     (*nda)->coordinates = da->coordinates;
   }
 

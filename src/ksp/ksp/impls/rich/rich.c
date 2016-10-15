@@ -73,8 +73,6 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
     ierr  = PetscInfo(ksp,"KSPSolve_Richardson: Warning, skipping optimized PCApplyRichardson() because scale factor is not 1.0\n");CHKERRQ(ierr);
   }
 
-  scale = richardsonP->scale;
-
   if (!ksp->guess_zero) {                          /*   r <- b - A x     */
     ierr = KSP_MatMult(ksp,Amat,x,r);CHKERRQ(ierr);
     ierr = VecAYPX(r,-1.0,b);CHKERRQ(ierr);
@@ -134,7 +132,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
         if (ksp->reason) break;
       }
 
-      ierr = VecAXPY(x,scale,z);CHKERRQ(ierr);    /*   x  <- x + scale z */
+      ierr = VecAXPY(x,richardsonP->scale,z);CHKERRQ(ierr);    /*   x  <- x + scale z */
       ksp->its++;
 
       if (i+1 < maxit || ksp->normtype != KSP_NORM_NONE) {

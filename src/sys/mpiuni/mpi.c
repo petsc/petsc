@@ -633,7 +633,7 @@ PETSC_EXTERN void PETSC_STDCALL  mpi_exscan_(void *sendbuf,void *recvbuf,int *co
   *ierr = MPI_SUCCESS;
 }
 
-#endif /* MPIUNI_AVOID_MPI_NAMESPACE */
+#endif /* MPIUNI_FORTRAN_BINDING */
 
 #if defined(__cplusplus)
 }

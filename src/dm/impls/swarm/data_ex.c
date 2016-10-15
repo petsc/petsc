@@ -47,29 +47,29 @@ Phase C: Pack data
 
 Phase D: Send data
 
-//
++ Constructor
 DataExCreate()
-// A
++ Phase A
 DataExTopologyInitialize()
 DataExTopologyAddNeighbour()
 DataExTopologyAddNeighbour()
 DataExTopologyFinalize()
-// B
++ Phase B
 DataExZeroAllSendCount()
 DataExAddToSendCount()
 DataExAddToSendCount()
 DataExAddToSendCount()
-// C
++ Phase C
 DataExPackInitialize()
 DataExPackData()
 DataExPackData()
 DataExPackFinalize()
-// D
++Phase D
 DataExBegin()
-// ... perform any calculations ... ///
+ ... perform any calculations ...
 DataExEnd()
 
-// Call any getters //
+... user calls any getters here ...
 
 
 */
@@ -219,11 +219,9 @@ PetscErrorCode DataExTopologyAddNeighbour(DataEx d,const PetscMPIInt proc_id)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (d->topology_status == DEOBJECT_FINALIZED) {
-    SETERRQ(d->comm, PETSC_ERR_ARG_WRONGSTATE, "Topology has been finalized. To modify or update call DataExTopologyInitialize() first");
-  } else if (d->topology_status != DEOBJECT_INITIALIZED) {
-    SETERRQ(d->comm, PETSC_ERR_ARG_WRONGSTATE, "Topology must be intialised. Call DataExTopologyInitialize() first");
-  }
+  if (d->topology_status == DEOBJECT_FINALIZED) SETERRQ(d->comm, PETSC_ERR_ARG_WRONGSTATE, "Topology has been finalized. To modify or update call DataExTopologyInitialize() first");
+  else if (d->topology_status != DEOBJECT_INITIALIZED) SETERRQ(d->comm, PETSC_ERR_ARG_WRONGSTATE, "Topology must be intialised. Call DataExTopologyInitialize() first");
+
   /* error on negative entries */
   if (proc_id < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Trying to set proc neighbour with a rank < 0");
   /* error on ranks larger than number of procs in communicator */
@@ -373,9 +371,8 @@ PetscErrorCode DataExTopologyFinalize(DataEx d)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (d->topology_status != DEOBJECT_INITIALIZED) {
-    SETERRQ(d->comm, PETSC_ERR_ARG_WRONGSTATE, "Topology must be intialised. Call DataExTopologyInitialize() first");
-  }
+  if (d->topology_status != DEOBJECT_INITIALIZED) SETERRQ(d->comm, PETSC_ERR_ARG_WRONGSTATE, "Topology must be intialised. Call DataExTopologyInitialize() first");
+
   ierr = PetscLogEventBegin(PTATIN_DataExchangerTopologySetup,0,0,0,0);CHKERRQ(ierr);
   /* given infomation about all my neighbours, make map symmetric */
   ierr = _DataExCompleteCommunicationMap( d->comm,d->n_neighbour_procs,d->neighbour_procs, &symm_nn, &symm_procs );CHKERRQ(ierr);
@@ -384,9 +381,9 @@ PetscErrorCode DataExTopologyFinalize(DataEx d)
   d->n_neighbour_procs = symm_nn;
   d->neighbour_procs   = symm_procs;
   /* allocates memory */
-  if (!d->messages_to_be_sent) {ierr = PetscMalloc1(d->n_neighbour_procs, &d->messages_to_be_sent);CHKERRQ(ierr);}
-  if (!d->message_offsets) {ierr = PetscMalloc1(d->n_neighbour_procs, &d->message_offsets);CHKERRQ(ierr);}
-  if (!d->messages_to_be_recvieved) {ierr = PetscMalloc1(d->n_neighbour_procs, &d->messages_to_be_recvieved);CHKERRQ(ierr);}
+  if (!d->messages_to_be_sent) {ierr = PetscMalloc1(d->n_neighbour_procs+1, &d->messages_to_be_sent);CHKERRQ(ierr);}
+  if (!d->message_offsets) {ierr = PetscMalloc1(d->n_neighbour_procs+1, &d->message_offsets);CHKERRQ(ierr);}
+  if (!d->messages_to_be_recvieved) {ierr = PetscMalloc1(d->n_neighbour_procs+1, &d->messages_to_be_recvieved);CHKERRQ(ierr);}
   if (!d->pack_cnt) {ierr = PetscMalloc(sizeof(PetscInt) * d->n_neighbour_procs, &d->pack_cnt);CHKERRQ(ierr);}
   if (!d->_stats) {ierr = PetscMalloc(sizeof(MPI_Status) * 2*d->n_neighbour_procs, &d->_stats);CHKERRQ(ierr);}
   if (!d->_requests) {ierr = PetscMalloc(sizeof(MPI_Request) * 2*d->n_neighbour_procs, &d->_requests);CHKERRQ(ierr);}
@@ -452,15 +449,12 @@ PetscErrorCode DataExAddToSendCount(DataEx de,const PetscMPIInt proc_id,const Pe
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (de->message_lengths_status == DEOBJECT_FINALIZED) {
-    SETERRQ( de->comm, PETSC_ERR_ORDER, "Message lengths have been defined. To modify these call DataExInitializeSendCount() first" );
-  } else if (de->message_lengths_status != DEOBJECT_INITIALIZED) {
-    SETERRQ( de->comm, PETSC_ERR_ORDER, "Message lengths must be defined. Call DataExInitializeSendCount() first" );
-  }
+  if (de->message_lengths_status == DEOBJECT_FINALIZED) SETERRQ( de->comm, PETSC_ERR_ORDER, "Message lengths have been defined. To modify these call DataExInitializeSendCount() first" );
+  else if (de->message_lengths_status != DEOBJECT_INITIALIZED) SETERRQ( de->comm, PETSC_ERR_ORDER, "Message lengths must be defined. Call DataExInitializeSendCount() first" );
+  
   ierr = _DataExConvertProcIdToLocalIndex( de, proc_id, &local_val );CHKERRQ(ierr);
-  if (local_val == -1) {
-    SETERRQ1( PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG,"Proc %d is not a valid neighbour rank", (int)proc_id );
-  }
+  if (local_val == -1) SETERRQ1( PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG,"Proc %d is not a valid neighbour rank", (int)proc_id );
+  
   de->messages_to_be_sent[local_val] = de->messages_to_be_sent[local_val] + count;
   PetscFunctionReturn(0);
 }
@@ -470,9 +464,8 @@ PetscErrorCode DataExAddToSendCount(DataEx de,const PetscMPIInt proc_id,const Pe
 PetscErrorCode DataExFinalizeSendCount(DataEx de)
 {
   PetscFunctionBegin;
-  if (de->message_lengths_status != DEOBJECT_INITIALIZED) {
-    SETERRQ( de->comm, PETSC_ERR_ORDER, "Message lengths must be defined. Call DataExInitializeSendCount() first" );
-  }
+  if (de->message_lengths_status != DEOBJECT_INITIALIZED) SETERRQ( de->comm, PETSC_ERR_ORDER, "Message lengths must be defined. Call DataExInitializeSendCount() first" );
+  
   de->message_lengths_status = DEOBJECT_FINALIZED;
   PetscFunctionReturn(0);
 }
@@ -493,12 +486,11 @@ PetscErrorCode _DataExInitializeTmpStorage(DataEx de)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (de->n_neighbour_procs < 0) {
-    SETERRQ( PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of neighbour procs < 0");
-  }
-  if (!de->neighbour_procs) {
-    SETERRQ( PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Neighbour proc list is NULL" );
-  }
+  /*if (de->n_neighbour_procs < 0) SETERRQ( PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of neighbour procs < 0");
+  */
+  /*
+  if (!de->neighbour_procs) SETERRQ( PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Neighbour proc list is NULL" );
+  */
   np = de->n_neighbour_procs;
   for (i = 0; i < np; ++i) {
     /*	de->messages_to_be_sent[i] = -1; */
@@ -571,23 +563,15 @@ PetscErrorCode DataExPackData(DataEx de,PetscMPIInt proc_id,PetscInt n,void *dat
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (de->packer_status == DEOBJECT_FINALIZED) {
-    SETERRQ( de->comm, PETSC_ERR_ORDER, "Packed data have been defined. To modify these call DataExInitializeSendCount(), DataExAddToSendCount(), DataExPackInitialize() first" );
-  }
-  else if (de->packer_status != DEOBJECT_INITIALIZED) {
-    SETERRQ( de->comm, PETSC_ERR_ORDER, "Packed data must be defined. Call DataExInitializeSendCount(), DataExAddToSendCount(), DataExPackInitialize() first" );
-  }
+  if (de->packer_status == DEOBJECT_FINALIZED) SETERRQ( de->comm, PETSC_ERR_ORDER, "Packed data have been defined. To modify these call DataExInitializeSendCount(), DataExAddToSendCount(), DataExPackInitialize() first" );
+  else if (de->packer_status != DEOBJECT_INITIALIZED) SETERRQ( de->comm, PETSC_ERR_ORDER, "Packed data must be defined. Call DataExInitializeSendCount(), DataExAddToSendCount(), DataExPackInitialize() first" );
+  
   if (!de->send_message) SETERRQ( de->comm, PETSC_ERR_ORDER, "send_message is not initialized. Call DataExPackInitialize() first" );
   ierr = _DataExConvertProcIdToLocalIndex( de, proc_id, &local );CHKERRQ(ierr);
   if (local == -1) SETERRQ1( PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "proc_id %d is not registered neighbour", (int)proc_id );
-  if (n+de->pack_cnt[local] > de->messages_to_be_sent[local]) {
-    SETERRQ3( PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Trying to pack too many entries to be sent to proc %d. Space requested = %D: Attempt to insert %D",
+  if (n+de->pack_cnt[local] > de->messages_to_be_sent[local]) SETERRQ3( PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Trying to pack too many entries to be sent to proc %d. Space requested = %D: Attempt to insert %D",
               (int)proc_id, de->messages_to_be_sent[local], n+de->pack_cnt[local] );
-    /* don't need this - the catch for too many messages will pick this up. Gives us more info though */
-    if (de->packer_status == DEOBJECT_FINALIZED) {
-      SETERRQ( de->comm, PETSC_ERR_ARG_WRONG, "Cannot insert any more data. DataExPackFinalize() has been called." );
-    }
-  }
+
   /* copy memory */
   insert_location = de->message_offsets[local] + de->pack_cnt[local];
   dest = ((char*)de->send_message) + de->unit_message_size*insert_location;
@@ -612,10 +596,8 @@ PetscErrorCode DataExPackFinalize(DataEx de)
   if (de->packer_status != DEOBJECT_INITIALIZED) SETERRQ( de->comm, PETSC_ERR_ORDER, "Packer has not been initialized. Must call DataExPackInitialize() first." );
   np = de->n_neighbour_procs;
   for (i = 0; i < np; ++i) {
-    if (de->pack_cnt[i] != de->messages_to_be_sent[i]) {
-      SETERRQ3( PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not all messages for neighbour[%d] have been packed. Expected %D : Inserted %D",
+    if (de->pack_cnt[i] != de->messages_to_be_sent[i]) SETERRQ3( PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not all messages for neighbour[%d] have been packed. Expected %D : Inserted %D",
                 (int)de->neighbour_procs[i], de->messages_to_be_sent[i], de->pack_cnt[i] );
-    }
   }
   /* init */
   for (i = 0; i < np; ++i) {
@@ -689,7 +671,7 @@ PetscErrorCode DataExEnd(DataEx de)
   if (!de->recv_message) SETERRQ( de->comm, PETSC_ERR_ORDER, "recv_message has not been initialized. Must call DataExPackFinalize() first" );
   ierr = PetscLogEventBegin(PTATIN_DataExchangerEnd,0,0,0,0);CHKERRQ(ierr);
   np = de->n_neighbour_procs;
-  ierr = PetscMalloc1(np, &message_recv_offsets);CHKERRQ(ierr);
+  ierr = PetscMalloc1(np+1, &message_recv_offsets);CHKERRQ(ierr);
   message_recv_offsets[0] = 0;
   total = de->messages_to_be_recvieved[0];
   for (i = 1; i < np; ++i) {

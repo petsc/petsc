@@ -24,9 +24,9 @@ int main(int argc,char **args)
 {
   Vec            x, b, u;      /* approx solution, RHS, exact solution */
   Mat            A;            /* linear system matrix */
-  KSP            ksp;         /* linear solver context */
+  KSP            ksp;          /* linear solver context */
   PC             pc;           /* preconditioner context */
-  PetscReal      norm;  /* norm of solution error */
+  PetscReal      norm;         /* norm of solution error */
   PetscErrorCode ierr;
   PetscInt       i,n = 10,col[3],its;
   PetscMPIInt    size;
@@ -169,7 +169,7 @@ int main(int argc,char **args)
      Always call PetscFinalize() before exiting a program.  This routine
        - finalizes the PETSc libraries as well as MPI
        - provides summary and diagnostic information if certain runtime
-         options are chosen (e.g., -log_summary).
+         options are chosen (e.g., -log_view).
   */
   ierr = PetscFinalize();
   return ierr;

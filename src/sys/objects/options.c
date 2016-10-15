@@ -763,10 +763,14 @@ PetscErrorCode  PetscOptionsInsert(PetscOptions options,int *argc,char ***args,c
   }
 
 #if defined(PETSC_HAVE_YAML)
-  char      yaml_file[PETSC_MAX_PATH_LEN];
-  PetscBool yaml_flg = PETSC_FALSE;
-  ierr = PetscOptionsGetString(NULL,NULL,"-options_file_yaml",yaml_file,PETSC_MAX_PATH_LEN,&yaml_flg);CHKERRQ(ierr);
-  if (yaml_flg) ierr = PetscOptionsInsertFileYAML(PETSC_COMM_WORLD,yaml_file,PETSC_TRUE);CHKERRQ(ierr);
+  {
+    char      yaml_file[PETSC_MAX_PATH_LEN];
+    PetscBool yaml_flg;
+    ierr = PetscOptionsGetString(NULL,NULL,"-options_file_yaml",yaml_file,PETSC_MAX_PATH_LEN,&yaml_flg);CHKERRQ(ierr);
+    if (yaml_flg) {
+      ierr = PetscOptionsInsertFileYAML(PETSC_COMM_WORLD,yaml_file,PETSC_TRUE);CHKERRQ(ierr);
+    }
+  }
 #endif
 
   /* insert command line options again because they take precedence over arguments in petscrc/environment */
@@ -2320,9 +2324,10 @@ PetscErrorCode PetscOptionsGetEnumArray(PetscOptions options,const char pre[],co
    The Fortran interface is slightly different from the C/C++
    interface (len is not used).  Sample usage in Fortran follows
 .vb
-      character *20 string
-      integer   flg, ierr
-      call PetscOptionsGetString(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-s',string,flg,ierr)
+      character *20    string
+      PetscErrorCode   ierr
+      PetscBool        set
+      call PetscOptionsGetString(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-s',string,set,ierr)
 .ve
 
    Notes: if the option is given but no string is provided then an empty string is returned and set is given the value of PETSC_TRUE

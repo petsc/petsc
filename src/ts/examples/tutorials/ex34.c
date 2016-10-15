@@ -2,8 +2,8 @@ static const char help[] = "An elastic wave equation driven by Dieterich-Ruina f
 /*
 This whole derivation comes from Erickson, Birnir, and Lavallee [2010]. The model comes from the continuum limit in Carlson and Langer [1989],
 
-  u_{tt}   = c^2 u_{xx} - \tilde\gamma^2 u − (\gamma^2 / \xi) (\theta + \ln(u_t + 1))
-  \theta_t = −(u_t + 1) (\theta + (1 + \epsilon) \ln(u_t +1))
+  u_{tt}   = c^2 u_{xx} - \tilde\gamma^2 u - (\gamma^2 / \xi) (\theta + \ln(u_t + 1))
+  \theta_t = -(u_t + 1) (\theta + (1 + \epsilon) \ln(u_t +1))
 
 which can be reduced to a first order system,
 
@@ -226,6 +226,8 @@ int main(int argc, char **argv)
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, -11, 3, 1, NULL, &dm);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+  ierr = DMSetUp(dm);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(dm, 0.0, 20.0, 0.0, 0.0, 0.0, 0.0);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(dm, &X);CHKERRQ(ierr);
 

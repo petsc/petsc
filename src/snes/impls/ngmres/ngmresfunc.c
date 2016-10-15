@@ -102,8 +102,7 @@ PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes,PetscInt ivec,Pe
     } else {
       ierr =SNESComputeFunction(snes,XA,FA);CHKERRQ(ierr);
     }
-  }
-  else {
+  } else {
     ierr = VecCopy(FM,FA);CHKERRQ(ierr);
     ierr = VecScale(FA,1.-alph_total);CHKERRQ(ierr);
     ierr = VecMAXPY(FA,l,beta,Fdot);CHKERRQ(ierr);

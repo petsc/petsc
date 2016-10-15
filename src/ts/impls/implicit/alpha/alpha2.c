@@ -273,7 +273,7 @@ static PetscErrorCode TSEvaluateWLTE_Alpha(TS ts,NormType wnormtype,PetscInt *or
   Vec            V = th->V1;              /* V = solution */
   Vec            Y = th->vec_lte_work[0]; /* Y = X + LTE  */
   Vec            Z = th->vec_lte_work[1]; /* Z = V + LTE  */
-  PetscReal      enormX,enormV;
+  PetscReal      enormX,enormV,enormXa,enormVa,enormXr,enormVr;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -295,8 +295,8 @@ static PetscErrorCode TSEvaluateWLTE_Alpha(TS ts,NormType wnormtype,PetscInt *or
     ierr = VecMAXPY(Z,3,scal,vecV);CHKERRQ(ierr);
   }
   /* XXX ts->atol and ts->vatol are not appropriate for computing enormV */
-  ierr = TSErrorWeightedNorm(ts,X,Y,wnormtype,&enormX);CHKERRQ(ierr);
-  ierr = TSErrorWeightedNorm(ts,V,Z,wnormtype,&enormV);CHKERRQ(ierr);
+  ierr = TSErrorWeightedNorm(ts,X,Y,wnormtype,&enormX,&enormXa,&enormXr);CHKERRQ(ierr);
+  ierr = TSErrorWeightedNorm(ts,V,Z,wnormtype,&enormV,&enormVa,&enormVr);CHKERRQ(ierr);
   if (wnormtype == NORM_2)
     *wlte = PetscSqrtReal(PetscSqr(enormX)/2 + PetscSqr(enormV)/2);
   else

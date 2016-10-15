@@ -9,5 +9,6 @@ anchors
 *.toc
 /tmp
 developerstmp.tex
+acknowltmp.tex
 manual1.tex
 intro.pdf

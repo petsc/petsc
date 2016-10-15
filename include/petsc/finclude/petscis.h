@@ -6,8 +6,8 @@
 
 
       PetscEnum IS_COLORING_GLOBAL
-      PetscEnum IS_COLORING_GHOSTED
-      parameter (IS_COLORING_GLOBAL = 0,IS_COLORING_GHOSTED = 1)
+      PetscEnum IS_COLORING_LOCAL
+      parameter (IS_COLORING_GLOBAL = 0,IS_COLORING_LOCAL = 1)
 
       PetscEnum IS_GENERAL
       PetscEnum IS_STRIDE

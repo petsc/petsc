@@ -1,7 +1,5 @@
 
 #requirespackage  'PETSC_HAVE_HYPRE'
-#requiresprecision double
-#requiresscalar    real
 
 
 ALL: lib

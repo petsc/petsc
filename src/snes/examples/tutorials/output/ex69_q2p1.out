@@ -12,18 +12,19 @@ Labels:
   depth: 3 strata of sizes (16, 24, 9)
   Face Sets: 4 strata of sizes (3, 3, 3, 3)
   marker: 4 strata of sizes (7, 7, 7, 7)
-Integral of pressure: 0.
-  0 SNES Function norm 0.0855847 
-    0 KSP Residual norm 0.339603 
-    1 KSP Residual norm < 1.e-11
-  Linear solve converged due to CONVERGED_ATOL iterations 1
-  1 SNES Function norm < 1.e-11
+Integral of pressure: -0.0455228
+  0 SNES Function norm 0.0870839 
+    0 KSP Residual norm 0.4791 
+    1 KSP Residual norm 1.692e-10 
+    2 KSP Residual norm < 1.e-11
+  Linear solve converged due to CONVERGED_ATOL iterations 2
+  1 SNES Function norm 3.072e-10 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=1
+  total number of linear solver iterations=2
   total number of function evaluations=2
   norm schedule ALWAYS
   SNESLineSearch Object: 1 MPI processes
@@ -59,7 +60,7 @@ SNES Object: 1 MPI processes
           using PRECONDITIONED norm type for convergence test
         PC Object: (fieldsplit_velocity_) 1 MPI processes
           type: lu
-            LU: out-of-place factorization
+            out-of-place factorization
             tolerance for zero pivot 2.22045e-14
             matrix ordering: nd
             factor fill ratio given 5., needed 1.17527
@@ -92,24 +93,24 @@ SNES Object: 1 MPI processes
           linear system matrix followed by preconditioner matrix:
           Mat Object: (fieldsplit_pressure_) 1 MPI processes
             type: schurcomplement
-            rows=16, cols=16
+            rows=27, cols=27
               has attached null space
               Schur complement A11 - A10 inv(A00) A01
               A11
                 Mat Object: (fieldsplit_pressure_) 1 MPI processes
                   type: seqaij
-                  rows=16, cols=16
-                  total: nonzeros=100, allocated nonzeros=100
+                  rows=27, cols=27, bs=3
+                  total: nonzeros=81, allocated nonzeros=81
                   total number of mallocs used during MatSetValues calls =0
                     has attached null space
-                    not using I-node routines
+                    using I-node routines: found 9 nodes, limit used is 5
               A10
                 Mat Object: 1 MPI processes
                   type: seqaij
-                  rows=16, cols=70
-                  total: nonzeros=384, allocated nonzeros=384
+                  rows=27, cols=70, rbs=3, cbs = 1
+                  total: nonzeros=378, allocated nonzeros=378
                   total number of mallocs used during MatSetValues calls =0
-                    not using I-node routines
+                    using I-node routines: found 9 nodes, limit used is 5
               KSP of A00
                 KSP Object: (fieldsplit_velocity_) 1 MPI processes
                   type: gmres
@@ -121,7 +122,7 @@ SNES Object: 1 MPI processes
                   using PRECONDITIONED norm type for convergence test
                 PC Object: (fieldsplit_velocity_) 1 MPI processes
                   type: lu
-                    LU: out-of-place factorization
+                    out-of-place factorization
                     tolerance for zero pivot 2.22045e-14
                     matrix ordering: nd
                     factor fill ratio given 5., needed 1.17527
@@ -143,24 +144,24 @@ SNES Object: 1 MPI processes
               A01
                 Mat Object: 1 MPI processes
                   type: seqaij
-                  rows=70, cols=16
-                  total: nonzeros=384, allocated nonzeros=384
+                  rows=70, cols=27
+                  total: nonzeros=378, allocated nonzeros=378
                   total number of mallocs used during MatSetValues calls =0
                     using I-node routines: found 45 nodes, limit used is 5
           Mat Object: 1 MPI processes
             type: seqaij
-            rows=16, cols=16
-            total: nonzeros=196, allocated nonzeros=196
+            rows=27, cols=27, rbs=3, cbs = 1
+            total: nonzeros=441, allocated nonzeros=441
             total number of mallocs used during MatSetValues calls =0
-              using I-node routines: found 12 nodes, limit used is 5
+              using I-node routines: found 9 nodes, limit used is 5
     linear system matrix = precond matrix:
     Mat Object: 1 MPI processes
       type: seqaij
-      rows=86, cols=86
-      total: nonzeros=2340, allocated nonzeros=2340
+      rows=97, cols=97
+      total: nonzeros=2309, allocated nonzeros=2309
       total number of mallocs used during MatSetValues calls =0
         has attached null space
-        using I-node routines: found 49 nodes, limit used is 5
+        using I-node routines: found 45 nodes, limit used is 5
 Number of SNES iterations = 1
-L_2 Error: 0.088 [0.00492, 0.0879]
+L_2 Error: 0.0124 [8.94e-05, 0.0124]
 Integral of pressure: 0.

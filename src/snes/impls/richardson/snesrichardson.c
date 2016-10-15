@@ -257,6 +257,8 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
 
      This uses no derivative information thus will be much slower then Newton's method obtained with -snes_type ls
 
+     Only supports left non-linear preconditioning.
+
 .seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNEWTONTR, SNESNGMRES, SNESQN, SNESNCG
 M*/
 #undef __FUNCT__

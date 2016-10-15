@@ -105,7 +105,8 @@ int main( int argc, char **argv )
      the distributed array, Create the vectors.
   */
   ierr = DMDACreate2d(MPI_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,user.mx,user.my,Nx,Ny,1,1,NULL,NULL,&user.dm);CHKERRQ(ierr);
-
+  ierr = DMSetFromOptions(user.dm);CHKERRQ(ierr);
+  ierr = DMSetUp(user.dm);CHKERRQ(ierr);
   /*
      Extract global and local vectors from DM; The local vectors are
      used solely as work space for the evaluation of the function,
@@ -768,7 +769,7 @@ static PetscErrorCode MSA_Plate(Vec XL,Vec XU,void *ctx){
 
   user->bmy = PetscMax(0,user->bmy);user->bmy = PetscMin(my,user->bmy);
   user->bmx = PetscMax(0,user->bmx);user->bmx = PetscMin(mx,user->bmx);
-  bmy=user->bmy, bmx=user->bmx;
+  bmy=user->bmy; bmx=user->bmx;
 
   ierr = DMDAGetCorners(user->dm,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
 

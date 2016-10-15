@@ -537,6 +537,8 @@ PetscErrorCode KSPReasonViewFromOptions(KSP ksp)
    Call KSPGetConvergedReason() to determine if the solver converged or failed and
    why. The number of iterations can be obtained from KSPGetIterationNumber().
 
+   If you provide a matrix that has a MatSetNullSpace() and MatSetTransposeNullSpace() this will use that information in solving singular systems. See MatNullSpaceCreate() for details.
+
    If using a direct method (e.g., via the KSP solver
    KSPPREONLY and a preconditioner such as PCLU/PCILU),
    then its=1.  See KSPSetTolerances() and KSPConvergedDefault()
@@ -552,7 +554,7 @@ PetscErrorCode KSPReasonViewFromOptions(KSP ksp)
 .keywords: KSP, solve, linear system
 
 .seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPConvergedDefault(),
-          KSPSolveTranspose(), KSPGetIterationNumber()
+          KSPSolveTranspose(), KSPGetIterationNumber(), MatNullSpaceCreate(), MatSetNullSpace(), MatSetTransposeNullSpace()
 @*/
 PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
 {
@@ -864,6 +866,8 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
 -  x - solution vector
 
    Notes: For complex numbers this solve the non-Hermitian transpose system.
+
+   This currently does NOT correctly use the null space of the operator and its transpose for solving singular systems.
 
    Developer Notes: We need to implement a KSPSolveHermitianTranspose()
 
@@ -1700,6 +1704,31 @@ PetscErrorCode KSPMonitor(KSP ksp,PetscInt it,PetscReal rnorm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscMonitorCompare"
+/*
+
+    Checks if two monitors are identical; if they are then it destroys the new one
+*/
+PetscErrorCode PetscMonitorCompare(PetscErrorCode (*nmon)(void),void *nmctx,PetscErrorCode (*nmdestroy)(void**),PetscErrorCode (*mon)(void),void *mctx,PetscErrorCode (*mdestroy)(void**),PetscBool *identical)
+{
+  *identical = PETSC_FALSE;
+  if (nmon == mon && nmdestroy == mdestroy) {
+    if (nmctx == mctx) *identical = PETSC_TRUE;
+    else if (nmdestroy == (PetscErrorCode (*)(void**)) PetscViewerAndFormatDestroy) {
+      PetscViewerAndFormat *old = (PetscViewerAndFormat*)mctx, *newo = (PetscViewerAndFormat*)nmctx;
+      if (old->viewer == newo->viewer && old->format == newo->format) *identical = PETSC_TRUE;
+    }
+    if (*identical) {
+      if (mdestroy) {
+        PetscErrorCode ierr;
+        ierr = (*mdestroy)(&nmctx);CHKERRQ(ierr);
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "KSPMonitorSet"
 /*@C
    KSPMonitorSet - Sets an ADDITIONAL function to be called at every iteration to monitor
@@ -1760,18 +1789,15 @@ PetscErrorCode  KSPMonitorSet(KSP ksp,PetscErrorCode (*monitor)(KSP,PetscInt,Pet
 {
   PetscInt       i;
   PetscErrorCode ierr;
+  PetscBool      identical;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (ksp->numbermonitors >= MAXKSPMONITORS) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Too many KSP monitors set");
   for (i=0; i<ksp->numbermonitors;i++) {
-    if (monitor == ksp->monitor[i] && monitordestroy == ksp->monitordestroy[i] && mctx == ksp->monitorcontext[i]) {
-      if (monitordestroy) {
-        ierr = (*monitordestroy)(&mctx);CHKERRQ(ierr);
-      }
-      PetscFunctionReturn(0);
-    }
+    ierr = PetscMonitorCompare((PetscErrorCode (*)(void))monitor,mctx,monitordestroy,(PetscErrorCode (*)(void))ksp->monitor[i],ksp->monitorcontext[i],ksp->monitordestroy[i],&identical);CHKERRQ(ierr);
+    if (identical) PetscFunctionReturn(0);
   }
+  if (ksp->numbermonitors >= MAXKSPMONITORS) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Too many KSP monitors set");
   ksp->monitor[ksp->numbermonitors]          = monitor;
   ksp->monitordestroy[ksp->numbermonitors]   = monitordestroy;
   ksp->monitorcontext[ksp->numbermonitors++] = (void*)mctx;

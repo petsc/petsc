@@ -348,6 +348,22 @@ static PetscErrorCode PCSetFromOptions_SVD(PetscOptionItems *PetscOptionsObject,
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PCView_SVD"
+static PetscErrorCode PCView_SVD(PC pc,PetscViewer viewer)
+{
+  PC_SVD         *svd = (PC_SVD*)pc->data;
+  PetscErrorCode ierr;
+  PetscBool      iascii;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
+    ierr = PetscViewerASCIIPrintf(viewer,"  SVD: All singular values smaller than %g treated as zero\n",(double)svd->zerosing);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  SVD: Provided essential rank of the matrix %D (all other eigenvalues are zeroed)\n",svd->essrank);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 /* -------------------------------------------------------------------------- */
 /*
    PCCreate_SVD - Creates a SVD preconditioner context, PC_SVD,
@@ -407,7 +423,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_SVD(PC pc)
   pc->ops->reset           = PCReset_SVD;
   pc->ops->destroy         = PCDestroy_SVD;
   pc->ops->setfromoptions  = PCSetFromOptions_SVD;
-  pc->ops->view            = 0;
+  pc->ops->view            = PCView_SVD;
   pc->ops->applyrichardson = 0;
   PetscFunctionReturn(0);
 }

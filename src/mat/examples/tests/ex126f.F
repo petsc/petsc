@@ -23,6 +23,10 @@
       PetscReal      info(MAT_FACTORINFO_SIZE)
 
       call PetscInitialize(PETSC_NULL_CHARACTER, ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
       m    = 10
       one  = 1.0
       ione = 1

@@ -1064,7 +1064,7 @@ static PetscErrorCode PetscViewerFileGetName_Binary(PetscViewer viewer,const cha
     Not Collective
 
   Input Parameter:
-.  viewer - the PetscViewer; must be a binary, MATLAB, hdf, or netcdf PetscViewer
+.  viewer - the PetscViewer; must be a PETSCVIEWERBINARY, PETSCVIEWERMATLAB, PETSCVIEWERHDF5, or PETSCVIEWERASCII  PetscViewer
 
   Output Parameter:
 .  type - type of file
@@ -1127,7 +1127,7 @@ PetscErrorCode PetscViewerBinarySetUseMPIIO(PetscViewer viewer,PetscBool flg)
     Logically Collective on PetscViewer
 
   Input Parameters:
-+  viewer - the PetscViewer; must be a binary, Matlab, hdf, or netcdf PetscViewer
++  viewer - the PetscViewer; must be a a PETSCVIEWERBINARY, PETSCVIEWERMATLAB, PETSCVIEWERHDF5, or PETSCVIEWERASCII  PetscViewer
 -  type - type of file
 $    FILE_MODE_WRITE - create new file for binary output
 $    FILE_MODE_READ - open existing file for binary input
@@ -1417,6 +1417,16 @@ static PetscErrorCode PetscViewerSetFromOptions_Binary(PetscOptionItems *PetscOp
   binary->setfromoptionscalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
+
+/*MC
+   PETSCVIEWERBINARY - A viewer that saves to binary files
+
+
+.seealso:  PetscViewerBinaryOpen(), PETSC_VIEWER_STDOUT_(),PETSC_VIEWER_STDOUT_SELF, PETSC_VIEWER_STDOUT_WORLD, PetscViewerCreate(), PetscViewerASCIIOpen(),
+           PetscViewerMatlabOpen(), VecView(), DMView(), PetscViewerMatlabPutArray(), PETSCVIEWERASCII, PETSCVIEWERMATLAB, PETSCVIEWERDRAW,
+           PetscViewerFileSetName(), PetscViewerFileSetMode(), PetscViewerFormat, PetscViewerType, PetscViewerSetType()
+
+M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerCreate_Binary"

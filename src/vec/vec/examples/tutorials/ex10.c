@@ -1,5 +1,5 @@
 
-static char help[] = "Tests I/O of vectors for different data formats (binary,HDF5,NetCDF) and illustrates the use of user-defined event logging\n\n";
+static char help[] = "Tests I/O of vectors for different data formats (binary,HDF5) and illustrates the use of user-defined event logging\n\n";
 
 #include <petscvec.h>
 #include <petscviewerhdf5.h>

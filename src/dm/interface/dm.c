@@ -977,7 +977,10 @@ PetscErrorCode DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
       ierr = MPIU_Allreduce(&bsLocal, &bsMin, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
       if (bsMin != bsMax) {bs = 1;}
       else                {bs = bsMax;}
-      ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)dm), bs < 0 ? 1 : bs, size, ltog, PETSC_OWN_POINTER, &dm->ltogmap);CHKERRQ(ierr);
+      bs   = bs < 0 ? 1 : bs;
+      /* Must reduce indices by blocksize */
+      if (bs > 1) for (l = 0; l < size; ++l) ltog[l] /= bs;
+      ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)dm), bs, size, ltog, PETSC_OWN_POINTER, &dm->ltogmap);CHKERRQ(ierr);
       ierr = PetscLogObjectParent((PetscObject)dm, (PetscObject)dm->ltogmap);CHKERRQ(ierr);
     } else {
       if (!dm->ops->getlocaltoglobalmapping) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM can not create LocalToGlobalMapping");
@@ -1121,7 +1124,7 @@ PetscErrorCode  DMCreateInjection(DM dm1,DM dm2,Mat *mat)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm1,DM_CLASSID,1);
   PetscValidHeaderSpecific(dm2,DM_CLASSID,2);
-  if (!*dm1->ops->getinjection) SETERRQ(PetscObjectComm((PetscObject)dm1),PETSC_ERR_SUP,"DMCreateInjection not implemented for this type");
+  if (!dm1->ops->getinjection) SETERRQ(PetscObjectComm((PetscObject)dm1),PETSC_ERR_SUP,"DMCreateInjection not implemented for this type");
   ierr = (*dm1->ops->getinjection)(dm1,dm2,mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1135,7 +1138,7 @@ PetscErrorCode  DMCreateInjection(DM dm1,DM dm2,Mat *mat)
 
     Input Parameter:
 +   dm - the DM object
--   ctype - IS_COLORING_GHOSTED or IS_COLORING_GLOBAL
+-   ctype - IS_COLORING_LOCAL or IS_COLORING_GLOBAL
 
     Output Parameter:
 .   coloring - the coloring
@@ -1175,7 +1178,7 @@ PetscErrorCode  DMCreateColoring(DM dm,ISColoringType ctype,ISColoring *coloring
        do not need to do it yourself.
 
        By default it also sets the nonzero structure and puts in the zero entries. To prevent setting
-       the nonzero pattern call DMDASetMatPreallocateOnly()
+       the nonzero pattern call DMSetMatrixPreallocateOnly()
 
        For structured grid problems, when you call MatView() on this matrix it is displayed using the global natural ordering, NOT in the ordering used
        internally by PETSc.
@@ -1607,13 +1610,12 @@ PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *len, char ***namelis
   if (dm->ops->createdomaindecomposition) {
     ierr = (*dm->ops->createdomaindecomposition)(dm,&l,namelist,innerislist,outerislist,dmlist);CHKERRQ(ierr);
     /* copy subdomain hooks and context over to the subdomain DMs */
-    if (dmlist) {
-      if (!*dmlist) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_POINTER,"Method mapped to dm->ops->createdomaindecomposition must allocate at least one DM");
+    if (dmlist && *dmlist) {
       for (i = 0; i < l; i++) {
         for (link=dm->subdomainhook; link; link=link->next) {
           if (link->ddhook) {ierr = (*link->ddhook)(dm,(*dmlist)[i],link->ctx);CHKERRQ(ierr);}
         }
-        (*dmlist)[i]->ctx = dm->ctx;
+        if (dm->ctx) (*dmlist)[i]->ctx = dm->ctx;
       }
     }
     if (len) *len = l;
@@ -1658,7 +1660,7 @@ PetscErrorCode DMCreateDomainDecompositionScatters(DM dm,PetscInt n,DM *subdms,V
   PetscValidPointer(subdms,3);
   if (dm->ops->createddscatters) {
     ierr = (*dm->ops->createddscatters)(dm,n,subdms,iscat,oscat,gscat);CHKERRQ(ierr);
-  } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "This type has no DMCreateDomainDecompositionLocalScatter implementation defined");
+  } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "This type has no DMCreateDomainDecompositionScatter implementation defined");
   PetscFunctionReturn(0);
 }
 
@@ -3990,6 +3992,7 @@ PetscErrorCode DMRestrictHook_Coordinates(DM dm,DM dmc,void *ctx)
   ierr = DMGetCoordinates(dmc,&ccoords);CHKERRQ(ierr);
   if (coords && !ccoords) {
     ierr = DMCreateGlobalVector(dmc_coord,&ccoords);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)ccoords,"coordinates");CHKERRQ(ierr);
     ierr = DMCreateInjection(dmc_coord,dm_coord,&inject);CHKERRQ(ierr);
     ierr = MatRestrict(inject,coords,ccoords);CHKERRQ(ierr);
     ierr = MatDestroy(&inject);CHKERRQ(ierr);
@@ -4014,6 +4017,7 @@ static PetscErrorCode DMSubDomainHook_Coordinates(DM dm,DM subdm,void *ctx)
   ierr = DMGetCoordinates(subdm,&ccoords);CHKERRQ(ierr);
   if (coords && !ccoords) {
     ierr = DMCreateGlobalVector(subdm_coord,&ccoords);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)ccoords,"coordinates");CHKERRQ(ierr);
     ierr = DMCreateLocalVector(subdm_coord,&clcoords);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject)clcoords,"coordinates");CHKERRQ(ierr);
     ierr = DMCreateDomainDecompositionScatters(dm_coord,1,&subdm_coord,NULL,&scat_i,&scat_g);CHKERRQ(ierr);
@@ -4965,7 +4969,7 @@ PetscErrorCode DMGetOutputDM(DM dm, DM *odm)
   PetscValidPointer(odm,2);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = PetscSectionHasConstraints(section, &hasConstraints);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&hasConstraints, &ghasConstraints, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject) dm));CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&hasConstraints, &ghasConstraints, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject) dm));CHKERRQ(ierr);
   if (!ghasConstraints) {
     *odm = dm;
     PetscFunctionReturn(0);
@@ -6410,3 +6414,53 @@ PetscErrorCode DMGetNeighbors(DM dm,PetscInt *nranks,const PetscMPIInt *ranks[])
   PetscFunctionReturn(0);
 }
 
+#include <petsc/private/matimpl.h> /* Needed because of coloring->ctype below */
+
+#undef __FUNCT__
+#define __FUNCT__ "MatFDColoringApply_AIJDM"
+/*
+    Converts the input vector to a ghosted vector and then calls the standard coloring code.
+    This has be a different function because it requires DM which is not defined in the Mat library
+*/
+PetscErrorCode  MatFDColoringApply_AIJDM(Mat J,MatFDColoring coloring,Vec x1,void *sctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (coloring->ctype == IS_COLORING_LOCAL) {
+    Vec x1local;
+    DM  dm;
+    ierr = MatGetDM(J,&dm);CHKERRQ(ierr);
+    if (!dm) SETERRQ(PetscObjectComm((PetscObject)J),PETSC_ERR_ARG_INCOMP,"IS_COLORING_LOCAL requires a DM");
+    ierr = DMGetLocalVector(dm,&x1local);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(dm,x1,INSERT_VALUES,x1local);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(dm,x1,INSERT_VALUES,x1local);CHKERRQ(ierr);
+    x1   = x1local;
+  }
+  ierr = MatFDColoringApply_AIJ(J,coloring,x1,sctx);CHKERRQ(ierr);
+  if (coloring->ctype == IS_COLORING_LOCAL) {
+    DM  dm;
+    ierr = MatGetDM(J,&dm);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(dm,&x1);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatFDColoringUseDM"
+/*@
+    MatFDColoringUseDM - allows a MatFDColoring object to use the DM associated with the matrix to use a IS_COLORING_LOCAL coloring
+
+    Input Parameter:
+.    coloring - the MatFDColoring object
+
+    Developer Notes: this routine exists because the PETSc Mat library does not know about the DM objects
+
+.seealso: MatFDColoring, MatFDColoringCreate(), ISColoringType
+@*/
+PetscErrorCode  MatFDColoringUseDM(Mat coloring,MatFDColoring fdcoloring)
+{
+  PetscFunctionBegin;
+  coloring->ops->fdcoloringapply = MatFDColoringApply_AIJDM;
+  PetscFunctionReturn(0);
+}

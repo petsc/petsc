@@ -43,6 +43,7 @@ row 6: (5, -7.)  (6, 14.)  (7, -7.)
 row 7: (0, -8.)  (6, -8.)  (7, 16.) 
 Test MatISGetMPIXAIJ
 Test MatGetLocalSubMatrix
+Test MatConvert_Nest_IS
 Test MatGetSubMatrix
 Test MatDiagonalSet
 Test MatShift
@@ -84,3 +85,4 @@ Test MatMissingDiagonal
 [1] [2,4) Missing 0, row -1 (diag zero)
 [2] [4,6) Missing 1, row 4 (diag zero)
 [3] [6,8) Missing 1, row 6 (diag zero)
+Test MatTranspose

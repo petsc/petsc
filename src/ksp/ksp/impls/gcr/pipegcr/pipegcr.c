@@ -5,6 +5,21 @@
 #include "petscsys.h"
 #include <../src/ksp/ksp/impls/gcr/pipegcr/pipegcrimpl.h>       /*I  "petscksp.h"  I*/
 
+static PetscBool  cited = PETSC_FALSE;
+static const char citation[] =
+  "@article{SSM2016,\n"
+  "  author = {P. Sanan and S.M. Schnepp and D.A. May},\n"
+  "  title = {Pipelined, Flexible Krylov Subspace Methods},\n"
+  "  journal = {SIAM Journal on Scientific Computing},\n"
+  "  volume = {38},\n"
+  "  number = {5},\n"
+  "  pages = {C441-C470},\n"
+  "  year = {2016},\n"
+  "  doi = {10.1137/15M1049130},\n"
+  "  URL = {http://dx.doi.org/10.1137/15M1049130},\n"
+  "  eprint = {http://dx.doi.org/10.1137/15M1049130}\n"
+  "}\n";
+
 #define KSPPIPEGCR_DEFAULT_MMAX 15
 #define KSPPIPEGCR_DEFAULT_NPREALLOC 5
 #define KSPPIPEGCR_DEFAULT_VECB 5
@@ -274,6 +289,8 @@ static PetscErrorCode KSPSolve_PIPEGCR(KSP ksp)
   PetscBool      issym;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister(citation,&cited);CHKERRQ(ierr);
+
   ierr = KSPGetOperators(ksp, &A, &B);CHKERRQ(ierr);
   x = ksp->vec_sol;
   b = ksp->vec_rhs;
@@ -674,7 +691,7 @@ PetscErrorCode KSPPIPEGCRGetNprealloc(KSP ksp,PetscInt *nprealloc)
   Level: intermediate
 
   Options Database:
-. -ksp_pipegcr_truncation, -ksp_pipegcr_truncation_restart
+. -ksp_pipegcr_truncation_type <standard,notay> - which stored basis vectors to orthogonalize against
 
 .seealso: KSPPIPEGCR, KSPPIPEGCRSetTruncationType, KSPPIPEGCRTruncationType, KSPFCDTruncationType
 @*/
@@ -706,7 +723,7 @@ PetscErrorCode KSPPIPEGCRSetTruncationType(KSP ksp,KSPFCDTruncationType truncstr
 .  truncstrat - the strategy type
 
   Options Database:
-. -ksp_pipegcr_truncation, -ksp_pipegcr_truncation_restart
+. -ksp_pipegcr_truncation_type <standard,notay> - which stored basis vectors to orthogonalize against
 
    Level: intermediate
 
@@ -802,8 +819,16 @@ PetscErrorCode  KSPPIPEGCRSetModifyPC(KSP ksp,PetscErrorCode (*function)(KSP,Pet
 }
 
 /*MC
-     KSPPIPEGCR - Implements the preconditioned Generalized Conjugate Residual method with pipelining.
+     KSPPIPEGCR - Implements a Pipelined Generalized Conjugate Residual method.
 
+  Options Database Keys:
+.   -ksp_pipegcr_mmax <N>  - the max number of Krylov directions to orthogonalize against
+.   -ksp_pipegcr_unroll_w - unroll w at the storage cost of a maximum of (mmax+1) extra vectors with the benefit of better pipelining (default: PETSC_TRUE)
+.   -ksp_pipegcr_nprealloc <N> - the number of vectors to preallocated for storing Krylov directions. Once exhausted new directions are allocated blockwise (default: 5)
+.   -ksp_pipegcr_truncation_type <standard,notay> - which previous search directions to orthogonalize against
+
+
+  Notes:
     The PIPEGCR Krylov method supports non-symmetric matrices and permits the use of a preconditioner
     which may vary from one iteration to the next. Users can can define a method to vary the
     preconditioner between iterates via KSPPIPEGCRSetModifyPC().
@@ -814,23 +839,19 @@ PetscErrorCode  KSPPIPEGCRSetModifyPC(KSP ksp,PetscErrorCode (*function)(KSP,Pet
 
     Only supports left preconditioning.
 
-    The natural norm for this method is (u,Au). This norm is available at no computational costs. Choosing norm types preconditioned or unpreconditioned involves a blocking reduction which prevents any benefit from pipelining.
+    The natural "norm" for this method is (u,Au), where u is the preconditioned residual. This norm is available at no additional computational cost, as with standard CG. Choosing preconditioned or unpreconditioned norm types involves a blocking reduction which prevents any benefit from pipelining.
 
-   Options Database Keys:
-+   -ksp_pipegcr_mmax <N>  - the max number of Krylov directions to orthogonalize against
-.   -ksp_pipegcr_unroll_w - unroll w at the storage cost of a maximum of (mmax+1) extra vectors with the benefit of better pipelining (default: PETSC_TRUE)
-.   -ksp_pipegcr_nprealloc <N> - the number of vectors to preallocated for storing Krylov directions. Once exhausted new directions are allocated blockwise (default: 5)
-.   -ksp_pipegcr_truncation - Truncate number of previous Krylov directions
--   -ksp_pipegcr_trancation_restart - Truncation-restart strategy: Keep at most mmax Krylov directions then restart (the default)
+  Reference:
+    P. Sanan, S.M. Schnepp, and D.A. May,
+    "Pipelined, Flexible Krylov Subspace Methods,"
+    SIAM Journal on Scientific Computing 2016 38:5, C441-C470,
+    DOI: 10.1137/15M1049130
 
-   Level: beginner
-
-    Reference:
-      Pipelined, Flexible Krylov Subspace Methods
-      Patrick Sanan, Sascha M. Schnepp, and Dave A. May
+   Level: intermediate
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
-           KSPPIPEFGMRES, KSPPIPECG, KSPPIPECR, KSPPIPEFCG
+           KSPPIPEFGMRES, KSPPIPECG, KSPPIPECR, KSPPIPEFCG,KSPPIPEGCRSetTruncationType(),KSPPIPEGCRSetNprealloc(),KSPPIPEGCRSetUnrollW(),KSPPIPEGCRSetMmax()
+
 
 M*/
 #undef __FUNCT__

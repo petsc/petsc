@@ -55,21 +55,34 @@ PetscErrorCode DMSwarmMigrate_Push_Basic(DM dm,PetscBool remove_sent_points)
     }
   }
   ierr = DataExPackFinalize(de);CHKERRQ(ierr);
+  ierr = DMSwarmRestoreField(dm,DMSwarmField_rank,NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
 
   if (remove_sent_points) {
+    DataField gfield;
+
+    ierr = DataBucketGetDataFieldByName(swarm->db,DMSwarmField_rank,&gfield);CHKERRQ(ierr);
+    ierr = DataFieldGetAccess(gfield);CHKERRQ(ierr);
+    ierr = DataFieldGetEntries(gfield,(void**)&rankval);CHKERRQ(ierr);
+
     /* remove points which left processor */
     ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
     for (p=0; p<npoints; p++) {
       nrank = rankval[p];
       if (nrank != rank) {
         /* kill point */
+        ierr = DataFieldRestoreAccess(gfield);CHKERRQ(ierr);
+        
         ierr = DataBucketRemovePointAtIndex(swarm->db,p);CHKERRQ(ierr);
-        DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr); /* you need to update npoints as the list size decreases! */
+
+        ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr); /* you need to update npoints as the list size decreases! */
+        ierr = DataFieldGetAccess(gfield);CHKERRQ(ierr);
+        ierr = DataFieldGetEntries(gfield,(void**)&rankval);CHKERRQ(ierr);
         p--; /* check replacement point */
       }
     }
+    ierr = DataFieldRestoreEntries(gfield,(void**)&rankval);CHKERRQ(ierr);
+    ierr = DataFieldRestoreAccess(gfield);CHKERRQ(ierr);
   }
-  ierr = DMSwarmRestoreField(dm,DMSwarmField_rank,NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
   ierr = DataExBegin(de);CHKERRQ(ierr);
   ierr = DataExEnd(de);CHKERRQ(ierr);
   ierr = DataExGetRecvData(de,&n_points_recv,(void**)&recv_points);CHKERRQ(ierr);

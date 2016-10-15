@@ -59,7 +59,6 @@
       <h3>Requirements and installation of the SAWs (if not using the --download-saws PETSc ./configure option)</h3>
 
       <ul>
-        <li class="version">This is currently only supported with petsc-master</li>
 
         <li>
           A current version of SAWs available from
@@ -73,13 +72,13 @@
       <ul>
         <li>
           <code>./configure PETSc with the option
-            --with-saws-dir=/directorywhereamsisinstalled (or --download-saws)
+            --with-saws-dir=/directorywhereamsisinstalled (or --download-saws we always recommend this option)
         </li>
 
         <li>
           To examine options in a browser, run PETSc applications with
-          <code>-server &lt;port&gt; -saws_view saws -ts_view_pre saws</code> and point your
-          brower to <code>http://localhost:8080</code>
+          <code> -saws_view saws -ts_view_pre saws</code> and point your
+          brower to <code>http://localhost:8080</code> or if you are running your application on a different machine pass the name of that machine to the browser.
         </li>
       </ul>
 

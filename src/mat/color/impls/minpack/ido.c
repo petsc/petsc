@@ -203,7 +203,8 @@ L70:
         numinc = list[ic];
         ++list[ic];
 /* Computing MAX */
-        i__3   = maxinc, i__4 = list[ic];
+        i__3   = maxinc;
+        i__4   = list[ic];
         maxinc = PetscMax(i__3,i__4);
 
 /*                 Delete column ic from the numinc list. */

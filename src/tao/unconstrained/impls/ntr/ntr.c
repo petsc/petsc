@@ -1,12 +1,7 @@
 #include <../src/tao/matrix/lmvmmat.h>
-#include <../src/tao/unconstrained/impls/ntr/ntr.h>
+#include <../src/tao/unconstrained/impls/ntr/ntrimpl.h>
 
 #include <petscksp.h>
-
-#define NTR_KSP_NASH    0
-#define NTR_KSP_STCG    1
-#define NTR_KSP_GLTR    2
-#define NTR_KSP_TYPES   3
 
 #define NTR_PC_NONE     0
 #define NTR_PC_AHESS    1
@@ -27,18 +22,29 @@
 #define NTR_UPDATE_INTERPOLATION  1
 #define NTR_UPDATE_TYPES          2
 
-static const char *NTR_KSP[64] = {  "nash", "stcg", "gltr"};
+static const char *NTR_PC[64] = {"none","ahess","bfgs","petsc"};
 
-static const char *NTR_PC[64] = {  "none", "ahess", "bfgs", "petsc"};
+static const char *BFGS_SCALE[64] = {"ahess","bfgs"};
 
-static const char *BFGS_SCALE[64] = {  "ahess", "bfgs"};
+static const char *NTR_INIT[64] = {"constant","direction","interpolation"};
 
-static const char *NTR_INIT[64] = {  "constant", "direction", "interpolation"};
-
-static const char *NTR_UPDATE[64] = {  "reduction", "interpolation"};
+static const char *NTR_UPDATE[64] = {"reduction","interpolation"};
 
 /*  Routine for BFGS preconditioner */
-static PetscErrorCode MatLMVMSolveShell(PC pc, Vec xin, Vec xout);
+#undef __FUNCT__
+#define __FUNCT__ "MatLMVMSolveShell"
+static PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x)
+{
+    PetscErrorCode ierr;
+    Mat M;
+    PetscFunctionBegin;
+    PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+    PetscValidHeaderSpecific(b,VEC_CLASSID,2);
+    PetscValidHeaderSpecific(x,VEC_CLASSID,3);
+    ierr = PCShellGetContext(pc,(void**)&M);CHKERRQ(ierr);
+    ierr = MatLMVMSolve(M, b, x);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+}
 
 /*
    TaoSolve_NTR - Implements Newton's Method with a trust region approach
@@ -61,8 +67,8 @@ static PetscErrorCode MatLMVMSolveShell(PC pc, Vec xin, Vec xout);
    definite matrix (the preconditioner).  Here g is the gradient and H
    is the Hessian matrix.
 
-   Note:  TaoSolve_NTR MUST use the iterative solver KSPNASH, KSPSTCG,
-          or KSPGLTR.  Thus, we set KSPNASH, KSPSTCG, or KSPGLTR in this
+   Note:  TaoSolve_NTR MUST use the iterative solver KSPCGNASH, KSPCGSTCG,
+          or KSPCGGLTR.  Thus, we set KSPCGNASH, KSPCGSTCG, or KSPCGGLTR in this
           routine regardless of what the user may have previously specified.
 */
 #undef __FUNCT__
@@ -70,8 +76,10 @@ static PetscErrorCode MatLMVMSolveShell(PC pc, Vec xin, Vec xout);
 static PetscErrorCode TaoSolve_NTR(Tao tao)
 {
   TAO_NTR            *tr = (TAO_NTR *)tao->data;
-  PC                 pc;
+  KSPType            ksp_type;
+  PetscBool          is_nash,is_stcg,is_gltr;
   KSPConvergedReason ksp_reason;
+  PC                 pc;
   TaoConvergedReason reason;
   PetscReal          fmin, ftrial, prered, actred, kappa, sigma, beta;
   PetscReal          tau, tau_1, tau_2, tau_max, tau_min, max_radius;
@@ -92,12 +100,18 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
     ierr = PetscPrintf(((PetscObject)tao)->comm,"WARNING: Variable bounds have been set but will be ignored by ntr algorithm\n");CHKERRQ(ierr);
   }
 
-  tao->trust = tao->trust0;
+  ierr = KSPGetType(tao->ksp,&ksp_type);CHKERRQ(ierr);
+  ierr = PetscStrcmp(ksp_type,KSPCGNASH,&is_nash);CHKERRQ(ierr);
+  ierr = PetscStrcmp(ksp_type,KSPCGSTCG,&is_stcg);CHKERRQ(ierr);
+  ierr = PetscStrcmp(ksp_type,KSPCGGLTR,&is_gltr);CHKERRQ(ierr);
+  if (!is_nash && !is_stcg && !is_gltr) {
+    SETERRQ(PETSC_COMM_SELF,1,"TAO_NTR requires nash, stcg, or gltr for the KSP");
+  }
 
-  /* Modify the radius if it is too large or small */
+  /* Initialize the radius and modify if it is too large or small */
+  tao->trust = tao->trust0;
   tao->trust = PetscMax(tao->trust, tr->min_radius);
   tao->trust = PetscMin(tao->trust, tr->max_radius);
-
 
   if (NTR_PC_BFGS == tr->pc_type && !tr->M) {
     ierr = VecGetLocalSize(tao->solution,&n);CHKERRQ(ierr);
@@ -109,35 +123,17 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
   /* Check convergence criteria */
   ierr = TaoComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient);CHKERRQ(ierr);
   ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
-  if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
+  if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1,"User provided compute function generated Inf or NaN");
   needH = 1;
 
   ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, 1.0, &reason);CHKERRQ(ierr);
   if (reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
   /* Create vectors for the limited memory preconditioner */
-  if ((NTR_PC_BFGS == tr->pc_type) &&
-      (BFGS_SCALE_BFGS != tr->bfgs_scale_type)) {
+  if ((NTR_PC_BFGS == tr->pc_type) && (BFGS_SCALE_BFGS != tr->bfgs_scale_type)) {
     if (!tr->Diag) {
         ierr = VecDuplicate(tao->solution, &tr->Diag);CHKERRQ(ierr);
     }
-  }
-
-  switch(tr->ksp_type) {
-  case NTR_KSP_NASH:
-    ierr = KSPSetType(tao->ksp, KSPNASH);CHKERRQ(ierr);
-    ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
-    break;
-
-  case NTR_KSP_STCG:
-    ierr = KSPSetType(tao->ksp, KSPSTCG);CHKERRQ(ierr);
-    ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
-    break;
-
-  default:
-    ierr = KSPSetType(tao->ksp, KSPGLTR);CHKERRQ(ierr);
-    ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
-    break;
   }
 
   /*  Modify the preconditioner to use the bfgs approximation */
@@ -344,28 +340,12 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
       ierr = KSPSetOperators(tao->ksp, tao->hessian, tao->hessian_pre);CHKERRQ(ierr);
 
       /* Solve the trust region subproblem */
-      if (NTR_KSP_NASH == tr->ksp_type) {
-        ierr = KSPNASHSetRadius(tao->ksp,tao->trust);CHKERRQ(ierr);
-        ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
-        ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
-        tao->ksp_its+=its;
-        tao->ksp_tot_its+=its;
-        ierr = KSPNASHGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
-      } else if (NTR_KSP_STCG == tr->ksp_type) {
-        ierr = KSPSTCGSetRadius(tao->ksp,tao->trust);CHKERRQ(ierr);
-        ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
-        ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
-        tao->ksp_its+=its;
-        tao->ksp_tot_its+=its;
-        ierr = KSPSTCGGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
-      } else { /* NTR_KSP_GLTR */
-        ierr = KSPGLTRSetRadius(tao->ksp,tao->trust);CHKERRQ(ierr);
-        ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
-        ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
-        tao->ksp_its+=its;
-        tao->ksp_tot_its+=its;
-        ierr = KSPGLTRGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
-      }
+      ierr = KSPCGSetRadius(tao->ksp,tao->trust);CHKERRQ(ierr);
+      ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
+      ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
+      tao->ksp_its+=its;
+      tao->ksp_tot_its+=its;
+      ierr = KSPCGGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
 
       if (0.0 == tao->trust) {
         /* Radius was uninitialized; use the norm of the direction */
@@ -385,28 +365,12 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
           tao->trust = PetscMax(tao->trust, tr->min_radius);
           tao->trust = PetscMin(tao->trust, tr->max_radius);
 
-          if (NTR_KSP_NASH == tr->ksp_type) {
-            ierr = KSPNASHSetRadius(tao->ksp,tao->trust);CHKERRQ(ierr);
-            ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
-            ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
-            tao->ksp_its+=its;
-            tao->ksp_tot_its+=its;
-            ierr = KSPNASHGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
-          } else if (NTR_KSP_STCG == tr->ksp_type) {
-            ierr = KSPSTCGSetRadius(tao->ksp,tao->trust);CHKERRQ(ierr);
-            ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
-            ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
-            tao->ksp_its+=its;
-            tao->ksp_tot_its+=its;
-            ierr = KSPSTCGGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
-          } else { /* NTR_KSP_GLTR */
-            ierr = KSPGLTRSetRadius(tao->ksp,tao->trust);CHKERRQ(ierr);
-            ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
-            ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
-            tao->ksp_its+=its;
-            tao->ksp_tot_its+=its;
-            ierr = KSPGLTRGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
-          }
+          ierr = KSPCGSetRadius(tao->ksp,tao->trust);CHKERRQ(ierr);
+          ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
+          ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
+          tao->ksp_its+=its;
+          tao->ksp_tot_its+=its;
+          ierr = KSPCGGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
 
           if (norm_d == 0.0) SETERRQ(PETSC_COMM_SELF,1, "Initial direction zero");
         }
@@ -432,14 +396,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
 
       if (NTR_UPDATE_REDUCTION == tr->update_type) {
         /* Get predicted reduction */
-        if (NTR_KSP_NASH == tr->ksp_type) {
-          ierr = KSPNASHGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
-        } else if (NTR_KSP_STCG == tr->ksp_type) {
-          ierr = KSPSTCGGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
-        } else { /* gltr */
-          ierr = KSPGLTRGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
-        }
-
+        ierr = KSPCGGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
         if (prered >= 0.0) {
           /* The predicted reduction has the wrong sign.  This cannot
              happen in infinite precision arithmetic.  Step should
@@ -496,14 +453,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
       }
       else {
         /* Get predicted reduction */
-        if (NTR_KSP_NASH == tr->ksp_type) {
-          ierr = KSPNASHGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
-        } else if (NTR_KSP_STCG == tr->ksp_type) {
-          ierr = KSPSTCGGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
-        } else { /* gltr */
-          ierr = KSPGLTRGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
-        }
-
+        ierr = KSPCGGetObjFcn(tao->ksp,&prered);CHKERRQ(ierr);
         if (prered >= 0.0) {
           /* The predicted reduction has the wrong sign.  This cannot
              happen in infinite precision arithmetic.  Step should
@@ -621,15 +571,12 @@ static PetscErrorCode TaoSetUp_NTR(Tao tao)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   if (!tao->gradient) {ierr = VecDuplicate(tao->solution, &tao->gradient);CHKERRQ(ierr);}
   if (!tao->stepdirection) {ierr = VecDuplicate(tao->solution, &tao->stepdirection);CHKERRQ(ierr);}
   if (!tr->W) {ierr = VecDuplicate(tao->solution, &tr->W);CHKERRQ(ierr);}
 
   tr->Diag = 0;
   tr->M = 0;
-
-
   PetscFunctionReturn(0);
 }
 
@@ -661,7 +608,6 @@ static PetscErrorCode TaoSetFromOptions_NTR(PetscOptionItems *PetscOptionsObject
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Newton trust region method for unconstrained optimization");CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-tao_ntr_ksp_type", "ksp type", "", NTR_KSP, NTR_KSP_TYPES, NTR_KSP[tr->ksp_type], &tr->ksp_type,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-tao_ntr_pc_type", "pc type", "", NTR_PC, NTR_PC_TYPES, NTR_PC[tr->pc_type], &tr->pc_type,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-tao_ntr_bfgs_scale_type", "bfgs scale type", "", BFGS_SCALE, BFGS_SCALE_TYPES, BFGS_SCALE[tr->bfgs_scale_type], &tr->bfgs_scale_type,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEList("-tao_ntr_init_type", "tao->trust initialization type", "", NTR_INIT, NTR_INIT_TYPES, NTR_INIT[tr->init_type], &tr->init_type,NULL);CHKERRQ(ierr);
@@ -728,8 +674,7 @@ static PetscErrorCode TaoView_NTR(Tao tao, PetscViewer viewer)
             min_d  .5 dT Hk d + gkT d,  s.t.   ||d|| < Delta_k
 
   Options Database Keys:
-+ -tao_ntr_ksp_type - "nash","stcg","gltr"
-. -tao_ntr_pc_type - "none","ahess","bfgs","petsc"
++ -tao_ntr_pc_type - "none","ahess","bfgs","petsc"
 . -tao_ntr_bfgs_scale_type - type of scaling with bfgs pc, "ahess" or "bfgs"
 . -tao_ntr_init_type - "constant","direction","interpolation"
 . -tao_ntr_update_type - "reduction","interpolation"
@@ -797,17 +742,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NTR(Tao tao)
   tr->alpha4 = 2.00;
   tr->alpha5 = 4.00;
 
-  /*  Interpolation parameters */
-  tr->mu1_i = 0.35;
-  tr->mu2_i = 0.50;
-
-  tr->gamma1_i = 0.0625;
-  tr->gamma2_i = 0.50;
-  tr->gamma3_i = 2.00;
-  tr->gamma4_i = 5.00;
-
-  tr->theta_i = 0.25;
-
   /*  Interpolation trust region update parameters */
   tr->mu1 = 0.10;
   tr->mu2 = 0.50;
@@ -819,35 +753,30 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NTR(Tao tao)
 
   tr->theta = 0.05;
 
+  /*  Interpolation parameters for initialization */
+  tr->mu1_i = 0.35;
+  tr->mu2_i = 0.50;
+
+  tr->gamma1_i = 0.0625;
+  tr->gamma2_i = 0.50;
+  tr->gamma3_i = 2.00;
+  tr->gamma4_i = 5.00;
+
+  tr->theta_i = 0.25;
+
   tr->min_radius = 1.0e-10;
   tr->max_radius = 1.0e10;
-  tr->epsilon = 1.0e-6;
+  tr->epsilon    = 1.0e-6;
 
-  tr->ksp_type        = NTR_KSP_STCG;
   tr->pc_type         = NTR_PC_BFGS;
   tr->bfgs_scale_type = BFGS_SCALE_AHESS;
   tr->init_type       = NTR_INIT_INTERPOLATION;
   tr->update_type     = NTR_UPDATE_REDUCTION;
 
-
   /* Set linear solver to default for trust region */
-  ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
-  ierr = KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix);CHKERRQ(ierr);
+  ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(tao->ksp,tao->hdr.prefix);CHKERRQ(ierr);
+  ierr = KSPSetType(tao->ksp,KSPCGSTCG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-
-#undef __FUNCT__
-#define __FUNCT__ "MatLMVMSolveShell"
-static PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x)
-{
-    PetscErrorCode ierr;
-    Mat M;
-    PetscFunctionBegin;
-    PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-    PetscValidHeaderSpecific(b,VEC_CLASSID,2);
-    PetscValidHeaderSpecific(x,VEC_CLASSID,3);
-    ierr = PCShellGetContext(pc,(void**)&M);CHKERRQ(ierr);
-    ierr = MatLMVMSolve(M, b, x);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-}

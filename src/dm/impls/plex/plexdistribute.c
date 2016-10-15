@@ -187,7 +187,7 @@ static PetscErrorCode DMPlexGetAdjacency_Cone_Internal(DM dm, PetscInt p, PetscI
     ierr = DMPlexGetSupportSize(dm, point, &supportSize);CHKERRQ(ierr);
     ierr = DMPlexGetSupport(dm, point, &support);CHKERRQ(ierr);
     for (s = 0; s < supportSize; ++s) {
-      for (q = 0; q < numAdj || (adj[numAdj++] = support[s],0); ++q) {
+      for (q = 0; q < numAdj || ((void)(adj[numAdj++] = support[s]),0); ++q) {
         if (support[s] == adj[q]) break;
       }
       if (numAdj > maxAdjSize) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);
@@ -216,7 +216,7 @@ static PetscErrorCode DMPlexGetAdjacency_Support_Internal(DM dm, PetscInt p, Pet
     ierr = DMPlexGetConeSize(dm, point, &coneSize);CHKERRQ(ierr);
     ierr = DMPlexGetCone(dm, point, &cone);CHKERRQ(ierr);
     for (c = 0; c < coneSize; ++c) {
-      for (q = 0; q < numAdj || (adj[numAdj++] = cone[c],0); ++q) {
+      for (q = 0; q < numAdj || ((void)(adj[numAdj++] = cone[c]),0); ++q) {
         if (cone[c] == adj[q]) break;
       }
       if (numAdj > maxAdjSize) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);
@@ -242,7 +242,7 @@ static PetscErrorCode DMPlexGetAdjacency_Transitive_Internal(DM dm, PetscInt p, 
 
     ierr = DMPlexGetTransitiveClosure(dm, star[s], (PetscBool)!useClosure, &closureSize, (PetscInt**) &closure);CHKERRQ(ierr);
     for (c = 0; c < closureSize*2; c += 2) {
-      for (q = 0; q < numAdj || (adj[numAdj++] = closure[c],0); ++q) {
+      for (q = 0; q < numAdj || ((void)(adj[numAdj++] = closure[c]),0); ++q) {
         if (closure[c] == adj[q]) break;
       }
       if (numAdj > maxAdjSize) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);
@@ -323,7 +323,7 @@ PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone,
         numAdj--;
         ierr = PetscSectionGetOffset(aSec,p,&aOff);CHKERRQ(ierr);
         for (s = 0; s < aDof; ++s) {
-          for (q = 0; q < numAdj || (orig[numAdj++] = anchors[aOff+s],0); ++q) {
+          for (q = 0; q < numAdj || ((void)(orig[numAdj++] = anchors[aOff+s]),0); ++q) {
             if (anchors[aOff+s] == orig[q]) break;
           }
           if (numAdj > maxAdjSize) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);
@@ -1092,7 +1092,7 @@ PetscErrorCode DMPlexDistributeCoordinates(DM dm, PetscSF migrationSF, DM dmPara
   ierr = DMGetCoordinateSection(dmParallel, &newCoordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &originalCoordinates);CHKERRQ(ierr);
   if (originalCoordinates) {
-    ierr = VecCreate(comm, &newCoordinates);CHKERRQ(ierr);
+    ierr = VecCreate(PETSC_COMM_SELF, &newCoordinates);CHKERRQ(ierr);
     ierr = PetscObjectGetName((PetscObject) originalCoordinates, &name);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) newCoordinates, name);CHKERRQ(ierr);
 
@@ -1584,7 +1584,10 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
   ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
 
   *dmParallel = NULL;
-  if (numProcs == 1) PetscFunctionReturn(0);
+  if (numProcs == 1) {
+    ierr = PetscLogEventEnd(DMPLEX_Distribute,dm,0,0,0);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
 
   /* Create cell partition */
   ierr = PetscLogEventBegin(PETSCPARTITIONER_Partition,dm,0,0,0);CHKERRQ(ierr);

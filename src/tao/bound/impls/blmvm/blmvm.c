@@ -27,7 +27,7 @@ static PetscErrorCode TaoSolve_BLMVM(Tao tao)
   ierr = VecBoundGradientProjection(blmP->unprojected_gradient,tao->solution, tao->XL,tao->XU,tao->gradient);CHKERRQ(ierr);
 
   ierr = TaoGradientNorm(tao, tao->gradient,NORM_2,&gnorm);CHKERRQ(ierr);
-  if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf pr NaN");
+  if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
 
   ierr = TaoMonitor(tao, tao->niter, f, gnorm, 0.0, stepsize, &reason);CHKERRQ(ierr);
   if (reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
@@ -39,6 +39,7 @@ static PetscErrorCode TaoSolve_BLMVM(Tao tao)
     delta = 2.0 / (gnorm*gnorm);
   }
   ierr = MatLMVMSetDelta(blmP->M,delta);CHKERRQ(ierr);
+  ierr = MatLMVMReset(blmP->M);CHKERRQ(ierr);
 
   /* Set counter for gradient/reset steps */
   blmP->grad = 0;
@@ -98,7 +99,7 @@ static PetscErrorCode TaoSolve_BLMVM(Tao tao)
       ierr = MatLMVMSolve(blmP->M, blmP->unprojected_gradient, tao->stepdirection);CHKERRQ(ierr);
       ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
 
-      /* This may be incorrect; linesearch has values fo stepmax and stepmin
+      /* This may be incorrect; linesearch has values for stepmax and stepmin
          that should be reset. */
       ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0);CHKERRQ(ierr);
       ierr = TaoLineSearchApply(tao->linesearch,tao->solution,&f, blmP->unprojected_gradient, tao->stepdirection,  &stepsize, &ls_status);CHKERRQ(ierr);

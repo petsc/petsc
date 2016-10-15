@@ -64,6 +64,10 @@
 
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
 
 ! Specify default dimensions of the problem
       mx = 10
@@ -109,7 +113,8 @@
      &     mx,my,Nx,Ny,i1,i1,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,           &
      &     dm,ierr)
       CHKERRQ(ierr)
-
+      call DMSetFromOptions(dm,ierr)
+      call DMSetUp(dm,ierr)
 
 ! Extract global and local vectors from DM; The local vectors are
 ! used solely as work space for the evaluation of the function,

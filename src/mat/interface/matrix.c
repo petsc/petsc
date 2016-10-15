@@ -96,6 +96,39 @@ PetscErrorCode MatSetRandom(Mat x,PetscRandom rctx)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatFactorGetErrorZeroPivot"
+/*@
+   MatFactorGetErrorZeroPivot - returns the pivot value that was determined to be zero and the row it occurred in 
+
+   Logically Collective on Mat
+
+   Input Parameters:
+.  mat - the factored matrix
+
+   Output Parameter:
++  pivot - the pivot value computed
+-  row - the row that the zero pivot occurred. Note that this row must be interpreted carefully due to row reorderings and which processes
+         the share the matrix 
+
+   Level: advanced
+
+   Notes: This routine does not work for factorizations done with external packages.
+   This routine should only be called if MatGetFactorError() returns a value of MAT_FACTOR_NUMERIC_ZEROPIVOT
+
+   This can be called on non-factored matrices that come from, for example, matrices used in SOR.
+
+.seealso: MatZeroEntries(), MatFactor(), MatGetFactor(), MatFactorSymbolic(), MatFactorClearError(), MatFactorGetErrorZeroPivot()
+@*/
+PetscErrorCode MatFactorGetErrorZeroPivot(Mat mat,PetscReal *pivot,PetscInt *row)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  *pivot = mat->factorerror_zeropivot_value;
+  *row   = mat->factorerror_zeropivot_row;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatFactorGetError"
 /*@
    MatFactorGetError - gets the error code from a factorization
@@ -110,13 +143,41 @@ PetscErrorCode MatSetRandom(Mat x,PetscRandom rctx)
 
    Level: advanced
 
-.seealso: MatZeroEntries(), MatFactor(), MatGetFactor(), MatFactorSymbolic()
+   Notes:    This can be called on non-factored matrices that come from, for example, matrices used in SOR.
+
+.seealso: MatZeroEntries(), MatFactor(), MatGetFactor(), MatFactorSymbolic(), MatFactorClearError(), MatFactorGetErrorZeroPivot()
 @*/
 PetscErrorCode MatFactorGetError(Mat mat,MatFactorError *err)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  *err = mat->errortype;
+  *err = mat->factorerrortype;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatFactorClearError"
+/*@
+   MatFactorClearError - clears the error code in a factorization
+
+   Logically Collective on Mat
+
+   Input Parameter:
+.  mat - the factored matrix
+
+   Level: developer
+
+   Notes: This can be called on non-factored matrices that come from, for example, matrices used in SOR.
+
+.seealso: MatZeroEntries(), MatFactor(), MatGetFactor(), MatFactorSymbolic(), MatFactorGetError(), MatFactorGetErrorZeroPivot()
+@*/
+PetscErrorCode MatFactorClearError(Mat mat)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  mat->factorerrortype             = MAT_FACTOR_NOERROR;
+  mat->factorerror_zeropivot_value = 0.0;
+  mat->factorerror_zeropivot_row   = 0;
   PetscFunctionReturn(0);
 }
 
@@ -170,26 +231,22 @@ PetscErrorCode MatFindNonzeroRows(Mat mat,IS *keptrows)
 @*/
 PetscErrorCode MatGetDiagonalBlock(Mat A,Mat *a)
 {
-  PetscErrorCode ierr,(*f)(Mat,Mat*);
-  PetscMPIInt    size;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
   PetscValidPointer(a,3);
   if (A->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
-  ierr = PetscObjectQueryFunction((PetscObject)A,"MatGetDiagonalBlock_C",&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(A,a);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  } else if (size == 1) {
-    *a = A;
-  } else {
-    MatType mattype;
-    ierr = MatGetType(A,&mattype);CHKERRQ(ierr);
-    SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Matrix type %s does not support getting diagonal block",mattype);
+  if (!A->ops->getdiagonalblock) {
+    PetscMPIInt size;
+    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+    if (size == 1) {
+      *a = A;
+      PetscFunctionReturn(0);
+    } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not coded for this matrix type");
   }
+  ierr = (*A->ops->getdiagonalblock)(A,a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -820,7 +877,7 @@ PetscErrorCode MatSetUp(Mat A)
          the matrix structure
 
    Options Database Keys:
-+  -mat_view ::ascii_info - Prints info on matrix at conclusion of MatEndAssembly()
++  -mat_view ::ascii_info - Prints info on matrix at conclusion of MatAssemblyEnd()
 .  -mat_view ::ascii_info_detail - Prints more detailed info
 .  -mat_view - Prints matrix in ASCII format
 .  -mat_view ::ascii_matlab - Prints matrix in Matlab format
@@ -1304,14 +1361,14 @@ PetscErrorCode MatSetValuesRowLocal(Mat mat,PetscInt row,const PetscScalar v[])
    Input Parameters:
 +  mat - the matrix
 .  row - the (block) row to set
--  v - a logically two-dimensional array of values
+-  v - a logically two-dimensional (column major) array of values for  block matrices with blocksize larger than one, otherwise a one dimensional array of values
 
    Notes:
    The values, v, are column-oriented for the block version.
 
    All the nonzeros in the row must be provided
 
-   THE MATRIX MUSAT HAVE PREVIOUSLY HAD ITS COLUMN INDICES SET. IT IS RARE THAT THIS ROUTINE IS USED, usually MatSetValues() is used.
+   THE MATRIX MUST HAVE PREVIOUSLY HAD ITS COLUMN INDICES SET. IT IS RARE THAT THIS ROUTINE IS USED, usually MatSetValues() is used.
 
    The row must belong to this process
 
@@ -2798,7 +2855,7 @@ PetscErrorCode MatGetInfo(Mat mat,MatInfoType flag,MatInfo *info)
 #undef __FUNCT__
 #define __FUNCT__ "MatGetInfo_External"
 /*
-   This is used by external packages where it is not easy to get the info from the actual 
+   This is used by external packages where it is not easy to get the info from the actual
    matrix factorization.
 */
 PetscErrorCode MatGetInfo_External(Mat A,MatInfoType flag,MatInfo *info)
@@ -3267,8 +3324,8 @@ PetscErrorCode MatSolve(Mat mat,Vec b,Vec x)
   MatCheckPreallocated(mat,1);
 
   ierr = PetscLogEventBegin(MAT_Solve,mat,b,x,0);CHKERRQ(ierr);
-  if (mat->errortype) {
-    ierr = PetscInfo1(mat,"MatFactorError %D\n",mat->errortype);CHKERRQ(ierr);
+  if (mat->factorerrortype) {
+    ierr = PetscInfo1(mat,"MatFactorError %D\n",mat->factorerrortype);CHKERRQ(ierr);
     ierr = VecSetInf(x);CHKERRQ(ierr);
   } else {
     ierr = (*mat->ops->solve)(mat,b,x);CHKERRQ(ierr);
@@ -3629,8 +3686,8 @@ PetscErrorCode MatSolveTranspose(Mat mat,Vec b,Vec x)
   if (mat->cmap->N != b->map->N) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_SIZ,"Mat mat,Vec b: global dim %D %D",mat->cmap->N,b->map->N);
   MatCheckPreallocated(mat,1);
   ierr = PetscLogEventBegin(MAT_SolveTranspose,mat,b,x,0);CHKERRQ(ierr);
-  if (mat->errortype) {
-    ierr = PetscInfo1(mat,"MatFactorError %D\n",mat->errortype);CHKERRQ(ierr);
+  if (mat->factorerrortype) {
+    ierr = PetscInfo1(mat,"MatFactorError %D\n",mat->factorerrortype);CHKERRQ(ierr);
     ierr = VecSetInf(x);CHKERRQ(ierr);
   } else {
     ierr = (*mat->ops->solvetranspose)(mat,b,x);CHKERRQ(ierr);
@@ -3695,8 +3752,8 @@ PetscErrorCode MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
 
   ierr = PetscLogEventBegin(MAT_SolveTransposeAdd,mat,b,x,y);CHKERRQ(ierr);
   if (mat->ops->solvetransposeadd) {
-    if (mat->errortype) {
-      ierr = PetscInfo1(mat,"MatFactorError %D\n",mat->errortype);CHKERRQ(ierr);
+    if (mat->factorerrortype) {
+      ierr = PetscInfo1(mat,"MatFactorError %D\n",mat->factorerrortype);CHKERRQ(ierr);
       ierr = VecSetInf(x);CHKERRQ(ierr);
     } else {
       ierr = (*mat->ops->solvetransposeadd)(mat,b,y,x);CHKERRQ(ierr);
@@ -4291,7 +4348,7 @@ PetscErrorCode MatGetFactor(Mat mat, const MatSolverPackage type,MatFactorType f
       SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_MISSING_FACTOR,"Could not locate a solver package. Perhaps you must ./configure with --download-<package>");
     }
   }
-  
+
   if (!foundmtype) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_MISSING_FACTOR,"MatSolverPackage %s does not support matrix type %s",type,((PetscObject)mat)->type_name);
   if (!conv) SETERRQ3(PetscObjectComm((PetscObject)mat),PETSC_ERR_MISSING_FACTOR,"MatSolverPackage %s does not support factorization type %s for  matrix type %s",type,MatFactorTypes[ftype],((PetscObject)mat)->type_name);
 
@@ -5037,21 +5094,21 @@ PetscErrorCode MatScale(Mat mat,PetscScalar a)
   if (a != (PetscScalar)1.0) {
     ierr = (*mat->ops->scale)(mat,a);CHKERRQ(ierr);
     ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUSP)
+    if (mat->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
+      mat->valid_GPU_matrix = PETSC_CUSP_CPU;
+    }
+#elif defined(PETSC_HAVE_VIENNACL)
+    if (mat->valid_GPU_matrix != PETSC_VIENNACL_UNALLOCATED) {
+      mat->valid_GPU_matrix = PETSC_VIENNACL_CPU;
+    }
+#elif defined(PETSC_HAVE_VECCUDA)
+    if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
+      mat->valid_GPU_matrix = PETSC_CUDA_CPU;
+    }
+#endif
   }
   ierr = PetscLogEventEnd(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_CUSP)
-  if (mat->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
-    mat->valid_GPU_matrix = PETSC_CUSP_CPU;
-  }
-#elif defined(PETSC_HAVE_VIENNACL)
-  if (mat->valid_GPU_matrix != PETSC_VIENNACL_UNALLOCATED) {
-    mat->valid_GPU_matrix = PETSC_VIENNACL_CPU;
-  }
-#elif defined(PETSC_HAVE_VECCUDA)
-  if (mat->valid_GPU_matrix != PETSC_CUDA_UNALLOCATED) {
-    mat->valid_GPU_matrix = PETSC_CUDA_CPU;
-  }
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -8328,45 +8385,6 @@ PetscErrorCode MatICCFactor(Mat mat,IS row,const MatFactorInfo *info)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatSetValuesAdifor"
-/*@
-   MatSetValuesAdifor - Sets values computed with automatic differentiation into a matrix.
-
-   Not Collective
-
-   Input Parameters:
-+  mat - the matrix
-.  nl - leading dimension of v
--  v - the values compute with ADIFOR
-
-   Level: developer
-
-   Notes:
-     Must call MatSetColoring() before using this routine. Also this matrix must already
-     have its nonzero pattern determined.
-
-.seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal(),
-          MatSetValues(), MatSetColoring()
-@*/
-PetscErrorCode MatSetValuesAdifor(Mat mat,PetscInt nl,void *v)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidType(mat,1);
-  PetscValidPointer(v,3);
-
-  if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Matrix must be already assembled");
-  ierr = PetscLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
-  if (!mat->ops->setvaluesadifor) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
-  ierr = (*mat->ops->setvaluesadifor)(mat,nl,v);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "MatDiagonalScaleLocal"
 /*@
    MatDiagonalScaleLocal - Scales columns of a matrix given the scaling values including the
@@ -10185,8 +10203,8 @@ PetscErrorCode   MatGetMultiProcBlock(Mat mat, MPI_Comm subComm, MatReuse scall,
    The submat always implements MatSetValuesLocal().  If isrow and iscol have the same block size, then
    MatSetValuesBlockedLocal() will also be implemented.
 
-   The mat must have had a ISLocalToGlobalMapping provided to it with MatSetLocalToGlobalMapping(). Note that 
-   matrices obtained with DMCreateMat() generally already have the local to global mapping provided.   
+   The mat must have had a ISLocalToGlobalMapping provided to it with MatSetLocalToGlobalMapping(). Note that
+   matrices obtained with DMCreateMat() generally already have the local to global mapping provided.
 
 .seealso: MatRestoreLocalSubMatrix(), MatCreateLocalRef(), MatSetLocalToGlobalMapping()
 @*/
@@ -10201,7 +10219,7 @@ PetscErrorCode MatGetLocalSubMatrix(Mat mat,IS isrow,IS iscol,Mat *submat)
   PetscCheckSameComm(isrow,2,iscol,3);
   PetscValidPointer(submat,4);
   if (!mat->rmap->mapping) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Matrix must have local to global mapping provided before this call");
-                                 
+
   if (mat->ops->getlocalsubmatrix) {
     ierr = (*mat->ops->getlocalsubmatrix)(mat,isrow,iscol,submat);CHKERRQ(ierr);
   } else {
@@ -10421,14 +10439,11 @@ PetscErrorCode MatTransposeColoringDestroy(MatTransposeColoring *c)
     Output Parameter:
 .   Btdense - dense matrix B^T
 
-    Options Database Keys:
-+    -mat_transpose_coloring_view - Activates basic viewing or coloring
-.    -mat_transpose_coloring_view_draw - Activates drawing of coloring
--    -mat_transpose_coloring_view_info - Activates viewing of coloring info
+    Level: advanced
 
-    Level: intermediate
+     Notes: These are used internally for some implementations of MatRARt()
 
-.seealso: MatTransposeColoringCreate(), MatTransposeColoringDestroy()
+.seealso: MatTransposeColoringCreate(), MatTransposeColoringDestroy(), MatTransColoringApplyDenToSp()
 
 .keywords: coloring
 @*/
@@ -10463,12 +10478,9 @@ PetscErrorCode MatTransColoringApplySpToDen(MatTransposeColoring coloring,Mat B,
     Output Parameter:
 .   Csp - sparse matrix
 
-    Options Database Keys:
-+    -mat_multtranspose_coloring_view - Activates basic viewing or coloring
-.    -mat_multtranspose_coloring_view_draw - Activates drawing of coloring
--    -mat_multtranspose_coloring_view_info - Activates viewing of coloring info
+    Level: advanced
 
-    Level: intermediate
+     Notes: These are used internally for some implementations of MatRARt()
 
 .seealso: MatTransposeColoringCreate(), MatTransposeColoringDestroy(), MatTransColoringApplySpToDen()
 
@@ -10504,8 +10516,8 @@ PetscErrorCode MatTransColoringApplyDenToSp(MatTransposeColoring matcoloring,Mat
 
     Level: intermediate
 
-.seealso: MatTransposeColoringDestroy(), MatTransposeColoringSetFromOptions(), MatTransColoringApplySpToDen(),
-           MatTransColoringApplyDenToSp(), MatTransposeColoringView(),
+.seealso: MatTransposeColoringDestroy(),  MatTransColoringApplySpToDen(),
+           MatTransColoringApplyDenToSp()
 @*/
 PetscErrorCode MatTransposeColoringCreate(Mat mat,ISColoring iscoloring,MatTransposeColoring *color)
 {

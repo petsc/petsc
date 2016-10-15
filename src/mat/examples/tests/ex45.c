@@ -12,8 +12,7 @@
 
 /*
   Demonstrates dumping matrix/vector from heritage code for PETSc.
-   Note does not do bit swapping, so will not generate proper
-PETSc files on Paragon/Dec Alpha.
+   Note does not do bit swapping, so will not generate proper PETSc files on some systems.
 */
 
 void Store2DArray(int,int,double*,const char*,int*);
@@ -42,10 +41,10 @@ int main(int argc,char **args)
 #define __FUNCT__ "Store2DArray"
 void Store2DArray(int m,int n,double *a,const char *filename,int *fdd)
 {
-  int    fd = *fdd;
-  int    i,j;
-  int    nz = -1,classid = 1211216;
-  double *vals;
+  int     fd = *fdd;
+  int     i,j;
+  int     nz = -1,classid = 1211216;
+  double  *vals;
 
   if (!fd) {
     fd = creat(filename,0666);
@@ -55,10 +54,10 @@ void Store2DArray(int m,int n,double *a,const char *filename,int *fdd)
     }
     *fdd = fd;
   }
-  write(fd,&classid,sizeof(int));
-  write(fd,&m,sizeof(int));
-  write(fd,&n,sizeof(int));
-  write(fd,&nz,sizeof(int));
+  if (write(fd,&classid,sizeof(int)) != sizeof(int)) abort();
+  if (write(fd,&m,sizeof(int)) != sizeof(int)) abort();
+  if (write(fd,&n,sizeof(int)) != sizeof(int)) abort();
+  if (write(fd,&nz,sizeof(int)) != sizeof(int)) abort();
 
   /*
      transpose the matrix, since it is stored by rows on the disk
@@ -73,7 +72,7 @@ void Store2DArray(int m,int n,double *a,const char *filename,int *fdd)
       vals[i+m*j] = a[j+i*n];
     }
   }
-  write(fd,vals,m*n*sizeof(double));
+  if ((size_t) write(fd,vals,m*n*sizeof(double)) != (size_t) m*n*sizeof(double)) abort();
   free(vals);
 
 }
@@ -82,8 +81,8 @@ void Store2DArray(int m,int n,double *a,const char *filename,int *fdd)
 #define __FUNCT__ "Store1DArray"
 void Store1DArray(int m,double *a,const char *filename,int *fdd)
 {
-  int fd      = *fdd;
-  int classid = 1211214;  /* classid for vectors */
+  int     fd = *fdd;
+  int     classid = 1211214;  /* classid for vectors */
 
   if (fd == -1) {
     fd = creat(filename,0666);
@@ -93,9 +92,9 @@ void Store1DArray(int m,double *a,const char *filename,int *fdd)
     }
     *fdd = fd;
   }
-  write(fd,&classid,sizeof(int));
-  write(fd,&m,sizeof(int));
-  write(fd,a,m*sizeof(double));
+  if (write(fd,&classid,sizeof(int)) != sizeof(int)) abort();
+  if (write(fd,&m,sizeof(int)) != sizeof(int)) abort();
+  if ((size_t) write(fd,a,m*sizeof(double)) != (size_t) m*sizeof(double)) abort();
 }
 
 

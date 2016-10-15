@@ -1249,13 +1249,10 @@ class Configure(config.base.Configure):
       yield (self.argDB['LD_SHARED'], [], 'so')
     if Configure.isDarwin(self.log):
       if 'with-shared-ld' in self.argDB:
-        yield (self.argDB['with-dynamic-ld'], ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')
-      #yield ('libtool', ['-noprebind','-dynamic','-single_module','-flat_namespace -undefined warning','-multiply_defined suppress'], 'dylib')
+        yield (self.argDB['with-dynamic-ld'], ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], '-no_compact_unwind', 'dylib')
       if hasattr(self, 'CXX') and self.mainLanguage == 'Cxx':
-#        yield ("g++", ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')
-        yield (self.CXX, ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')
-#      yield ("gcc", ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')
-      yield (self.CC, ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')
+        yield (self.CXX, ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress', '-no_compact_unwind'], 'dylib')
+      yield (self.CC, ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress', '-no_compact_unwind'], 'dylib')
     if hasattr(self, 'CXX') and self.mainLanguage == 'Cxx':
       # C++ compiler default
       yield (self.CXX, ['-shared'], 'so')
@@ -1265,6 +1262,11 @@ class Configure(config.base.Configure):
     yield (self.CC, ['-dynamic'], 'so')
     yield (self.CC, ['-qmkshrobj'], 'so')
     yield (self.CC, ['-shared'], 'dll')
+    # Windows default
+    if self.CC.find('win32fe') >=0:
+      if hasattr(self, 'CXX') and self.mainLanguage == 'Cxx':
+        yield (self.CXX, ['-LD'], 'dll')
+      yield (self.CC, ['-LD'], 'dll')
     # Solaris default
     if Configure.isSolaris(self.log):
       if hasattr(self, 'CXX') and self.mainLanguage == 'Cxx':
@@ -1302,12 +1304,18 @@ class Configure(config.base.Configure):
             self.sharedLinker = self.LD_SHARED
             self.sharedLibraryFlags = goodFlags
             self.sharedLibraryExt = ext
+            if ext == 'dll':
+              dllexport = '__declspec(dllexport) '
+              dllimport = '__declspec(dllimport) '
+            else:
+              dllexport = ''
+              dllimport = ''
             # using printf appears to correctly identify non-pic code on X86_64
-            if self.checkLink(includes = '#include <stdio.h>\nint '+testMethod+'(void) {fprintf(stdout,"hello");\nreturn 0;}\n', codeBegin = '', codeEnd = '', cleanup = 0, shared = 1):
+            if self.checkLink(includes = '#include <stdio.h>\n'+dllexport+'int '+testMethod+'(void) {fprintf(stdout,"hello");\nreturn 0;}\n', codeBegin = '', codeEnd = '', cleanup = 0, shared = 1):
               oldLib  = self.linkerObj
               oldLibs = self.LIBS
               self.LIBS += ' -L'+self.tmpDir+' -lconftest'
-              accepted = self.checkLink(includes = 'int foo(void);', body = 'int ret = foo();\nif (ret) {}\n')
+              accepted = self.checkLink(includes = dllimport+'int foo(void);', body = 'int ret = foo();\nif (ret) {}\n')
               os.remove(oldLib)
               self.LIBS = oldLibs
               if accepted:
@@ -1359,7 +1367,7 @@ class Configure(config.base.Configure):
       languages.append('FC')
     for language in languages:
       self.pushLanguage(language)
-      for testFlag in ['-Wl,-multiply_defined,suppress', '-Wl,-multiply_defined -Wl,suppress', '-Wl,-commons,use_dylibs', '-Wl,-search_paths_first']:
+      for testFlag in ['-Wl,-multiply_defined,suppress', '-Wl,-multiply_defined -Wl,suppress', '-Wl,-commons,use_dylibs', '-Wl,-search_paths_first', '-Wl,-no_compact_unwind']:
         if self.checkLinkerFlag(testFlag):
           # expand to CC_LINKER_FLAGS or CXX_LINKER_FLAGS or FC_LINKER_FLAGS
 	  linker_flag_var = langMap[language]+'_LINKER_FLAGS'

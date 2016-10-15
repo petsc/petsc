@@ -7,8 +7,8 @@ KSP Object: (esi_)
   left preconditioning
 PC Object: (esi_)
   type: ilu
-    ILU: 0 levels of fill
-    ILU: max fill ratio allocated 1
-    ILU: tolerance for zero pivot 1e-12
+    0 levels of fill
+    max fill ratio allocated 1
+    tolerance for zero pivot 1e-12
          out-of-place factorization
          matrix ordering: natural

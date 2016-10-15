@@ -29,7 +29,8 @@
 
       PetscMPIInt rank,size
       PetscInt nlocal,nghost,ifrom(2)
-      PetscInt ierr,i,rstart,rend,ione
+      PetscErrorCode ierr
+      PetscInt i,rstart,rend,ione
       PetscBool   flag
       PetscScalar  value,tarray(20)
       Vec          lx,gx,gxs
@@ -38,6 +39,10 @@
       nghost = 2
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'PetscInitialize failed'
+        stop
+      endif
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
 

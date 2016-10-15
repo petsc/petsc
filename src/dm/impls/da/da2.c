@@ -662,9 +662,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
     n0 = sn0; n2 = sn2; n6 = sn6; n8 = sn8;
   }
 
-  if (((stencil_type == DMDA_STENCIL_STAR)  ||
-       (bx && bx != DM_BOUNDARY_PERIODIC) ||
-       (by && by != DM_BOUNDARY_PERIODIC))) {
+  if (((stencil_type == DMDA_STENCIL_STAR)  || (bx && bx != DM_BOUNDARY_PERIODIC) || (by && by != DM_BOUNDARY_PERIODIC))) {
     /*
         Recompute the local to global mappings, this time keeping the
       information about the cross corner processor numbers and any ghosted
@@ -801,8 +799,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
 .  bx,by - type of ghost nodes the array have.
          Use one of DM_BOUNDARY_NONE, DM_BOUNDARY_GHOSTED, DM_BOUNDARY_PERIODIC.
 .  stencil_type - stencil type.  Use either DMDA_STENCIL_BOX or DMDA_STENCIL_STAR.
-.  M,N - global dimension in each direction of the array (use -M and or -N to indicate that it may be set to a different value
-            from the command line with -da_grid_x <M> -da_grid_y <N>)
+.  M,N - global dimension in each direction of the array
 .  m,n - corresponding number of processors in each dimension
          (or PETSC_DECIDE to have calculated)
 .  dof - number of degrees of freedom per node
@@ -838,6 +835,11 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
    The appropriate vector objects can be obtained with calls to DMCreateGlobalVector()
    and DMCreateLocalVector() and calls to VecDuplicate() if more are needed.
 
+   You must call DMSetUp() after this call before using this DM.
+
+   If you wish to use the options database to change values in the DMDA call DMSetFromOptions() after this call
+   but before DMSetUp().
+
 .keywords: distributed array, create, two-dimensional
 
 .seealso: DMDestroy(), DMView(), DMDACreate1d(), DMDACreate3d(), DMGlobalToLocalBegin(), DMDAGetRefinementFactor(),
@@ -861,8 +863,5 @@ PetscErrorCode  DMDACreate2d(MPI_Comm comm,DMBoundaryType bx,DMBoundaryType by,D
   ierr = DMDASetStencilType(*da, stencil_type);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(*da, s);CHKERRQ(ierr);
   ierr = DMDASetOwnershipRanges(*da, lx, ly, NULL);CHKERRQ(ierr);
-  /* This violates the behavior for other classes, but right now users expect negative dimensions to be handled this way */
-  ierr = DMSetFromOptions(*da);CHKERRQ(ierr);
-  ierr = DMSetUp(*da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

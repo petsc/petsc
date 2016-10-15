@@ -204,6 +204,141 @@ static PetscErrorCode ReadData3D(DM dm, Vec u, AppCtx *user)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "SetSymmetries"
+static PetscErrorCode SetSymmetries(DM dm, PetscSection s, AppCtx *user)
+{
+  PetscInt       f, o, i, j, k, c, d;
+  DMLabel        depthLabel;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetLabel(dm,"depth",&depthLabel);CHKERRQ(ierr);
+  for (f = 0; f < user->Nf; f++) {
+    PetscSectionSym sym;
+
+    if (user->k[f] < 3) continue; /* No symmetries needed for order < 3, because no cell, facet, edge or vertex has more than one node */
+    ierr = PetscSectionSymCreateLabel(PetscObjectComm((PetscObject)s),depthLabel,&sym);CHKERRQ(ierr);
+
+    for (d = 0; d <= user->dim; d++) {
+      if (d == 1) {
+        PetscInt        numDof  = user->k[f] - 1;
+        PetscInt        numComp = user->Nc[f];
+        PetscInt        minOrnt = -2;
+        PetscInt        maxOrnt = 2;
+        PetscInt        **perms;
+
+        ierr = PetscCalloc1(maxOrnt - minOrnt,&perms);CHKERRQ(ierr);
+        for (o = minOrnt; o < maxOrnt; o++) {
+          PetscInt *perm;
+
+          if (o == -1 || !o) { /* identity */
+            perms[o - minOrnt] = NULL;
+          } else {
+            ierr = PetscMalloc1(numDof * numComp, &perm);CHKERRQ(ierr);
+            for (i = numDof - 1, k = 0; i >= 0; i--) {
+              for (j = 0; j < numComp; j++, k++) perm[k] = i * numComp + j;
+            }
+            perms[o - minOrnt] = perm;
+          }
+        }
+        ierr = PetscSectionSymLabelSetStratum(sym,d,numDof*numComp,minOrnt,maxOrnt,PETSC_OWN_POINTER,(const PetscInt **) perms,NULL);CHKERRQ(ierr);
+      } else if (d == 2) {
+        PetscInt        perEdge = user->k[f] - 1;
+        PetscInt        numDof  = perEdge * perEdge;
+        PetscInt        numComp = user->Nc[f];
+        PetscInt        minOrnt = -4;
+        PetscInt        maxOrnt = 4;
+        PetscInt        **perms;
+
+        ierr = PetscCalloc1(maxOrnt-minOrnt,&perms);CHKERRQ(ierr);
+        for (o = minOrnt; o < maxOrnt; o++) {
+          PetscInt *perm;
+
+          if (!o) continue; /* identity */
+          ierr = PetscMalloc1(numDof * numComp, &perm);CHKERRQ(ierr);
+          /* We want to perm[k] to list which *localArray* position the *sectionArray* position k should go to for the given orientation*/
+          switch (o) {
+          case 0:
+            break; /* identity */
+          case -4: /* flip along (-1,-1)--( 1, 1), which swaps edges 0 and 3 and edges 1 and 2.  This swaps the i and j variables */
+            for (i = 0, k = 0; i < perEdge; i++) {
+              for (j = 0; j < perEdge; j++, k++) {
+                for (c = 0; c < numComp; c++) {
+                  perm[k * numComp + c] = (perEdge * j + i) * numComp + c;
+                }
+              }
+            }
+            break;
+          case -3: /* flip along (-1, 0)--( 1, 0), which swaps edges 0 and 2.  This reverses the i variable */
+            for (i = 0, k = 0; i < perEdge; i++) {
+              for (j = 0; j < perEdge; j++, k++) {
+                for (c = 0; c < numComp; c++) {
+                  perm[k * numComp + c] = (perEdge * (perEdge - 1 - i) + j) * numComp + c;
+                }
+              }
+            }
+            break;
+          case -2: /* flip along ( 1,-1)--(-1, 1), which swaps edges 0 and 1 and edges 2 and 3.  This swaps the i and j variables and reverse both */
+            for (i = 0, k = 0; i < perEdge; i++) {
+              for (j = 0; j < perEdge; j++, k++) {
+                for (c = 0; c < numComp; c++) {
+                  perm[k * numComp + c] = (perEdge * (perEdge - 1 - j) + (perEdge - 1 - i)) * numComp + c;
+                }
+              }
+            }
+            break;
+          case -1: /* flip along ( 0,-1)--( 0, 1), which swaps edges 3 and 1.  This reverses the j variable */
+            for (i = 0, k = 0; i < perEdge; i++) {
+              for (j = 0; j < perEdge; j++, k++) {
+                for (c = 0; c < numComp; c++) {
+                  perm[k * numComp + c] = (perEdge * i + (perEdge - 1 - j)) * numComp + c;
+                }
+              }
+            }
+            break;
+          case  1: /* rotate section edge 1 to local edge 0.  This swaps the i and j variables and then reverses the j variable */
+            for (i = 0, k = 0; i < perEdge; i++) {
+              for (j = 0; j < perEdge; j++, k++) {
+                for (c = 0; c < numComp; c++) {
+                  perm[k * numComp + c] = (perEdge * (perEdge - 1 - j) + i) * numComp + c;
+                }
+              }
+            }
+            break;
+          case  2: /* rotate section edge 2 to local edge 0.  This reverse both i and j variables */
+            for (i = 0, k = 0; i < perEdge; i++) {
+              for (j = 0; j < perEdge; j++, k++) {
+                for (c = 0; c < numComp; c++) {
+                  perm[k * numComp + c] = (perEdge * (perEdge - 1 - i) + (perEdge - 1 - j)) * numComp + c;
+                }
+              }
+            }
+            break;
+          case  3: /* rotate section edge 3 to local edge 0.  This swaps the i and j variables and then reverses the i variable */
+            for (i = 0, k = 0; i < perEdge; i++) {
+              for (j = 0; j < perEdge; j++, k++) {
+                for (c = 0; c < numComp; c++) {
+                  perm[k * numComp + c] = (perEdge * j + (perEdge - 1 - i)) * numComp + c;
+                }
+              }
+            }
+            break;
+          default:
+            break;
+          }
+          perms[o - minOrnt] = perm;
+        }
+        ierr = PetscSectionSymLabelSetStratum(sym,d,numDof*numComp,minOrnt,maxOrnt,PETSC_OWN_POINTER,(const PetscInt **) perms,NULL);CHKERRQ(ierr);
+      }
+    }
+    ierr = PetscSectionSetFieldSym(s,f,sym);CHKERRQ(ierr);
+    ierr = PetscSectionSymDestroy(&sym);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionViewFromOptions(s,NULL,"-section_with_sym_view");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
@@ -229,6 +364,7 @@ int main(int argc, char **argv)
       size += PetscPowInt(user.k[f]+1, d)*user.Nc[f];
     }
     ierr = DMPlexCreateSection(dm, user.dim, user.Nf, user.Nc, numDof, 0, NULL, NULL, NULL, NULL, &s);CHKERRQ(ierr);
+    ierr = SetSymmetries(dm, s, &user);CHKERRQ(ierr);
     ierr = PetscFree(numDof);CHKERRQ(ierr);
   }
   ierr = DMSetDefaultSection(dm, s);CHKERRQ(ierr);

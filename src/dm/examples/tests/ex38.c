@@ -28,6 +28,8 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,NULL,"-stencil_type",(PetscInt*)&stencil_type,NULL);CHKERRQ(ierr);
 
   ierr = DMDACreate3d(PETSC_COMM_WORLD,bx,by,bz,stencil_type,M,N,P,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,0,0,0,&da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(global,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {ierr = VecSetValue(global,i,(PetscReal)(i + 100*rank),INSERT_VALUES);CHKERRQ(ierr);}

@@ -7,6 +7,7 @@ class Configure(config.package.Package):
     self.includes     = ['mkl.h']
     self.functions    = ['pardisoinit']
     self.liblist      = [[]] # use MKL detected by BlasLapack.py
+    self.precisions   = ['single','double']
     return
 
   def setupDependencies(self, framework):

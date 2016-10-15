@@ -11,7 +11,7 @@
 typedef struct {
   PetscInt  nsmooths;
   PetscBool sym_graph;
-  PetscInt square_graph;
+  PetscInt  square_graph;
 } PC_GAMG_AGG;
 
 #undef __FUNCT__
@@ -25,7 +25,7 @@ typedef struct {
 .  pc - the preconditioner context
 
    Options Database Key:
-.  -pc_gamg_agg_nsmooths
+.  -pc_gamg_agg_nsmooths <nsmooth, default=1> - number of smoothing steps to use with smooth aggregation
 
    Level: intermediate
 
@@ -59,21 +59,22 @@ static PetscErrorCode PCGAMGSetNSmooths_AGG(PC pc, PetscInt n)
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGSetSymGraph"
 /*@
-   PCGAMGSetSymGraph -
+   PCGAMGSetSymGraph - Symmetrize the graph before computing the aggregation. Some algorithms require the graph be symmetric
 
    Not Collective on PC
 
    Input Parameters:
-.  pc - the preconditioner context
++  pc - the preconditioner context
+.  n - PETSC_TRUE or PETSC_FALSE
 
    Options Database Key:
-.  -pc_gamg_sym_graph
+.  -pc_gamg_sym_graph <true,default=false> - symmetrize the graph before computing the aggregation
 
    Level: intermediate
 
    Concepts: Aggregation AMG preconditioner
 
-.seealso: ()
+.seealso: PCGAMGSetSquareGraph()
 @*/
 PetscErrorCode PCGAMGSetSymGraph(PC pc, PetscBool n)
 {
@@ -101,21 +102,22 @@ static PetscErrorCode PCGAMGSetSymGraph_AGG(PC pc, PetscBool n)
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGSetSquareGraph"
 /*@
-   PCGAMGSetSquareGraph -
+   PCGAMGSetSquareGraph -  Square the graph, ie. compute A'*A before aggregating it
 
    Not Collective on PC
 
    Input Parameters:
-.  pc - the preconditioner context
++  pc - the preconditioner context
+-  n - PETSC_TRUE or PETSC_FALSE
 
    Options Database Key:
-.  -pc_gamg_square_graph
+.  -pc_gamg_square_graph <n,default = 1> - number of levels to square the graph on before aggregating it
 
    Level: intermediate
 
    Concepts: Aggregation AMG preconditioner
 
-.seealso: ()
+.seealso: PCGAMGSetSymGraph()
 @*/
 PetscErrorCode PCGAMGSetSquareGraph(PC pc, PetscInt n)
 {
@@ -140,13 +142,6 @@ static PetscErrorCode PCGAMGSetSquareGraph_AGG(PC pc, PetscInt n)
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
-/*
-   PCSetFromOptions_GAMG_AGG
-
-  Input Parameter:
-   . pc -
-*/
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_GAMG_AGG"
 static PetscErrorCode PCSetFromOptions_GAMG_AGG(PetscOptionItems *PetscOptionsObject,PC pc)
@@ -159,19 +154,8 @@ static PetscErrorCode PCSetFromOptions_GAMG_AGG(PetscOptionItems *PetscOptionsOb
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"GAMG-AGG options");CHKERRQ(ierr);
   {
-    /* -pc_gamg_agg_nsmooths */
-    pc_gamg_agg->nsmooths = 1;
-
     ierr = PetscOptionsInt("-pc_gamg_agg_nsmooths","smoothing steps for smoothed aggregation, usually 1","PCGAMGSetNSmooths",pc_gamg_agg->nsmooths,&pc_gamg_agg->nsmooths,NULL);CHKERRQ(ierr);
-
-    /* -pc_gamg_sym_graph */
-    pc_gamg_agg->sym_graph = PETSC_FALSE;
-
     ierr = PetscOptionsBool("-pc_gamg_sym_graph","Set for asymmetric matrices","PCGAMGSetSymGraph",pc_gamg_agg->sym_graph,&pc_gamg_agg->sym_graph,NULL);CHKERRQ(ierr);
-
-    /* -pc_gamg_square_graph */
-    pc_gamg_agg->square_graph = 1;
-
     ierr = PetscOptionsInt("-pc_gamg_square_graph","Number of levels to square graph for faster coarsening and lower coarse grid complexity","PCGAMGSetSquareGraph",pc_gamg_agg->square_graph,&pc_gamg_agg->square_graph,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -179,12 +163,6 @@ static PetscErrorCode PCSetFromOptions_GAMG_AGG(PetscOptionItems *PetscOptionsOb
 }
 
 /* -------------------------------------------------------------------------- */
-/*
-   PCDestroy_AGG
-
-  Input Parameter:
-   . pc -
-*/
 #undef __FUNCT__
 #define __FUNCT__ "PCDestroy_GAMG_AGG"
 static PetscErrorCode PCDestroy_GAMG_AGG(PC pc)
@@ -302,7 +280,7 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
 {
   PetscErrorCode ierr;
   PetscBool      isMPI;
-  Mat_SeqAIJ     *matA_1, *matB_1=0, *matA_2, *matB_2=0;
+  Mat_SeqAIJ     *matA_1, *matB_1=0;
   MPI_Comm       comm;
   PetscInt       lid,*ii,*idx,ix,Iend,my0,kk,n,j;
   Mat_MPIAIJ     *mpimat_2 = 0, *mpimat_1=0;
@@ -334,8 +312,6 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
     mpimat_1 = (Mat_MPIAIJ*)Gmat_1->data;
     matA_1   = (Mat_SeqAIJ*)mpimat_1->A->data;
     matB_1   = (Mat_SeqAIJ*)mpimat_1->B->data;
-    matA_2   = (Mat_SeqAIJ*)mpimat_2->A->data;
-    matB_2   = (Mat_SeqAIJ*)mpimat_2->B->data;
 
     /* force compressed row storage for B matrix in AuxMat */
     ierr = MatCheckCompressedRow(mpimat_1->B,matB_1->nonzerorowcnt,&matB_1->compressedrow,matB_1->i,Gmat_1->rmap->n,-1.0);CHKERRQ(ierr);
@@ -347,15 +323,14 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
       lid_cprowID_1[lid] = ix;
     }
   } else {
+    PetscBool        isAIJ;
+    ierr = PetscObjectTypeCompare((PetscObject)Gmat_1,MATSEQAIJ,&isAIJ);CHKERRQ(ierr);
+    if (!isAIJ) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Require AIJ matrix.");
     matA_1        = (Mat_SeqAIJ*)Gmat_1->data;
-    matA_2        = (Mat_SeqAIJ*)Gmat_2->data;
     lid_cprowID_1 = NULL;
   }
   if (nloc>0) {
-    if (!(matA_1 && !matA_1->compressedrow.use)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"!(matA_1 && !matA_1->compressedrow.use)");
-    if (!(!matB_1 || matB_1->compressedrow.use)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"!(matB_1==0 || matB_1->compressedrow.use)");
-    if (!(matA_2 && !matA_2->compressedrow.use)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"!(matA_2 && !matA_2->compressedrow.use)");
-    if (!(!matB_2 || matB_2->compressedrow.use)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"!(matB_2==0 || matB_2->compressedrow.use)");
+    if (matB_1 && !matB_1->compressedrow.use) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"matB_1 && !matB_1->compressedrow.use: PETSc bug???");
   }
   /* get state of locals and selected gid for deleted */
   ierr = PetscMalloc2(nloc, &lid_state,nloc, &lid_parent_gid);CHKERRQ(ierr);
@@ -891,6 +866,8 @@ static PetscErrorCode PCView_GAMG_AGG(PC pc,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscViewerASCIIPrintf(viewer,"      AGG specific options\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"        Symmetric graph %s\n",pc_gamg_agg->sym_graph ? "true" : "false");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"        Number of levels to square graph %D\n",pc_gamg_agg->square_graph);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"        Number smoothing steps %D\n",pc_gamg_agg->nsmooths);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -960,8 +937,9 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **
   MatCoarsen     crs;
   MPI_Comm       comm;
   PetscMPIInt    rank;
-  PetscReal      rr;
+  PetscReal      hashfact;
   PetscInt       iSwapIndex;
+  PetscRandom    random;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(PC_GAMGCoarsen_AGG,0,0,0,0);CHKERRQ(ierr);
@@ -983,10 +961,11 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **
   for (Ii = 0; Ii < nloc; Ii++) {
     permute[Ii]   = Ii;
   }
+  ierr = PetscRandomCreate(PETSC_COMM_SELF,&random);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Gmat1, &Istart, &Iend);CHKERRQ(ierr);
   for (Ii = 0; Ii < nloc; Ii++) {
-    ierr = PetscRandomGetValueReal(pc_gamg->random,&rr);CHKERRQ(ierr);
-    iSwapIndex = (PetscInt) (rr*nloc);
+    ierr = PetscRandomGetValueReal(random,&hashfact);CHKERRQ(ierr);
+    iSwapIndex = (PetscInt) (hashfact*nloc)%nloc;
     if (!bIndexSet[iSwapIndex] && iSwapIndex != Ii) {
       PetscInt iTemp = permute[iSwapIndex];
       permute[iSwapIndex]   = permute[Ii];
@@ -995,7 +974,7 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **
     }
   }
   ierr = PetscFree(bIndexSet);CHKERRQ(ierr);
-
+  ierr = PetscRandomDestroy(&random);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF, nloc, permute, PETSC_USE_POINTER, &perm);CHKERRQ(ierr);
 #if defined PETSC_GAMG_USE_LOG
   ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET4],0,0,0,0);CHKERRQ(ierr);
@@ -1206,6 +1185,7 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
   Vec            bb, xx;
   PC             epc;
   PetscReal      alpha, emax, emin;
+  PetscRandom    random;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)Amat,&comm);CHKERRQ(ierr);
@@ -1215,7 +1195,9 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
   if (0 < pc_gamg_agg->nsmooths) {
     ierr = MatCreateVecs(Amat, &bb, 0);CHKERRQ(ierr);
     ierr = MatCreateVecs(Amat, &xx, 0);CHKERRQ(ierr);
-    ierr = VecSetRandom(bb,pc_gamg->random);CHKERRQ(ierr);
+    ierr = PetscRandomCreate(PETSC_COMM_SELF,&random);CHKERRQ(ierr);
+    ierr = VecSetRandom(bb,random);CHKERRQ(ierr);
+    ierr = PetscRandomDestroy(&random);CHKERRQ(ierr);
 
     ierr = KSPCreate(comm,&eksp);CHKERRQ(ierr);
     ierr = KSPSetErrorIfNotConverged(eksp,pc->erroriffailure);CHKERRQ(ierr);
@@ -1307,6 +1289,11 @@ PetscErrorCode  PCCreateGAMG_AGG(PC pc)
   pc_gamg->ops->optprolongator    = PCGAMGOptProlongator_AGG;
   pc_gamg->ops->createdefaultdata = PCSetData_AGG;
   pc_gamg->ops->view              = PCView_GAMG_AGG;
+
+  pc_gamg_agg->square_graph = 1;
+  pc_gamg_agg->sym_graph    = PETSC_FALSE;
+  pc_gamg_agg->nsmooths     = 1;
+
 
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetNSmooths_C",PCGAMGSetNSmooths_AGG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetSymGraph_C",PCGAMGSetSymGraph_AGG);CHKERRQ(ierr);

@@ -111,6 +111,8 @@ int main(int argc,char **argv)
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_MIRROR,-2,DOF,1,NULL,&da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
 
   /* The only spatial coupling in the Jacobian (diffusion) is for the first 5 He, the first V, and the first I.
      The ofill (thought of as a DOF by DOF 2d (row-oriented) array) represents the nonzero coupling between degrees
@@ -1279,6 +1281,8 @@ PetscErrorCode MyMonitorSetUp(TS ts)
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&M,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   ierr = DMDAGetOwnershipRanges(da,&lx,NULL,NULL);CHKERRQ(ierr);
   ierr = DMDACreate2d(PetscObjectComm((PetscObject)da),DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,NHe,PETSC_DETERMINE,1,1,1,lx,NULL,&ctx->Heda);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(ctx->Heda);CHKERRQ(ierr);
+  ierr = DMSetUp(ctx->Heda);CHKERRQ(ierr);
   ierr = DMDASetFieldName(ctx->Heda,0,"He");CHKERRQ(ierr);
   ierr = DMDASetCoordinateName(ctx->Heda,0,"X coordinate direction");CHKERRQ(ierr);
   ierr = PetscSNPrintf(ycoor,32,"%D ... Cluster size ... 1",NHe);CHKERRQ(ierr);
@@ -1304,6 +1308,8 @@ PetscErrorCode MyMonitorSetUp(TS ts)
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&M,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   ierr = DMDAGetOwnershipRanges(da,&lx,NULL,NULL);CHKERRQ(ierr);
   ierr = DMDACreate2d(PetscObjectComm((PetscObject)da),DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,NV,PETSC_DETERMINE,1,1,1,lx,NULL,&ctx->Vda);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(ctx->Vda);CHKERRQ(ierr);
+  ierr = DMSetUp(ctx->Vda);CHKERRQ(ierr);
   ierr = DMDASetFieldName(ctx->Vda,0,"V");CHKERRQ(ierr);
   ierr = DMDASetCoordinateName(ctx->Vda,0,"X coordinate direction");CHKERRQ(ierr);
   ierr = PetscSNPrintf(ycoor,32,"%D ... Cluster size ... 1",NV);CHKERRQ(ierr);
@@ -1331,6 +1337,8 @@ PetscErrorCode MyMonitorSetUp(TS ts)
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&M,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   ierr = DMDAGetOwnershipRanges(da,&lx,NULL,NULL);CHKERRQ(ierr);
   ierr = DMDACreate2d(PetscObjectComm((PetscObject)da),DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,NHeV[1],PETSC_DETERMINE,1,1,1,lx,NULL,&ctx->HeVda);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(ctx->HeVda);CHKERRQ(ierr);
+  ierr = DMSetUp(ctx->HeVda);CHKERRQ(ierr);
   ierr = DMDASetFieldName(ctx->HeVda,0,"HeV[1][]");CHKERRQ(ierr);
   ierr = DMDASetCoordinateName(ctx->HeVda,0,"X coordinate direction");CHKERRQ(ierr);
   ierr = PetscSNPrintf(ycoor,32,"%D ... Cluster size ... 1",NHeV[1]);CHKERRQ(ierr);

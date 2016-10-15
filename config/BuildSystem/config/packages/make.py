@@ -6,7 +6,6 @@ class Configure(config.package.GNUPackage):
     config.package.GNUPackage.__init__(self, framework)
     self.download          = ['http://ftp.gnu.org/gnu/make/make-4.1.tar.gz','http://ftp.mcs.anl.gov/pub/petsc/externalpackages/make-4.1.tar.gz']
     self.complex           = 1
-    self.double            = 0
     self.downloadonWindows = 1
     self.useddirectly      = 0
 

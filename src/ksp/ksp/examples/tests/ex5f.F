@@ -23,6 +23,10 @@
       m = 10
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
       one = 1.0
       call KSPCreate(PETSC_COMM_SELF,ksp,ierr)
 

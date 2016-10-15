@@ -1552,6 +1552,8 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
 #else
   snes->deltatol          = 1.e-12;
 #endif
+  snes->divtol            = 1.e4;
+  snes->rnorm0            = 0;
   snes->nfuncs            = 0;
   snes->numFailures       = 0;
   snes->maxFailures       = 1;
@@ -3526,18 +3528,15 @@ PetscErrorCode  SNESMonitorSet(SNES snes,PetscErrorCode (*f)(SNES,PetscInt,Petsc
 {
   PetscInt       i;
   PetscErrorCode ierr;
+  PetscBool      identical;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  if (snes->numbermonitors >= MAXSNESMONITORS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many monitors set");
   for (i=0; i<snes->numbermonitors;i++) {
-    if (f == snes->monitor[i] && monitordestroy == snes->monitordestroy[i] && mctx == snes->monitorcontext[i]) {
-      if (monitordestroy) {
-        ierr = (*monitordestroy)(&mctx);CHKERRQ(ierr);
-      }
-      PetscFunctionReturn(0);
-    }
+    ierr = PetscMonitorCompare((PetscErrorCode (*)(void))f,mctx,monitordestroy,(PetscErrorCode (*)(void))snes->monitor[i],snes->monitorcontext[i],snes->monitordestroy[i],&identical);CHKERRQ(ierr);
+    if (identical) PetscFunctionReturn(0);
   }
+  if (snes->numbermonitors >= MAXSNESMONITORS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many monitors set");
   snes->monitor[snes->numbermonitors]          = f;
   snes->monitordestroy[snes->numbermonitors]   = monitordestroy;
   snes->monitorcontext[snes->numbermonitors++] = (void*)mctx;
@@ -3654,9 +3653,12 @@ PetscErrorCode  SNESSetConvergenceTest(SNES snes,PetscErrorCode (*SNESConvergenc
 .  reason - negative value indicates diverged, positive value converged, see SNESConvergedReason or the
             manual pages for the individual convergence tests for complete lists
 
+   Options Database:
+.   -snes_converged_reason - prints the reason to standard out
+
    Level: intermediate
 
-   Notes: Can only be called after the call the SNESSolve() is complete.
+   Notes: Should only be called after the call the SNESSolve() is complete, if it is called earlier it returns the value SNES__CONVERGED_ITERATING.
 
 .keywords: SNES, nonlinear, set, convergence, test
 
@@ -5096,12 +5098,14 @@ PetscErrorCode SNESHasNPC(SNES snes, PetscBool *has_npc)
     Output Parameter:
 .   side - the preconditioning side, where side is one of
 .vb
-      PC_LEFT - left preconditioning (default)
-      PC_RIGHT - right preconditioning
+      PC_LEFT - left preconditioning
+      PC_RIGHT - right preconditioning (default for most nonlinear solvers)
 .ve
 
     Options Database Keys:
 .   -snes_pc_side <right,left>
+
+    Notes: SNESNRICHARDSON and SNESNCG only support left preconditioning.
 
     Level: intermediate
 
@@ -5131,8 +5135,8 @@ PetscErrorCode  SNESSetNPCSide(SNES snes,PCSide side)
     Output Parameter:
 .   side - the preconditioning side, where side is one of
 .vb
-      PC_LEFT - left preconditioning (default)
-      PC_RIGHT - right preconditioning
+      PC_LEFT - left preconditioning
+      PC_RIGHT - right preconditioning (default for most nonlinear solvers)
 .ve
 
     Level: intermediate

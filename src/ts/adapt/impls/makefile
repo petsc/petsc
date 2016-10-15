@@ -1,7 +1,7 @@
 
 ALL: lib
 
-DIRS     = basic cfl none
+DIRS     = glee basic cfl none
 LOCDIR   = src/ts/adapt/impls/
 MANSEC   = TS
 

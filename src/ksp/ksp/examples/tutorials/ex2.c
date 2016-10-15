@@ -27,9 +27,9 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Vec            x,b,u;  /* approx solution, RHS, exact solution */
+  Vec            x,b,u;    /* approx solution, RHS, exact solution */
   Mat            A;        /* linear system matrix */
-  KSP            ksp;     /* linear solver context */
+  KSP            ksp;      /* linear solver context */
   PetscRandom    rctx;     /* random number generator context */
   PetscReal      norm;     /* norm of solution error */
   PetscInt       i,j,Ii,J,Istart,Iend,m = 8,n = 7,its;
@@ -227,7 +227,7 @@ int main(int argc,char **args)
      Always call PetscFinalize() before exiting a program.  This routine
        - finalizes the PETSc libraries as well as MPI
        - provides summary and diagnostic information if certain runtime
-         options are chosen (e.g., -log_summary).
+         options are chosen (e.g., -log_view).
   */
   ierr = PetscFinalize();
   return ierr;

@@ -230,6 +230,8 @@ typedef enum {/* converged */
               SNES_DIVERGED_LINE_SEARCH         = -6, /* the line search failed */
               SNES_DIVERGED_INNER               = -7, /* inner solve failed */
               SNES_DIVERGED_LOCAL_MIN           = -8, /* || J^T b || is small, implies converged to local minimum of F() */
+              SNES_DIVERGED_DTOL                = -9, /* || F || > divtol*||F_initial|| */
+
               SNES_CONVERGED_ITERATING          =  0} SNESConvergedReason;
 PETSC_EXTERN const char *const*SNESConvergedReasons;
 
@@ -271,6 +273,15 @@ M*/
    Level: beginner
 
 .seealso:  SNESSolve(), SNESGetConvergedReason(), SNESConvergedReason, SNESSetTolerances()
+
+M*/
+
+/*MC
+     SNES_DIVERGED_DTOL - The norm of the function has increased by a factor of divtol set with SNESSetDivergenceTolerance()
+
+   Level: beginner
+
+.seealso:  SNESSolve(), SNESGetConvergedReason(), SNESConvergedReason, SNESSetTolerances(), SNESSetDivergenceTolerance()
 
 M*/
 

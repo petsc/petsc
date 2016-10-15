@@ -1,0 +1,17 @@
+Vec Object: 1 MPI processes
+  type: seq
+44.
+49.
+Vec Object: 1 MPI processes
+  type: seq
+11.
+13.
+Vec Object: 1 MPI processes
+  type: seq
+462.
+546.
+[ERROR] MatDiagonalSet_Shell: Operation not supported on scaled matrix
+Vec Object: 1 MPI processes
+  type: seq
+462.
+546.

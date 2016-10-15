@@ -26,7 +26,6 @@
 #define KSPCHEBYSHEV 'chebyshev'
 #define KSPCG 'cg'
 #define KSPCGNE 'cgne'
-#define KSPNASH 'nash'
 #define KSPSTCG 'stcg'
 #define KSPGLTR 'gltr'
 #define KSPFCG 'fcg'

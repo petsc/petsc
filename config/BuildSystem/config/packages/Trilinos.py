@@ -34,6 +34,7 @@ class Configure(config.package.CMakePackage):
     self.mumps           = framework.require('config.packages.MUMPS',self)
     self.zoltan          = framework.require('config.packages.Zoltan',self)
     self.ml              = framework.require('config.packages.ml',self)
+    self.chaco           = framework.require('config.packages.Chaco',self)
     self.exodusii        = framework.require('config.packages.exodusii',self)
     self.boost           = framework.require('config.packages.boost',self)
     self.deps            = [self.mpi,self.blasLapack,self.netcdf,self.hdf5]
@@ -45,6 +46,7 @@ class Configure(config.package.CMakePackage):
   def Install(self):
     config.package.CMakePackage.Install(self)
     self.addDefine('HAVE_ML',1)
+    self.addDefine('HAVE_CHACO',1)
     self.addDefine('HAVE_ZOLTAN',1)
     self.addDefine('HAVE_EXODUSII',1)
     return self.installDir
@@ -55,6 +57,9 @@ class Configure(config.package.CMakePackage):
 
     if self.ml.found:
       raise RuntimeError('Trilinos contains ml, therefor do not provide/build a ml if you are providing/building Trilinos')
+
+    if self.chaco.found:
+      raise RuntimeError('Trilinos contains chaco, therefor do not provide/build a chaco if you are providing/building Trilinos')
 
     if self.exodusii.found:
       raise RuntimeError('Trilinos contains Exudusii, therefor do not provide/build a Exodusii if you are providing/building Trilinos')

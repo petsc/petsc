@@ -4,23 +4,23 @@
     2 KSP Residual norm 0.00555887 
     3 KSP Residual norm 0.00240459 
     4 KSP Residual norm 0.00131775 
-    5 KSP Residual norm 0.000644714 
-    6 KSP Residual norm 0.000633075 
-    7 KSP Residual norm 0.000355481 
-    8 KSP Residual norm 0.000232608 
+    5 KSP Residual norm 0.000643679 
+    6 KSP Residual norm 0.00063304 
+    7 KSP Residual norm 0.000355474 
+    8 KSP Residual norm 0.000232607 
     9 KSP Residual norm 0.000182536 
    10 KSP Residual norm 0.000128418 
-   11 KSP Residual norm 8.96828e-05 
-   12 KSP Residual norm 8.9406e-05 
-   13 KSP Residual norm 4.50224e-05 
-   14 KSP Residual norm 1.96312e-05 
+   11 KSP Residual norm 8.96694e-05 
+   12 KSP Residual norm 8.88895e-05 
+   13 KSP Residual norm 4.50222e-05 
+   14 KSP Residual norm 1.96314e-05 
    15 KSP Residual norm 5.69145e-06 
-   16 KSP Residual norm 2.93839e-06 
-   17 KSP Residual norm 1.15637e-06 
-   18 KSP Residual norm 1.14821e-06 
-   19 KSP Residual norm 5.77909e-07 
-   20 KSP Residual norm 1.69637e-07 
-   21 KSP Residual norm 7.01731e-08 
+   16 KSP Residual norm 2.93836e-06 
+   17 KSP Residual norm 1.15352e-06 
+   18 KSP Residual norm 1.14743e-06 
+   19 KSP Residual norm 5.779e-07 
+   20 KSP Residual norm 1.69638e-07 
+   21 KSP Residual norm 7.01713e-08 
    22 KSP Residual norm 2.02303e-08 
   Linear solve converged due to CONVERGED_RTOL iterations 22
   1 SNES Function norm 2.02303e-08 
@@ -60,7 +60,7 @@ SNES Object: 1 MPI processes
         using NONE norm type for convergence test
       PC Object: (fieldsplit_velocity_) 1 MPI processes
         type: lu
-          LU: out-of-place factorization
+          out-of-place factorization
           tolerance for zero pivot 2.22045e-14
           matrix ordering: nd
           factor fill ratio given 5., needed 3.45047
@@ -105,4 +105,4 @@ SNES Object: 1 MPI processes
         has attached null space
         using I-node routines: found 513 nodes, limit used is 5
 Number of SNES iterations = 1
-L_2 Error: 6.47e-07 [1.5e-08, 6.47e-07]
+L_2 Error: 6.47e-07 [1.53e-08, 6.47e-07]

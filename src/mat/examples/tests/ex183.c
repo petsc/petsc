@@ -90,7 +90,7 @@ int main(int argc, char **args)
   color = rank/k;
   ierr = MPI_Comm_split(PETSC_COMM_WORLD,color,rank,&subcomm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(subcomm,&subsize);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(subcomm,&subrank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(subcomm,&subrank);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
   nis = 1;
   ierr = PetscMalloc2(rend-rstart,&rowindices,rend-rstart,&colindices);CHKERRQ(ierr);

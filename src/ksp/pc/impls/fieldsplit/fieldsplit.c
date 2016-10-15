@@ -620,20 +620,36 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       /* special case need where Afield[0] is not needed and only certain columns of Afield[1] are needed since update is only on those rows of the solution */
       if (!jac->Afield) {
         ierr = PetscCalloc1(nsplit,&jac->Afield);CHKERRQ(ierr);
-        ierr  = MatGetSubMatrix(pc->mat,ilink->next->is,ilink->is,MAT_INITIAL_MATRIX,&jac->Afield[1]);CHKERRQ(ierr);
+        if (jac->offdiag_use_amat) {
+          ierr  = MatGetSubMatrix(pc->mat,ilink->next->is,ilink->is,MAT_INITIAL_MATRIX,&jac->Afield[1]);CHKERRQ(ierr);
+        } else {
+          ierr  = MatGetSubMatrix(pc->pmat,ilink->next->is,ilink->is,MAT_INITIAL_MATRIX,&jac->Afield[1]);CHKERRQ(ierr);
+        }
       } else {
-        ierr  = MatGetSubMatrix(pc->mat,ilink->next->is,ilink->is,MAT_REUSE_MATRIX,&jac->Afield[1]);CHKERRQ(ierr);
+        if (jac->offdiag_use_amat) {
+          ierr  = MatGetSubMatrix(pc->mat,ilink->next->is,ilink->is,MAT_REUSE_MATRIX,&jac->Afield[1]);CHKERRQ(ierr);
+        } else {
+          ierr  = MatGetSubMatrix(pc->pmat,ilink->next->is,ilink->is,MAT_REUSE_MATRIX,&jac->Afield[1]);CHKERRQ(ierr);
+        }
       }
     } else {
       if (!jac->Afield) {
         ierr = PetscMalloc1(nsplit,&jac->Afield);CHKERRQ(ierr);
         for (i=0; i<nsplit; i++) {
-          ierr  = MatGetSubMatrix(pc->mat,ilink->is,NULL,MAT_INITIAL_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
+          if (jac->offdiag_use_amat) {
+            ierr  = MatGetSubMatrix(pc->mat,ilink->is,NULL,MAT_INITIAL_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
+          } else {
+            ierr  = MatGetSubMatrix(pc->pmat,ilink->is,NULL,MAT_INITIAL_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
+          }
           ilink = ilink->next;
         }
       } else {
         for (i=0; i<nsplit; i++) {
-          ierr  = MatGetSubMatrix(pc->mat,ilink->is,NULL,MAT_REUSE_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
+          if (jac->offdiag_use_amat) {
+            ierr  = MatGetSubMatrix(pc->mat,ilink->is,NULL,MAT_REUSE_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
+          } else {
+            ierr  = MatGetSubMatrix(pc->pmat,ilink->is,NULL,MAT_REUSE_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
+          }
           ilink = ilink->next;
         }
       }
@@ -1869,7 +1885,7 @@ PetscErrorCode  PCFieldSplitGetSubKSP(PC pc,PetscInt *n,KSP *subksp[])
 #undef __FUNCT__
 #define __FUNCT__ "PCFieldSplitSetSchurPre"
 /*@
-    PCFieldSplitSetSchurPre -  Indicates if the Schur complement is preconditioned by a preconditioner constructed by the
+    PCFieldSplitSetSchurPre -  Indicates what operator is used to construct the preconditioner for the Schur complement.
       A11 matrix. Otherwise no preconditioner is used.
 
     Collective on PC
@@ -1886,7 +1902,7 @@ PetscErrorCode  PCFieldSplitGetSubKSP(PC pc,PetscInt *n,KSP *subksp[])
     Notes:
 $    If ptype is
 $        a11 then the preconditioner for the Schur complement is generated from the block diagonal part of the preconditioner
-$             matrix associated with the Schur complement (i.e. A11), not he Schur complement matrix
+$             matrix associated with the Schur complement (i.e. A11), not the Schur complement matrix
 $        self the preconditioner for the Schur complement is generated from the symbolic representation of the Schur complement matrix:
 $             The only preconditioner that currently works with this symbolic respresentation matrix object is the PCLSC
 $             preconditioner

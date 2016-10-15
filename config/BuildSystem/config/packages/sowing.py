@@ -4,10 +4,9 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download          = ['git://https://bitbucket.org/petsc/pkg-sowing.git','http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sowing-1.1.20-pre2.tar.gz']
-    self.gitcommit         = 'v1.1.20-pre2'
+    self.download          = ['git://https://bitbucket.org/petsc/pkg-sowing.git','http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sowing-1.1.23-p1.tar.gz']
+    self.gitcommit         = 'v1.1.23-p1'
     self.complex           = 1
-    self.double            = 0
     self.downloadonWindows = 1
     self.publicInstall     = 0  # always install in PETSC_DIR/PETSC_ARCH (not --prefix) since this is not used by users
     self.parallelMake      = 0  # sowing does not support make -j np

@@ -18,7 +18,7 @@ static PetscBool MatMFFDPackageInitialized = PETSC_FALSE;
   Level: developer
 
 .keywords: Petsc, destroy, package
-.seealso: PetscFinalize()
+.seealso: PetscFinalize(), MatCreateMFFD(), MatCreateSNESMF()
 @*/
 PetscErrorCode  MatMFFDFinalizePackage(void)
 {
@@ -101,7 +101,7 @@ PetscErrorCode  MatMFFDInitializePackage(void)
           F'(u)a  ~=  ----------------
                               h
 
-.seealso: MatCreateSNESMF(), MatMFFDRegister(), MatMFFDSetFunction()
+.seealso: MatCreateSNESMF(), MatMFFDRegister(), MatMFFDSetFunction(), MatCreateMFFD()
 @*/
 PetscErrorCode  MatMFFDSetType(Mat mat,MatMFFDType ftype)
 {
@@ -576,7 +576,7 @@ static PetscErrorCode  MatMFFDSetCheckh_MFFD(Mat J,FCN3 fun,void *ectx)
 
 .keywords: SNES, matrix-free, parameters
 
-.seealso: MatSetFromOptions(), MatCreateSNESMF()
+.seealso: MatSetFromOptions(), MatCreateSNESMF(), MatCreateMFFD()
 @*/
 PetscErrorCode  MatMFFDSetOptionsPrefix(Mat mat,const char prefix[])
 
@@ -674,7 +674,10 @@ static PetscErrorCode MatMissingDiagonal_MFFD(Mat A,PetscBool  *missing,PetscInt
 
   Level: advanced
 
-.seealso: MatCreateMFFD(), MatCreateSNESMF(), MatMFFDSetFunction()
+.seealso: MatCreateMFFD(), MatCreateSNESMF(), MatMFFDSetFunction(), MatMFFDSetType(),  
+          MatMFFDSetFunctionError(), MatMFFDDSSetUmin(), MatMFFDSetFunction()
+          MatMFFDSetHHistory(), MatMFFDResetHHistory(), MatCreateSNESMF(),
+          MatMFFDGetH(),
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_MFFD"
@@ -1167,10 +1170,13 @@ PetscErrorCode  MatMFFDSetBase(Mat J,Vec U,Vec F)
 
     Level: advanced
 
-    Notes: For example, MatMFFDSetCheckPositivity() insures that all entries
+    Notes: For example, MatMFFDCheckPositivity() insures that all entries
        of U + h*a are non-negative
 
-.seealso:  MatMFFDSetCheckPositivity()
+     The function you provide is called after the default h has been computed and allows you to
+     modify it.
+
+.seealso:  MatMFFDCheckPositivity()
 @*/
 PetscErrorCode  MatMFFDSetCheckh(Mat J,PetscErrorCode (*fun)(void*,Vec,Vec,PetscScalar*),void *ctx)
 {
@@ -1183,7 +1189,7 @@ PetscErrorCode  MatMFFDSetCheckh(Mat J,PetscErrorCode (*fun)(void*,Vec,Vec,Petsc
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatMFFDSetCheckPositivity"
+#define __FUNCT__ "MatMFFDCheckPositivity"
 /*@
     MatMFFDCheckPositivity - Checks that all entries in U + h*a are positive or
         zero, decreases h until this is satisfied.

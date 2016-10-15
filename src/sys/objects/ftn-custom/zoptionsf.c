@@ -16,6 +16,7 @@
 #define petscoptionshasname_               PETSCOPTIONSHASNAME
 #define petscoptionsgetint_                PETSCOPTIONSGETINT
 #define petscoptionsgetreal_               PETSCOPTIONSGETREAL
+#define petscoptionsgetscalar_             PETSCOPTIONSGETSCALAR
 #define petscoptionsgetrealarray_          PETSCOPTIONSGETREALARRAY
 #define petscoptionsgetstring_             PETSCOPTIONSGETSTRING
 #define petscgetprogramname                PETSCGETPROGRAMNAME
@@ -32,6 +33,7 @@
 #define petscoptionshasname_               petscoptionshasname
 #define petscoptionsgetint_                petscoptionsgetint
 #define petscoptionsgetreal_               petscoptionsgetreal
+#define petscoptionsgetscalar_             petscoptionsgetscalar
 #define petscoptionsgetrealarray_          petscoptionsgetrealarray
 #define petscoptionsgetstring_             petscoptionsgetstring
 #define petscoptionsgetintarray_           petscoptionsgetintarray
@@ -162,6 +164,21 @@ PETSC_EXTERN void PETSC_STDCALL petscoptionsgetreal_(PetscOptions *options,CHAR 
   FIXCHAR(name,len2,c2);
   CHKFORTRANNULLOBJECTDEREFERENCE(options);
   *ierr = PetscOptionsGetReal(*options,c1,c2,dvalue,&flag);
+  if (!FORTRANNULLBOOL(flg)) *flg = flag;
+  FREECHAR(pre,c1);
+  FREECHAR(name,c2);
+}
+
+PETSC_EXTERN void PETSC_STDCALL petscoptionsgetscalar_(PetscOptions *options,CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
+                    PetscScalar *dvalue,PetscBool  *flg,PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
+{
+  char *c1,*c2;
+  PetscBool  flag;
+
+  FIXCHAR(pre,len1,c1);
+  FIXCHAR(name,len2,c2);
+  CHKFORTRANNULLOBJECTDEREFERENCE(options);
+  *ierr = PetscOptionsGetScalar(*options,c1,c2,dvalue,&flag);
   if (!FORTRANNULLBOOL(flg)) *flg = flag;
   FREECHAR(pre,c1);
   FREECHAR(name,c2);

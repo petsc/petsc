@@ -14,7 +14,8 @@
 #define PetscDrawMesh PetscFortranAddr
 #define PetscDrawButton PetscEnum
 #define PetscDrawType character*(80)
-
+#define PetscDrawMarkerType PetscEnum
+#define PetscDrawBar PetscFortranAddr
 !
 !  types of draw context
 !

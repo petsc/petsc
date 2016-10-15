@@ -37,14 +37,14 @@ int main(int argc,char **argv)
   ierr = PetscOptionsHasName(NULL,NULL,"-grid2d",&flg2);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,NULL,"-grid3d",&flg3);CHKERRQ(ierr);
   if (flg2) {
-    ierr = DMDACreate2d(PETSC_COMM_WORLD,periodic,periodic,stencil_type,M,N,m,n,dof,stencil_width,
-                        NULL,NULL,&da);CHKERRQ(ierr);
+    ierr = DMDACreate2d(PETSC_COMM_WORLD,periodic,periodic,stencil_type,M,N,m,n,dof,stencil_width,NULL,NULL,&da);CHKERRQ(ierr);
   } else if (flg3) {
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,periodic,periodic,periodic,stencil_type,M,N,P,m,n,p,dof,stencil_width,
-                        NULL,NULL,NULL,&da);CHKERRQ(ierr);
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,periodic,periodic,periodic,stencil_type,M,N,P,m,n,p,dof,stencil_width,NULL,NULL,NULL,&da);CHKERRQ(ierr);
   } else {
     ierr = DMDACreate1d(PETSC_COMM_WORLD,periodic,M,dof,stencil_width,NULL,&da);CHKERRQ(ierr);
   }
+  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);

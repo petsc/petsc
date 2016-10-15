@@ -316,14 +316,10 @@ int main(int argc,char **args)
     ierr = MaybeLogStagePop();CHKERRQ(ierr);
     ierr = MaybeLogStagePush(stage[4]);CHKERRQ(ierr);
 
-    /* 3rd solve */
-    ierr = MatScale(Amat, 100000.0);CHKERRQ(ierr);
-    ierr = KSPSetOperators(ksp, Amat, Amat);CHKERRQ(ierr);
-    ierr = KSPSetUp(ksp);CHKERRQ(ierr);
-
     ierr = MaybeLogStagePop();CHKERRQ(ierr);
     ierr = MaybeLogStagePush(stage[5]);CHKERRQ(ierr);
 
+    /* 3rd solve */
     ierr = KSPSolve(ksp, bb, xx);CHKERRQ(ierr);
 
     ierr = MaybeLogStagePop();CHKERRQ(ierr);

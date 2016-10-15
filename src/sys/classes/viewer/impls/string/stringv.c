@@ -132,6 +132,17 @@ PetscErrorCode PetscViewerRestoreSubViewer_String(PetscViewer viewer,MPI_Comm co
   PetscFunctionReturn(0);
 }
 
+/*MC
+   PETSCVIEWERSTRING - A viewer that writes to a string
+
+
+.seealso:  PetscViewerStringOpen(), PetscViewerStringSPrintf(), PetscViewerSocketOpen(), PetscViewerDrawOpen(), PETSCVIEWERSOCKET,
+           PetscViewerCreate(), PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), PETSCVIEWERBINARY, PETSCVIEWERDRAW,
+           PetscViewerMatlabOpen(), VecView(), DMView(), PetscViewerMatlabPutArray(), PETSCVIEWERASCII, PETSCVIEWERMATLAB,
+           PetscViewerFileSetName(), PetscViewerFileSetMode(), PetscViewerFormat, PetscViewerType, PetscViewerSetType()
+
+M*/
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerCreate_String"
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_String(PetscViewer v)

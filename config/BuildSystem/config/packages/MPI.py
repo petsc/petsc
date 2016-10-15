@@ -38,7 +38,6 @@ class Configure(config.package.Package):
     self.liblist          = liblist_mpich + liblist_lam + liblist_msmpi + liblist_other + liblist_single
     # defaults to --with-mpi=yes
     self.required         = 1
-    self.double           = 0
     self.complex          = 1
     self.isPOE            = 0
     self.usingMPIUni      = 0
@@ -456,8 +455,10 @@ class Configure(config.package.Package):
         self.addDefine('HAVE_OMPI_RELEASE_VERSION',ompi_release_version)
       except:
         self.logPrint('Unable to parse OpenMPI version from header. Probably a buggy preprocessor')
+
   def findMPIInc(self):
-    '''Find MPI include paths from "mpicc -show"'''
+    '''Find MPI include paths from "mpicc -show" and use with CUDAC_FLAGS'''
+    if not hasattr(self.compilers, 'CUDAC'): return
     import re
     output = ''
     try:
@@ -472,9 +473,10 @@ class Configure(config.package.Package):
         self.logPrint( 'Checking arg '+arg, 4, 'compilers')
         m = re.match(r'^-I.*$', arg)
         if m:
-          inc = arg.replace('-I','')
-          self.logPrint('Found include directory: '+inc, 4, 'compilers')
-          self.include.append(inc)
+          self.logPrint('Found include option: '+arg, 4, 'compilers')
+          self.setCompilers.pushLanguage('CUDA')
+          self.setCompilers.addCompilerFlag(arg)
+          self.setCompilers.popLanguage()
           continue
     except StopIteration:
       pass

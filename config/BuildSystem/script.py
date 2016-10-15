@@ -22,15 +22,23 @@ if sys.version_info[:2] >= (2, 6) and not USE_SUBPROCESS:
 import nargs
 useThreads = nargs.Arg.findArgument('useThreads', sys.argv[1:])
 if useThreads is None:
-  useThreads = 0 # worarround issue with parallel configure
+  useThreads = 0 # workaround issue with parallel configure
+elif useThreads == 'no' or useThreads == '0':
+  useThreads = 0
+elif useThreads == 'yes' or useThreads == '1':
+  useThreads = 1
 else:
-  useThreads = int(useThreads)
+  raise RuntimeError('Unknown option value for --useThreads ',useThreads)
 
 useSelect = nargs.Arg.findArgument('useSelect', sys.argv[1:])
 if useSelect is None:
   useSelect = 1
+elif useSelect == 'no' or useSelect == '0':
+  useSelect = 0
+elif useSelect == 'yes' or useSelect == '1':
+  useSelect = 1
 else:
-  useSelect = int(useSelect)
+  raise RuntimeError('Unknown option value for --useSelect ',useSelect)
 
 import logger
 

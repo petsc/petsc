@@ -27,8 +27,17 @@ ex9busopt: ex9busopt.o  chkopts
 ex9busopt_fd: ex9busopt_fd.o  chkopts
 	-${CLINKER} -o ex9busopt_fd ex9busopt_fd.o  ${PETSC_LIB}
 
-runex9bus:
-	-@${MPIEXEC} -n 1 ./ex9bus
+runex9bus_implicit:
+	-@${MPIEXEC} -n 1 ./ex9bus -ts_monitor -snes_monitor_short > ex9bus_1.tmp 2>&1;    \
+	   ${DIFF} output/ex9bus_1.out ex9bus_1.tmp || printf "${PWD}\nPossible problem with ex9bus_implicit, diffs above\n=========================================\n"; \
+	   ${RM} -f ex9bus_1.tmp
+
+runex9bus_semiexplicit:
+	-@x="bad"; ${MPIEXEC} -n 1 ./ex9bus -ts_monitor -snes_monitor_short -dae_semiexplicit -ts_rk_type 2a > ex9bus_2.tmp 2>&1;   \
+           if (${DIFF} output/ex9bus_2.out ex9bus_2.tmp > /dev/null 2>&1) then x='good'; fi ;\
+           if (${DIFF} output/ex9bus_2_alt.out ex9bus_2.tmp > /dev/null 2>&1) then x='good'; fi; \
+           if [ "$$x" = "bad" ]; then ${DIFF} output/ex9bus_2.out ex9bus_2.tmp ; ${DIFF} output/ex9bus_2_alt.out ex9bus_2.tmp ; printf "${PWD}\nPossible problem with ex9bus_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex9bus_2.tmp
 
 runex9busadj:
 	-@${MPIEXEC} -n 1 ./ex9busadj -viewer_binary_skip_info > ex9busadj_1.tmp 2>&1;	  \
@@ -49,6 +58,6 @@ clean_files:
 	${RM} ex9busopt.o
 	-@${RM} ex9bus-SA-*
 
-TESTEXAMPLES_DOUBLEINT32 = ex9bus.PETSc runex9bus ex9bus.rm ex9busadj.PETSc runex9busadj ex9busadj.rm ex9busopt.PETSc runex9busopt ex9busopt.rm ex9busopt_fd.PETSc runex9busopt_fd ex9busopt_fd.rm
+TESTEXAMPLES_DOUBLEINT32 = ex9bus.PETSc runex9bus_implicit runex9bus_semiexplicit ex9bus.rm ex9busadj.PETSc runex9busadj ex9busadj.rm ex9busopt.PETSc runex9busopt ex9busopt.rm ex9busopt_fd.PETSc runex9busopt_fd ex9busopt_fd.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test

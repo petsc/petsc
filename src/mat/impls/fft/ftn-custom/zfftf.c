@@ -12,6 +12,6 @@ PETSC_EXTERN void PETSC_STDCALL matcreatefft_(MPI_Comm *comm,PetscInt *ndim,Pets
   char *mattype;
 
   FIXCHAR(type_name,len,mattype);
-  *ierr = MatCreateFFT(*comm,*ndim,dim,mattype,A);
+  *ierr = MatCreateFFT(MPI_Comm_f2c(*(MPI_Fint*)&*comm),*ndim,dim,mattype,A);
   FREECHAR(type_name,mattype);
 }

@@ -1,7 +1,9 @@
 !
-!  Single Fortran 90 include file
+!  Single Fortran 90 include file for all of PETSc
 !
 #include "petsc/finclude/petsc.h"
+#include "petsc/finclude/petscsys.h90"
+#include "petsc/finclude/petscdraw.h90"
 #include "petsc/finclude/petscviewer.h90"
 #include "petsc/finclude/petscis.h90"
 #include "petsc/finclude/petscvec.h90"

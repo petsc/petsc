@@ -5,6 +5,8 @@
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define dmview_                      DMVIEW
 #define dmsetoptionsprefix_          DMSETOPTIONSPREFIX
+#define dmsettype_                   DMSETTYPE
+#define dmgettype_                   DMGETTYPE
 #define dmsetmattype_                DMSETMATTYPE
 #define dmsetvectype_                DMSETVECTYPE
 #define dmgetmattype_                DMGETMATTYPE
@@ -24,6 +26,8 @@
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dmview_                      dmview
 #define dmsetoptionsprefix_          dmsetoptionsprefix
+#define dmsettype_                   dmsettype
+#define dmgettype_                   dmgettype
 #define dmsetmattype_                dmsetmattype
 #define dmsetvectype_                dmsetvectype
 #define dmgetmattype_                dmgetmattype
@@ -78,6 +82,27 @@ PETSC_EXTERN void PETSC_STDCALL dmsetoptionsprefix_(DM *dm,CHAR prefix PETSC_MIX
   FIXCHAR(prefix,len,t);
   *ierr = DMSetOptionsPrefix(*dm,t);
   FREECHAR(prefix,t);
+}
+
+PETSC_EXTERN void PETSC_STDCALL dmsettype_(DM *x,CHAR type_name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  char *t;
+
+  FIXCHAR(type_name,len,t);
+  *ierr = DMSetType(*x,t);
+  FREECHAR(type_name,t);
+}
+
+PETSC_EXTERN void PETSC_STDCALL dmgettype_(DM *mm,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  const char *tname;
+
+  *ierr = DMGetType(*mm,&tname);if (*ierr) return;
+  if (name != PETSC_NULL_CHARACTER_Fortran) {
+    *ierr = PetscStrncpy(name,tname,len);if (*ierr) return;
+  }
+  FIXRETURNCHAR(PETSC_TRUE,name,len);
+
 }
 
 PETSC_EXTERN void PETSC_STDCALL dmsetmattype_(DM *dm,CHAR prefix PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))

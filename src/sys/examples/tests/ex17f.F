@@ -11,6 +11,10 @@
       character*100    joe
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+         print*,'Unable to initialize PETSc'
+         stop
+      endif
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
       call PetscFOpen(PETSC_COMM_WORLD,'testfile','w',file,ierr)
@@ -25,6 +29,10 @@
       call PetscSynchronizedFlush(PETSC_COMM_WORLD,file,ierr)
 
       call PetscFClose(PETSC_COMM_WORLD,file,ierr)
+
+      call PetscSynchronizedPrintf(PETSC_COMM_WORLD,'Hi twice \n',          &
+     &                              ierr)
+      call PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT,ierr)
 
       call PetscFinalize(ierr)
       end

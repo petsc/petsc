@@ -5,6 +5,9 @@ static char help[] = "Tests DMSwarm\n\n";
 #include <petscdmda.h>
 #include <petscdmswarm.h>
 
+PetscErrorCode DMSwarmCollect_General(DM dm,PetscErrorCode (*collect)(DM,void*,PetscInt*,PetscInt**),size_t ctx_size,void *ctx,PetscInt *globalsize);
+PetscErrorCode DMSwarmCollect_DMDABoundingBox(DM dm,PetscInt *globalsize);
+
 #undef __FUNCT__
 #define __FUNCT__ "ex1_1"
 PetscErrorCode ex1_1(void)
@@ -18,6 +21,8 @@ PetscErrorCode ex1_1(void)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&commsize);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
+  if ((commsize > 1) && (commsize != 4)) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must be run wuth 4 MPI ranks");
+  
   ierr = DMCreate(PETSC_COMM_WORLD,&dms);CHKERRQ(ierr);
   ierr = DMSetType(dms,DMSWARM);CHKERRQ(ierr);
 
@@ -50,12 +55,12 @@ PetscErrorCode ex1_1(void)
   }
 
   ierr = DMSwarmCreateGlobalVectorFromField(dms,"viscosity",&x);CHKERRQ(ierr);
-  //ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  /*ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
   ierr = DMSwarmDestroyGlobalVectorFromField(dms,"viscosity",&x);CHKERRQ(ierr);
   
   ierr = DMSwarmVectorDefineField(dms,"strain");CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(dms,&x);CHKERRQ(ierr);
-  //ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  /*ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   
   {
@@ -180,9 +185,7 @@ PetscErrorCode ex1_2(void)
     ierr = DMSwarmCreateGlobalVectorFromField(dms,"viscosity",&x);CHKERRQ(ierr);
     ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = DMSwarmDestroyGlobalVectorFromField(dms,"viscosity",&x);CHKERRQ(ierr);
-}
-  
-  
+  }
   ierr = DMDestroy(&dms);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
@@ -200,13 +203,14 @@ PetscErrorCode ex1_3(void)
   PetscMPIInt rank,commsize;
   PetscInt is,js,ni,nj,overlap;
   DM dmcell;
-
   
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&commsize);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   
   overlap = 2;
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,13,13,PETSC_DECIDE,PETSC_DECIDE,1,overlap,NULL,NULL,&dmcell);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(dmcell);CHKERRQ(ierr);
+  ierr = DMSetUp(dmcell);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(dmcell,-1.0,1.0,-1.0,1.0,-1.0,1.0);CHKERRQ(ierr);
   
   ierr = DMDAGetCorners(dmcell,&is,&js,NULL,&ni,&nj,NULL);CHKERRQ(ierr);
@@ -269,7 +273,6 @@ PetscErrorCode ex1_3(void)
     ierr = DMDAVecRestoreArray(dmcellcdm,coor,&LA_coor);CHKERRQ(ierr);
   }
   
-  
   {
     PetscInt npoints[2],npoints_orig[2],ng;
     
@@ -282,17 +285,17 @@ PetscErrorCode ex1_3(void)
     ierr = DMSwarmGetLocalSize(dms,&npoints[0]);CHKERRQ(ierr);
     ierr = DMSwarmGetSize(dms,&npoints[1]);CHKERRQ(ierr);
     PetscPrintf(PETSC_COMM_SELF,"rank[%d] after(%D,%D)\n",rank,npoints[0],npoints[1]);
-    
   }
   
   {
     PetscReal *array_x,*array_y;
     PetscInt npoints,p;
-    FILE *fp;
-    char name[100];
+    FILE *fp = NULL;
+    char name[PETSC_MAX_PATH_LEN];
     
-    sprintf(name,"c-rank%d.gp",rank);
+    PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"c-rank%d.gp",rank);
     fp = fopen(name,"w");
+    if (!fp) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file %s",name);
     ierr = DMSwarmGetLocalSize(dms,&npoints);CHKERRQ(ierr);
     ierr = DMSwarmGetField(dms,"coorx",NULL,NULL,(void**)&array_x);CHKERRQ(ierr);
     ierr = DMSwarmGetField(dms,"coory",NULL,NULL,(void**)&array_y);CHKERRQ(ierr);
@@ -328,7 +331,7 @@ PetscErrorCode collect_zone(DM dm,void *ctx,PetscInt *nfound,PetscInt **foundlis
   
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
-  //printf("z %1.4e,%1.4e --> %1.4e\n",zone->cx[0],zone->cx[1],zone->radius);
+  /*PetscPrintf(PETSC_COMM_WORLD,"z %1.4e,%1.4e --> %1.4e\n",zone->cx[0],zone->cx[1],zone->radius);*/
   
   ierr = DMSwarmGetLocalSize(dm,&npoints);CHKERRQ(ierr);
   ierr = DMSwarmGetField(dm,"coorx",NULL,NULL,(void**)&array_x);CHKERRQ(ierr);
@@ -361,7 +364,7 @@ PetscErrorCode collect_zone(DM dm,void *ctx,PetscInt *nfound,PetscInt **foundlis
   ierr = DMSwarmRestoreField(dm,"coory",NULL,NULL,(void**)&array_y);CHKERRQ(ierr);
   ierr = DMSwarmRestoreField(dm,"coorx",NULL,NULL,(void**)&array_x);CHKERRQ(ierr);
   
-  //printf("rank[%d]: p2collect = %d\n",rank,p2collect);
+  /*PetscPrintf(PETSC_COMM_WORLD,"rank[%d]: p2collect = %d\n",rank,p2collect);*/
 
   *nfound = p2collect;
   *foundlist = plist;
@@ -382,12 +385,13 @@ PetscErrorCode ex1_4(void)
   
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&commsize);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  //if (commsize != 4) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must be run with 4 MPI ranks");
   
   nn = 101;
   dx = 2.0/ (PetscReal)(nn-1);
   overlap = 0;
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nn,nn,PETSC_DECIDE,PETSC_DECIDE,1,overlap,NULL,NULL,&dmcell);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(dmcell);CHKERRQ(ierr);
+  ierr = DMSetUp(dmcell);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(dmcell,-1.0,1.0,-1.0,1.0,-1.0,1.0);CHKERRQ(ierr);
   
   ierr = DMDAGetCorners(dmcell,&is,&js,NULL,&ni,&nj,NULL);CHKERRQ(ierr);
@@ -430,15 +434,15 @@ PetscErrorCode ex1_4(void)
         xp = LA_coor[j][i].x;
         yp = LA_coor[j][i].y;
         
-        array_x[4*cnt+0] = xp - dx*0.1; //if (array_x[4*cnt+0] < -1.0) { array_x[4*cnt+0] = -1.0+1.0e-12; }
-        array_x[4*cnt+1] = xp + dx*0.1; //if (array_x[4*cnt+1] > 1.0)  { array_x[4*cnt+1] =  1.0-1.0e-12; }
-        array_x[4*cnt+2] = xp - dx*0.1; //if (array_x[4*cnt+2] < -1.0) { array_x[4*cnt+2] = -1.0+1.0e-12; }
-        array_x[4*cnt+3] = xp + dx*0.1; //if (array_x[4*cnt+3] > 1.0)  { array_x[4*cnt+3] =  1.0-1.0e-12; }
+        array_x[4*cnt+0] = xp - dx*0.1; /*if (array_x[4*cnt+0] < -1.0) { array_x[4*cnt+0] = -1.0+1.0e-12; }*/
+        array_x[4*cnt+1] = xp + dx*0.1; /*if (array_x[4*cnt+1] > 1.0)  { array_x[4*cnt+1] =  1.0-1.0e-12; }*/
+        array_x[4*cnt+2] = xp - dx*0.1; /*if (array_x[4*cnt+2] < -1.0) { array_x[4*cnt+2] = -1.0+1.0e-12; }*/
+        array_x[4*cnt+3] = xp + dx*0.1; /*if (array_x[4*cnt+3] > 1.0)  { array_x[4*cnt+3] =  1.0-1.0e-12; }*/
         
-        array_y[4*cnt+0] = yp - dx*0.1; //if (array_y[4*cnt+0] < -1.0) { array_y[4*cnt+0] = -1.0+1.0e-12; }
-        array_y[4*cnt+1] = yp - dx*0.1; //if (array_y[4*cnt+1] < -1.0) { array_y[4*cnt+1] = -1.0+1.0e-12; }
-        array_y[4*cnt+2] = yp + dx*0.1; //if (array_y[4*cnt+2] > 1.0)  { array_y[4*cnt+2] =  1.0-1.0e-12; }
-        array_y[4*cnt+3] = yp + dx*0.1; //if (array_y[4*cnt+3] > 1.0)  { array_y[4*cnt+3] =  1.0-1.0e-12; }
+        array_y[4*cnt+0] = yp - dx*0.1; /*if (array_y[4*cnt+0] < -1.0) { array_y[4*cnt+0] = -1.0+1.0e-12; }*/
+        array_y[4*cnt+1] = yp - dx*0.1; /*if (array_y[4*cnt+1] < -1.0) { array_y[4*cnt+1] = -1.0+1.0e-12; }*/
+        array_y[4*cnt+2] = yp + dx*0.1; /*if (array_y[4*cnt+2] > 1.0)  { array_y[4*cnt+2] =  1.0-1.0e-12; }*/
+        array_y[4*cnt+3] = yp + dx*0.1; /*if (array_y[4*cnt+3] > 1.0)  { array_y[4*cnt+3] =  1.0-1.0e-12; }*/
         
         cnt++;
       }
@@ -483,8 +487,6 @@ PetscErrorCode ex1_4(void)
     }
   }
   
-
-  
   {
     PetscInt npoints[2],npoints_orig[2],ng;
     
@@ -497,17 +499,17 @@ PetscErrorCode ex1_4(void)
     ierr = DMSwarmGetLocalSize(dms,&npoints[0]);CHKERRQ(ierr);
     ierr = DMSwarmGetSize(dms,&npoints[1]);CHKERRQ(ierr);
     PetscPrintf(PETSC_COMM_SELF,"rank[%d] after(%D,%D)\n",rank,npoints[0],npoints[1]);
-    
   }
   
   {
     PetscReal *array_x,*array_y;
     PetscInt npoints,p;
-    FILE *fp;
-    char name[100];
+    FILE *fp = NULL;
+    char name[PETSC_MAX_PATH_LEN];
     
-    sprintf(name,"c-rank%d.gp",rank);
+    PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"c-rank%d.gp",rank);
     fp = fopen(name,"w");
+    if (!fp) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file %s",name);
     ierr = DMSwarmGetLocalSize(dms,&npoints);CHKERRQ(ierr);
     ierr = DMSwarmGetField(dms,"coorx",NULL,NULL,(void**)&array_x);CHKERRQ(ierr);
     ierr = DMSwarmGetField(dms,"coory",NULL,NULL,(void**)&array_y);CHKERRQ(ierr);
@@ -531,12 +533,21 @@ PetscErrorCode ex1_4(void)
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
+  PetscInt test_mode = 4;
   
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
-  //ierr = ex1_1();CHKERRQ(ierr);
-  //ierr = ex1_2();CHKERRQ(ierr);
-  //ierr = ex1_3();CHKERRQ(ierr);
-  ierr = ex1_4();CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-test_mode",&test_mode,NULL);CHKERRQ(ierr);
+  if (test_mode == 1) {
+    ierr = ex1_1();CHKERRQ(ierr);
+  } else if (test_mode == 2) {
+    ierr = ex1_2();CHKERRQ(ierr);
+  } else if (test_mode == 3) {
+    ierr = ex1_3();CHKERRQ(ierr);
+  } else if (test_mode == 4) {
+    ierr = ex1_4();CHKERRQ(ierr);
+  } else {
+    PetscPrintf(PETSC_COMM_WORLD,"Unknown test_mode value, should be 1,2,3,4\n");
+  }
   ierr = PetscFinalize();
   return 0;
 }

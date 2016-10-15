@@ -23,6 +23,7 @@ PetscErrorCode  ISFinalizePackage(void)
 
   PetscFunctionBegin;
   ierr = PetscFunctionListDestroy(&ISList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&PetscSectionSymList);CHKERRQ(ierr);
   ISPackageInitialized = PETSC_FALSE;
   ISRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -56,6 +57,7 @@ PetscErrorCode  ISInitializePackage(void)
   ierr = PetscClassIdRegister("Index Set",&IS_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("IS L to G Mapping",&IS_LTOGM_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("Section",&PETSC_SECTION_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("Section Symmetry",&PETSC_SECTION_SYM_CLASSID);CHKERRQ(ierr);
 
   /* Process info exclusions */
   ierr = PetscOptionsGetString(NULL,NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);

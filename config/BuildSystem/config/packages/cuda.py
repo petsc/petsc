@@ -8,14 +8,14 @@ class Configure(config.package.Package):
     self.includes         = ['cublas.h','cufft.h','cusparse.h','thrust/version.h']
     self.liblist          = [['libcufft.a', 'libcublas.a','libcudart.a','libcusparse.a'],
                              ['cufft.lib','cublas.lib','cudart.lib','cusparse.lib']]
-    self.double           = 0   # 1 means requires double precision
+    self.precisions       = ['single','double']
     self.cxx              = 0
     self.complex          = 1
     self.cudaArch         = ''
     self.CUDAVersion      = '4020' # Minimal cuda version is 4.2
     self.CUDAVersionStr   = str(int(self.CUDAVersion)/1000) + '.' + str(int(self.CUDAVersion)/10%10)
-    self.hastests         = 1
-    self.hastestsdatafiles= 1
+    self.hastests         = 0
+    self.hastestsdatafiles= 0
     return
 
   def __str__(self):

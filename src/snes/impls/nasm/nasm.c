@@ -49,17 +49,17 @@ static PetscErrorCode SNESReset_NASM(SNES snes)
     if (nasm->gscatter) { ierr = VecScatterDestroy(&nasm->gscatter[i]);CHKERRQ(ierr); }
   }
 
-  if (nasm->x) {ierr = PetscFree(nasm->x);CHKERRQ(ierr);}
-  if (nasm->xl) {ierr = PetscFree(nasm->xl);CHKERRQ(ierr);}
-  if (nasm->y) {ierr = PetscFree(nasm->y);CHKERRQ(ierr);}
-  if (nasm->b) {ierr = PetscFree(nasm->b);CHKERRQ(ierr);}
+  ierr = PetscFree(nasm->x);CHKERRQ(ierr);
+  ierr = PetscFree(nasm->xl);CHKERRQ(ierr);
+  ierr = PetscFree(nasm->y);CHKERRQ(ierr);
+  ierr = PetscFree(nasm->b);CHKERRQ(ierr);
 
   if (nasm->xinit) {ierr = VecDestroy(&nasm->xinit);CHKERRQ(ierr);}
 
-  if (nasm->subsnes) {ierr = PetscFree(nasm->subsnes);CHKERRQ(ierr);}
-  if (nasm->oscatter) {ierr = PetscFree(nasm->oscatter);CHKERRQ(ierr);}
-  if (nasm->iscatter) {ierr = PetscFree(nasm->iscatter);CHKERRQ(ierr);}
-  if (nasm->gscatter) {ierr = PetscFree(nasm->gscatter);CHKERRQ(ierr);}
+  ierr = PetscFree(nasm->subsnes);CHKERRQ(ierr);
+  ierr = PetscFree(nasm->oscatter);CHKERRQ(ierr);
+  ierr = PetscFree(nasm->iscatter);CHKERRQ(ierr);
+  ierr = PetscFree(nasm->gscatter);CHKERRQ(ierr);
 
   nasm->eventrestrictinterp = 0;
   nasm->eventsubsolve = 0;

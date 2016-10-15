@@ -32,8 +32,8 @@ int main(int argc,char **args)
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate file for writing");
 
   ierr = PetscFixFilename(filein,finname);CHKERRQ(ierr);
-  if (!(file = fopen(finname,"r"))) SETERRQ(PETSC_COMM_SELF,1,"cannot open input file\n");
-  fscanf(file,"%d\n",&n);
+  if (!(file = fopen(finname,"r"))) SETERRQ(PETSC_COMM_SELF,1,"Cannot open input file\n");
+  if (fscanf(file,"%d\n",&n) != 1) SETERRQ(PETSC_COMM_SELF,1,"Badly formatted input file\n");
 
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,n,n);CHKERRQ(ierr);
@@ -43,7 +43,7 @@ int main(int argc,char **args)
   ierr = VecSetFromOptions(b);CHKERRQ(ierr);
 
   for (row=0; row<n; row++) {
-    fscanf(file,"row %d:",&rowin);
+    if (fscanf(file,"row %d:",&rowin) != 1) SETERRQ(PETSC_COMM_SELF,1,"Badly formatted input file\n");
     if (rowin != row) SETERRQ(PETSC_COMM_SELF,1,"Bad file");
     while (fscanf(file," %d %le",&col,(double*)&val)) {
       ierr = MatSetValues(A,1,&row,1,&col,&val,INSERT_VALUES);CHKERRQ(ierr);
@@ -53,7 +53,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = VecGetArray(b,&array);CHKERRQ(ierr);
   for (row=0; row<n; row++) {
-    fscanf(file," ii= %d %le",&col,(double*)(array+row));
+    if (fscanf(file," ii= %d %le",&col,(double*)(array+row)) != 2)  SETERRQ(PETSC_COMM_SELF,1,"Badly formatted input file\n");
   }
   ierr = VecRestoreArray(b,&array);CHKERRQ(ierr);
 

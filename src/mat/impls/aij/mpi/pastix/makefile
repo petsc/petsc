@@ -1,6 +1,5 @@
 
 #requirespackage   'PETSC_HAVE_PASTIX'
-#requiresprecision double
 
 ALL: lib
 

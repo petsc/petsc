@@ -30,7 +30,7 @@ int main(int argc,char **args)
   Mat            A,F,RHS,X,C1;
   MatFactorInfo  info;
   IS             perm,iperm;
-  PetscInt       dof =1,M=-8,m,n,nrhs;
+  PetscInt       dof =1,M=8,m,n,nrhs;
   PetscScalar    one = 1.0;
   PetscReal      norm,tol = 1000*PETSC_MACHINE_EPSILON;
   PetscBool      InplaceLU=PETSC_FALSE;

@@ -220,7 +220,7 @@ PetscErrorCode MatSolve_SuperLU(Mat A,Vec b,Vec x)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (A->errortype) {
+  if (A->factorerrortype) {
     ierr = PetscInfo(A,"MatSolve is called with singular matrix factor, skip\n");CHKERRQ(ierr);
     ierr = VecSetInf(x);CHKERRQ(ierr); 
     PetscFunctionReturn(0);
@@ -239,7 +239,7 @@ PetscErrorCode MatSolveTranspose_SuperLU(Mat A,Vec b,Vec x)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (A->errortype) {
+  if (A->factorerrortype) {
     ierr = PetscInfo(A,"MatSolve is called with singular matrix factor, skip\n");CHKERRQ(ierr);
     ierr = VecSetInf(x);CHKERRQ(ierr); 
     PetscFunctionReturn(0);
@@ -360,7 +360,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo
     } else {
       if (sinfo <= lu->A.ncol) {
         if (lu->options.ILU_FillTol == 0.0) {
-          F->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+          F->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
         }
         ierr = PetscInfo2(F,"Number of zero pivots %D, ILU_FillTol %g\n",sinfo,lu->options.ILU_FillTol);CHKERRQ(ierr);
       } else if (sinfo == lu->A.ncol + 1) {
@@ -374,7 +374,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo
          */
         ierr = PetscInfo1(F,"Matrix factor U is nonsingular, but is singular to working precision. The solution is computed. info %D",sinfo);CHKERRQ(ierr);
       } else { /* sinfo > lu->A.ncol + 1 */
-        F->errortype = MAT_FACTOR_OUTMEMORY;
+        F->factorerrortype = MAT_FACTOR_OUTMEMORY;
         ierr = PetscInfo1(F,"Number of bytes allocated when memory allocation fails %D\n",sinfo);CHKERRQ(ierr);
       }
     }

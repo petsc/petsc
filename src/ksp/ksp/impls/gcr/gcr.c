@@ -71,7 +71,7 @@ static PetscErrorCode KSPSolve_GCR_cycle(KSP ksp)
     ierr = KSPLogResidualHistory(ksp,norm_r);CHKERRQ(ierr);
     ierr = KSPMonitor(ksp,ksp->its,norm_r);CHKERRQ(ierr);
 
-    if (ksp->its > ksp->chknorm) {
+    if (ksp->its-1 > ksp->chknorm) {
       ierr = (*ksp->converged)(ksp,ksp->its,norm_r,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
       if (ksp->reason) break;
     }
