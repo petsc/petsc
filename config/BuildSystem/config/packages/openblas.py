@@ -33,7 +33,6 @@ class Configure(config.package.Package):
       self.argDB['known-64-bit-blas-indices'] = 1
     if 'download-openblas-make-options' in self.argDB and self.argDB['download-openblas-make-options']:
       cmdline+=" "+self.argDB['download-openblas-make-options']
-      print cmdline
 
     libdir = self.libDir
     blasDir = self.packageDir
