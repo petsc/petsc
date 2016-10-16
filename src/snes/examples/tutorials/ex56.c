@@ -317,97 +317,62 @@ int main(int argc,char **args)
         dm   = distdm;
       }
     }
-  }
-  ierr = DMSetFromOptions(dm);CHKERRQ(ierr); /* refinement done here in Plex, p4est */
-  /* snes */
-  ierr = SNESCreate(comm, &snes);CHKERRQ(ierr);
-  ierr = SNESSetDM(snes, dm);CHKERRQ(ierr);
-  /* fem */
-  {
-    const PetscInt Ncomp = dim;
-    const PetscInt components[] = {0,1,2};
-    const PetscInt Nfid = 1, Npid = 1;
-    const PetscInt fid[] = {1}; /* The fixed faces (x=0) */
-    const PetscInt pid[] = {2}; /* The faces with loading (x=L_x) */
+    ierr = DMSetFromOptions(dm);CHKERRQ(ierr); /* refinement done here in Plex, p4est */
+    /* snes */
+    ierr = SNESCreate(comm, &snes);CHKERRQ(ierr);
+    ierr = SNESSetDM(snes, dm);CHKERRQ(ierr);
+    /* fem */
+    {
+      const PetscInt Ncomp = dim;
+      const PetscInt components[] = {0,1,2};
+      const PetscInt Nfid = 1, Npid = 1;
+      const PetscInt fid[] = {1}; /* The fixed faces (x=0) */
+      const PetscInt pid[] = {2}; /* The faces with loading (x=L_x) */
     PetscFE         fe;
-    PetscDS         prob;
-    DM              cdm = dm;
+      PetscDS         prob;
+      DM              cdm = dm;
 
-    ierr = PetscFECreateDefault(dm, dim, dim, PETSC_FALSE, NULL, 2, &fe);CHKERRQ(ierr); /* elasticity */
-    ierr = PetscObjectSetName((PetscObject) fe, "deformation");CHKERRQ(ierr);
-    /* FEM prob */
-    ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-    ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
-    /* setup problem */
-    ierr = PetscDSSetResidual(prob, 0, f0_u, f1_u_3d);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu_3d);CHKERRQ(ierr);
-    ierr = PetscDSSetBdResidual(prob, 0, f0_bd_u_3d, f1_bd_u);CHKERRQ(ierr);
-    /* bcs */
-    ierr = PetscDSAddBoundary(prob, PETSC_TRUE, "fixed", "Faces", 0, Ncomp, components, (void (*)()) zero, Nfid, fid, NULL);CHKERRQ(ierr);
-    ierr = PetscDSAddBoundary(prob, PETSC_FALSE, "traction", "Faces", 0, Ncomp, components, NULL, Npid, pid, NULL);CHKERRQ(ierr);
-    while (cdm) {
-      ierr = DMSetDS(cdm,prob);CHKERRQ(ierr);
-      ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
+      ierr = PetscFECreateDefault(dm, dim, dim, PETSC_FALSE, NULL, PETSC_DEFAULT, &fe);CHKERRQ(ierr); /* elasticity */
+      ierr = PetscObjectSetName((PetscObject) fe, "deformation");CHKERRQ(ierr);
+      /* FEM prob */
+      ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+      ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
+      /* setup problem */
+      ierr = PetscDSSetResidual(prob, 0, f0_u, f1_u_3d);CHKERRQ(ierr);
+      ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu_3d);CHKERRQ(ierr);
+      ierr = PetscDSSetBdResidual(prob, 0, f0_bd_u_3d, f1_bd_u);CHKERRQ(ierr);
+      /* bcs */
+      ierr = PetscDSAddBoundary(prob, PETSC_TRUE, "fixed", "Faces", 0, Ncomp, components, (void (*)()) zero, Nfid, fid, NULL);CHKERRQ(ierr);
+      ierr = PetscDSAddBoundary(prob, PETSC_FALSE, "traction", "Faces", 0, Ncomp, components, NULL, Npid, pid, NULL);CHKERRQ(ierr);
+      while (cdm) {
+        ierr = DMSetDS(cdm,prob);CHKERRQ(ierr);
+        ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
+      }
+      ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
     }
-    ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
-  }
-  /* vecs & mat */
-  ierr = DMCreateGlobalVector(dm,&xx);CHKERRQ(ierr);
-  ierr = VecDuplicate(xx, &bb);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) bb, "b");CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) xx, "u");CHKERRQ(ierr);
-  ierr = DMCreateMatrix(dm, &Amat);CHKERRQ(ierr);
-  if (use_nearnullspace) {
-    /* Set up the near null space (a.k.a. rigid body modes) that will be used by the multigrid preconditioner */
-    DM           subdm;
-    MatNullSpace nearNullSpace;
-    PetscInt     fields = 0;
-    PetscObject  deformation;
-    ierr = DMCreateSubDM(dm, 1, &fields, NULL, &subdm);CHKERRQ(ierr);
-    ierr = DMPlexCreateRigidBody(subdm, &nearNullSpace);CHKERRQ(ierr);
-    ierr = DMGetField(dm, 0, &deformation);CHKERRQ(ierr);
-    ierr = PetscObjectCompose(deformation, "nearnullspace", (PetscObject) nearNullSpace);CHKERRQ(ierr);
-    ierr = DMDestroy(&subdm);CHKERRQ(ierr);
-    ierr = MatNullSpaceDestroy(&nearNullSpace);CHKERRQ(ierr); /* created by DM and destroyed by Mat */
-  }
-  ierr = DMPlexSetSNESLocalFEM(dm,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes, Amat, Amat, NULL, NULL);CHKERRQ(ierr);
-  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-  ierr = DMSetUp(dm);CHKERRQ(ierr);
-  ierr = PetscLogStagePop();CHKERRQ(ierr);
-  ierr = PetscLogStagePush(stage[0]);CHKERRQ(ierr);
-  /* ksp */
-  ierr = SNESGetKSP(snes, &ksp);CHKERRQ(ierr);
-  ierr = KSPSetComputeSingularValues( ksp,PETSC_TRUE);CHKERRQ(ierr);
-  /* test BCs */
-  ierr = VecZeroEntries(xx);CHKERRQ(ierr);
-  if (test_nonzero_cols) {
-    if (rank==0) ierr = VecSetValue(xx,0,1.0,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(xx);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(xx);CHKERRQ(ierr);
-  }
-  ierr = VecZeroEntries(bb);CHKERRQ(ierr);
-  ierr = VecGetSize(bb,&i);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s %d equations in vector, %d vertices\n",rank,__FUNCT__,i,i/dim);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(bb,&i);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s %d local equations\n",rank,__FUNCT__,i);CHKERRQ(ierr);
-  ierr = PetscLogStagePop();CHKERRQ(ierr);
-  /* 1st solve */
-  ierr = PetscLogStagePush(stage[1]);CHKERRQ(ierr);
-  ierr = SNESSolve(snes, bb, xx);CHKERRQ(ierr);
-  ierr = PetscLogStagePop();CHKERRQ(ierr);
-  /* 2nd solve */
-  if (two_solves) {
-    PetscReal emax, emin;
-    Vec       res;
-
-    ierr = PetscLogStagePush(stage[2]);CHKERRQ(ierr);
-    /* PC setup basically */
-    ierr = MatScale(Amat, 100000.0);CHKERRQ(ierr);
-    ierr = SNESSetUp(snes);CHKERRQ(ierr);
-    ierr = PetscLogStagePop();CHKERRQ(ierr);
-    ierr = PetscLogStagePush(stage[3]);CHKERRQ(ierr);
-    ierr = SNESSolve(snes, bb, xx);CHKERRQ(ierr);
+    /* vecs & mat */
+    ierr = DMCreateGlobalVector(dm,&xx);CHKERRQ(ierr);
+    ierr = VecDuplicate(xx, &bb);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) bb, "b");CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) xx, "u");CHKERRQ(ierr);
+    ierr = DMCreateMatrix(dm, &Amat);CHKERRQ(ierr);
+    if (use_nearnullspace) {
+      /* Set up the near null space (a.k.a. rigid body modes) that will be used by the multigrid preconditioner */
+      DM           subdm;
+      MatNullSpace nearNullSpace;
+      PetscInt     fields = 0;
+      PetscObject  deformation;
+      ierr = DMCreateSubDM(dm, 1, &fields, NULL, &subdm);CHKERRQ(ierr);
+      ierr = DMPlexCreateRigidBody(subdm, &nearNullSpace);CHKERRQ(ierr);
+      ierr = DMGetField(dm, 0, &deformation);CHKERRQ(ierr);
+      ierr = PetscObjectCompose(deformation, "nearnullspace", (PetscObject) nearNullSpace);CHKERRQ(ierr);
+      ierr = DMDestroy(&subdm);CHKERRQ(ierr);
+      ierr = MatNullSpaceDestroy(&nearNullSpace);CHKERRQ(ierr); /* created by DM and destroyed by Mat */
+    }
+    ierr = DMPlexSetSNESLocalFEM(dm,NULL,NULL,NULL);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes, Amat, Amat, NULL, NULL);CHKERRQ(ierr);
+    ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+    ierr = DMSetUp(dm);CHKERRQ(ierr);
     ierr = PetscLogStagePop();CHKERRQ(ierr);
     ierr = PetscLogStagePush(stage[0]);CHKERRQ(ierr);
     /* ksp */
