@@ -17,15 +17,32 @@ int main(int argc,char **argv)
 {
   PetscErrorCode         ierr;
   PetscInt               indices[] = {0,1,2,3,-1,-1,-1,-1,8,9,10,11};
-  ISLocalToGlobalMapping map1,map2;
+  PetscInt               indices2[] = {0,1,2,3,4,5,-1,-1,-1,-1,-1,-1,12,13,14,15,16,17};
+  ISLocalToGlobalMapping map;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD,1,12,indices,PETSC_COPY_VALUES,&map1);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD,1,12,indices,PETSC_COPY_VALUES,&map2);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingSetBlockSize(map1,2);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingSetBlockSize(map2,4);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&map1);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&map2);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD,1,12,indices,PETSC_COPY_VALUES,&map);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingView(map,NULL);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingSetBlockSize(map,2);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingView(map,NULL);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingSetBlockSize(map,4);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingView(map,NULL);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingSetBlockSize(map,2);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingView(map,NULL);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingSetBlockSize(map,1);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingView(map,NULL);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&map);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD,1,18,indices2,PETSC_COPY_VALUES,&map);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingView(map,NULL);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingSetBlockSize(map,3);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingView(map,NULL);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingSetBlockSize(map,6);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingView(map,NULL);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingSetBlockSize(map,3);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingView(map,NULL);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingSetBlockSize(map,1);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingView(map,NULL);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&map);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }

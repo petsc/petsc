@@ -197,7 +197,7 @@ PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF sf,PetscInt start,ISLocalT
 PetscErrorCode  ISLocalToGlobalMappingSetBlockSize(ISLocalToGlobalMapping mapping,PetscInt bs)
 {
   PetscInt       *nid,*oid;
-  PetscInt       i,cn,on,obs,nn,cum;
+  PetscInt       i,cn,on,obs,nn,cum,r,rbs,ri;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -209,20 +209,39 @@ PetscErrorCode  ISLocalToGlobalMappingSetBlockSize(ISLocalToGlobalMapping mappin
   oid = mapping->indices;
   nn  = (on*obs)/bs;
   if ((on*obs)%bs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Block size %D is inconsistent with block size %D and number of block indices %D",bs,obs,on);
+  if (bs < obs && obs%bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Block size %D is inconsistent with block size %D",bs,obs);
+  if (bs < obs) {
+    r   = bs;
+    rbs = obs/bs;
+    ri  = 1;
+  } else {
+    r   = obs;
+    rbs = 1;
+    ri  = bs/obs;
+  }
   ierr = PetscMalloc1(nn,&nid);CHKERRQ(ierr);
   for (i=0,cum=0,cn=0;i<on;i++) {
-    if (oid[i] < 0) cn++;
-    if (cn == bs || (oid[i] > -1 && !((oid[i]*obs)%bs))) {
+    if (oid[i] < 0) cn += r;
+    if ((cn && !(cn%bs)) || (oid[i] > -1 && !((oid[i]*obs)%bs))) {
       if (cum == nn) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Block sizes %D and %D are incompatible with the block indices",bs,obs);
-      if (cn && cn != bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Block sizes %D and %D are incompatible with the block indices",bs,obs);
-      if (cn) nid[cum++] = -1;
-      else nid[cum++] = (oid[i]*obs)/bs;
-      cn = 0;
+      if (cn && cn%bs) SETERRQ5(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Block sizes %D and %D are incompatible with the block indices (neg = %D, rbs %D, r %D)",bs,obs,cn,rbs,r);
+      if (cn) {
+        PetscInt j;
+        for (j=0;j<rbs;j++) nid[cum++] = -1;
+      } else {
+        PetscInt j;
+        for (j=1;j<ri;j++) {
+          if (i+j >= on) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Block sizes %D and %D are incompatible with the block indices: non consecutive indices found",bs,obs);
+          if (oid[i] != oid[i+j]-j) SETERRQ6(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Block sizes %D and %D are incompatible with the block indices: non consecutive indices %D %D (%D,%D)",bs,obs,oid[i],oid[i+j],j,ri);
+        }
+        for (j=0;j<rbs;j++) nid[cum++] = (oid[i]*obs)/bs+j;
+      }
+      cn   = 0;
     }
   }
   if (cum != nn || cn) {
     ierr = PetscFree(nid);CHKERRQ(ierr);
-    SETERRQ5(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Incompatible block sizes %D and %D (new block indices found %D != %D, neg %d)",bs,obs,cum,nn,cn);
+    SETERRQ6(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Incompatible block sizes %D and %D (new block indices found %D != %D, neg %D, rbs %D)",bs,obs,cum,nn,cn,rbs);
   }
   mapping->n           = nn;
   mapping->bs          = bs;
