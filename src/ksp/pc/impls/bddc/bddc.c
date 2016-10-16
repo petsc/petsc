@@ -1237,8 +1237,8 @@ PetscErrorCode PCBDDCSetDofsSplitting(PC pc,PetscInt n_is, IS ISForDofs[])
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveInt(pc,n_is,2);
   for (i=0;i<n_is;i++) {
-    PetscCheckSameComm(pc,1,ISForDofs[i],3);
     PetscValidHeaderSpecific(ISForDofs[i],IS_CLASSID,3);
+    PetscCheckSameComm(pc,1,ISForDofs[i],3);
   }
   ierr = PetscTryMethod(pc,"PCBDDCSetDofsSplitting_C",(PC,PetscInt,IS[]),(pc,n_is,ISForDofs));CHKERRQ(ierr);
   PetscFunctionReturn(0);
