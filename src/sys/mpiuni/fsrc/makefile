@@ -1,4 +1,4 @@
-#requiresdefine   'MPIUNI_FORTRAN_BINDING'
+#requiresdefine   'PETSC_HAVE_FORTRAN'
 
 ALL: lib
 

@@ -279,9 +279,8 @@ typedef void  (MPI_User_function)(void*, void *, int *, MPI_Datatype *);
   For C functions below (that get compiled into petsc library) - we map
   the 'MPI' functions to use 'Petsc_MPI' namespace.
 
-  However we cannot do such maping for fortran MPIUNI functions. One
-  can use the configure option --with-mpiuni-fortran-binding=0 to
-  prevent compiling MPIUNI fortran interface.
+  With fortran we use similar mapping - thus requiring the use of
+  c-preprocessor with mpif.h
 */
 #define MPI_Abort         Petsc_MPI_Abort
 #define MPI_Attr_get      Petsc_MPI_Attr_get
