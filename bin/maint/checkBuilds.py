@@ -382,7 +382,7 @@ Thanks,
       import smtplib
       from email.mime.text import MIMEText
 
-      if author == 'Mark Adams <mark.adams@columbia.edu>':
+      if author in ['Mark Adams <mark.adams@columbia.edu>','Mark Adams <cal2princeton@yahoo.com>'] :
         author =  'Mark Adams <mfadams@lbl.gov>'
       if author == 'Karl Rupp <rupp@mcs.anl.gov>':
         author =  'Karl Rupp <me@karlrupp.net>'
