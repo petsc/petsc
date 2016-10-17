@@ -40,6 +40,25 @@ static PetscErrorCode PCApply_SOR(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PCApplyTranspose_SOR"
+static PetscErrorCode PCApplyTranspose_SOR(PC pc,Vec x,Vec y)
+{
+  PC_SOR         *jac = (PC_SOR*)pc->data;
+  PetscErrorCode ierr;
+  PetscInt       flag = jac->sym | SOR_ZERO_INITIAL_GUESS;
+  PetscReal      fshift;
+  PetscBool      set,sym;
+
+  PetscFunctionBegin;
+  ierr = MatIsSymmetricKnown(pc->pmat,&set,&sym);CHKERRQ(ierr);
+  if (!set || !sym || (jac->sym != SOR_SYMMETRIC_SWEEP && jac->sym != SOR_LOCAL_SYMMETRIC_SWEEP)) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Can only apply transpose of SOR if matrix is symmetric and sweep is symmetric");
+  fshift = (jac->fshift ? jac->fshift : pc->erroriffailure ? 0.0 : -1.0);
+  ierr = MatSOR(pc->pmat,x,jac->omega,(MatSORType)flag,fshift,jac->its,jac->lits,y);CHKERRQ(ierr);
+  ierr = MatFactorGetError(pc->pmat,(MatFactorError*)&pc->failedreason);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCApplyRichardson_SOR"
 static PetscErrorCode PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscBool guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
@@ -476,6 +495,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_SOR(PC pc)
   ierr = PetscNewLog(pc,&jac);CHKERRQ(ierr);
 
   pc->ops->apply           = PCApply_SOR;
+  pc->ops->applytranspose  = PCApplyTranspose_SOR;
   pc->ops->applyrichardson = PCApplyRichardson_SOR;
   pc->ops->setfromoptions  = PCSetFromOptions_SOR;
   pc->ops->setup           = 0;
