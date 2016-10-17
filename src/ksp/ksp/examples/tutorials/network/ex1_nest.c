@@ -363,9 +363,9 @@ int main(int argc,char ** argv)
 
   /* We don't use these data structures anymore since they have been copied to networkdm */
   if (!rank) {
-    PetscFree(edgelist);CHKERRQ(ierr);
-    PetscFree(node);CHKERRQ(ierr);
-    PetscFree(branch);CHKERRQ(ierr);
+    ierr = PetscFree(edgelist);CHKERRQ(ierr);
+    ierr = PetscFree(node);CHKERRQ(ierr);
+    ierr = PetscFree(branch);CHKERRQ(ierr);
   }
 
 
