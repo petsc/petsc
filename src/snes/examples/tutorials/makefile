@@ -670,6 +670,16 @@ runex19:
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex19, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19_1.tmp
+runex19_hypre:
+	-@${MPIEXEC} -n 2 ./ex19 -da_refine 3 -snes_monitor_short -pc_type hypre > ex19_1.tmp 2>&1; \
+	   if (${DIFF} output/ex19_hypre.out ex19_1.tmp) then true; \
+	   else  printf "${PWD}\nPossible problem with ex19_hypre, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex19_1.tmp
+runex19_ml:
+	-@${MPIEXEC} -n 2 ./ex19 -da_refine 3 -snes_monitor_short -pc_type ml > ex19_1.tmp 2>&1; \
+	   if (${DIFF} output/ex19_ml.out ex19_1.tmp) then true; \
+	   else  printf "${PWD}\nPossible problem with ex19_ml, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex19_1.tmp
 runex19_ibcgs:
 	-@${MPIEXEC} -n 2 ./ex19 -ksp_type ibcgs -ksp_monitor_short -da_refine 2  -snes_view > ex19_ibcgs.tmp 2>&1; \
 	   if (${DIFF} output/ex19_ibcgs.out ex19_ibcgs.tmp) then true; \
@@ -1029,8 +1039,7 @@ testex19: ex19.PETSc
 	   else echo "Possible error running C/C++ src/snes/examples/tutorials/ex19 with 2 MPI processes"; \
            echo "See http://www.mcs.anl.gov/petsc/documentation/faq.html";\
            cat ex19_1.tmp; fi; fi; \
-        ${RM} -f ex19_1.tmp; \
-        ${MAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ex19.rm ; fi
+        ${RM} -f ex19_1.tmp; fi
 
 runex19_cusp:
 	-@${MPIEXEC} -n 1 ./ex19 -dm_vec_type cusp -dm_mat_type aijcusp -pc_type none -ksp_type fgmres -snes_monitor_short -snes_rtol 1.e-5 > ex19.tmp 2>&1; \
@@ -1340,6 +1349,8 @@ TESTEXAMPLES_MATLAB_ENGINE     =
 TESTEXAMPLES_SAWS	       =
 TESTEXAMPLES_ADIFOR	       = ex5f.PETSc runex5f_2 ex5f.rm
 TESTEXAMPLES_MUMPS             = ex19.PETSc runex19_4 runex19_fieldsplit_mumps runex19_3 runex19_4  ex19.rm
+TESTEXAMPLES_ML                = ex19.PETSc runex19_ml ex19.rm
+TESTEXAMPLES_HYPRE             = ex19.PETSc runex19_hypre ex19.rm
 TESTEXAMPLES_SUPERLU           = ex19.PETSc runex19_superlu ex19.rm
 TESTEXAMPLES_SUPERLU_DIST      = ex19.PETSc runex19_superlu_dist runex19_superlu_dist_2 ex19.rm  ex19.PETSc  ex19.rm
 TESTEXAMPLES_PASTIX            = ex19.PETSc runex19_11 runex19_12 ex19.rm  ex19.PETSc runex19_11 runex19_12 ex19.rm
