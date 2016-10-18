@@ -19,6 +19,12 @@ typedef struct {
   PetscBool  islocalref;                  /* is a reference to a local submatrix? */
 } Mat_IS;
 
+struct _MatISLocalFields {
+  PetscInt nr,nc;
+  IS       *rf,*cf;
+};
+typedef struct _MatISLocalFields *MatISLocalFields;
+
 PETSC_EXTERN PetscErrorCode MatISSetMPIXAIJPreallocation_Private(Mat,Mat,PetscBool);
 #endif
 

@@ -1565,6 +1565,14 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
 
   /* process topology information */
   if (pcbddc->recompute_topography) {
+    PetscContainer   c;
+
+    ierr = PetscObjectQuery((PetscObject)pc->pmat,"_convert_nest_lfields",(PetscObject*)&c);CHKERRQ(ierr);
+    if (c) {
+      MatISLocalFields lf;
+      ierr = PetscContainerGetPointer(c,(void**)&lf);CHKERRQ(ierr);
+      ierr = PCBDDCSetDofsSplittingLocal(pc,lf->nr,lf->rf);CHKERRQ(ierr);
+    }
     ierr = PCBDDCComputeLocalTopologyInfo(pc);CHKERRQ(ierr);
     /* detect local disconnected subdomains if requested (use matis->A) */
     if (pcbddc->detect_disconnected) {
