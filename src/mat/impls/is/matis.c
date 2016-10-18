@@ -1129,19 +1129,26 @@ static PetscErrorCode MatISGetMPIXAIJ_IS(Mat mat, MatReuse reuse, Mat *M)
   if (nsubdomains == 1) {
     Mat            B;
     IS             rows,cols;
+    IS             irows,icols;
     const PetscInt *ridxs,*cidxs;
 
     ierr = ISLocalToGlobalMappingGetIndices(mat->rmap->mapping,&ridxs);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingGetIndices(mat->cmap->mapping,&cidxs);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF,mat->rmap->n,ridxs,PETSC_USE_POINTER,&rows);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF,mat->cmap->n,cidxs,PETSC_USE_POINTER,&cols);CHKERRQ(ierr);
-    ierr = MatConvert(matis->A,MATAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-    ierr = MatGetSubMatrix(B,rows,cols,reuse,M);CHKERRQ(ierr);
-    ierr = MatDestroy(&B);CHKERRQ(ierr);
-    ierr = ISDestroy(&cols);CHKERRQ(ierr);
-    ierr = ISDestroy(&rows);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingRestoreIndices(mat->rmap->mapping,&ridxs);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingRestoreIndices(mat->cmap->mapping,&cidxs);CHKERRQ(ierr);
+    ierr = ISSetPermutation(rows);CHKERRQ(ierr);
+    ierr = ISSetPermutation(cols);CHKERRQ(ierr);
+    ierr = ISInvertPermutation(rows,mat->rmap->n,&irows);CHKERRQ(ierr);
+    ierr = ISInvertPermutation(cols,mat->cmap->n,&icols);CHKERRQ(ierr);
+    ierr = ISDestroy(&cols);CHKERRQ(ierr);
+    ierr = ISDestroy(&rows);CHKERRQ(ierr);
+    ierr = MatConvert(matis->A,MATAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+    ierr = MatGetSubMatrix(B,irows,icols,reuse,M);CHKERRQ(ierr);
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
+    ierr = ISDestroy(&icols);CHKERRQ(ierr);
+    ierr = ISDestroy(&irows);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   ierr = MatGetSize(mat,&rows,&cols);CHKERRQ(ierr);
