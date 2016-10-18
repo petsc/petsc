@@ -74,6 +74,6 @@ runex1_nest_2:
 	   else printf "${PWD}\nPossible problem with ex1_nest_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex1_nest_2.tmp
 
-TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 ex2_graphindex ex2_graphindex_2 ex2.rm ex1_nest.PETSc runex1_nest runex1_nest_2 ex1_nest.rm
+TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 runex2_graphindex runex2_graphindex_2 ex2.rm ex1_nest.PETSc runex1_nest runex1_nest_2 ex1_nest.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test

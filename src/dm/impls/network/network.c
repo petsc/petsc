@@ -1567,6 +1567,20 @@ PetscErrorCode DMDestroy_Network(DM dm)
     ierr = PetscFree(network->Jvptr);CHKERRQ(ierr);
     ierr = PetscFree(network->Jv);CHKERRQ(ierr);
   }
+
+  ierr = ISLocalToGlobalMappingDestroy(&network->vertex.mapping);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&network->vertex.DofSection);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&network->vertex.GlobalDofSection);CHKERRQ(ierr);
+  if (network->vertex.sf) {
+    ierr = PetscSFDestroy(&network->vertex.sf);CHKERRQ(ierr);
+  }
+  /* edge */
+  ierr = ISLocalToGlobalMappingDestroy(&network->edge.mapping);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&network->edge.DofSection);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&network->edge.GlobalDofSection);CHKERRQ(ierr);
+  if (network->edge.sf) {
+    ierr = PetscSFDestroy(&network->edge.sf);CHKERRQ(ierr);
+  }
   ierr = DMDestroy(&network->plex);CHKERRQ(ierr);
   network->edges = NULL;
   ierr = PetscSectionDestroy(&network->DataSection);CHKERRQ(ierr);
