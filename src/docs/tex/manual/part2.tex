@@ -6473,7 +6473,7 @@ is done with the \trl{-C} compiler option, so never use the \trl{-C} option with
 \label{ch_matlab}\sindex{MATLAB}
 
 There are three basic ways to use MATLAB with PETSc: 
-\begin{enumerate}
+\begin{tightenumerate}
   \item (Section \ref{sec_matlabdump}) dumping files to be read into MATLAB,
   \item (Section \ref{sec_matlabsocket}) automatically sending data from a running PETSc program
 to a MATLAB process where you may interactively type MATLAB commands (or run
@@ -6481,13 +6481,16 @@ scripts), and
 \item (Section \ref{sec_matlabengine}) automatically sending data back and forth between PETSc and
 MATLAB where MATLAB commands are issued not interactively but from a script or
 the PETSc program (this uses the MATLAB Engine).
-\end{enumerate}
+\end{tightenumerate}
 
 \section{Dumping Data for MATLAB}
 \label{sec_matlabdump}
-One can dump PETSc matrices and vectors to the screen (and thus save in a file via
-\trl{> filename.m}) in an ASCII format that MATLAB can read in directly. This is done with the
-command line options \trl{-vec_view ::ascii_matlab} or \trl{-mat_view ::ascii_matlab}. This causes the PETSc program
+\subsection{Dumping ASCII MATLAB data}
+One can dump PETSc matrices and vectors to the screen in an ASCII format that MATLAB can read in directly. This is done with the
+command line options \trl{-vec_view ::ascii_matlab} or \trl{-mat_view ::ascii_matlab}. 
+To write a a file, use \trl{-vec_view :filename.m:ascii_matlab} or \trl{-mat_view :filename.m:ascii_matlab}.
+
+This causes the PETSc program
 to print the vectors and matrices every time \lstinline{VecAssemblyEnd()} or \lstinline{MatAssemblyEnd()} are called. \findex{-vec_view ::ascii_matlab} \findex{-mat_view ::ascii_matlab} 
 To provide finer control
 over when and what vectors and matrices are dumped one can use the \lstinline{VecView()} and
@@ -6505,17 +6508,32 @@ PetscObjectSetName((PetscObject)A,"name");
 \end{lstlisting}\sindex{PetscObjectSetName()}
 If no name is specified, the object is given a default name using \lstinline{PetscObjectName()}.
 
-One can also read PETSc binary files directly into MATLAB via the scripts available in \lstinline{$PETSC_DIR/share/matlab}.
-This requires less disk space.
+\subsection{Dumping Binary Data for MATLAB}
+One can also read PETSc binary files (see Section \ref{sec_viewers}) directly into MATLAB via the scripts available in \lstinline{$PETSC_DIR/share/matlab}.
+This requires less disk space and is recommended for all but the smallest data sizes.
+One can also use
+\begin{lstlisting}
+PetscViewerPushFormat(viewer,PETSC_VIEWER_BINARY_MATLAB} 
+\end{lstlisting}
+to dump both a PETSc binary file and a corresponding \trl{.info} file which 
+\lstinline{PetscReadBinaryMatlab.m} will use to format the binary file in more complex cases, such as using a \lstinline{DMDA}. 
+For an example, see \href{http://www.mcs.anl.gov/petsc/petsc-current/src/dm/examples/tutorials/ex7.c.html}{\trl{PETSC_DIR/src/dm/examples/tutorials/ex7.c}}.
+In MATLAB (R2015b), one may then generate a useful structure. For example:
+\begin{outputlisting}[\normalsize\ttfamily]
+setenv('PETSC_DIR','~/petsc');
+setenv('PETSC_ARCH','arch-darwin-double-debug');
+addpath('~/petsc/share/petsc/matlab');
+gridData=PetscReadBinaryMatlab('output_file');
+\end{outputlisting}
 
-\section{Sending Data to Interactive Running MATLAB Session}
+\section{Sending Data to an Interactive MATLAB Session}
 \label{sec_matlabsocket}
 
 One creates a viewer to MATLAB via
 \begin{lstlisting}
 PetscViewerSocketOpen(MPI_Comm,char *machine,int port,PetscViewer *v);
 \end{lstlisting}
-(port is usually set to \lstinline{PETSC_DEFAULT}; use \lstinline{NULL} for the machine if the
+(\lstinline{port} is usually set to \lstinline{PETSC_DEFAULT}; use \lstinline{NULL} for the machine if the
 MATLAB interactive session is running on the same machine as the PETSc program)
 and then sends matrices or vectors via
 \begin{lstlisting}
@@ -6524,7 +6542,7 @@ MatView(Mat B,v);
 \end{lstlisting}
 One can also send arrays or integer arrays via \lstinline{PetscIntView()}, \lstinline{PetscRealView()} and \break\lstinline{PetscScalarView()}.
 One may start the MATLAB program manually or use the PETSc command
-\break \lstinline{PetscStartMATLAB(MPI_Comm,char *machine,char *script,FILE **fp)}; where machine and script may be \lstinline{NULL}.
+\break \lstinline{PetscStartMATLAB(MPI_Comm,char *machine,char *script,FILE **fp)}; where \lstinline{machine} and \lstinline{script} may be \lstinline{NULL}.
 
 To receive the objects in MATLAB you must first make sure that \trl{${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/matlab}
 is in your MATLAB path. Use \lstinline{p = sopen;} (or \lstinline{p = sopen(portnum)} if you provided a port number in
@@ -6548,9 +6566,9 @@ PetscMatlabEnginePut(PetscMatlabEngine e,PetscObject obj);
 One can get objects
 via
 \begin{lstlisting}
-PetscMatlabEngineGet(PetscMatlabEngine e,PetscObject obj);.
+PetscMatlabEngineGet(PetscMatlabEngine e,PetscObject obj); 
 \end{lstlisting}
-Similarly one can send arrays via
+Similarly, one can send arrays via
 \begin{lstlisting}
 PetscMatlabEnginePutArray(PetscMatlabEngine e,int m,int n,PetscScalar *array,char *name);
 \end{lstlisting}
@@ -6559,7 +6577,7 @@ and get them back via
 PetscMatlabEngineGetArray(PetscMatlabEngine e,int m,int n,PetscScalar *array,char *name);
 \end{lstlisting}
 One cannot use MATLAB
-interactively in this mode but you can send MATLAB commands via
+interactively in this mode but one can send MATLAB commands via
 \begin{lstlisting}
 PetscMatlabEngineEvaluate(PetscMatlabEngine,"format",...);
 \end{lstlisting}
@@ -6568,7 +6586,7 @@ For example,
 \begin{lstlisting}
 PetscMatlabEngineEvaluate(PetscMatlabEngine,"x = \%g *y + z;",avalue);
 \end{lstlisting}
-The name of each PETSc variable passed to Matlab may be set with
+The name of each PETSc variable passed to MATLAB may be set with
 \begin{lstlisting}
 PetscObjectSetName((PetscObject)A,"name");
 \end{lstlisting}
