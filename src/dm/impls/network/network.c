@@ -831,12 +831,13 @@ PetscErrorCode PetscSFGetSubSF(PetscSF mastersf, ISLocalToGlobalMapping map, Pet
   ierr = PetscSFBcastBegin(mastersf, MPIU_INT, local_points, remote_points);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(mastersf, MPIU_INT, local_points, remote_points);CHKERRQ(ierr);
   /* Fill up graph using local (that is, local to the subset) numbering. */
-  ierr = PetscMalloc2(nleaves_sub,&ilocal_sub,nleaves_sub,&iremote_sub);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nleaves_sub,&ilocal_sub);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nleaves_sub,&iremote_sub);CHKERRQ(ierr);
   nleaves_sub = 0;
   for (i = 0; i < nleaves; i++) {
     if (ilocal_map[i] != -1) {
       ilocal_sub[nleaves_sub] = ilocal_map[i];
-      iremote_sub[nleaves_sub] = iremote[i];
+      iremote_sub[nleaves_sub].rank = iremote[i].rank;
       iremote_sub[nleaves_sub].index = remote_points[ilocal[i]];
       nleaves_sub += 1;
     }
@@ -847,8 +848,9 @@ PetscErrorCode PetscSFGetSubSF(PetscSF mastersf, ISLocalToGlobalMapping map, Pet
   /* Create new subSF */
   ierr = PetscSFCreate(PETSC_COMM_WORLD,subSF);CHKERRQ(ierr);
   ierr = PetscSFSetFromOptions(*subSF);CHKERRQ(ierr);
-  ierr = PetscSFSetGraph(*subSF,nroots_sub,nleaves_sub,ilocal_sub,PETSC_OWN_POINTER,iremote_sub,PETSC_OWN_POINTER);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(*subSF,nroots_sub,nleaves_sub,ilocal_sub,PETSC_OWN_POINTER,iremote_sub,PETSC_COPY_VALUES);CHKERRQ(ierr);
   ierr = PetscFree(ilocal_map);CHKERRQ(ierr);
+  ierr = PetscFree(iremote_sub);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
