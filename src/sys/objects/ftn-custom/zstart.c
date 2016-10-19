@@ -308,7 +308,7 @@ static void petscinitialize_internal(CHAR filename, PetscInt len, PetscBool read
   getarg_(&i,name,256);
 #endif
   /* Eliminate spaces at the end of the string */
-  for (j=sizeof(name)-1; j>=0; j--) {
+  for (j=sizeof(name)-2; j>=0; j--) {
     if (name[j] != ' ') {
       name[j+1] = 0;
       break;

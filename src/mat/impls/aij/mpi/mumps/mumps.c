@@ -498,14 +498,29 @@ PetscErrorCode MatConvertToTriples_seqaij_seqsbaij(Mat A,int shift,MatReuse reus
   PetscErrorCode    ierr;
   PetscInt          *row,*col;
   Mat_SeqAIJ        *aa=(Mat_SeqAIJ*)A->data;
+  PetscBool         missing;
 
   PetscFunctionBegin;
   ai   =aa->i; aj=aa->j;av=aa->a;
   adiag=aa->diag;
+  ierr  = MatMissingDiagonal_SeqAIJ(A,&missing,&i);CHKERRQ(ierr);
   if (reuse == MAT_INITIAL_MATRIX) {
     /* count nz in the uppper triangular part of A */
     nz = 0;
-    for (i=0; i<M; i++) nz += ai[i+1] - adiag[i];
+    if (missing) {
+      for (i=0; i<M; i++) {
+        if (PetscUnlikely(adiag[i] >= ai[i+1])) {
+          for (j=ai[i];j<ai[i+1];j++) {
+            if (aj[j] < i) continue;
+            nz++;
+          }
+        } else {
+          nz += ai[i+1] - adiag[i];
+        }
+      }
+    } else {
+      for (i=0; i<M; i++) nz += ai[i+1] - adiag[i];
+    }
     *nnz = nz;
 
     ierr = PetscMalloc((2*nz*sizeof(PetscInt)+nz*sizeof(PetscScalar)), &row);CHKERRQ(ierr);
@@ -513,22 +528,60 @@ PetscErrorCode MatConvertToTriples_seqaij_seqsbaij(Mat A,int shift,MatReuse reus
     val  = (PetscScalar*)(col + nz);
 
     nz = 0;
-    for (i=0; i<M; i++) {
-      rnz = ai[i+1] - adiag[i];
-      ajj = aj + adiag[i];
-      v1  = av + adiag[i];
-      for (j=0; j<rnz; j++) {
-        row[nz] = i+shift; col[nz] = ajj[j] + shift; val[nz++] = v1[j];
+    if (missing) {
+      for (i=0; i<M; i++) {
+        if (PetscUnlikely(adiag[i] >= ai[i+1])) {
+          for (j=ai[i];j<ai[i+1];j++) {
+            if (aj[j] < i) continue;
+            row[nz] = i+shift;
+            col[nz] = aj[j]+shift;
+            val[nz] = av[j];
+            nz++;
+          }
+        } else {
+          rnz = ai[i+1] - adiag[i];
+          ajj = aj + adiag[i];
+          v1  = av + adiag[i];
+          for (j=0; j<rnz; j++) {
+            row[nz] = i+shift; col[nz] = ajj[j] + shift; val[nz++] = v1[j];
+          }
+        }
+      }
+    } else {
+      for (i=0; i<M; i++) {
+        rnz = ai[i+1] - adiag[i];
+        ajj = aj + adiag[i];
+        v1  = av + adiag[i];
+        for (j=0; j<rnz; j++) {
+          row[nz] = i+shift; col[nz] = ajj[j] + shift; val[nz++] = v1[j];
+        }
       }
     }
     *r = row; *c = col; *v = val;
   } else {
     nz = 0; val = *v;
-    for (i=0; i <M; i++) {
-      rnz = ai[i+1] - adiag[i];
-      v1  = av + adiag[i];
-      for (j=0; j<rnz; j++) {
-        val[nz++] = v1[j];
+    if (missing) {
+      for (i=0; i <M; i++) {
+        if (PetscUnlikely(adiag[i] >= ai[i+1])) {
+          for (j=ai[i];j<ai[i+1];j++) {
+            if (aj[j] < i) continue;
+            val[nz++] = av[j];
+          }
+        } else {
+          rnz = ai[i+1] - adiag[i];
+          v1  = av + adiag[i];
+          for (j=0; j<rnz; j++) {
+            val[nz++] = v1[j];
+          }
+        }
+      }
+    } else {
+      for (i=0; i <M; i++) {
+        rnz = ai[i+1] - adiag[i];
+        v1  = av + adiag[i];
+        for (j=0; j<rnz; j++) {
+          val[nz++] = v1[j];
+        }
       }
     }
   }
