@@ -682,7 +682,7 @@ PetscErrorCode  SNESConvergedDefault(SNES snes,PetscInt it,PetscReal xnorm,Petsc
     } else if (snorm < snes->stol*xnorm) {
       ierr    = PetscInfo3(snes,"Converged due to small update length: %14.12e < %14.12e * %14.12e\n",(double)snorm,(double)snes->stol,(double)xnorm);CHKERRQ(ierr);
       *reason = SNES_CONVERGED_SNORM_RELATIVE;
-    } else if (fnorm > snes->divtol*snes->rnorm0) {
+    } else if (snes->divtol > 0 && (fnorm > snes->divtol*snes->rnorm0)) {
       ierr    = PetscInfo3(snes,"Diverged due to increase in function norm: %14.12e > %14.12e * %14.12e\n",(double)fnorm,(double)snes->divtol,(double)snes->rnorm0);CHKERRQ(ierr);
       *reason = SNES_DIVERGED_DTOL;
     }
