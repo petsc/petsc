@@ -58,7 +58,7 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "read_data"
-PetscErrorCode read_data(int *pnnode,int *pnbranch,Node **pnode,Branch **pbranch,int **pedgelist)
+PetscErrorCode read_data(PetscInt *pnnode,PetscInt *pnbranch,Node **pnode,Branch **pbranch,int **pedgelist)
 {
   PetscErrorCode    ierr;
   PetscInt          nnode, nbranch, i;
@@ -273,7 +273,7 @@ int main(int argc,char ** argv)
   Mat               A;
   KSP               ksp;
   int               *edgelist;
-  int               componentkey[2];
+  PetscInt          componentkey[2];
   Node              *node;
   Branch            *branch;
 
