@@ -1,6 +1,6 @@
-static char help[] = "3D, tri-quadradic (Q2), displacement finite element formulation\n\
+static char help[] = "3D, tri-quadratic hexahedra (Q1), displacement finite element formulation\n\
 of linear elasticity.  E=1.0, nu=1/3.\n\
-Unit cube domain with Dirichlet boundary condition.\n\n";
+Unit cube domain with Dirichlet boundary\n\n";
 
 #include <petscdmplex.h>
 #include <petscsnes.h>
@@ -225,9 +225,9 @@ int main(int argc,char **args)
   MPI_Comm       comm;
   PetscMPIInt    npe,rank;
   PetscLogStage  stage[7];
-  PetscBool      test_nonzero_cols=PETSC_FALSE,use_nearnullspace=PETSC_TRUE,new_test=PETSC_TRUE;
+  PetscBool      test_nonzero_cols=PETSC_FALSE,use_nearnullspace=PETSC_TRUE;
   Vec            xx,bb;
-  PetscInt       iter,i,N,dim=3,cells[3]={1,1,1},max_conv_its,local_sizes[7];
+  PetscInt       iter,i,N,dim=3,cells[3]={1,1,1},max_conv_its,local_sizes[7],run_type=1,one=1,fifty=50;
   DM             dm,distdm,newdm;
   PetscBool      flg;
   char           convType[256];
@@ -390,9 +390,9 @@ int main(int argc,char **args)
       const PetscInt Nfid = 1, Npid = 1;
       const PetscInt fid[] = {1}; /* The fixed faces (x=0) */
       const PetscInt pid[] = {2}; /* The faces with loading (x=L_x) */
-      PetscFE        fe;
-      PetscDS        prob;
-      DM             cdm = dm;
+      PetscFE         fe;
+      PetscDS         prob;
+      DM              cdm = dm;
 
       ierr = PetscFECreateDefault(dm, dim, dim, PETSC_FALSE, NULL, PETSC_DECIDE, &fe);CHKERRQ(ierr); /* elasticity */
       ierr = PetscObjectSetName((PetscObject) fe, "deformation");CHKERRQ(ierr);
@@ -461,18 +461,18 @@ int main(int argc,char **args)
       ierr = VecAssemblyEnd(xx);CHKERRQ(ierr);
     }
     ierr = VecZeroEntries(bb);CHKERRQ(ierr);
-    /* setup solver, dummy solve to really setup. THIS MESSES UP THE SOLVER SOMEHOW */
+    ierr = VecGetSize(bb,&i);CHKERRQ(ierr);
+    local_sizes[iter] = i;
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d]%s %d equations in vector, %d vertices\n",rank,__FUNCT__,i,i/dim);CHKERRQ(ierr);
+    /* setup solver, dummy solve to really setup */
     if (0) {
-      PetscReal krtol,katol,kdtol,new_tol=10000; PetscInt kmit;
-      ierr = KSPGetTolerances(ksp,&krtol,&katol,&kdtol,&kmit);CHKERRQ(ierr);
-      ierr = KSPSetTolerances(ksp,krtol, new_tol,kdtol, kmit);CHKERRQ(ierr);
-      ierr = VecSet(bb,1.0);CHKERRQ(ierr);
+      ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1);CHKERRQ(ierr);
       ierr = SNESSolve(snes, bb, xx);CHKERRQ(ierr);
-      ierr = KSPSetTolerances(ksp,krtol,katol,kdtol,kmit);CHKERRQ(ierr);
-      ierr = VecSet(bb,0.0);CHKERRQ(ierr);
+      ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,50);CHKERRQ(ierr);
+      ierr = VecZeroEntries(xx);CHKERRQ(ierr);
     }
     ierr = PetscLogStagePop();CHKERRQ(ierr);
-    /* 1st solve */
+    /* solve */
     ierr = PetscLogStagePush(stage[1]);CHKERRQ(ierr);
     ierr = SNESSolve(snes, bb, xx);CHKERRQ(ierr);
     ierr = PetscLogStagePop();CHKERRQ(ierr);
@@ -481,7 +481,7 @@ int main(int argc,char **args)
     {
       PetscViewer       viewer = NULL;
       PetscViewerFormat fmt;
-      ierr = PetscOptionsGetViewer(comm,NULL,"-vec_view",&viewer,&fmt,&flg);CHKERRQ(ierr);
+      ierr = PetscOptionsGetViewer(comm,"ex56_","-vec_view",&viewer,&fmt,&flg);CHKERRQ(ierr);
       if (flg) {
         ierr = PetscViewerPushFormat(viewer,fmt);CHKERRQ(ierr);
         ierr = VecView(xx,viewer);CHKERRQ(ierr);
@@ -497,16 +497,16 @@ int main(int argc,char **args)
     ierr = VecDestroy(&bb);CHKERRQ(ierr);
     ierr = MatDestroy(&Amat);CHKERRQ(ierr);
   }
-  if (new_test) {
+  if (run_type==1) {
     err[0] = 59.9753 - mdisp[0]; /* error with what I think is the exact solution */
   } else {
     err[0] = 171.038 - mdisp[0];
   }
   for (iter=1 ; iter<max_conv_its ; iter++) {
-    if (new_test) {
-      err[iter] = 59.9753 - mdisp[0];
+    if (run_type==1) {
+      err[iter] = 59.9753 - mdisp[iter];
     } else {
-      err[iter] = 171.038 - mdisp[0];
+      err[iter] = 171.038 - mdisp[iter];
     }
     PetscPrintf(PETSC_COMM_WORLD,"[%d]%s %D) N=%12D, max displ=%9.7e, disp diff=%9.2e, error=%4.3e, rate=%3.2g\n",
                 rank,__FUNCT__,iter,local_sizes[iter],mdisp[iter],
