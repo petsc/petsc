@@ -1144,7 +1144,7 @@ PetscErrorCode  PetscOptionsSetValue(PetscOptions options,const char iname[],con
   char           **names;
   char           fullname[2048];
   const char     *name = iname;
-  int            gt,match;
+  int            match;
 
   if (!options) {
     if (!defaultoptions) {
@@ -1187,13 +1187,13 @@ PetscErrorCode  PetscOptionsSetValue(PetscOptions options,const char iname[],con
 
   for (i=0; i<N; i++) {
 #if defined(PETSC_HAVE_STRCASECMP)
-    gt = strcasecmp(names[i],name);
+    match = strcasecmp(names[i],name);
 #elif defined(PETSC_HAVE_STRICMP)
-    gt = stricmp(names[i],name);
+    match = stricmp(names[i],name);
 #else
     Error
 #endif
-    if (!gt) {
+    if (!match) {
       if (options->values[i]) free(options->values[i]);
       len = value ? strlen(value) : 0;
       if (len) {
@@ -1202,7 +1202,7 @@ PetscErrorCode  PetscOptionsSetValue(PetscOptions options,const char iname[],con
         strcpy(options->values[i],value);
       } else options->values[i] = 0;
       return 0;
-    } else if (gt > 0) {
+    } else if (strcmp(names[i],name) > 0) {
       n = i;
       break;
     }
