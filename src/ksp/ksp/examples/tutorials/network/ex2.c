@@ -31,9 +31,9 @@ typedef struct Edge {
 
 #undef __FUNCT__
 #define __FUNCT__ "distance"
-PetscScalar distance(PetscScalar x1, PetscScalar x2, PetscScalar y1, PetscScalar y2)
+PetscReal distance(PetscReal x1, PetscReal x2, PetscReal y1, PetscReal y2)
 {
-  return PetscSqrtScalar(PetscPowScalar(x2-x1,2.0) + PetscPowScalar(y2-y1,2.0));
+  return PetscSqrtReal(PetscPowReal(x2-x1,2.0) + PetscPowReal(y2-y1,2.0));
 }
 
 /* 
