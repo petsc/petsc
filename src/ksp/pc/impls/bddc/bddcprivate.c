@@ -2185,10 +2185,10 @@ PetscErrorCode PCBDDCBenignCheck(PC pc, IS zerodiag)
 PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
 {
   PC_BDDC*       pcbddc = (PC_BDDC*)pc->data;
-  IS             pressures,zerodiag,*zerodiag_subs;
+  IS             pressures,zerodiag,zerodiag_save,*zerodiag_subs;
   PetscInt       nz,n;
-  PetscInt       *interior_dofs,n_interior_dofs;
-  PetscBool      sorted,have_null,has_null_pressures,recompute_zerodiag;
+  PetscInt       *interior_dofs,n_interior_dofs,nneu;
+  PetscBool      sorted,have_null,has_null_pressures,recompute_zerodiag,checkb;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2230,6 +2230,8 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
   if (!sorted) {
     ierr = ISSort(zerodiag);CHKERRQ(ierr);
   }
+  ierr = PetscObjectReference((PetscObject)zerodiag);CHKERRQ(ierr);
+  zerodiag_save = zerodiag;
   ierr = ISGetLocalSize(zerodiag,&nz);CHKERRQ(ierr);
   if (!nz) {
     if (n) have_null = PETSC_FALSE;
@@ -2238,11 +2240,16 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
   }
   recompute_zerodiag = PETSC_FALSE;
   /* in case disconnected subdomains info is present, split the pressures accordingly (otherwise the benign trick could fail) */
-  zerodiag_subs = NULL;
+  zerodiag_subs    = NULL;
   pcbddc->benign_n = 0;
-  n_interior_dofs = 0;
-  interior_dofs = NULL;
-  if (pcbddc->current_level) { /* need to compute interior nodes */
+  n_interior_dofs  = 0;
+  interior_dofs    = NULL;
+  nneu             = 0;
+  if (pcbddc->NeumannBoundariesLocal) {
+    ierr = ISGetLocalSize(pcbddc->NeumannBoundariesLocal,&nneu);CHKERRQ(ierr);
+  }
+  checkb = (PetscBool)(!nneu || pcbddc->current_level);
+  if (checkb) { /* need to compute interior nodes */
     PetscInt n,i,j;
     PetscInt n_neigh,*neigh,*n_shared,**shared;
     PetscInt *iwork;
@@ -2262,7 +2269,7 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
   }
   if (has_null_pressures) {
     IS             *subs;
-    PetscInt       nsubs,i,j,nl,nneu;
+    PetscInt       nsubs,i,j,nl;
     const PetscInt *idxs;
     PetscScalar    *array;
     Vec            *work;
@@ -2270,12 +2277,8 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
 
     subs  = pcbddc->local_subs;
     nsubs = pcbddc->n_local_subs;
-    nneu  = 0;
-    if (pcbddc->NeumannBoundariesLocal) {
-      ierr = ISGetLocalSize(pcbddc->NeumannBoundariesLocal,&nneu);CHKERRQ(ierr);
-    }
     /* these vectors are needed to check if the constant on pressures is in the kernel of the local operator B (i.e. B(v_I,p0) should be zero) */
-    if (pcbddc->current_level) {
+    if (checkb) {
       ierr = VecDuplicateVecs(matis->y,2,&work);CHKERRQ(ierr);
       ierr = ISGetLocalSize(zerodiag,&nl);CHKERRQ(ierr);
       ierr = ISGetIndices(zerodiag,&idxs);CHKERRQ(ierr);
@@ -2304,7 +2307,7 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
         if (nl) {
           PetscBool valid = PETSC_TRUE;
 
-          if (pcbddc->current_level) {
+          if (checkb) {
             ierr = VecSet(matis->x,0);CHKERRQ(ierr);
             ierr = ISGetLocalSize(subs[i],&nl);CHKERRQ(ierr);
             ierr = ISGetIndices(subs[i],&idxs);CHKERRQ(ierr);
@@ -2356,14 +2359,14 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
       if (valid && pressures) {
         ierr = ISEqual(pressures,zerodiag,&valid);CHKERRQ(ierr);
       }
-      if (valid && pcbddc->current_level) {
+      if (valid && checkb) {
         ierr = MatMult(matis->A,work[0],matis->x);CHKERRQ(ierr);
         ierr = VecPointwiseMult(matis->x,work[1],matis->x);CHKERRQ(ierr);
         ierr = VecGetArray(matis->x,&array);CHKERRQ(ierr);
         for (j=0;j<n_interior_dofs;j++) {
-            if (PetscAbsScalar(array[interior_dofs[j]]) > PETSC_SMALL) {
-              valid = PETSC_FALSE;
-              break;
+          if (PetscAbsScalar(array[interior_dofs[j]]) > PETSC_SMALL) {
+            valid = PETSC_FALSE;
+            break;
           }
         }
         ierr = VecRestoreArray(matis->x,&array);CHKERRQ(ierr);
@@ -2375,7 +2378,7 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
         zerodiag_subs[0] = zerodiag;
       }
     }
-    if (pcbddc->current_level) {
+    if (checkb) {
       ierr = VecDestroyVecs(2,&work);CHKERRQ(ierr);
     }
   }
@@ -2441,7 +2444,7 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
     if (pressures) {
       isused = pressures;
     } else {
-      isused = zerodiag;
+      isused = zerodiag_save;
     }
     ierr = MatGetLocalToGlobalMapping(pc->pmat,&l2gmap,NULL);CHKERRQ(ierr);
     ierr = MatISGetLocalMat(pc->pmat,&A);CHKERRQ(ierr);
@@ -2484,6 +2487,7 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
     ierr = MatAssemblyBegin(pcbddc->divudotp,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(pcbddc->divudotp,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
+  ierr = ISDestroy(&zerodiag_save);CHKERRQ(ierr);
 
   /* change of basis and p0 dofs */
   if (has_null_pressures) {
