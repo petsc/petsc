@@ -227,7 +227,7 @@ int main(int argc,char **args)
   PetscLogStage  stage[7];
   PetscBool      test_nonzero_cols=PETSC_FALSE,use_nearnullspace=PETSC_TRUE;
   Vec            xx,bb;
-  PetscInt       iter,i,N,dim=3,cells[3]={1,1,1},max_conv_its,local_sizes[7],run_type=1,one=1,fifty=50;
+  PetscInt       iter,i,N,dim=3,cells[3]={1,1,1},max_conv_its,local_sizes[7],run_type=1;
   DM             dm,distdm,newdm;
   PetscBool      flg;
   char           convType[256];
