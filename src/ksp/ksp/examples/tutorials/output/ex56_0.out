@@ -1,15 +1,15 @@
-  0 KSP Residual norm 1541.79 
-  1 KSP Residual norm 457.503 
-  2 KSP Residual norm 179.338 
-  3 KSP Residual norm 48.8123 
-  4 KSP Residual norm 24.3473 
-  5 KSP Residual norm 8.61576 
-  6 KSP Residual norm 3.02445 
-  7 KSP Residual norm 1.24469 
-  8 KSP Residual norm 0.355207 
-  9 KSP Residual norm 0.0901111 
- 10 KSP Residual norm 0.0203777 
- 11 KSP Residual norm 0.00480023 
+  0 KSP Residual norm 1541.48 
+  1 KSP Residual norm 457.912 
+  2 KSP Residual norm 179.472 
+  3 KSP Residual norm 48.887 
+  4 KSP Residual norm 24.3624 
+  5 KSP Residual norm 8.62227 
+  6 KSP Residual norm 3.02738 
+  7 KSP Residual norm 1.2471 
+  8 KSP Residual norm 0.355968 
+  9 KSP Residual norm 0.0902322 
+ 10 KSP Residual norm 0.0203942 
+ 11 KSP Residual norm 0.00480404 
 Linear solve converged due to CONVERGED_RTOL iterations 11
 KSP Object: 8 MPI processes
   type: cg
@@ -23,7 +23,8 @@ PC Object: 8 MPI processes
       Cycles per PCApply=1
       Using externally compute Galerkin coarse grid matrices
       GAMG specific options
-        Threshold for dropping small values from graph -0.01
+        Threshold for dropping small values in graph on each level =   -0.01  
+        Threshold scaling factor for each level not specified = 1.
         Using aggregates from coarsening process to define subdomains for PCASM
         Using parallel coarse grid solver (all coarse grid equations not put on one process)
         AGG specific options
@@ -49,7 +50,7 @@ PC Object: 8 MPI processes
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 8 MPI processes
       type: chebyshev
-        Chebyshev: eigenvalue estimates:  min = 0.364053, max = 1.91128
+        Chebyshev: eigenvalue estimates:  min = 0.364029, max = 1.91115
         Chebyshev: eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_1_esteig_) 8 MPI processes
           type: cg
@@ -169,18 +170,18 @@ PC Object: 8 MPI processes
     total number of mallocs used during MatSetValues calls =0
       has attached near null space
       using I-node (on process 0) routines: found 343 nodes, limit used is 5
-  0 KSP Residual norm 0.0154179 
-  1 KSP Residual norm 0.00457503 
-  2 KSP Residual norm 0.00179338 
-  3 KSP Residual norm 0.000488123 
-  4 KSP Residual norm 0.000243473 
-  5 KSP Residual norm 8.61576e-05 
-  6 KSP Residual norm 3.02445e-05 
-  7 KSP Residual norm 1.24469e-05 
-  8 KSP Residual norm 3.55207e-06 
-  9 KSP Residual norm 9.01111e-07 
- 10 KSP Residual norm 2.03777e-07 
- 11 KSP Residual norm 4.80023e-08 
+  0 KSP Residual norm 0.0154148 
+  1 KSP Residual norm 0.00457912 
+  2 KSP Residual norm 0.00179472 
+  3 KSP Residual norm 0.00048887 
+  4 KSP Residual norm 0.000243624 
+  5 KSP Residual norm 8.62227e-05 
+  6 KSP Residual norm 3.02738e-05 
+  7 KSP Residual norm 1.2471e-05 
+  8 KSP Residual norm 3.55968e-06 
+  9 KSP Residual norm 9.02322e-07 
+ 10 KSP Residual norm 2.03942e-07 
+ 11 KSP Residual norm 4.80404e-08 
 Linear solve converged due to CONVERGED_RTOL iterations 11
 KSP Object: 8 MPI processes
   type: cg
@@ -194,7 +195,8 @@ PC Object: 8 MPI processes
       Cycles per PCApply=1
       Using externally compute Galerkin coarse grid matrices
       GAMG specific options
-        Threshold for dropping small values from graph -0.01
+        Threshold for dropping small values in graph on each level =   -0.01  
+        Threshold scaling factor for each level not specified = 1.
         Using aggregates from coarsening process to define subdomains for PCASM
         Using parallel coarse grid solver (all coarse grid equations not put on one process)
         AGG specific options
@@ -220,7 +222,7 @@ PC Object: 8 MPI processes
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 8 MPI processes
       type: chebyshev
-        Chebyshev: eigenvalue estimates:  min = 0.364053, max = 1.91128
+        Chebyshev: eigenvalue estimates:  min = 0.364029, max = 1.91115
         Chebyshev: eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_1_esteig_) 8 MPI processes
           type: cg
@@ -340,18 +342,18 @@ PC Object: 8 MPI processes
     total number of mallocs used during MatSetValues calls =0
       has attached near null space
       using I-node (on process 0) routines: found 343 nodes, limit used is 5
-  0 KSP Residual norm 0.0154179 
-  1 KSP Residual norm 0.00457503 
-  2 KSP Residual norm 0.00179338 
-  3 KSP Residual norm 0.000488123 
-  4 KSP Residual norm 0.000243473 
-  5 KSP Residual norm 8.61576e-05 
-  6 KSP Residual norm 3.02445e-05 
-  7 KSP Residual norm 1.24469e-05 
-  8 KSP Residual norm 3.55207e-06 
-  9 KSP Residual norm 9.01111e-07 
- 10 KSP Residual norm 2.03777e-07 
- 11 KSP Residual norm 4.80023e-08 
+  0 KSP Residual norm 0.0154148 
+  1 KSP Residual norm 0.00457912 
+  2 KSP Residual norm 0.00179472 
+  3 KSP Residual norm 0.00048887 
+  4 KSP Residual norm 0.000243624 
+  5 KSP Residual norm 8.62227e-05 
+  6 KSP Residual norm 3.02738e-05 
+  7 KSP Residual norm 1.2471e-05 
+  8 KSP Residual norm 3.55968e-06 
+  9 KSP Residual norm 9.02322e-07 
+ 10 KSP Residual norm 2.03942e-07 
+ 11 KSP Residual norm 4.80404e-08 
 Linear solve converged due to CONVERGED_RTOL iterations 11
 KSP Object: 8 MPI processes
   type: cg
@@ -365,7 +367,8 @@ PC Object: 8 MPI processes
       Cycles per PCApply=1
       Using externally compute Galerkin coarse grid matrices
       GAMG specific options
-        Threshold for dropping small values from graph -0.01
+        Threshold for dropping small values in graph on each level =   -0.01  
+        Threshold scaling factor for each level not specified = 1.
         Using aggregates from coarsening process to define subdomains for PCASM
         Using parallel coarse grid solver (all coarse grid equations not put on one process)
         AGG specific options
@@ -391,7 +394,7 @@ PC Object: 8 MPI processes
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 8 MPI processes
       type: chebyshev
-        Chebyshev: eigenvalue estimates:  min = 0.364053, max = 1.91128
+        Chebyshev: eigenvalue estimates:  min = 0.364029, max = 1.91115
         Chebyshev: eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_1_esteig_) 8 MPI processes
           type: cg
@@ -511,4 +514,4 @@ PC Object: 8 MPI processes
     total number of mallocs used during MatSetValues calls =0
       has attached near null space
       using I-node (on process 0) routines: found 343 nodes, limit used is 5
-[0]main |b-Ax|/|b|=5.331629e-05, |b|=4.630910e+00, emax=9.960830e-01
+[0]main |b-Ax|/|b|=5.332472e-05, |b|=4.630910e+00, emax=9.960798e-01
