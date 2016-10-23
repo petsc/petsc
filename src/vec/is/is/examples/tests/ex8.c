@@ -47,6 +47,7 @@ int main(int argc,char **argv)
   ierr = ISLocalToGlobalMappingView(map,NULL);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingSetBlockSize(map,2);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingView(map,NULL);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&map);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }
