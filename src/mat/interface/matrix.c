@@ -7204,11 +7204,7 @@ PetscErrorCode MatSetBlockSize(Mat mat,PetscInt bs)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidLogicalCollectiveInt(mat,bs,2);
-  if (mat->ops->setblocksizes) {
-    ierr = (*mat->ops->setblocksizes)(mat,bs,bs);CHKERRQ(ierr);
-  }
-  ierr = PetscLayoutSetBlockSize(mat->rmap,bs);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(mat->cmap,bs);CHKERRQ(ierr);
+  ierr = MatSetBlockSizes(mat,bs,bs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -7242,14 +7238,43 @@ PetscErrorCode MatSetBlockSize(Mat mat,PetscInt bs)
 @*/
 PetscErrorCode MatSetBlockSizes(Mat mat,PetscInt rbs,PetscInt cbs)
 {
+  PetscBool      nrl = PETSC_FALSE,ncl = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidLogicalCollectiveInt(mat,rbs,2);
   PetscValidLogicalCollectiveInt(mat,cbs,3);
+  if (mat->rmap->bs > 0 && mat->rmap->bs != rbs && mat->rmap->refcnt) nrl = PETSC_TRUE;
+  if (mat->cmap->bs > 0 && mat->cmap->bs != cbs && mat->cmap->refcnt) ncl = PETSC_TRUE;
   if (mat->ops->setblocksizes) {
     ierr = (*mat->ops->setblocksizes)(mat,rbs,cbs);CHKERRQ(ierr);
+  }
+  if (nrl) {
+    ISLocalToGlobalMapping l2g = NULL;
+    PetscLayout            nmap;
+
+    ierr = PetscLayoutDuplicate(mat->rmap,&nmap);CHKERRQ(ierr);
+    if (mat->rmap->mapping) {
+      ierr = PetscObjectReference((PetscObject)mat->rmap->mapping);CHKERRQ(ierr);
+      l2g  = mat->rmap->mapping;
+    }
+    ierr = PetscLayoutDestroy(&mat->rmap);CHKERRQ(ierr);
+    mat->rmap = nmap;
+    mat->rmap->mapping = l2g;
+  }
+  if (ncl) {
+    ISLocalToGlobalMapping l2g = NULL;
+    PetscLayout            nmap;
+
+    ierr = PetscLayoutDuplicate(mat->cmap,&nmap);CHKERRQ(ierr);
+    if (mat->cmap->mapping) {
+      ierr = PetscObjectReference((PetscObject)mat->cmap->mapping);CHKERRQ(ierr);
+      l2g  = mat->cmap->mapping;
+    }
+    ierr = PetscLayoutDestroy(&mat->cmap);CHKERRQ(ierr);
+    mat->cmap = nmap;
+    mat->cmap->mapping = l2g;
   }
   ierr = PetscLayoutSetBlockSize(mat->rmap,rbs);CHKERRQ(ierr);
   ierr = PetscLayoutSetBlockSize(mat->cmap,cbs);CHKERRQ(ierr);
