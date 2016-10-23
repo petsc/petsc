@@ -16,8 +16,8 @@ T*/
 int main(int argc,char **argv)
 {
   PetscErrorCode         ierr;
-  PetscInt               indices[] = {0,1,2,3,-1,-1,-1,-1,8,9,10,11};
-  PetscInt               indices2[] = {0,1,2,3,4,5,-1,-1,-1,-1,-1,-1,12,13,14,15,16,17};
+  PetscInt               indices[] = {0,1,2,3,-1,-1,-1,-1,4,5,6,7};
+  PetscInt               indices2[] = {0,1,2,3,4,5,-1,-1,-1,-1,-1,-1,6,7,8,9,10,11};
   ISLocalToGlobalMapping map;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
@@ -43,6 +43,10 @@ int main(int argc,char **argv)
   ierr = ISLocalToGlobalMappingSetBlockSize(map,1);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingView(map,NULL);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&map);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD,5,2,indices2,PETSC_COPY_VALUES,&map);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingView(map,NULL);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingSetBlockSize(map,2);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingView(map,NULL);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }
