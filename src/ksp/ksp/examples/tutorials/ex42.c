@@ -1985,6 +1985,7 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
     PC             pc;
     const PetscInt ufields[] = {0,1,2},pfields[] = {3};
     ierr = KSPGetPC(ksp_S,&pc);CHKERRQ(ierr);
+    ierr = PCFieldSplitSetBlockSize(pc,4);CHKERRQ(ierr);
     ierr = PCFieldSplitSetFields(pc,"u",3,ufields,ufields);CHKERRQ(ierr);
     ierr = PCFieldSplitSetFields(pc,"p",1,pfields,pfields);CHKERRQ(ierr);
   }
