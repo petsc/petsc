@@ -2426,6 +2426,9 @@ runex180:
 	  ${MPIEXEC} -n 1 ./ex180 -mat_type sbaij  -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump >> ex180.tmp 2>&1; \
 	  ${MPIEXEC} -n 2 ./ex180 -mat_type sbaij  -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump >> ex180.tmp 2>&1; \
 	  ${MPIEXEC} -n 1 ./ex180 -mat_type sbaij -matload_block_size 4 -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump >> ex180.tmp 2>&1; \
+	  ${MPIEXEC} -n 2 ./ex180 -mat_type sbaij -matload_block_size 4 -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump >> ex180.tmp 2>&1; \
+	  ${MPIEXEC} -n 1 ./ex180 -mat_type baij -matload_block_size 4 -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump >> ex180.tmp 2>&1; \
+	  ${MPIEXEC} -n 2 ./ex180 -mat_type baij -matload_block_size 4 -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump >> ex180.tmp 2>&1; \
 	   ${DIFF} output/ex180_1.out ex180.tmp || printf "${PWD}\nPossible problem with ex180, diffs above\n=========================================\n"; \
 	   ${RM} -f ex180.tmp
 
