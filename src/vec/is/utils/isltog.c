@@ -7,6 +7,35 @@ PetscClassId IS_LTOGM_CLASSID;
 static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGlobalMapping,PetscInt*,PetscInt**,PetscInt**,PetscInt***);
 
 #undef __FUNCT__
+#define __FUNCT__ "ISLocalToGlobalMappingDuplicate"
+/*@
+    ISLocalToGlobalMappingDuplicate - Duplicates the local to global mapping object
+
+    Not Collective
+
+    Input Parameter:
+.   ltog - local to global mapping
+
+    Output Parameter:
+.   nltog - the duplicated local to global mapping
+
+    Level: advanced
+
+    Concepts: mapping^local to global
+
+.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate()
+@*/
+PetscErrorCode  ISLocalToGlobalMappingDuplicate(ISLocalToGlobalMapping ltog,ISLocalToGlobalMapping* nltog)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ltog,IS_LTOGM_CLASSID,1);
+  ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)ltog),ltog->bs,ltog->n,ltog->indices,PETSC_COPY_VALUES,nltog);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ISLocalToGlobalMappingGetSize"
 /*@
     ISLocalToGlobalMappingGetSize - Gets the local size of a local to global mapping
