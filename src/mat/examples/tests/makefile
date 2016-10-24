@@ -2702,57 +2702,57 @@ runex205:
 	   ${RM} -f ex205.tmp
 
 runex206_aij_1:
-	-@${MPIEXEC} -n 1 ./ex206 -f ${DATAFILESPATH}/matrices/small  -mat_type aij -mat_block_size 1  > ex206.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex206 -f ${DATAFILESPATH}/matrices/small  -mat_type aij -mat_block_size 1 | grep -v Mat_  > ex206.tmp 2>&1; \
 	   ${DIFF} output/ex206_aij_1.out ex206.tmp || printf "${PWD}\nPossible problem with ex206_aij_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex206.tmp
 
 runex206_aij_2:
-	-@${MPIEXEC} -n 2 ./ex206 -f ${DATAFILESPATH}/matrices/small  -mat_type aij -mat_block_size 1  > ex206.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex206 -f ${DATAFILESPATH}/matrices/small  -mat_type aij -mat_block_size 1   | grep -v Mat_ > ex206.tmp 2>&1; \
 	   ${DIFF} output/ex206_aij_2.out ex206.tmp || printf "${PWD}\nPossible problem with ex206_aij_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex206.tmp
 
 runex206_baij_1_2:
-	-@${MPIEXEC} -n 1 ./ex206 -f ${DATAFILESPATH}/matrices/small  -mat_type baij -mat_block_size 2  > ex206.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex206 -f ${DATAFILESPATH}/matrices/small  -mat_type baij -mat_block_size 2   | grep -v Mat_ > ex206.tmp 2>&1; \
 	   ${DIFF} output/ex206_baij_1_2.out ex206.tmp || printf "${PWD}\nPossible problem with ex206_baij_1_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex206.tmp
 
 runex206_baij_2_2:
-	-@${MPIEXEC} -n 2 ./ex206 -f ${DATAFILESPATH}/matrices/small  -mat_type baij -mat_block_size 2  > ex206.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex206 -f ${DATAFILESPATH}/matrices/small  -mat_type baij -mat_block_size 2   | grep -v Mat_ > ex206.tmp 2>&1; \
 	   ${DIFF} output/ex206_baij_2_2.out ex206.tmp || printf "${PWD}\nPossible problem with ex206_baij_2_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex206.tmp
 
 runex206_sbaij_1_1:
-	-@${MPIEXEC} -n 1 ./ex206 -f ${DATAFILESPATH}/matrices/small  -mat_type sbaij -mat_block_size 1  > ex206.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex206 -f ${DATAFILESPATH}/matrices/small  -mat_type sbaij -mat_block_size 1   | grep -v Mat_ > ex206.tmp 2>&1; \
 	   ${DIFF} output/ex206_sbaij_1_1.out ex206.tmp || printf "${PWD}\nPossible problem with ex206_sbaij_1_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex206.tmp
 
 runex206_sbaij_1_2:
-	-@${MPIEXEC} -n 1 ./ex206 -f ${DATAFILESPATH}/matrices/small  -mat_type sbaij -mat_block_size 2  > ex206.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex206 -f ${DATAFILESPATH}/matrices/small  -mat_type sbaij -mat_block_size 2   | grep -v Mat_ > ex206.tmp 2>&1; \
 	   ${DIFF} output/ex206_sbaij_1_2.out ex206.tmp || printf "${PWD}\nPossible problem with ex206_sbaij_1_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex206.tmp
 
 runex206_sbaij_2_2:
-	-@${MPIEXEC} -n 2 ./ex206 -f ${DATAFILESPATH}/matrices/small  -mat_type sbaij -mat_block_size 2  > ex206.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex206 -f ${DATAFILESPATH}/matrices/small  -mat_type sbaij -mat_block_size 2   | grep -v Mat_ > ex206.tmp 2>&1; \
 	   ${DIFF} output/ex206_sbaij_2_2.out ex206.tmp || printf "${PWD}\nPossible problem with ex206_sbaij_2_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex206.tmp
 
 runex206_aij_2_d:
-	-@${MPIEXEC} -n 2 ./ex206 -f ${DATAFILESPATH}/matrices/small -f2 ${DATAFILESPATH}/matrices/smallbs2 -mat_type aij -mat_block_size 1  > ex206.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex206 -f ${DATAFILESPATH}/matrices/small -f2 ${DATAFILESPATH}/matrices/smallbs2 -mat_type aij -mat_block_size 1  | grep -v Mat_ > ex206.tmp 2>&1; \
 	   ${DIFF} output/ex206_aij_2_d.out ex206.tmp || printf "${PWD}\nPossible problem with ex206_aij_2_d, diffs above\n=========================================\n"; \
 	   ${RM} -f ex206.tmp
 
 runex206_baij_2_1_d:
-	-@${MPIEXEC} -n 2 ./ex206 -f ${DATAFILESPATH}/matrices/small -f2 ${DATAFILESPATH}/matrices/smallbs2 -mat_type baij -mat_block_size 1  > ex206.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex206 -f ${DATAFILESPATH}/matrices/small -f2 ${DATAFILESPATH}/matrices/smallbs2 -mat_type baij -mat_block_size 1  | grep -v Mat_ > ex206.tmp 2>&1; \
 	   ${DIFF} output/ex206_baij_2_1_d.out ex206.tmp || printf "${PWD}\nPossible problem with ex206_baij_2_1_d, diffs above\n=========================================\n"; \
 	   ${RM} -f ex206.tmp
 
 runex206_baij_2_2_d:
-	-@${MPIEXEC} -n 2 ./ex206 -f ${DATAFILESPATH}/matrices/small -f2 ${DATAFILESPATH}/matrices/smallbs2 -mat_type baij -mat_block_size 2  > ex206.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex206 -f ${DATAFILESPATH}/matrices/small -f2 ${DATAFILESPATH}/matrices/smallbs2 -mat_type baij -mat_block_size 2  | grep -v Mat_ > ex206.tmp 2>&1; \
 	   ${DIFF} output/ex206_baij_2_2_d.out ex206.tmp || printf "${PWD}\nPossible problem with ex206_baij_2_2_d, diffs above\n=========================================\n"; \
 	   ${RM} -f ex206.tmp
 
 runex206_sbaij_2_1_d:
-	-@${MPIEXEC} -n 2 ./ex206 -f ${DATAFILESPATH}/matrices/small -f2 ${DATAFILESPATH}/matrices/smallbs2 -mat_type sbaij -mat_block_size 1  > ex206.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex206 -f ${DATAFILESPATH}/matrices/small -f2 ${DATAFILESPATH}/matrices/smallbs2 -mat_type sbaij -mat_block_size 1  | grep -v Mat_ > ex206.tmp 2>&1; \
 	   ${DIFF} output/ex206_sbaij_2_1_d.out ex206.tmp || printf "${PWD}\nPossible problem with ex206_sbaij_2_1_d, diffs above\n=========================================\n"; \
 	   ${RM} -f ex206.tmp
 
