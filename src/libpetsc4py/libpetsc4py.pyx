@@ -2110,6 +2110,8 @@ cdef extern from * nogil:
     PetscErrorCode TSMonitor(PetscTS,PetscInt,PetscReal,PetscVec)
     PetscErrorCode TSComputeIFunction(PetscTS,PetscReal,PetscVec,PetscVec,PetscVec,PetscBool)
     PetscErrorCode TSComputeIJacobian(PetscTS,PetscReal,PetscVec,PetscVec,PetscReal,PetscMat,PetscMat,PetscBool)
+    PetscErrorCode TSComputeI2Function(PetscTS,PetscReal,PetscVec,PetscVec,PetscVec,PetscVec)
+    PetscErrorCode TSComputeI2Jacobian(PetscTS,PetscReal,PetscVec,PetscVec,PetscVec,PetscReal,PetscReal,PetscMat,PetscMat)
     PetscErrorCode SNESTSFormFunction(PetscSNES,PetscVec,PetscVec,void*)
     PetscErrorCode SNESTSFormJacobian(PetscSNES,PetscVec,PetscMat,PetscMat,void*)
 

@@ -276,6 +276,64 @@ cdef class TS(Object):
         PetscINCREF(J.obj); PetscINCREF(P.obj)
         cdef object jacobian = self.get_attr('__ijacobian__')
         return (J, P, jacobian)
+        
+    def setI2Function(self, function, Vec f=None, args=None, kargs=None):
+        cdef PetscVec fvec=NULL
+        if f is not None: fvec = f.vec
+        if function is not None:
+            if args  is None: args  = ()
+            if kargs is None: kargs = {}
+            context = (function, args, kargs)
+            self.set_attr('__i2function__', context)
+            CHKERR( TSSetI2Function(self.ts, fvec, TS_I2Function, <void*>context) )
+        else:
+            CHKERR( TSSetI2Function(self.ts, fvec, NULL, NULL) )
+
+    def setI2Jacobian(self, jacobian, Mat J=None, Mat P=None, args=None, kargs=None):
+        cdef PetscMat Jmat=NULL
+        if J is not None: Jmat = J.mat
+        cdef PetscMat Pmat=Jmat
+        if P is not None: Pmat = P.mat
+        if jacobian is not None:
+            if args  is None: args  = ()
+            if kargs is None: kargs = {}
+            context = (jacobian, args, kargs)
+            self.set_attr('__i2jacobian__', context)
+            CHKERR( TSSetI2Jacobian(self.ts, Jmat, Pmat, TS_I2Jacobian, <void*>context) )
+        else:
+            CHKERR( TSSetI2Jacobian(self.ts, Jmat, Pmat, NULL, NULL) )
+
+    def computeI2Function(self,
+                         t, Vec x not None, Vec xdot not None, Vec xdotdot not None,
+                         Vec f not None):
+        cdef PetscReal rval = asReal(t)
+        CHKERR( TSComputeI2Function(self.ts, rval, x.vec, xdot.vec, xdotdot.vec,
+                                   f.vec) )
+
+    def computeI2Jacobian(self,
+                         t, Vec x not None, Vec xdot not None, Vec xdotdot not None, v, a,
+                         Mat J not None, Mat P=None):
+        cdef PetscReal rval1 = asReal(t)
+        cdef PetscReal rval2 = asReal(v)
+        cdef PetscReal rval3 = asReal(a)
+        cdef PetscMat jmat = J.mat, pmat = J.mat
+        if P is not None: pmat = P.mat
+        CHKERR( TSComputeI2Jacobian(self.ts, rval1, x.vec, xdot.vec, xdotdot.vec, rval2, rval3,
+                                   jmat, pmat) )
+
+    def getI2Function(self):
+        cdef Vec f = Vec()
+        CHKERR( TSGetI2Function(self.ts, &f.vec, NULL, NULL) )
+        PetscINCREF(f.obj)
+        cdef object function = self.get_attr('__i2function__')
+        return (f, function)
+
+    def getI2Jacobian(self):
+        cdef Mat J = Mat(), P = Mat()
+        CHKERR( TSGetI2Jacobian(self.ts, &J.mat, &P.mat, NULL, NULL) )
+        PetscINCREF(J.obj); PetscINCREF(P.obj)
+        cdef object jacobian = self.get_attr('__i2jacobian__')
+        return (J, P, jacobian)        
 
     # --- solution vector ---
 
@@ -287,6 +345,17 @@ cdef class TS(Object):
         CHKERR( TSGetSolution(self.ts, &u.vec) )
         PetscINCREF(u.obj)
         return u
+        
+    def setSolution2(self, Vec u not None, Vec v not None):
+        CHKERR( TS2SetSolution(self.ts, u.vec, v.vec) )
+
+    def getSolution2(self):
+        cdef Vec u = Vec()
+        cdef Vec v = Vec()
+        CHKERR( TS2GetSolution(self.ts, &u.vec, &v.vec) )
+        PetscINCREF(u.obj)
+        PetscINCREF(v.obj)
+        return (u, v)
 
     # --- inner solver ---
 
