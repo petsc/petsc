@@ -63,13 +63,13 @@ runex2_graphindex_2:
 	   ${RM} -f ex2_graphindex_2.tmp
 		
 runex1_nest:
-	-@${MPIEXEC} -n 1 ./ex1_nest -ksp_monitor > ex1_nest.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex1_nest -ksp_converged_reason > ex1_nest.tmp 2>&1;   \
 	   if (${DIFF} output/ex1_nest.out ex1_nest.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex1_nest, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex1_nest.tmp
 
 runex1_nest_2:
-	-@${MPIEXEC} -n 2 ./ex1_nest -petscpartitioner_type simple -ksp_monitor > ex1_nest_2.tmp 2>&1;   \
+	-@${MPIEXEC} -n 2 ./ex1_nest -petscpartitioner_type simple -ksp_converged_reason > ex1_nest_2.tmp 2>&1;   \
 	   if (${DIFF} output/ex1_nest_2.out ex1_nest_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex1_nest_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex1_nest_2.tmp

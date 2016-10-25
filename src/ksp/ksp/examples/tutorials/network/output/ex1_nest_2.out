@@ -1,7 +1,4 @@
-  0 KSP Residual norm 1.326649916142e+01 
-  1 KSP Residual norm 1.145907259893e+01 
-  2 KSP Residual norm 7.712516601787e+00 
-  3 KSP Residual norm 2.339800129114e-15 
+Linear solve converged due to CONVERGED_RTOL iterations 3
 Vec Object: 2 MPI processes
   type: mpi
 Process [0]
