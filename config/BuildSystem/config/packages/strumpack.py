@@ -4,7 +4,7 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.download         = ['http://portal.nersc.gov/project/sparse/strumpack/STRUMPACK-sparse-1.0.3.tar.gz']
+    self.download         = ['http://portal.nersc.gov/project/sparse/strumpack/STRUMPACK-sparse-1.0.4.tar.gz']
     self.functions        = ['STRUMPACK_init']
     self.includes         = ['StrumpackSparseSolver.h']
     self.liblist          = [['libstrumpack_sparse.a']]
