@@ -225,7 +225,7 @@ runex28:
 	   ${DIFF} output/ex28.out ex28.tmp || echo  ${PWD} "\nPossible problem with ex28, diffs above \n========================================="; \
 	   ${RM} -f ex28.tmp
 runex32:
-	-@${MPIEXEC} -n 1 ./ex32 > ex32.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex32 -skip_petscrc -options_left 0 > ex32.tmp 2>&1;   \
 	   ${DIFF} output/ex32.out ex32.tmp || echo  ${PWD} "\nPossible problem with ex32, diffs above \n========================================="; \
 	   ${RM} -f ex32.tmp
 
