@@ -1651,7 +1651,7 @@ runex67_nonsymmetric_left:
         ${RM} -f ex67.tmp
 
 runex67_nonsymmetric_right:
-	-@${MPIEXEC} -n 1 ./ex67 -symmetric false -ksp_view -ksp_converged_reason -pc_type jacobi -mat_no_inode -ksp_monitor_true_residual  -ksp_rtol 1.e-14 -ksp_max_it 12 -ksp_pc_side right  > ex67.tmp 2>&1;  \
+	-@${MPIEXEC} -n 1 ./ex67 -symmetric false -ksp_view -ksp_converged_reason -pc_type jacobi -mat_no_inode -ksp_monitor_true_residual  -ksp_rtol 1.e-14 -ksp_max_it 12 -ksp_pc_side right | sed 's/ATOL/RTOL/g'  > ex67.tmp 2>&1;  \
         ${DIFF} output/ex67_nonsymmetric_right.out ex67.tmp || printf "${PWD}\nPossible problem with ex67_nonsymmetric_right, diffs above\n=========================================\n"; \
         ${RM} -f ex67.tmp
 
