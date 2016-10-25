@@ -6,7 +6,7 @@ FPPFLAGS        =
 LOCDIR          = src/sys/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex7.c ex8.c ex9.c ex10.c ex11.c ex12.c \
                 ex14.c ex15.c ex16.c ex18.c ex19.c ex20.c ex21.c \
-                ex22.c ex23.c ex24.c ex27.c ex28.c ex29.c ex30.c
+                ex22.c ex23.c ex24.c ex27.c ex28.c ex29.c ex32.c
 EXAMPLESF       = ex1f.F ex5f.F ex6f.F ex17f.F
 MANSEC          = Sys
 
@@ -114,9 +114,9 @@ ex28: ex28.o chkopts
 ex29: ex29.o chkopts
 	-${CLINKER} -o ex29 ex29.o  ${PETSC_SYS_LIB}
 	${RM} -f ex29.o
-ex30: ex30.o chkopts
-	-${CLINKER} -o ex30 ex30.o  ${PETSC_SYS_LIB}
-	${RM} -f ex30.o
+ex32: ex32.o chkopts
+	-${CLINKER} -o ex32 ex32.o  ${PETSC_SYS_LIB}
+	${RM} -f ex32.o
 #----------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 > ex1.tmp1 2>&1; egrep "(PETSC ERROR)" ex1.tmp1 | egrep "(main|CreateError|Error Created)" | cut -f1,2,3,4,5 -d" " > ex1.tmp;\
@@ -224,10 +224,10 @@ runex28:
 	-@${MPIEXEC} -n 1 ./ex28 > ex28.tmp 2>&1;   \
 	   ${DIFF} output/ex28.out ex28.tmp || echo  ${PWD} "\nPossible problem with ex28, diffs above \n========================================="; \
 	   ${RM} -f ex28.tmp
-runex30:
-	-@${MPIEXEC} -n 1 ./ex30 > ex30.tmp 2>&1;   \
-	   ${DIFF} output/ex30.out ex30.tmp || echo  ${PWD} "\nPossible problem with ex30, diffs above \n========================================="; \
-	   ${RM} -f ex30.tmp
+runex32:
+	-@${MPIEXEC} -n 1 ./ex32 > ex32.tmp 2>&1;   \
+	   ${DIFF} output/ex32.out ex32.tmp || echo  ${PWD} "\nPossible problem with ex32, diffs above \n========================================="; \
+	   ${RM} -f ex32.tmp
 
 
 TESTEXAMPLES_C		       = ex4.PETSc ex4.rm \
@@ -235,7 +235,7 @@ TESTEXAMPLES_C		       = ex4.PETSc ex4.rm \
                                  ex20.PETSc runex20 runex20_2 runex20_3 ex20.rm  ex21.PETSc ex21.rm \
                                  ex22.PETSc runex22 ex22.rm ex24.PETSc ex24.rm \
                                  ex25.PETSc runex25 ex25.rm ex28.PETSc ex28.rm \
-                                 ex30.PETSc runex30 ex30.rm
+                                 ex32.PETSc runex32 ex32.rm
 
 TESTEXAMPLES_C_COMPLEX         = ex14.PETSc runex14 ex14.rm
 
