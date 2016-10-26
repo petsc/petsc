@@ -64,7 +64,11 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
     ierr = MatDuplicate(jac->A,MAT_DO_NOT_COPY_VALUES,&jac->U);CHKERRQ(ierr);
     ierr = MatDuplicate(jac->A,MAT_DO_NOT_COPY_VALUES,&jac->Vt);CHKERRQ(ierr);
   }
-  ierr  = MatGetSize(pc->pmat,&n,NULL);CHKERRQ(ierr);
+  ierr  = MatGetSize(jac->A,&n,NULL);CHKERRQ(ierr);
+  if (!n) {
+    ierr = PetscInfo(pc,"Matrix has zero rows, skipping svd\n");
+    PetscFunctionReturn(0);
+  }
   ierr  = PetscBLASIntCast(n,&nb);CHKERRQ(ierr);
   lwork = 5*nb;
   ierr  = PetscMalloc1(lwork,&work);CHKERRQ(ierr);
@@ -90,7 +94,7 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
     PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("A","A",&nb,&nb,a,&nb,dd,u,&nb,v,&nb,work,&lwork,rwork,&lierr));
     if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"gesv() error %d",lierr);
     ierr = PetscFree(rwork);CHKERRQ(ierr);
-    for (i=0; i<nb; i++) d[i] = dd[i];
+    for (i=0; i<n; i++) d[i] = dd[i];
     ierr = PetscFree(dd);CHKERRQ(ierr);
     ierr = PetscFPTrapPop();CHKERRQ(ierr);
   }
