@@ -1,11 +1,6 @@
-static char help[] = "3D, tri-linear quadrilateral (Q1), displacement finite element formulation\n\
+static char help[] = "3D, tri-quadratic hexahedra (Q1), displacement finite element formulation\n\
 of linear elasticity.  E=1.0, nu=1/3.\n\
-Unit cube domain with Dirichlet boundary condition at x=0 for run_type==0 and entire boundary for run_type==1\n\
-run_type==0: Traction load of [1, -z, y] at x=1.\n\
-run_type==1: Load of (x^4-x^2)*(y^4-y^2)*(z^4-z^2) on (0,1]^3 domain\n\
-  -cells <n1,n2,n3> : number of cells in each dimension\n               \
-  -alpha <v>        : scaling of material coeficient in embedded sphere (run_type==0)\n\
-  -lx <v>           : Domain length in x (-.5-.5)^2 in y & z (run_type==0)\n\n";
+Unit cube domain with Dirichlet boundary\n\n";
 
 #include <petscdmplex.h>
 #include <petscsnes.h>
@@ -395,9 +390,9 @@ int main(int argc,char **args)
       const PetscInt Nfid = 1, Npid = 1;
       const PetscInt fid[] = {1}; /* The fixed faces (x=0) */
       const PetscInt pid[] = {2}; /* The faces with loading (x=L_x) */
-      PetscFE        fe;
-      PetscDS        prob;
-      DM             cdm = dm;
+      PetscFE         fe;
+      PetscDS         prob;
+      DM              cdm = dm;
 
       ierr = PetscFECreateDefault(dm, dim, dim, PETSC_FALSE, NULL, PETSC_DECIDE, &fe);CHKERRQ(ierr); /* elasticity */
       ierr = PetscObjectSetName((PetscObject) fe, "deformation");CHKERRQ(ierr);
@@ -466,18 +461,18 @@ int main(int argc,char **args)
       ierr = VecAssemblyEnd(xx);CHKERRQ(ierr);
     }
     ierr = VecZeroEntries(bb);CHKERRQ(ierr);
-    /* setup solver, dummy solve to really setup. THIS MESSES UP THE SOLVER SOMEHOW */
+    ierr = VecGetSize(bb,&i);CHKERRQ(ierr);
+    local_sizes[iter] = i;
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d]%s %d equations in vector, %d vertices\n",rank,__FUNCT__,i,i/dim);CHKERRQ(ierr);
+    /* setup solver, dummy solve to really setup */
     if (0) {
-      PetscReal krtol,katol,kdtol,new_tol=10000; PetscInt kmit;
-      ierr = KSPGetTolerances(ksp,&krtol,&katol,&kdtol,&kmit);CHKERRQ(ierr);
-      ierr = KSPSetTolerances(ksp,krtol, new_tol,kdtol, kmit);CHKERRQ(ierr);
-      ierr = VecSet(bb,1.0);CHKERRQ(ierr);
+      ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1);CHKERRQ(ierr);
       ierr = SNESSolve(snes, bb, xx);CHKERRQ(ierr);
-      ierr = KSPSetTolerances(ksp,krtol,katol,kdtol,kmit);CHKERRQ(ierr);
-      ierr = VecSet(bb,0.0);CHKERRQ(ierr);
+      ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,50);CHKERRQ(ierr);
+      ierr = VecZeroEntries(xx);CHKERRQ(ierr);
     }
     ierr = PetscLogStagePop();CHKERRQ(ierr);
-    /* 1st solve */
+    /* solve */
     ierr = PetscLogStagePush(stage[1]);CHKERRQ(ierr);
     ierr = SNESSolve(snes, bb, xx);CHKERRQ(ierr);
     ierr = PetscLogStagePop();CHKERRQ(ierr);
@@ -486,7 +481,7 @@ int main(int argc,char **args)
     {
       PetscViewer       viewer = NULL;
       PetscViewerFormat fmt;
-      ierr = PetscOptionsGetViewer(comm,NULL,"-vec_view",&viewer,&fmt,&flg);CHKERRQ(ierr);
+      ierr = PetscOptionsGetViewer(comm,"ex56_","-vec_view",&viewer,&fmt,&flg);CHKERRQ(ierr);
       if (flg) {
         ierr = PetscViewerPushFormat(viewer,fmt);CHKERRQ(ierr);
         ierr = VecView(xx,viewer);CHKERRQ(ierr);
@@ -503,17 +498,17 @@ int main(int argc,char **args)
     ierr = MatDestroy(&Amat);CHKERRQ(ierr);
   }
   if (run_type==1) {
-    err[0] = 59.97521 - mdisp[0]; /* error with what I think is the exact solution */
+    err[0] = 59.9753 - mdisp[0]; /* error with what I think is the exact solution */
   } else {
     err[0] = 171.038 - mdisp[0];
   }
   for (iter=1 ; iter<max_conv_its ; iter++) {
     if (run_type==1) {
-      err[iter] = 59.97521 - mdisp[iter];
+      err[iter] = 59.9753 - mdisp[iter];
     } else {
       err[iter] = 171.038 - mdisp[iter];
     }
-    PetscPrintf(PETSC_COMM_WORLD,"[%d]%s %D) N=%12D, max displ=%6.5e, disp diff=%9.2e, error=%4.3e, rate=%3.2g\n",
+    PetscPrintf(PETSC_COMM_WORLD,"[%d]%s %D) N=%12D, max displ=%9.7e, disp diff=%9.2e, error=%4.3e, rate=%3.2g\n",
                 rank,__FUNCT__,iter,local_sizes[iter],mdisp[iter],
                 mdisp[iter]-mdisp[iter-1],err[iter],log(err[iter-1]/err[iter])/log(2.));
   }
