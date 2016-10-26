@@ -2248,7 +2248,7 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
   if (pcbddc->NeumannBoundariesLocal) {
     ierr = ISGetLocalSize(pcbddc->NeumannBoundariesLocal,&nneu);CHKERRQ(ierr);
   }
-  checkb = (PetscBool)(!nneu || pcbddc->current_level);
+  checkb = (PetscBool)(!pcbddc->NeumannBoundariesLocal || pcbddc->current_level);
   if (checkb) { /* need to compute interior nodes */
     PetscInt n,i,j;
     PetscInt n_neigh,*neigh,*n_shared,**shared;
