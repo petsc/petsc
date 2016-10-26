@@ -16,6 +16,8 @@
 
 const char *const MatCUSPStorageFormats[] = {"CSR","DIA","ELL","MatCUSPStorageFormat","MAT_CUSP_",0};
 
+PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_petsc(Mat,MatFactorType,Mat*);
+
 #undef __FUNCT__
 #define __FUNCT__ "MatCUSPSetStream"
 PetscErrorCode MatCUSPSetStream(Mat A,const cudaStream_t stream)
@@ -608,4 +610,19 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSP(Mat B)
 
 .seealso: MatCreateSeqAIJCUSP(), MATAIJCUSP, MatCreateAIJCUSP(), MatCUSPSetFormat(), MatCUSPStorageFormat, MatCUSPFormatOperation
 M*/
+
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSolverPackageRegister_CUSP"
+PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_CUSP(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJCUSP,    MAT_FACTOR_LU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJCUSP,    MAT_FACTOR_CHOLESKY,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJCUSP,    MAT_FACTOR_ILU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJCUSP,    MAT_FACTOR_ICC,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 

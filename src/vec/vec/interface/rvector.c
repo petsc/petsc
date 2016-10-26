@@ -24,6 +24,8 @@ PETSC_EXTERN PetscErrorCode VecValidValues(Vec vec,PetscInt argnum,PetscBool beg
   if ((vec->petscnative || vec->ops->getarray) && (vec->valid_GPU_array == PETSC_CUSP_CPU || vec->valid_GPU_array == PETSC_CUSP_BOTH)) {
 #elif defined(PETSC_HAVE_VECCUDA)
   if ((vec->petscnative || vec->ops->getarray) && (vec->valid_GPU_array == PETSC_CUDA_CPU || vec->valid_GPU_array == PETSC_CUDA_BOTH)) {
+#elif defined(PETSC_HAVE_VIENNACL)
+  if ((vec->petscnative || vec->ops->getarray) && (vec->valid_GPU_array == PETSC_VIENNACL_CPU || vec->valid_GPU_array == PETSC_VIENNACL_BOTH)) {
 #else
   if (vec->petscnative || vec->ops->getarray) {
 #endif
@@ -1655,6 +1657,8 @@ PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
 #elif defined(PETSC_HAVE_VIENNACL)
     if (x->valid_GPU_array == PETSC_VIENNACL_GPU) {
       ierr = VecViennaCLCopyFromGPU(x);CHKERRQ(ierr);
+    } else if (x->valid_GPU_array == PETSC_VIENNACL_UNALLOCATED) {
+      ierr = VecViennaCLAllocateCheckHost(x); CHKERRQ(ierr);
     }
 #elif defined(PETSC_HAVE_VECCUDA)
     if (x->valid_GPU_array == PETSC_CUDA_GPU) {

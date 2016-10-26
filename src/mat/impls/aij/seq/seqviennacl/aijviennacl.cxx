@@ -21,6 +21,8 @@
 #include "viennacl/linalg/prod.hpp"
 
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJViennaCL(Mat A, MatType type, MatReuse reuse, Mat *newmat);
+PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_petsc(Mat,MatFactorType,Mat*);
+
 
 #undef __FUNCT__
 #define __FUNCT__ "MatViennaCLCopyToGPU"
@@ -447,4 +449,19 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJViennaCL(Mat A,MatType type,
 
 .seealso: MatCreateSeqAIJViennaCL(), MATAIJVIENNACL, MatCreateAIJViennaCL()
 M*/
+
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSolverPackageRegister_ViennaCL"
+PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_ViennaCL(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJVIENNACL,    MAT_FACTOR_LU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJVIENNACL,    MAT_FACTOR_CHOLESKY,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJVIENNACL,    MAT_FACTOR_ILU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJVIENNACL,    MAT_FACTOR_ICC,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 

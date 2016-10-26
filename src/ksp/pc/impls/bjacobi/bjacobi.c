@@ -551,7 +551,7 @@ PetscErrorCode  PCBJacobiGetLocalBlocks(PC pc, PetscInt *blocks, const PetscInt 
          and set the options directly on the resulting KSP object (you can access its PC
          KSPGetPC())
 
-     For CUSP vectors it is recommended to use exactly one block per MPI process for best
+     For GPU-based vectors (CUDA, CUSP, ViennaCL) it is recommended to use exactly one block per MPI process for best
          performance.  Different block partitioning may lead to additional data transfers
          between host and GPU that lead to degraded performance.
 
@@ -837,6 +837,9 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
 #elif defined(PETSC_HAVE_VECCUDA)
     ierr = VecSetType(bjac->x,VECCUDA);CHKERRQ(ierr);
     ierr = VecSetType(bjac->y,VECCUDA);CHKERRQ(ierr);
+#elif defined(PETSC_HAVE_VIENNACL)
+    ierr = VecSetType(bjac->x,VECVIENNACL);CHKERRQ(ierr);
+    ierr = VecSetType(bjac->y,VECVIENNACL);CHKERRQ(ierr);
 #endif
     ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)bjac->x);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)bjac->y);CHKERRQ(ierr);
@@ -1091,6 +1094,9 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
 #elif defined(PETSC_HAVE_VECCUDA)
       ierr = VecSetType(x,VECCUDA);CHKERRQ(ierr);
       ierr = VecSetType(y,VECCUDA);CHKERRQ(ierr);
+#elif defined(PETSC_HAVE_VIENNACL)
+      ierr = VecSetType(x,VECVIENNACL);CHKERRQ(ierr);
+      ierr = VecSetType(y,VECVIENNACL);CHKERRQ(ierr);
 #endif
       ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)x);CHKERRQ(ierr);
       ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)y);CHKERRQ(ierr);
@@ -1288,6 +1294,9 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
 #elif defined(PETSC_HAVE_VECCUDA)
     ierr = VecSetType(mpjac->xsub,VECMPICUDA);CHKERRQ(ierr);
     ierr = VecSetType(mpjac->ysub,VECMPICUDA);CHKERRQ(ierr);
+#elif defined(PETSC_HAVE_VECVIENNACL)
+    ierr = VecSetType(mpjac->xsub,VECMPIVIENNACL);CHKERRQ(ierr);
+    ierr = VecSetType(mpjac->ysub,VECMPIVIENNACL);CHKERRQ(ierr);
 #endif
     ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)mpjac->xsub);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)mpjac->ysub);CHKERRQ(ierr);
