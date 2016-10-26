@@ -30,8 +30,8 @@ Labels:
         depth: 3 strata of sizes (19, 40, 22)
   0 SNES Function norm 8.32828 
     0 KSP unpreconditioned resid norm 8.328278903362e+00 true resid norm 8.328278903362e+00 ||r(i)||/||b|| 1.000000000000e+00
-    1 KSP unpreconditioned resid norm 4.187754904786e-06 true resid norm 4.187754904786e-06 ||r(i)||/||b|| 5.028355742379e-07
-    2 KSP unpreconditioned resid norm 1.795165339852e-12 true resid norm 1.795165339852e-12 ||r(i)||/||b|| 2.155505790190e-13
+    1 KSP unpreconditioned resid norm 4.187754904870e-06 true resid norm 4.187754904870e-06 ||r(i)||/||b|| 5.028355742480e-07
+    2 KSP unpreconditioned resid norm 1.794125825626e-12 true resid norm 1.794125825626e-12 ||r(i)||/||b|| 2.154257616063e-13
   1 SNES Function norm < 1.e-11
 Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 1
 SNES Object: 1 MPI processes
@@ -194,4 +194,4 @@ SNES Object: 1 MPI processes
       total number of mallocs used during MatSetValues calls =0
         not using I-node routines
 Number of SNES iterations = 1
-L_2 Error: 0.00173611
+L_2 Error: 0.00131794

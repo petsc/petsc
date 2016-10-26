@@ -30,6 +30,11 @@ typedef struct {
   BCType         bcType;
   CoeffType      variableCoefficient;
   PetscErrorCode (**exactFuncs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
+  PetscBool      fieldBC;
+  void           (**exactFields)(PetscInt, PetscInt, PetscInt,
+                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                 PetscReal, const PetscReal[], PetscScalar[]);
   /* Solver */
   PC            pcmg;              /* This is needed for error monitoring */
 } AppCtx;
@@ -71,6 +76,14 @@ static PetscErrorCode quadratic_u_2d(PetscInt dim, PetscReal time, const PetscRe
 {
   *u = x[0]*x[0] + x[1]*x[1];
   return 0;
+}
+
+static void quadratic_u_field_2d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                                 const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                                 const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                                 PetscReal t, const PetscReal x[], PetscScalar uexact[])
+{
+  uexact[0] = a[0];
 }
 
 void f0_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -276,6 +289,14 @@ static PetscErrorCode quadratic_u_3d(PetscInt dim, PetscReal time, const PetscRe
   return 0;
 }
 
+static void quadratic_u_field_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                                 const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                                 const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                                 PetscReal t, const PetscReal x[], PetscScalar uexact[])
+{
+  uexact[0] = a[0];
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "ProcessOptions"
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -296,6 +317,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->refinementLimit     = 0.0;
   options->bcType              = DIRICHLET;
   options->variableCoefficient = COEFF_NONE;
+  options->fieldBC             = PETSC_FALSE;
   options->jacobianMF          = PETSC_FALSE;
   options->showInitial         = PETSC_FALSE;
   options->showSolution        = PETSC_FALSE;
@@ -327,6 +349,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsEList("-variable_coefficient","Type of variable coefficent","ex12.c",coeffTypes,4,coeffTypes[options->variableCoefficient],&coeff,NULL);CHKERRQ(ierr);
   options->variableCoefficient = (CoeffType) coeff;
 
+  ierr = PetscOptionsBool("-field_bc", "Use a field representation for the BC", "ex12.c", options->fieldBC, &options->fieldBC, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-jacobian_mf", "Calculate the action of the Jacobian on the fly", "ex12.c", options->jacobianMF, &options->jacobianMF, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-show_initial", "Output the initial guess for verification", "ex12.c", options->showInitial, &options->showInitial, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-show_solution", "Output the solution for verification", "ex12.c", options->showSolution, &options->showSolution, NULL);CHKERRQ(ierr);
@@ -509,17 +532,21 @@ static PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
   }
   switch (user->dim) {
   case 2:
-    user->exactFuncs[0] = quadratic_u_2d;
+    user->exactFuncs[0]  = quadratic_u_2d;
+    user->exactFields[0] = quadratic_u_field_2d;
     if (user->bcType == NEUMANN) {ierr = PetscDSSetBdResidual(prob, 0, f0_bd_u, f1_bd_zero);CHKERRQ(ierr);}
     break;
   case 3:
-    user->exactFuncs[0] = quadratic_u_3d;
+    user->exactFuncs[0]  = quadratic_u_3d;
+    user->exactFields[0] = quadratic_u_field_3d;
     if (user->bcType == NEUMANN) {ierr = PetscDSSetBdResidual(prob, 0, f0_bd_u, f1_bd_zero);CHKERRQ(ierr);}
     break;
   default:
     SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
   }
-  ierr = PetscDSAddBoundary(prob, user->bcType == DIRICHLET ? PETSC_TRUE : PETSC_FALSE, "wall", user->bcType == DIRICHLET ? "marker" : "boundary", 0, 0, NULL, (void (*)()) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
+  ierr = PetscDSAddBoundary(prob, user->bcType == DIRICHLET ? (user->fieldBC ? DM_BC_ESSENTIAL_FIELD : DM_BC_ESSENTIAL) : DM_BC_NATURAL,
+                            "wall", user->bcType == DIRICHLET ? "marker" : "boundary", 0, 0, NULL,
+                            user->fieldBC ? (void (*)()) user->exactFields[0] : (void (*)()) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -540,13 +567,32 @@ static PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "SetupBC"
+static PetscErrorCode SetupBC(DM dm, DM dmAux, AppCtx *user)
+{
+  PetscErrorCode (*bcFuncs[1])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx);
+  Vec            uexact;
+  PetscInt       dim;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  if (dim == 2) bcFuncs[0] = quadratic_u_2d;
+  else          bcFuncs[0] = quadratic_u_3d;
+  ierr = DMCreateLocalVector(dmAux, &uexact);CHKERRQ(ierr);
+  ierr = DMProjectFunctionLocal(dmAux, 0.0, bcFuncs, NULL, INSERT_ALL_VALUES, uexact);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject) dm, "A", (PetscObject) uexact);CHKERRQ(ierr);
+  ierr = VecDestroy(&uexact);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "SetupDiscretization"
 static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 {
   DM             cdm   = dm;
   const PetscInt dim   = user->dim;
   PetscFE        feAux = NULL;
-  PetscFE        feBd  = NULL;
   PetscFE        feCh  = NULL;
   PetscFE        fe;
   PetscDS        prob, probAux = NULL, probCh = NULL;
@@ -557,14 +603,18 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   /* Create finite element */
   ierr = PetscFECreateDefault(dm, dim, 1, simplex, NULL, -1, &fe);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe, "potential");CHKERRQ(ierr);
-  if (user->bcType == NEUMANN) {
-    ierr = PetscFECreateDefault(dm, dim-1, 1, simplex, "bd_", -1, &feBd);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) feBd, "potential");CHKERRQ(ierr);
-  }
   if (user->variableCoefficient == COEFF_FIELD) {
     PetscQuadrature q;
 
     ierr = PetscFECreateDefault(dm, dim, 1, simplex, "mat_", -1, &feAux);CHKERRQ(ierr);
+    ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
+    ierr = PetscFESetQuadrature(feAux, q);CHKERRQ(ierr);
+    ierr = PetscDSCreate(PetscObjectComm((PetscObject)dm),&probAux);CHKERRQ(ierr);
+    ierr = PetscDSSetDiscretization(probAux, 0, (PetscObject) feAux);CHKERRQ(ierr);
+  } else if (user->fieldBC) {
+    PetscQuadrature q;
+
+    ierr = PetscFECreateDefault(dm, dim, 1, simplex, "bc_", -1, &feAux);CHKERRQ(ierr);
     ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
     ierr = PetscFESetQuadrature(feAux, q);CHKERRQ(ierr);
     ierr = PetscDSCreate(PetscObjectComm((PetscObject)dm),&probAux);CHKERRQ(ierr);
@@ -578,7 +628,6 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   /* Set discretization and boundary conditions for each mesh */
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
-  ierr = PetscDSSetBdDiscretization(prob, 0, (PetscObject) feBd);CHKERRQ(ierr);
   ierr = SetupProblem(prob, user);CHKERRQ(ierr);
   while (cdm) {
     DM coordDM;
@@ -592,7 +641,8 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
       ierr = DMSetCoordinateDM(dmAux, coordDM);CHKERRQ(ierr);
       ierr = DMSetDS(dmAux, probAux);CHKERRQ(ierr);
       ierr = PetscObjectCompose((PetscObject) dm, "dmAux", (PetscObject) dmAux);CHKERRQ(ierr);
-      ierr = SetupMaterial(cdm, dmAux, user);CHKERRQ(ierr);
+      if (user->fieldBC) {ierr = SetupBC(cdm, dmAux, user);CHKERRQ(ierr);}
+      else               {ierr = SetupMaterial(cdm, dmAux, user);CHKERRQ(ierr);}
       ierr = DMDestroy(&dmAux);CHKERRQ(ierr);
     }
     if (feCh) {
@@ -613,7 +663,6 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
     ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&feBd);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&feAux);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&feCh);CHKERRQ(ierr);
   ierr = PetscDSDestroy(&probAux);CHKERRQ(ierr);
@@ -773,7 +822,7 @@ int main(int argc, char **argv)
   ierr = SNESSetDM(snes, dm);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(dm, &user);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(1 * sizeof(void (*)(const PetscReal[], PetscScalar *, void *)), &user.exactFuncs);CHKERRQ(ierr);
+  ierr = PetscMalloc2(1, &user.exactFuncs, 1, &user.exactFields);CHKERRQ(ierr);
   ierr = SetupDiscretization(dm, &user);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(dm, &u);CHKERRQ(ierr);
@@ -799,7 +848,8 @@ int main(int argc, char **argv)
     userJ.user = &user;
 
     ierr = DMCreateLocalVector(dm, &userJ.u);CHKERRQ(ierr);
-    ierr = DMProjectFunctionLocal(dm, 0.0, user.exactFuncs, NULL, INSERT_BC_VALUES, userJ.u);CHKERRQ(ierr);
+    if (user.fieldBC) {ierr = DMProjectFieldLocal(dm, 0.0, userJ.u, user.exactFields, INSERT_BC_VALUES, userJ.u);CHKERRQ(ierr);}
+    else              {ierr = DMProjectFunctionLocal(dm, 0.0, user.exactFuncs, NULL, INSERT_BC_VALUES, userJ.u);CHKERRQ(ierr);}
     ierr = MatShellSetContext(A, &userJ);CHKERRQ(ierr);
   } else {
     A = J;
@@ -814,7 +864,8 @@ int main(int argc, char **argv)
 
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
-  ierr = DMProjectFunction(dm, 0.0, user.exactFuncs, NULL, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+  if (user.fieldBC) {ierr = DMProjectField(dm, 0.0, u, user.exactFields, INSERT_ALL_VALUES, u);CHKERRQ(ierr);}
+  else              {ierr = DMProjectFunction(dm, 0.0, user.exactFuncs, NULL, INSERT_ALL_VALUES, u);CHKERRQ(ierr);}
   if (user.restart) {
 #if defined(PETSC_HAVE_HDF5)
     PetscViewer viewer;
@@ -939,7 +990,7 @@ int main(int argc, char **argv)
   ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
-  ierr = PetscFree(user.exactFuncs);CHKERRQ(ierr);
+  ierr = PetscFree2(user.exactFuncs, user.exactFields);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }

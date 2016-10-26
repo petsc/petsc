@@ -56,24 +56,19 @@ PETSC_EXTERN PetscErrorCode PetscDSRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode PetscDSGetSpatialDimension(PetscDS, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscDSGetNumFields(PetscDS, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscDSGetTotalDimension(PetscDS, PetscInt *);
-PETSC_EXTERN PetscErrorCode PetscDSGetTotalBdDimension(PetscDS, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscDSGetTotalComponents(PetscDS, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscDSGetFieldIndex(PetscDS, PetscObject, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscDSGetFieldSize(PetscDS, PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscDSGetFieldOffset(PetscDS, PetscInt, PetscInt *);
-PETSC_EXTERN PetscErrorCode PetscDSGetBdFieldOffset(PetscDS, PetscInt, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscDSGetDimensions(PetscDS, PetscInt *[]);
+PETSC_EXTERN PetscErrorCode PetscDSGetComponents(PetscDS, PetscInt *[]);
 PETSC_EXTERN PetscErrorCode PetscDSGetComponentOffset(PetscDS, PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscDSGetComponentOffsets(PetscDS, PetscInt *[]);
-PETSC_EXTERN PetscErrorCode PetscDSGetComponentBdOffsets(PetscDS, PetscInt *[]);
 PETSC_EXTERN PetscErrorCode PetscDSGetComponentDerivativeOffsets(PetscDS, PetscInt *[]);
-PETSC_EXTERN PetscErrorCode PetscDSGetComponentBdDerivativeOffsets(PetscDS, PetscInt *[]);
 
 PETSC_EXTERN PetscErrorCode PetscDSGetDiscretization(PetscDS, PetscInt, PetscObject *);
 PETSC_EXTERN PetscErrorCode PetscDSSetDiscretization(PetscDS, PetscInt, PetscObject);
 PETSC_EXTERN PetscErrorCode PetscDSAddDiscretization(PetscDS, PetscObject);
-PETSC_EXTERN PetscErrorCode PetscDSGetBdDiscretization(PetscDS, PetscInt, PetscObject *);
-PETSC_EXTERN PetscErrorCode PetscDSSetBdDiscretization(PetscDS, PetscInt, PetscObject);
-PETSC_EXTERN PetscErrorCode PetscDSAddBdDiscretization(PetscDS, PetscObject);
 PETSC_EXTERN PetscErrorCode PetscDSGetImplicit(PetscDS, PetscInt, PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscDSSetImplicit(PetscDS, PetscInt, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscDSGetAdjacency(PetscDS, PetscInt, PetscBool*, PetscBool*);
@@ -270,14 +265,14 @@ PETSC_EXTERN PetscErrorCode PetscDSSetBdJacobian(PetscDS, PetscInt, PetscInt,
                                                           const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                           PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscScalar[]));
 PETSC_EXTERN PetscErrorCode PetscDSGetTabulation(PetscDS, PetscReal ***, PetscReal ***);
-PETSC_EXTERN PetscErrorCode PetscDSGetBdTabulation(PetscDS, PetscReal ***, PetscReal ***);
+PETSC_EXTERN PetscErrorCode PetscDSGetFaceTabulation(PetscDS, PetscReal ***, PetscReal ***);
 PETSC_EXTERN PetscErrorCode PetscDSGetEvaluationArrays(PetscDS, PetscScalar **, PetscScalar **, PetscScalar **);
 PETSC_EXTERN PetscErrorCode PetscDSGetWeakFormArrays(PetscDS, PetscScalar **, PetscScalar **, PetscScalar **, PetscScalar **, PetscScalar **, PetscScalar **);
 PETSC_EXTERN PetscErrorCode PetscDSGetRefCoordArrays(PetscDS, PetscReal **, PetscScalar **);
 PETSC_EXTERN PetscErrorCode PetscDSCopyEquations(PetscDS, PetscDS);
-PETSC_EXTERN PetscErrorCode PetscDSAddBoundary(PetscDS, PetscBool, const char[], const char[], PetscInt, PetscInt, const PetscInt *, void (*)(), PetscInt, const PetscInt *, void *);
+PETSC_EXTERN PetscErrorCode PetscDSAddBoundary(PetscDS, DMBoundaryConditionType, const char[], const char[], PetscInt, PetscInt, const PetscInt *, void (*)(), PetscInt, const PetscInt *, void *);
 PETSC_EXTERN PetscErrorCode PetscDSGetNumBoundary(PetscDS, PetscInt *);
-PETSC_EXTERN PetscErrorCode PetscDSGetBoundary(PetscDS, PetscInt, PetscBool *, const char **, const char **, PetscInt *, PetscInt *, const PetscInt **, void (**)(), PetscInt *, const PetscInt **, void **);
+PETSC_EXTERN PetscErrorCode PetscDSGetBoundary(PetscDS, PetscInt, DMBoundaryConditionType *, const char **, const char **, PetscInt *, PetscInt *, const PetscInt **, void (**)(), PetscInt *, const PetscInt **, void **);
 PETSC_EXTERN PetscErrorCode PetscDSCopyBoundary(PetscDS, PetscDS);
 
 #endif

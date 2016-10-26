@@ -4465,7 +4465,7 @@ static PetscErrorCode DMProjectFunctionLabelLocal_pforest(DM dm, PetscReal time,
 #define DMProjectFieldLocal_pforest _append_pforest(DMProjectFieldLocal)
 #undef __FUNCT__
 #define __FUNCT__ _pforest_string(DMProjectFieldLocal_pforest)
-PetscErrorCode DMProjectFieldLocal_pforest(DM dm, Vec localU,void (**funcs) (PetscInt, PetscInt, PetscInt,
+PetscErrorCode DMProjectFieldLocal_pforest(DM dm, PetscReal time, Vec localU,void (**funcs) (PetscInt, PetscInt, PetscInt,
                                                                              const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                              const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                              PetscReal, const PetscReal[], PetscScalar[]),InsertMode mode, Vec localX)
@@ -4476,7 +4476,7 @@ PetscErrorCode DMProjectFieldLocal_pforest(DM dm, Vec localU,void (**funcs) (Pet
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMPforestGetPlex(dm,&plex);CHKERRQ(ierr);
-  ierr = DMProjectFieldLocal(plex,localU,funcs,mode,localX);CHKERRQ(ierr);
+  ierr = DMProjectFieldLocal(plex,time,localU,funcs,mode,localX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

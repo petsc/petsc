@@ -464,7 +464,6 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   DM             cdm   = dm;
   const PetscInt dim   = user->dim;
   PetscFE        feAux = NULL;
-  PetscFE        feBd  = NULL;
   PetscFE        fe;
   PetscDS        prob, probAux = NULL;
   PetscErrorCode ierr;
@@ -473,10 +472,6 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   /* Create finite element */
   ierr = PetscFECreateDefault(dm, dim, 1, PETSC_TRUE, NULL, -1, &fe);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe, "potential");CHKERRQ(ierr);
-  if (user->bcType == NEUMANN) {
-    ierr = PetscFECreateDefault(dm, dim-1, 1, PETSC_TRUE, "bd_", -1, &feBd);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) feBd, "potential");CHKERRQ(ierr);
-  }
   if (user->variableCoefficient == COEFF_FIELD) {
     PetscQuadrature q;
 
@@ -489,7 +484,6 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   /* Set discretization and boundary conditions for each mesh */
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
-  ierr = PetscDSSetBdDiscretization(prob, 0, (PetscObject) feBd);CHKERRQ(ierr);
   ierr = SetupProblem(prob, user);CHKERRQ(ierr);
   while (cdm) {
     if (feAux) {
@@ -506,7 +500,6 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
     ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&feBd);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&feAux);CHKERRQ(ierr);
   ierr = PetscDSDestroy(&probAux);CHKERRQ(ierr);
   PetscFunctionReturn(0);

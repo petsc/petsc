@@ -69,7 +69,7 @@ SNES Object: 7 MPI processes
         Mat Object: 7 MPI processes
           type: mpiaij
           rows=513, cols=513
-          total: nonzeros=7433, allocated nonzeros=7433
+          total: nonzeros=7461, allocated nonzeros=7461
           total number of mallocs used during MatSetValues calls =0
             not using I-node (on process 0) routines
   Up solver (post-smoother) same as down solver (pre-smoother)
@@ -99,8 +99,8 @@ SNES Object: 7 MPI processes
         linear system matrix = precond matrix:
         Mat Object: 7 MPI processes
           type: mpiaij
-          rows=1507, cols=1507
-          total: nonzeros=22949, allocated nonzeros=22949
+          rows=1495, cols=1495
+          total: nonzeros=22813, allocated nonzeros=22813
           total number of mallocs used during MatSetValues calls =0
             not using I-node (on process 0) routines
   Up solver (post-smoother) same as down solver (pre-smoother)
