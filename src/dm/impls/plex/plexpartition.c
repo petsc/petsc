@@ -515,7 +515,7 @@ PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner part)
   ierr = PetscPartitionerSetTypeFromOptions_Internal(part);CHKERRQ(ierr);
 
   ierr = PetscObjectOptionsBegin((PetscObject) part);CHKERRQ(ierr);
-  if (part->ops->setfromoptions) {ierr = (*part->ops->setfromoptions)(part);CHKERRQ(ierr);}
+  if (part->ops->setfromoptions) {ierr = (*part->ops->setfromoptions)(PetscOptionsObject,part);CHKERRQ(ierr);}
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject) part);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -716,12 +716,18 @@ PetscErrorCode PetscPartitionerDestroy_Shell(PetscPartitioner part)
 #define __FUNCT__ "PetscPartitionerView_Shell_Ascii"
 PetscErrorCode PetscPartitionerView_Shell_Ascii(PetscPartitioner part, PetscViewer viewer)
 {
-  PetscViewerFormat format;
-  PetscErrorCode    ierr;
+  PetscPartitioner_Shell *p = (PetscPartitioner_Shell *) part->data;
+  PetscViewerFormat       format;
+  PetscErrorCode          ierr;
 
   PetscFunctionBegin;
   ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "Shell Graph Partitioner:\n");CHKERRQ(ierr);
+  if (p->random) {
+    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "using random partition\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -741,6 +747,20 @@ PetscErrorCode PetscPartitionerView_Shell(PetscPartitioner part, PetscViewer vie
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerSetFromOptions_Shell"
+PetscErrorCode PetscPartitionerSetFromOptions_Shell(PetscOptionItems *PetscOptionsObject, PetscPartitioner part)
+{
+  PetscPartitioner_Shell *p = (PetscPartitioner_Shell *) part->data;
+  PetscErrorCode          ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsHead(PetscOptionsObject, "PetscPartitionerShell Options");CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-petscpartitioner_shell_random", "Use a random partition", "PetscPartitionerView", PETSC_FALSE, &p->random, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscPartitionerPartition_Shell"
 PetscErrorCode PetscPartitionerPartition_Shell(PetscPartitioner part, DM dm, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection partSection, IS *partition)
 {
@@ -749,6 +769,27 @@ PetscErrorCode PetscPartitionerPartition_Shell(PetscPartitioner part, DM dm, Pet
   PetscErrorCode          ierr;
 
   PetscFunctionBegin;
+  if (p->random) {
+    PetscRandom r;
+    PetscInt   *sizes, *points, v;
+
+    ierr = PetscRandomCreate(PETSC_COMM_SELF, &r);CHKERRQ(ierr);
+    ierr = PetscRandomSetInterval(r, 0.0, (PetscScalar) (nparts+1));CHKERRQ(ierr);
+    ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
+    ierr = PetscCalloc2(nparts, &sizes, numVertices, &points);CHKERRQ(ierr);
+    for (v = 0; v < numVertices; ++v) {
+      PetscReal val;
+      PetscInt  part;
+
+      ierr = PetscRandomGetValueReal(r, &val);CHKERRQ(ierr);
+      part = PetscFloorReal(val);
+      points[v] = part;
+      ++sizes[part];
+    }
+    ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
+    ierr = PetscPartitionerShellSetPartition(part, nparts, sizes, points);CHKERRQ(ierr);
+    ierr = PetscFree2(sizes, points);CHKERRQ(ierr);
+  }
   ierr = PetscSectionGetChart(p->section, NULL, &np);CHKERRQ(ierr);
   if (nparts != np) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of requested partitions %d != configured partitions %d", nparts, np);
   ierr = ISGetLocalSize(p->partition, &np);CHKERRQ(ierr);
@@ -764,9 +805,10 @@ PetscErrorCode PetscPartitionerPartition_Shell(PetscPartitioner part, DM dm, Pet
 PetscErrorCode PetscPartitionerInitialize_Shell(PetscPartitioner part)
 {
   PetscFunctionBegin;
-  part->ops->view      = PetscPartitionerView_Shell;
-  part->ops->destroy   = PetscPartitionerDestroy_Shell;
-  part->ops->partition = PetscPartitionerPartition_Shell;
+  part->ops->view           = PetscPartitionerView_Shell;
+  part->ops->setfromoptions = PetscPartitionerSetFromOptions_Shell;
+  part->ops->destroy        = PetscPartitionerDestroy_Shell;
+  part->ops->partition      = PetscPartitionerPartition_Shell;
   PetscFunctionReturn(0);
 }
 
@@ -791,6 +833,7 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Shell(PetscPartitioner part)
   part->data = p;
 
   ierr = PetscPartitionerInitialize_Shell(part);CHKERRQ(ierr);
+  p->random = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -799,7 +842,7 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Shell(PetscPartitioner part)
 /*@C
   PetscPartitionerShellSetPartition - Set an artifical partition for a mesh
 
-  Collective on PART
+  Collective on Part
 
   Input Parameters:
 + part     - The PetscPartitioner
@@ -837,6 +880,59 @@ PetscErrorCode PetscPartitionerShellSetPartition(PetscPartitioner part, PetscInt
   ierr = PetscSectionSetUp(p->section);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(p->section, &numPoints);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject) part), numPoints, points, PETSC_COPY_VALUES, &p->partition);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerShellSetRandom"
+/*@
+  PetscPartitionerShellSetRandom - Set the flag to use a random partition
+
+  Collective on Part
+
+  Input Parameters:
++ part   - The PetscPartitioner
+- random - The flag to use a random partition
+
+  Level: intermediate
+
+.seealso PetscPartitionerShellGetRandom(), PetscPartitionerCreate()
+@*/
+PetscErrorCode PetscPartitionerShellSetRandom(PetscPartitioner part, PetscBool random)
+{
+  PetscPartitioner_Shell *p = (PetscPartitioner_Shell *) part->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
+  p->random = random;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerShellGetRandom"
+/*@
+  PetscPartitionerShellGetRandom - get the flag to use a random partition
+
+  Collective on Part
+
+  Input Parameter:
+. part   - The PetscPartitioner
+
+  Output Parameter
+. random - The flag to use a random partition
+
+  Level: intermediate
+
+.seealso PetscPartitionerShellSetRandom(), PetscPartitionerCreate()
+@*/
+PetscErrorCode PetscPartitionerShellGetRandom(PetscPartitioner part, PetscBool *random)
+{
+  PetscPartitioner_Shell *p = (PetscPartitioner_Shell *) part->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
+  PetscValidPointer(random, 2);
+  *random = p->random;
   PetscFunctionReturn(0);
 }
 

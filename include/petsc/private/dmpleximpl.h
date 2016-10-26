@@ -28,7 +28,7 @@ typedef enum {REFINER_NOOP = 0,
 
 typedef struct _PetscPartitionerOps *PetscPartitionerOps;
 struct _PetscPartitionerOps {
-  PetscErrorCode (*setfromoptions)(PetscPartitioner);
+  PetscErrorCode (*setfromoptions)(PetscOptionItems*,PetscPartitioner);
   PetscErrorCode (*setup)(PetscPartitioner);
   PetscErrorCode (*view)(PetscPartitioner,PetscViewer);
   PetscErrorCode (*destroy)(PetscPartitioner);
@@ -52,6 +52,7 @@ typedef struct {
 typedef struct {
   PetscSection section;   /* Sizes for each partition */
   IS           partition; /* Points in each partition */
+  PetscBool    random;    /* Flag for a random partition */
 } PetscPartitioner_Shell;
 
 typedef struct {
