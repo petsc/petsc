@@ -4347,9 +4347,9 @@ PetscErrorCode DMSetCoordinateDM(DM dm, DM cdm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(cdm,DM_CLASSID,2);
+  ierr = PetscObjectReference((PetscObject)cdm);CHKERRQ(ierr);
   ierr = DMDestroy(&dm->coordinateDM);CHKERRQ(ierr);
   dm->coordinateDM = cdm;
-  ierr = PetscObjectReference((PetscObject) dm->coordinateDM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
