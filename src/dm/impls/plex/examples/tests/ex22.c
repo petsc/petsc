@@ -27,7 +27,7 @@ static PetscErrorCode testIdentity(DM dm, PetscBool dmIsSimplicial, PetscInt cel
         PetscReal x = preimage[i * dimR + j];
         PetscReal y = preimage[i * dimR + ((j + 1) % dimR)];
 
-        preimage[i * dimR + ((j + 1) % dimR)] = -1. + (y + 1.) * 0.5 * (x - 1.);
+        preimage[i * dimR + ((j + 1) % dimR)] = -1. + (y + 1.) * 0.5 * (1. - x);
       }
     }
   }
@@ -42,23 +42,23 @@ static PetscErrorCode testIdentity(DM dm, PetscBool dmIsSimplicial, PetscInt cel
       max = PetscMax(max,PetscAbsReal(preimage[i * dimR + j] - inverted[i * dimR + j]));
     }
     if (max > tol) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Bad inversion for cell %D with tolerance %f: (",cell,tol);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Bad inversion for cell %D with error %g (tol %g): (",cell,max,tol);CHKERRQ(ierr);
       for (j = 0; j < dimR; j++) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"%f",(double) preimage[i * dimR + j]);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"%+f",(double) preimage[i * dimR + j]);CHKERRQ(ierr);
         if (j < dimR - 1) {
           ierr = PetscPrintf(PETSC_COMM_SELF,",");CHKERRQ(ierr);
         }
       }
       ierr = PetscPrintf(PETSC_COMM_SELF,") --> (");CHKERRQ(ierr);
       for (j = 0; j < dimC; j++) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"%f",(double) mapped[i * dimC + j]);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"%+f",(double) mapped[i * dimC + j]);CHKERRQ(ierr);
         if (j < dimC - 1) {
           ierr = PetscPrintf(PETSC_COMM_SELF,",");CHKERRQ(ierr);
         }
       }
       ierr = PetscPrintf(PETSC_COMM_SELF,") --> (");CHKERRQ(ierr);
       for (j = 0; j < dimR; j++) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"%f",(double) inverted[i * dimR + j]);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"%+f",(double) inverted[i * dimR + j]);CHKERRQ(ierr);
         if (j < dimR - 1) {
           ierr = PetscPrintf(PETSC_COMM_SELF,",");CHKERRQ(ierr);
         }
@@ -70,21 +70,21 @@ static PetscErrorCode testIdentity(DM dm, PetscBool dmIsSimplicial, PetscInt cel
 
       offset = snprintf(strBuf + offset,BUFSIZ-offset,"Good inversion for cell %d: (", (int) cell);
       for (j = 0; j < dimR; j++) {
-        offset += snprintf(strBuf + offset,BUFSIZ-offset,"%f",(double) preimage[i * dimR + j]);
+        offset += snprintf(strBuf + offset,BUFSIZ-offset,"%+f",(double) preimage[i * dimR + j]);
         if (j < dimR - 1) {
           offset += snprintf(strBuf + offset,BUFSIZ-offset,",");
         }
       }
       offset += snprintf(strBuf + offset,BUFSIZ-offset,") --> (");
       for (j = 0; j < dimC; j++) {
-        offset += snprintf(strBuf + offset,BUFSIZ-offset,"%f",(double) mapped[i * dimC + j]);
+        offset += snprintf(strBuf + offset,BUFSIZ-offset,"%+f",(double) mapped[i * dimC + j]);
         if (j < dimC - 1) {
           offset += snprintf(strBuf + offset,BUFSIZ-offset,",");
         }
       }
       offset += snprintf(strBuf + offset,BUFSIZ-offset,") --> (");
       for (j = 0; j < dimR; j++) {
-        offset += snprintf(strBuf + offset,BUFSIZ-offset,"%f",(double) inverted[i * dimR + j]);
+        offset += snprintf(strBuf + offset,BUFSIZ-offset,"%+f",(double) inverted[i * dimR + j]);
         if (j < dimR - 1) {
           offset += snprintf(strBuf + offset,BUFSIZ-offset,",");
         }
@@ -100,10 +100,18 @@ static PetscErrorCode testIdentity(DM dm, PetscBool dmIsSimplicial, PetscInt cel
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode identityEmbedding(PetscInt dim, PetscReal time, const PetscReal *x, PetscInt Nf, PetscScalar *u, void *ctx)
+{
+  PetscInt i;
+
+  for (i = 0; i < dim; i++) {u[i] = x[i];};
+  return 0;
+}
+
 int main(int argc, char **argv)
 {
   PetscRandom    randCtx;
-  PetscInt       dim, dimC, isSimplex, numTests = 10;
+  PetscInt       dim, dimC, isSimplex, isFE, numTests = 10;
   PetscReal      perturb = 0.1, tol = PETSC_SMALL;
   PetscErrorCode ierr;
 
@@ -118,72 +126,103 @@ int main(int argc, char **argv)
   for (dim = 1; dim <= 3; dim++) {
     for (dimC = dim; dimC <= PetscMin(3,dim + 1); dimC++) {
       for (isSimplex = 0; isSimplex < 2; isSimplex++) {
-        DM           dm;
-        Vec          coords;
-        PetscScalar *coordArray;
-        PetscReal    noise;
-        PetscInt     i, n;
+        for (isFE = 0; isFE < 2; isFE++) {
+          DM           dm;
+          Vec          coords;
+          PetscScalar *coordArray;
+          PetscReal    noise;
+          PetscInt     i, n, order = 1;
 
-        ierr = DMPlexCreateReferenceCell(PETSC_COMM_SELF,dim,isSimplex ? PETSC_TRUE : PETSC_FALSE, &dm);CHKERRQ(ierr);
-        ierr = PetscInfo3(dm,"Testing %s %DD mesh embedded in %DD\n",isSimplex ? "simplicial" : "tensor", dim, dimC);
-        ierr = DMGetCoordinatesLocal(dm,&coords);CHKERRQ(ierr);
-        ierr = VecGetLocalSize(coords,&n);CHKERRQ(ierr);
-        if (dimC > dim) { /* reembed in higher dimension */
-          PetscSection sec, newSec;
-          PetscInt     pStart, pEnd, p, i, newN;
-          Vec          newVec;
-          DM           coordDM;
-          PetscScalar  *newCoordArray;
+          ierr = DMPlexCreateReferenceCell(PETSC_COMM_SELF,dim,isSimplex ? PETSC_TRUE : PETSC_FALSE, &dm);CHKERRQ(ierr);
+          if (isFE) {
+            DM             dmCoord;
+            PetscSpace     sp;
+            PetscFE        fe;
+            Vec            localCoords;
+            PetscErrorCode (*funcs[1])(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *) = {identityEmbedding};
+            void           *ctxs[1] = {NULL};
 
-          ierr = DMGetCoordinateSection(dm,&sec);CHKERRQ(ierr);
-          ierr = PetscSectionCreate(PetscObjectComm((PetscObject)sec),&newSec);CHKERRQ(ierr);
-          ierr = PetscSectionSetNumFields(newSec,1);CHKERRQ(ierr);
-          ierr = PetscSectionGetChart(sec,&pStart,&pEnd);CHKERRQ(ierr);
-          ierr = PetscSectionSetChart(newSec,pStart,pEnd);CHKERRQ(ierr);
-          for (p = pStart; p < pEnd; p++) {
-            PetscInt nDof;
-
-            ierr = PetscSectionGetDof(sec,p,&nDof);CHKERRQ(ierr);
-            if (nDof != dim) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Coordinate section point %D has %D dofs != dim %D",p,nDof,dim);
-            ierr = PetscSectionSetDof(newSec,p,dimC);CHKERRQ(ierr);
-            ierr = PetscSectionSetFieldDof(newSec,p,0,dimC);CHKERRQ(ierr);
+            ierr = PetscFECreateDefault(dm,dim,dim,isSimplex,isSimplex ? NULL : "tensor_" ,PETSC_DEFAULT,&fe);CHKERRQ(ierr);
+            ierr = PetscFEGetBasisSpace(fe,&sp);CHKERRQ(ierr);
+            ierr = PetscSpaceGetOrder(sp,&order);CHKERRQ(ierr);
+            ierr = DMSetField(dm,0,(PetscObject)fe);CHKERRQ(ierr);
+            ierr = DMCreateLocalVector(dm,&localCoords);CHKERRQ(ierr);
+            ierr = DMProjectFunctionLocal(dm,0,funcs,ctxs,INSERT_VALUES,localCoords);CHKERRQ(ierr);
+            ierr = DMClone(dm,&dmCoord);CHKERRQ(ierr);
+            ierr = DMSetField(dmCoord,0,(PetscObject)fe);CHKERRQ(ierr);
+            ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+            ierr = DMSetCoordinateDM(dm,dmCoord);CHKERRQ(ierr);
+            ierr = DMDestroy(&dmCoord);CHKERRQ(ierr);
+            ierr = DMSetCoordinatesLocal(dm,localCoords);CHKERRQ(ierr);
+            ierr = VecDestroy(&localCoords);CHKERRQ(ierr);
           }
-          ierr = PetscSectionSetUp(newSec);CHKERRQ(ierr);
-          ierr = PetscSectionGetStorageSize(newSec,&newN);CHKERRQ(ierr);
-          ierr = VecCreateSeq(PETSC_COMM_SELF,newN,&newVec);CHKERRQ(ierr);
-          ierr = VecGetArray(newVec,&newCoordArray);CHKERRQ(ierr);
-          ierr = VecGetArray(coords,&coordArray);CHKERRQ(ierr);
-          for (i = 0; i < n / dim; i++) {
-            PetscInt j;
+          ierr = PetscInfo4(dm,"Testing %s%D %DD mesh embedded in %DD\n",isSimplex ? "P" : "Q" , order, dim, dimC);
+          ierr = DMGetCoordinatesLocal(dm,&coords);CHKERRQ(ierr);
+          ierr = VecGetLocalSize(coords,&n);CHKERRQ(ierr);
+          if (dimC > dim) { /* reembed in higher dimension */
+            PetscSection sec, newSec;
+            PetscInt     pStart, pEnd, p, i, newN;
+            Vec          newVec;
+            DM           coordDM;
+            PetscScalar  *newCoordArray;
 
-            for (j = 0; j < dim; j++) {
-              newCoordArray[i * dimC + j] = coordArray[i * dim + j];
+            ierr = DMGetCoordinateSection(dm,&sec);CHKERRQ(ierr);
+            ierr = PetscSectionCreate(PetscObjectComm((PetscObject)sec),&newSec);CHKERRQ(ierr);
+            ierr = PetscSectionSetNumFields(newSec,1);CHKERRQ(ierr);
+            ierr = PetscSectionGetChart(sec,&pStart,&pEnd);CHKERRQ(ierr);
+            ierr = PetscSectionSetChart(newSec,pStart,pEnd);CHKERRQ(ierr);
+            for (p = pStart; p < pEnd; p++) {
+              PetscInt nDof;
+
+              ierr = PetscSectionGetDof(sec,p,&nDof);CHKERRQ(ierr);
+              if (nDof % dim) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Coordinate section point %D has %D dofs != 0 mod %D",p,nDof,dim);
+              ierr = PetscSectionSetDof(newSec,p,(nDof/dim)*dimC);CHKERRQ(ierr);
+              ierr = PetscSectionSetFieldDof(newSec,p,0,(nDof/dim)*dimC);CHKERRQ(ierr);
             }
-            for (; j < dimC; j++) {
-              newCoordArray[i * dimC + j] = 0.;
+            ierr = PetscSectionSetUp(newSec);CHKERRQ(ierr);
+            ierr = PetscSectionGetStorageSize(newSec,&newN);CHKERRQ(ierr);
+            ierr = VecCreateSeq(PETSC_COMM_SELF,newN,&newVec);CHKERRQ(ierr);
+            ierr = VecGetArray(newVec,&newCoordArray);CHKERRQ(ierr);
+            ierr = VecGetArray(coords,&coordArray);CHKERRQ(ierr);
+            for (i = 0; i < n / dim; i++) {
+              PetscInt j;
+
+              for (j = 0; j < dim; j++) {
+                newCoordArray[i * dimC + j] = coordArray[i * dim + j];
+              }
+              for (; j < dimC; j++) {
+                newCoordArray[i * dimC + j] = 0.;
+              }
             }
+            ierr = VecRestoreArray(coords,&coordArray);CHKERRQ(ierr);
+            ierr = VecRestoreArray(newVec,&newCoordArray);CHKERRQ(ierr);
+            ierr = DMSetCoordinateDim(dm,dimC);CHKERRQ(ierr);
+            ierr = DMSetCoordinateSection(dm,dimC,newSec);CHKERRQ(ierr);
+            ierr = DMSetCoordinatesLocal(dm,newVec);CHKERRQ(ierr);
+            ierr = VecDestroy(&newVec);CHKERRQ(ierr);
+            ierr = PetscSectionDestroy(&newSec);CHKERRQ(ierr);
+            ierr = DMGetCoordinatesLocal(dm,&coords);CHKERRQ(ierr);
+            ierr = DMGetCoordinateDM(dm,&coordDM);CHKERRQ(ierr);
+            if (isFE) {
+              PetscFE fe;
+
+              ierr = PetscFECreateDefault(dm,dim,dimC,isSimplex,isSimplex ? NULL : "tensor_",PETSC_DEFAULT,&fe);CHKERRQ(ierr);
+              ierr = DMSetField(coordDM,0,(PetscObject)fe);CHKERRQ(ierr);
+              ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+            }
+            ierr = DMSetCoordinateDim(coordDM,dimC);CHKERRQ(ierr);
+            ierr = VecGetLocalSize(coords,&n);CHKERRQ(ierr);
+          }
+          ierr = VecGetArray(coords,&coordArray);CHKERRQ(ierr);
+          for (i = 0; i < n; i++) {
+            ierr = PetscRandomGetValueReal(randCtx,&noise);CHKERRQ(ierr);
+            coordArray[i] += noise * perturb;
           }
           ierr = VecRestoreArray(coords,&coordArray);CHKERRQ(ierr);
-          ierr = VecRestoreArray(newVec,&newCoordArray);CHKERRQ(ierr);
-          ierr = DMSetCoordinateDim(dm,dimC);CHKERRQ(ierr);
-          ierr = DMSetCoordinateSection(dm,dimC,newSec);CHKERRQ(ierr);
-          ierr = DMSetCoordinatesLocal(dm,newVec);CHKERRQ(ierr);
-          ierr = VecDestroy(&newVec);CHKERRQ(ierr);
-          ierr = PetscSectionDestroy(&newSec);CHKERRQ(ierr);
-          ierr = DMGetCoordinatesLocal(dm,&coords);CHKERRQ(ierr);
-          ierr = DMGetCoordinateDM(dm,&coordDM);CHKERRQ(ierr);
-          ierr = DMSetCoordinateDim(coordDM,dimC);CHKERRQ(ierr);
-          ierr = VecGetLocalSize(coords,&n);CHKERRQ(ierr);
+          ierr = DMSetCoordinatesLocal(dm, coords);CHKERRQ(ierr);
+          ierr = testIdentity(dm, isSimplex ? PETSC_TRUE : PETSC_FALSE, 0, randCtx, numTests, tol);CHKERRQ(ierr);
+          ierr = DMDestroy(&dm);CHKERRQ(ierr);
         }
-        ierr = VecGetArray(coords,&coordArray);CHKERRQ(ierr);
-        for (i = 0; i < n; i++) {
-          ierr = PetscRandomGetValueReal(randCtx,&noise);CHKERRQ(ierr);
-          coordArray[i] += noise * perturb;
-        }
-        ierr = VecRestoreArray(coords,&coordArray);CHKERRQ(ierr);
-        ierr = DMSetCoordinatesLocal(dm, coords);CHKERRQ(ierr);
-        ierr = testIdentity(dm, isSimplex ? PETSC_TRUE : PETSC_FALSE, 0, randCtx, numTests, tol);CHKERRQ(ierr);
-        ierr = DMDestroy(&dm);CHKERRQ(ierr);
       }
     }
   }
