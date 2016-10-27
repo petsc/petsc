@@ -59,9 +59,9 @@ ex20: ex20.o  chkopts
 	-${CLINKER} -o ex20 ex20.o ${PETSC_DM_LIB}
 	${RM} -f ex20.o
 
-ex21: ex21.o  chkopts
-	-${CLINKER} -o ex21 ex21.o ${PETSC_DM_LIB}
-	${RM} -f ex20.o
+ex22: ex22.o  chkopts
+	-${CLINKER} -o ex22 ex22.o ${PETSC_DM_LIB}
+	${RM} -f ex22.o
 
 
 #--------------------------------------------------------------------------
