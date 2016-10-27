@@ -8,7 +8,7 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex8.c ex9.c ex10.c\
                   ex11.c ex12.c ex12.m ex13.c ex14.c ex15.c ex16.c ex17.c ex19.c ex20.c \
 	          ex21.c ex22.c ex23.c ex24.c ex25.c ex26.c ex27.c ex28.c ex30.c \
 	          ex31.c ex32.c ex34.c ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c \
-	          ex42.c ex43.c
+	          ex42.c ex43.c ex44.c
 EXAMPLESF       =
 MANSEC          = DM
 
@@ -175,6 +175,9 @@ ex42:ex42.o   chkopts
 ex43:ex43.o   chkopts
 	-${CLINKER} -o ex43 ex43.o  ${PETSC_DM_LIB}
 	${RM} -f ex43.o
+ex44:ex44.o   chkopts
+	-${CLINKER} -o ex44 ex44.o  ${PETSC_DM_LIB}
+	${RM} -f ex44.o
 #-------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 2 ./ex1 -nox | grep -v -i Object > ex1_1.tmp 2>&1;	  \
@@ -396,6 +399,22 @@ runex37:
 	-@${MPIEXEC} -n 2 ./ex37 ;\
 	  ${RM} -f ex32_1.tmp
 
+runex39:
+	-@${MPIEXEC} -n 1 ./ex39  > ex39_1.tmp; \
+	  ${DIFF} output/ex39_1.out ex39_1.tmp || printf "${PWD}\nPossible problem with ex39, diffs above\n=========================================\n"; \
+	  ${RM} -f ex39_1.tmp
+runex39_2:
+	-@${MPIEXEC} -n 2 ./ex39  | ${GREP} -v Vec_  > ex39_2.tmp; \
+	  ${DIFF} output/ex39_2.out ex39_2.tmp || printf "${PWD}\nPossible problem with ex39_2, diffs above\n=========================================\n"; \
+	  ${RM} -f ex39_2.tmp
+runex40:
+	-@${MPIEXEC} -n 1 ./ex40  > ex40_1.tmp; \
+	  ${DIFF} output/ex40_1.out ex40_1.tmp || printf "${PWD}\nPossible problem with ex40, diffs above\n=========================================\n"; \
+	  ${RM} -f ex40_1.tmp
+runex40_2:
+	-@${MPIEXEC} -n 4 ./ex40 | ${GREP} -v Vec_  > ex40_2.tmp; \
+	  ${DIFF} output/ex40_2.out ex40_2.tmp || printf "${PWD}\nPossible problem with ex40_2, diffs above\n=========================================\n"; \
+	  ${RM} -f ex40_2.tmp
 runex42:
 	-@${MPIEXEC} -n 2 ./ex42 ;\
 	  ${RM} -f 2d_nocoord.vtr 2d.vtr 3d_nocoord.vtr 3d.vtr
@@ -404,6 +423,11 @@ runex43:
 	-@${MPIEXEC} -n 2 ./ex43 > ex43.tmp; \
 	  ${DIFF} output/ex43_1.out ex43.tmp || printf "${PWD}\nPossible problem with 43, diffs above\n=========================================\n" ; \
 	  ${RM} -f ex43.tmp
+
+runex44:
+	-@${MPIEXEC} -n 3 ./ex44 > ex44.tmp; \
+	  ${DIFF} output/ex44.out ex44.tmp || printf "${PWD}\nPossible problem with 44, diffs above\n=========================================\n" ; \
+	  ${RM} -f ex44.tmp
 
 TESTEXAMPLES_C		  = ex2.PETSc runex2_2 runex2_3 ex2.rm ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 runex4_2 ex4.rm ex15.PETSc ex15.rm ex16.PETSc ex16.rm \
                             ex21.PETSc runex21 ex21.rm ex24.PETSc runex24 ex24.rm ex25.PETSc \

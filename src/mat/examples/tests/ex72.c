@@ -39,8 +39,10 @@ int main(int argc,char **args)
   ierr = PetscFOpen(PETSC_COMM_SELF,filein,"r",&file);CHKERRQ(ierr);
 
   /* process header with comments */
-  do fgets(buf,PETSC_MAX_PATH_LEN-1,file);
-  while (buf[0] == '%');
+  do {
+    char *str = fgets(buf,PETSC_MAX_PATH_LEN-1,file);
+    if (!str) SETERRQ(PETSC_COMM_SELF,1,"Incorrect format in file");
+  }while (buf[0] == '%');
 
   /* The first non-comment line has the matrix dimensions */
   sscanf(buf,"%d %d %d\n",&m,&n,&nnz);

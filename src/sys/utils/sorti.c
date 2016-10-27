@@ -290,7 +290,7 @@ static PetscErrorCode PetscSortIntWithArrayPair_Private(PetscInt *L,PetscInt *J,
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortIntWithArray()
 @*/
-PetscErrorCode  PetscSortIntWithArrayPair(PetscInt n,PetscInt *L,PetscInt *J, PetscInt *K)
+PetscErrorCode  PetscSortIntWithArrayPair(PetscInt n,PetscInt L[],PetscInt J[], PetscInt K[])
 {
   PetscErrorCode ierr;
   PetscInt       j,k,tmp,ik;
@@ -604,7 +604,7 @@ static PetscErrorCode PetscSortIntWithDataArray_Private(PetscInt *v,char *V,Pets
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSortIntWithDataArray"
-/*@
+/*@C
    PetscSortIntWithDataArray - Sorts an array of integers in place in increasing order;
        changes a second array to match the sorted first INTEGER array.  Unlike other sort routines, the user must
        provide workspace (the size of an element in the data array) to use when sorting.
@@ -663,7 +663,7 @@ PetscErrorCode  PetscSortIntWithDataArray(PetscInt n,PetscInt i[],void *Ii,size_
 
    Output Parameters:
 +  n   - number of values in the merged array
--  I   - merged sorted array, this is allocated if an array is not provided
+-  L   - merged sorted array, this is allocated if an array is not provided
 
    Level: intermediate
 
@@ -671,7 +671,7 @@ PetscErrorCode  PetscSortIntWithDataArray(PetscInt n,PetscInt i[],void *Ii,size_
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt(), PetscSortIntWithArray()
 @*/
-PetscErrorCode  PetscMergeIntArray(PetscInt an,const PetscInt *aI, PetscInt bn, const PetscInt *bI,  PetscInt *n, PetscInt **L)
+PetscErrorCode  PetscMergeIntArray(PetscInt an,const PetscInt aI[], PetscInt bn, const PetscInt bI[],  PetscInt *n, PetscInt **L)
 {
   PetscErrorCode ierr;
   PetscInt       *L_ = *L, ak, bk, k;
@@ -738,7 +738,7 @@ PetscErrorCode  PetscMergeIntArray(PetscInt an,const PetscInt *aI, PetscInt bn, 
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt(), PetscSortIntWithArray()
 @*/
-PetscErrorCode  PetscMergeIntArrayPair(PetscInt an,const PetscInt *aI, const PetscInt *aJ, PetscInt bn, const PetscInt *bI, const PetscInt *bJ, PetscInt *n, PetscInt **L, PetscInt **J)
+PetscErrorCode  PetscMergeIntArrayPair(PetscInt an,const PetscInt aI[], const PetscInt aJ[], PetscInt bn, const PetscInt bI[], const PetscInt bJ[], PetscInt *n, PetscInt **L, PetscInt **J)
 {
   PetscErrorCode ierr;
   PetscInt       n_, *L_, *J_, ak, bk, k;
@@ -825,7 +825,7 @@ PetscErrorCode PetscMergeMPIIntArray(PetscInt an,const PetscMPIInt aI[],PetscInt
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscProcessTree"
-/*@
+/*@C
    PetscProcessTree - Prepares tree data to be displayed graphically
 
    Not Collective
@@ -842,8 +842,9 @@ PetscErrorCode PetscMergeMPIIntArray(PetscInt an,const PetscMPIInt aI[],PetscInt
 .  Idbylevel - a list of ids on each of the levels, first level followed by second etc
 -  Column - for each id tells its column index
 
-   Level: intermediate
+   Level: developer
 
+   Notes: This code is not currently used
 
 .seealso: PetscSortReal(), PetscSortIntWithPermutation()
 @*/

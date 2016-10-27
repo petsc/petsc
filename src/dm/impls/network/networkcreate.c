@@ -133,6 +133,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Network(DM dm)
   network->nNodes         = -1;
   network->nEdges         = -1;
 
+
   ierr = DMInitialize_Network(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

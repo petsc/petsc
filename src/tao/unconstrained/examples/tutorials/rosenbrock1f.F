@@ -52,6 +52,10 @@
 
 !  Initialize TAO and PETSc
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+         print*,'Unable to initialize PETSc'
+         stop
+      endif
 
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)

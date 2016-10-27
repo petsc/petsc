@@ -15,6 +15,10 @@
       IS       isrow
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
 #if defined(PETSC_USE_64BIT_INDICES)
       call PetscViewerBinaryOpen(PETSC_COMM_WORLD,                          &
      & '../../../../share/petsc/datafiles/matrices/' //                       &

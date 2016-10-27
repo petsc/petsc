@@ -101,6 +101,8 @@ int main( int argc, char **argv )
      the distributed array, Create the vectors.
   */
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.nx,user.ny,Nx,Ny,1,1,NULL,NULL,&user.dm);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(user.dm);CHKERRQ(ierr);
+  ierr = DMSetUp(user.dm);CHKERRQ(ierr);
 
   /*
      Extract global and local vectors from DM; the vector user.B is

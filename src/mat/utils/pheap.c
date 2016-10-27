@@ -95,7 +95,7 @@ PetscErrorCode PetscHeapAdd(PetscHeap h,PetscInt id,PetscInt val)
   h->base[loc].value = val;
 
   /* move up until heap condition is satisfied */
-  while (par = Parent(loc), Value(h,par) > val) {
+  while ((void)(par = Parent(loc)), Value(h,par) > val) {
     Swap(h,loc,par);
     loc = par;
   }

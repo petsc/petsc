@@ -175,6 +175,7 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
 
   Input Parameters:
 + dm      - The DM
+. time    - The time
 . U       - The input field vector
 . funcs   - The functions to evaluate, one per field
 - mode    - The insertion mode for values
@@ -186,7 +187,7 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
 
 .seealso: DMProjectFunction(), DMComputeL2Diff()
 @*/
-PetscErrorCode DMProjectField(DM dm, Vec U,
+PetscErrorCode DMProjectField(DM dm, PetscReal time, Vec U,
                               void (**funcs)(PetscInt, PetscInt, PetscInt,
                                              const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                              const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -199,10 +200,12 @@ PetscErrorCode DMProjectField(DM dm, Vec U,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dm, &localU);CHKERRQ(ierr);
+  /* We currently check whether locU == locX to see if we need to apply BC */
+  if (U != X) {ierr = DMGetLocalVector(dm, &localU);CHKERRQ(ierr);}
+  else        {localU = localX;}
   ierr = DMGlobalToLocalBegin(dm, U, INSERT_VALUES, localU);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm, U, INSERT_VALUES, localU);CHKERRQ(ierr);
-  ierr = DMProjectFieldLocal(dm, localU, funcs, mode, localX);CHKERRQ(ierr);
+  ierr = DMProjectFieldLocal(dm, time, localU, funcs, mode, localX);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(dm, localX, mode, X);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(dm, localX, mode, X);CHKERRQ(ierr);
   if (mode == INSERT_VALUES || mode == INSERT_ALL_VALUES || mode == INSERT_BC_VALUES) {
@@ -214,7 +217,7 @@ PetscErrorCode DMProjectField(DM dm, Vec U,
     }
   }
   ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm, &localU);CHKERRQ(ierr);
+  if (U != X) {ierr = DMRestoreLocalVector(dm, &localU);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

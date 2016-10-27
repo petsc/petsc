@@ -22,6 +22,10 @@
 #define indices(ib)  index(iss + (ib))
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+         print*,'Unable to initialize PETSc'
+         stop
+      endif
       n     = 10
       first = 3
       step  = 2

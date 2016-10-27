@@ -704,17 +704,17 @@ The Bundle Method for Regularized Risk Minimization (BMRM)\cite{brmrm} is a
 numerical approach to optimizing an unconstrained objective in the form of 
 $f(x) + 0.5 * \lambda \| x \|^2$.  Here $f$ is a convex function that is finite on 
 the whole space.  $\lambda$ is a positive 
-weight parameter, and $\| x \|$ is the Euclidean norm of x.  The algorithm only 
-requires a routine which, given an x, returns the value of f(x) and the 
-gradient of f at x.
+weight parameter, and $\| x \|$ is the Euclidean norm of $x$.  The algorithm only 
+requires a routine which, given an $x$, returns the value of $f(x)$ and the 
+gradient of $f$ at $x$.
 
 \subsection{OWL-QN}\sindex{OWLQN}
 The Orthant-Wise Limited-memory Quasi-Newton algorithm (OWL-QN)\cite{owlqn}
 is a numerical approach to optimizing an unconstrained objective in the 
 form of $f(x) + \lambda \|x\|_1$.  Here f is a convex and differentiable 
 function, $\lambda$ is a positive weight parameter, and $\| x \|_1$ is the 
-L1 norm of x: $\sum_i |x_i|$.  The algorithm only requires evaluating the 
-value of f and its gradient
+$L1$ norm of $x$: $\sum_i |x_i|$.  The algorithm only requires evaluating the 
+value of $f$ and its gradient.
 
 \section{Bound-Constrained Optimization}\sindex{bounds}
 \label{chapter:bound}
@@ -725,7 +725,7 @@ lower bounds on some of the variables.
 These solvers use the bounds on the variables as well as objective
 function, gradient, and possibly Hessian information.
 
-\subsection{TRON}\label{sec:tron} \sindex{Newton's
+\subsection{Trust-Region Newton Method}\label{sec:tron} \sindex{Newton's
 method} \sindex{trust region}
 The TRON \cite{lin_c3} algorithm is an active-set method that uses a 
 combination of gradient projections and 
@@ -754,7 +754,7 @@ rate of convergence for the algorithm and should be
 tuned and adjusted for optimal performance.
 
 
-\subsection{Gradient Projection: Conjugate Gradient Method}
+\subsection{Gradient Projection Conjugate Gradient Method}
 The GPCG \cite{more-toraldo} algorithm is much like the TRON algorithm, discussed in
 Section \ref{sec:tron}, except that
 it assumes that the objective function is quadratic and convex.
@@ -775,10 +775,11 @@ This method also requires the solution of systems of linear equations,
 whose solver can be accessed and modified 
 with the command {\tt Tao\-Get\-KSP()}.
 
-\subsection{Limited-Memory, Variable-Metric Method}
+\subsection{Bound-constrained Limited-Memory Variable-Metric Method}
+\label{sec:blmvm}
 
-The limited-memory, variable-metric method is the bound-constrained variant 
-of the LMVM method for
+BLMVM is a limited-memory, variable-metric method and is 
+the bound-constrained variant of the LMVM method for
 unconstrained optimization.  It uses projected gradients to approximate
 the Hessian, eliminating the need for Hessian evaluations.
 The method can be set by using the TAO solver {\tt tao\_blmvm}.
@@ -1037,8 +1038,13 @@ $x_+$ to be evaluated is obtained by solving the trust-region subproblem
 \end{equation}
 where $\Delta_k$ is the current 
 trust-region radius. By default we use a trust-region norm with $p=\infty$
-and solve (\ref{eq:poundersp}) with the BQPIP method described in
-Section~\ref{sec:bqpip}. 
+and solve (\ref{eq:poundersp}) with the BLMVM method described in
+Section~\ref{sec:blmvm}.  While the subproblem is a bound-constrained
+quadratic program, it may not be convex and the BQPIP and GPCG methods 
+may not solve the subproblem.  Therefore, either BLMVM (the default) 
+or TRON should be used.  Note: TRON uses its own internal trust region 
+that may interfere with the infinity-norm trust region used in the 
+model problem (\ref{eq:poundersp}).
 
 The residual vector is then evaluated to obtain $F(x_+)$ and hence
 $f(x_+)$. The ratio of actual decrease to predicted decrease, 

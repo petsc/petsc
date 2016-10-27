@@ -545,7 +545,7 @@ PetscErrorCode PCGAMGGraph_GEO(PC pc,Mat Amat,Mat *a_Gmat)
   PetscErrorCode  ierr;
   PC_MG           *mg      = (PC_MG*)pc->data;
   PC_GAMG         *pc_gamg = (PC_GAMG*)mg->innerctx;
-  const PetscReal vfilter  = pc_gamg->threshold;
+  const PetscReal vfilter  = pc_gamg->threshold[0];
   MPI_Comm        comm;
   Mat             Gmat;
   PetscBool       set,flg,symm;

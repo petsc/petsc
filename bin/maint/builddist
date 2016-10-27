@@ -94,7 +94,7 @@ version_date=`date +"%b, %d, %Y"`
 version_git=`git describe`
 version_date_git=`git log -1 --pretty=format:%ci`
 if [ ${version}foo = foo ]; then
-  if  [ ${version_release} = 0 ]; then
+  if  [ ${version_release} = 0 -o ${version_release} = -2 ]; then
     version=-`echo ${branch} | sed s~/~-~g`
   elif [ ${version_release} = 1 ]; then
     version=-${version_major}.${version_minor}.${version_subminor}

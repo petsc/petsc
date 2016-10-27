@@ -9,6 +9,7 @@ class Configure(config.package.Package):
     self.liblist           = [['Derivatives.py']]
     self.libdir            = os.path.join('lib', 'python', 'site-packages')
     self.altlibdir         = os.path.join('lib', 'python'+'.'.join(map(str, sys.version_info[0:2])), 'site-packages')
+    self.useddirectly      = 0
     return
 
   def setupDependencies(self, framework):

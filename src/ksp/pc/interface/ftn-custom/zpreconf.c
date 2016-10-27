@@ -54,5 +54,6 @@ PETSC_EXTERN void PETSC_STDCALL pcgetoptionsprefix_(PC *pc,CHAR prefix PETSC_MIX
 
   *ierr = PCGetOptionsPrefix(*pc,&tname);
   *ierr = PetscStrncpy(prefix,tname,len);if (*ierr) return;
+  FIXRETURNCHAR(PETSC_TRUE,prefix,len);
 }
 

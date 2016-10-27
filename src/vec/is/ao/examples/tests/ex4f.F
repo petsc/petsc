@@ -18,6 +18,10 @@
       zero = 0
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
       nlocal = 0

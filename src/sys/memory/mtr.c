@@ -352,8 +352,12 @@ PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char function
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* Do not try to handle empty blocks */
-  if (!len) {*result = NULL; PetscFunctionReturn(0);}
+  /* Realloc to zero = free */
+  if (!len) {
+    ierr = PetscTrFreeDefault(*result,lineno,function,filename);CHKERRQ(ierr);
+    *result = NULL;
+    PetscFunctionReturn(0);
+  }
 
   if (TRdebugLevel) {ierr = PetscMallocValidate(lineno,function,filename); if (ierr) PetscFunctionReturn(ierr);}
 

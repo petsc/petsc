@@ -19,116 +19,114 @@
    17 KSP Residual norm 0.000170258 
    18 KSP Residual norm 0.000131625 
    19 KSP Residual norm 0.000110039 
-   20 KSP Residual norm 9.17201e-05 
-   21 KSP Residual norm 6.97927e-05 
-   22 KSP Residual norm 4.66632e-05 
-   23 KSP Residual norm 3.30304e-05 
-   24 KSP Residual norm 2.06922e-05 
-   25 KSP Residual norm 1.48015e-05 
-   26 KSP Residual norm 9.46873e-06 
-   27 KSP Residual norm 5.50084e-06 
-   28 KSP Residual norm 4.66061e-06 
-   29 KSP Residual norm 4.11602e-06 
-   30 KSP Residual norm 3.66422e-06 
-   31 KSP Residual norm 3.33275e-06 
-   32 KSP Residual norm 3.07734e-06 
-   33 KSP Residual norm 2.87289e-06 
-   34 KSP Residual norm 2.70442e-06 
-   35 KSP Residual norm 2.56249e-06 
-   36 KSP Residual norm 2.44079e-06 
-   37 KSP Residual norm 2.33493e-06 
-   38 KSP Residual norm 2.24174e-06 
-   39 KSP Residual norm 2.1589e-06 
-   40 KSP Residual norm 2.0846e-06 
-   41 KSP Residual norm 2.01749e-06 
-   42 KSP Residual norm 1.95646e-06 
-   43 KSP Residual norm 1.90066e-06 
-   44 KSP Residual norm 1.84938e-06 
-   45 KSP Residual norm 1.80203e-06 
-   46 KSP Residual norm 1.75814e-06 
-   47 KSP Residual norm 1.71732e-06 
-   48 KSP Residual norm 1.67921e-06 
-   49 KSP Residual norm 1.64353e-06 
-   50 KSP Residual norm 1.61003e-06 
-   51 KSP Residual norm 1.5785e-06 
-   52 KSP Residual norm 1.54875e-06 
-   53 KSP Residual norm 1.52062e-06 
-   54 KSP Residual norm 1.49398e-06 
-   55 KSP Residual norm 1.46868e-06 
-   56 KSP Residual norm 1.44463e-06 
-   57 KSP Residual norm 1.42172e-06 
-   58 KSP Residual norm 1.39987e-06 
-   59 KSP Residual norm 1.379e-06 
-   60 KSP Residual norm 1.35903e-06 
-   61 KSP Residual norm 1.33991e-06 
-   62 KSP Residual norm 1.32157e-06 
-   63 KSP Residual norm 1.30396e-06 
-   64 KSP Residual norm 1.28704e-06 
-   65 KSP Residual norm 1.27076e-06 
-   66 KSP Residual norm 1.25509e-06 
-   67 KSP Residual norm 1.23998e-06 
-   68 KSP Residual norm 1.2254e-06 
-   69 KSP Residual norm 1.21133e-06 
-   70 KSP Residual norm 1.19773e-06 
-   71 KSP Residual norm 1.18457e-06 
-   72 KSP Residual norm 1.17184e-06 
-   73 KSP Residual norm 1.15952e-06 
-   74 KSP Residual norm 1.14757e-06 
-   75 KSP Residual norm 1.13599e-06 
-   76 KSP Residual norm 1.12475e-06 
-   77 KSP Residual norm 1.11384e-06 
-   78 KSP Residual norm 1.10323e-06 
-   79 KSP Residual norm 1.09293e-06 
-   80 KSP Residual norm 1.08291e-06 
-   81 KSP Residual norm 1.07316e-06 
-   82 KSP Residual norm 1.06367e-06 
-   83 KSP Residual norm 1.05442e-06 
-   84 KSP Residual norm 1.04542e-06 
-   85 KSP Residual norm 1.03664e-06 
-   86 KSP Residual norm 1.02807e-06 
-   87 KSP Residual norm 1.01972e-06 
-   88 KSP Residual norm 1.01157e-06 
-   89 KSP Residual norm 1.00361e-06 
-   90 KSP Residual norm 9.95829e-07 
-   91 KSP Residual norm 9.88231e-07 
-   92 KSP Residual norm 9.80805e-07 
-   93 KSP Residual norm 9.73543e-07 
-   94 KSP Residual norm 9.6644e-07 
-   95 KSP Residual norm 9.59491e-07 
-   96 KSP Residual norm 9.52689e-07 
-   97 KSP Residual norm 9.4603e-07 
-   98 KSP Residual norm 9.39509e-07 
-   99 KSP Residual norm 9.3312e-07 
-  100 KSP Residual norm 7.88742e-06 
-  101 KSP Residual norm 5.85105e-06 
-  102 KSP Residual norm 3.71611e-06 
-  103 KSP Residual norm 3.27417e-06 
-  104 KSP Residual norm 2.14893e-06 
-  105 KSP Residual norm 1.7856e-06 
-  106 KSP Residual norm 1.01271e-06 
-  107 KSP Residual norm 7.0198e-07 
-  108 KSP Residual norm 5.23975e-07 
-  109 KSP Residual norm 3.62176e-07 
-  110 KSP Residual norm 2.3738e-07 
-  111 KSP Residual norm 1.45311e-07 
-  112 KSP Residual norm 1.29293e-07 
-  113 KSP Residual norm 8.94107e-08 
-  114 KSP Residual norm 7.94976e-08 
-  115 KSP Residual norm 5.60105e-08 
-  116 KSP Residual norm 5.36328e-08 
-  117 KSP Residual norm 4.30768e-08 
-  118 KSP Residual norm 4.00658e-08 
-  119 KSP Residual norm 3.27605e-08 
-  120 KSP Residual norm 2.92869e-08 
-  121 KSP Residual norm 2.31855e-08 
-  Linear solve converged due to CONVERGED_RTOL iterations 121
-  1 SNES Function norm 2.31855e-08 
+   20 KSP Residual norm 9.17202e-05 
+   21 KSP Residual norm 6.97954e-05 
+   22 KSP Residual norm 4.66664e-05 
+   23 KSP Residual norm 3.30571e-05 
+   24 KSP Residual norm 2.07176e-05 
+   25 KSP Residual norm 1.48734e-05 
+   26 KSP Residual norm 9.52919e-06 
+   27 KSP Residual norm 5.46845e-06 
+   28 KSP Residual norm 4.16654e-06 
+   29 KSP Residual norm 3.56418e-06 
+   30 KSP Residual norm 3.12323e-06 
+   31 KSP Residual norm 2.81264e-06 
+   32 KSP Residual norm 2.5786e-06 
+   33 KSP Residual norm 2.3945e-06 
+   34 KSP Residual norm 2.24484e-06 
+   35 KSP Residual norm 2.12014e-06 
+   36 KSP Residual norm 2.01415e-06 
+   37 KSP Residual norm 1.92261e-06 
+   38 KSP Residual norm 1.84252e-06 
+   39 KSP Residual norm 1.77167e-06 
+   40 KSP Residual norm 1.70841e-06 
+   41 KSP Residual norm 1.65148e-06 
+   42 KSP Residual norm 1.59988e-06 
+   43 KSP Residual norm 1.55284e-06 
+   44 KSP Residual norm 1.50971e-06 
+   45 KSP Residual norm 1.46999e-06 
+   46 KSP Residual norm 1.43325e-06 
+   47 KSP Residual norm 1.39913e-06 
+   48 KSP Residual norm 1.36734e-06 
+   49 KSP Residual norm 1.33762e-06 
+   50 KSP Residual norm 1.30976e-06 
+   51 KSP Residual norm 1.28357e-06 
+   52 KSP Residual norm 1.25889e-06 
+   53 KSP Residual norm 1.23558e-06 
+   54 KSP Residual norm 1.21352e-06 
+   55 KSP Residual norm 1.19261e-06 
+   56 KSP Residual norm 1.17273e-06 
+   57 KSP Residual norm 1.15382e-06 
+   58 KSP Residual norm 1.1358e-06 
+   59 KSP Residual norm 1.11859e-06 
+   60 KSP Residual norm 1.10214e-06 
+   61 KSP Residual norm 1.0864e-06 
+   62 KSP Residual norm 1.07131e-06 
+   63 KSP Residual norm 1.05684e-06 
+   64 KSP Residual norm 1.04294e-06 
+   65 KSP Residual norm 1.02957e-06 
+   66 KSP Residual norm 1.0167e-06 
+   67 KSP Residual norm 1.0043e-06 
+   68 KSP Residual norm 9.92348e-07 
+   69 KSP Residual norm 9.80811e-07 
+   70 KSP Residual norm 9.69667e-07 
+   71 KSP Residual norm 9.58894e-07 
+   72 KSP Residual norm 9.48473e-07 
+   73 KSP Residual norm 9.38384e-07 
+   74 KSP Residual norm 9.28611e-07 
+   75 KSP Residual norm 9.19136e-07 
+   76 KSP Residual norm 9.09946e-07 
+   77 KSP Residual norm 9.01026e-07 
+   78 KSP Residual norm 8.92364e-07 
+   79 KSP Residual norm 8.83946e-07 
+   80 KSP Residual norm 8.75762e-07 
+   81 KSP Residual norm 8.67802e-07 
+   82 KSP Residual norm 8.60055e-07 
+   83 KSP Residual norm 8.52511e-07 
+   84 KSP Residual norm 8.45163e-07 
+   85 KSP Residual norm 8.38001e-07 
+   86 KSP Residual norm 8.31019e-07 
+   87 KSP Residual norm 8.24208e-07 
+   88 KSP Residual norm 8.17562e-07 
+   89 KSP Residual norm 8.11074e-07 
+   90 KSP Residual norm 8.04738e-07 
+   91 KSP Residual norm 7.98548e-07 
+   92 KSP Residual norm 7.92499e-07 
+   93 KSP Residual norm 7.86586e-07 
+   94 KSP Residual norm 7.80802e-07 
+   95 KSP Residual norm 7.75145e-07 
+   96 KSP Residual norm 7.69609e-07 
+   97 KSP Residual norm 7.6419e-07 
+   98 KSP Residual norm 7.58883e-07 
+   99 KSP Residual norm 7.53686e-07 
+  100 KSP Residual norm 6.38096e-06 
+  101 KSP Residual norm 4.96845e-06 
+  102 KSP Residual norm 3.29935e-06 
+  103 KSP Residual norm 2.98505e-06 
+  104 KSP Residual norm 1.85798e-06 
+  105 KSP Residual norm 1.56652e-06 
+  106 KSP Residual norm 8.60471e-07 
+  107 KSP Residual norm 6.32535e-07 
+  108 KSP Residual norm 4.46881e-07 
+  109 KSP Residual norm 3.04631e-07 
+  110 KSP Residual norm 1.95425e-07 
+  111 KSP Residual norm 1.29472e-07 
+  112 KSP Residual norm 1.12951e-07 
+  113 KSP Residual norm 7.75897e-08 
+  114 KSP Residual norm 6.69773e-08 
+  115 KSP Residual norm 4.71168e-08 
+  116 KSP Residual norm 4.47879e-08 
+  117 KSP Residual norm 3.61252e-08 
+  118 KSP Residual norm 3.32325e-08 
+  119 KSP Residual norm 2.73025e-08 
+  Linear solve converged due to CONVERGED_RTOL iterations 119
+  1 SNES Function norm 2.73025e-08 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=121
+  total number of linear solver iterations=119
   total number of function evaluations=2
   norm schedule ALWAYS
   SNESLineSearch Object: 1 MPI processes
@@ -159,7 +157,7 @@ SNES Object: 1 MPI processes
         using NONE norm type for convergence test
       PC Object: (fieldsplit_velocity_) 1 MPI processes
         type: lu
-          LU: out-of-place factorization
+          out-of-place factorization
           tolerance for zero pivot 2.22045e-14
           matrix ordering: nd
           factor fill ratio given 5., needed 3.45047
@@ -204,4 +202,4 @@ SNES Object: 1 MPI processes
         has attached null space
         using I-node routines: found 513 nodes, limit used is 5
 Number of SNES iterations = 1
-L_2 Error: 1.91e-06 [3.86e-08, 1.91e-06]
+L_2 Error: 2.56e-06 [4.34e-08, 2.56e-06]

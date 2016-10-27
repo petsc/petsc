@@ -76,7 +76,7 @@ PetscErrorCode MatFindZeroDiagonals_SeqAIJ_Private(Mat A,PetscInt *nrows,PetscIn
   Mat_SeqAIJ      *a  = (Mat_SeqAIJ*)A->data;
   const MatScalar *aa = a->a;
   PetscInt        i,m=A->rmap->n,cnt = 0;
-  const PetscInt  *jj = a->j,*diag;
+  const PetscInt  *ii = a->i,*jj = a->j,*diag;
   PetscInt        *rows;
   PetscErrorCode  ierr;
 
@@ -84,14 +84,14 @@ PetscErrorCode MatFindZeroDiagonals_SeqAIJ_Private(Mat A,PetscInt *nrows,PetscIn
   ierr = MatMarkDiagonal_SeqAIJ(A);CHKERRQ(ierr);
   diag = a->diag;
   for (i=0; i<m; i++) {
-    if ((jj[diag[i]] != i) || (aa[diag[i]] == 0.0)) {
+    if ((diag[i] >= ii[i+1]) || (jj[diag[i]] != i) || (aa[diag[i]] == 0.0)) {
       cnt++;
     }
   }
   ierr = PetscMalloc1(cnt,&rows);CHKERRQ(ierr);
   cnt  = 0;
   for (i=0; i<m; i++) {
-    if ((jj[diag[i]] != i) || (aa[diag[i]] == 0.0)) {
+    if ((diag[i] >= ii[i+1]) || (jj[diag[i]] != i) || (aa[diag[i]] == 0.0)) {
       rows[cnt++] = i;
     }
   }
@@ -1587,10 +1587,10 @@ PetscErrorCode  MatInvertDiagonal_SeqAIJ(Mat A,PetscScalar omega,PetscScalar fsh
       if (!PetscAbsScalar(mdiag[i])) { /* zero diagonal */
         if (PetscRealPart(fshift)) {
           ierr = PetscInfo1(A,"Zero diagonal on row %D\n",i);CHKERRQ(ierr);
-          A->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
-        } else {
-          SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Zero diagonal on row %D",i);
-        }
+          A->factorerrortype             = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+          A->factorerror_zeropivot_value = 0.0;
+          A->factorerror_zeropivot_row   = i;
+        } SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Zero diagonal on row %D",i);
       }
       idiag[i] = 1.0/v[diag[i]];
     }
@@ -1828,13 +1828,13 @@ PetscErrorCode MatZeroRows_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
     ierr = VecRestoreArray(b,&bb);CHKERRQ(ierr);
   }
 
+  ierr = MatMissingDiagonal_SeqAIJ(A,&missing,&d);CHKERRQ(ierr);
   if (a->keepnonzeropattern) {
     for (i=0; i<N; i++) {
       if (rows[i] < 0 || rows[i] > m) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"row %D out of range", rows[i]);
       ierr = PetscMemzero(&a->a[a->i[rows[i]]],a->ilen[rows[i]]*sizeof(PetscScalar));CHKERRQ(ierr);
     }
     if (diag != 0.0) {
-      ierr = MatMissingDiagonal_SeqAIJ(A,&missing,&d);CHKERRQ(ierr);
       if (missing) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry in row %D",d);
       for (i=0; i<N; i++) {
         a->a[a->diag[rows[i]]] = diag;
@@ -1905,9 +1905,17 @@ PetscErrorCode MatZeroRowsColumns_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],
   ierr = PetscFree(zeroed);CHKERRQ(ierr);
   if (diag != 0.0) {
     ierr = MatMissingDiagonal_SeqAIJ(A,&missing,&d);CHKERRQ(ierr);
-    if (missing) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry in row %D",d);
-    for (i=0; i<N; i++) {
-      a->a[a->diag[rows[i]]] = diag;
+    if (missing) {
+      if (a->nonew) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry in row %D",d);
+      else {
+        for (i=0; i<N; i++) {
+          ierr = MatSetValues_SeqAIJ(A,1,&rows[i],1,&rows[i],&diag,INSERT_VALUES);CHKERRQ(ierr);
+        }
+      }
+    } else {
+      for (i=0; i<N; i++) {
+        a->a[a->diag[rows[i]]] = diag;
+      }
     }
   }
   ierr = MatAssemblyEnd_SeqAIJ(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -2972,10 +2980,12 @@ PetscErrorCode MatInvertBlockDiagonal_SeqAIJ(Mat A,const PetscScalar **values)
       ierr    = MatGetValues(A,1,&i,1,&i,diag+i);CHKERRQ(ierr);
       if (PetscAbsScalar(diag[i] + shift) < PETSC_MACHINE_EPSILON) {
         if (allowzeropivot) {
-          A->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
-          ierr = PetscInfo1(A,"Zero pivot, row %D\n",i);CHKERRQ(ierr);
-        } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",i);
-      } 
+          A->factorerrortype             = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+          A->factorerror_zeropivot_value = PetscAbsScalar(diag[i]);
+          A->factorerror_zeropivot_row   = i;
+          ierr = PetscInfo3(A,"Zero pivot, row %D pivot %g tolerance %g\n",i,(double)PetscAbsScalar(diag[i]),(double)PETSC_MACHINE_EPSILON);CHKERRQ(ierr);
+        } else SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D pivot %g tolerance %g",i,(double)PetscAbsScalar(diag[i]),(double)PETSC_MACHINE_EPSILON);
+      }
       diag[i] = (PetscScalar)1.0 / (diag[i] + shift);
     }
     break;
@@ -2984,7 +2994,7 @@ PetscErrorCode MatInvertBlockDiagonal_SeqAIJ(Mat A,const PetscScalar **values)
       ij[0] = 2*i; ij[1] = 2*i + 1;
       ierr  = MatGetValues(A,2,ij,2,ij,diag);CHKERRQ(ierr);
       ierr  = PetscKernel_A_gets_inverse_A_2(diag,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
-      if (zeropivotdetected) A->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+      if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
       ierr  = PetscKernel_A_gets_transpose_A_2(diag);CHKERRQ(ierr);
       diag += 4;
     }
@@ -2994,7 +3004,7 @@ PetscErrorCode MatInvertBlockDiagonal_SeqAIJ(Mat A,const PetscScalar **values)
       ij[0] = 3*i; ij[1] = 3*i + 1; ij[2] = 3*i + 2;
       ierr  = MatGetValues(A,3,ij,3,ij,diag);CHKERRQ(ierr);
       ierr  = PetscKernel_A_gets_inverse_A_3(diag,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
-      if (zeropivotdetected) A->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+      if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
       ierr  = PetscKernel_A_gets_transpose_A_3(diag);CHKERRQ(ierr);
       diag += 9;
     }
@@ -3004,7 +3014,7 @@ PetscErrorCode MatInvertBlockDiagonal_SeqAIJ(Mat A,const PetscScalar **values)
       ij[0] = 4*i; ij[1] = 4*i + 1; ij[2] = 4*i + 2; ij[3] = 4*i + 3;
       ierr  = MatGetValues(A,4,ij,4,ij,diag);CHKERRQ(ierr);
       ierr  = PetscKernel_A_gets_inverse_A_4(diag,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
-      if (zeropivotdetected) A->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+      if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
       ierr  = PetscKernel_A_gets_transpose_A_4(diag);CHKERRQ(ierr);
       diag += 16;
     }
@@ -3014,7 +3024,7 @@ PetscErrorCode MatInvertBlockDiagonal_SeqAIJ(Mat A,const PetscScalar **values)
       ij[0] = 5*i; ij[1] = 5*i + 1; ij[2] = 5*i + 2; ij[3] = 5*i + 3; ij[4] = 5*i + 4;
       ierr  = MatGetValues(A,5,ij,5,ij,diag);CHKERRQ(ierr);
       ierr  = PetscKernel_A_gets_inverse_A_5(diag,ipvt,work,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
-      if (zeropivotdetected) A->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+      if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
       ierr  = PetscKernel_A_gets_transpose_A_5(diag);CHKERRQ(ierr);
       diag += 25;
     }
@@ -3024,7 +3034,7 @@ PetscErrorCode MatInvertBlockDiagonal_SeqAIJ(Mat A,const PetscScalar **values)
       ij[0] = 6*i; ij[1] = 6*i + 1; ij[2] = 6*i + 2; ij[3] = 6*i + 3; ij[4] = 6*i + 4; ij[5] = 6*i + 5;
       ierr  = MatGetValues(A,6,ij,6,ij,diag);CHKERRQ(ierr);
       ierr  = PetscKernel_A_gets_inverse_A_6(diag,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
-      if (zeropivotdetected) A->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+      if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
       ierr  = PetscKernel_A_gets_transpose_A_6(diag);CHKERRQ(ierr);
       diag += 36;
     }
@@ -3034,7 +3044,7 @@ PetscErrorCode MatInvertBlockDiagonal_SeqAIJ(Mat A,const PetscScalar **values)
       ij[0] = 7*i; ij[1] = 7*i + 1; ij[2] = 7*i + 2; ij[3] = 7*i + 3; ij[4] = 7*i + 4; ij[5] = 7*i + 5; ij[5] = 7*i + 6;
       ierr  = MatGetValues(A,7,ij,7,ij,diag);CHKERRQ(ierr);
       ierr  = PetscKernel_A_gets_inverse_A_7(diag,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
-      if (zeropivotdetected) A->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+      if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
       ierr  = PetscKernel_A_gets_transpose_A_7(diag);CHKERRQ(ierr);
       diag += 49;
     }
@@ -3047,7 +3057,7 @@ PetscErrorCode MatInvertBlockDiagonal_SeqAIJ(Mat A,const PetscScalar **values)
       }
       ierr  = MatGetValues(A,bs,IJ,bs,IJ,diag);CHKERRQ(ierr);
       ierr  = PetscKernel_A_gets_inverse_A(bs,diag,v_pivots,v_work,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
-      if (zeropivotdetected) A->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+      if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
       ierr  = PetscKernel_A_gets_transpose_A_N(diag,bs);CHKERRQ(ierr);
       diag += bs2;
     }
@@ -3170,9 +3180,9 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqAIJ,
                                 /* 69*/ MatGetRowMaxAbs_SeqAIJ,
                                         MatGetRowMinAbs_SeqAIJ,
                                         0,
-                                        MatSetColoring_SeqAIJ,
                                         0,
-                                /* 74*/ MatSetValuesAdifor_SeqAIJ,
+                                        0,
+                                /* 74*/ 0,
                                         MatFDColoringApply_AIJ,
                                         0,
                                         0,
@@ -3635,6 +3645,8 @@ PetscErrorCode  MatSeqAIJSetPreallocation_SeqAIJ(Mat B,PetscInt nz,const PetscIn
   if (realalloc) {
     ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   }
+  B->was_assembled = PETSC_FALSE;
+  B->assembled     = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -4401,58 +4413,6 @@ PetscErrorCode  MatCreateSeqAIJFromTriple(MPI_Comm comm,PetscInt m,PetscInt n,Pe
   ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscFree(nnz);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatSetColoring_SeqAIJ"
-PetscErrorCode MatSetColoring_SeqAIJ(Mat A,ISColoring coloring)
-{
-  PetscErrorCode ierr;
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-
-  PetscFunctionBegin;
-  if (coloring->ctype == IS_COLORING_GLOBAL) {
-    ierr        = ISColoringReference(coloring);CHKERRQ(ierr);
-    a->coloring = coloring;
-  } else if (coloring->ctype == IS_COLORING_GHOSTED) {
-    PetscInt        i,*larray;
-    ISColoring      ocoloring;
-    ISColoringValue *colors;
-
-    /* set coloring for diagonal portion */
-    ierr = PetscMalloc1(A->cmap->n,&larray);CHKERRQ(ierr);
-    for (i=0; i<A->cmap->n; i++) larray[i] = i;
-    ierr = ISGlobalToLocalMappingApply(A->cmap->mapping,IS_GTOLM_MASK,A->cmap->n,larray,NULL,larray);CHKERRQ(ierr);
-    ierr = PetscMalloc1(A->cmap->n,&colors);CHKERRQ(ierr);
-    for (i=0; i<A->cmap->n; i++) colors[i] = coloring->colors[larray[i]];
-    ierr        = PetscFree(larray);CHKERRQ(ierr);
-    ierr        = ISColoringCreate(PETSC_COMM_SELF,coloring->n,A->cmap->n,colors,PETSC_OWN_POINTER,&ocoloring);CHKERRQ(ierr);
-    a->coloring = ocoloring;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatSetValuesAdifor_SeqAIJ"
-PetscErrorCode MatSetValuesAdifor_SeqAIJ(Mat A,PetscInt nl,void *advalues)
-{
-  Mat_SeqAIJ      *a      = (Mat_SeqAIJ*)A->data;
-  PetscInt        m       = A->rmap->n,*ii = a->i,*jj = a->j,nz,i,j;
-  MatScalar       *v      = a->a;
-  PetscScalar     *values = (PetscScalar*)advalues;
-  ISColoringValue *color;
-
-  PetscFunctionBegin;
-  if (!a->coloring) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Coloring not set for matrix");
-  color = a->coloring->colors;
-  /* loop over rows */
-  for (i=0; i<m; i++) {
-    nz = ii[i+1] - ii[i];
-    /* loop over columns putting computed value into matrix */
-    for (j=0; j<nz; j++) *v++ = values[color[*jj++]];
-    values += nl; /* jump to next row of derivatives */
-  }
   PetscFunctionReturn(0);
 }
 

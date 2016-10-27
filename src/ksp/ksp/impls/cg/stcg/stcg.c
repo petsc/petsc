@@ -8,93 +8,13 @@
 static const char *DType_Table[64] = {"preconditioned", "unpreconditioned"};
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPSTCGSetRadius"
-/*@
-    KSPSTCGSetRadius - Sets the radius of the trust region.
-
-    Logically Collective on KSP
-
-    Input Parameters:
-+   ksp    - the iterative context
--   radius - the trust region radius (Infinity is the default)
-
-    Options Database Key:
-.   -ksp_stcg_radius <r>
-
-    Level: advanced
-
-.keywords: KSP, STCG, set, trust region radius
-@*/
-PetscErrorCode  KSPSTCGSetRadius(KSP ksp, PetscReal radius)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  if (radius < 0.0) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE, "Radius negative");
-  PetscValidLogicalCollectiveReal(ksp,radius,2);
-  ierr = PetscTryMethod(ksp,"KSPSTCGSetRadius_C",(KSP,PetscReal),(ksp,radius));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "KSPSTCGGetNormD"
-/*@
-    KSPSTCGGetNormD - Got norm of the direction.
-
-    Collective on KSP
-
-    Input Parameters:
-+   ksp    - the iterative context
--   norm_d - the norm of the direction
-
-    Level: advanced
-
-.keywords: KSP, STCG, get, norm direction
-@*/
-PetscErrorCode  KSPSTCGGetNormD(KSP ksp, PetscReal *norm_d)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  ierr = PetscUseMethod(ksp,"KSPSTCGGetNormD_C",(KSP,PetscReal*),(ksp,norm_d));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "KSPSTCGGetObjFcn"
-/*@
-    KSPSTCGGetObjFcn - Get objective function value.
-
-    Collective on KSP
-
-    Input Parameters:
-+   ksp   - the iterative context
--   o_fcn - the objective function value
-
-    Level: advanced
-
-.keywords: KSP, STCG, get, objective function
-@*/
-PetscErrorCode  KSPSTCGGetObjFcn(KSP ksp, PetscReal *o_fcn)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  ierr = PetscUseMethod(ksp,"KSPSTCGGetObjFcn_C",(KSP,PetscReal*),(ksp,o_fcn));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_STCG"
-static PetscErrorCode KSPSolve_STCG(KSP ksp)
+#define __FUNCT__ "KSPCGSolve_STCG"
+static PetscErrorCode KSPCGSolve_STCG(KSP ksp)
 {
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP, "STCG is not available for complex systems");
 #else
-  KSP_STCG       *cg = (KSP_STCG*)ksp->data;
+  KSPCG_STCG     *cg = (KSPCG_STCG*)ksp->data;
   PetscErrorCode ierr;
   Mat            Qmat, Mmat;
   Vec            r, z, p, d;
@@ -165,7 +85,7 @@ static PetscErrorCode KSPSolve_STCG(KSP ksp)
     /*************************************************************************/
 
     ksp->reason = KSP_DIVERGED_NANORINF;
-    ierr        = PetscInfo1(ksp, "KSPSolve_STCG: bad preconditioner: rz=%g\n", (double)rz);CHKERRQ(ierr);
+    ierr        = PetscInfo1(ksp, "KSPCGSolve_STCG: bad preconditioner: rz=%g\n", (double)rz);CHKERRQ(ierr);
 
     if (cg->radius != 0) {
       if (r2 >= rr) {
@@ -200,7 +120,7 @@ static PetscErrorCode KSPSolve_STCG(KSP ksp)
     /*************************************************************************/
 
     ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
-    ierr        = PetscInfo1(ksp, "KSPSolve_STCG: indefinite preconditioner: rz=%g\n", (double)rz);CHKERRQ(ierr);
+    ierr        = PetscInfo1(ksp, "KSPCGSolve_STCG: indefinite preconditioner: rz=%g\n", (double)rz);CHKERRQ(ierr);
 
     if (cg->radius != 0.0) {
       if (r2 >= rr) {
@@ -278,7 +198,7 @@ static PetscErrorCode KSPSolve_STCG(KSP ksp)
     /*************************************************************************/
 
     ksp->reason = KSP_DIVERGED_NANORINF;
-    ierr        = PetscInfo1(ksp, "KSPSolve_STCG: bad matrix: kappa=%g\n", (double)kappa);CHKERRQ(ierr);
+    ierr        = PetscInfo1(ksp, "KSPCGSolve_STCG: bad matrix: kappa=%g\n", (double)kappa);CHKERRQ(ierr);
 
     if (cg->radius) {
       if (r2 >= rr) {
@@ -332,7 +252,7 @@ static PetscErrorCode KSPSolve_STCG(KSP ksp)
     /*************************************************************************/
 
     ksp->reason = KSP_CONVERGED_CG_NEG_CURVE;
-    ierr        = PetscInfo1(ksp, "KSPSolve_STCG: negative curvature: kappa=%g\n", (double)kappa);CHKERRQ(ierr);
+    ierr        = PetscInfo1(ksp, "KSPCGSolve_STCG: negative curvature: kappa=%g\n", (double)kappa);CHKERRQ(ierr);
 
     if (cg->radius != 0.0 && norm_p > 0.0) {
       /***********************************************************************/
@@ -407,7 +327,7 @@ static PetscErrorCode KSPSolve_STCG(KSP ksp)
       /***********************************************************************/
 
       ksp->reason = KSP_CONVERGED_CG_CONSTRAINED;
-      ierr        = PetscInfo1(ksp, "KSPSolve_STCG: constrained step: radius=%g\n", (double)cg->radius);CHKERRQ(ierr);
+      ierr        = PetscInfo1(ksp, "KSPCGSolve_STCG: constrained step: radius=%g\n", (double)cg->radius);CHKERRQ(ierr);
 
       if (norm_p > 0.0) {
         /*********************************************************************/
@@ -469,7 +389,7 @@ static PetscErrorCode KSPSolve_STCG(KSP ksp)
       /***********************************************************************/
 
       ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
-      ierr        = PetscInfo1(ksp, "KSPSolve_STCG: cg indefinite preconditioner: rz=%g\n", (double)rz);CHKERRQ(ierr);
+      ierr        = PetscInfo1(ksp, "KSPCGSolve_STCG: cg indefinite preconditioner: rz=%g\n", (double)rz);CHKERRQ(ierr);
       break;
     }
 
@@ -506,7 +426,7 @@ static PetscErrorCode KSPSolve_STCG(KSP ksp)
       /* The method has converged.                                           */
       /***********************************************************************/
 
-      ierr = PetscInfo2(ksp, "KSPSolve_STCG: truncated step: rnorm=%g, radius=%g\n", (double)norm_r, (double)cg->radius);CHKERRQ(ierr);
+      ierr = PetscInfo2(ksp, "KSPCGSolve_STCG: truncated step: rnorm=%g, radius=%g\n", (double)norm_r, (double)cg->radius);CHKERRQ(ierr);
       break;
     }
 
@@ -521,7 +441,7 @@ static PetscErrorCode KSPSolve_STCG(KSP ksp)
       /***********************************************************************/
 
       ksp->reason = KSP_DIVERGED_BREAKDOWN;
-      ierr        = PetscInfo1(ksp, "KSPSolve_STCG: breakdown: beta=%g\n", (double)beta);CHKERRQ(ierr);
+      ierr        = PetscInfo1(ksp, "KSPCGSolve_STCG: breakdown: beta=%g\n", (double)beta);CHKERRQ(ierr);
       break;
     }
 
@@ -531,7 +451,7 @@ static PetscErrorCode KSPSolve_STCG(KSP ksp)
 
     if (ksp->its >= max_cg_its) {
       ksp->reason = KSP_DIVERGED_ITS;
-      ierr        = PetscInfo1(ksp, "KSPSolve_STCG: iterlim: its=%D\n", ksp->its);CHKERRQ(ierr);
+      ierr        = PetscInfo1(ksp, "KSPCGSolve_STCG: iterlim: its=%D\n", ksp->its);CHKERRQ(ierr);
       break;
     }
 
@@ -573,7 +493,7 @@ static PetscErrorCode KSPSolve_STCG(KSP ksp)
       /***********************************************************************/
 
       ksp->reason = KSP_CONVERGED_CG_NEG_CURVE;
-      ierr        = PetscInfo1(ksp, "KSPSolve_STCG: negative curvature: kappa=%g\n", (double)kappa);CHKERRQ(ierr);
+      ierr        = PetscInfo1(ksp, "KSPCGSolve_STCG: negative curvature: kappa=%g\n", (double)kappa);CHKERRQ(ierr);
 
       if (cg->radius != 0.0 && norm_p > 0.0) {
         /*********************************************************************/
@@ -603,34 +523,34 @@ static PetscErrorCode KSPSolve_STCG(KSP ksp)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_STCG"
-static PetscErrorCode KSPSetUp_STCG(KSP ksp)
+#define __FUNCT__ "KSPCGSetUp_STCG"
+static PetscErrorCode KSPCGSetUp_STCG(KSP ksp)
 {
   PetscErrorCode ierr;
 
+  PetscFunctionBegin;
   /***************************************************************************/
   /* Set work vectors needed by conjugate gradient method and allocate       */
   /***************************************************************************/
 
-  PetscFunctionBegin;
   ierr = KSPSetWorkVecs(ksp, 3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPDestroy_STCG"
-static PetscErrorCode KSPDestroy_STCG(KSP ksp)
+#define __FUNCT__ "KSPCGDestroy_STCG"
+static PetscErrorCode KSPCGDestroy_STCG(KSP ksp)
 {
   PetscErrorCode ierr;
 
+  PetscFunctionBegin;
   /***************************************************************************/
   /* Clear composed functions                                                */
   /***************************************************************************/
 
-  PetscFunctionBegin;
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPSTCGSetRadius_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPSTCGGetNormD_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPSTCGGetObjFcn_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGSetRadius_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGGetNormD_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGGetObjFcn_C",NULL);CHKERRQ(ierr);
 
   /***************************************************************************/
   /* Destroy KSP object.                                                     */
@@ -641,10 +561,10 @@ static PetscErrorCode KSPDestroy_STCG(KSP ksp)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPSTCGSetRadius_STCG"
-static PetscErrorCode  KSPSTCGSetRadius_STCG(KSP ksp, PetscReal radius)
+#define __FUNCT__ "KSPCGSetRadius_STCG"
+static PetscErrorCode  KSPCGSetRadius_STCG(KSP ksp, PetscReal radius)
 {
-  KSP_STCG *cg = (KSP_STCG*)ksp->data;
+  KSPCG_STCG *cg = (KSPCG_STCG*)ksp->data;
 
   PetscFunctionBegin;
   cg->radius = radius;
@@ -652,10 +572,10 @@ static PetscErrorCode  KSPSTCGSetRadius_STCG(KSP ksp, PetscReal radius)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPSTCGGetNormD_STCG"
-static PetscErrorCode  KSPSTCGGetNormD_STCG(KSP ksp, PetscReal *norm_d)
+#define __FUNCT__ "KSPCGGetNormD_STCG"
+static PetscErrorCode  KSPCGGetNormD_STCG(KSP ksp, PetscReal *norm_d)
 {
-  KSP_STCG *cg = (KSP_STCG*)ksp->data;
+  KSPCG_STCG *cg = (KSPCG_STCG*)ksp->data;
 
   PetscFunctionBegin;
   *norm_d = cg->norm_d;
@@ -663,10 +583,10 @@ static PetscErrorCode  KSPSTCGGetNormD_STCG(KSP ksp, PetscReal *norm_d)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPSTCGGetObjFcn_STCG"
-static PetscErrorCode  KSPSTCGGetObjFcn_STCG(KSP ksp, PetscReal *o_fcn)
+#define __FUNCT__ "KSPCGGetObjFcn_STCG"
+static PetscErrorCode  KSPCGGetObjFcn_STCG(KSP ksp, PetscReal *o_fcn)
 {
-  KSP_STCG *cg = (KSP_STCG*)ksp->data;
+  KSPCG_STCG *cg = (KSPCG_STCG*)ksp->data;
 
   PetscFunctionBegin;
   *o_fcn = cg->o_fcn;
@@ -674,27 +594,27 @@ static PetscErrorCode  KSPSTCGGetObjFcn_STCG(KSP ksp, PetscReal *o_fcn)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPSetFromOptions_STCG"
-static PetscErrorCode KSPSetFromOptions_STCG(PetscOptionItems *PetscOptionsObject,KSP ksp)
+#define __FUNCT__ "KSPCGSetFromOptions_STCG"
+static PetscErrorCode KSPCGSetFromOptions_STCG(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
-  KSP_STCG       *cg = (KSP_STCG*)ksp->data;
+  KSPCG_STCG     *cg = (KSPCG_STCG*)ksp->data;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"KSP STCG options");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ksp_stcg_radius", "Trust Region Radius", "KSPSTCGSetRadius", cg->radius, &cg->radius, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-ksp_stcg_dtype", "Norm used for direction", "", DType_Table, STCG_DIRECTION_TYPES, DType_Table[cg->dtype], &cg->dtype, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSPCG STCG options");CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ksp_cg_radius", "Trust Region Radius", "KSPCGSetRadius", cg->radius, &cg->radius, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-ksp_cg_dtype", "Norm used for direction", "", DType_Table, STCG_DIRECTION_TYPES, DType_Table[cg->dtype], &cg->dtype, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*MC
-     KSPSTCG -   Code to run conjugate gradient method subject to a constraint
+     KSPCGSTCG -   Code to run conjugate gradient method subject to a constraint
          on the solution norm. This is used in Trust Region methods for
          nonlinear equations, SNESNEWTONTR
 
    Options Database Keys:
-.      -ksp_stcg_radius <r> - Trust Region Radius
+.      -ksp_cg_radius <r> - Trust Region Radius
 
    Notes: This is rarely used directly
 
@@ -724,15 +644,15 @@ $  other KSP converged/diverged reasons
 
    Level: developer
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPSTCGSetRadius(), KSPSTCGGetNormD(), KSPSTCGGetObjFcn()
+.seealso:  KSPCreate(), KSPCGSetType(), KSPType (for list of available types), KSP, KSPCGSetRadius(), KSPCGGetNormD(), KSPCGGetObjFcn()
 M*/
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPCreate_STCG"
-PETSC_EXTERN PetscErrorCode KSPCreate_STCG(KSP ksp)
+#define __FUNCT__ "KSPCreate_CGSTCG"
+PETSC_EXTERN PetscErrorCode KSPCreate_CGSTCG(KSP ksp)
 {
   PetscErrorCode ierr;
-  KSP_STCG       *cg;
+  KSPCG_STCG     *cg;
 
   PetscFunctionBegin;
   ierr = PetscNewLog(ksp,&cg);CHKERRQ(ierr);
@@ -740,26 +660,26 @@ PETSC_EXTERN PetscErrorCode KSPCreate_STCG(KSP ksp)
   cg->radius = 0.0;
   cg->dtype  = STCG_UNPRECONDITIONED_DIRECTION;
 
-  ksp->data = (void*) cg;
-  ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
-  ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
-  ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2);CHKERRQ(ierr);
+  ksp->data  = (void*) cg;
+  ierr       = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
+  ierr       = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr       = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2);CHKERRQ(ierr);
 
   /***************************************************************************/
   /* Sets the functions that are associated with this data structure         */
   /* (in C++ this is the same as defining virtual functions).                */
   /***************************************************************************/
 
-  ksp->ops->setup          = KSPSetUp_STCG;
-  ksp->ops->solve          = KSPSolve_STCG;
-  ksp->ops->destroy        = KSPDestroy_STCG;
-  ksp->ops->setfromoptions = KSPSetFromOptions_STCG;
+  ksp->ops->setup          = KSPCGSetUp_STCG;
+  ksp->ops->solve          = KSPCGSolve_STCG;
+  ksp->ops->destroy        = KSPCGDestroy_STCG;
+  ksp->ops->setfromoptions = KSPCGSetFromOptions_STCG;
   ksp->ops->buildsolution  = KSPBuildSolutionDefault;
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->view           = 0;
 
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPSTCGSetRadius_C",KSPSTCGSetRadius_STCG);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPSTCGGetNormD_C",KSPSTCGGetNormD_STCG);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPSTCGGetObjFcn_C",KSPSTCGGetObjFcn_STCG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGSetRadius_C",KSPCGSetRadius_STCG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGGetNormD_C",KSPCGGetNormD_STCG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGGetObjFcn_C",KSPCGGetObjFcn_STCG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

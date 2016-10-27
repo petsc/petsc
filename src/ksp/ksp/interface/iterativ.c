@@ -1092,16 +1092,23 @@ PetscErrorCode KSPDestroyDefault(KSP ksp)
 $  KSP_CONVERGED_RTOL (residual 2-norm decreased by a factor of rtol, from 2-norm of right hand side)
 $  KSP_CONVERGED_ATOL (residual 2-norm less than abstol)
 $  KSP_CONVERGED_ITS (used by the preonly preconditioner that always uses ONE iteration, or when the KSPConvergedSkip() convergence test routine is set.
-$  KSP_CONVERGED_CG_NEG_CURVE
-$  KSP_CONVERGED_CG_CONSTRAINED
-$  KSP_CONVERGED_STEP_LENGTH
+$  KSP_CONVERGED_CG_NEG_CURVE (see note below)
+$  KSP_CONVERGED_CG_CONSTRAINED (see note below)
+$  KSP_CONVERGED_STEP_LENGTH (see note below)
+$  KSP_CONVERGED_ITERATING (returned if the solver is not yet finished)
 $  KSP_DIVERGED_ITS  (required more than its to reach convergence)
 $  KSP_DIVERGED_DTOL (residual norm increased by a factor of divtol)
 $  KSP_DIVERGED_NANORINF (residual norm became Not-a-number or Inf likely due to 0/0)
 $  KSP_DIVERGED_BREAKDOWN (generic breakdown in method)
 $  KSP_DIVERGED_BREAKDOWN_BICG (Initial residual is orthogonal to preconditioned initial residual. Try a different preconditioner, or a different initial Level.)
 
-   Notes: Can only be called after the call the KSPSolve() is complete.
+   Options Database:
+.   -ksp_converged_reason - prints the reason to standard out
+
+   Notes: If this routine is called before or doing the KSPSolve() the value of KSP_CONVERGED_ITERATING is returned
+
+   The values  KSP_CONVERGED_CG_NEG_CURVE, KSP_CONVERGED_CG_CONSTRAINED, and KSP_CONVERGED_STEP_LENGTH are returned only by the special KSPCGNASH, KSPCGSTCG, and KSPCGGLTR
+   solvers which are used by the SNESNEWTONTR (trust region) solver.
 
    Level: intermediate
 

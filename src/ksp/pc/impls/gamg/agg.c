@@ -276,7 +276,7 @@ static const NState REMOVED =-3;
 */
 #undef __FUNCT__
 #define __FUNCT__ "smoothAggs"
-static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2)
+static PetscErrorCode smoothAggs(PC pc,Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2)
 {
   PetscErrorCode ierr;
   PetscBool      isMPI;
@@ -330,7 +330,7 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
     lid_cprowID_1 = NULL;
   }
   if (nloc>0) {
-    if (!(!matB_1 || matB_1->compressedrow.use)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"!(matB_1==0 || matB_1->compressedrow.use)");
+    if (matB_1 && !matB_1->compressedrow.use) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"matB_1 && !matB_1->compressedrow.use: PETSc bug???");
   }
   /* get state of locals and selected gid for deleted */
   ierr = PetscMalloc2(nloc, &lid_state,nloc, &lid_parent_gid);CHKERRQ(ierr);
@@ -435,7 +435,7 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
               SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"found node %d times???",hav);
             }
           } else {            /* I'm stealing this local, owned by a ghost */
-            if (sgid != -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Have un-symmetric graph (apparently). Use '-pc_gamg_sym_graph true' to symetrize the graph or '-pc_gamg_threshold -1.0' if the matrix is structurally symmetric.");
+            if (sgid != -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Have un-symmetric graph (apparently). Use '-%spc_gamg_sym_graph true' to symetrize the graph or '-%spc_gamg_threshold -1' if the matrix is structurally symmetric.",((PetscObject)pc)->prefix,((PetscObject)pc)->prefix);
             ierr = PetscCDAppendID(aggs_2, lid, lidj+my0);CHKERRQ(ierr);
           }
         }
@@ -888,7 +888,7 @@ static PetscErrorCode PCGAMGGraph_AGG(PC pc,Mat Amat,Mat *a_Gmat)
   PetscErrorCode            ierr;
   PC_MG                     *mg          = (PC_MG*)pc->data;
   PC_GAMG                   *pc_gamg     = (PC_GAMG*)mg->innerctx;
-  const PetscReal           vfilter      = pc_gamg->threshold;
+  const PetscReal           vfilter      = pc_gamg->threshold[pc_gamg->current_level];
   PC_GAMG_AGG               *pc_gamg_agg = (PC_GAMG_AGG*)pc_gamg->subctx;
   Mat                       Gmat;
   MPI_Comm                  comm;
@@ -937,8 +937,9 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **
   MatCoarsen     crs;
   MPI_Comm       comm;
   PetscMPIInt    rank;
-  PetscReal      rr;
+  PetscReal      hashfact;
   PetscInt       iSwapIndex;
+  PetscRandom    random;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(PC_GAMGCoarsen_AGG,0,0,0,0);CHKERRQ(ierr);
@@ -960,10 +961,11 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **
   for (Ii = 0; Ii < nloc; Ii++) {
     permute[Ii]   = Ii;
   }
+  ierr = PetscRandomCreate(PETSC_COMM_SELF,&random);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Gmat1, &Istart, &Iend);CHKERRQ(ierr);
   for (Ii = 0; Ii < nloc; Ii++) {
-    ierr = PetscRandomGetValueReal(pc_gamg->random,&rr);CHKERRQ(ierr);
-    iSwapIndex = (PetscInt) (rr*nloc);
+    ierr = PetscRandomGetValueReal(random,&hashfact);CHKERRQ(ierr);
+    iSwapIndex = (PetscInt) (hashfact*nloc)%nloc;
     if (!bIndexSet[iSwapIndex] && iSwapIndex != Ii) {
       PetscInt iTemp = permute[iSwapIndex];
       permute[iSwapIndex]   = permute[Ii];
@@ -972,7 +974,7 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **
     }
   }
   ierr = PetscFree(bIndexSet);CHKERRQ(ierr);
-
+  ierr = PetscRandomDestroy(&random);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF, nloc, permute, PETSC_USE_POINTER, &perm);CHKERRQ(ierr);
 #if defined PETSC_GAMG_USE_LOG
   ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET4],0,0,0,0);CHKERRQ(ierr);
@@ -995,7 +997,7 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **
   /* smooth aggs */
   if (Gmat2 != Gmat1) {
     const PetscCoarsenData *llist = *agg_lists;
-    ierr     = smoothAggs(Gmat2, Gmat1, *agg_lists);CHKERRQ(ierr);
+    ierr     = smoothAggs(a_pc,Gmat2, Gmat1, *agg_lists);CHKERRQ(ierr);
     ierr     = MatDestroy(&Gmat1);CHKERRQ(ierr);
     *a_Gmat1 = Gmat2; /* output */
     ierr     = PetscCDGetMat(llist, &mat);CHKERRQ(ierr);
@@ -1183,6 +1185,7 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
   Vec            bb, xx;
   PC             epc;
   PetscReal      alpha, emax, emin;
+  PetscRandom    random;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)Amat,&comm);CHKERRQ(ierr);
@@ -1192,7 +1195,9 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
   if (0 < pc_gamg_agg->nsmooths) {
     ierr = MatCreateVecs(Amat, &bb, 0);CHKERRQ(ierr);
     ierr = MatCreateVecs(Amat, &xx, 0);CHKERRQ(ierr);
-    ierr = VecSetRandom(bb,pc_gamg->random);CHKERRQ(ierr);
+    ierr = PetscRandomCreate(PETSC_COMM_SELF,&random);CHKERRQ(ierr);
+    ierr = VecSetRandom(bb,random);CHKERRQ(ierr);
+    ierr = PetscRandomDestroy(&random);CHKERRQ(ierr);
 
     ierr = KSPCreate(comm,&eksp);CHKERRQ(ierr);
     ierr = KSPSetErrorIfNotConverged(eksp,pc->erroriffailure);CHKERRQ(ierr);

@@ -11,7 +11,7 @@ class Configure(config.package.GNUPackage):
     self.liblist           = [['libml.a']]
     self.license           = 'http://trilinos.sandia.gov/'
     self.fc                = 0
-    self.double            = 1
+    self.precisions        = ['double']
     self.complex           = 0
     self.downloadonWindows = 1
     self.requires32bitint  = 1;  # ml uses a combination of "global" indices that can be 64 bit and local indices that are always int therefore it is

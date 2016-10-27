@@ -4,7 +4,7 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit         = '9fc43b7' # trilinos-release-12-6-branch
+    self.gitcommit         = '0ddbf6e' # master
     self.download          = ['https://github.com/trilinos/xSDKTrilinos/archive/'+self.gitcommit+'.tar.gz','git://https://github.com/trilinos/xSDKTrilinos.git']
     self.downloaddirname   = 'xSDKTrilinos'
     self.includes          = []
@@ -14,6 +14,7 @@ class Configure(config.package.CMakePackage):
     self.downloadonWindows = 0
     self.hastests          = 1
     self.linkedbypetsc     = 0
+    self.useddirectly      = 0
     return
 
   def setupDependencies(self, framework):

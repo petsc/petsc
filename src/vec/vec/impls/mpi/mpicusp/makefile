@@ -1,7 +1,7 @@
 #requirespackage 'PETSC_HAVE_CUSP'
 ALL: lib
 
-CFLAGS   = ${PNETCDF_INCLUDE}
+CFLAGS   = 
 FFLAGS   =
 SOURCECU = mpicusp.cu
 SOURCEF  =

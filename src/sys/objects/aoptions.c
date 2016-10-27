@@ -81,7 +81,7 @@ PetscErrorCode PetscObjectOptionsBegin_Private(PetscOptionItems *PetscOptionsObj
      Handles adding another option to the list of options within this particular PetscOptionsBegin() PetscOptionsEnd()
 */
 #undef __FUNCT__
-#define __FUNCT__ "PetscOptionCreate_Private"
+#define __FUNCT__ "PetscOptionItemCreate_Private"
 static int PetscOptionItemCreate_Private(PetscOptionItems *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscOptionType t,PetscOptionItem *amsopt)
 {
   int             ierr;
@@ -1153,7 +1153,7 @@ PetscErrorCode  PetscOptionsEList_Private(PetscOptionItems *PetscOptionsObject,c
   }
   ierr = PetscOptionsGetEList(PetscOptionsObject->options,PetscOptionsObject->prefix,opt,list,ntext,value,set);CHKERRQ(ierr);
   if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
-    ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm,"  -%s%s <%s> (choose one of)",PetscOptionsObject->prefix?PetscOptionsObject->prefix:"",opt+1,currentvalue);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm,"  -%s%s <%s> %s (choose one of)",PetscOptionsObject->prefix?PetscOptionsObject->prefix:"",opt+1,currentvalue,ltext);CHKERRQ(ierr);
     for (i=0; i<ntext; i++) {
       ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm," %s",list[i]);CHKERRQ(ierr);
     }

@@ -18,7 +18,7 @@ static PetscErrorCode DMDAGetAdjacency_Internal(DM dm, PetscInt p, PetscBool use
 
     ierr = DMDAGetTransitiveClosure(dm, star[s], (PetscBool)!useClosure, &closureSize, (PetscInt**) &closure);CHKERRQ(ierr);
     for (c = 0; c < closureSize*2; c += 2) {
-      for (q = 0; q < numAdj || (adj[numAdj++] = closure[c],0); ++q) {
+      for (q = 0; q < numAdj || ((void)(adj[numAdj++] = closure[c]),0); ++q) {
         if (closure[c] == adj[q]) break;
       }
       if (numAdj > maxAdjSize) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);

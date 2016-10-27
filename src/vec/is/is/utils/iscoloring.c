@@ -199,7 +199,7 @@ PetscErrorCode  ISColoringGetIS(ISColoring iscoloring,PetscInt *nn,IS *isis[])
         ierr = MPI_Scan(&iscoloring->N,&base,1,MPIU_INT,MPI_SUM,iscoloring->comm);CHKERRQ(ierr);
         base -= iscoloring->N;
         for (i=0; i<n; i++) ii[colors[i]][mcolors[colors[i]]++] = i + base; /* global idx */
-      } else if (iscoloring->ctype == IS_COLORING_GHOSTED) {
+      } else if (iscoloring->ctype == IS_COLORING_LOCAL) {
         for (i=0; i<n; i++) ii[colors[i]][mcolors[colors[i]]++] = i;   /* local idx */
       } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not provided for this ISColoringType type");
 

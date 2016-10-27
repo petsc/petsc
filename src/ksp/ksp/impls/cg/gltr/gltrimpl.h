@@ -15,8 +15,8 @@
 /*     9, pages 504-525, 1999.                                               */
 /*****************************************************************************/
 
-#if !defined(__GLTR)
-#define __GLTR
+#if !defined(__CG_GLTR)
+#define __CG_GLTR
 
 #include <petsc/private/kspimpl.h>
 
@@ -46,7 +46,7 @@ typedef struct {
   PetscInt max_lanczos_its;    /* Maximum lanczos iterations                */
   PetscInt max_newton_its;     /* Maximum newton iterations                 */
   PetscInt dtype;              /* Method used to measure the norm of step   */
-} KSP_GLTR;
+} KSPCG_GLTR;
 
 #endif
 

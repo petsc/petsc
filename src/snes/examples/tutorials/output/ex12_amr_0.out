@@ -15,7 +15,7 @@ Process [4]
 0.3125
 0.8125
 0.625
-L_2 Error: 0.03125
+L_2 Error: 0.0208333
 Initial Residual
 Vec Object: 5 MPI processes
   type: mpi

@@ -262,7 +262,12 @@ PETSC_EXTERN PetscErrorCode MatSetRandom(Mat,PetscRandom);
 
 /*S
      MatStencil - Data structure (C struct) for storing information about a single row or
-        column of a matrix as indexed on an associated grid.
+        column of a matrix as indexed on an associated grid. These are arguments to MatSetStencil() and MatSetBlockStencil()
+
+   The i,j, and k represent the logical coordinates over the entire grid (for 2 and 1 dimensional problems the k and j entries are ignored).
+   The c represents the the degrees of freedom at each grid point (the dof argument to DMDASetDOF()). If dof is 1 then this entry is ignored.
+
+   For stencil access to vectors see DMDAVecGetArray(), DMDAVecGetArrayF90().
 
    Fortran usage is different, see MatSetValuesStencil() for details.
 
@@ -270,7 +275,7 @@ PETSC_EXTERN PetscErrorCode MatSetRandom(Mat,PetscRandom);
 
   Concepts: matrix; linear operator
 
-.seealso:  MatSetValuesStencil(), MatSetStencil(), MatSetValuesBlockedStencil()
+.seealso:  MatSetValuesStencil(), MatSetStencil(), MatSetValuesBlockedStencil(), DMDAVecGetArray(), DMDAVecGetArrayF90()
 S*/
 typedef struct {
   PetscInt k,j,i,c;
@@ -280,12 +285,9 @@ PETSC_EXTERN PetscErrorCode MatSetValuesStencil(Mat,PetscInt,const MatStencil[],
 PETSC_EXTERN PetscErrorCode MatSetValuesBlockedStencil(Mat,PetscInt,const MatStencil[],PetscInt,const MatStencil[],const PetscScalar[],InsertMode);
 PETSC_EXTERN PetscErrorCode MatSetStencil(Mat,PetscInt,const PetscInt[],const PetscInt[],PetscInt);
 
-PETSC_EXTERN PetscErrorCode MatSetColoring(Mat,ISColoring);
-PETSC_EXTERN PetscErrorCode MatSetValuesAdifor(Mat,PetscInt,void*);
-
 /*E
     MatAssemblyType - Indicates if the matrix is now to be used, or if you plan
-     to continue to add values to it
+     to continue to add or insert values to it
 
     Level: beginner
 
@@ -344,8 +346,6 @@ PETSC_EXTERN PetscErrorCode MatGetRow(Mat,PetscInt,PetscInt *,const PetscInt *[]
 PETSC_EXTERN PetscErrorCode MatRestoreRow(Mat,PetscInt,PetscInt *,const PetscInt *[],const PetscScalar*[]);
 PETSC_EXTERN PetscErrorCode MatGetRowUpperTriangular(Mat);
 PETSC_EXTERN PetscErrorCode MatRestoreRowUpperTriangular(Mat);
-PETSC_EXTERN PetscErrorCode MatGetColumn(Mat,PetscInt,PetscInt *,const PetscInt *[],const PetscScalar*[]);
-PETSC_EXTERN PetscErrorCode MatRestoreColumn(Mat,PetscInt,PetscInt *,const PetscInt *[],const PetscScalar*[]);
 PETSC_EXTERN PetscErrorCode MatGetColumnVector(Mat,Vec,PetscInt);
 PETSC_EXTERN PetscErrorCode MatSeqAIJGetArray(Mat,PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode MatSeqAIJRestoreArray(Mat,PetscScalar *[]);
@@ -991,6 +991,7 @@ typedef enum {MAT_FACTOR_NOERROR,MAT_FACTOR_STRUCT_ZEROPIVOT,MAT_FACTOR_NUMERIC_
 
 PETSC_EXTERN PetscErrorCode MatFactorGetError(Mat,MatFactorError*);
 PETSC_EXTERN PetscErrorCode MatFactorClearError(Mat);
+PETSC_EXTERN PetscErrorCode MatFactorGetErrorZeroPivot(Mat,PetscReal*,PetscInt*);
 
 /*S
    MatFactorInfo - Data passed into the matrix factorization routines, and information about the resulting factorization
@@ -1323,7 +1324,7 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_SETUP_PREALLOCATION=29,
                MATOP_ILUFACTOR_SYMBOLIC=30,
                MATOP_ICCFACTOR_SYMBOLIC=31,
-               /* MATOP_PLACEHOLDER_32=32, */
+               MATOP_GET_DIAGONAL_BLOCK=32,
                /* MATOP_PLACEHOLDER_33=33, */
                MATOP_DUPLICATE=34,
                MATOP_FORWARD_SOLVE=35,

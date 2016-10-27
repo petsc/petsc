@@ -15,8 +15,8 @@ blocks for the implementation of large-scale application codes on parallel
 (and serial) computers.  PETSc uses the MPI standard for all
 message-passing communication.
 
-PETSc includes an expanding suite of parallel linear, nonlinear
-equation solvers and time integrators that may be
+PETSc includes an expanding suite of parallel linear solvers, nonlinear
+solvers, and time integrators that may be
 used in application codes written in Fortran, C, C++, Python, and MATLAB (sequential).  PETSc
 provides many of the mechanisms needed within parallel application
 codes, such as parallel matrix and vector assembly routines. The library is
@@ -38,9 +38,9 @@ them'' yourself.
 \item  For many tasks a package such as MATLAB is often the best tool; PETSc is not
 intended for the classes of problems for which effective MATLAB code
 can be written. PETSc also has a MATLAB interface, so portions of your code can be written in MATLAB to ``try out'' the PETSc solvers.
-The resulting code will not be scalable however because currently MATLAB is inherently not scalable.
-\item PETSc should not be used to attempt to provide
-a ``{\bf parallel linear solver}'' in an otherwise sequential code.
+The resulting code will not be scalable, however, because currently MATLAB is inherently not scalable.
+\item PETSc should {\em not} be used to attempt to provide
+a ``parallel linear solver'' in an otherwise sequential code.
 Certainly all parts of a previously sequential code need not be parallelized but the
 matrix generation portion must be parallelized to expect any kind of reasonable performance.
 Do not expect to generate your matrix sequentially and then ``use PETSc'' to solve
@@ -52,9 +52,8 @@ calling sequences of routines will occur.  PETSc is supported; see the
 web site \href{http://www.mcs.anl.gov/petsc}{http://www.mcs.anl.gov/petsc} for information on
 contacting support.
 
-A \href{http://www.mcs.anl.gov/petsc/publications}{http://www.mcs.anl.gov/petsc/publications} may be found
-a list of publications and web sites that feature work involving PETSc.
-
+A list of publications and web sites that feature work involving PETSc may be found at
+\href{http://www.mcs.anl.gov/petsc/publications}{http://www.mcs.anl.gov/petsc/publications}.
 
 We welcome any reports of corrections for this document.
 

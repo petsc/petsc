@@ -256,6 +256,12 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
   if (n) PetscValidPointer(vecs,4);
   for (i=0; i<n; i++) PetscValidHeaderSpecific(vecs[i],VEC_CLASSID,4);
   PetscValidPointer(SP,5);
+  if (n) {
+    for (i=0; i<n; i++) {
+      /* prevent the user from changes values in the vector */
+      ierr = VecLockPush(vecs[i]);CHKERRQ(ierr);
+    }
+  }
 #if defined(PETSC_USE_DEBUG)
   if (n) {
     PetscScalar *dots;
@@ -329,11 +335,16 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
 PetscErrorCode  MatNullSpaceDestroy(MatNullSpace *sp)
 {
   PetscErrorCode ierr;
+  PetscInt       i;
 
   PetscFunctionBegin;
   if (!*sp) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*sp),MAT_NULLSPACE_CLASSID,1);
   if (--((PetscObject)(*sp))->refct > 0) {*sp = 0; PetscFunctionReturn(0);}
+
+  for (i=0; i < (*sp)->n; i++) {
+    ierr = VecLockPop((*sp)->vecs[i]);CHKERRQ(ierr);
+  }
 
   ierr = VecDestroyVecs((*sp)->n,&(*sp)->vecs);CHKERRQ(ierr);
   ierr = PetscFree((*sp)->alpha);CHKERRQ(ierr);

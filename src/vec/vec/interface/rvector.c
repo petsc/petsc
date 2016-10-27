@@ -24,6 +24,8 @@ PETSC_EXTERN PetscErrorCode VecValidValues(Vec vec,PetscInt argnum,PetscBool beg
   if ((vec->petscnative || vec->ops->getarray) && (vec->valid_GPU_array == PETSC_CUSP_CPU || vec->valid_GPU_array == PETSC_CUSP_BOTH)) {
 #elif defined(PETSC_HAVE_VECCUDA)
   if ((vec->petscnative || vec->ops->getarray) && (vec->valid_GPU_array == PETSC_CUDA_CPU || vec->valid_GPU_array == PETSC_CUDA_BOTH)) {
+#elif defined(PETSC_HAVE_VIENNACL)
+  if ((vec->petscnative || vec->ops->getarray) && (vec->valid_GPU_array == PETSC_VIENNACL_CPU || vec->valid_GPU_array == PETSC_VIENNACL_BOTH)) {
 #else
   if (vec->petscnative || vec->ops->getarray) {
 #endif
@@ -389,7 +391,7 @@ PetscErrorCode  VecMax(Vec x,PetscInt *p,PetscReal *val)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecMin"
-/*@
+/*@C
    VecMin - Determines the minimum vector component and its location.
 
    Collective on Vec
@@ -1602,7 +1604,7 @@ PetscErrorCode VecRestoreLocalVector(Vec v,Vec w)
    processor's portion of the vector data. For the standard PETSc
    vectors, VecGetArray() returns a pointer to the local data array and
    does not use any copies. If the underlying vector data is not stored
-   in a contiquous array this routine will copy the data to a contiquous
+   in a contiguous array this routine will copy the data to a contiguous
    array and return a pointer to that. You MUST call VecRestoreArray()
    when you no longer need access to the array.
 
@@ -1655,6 +1657,8 @@ PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
 #elif defined(PETSC_HAVE_VIENNACL)
     if (x->valid_GPU_array == PETSC_VIENNACL_GPU) {
       ierr = VecViennaCLCopyFromGPU(x);CHKERRQ(ierr);
+    } else if (x->valid_GPU_array == PETSC_VIENNACL_UNALLOCATED) {
+      ierr = VecViennaCLAllocateCheckHost(x); CHKERRQ(ierr);
     }
 #elif defined(PETSC_HAVE_VECCUDA)
     if (x->valid_GPU_array == PETSC_CUDA_GPU) {
@@ -2006,6 +2010,8 @@ PetscErrorCode  VecReplaceArray(Vec vec,const PetscScalar array[])
 
     Example of Usage:
 .vb
+#include <petsc/finclude/petscvec.h90>
+
     Vec x
     Vec, pointer :: y(:)
     ....
@@ -2045,6 +2051,8 @@ M*/
 
     Example of Usage:
 .vb
+#include <petsc/finclude/petscvec.h90>
+
     PetscScalar, pointer :: xx_v(:)
     ....
     call VecGetArrayF90(x,xx_v,ierr)
@@ -2102,6 +2110,8 @@ M*/
 
     Example of Usage:
 .vb
+#include <petsc/finclude/petscvec.h90>
+
     PetscScalar, pointer :: xx_v(:)
     ....
     call VecGetArrayF90(x,xx_v,ierr)
@@ -2137,6 +2147,8 @@ M*/
 
     Example of Usage:
 .vb
+#include <petsc/finclude/petscvec.h90>
+
     PetscScalar, pointer :: xx_v(:)
     ....
     call VecGetArrayReadF90(x,xx_v,ierr)
@@ -2170,6 +2182,8 @@ M*/
 
     Example of Usage:
 .vb
+#include <petsc/finclude/petscvec.h90>
+
     PetscScalar, pointer :: xx_v(:)
     ....
     call VecGetArrayReadF90(x,xx_v,ierr)

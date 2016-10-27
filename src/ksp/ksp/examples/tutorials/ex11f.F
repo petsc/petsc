@@ -77,6 +77,10 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
 #if !defined(PETSC_USE_COMPLEX)
       write(6,*) 'This example requires complex numbers.'
       goto 200

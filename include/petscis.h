@@ -146,15 +146,15 @@ PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetBlockSize(ISLocalToGlobalMa
 
 $   IS_COLORING_GLOBAL - does not include the colors for ghost points, this is used when the function
 $                        is called synchronously in parallel. This requires generating a "parallel coloring".
-$   IS_COLORING_GHOSTED - includes colors for ghost points, this is used when the function can be called
+$   IS_COLORING_LOCAL - includes colors for ghost points, this is used when the function can be called
 $                         separately on individual processes with the ghost points already filled in. Does not
 $                         require a "parallel coloring", rather each process colors its local + ghost part.
-$                         Using this can result in much less parallel communication. In the paradigm of
-$                         DMGetLocalVector() and DMGetGlobalVector() this could be called IS_COLORING_LOCAL
+$                         Using this can result in much less parallel communication. Currently only works 
+$                         with DMDA and if you call MatFDColoringSetFunction() with the local function.
 
 .seealso: DMCreateColoring()
 E*/
-typedef enum {IS_COLORING_GLOBAL,IS_COLORING_GHOSTED} ISColoringType;
+typedef enum {IS_COLORING_GLOBAL,IS_COLORING_LOCAL} ISColoringType;
 PETSC_EXTERN const char *const ISColoringTypes[];
 typedef unsigned PETSC_IS_COLOR_VALUE_TYPE ISColoringValue;
 PETSC_EXTERN PetscErrorCode ISAllGatherColors(MPI_Comm,PetscInt,ISColoringValue*,PetscInt*,ISColoringValue*[]);

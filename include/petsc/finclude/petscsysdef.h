@@ -13,7 +13,7 @@
 #include "petsc/finclude/petscviewerdef.h"
 #include "petsc/finclude/petscerrordef.h"
 #include "petsc/finclude/petsclogdef.h"
-#include "petsc/finclude/petscdrawdef.h"
+#include "petsc/finclude/petscbagdef.h"
 
 !
 ! The real*8,complex*16 notatiton is used so that the
@@ -50,6 +50,7 @@
 #endif
 #define PetscInt64 integer8
 #define PetscObjectState PetscInt64
+#define PetscObjectId PetscInt64
 
 #if (PETSC_SIZEOF_INT == 4)
 #define PetscFortranInt integer4
@@ -155,7 +156,7 @@
 #endif
 #define PetscRealPart(a) a
 #define PetscConj(a) a
-#define PetscImaginaryPart(a) a
+#define PetscImaginaryPart(a) 0.0
 #endif
 
 #if defined (PETSC_USE_REAL_SINGLE)
@@ -210,6 +211,9 @@
 #define PetscBuildTwoSidedType PetscEnum
 #define PetscSubcommType PetscEnum
 
+#if !defined(PETSC_USE_FORTRAN_DATATYPES)
 #define PetscOptions PetscFortranAddr
+#endif
+#define PetscFunctionList PetscFortranAddr
 
 #endif

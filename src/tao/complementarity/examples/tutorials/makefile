@@ -72,7 +72,7 @@ runminsurf1_2:
 	${RM} -f minsurf1_2.tmp
 
 TESTEXAMPLES_C_NOTSINGLE = blackscholes.PETSc runblackscholes runblackscholes_2\
-	                   runblackscholes_3 runblackscholes_4 \
+	                   runblackscholes_3 runblackscholes_4 printdot \
 	                   runblackscholes_5 runblackscholes_6 \
 	                   runblackscholes_7 blackscholes.rm \
                            minsurf1.PETSc runminsurf1 runminsurf1_2 minsurf1.rm

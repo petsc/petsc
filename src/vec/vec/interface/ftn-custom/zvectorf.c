@@ -14,6 +14,7 @@
 #define vecrestorearrayread_      VECRESTOREARRAYREAD
 #define vecduplicatevecs_         VECDUPLICATEVECS
 #define vecdestroyvecs_           VECDESTROYVECS
+#define vecmin_                   VECMIN
 #define vecmax_                   VECMAX
 #define vecgetownershiprange_     VECGETOWNERSHIPRANGE
 #define vecgetownershipranges_    VECGETOWNERSHIPRANGES
@@ -31,6 +32,7 @@
 #define vecrestorearrayread_      vecrestorearrayread
 #define vecduplicatevecs_         vecduplicatevecs
 #define vecdestroyvecs_           vecdestroyvecs
+#define vecmin_                   vecmin
 #define vecmax_                   vecmax
 #define vecgetownershiprange_     vecgetownershiprange
 #define vecgetownershipranges_    vecgetownershipranges
@@ -172,6 +174,12 @@ PETSC_EXTERN void PETSC_STDCALL vecdestroyvecs_(PetscInt *m,Vec *vecs,PetscError
   for (i=0; i<*m; i++) {
     *ierr = VecDestroy(&vecs[i]);if (*ierr) return;
   }
+}
+
+PETSC_EXTERN void PETSC_STDCALL vecmin_(Vec *x,PetscInt *p,PetscReal *val,PetscErrorCode *ierr)
+{
+  CHKFORTRANNULLINTEGER(p);
+  *ierr = VecMin(*x,p,val);
 }
 
 PETSC_EXTERN void PETSC_STDCALL vecmax_(Vec *x,PetscInt *p,PetscReal *val,PetscErrorCode *ierr)

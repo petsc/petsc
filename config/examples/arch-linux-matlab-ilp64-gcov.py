@@ -20,7 +20,7 @@ if __name__ == '__main__':
     '--with-blas-lapack-dir=/soft/com/packages/MATLAB/R2016a',
     '--with-matlab=1',
     '--with-matlab-engine=1',
-    '--with-matlabengine-lib=-Wl,-rpath,/nfs/software/linux-ubuntu_precise_amd64/com/packages/MATLAB/R2016a/sys/os/glnxa64:/nfs/software/linux-ubuntu_precise_amd64/com/packages/MATLAB/R2016a/bin/glnxa64:/nfs/software/linux-ubuntu_precise_amd64/com/packages/MATLAB/R2016a/extern/lib/glnxa64 -L/nfs/software/linux-ubuntu_precise_amd64/com/packages/MATLAB/R2016a/bin/glnxa64 -L/nfs/software/linux-ubuntu_precise_amd64/com/packages/MATLAB/R2016a/extern/lib/glnxa64 -leng -lmex -lmx -lmat -lut -lmwm_dispatcher -lmwopcmodel -lmwservices -lmwservices -lmwopcmodel -lmwopcmodel -lmwm_dispatcher -lmwmpath -lmwopcmodel -lmwservices -lmwopcmodel -lmwservices -lxerces-c',
+    '--with-matlabengine-lib=-Wl,-rpath,/soft/com/packages/MATLAB/R2016a/sys/os/glnxa64:/soft/com/packages/MATLAB/R2016a/bin/glnxa64:/soft/com/packages/MATLAB/R2016a/extern/lib/glnxa64 -L/soft/com/packages/MATLAB/R2016a/bin/glnxa64 -L/soft/com/packages/MATLAB/R2016a/extern/lib/glnxa64 -leng -lmex -lmx -lmat -lut -lmwm_dispatcher -lmwopcmodel -lmwservices -lmwservices -lmwopcmodel -lmwopcmodel -lmwm_dispatcher -lmwmpath -lmwopcmodel -lmwservices -lmwopcmodel -lmwservices -lxerces-c',
     '--with-shared-libraries=1',
     '-known-64-bit-blas-indices=1',
     '--with-ssl=0',

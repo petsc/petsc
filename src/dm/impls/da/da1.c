@@ -245,7 +245,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
 
     for (i=0; i<(sDist); i++) { /* Right ghost points */
       if ((xe+i)<M) idx[nn++] =  xe+i;
-      else          idx[nn++] = M - (i + 1);
+      else          idx[nn++] = M - (i + 2);
     }
   } else {      /* Now do all cases with no periodicity */
     if (0 <= xs-sDist) {
@@ -303,7 +303,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
 +  comm - MPI communicator
 .  bx - type of ghost cells at the boundary the array should have, if any. Use
           DM_BOUNDARY_NONE, DM_BOUNDARY_GHOSTED, or DM_BOUNDARY_PERIODIC.
-.  M - global dimension of the array (use -M to indicate that it may be set to a different value
+.  M - global dimension of the array
             from the command line with -da_grid_x <M>)
 .  dof - number of degrees of freedom per node
 .  s - stencil width
@@ -325,6 +325,11 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
    The array data itself is NOT stored in the DMDA, it is stored in Vec objects;
    The appropriate vector objects can be obtained with calls to DMCreateGlobalVector()
    and DMCreateLocalVector() and calls to VecDuplicate() if more are needed.
+
+   You must call DMSetUp() after this call before using this DM. 
+
+   If you wish to use the options database to change values in the DMDA call DMSetFromOptions() after this call
+   but before DMSetUp(). 
 
 .keywords: distributed array, create, one-dimensional
 
@@ -348,8 +353,5 @@ PetscErrorCode  DMDACreate1d(MPI_Comm comm, DMBoundaryType bx, PetscInt M, Petsc
   ierr = DMDASetDof(*da, dof);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(*da, s);CHKERRQ(ierr);
   ierr = DMDASetOwnershipRanges(*da, lx, NULL, NULL);CHKERRQ(ierr);
-  /* This violates the behavior for other classes, but right now users expect negative dimensions to be handled this way */
-  ierr = DMSetFromOptions(*da);CHKERRQ(ierr);
-  ierr = DMSetUp(*da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

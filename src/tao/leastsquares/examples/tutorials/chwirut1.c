@@ -102,7 +102,6 @@ int main(int argc,char **argv)
   ierr = TaoSetConvergenceHistory(tao,hist,resid,0,lits,100,PETSC_TRUE);CHKERRQ(ierr);
   /* Perform the Solve */
   ierr = TaoSolve(tao);CHKERRQ(ierr);
-  ierr = TaoView(tao,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
   /* Free TAO data structures */
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);

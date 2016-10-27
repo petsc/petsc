@@ -9,6 +9,19 @@ struct _n_User {
 };
 
 #undef __FUNCT__
+#define __FUNCT__ "MatView_User"
+static PetscErrorCode MatView_User(Mat A,PetscViewer viewer)
+{
+  User           user;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatShellGetContext(A,&user);CHKERRQ(ierr);
+  ierr = MatView(user->B,viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatMult_User"
 static PetscErrorCode MatMult_User(Mat A,Vec X,Vec Y)
 {
@@ -48,6 +61,20 @@ static PetscErrorCode MatGetDiagonal_User(Mat A,Vec X)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatDiagonalSet_User"
+static PetscErrorCode MatDiagonalSet_User(Mat A,Vec D,InsertMode is)
+{
+  User           user;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatShellGetContext(A,&user);CHKERRQ(ierr);
+  ierr = MatDiagonalSet(user->B,D,is);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "TestMatrix"
 static PetscErrorCode TestMatrix(Mat A,Vec X,Vec Y,Vec Z)
 {
@@ -75,6 +102,14 @@ static PetscErrorCode TestMatrix(Mat A,Vec X,Vec Y,Vec Z)
   ierr = VecView(W2,viewer);CHKERRQ(ierr);
   ierr = MatGetDiagonal(A,W2);CHKERRQ(ierr);
   ierr = VecView(W2,viewer);CHKERRQ(ierr);
+  /* MATSHELL does not support MatDiagonalSet after MatScale */
+  if (strncmp(mattypename, "shell", 5)) {
+    ierr = MatDiagonalSet(A,X,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatGetDiagonal(A,W1);CHKERRQ(ierr);
+    ierr = VecView(W1,viewer);CHKERRQ(ierr);
+  } else {
+    ierr = PetscViewerASCIIPrintf(viewer,"MatDiagonalSet not tested on MATSHELL\n");CHKERRQ(ierr);
+  }
   ierr = MatDestroy(&E);CHKERRQ(ierr);
   ierr = VecDestroy(&W1);CHKERRQ(ierr);
   ierr = VecDestroy(&W2);CHKERRQ(ierr);
@@ -118,9 +153,11 @@ int main(int argc,char **args)
 
   ierr = MatCreateShell(PETSC_COMM_WORLD,2,2,2,2,user,&S);CHKERRQ(ierr);
   ierr = MatSetUp(S);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(S,MATOP_VIEW,(void (*)(void))MatView_User);CHKERRQ(ierr);
   ierr = MatShellSetOperation(S,MATOP_MULT,(void (*)(void))MatMult_User);CHKERRQ(ierr);
   ierr = MatShellSetOperation(S,MATOP_MULT_TRANSPOSE,(void (*)(void))MatMultTranspose_User);CHKERRQ(ierr);
   ierr = MatShellSetOperation(S,MATOP_GET_DIAGONAL,(void (*)(void))MatGetDiagonal_User);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(S,MATOP_DIAGONAL_SET,(void (*)(void))MatDiagonalSet_User);CHKERRQ(ierr);
 
   for (i=0; i<4; i++) {
     ierr = MatCreateSeqDense(PETSC_COMM_WORLD,1,1,&avals[i],&D[i]);CHKERRQ(ierr);

@@ -67,7 +67,7 @@ struct _MatOps {
   PetscErrorCode (*setup)(Mat);
   PetscErrorCode (*ilufactorsymbolic)(Mat,Mat,IS,IS,const MatFactorInfo*);
   PetscErrorCode (*iccfactorsymbolic)(Mat,Mat,IS,const MatFactorInfo*);
-  PetscErrorCode (*placeholder_32)(Mat);
+  PetscErrorCode (*getdiagonalblock)(Mat,Mat*);
   PetscErrorCode (*placeholder_33)(Mat);
   /*34*/
   PetscErrorCode (*duplicate)(Mat,MatDuplicateOption,Mat*);
@@ -115,7 +115,7 @@ struct _MatOps {
   PetscErrorCode (*getrowmaxabs)(Mat,Vec,PetscInt[]);
   PetscErrorCode (*getrowminabs)(Mat,Vec,PetscInt[]);
   PetscErrorCode (*convert)(Mat, MatType,MatReuse,Mat*);
-  PetscErrorCode (*setcoloring)(Mat,ISColoring);
+  PetscErrorCode (*dummy72)(void);
   PetscErrorCode (*placeholder_73)(Mat,void*);
   /*74*/
   PetscErrorCode (*setvaluesadifor)(Mat,PetscInt,void*);
@@ -403,7 +403,9 @@ struct _p_Mat {
   PetscReal              checksymmetrytol;
   Mat_Redundant          *redundant;        /* used by MatCreateRedundantMatrix() */
   PetscBool              erroriffailure;    /* Generate an error if detected (for example a zero pivot) instead of returning */
-  MatFactorError         errortype;         /* type of error */
+  MatFactorError         factorerrortype;               /* type of error in factorization */
+  PetscReal              factorerror_zeropivot_value;   /* If numerical zero pivot was detected this is the computed value */
+  PetscInt               factorerror_zeropivot_row;     /* Row where zero pivot was detected */
 };
 
 PETSC_INTERN PetscErrorCode MatAXPY_Basic(Mat,PetscScalar,Mat,MatStructure);
@@ -525,9 +527,10 @@ struct  _p_MatFDColoring{
   Vec            vscale;           /* holds FD scaling, i.e. 1/dx for each perturbed column */
   PetscInt       currentcolor;     /* color for which function evaluation is being done now */
   const char     *htype;           /* "wp" or "ds" */
-  ISColoringType ctype;            /* IS_COLORING_GLOBAL or IS_COLORING_GHOSTED */
+  ISColoringType ctype;            /* IS_COLORING_GLOBAL or IS_COLORING_LOCAL */
   PetscInt       brows,bcols;      /* number of block rows or columns for speedup inserting the dense matrix into sparse Jacobian */
   PetscBool      setupcalled;      /* true if setup has been called */
+  PetscBool      viewed;           /* true if the -mat_fd_coloring_view has been triggered already */
   void           (*ftn_func_pointer)(void),*ftn_func_cntx; /* serve the same purpose as *fortran_func_pointers in PETSc objects */
 };
 
@@ -560,7 +563,7 @@ struct  _p_MatTransposeColoring{
   PetscInt       *ncolumns;        /* number of local columns for a color */
   PetscInt       *nrows;           /* number of local rows for each color */
   PetscInt       currentcolor;     /* color for which function evaluation is being done now */
-  ISColoringType ctype;            /* IS_COLORING_GLOBAL or IS_COLORING_GHOSTED */
+  ISColoringType ctype;            /* IS_COLORING_GLOBAL or IS_COLORING_LOCAL */
 
   PetscInt       *colorforrow,*colorforcol;  /* pointer to rows and columns */
   PetscInt       *rows;                      /* lists the local rows for each color (using the local row numbering) */
@@ -670,7 +673,9 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_none(Mat fact,Mat mat,const Mat
   if (PetscAbsScalar(sctx->pv) <= _zero && !PetscIsNanScalar(sctx->pv)) {
     if (!mat->erroriffailure) {
       ierr = PetscInfo3(mat,"Detected zero pivot in factorization in row %D value %g tolerance %g",row,(double)PetscAbsScalar(sctx->pv),(double)_zero);CHKERRQ(ierr);
-      fact->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+      fact->factorerrortype             = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+      fact->factorerror_zeropivot_value = PetscAbsScalar(sctx->pv);
+      fact->factorerror_zeropivot_row   = row;
     } else SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g",row,(double)PetscAbsScalar(sctx->pv),(double)_zero);
   }
   PetscFunctionReturn(0);
@@ -1499,7 +1504,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedAddSorted_fast(PetscInt nidx,
     /* entry is right after previous list */
     if (entry == lnk[prev]+lnk[prev+1]) {
       lnk[prev+1]++;
-      if (lnk[next] == entry+1) { /* combine two contiquous strings */
+      if (lnk[next] == entry+1) { /* combine two contiguous strings */
         lnk[prev+1] += lnk[next+1];
         lnk[prev+2]  = lnk[next+2];
         next         = lnk[next+2];
@@ -1519,7 +1524,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedAddSorted_fast(PetscInt nidx,
     lnk[prev+2]    = 3*((lnk[8]++)+3);      /* connect previous node to the new node */
     prev           = lnk[prev+2];
     lnk[prev]      = entry;        /* set value of the new node */
-    lnk[prev+1]    = 1;             /* number of values in contiquous string is one to start */
+    lnk[prev+1]    = 1;             /* number of values in contiguous string is one to start */
     lnk[prev+2]    = next;          /* connect new node to next node */
     lnk[0]++;
   }
@@ -1580,6 +1585,9 @@ PETSC_STATIC_INLINE PetscErrorCode PetscSortIntWithMatScalarArray(PetscInt n,Pet
   }
 #endif
 }
+
+/* this is extern because it is used in MatFDColoringUseDM() which is in the DM library */
+PETSC_EXTERN PetscErrorCode MatFDColoringApply_AIJ(Mat,MatFDColoring,Vec,void*);
 
 PETSC_EXTERN PetscLogEvent MAT_Mult, MAT_MultMatrixFree, MAT_Mults, MAT_MultConstrained, MAT_MultAdd, MAT_MultTranspose;
 PETSC_EXTERN PetscLogEvent MAT_MultTransposeConstrained, MAT_MultTransposeAdd, MAT_Solve, MAT_Solves, MAT_SolveAdd, MAT_SolveTranspose;

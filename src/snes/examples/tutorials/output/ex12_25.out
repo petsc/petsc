@@ -12,7 +12,7 @@ Vec Object: 1 MPI processes
 Initial guess
 Vec Object: potential 1 MPI processes
   type: seq
-L_2 Error: 0.416667
+L_2 Error: 0.338012
 Residual:
 Vec Object: 1 MPI processes
   type: seq

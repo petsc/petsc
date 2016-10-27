@@ -521,7 +521,7 @@ PetscErrorCode  PetscBinaryClose(int fd)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscBinarySeek"
-/*@
+/*@C
    PetscBinarySeek - Moves the file pointer on a PETSc binary file.
 
    Not Collective

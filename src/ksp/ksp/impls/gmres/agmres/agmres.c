@@ -1,21 +1,6 @@
 
 #define PETSCKSP_DLL
 
-/*
- * This file implements the GMRES method with the Krylov basis built from Newton polynomials [1, 2, 3]. The basis thus generated is called the Newton basis. To reduce the negative effects of restarting, this basis is augmented with harmonic Ritz vectors that approximate the smallest or the largest eigenvalues [4].
- * References :
- * [1] Bai, Zhaojun and  Hu, D. and Reichel, L. A Newton basis GMRES implementation. IMA J. Numer. Anal. 14 (1994), no. 4, 563-581.
- *  [2] Sidje, Roger B. Alternatives for parallel Krylov subspace basis computation. Numer. Linear Algebra Appl. 4 (1997), no. 4, 305-331
- *  [3] Erhel, Jocelyne. A parallel GMRES version for general sparse matrices. Electron. Trans. Numer. Anal. 3 (1995), Dec., 160-176
- *
- *
- * This KSP is fully described in this paper together with many numerical experiments
- *  [4] D. Nuentsa Wakam and J. Erhel, Parallelism and robustness in GMRES with the Newton basis and the deflation of eigenvalues. Research report INRIA RR-7787, November 2011.
- *
- *  NOTE: In this implementation, although the deflation is done either by augmenting the basis (which is the primary goal), the preconditioning deflation defined in KSP DGMRES can be used as well with this KSP (database option -ksp_agmres_DeflPrecond, this is an  experimental option).
- *
- */
-
 #include <../src/ksp/ksp/impls/gmres/agmres/agmresimpl.h>
 
 #define AGMRES_DEFAULT_MAXK 30

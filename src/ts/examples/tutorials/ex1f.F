@@ -65,6 +65,10 @@
       param_min = 0
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+         print*,'Unable to initialize PETSc'
+         stop
+      endif
       user(lmx)        = 4
       user(lmy)        = 4
       user(param)      = 6.0
@@ -216,7 +220,7 @@
       PetscOffset      xidx
       PetscReal one,lambda
       PetscReal temp1,temp,hx,hy
-      PetscScalar      xx(1)
+      PetscScalar      xx(2)
       PetscInt          param,lmx,lmy
       parameter (param = 1,lmx = 2,lmy = 3)
 
@@ -268,7 +272,7 @@
       PetscReal  hx,hy,hxdhy,hydhx
       PetscScalar  ut,ub,ul,ur,u
       PetscScalar  uxx,uyy,sc
-      PetscScalar  xx(1),ff(1)
+      PetscScalar  xx(2),ff(2)
       PetscInt     param,lmx,lmy
       parameter (param = 1,lmx = 2,lmy = 3)
 
@@ -330,7 +334,7 @@
       PetscInt    i,j,row(1),mx,my
       PetscInt    col(5),i1,i5
       PetscScalar two,one,lambda
-      PetscScalar v(5),sc,xx(1)
+      PetscScalar v(5),sc,xx(2)
       PetscReal hx,hy,hxdhy,hydhx
 
       PetscInt  param,lmx,lmy

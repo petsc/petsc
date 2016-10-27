@@ -6,7 +6,7 @@ FPPFLAGS        =
 LOCDIR          = src/sys/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex7.c ex8.c ex9.c ex10.c ex11.c ex12.c \
                 ex14.c ex15.c ex16.c ex18.c ex19.c ex20.c ex21.c \
-                ex22.c ex23.c ex24.c ex27.c ex28.c ex29.c ex30.c ex31.c
+                ex22.c ex23.c ex24.c ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c
 EXAMPLESF       = ex1f.F ex5f.F ex6f.F ex17f.F
 MANSEC          = Sys
 
@@ -120,6 +120,9 @@ ex30: ex30.o chkopts
 ex31: ex31.o chkopts
 	-${CLINKER} -o ex31 ex31.o  ${PETSC_SYS_LIB}
 	${RM} -f ex31.o
+ex32: ex32.o chkopts
+	-${CLINKER} -o ex32 ex32.o  ${PETSC_SYS_LIB}
+	${RM} -f ex32.o
 #----------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 > ex1.tmp1 2>&1; egrep "(PETSC ERROR)" ex1.tmp1 | egrep "(main|CreateError|Error Created)" | cut -f1,2,3,4,5 -d" " > ex1.tmp;\
@@ -194,6 +197,12 @@ runex14:
 	   ${DIFF} output/ex14.out ex14.tmp || printf "${PWD}\nPossible problem with ex14, diffs above\n=========================================\n"; \
 	   ${RM} ex14.tmp
 
+runex17f:
+	-@${MPIEXEC} -n 3 ./ex17f > ex17f.tmp 2>&1;\
+	   if (${DIFF} output/ex17f_1.out ex17f.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex17f_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex17f.tmp
+
 runex19:
 	-@${MPIEXEC} -n 1 ./ex19 > ex19_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
@@ -233,17 +242,22 @@ runex31:
            echo ${PWD}/someotherfile >> ex31-sh.tmp  2>&1;   \
 	   ${DIFF} ex31-sh.tmp ex31.tmp || echo  ${PWD} "\nPossible problem with ex31, diffs above \n========================================="; \
 	   ${RM} -f ex31.tmp ex31-sh.tmp
+runex32:
+	-@${MPIEXEC} -n 1 ./ex32 -skip_petscrc -options_left 0 > ex32.tmp 2>&1;   \
+	   ${DIFF} output/ex32.out ex32.tmp || echo  ${PWD} "\nPossible problem with ex32, diffs above \n========================================="; \
+	   ${RM} -f ex32.tmp
 
 TESTEXAMPLES_C		       = ex4.PETSc ex4.rm \
                                  ex8.PETSc runex8 runex8_f ex8.rm ex19.PETSc runex19 ex19.rm \
                                  ex20.PETSc runex20 runex20_2 runex20_3 ex20.rm  ex21.PETSc ex21.rm \
                                  ex22.PETSc runex22 ex22.rm ex24.PETSc ex24.rm \
-                                 ex25.PETSc runex25 ex25.rm ex28.PETSc ex28.rm
+                                 ex25.PETSc runex25 ex25.rm ex28.PETSc ex28.rm \
+                                 ex32.PETSc runex32 ex32.rm
 
 TESTEXAMPLES_C_COMPLEX         = ex14.PETSc runex14 ex14.rm
 
 TESTEXAMPLES_C_X	       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc ex3.rm
-TESTEXAMPLES_FORTRAN	       = ex5f.PETSc ex5f.rm ex6f.PETSc ex6f.rm ex17f.PETSc ex17f.rm
+TESTEXAMPLES_FORTRAN	       = ex5f.PETSc ex5f.rm ex6f.PETSc ex6f.rm ex17f.PETSc runex17f ex17f.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex1f.PETSc ex1f.rm
 TESTEXAMPLES_FORTRAN_COMPLEX   = ex1f.PETSc ex1f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex5f.PETSc ex5f.rm ex6f.PETSc ex6f.rm

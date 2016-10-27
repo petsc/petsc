@@ -3,7 +3,10 @@
 configure_options = [
   '--with-serialize-functions=1',
   '--download-mpich=1',
-  '--download-fblaslapack=1',
+  '--download-openblas=1',
+  '--download-openblas-make-options=TARGET=CORE2 DYNAMIC_ARCH=0',
+  '--with-fortran-datatypes=1',
+  '--with-fortran-interfaces=0',
   '--download-hypre=1',
   '--download-cmake=1',
   '--download-metis=1',
@@ -13,8 +16,8 @@ configure_options = [
   '--download-triangle=1',
   '--download-superlu=1',
   '--download-superlu_dist=1',
-  '--download-scalapack=1',
-  '--download-mumps=1',
+  #'--download-scalapack=1',
+  #'--download-mumps=1', disabled as some mumps tests are fortran tests - that don't work with fortran-datatypes
   '--download-elemental=1',
   '--with-cxx-dialect=C++11',
   '--download-spai=1',

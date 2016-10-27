@@ -76,7 +76,7 @@ struct _VecOps {
   PetscErrorCode (*abs)(Vec);
   PetscErrorCode (*exp)(Vec);
   PetscErrorCode (*log)(Vec);
-  PetscErrorCode (*shift)(Vec);
+  PetscErrorCode (*shift)(Vec,PetscScalar);
   PetscErrorCode (*create)(Vec);
   PetscErrorCode (*stridegather)(Vec,PetscInt,Vec,InsertMode);
   PetscErrorCode (*stridescatter)(Vec,PetscInt,Vec,InsertMode);

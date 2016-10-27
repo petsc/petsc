@@ -74,7 +74,7 @@ TS Object: 1 MPI processes
       using PRECONDITIONED norm type for convergence test
     PC Object: 1 MPI processes
       type: lu
-        LU: out-of-place factorization
+        out-of-place factorization
         tolerance for zero pivot 2.22045e-14
         matrix ordering: nd
         factor fill ratio given 5., needed 1.22511

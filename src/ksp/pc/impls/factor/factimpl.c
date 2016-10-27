@@ -119,6 +119,39 @@ PetscErrorCode  PCFactorGetLevels_Factor(PC pc,PetscInt *levels)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PCFactorGetZeroPivot_Factor"
+PetscErrorCode  PCFactorGetZeroPivot_Factor(PC pc,PetscReal *pivot)
+{
+  PC_Factor      *ilu = (PC_Factor*)pc->data;
+
+  PetscFunctionBegin;
+  *pivot = ilu->info.zeropivot;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCFactorGetShiftAmount_Factor"
+PetscErrorCode  PCFactorGetShiftAmount_Factor(PC pc,PetscReal *shift)
+{
+  PC_Factor      *ilu = (PC_Factor*)pc->data;
+
+  PetscFunctionBegin;
+  *shift = ilu->info.shiftamount;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCFactorGetShiftTyoe_Factor"
+PetscErrorCode  PCFactorGetShiftType_Factor(PC pc,MatFactorShiftType *type)
+{
+  PC_Factor      *ilu = (PC_Factor*)pc->data;
+
+  PetscFunctionBegin;
+  *type = (MatFactorShiftType) (int) ilu->info.shifttype;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorSetLevels_Factor"
 PetscErrorCode  PCFactorSetLevels_Factor(PC pc,PetscInt levels)
 {
@@ -295,6 +328,14 @@ PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
+    if (factor->inplace) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  in-place factorization\n");CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"  out-of-place factorization\n");CHKERRQ(ierr);
+    }
+
+    if (factor->reusefill)     {ierr = PetscViewerASCIIPrintf(viewer,"  Reusing fill from past factorization\n");CHKERRQ(ierr);}
+    if (factor->reuseordering) {ierr = PetscViewerASCIIPrintf(viewer,"  Reusing reordering from past factorization\n");CHKERRQ(ierr);}
     if (factor->factortype == MAT_FACTOR_ILU || factor->factortype == MAT_FACTOR_ICC) {
       if (factor->info.dt > 0) {
         ierr = PetscViewerASCIIPrintf(viewer,"  drop tolerance %g\n",(double)factor->info.dt);CHKERRQ(ierr);

@@ -133,6 +133,8 @@ int main(int argc,char **argv)
   */
 
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,m,1,1,NULL,&appctx.da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(appctx.da);CHKERRQ(ierr);
+  ierr = DMSetUp(appctx.da);CHKERRQ(ierr);
 
   /*
      Extract global and local vectors from DMDA; we use these to store the

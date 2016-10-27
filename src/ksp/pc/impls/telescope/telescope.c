@@ -5,6 +5,27 @@
 #include <petscdm.h> /*I "petscdm.h" I*/
 #include "../src/ksp/pc/impls/telescope/telescope.h"
 
+static PetscBool  cited = PETSC_FALSE;
+static const char citation[] =
+"@inproceedings{MaySananRuppKnepleySmith2016,\n"
+"  title     = {Extreme-Scale Multigrid Components within PETSc},\n"
+"  author    = {Dave A. May and Patrick Sanan and Karl Rupp and Matthew G. Knepley and Barry F. Smith},\n"
+"  booktitle = {Proceedings of the Platform for Advanced Scientific Computing Conference},\n"
+"  series    = {PASC '16},\n"
+"  isbn      = {978-1-4503-4126-4},\n"
+"  location  = {Lausanne, Switzerland},\n"
+"  pages     = {5:1--5:12},\n"
+"  articleno = {5},\n"
+"  numpages  = {12},\n"
+"  url       = {http://doi.acm.org/10.1145/2929908.2929913},\n"
+"  doi       = {10.1145/2929908.2929913},\n"
+"  acmid     = {2929913},\n"
+"  publisher = {ACM},\n"
+"  address   = {New York, NY, USA},\n"
+"  keywords  = {GPU, HPC, agglomeration, coarse-level solver, multigrid, parallel computing, preconditioning},\n"
+"  year      = {2016}\n"
+"}\n";
+
 /*
  PCTelescopeSetUp_default()
  PCTelescopeMatCreate_default()
@@ -448,6 +469,8 @@ static PetscErrorCode PCApply_Telescope(PC pc,Vec x,Vec y)
   const PetscScalar *x_array;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister(citation,&cited);CHKERRQ(ierr);
+
   xtmp    = sred->xtmp;
   scatter = sred->scatter;
   xred    = sred->xred;
@@ -457,7 +480,7 @@ static PetscErrorCode PCApply_Telescope(PC pc,Vec x,Vec y)
   ierr = VecScatterBegin(scatter,x,xtmp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(scatter,x,xtmp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
-  /* copy vector entires into xred */
+  /* copy vector entries into xred */
   ierr = VecGetArrayRead(xtmp,&x_array);CHKERRQ(ierr);
   if (xred) {
     PetscScalar *LA_xred;
@@ -516,7 +539,7 @@ static PetscErrorCode PCApplyRichardson_Telescope(PC pc,Vec x,Vec y,Vec w,PetscR
     ierr = VecScatterBegin(scatter,y,xtmp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(scatter,y,xtmp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
-    /* copy vector entires into xred */
+    /* copy vector entries into xred */
     ierr = VecGetArrayRead(xtmp,&x_array);CHKERRQ(ierr);
     if (yred) {
       PetscScalar *LA_yred;
@@ -1053,6 +1076,9 @@ PetscErrorCode PCTelescopeGetSubcommType(PC pc, PetscSubcommType *subcommtype)
 
 
   Contributed by Dave May
+
+  Reference:
+  Dave A. May, Patrick Sanan, Karl Rupp, Matthew G. Knepley, and Barry F. Smith, "Extreme-Scale Multigrid Components within PETSc". 2016. In Proceedings of the Platform for Advanced Scientific Computing Conference (PASC '16). DOI: 10.1145/2929908.2929913
 
 .seealso:  PCTelescopeGetKSP(), PCTelescopeGetDM(), PCTelescopeGetReductionFactor(), PCTelescopeSetReductionFactor(), PCTelescopeGetIgnoreDM(), PCTelescopeSetIgnoreDM(), PCREDUNDANT
 M*/

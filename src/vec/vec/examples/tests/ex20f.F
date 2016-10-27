@@ -22,6 +22,10 @@
        vecclassid(1) = 1211211 + 3
 
        call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+       if (ierr .ne. 0) then
+         print*,'Unable to initialize PETSc'
+         stop
+       endif
 
        do 10, i=1,5
          array(i) = i

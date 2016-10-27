@@ -433,14 +433,14 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFacto
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot in row %D",sinfo);
     } else {
       if (sinfo <= lu->A_sup.ncol) {
-        F->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+        F->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
         ierr = PetscInfo1(F,"U(i,i) is exactly zero, i= %D\n",sinfo);CHKERRQ(ierr);
       } else if (sinfo > lu->A_sup.ncol) {
         /* 
          number of bytes allocated when memory allocation
          failure occurred, plus A->ncol.
          */
-        F->errortype = MAT_FACTOR_OUTMEMORY;
+        F->factorerrortype = MAT_FACTOR_OUTMEMORY;
         ierr = PetscInfo1(F,"Number of bytes allocated when memory allocation fails %D\n",sinfo);CHKERRQ(ierr);
       }
     }

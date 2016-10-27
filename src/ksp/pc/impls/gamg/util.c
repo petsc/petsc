@@ -72,7 +72,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatCollapseRows(Mat Amat,PetscInt start,Petsc
 PetscErrorCode PCGAMGCreateGraph(Mat Amat, Mat *a_Gmat)
 {
   PetscErrorCode ierr;
-  PetscInt       Istart,Iend,Ii,i,jj,kk,ncols,nloc,NN,MM,bs;
+  PetscInt       Istart,Iend,Ii,jj,kk,ncols,nloc,NN,MM,bs;
   MPI_Comm       comm;
   Mat            Gmat;
   MatType        mtype;
@@ -91,7 +91,7 @@ PetscErrorCode PCGAMGCreateGraph(Mat Amat, Mat *a_Gmat)
   if (bs > 1) {
     const PetscScalar *vals;
     const PetscInt    *idx;
-    PetscInt          *d_nnz, *o_nnz,*blockmask = NULL,maskcnt,*w0,*w1,*w2;
+    PetscInt          *d_nnz, *o_nnz,*w0,*w1,*w2;
     PetscBool         ismpiaij,isseqaij;
 
     /*
@@ -149,44 +149,10 @@ PetscErrorCode PCGAMGCreateGraph(Mat Amat, Mat *a_Gmat)
       }
 
     } else {
-      /*
-
-       This is O(nloc*nloc/bs) work!
-
-       This is accurate for the "diagonal" block of the matrix but will be grossly high for the
-       off diagonal block most of the time but could be too low for the off-diagonal.
-
-       This should be fixed to be accurate for the off-diagonal portion. Cannot just use a mask
-       for the off-diagonal portion since for huge matrices that would require too much memory per
-       MPI process.
-      */
-      ierr = PetscMalloc1(nloc, &blockmask);CHKERRQ(ierr);
-      for (Ii = Istart, jj = 0; Ii < Iend; Ii += bs, jj++) {
-        o_nnz[jj] = 0;
-        ierr = PetscMemzero(blockmask,nloc*sizeof(PetscInt));CHKERRQ(ierr);
-        for (kk=0; kk<bs; kk++) { /* rows that get collapsed to a single row */
-          ierr = MatGetRow(Amat,Ii+kk,&ncols,&idx,0);CHKERRQ(ierr);
-          for (i=0; i<ncols; i++) {
-            if (idx[i] >= Istart && idx[i] < Iend) {
-              blockmask[(idx[i] - Istart)/bs] = 1;
-            }
-          }
-          if (ncols > o_nnz[jj]) {
-            o_nnz[jj] = ncols;
-            if (o_nnz[jj] > (NN/bs-nloc)) o_nnz[jj] = NN/bs-nloc;
-          }
-          ierr = MatRestoreRow(Amat,Ii+kk,&ncols,&idx,0);CHKERRQ(ierr);
-        }
-        maskcnt = 0;
-        for (i=0; i<nloc; i++) {
-          if (blockmask[i]) maskcnt++;
-        }
-        d_nnz[jj] = maskcnt;
-      }
-      ierr = PetscFree(blockmask);CHKERRQ(ierr);
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Require AIJ matrix type");
     }
 
-    /* get scalar copy (norms) of matrix -- AIJ specific!!! */
+    /* get scalar copy (norms) of matrix */
     ierr = MatGetType(Amat,&mtype);CHKERRQ(ierr);
     ierr = MatCreate(comm, &Gmat);CHKERRQ(ierr);
     ierr = MatSetSizes(Gmat,nloc,nloc,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
@@ -260,18 +226,19 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
 
   if (vfilter < 0.0 && !symm) {
     /* Just use the provided matrix as the graph but make all values positive */
-    Mat_MPIAIJ  *aij = (Mat_MPIAIJ*)Gmat->data;
     MatInfo     info;
     PetscScalar *avals;
-    PetscMPIInt size;
-
-    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)Gmat),&size);CHKERRQ(ierr);
-    if (size == 1) {
+    PetscBool isaij,ismpiaij;
+    ierr = PetscObjectTypeCompare((PetscObject)Gmat,MATSEQAIJ,&isaij);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)Gmat,MATMPIAIJ,&ismpiaij);CHKERRQ(ierr);
+    if (!isaij && !ismpiaij) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Require (MPI)AIJ matrix type");
+    if (isaij) {
       ierr = MatGetInfo(Gmat,MAT_LOCAL,&info);CHKERRQ(ierr);
       ierr = MatSeqAIJGetArray(Gmat,&avals);CHKERRQ(ierr);
       for (jj = 0; jj<info.nz_used; jj++) avals[jj] = PetscAbsScalar(avals[jj]);
       ierr = MatSeqAIJRestoreArray(Gmat,&avals);CHKERRQ(ierr);
     } else {
+      Mat_MPIAIJ  *aij = (Mat_MPIAIJ*)Gmat->data;
       ierr = MatGetInfo(aij->A,MAT_LOCAL,&info);CHKERRQ(ierr);
       ierr = MatSeqAIJGetArray(aij->A,&avals);CHKERRQ(ierr);
       for (jj = 0; jj<info.nz_used; jj++) avals[jj] = PetscAbsScalar(avals[jj]);
@@ -365,7 +332,7 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCGAMGGetDataWithGhosts - hacks into Mat MPIAIJ so this must have > 1 pe
+   PCGAMGGetDataWithGhosts - hacks into Mat MPIAIJ so this must have npe > 1
 
    Input Parameter:
    . Gmat - MPIAIJ matrix for scattters

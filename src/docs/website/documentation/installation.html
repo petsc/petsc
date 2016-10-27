@@ -1034,7 +1034,7 @@
       <hr>
 
       <div>
-        <h3><a name="cuda">Installing PETSc to use GPUs and accelerators via OpenCL (NVIDIA, AMD, Intel MIC)</a></h3>
+        <h3><a name="opencl">Installing PETSc to use GPUs and accelerators via OpenCL (NVIDIA, AMD, Intel MIC)</a></h3>
 
         <ul>
           <li>
@@ -1059,12 +1059,32 @@
 
       <hr>
 
-      <a href="#" target="_top">Return to Installation Instructions</a>
-    </div>
+      <div>
+        <h3><a name="iosandroid">Installing PETSc on an iOS or Android platform</a></h3>
 
-    <!--end-->
+        <ul>
+          <li>
+            A thorough discussion of the installation procedure is given <a href="https://www.researchgate.net/publication/308973080_Comparison_of_Migration_Techniques_for_High-Performance_Code_to_Android_and_iOS">here</a>.
+          </li>
 
-    <hr>
+          <li>
+            For Android, you must have your standalone bin folder in the path, so that the compilers are visible.
+          </li>
+
+          <li>Check <code>config/examples/arch-arm64-opt.py</code> for iOS
+            and <code>config/examples/arch-armv7-opt.py</code> for example usage.</li>
+        </ul>
+
+        <p>
+          OpenCL/ViennaCL builds of PETSc currently work on Apple OSX, Linux, and Microsoft Windows. OpenCL is less a burden on the build system than CUDA, so installation is often easier and works with any host compiler.
+        </p>
+
+        <a href="#" target="_top">Return to Installation Instructions</a>
+      </div> <!-- #iosandroid -->
+
+      <hr>
+
+    </div> <!--end-->
 
   </body>
 </html>

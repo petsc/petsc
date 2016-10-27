@@ -76,8 +76,10 @@ PetscErrorCode PetscOptionsHelpPrintedCreate(PetscOptionsHelpPrinted *hp)
 PetscErrorCode PetscOptionsHelpPrintedCheck(PetscOptionsHelpPrinted hp,const char *pre,const char* name,PetscBool *found)
 {
   size_t          l1,l2;
+#if !defined(PETSC_HAVE_THREADSAFETY)
   char            *both;
   khint_t         newitem;
+#endif
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -87,6 +89,7 @@ PetscErrorCode PetscOptionsHelpPrintedCheck(PetscOptionsHelpPrinted hp,const cha
     *found = PETSC_FALSE;
     PetscFunctionReturn(0);
   }
+#if !defined(PETSC_HAVE_THREADSAFETY)
   ierr = PetscSegBufferGet(hp->strings,l1+l2+1,&both);CHKERRQ(ierr);
   ierr = PetscStrcpy(both,pre);CHKERRQ(ierr);
   ierr = PetscStrcat(both,name);CHKERRQ(ierr);
@@ -95,6 +98,9 @@ PetscErrorCode PetscOptionsHelpPrintedCheck(PetscOptionsHelpPrinted hp,const cha
     ierr = PetscSegBufferUnuse(hp->strings,l1+l2+1);CHKERRQ(ierr);
   }
   *found = newitem ? PETSC_FALSE : PETSC_TRUE;
+#else
+  *found = PETSC_FALSE;
+#endif
   PetscFunctionReturn(0);
 }
 

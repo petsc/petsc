@@ -1579,7 +1579,8 @@ PetscErrorCode PetscSectionView(PetscSection s, PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!viewer) {ierr = PetscViewerASCIIGetStdout(PETSC_COMM_SELF, &viewer);CHKERRQ(ierr);}
+  PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
+  if (!viewer) {ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)s), &viewer);CHKERRQ(ierr);}
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
   if (isascii) {

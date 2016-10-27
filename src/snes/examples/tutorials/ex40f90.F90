@@ -20,33 +20,33 @@
 
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+         print*,'PetscInitialize failed'
+         stop
+      endif
 
       ten = 10
       one = 1
       two = 2
 
-      call DMDACreate2d(PETSC_COMM_WORLD,                               &
-     &     DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,                       &
-     &                DMDA_STENCIL_BOX,                                 &
-     &                -ten,-ten,PETSC_DECIDE,PETSC_DECIDE,two,one,      &
-     &                PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
-
+      call DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,ten,ten,PETSC_DECIDE,PETSC_DECIDE,two,one,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr);CHKERRQ(ierr)
+      call DMSetFromOptions(da,ierr)
+      call DMSetUp(da,ierr)
 
 !       Create solver object and associate it with the unknowns (on the grid)
 
-      call SNESCreate(PETSC_COMM_WORLD,snes,ierr)
-      call SNESSetDM(snes,da,ierr)
+      call SNESCreate(PETSC_COMM_WORLD,snes,ierr);CHKERRQ(ierr)
+      call SNESSetDM(snes,da,ierr);CHKERRQ(ierr)
 
-      call DMDASNESSetFunctionLocal(da,INSERT_VALUES,FormFunctionLocal,    &
-     &                              PETSC_NULL_OBJECT,ierr)
-      call SNESSetFromOptions(snes,ierr)
+      call DMDASNESSetFunctionLocal(da,INSERT_VALUES,FormFunctionLocal,PETSC_NULL_OBJECT,ierr);CHKERRQ(ierr)
+      call SNESSetFromOptions(snes,ierr);CHKERRQ(ierr)
 
 !      Solve the nonlinear system
 !
-      call SNESSolve(snes,PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,ierr)
+      call SNESSolve(snes,PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,ierr);CHKERRQ(ierr)
 
-      call SNESDestroy(snes,ierr)
-      call DMDestroy(da,ierr)
+      call SNESDestroy(snes,ierr);CHKERRQ(ierr)
+      call DMDestroy(da,ierr);CHKERRQ(ierr)
       call PetscFinalize(ierr)
       end
 
@@ -55,12 +55,8 @@
       implicit none
       PetscInt i,j,k,dummy
       DMDALocalInfo in(DMDA_LOCAL_INFO_SIZE)
-      PetscScalar x(in(DMDA_LOCAL_INFO_DOF),                            &
-     &              XG_RANGE,                                           &
-     &              YG_RANGE)
-      PetscScalar f(in(DMDA_LOCAL_INFO_DOF),                            &
-     &             X_RANGE,                                             &
-     &             Y_RANGE)
+      PetscScalar x(in(DMDA_LOCAL_INFO_DOF),XG_RANGE,YG_RANGE)
+      PetscScalar f(in(DMDA_LOCAL_INFO_DOF),X_RANGE,Y_RANGE)
       PetscErrorCode ierr
 
       do i=in(DMDA_LOCAL_INFO_XS)+1,in(DMDA_LOCAL_INFO_XS)+in(DMDA_LOCAL_INFO_XM)

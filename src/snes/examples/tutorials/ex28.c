@@ -354,9 +354,10 @@ int main(int argc, char *argv[])
   PetscBool      view_draw,pass_dm;
 
   ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,-10,1,1,NULL,&dau);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,10,1,1,NULL,&dau);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(dau,"u_");CHKERRQ(ierr);
   ierr = DMSetFromOptions(dau);CHKERRQ(ierr);
+  ierr = DMSetUp(dau);CHKERRQ(ierr);
   ierr = DMDAGetOwnershipRanges(dau,&lxu,0,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(dau,0, &m,0,0, &sizes,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscMalloc1(sizes,&lxk);CHKERRQ(ierr);
@@ -365,6 +366,7 @@ int main(int argc, char *argv[])
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,m-1,1,1,lxk,&dak);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(dak,"k_");CHKERRQ(ierr);
   ierr = DMSetFromOptions(dak);CHKERRQ(ierr);
+  ierr = DMSetUp(dak);CHKERRQ(ierr);
   ierr = PetscFree(lxk);CHKERRQ(ierr);
 
   ierr = DMCompositeCreate(PETSC_COMM_WORLD,&pack);CHKERRQ(ierr);

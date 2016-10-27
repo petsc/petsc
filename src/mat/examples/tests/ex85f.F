@@ -17,6 +17,10 @@
       PetscScalar value
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
 
       twelve = 12
       call MatCreate(PETSC_COMM_SELF,m,ierr)

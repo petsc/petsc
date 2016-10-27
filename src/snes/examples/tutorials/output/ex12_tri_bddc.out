@@ -94,4 +94,4 @@ SNES Object: 5 MPI processes
           total number of mallocs used during MatSetValues calls =0
             not using I-node routines
 Number of SNES iterations = 1
-L_2 Error: 0.00173611
+L_2 Error: 0.00131794

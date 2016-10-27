@@ -53,7 +53,9 @@ int main(int argc,char **argv)
   appctx.a  = -1.0;
   ierr      = PetscOptionsGetReal(NULL,NULL,"-a",&appctx.a,NULL);CHKERRQ(ierr);
 
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC, -60, 1, 1,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC, 60, 1, 1,NULL,&da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
 
   /* Create vector data structures for approximate and exact solutions */
   ierr = DMCreateGlobalVector(da,&U);CHKERRQ(ierr);

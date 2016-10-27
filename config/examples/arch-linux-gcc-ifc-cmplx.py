@@ -4,7 +4,7 @@
 import os
 import distutils.spawn
 ifort_lib_dir=os.path.join(os.path.dirname(os.path.dirname(distutils.spawn.find_executable('ifort'))),'lib','intel64')
-mpich_install_dir='/homes/petsc/soft/linux-Ubuntu_12.04-x86_64/mpich-3.1.3-gcc-ifc'
+mpich_install_dir='/homes/petsc/soft/linux-Ubuntu_14.04-x86_64/mpich-3.2-gcc-ifc'
 mpich_lib_dir=os.path.join(mpich_install_dir,'lib')
 
 configure_options = [

@@ -4,7 +4,7 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.gitcommit = 'v2.11.1'
+    self.gitcommit = 'v2.11.1-55-g2ea0e43'
     self.download  = ['git://https://github.com/LLNL/hypre','https://github.com/LLNL/hypre/archive/'+self.gitcommit+'.tar.gz']
     self.functions = ['HYPRE_IJMatrixCreate']
     self.includes  = ['HYPRE.h']
@@ -12,7 +12,7 @@ class Configure(config.package.GNUPackage):
     self.license   = 'https://computation.llnl.gov/casc/linear_solvers/sls_hypre.html'
     # Per hypre users guide section 7.5 - install manually on windows for MS compilers.
     self.downloadonWindows = 0
-    self.double            = 1
+    self.precisions        = ['double']
     self.complex           = 0
     self.hastests          = 1
     self.hastestsdatafiles = 1

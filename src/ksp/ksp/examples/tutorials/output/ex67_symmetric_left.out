@@ -1,0 +1,39 @@
+  0 KSP preconditioned resid norm 2.673348029835e-02 true resid norm 2.236067977500e+00 ||r(i)||/||b|| 1.000000000000e+00
+  1 KSP preconditioned resid norm 2.623221277441e-03 true resid norm 5.400564753058e-01 ||r(i)||/||b|| 2.415205980946e-01
+  2 KSP preconditioned resid norm 4.772549833927e-04 true resid norm 8.381462734504e-02 ||r(i)||/||b|| 3.748304085046e-02
+  3 KSP preconditioned resid norm 1.285178934335e-04 true resid norm 3.171591658850e-02 ||r(i)||/||b|| 1.418378909212e-02
+  4 KSP preconditioned resid norm 4.655504115741e-06 true resid norm 1.744722894237e-03 ||r(i)||/||b|| 7.802637986828e-04
+  5 KSP preconditioned resid norm 3.388491136321e-08 true resid norm 8.371443182788e-06 ||r(i)||/||b|| 3.743823205298e-06
+  6 KSP preconditioned resid norm 1.763669642183e-09 true resid norm 5.943918335685e-07 ||r(i)||/||b|| 2.658201090260e-07
+  7 KSP preconditioned resid norm 2.984419585039e-11 true resid norm 1.264527842976e-08 ||r(i)||/||b|| 5.655140432672e-09
+  8 KSP preconditioned resid norm 1.365787844476e-18 true resid norm 2.056161816083e-15 ||r(i)||/||b|| 9.195435187003e-16
+Linear solve converged due to CONVERGED_RTOL iterations 8
+KSP Object: 1 MPI processes
+  type: gmres
+    GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+    GMRES: happy breakdown tolerance 1e-30
+  maximum iterations=12, initial guess is zero
+  tolerances:  relative=1e-14, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object: 1 MPI processes
+  type: sor
+    SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
+  linear system matrix = precond matrix:
+  Mat Object: 1 MPI processes
+    type: seqaij
+    rows=10, cols=10
+    total: nonzeros=50, allocated nonzeros=50
+    total number of mallocs used during MatSetValues calls =0
+      has attached null space
+      not using I-node routines
+  0 KSP preconditioned resid norm 2.673348029835e-02 true resid norm 2.236067977500e+00 ||r(i)||/||b|| 1.000000000000e+00
+  1 KSP preconditioned resid norm 2.623221277441e-03 true resid norm 5.400564753058e-01 ||r(i)||/||b|| 2.415205980946e-01
+  2 KSP preconditioned resid norm 4.772549833927e-04 true resid norm 8.381462734504e-02 ||r(i)||/||b|| 3.748304085046e-02
+  3 KSP preconditioned resid norm 1.285178934335e-04 true resid norm 3.171591658850e-02 ||r(i)||/||b|| 1.418378909212e-02
+  4 KSP preconditioned resid norm 4.655504115741e-06 true resid norm 1.744722894237e-03 ||r(i)||/||b|| 7.802637986828e-04
+  5 KSP preconditioned resid norm 3.388491136321e-08 true resid norm 8.371443182788e-06 ||r(i)||/||b|| 3.743823205298e-06
+  6 KSP preconditioned resid norm 1.763669642183e-09 true resid norm 5.943918335685e-07 ||r(i)||/||b|| 2.658201090260e-07
+  7 KSP preconditioned resid norm 2.984419585039e-11 true resid norm 1.264527842976e-08 ||r(i)||/||b|| 5.655140432672e-09
+  8 KSP preconditioned resid norm 1.365787844476e-18 true resid norm 2.056161816083e-15 ||r(i)||/||b|| 9.195435187003e-16
+Linear solve converged due to CONVERGED_RTOL iterations 8

@@ -7,6 +7,7 @@ class Configure(config.package.Package):
                               'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpi4py-1.3.1.tar.gz']
     self.functions         = []
     self.includes          = []
+    self.useddirectly      = 0
     return
 
   def setupDependencies(self, framework):

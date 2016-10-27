@@ -314,9 +314,12 @@ PETSC_EXTERN PetscErrorCode PetscLogEventZeroFlops(PetscLogEvent);
 */
 PETSC_STATIC_INLINE PetscErrorCode PetscMPITypeSize(PetscLogDouble *buff,PetscMPIInt count,MPI_Datatype type)
 {
-  PetscMPIInt mysize; 
+  PetscMPIInt mysize;
+  PetscErrorCode _myierr;
   if (type == MPI_DATATYPE_NULL) return 0;
-  else return  (MPI_Type_size(type,&mysize) || ((*buff += (PetscLogDouble) (count*mysize)),0));
+  _myierr = MPI_Type_size(type,&mysize);CHKERRQ(_myierr);
+  *buff += (PetscLogDouble) (count*mysize);
+  return 0;
 }
 
 PETSC_STATIC_INLINE PetscErrorCode PetscMPITypeSizeComm(MPI_Comm comm, PetscLogDouble *buff,PetscMPIInt *counts,MPI_Datatype type)

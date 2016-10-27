@@ -73,6 +73,13 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
   PetscFunctionBegin;
   if (!ksp->vec_rhs->petscnative) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Only coded for PETSc vectors");
 
+ #if defined(PETSC_HAVE_MPI_LONG_DOUBLE) && !defined(PETSC_USE_COMPLEX) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
+  /* since 80 bit long doubls do not fill the upper bits, we fill them initially so that
+     valgrind won't detect MPI_Allreduce() with uninitialized data */
+  ierr = PetscMemzero(insums,sizeof(insums));CHKERRQ(ierr);
+  ierr = PetscMemzero(insums,sizeof(insums));CHKERRQ(ierr);
+#endif
+
   ierr = PCGetOperators(ksp->pc,&A,NULL);CHKERRQ(ierr);
   ierr = VecGetLocalSize(ksp->vec_sol,&N);CHKERRQ(ierr);
   Xn   = ksp->vec_sol; ierr = VecGetArray(Xn_1,(PetscScalar**)&xn_1);CHKERRQ(ierr); ierr = VecRestoreArray(Xn_1,NULL);CHKERRQ(ierr);

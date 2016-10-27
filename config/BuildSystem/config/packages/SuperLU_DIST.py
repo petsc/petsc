@@ -4,7 +4,7 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit         = '0b5369f' #maint/v5.1.0+ from june-16-2016
+    self.gitcommit         = 'v5.1.2'
     self.download         = ['git://https://github.com/xiaoyeli/superlu_dist','https://github.com/xiaoyeli/superlu_dist/archive/'+self.gitcommit+'.tar.gz']
     self.downloaddirname  = 'superlu_dist'
     self.functions        = ['set_default_options_dist']
@@ -16,6 +16,7 @@ class Configure(config.package.CMakePackage):
     self.hastests         = 1
     self.hastestsdatafiles= 1
     self.requirec99flag   = 1 # SuperLU_Dist uses C99 features
+    self.precisions       = ['double']
     return
 
   def setupHelp(self, help):

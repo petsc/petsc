@@ -220,7 +220,7 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
       dp = 0.0;
     }
     ksp->rnorm = dp;
-    CHKERRQ(ierr);KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
+    ierr = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
     if (eigs) cg->ned = ksp->its;
     ierr = KSPMonitor(ksp,i+1,dp);CHKERRQ(ierr);
     ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);

@@ -33,8 +33,8 @@ int main(int argc,char **args)
 
   ierr = PetscFOpen(PETSC_COMM_SELF,filein,"r",&file);CHKERRQ(ierr);
 
-  fscanf(file,"  NUNKNS =%d  NCOEFF =%d\n",&n,&nnz);
-  fscanf(file,"  JA POINTER IN SLAPSV\n");
+  if (fscanf(file,"  NUNKNS =%d  NCOEFF =%d\n",&n,&nnz) != 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG, "Incorrectly formatted file");
+  if (fscanf(file,"  JA POINTER IN SLAPSV\n")) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG, "Incorrectly formatted file");
 
   ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,n,n,20,0,&A);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
@@ -42,26 +42,28 @@ int main(int argc,char **args)
   ierr = VecSetFromOptions(b);CHKERRQ(ierr);
 
   ierr = PetscMalloc1(n+1,&col);CHKERRQ(ierr);
-  for (i=0; i<n+1; i++) fscanf(file,"     I=%d%d\n",&j,&col[i]);
-  fscanf(file,"  EOD JA\n");
+  for (i=0; i<n+1; i++) {
+    if (fscanf(file,"     I=%d%d\n",&j,&col[i]) != 2)  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG, "Incorrectly formatted file");
+  }
+  if (fscanf(file,"  EOD JA\n")) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG, "Incorrectly formatted file");
 
   ierr = PetscMalloc1(nnz,&val);CHKERRQ(ierr);
   ierr = PetscMalloc1(nnz,&row);CHKERRQ(ierr);
-  fscanf(file,"  COEFFICIENT MATRIX IN SLAPSV: I, IA, A\n");
+  if (fscanf(file,"  COEFFICIENT MATRIX IN SLAPSV: I, IA, A\n")) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG, "Incorrectly formatted file");
   for (i=0; i<nnz; i++) {
-    fscanf(file,"    %d%d%le\n",&j,&row[i],(double*)&val[i]);
+    if (fscanf(file,"    %d%d%le\n",&j,&row[i],(double*)&val[i]) != 3) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG, "Incorrectly formatted file");
     row[i]--;
   }
-  fscanf(file,"  EOD IA\n");
+  if (fscanf(file,"  EOD IA\n")) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG, "Incorrectly formatted file");
 
   ierr = PetscMalloc1(n,&bval);CHKERRQ(ierr);
   ierr = PetscMalloc1(n,&brow);CHKERRQ(ierr);
-  fscanf(file,"  RESIDUAL IN SLAPSV ;IRHS=%d\n",&j);
+  if (fscanf(file,"  RESIDUAL IN SLAPSV ;IRHS=%d\n",&j) != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG, "Incorrectly formatted file");
   for (i=0; i<n; i++) {
-    fscanf(file,"      %d%le%d\n",&j,(double*)(bval+i),&j);
+    if (fscanf(file,"      %d%le%d\n",&j,(double*)(bval+i),&j) != 3) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG, "Incorrectly formatted file");
     brow[i] = i;
   }
-  fscanf(file,"  EOD RESIDUAL");
+  if (fscanf(file,"  EOD RESIDUAL")) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG, "Incorrectly formatted file");
   fclose(file);
 
   m     = n/size+1;

@@ -12,9 +12,9 @@ Labels:
   marker: 4 strata of sizes (17, 15, 17, 15)
   depth: 3 strata of sizes (81, 208, 128)
 Integral of pressure: 0.
-  0 SNES Function norm 0.0349722 
-    0 KSP Residual norm 0.994262 
-    1 KSP Residual norm 9.884e-10 
+  0 SNES Function norm 0.0350306 
+    0 KSP Residual norm 0.99431 
+    1 KSP Residual norm 9.948e-10 
     2 KSP Residual norm < 1.e-11
   Linear solve converged due to CONVERGED_ATOL iterations 2
   1 SNES Function norm < 1.e-11
@@ -59,7 +59,7 @@ SNES Object: 1 MPI processes
           using PRECONDITIONED norm type for convergence test
         PC Object: (fieldsplit_velocity_) 1 MPI processes
           type: lu
-            LU: out-of-place factorization
+            out-of-place factorization
             tolerance for zero pivot 2.22045e-14
             matrix ordering: nd
             factor fill ratio given 5., needed 2.54349
@@ -121,7 +121,7 @@ SNES Object: 1 MPI processes
                   using PRECONDITIONED norm type for convergence test
                 PC Object: (fieldsplit_velocity_) 1 MPI processes
                   type: lu
-                    LU: out-of-place factorization
+                    out-of-place factorization
                     tolerance for zero pivot 2.22045e-14
                     matrix ordering: nd
                     factor fill ratio given 5., needed 2.54349
@@ -162,5 +162,5 @@ SNES Object: 1 MPI processes
         has attached null space
         using I-node routines: found 288 nodes, limit used is 5
 Number of SNES iterations = 1
-L_2 Error: 0.00126 [1.22e-05, 0.00126]
+L_2 Error: 0.00151 [9.32e-06, 0.00151]
 Integral of pressure: 0.

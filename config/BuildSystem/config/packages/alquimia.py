@@ -13,6 +13,7 @@ class Configure(config.package.CMakePackage):
     self.cxx               = 1    # 1 means requires C++
     self.linkedbypetsc     = 0
     self.makerulename      = 'alquimia'    # make on the alquimia directory tries to build executables that will fail so force only building the libraries
+    self.useddirectly      = 0
     return
 
   def setupDependencies(self, framework):

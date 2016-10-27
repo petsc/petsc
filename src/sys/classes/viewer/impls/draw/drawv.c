@@ -501,6 +501,16 @@ PetscErrorCode PetscViewerView_Draw(PetscViewer viewer,PetscViewer v)
   PetscFunctionReturn(0);
 }
 
+/*MC
+   PETSCVIEWERDRAW - A viewer that generates graphics, either to the screen or a file
+
+
+.seealso:  PetscViewerDrawOpen(), PetscViewerDrawGetDraw(), PETSC_VIEWER_DRAW_(),PETSC_VIEWER_DRAW_SELF, PETSC_VIEWER_DRAW_WORLD,
+           PetscViewerCreate(), PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), PETSCVIEWERBINARY, 
+           PetscViewerMatlabOpen(), VecView(), DMView(), PetscViewerMatlabPutArray(), PETSCVIEWERASCII, PETSCVIEWERMATLAB,
+           PetscViewerFileSetName(), PetscViewerFileSetMode(), PetscViewerFormat, PetscViewerType, PetscViewerSetType()
+
+M*/
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerCreate_Draw"
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_Draw(PetscViewer viewer)

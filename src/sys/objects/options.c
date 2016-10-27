@@ -763,10 +763,14 @@ PetscErrorCode  PetscOptionsInsert(PetscOptions options,int *argc,char ***args,c
   }
 
 #if defined(PETSC_HAVE_YAML)
-  char      yaml_file[PETSC_MAX_PATH_LEN];
-  PetscBool yaml_flg = PETSC_FALSE;
-  ierr = PetscOptionsGetString(NULL,NULL,"-options_file_yaml",yaml_file,PETSC_MAX_PATH_LEN,&yaml_flg);CHKERRQ(ierr);
-  if (yaml_flg) ierr = PetscOptionsInsertFileYAML(PETSC_COMM_WORLD,yaml_file,PETSC_TRUE);CHKERRQ(ierr);
+  {
+    char      yaml_file[PETSC_MAX_PATH_LEN];
+    PetscBool yaml_flg;
+    ierr = PetscOptionsGetString(NULL,NULL,"-options_file_yaml",yaml_file,PETSC_MAX_PATH_LEN,&yaml_flg);CHKERRQ(ierr);
+    if (yaml_flg) {
+      ierr = PetscOptionsInsertFileYAML(PETSC_COMM_WORLD,yaml_file,PETSC_TRUE);CHKERRQ(ierr);
+    }
+  }
 #endif
 
   /* insert command line options again because they take precedence over arguments in petscrc/environment */
@@ -1144,7 +1148,7 @@ PetscErrorCode  PetscOptionsSetValue(PetscOptions options,const char iname[],con
   char           **names;
   char           fullname[2048];
   const char     *name = iname;
-  int            gt,match;
+  int            match;
 
   if (!options) {
     if (!defaultoptions) {
@@ -1187,13 +1191,13 @@ PetscErrorCode  PetscOptionsSetValue(PetscOptions options,const char iname[],con
 
   for (i=0; i<N; i++) {
 #if defined(PETSC_HAVE_STRCASECMP)
-    gt = strcasecmp(names[i],name);
+    match = strcasecmp(names[i],name);
 #elif defined(PETSC_HAVE_STRICMP)
-    gt = stricmp(names[i],name);
+    match = stricmp(names[i],name);
 #else
     Error
 #endif
-    if (!gt) {
+    if (!match) {
       if (options->values[i]) free(options->values[i]);
       len = value ? strlen(value) : 0;
       if (len) {
@@ -1202,7 +1206,7 @@ PetscErrorCode  PetscOptionsSetValue(PetscOptions options,const char iname[],con
         strcpy(options->values[i],value);
       } else options->values[i] = 0;
       return 0;
-    } else if (gt > 0) {
+    } else if (strcmp(names[i],name) > 0) {
       n = i;
       break;
     }
@@ -2320,9 +2324,10 @@ PetscErrorCode PetscOptionsGetEnumArray(PetscOptions options,const char pre[],co
    The Fortran interface is slightly different from the C/C++
    interface (len is not used).  Sample usage in Fortran follows
 .vb
-      character *20 string
-      integer   flg, ierr
-      call PetscOptionsGetString(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-s',string,flg,ierr)
+      character *20    string
+      PetscErrorCode   ierr
+      PetscBool        set
+      call PetscOptionsGetString(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-s',string,set,ierr)
 .ve
 
    Notes: if the option is given but no string is provided then an empty string is returned and set is given the value of PETSC_TRUE

@@ -6,31 +6,7 @@
 % figures are numbered consecutively throughout the document (not by
 % chapters).
 %
-\documentclass[twoside,12pt]{../sty/report_petsc}
-
-\usepackage{makeidx,xspace}
-\usepackage[bookmarksopen,colorlinks]{hyperref}
-\usepackage[all]{hypcap}
-\usepackage{color}
-\input pdfcolor.tex
-
-\usepackage[pdftex]{graphicx}
-
-%\usepackage{psfig}
-\usepackage{../sty/verbatim}
-\usepackage{../sty/tpage}
-\usepackage{../sty/here}
-\usepackage{../sty/anlhelper}
-\usepackage{../sty/trl}
-
-\setlength{\textwidth}{6.5in}
-\setlength{\oddsidemargin}{0.0in}
-\setlength{\evensidemargin}{0.0in}
-\setlength{\textheight}{9.2in}
-\setlength{\topmargin}{-.8in}
-
-\newcommand{\findex}[1]{\index{FUNCTION #1}}
-\newcommand{\sindex}[1]{\index{#1}}
+\input{manualpreamble.tex}
 
 % Defines the environment where design issues are discussed. In the manual
 % version of this report, these regions are ignored.
@@ -94,7 +70,7 @@ Argonne National Laboratory, 2016.
 %
 % Acknowledgements for users manual
 \newpage
-\input{acknowl.tex}
+\input{acknowltmp.tex}
 
 \newpage
 % Include only Part 1 of users manual

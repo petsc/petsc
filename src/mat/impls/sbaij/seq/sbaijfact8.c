@@ -177,7 +177,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_5_NaturalOrdering(Mat C,Mat A,c
     d    = ba+k*25;
     ierr = PetscMemcpy(d,dk,25*sizeof(MatScalar));CHKERRQ(ierr);
     ierr = PetscKernel_A_gets_inverse_A_5(d,ipvt,work,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
-    if (zeropivotdetected) C->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+    if (zeropivotdetected) C->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
 
     jmin = bi[k]; jmax = bi[k+1];
     if (jmin < jmax) {

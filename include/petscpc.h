@@ -137,6 +137,9 @@ PETSC_EXTERN PetscErrorCode PCFactorSetPivotInBlocks(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCFactorSetLevels(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCFactorGetLevels(PC,PetscInt*);
 PETSC_EXTERN PetscErrorCode PCFactorSetDropTolerance(PC,PetscReal,PetscReal,PetscInt);
+PETSC_EXTERN PetscErrorCode PCFactorGetZeroPivot(PC,PetscReal*);
+PETSC_EXTERN PetscErrorCode PCFactorGetShiftAmount(PC,PetscReal*);
+PETSC_EXTERN PetscErrorCode PCFactorGetShiftType(PC,MatFactorShiftType*);
 
 PETSC_EXTERN PetscErrorCode PCASMSetLocalSubdomains(PC,PetscInt,IS[],IS[]);
 PETSC_EXTERN PetscErrorCode PCASMSetTotalSubdomains(PC,PetscInt,IS[],IS[]);
@@ -154,6 +157,8 @@ PETSC_EXTERN PetscErrorCode PCASMDestroySubdomains(PetscInt,IS[],IS[]);
 PETSC_EXTERN PetscErrorCode PCASMCreateSubdomains2D(PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,IS**,IS**);
 PETSC_EXTERN PetscErrorCode PCASMGetLocalSubdomains(PC,PetscInt*,IS*[],IS*[]);
 PETSC_EXTERN PetscErrorCode PCASMGetLocalSubmatrices(PC,PetscInt*,Mat*[]);
+PETSC_EXTERN PetscErrorCode PCASMGetSubMatType(PC,MatType*);
+PETSC_EXTERN PetscErrorCode PCASMSetSubMatType(PC,MatType);
 
 PETSC_EXTERN PetscErrorCode PCGASMSetTotalSubdomains(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCGASMSetSubdomains(PC,PetscInt,IS[],IS[]);
@@ -257,7 +262,8 @@ PETSC_EXTERN PetscErrorCode PCGAMGSetRepartition(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGASMSetUseAggs(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetUseParallelCoarseGridSolve(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetSolverType(PC,char[],PetscInt);
-PETSC_EXTERN PetscErrorCode PCGAMGSetThreshold(PC,PetscReal);
+PETSC_EXTERN PetscErrorCode PCGAMGSetThreshold(PC,PetscReal[],PetscInt);
+PETSC_EXTERN PetscErrorCode PCGAMGSetThresholdScale(PC,PetscReal);
 PETSC_EXTERN PetscErrorCode PCGAMGSetCoarseEqLim(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetNlevels(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetNSmooths(PC,PetscInt);

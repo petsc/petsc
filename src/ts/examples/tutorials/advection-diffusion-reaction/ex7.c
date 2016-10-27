@@ -53,6 +53,8 @@ int main(int argc,char **argv)
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_MIRROR,-8,user.N,1,NULL,&da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
 
   for (i=0; i<user.N; i++) {
     ierr = PetscSNPrintf(Name,16,"Void size %d",(int)(i+1));

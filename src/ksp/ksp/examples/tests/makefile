@@ -10,7 +10,7 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex8.c ex10.c ex11.c ex14.c
                 ex33.c ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c \
                 ex43.c ex44.c ex45.c ex46.cxx ex47.c ex48.c ex49.c ex50.c ex51.c
 EXAMPLESCH      =
-EXAMPLESF       = ex5f.F ex12f.F ex16f.F
+EXAMPLESF       = ex5f.F ex12f.F ex16f.F ex52f.F
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
@@ -191,6 +191,9 @@ ex50: ex50.o chkopts
 ex51: ex51.o chkopts
 	-${CLINKER} -o ex51 ex51.o ${PETSC_KSP_LIB}
 	${RM} ex51.o
+ex52f: ex52f.o  chkopts
+	-${FLINKER} -o ex52f ex52f.o  ${PETSC_KSP_LIB}
+	${RM} ex52f.o
 #------------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex1_1.tmp 2>&1;	  \
@@ -1032,25 +1035,32 @@ runex51_2:
         if [ "$$x" = "bad" ]; then ${DIFF} output/ex51_1.out ex51.tmp ; ${DIFF} output/ex51_2.out ex51.tmp ; printf "${PWD}\nPossible problem with ex51_2, diffs above\n=========================================\n"; fi; \
         ${RM} -f ex51.tmp
 
+runex52f:
+	-@${MPIEXEC} -n 1 ./ex52f   > ex52f_1.tmp 2>&1; \
+	   if (${DIFF} output/ex52f_1.out ex52f_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex52f_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex52f_1.tmp
+
 TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 runex3_nocheby runex3_chebynoest runex3_chebyest ex3.rm ex4.PETSc runex4 runex4_3 \
                                  runex4_5 ex4.rm \
                                  ex14.PETSc runex14 ex14.rm ex19.PETSc runex19 runex19_2 ex19.rm ex21.PETSc runex21 runex21_2 runex21_3 ex21.rm \
-                                 ex22.PETSc runex22 runex22_2 ex22.rm \
+                                 ex22.PETSc runex22 runex22_2 ex22.rm printdot \
                                  ex24.PETSc runex24 runex24_2 runex24_3 runex24_4 ex24.rm \
                                  ex26.PETSc runex26 runex26_2 ex26.rm ex27.PETSc ex27.rm \
                                  ex28.PETSc runex28 runex28_2 runex28_3 ex28.rm \
                                  ex32.PETSc runex32_testset1 runex32_testset2 runex32_testset3 runex32_testset4 runex32_testset5 \
-                                 runex32_aij_sbaij_icc runex32_aij_sbaij_icc_lev1 runex32_aij_sbaij_icc_lev10 runex32_aij_sbaij_cholesky \
+                                 runex32_aij_sbaij_icc runex32_aij_sbaij_icc_lev1 runex32_aij_sbaij_icc_lev10 runex32_aij_sbaij_cholesky printdot \
                                  runex32_inode2 runex32_inode2_nd runex32_inode3 runex32_inode3_nd runex32_inode4 runex32_inode4_nd \
                                  runex32_inode5 runex32_inode5_nd ex32.rm \
                                  ex38.PETSc runex38 ex38.rm ex39.PETSc runex39 runex39_2 ex39.rm ex41.PETSc runex41 runex41_2 ex41.rm \
                                  ex42.PETSc runex42 runex42_2 ex42.rm \
-                                 ex44.PETSc runex44 ex44.rm ex45.PETSc runex45 ex45.rm ex47.PETSc runex47 ex47.rm ex48.PETSc runex48 ex48.rm\
-                                 ex49.PETSc runex49 ex49.rm ex50.PETSc runex50 ex50.rm \
+                                 ex44.PETSc runex44 ex44.rm ex45.PETSc runex45 ex45.rm ex47.PETSc runex47 ex47.rm ex48.PETSc runex48 ex48.rm printdot \
+                                 ex50.PETSc runex50 ex50.rm \
                                  ex51.PETSc runex51 runex51_2 ex51.rm
+TESTEXAMPLES_C_NOTSINGLE       = ex49.PETSc runex49 ex49.rm
 TESTEXAMPLES_C_X	       = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex8.PETSc runex8 runex8_2 ex8.rm ex33.PETSc runex33 ex33.rm
-TESTEXAMPLES_FORTRAN	       = ex5f.PETSc runex5f ex5f.rm ex12f.PETSc ex12f.rm
+TESTEXAMPLES_FORTRAN	       = ex5f.PETSc runex5f ex5f.rm ex12f.PETSc ex12f.rm ex52f.PETSc runex52f ex52f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex12f.PETSc ex12f.rm ex16f.PETSc ex16f.rm
 TESTEXAMPLES_C_X_MPIUNI        = ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm
 TESTEXAMPLES_C_COMPLEX	       = ex17.PETSc runex17 runex17_2 ex17.rm

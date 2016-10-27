@@ -3,7 +3,7 @@
 
 ALL: lib
 
-CFLAGS   = ${PNETCDF_INCLUDE}
+CFLAGS   = 
 FFLAGS   =
 SOURCECXX= mpiviennacl.cxx
 SOURCEF  =

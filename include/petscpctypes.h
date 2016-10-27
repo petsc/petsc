@@ -19,7 +19,7 @@ typedef struct _p_PC* PC;
 
    Level: beginner
 
-   Notes: Click on the links below to see details on a particular solver
+   Notes: Click on the links above to see details on a particular solver
 
           PCRegister() is used to register preconditioners that are then accessible via PCSetType()
 
@@ -66,6 +66,9 @@ typedef const char* PCType;
 #define PCSACUSPPOLY      "sacusppoly"
 #define PCBICGSTABCUSP    "bicgstabcusp"
 #define PCAINVCUSP        "ainvcusp"
+#define PCCHOWILUVIENNACL "chowiluviennacl"
+#define PCROWSCALINGVIENNACL "rowscalingviennacl"
+#define PCSAVIENNACL      "saviennacl"
 #define PCBDDC            "bddc"
 #define PCKACZMARZ        "kaczmarz"
 #define PCTELESCOPE       "telescope"

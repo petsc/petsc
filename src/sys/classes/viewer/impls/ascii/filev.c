@@ -861,6 +861,15 @@ PetscErrorCode  PetscViewerView_ASCII(PetscViewer v,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+/*MC
+   PETSCVIEWERASCII - A viewer that prints to stdout or an ASCII file
+
+
+.seealso:  PETSC_VIEWER_STDOUT_(),PETSC_VIEWER_STDOUT_SELF, PETSC_VIEWER_STDOUT_WORLD,PetscViewerCreate(), PetscViewerASCIIOpen(),
+           PetscViewerMatlabOpen(), VecView(), DMView(), PetscViewerMatlabPutArray(), PETSCVIEWERBINARY, PETSCVIEWERMATLAB,
+           PetscViewerFileSetName(), PetscViewerFileSetMode(), PetscViewerFormat, PetscViewerType, PetscViewerSetType()
+
+M*/
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerCreate_ASCII"
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_ASCII(PetscViewer viewer)

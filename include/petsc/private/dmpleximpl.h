@@ -9,7 +9,7 @@
 #include <petsc/private/isimpl.h>     /* for inline access to atlasOff */
 #include <../src/sys/utils/hash.h>
 
-PETSC_EXTERN PetscLogEvent DMPLEX_Interpolate, PETSCPARTITIONER_Partition, DMPLEX_Distribute, DMPLEX_DistributeCones, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_DistributeOverlap, DMPLEX_DistributeField, DMPLEX_DistributeData, DMPLEX_Migrate, DMPLEX_GlobalToNaturalBegin, DMPLEX_GlobalToNaturalEnd, DMPLEX_NaturalToGlobalBegin, DMPLEX_NaturalToGlobalEnd, DMPLEX_Stratify, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM, DMPLEX_InterpolatorFEM, DMPLEX_InjectorFEM, DMPLEX_IntegralFEM, DMPLEX_CreateGmsh;
+PETSC_EXTERN PetscLogEvent DMPLEX_Interpolate, PETSCPARTITIONER_Partition, DMPLEX_Distribute, DMPLEX_DistributeCones, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_DistributeOverlap, DMPLEX_DistributeField, DMPLEX_DistributeData, DMPLEX_Migrate, DMPLEX_InterpolateSF, DMPLEX_GlobalToNaturalBegin, DMPLEX_GlobalToNaturalEnd, DMPLEX_NaturalToGlobalBegin, DMPLEX_NaturalToGlobalEnd, DMPLEX_Stratify, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM, DMPLEX_InterpolatorFEM, DMPLEX_InjectorFEM, DMPLEX_IntegralFEM, DMPLEX_CreateGmsh;
 
 PETSC_EXTERN PetscBool      PetscPartitionerRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PetscPartitionerRegisterAll(void);
@@ -28,7 +28,7 @@ typedef enum {REFINER_NOOP = 0,
 
 typedef struct _PetscPartitionerOps *PetscPartitionerOps;
 struct _PetscPartitionerOps {
-  PetscErrorCode (*setfromoptions)(PetscPartitioner);
+  PetscErrorCode (*setfromoptions)(PetscOptionItems*,PetscPartitioner);
   PetscErrorCode (*setup)(PetscPartitioner);
   PetscErrorCode (*view)(PetscPartitioner,PetscViewer);
   PetscErrorCode (*destroy)(PetscPartitioner);
@@ -52,6 +52,7 @@ typedef struct {
 typedef struct {
   PetscSection section;   /* Sizes for each partition */
   IS           partition; /* Points in each partition */
+  PetscBool    random;    /* Flag for a random partition */
 } PetscPartitioner_Shell;
 
 typedef struct {
@@ -385,7 +386,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexGetGlobalOffset_Private(DM dm, PetscInt
     ierr = PetscSectionGetOffset(dm->defaultGlobalSection, point, start);CHKERRQ(ierr);
     ierr = PetscSectionGetDof(dm->defaultGlobalSection, point, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetConstraintDof(dm->defaultGlobalSection, point, &cdof);CHKERRQ(ierr);
-    *end = *start + dof-cdof;
+    *end = *start + dof - cdof + (dof < 0 ? 1 : 0);
   }
 #else
   {
@@ -393,7 +394,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexGetGlobalOffset_Private(DM dm, PetscInt
     const PetscInt     dof  = s->atlasDof[point - s->pStart];
     const PetscInt     cdof = s->bc ? s->bc->atlasDof[point - s->bc->pStart] : 0;
     *start = s->atlasOff[point - s->pStart];
-    *end   = *start + dof-cdof;
+    *end   = *start + dof - cdof + (dof < 0 ? 1 : 0);
   }
 #endif
   PetscFunctionReturn(0);

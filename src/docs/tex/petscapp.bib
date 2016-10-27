@@ -1206,13 +1206,13 @@ doi = "http://dx.doi.org/10.1016/j.cma.2015.03.014",
 url = "http://www.sciencedirect.com/science/article/pii/S0045782515001243",
 author = "D.A. May and J. Brown and L. Le Pourhiet",
 }
-@article{IsaacKnepley2015,
+@article{IsaacKnepley2016,
   title   = {Support for Non-conformal Meshes in PETSc's DMPlex Interface},
   author  = {Tobin Isaac and Matthew G. Knepley},
   journal = {ACM Transaction on Mathematical Software},
   eprint  = {1508.02470},
-  note    = {Submitted},
-  year    = {2015}
+  note    = {In review},
+  year    = {2016}
 }
 @article{KnepleyLangeGorman2015,
   title     = {Unstructured Overlapping Mesh Distribution in Parallel},
@@ -1222,7 +1222,7 @@ author = "D.A. May and J. Brown and L. Le Pourhiet",
   year      = {2015}
 }
 @article{LangeMitchellKnepleyGorman2015,
-  title     = {Efficient mesh management in Firedrake using PETSc-DMPlex},
+  title     = {Efficient mesh management in {Firedrake} using {PETSc-DMPlex}},
   author    = {Michael Lange and Lawrence Mitchell and Matthew G. Knepley and Gerard J. Gorman},
   journal   = {SIAM Journal on Scientific Computing},
   note      = {accepted},
@@ -4703,11 +4703,17 @@ ISSN={0885-8950}
 % LiteralHTML:
 @Article{CollierDalcinCalo2013,
   title   = {{PetIGA}: High-Performance Isogeometric Analysis},
-  author  = {N. Collier and L. Dalcin and V.M. Calo},
+  author  = {Nathan Collier and Lisandro Dalcin and Victor M. Calo},
   journal = {arxiv},
   year    = {2013},
   number  = {1305.4452},
   note    = {\url{http://arxiv.org/abs/1305.4452}},
+}
+@Article{CollierDalcinVignalCortesCalo2016,
+  title   = {PetIGA: A framework for high-performance isogeometric analysis},
+  author  = {Lisandro Dalcin and Nathan Collier and Philippe Vignal and AMA C{\^o}rtes and Victor M. Calo},
+  journal = {Computer Methods in Applied Mechanics and Engineering},
+  year    = {2016},
 }
 @Misc{petiga-web-page,
   author       = {N. Collier and L. Dalcin and V.M. Calo},
@@ -4854,7 +4860,7 @@ ISSN={0885-8950}
   author        = {},
   title         = {{libMesh}:a C++ framework for the numerical simulation of partial differential equations on serial and parallel platforms},
   note          = {[Online]},
-  URL  = {http://libmesh.sourceforge.net}
+  URL  = {http://libmesh.github.io}
 }
 @misc{moose-web-page,
   title = {Multiphysics {O}bject-{O}riented {S}imulation {E}nvironment ({MOOSE})},
@@ -5579,12 +5585,25 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
 % LiteralHTML:
 % LiteralHTML:  <a name="algorithm"><H3><center>Algorithm design and analysis</center></H3>
 % LiteralHTML:
+@inproceeedings{BarralKnepleyLangePiggottGorman2016,
+  title     = {Anisotropic mesh adaptation in Firedrake with PETSc DMPlex},
+  author    = {Nicolas Barral and Matthew G. Knepley and Michael Lange and Matthew D. Piggott and Gerard J. Gorman},
+  booktitle = {25th International Meshing Roundtable},
+  editor    = {Steve Owen and Hang Si},
+  month     = {September},
+  address   = {Washington, DC},
+  year      = {2016}
+}
+
 @article{AdamsBrownKnepleySamtaney2016,
   title   = {Segmental Refinement: A Multigrid Technique for Data Locality},
-  author  = {Mark F. Adams and Jed Brown and Matt Knepley and Ravi Samtaney},
+  author  = {Mark F. Adams and Jed Brown and Matthew G. Knepley and Ravi Samtaney},
   journal = {SIAM Journal on Scientific Computing},
-  url     = {http://arxiv.org/abs/1406.7808},
-  note    = {to appear},
+  url     = {http://epubs.siam.org/toc/sjoce3/38/4 },
+  epub    = {http://arxiv.org/abs/1406.7808},
+  volume  = {8},
+  number  = {4},
+  doi     = {10.1137/140975127},
   year    = {2016}
 }
 @inproceedings{MaySananRuppKnepleySmith2016,
@@ -5725,7 +5744,7 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
 @Misc{KnepleyRuppTerrel2014,
   author = {Matthew G. Knepley and Karl Rupp and Andy R. Terrel},
   title  = {Finite Element Integration with Quadrature on Accelerators},
-  year   = {2014}
+  year   = {2016}
 }
 @techreport{pbmkbsxt2012,
   title = "Composing Scalable Nonlinear Algebraic Solvers",
@@ -6806,4 +6825,24 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
   address = {Bordeaux, France},
   year    = {2010},
   url     = {http://jointlab.ncsa.illinois.edu/events/workshop3/pdf/presentations/Gropp-Update-on-Libraries.pdf},
+}
+
+@article{SSM2016,
+  author = {P. Sanan and S.M. Schnepp and D.A. May},
+  title = {Pipelined, Flexible Krylov Subspace Methods},
+  journal = {SIAM Journal on Scientific Computing},
+  volume = {38},
+  number = {5},
+  pages = {C441-C470},
+  year = {2016},
+  doi = {10.1137/15M1049130},
+  URL = {http://dx.doi.org/10.1137/15M1049130},
+  eprint = {http://dx.doi.org/10.1137/15M1049130}
+}
+@inproceedings{AdamsBrownKnepley2013,
+    author       = {Mark F. Adams and Jed Brown and Matthew G. Knepley},
+    title        = {Low-communication techniques for extreme-scale multilevel solvers},
+    booktitle    = {Exascale Mathematics Workshop, Aug 21--22, Washington, DC},
+    organization = {DOE Office of Advanced Scientific Computing Research},
+    year         = {2013}
 }

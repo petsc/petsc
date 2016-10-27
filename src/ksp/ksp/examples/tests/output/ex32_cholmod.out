@@ -11,6 +11,7 @@ KSP Object: 1 MPI processes
 PC Object: 1 MPI processes
   type: cholesky
     Cholesky: out-of-place factorization
+    out-of-place factorization
     tolerance for zero pivot 2.22045e-14
     matrix ordering: natural
     factor fill ratio given 0., needed 0.

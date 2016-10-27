@@ -143,8 +143,10 @@ PetscErrorCode  PetscViewerVTKAddField_VTK(PetscViewer viewer,PetscObject dm,Pet
   PetscFunctionBegin;
   if (vtk->dm) {
     if (dm != vtk->dm) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_INCOMP,"Cannot write a field from more than one grid to the same VTK file");
+  } else {
+    ierr = PetscObjectReference(dm);CHKERRQ(ierr);
+    vtk->dm = dm;
   }
-  vtk->dm    = dm;
   vtk->write = PetscViewerVTKWriteFunction;
   ierr       = PetscNew(&link);CHKERRQ(ierr);
   link->ft   = fieldtype;
@@ -157,6 +159,17 @@ PetscErrorCode  PetscViewerVTKAddField_VTK(PetscViewer viewer,PetscObject dm,Pet
   } else vtk->link = link;
   PetscFunctionReturn(0);
 }
+
+/*MC
+   PETSCVIEWERVTK - A viewer that writes to an VTK file
+
+
+.seealso:  PetscViewerVTKOpen(), PetscViewerHDF5Open(), PetscViewerStringSPrintf(), PetscViewerSocketOpen(), PetscViewerDrawOpen(), PETSCVIEWERSOCKET,
+           PetscViewerCreate(), PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), PETSCVIEWERBINARY, PETSCVIEWERDRAW, PETSCVIEWERSTRING,
+           PetscViewerMatlabOpen(), VecView(), DMView(), PetscViewerMatlabPutArray(), PETSCVIEWERASCII, PETSCVIEWERMATLAB,
+           PetscViewerFileSetName(), PetscViewerFileSetMode(), PetscViewerFormat, PetscViewerType, PetscViewerSetType()
+
+M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerCreate_VTK"

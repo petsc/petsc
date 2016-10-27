@@ -85,6 +85,8 @@ int main(int argc,char **argv)
   } else {
     ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.fine.mx,user.fine.my,user.fine.mz,Npx,Npy,Npz,1,1,NULL,NULL,NULL,&user.fine.da);CHKERRQ(ierr);
   }
+  ierr = DMSetFromOptions(user.fine.da);CHKERRQ(ierr);
+  ierr = DMSetUp(user.fine.da);CHKERRQ(ierr);
 
   /* Test DMCreateMatrix()                                         */
   /*------------------------------------------------------------*/
@@ -126,13 +128,13 @@ int main(int argc,char **argv)
 
   /* Set up distributed array for coarse grid */
   if (!Test_3D) {
-    ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,
-                        user.coarse.my,Npx,Npy,1,1,NULL,NULL,&user.coarse.da);CHKERRQ(ierr);
+    ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,user.coarse.my,Npx,Npy,1,1,NULL,NULL,&user.coarse.da);CHKERRQ(ierr);
   } else {
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,
-                        user.coarse.mx,user.coarse.my,user.coarse.mz,Npx,Npy,Npz,
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,user.coarse.my,user.coarse.mz,Npx,Npy,Npz,
                         1,1,NULL,NULL,NULL,&user.coarse.da);CHKERRQ(ierr);
   }
+  ierr = DMSetFromOptions(user.coarse.da);CHKERRQ(ierr);
+  ierr = DMSetUp(user.coarse.da);CHKERRQ(ierr);
 
   /* Create interpolation between the levels */
   ierr = DMCreateInterpolation(user.coarse.da,user.fine.da,&P,NULL);CHKERRQ(ierr);

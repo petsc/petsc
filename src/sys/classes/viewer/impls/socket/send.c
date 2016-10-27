@@ -226,8 +226,7 @@ PETSC_INTERN PetscErrorCode PetscSocketListen(int listenport,int *t)
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerSocketOpen"
 /*@C
-   PetscViewerSocketOpen - Opens a connection to a MATLAB or other socket
-        based server.
+   PetscViewerSocketOpen - Opens a connection to a MATLAB or other socket based server.
 
    Collective on MPI_Comm
 
@@ -266,10 +265,14 @@ $    -viewer_socket_port <port>
 -   PETSC_VIEWER_SOCKET_MACHINE machine name
 
      Currently the only socket client available is MATLAB. See
-     src/dm/da/examples/tests/ex12.c and ex12.m for an example of usage.
+     src/dm/examples/tests/ex12.c and ex12.m for an example of usage.
 
    Notes: The socket viewer is in some sense a subclass of the binary viewer, to read and write to the socket
-          use PetscViewerBinaryRead/Write/GetDescriptor().
+          use PetscViewerBinaryRead(), PetscViewerBinaryWrite(), PetscViewerBinarWriteStringArray(), PetscViewerBinaryGetDescriptor().
+
+     Use this for communicating with an interactive MATLAB session, see PETSC_VIEWER_MATLAB_() for writing output to a
+     .mat file. Use PetscMatlabEngineCreate() or PETSC_MATLAB_ENGINE_(), PETSC_MATLAB_ENGINE_SELF, or PETSC_MATLAB_ENGINE_WORLD
+     for communicating with a MATLAB Engine
 
    Concepts: MATLAB^sending data
    Concepts: sockets^sending data
@@ -277,7 +280,7 @@ $    -viewer_socket_port <port>
 .seealso: MatView(), VecView(), PetscViewerDestroy(), PetscViewerCreate(), PetscViewerSetType(),
           PetscViewerSocketSetConnection(), PETSC_VIEWER_SOCKET_, PETSC_VIEWER_SOCKET_WORLD,
           PETSC_VIEWER_SOCKET_SELF, PetscViewerBinaryWrite(), PetscViewerBinaryRead(), PetscViewerBinaryWriteStringArray(),
-          PetscBinaryViewerGetDescriptor()
+          PetscBinaryViewerGetDescriptor(), PetscMatlabEngineCreate()
 @*/
 PetscErrorCode  PetscViewerSocketOpen(MPI_Comm comm,const char machine[],int port,PetscViewer *lab)
 {
@@ -319,6 +322,17 @@ static PetscErrorCode PetscViewerSetFromOptions_Socket(PetscOptionItems *PetscOp
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*MC
+   PETSCVIEWERSOCKET - A viewer that writes to a Unix socket
+
+
+.seealso:  PetscViewerSocketOpen(), PetscViewerDrawOpen(), PETSC_VIEWER_DRAW_(),PETSC_VIEWER_DRAW_SELF, PETSC_VIEWER_DRAW_WORLD,
+           PetscViewerCreate(), PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), PETSCVIEWERBINARY, PETSCVIEWERDRAW,
+           PetscViewerMatlabOpen(), VecView(), DMView(), PetscViewerMatlabPutArray(), PETSCVIEWERASCII, PETSCVIEWERMATLAB,
+           PetscViewerFileSetName(), PetscViewerFileSetMode(), PetscViewerFormat, PetscViewerType, PetscViewerSetType()
+
+M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerCreate_Socket"
@@ -439,15 +453,17 @@ $    -viewer_socket_port <port>
 $       XXXView(XXX object,PETSC_VIEWER_SOCKET_(comm));
 
      Currently the only socket client available is MATLAB. See
-     src/dm/da/examples/tests/ex12.c and ex12.m for an example of usage.
+     src/dm/examples/tests/ex12.c and ex12.m for an example of usage.
 
      Connects to a waiting socket and stays connected until PetscViewerDestroy() is called.
 
-     Use this for communicating with an interactive MATLAB session, see PETSC_VIEWER_MATLAB_() for communicating with the MATLAB engine.
+     Use this for communicating with an interactive MATLAB session, see PETSC_VIEWER_MATLAB_() for writing output to a
+     .mat file. Use PetscMatlabEngineCreate() or PETSC_MATLAB_ENGINE_(), PETSC_MATLAB_ENGINE_SELF, or PETSC_MATLAB_ENGINE_WORLD 
+     for communicating with a MATLAB Engine
 
 .seealso: PETSC_VIEWER_SOCKET_WORLD, PETSC_VIEWER_SOCKET_SELF, PetscViewerSocketOpen(), PetscViewerCreate(),
           PetscViewerSocketSetConnection(), PetscViewerDestroy(), PETSC_VIEWER_SOCKET_(), PetscViewerBinaryWrite(), PetscViewerBinaryRead(),
-          PetscViewerBinaryWriteStringArray(), PetscBinaryViewerGetDescriptor(), PETSC_VIEWER_MATLAB_()
+          PetscViewerBinaryWriteStringArray(), PetscViewerBinaryGetDescriptor(), PETSC_VIEWER_MATLAB_()
 @*/
 PetscViewer  PETSC_VIEWER_SOCKET_(MPI_Comm comm)
 {

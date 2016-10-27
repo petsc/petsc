@@ -12,17 +12,17 @@ Labels:
   marker: 4 strata of sizes (5, 3, 5, 3)
   depth: 3 strata of sizes (9, 16, 8)
 Integral of pressure: 0.
-L_2 Error: [0.000608802, 0.0353728]
-L_2 Residual: 0.0465972
-Linear L_2 Residual: 0.0465972
-  0 SNES Function norm 0.114309 
+L_2 Error: [0.000439127, 0.0376629]
+L_2 Residual: 0.0453958
+Linear L_2 Residual: 0.0453958
+  0 SNES Function norm 0.11706 
 Mat Object: 1 MPI processes
   type: seqaij
   rows=9, cols=9
   total: nonzeros=81, allocated nonzeros=81
   total number of mallocs used during MatSetValues calls =0
     using I-node routines: found 2 nodes, limit used is 5
-    0 KSP Residual norm 0.49152 
+    0 KSP Residual norm 0.49651 
     1 KSP Residual norm < 1.e-11
   Linear solve converged due to CONVERGED_RTOL iterations 1
   1 SNES Function norm < 1.e-11
@@ -67,7 +67,7 @@ SNES Object: 1 MPI processes
           using PRECONDITIONED norm type for convergence test
         PC Object: (fieldsplit_velocity_) 1 MPI processes
           type: lu
-            LU: out-of-place factorization
+            out-of-place factorization
             tolerance for zero pivot 2.22045e-14
             matrix ordering: nd
             factor fill ratio given 5., needed 1.15761
@@ -97,6 +97,8 @@ SNES Object: 1 MPI processes
           using PRECONDITIONED norm type for convergence test
         PC Object: (fieldsplit_pressure_) 1 MPI processes
           type: svd
+            SVD: All singular values smaller than 1e-12 treated as zero
+            SVD: Provided essential rank of the matrix 0 (all other eigenvalues are zeroed)
           linear system matrix followed by preconditioner matrix:
           Mat Object: (fieldsplit_pressure_) 1 MPI processes
             type: schurcomplement
@@ -129,7 +131,7 @@ SNES Object: 1 MPI processes
                   using PRECONDITIONED norm type for convergence test
                 PC Object: (fieldsplit_velocity_) 1 MPI processes
                   type: lu
-                    LU: out-of-place factorization
+                    out-of-place factorization
                     tolerance for zero pivot 2.22045e-14
                     matrix ordering: nd
                     factor fill ratio given 5., needed 1.15761
@@ -170,47 +172,47 @@ SNES Object: 1 MPI processes
         has attached null space
         using I-node routines: found 24 nodes, limit used is 5
 Number of SNES iterations = 1
-L_2 Error: 0.0259 [0.000635, 0.0259]
+L_2 Error: 0.0288 [0.000564, 0.0288]
 Integral of pressure: 0.
 Solution
 Vec Object: Solution 1 MPI processes
   type: seq
--0.205397
--0.00747058
--0.139074
-0.203371
-0.0145472
--0.00388803
--0.000326812
--0.00222864
-0.0221427
--0.00652738
--0.0214266
-0.271823
-0.00789968
-0.101768
--0.22932
--0.00619693
--0.00484565
-0.00370732
-0.00733526
-0.00462083
-0.00325228
-0.00795014
--0.000211937
-0.00586203
--0.00537318
--0.00179743
--0.00299058
--0.00368727
--0.00432617
-0.000235393
--0.00531638
--0.00496605
-0.00312174
--0.00381891
--0.00382523
-0.00452239
-0.00508373
--0.00176865
-0.00735989
+-0.205673
+-0.00755668
+-0.139153
+0.20823
+0.0139546
+-0.00670345
+-0.000329078
+-0.00219646
+0.0183289
+-0.00644367
+-0.024886
+0.275829
+0.00796406
+0.103735
+-0.229707
+-0.00616149
+-0.00482075
+0.00374047
+0.00724176
+0.00459497
+0.0034199
+0.00777932
+-0.000234122
+0.0058977
+-0.00542066
+-0.00171084
+-0.00299241
+-0.0037678
+-0.00431127
+0.000245196
+-0.00535188
+-0.00501787
+0.00313499
+-0.00385273
+-0.00382101
+0.00453874
+0.00512423
+-0.00181924
+0.00737771

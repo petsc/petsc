@@ -727,6 +727,11 @@ runex31:
 	   ${DIFF} output/ex31_1.out ex31_1.tmp || printf "${PWD}\nPossible problem with ex31_1, diffs above\n=========================================\n";  \
 	   ${RM} -f ex31_1.tmp
 
+runex31_2:
+	-@${MPIEXEC} -n 1 ./ex31 -ts_type glee > ex31_2.tmp 2>&1; \
+	   ${DIFF} output/ex31_2.out ex31_2.tmp || printf "${PWD}\nPossible problem with ex31_2, diffs above\n=========================================\n";  \
+	   ${RM} -f ex31_2.tmp
+
 runex35:
 	-@${MPIEXEC} -n 1 ./ex35 -ts_monitor -ts_adapt_basic_reject_safety 1 > ex35_1.tmp 2>&1;  \
 	   ${DIFF} output/ex35_1.out ex35_1.tmp || printf "${PWD}\nPossible problem with ex35_1, diffs above\n=========================================\n"; \
@@ -829,28 +834,29 @@ TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex3.PETSc runex3 runex3_2 r
                             ex8.PETSc runex8 ex8.rm \
                             ex13.PETSc runex13 runex13_2 runex13_3 ex13.rm\
                             ex15.PETSc runex15 runex15_2 runex15_5 ex15.rm \
-                            ex16adj.PETSc runex16adj runex16adj_2 ex16adj.rm \
+                            ex16adj.PETSc runex16adj runex16adj_2 ex16adj.rm printdot \
                             ex17.PETSc runex17 ex17.rm \
                             ex19.PETSc ex19.rm \
                             ex22.PETSc runex22_2 runex22_3 runex22_4 ex22.rm \
                             ex25.PETSc runex25 ex25.rm \
-                            ex31.PETSc ex31.rm \
+                            ex31.PETSc runex31 runex31_2 ex31.rm \
                             ex40.PETSc runex40 ex40.rm \
                             ex41.PETSc runex41 ex41.rm \
                             ex43.PETSc ex43.rm \
                             ex44.PETSc runex44 ex44.rm
-TESTEXAMPLES_C_NOTSINGLE  = ex2.PETSc runex2 ex2.rm ex3.PETSc runex3_3 ex3.rm ex8.PETSc runex8_2 runex8_3 ex8.rm ex10.PETSc runex10 runex10_2 runex10_3  ex10.rm \
-                            ex12.PETSc runex12 runex12_2 ex12.rm ex15.PETSc runex15_3 runex15_4 ex15.rm \
-                            ex16.PETSc runex16  ex16.rm ex17.PETSc runex17 runex17_2 ex17.rm  ex22.PETSc runex22  ex22.rm \
-                            ex43.PETSc runex43_a runex43_b ex43.rm
+TESTEXAMPLES_C_NOTSINGLE  = ex2.PETSc runex2 ex2.rm ex3.PETSc runex3_3 ex3.rm ex8.PETSc runex8_2 runex8_3 ex8.rm ex10.PETSc printdot runex10 runex10_2 runex10_3  ex10.rm \
+                            printdot ex12.PETSc runex12 runex12_2 ex12.rm ex15.PETSc runex15_3 runex15_4 ex15.rm printdot \
+                            ex16.PETSc runex16  ex16.rm ex17.PETSc runex17 runex17_2 ex17.rm  ex22.PETSc runex22  ex22.rm printdot \
+                            ex29.PETSc runex29 ex29.rm ex43.PETSc runex43_a runex43_b ex43.rm
 TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE  = ex9.PETSc runex9 runex9_2 runex9_3 ex9.rm ex26.PETSc runex26 runex26_2 runex26_3 runex26_4 ex26.rm\
                             ex16opt_p.PETSc  runex16opt_p  ex16opt_p.rm \
-                            ex16opt_ic.PETSc runex16opt_ic ex16opt_ic.rm \
+                            printdot ex16opt_ic.PETSc runex16opt_ic ex16opt_ic.rm \
                             ex20opt_p.PETSc   ex20opt_p.rm \
                             ex20opt_ic.PETSc  ex20opt_ic.rm
 TESTEXAMPLES_C_X	  = ex5.PETSc runex5 ex5.rm
 TESTEXAMPLES_FORTRAN	  = ex1f.PETSc runex1f ex1f.rm
-TESTEXAMPLES_FORTRAN_NOTSINGLE =  ex22f.PETSc runex22f ex22f.rm ex22f_mf.PETSc runex22f_mf ex22f_mf.rm
+TESTEXAMPLES_FORTRAN_NOTSINGLE =  ex22f.PETSc runex22f ex22f.rm
+TESTEXAMPLES_F90_NOTSINGLE =  ex22f_mf.PETSc runex22f_mf ex22f_mf.rm
 TESTEXAMPLES_C_X_MPIUNI   = ex43.PETSc runex43_a runex43_b ex43.rm \
                             ex44.PETSc runex44_a runex44_b ex44.rm
 TESTEXAMPLES_13		  = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm \
@@ -860,6 +866,6 @@ TESTEXAMPLES_MOAB         = ex35.PETSc runex35 ex35.rm
 TESTEXAMPLES_MOAB_HDF5    = ex35.PETSc runex35_2 ex35.rm
 TESTEXAMPLES_TCHEM        = extchem.PETSc runextchem extchem.rm
 
-TESTEXAMPLES_REVOLVE      = ex20adj.PETSc runex20adj_7 runex20adj_8 runex20adj_9 runex20adj_10 runex20adj_11 runex20adj_12 runex20adj_13 runex20adj_14 runex20adj_15 runex20adj_16 runex20adj_17 runex20adj_18 runex20adj_19 runex20adj_20 ex20adj.rm
+TESTEXAMPLES_REVOLVE      = ex20adj.PETSc runex20adj_7 runex20adj_8 runex20adj_9 printdot runex20adj_10 runex20adj_11 runex20adj_12 runex20adj_13 runex20adj_14 runex20adj_15 runex20adj_16 runex20adj_17 printdot runex20adj_18 runex20adj_19 runex20adj_20 ex20adj.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test

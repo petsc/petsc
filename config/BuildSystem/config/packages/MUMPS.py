@@ -14,6 +14,7 @@ class Configure(config.package.Package):
     self.includes         = ['dmumps_c.h']
     #
     # Mumps does NOT work with 64 bit integers without a huge number of hacks we ain't making
+    self.precisions       = ['single','double']
     self.requires32bitint = 1;  # 1 means that the package will not work with 64 bit integers
     self.downloadonWindows= 1
     self.hastests         = 1
@@ -50,8 +51,6 @@ class Configure(config.package.Package):
     if self.argDB['with-mumps-serial']:
       if not self.mpi.usingMPIUni:
         raise RuntimeError('Serial MUMPS version is only compatible with MPIUni\nReconfigure using --with-mpi=0')
-      elif self.mpi.usingMPIUniFortranBinding:
-        raise RuntimeError('Serial MUMPS version is incompatible with the MPIUni Fortran bindings\nReconfigure using --with-mpiuni-fortran-binding=0')
     return
 
   def Install(self):

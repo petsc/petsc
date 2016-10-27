@@ -15,13 +15,14 @@ KSP Object: 1 MPI processes
   using PRECONDITIONED norm type for convergence test
 PC Object: 1 MPI processes
   type: icc
+    out-of-place factorization
     1 level of fill
     tolerance for zero pivot 2.22045e-14
     using Manteuffel shift [POSITIVE_DEFINITE]
     matrix ordering: natural
     factor fill ratio given 1., needed 0.976077
       Factored matrix follows:
-        Mat Object:         1 MPI processes
+        Mat Object: 1 MPI processes
           type: seqsbaij
           rows=221, cols=221
           package used to perform factorization: bas
@@ -29,7 +30,7 @@ PC Object: 1 MPI processes
           total number of mallocs used during MatSetValues calls =0
               block size is 1
   linear system matrix = precond matrix:
-  Mat Object:   1 MPI processes
+  Mat Object: 1 MPI processes
     type: seqaij
     rows=221, cols=221
     total: nonzeros=1045, allocated nonzeros=1105

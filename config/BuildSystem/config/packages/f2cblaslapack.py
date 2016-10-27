@@ -4,7 +4,6 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/f2cblaslapack-3.4.2.q1.tar.gz']
-    self.double           = 0
     self.downloadonWindows= 1
     self.skippackagewithoptions = 1
 

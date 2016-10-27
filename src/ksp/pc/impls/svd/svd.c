@@ -64,7 +64,11 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
     ierr = MatDuplicate(jac->A,MAT_DO_NOT_COPY_VALUES,&jac->U);CHKERRQ(ierr);
     ierr = MatDuplicate(jac->A,MAT_DO_NOT_COPY_VALUES,&jac->Vt);CHKERRQ(ierr);
   }
-  ierr  = MatGetSize(pc->pmat,&n,NULL);CHKERRQ(ierr);
+  ierr  = MatGetSize(jac->A,&n,NULL);CHKERRQ(ierr);
+  if (!n) {
+    ierr = PetscInfo(pc,"Matrix has zero rows, skipping svd\n");
+    PetscFunctionReturn(0);
+  }
   ierr  = PetscBLASIntCast(n,&nb);CHKERRQ(ierr);
   lwork = 5*nb;
   ierr  = PetscMalloc1(lwork,&work);CHKERRQ(ierr);
@@ -90,7 +94,7 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
     PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("A","A",&nb,&nb,a,&nb,dd,u,&nb,v,&nb,work,&lwork,rwork,&lierr));
     if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"gesv() error %d",lierr);
     ierr = PetscFree(rwork);CHKERRQ(ierr);
-    for (i=0; i<nb; i++) d[i] = dd[i];
+    for (i=0; i<n; i++) d[i] = dd[i];
     ierr = PetscFree(dd);CHKERRQ(ierr);
     ierr = PetscFPTrapPop();CHKERRQ(ierr);
   }
@@ -348,6 +352,22 @@ static PetscErrorCode PCSetFromOptions_SVD(PetscOptionItems *PetscOptionsObject,
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PCView_SVD"
+static PetscErrorCode PCView_SVD(PC pc,PetscViewer viewer)
+{
+  PC_SVD         *svd = (PC_SVD*)pc->data;
+  PetscErrorCode ierr;
+  PetscBool      iascii;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
+    ierr = PetscViewerASCIIPrintf(viewer,"  SVD: All singular values smaller than %g treated as zero\n",(double)svd->zerosing);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  SVD: Provided essential rank of the matrix %D (all other eigenvalues are zeroed)\n",svd->essrank);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 /* -------------------------------------------------------------------------- */
 /*
    PCCreate_SVD - Creates a SVD preconditioner context, PC_SVD,
@@ -407,7 +427,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_SVD(PC pc)
   pc->ops->reset           = PCReset_SVD;
   pc->ops->destroy         = PCDestroy_SVD;
   pc->ops->setfromoptions  = PCSetFromOptions_SVD;
-  pc->ops->view            = 0;
+  pc->ops->view            = PCView_SVD;
   pc->ops->applyrichardson = 0;
   PetscFunctionReturn(0);
 }

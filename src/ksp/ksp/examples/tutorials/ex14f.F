@@ -98,6 +98,10 @@
       ithree         = 3
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
       comm = PETSC_COMM_WORLD
 
 !  Initialize problem parameters
@@ -134,10 +138,11 @@
      &                        '-Nx',Nx,flg,ierr)
       call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,   &
      &                         '-Ny',Ny,flg,ierr)
-      call DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,         &
-     &     DMDA_STENCIL_STAR,mx,my,Nx,Ny,one,one,                        &
+      call DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,             &
+     &     DMDA_STENCIL_STAR,mx,my,Nx,Ny,one,one,                           &
      &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
-
+      call DMSetFromOptions(da,ierr)
+      call DMSetUp(da,ierr)
 !
 !  Extract global and local vectors from DMDA then duplicate for remaining
 !  vectors that are the same types
@@ -321,7 +326,7 @@
       PetscInt  my, xs,ys,xm
       PetscInt  ym
       PetscReal one,lambda,temp1,temp,hx,hy
-      PetscScalar      xx(1)
+      PetscScalar      xx(2)
       DM               da
       Mat              B
       common   /mycommon/ mx,my,B,localX,da
@@ -401,7 +406,7 @@
       PetscInt rowf
       PetscReal two,one,lambda,hx
       PetscReal hy,hxdhy,hydhx,sc
-      PetscScalar      u,uxx,uyy,xx(1),ff(1)
+      PetscScalar      u,uxx,uyy,xx(2),ff(2)
       DM               da
       Mat              B
       common   /mycommon/ mx,my,B,localX,da
@@ -503,7 +508,7 @@
       Mat         jac
       Vec         localX
       DM          da
-      PetscInt     ltog(1)
+      PetscInt     ltog(2)
       PetscOffset idltog,idx
       PetscErrorCode ierr
       PetscInt xs,ys,xm,ym
@@ -513,7 +518,7 @@
       PetscInt col(5),ifive
       PetscScalar two,one,lambda
       PetscScalar v(5),hx,hy,hxdhy
-      PetscScalar hydhx,sc,xx(1)
+      PetscScalar hydhx,sc,xx(2)
       Mat         B
       ISLocalToGlobalMapping ltogm
       common   /mycommon/ mx,my,B,localX,da

@@ -9,6 +9,7 @@ class Configure(config.package.GNUPackage):
     self.downloadonWindows = 1
     self.lookforbydefault  = 1
     self.publicInstall     = 0  # always install in PETSC_DIR/PETSC_ARCH (not --prefix) since this is not used by users
+    self.linkedbypetsc     = 0
     return
 
   def setupHelp(self, help):

@@ -78,7 +78,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_inplace(Mat C,Mat A,const MatFactorI
     w    = pv + bs2*diag;
 
     ierr = PetscKernel_A_gets_inverse_A(bs,w,v_pivots,v_work,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
-    if (zeropivotdetected) C->errortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+    if (zeropivotdetected) C->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
   }
 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);

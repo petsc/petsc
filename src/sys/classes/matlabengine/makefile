@@ -1,7 +1,5 @@
 
 #requiresdefine  'PETSC_HAVE_MATLAB_ENGINE'
-#requiresscalar real
-#requiresprecision  double
 
 ALL: lib
 

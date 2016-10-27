@@ -6,7 +6,7 @@
 #include <petscds.h>
 
 PetscClassId  DM_CLASSID;
-PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocalToLocal, DM_LocatePoints, DM_Coarsen, DM_CreateInterpolation, DM_CreateRestriction;
+PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocalToLocal, DM_LocatePoints, DM_Coarsen, DM_Refine, DM_CreateInterpolation, DM_CreateRestriction;
 
 const char *const DMBoundaryTypes[] = {"NONE","GHOSTED","MIRROR","PERIODIC","TWIST","DM_BOUNDARY_",0};
 
@@ -977,7 +977,10 @@ PetscErrorCode DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
       ierr = MPIU_Allreduce(&bsLocal, &bsMin, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
       if (bsMin != bsMax) {bs = 1;}
       else                {bs = bsMax;}
-      ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)dm), bs < 0 ? 1 : bs, size, ltog, PETSC_OWN_POINTER, &dm->ltogmap);CHKERRQ(ierr);
+      bs   = bs < 0 ? 1 : bs;
+      /* Must reduce indices by blocksize */
+      if (bs > 1) for (l = 0; l < size; ++l) ltog[l] /= bs;
+      ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)dm), bs, size, ltog, PETSC_OWN_POINTER, &dm->ltogmap);CHKERRQ(ierr);
       ierr = PetscLogObjectParent((PetscObject)dm, (PetscObject)dm->ltogmap);CHKERRQ(ierr);
     } else {
       if (!dm->ops->getlocaltoglobalmapping) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM can not create LocalToGlobalMapping");
@@ -1121,7 +1124,7 @@ PetscErrorCode  DMCreateInjection(DM dm1,DM dm2,Mat *mat)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm1,DM_CLASSID,1);
   PetscValidHeaderSpecific(dm2,DM_CLASSID,2);
-  if (!*dm1->ops->getinjection) SETERRQ(PetscObjectComm((PetscObject)dm1),PETSC_ERR_SUP,"DMCreateInjection not implemented for this type");
+  if (!dm1->ops->getinjection) SETERRQ(PetscObjectComm((PetscObject)dm1),PETSC_ERR_SUP,"DMCreateInjection not implemented for this type");
   ierr = (*dm1->ops->getinjection)(dm1,dm2,mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1135,7 +1138,7 @@ PetscErrorCode  DMCreateInjection(DM dm1,DM dm2,Mat *mat)
 
     Input Parameter:
 +   dm - the DM object
--   ctype - IS_COLORING_GHOSTED or IS_COLORING_GLOBAL
+-   ctype - IS_COLORING_LOCAL or IS_COLORING_GLOBAL
 
     Output Parameter:
 .   coloring - the coloring
@@ -1175,7 +1178,7 @@ PetscErrorCode  DMCreateColoring(DM dm,ISColoringType ctype,ISColoring *coloring
        do not need to do it yourself.
 
        By default it also sets the nonzero structure and puts in the zero entries. To prevent setting
-       the nonzero pattern call DMDASetMatPreallocateOnly()
+       the nonzero pattern call DMSetMatrixPreallocateOnly()
 
        For structured grid problems, when you call MatView() on this matrix it is displayed using the global natural ordering, NOT in the ordering used
        internally by PETSc.
@@ -1607,13 +1610,12 @@ PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *len, char ***namelis
   if (dm->ops->createdomaindecomposition) {
     ierr = (*dm->ops->createdomaindecomposition)(dm,&l,namelist,innerislist,outerislist,dmlist);CHKERRQ(ierr);
     /* copy subdomain hooks and context over to the subdomain DMs */
-    if (dmlist) {
-      if (!*dmlist) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_POINTER,"Method mapped to dm->ops->createdomaindecomposition must allocate at least one DM");
+    if (dmlist && *dmlist) {
       for (i = 0; i < l; i++) {
         for (link=dm->subdomainhook; link; link=link->next) {
           if (link->ddhook) {ierr = (*link->ddhook)(dm,(*dmlist)[i],link->ctx);CHKERRQ(ierr);}
         }
-        (*dmlist)[i]->ctx = dm->ctx;
+        if (dm->ctx) (*dmlist)[i]->ctx = dm->ctx;
       }
     }
     if (len) *len = l;
@@ -1689,6 +1691,7 @@ PetscErrorCode  DMRefine(DM dm,MPI_Comm comm,DM *dmf)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscLogEventBegin(DM_Refine,dm,0,0,0);CHKERRQ(ierr);
   if (!dm->ops->refine) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"This DM cannot refine");
   ierr = (*dm->ops->refine)(dm,comm,dmf);CHKERRQ(ierr);
   if (*dmf) {
@@ -1707,6 +1710,7 @@ PetscErrorCode  DMRefine(DM dm,MPI_Comm comm,DM *dmf)
       }
     }
   }
+  ierr = PetscLogEventEnd(DM_Refine,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -6002,7 +6006,7 @@ PetscErrorCode DMCopyBoundary(DM dm, DM dmNew)
 
   Input Parameters:
 + dm          - The DM, with a PetscDS that matches the problem being constrained
-. isEssential - Flag for an essential (Dirichlet) condition, as opposed to a natural (Neumann) condition
+. type        - The type of condition, e.g. DM_BC_ESSENTIAL_ANALYTIC/DM_BC_ESSENTIAL_FIELD (Dirichlet), or DM_BC_NATURAL (Neumann)
 . name        - The BC name
 . labelname   - The label defining constrained points
 . field       - The field to constrain
@@ -6021,13 +6025,13 @@ PetscErrorCode DMCopyBoundary(DM dm, DM dmNew)
 
 .seealso: DMGetBoundary()
 @*/
-PetscErrorCode DMAddBoundary(DM dm, PetscBool isEssential, const char name[], const char labelname[], PetscInt field, PetscInt numcomps, const PetscInt *comps, void (*bcFunc)(), PetscInt numids, const PetscInt *ids, void *ctx)
+PetscErrorCode DMAddBoundary(DM dm, DMBoundaryConditionType type, const char name[], const char labelname[], PetscInt field, PetscInt numcomps, const PetscInt *comps, void (*bcFunc)(), PetscInt numids, const PetscInt *ids, void *ctx)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = PetscDSAddBoundary(dm->prob,isEssential,name,labelname,field,numcomps,comps,bcFunc,numids,ids,ctx);CHKERRQ(ierr);
+  ierr = PetscDSAddBoundary(dm->prob,type,name,labelname,field,numcomps,comps,bcFunc,numids,ids,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -6066,7 +6070,7 @@ PetscErrorCode DMGetNumBoundary(DM dm, PetscInt *numBd)
 - bd          - The BC number
 
   Output Parameters:
-+ isEssential - Flag for an essential (Dirichlet) condition, as opposed to a natural (Neumann) condition
++ type        - The type of condition, e.g. DM_BC_ESSENTIAL_ANALYTIC/DM_BC_ESSENTIAL_FIELD (Dirichlet), or DM_BC_NATURAL (Neumann)
 . name        - The BC name
 . labelname   - The label defining constrained points
 . field       - The field to constrain
@@ -6085,13 +6089,13 @@ PetscErrorCode DMGetNumBoundary(DM dm, PetscInt *numBd)
 
 .seealso: DMAddBoundary()
 @*/
-PetscErrorCode DMGetBoundary(DM dm, PetscInt bd, PetscBool *isEssential, const char **name, const char **labelname, PetscInt *field, PetscInt *numcomps, const PetscInt **comps, void (**func)(), PetscInt *numids, const PetscInt **ids, void **ctx)
+PetscErrorCode DMGetBoundary(DM dm, PetscInt bd, DMBoundaryConditionType *type, const char **name, const char **labelname, PetscInt *field, PetscInt *numcomps, const PetscInt **comps, void (**func)(), PetscInt *numids, const PetscInt **ids, void **ctx)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = PetscDSGetBoundary(dm->prob,bd,isEssential,name,labelname,field,numcomps,comps,func,numids,ids,ctx);CHKERRQ(ierr);
+  ierr = PetscDSGetBoundary(dm->prob,bd,type,name,labelname,field,numcomps,comps,func,numids,ids,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -6223,26 +6227,6 @@ PetscErrorCode DMProjectFunctionLocal(DM dm, PetscReal time, PetscErrorCode (**f
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMProjectFieldLocal"
-PetscErrorCode DMProjectFieldLocal(DM dm, Vec localU,
-                                   void (**funcs)(PetscInt, PetscInt, PetscInt,
-                                                  const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
-                                                  const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
-                                                  PetscReal, const PetscReal[], PetscScalar[]),
-                                   InsertMode mode, Vec localX)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidHeaderSpecific(localU,VEC_CLASSID,2);
-  PetscValidHeaderSpecific(localX,VEC_CLASSID,5);
-  if (!dm->ops->projectfieldlocal) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implemnt DMProjectFieldLocal",((PetscObject)dm)->type_name);
-  ierr = (dm->ops->projectfieldlocal) (dm, localU, funcs, mode, localX);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "DMProjectFunctionLabelLocal"
 PetscErrorCode DMProjectFunctionLabelLocal(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
 {
@@ -6253,6 +6237,46 @@ PetscErrorCode DMProjectFunctionLabelLocal(DM dm, PetscReal time, DMLabel label,
   PetscValidHeaderSpecific(localX,VEC_CLASSID,5);
   if (!dm->ops->projectfunctionlabellocal) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implemnt DMProjectFunctionLabelLocal",((PetscObject)dm)->type_name);
   ierr = (dm->ops->projectfunctionlabellocal) (dm, time, label, numIds, ids, funcs, ctxs, mode, localX);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMProjectFieldLocal"
+PetscErrorCode DMProjectFieldLocal(DM dm, PetscReal time, Vec localU,
+                                   void (**funcs)(PetscInt, PetscInt, PetscInt,
+                                                  const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                  const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                  PetscReal, const PetscReal[], PetscScalar[]),
+                                   InsertMode mode, Vec localX)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(localU,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(localX,VEC_CLASSID,6);
+  if (!dm->ops->projectfieldlocal) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implemnt DMProjectFieldLocal",((PetscObject)dm)->type_name);
+  ierr = (dm->ops->projectfieldlocal) (dm, time, localU, funcs, mode, localX);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMProjectFieldLabelLocal"
+PetscErrorCode DMProjectFieldLabelLocal(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], Vec localU,
+                                        void (**funcs)(PetscInt, PetscInt, PetscInt,
+                                                       const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                       const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                       PetscReal, const PetscReal[], PetscScalar[]),
+                                        InsertMode mode, Vec localX)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(localU,VEC_CLASSID,6);
+  PetscValidHeaderSpecific(localX,VEC_CLASSID,9);
+  if (!dm->ops->projectfieldlabellocal) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implemnt DMProjectFieldLocal",((PetscObject)dm)->type_name);
+  ierr = (dm->ops->projectfieldlabellocal)(dm, time, label, numIds, ids, localU, funcs, mode, localX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -6412,3 +6436,53 @@ PetscErrorCode DMGetNeighbors(DM dm,PetscInt *nranks,const PetscMPIInt *ranks[])
   PetscFunctionReturn(0);
 }
 
+#include <petsc/private/matimpl.h> /* Needed because of coloring->ctype below */
+
+#undef __FUNCT__
+#define __FUNCT__ "MatFDColoringApply_AIJDM"
+/*
+    Converts the input vector to a ghosted vector and then calls the standard coloring code.
+    This has be a different function because it requires DM which is not defined in the Mat library
+*/
+PetscErrorCode  MatFDColoringApply_AIJDM(Mat J,MatFDColoring coloring,Vec x1,void *sctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (coloring->ctype == IS_COLORING_LOCAL) {
+    Vec x1local;
+    DM  dm;
+    ierr = MatGetDM(J,&dm);CHKERRQ(ierr);
+    if (!dm) SETERRQ(PetscObjectComm((PetscObject)J),PETSC_ERR_ARG_INCOMP,"IS_COLORING_LOCAL requires a DM");
+    ierr = DMGetLocalVector(dm,&x1local);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(dm,x1,INSERT_VALUES,x1local);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(dm,x1,INSERT_VALUES,x1local);CHKERRQ(ierr);
+    x1   = x1local;
+  }
+  ierr = MatFDColoringApply_AIJ(J,coloring,x1,sctx);CHKERRQ(ierr);
+  if (coloring->ctype == IS_COLORING_LOCAL) {
+    DM  dm;
+    ierr = MatGetDM(J,&dm);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(dm,&x1);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatFDColoringUseDM"
+/*@
+    MatFDColoringUseDM - allows a MatFDColoring object to use the DM associated with the matrix to use a IS_COLORING_LOCAL coloring
+
+    Input Parameter:
+.    coloring - the MatFDColoring object
+
+    Developer Notes: this routine exists because the PETSc Mat library does not know about the DM objects
+
+.seealso: MatFDColoring, MatFDColoringCreate(), ISColoringType
+@*/
+PetscErrorCode  MatFDColoringUseDM(Mat coloring,MatFDColoring fdcoloring)
+{
+  PetscFunctionBegin;
+  coloring->ops->fdcoloringapply = MatFDColoringApply_AIJDM;
+  PetscFunctionReturn(0);
+}

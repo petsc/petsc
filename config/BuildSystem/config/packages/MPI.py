@@ -38,7 +38,6 @@ class Configure(config.package.Package):
     self.liblist          = liblist_mpich + liblist_lam + liblist_msmpi + liblist_other + liblist_single
     # defaults to --with-mpi=yes
     self.required         = 1
-    self.double           = 0
     self.complex          = 1
     self.isPOE            = 0
     self.usingMPIUni      = 0
@@ -56,7 +55,6 @@ class Configure(config.package.Package):
     help.addArgument('MPI', '-with-mpiexec=<prog>',                              nargs.Arg(None, None, 'The utility used to launch MPI jobs'))
     help.addArgument('MPI', '-with-mpi-compilers=<bool>',                        nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
     help.addArgument('MPI', '-known-mpi-shared-libraries=<bool>',                nargs.ArgBool(None, None, 'Indicates the MPI libraries are shared (the usual test will be skipped)'))
-    help.addArgument('MPI', '-with-mpiuni-fortran-binding=<bool>',               nargs.ArgBool(None, 1, 'Build the MPIUni Fortran bindings'))
     return
 
   def setupDependencies(self, framework):
@@ -309,11 +307,6 @@ class Configure(config.package.Package):
     self.framework.addDefine('MPI_Type_create_struct(count,lens,displs,types,newtype)', 'MPI_Type_struct((count),(lens),(displs),(types),(newtype))')
     self.framework.addDefine('MPI_Comm_create_errhandler(p_err_fun,p_errhandler)', 'MPI_Errhandler_create((p_err_fun),(p_errhandler))')
     self.framework.addDefine('MPI_Comm_set_errhandler(comm,p_errhandler)', 'MPI_Errhandler_set((comm),(p_errhandler))')
-    if hasattr(self.compilers, 'FC') and self.argDB['with-mpiuni-fortran-binding']:
-      self.usingMPIUniFortranBinding = 1
-      self.framework.addDefine('MPIUNI_FORTRAN_BINDING', 1)
-    else:
-      self.usingMPIUniFortranBinding = 0
     self.logWrite(self.framework.restoreLog())
     if self.getDefaultLanguage == 'C': self.addDefine('HAVE_MPI_C_DOUBLE_COMPLEX', 1)
     self.commf2c = 1
@@ -456,8 +449,10 @@ class Configure(config.package.Package):
         self.addDefine('HAVE_OMPI_RELEASE_VERSION',ompi_release_version)
       except:
         self.logPrint('Unable to parse OpenMPI version from header. Probably a buggy preprocessor')
+
   def findMPIInc(self):
-    '''Find MPI include paths from "mpicc -show"'''
+    '''Find MPI include paths from "mpicc -show" and use with CUDAC_FLAGS'''
+    if not hasattr(self.compilers, 'CUDAC'): return
     import re
     output = ''
     try:
@@ -472,9 +467,10 @@ class Configure(config.package.Package):
         self.logPrint( 'Checking arg '+arg, 4, 'compilers')
         m = re.match(r'^-I.*$', arg)
         if m:
-          inc = arg.replace('-I','')
-          self.logPrint('Found include directory: '+inc, 4, 'compilers')
-          self.include.append(inc)
+          self.logPrint('Found include option: '+arg, 4, 'compilers')
+          self.setCompilers.pushLanguage('CUDA')
+          self.setCompilers.addCompilerFlag(arg)
+          self.setCompilers.popLanguage()
           continue
     except StopIteration:
       pass

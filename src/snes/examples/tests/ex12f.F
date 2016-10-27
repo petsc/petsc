@@ -46,6 +46,10 @@
       external         FormJacobian,FormFunction
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      if (ierr .ne. 0) then
+        print*,'Unable to initialize PETSc'
+        stop
+      endif
       i1 = 1
       i0 = 0
       i3 = 3
@@ -62,7 +66,8 @@
 ! Set up data structures
       call DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,N,i1,i1,            &
      &     PETSC_NULL_INTEGER,ctx(1),ierr)
-
+      call DMSetFromOptions(ctx(1),ierr)
+      call DMSetUp(ctx(1),ierr)
       call DMCreateGlobalVector(ctx(1),x,ierr)
       call DMCreateLocalVector(ctx(1),ctx(3),ierr)
 
@@ -133,7 +138,7 @@
       PetscInt i,s,n
       PetscErrorCode ierr
       PetscOffset      ixx,iff,iF2
-      PetscScalar      h,d,vf2(1),vxx(1),vff(1)
+      PetscScalar      h,d,vf2(2),vxx(2),vff(2)
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
 #include <petsc/finclude/petscdm.h>
@@ -239,7 +244,7 @@
       PetscErrorCode ierr
       PetscMPIInt rank,size
       PetscOffset      ixx
-      PetscScalar      d,A,h,vxx(1)
+      PetscScalar      d,A,h,vxx(2)
 
       i1 = 1
       h = 1.0/(real(ctx(6)) - 1.0)

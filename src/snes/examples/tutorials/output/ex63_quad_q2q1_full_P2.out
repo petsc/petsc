@@ -1,11 +1,11 @@
 DMSWARM_PIC: Using method CellDM->LocatePoints
   DMSWARM_PIC: Using method CellDM->GetNeigbors
-  0 SNES Function norm 17.8197 
-    0 KSP Residual norm 17.8197 
-    1 KSP Residual norm 6.13491e-05 
-    2 KSP Residual norm 2.875e-10 
+  0 SNES Function norm 18.1358 
+    0 KSP Residual norm 18.1358 
+    1 KSP Residual norm 2.80386e-05 
+    2 KSP Residual norm 4.408e-11 
   Linear solve converged due to CONVERGED_RTOL iterations 2
-  1 SNES Function norm 2.875e-10 
+  1 SNES Function norm 4.408e-11 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 2 MPI processes
   type: newtonls
@@ -49,11 +49,13 @@ SNES Object: 2 MPI processes
           type: gamg
             MG: type is MULTIPLICATIVE, levels=2 cycles=v
               Cycles per PCApply=1
-              Using Galerkin computed coarse grid matrices
+              Using externally compute Galerkin coarse grid matrices
               GAMG specific options
                 Threshold for dropping small values from graph 0.
                 AGG specific options
                   Symmetric graph false
+                  Number of levels to square graph 1
+                  Number smoothing steps 1
           Coarse grid solver -- level -------------------------------
             KSP Object: (fieldsplit_velocity_mg_coarse_) 2 MPI processes
               type: preonly
@@ -73,37 +75,37 @@ SNES Object: 2 MPI processes
                 using NONE norm type for convergence test
               PC Object: (fieldsplit_velocity_mg_coarse_sub_) 1 MPI processes
                 type: lu
-                  LU: out-of-place factorization
+                  out-of-place factorization
                   tolerance for zero pivot 2.22045e-14
                   using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
                   matrix ordering: nd
-                  factor fill ratio given 5., needed 1.496
+                  factor fill ratio given 5., needed 1.5748
                     Factored matrix follows:
                       Mat Object: 1 MPI processes
                         type: seqaij
-                        rows=44, cols=44, bs=2
+                        rows=48, cols=48, bs=2
                         package used to perform factorization: petsc
-                        total: nonzeros=1496, allocated nonzeros=1496
+                        total: nonzeros=1600, allocated nonzeros=1600
                         total number of mallocs used during MatSetValues calls =0
-                          using I-node routines: found 15 nodes, limit used is 5
+                          using I-node routines: found 17 nodes, limit used is 5
                 linear system matrix = precond matrix:
                 Mat Object: 1 MPI processes
                   type: seqaij
-                  rows=44, cols=44, bs=2
-                  total: nonzeros=1000, allocated nonzeros=1000
+                  rows=48, cols=48, bs=2
+                  total: nonzeros=1016, allocated nonzeros=1016
                   total number of mallocs used during MatSetValues calls =0
-                    using I-node routines: found 22 nodes, limit used is 5
+                    using I-node routines: found 24 nodes, limit used is 5
               linear system matrix = precond matrix:
               Mat Object: 2 MPI processes
                 type: mpiaij
-                rows=44, cols=44, bs=2
-                total: nonzeros=1000, allocated nonzeros=1000
+                rows=48, cols=48, bs=2
+                total: nonzeros=1016, allocated nonzeros=1016
                 total number of mallocs used during MatSetValues calls =0
-                  using I-node (on process 0) routines: found 22 nodes, limit used is 5
+                  using I-node (on process 0) routines: found 24 nodes, limit used is 5
           Down solver (pre-smoother) on level 1 -------------------------------
             KSP Object: (fieldsplit_velocity_mg_levels_1_) 2 MPI processes
               type: chebyshev
-                Chebyshev: eigenvalue estimates:  min = 0.146777, max = 1.61455
+                Chebyshev: eigenvalue estimates:  min = 0.140607, max = 1.54668
                 Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
                 KSP Object: (fieldsplit_velocity_mg_levels_1_esteig_) 2 MPI processes
                   type: gmres
@@ -182,11 +184,13 @@ SNES Object: 2 MPI processes
                   type: gamg
                     MG: type is MULTIPLICATIVE, levels=2 cycles=v
                       Cycles per PCApply=1
-                      Using Galerkin computed coarse grid matrices
+                      Using externally compute Galerkin coarse grid matrices
                       GAMG specific options
                         Threshold for dropping small values from graph 0.
                         AGG specific options
                           Symmetric graph false
+                          Number of levels to square graph 1
+                          Number smoothing steps 1
                   Coarse grid solver -- level -------------------------------
                     KSP Object: (fieldsplit_velocity_mg_coarse_) 2 MPI processes
                       type: preonly
@@ -206,37 +210,37 @@ SNES Object: 2 MPI processes
                         using NONE norm type for convergence test
                       PC Object: (fieldsplit_velocity_mg_coarse_sub_) 1 MPI processes
                         type: lu
-                          LU: out-of-place factorization
+                          out-of-place factorization
                           tolerance for zero pivot 2.22045e-14
                           using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
                           matrix ordering: nd
-                          factor fill ratio given 5., needed 1.496
+                          factor fill ratio given 5., needed 1.5748
                             Factored matrix follows:
                               Mat Object: 1 MPI processes
                                 type: seqaij
-                                rows=44, cols=44, bs=2
+                                rows=48, cols=48, bs=2
                                 package used to perform factorization: petsc
-                                total: nonzeros=1496, allocated nonzeros=1496
+                                total: nonzeros=1600, allocated nonzeros=1600
                                 total number of mallocs used during MatSetValues calls =0
-                                  using I-node routines: found 15 nodes, limit used is 5
+                                  using I-node routines: found 17 nodes, limit used is 5
                         linear system matrix = precond matrix:
                         Mat Object: 1 MPI processes
                           type: seqaij
-                          rows=44, cols=44, bs=2
-                          total: nonzeros=1000, allocated nonzeros=1000
+                          rows=48, cols=48, bs=2
+                          total: nonzeros=1016, allocated nonzeros=1016
                           total number of mallocs used during MatSetValues calls =0
-                            using I-node routines: found 22 nodes, limit used is 5
+                            using I-node routines: found 24 nodes, limit used is 5
                       linear system matrix = precond matrix:
                       Mat Object: 2 MPI processes
                         type: mpiaij
-                        rows=44, cols=44, bs=2
-                        total: nonzeros=1000, allocated nonzeros=1000
+                        rows=48, cols=48, bs=2
+                        total: nonzeros=1016, allocated nonzeros=1016
                         total number of mallocs used during MatSetValues calls =0
-                          using I-node (on process 0) routines: found 22 nodes, limit used is 5
+                          using I-node (on process 0) routines: found 24 nodes, limit used is 5
                   Down solver (pre-smoother) on level 1 -------------------------------
                     KSP Object: (fieldsplit_velocity_mg_levels_1_) 2 MPI processes
                       type: chebyshev
-                        Chebyshev: eigenvalue estimates:  min = 0.146777, max = 1.61455
+                        Chebyshev: eigenvalue estimates:  min = 0.140607, max = 1.54668
                         Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
                         KSP Object: (fieldsplit_velocity_mg_levels_1_esteig_) 2 MPI processes
                           type: gmres
@@ -293,64 +297,64 @@ SNES Object: 2 MPI processes
         has attached null space
         using I-node (on process 0) routines: found 240 nodes, limit used is 5
 Number of SNES iterations = 1
-L_2 Error: 1.61e-10 [1.8e-11, 1.6e-10]
+L_2 Error: 1.29e-10 [7.44e-12, 1.29e-10]
 Timestep: 0 Np: 64
 Timestep: 0 Np: 80
 Timestep: 1 Np: 64
 Timestep: 1 Np: 80
 Timestep: 2 Np: 64
 Timestep: 2 Np: 80
-Timestep: 3 Np: 60
+Timestep: 3 Np: 63
 Timestep: 3 Np: 80
-Timestep: 4 Np: 58
-Timestep: 4 Np: 79
-Timestep: 5 Np: 59
+Timestep: 4 Np: 61
+Timestep: 4 Np: 78
+Timestep: 5 Np: 61
 Timestep: 5 Np: 78
-Timestep: 6 Np: 60
-Timestep: 6 Np: 77
-Timestep: 7 Np: 58
-Timestep: 7 Np: 76
-Timestep: 8 Np: 57
-Timestep: 8 Np: 75
-Timestep: 9 Np: 57
-Timestep: 9 Np: 75
-Timestep: 10 Np: 57
-Timestep: 10 Np: 74
-Timestep: 11 Np: 57
-Timestep: 11 Np: 74
-Timestep: 12 Np: 57
-Timestep: 12 Np: 71
-Timestep: 13 Np: 55
-Timestep: 13 Np: 72
-Timestep: 14 Np: 52
-Timestep: 14 Np: 72
-Timestep: 15 Np: 53
-Timestep: 15 Np: 71
-Timestep: 16 Np: 53
-Timestep: 16 Np: 71
-Timestep: 17 Np: 51
-Timestep: 17 Np: 71
-Timestep: 18 Np: 50
-Timestep: 18 Np: 71
-Timestep: 19 Np: 50
-Timestep: 19 Np: 69
-Timestep: 20 Np: 47
-Timestep: 20 Np: 70
-Timestep: 21 Np: 48
-Timestep: 21 Np: 69
-Timestep: 22 Np: 49
-Timestep: 22 Np: 67
-Timestep: 23 Np: 48
-Timestep: 23 Np: 68
-Timestep: 24 Np: 48
+Timestep: 6 Np: 61
+Timestep: 6 Np: 76
+Timestep: 7 Np: 60
+Timestep: 7 Np: 75
+Timestep: 8 Np: 60
+Timestep: 8 Np: 74
+Timestep: 9 Np: 58
+Timestep: 9 Np: 73
+Timestep: 10 Np: 59
+Timestep: 10 Np: 70
+Timestep: 11 Np: 58
+Timestep: 11 Np: 70
+Timestep: 12 Np: 58
+Timestep: 12 Np: 70
+Timestep: 13 Np: 58
+Timestep: 13 Np: 68
+Timestep: 14 Np: 57
+Timestep: 14 Np: 67
+Timestep: 15 Np: 56
+Timestep: 15 Np: 67
+Timestep: 16 Np: 56
+Timestep: 16 Np: 67
+Timestep: 17 Np: 55
+Timestep: 17 Np: 68
+Timestep: 18 Np: 55
+Timestep: 18 Np: 68
+Timestep: 19 Np: 54
+Timestep: 19 Np: 68
+Timestep: 20 Np: 53
+Timestep: 20 Np: 67
+Timestep: 21 Np: 53
+Timestep: 21 Np: 67
+Timestep: 22 Np: 53
+Timestep: 22 Np: 66
+Timestep: 23 Np: 53
+Timestep: 23 Np: 66
+Timestep: 24 Np: 53
 Timestep: 24 Np: 66
-Timestep: 25 Np: 48
-Timestep: 25 Np: 66
-Timestep: 26 Np: 48
-Timestep: 26 Np: 66
-Timestep: 27 Np: 50
-Timestep: 27 Np: 64
-Timestep: 28 Np: 49
-Timestep: 28 Np: 63
-Timestep: 29 Np: 45
-Timestep: 29 Np: 65
+Timestep: 25 Np: 51
+Timestep: 25 Np: 65
+Timestep: 26 Np: 49
+Timestep: 26 Np: 65
+Timestep: 27 Np: 48
+Timestep: 27 Np: 65
+Timestep: 28 Np: 48
+Timestep: 28 Np: 64
+Timestep: 29 Np: 48
+Timestep: 29 Np: 63

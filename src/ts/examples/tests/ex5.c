@@ -221,8 +221,9 @@ int main(int argc,char **argv)
   /*------------------------------------------*/
 
   /* Create grid */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,-20,-20,
-                      PETSC_DECIDE,PETSC_DECIDE,dof,1,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,20,20,PETSC_DECIDE,PETSC_DECIDE,dof,1,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
 
   /* Define output window for each variable of interest */
@@ -502,44 +503,44 @@ void readinput(struct in *put)
 
   ifp = fopen("ex5_control.txt", "r");
 
-  for (i=0; i<110; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<110; i++) { if (fscanf(ifp, "%c", &x) != 1) abort();}
+  if (fscanf(ifp, "%lf", &tmp) != 1) abort();
   put->Ts = tmp;
 
-  for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<43; i++) { if (fscanf(ifp, "%c", &x) != 1) abort();}
+  if (fscanf(ifp, "%lf", &tmp) != 1) abort();
   put->Td = tmp;
 
-  for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<43; i++) { if (fscanf(ifp, "%c", &x) != 1) abort();}
+  if (fscanf(ifp, "%lf", &tmp) != 1) abort();
   put->Ta = tmp;
 
-  for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<43; i++) { if (fscanf(ifp, "%c", &x) != 1) abort();}
+  if (fscanf(ifp, "%lf", &tmp)!= 1) abort();
   put->Tc = tmp;
 
-  for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<43; i++) { if (fscanf(ifp, "%c", &x) != 1) abort();}
+  if (fscanf(ifp, "%lf", &tmp) != 1) abort();
   put->fr = tmp;
 
-  for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<43; i++) {if (fscanf(ifp, "%c", &x) != 1) abort();}
+  if (fscanf(ifp, "%lf", &tmp) != 1) abort();
   put->wnd = tmp;
 
-  for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<43; i++) {if (fscanf(ifp, "%c", &x) != 1) abort();}
+  if (fscanf(ifp, "%lf", &tmp) != 1) abort();  
   put->pwt = tmp;
 
-  for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<43; i++) {if (fscanf(ifp, "%c", &x) != 1) abort();}
+  if (fscanf(ifp, "%lf", &tmp) != 1) abort();  
   put->wndDir = tmp;
 
-  for (i=0; i<43; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<43; i++) {if (fscanf(ifp, "%c", &x) != 1) abort();}
+  if (fscanf(ifp, "%lf", &tmp) != 1) abort();  
   put->time = tmp;
 
-  for (i=0; i<63; i++) fscanf(ifp, "%c", &x);
-  fscanf(ifp, "%lf", &tmp);
+  for (i=0; i<63; i++) {if (fscanf(ifp, "%c", &x) != 1) abort();}
+  if (fscanf(ifp, "%lf", &tmp) != 1) abort();
   put->init = tmp;
 
 }
