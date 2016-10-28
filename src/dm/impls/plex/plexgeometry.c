@@ -2329,6 +2329,16 @@ static PetscErrorCode DMPlexCoordinatesToReference_Tensor(DM dm, PetscInt cell, 
           }
         }
       }
+#if 0 && defined(PETSC_USE_DEBUG)
+      {
+        PetscReal maxAbs = 0.;
+
+        for (l = 0; l < dimC; l++) {
+          maxAbs = PetscMax(maxAbs,PetscAbsReal(resNeg[l]));
+        }
+        ierr = PetscInfo4(dm,"cell %D, point %D, iter %D: res %g\n",cell,j,i,maxAbs);CHKERRQ(ierr);
+      }
+#endif
 
       ierr = DMPlexCoordinatesToReference_NewtonUpdate(dimC,dimR,J,invJ,work,resNeg,guess);CHKERRQ(ierr);
     }
@@ -2468,6 +2478,16 @@ static PetscErrorCode DMPlexCoordinatesToReference_FE(DM dm, PetscFE fe, PetscIn
           }
         }
       }
+#if 0 && defined(PETSC_USE_DEBUG)
+      {
+        PetscReal maxAbs = 0.;
+
+        for (l = 0; l < dimC; l++) {
+          maxAbs = PetscMax(maxAbs,PetscAbsReal(resNeg[l]));
+        }
+        ierr = PetscInfo4(dm,"cell %D, point %D, iter %D: res %g\n",cell,j,i,maxAbs);CHKERRQ(ierr);
+      }
+#endif
       ierr = DMPlexCoordinatesToReference_NewtonUpdate(dimC,dimR,J,invJ,work,resNeg,guess);CHKERRQ(ierr);
     }
   }
