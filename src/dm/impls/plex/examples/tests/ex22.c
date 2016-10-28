@@ -147,6 +147,7 @@ int main(int argc, char **argv)
             ierr = PetscSpaceGetOrder(sp,&order);CHKERRQ(ierr);
             ierr = DMSetField(dm,0,(PetscObject)fe);CHKERRQ(ierr);
             ierr = DMCreateLocalVector(dm,&localCoords);CHKERRQ(ierr);
+            ierr = VecSetDM(localCoords,NULL);CHKERRQ(ierr);
             ierr = DMProjectFunctionLocal(dm,0,funcs,ctxs,INSERT_VALUES,localCoords);CHKERRQ(ierr);
             ierr = DMClone(dm,&dmCoord);CHKERRQ(ierr);
             ierr = DMSetField(dmCoord,0,(PetscObject)fe);CHKERRQ(ierr);
