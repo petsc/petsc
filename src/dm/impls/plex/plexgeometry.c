@@ -2168,10 +2168,9 @@ PetscErrorCode DMPlexGetDataFVM(DM dm, PetscFV fv, Vec *cellgeom, Vec *facegeom,
 #define __FUNCT__ "DMPlexCoordinatesToReference_NewtonUpdate"
 static PetscErrorCode DMPlexCoordinatesToReference_NewtonUpdate(PetscInt dimC, PetscInt dimR, PetscScalar *J, PetscScalar *invJ, PetscScalar *work,  PetscReal *resNeg, PetscReal *guess)
 {
-  PetscFunctionBeginHot;
-
   PetscInt l, m;
 
+  PetscFunctionBeginHot;
   if (dimC == dimR && dimR <= 3) {
     /* invert Jacobian, multiply */
     PetscScalar det, idet;
