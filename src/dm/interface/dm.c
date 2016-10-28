@@ -4716,19 +4716,19 @@ PetscErrorCode DMGetCoordinatesLocalized(DM dm,PetscBool *areLocalized)
   }
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(coordSection,&sStart,&sEnd);CHKERRQ(ierr);
-  alreadyLocalized = alreadyLocalizedGlobal = PETSC_TRUE;
+  alreadyLocalized = alreadyLocalizedGlobal = PETSC_FALSE;
   for (c = cStart; c < cEnd; ++c) {
     if (c < sStart || c >= sEnd) {
       alreadyLocalized = PETSC_FALSE;
       break;
     }
     ierr = PetscSectionGetDof(coordSection, c, &dof);CHKERRQ(ierr);
-    if (!dof) {
-      alreadyLocalized = PETSC_FALSE;
+    if (dof) {
+      alreadyLocalized = PETSC_TRUE;
       break;
     }
   }
-  ierr = MPI_Allreduce(&alreadyLocalized,&alreadyLocalizedGlobal,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&alreadyLocalized,&alreadyLocalizedGlobal,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
   *areLocalized = alreadyLocalizedGlobal;
   PetscFunctionReturn(0);
 }
