@@ -142,7 +142,7 @@ int main(int argc, char **argv)
             PetscErrorCode (*funcs[1])(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *) = {identityEmbedding};
             void           *ctxs[1] = {NULL};
 
-            ierr = PetscFECreateDefault(dm,dim,dim,isSimplex,isSimplex ? NULL : "tensor_" ,PETSC_DEFAULT,&fe);CHKERRQ(ierr);
+            ierr = PetscFECreateDefault(dm,dim,dim,isSimplex ? PETSC_TRUE : PETSC_FALSE,isSimplex ? NULL : "tensor_" ,PETSC_DEFAULT,&fe);CHKERRQ(ierr);
             ierr = PetscFEGetBasisSpace(fe,&sp);CHKERRQ(ierr);
             ierr = PetscSpaceGetOrder(sp,&order);CHKERRQ(ierr);
             ierr = DMSetField(dm,0,(PetscObject)fe);CHKERRQ(ierr);
@@ -207,7 +207,7 @@ int main(int argc, char **argv)
             if (isFE) {
               PetscFE fe;
 
-              ierr = PetscFECreateDefault(dm,dim,dimC,isSimplex,isSimplex ? NULL : "tensor_",PETSC_DEFAULT,&fe);CHKERRQ(ierr);
+              ierr = PetscFECreateDefault(dm,dim,dimC,isSimplex ? PETSC_TRUE : PETSC_FALSE,isSimplex ? NULL : "tensor_",PETSC_DEFAULT,&fe);CHKERRQ(ierr);
               ierr = DMSetField(coordDM,0,(PetscObject)fe);CHKERRQ(ierr);
               ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
             }
