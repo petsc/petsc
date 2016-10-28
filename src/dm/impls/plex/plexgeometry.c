@@ -2237,7 +2237,7 @@ static PetscErrorCode DMPlexCoordinatesToReference_NewtonUpdate(PetscInt dimC, P
 #define __FUNCT__ "DMPlexCoordinatesToReference_Tensor"
 static PetscErrorCode DMPlexCoordinatesToReference_Tensor(DM dm, PetscInt cell, PetscInt numPoints, const PetscReal realCoords[], PetscReal refCoords[], Vec coords, PetscInt dimC, PetscInt dimR)
 {
-  PetscInt       coordSize, i, j, k, l, m, maxIts = 10, numV = (1 << dimR);
+  PetscInt       coordSize, i, j, k, l, m, maxIts = 7, numV = (1 << dimR);
   PetscScalar    *coordsScalar = NULL;
   PetscReal      *cellData, *cellCoords, *cellCoeffs, *extJ, *resNeg;
   PetscScalar    *J, *invJ, *work;
@@ -2434,7 +2434,7 @@ static PetscErrorCode DMPlexReferenceToCoordinates_Tensor(DM dm, PetscInt cell, 
 #define __FUNCT__ "DMPlexCoordinatesToReference_FE"
 static PetscErrorCode DMPlexCoordinatesToReference_FE(DM dm, PetscFE fe, PetscInt cell, PetscInt numPoints, const PetscReal realCoords[], PetscReal refCoords[], Vec coords, PetscInt dimC, PetscInt dimR)
 {
-  PetscInt       numComp, numDof, i, j, k, l, m, maxIter = 10, coordSize;
+  PetscInt       numComp, numDof, i, j, k, l, m, maxIter = 7, coordSize;
   PetscScalar    *nodes = NULL, *modes, *invV;
   PetscReal      *B;
   PetscReal      *D;
