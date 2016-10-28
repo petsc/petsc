@@ -37,32 +37,40 @@ class Configure(config.package.CMakePackage):
     self.chaco           = framework.require('config.packages.Chaco',self)
     self.exodusii        = framework.require('config.packages.exodusii',self)
     self.boost           = framework.require('config.packages.boost',self)
-    self.deps            = [self.mpi,self.blasLapack,self.netcdf,self.hdf5]
-    self.odeps           = [self.hwloc,self.hypre,self.superlu,self.superlu_dist,self.parmetis,self.metis,self.ptscotch,self.boost]
+    self.deps            = [self.mpi,self.blasLapack]
+    self.odeps           = [self.hwloc,self.hypre,self.superlu,self.superlu_dist,self.parmetis,self.metis,self.ptscotch,self.boost,self.netcdf,self.hdf5]
     #
     # also requires the ./configure option --with-cxx-dialect=C++11
     return
 
-  def Install(self):
-    config.package.CMakePackage.Install(self)
+  def checkTrilinosDuplicates(self):
+    # we check this in two places, before doing a Trilinos install and (for when PETSc does not install Trilinos) when checking that
+    # the the Trilinos libraries are valid
+    if self.zoltan.found:
+      raise RuntimeError('Trilinos contains Zoltan, therefor do not provide/build a Zoltan if you are providing/building Trilinos')
+    if self.ml.found:
+      raise RuntimeError('Trilinos contains ml, therefor do not provide/build a ml if you are providing/building Trilinos')
+    if self.chaco.found:
+      raise RuntimeError('Trilinos contains chaco, therefor do not provide/build a chaco if you are providing/building Trilinos')
+    if self.exodusii.found:
+      raise RuntimeError('Trilinos contains Exudusii, therefor do not provide/build a Exodusii if you are providing/building Trilinos')
+
+  def configureLibrary(self):
+    self.checkTrilinosDuplicates()
+    config.package.CMakePackage.configureLibrary(self)
+    # should actually test that each of these is installed in the Trilinos libraries
     self.addDefine('HAVE_ML',1)
     self.addDefine('HAVE_CHACO',1)
     self.addDefine('HAVE_ZOLTAN',1)
     self.addDefine('HAVE_EXODUSII',1)
-    return self.installDir
 
   def formCMakeConfigureArgs(self):
-    if self.zoltan.found:
-      raise RuntimeError('Trilinos contains Zoltan, therefor do not provide/build a Zoltan if you are providing/building Trilinos')
+    self.checkTrilinosDuplicates()
+    if not self.netcdf.found:
+      raise RuntimeError('Trilinos requires netcdf so make sure you have --download-netcdf or --with-netcdf-dir if you are building Trilinos')
 
-    if self.ml.found:
-      raise RuntimeError('Trilinos contains ml, therefor do not provide/build a ml if you are providing/building Trilinos')
-
-    if self.chaco.found:
-      raise RuntimeError('Trilinos contains chaco, therefor do not provide/build a chaco if you are providing/building Trilinos')
-
-    if self.exodusii.found:
-      raise RuntimeError('Trilinos contains Exudusii, therefor do not provide/build a Exodusii if you are providing/building Trilinos')
+    if not self.hdf5.found:
+      raise RuntimeError('Trilinos requires hdf5 so make sure you have --download-hdf5 or --with-hdf5-dir if you are building Trilinos')
 
     # Check for 64bit pointers
     if self.types.sizes['known-sizeof-void-p'] != 8:
