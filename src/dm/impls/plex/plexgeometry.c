@@ -2209,7 +2209,7 @@ static PetscErrorCode DMPlexCoordinatesToReference_NewtonUpdate(PetscInt dimC, P
     }
     for (l = 0; l < dimR; l++) {
       for (m = 0; m < dimC; m++) {
-        guess[m] += invJ[l * dimC + m] * resNeg[m];
+        guess[l] += invJ[l * dimC + m] * resNeg[m];
       }
     }
   } else {
@@ -2457,15 +2457,15 @@ static PetscErrorCode DMPlexCoordinatesToReference_FE(DM dm, PetscFE fe, PetscIn
       }
     }
   }
-  ierr = DMGetWorkArray(dm,numDof * numDof,PETSC_REAL,&B);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm,numDof,PETSC_REAL,&B);CHKERRQ(ierr);
   ierr = DMGetWorkArray(dm,numDof * dimR,PETSC_REAL,&D);CHKERRQ(ierr);
   ierr = DMGetWorkArray(dm,dimC + 3 * dimC * dimR,PETSC_SCALAR,&resNeg);CHKERRQ(ierr);
   J = &resNeg[dimC];
   invJ = &J[dimC * dimR];
   work = &invJ[dimC * dimR];
   for (i = 0; i < numPoints * dimR; i++) {refCoords[i] = 0.;}
-  for (i = 0; i < maxIter; i++) { /* we could batch this so that we're not making big B and D arrays all the time */
-    for (j = 0; j < numPoints; j++) {
+  for (j = 0; j < numPoints; j++) {
+      for (i = 0; i < maxIter; i++) { /* we could batch this so that we're not making big B and D arrays all the time */
       PetscReal *guess = &refCoords[j * dimR];
       ierr = PetscSpaceEvaluate(fe->basisSpace, 1, guess, B, D, NULL);CHKERRQ(ierr);
       for (k = 0; k < dimC; k++) {resNeg[k] = realCoords[j * dimC + k];}
@@ -2491,9 +2491,9 @@ static PetscErrorCode DMPlexCoordinatesToReference_FE(DM dm, PetscFE fe, PetscIn
       ierr = DMPlexCoordinatesToReference_NewtonUpdate(dimC,dimR,J,invJ,work,resNeg,guess);CHKERRQ(ierr);
     }
   }
-  ierr = DMRestoreWorkArray(dm,dimC + 2 * dimC + dimR,PETSC_SCALAR,&resNeg);CHKERRQ(ierr);
-  ierr = DMRestoreWorkArray(dm,numDof * numDof * dimR,PETSC_REAL,&D);CHKERRQ(ierr);
-  ierr = DMRestoreWorkArray(dm,numDof * numDof,PETSC_REAL,&B);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm,dimC + 3 * dimC * dimR,PETSC_SCALAR,&resNeg);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm,numDof * dimR,PETSC_REAL,&D);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm,numDof,PETSC_REAL,&B);CHKERRQ(ierr);
   ierr = DMRestoreWorkArray(dm,dimC * numDof,PETSC_SCALAR,&modes);CHKERRQ(ierr);
   ierr = DMPlexVecRestoreClosure(dm, NULL, coords, cell, &coordSize, &nodes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2524,7 +2524,7 @@ static PetscErrorCode DMPlexReferenceToCoordinates_FE(DM dm, PetscFE fe, PetscIn
       }
     }
   }
-  ierr = DMGetWorkArray(dm,numDof * numDof,PETSC_REAL,&B);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm,numDof,PETSC_REAL,&B);CHKERRQ(ierr);
   for (i = 0; i < numPoints * dimC; i++) {realCoords[i] = 0.;}
   for (j = 0; j < numPoints; j++) {
     const PetscReal *guess  = &refCoords[j * dimR];
@@ -2537,7 +2537,7 @@ static PetscErrorCode DMPlexReferenceToCoordinates_FE(DM dm, PetscFE fe, PetscIn
       }
     }
   }
-  ierr = DMRestoreWorkArray(dm,numDof * numDof,PETSC_REAL,&B);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm,numDof,PETSC_REAL,&B);CHKERRQ(ierr);
   ierr = DMRestoreWorkArray(dm,dimC * numDof,PETSC_SCALAR,&modes);CHKERRQ(ierr);
   ierr = DMPlexVecRestoreClosure(dm, NULL, coords, cell, &coordSize, &nodes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
