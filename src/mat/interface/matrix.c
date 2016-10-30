@@ -473,7 +473,7 @@ PetscErrorCode MatMissingDiagonal(Mat mat,PetscBool *missing,PetscInt *dd)
    matrix at a time, per processor. MatGetRow() can only obtain rows
    associated with the given processor, it cannot get rows from the
    other processors; for that we suggest using MatGetSubMatrices(), then
-   MatGetRow() on the submatrix. The row indix passed to MatGetRows()
+   MatGetRow() on the submatrix. The row index passed to MatGetRows()
    is in the global number of rows.
 
    Fortran Notes:
