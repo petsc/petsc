@@ -6,7 +6,9 @@
 static  char help[] = "This example demonstrates use of the TAO package to \n\
 solve an unconstrained minimization problem on a single processor.  We \n\
 minimize the extended Rosenbrock function: \n\
-   sum_{i=0}^{n/2-1} ( alpha*(x_{2i+1}-x_{2i}^2)^2 + (1-x_{2i})^2 ) \n";
+   sum_{i=0}^{n/2-1} ( alpha*(x_{2i+1}-x_{2i}^2)^2 + (1-x_{2i})^2 ) \n\
+or the chained Rosenbrock function:\n\
+   sum_{i=0}^{n-1} alpha*(x_{i+1} - x_i^2)^2 + (1 - x_i)^2\n";
 
 /*T
    Concepts: TAO^Solving an unconstrained minimization problem
@@ -29,6 +31,7 @@ T*/
 typedef struct {
   PetscInt  n;          /* dimension */
   PetscReal alpha;   /* condition parameter */
+  PetscBool chained;
 } AppCtx;
 
 /* -------------- User-defined routines ---------- */
@@ -55,10 +58,11 @@ int main(int argc,char **argv)
   if (size >1) SETERRQ(PETSC_COMM_SELF,1,"Incorrect number of processors");
 
   /* Initialize problem parameters */
-  user.n = 2; user.alpha = 99.0;
+  user.n = 2; user.alpha = 99.0; user.chained = PETSC_FALSE;
   /* Check for command line arguments to override defaults */
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&user.n,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,NULL,"-alpha",&user.alpha,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-chained",&user.chained,&flg);CHKERRQ(ierr);
 
   /* Allocate vectors for the solution and gradient */
   ierr = VecCreateSeq(PETSC_COMM_SELF,user.n,&x);CHKERRQ(ierr);
@@ -125,11 +129,21 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *f, Vec G,void *ptr)
   ierr = VecGetArray(G,&g);CHKERRQ(ierr);
 
   /* Compute G(X) */
-  for (i=0; i<nn; i++){
-    t1 = x[2*i+1]-x[2*i]*x[2*i]; t2= 1-x[2*i];
-    ff += alpha*t1*t1 + t2*t2;
-    g[2*i] = -4*alpha*t1*x[2*i]-2.0*t2;
-    g[2*i+1] = 2*alpha*t1;
+  if (user->chained) {
+    g[0] = 0;
+    for (i=0; i<user->n-1; i++) {
+      t1 = x[i+1] - x[i]*x[i];
+      ff += PetscSqr(1 - x[i]) + alpha*t1*t1;
+      g[i] += -2*(1 - x[i]) + 2*alpha*t1*(-2*x[i]);
+      g[i+1] = 2*alpha*t1;
+    }
+  } else {
+    for (i=0; i<nn; i++){
+      t1 = x[2*i+1]-x[2*i]*x[2*i]; t2= 1-x[2*i];
+      ff += alpha*t1*t1 + t2*t2;
+      g[2*i] = -4*alpha*t1*x[2*i]-2.0*t2;
+      g[2*i+1] = 2*alpha*t1;
+    }
   }
 
   /* Restore vectors */
@@ -175,12 +189,25 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
 
   /* Compute H(X) entries */
-  for (i=0; i<user->n/2; i++){
-    v[1][1] = 2*alpha;
-    v[0][0] = -4*alpha*(x[2*i+1]-3*x[2*i]*x[2*i]) + 2;
-    v[1][0] = v[0][1] = -4.0*alpha*x[2*i];
-    ind[0]=2*i; ind[1]=2*i+1;
-    ierr = MatSetValues(H,2,ind,2,ind,v[0],INSERT_VALUES);CHKERRQ(ierr);
+  if (user->chained) {
+    ierr = MatZeroEntries(H);CHKERRQ(ierr);
+    for (i=0; i<user->n-1; i++) {
+      PetscScalar t1 = x[i+1] - x[i]*x[i];
+      v[0][0] = 2 + 2*alpha*(t1*(-2) - 2*x[i]);
+      v[0][1] = 2*alpha*(-2*x[i]);
+      v[1][0] = 2*alpha*(-2*x[i]);
+      v[1][1] = 2*alpha*t1;
+      ind[0] = i; ind[1] = i+1;
+      ierr = MatSetValues(H,2,ind,2,ind,v[0],ADD_VALUES);CHKERRQ(ierr);
+    }
+  } else {
+    for (i=0; i<user->n/2; i++){
+      v[1][1] = 2*alpha;
+      v[0][0] = -4*alpha*(x[2*i+1]-3*x[2*i]*x[2*i]) + 2;
+      v[1][0] = v[0][1] = -4.0*alpha*x[2*i];
+      ind[0]=2*i; ind[1]=2*i+1;
+      ierr = MatSetValues(H,2,ind,2,ind,v[0],INSERT_VALUES);CHKERRQ(ierr);
+    }
   }
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
 
