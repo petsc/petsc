@@ -825,8 +825,8 @@ PetscErrorCode DMPlexComputeProjection3Dto2D(PetscInt coordSize, PetscScalar coo
       x2p[d] += R[d*dim+e]*x2[e];
     }
   }
-  if (PetscAbsReal(x1p[2]) > 1.0e-9) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid rotation calculated");
-  if (PetscAbsReal(x2p[2]) > 1.0e-9) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid rotation calculated");
+  if (PetscAbsReal(x1p[2]) > 10. * PETSC_SMALL) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid rotation calculated");
+  if (PetscAbsReal(x2p[2]) > 10. * PETSC_SMALL) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid rotation calculated");
   /* 2) Project to (x, y) */
   for (p = 3; p < coordSize/3; ++p) {
     for (d = 0; d < dim; ++d) {
