@@ -42,7 +42,7 @@ static PetscErrorCode testIdentity(DM dm, PetscBool dmIsSimplicial, PetscInt cel
       max = PetscMax(max,PetscAbsReal(preimage[i * dimR + j] - inverted[i * dimR + j]));
     }
     if (max > tol) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Bad inversion for cell %D with error %g (tol %g): (",cell,max,tol);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Bad inversion for cell %D with error %g (tol %g): (",cell,(double)max,(double)tol);CHKERRQ(ierr);
       for (j = 0; j < dimR; j++) {
         ierr = PetscPrintf(PETSC_COMM_SELF,"%+f",(double) preimage[i * dimR + j]);CHKERRQ(ierr);
         if (j < dimR - 1) {
@@ -65,31 +65,41 @@ static PetscErrorCode testIdentity(DM dm, PetscBool dmIsSimplicial, PetscInt cel
       }
       ierr = PetscPrintf(PETSC_COMM_SELF,")\n");CHKERRQ(ierr);
     } else {
-      char strBuf[BUFSIZ] = {'\0'};
-      int  offset = 0;
+      char   strBuf[BUFSIZ] = {'\0'};
+      size_t offset = 0, count;
 
-      offset = snprintf(strBuf + offset,BUFSIZ-offset,"Good inversion for cell %d: (", (int) cell);
+      ierr = PetscSNPrintfCount(strBuf + offset,BUFSIZ-offset,"Good inversion for cell %D: (",&count,cell);CHKERRQ(ierr);
+      offset += count;
       for (j = 0; j < dimR; j++) {
-        offset += snprintf(strBuf + offset,BUFSIZ-offset,"%+f",(double) preimage[i * dimR + j]);
+        ierr = PetscSNPrintfCount(strBuf + offset,BUFSIZ-offset,"%+f",&count,(double) preimage[i * dimR + j]);CHKERRQ(ierr);
+        offset += count;
         if (j < dimR - 1) {
-          offset += snprintf(strBuf + offset,BUFSIZ-offset,",");
+          ierr = PetscSNPrintfCount(strBuf + offset,BUFSIZ-offset,",",&count);CHKERRQ(ierr);
+          offset += count;
         }
       }
-      offset += snprintf(strBuf + offset,BUFSIZ-offset,") --> (");
+      ierr = PetscSNPrintfCount(strBuf + offset,BUFSIZ-offset,") --> (",&count);CHKERRQ(ierr);
+      offset += count;
       for (j = 0; j < dimC; j++) {
-        offset += snprintf(strBuf + offset,BUFSIZ-offset,"%+f",(double) mapped[i * dimC + j]);
+        ierr = PetscSNPrintfCount(strBuf + offset,BUFSIZ-offset,"%+f",&count,(double) mapped[i * dimC + j]);CHKERRQ(ierr);
+        offset += count;
         if (j < dimC - 1) {
-          offset += snprintf(strBuf + offset,BUFSIZ-offset,",");
+          ierr = PetscSNPrintfCount(strBuf + offset,BUFSIZ-offset,",",&count);CHKERRQ(ierr);
+          offset += count;
         }
       }
-      offset += snprintf(strBuf + offset,BUFSIZ-offset,") --> (");
+      ierr = PetscSNPrintfCount(strBuf + offset,BUFSIZ-offset,") --> (",&count);CHKERRQ(ierr);
+      offset += count;
       for (j = 0; j < dimR; j++) {
-        offset += snprintf(strBuf + offset,BUFSIZ-offset,"%+f",(double) inverted[i * dimR + j]);
+        ierr = PetscSNPrintfCount(strBuf + offset,BUFSIZ-offset,"%+f",&count,(double) inverted[i * dimR + j]);CHKERRQ(ierr);
+        offset += count;
         if (j < dimR - 1) {
-          offset += snprintf(strBuf + offset,BUFSIZ-offset,",");
+          ierr = PetscSNPrintfCount(strBuf + offset,BUFSIZ-offset,",",&count);CHKERRQ(ierr);
+          offset += count;
         }
       }
-      offset += snprintf(strBuf + offset,BUFSIZ-offset,")\n");
+      ierr = PetscSNPrintfCount(strBuf + offset,BUFSIZ-offset,")\n",&count);CHKERRQ(ierr);
+      offset += count;
       ierr = PetscInfo1(dm,"%s",strBuf);CHKERRQ(ierr);
     }
   }
