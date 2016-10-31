@@ -437,6 +437,7 @@ static PetscErrorCode DMPlexWriteCoordinates_Vertices_HDF5_Static(DM dm, PetscVi
   const DMBoundaryType *bd;
   PetscReal        lengthScale;
   PetscInt         vStart, vEnd, v, bs, coordSize, dof, off, d;
+  PetscBool        localized;
   hid_t            fileId, groupId;
   PetscErrorCode   ierr;
 
@@ -446,7 +447,8 @@ static PetscErrorCode DMPlexWriteCoordinates_Vertices_HDF5_Static(DM dm, PetscVi
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = VecGetBlockSize(coordinates, &bs);CHKERRQ(ierr);
   ierr = VecGetLocalSize(coordinates, &coordSize);CHKERRQ(ierr);
-  if (coordSize == (vEnd - vStart)*bs) PetscFunctionReturn(0);
+  ierr = DMGetCoordinatesLocalized(dm,&localized);CHKERRQ(ierr);
+  if (localized == PETSC_FALSE) PetscFunctionReturn(0);
   ierr = DMGetPeriodicity(dm, NULL, &L, &bd);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &cSection);CHKERRQ(ierr);
   ierr = VecCreate(PetscObjectComm((PetscObject) coordinates), &newcoords);CHKERRQ(ierr);
