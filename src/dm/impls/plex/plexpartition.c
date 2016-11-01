@@ -848,7 +848,7 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Shell(PetscPartitioner part)
 + part     - The PetscPartitioner
 . numProcs - The number of partitions
 . sizes    - array of size numProcs (or NULL) providing the number of points in each partition
-- points   - array of size sum(sizes) (may be NULL iff sizes is NULL) providing the partition each point belongs to
+- points   - array of size sum(sizes) (may be NULL iff sizes is NULL), a permutation of the points that groups those assigned to each partition in order (i.e., partition 0 first, partition 1 next, etc.)
 
   Level: developer
 
