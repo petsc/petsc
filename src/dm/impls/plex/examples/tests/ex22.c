@@ -122,7 +122,7 @@ int main(int argc, char **argv)
 {
   PetscRandom    randCtx;
   PetscInt       dim, dimC, isSimplex, isFE, numTests = 10;
-  PetscReal      perturb = 0.1, tol = PETSC_SMALL;
+  PetscReal      perturb = 0.1, tol = 10. * PETSC_SMALL;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
