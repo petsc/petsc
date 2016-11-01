@@ -272,7 +272,7 @@ PetscErrorCode VecSetDM(Vec v, DM dm)
 
    Input Parameter:
 +  dm - the DM context
-.  ctype - the matrix type
+-  ctype - the matrix type
 
    Options Database:
 .   -dm_mat_type ctype
