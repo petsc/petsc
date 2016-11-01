@@ -1003,8 +1003,11 @@ PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const PetscIn
         periodicZ == DM_BOUNDARY_PERIODIC || periodicZ == DM_BOUNDARY_TWIST) {
       PetscReal      L[3];
       PetscReal      maxCell[3];
-      DMBoundaryType bdType[3] = {periodicX, periodicY, periodicZ};
+      DMBoundaryType bdType[3];
 
+      bdType[0] = periodicX;
+      bdType[1] = periodicY;
+      bdType[2] = periodicZ;
       for (i = 0; i < dim; i++) {
         L[i]       = upper[i] - lower[i];
         maxCell[i] = 1.1 * (L[i] / cells[i]);
