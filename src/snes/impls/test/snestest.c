@@ -2,9 +2,9 @@
 #include <petsc/private/snesimpl.h>
 
 typedef struct {
-  PetscBool   complete_print;
-  PetscBool   threshold_print;
-  PetscReal   threshold;
+  PetscBool     complete_print;
+  PetscBool     threshold_print;
+  PetscScalar   threshold;
 } SNES_Test;
 
 
