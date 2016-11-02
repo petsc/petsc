@@ -176,7 +176,7 @@ PETSC_STATIC_INLINE void CoordinatesRealToRef(PetscInt dimReal, PetscInt dimRef,
   for (d = 0; d < dimRef; ++d) {
     xi[d] = -1.;
     for (e = 0; e < dimReal; ++e) {
-      xi[d] += invJ[d*dimRef+e]*(x[e] - v0[e]);
+      xi[d] += invJ[d*dimReal+e]*(x[e] - v0[e]);
     }
   }
 }

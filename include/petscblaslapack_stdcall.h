@@ -52,6 +52,8 @@ PETSC_EXTERN void PETSC_STDCALL SSYTRF(const char*,int,PetscBLASInt*,PetscScalar
 PETSC_EXTERN void PETSC_STDCALL SSYTRS(const char*,int,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 #  define LAPACKsytri_(a,b,c,d,e,f,g)               SSYTRI((a),1,(b),(c),(d),(e),(f),(g))
 PETSC_EXTERN void PETSC_STDCALL SSYTRI(const char*,int,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*);
+#  define LAPACKgels_(a,b,c,d,e,f,g,h,i,j,k)        SGELS((a),1,(b),(c),(d),(e),(f),(g),(h),(i),(j),(k))
+PETSC_EXTERN void PETSC_STDCALL SGELS(const char*,int,const PetscBLASInt*,const PetscBLASInt*,const PetscBLASInt*,PetscScalar*,const PetscBLASInt*,PetscScalar*,const PetscBLASInt*,PetscScalar*,const PetscBLASInt*,PetscBLASInt*);
 #  define BLASgemm_(a,b,c,d,e,f,g,h,i,j,k,l,m)      SGEMM((a),1,(b),1,(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m))
 PETSC_EXTERN void PETSC_STDCALL SGEMM(const char*,int,const char*,int,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*);
 #  define BLASsymm_(a,b,c,d,e,f,g,h,i,j,k,l)        SSYMM((a),1,(b),1,(c),(d),(e),(f),(g),(h),(i),(j),(k),(l))
@@ -131,6 +133,8 @@ PETSC_EXTERN void PETSC_STDCALL DSYTRI(const char*,int,PetscBLASInt*,PetscScalar
 PETSC_EXTERN void PETSC_STDCALL DGEMV(const char*,int,const PetscBLASInt*,const PetscBLASInt*,const PetscScalar*,const PetscScalar*,const PetscBLASInt*,const PetscScalar *,const PetscBLASInt*,const PetscScalar*,PetscScalar*,const PetscBLASInt*);
 #  define LAPACKgetrs_(a,b,c,d,e,f,g,h,i)           DGETRS((a),1,(b),(c),(d),(e),(f),(g),(h),(i))
 PETSC_EXTERN void PETSC_STDCALL DGETRS(const char*,int,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+#  define LAPACKgels_(a,b,c,d,e,f,g,h,i,j,k)        DGELS((a),1,(b),(c),(d),(e),(f),(g),(h),(i),(j),(k))
+PETSC_EXTERN void PETSC_STDCALL DGELS(const char*,int,const PetscBLASInt*,const PetscBLASInt*,const PetscBLASInt*,PetscScalar*,const PetscBLASInt*,PetscScalar*,const PetscBLASInt*,PetscScalar*,const PetscBLASInt*,PetscBLASInt*);
 #  define BLASgemm_(a,b,c,d,e,f,g,h,i,j,k,l,m)      DGEMM((a),1,(b),1,(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m))
 PETSC_EXTERN void PETSC_STDCALL DGEMM(const char*,int,const char*,int,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*);
 #  define BLASsymm_(a,b,c,d,e,f,g,h,i,j,k,l)        DSYMM((a),1,(b),1,(c),(d),(e),(f),(g),(h),(i),(j),(k),(l))
@@ -205,6 +209,8 @@ PETSC_EXTERN void PETSC_STDCALL CSYTRI(const char*,int,PetscBLASInt*,PetscScalar
 PETSC_EXTERN void PETSC_STDCALL CGEMV(const char*,int,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar *,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*);
 #  define LAPACKgetrs_(a,b,c,d,e,f,g,h,i)           CGETRS((a),1,(b),(c),(d),(e),(f),(g),(h),(i))
 PETSC_EXTERN void PETSC_STDCALL CGETRS(const char*,int,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+#  define LAPACKgels_(a,b,c,d,e,f,g,h,i,j,k)        CGELS((a),1,(b),(c),(d),(e),(f),(g),(h),(i),(j),(k))
+PETSC_EXTERN void PETSC_STDCALL CGELS(const char*,int,const PetscBLASInt*,const PetscBLASInt*,const PetscBLASInt*,PetscScalar*,const PetscBLASInt*,PetscScalar*,const PetscBLASInt*,PetscScalar*,const PetscBLASInt*,PetscBLASInt*);
 #  define BLASgemm_(a,b,c,d,e,f,g,h,i,j,k,l,m)      CGEMM((a),1,(b),1,(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m))
 PETSC_EXTERN void PETSC_STDCALL CGEMM(const char*,int,const char*,int,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*);
 #  define BLASsymm_(a,b,c,d,e,f,g,h,i,j,k,l)        CSYMM((a),1,(b),1,(c),(d),(e),(f),(g),(h),(i),(j),(k),(l))
@@ -276,6 +282,8 @@ PETSC_EXTERN void PETSC_STDCALL ZSYTRI(const char*,int,PetscBLASInt*,PetscScalar
 PETSC_EXTERN void PETSC_STDCALL ZGEMV(const char*,const int,const PetscBLASInt*,const PetscBLASInt*,const PetscScalar*,const PetscScalar*,const PetscBLASInt*,const PetscScalar *,const PetscBLASInt*,const PetscScalar*,PetscScalar*,const PetscBLASInt*);
 #  define LAPACKgetrs_(a,b,c,d,e,f,g,h,i)           ZGETRS((a),1,(b),(c),(d),(e),(f),(g),(h),(i))
 PETSC_EXTERN void PETSC_STDCALL ZGETRS(const char*,int,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+#  define LAPACKgels_(a,b,c,d,e,f,g,h,i,j,k)        ZGELS((a),1,(b),(c),(d),(e),(f),(g),(h),(i),(j),(k))
+PETSC_EXTERN void PETSC_STDCALL ZGELS(const char*,int,const PetscBLASInt*,const PetscBLASInt*,const PetscBLASInt*,PetscScalar*,const PetscBLASInt*,PetscScalar*,const PetscBLASInt*,PetscScalar*,const PetscBLASInt*,PetscBLASInt*);
 #  define BLASgemm_(a,b,c,d,e,f,g,h,i,j,k,l,m)      ZGEMM((a),1,(b),1,(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m))
 PETSC_EXTERN void PETSC_STDCALL ZGEMM(const char*,int,const char*,int,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*);
 #  define BLASsymm_(a,b,c,d,e,f,g,h,i,j,k,l)        ZSYMM((a),1,(b),1,(c),(d),(e),(f),(g),(h),(i),(j),(k),(l))
