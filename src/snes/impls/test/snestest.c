@@ -92,7 +92,7 @@ PetscErrorCode SNESSolve_Test(SNES snes)
     if (neP->threshold_print) {
       MPI_Comm          comm;
       PetscViewer       viewer;
-      PetscInt          Istart, Iend, *ccols, bncols, cncols, j;
+      PetscInt          Istart, Iend, *ccols, bncols, cncols, j, col;
       PetscScalar       *cvals;
       const PetscInt    *bcols;
       const PetscScalar *bvals;
@@ -104,8 +104,8 @@ PetscErrorCode SNESSolve_Test(SNES snes)
       ierr = MatSetOption(C,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
       ierr = MatGetOwnershipRange(B,&Istart,&Iend);CHKERRQ(ierr);
 
-      for (i = Istart; i < Iend; i++) {
-        ierr = MatGetRow(B,i,&bncols,&bcols,&bvals);CHKERRQ(ierr);
+      for (col = Istart; col < Iend; col++) {
+        ierr = MatGetRow(B,col,&bncols,&bcols,&bvals);CHKERRQ(ierr);
         ierr = PetscMalloc2(bncols,&ccols,bncols,&cvals);CHKERRQ(ierr); 
         for (j = 0, cncols = 0; j < bncols; j++) {
           if (PetscAbsScalar(bvals[j]) > PetscAbsScalar(neP->threshold)) {
