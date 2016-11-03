@@ -166,7 +166,7 @@ class Installer(script.Script):
     newFile.write(''.join(lines))
     newFile.close()
     return
-    
+
   def copyExamples(self, src, dst):
     """Recursively copy the examples directories
     """
@@ -175,17 +175,25 @@ class Installer(script.Script):
 
     self.copyfile(os.path.join(src,'makefile'),dst)
     names  = os.listdir(src)
+    nret2 = 0
     for name in names:
       srcname = os.path.join(src, name)
       dstname = os.path.join(dst, name)
       if not name.startswith('arch') and os.path.isdir(srcname) and os.path.isfile(os.path.join(srcname,'makefile')):
         os.mkdir(dstname)
-        self.copyExamples(srcname,dstname)
+        nret = self.copyExamples(srcname,dstname)
         if name == 'tests' or name == 'tutorials':
-           self.copyexamplefiles(srcname,dstname)
-           if os.path.isdir(os.path.join(srcname,'output')):
-             os.mkdir(os.path.join(dstname,'output'))
-             self.copyexamplefiles(os.path.join(srcname,'output'),os.path.join(dstname,'output'))
+          self.copyexamplefiles(srcname,dstname)
+          if os.path.isdir(os.path.join(srcname,'output')):
+            os.mkdir(os.path.join(dstname,'output'))
+            self.copyexamplefiles(os.path.join(srcname,'output'),os.path.join(dstname,'output'))
+          nret = 1
+        if not nret:
+          # prune directory branches that don't have examples under them
+          os.unlink(os.path.join(dstname,'makefile'))
+          os.rmdir(dstname)
+        nret2 = nret + nret2
+    return nret2
 
   def copytree(self, src, dst, symlinks = False, copyFunc = shutil.copy2, exclude = []):
     """Recursively copy a directory tree using copyFunc, which defaults to shutil.copy2().
