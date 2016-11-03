@@ -961,6 +961,7 @@ PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt numFace
 @*/
 PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const PetscInt cells[], DMBoundaryType periodicX, DMBoundaryType periodicY, DMBoundaryType periodicZ, DM *dm)
 {
+  PetscInt       i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -976,6 +977,21 @@ PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const PetscIn
     PetscReal upper[2] = {1.0, 1.0};
 
     ierr = DMPlexCreateSquareMesh(*dm, lower, upper, cells, periodicX, periodicY);CHKERRQ(ierr);
+    if (periodicX == DM_BOUNDARY_PERIODIC || periodicX == DM_BOUNDARY_TWIST ||
+        periodicY == DM_BOUNDARY_PERIODIC || periodicY == DM_BOUNDARY_TWIST) {
+      PetscReal      L[2];
+      PetscReal      maxCell[2];
+      DMBoundaryType bdType[2];
+
+      bdType[0] = periodicX;
+      bdType[1] = periodicY;
+      for (i = 0; i < dim; i++) {
+        L[i]       = upper[i] - lower[i];
+        maxCell[i] = 1.1 * (L[i] / cells[i]);
+      }
+
+      ierr = DMSetPeriodicity(*dm,maxCell,L,bdType);CHKERRQ(ierr);
+    }
     break;
   }
   case 3:
@@ -984,6 +1000,23 @@ PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const PetscIn
     PetscReal upper[3] = {1.0, 1.0, 1.0};
 
     ierr = DMPlexCreateCubeMesh_Internal(*dm, lower, upper, cells, periodicX, periodicY, periodicZ);CHKERRQ(ierr);
+    if (periodicX == DM_BOUNDARY_PERIODIC || periodicX == DM_BOUNDARY_TWIST ||
+        periodicY == DM_BOUNDARY_PERIODIC || periodicY == DM_BOUNDARY_TWIST ||
+        periodicZ == DM_BOUNDARY_PERIODIC || periodicZ == DM_BOUNDARY_TWIST) {
+      PetscReal      L[3];
+      PetscReal      maxCell[3];
+      DMBoundaryType bdType[3];
+
+      bdType[0] = periodicX;
+      bdType[1] = periodicY;
+      bdType[2] = periodicZ;
+      for (i = 0; i < dim; i++) {
+        L[i]       = upper[i] - lower[i];
+        maxCell[i] = 1.1 * (L[i] / cells[i]);
+      }
+
+      ierr = DMSetPeriodicity(*dm,maxCell,L,bdType);CHKERRQ(ierr);
+    }
     break;
   }
   default:
