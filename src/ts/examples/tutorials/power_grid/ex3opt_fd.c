@@ -27,8 +27,8 @@ PetscErrorCode FormFunction(Tao,Vec,PetscReal*,void*);
 
 /* Event check */
 #undef __FUNCT__
-#define __FUNCT__ "PetscEventFunction"
-PetscErrorCode PetscEventFunction(TS ts,PetscReal t,Vec X,PetscScalar *fvalue,void *ctx)
+#define __FUNCT__ "EventFunction"
+PetscErrorCode EventFunction(TS ts,PetscReal t,Vec X,PetscScalar *fvalue,void *ctx)
 {
   AppCtx        *user=(AppCtx*)ctx;
 
