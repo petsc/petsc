@@ -3,8 +3,8 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download         = ['https://gforge.inria.fr/frs/download.php/file/34392/pastix_5.2.2.20.tar.bz2',
-                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/pastix_5.2.2.20.tar.bz2']
+    self.download         = ['https://gforge.inria.fr/frs/download.php/file/36212/pastix_5.2.3.tar.bz2',
+                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/pastix_5.2.3.tar.bz2']
     self.liblist          = [['libpastix.a'],
                             ['libpastix.a','libpthread.a','librt.a']]
     self.functions        = ['pastix']
