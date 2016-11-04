@@ -660,14 +660,14 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature1D_Internal(PetscInt npoints, 
   a4      = PetscTGamma(a + b + npoints + 1);
 #else
   {
-    PetscReal fa, fb;
+    PetscInt ia, ib;
 
-    fa = PetscFloorReal(a);
-    fb = PetscFloorReal(b);
-    if (fa == a && fb == b && a + npoints + 1 > 0 && b + npoints + 1 > 0 && a + b + npoints + 1 > 0) { /* All gamma(x) terms are (x-1)! terms */
-      ierr = PetscDTFactorial_Internal(a + npoints, &a2);CHKERRQ(ierr);
-      ierr = PetscDTFactorial_Internal(b + npoints, &a3);CHKERRQ(ierr);
-      ierr = PetscDTFactorial_Internal(a + b + npoints, &a4);CHKERRQ(ierr);
+    ia = (PetscInt) a;
+    ib = (PetscInt) b;
+    if (ia == a && ib == b && ia + npoints + 1 > 0 && ib + npoints + 1 > 0 && ia + ib + npoints + 1 > 0) { /* All gamma(x) terms are (x-1)! terms */
+      ierr = PetscDTFactorial_Internal(ia + npoints, &a2);CHKERRQ(ierr);
+      ierr = PetscDTFactorial_Internal(ib + npoints, &a3);CHKERRQ(ierr);
+      ierr = PetscDTFactorial_Internal(ia + ib + npoints, &a4);CHKERRQ(ierr);
     } else {
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"tgamma() - math routine is unavailable.");
     }
