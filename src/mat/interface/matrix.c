@@ -1984,7 +1984,7 @@ PetscErrorCode MatGetLayouts(Mat A,PetscLayout *rmap,PetscLayout *cmap)
    Not Collective
 
    Input Parameters:
-+  x - the matrix
++  mat - the matrix
 .  nrow, irow - number of rows and their local indices
 .  ncol, icol - number of columns and their local indices
 .  y -  a logically two-dimensional array of values
