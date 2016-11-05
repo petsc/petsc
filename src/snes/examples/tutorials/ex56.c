@@ -212,7 +212,7 @@ int main(int argc,char **args)
   PetscBool      test_nonzero_cols=PETSC_FALSE,use_nearnullspace=PETSC_TRUE;
   Vec            xx,bb;
   PetscInt       iter,i,N,dim=3,cells[3]={1,1,1},max_conv_its,local_sizes[7],run_type=1;
-  DM             dm,distdm,newdm;
+  DM             dm,distdm,basedm;
   PetscBool      flg;
   char           convType[256];
   PetscReal      Lx,mdisp[10],err[10];
@@ -255,114 +255,123 @@ int main(int argc,char **args)
   ierr = PetscLogStageRegister("1st Setup", &stage[0]);CHKERRQ(ierr);
   ierr = PetscLogStageRegister("1st Solve", &stage[1]);CHKERRQ(ierr);
 
-  for (iter=0 ; iter<max_conv_its ; iter++) {
-    ierr = PetscOptionsClearValue(NULL,"-ex56_dm_refine");CHKERRQ(ierr);
-    ierr = PetscOptionsInsertString(NULL,options[iter]);CHKERRQ(ierr);
-    /* create DM, Plex calls DMSetup */
-    ierr = PetscLogStagePush(stage[6]);CHKERRQ(ierr);
-    ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, &dm);CHKERRQ(ierr);
-    {
-      DMLabel         label;
-      IS              is;
-      ierr = DMCreateLabel(dm, "boundary");CHKERRQ(ierr);
-      ierr = DMGetLabel(dm, "boundary", &label);CHKERRQ(ierr);
-      ierr = DMPlexMarkBoundaryFaces(dm, label);CHKERRQ(ierr);
-      if (run_type==0) {
-        ierr = DMGetStratumIS(dm, "boundary", 1,  &is);CHKERRQ(ierr);
-        ierr = DMCreateLabel(dm,"Faces");CHKERRQ(ierr);
-        if (is) {
-          PetscInt        d, f, Nf;
-          const PetscInt *faces;
-          PetscInt        csize;
-          PetscSection    cs;
-          Vec             coordinates ;
-          DM              cdm;
-          ierr = ISGetLocalSize(is, &Nf);CHKERRQ(ierr);
-          ierr = ISGetIndices(is, &faces);CHKERRQ(ierr);
-          ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-          ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
-          ierr = DMGetDefaultSection(cdm, &cs);CHKERRQ(ierr);
-          /* Check for each boundary face if any component of its centroid is either 0.0 or 1.0 */
-          for (f = 0; f < Nf; ++f) {
-            PetscReal   faceCoord;
-            PetscInt    b,v;
-            PetscScalar *coords = NULL;
-            PetscInt    Nv;
-            ierr = DMPlexVecGetClosure(cdm, cs, coordinates, faces[f], &csize, &coords);CHKERRQ(ierr);
-            Nv   = csize/dim; /* Calculate mean coordinate vector */
-            for (d = 0; d < dim; ++d) {
-              faceCoord = 0.0;
-              for (v = 0; v < Nv; ++v) faceCoord += PetscRealPart(coords[v*dim+d]);
-              faceCoord /= Nv;
-              for (b = 0; b < 2; ++b) {
-                if (PetscAbs(faceCoord - b) < PETSC_SMALL) { /* domain have not been set yet, still [0,1]^3 */
-                  ierr = DMSetLabelValue(dm, "Faces", faces[f], d*2+b+1);CHKERRQ(ierr);
-                }
+  /* create DM, Plex calls DMSetup */
+  ierr = PetscLogStagePush(stage[6]);CHKERRQ(ierr);
+  ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, &dm);CHKERRQ(ierr);
+  {
+    DMLabel         label;
+    IS              is;
+    ierr = DMCreateLabel(dm, "boundary");CHKERRQ(ierr);
+    ierr = DMGetLabel(dm, "boundary", &label);CHKERRQ(ierr);
+    ierr = DMPlexMarkBoundaryFaces(dm, label);CHKERRQ(ierr);
+    if (run_type==0) {
+      ierr = DMGetStratumIS(dm, "boundary", 1,  &is);CHKERRQ(ierr);
+      ierr = DMCreateLabel(dm,"Faces");CHKERRQ(ierr);
+      if (is) {
+        PetscInt        d, f, Nf;
+        const PetscInt *faces;
+        PetscInt        csize;
+        PetscSection    cs;
+        Vec             coordinates ;
+        DM              cdm;
+        ierr = ISGetLocalSize(is, &Nf);CHKERRQ(ierr);
+        ierr = ISGetIndices(is, &faces);CHKERRQ(ierr);
+        ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+        ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
+        ierr = DMGetDefaultSection(cdm, &cs);CHKERRQ(ierr);
+        /* Check for each boundary face if any component of its centroid is either 0.0 or 1.0 */
+        for (f = 0; f < Nf; ++f) {
+          PetscReal   faceCoord;
+          PetscInt    b,v;
+          PetscScalar *coords = NULL;
+          PetscInt    Nv;
+          ierr = DMPlexVecGetClosure(cdm, cs, coordinates, faces[f], &csize, &coords);CHKERRQ(ierr);
+          Nv   = csize/dim; /* Calculate mean coordinate vector */
+          for (d = 0; d < dim; ++d) {
+            faceCoord = 0.0;
+            for (v = 0; v < Nv; ++v) faceCoord += PetscRealPart(coords[v*dim+d]);
+            faceCoord /= Nv;
+            for (b = 0; b < 2; ++b) {
+              if (PetscAbs(faceCoord - b) < PETSC_SMALL) { /* domain have not been set yet, still [0,1]^3 */
+                ierr = DMSetLabelValue(dm, "Faces", faces[f], d*2+b+1);CHKERRQ(ierr);
               }
             }
-            ierr = DMPlexVecRestoreClosure(cdm, cs, coordinates, faces[f], &csize, &coords);CHKERRQ(ierr);
           }
-          ierr = ISRestoreIndices(is, &faces);CHKERRQ(ierr);
+          ierr = DMPlexVecRestoreClosure(cdm, cs, coordinates, faces[f], &csize, &coords);CHKERRQ(ierr);
         }
-        ierr = ISDestroy(&is);CHKERRQ(ierr);
-        ierr = DMGetLabel(dm, "Faces", &label);CHKERRQ(ierr);
-        ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
+        ierr = ISRestoreIndices(is, &faces);CHKERRQ(ierr);
+      }
+      ierr = ISDestroy(&is);CHKERRQ(ierr);
+      ierr = DMGetLabel(dm, "Faces", &label);CHKERRQ(ierr);
+      ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
+    }
+  }
+  {
+    PetscInt dimEmbed, i;
+    PetscInt nCoords;
+    PetscScalar *coords,bounds[] = {0,Lx,-.5,.5,-.5,.5,}; /* x_min,x_max,y_min,y_max */
+    Vec coordinates;
+    if (run_type==1) {
+      for (i = 0; i < 2*dim; i++) bounds[i] = (i%2) ? 1 : 0;
+    }
+    ierr = DMGetCoordinatesLocal(dm,&coordinates);CHKERRQ(ierr);
+    ierr = DMGetCoordinateDim(dm,&dimEmbed);CHKERRQ(ierr);
+    if (dimEmbed != dim) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"dimEmbed != dim %D",dimEmbed);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(coordinates,&nCoords);CHKERRQ(ierr);
+    if (nCoords % dimEmbed) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Coordinate vector the wrong size");CHKERRQ(ierr);
+    ierr = VecGetArray(coordinates,&coords);CHKERRQ(ierr);
+    for (i = 0; i < nCoords; i += dimEmbed) {
+      PetscInt j;
+      PetscScalar *coord = &coords[i];
+      for (j = 0; j < dimEmbed; j++) {
+        coord[j] = bounds[2 * j] + coord[j] * (bounds[2 * j + 1] - bounds[2 * j]);
       }
     }
-    {
-      PetscInt dimEmbed, i;
-      PetscInt nCoords;
-      PetscScalar *coords,bounds[] = {0,Lx,-.5,.5,-.5,.5,}; /* x_min,x_max,y_min,y_max */
-      Vec coordinates;
-      if (run_type==1) {
-        for (i = 0; i < 2*dim; i++) bounds[i] = (i%2) ? 1 : 0;
-      }
-      ierr = DMGetCoordinatesLocal(dm,&coordinates);CHKERRQ(ierr);
-      ierr = DMGetCoordinateDim(dm,&dimEmbed);CHKERRQ(ierr);
-      if (dimEmbed != dim) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"dimEmbed != dim %D",dimEmbed);CHKERRQ(ierr);
-      ierr = VecGetLocalSize(coordinates,&nCoords);CHKERRQ(ierr);
-      if (nCoords % dimEmbed) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Coordinate vector the wrong size");CHKERRQ(ierr);
-      ierr = VecGetArray(coordinates,&coords);CHKERRQ(ierr);
-      for (i = 0; i < nCoords; i += dimEmbed) {
-        PetscInt j;
-        PetscScalar *coord = &coords[i];
-        for (j = 0; j < dimEmbed; j++) {
-          coord[j] = bounds[2 * j] + coord[j] * (bounds[2 * j + 1] - bounds[2 * j]);
-        }
-      }
-      ierr = VecRestoreArray(coordinates,&coords);CHKERRQ(ierr);
-      ierr = DMSetCoordinatesLocal(dm,coordinates);CHKERRQ(ierr);
+    ierr = VecRestoreArray(coordinates,&coords);CHKERRQ(ierr);
+    ierr = DMSetCoordinatesLocal(dm,coordinates);CHKERRQ(ierr);
+  }
+
+  /* convert to p4est, and distribute */
+
+  ierr = PetscOptionsBegin(comm, "", "Mesh conversion options", "DMPLEX");CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-dm_type","Convert DMPlex to another format (should not be Plex!)","ex56.c",DMList,DMPLEX,convType,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();
+  if (flg) {
+    DM newdm;
+    ierr = DMConvert(dm,convType,&newdm);CHKERRQ(ierr);
+    if (newdm) {
+      const char *prefix;
+      PetscBool isForest;
+      ierr = PetscObjectGetOptionsPrefix((PetscObject)dm,&prefix);CHKERRQ(ierr);
+      ierr = PetscObjectSetOptionsPrefix((PetscObject)newdm,prefix);CHKERRQ(ierr);
+      ierr = DMIsForest(newdm,&isForest);CHKERRQ(ierr);
+      if (isForest) {
+      } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER, "Converted to non Forest?");
+      ierr = DMDestroy(&dm);CHKERRQ(ierr);
+      dm   = newdm;
+    } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER, "Convert failed?");
+  } else {
+    /* Plex Distribute mesh over processes */
+    ierr = DMPlexDistribute(dm, 0, NULL, &distdm);CHKERRQ(ierr);
+    if (distdm) {
+      const char *prefix;
+      ierr = PetscObjectGetOptionsPrefix((PetscObject)dm,&prefix);CHKERRQ(ierr);
+      ierr = PetscObjectSetOptionsPrefix((PetscObject)distdm,prefix);CHKERRQ(ierr);
+      ierr = DMDestroy(&dm);CHKERRQ(ierr);
+      dm   = distdm;
     }
-    ierr = PetscObjectSetName( (PetscObject)dm,"Mesh");CHKERRQ(ierr);
-    /* convert to p4est, and distribute */
+  }
+  ierr = PetscLogStagePop();CHKERRQ(ierr);
+  basedm = dm; dm = NULL;
+
+  for (iter=0 ; iter<max_conv_its ; iter++) {
+    ierr = PetscLogStagePush(stage[6]);CHKERRQ(ierr);
+    /* make new DM */
+    ierr = DMClone(basedm, &dm);CHKERRQ(ierr);
     ierr = PetscObjectSetOptionsPrefix((PetscObject) dm, "ex56_");CHKERRQ(ierr);
-    ierr = PetscOptionsBegin(comm, "", "Mesh conversion options", "DMPLEX");CHKERRQ(ierr);
-    ierr = PetscOptionsFList("-dm_type","Convert DMPlex to another format (should not be Plex!)","ex56.c",DMList,DMPLEX,convType,256,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsEnd();
-    if (flg) {
-      ierr = DMConvert(dm,convType,&newdm);CHKERRQ(ierr);
-      if (newdm) {
-        const char *prefix;
-        PetscBool isForest;
-        ierr = PetscObjectGetOptionsPrefix((PetscObject)dm,&prefix);CHKERRQ(ierr);
-        ierr = PetscObjectSetOptionsPrefix((PetscObject)newdm,prefix);CHKERRQ(ierr);
-        ierr = DMIsForest(newdm,&isForest);CHKERRQ(ierr);
-        if (isForest) {
-        } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER, "Converted to non Forest?");
-        ierr = DMDestroy(&dm);CHKERRQ(ierr);
-        dm   = newdm;
-      } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER, "Convert failed?");
-    } else {
-      /* Plex Distribute mesh over processes */
-      ierr = DMPlexDistribute(dm, 0, NULL, &distdm);CHKERRQ(ierr);
-      if (distdm) {
-        const char *prefix;
-        ierr = PetscObjectGetOptionsPrefix((PetscObject)dm,&prefix);CHKERRQ(ierr);
-        ierr = PetscObjectSetOptionsPrefix((PetscObject)distdm,prefix);CHKERRQ(ierr);
-        ierr = DMDestroy(&dm);CHKERRQ(ierr);
-        dm   = distdm;
-      }
-    }
+    ierr = PetscObjectSetName( (PetscObject)dm,"Mesh");CHKERRQ(ierr);
+    ierr = PetscOptionsClearValue(NULL,"-ex56_dm_refine");CHKERRQ(ierr);
+    ierr = PetscOptionsInsertString(NULL,options[iter]);CHKERRQ(ierr);
     ierr = DMSetFromOptions(dm);CHKERRQ(ierr); /* refinement done here in Plex, p4est */
     /* snes */
     ierr = SNESCreate(comm, &snes);CHKERRQ(ierr);
@@ -481,14 +490,15 @@ int main(int argc,char **args)
     ierr = VecDestroy(&bb);CHKERRQ(ierr);
     ierr = MatDestroy(&Amat);CHKERRQ(ierr);
   }
+  ierr = DMDestroy(&basedm);CHKERRQ(ierr);
   if (run_type==1) {
-    err[0] = 59.9753 - mdisp[0]; /* error with what I think is the exact solution */
+    err[0] = 59.975208 - mdisp[0]; /* error with what I think is the exact solution */
   } else {
     err[0] = 171.038 - mdisp[0];
   }
   for (iter=1 ; iter<max_conv_its ; iter++) {
     if (run_type==1) {
-      err[iter] = 59.9753 - mdisp[iter];
+      err[iter] = 59.975208 - mdisp[iter];
     } else {
       err[iter] = 171.038 - mdisp[iter];
     }
