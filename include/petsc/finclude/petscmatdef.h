@@ -121,6 +121,7 @@
 #define MATTRANSPOSEMAT    'transpose'
 #define MATSCHURCOMPLEMENT 'schurcomplement'
 #define MATPYTHON          'python'
+#define MATHYPRE           'hypre'
 #define MATHYPRESTRUCT     'hyprestruct'
 #define MATHYPRESSTRUCT    'hypresstruct'
 #define MATSUBMATRIX       'submatrix'

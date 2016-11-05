@@ -53,6 +53,10 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat);
 
 PETSC_EXTERN PetscErrorCode MatCreate_Preallocator(Mat);
 
+#if defined PETSC_HAVE_HYPRE
+PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat);
+#endif
+
 /*
     This is used by MatSetType() to make sure that at least one
     MatRegisterAll() is called. In general, if there is more than one
@@ -120,7 +124,6 @@ PetscErrorCode  MatRegisterAll(void)
   ierr = MatRegister(MATBLOCKMAT,       MatCreate_BlockMat);CHKERRQ(ierr);
   ierr = MatRegister(MATNEST,           MatCreate_Nest);CHKERRQ(ierr);
 
-
 #if defined PETSC_HAVE_CUSP
   ierr = MatRegisterBaseName(MATAIJCUSP,MATSEQAIJCUSP,MATMPIAIJCUSP);CHKERRQ(ierr);
   ierr = MatRegister(MATSEQAIJCUSP,     MatCreate_SeqAIJCUSP);CHKERRQ(ierr);
@@ -139,7 +142,6 @@ PetscErrorCode  MatRegisterAll(void)
   ierr = MatRegister(MATMPIAIJVIENNACL, MatCreate_MPIAIJViennaCL);CHKERRQ(ierr);
 #endif
 
-
 #if defined PETSC_HAVE_FFTW
   ierr = MatRegister(MATFFTW,           MatCreate_FFTW);CHKERRQ(ierr);
 #endif
@@ -148,6 +150,10 @@ PetscErrorCode  MatRegisterAll(void)
 #endif
 
   ierr = MatRegister(MATPREALLOCATOR,   MatCreate_Preallocator);CHKERRQ(ierr);
+
+#if defined PETSC_HAVE_HYPRE
+  ierr = MatRegister(MATHYPRE,          MatCreate_HYPRE);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
