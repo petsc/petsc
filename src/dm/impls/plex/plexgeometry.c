@@ -1321,7 +1321,7 @@ static PetscErrorCode DMPlexComputeHexahedronGeometry_Internal(DM dm, PetscInt e
       PetscReal xi = points[dimR * i], eta = points[dimR * i + 1], theta = points[dimR * i + 2];
 
       if (v) {
-        PetscReal extPoint[4];
+        PetscReal extPoint[8];
 
         extPoint[0] = 1.;
         extPoint[1] = xi;
@@ -1445,7 +1445,7 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_Implicit(DM dm, PetscInt cell
     for (i = 1; i < Nq; i++) {
       PetscInt j;
 
-      if (detJ) {detJ[j] = detJ[0];}
+      if (detJ) {detJ[i] = detJ[0];}
       for (j = 0; j < coordDim * coordDim; j++) {
         if (J)    {J   [coordDim * coordDim * i + j] = J[j];}
         if (invJ) {invJ[coordDim * coordDim * i + j] = invJ[j];}
@@ -1518,6 +1518,7 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_FE(DM dm, PetscFE fe, PetscIn
   } else {
     ierr = PetscQuadratureGetData(quad, &qdim, &Nq, &quadPoints, NULL);CHKERRQ(ierr);
   }
+  ierr = PetscFEGetDimension(fe, &pdim);CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fe, &feQuad);CHKERRQ(ierr);
   if (feQuad == quad) {
     ierr = PetscFEGetDefaultTabulation(fe, &basis, &basisDer, NULL);CHKERRQ(ierr);
@@ -1525,7 +1526,6 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_FE(DM dm, PetscFE fe, PetscIn
   } else {
     ierr = PetscFEGetTabulation(fe, Nq, quadPoints, &basis, &basisDer, NULL);CHKERRQ(ierr);
   }
-  ierr = PetscFEGetDimension(fe, &pdim);CHKERRQ(ierr);
   if (qdim != dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Point dimension %d != quadrature dimension %d", dim, qdim);
   if (v) {
     ierr = PetscMemzero(v, Nq*cdim*sizeof(PetscReal));CHKERRQ(ierr);
