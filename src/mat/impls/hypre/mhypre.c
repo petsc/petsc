@@ -235,6 +235,7 @@ static PetscErrorCode MatConvert_HYPRE_IS(Mat A, MatType mtype, MatReuse reuse, 
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
+  comm = PetscObjectComm((PetscObject)A);
   PetscStackCallStandard(HYPRE_IJMatrixGetObjectType,(mhA->ij,&type));
   if (type != HYPRE_PARCSR) SETERRQ(comm,PETSC_ERR_SUP,"Only HYPRE_PARCSR is supported");
   PetscStackCallStandard(HYPRE_IJMatrixGetObject,(mhA->ij,(void**)&hA));
@@ -259,7 +260,6 @@ static PetscErrorCode MatConvert_HYPRE_IS(Mat A, MatType mtype, MatReuse reuse, 
     PetscInt *aux;
 
     /* generate l2g maps for rows and cols */
-    comm = PetscObjectComm((PetscObject)A);
     ierr = ISCreateStride(comm,dr,str,1,&is);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingCreateIS(is,&rl2g);CHKERRQ(ierr);
     ierr = ISDestroy(&is);CHKERRQ(ierr);
