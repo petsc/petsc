@@ -1379,7 +1379,7 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_Implicit(DM dm, PetscInt cell
   PetscInt        Nq = 0;
   const PetscReal *points = NULL;
   DMLabel         depthLabel;
-  PetscReal       v0[3];
+  PetscReal       v0[3] = {-1.}, J0[9] = {-1.}, detJ0 = -1.;
   PetscBool       isAffine = PETSC_TRUE;
   PetscErrorCode  ierr;
 
@@ -1400,12 +1400,20 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_Implicit(DM dm, PetscInt cell
     isAffine = PETSC_FALSE;
     break;
   case 1:
-    ierr = DMPlexComputeLineGeometry_Internal(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
+    if (Nq) {
+      ierr = DMPlexComputeLineGeometry_Internal(dm, cell, v0, J0, NULL, &detJ0);CHKERRQ(ierr);
+    } else {
+      ierr = DMPlexComputeLineGeometry_Internal(dm, cell, v, J, invJ, detJ);CHKERRQ(ierr);
+    }
     break;
   case 2:
     switch (coneSize) {
     case 3:
-      ierr = DMPlexComputeTriangleGeometry_Internal(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
+      if (Nq) {
+        ierr = DMPlexComputeTriangleGeometry_Internal(dm, cell, v0, J0, NULL, &detJ0);CHKERRQ(ierr);
+      } else {
+        ierr = DMPlexComputeTriangleGeometry_Internal(dm, cell, v, J, invJ, detJ);CHKERRQ(ierr);
+      }
       break;
     case 4:
       ierr = DMPlexComputeRectangleGeometry_Internal(dm, cell, Nq, points, v, J, invJ, detJ);CHKERRQ(ierr);
@@ -1418,7 +1426,11 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_Implicit(DM dm, PetscInt cell
   case 3:
     switch (coneSize) {
     case 4:
-      ierr = DMPlexComputeTetrahedronGeometry_Internal(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
+      if (Nq) {
+        ierr = DMPlexComputeTetrahedronGeometry_Internal(dm, cell, v0, J0, NULL, &detJ0);CHKERRQ(ierr);
+      } else {
+        ierr = DMPlexComputeTetrahedronGeometry_Internal(dm, cell, v, J, invJ, detJ);CHKERRQ(ierr);
+      }
       break;
     case 6: /* Faces */
     case 8: /* Vertices */
@@ -1426,29 +1438,55 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_Implicit(DM dm, PetscInt cell
       isAffine = PETSC_FALSE;
       break;
     default:
-        SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported number of faces %D in cell %D for element geometry computation", coneSize, cell);
+      SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported number of faces %D in cell %D for element geometry computation", coneSize, cell);
     }
     break;
   default:
     SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported dimension %D for element geometry computation", dim);
   }
-  if (isAffine) {
+  if (isAffine && Nq) {
     if (v) {
-      if (!Nq) {
-        for (i = 0; i < coordDim; i++) {v[i] = v0[i];}
-      } else {
-        for (i = 0; i < Nq; i++) {
-          CoordinatesRefToReal(coordDim,dim,v0, J, &points[dim * i], &v[coordDim * i]);
+      for (i = 0; i < Nq; i++) {
+        CoordinatesRefToReal(coordDim,dim,v0, J0, &points[dim * i], &v[coordDim * i]);
+      }
+    }
+    if (detJ) {
+      for (i = 0; i < Nq; i++) {
+        detJ[i] = detJ0;
+      }
+    }
+    if (J) {
+      PetscInt k;
+
+      for (i = 0, k = 0; i < Nq; i++) {
+        PetscInt j;
+
+        for (j = 0; j < coordDim * coordDim; j++, k++) {
+          J[k] = J0[j];
         }
       }
     }
-    for (i = 1; i < Nq; i++) {
-      PetscInt j;
+    if (invJ) {
+      PetscInt k;
+      switch (coordDim) {
+      case 0:
+        break;
+      case 1:
+        invJ[0] = 1./J0[0];
+        break;
+      case 2:
+        DMPlex_Invert2D_Internal(invJ, J0, detJ0);
+        break;
+      case 3:
+        DMPlex_Invert3D_Internal(invJ, J0, detJ0);
+        break;
+      }
+      for (i = 1, k = coordDim * coordDim; i < Nq; i++) {
+        PetscInt j;
 
-      if (detJ) {detJ[i] = detJ[0];}
-      for (j = 0; j < coordDim * coordDim; j++) {
-        if (J)    {J   [coordDim * coordDim * i + j] = J[j];}
-        if (invJ) {invJ[coordDim * coordDim * i + j] = invJ[j];}
+        for (j = 0; j < coordDim * coordDim; j++, k++) {
+          invJ[k] = invJ[j];
+        }
       }
     }
   }
