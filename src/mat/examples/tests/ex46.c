@@ -87,7 +87,20 @@ int main(int argc,char **args)
   ierr = VecAXPY(x,-1.,x2);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&err);CHKERRQ(ierr);
   if (PetscAbsReal(err) > PETSC_SMALL) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error MatMultTranspose C %g",err);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
+
+  /* check PtAP */
+  if (M == N) {
+    Mat pP,hP;
+    ierr = MatPtAP(A,A,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&pP);CHKERRQ(ierr);
+    ierr = MatPtAP(C,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&hP);CHKERRQ(ierr);
+    ierr = MatConvert(hP,MATAIJ,MAT_INITIAL_MATRIX,&D);CHKERRQ(ierr);
+    ierr = MatAXPY(D,-1.,pP,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatNorm(D,NORM_INFINITY,&err);CHKERRQ(ierr);
+    if (PetscAbsReal(err) > PETSC_SMALL) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error MatPtAP %g",err);
+    ierr = MatDestroy(&pP);CHKERRQ(ierr);
+    ierr = MatDestroy(&hP);CHKERRQ(ierr);
+    ierr = MatDestroy(&D);CHKERRQ(ierr);
+  }
 
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&x2);CHKERRQ(ierr);
@@ -95,6 +108,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(&y2);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return ierr;

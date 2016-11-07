@@ -8,6 +8,7 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <../src/vec/vec/impls/hypre/vhyp.h>
 #include <HYPRE.h>
+#include <_hypre_parcsr_ls.h>
 
 static PetscErrorCode MatHYPRE_CreateFromMat(Mat,Mat_HYPRE*);
 static PetscErrorCode MatHYPRE_IJMatrixPreallocate(Mat,Mat,HYPRE_IJMatrix);
@@ -480,6 +481,30 @@ static PetscErrorCode MatConvert_HYPRE_AIJ(Mat A, MatType mtype, MatReuse reuse,
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatPtAP_HYPRE_HYPRE"
+static PetscErrorCode MatPtAP_HYPRE_HYPRE(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
+{
+  hypre_ParCSRMatrix *Aparcsr,*Pparcsr,*ptapparcsr;
+  Mat_HYPRE          *hA = (Mat_HYPRE*)A->data, *hP = (Mat_HYPRE*)P->data;
+  HYPRE_Int          type;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  if (scall == MAT_REUSE_MATRIX) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Unsupported MAT_REUSE_MATRIX");
+  PetscStackCallStandard(HYPRE_IJMatrixGetObjectType,(hA->ij,&type));
+  if (type != HYPRE_PARCSR) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Only HYPRE_PARCSR is supported");
+  PetscStackCallStandard(HYPRE_IJMatrixGetObjectType,(hP->ij,&type));
+  if (type != HYPRE_PARCSR) SETERRQ(PetscObjectComm((PetscObject)P),PETSC_ERR_SUP,"Only HYPRE_PARCSR is supported");
+  ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
+  PetscStackCallStandard(HYPRE_IJMatrixGetObject,(hA->ij,(void**)&Aparcsr));
+  PetscStackCallStandard(HYPRE_IJMatrixGetObject,(hP->ij,(void**)&Pparcsr));
+  PetscStackCallStandard(hypre_BoomerAMGBuildCoarseOperator,(Pparcsr,Aparcsr,Pparcsr,&ptapparcsr));
+  ierr = MatHYPRECreateFromParCSR(ptapparcsr,PETSC_USE_POINTER,C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatMultTranspose_HYPRE"
 static PetscErrorCode MatMultTranspose_HYPRE(Mat A, Vec x, Vec y)
 {
@@ -658,6 +683,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
   B->ops->setup         = MatSetUp_HYPRE;
   B->ops->destroy       = MatDestroy_HYPRE;
   B->ops->assemblyend   = MatAssemblyEnd_HYPRE;
+  B->ops->ptap          = MatPtAP_HYPRE_HYPRE;
 
   ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)B),&hB->comm);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATHYPRE);CHKERRQ(ierr);
