@@ -6,9 +6,8 @@
 #include <petsc/private/matimpl.h>
 #include <../src/mat/impls/hypre/mhypre.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
-#include <HYPRE_struct_mv.h>
-#include <HYPRE_struct_ls.h>
-#include <_hypre_struct_mv.h>
+#include <../src/vec/vec/impls/hypre/vhyp.h>
+#include <HYPRE.h>
 
 static PetscErrorCode MatHYPRE_CreateFromMat(Mat,Mat_HYPRE*);
 static PetscErrorCode MatHYPRE_IJMatrixPreallocate(Mat,Mat,HYPRE_IJMatrix);
@@ -145,7 +144,7 @@ static PetscErrorCode MatHYPRE_IJMatrixFastCopy_SeqAIJ(Mat A, HYPRE_IJMatrix ij)
 {
   PetscErrorCode        ierr;
   Mat_SeqAIJ            *pdiag = (Mat_SeqAIJ*)A->data;
-  int                   type;
+  HYPRE_Int             type;
   hypre_ParCSRMatrix    *par_matrix;
   hypre_AuxParCSRMatrix *aux_matrix;
   hypre_CSRMatrix       *hdiag;
@@ -176,7 +175,7 @@ static PetscErrorCode MatHYPRE_IJMatrixFastCopy_MPIAIJ(Mat A, HYPRE_IJMatrix ij)
   Mat_MPIAIJ            *pA = (Mat_MPIAIJ*)A->data;
   Mat_SeqAIJ            *pdiag,*poffd;
   PetscInt              i,*garray = pA->garray,*jj,cstart,*pjj;
-  int                   type;
+  HYPRE_Int             type;
   hypre_ParCSRMatrix    *par_matrix;
   hypre_AuxParCSRMatrix *aux_matrix;
   hypre_CSRMatrix       *hdiag,*hoffd;
@@ -231,7 +230,7 @@ static PetscErrorCode MatConvert_HYPRE_IS(Mat A, MatType mtype, MatReuse reuse, 
   PetscInt               *col_map_offd,*hdi,*hdj,*hoi,*hoj;
   PetscInt               *ii,*jj,*iptr,*jptr;
   PetscInt               cum,dr,dc,oc,str,stc,nnz,i,jd,jo,M,N;
-  int                    type;
+  HYPRE_Int              type;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
@@ -367,7 +366,7 @@ static PetscErrorCode MatConvert_HYPRE_AIJ(Mat A, MatType mtype, MatReuse reuse,
   PetscScalar        *da,*oa,*aptr;
   PetscInt           *dii,*djj,*oii,*ojj,*iptr;
   PetscInt           i,dnnz,onnz,m,n;
-  int                type;
+  HYPRE_Int          type;
   PetscMPIInt        size;
   PetscErrorCode     ierr;
 
@@ -519,17 +518,17 @@ static PetscErrorCode MatHYPRE_MultKernel_Private(Mat A, Vec x, Vec y, PetscBool
   ierr = VecGetArrayRead(x,(const PetscScalar**)&ax);CHKERRQ(ierr);
   ierr = VecGetArray(y,&ay);CHKERRQ(ierr);
   if (trans) {
-    HYPREReplacePointer(hA->x,ay,say);
-    HYPREReplacePointer(hA->b,ax,sax);
+    VecHYPRE_ParVectorReplacePointer(hA->x,ay,say);
+    VecHYPRE_ParVectorReplacePointer(hA->b,ax,sax);
     hypre_ParCSRMatrixMatvecT(1.,parcsr,hy,0.,hx);
-    HYPREReplacePointer(hA->x,say,ay);
-    HYPREReplacePointer(hA->b,sax,ax);
+    VecHYPRE_ParVectorReplacePointer(hA->x,say,ay);
+    VecHYPRE_ParVectorReplacePointer(hA->b,sax,ax);
   } else {
-    HYPREReplacePointer(hA->x,ax,sax);
-    HYPREReplacePointer(hA->b,ay,say);
+    VecHYPRE_ParVectorReplacePointer(hA->x,ax,sax);
+    VecHYPRE_ParVectorReplacePointer(hA->b,ay,say);
     hypre_ParCSRMatrixMatvec(1.,parcsr,hx,0.,hy);
-    HYPREReplacePointer(hA->x,sax,ax);
-    HYPREReplacePointer(hA->b,say,ay);
+    VecHYPRE_ParVectorReplacePointer(hA->x,sax,ax);
+    VecHYPRE_ParVectorReplacePointer(hA->b,say,ay);
   }
   ierr = VecRestoreArrayRead(x,(const PetscScalar**)&ax);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&ay);CHKERRQ(ierr);

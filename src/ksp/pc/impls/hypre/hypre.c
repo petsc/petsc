@@ -8,6 +8,7 @@
 #include <petsc/private/pcimpl.h>          /*I "petscpc.h" I*/
 /* this include is needed ONLY to allow access to the private data inside the Mat object specific to hypre */
 #include <petsc/private/matimpl.h>
+#include <../src/vec/vec/impls/hypre/vhyp.h>
 #include <../src/mat/impls/hypre/mhypre.h>
 #include <../src/dm/impls/da/hypre/mhyp.h>
 #include <_hypre_parcsr_ls.h>
@@ -125,18 +126,6 @@ PetscErrorCode PCHYPREGetSolver(PC pc,HYPRE_Solver *hsolver)
   PetscFunctionReturn(0);
 }
 
-/*
-    Replaces the address where the HYPRE vector points to its data with the address of
-  PETSc's data. Saves the old address so it can be reset when we are finished with it.
-  Allows use to get the data into a HYPRE vector without the cost of memcopies
-*/
-#define HYPREReplacePointer(b,newvalue,savedvalue) { \
-    hypre_ParVector *par_vector   = (hypre_ParVector*)hypre_IJVectorObject(((hypre_IJVector*)b)); \
-    hypre_Vector    *local_vector = hypre_ParVectorLocalVector(par_vector); \
-    savedvalue         = local_vector->data; \
-    local_vector->data = newvalue;          \
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "PCSetUp_HYPRE"
 static PetscErrorCode PCSetUp_HYPRE(PC pc)
@@ -185,7 +174,7 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc)
       for (i=0; i<nvec; i++) {
         ierr = VecHYPRE_IJVectorCreate(vecs[i],&jac->hmnull[i]);CHKERRQ(ierr);
         ierr = VecGetArrayRead(vecs[i],(const PetscScalar **)&petscvecarray);CHKERRQ(ierr);
-        HYPREReplacePointer(jac->hmnull[i],petscvecarray,jac->hmnull_hypre_data_array[i]);
+        VecHYPRE_ParVectorReplacePointer(jac->hmnull[i],petscvecarray,jac->hmnull_hypre_data_array[i]);
         ierr = VecRestoreArrayRead(vecs[i],(const PetscScalar **)&petscvecarray);CHKERRQ(ierr);
         PetscStackCallStandard(HYPRE_IJVectorGetObject,(jac->hmnull[i],(void**)&jac->phmnull[i]));
       }
@@ -195,7 +184,7 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc)
         ierr = VecNormalize(jac->hmnull_constant,NULL);
         ierr = VecHYPRE_IJVectorCreate(jac->hmnull_constant,&jac->hmnull[nvec]);CHKERRQ(ierr);
         ierr = VecGetArrayRead(jac->hmnull_constant,(const PetscScalar **)&petscvecarray);CHKERRQ(ierr);
-        HYPREReplacePointer(jac->hmnull[nvec],petscvecarray,jac->hmnull_hypre_data_array[nvec]);
+        VecHYPRE_ParVectorReplacePointer(jac->hmnull[nvec],petscvecarray,jac->hmnull_hypre_data_array[nvec]);
         ierr = VecRestoreArrayRead(jac->hmnull_constant,(const PetscScalar **)&petscvecarray);CHKERRQ(ierr);
         PetscStackCallStandard(HYPRE_IJVectorGetObject,(jac->hmnull[nvec],(void**)&jac->phmnull[nvec]));
         nvec++;
@@ -300,8 +289,8 @@ static PetscErrorCode PCApply_HYPRE(PC pc,Vec b,Vec x)
   if (!jac->applyrichardson) {ierr = VecSet(x,0.0);CHKERRQ(ierr);}
   ierr = VecGetArrayRead(b,&bv);CHKERRQ(ierr);
   ierr = VecGetArray(x,&xv);CHKERRQ(ierr);
-  HYPREReplacePointer(hjac->b,(PetscScalar*)bv,sbv);
-  HYPREReplacePointer(hjac->x,xv,sxv);
+  VecHYPRE_ParVectorReplacePointer(hjac->b,(PetscScalar*)bv,sbv);
+  VecHYPRE_ParVectorReplacePointer(hjac->x,xv,sxv);
 
   PetscStackCallStandard(HYPRE_IJMatrixGetObject,(hjac->ij,(void**)&hmat));
   PetscStackCallStandard(HYPRE_IJVectorGetObject,(hjac->b,(void**)&jbv));
@@ -313,8 +302,8 @@ static PetscErrorCode PCApply_HYPRE(PC pc,Vec b,Vec x)
   if (jac->setup == HYPRE_AMSSetup && jac->ams_beta_is_zero_part) {
     PetscStackCallStandard(HYPRE_AMSProjectOutGradients,(jac->hsolver,jxv));
   }
-  HYPREReplacePointer(hjac->b,(PetscScalar*)sbv,bv);
-  HYPREReplacePointer(hjac->x,sxv,xv);
+  VecHYPRE_ParVectorReplacePointer(hjac->b,(PetscScalar*)sbv,bv);
+  VecHYPRE_ParVectorReplacePointer(hjac->x,sxv,xv);
   ierr = VecRestoreArray(x,&xv);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(b,&bv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -344,7 +333,7 @@ static PetscErrorCode PCReset_HYPRE(PC pc)
     PETSC_UNUSED PetscScalar *petscvecarray;
 
     for (i=0; i<jac->n_hmnull; i++) {
-      HYPREReplacePointer(jac->hmnull[i],jac->hmnull_hypre_data_array[i],petscvecarray);
+      VecHYPRE_ParVectorReplacePointer(jac->hmnull[i],jac->hmnull_hypre_data_array[i],petscvecarray);
       PetscStackCallStandard(HYPRE_IJVectorDestroy,(jac->hmnull[i]));
     }
     ierr = PetscFree(jac->hmnull);CHKERRQ(ierr);
@@ -455,8 +444,8 @@ static PetscErrorCode PCApplyTranspose_HYPRE_BoomerAMG(PC pc,Vec b,Vec x)
   ierr = VecSet(x,0.0);CHKERRQ(ierr);
   ierr = VecGetArrayRead(b,&bv);CHKERRQ(ierr);
   ierr = VecGetArray(x,&xv);CHKERRQ(ierr);
-  HYPREReplacePointer(hjac->b,(PetscScalar*)bv,sbv);
-  HYPREReplacePointer(hjac->x,xv,sxv);
+  VecHYPRE_ParVectorReplacePointer(hjac->b,(PetscScalar*)bv,sbv);
+  VecHYPRE_ParVectorReplacePointer(hjac->x,xv,sxv);
 
   PetscStackCallStandard(HYPRE_IJMatrixGetObject,(hjac->ij,(void**)&hmat));
   PetscStackCallStandard(HYPRE_IJVectorGetObject,(hjac->b,(void**)&jbv));
@@ -467,8 +456,8 @@ static PetscErrorCode PCApplyTranspose_HYPRE_BoomerAMG(PC pc,Vec b,Vec x)
   if (hierr && (hierr != 1)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in HYPRE solver, error code %d",hierr);
   if (hierr) hypre__global_error = 0;
 
-  HYPREReplacePointer(hjac->b,sbv,bv);
-  HYPREReplacePointer(hjac->x,sxv,xv);
+  VecHYPRE_ParVectorReplacePointer(hjac->b,sbv,bv);
+  VecHYPRE_ParVectorReplacePointer(hjac->x,sxv,xv);
   ierr = VecRestoreArray(x,&xv);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(b,&bv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
