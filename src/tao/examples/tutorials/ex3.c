@@ -223,7 +223,7 @@ PetscErrorCode CreateCtx(DM dm, AppCtx* user)
   /* y_d = interpolate(Expression("sin(x[0]) + .."), V) */
   ierr = PetscMalloc(1 * sizeof(void (*)(const PetscReal[], PetscScalar *, void *)), &wtf);CHKERRQ(ierr);
   wtf[0] = data_kernel;
-  ierr = DMProjectFunction(dm, wtf, NULL, INSERT_VALUES, user->data);CHKERRQ(ierr);
+  ierr = DMProjectFunction(dm, 0.0, wtf, NULL, INSERT_VALUES, user->data);CHKERRQ(ierr);
   ierr = PetscFree(wtf);CHKERRQ(ierr);
 
   /* assemble(inner(u, v)*dx), almost */
