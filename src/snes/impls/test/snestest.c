@@ -2,7 +2,9 @@
 #include <petsc/private/snesimpl.h>
 
 typedef struct {
-  PetscBool complete_print;
+  PetscBool     complete_print;
+  PetscBool     threshold_print;
+  PetscScalar   threshold;
 } SNES_Test;
 
 
@@ -10,7 +12,7 @@ typedef struct {
 #define __FUNCT__ "SNESSolve_Test"
 PetscErrorCode SNESSolve_Test(SNES snes)
 {
-  Mat            A = snes->jacobian,B;
+  Mat            A = snes->jacobian,B,C;
   Vec            x = snes->vec_sol,f = snes->vec_func,f1 = snes->vec_sol_update;
   PetscErrorCode ierr;
   PetscInt       i;
@@ -29,6 +31,7 @@ PetscErrorCode SNESSolve_Test(SNES snes)
     ierr = PetscPrintf(PetscObjectComm((PetscObject)snes),"Run with -snes_test_display to show difference\n");CHKERRQ(ierr);
     ierr = PetscPrintf(PetscObjectComm((PetscObject)snes),"of hand-coded and finite difference Jacobian.\n");CHKERRQ(ierr);
   }
+
 
   for (i=0; i<3; i++) {
     void                     *functx;
@@ -84,6 +87,49 @@ PetscErrorCode SNESSolve_Test(SNES snes)
       ierr = PetscPrintf(PetscObjectComm((PetscObject)snes),"Hand-coded minus finite-difference Jacobian (%s)\n",loc[i]);CHKERRQ(ierr);
       ierr = MatView(B,viewer);CHKERRQ(ierr);
     }
+
+
+    if (neP->threshold_print) {
+      MPI_Comm          comm;
+      PetscViewer       viewer;
+      PetscInt          Istart, Iend, *ccols, bncols, cncols, j, col;
+      PetscScalar       *cvals;
+      const PetscInt    *bcols;
+      const PetscScalar *bvals;
+      
+      ierr = MatCreate(PetscObjectComm((PetscObject)A),&C);CHKERRQ(ierr);
+      ierr = MatSetSizes(C,m,n,M,N);CHKERRQ(ierr);
+      ierr = MatSetType(C,((PetscObject)A)->type_name);CHKERRQ(ierr);
+      ierr = MatSetUp(C);CHKERRQ(ierr);
+      ierr = MatSetOption(C,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = MatGetOwnershipRange(B,&Istart,&Iend);CHKERRQ(ierr);
+
+      for (col = Istart; col < Iend; col++) {
+        ierr = MatGetRow(B,col,&bncols,&bcols,&bvals);CHKERRQ(ierr);
+        ierr = PetscMalloc2(bncols,&ccols,bncols,&cvals);CHKERRQ(ierr); 
+        for (j = 0, cncols = 0; j < bncols; j++) {
+          if (PetscAbsScalar(bvals[j]) > PetscAbsScalar(neP->threshold)) {
+            ccols[cncols] = bcols[j];
+            cvals[cncols] = bvals[j];
+            cncols += 1;
+          }
+        }
+        ierr = MatSetValues(C,1,&i,cncols,ccols,cvals,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatRestoreRow(B,i,&bncols,&bcols,&bvals);CHKERRQ(ierr);
+        ierr = PetscFree2(ccols,cvals);CHKERRQ(ierr); 
+      }
+      
+      ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)snes),"Entries where difference is over threshold (%s)\n",loc[i]);CHKERRQ(ierr);
+      ierr = PetscObjectGetComm((PetscObject)C,&comm);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIGetStdout(comm,&viewer);CHKERRQ(ierr);
+
+      ierr = MatView(C,viewer);CHKERRQ(ierr);
+      ierr = MatDestroy(&C);CHKERRQ(ierr);
+    }
+
     if (!gnorm) gnorm = 1; /* just in case */
     ierr = PetscPrintf(PetscObjectComm((PetscObject)snes),"Norm of matrix ratio %g, difference %g (%s)\n",(double)(nrm/gnorm),(double)nrm,loc[i]);CHKERRQ(ierr);
 
@@ -151,6 +197,7 @@ static PetscErrorCode SNESSetFromOptions_Test(PetscOptionItems *PetscOptionsObje
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Hand-coded Jacobian tester options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-snes_test_display","Display difference between hand-coded and finite difference Jacobians","None",ls->complete_print,&ls->complete_print,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsScalar("-snes_test_display_threshold", "Display difference between hand-coded and finite difference Jacobians which exceed input threshold", "None", ls->threshold, &ls->threshold, &ls->threshold_print);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

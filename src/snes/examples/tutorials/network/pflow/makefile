@@ -31,6 +31,7 @@ runpf_2:
 	   else printf "${PWD}\nPossible problem with pf_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f pf.tmp
 
+
 TESTEXAMPLES_C		       =  pf.PETSc runpf runpf_2 pf.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test

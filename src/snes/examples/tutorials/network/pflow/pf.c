@@ -29,6 +29,7 @@ PetscErrorCode GetListofEdges(PetscInt nbranches, EDGEDATA branch,int edges[])
 
 typedef struct{
   PetscScalar  Sbase;
+  PetscBool    jac_error; /* introduce error in the jacobian */
 }UserCtx;
 
 #undef __FUNCT__
@@ -341,6 +342,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X, Mat J,Mat Jpre,void *appctx)
 	if (!ghostvtex && bus->ide == PV_BUS) {
 	  row[0] = goffset+1; col[0] = goffset+1;
 	  values[0]  = 1.0;
+    if (User->jac_error) values[0] = 50.0;
 	  ierr = MatSetValues(J,1,row,1,col,values,ADD_VALUES);CHKERRQ(ierr);
 	}
       }
@@ -460,6 +462,10 @@ int main(int argc,char ** argv)
       ierr = PetscMalloc1(2*numEdges,&edges);CHKERRQ(ierr);
       ierr = GetListofEdges(pfdata->nbranch,pfdata->branch,edges);CHKERRQ(ierr);
     }
+
+    /* If external option activated. Introduce error in jacobian */
+    ierr = PetscOptionsHasName(NULL,NULL, "-jac_error", &User.jac_error);CHKERRQ(ierr);
+
     PetscLogStagePop();
     ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
     ierr = PetscLogStageRegister("Create network",&stage2);CHKERRQ(ierr);
