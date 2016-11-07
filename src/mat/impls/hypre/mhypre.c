@@ -306,8 +306,14 @@ static PetscErrorCode MatConvert_HYPRE_IS(Mat A, MatType mtype, MatReuse reuse, 
   }
   for (; cum<dr; cum++) *(++ii) = nnz;
   if (reuse != MAT_REUSE_MATRIX) {
+    Mat_SeqAIJ* a;
+
     ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,dr,dc+oc,iptr,jptr,data,&lA);CHKERRQ(ierr);
     ierr = MatISSetLocalMat(*B,lA);CHKERRQ(ierr);
+    /* hack SeqAIJ */
+    a          = (Mat_SeqAIJ*)(lA->data);
+    a->free_a  = PETSC_TRUE;
+    a->free_ij = PETSC_TRUE;
     ierr = MatDestroy(&lA);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
