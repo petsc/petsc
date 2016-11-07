@@ -8,7 +8,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                 ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c \
                 ex19.c ex20.c ex21.c ex22.c ex23.c ex24.c ex25.c ex26.c ex27.c ex28.c ex29.c \
                 ex30.c ex31.c ex32.c ex33.c ex34.c ex35.c ex37.c ex38.c \
-                ex40.c ex41.c ex42.c ex43.c ex44.c ex45.c ex47.c ex48.c \
+                ex40.c ex41.c ex42.c ex43.c ex44.c ex45.c ex46.c ex47.c ex48.c \
                 ex49.c ex50.c ex51.c ex52.c ex53.c ex54.c ex55.c ex56.c \
                 ex57.c ex58.c ex59.c ex60.c ex61.c ex62.c ex64.c ex65.c \
                 ex66.c ex68.c ex70.c ex71.c ex72.c ex73.c ex74.c ex75.c \
@@ -213,6 +213,10 @@ ex44: ex44.o chkopts
 ex45: ex45.o chkopts
 	-${CLINKER} -o ex45 ex45.o ${PETSC_MAT_LIB}
 	${RM} ex45.o
+
+ex46: ex46.o chkopts
+	-${CLINKER} -o ex46 ex46.o ${PETSC_MAT_LIB}
+	${RM} ex46.o
 
 ex47: ex47.o chkopts
 	-${CLINKER} -o ex47 ex47.o ${PETSC_MAT_LIB}
@@ -1433,6 +1437,18 @@ runex42_unsorted_baij_mpi:
 runex45:
 	-@${MPIEXEC} -n 1  ./ex45 ; \
 	   ${RM} -f array.dat
+
+runex46_1:
+	-@${MPIEXEC} -n 1  ./ex46 > ex46_1.tmp 2>&1; \
+	   if (${DIFF} output/ex46_1.out ex46_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex46_1, diffs above\n==============================\n"; fi; \
+	   ${RM} -f ex46_1.tmp
+
+runex46_2:
+	-@${MPIEXEC} -n 3  ./ex46 -N 13 > ex46_2.tmp 2>&1; \
+	   if (${DIFF} output/ex46_2.out ex46_2.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex46_2, diffs above\n==============================\n"; fi; \
+	   ${RM} -f ex46_2.tmp
 
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex47:
@@ -2864,5 +2880,6 @@ TESTEXAMPLES_SUPERLU_DIST_COMPLEX_DATAFILESPATH = ex125.PETSc runex125_superlu_d
 TESTEXAMPLES_F90               = ex196f90.PETSc ex196f90.rm
 TESTEXAMPLES_VECCUDA           = ex2.PETSc runex2_aijcusparse runex2_2_aijcusparse runex2_3_aijcusparse ex2.rm \
                                  ex5.PETSc runex5_aijcusparse runex5_2_aijcusparse runex5_3_aijcusparse ex5.rm
+TESTEXAMPLES_HYPRE             = ex46.PETSc runex46_1 runex46_2 ex46.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test
