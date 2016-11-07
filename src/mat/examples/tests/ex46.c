@@ -5,6 +5,7 @@ static char help[] = "Tests MatHYPRE\n";
 #include <petsc/private/matimpl.h>
 /* there's no getter API to extract the ParCSR yet */
 #include <../src/mat/impls/hypre/mhypre.h>
+#include <_hypre_IJ_mv.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 
 #undef __FUNCT__
