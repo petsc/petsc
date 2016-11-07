@@ -143,24 +143,27 @@ static PetscErrorCode MatHYPRE_IJMatrixCopy(Mat A, HYPRE_IJMatrix ij)
 #define __FUNCT__ "MatHYPRE_IJMatrixFastCopy_SeqAIJ"
 static PetscErrorCode MatHYPRE_IJMatrixFastCopy_SeqAIJ(Mat A, HYPRE_IJMatrix ij)
 {
-  PetscErrorCode ierr;
-  Mat_SeqAIJ     *pdiag = (Mat_SeqAIJ*)A->data;
-
+  PetscErrorCode        ierr;
+  Mat_SeqAIJ            *pdiag = (Mat_SeqAIJ*)A->data;
+  int                   type;
   hypre_ParCSRMatrix    *par_matrix;
   hypre_AuxParCSRMatrix *aux_matrix;
   hypre_CSRMatrix       *hdiag;
 
   PetscFunctionBegin;
   PetscStackCallStandard(HYPRE_IJMatrixInitialize,(ij));
-  par_matrix = (hypre_ParCSRMatrix*)hypre_IJMatrixObject(ij);
-  aux_matrix = (hypre_AuxParCSRMatrix*)hypre_IJMatrixTranslator(ij);
-  hdiag      = hypre_ParCSRMatrixDiag(par_matrix);
+  PetscStackCallStandard(HYPRE_IJMatrixGetObjectType,(ij,&type));
+  if (type != HYPRE_PARCSR) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Only HYPRE_PARCSR is supported");
+  PetscStackCallStandard(HYPRE_IJMatrixGetObject,(ij,(void**)&par_matrix));
+  hdiag = hypre_ParCSRMatrixDiag(par_matrix);
   /*
        this is the Hack part where we monkey directly with the hypre datastructures
   */
   ierr = PetscMemcpy(hdiag->i,pdiag->i,(A->rmap->n + 1)*sizeof(PetscInt));
   ierr = PetscMemcpy(hdiag->j,pdiag->j,pdiag->nz*sizeof(PetscInt));
   ierr = PetscMemcpy(hdiag->data,pdiag->a,pdiag->nz*sizeof(PetscScalar));
+
+  aux_matrix = (hypre_AuxParCSRMatrix*)hypre_IJMatrixTranslator(ij);
   hypre_AuxParCSRMatrixNeedAux(aux_matrix) = 0;
   PetscFunctionReturn(0);
 }
@@ -169,11 +172,11 @@ static PetscErrorCode MatHYPRE_IJMatrixFastCopy_SeqAIJ(Mat A, HYPRE_IJMatrix ij)
 #define __FUNCT__ "MatHYPRE_IJMatrixFastCopy_MPIAIJ"
 static PetscErrorCode MatHYPRE_IJMatrixFastCopy_MPIAIJ(Mat A, HYPRE_IJMatrix ij)
 {
-  PetscErrorCode ierr;
-  Mat_MPIAIJ     *pA = (Mat_MPIAIJ*)A->data;
-  Mat_SeqAIJ     *pdiag,*poffd;
-  PetscInt       i,*garray = pA->garray,*jj,cstart,*pjj;
-
+  PetscErrorCode        ierr;
+  Mat_MPIAIJ            *pA = (Mat_MPIAIJ*)A->data;
+  Mat_SeqAIJ            *pdiag,*poffd;
+  PetscInt              i,*garray = pA->garray,*jj,cstart,*pjj;
+  int                   type;
   hypre_ParCSRMatrix    *par_matrix;
   hypre_AuxParCSRMatrix *aux_matrix;
   hypre_CSRMatrix       *hdiag,*hoffd;
@@ -185,10 +188,11 @@ static PetscErrorCode MatHYPRE_IJMatrixFastCopy_MPIAIJ(Mat A, HYPRE_IJMatrix ij)
   ierr = MatGetOwnershipRange(A,&cstart,NULL);CHKERRQ(ierr);
 
   PetscStackCallStandard(HYPRE_IJMatrixInitialize,(ij));
-  par_matrix = (hypre_ParCSRMatrix*)hypre_IJMatrixObject(ij);
-  aux_matrix = (hypre_AuxParCSRMatrix*)hypre_IJMatrixTranslator(ij);
-  hdiag      = hypre_ParCSRMatrixDiag(par_matrix);
-  hoffd      = hypre_ParCSRMatrixOffd(par_matrix);
+  PetscStackCallStandard(HYPRE_IJMatrixGetObjectType,(ij,&type));
+  if (type != HYPRE_PARCSR) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Only HYPRE_PARCSR is supported");
+  PetscStackCallStandard(HYPRE_IJMatrixGetObject,(ij,(void**)&par_matrix));
+  hdiag = hypre_ParCSRMatrixDiag(par_matrix);
+  hoffd = hypre_ParCSRMatrixOffd(par_matrix);
 
   /*
        this is the Hack part where we monkey directly with the hypre datastructures
@@ -207,6 +211,7 @@ static PetscErrorCode MatHYPRE_IJMatrixFastCopy_MPIAIJ(Mat A, HYPRE_IJMatrix ij)
   for (i=0; i<poffd->nz; i++) jj[i] = garray[pjj[i]];
   ierr = PetscMemcpy(hoffd->data,poffd->a,poffd->nz*sizeof(PetscScalar));
 
+  aux_matrix = (hypre_AuxParCSRMatrix*)hypre_IJMatrixTranslator(ij);
   hypre_AuxParCSRMatrixNeedAux(aux_matrix) = 0;
   PetscFunctionReturn(0);
 }
@@ -245,7 +250,7 @@ PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat A, MatType type, MatReuse r
 
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_HYPRE_AIJ"
-PetscErrorCode MatConvert_HYPRE_AIJ(Mat A, MatType mtype, MatReuse reuse, Mat *B)
+static PetscErrorCode MatConvert_HYPRE_AIJ(Mat A, MatType mtype, MatReuse reuse, Mat *B)
 {
   Mat_HYPRE          *hA = (Mat_HYPRE*)A->data;
   hypre_ParCSRMatrix *parcsr;
@@ -369,7 +374,7 @@ PetscErrorCode MatConvert_HYPRE_AIJ(Mat A, MatType mtype, MatReuse reuse, Mat *B
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMultTranspose_HYPRE"
-PetscErrorCode MatMultTranspose_HYPRE(Mat A, Vec x, Vec y)
+static PetscErrorCode MatMultTranspose_HYPRE(Mat A, Vec x, Vec y)
 {
   PetscErrorCode ierr;
 
@@ -380,7 +385,7 @@ PetscErrorCode MatMultTranspose_HYPRE(Mat A, Vec x, Vec y)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMult_HYPRE"
-PetscErrorCode MatMult_HYPRE(Mat A, Vec x, Vec y)
+static PetscErrorCode MatMult_HYPRE(Mat A, Vec x, Vec y)
 {
   PetscErrorCode ierr;
 
@@ -391,7 +396,7 @@ PetscErrorCode MatMult_HYPRE(Mat A, Vec x, Vec y)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatHYPRE_MultKernel_Private"
-PetscErrorCode MatHYPRE_MultKernel_Private(Mat A, Vec x, Vec y, PetscBool trans)
+static PetscErrorCode MatHYPRE_MultKernel_Private(Mat A, Vec x, Vec y, PetscBool trans)
 {
   Mat_HYPRE          *hA = (Mat_HYPRE*)A->data;
   hypre_ParCSRMatrix *parcsr;
@@ -425,7 +430,7 @@ PetscErrorCode MatHYPRE_MultKernel_Private(Mat A, Vec x, Vec y, PetscBool trans)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_HYPRE"
-PetscErrorCode MatDestroy_HYPRE(Mat A)
+static PetscErrorCode MatDestroy_HYPRE(Mat A)
 {
   Mat_HYPRE      *hA = (Mat_HYPRE*)A->data;
   PetscErrorCode ierr;
@@ -442,7 +447,7 @@ PetscErrorCode MatDestroy_HYPRE(Mat A)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetUp_HYPRE"
-PetscErrorCode MatSetUp_HYPRE(Mat A)
+static PetscErrorCode MatSetUp_HYPRE(Mat A)
 {
   Mat_HYPRE          *hA = (Mat_HYPRE*)A->data;
   Vec                x,b;
@@ -463,7 +468,7 @@ PetscErrorCode MatSetUp_HYPRE(Mat A)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatAssemblyEnd_HYPRE"
-PetscErrorCode MatAssemblyEnd_HYPRE(Mat A, MatAssemblyType mode)
+static PetscErrorCode MatAssemblyEnd_HYPRE(Mat A, MatAssemblyType mode)
 {
   Mat_HYPRE          *hA = (Mat_HYPRE*)A->data;
   PetscErrorCode     ierr;
