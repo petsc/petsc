@@ -438,8 +438,11 @@ static PetscErrorCode MatDestroy_HYPRE(Mat A)
   PetscFunctionBegin;
   if (hA->x) PetscStackCallStandard(HYPRE_IJVectorDestroy,(hA->x));
   if (hA->b) PetscStackCallStandard(HYPRE_IJVectorDestroy,(hA->b));
-  if (hA->ij) PetscStackCallStandard(HYPRE_IJMatrixDestroy,(hA->ij));
-  if (hA->comm) { ierr = MPI_Comm_free(&hA->comm);CHKERRQ(ierr);}
+  if (hA->ij) {
+    if (!hA->inner_free) hypre_IJMatrixObject(hA->ij) = NULL;
+    PetscStackCallStandard(HYPRE_IJMatrixDestroy,(hA->ij));
+  }
+  if (hA->comm) { ierr = MPI_Comm_free(&hA->comm);CHKERRQ(ierr); }
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_hypre_aij_C",NULL);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -478,14 +481,55 @@ static PetscErrorCode MatAssemblyEnd_HYPRE(Mat A, MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
-/* Is this needed?
-  int                type;
-  hypre_ParCSRMatrix *parcsr;
-  PetscStackCallStandard(HYPRE_IJMatrixGetObjectType,(hA->ij,&type));
-  if (type != HYPRE_PARCSR) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Only HYPRE_PARCSR supported");
-  PetscStackCallStandard(HYPRE_IJMatrixGetObject,(hA->ij,(void**)&parcsr));
-  PetscStackCallStandard(hypre_MatvecCommPkgCreate,(parcsr));
-*/
+#undef __FUNCT__
+#define __FUNCT__ "MatHYPRECreateFromParCSR"
+PETSC_EXTERN PetscErrorCode MatHYPRECreateFromParCSR(void *vparcsr, PetscCopyMode copymode, Mat* A)
+{
+  Mat_HYPRE             *hA;
+  hypre_ParCSRMatrix    *parcsr;
+  MPI_Comm              comm;
+  PetscInt              rstart,rend,cstart,cend,M,N;
+  PetscErrorCode        ierr;
+
+  PetscFunctionBegin;
+  parcsr = (hypre_ParCSRMatrix *)vparcsr;
+  comm   = hypre_ParCSRMatrixComm(parcsr);
+  if (copymode == PETSC_COPY_VALUES) SETERRQ(comm,PETSC_ERR_SUP,"Unsupported copymode PETSC_COPY_VALUES");
+
+  /* access ParCSRMatrix */
+  rstart = hypre_ParCSRMatrixFirstRowIndex(parcsr);
+  rend   = hypre_ParCSRMatrixLastRowIndex(parcsr);
+  cstart = hypre_ParCSRMatrixFirstColDiag(parcsr);
+  cend   = hypre_ParCSRMatrixLastColDiag(parcsr);
+  M      = hypre_ParCSRMatrixGlobalNumRows(parcsr);
+  N      = hypre_ParCSRMatrixGlobalNumCols(parcsr);
+
+  /* create PETSc matrix with MatHYPRE */
+  ierr = MatCreate(comm,A);CHKERRQ(ierr);
+  ierr = MatSetSizes(*A,rend-rstart+1,cend-cstart+1,M,N);CHKERRQ(ierr);
+  ierr = MatSetType(*A,MATHYPRE);CHKERRQ(ierr);
+  ierr = MatSetUp(*A);CHKERRQ(ierr);
+  hA   = (Mat_HYPRE*)((*A)->data);
+
+  /* create HYPRE_IJMatrix */
+  PetscStackCallStandard(HYPRE_IJMatrixCreate,(hA->comm,rstart,rend-1,cstart,cend-1,&hA->ij));
+
+  /* set ParCSR object */
+  PetscStackCallStandard(HYPRE_IJMatrixSetObjectType,(hA->ij,HYPRE_PARCSR));
+  hypre_IJMatrixObject(hA->ij) = parcsr;
+
+  /* set assembled flag */
+  hypre_IJMatrixAssembleFlag(hA->ij) = 1;
+  PetscStackCallStandard(HYPRE_IJMatrixInitialize,(hA->ij));
+
+  /* prevent from freeing the pointer */
+  if (copymode == PETSC_USE_POINTER) hA->inner_free = PETSC_FALSE;
+
+  ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_HYPRE"
 PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
@@ -494,7 +538,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr          = PetscNewLog(B,&hB);CHKERRQ(ierr);
+  ierr           = PetscNewLog(B,&hB);CHKERRQ(ierr);
+  hB->inner_free = PETSC_TRUE;
+
   B->data       = (void*)hB;
   B->rmap->bs   = 1;
   B->assembled  = PETSC_FALSE;

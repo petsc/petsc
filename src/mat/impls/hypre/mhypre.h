@@ -11,6 +11,7 @@ typedef struct {
   HYPRE_IJVector x;
   HYPRE_IJVector b;
   MPI_Comm       comm;
+  PetscBool      inner_free;
 } Mat_HYPRE;
 
 PETSC_EXTERN PetscErrorCode VecHYPRE_IJVectorCreate(Vec,HYPRE_IJVector*);
