@@ -115,7 +115,17 @@ PetscErrorCode  PetscDrawView(PetscDraw indraw,PetscViewer viewer)
    Concepts: graphics^creating context
    Concepts: drawing^creating context
 
-.seealso: PetscDrawSetFromOptions(), PetscDrawDestroy(), PetscDrawSetType()
+.seealso: PetscDrawSetType(), PetscDrawSetFromOptions(), PetscDrawDestroy(), PetscDrawSetType(), PetscDrawLGCreate(), PetscDrawSPCreate(),
+          PetscDrawViewPortsCreate(), PetscDrawViewPortsSet(), PetscDrawAxisCreate(), PetscDrawHGCreate(), PetscDrawBarCreate(),
+          PetscViewerDrawGetDraw(), PetscDrawSetFromOptions(), PetscDrawSetSave(), PetscDrawSetSaveMovie(), PetscDrawSetSaveFinalImage(),
+          PetscDrawOpenX(), PetscDrawOpenImage(), PetscDrawIsNull(), PetscDrawGetPopup(), PetscDrawCheckResizedWindow(), PetscDrawResizeWindow(),
+          PetscDrawGetWindowSize(), PetscDrawLine(), PetscDrawArrow(), PetscDrawLineSetWidth(), PetscDrawLineGetWidth(), PetscDrawMarker(),
+          PetscDrawPoint(), PetscDrawRectangle(), PetscDrawTriangle(), PetscDrawEllipse(), PetscDrawString(), PetscDrawStringCentered(),
+          PetscDrawStringBoxed(), PetscDrawStringBoxedSize(), PetscDrawStringVertical(), PetscDrawSetViewPort(), PetscDrawGetViewPort(),
+          PetscDrawSplitViewPort(), PetscDrawSetTitle(), PetscDrawAppendTitle(), PetscDrawGetTitle(), PetscDrawSetPause(), PetscDrawGetPause(),
+          PetscDrawPause(), PetscDrawSetDoubleBuffer(), PetscDrawClear(), PetscDrawFlush(), PetscDrawGetSingleton(), PetscDrawGetMouseButton(),
+          PetscDrawZoom(), PetscDrawGetBoundingBox()
+
 @*/
 PetscErrorCode  PetscDrawCreate(MPI_Comm comm,const char display[],const char title[],int x,int y,int w,int h,PetscDraw *indraw)
 {
@@ -182,19 +192,19 @@ PetscErrorCode  PetscDrawCreate(MPI_Comm comm,const char display[],const char ti
    Options Database Command:
 .  -draw_type  <type> - Sets the type; use -help for a list of available methods (for instance, x)
 
-   See PetscDrawSetFromOptions for additional options database keys
+   See PetscDrawSetFromOptions() for additional options database keys
 
    Level: intermediate
 
    Notes:
    See "petsc/include/petscdraw.h" for available methods (for instance,
-   PETSC_DRAW_X)
+   PETSC_DRAW_X, PETSC_DRAW_TIKZ or PETSC_DRAW_IMAGE)
 
    Concepts: drawing^X windows
    Concepts: X windows^graphics
    Concepts: drawing^Microsoft Windows
 
-.seealso: PetscDrawSetFromOptions(), PetscDrawCreate(), PetscDrawDestroy()
+.seealso: PetscDrawSetFromOptions(), PetscDrawCreate(), PetscDrawDestroy(), PetscDrawType
 @*/
 PetscErrorCode  PetscDrawSetType(PetscDraw draw,PetscDrawType type)
 {
@@ -257,6 +267,8 @@ PetscErrorCode  PetscDrawSetType(PetscDraw draw,PetscDrawType type)
 
    Level: advanced
 
+.seealso: PetscDrawSetType(), PetscDrawType
+
 @*/
 PetscErrorCode  PetscDrawGetType(PetscDraw draw,PetscDrawType *type)
 {
@@ -296,7 +308,7 @@ $     -draw_type my_draw_type
    Concepts: graphics^registering new draw classes
    Concepts: PetscDraw^registering new draw classes
 
-.seealso: PetscDrawRegisterAll(), PetscDrawRegisterDestroy()
+.seealso: PetscDrawRegisterAll(), PetscDrawRegisterDestroy(), PetscDrawType, PetscDrawSetType()
 @*/
 PetscErrorCode  PetscDrawRegister(const char *sname,PetscErrorCode (*function)(PetscDraw))
 {
@@ -323,7 +335,7 @@ PetscErrorCode  PetscDrawRegister(const char *sname,PetscErrorCode (*function)(P
 
 .keywords: PetscDraw, set, options, prefix, database
 
-.seealso: PetscDrawSetFromOptions()
+.seealso: PetscDrawSetFromOptions(), PetscDrawCreate()
 @*/
 PetscErrorCode  PetscDrawSetOptionsPrefix(PetscDraw draw,const char prefix[])
 {
@@ -365,7 +377,7 @@ PetscErrorCode  PetscDrawSetOptionsPrefix(PetscDraw draw,const char prefix[])
    Concepts: drawing^setting options
    Concepts: graphics^setting options
 
-.seealso: PetscDrawCreate(), PetscDrawSetType(), PetscDrawSetSave(), PetscDrawSetSaveFinalImage()
+.seealso: PetscDrawCreate(), PetscDrawSetType(), PetscDrawSetSave(), PetscDrawSetSaveFinalImage(), PetscDrawPause(), PetscDrawSetPause()
 
 @*/
 PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)

@@ -152,6 +152,9 @@ PetscErrorCode  PetscDrawPopCurrentPoint(PetscDraw draw)
    Concepts: line^drawing
    Concepts: drawing^line
 
+.seealso: PetscDrawArrow(), PetscDrawLineSetWidth(), PetscDrawLineGetWidth(), PetscDrawRectangle(), PetscDrawTriangle(), PetscDrawEllipse(),
+          PetscDrawMarker(), PetscDrawPoint()
+
 @*/
 PetscErrorCode  PetscDrawLine(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int cl)
 {
@@ -180,6 +183,9 @@ PetscErrorCode  PetscDrawLine(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal
 
    Concepts: line^drawing
    Concepts: drawing^line
+
+.seealso: PetscDrawLine(), PetscDrawLineSetWidth(), PetscDrawLineGetWidth(), PetscDrawRectangle(), PetscDrawTriangle(), PetscDrawEllipse(),
+          PetscDrawMarker(), PetscDrawPoint()
 
 @*/
 PetscErrorCode  PetscDrawArrow(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int cl)
@@ -210,7 +216,7 @@ PetscErrorCode  PetscDrawArrow(PetscDraw draw,PetscReal xl,PetscReal yl,PetscRea
 
    Concepts: line^width
 
-.seealso:  PetscDrawLineGetWidth()
+.seealso:  PetscDrawLineGetWidth(), PetscDrawLine(), PetscDrawArrow()
 @*/
 PetscErrorCode  PetscDrawLineSetWidth(PetscDraw draw,PetscReal width)
 {
@@ -246,7 +252,7 @@ PetscErrorCode  PetscDrawLineSetWidth(PetscDraw draw,PetscReal width)
 
    Concepts: line^width
 
-.seealso:  PetscDrawLineSetWidth()
+.seealso:  PetscDrawLineSetWidth(), PetscDrawLine(), PetscDrawArrow()
 @*/
 PetscErrorCode  PetscDrawLineGetWidth(PetscDraw draw,PetscReal *width)
 {

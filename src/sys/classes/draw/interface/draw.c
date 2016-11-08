@@ -357,6 +357,8 @@ PetscErrorCode  PetscDrawDestroy(PetscDraw *draw)
 
    Level: advanced
 
+.seealso: PetscDrawScalePopup(), PetscDrawCreate()
+
 @*/
 PetscErrorCode  PetscDrawGetPopup(PetscDraw draw,PetscDraw *popup)
 {
@@ -388,6 +390,8 @@ PetscErrorCode  PetscDrawGetPopup(PetscDraw draw,PetscDraw *popup)
 - display - the X windows display
 
   Level: advanced
+
+.seealso: PetscDrawCreate()
 
 @*/
 PetscErrorCode  PetscDrawSetDisplay(PetscDraw draw,const char display[])

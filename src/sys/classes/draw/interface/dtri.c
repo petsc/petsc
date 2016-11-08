@@ -22,6 +22,7 @@
    Concepts: graphics^triangle
    Concepts: triangle
 
+.seealso: PetscDrawLine(), PetscDrawRectangle(), PetscDrawEllipse(), PetscDrawMarker(), PetscDrawPoint(), PetscDrawArrow()
 @*/
 PetscErrorCode  PetscDrawTriangle(PetscDraw draw,PetscReal x1,PetscReal y_1,PetscReal x2,PetscReal y2,PetscReal x3,PetscReal y3,int c1,int c2,int c3)
 {
@@ -37,7 +38,7 @@ PetscErrorCode  PetscDrawTriangle(PetscDraw draw,PetscReal x1,PetscReal y_1,Pets
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawScalePopup"
 /*@
-   PetscDrawScalePopup - PetscDraws a contour scale window.
+   PetscDrawScalePopup - draws a contour scale window.
 
    Collective on PetscDraw
 
@@ -49,6 +50,8 @@ PetscErrorCode  PetscDrawTriangle(PetscDraw draw,PetscReal x1,PetscReal y_1,Pets
    Level: intermediate
 
    Notes: All processors that share the draw MUST call this routine
+
+.seealso: PetscDrawGetPopup(), PetscDrawTensorContour()
 
 @*/
 PetscErrorCode  PetscDrawScalePopup(PetscDraw popup,PetscReal min,PetscReal max)
@@ -143,7 +146,7 @@ static PetscErrorCode PetscDrawTensorContour_Zoom(PetscDraw win,void *dctx)
    Concepts: contour plot
    Concepts: drawing^contour plot
 
-.seealso: PetscDrawTensorContourPatch()
+.seealso: PetscDrawTensorContourPatch(), PetscDrawScalePopup()
 
 @*/
 PetscErrorCode  PetscDrawTensorContour(PetscDraw draw,int m,int n,const PetscReal xi[],const PetscReal yi[],PetscReal *v)
