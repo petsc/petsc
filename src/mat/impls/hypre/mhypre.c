@@ -812,8 +812,6 @@ static PetscErrorCode MatAssemblyEnd_HYPRE(Mat A, MatAssemblyType mode)
 
    Level: intermediate
 
-   Notes: Not all the combinations between copymode and mtype are currently supported.
-
 .seealso: MatHYPRE, PetscCopyMode
 */
 #undef __FUNCT__
@@ -835,11 +833,10 @@ PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(void *vparcsr, MatType mtype, Pe
   ierr   = PetscStrcmp(mtype,MATMPIAIJ,&ismpiaij);CHKERRQ(ierr);
   ierr   = PetscStrcmp(mtype,MATAIJ,&isaij);CHKERRQ(ierr);
   ierr   = PetscStrcmp(mtype,MATHYPRE,&ishyp);CHKERRQ(ierr);
-  ierr   = PetscStrcmp(mtype,MATHYPRE,&isis);CHKERRQ(ierr);
+  ierr   = PetscStrcmp(mtype,MATIS,&isis);CHKERRQ(ierr);
   isaij  = (PetscBool)(isseqaij || ismpiaij || isaij);
   if (!isaij && !ishyp && !isis) SETERRQ6(comm,PETSC_ERR_SUP,"Unsupported MatType %s! Supported types are %s, %s, %s, %s, and %s",mtype,MATAIJ,MATSEQAIJ,MATMPIAIJ,MATIS,MATHYPRE);
   if (ishyp && copymode == PETSC_COPY_VALUES) SETERRQ(comm,PETSC_ERR_SUP,"Unsupported copymode PETSC_COPY_VALUES");
-  if (isis  && copymode == PETSC_OWN_POINTER) SETERRQ(comm,PETSC_ERR_SUP,"Unsupported copymode PETSC_OWN_POINTER");
 
   /* access ParCSRMatrix */
   rstart = hypre_ParCSRMatrixFirstRowIndex(parcsr);
@@ -883,7 +880,8 @@ PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(void *vparcsr, MatType mtype, Pe
       *A   = T;
     }
   } else if (isis) {
-    ierr = MatConvert_HYPRE_AIJ(T,MATIS,MAT_INITIAL_MATRIX,A);CHKERRQ(ierr);
+    ierr = MatConvert_HYPRE_IS(T,MATIS,MAT_INITIAL_MATRIX,A);CHKERRQ(ierr);
+    if (copymode != PETSC_OWN_POINTER) hA->inner_free = PETSC_FALSE;
     ierr = MatDestroy(&T);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
