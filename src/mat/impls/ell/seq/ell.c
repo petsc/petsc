@@ -147,7 +147,7 @@ PetscErrorCode MatMult_SeqELL(Mat A,Vec xx,Vec yy)
     sum7 = 0.0;
     sum8 = 0.0;
     for (j=0; j<a->rlenmax; j++) {
-       sum1 += *aval++*x[*acolidx++]; 
+       sum1 += *aval++*x[*acolidx++];
        sum2 += *aval++*x[*acolidx++];
        sum3 += *aval++*x[*acolidx++];
        sum4 += *aval++*x[*acolidx++];

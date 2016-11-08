@@ -40,7 +40,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_Nest(Mat);
 
 PETSC_EXTERN PetscErrorCode MatCreate_SeqELL(Mat);
-//PETSC_EXTERN PetscErrorCode MatCreate_MPIELL(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPIELL(Mat);
 
 #if defined PETSC_HAVE_CUSP
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSP(Mat);

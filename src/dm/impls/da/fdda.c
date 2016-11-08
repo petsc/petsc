@@ -842,7 +842,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIELL(DM da,Mat J)
   }
   ierr = MatSetBlockSize(J,nc);CHKERRQ(ierr);
   ierr = MatSeqELLSetPreallocation(J,0,dnz);CHKERRQ(ierr);
-  //ierr = MatMPIELLSetPreallocation(J,0,dnz,0,onz);CHKERRQ(ierr);
+  ierr = MatMPIELLSetPreallocation(J,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
 
   ierr = MatSetLocalToGlobalMapping(J,ltog,ltog);CHKERRQ(ierr);

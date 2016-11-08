@@ -3,13 +3,13 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC	 = mpibaij.c mmbaij.c baijov.c mpb_baij.c
+SOURCEC	 = mpiell.c mmell.c
 SOURCEF	 =
-SOURCEH	 = mpibaij.h
+SOURCEH	 = mpiell.h
 LIBBASE	 = libpetscmat
-DIRS	 = 
+DIRS	 =
 MANSEC	 = Mat
-LOCDIR	 = src/mat/impls/baij/mpi/
+LOCDIR	 = src/mat/impls/ell/mpi/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

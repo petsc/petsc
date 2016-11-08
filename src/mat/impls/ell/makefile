@@ -1,7 +1,7 @@
 
 ALL: lib
 
-DIRS     = seq
+DIRS     = seq mpi
 LOCDIR   = src/mat/impls/ell/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
