@@ -4,8 +4,8 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.download         = ['http://portal.nersc.gov/project/sparse/strumpack/STRUMPACK-sparse-1.0.4.tar.gz',
-                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/STRUMPACK-sparse-1.0.4.tar.gz']
+    self.download         = ['http://portal.nersc.gov/project/sparse/strumpack/STRUMPACK-sparse-1.1.0.tar.gz',
+                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/STRUMPACK-sparse-1.1.0.tar.gz']
     self.functions        = ['STRUMPACK_init']
     self.includes         = ['StrumpackSparseSolver.h']
     self.liblist          = [['libstrumpack_sparse.a']]
@@ -37,7 +37,7 @@ class Configure(config.package.CMakePackage):
     args.append('-DSCALAPACK_LIBRARIES="'+self.libraries.toString(self.scalapack.lib)+'"')
     args.append('-DSCALAPACK_LIBRARY="'+self.libraries.toString(self.scalapack.lib)+'"')
     args.append('-DBLACS_LIBRARY="'+self.libraries.toString(self.scalapack.lib)+'"')
-    
+
     args.append('-DMETIS_LIBRARIES="'+self.libraries.toString(self.metis.lib)+'"')
     args.append('-DMETIS_INCLUDES="'+self.headers.toStringNoDupes(self.metis.include)[2:]+'"')
 
