@@ -69,11 +69,13 @@ int main(int argc,char **args)
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&D);CHKERRQ(ierr);
 
-  /* check MatHYPRECreateFromParCSR */
+  /* check MatCreateFromParCSR */
   {
     Mat_HYPRE *hB = (Mat_HYPRE*)(B->data);
     hypre_ParCSRMatrix *parcsr = (hypre_ParCSRMatrix*)hypre_IJMatrixObject(hB->ij);
-    ierr = MatHYPRECreateFromParCSR(parcsr,PETSC_USE_POINTER,&C);CHKERRQ(ierr);
+    ierr = MatCreateFromParCSR(parcsr,MATAIJ,PETSC_COPY_VALUES,&D);CHKERRQ(ierr);
+    ierr = MatDestroy(&D);CHKERRQ(ierr);
+    ierr = MatCreateFromParCSR(parcsr,MATHYPRE,PETSC_USE_POINTER,&C);CHKERRQ(ierr);
   }
 
   /* check matmult */
