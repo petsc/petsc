@@ -5,6 +5,31 @@
 #include <petscctable.h>
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscTableCreateHashSize"
+static PetscErrorCode PetscTableCreateHashSize(PetscInt sz, PetscInt *hsz)
+{
+  PetscFunctionBegin;
+  if (sz < 100)          *hsz = 139;
+  else if (sz < 200)     *hsz = 283;
+  else if (sz < 400)     *hsz = 577;
+  else if (sz < 800)     *hsz = 1103;
+  else if (sz < 1600)    *hsz = 2239;
+  else if (sz < 3200)    *hsz = 4787;
+  else if (sz < 6400)    *hsz = 9337;
+  else if (sz < 12800)   *hsz = 17863;
+  else if (sz < 25600)   *hsz = 37649;
+  else if (sz < 51200)   *hsz = 72307;
+  else if (sz < 102400)  *hsz = 142979;
+  else if (sz < 204800)  *hsz = 299983;
+  else if (sz < 409600)  *hsz = 599869;
+  else if (sz < 819200)  *hsz = 1193557;
+  else if (sz < 1638400) *hsz = 2297059;
+  else if (sz < 3276800) *hsz = 4902383;
+  else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"A really huge hash is being requested.. cannot process: %D",sz);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscTableCreate"
 /*
    PetscTableCreate  Creates a PETSc look up table
@@ -23,8 +48,8 @@ PetscErrorCode  PetscTableCreate(const PetscInt n,PetscInt maxkey,PetscTable *rt
 
   PetscFunctionBegin;
   if (n < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"n < 0");
-  ierr          = PetscNew(&ta);CHKERRQ(ierr);
-  ta->tablesize = 17 + PetscIntMultTruncate(3,n/2);
+  ierr       = PetscNew(&ta);CHKERRQ(ierr);
+  ierr       = PetscTableCreateHashSize(n,&ta->tablesize);
   ierr       = PetscCalloc1(ta->tablesize,&ta->keytable);CHKERRQ(ierr);
   ierr       = PetscMalloc1(ta->tablesize,&ta->table);CHKERRQ(ierr);
   ta->head   = 0;
@@ -120,9 +145,7 @@ PetscErrorCode  PetscTableAddExpand(PetscTable ta,PetscInt key,PetscInt data,Ins
   PetscInt       *oldtab = ta->table,*oldkt = ta->keytable,newk,ndata;
 
   PetscFunctionBegin;
-  ta->tablesize = PetscIntMultTruncate(2,ta->tablesize);
-  if (tsize == ta->tablesize) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Table is as large as possible; ./configure with the option --with-64-bit-integers to run this large case");
-
+  ierr = PetscTableCreateHashSize(ta->tablesize,&ta->tablesize);
   ierr = PetscMalloc1(ta->tablesize,&ta->table);CHKERRQ(ierr);
   ierr = PetscCalloc1(ta->tablesize,&ta->keytable);CHKERRQ(ierr);
 

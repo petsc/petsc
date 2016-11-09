@@ -18,9 +18,16 @@ typedef PetscInt* PetscTablePosition;
 #define __FUNCT__ "PetscHash"
 PETSC_STATIC_INLINE unsigned long PetscHash(PetscTable ta,unsigned long x)
 {
-#define PETSC_HASH_FACT 79943
   PetscFunctionBegin;
-  PetscFunctionReturn((PETSC_HASH_FACT*x)%(unsigned long)ta->tablesize);
+  PetscFunctionReturn(x%(unsigned long)ta->tablesize);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscHashStep"
+PETSC_STATIC_INLINE unsigned long PetscHashStep(PetscTable ta,unsigned long x)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(1+(x%(unsigned long)(ta->tablesize-1)));
 }
 
 PETSC_EXTERN PetscErrorCode PetscTableCreate(const PetscInt,PetscInt,PetscTable*);
@@ -40,6 +47,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscTableAdd(PetscTable ta,PetscInt key,Pets
 {
   PetscErrorCode ierr;
   PetscInt       i,hash = (PetscInt)PetscHash(ta,(unsigned long)key);
+  PetscInt       hashstep = (PetscInt)PetscHashStep(ta,(unsigned long)key);
 
   PetscFunctionBegin;
   if (key <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"key <= 0");
@@ -76,7 +84,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscTableAdd(PetscTable ta,PetscInt key,Pets
       }
       PetscFunctionReturn(0);
     }
-    hash = (hash == (ta->tablesize-1)) ? 0 : hash+1;
+    hash = (hash + hashstep)%ta->tablesize;
   }
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Full table");
   /* PetscFunctionReturn(0); */
@@ -88,6 +96,7 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscTableAddCount(PetscTable ta,PetscInt ke
 {
   PetscErrorCode ierr;
   PetscInt       i,hash = (PetscInt)PetscHash(ta,(unsigned long)key);
+  PetscInt       hashstep = (PetscInt)PetscHashStep(ta,(unsigned long)key);
 
   PetscFunctionBegin;
   if (key <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"key <= 0");
@@ -106,7 +115,7 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscTableAddCount(PetscTable ta,PetscInt ke
       }
       PetscFunctionReturn(0);
     }
-    hash = (hash == (ta->tablesize-1)) ? 0 : hash+1;
+    hash = (hash + hashstep)%ta->tablesize;
   }
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Full table");
   /* PetscFunctionReturn(0); */
@@ -123,21 +132,22 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscTableAddCount(PetscTable ta,PetscInt ke
 */
 PETSC_STATIC_INLINE PetscErrorCode  PetscTableFind(PetscTable ta,PetscInt key,PetscInt *data)
 {
-  PetscInt hash,ii = 0;
+  PetscInt       ii = 0;
+  PetscInt       hash = (PetscInt)PetscHash(ta,(unsigned long)key);
+  PetscInt       hashstep = (PetscInt)PetscHashStep(ta,(unsigned long)key);
 
   PetscFunctionBegin;
   *data = 0;
   if (key <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Key <= 0");
   if (key > ta->maxkey) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"key %D is greater than largest key allowed %D",key,ta->maxkey);
 
-  hash  = (PetscInt)PetscHash(ta,(unsigned long)key);
   while (ii++ < ta->tablesize) {
     if (!ta->keytable[hash]) break;
     else if (ta->keytable[hash] == key) {
       *data = ta->table[hash];
       break;
     }
-    hash = (hash == (ta->tablesize-1)) ? 0 : hash+1;
+    hash = (hash + hashstep)%ta->tablesize;
   }
   PetscFunctionReturn(0);
 }
