@@ -1668,11 +1668,9 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   /* check existence of a divergence free extension, i.e.
      b(v_I,p_0) = 0 for all v_I (raise error if not).
      Also, check that PCBDDCBenignGetOrSetP0 works */
-#if defined(PETSC_USE_DEBUG)
-  if (pcbddc->benign_saddle_point) {
+  if (pcbddc->benign_saddle_point && pcbddc->dbg_flag > 1) {
     ierr = PCBDDCBenignCheck(pc,zerodiag);CHKERRQ(ierr);
   }
-#endif
   ierr = ISDestroy(&zerodiag);CHKERRQ(ierr);
 
   /* Setup local dirichlet solver ksp_D and sub_schurs solvers */
