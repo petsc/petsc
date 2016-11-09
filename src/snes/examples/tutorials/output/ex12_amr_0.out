@@ -2,11 +2,11 @@ Initial guess
 Vec Object: potential 5 MPI processes
   type: mpi
 Process [0]
-1.125
+0.625
 Process [1]
 Process [2]
 0.8125
-0.625
+1.125
 Process [3]
 0.3125
 0.125

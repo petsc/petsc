@@ -473,7 +473,7 @@ PetscErrorCode MatMissingDiagonal(Mat mat,PetscBool *missing,PetscInt *dd)
    matrix at a time, per processor. MatGetRow() can only obtain rows
    associated with the given processor, it cannot get rows from the
    other processors; for that we suggest using MatGetSubMatrices(), then
-   MatGetRow() on the submatrix. The row indix passed to MatGetRows()
+   MatGetRow() on the submatrix. The row index passed to MatGetRows()
    is in the global number of rows.
 
    Fortran Notes:
@@ -2072,7 +2072,7 @@ PetscErrorCode MatGetLayouts(Mat A,PetscLayout *rmap,PetscLayout *cmap)
    Not Collective
 
    Input Parameters:
-+  x - the matrix
++  mat - the matrix
 .  nrow, irow - number of rows and their local indices
 .  ncol, icol - number of columns and their local indices
 .  y -  a logically two-dimensional array of values
@@ -8174,6 +8174,9 @@ PetscErrorCode MatGetNullSpace(Mat mat, MatNullSpace *nullsp)
 
       Krylov solvers can produce the minimal norm solution to the least squares problem by utilizing MatNullSpaceRemove().
 
+    If the matrix is known to be symmetric because it is an SBAIJ matrix or one as called MatSetOption(mat,MAT_SYMMETRIC or MAT_SYMMETRIC_ETERNAL,PETSC_TRUE); this
+    routine also automatically calls MatSetTransposeNullSpace().
+
    Concepts: null space^attaching to matrix
 
 .seealso: MatCreate(), MatNullSpaceCreate(), MatSetNearNullSpace(), MatGetNullSpace(), MatSetTransposeNullSpace(), MatGetTransposeNullSpace(), MatNullSpaceRemove()
@@ -8190,6 +8193,9 @@ PetscErrorCode MatSetNullSpace(Mat mat,MatNullSpace nullsp)
   if (nullsp) {ierr = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);}
   ierr = MatNullSpaceDestroy(&mat->nullsp);CHKERRQ(ierr);
   mat->nullsp = nullsp;
+  if (mat->symmetric_set && mat->symmetric) {
+    ierr = MatSetTransposeNullSpace(mat,nullsp);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

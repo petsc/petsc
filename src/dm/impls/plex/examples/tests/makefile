@@ -59,6 +59,10 @@ ex20: ex20.o  chkopts
 	-${CLINKER} -o ex20 ex20.o ${PETSC_DM_LIB}
 	${RM} -f ex20.o
 
+ex22: ex22.o  chkopts
+	-${CLINKER} -o ex22 ex22.o ${PETSC_DM_LIB}
+	${RM} -f ex22.o
+
 
 #--------------------------------------------------------------------------
 runex1:
@@ -196,7 +200,13 @@ runex20_3d:
 		else printf "${PWD}\nPossible problem with runex20_3d, diffs above\n================================================================\n"; fi ;\
 		${RM} -f ex20_3d.tmp
 
-TESTEXAMPLES_C           = ex3.PETSc runex3_constraints runex3_nonconforming_tensor_2 runex3_nonconforming_tensor_3 runex3_nonconforming_tensor_2_fv runex3_nonconforming_tensor_3_fv ex3.rm ex6.PETSc runex6 ex6.rm
+runex22:
+	-@${MPIEXEC} -n 1 ./ex22 -tensor_petscspace_order 2 -petscspace_order 2 -tensor_petscspace_poly_tensor 1 > ex22.tmp 2>&1;\
+		if (${DIFF} output/ex22.out ex22.tmp) then true ;\
+		else printf "${PWD}\nPossible problem with runex22, diffs above\n================================================================\n"; fi ;\
+		${RM} -f ex22.tmp
+
+TESTEXAMPLES_C           = ex3.PETSc runex3_constraints runex3_nonconforming_tensor_2 runex3_nonconforming_tensor_3 runex3_nonconforming_tensor_2_fv runex3_nonconforming_tensor_3_fv ex3.rm ex6.PETSc runex6 ex6.rm ex22.PETSc runex22 ex22.rm
 TESTEXAMPLES_C_NOTSINGLE = ex3.PETSc runex3_nonconforming_tensor_2_hi ex3.rm
 TESTEXAMPLES_HDF5        = ex15.PETSc runex15_0 ex15.rm
 TESTEXAMPLES_TRIANGLE    = ex3.PETSc runex3_nonconforming_simplex_2 runex3_nonconforming_simplex_2_hi runex3_nonconforming_simplex_2_fv ex3.rm ex20.PETSc runex20_2d ex20.rm

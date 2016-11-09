@@ -2868,10 +2868,11 @@ If poor convergence rates are observed using the smoothed version one can test u
 AMG methods requires knowledge of the number of degrees of
 freedom per vertex, the default is one (a scalar problem).
 Vector problems like elasticity should set the block size of the matrix appropriately with \trl{-mat_block_size bs}  or \lstinline{MatSetBlockSize(mat,bs)}.
+Equations must be ordered in ``vertex-major'' ordering (e.g., $x_1,y_1,z_1,x_2,y_2,...$).
 
 Smoothed aggregation requires an explicit representation of the (near) null space of the operator for optimal performance.
-One can provide this with \lstinline{MatSetNearNullSpace()}.
-The one vector is the default, for each variable given by the block size (e.g., the translational rigid  body modes).
+One can provide an orthonormal set of null space vectors with \lstinline{MatSetNearNullSpace()}.
+The vector of all ones is the default, for each variable given by the block size (e.g., the translational rigid  body modes).
 For elasticity, where rotational rigid body modes are required to complete the near null space you can use \lstinline{MatNullSpaceCreateRigidBody()} to create the null space vectors and then \lstinline{MatSetNearNullSpace()}.
 
 There are several options to provide parameters to the coarsening algorithm and parallel data layout.

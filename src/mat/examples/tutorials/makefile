@@ -131,7 +131,7 @@ TESTEXAMPLES_C_X_MPIUNI   =
 TESTEXAMPLES_DATAFILESPATH  = ex1.PETSc runex1 ex1.rm ex5.PETSc runex5 ex5.rm ex9.PETSc runex9 ex9.rm ex10.PETSc runex10_seqaij runex10_seqdense runex10_mpiaij runex10_mpidense ex10.rm
 TESTEXAMPLES_FORTRAN_MPIUNI =
 TESTEXAMPLES_13		    = ex1.PETSc ex1.rm
-TESTEXAMPLES_PARAMETIS      = ex11.PETSc runex11 ex11.rm ex15.PETSc runex15 ex15.rm
+TESTEXAMPLES_PARMETIS       = ex11.PETSc runex11 ex11.rm ex15.PETSc runex15 ex15.rm
 TESTEXAMPLES_PTSCOTCH       = ex15.PETSc runex15_2 ex15.rm
 
 

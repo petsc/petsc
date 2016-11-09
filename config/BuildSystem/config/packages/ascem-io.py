@@ -12,6 +12,7 @@ class Configure(config.package.Package):
     self.requirescxx11    = 0
     self.downloadonWindows= 0
     self.hastests         = 1
+    self.useddirectly     = 0
     return
 
   def setupDependencies(self, framework):

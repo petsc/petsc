@@ -79,8 +79,14 @@ PetscErrorCode  MatFinalizePackage(void)
 #if defined(PETSC_HAVE_MUMPS)
 PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_MUMPS(void);
 #endif
+#if defined(PETSC_HAVE_CUSP)
+PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_CUSP(void);
+#endif
 #if defined(PETSC_HAVE_VECCUDA)
 PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_CUSPARSE(void);
+#endif
+#if defined(PETSC_HAVE_VIENNACL)
+PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_ViennaCL(void);
 #endif
 #if defined(PETSC_HAVE_ELEMENTAL)
 PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Elemental(void);
@@ -326,8 +332,14 @@ PetscErrorCode  MatInitializePackage(void)
 #if defined(PETSC_HAVE_MUMPS)
   ierr = MatSolverPackageRegister_MUMPS();CHKERRQ(ierr);
 #endif
+#if defined(PETSC_HAVE_CUSP)
+  ierr = MatSolverPackageRegister_CUSP();CHKERRQ(ierr);
+#endif
 #if defined(PETSC_HAVE_VECCUDA)
   ierr = MatSolverPackageRegister_CUSPARSE();CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_VIENNACL)
+  ierr = MatSolverPackageRegister_ViennaCL();CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_ELEMENTAL)
   ierr = MatSolverPackageRegister_Elemental();CHKERRQ(ierr);

@@ -4,6 +4,8 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/lgrind-dev.tar.gz']
+    self.linkedbypetsc     = 0
+    self.useddirectly      = 0
     #
     #  lgrind is currently not used by PETSc
     #

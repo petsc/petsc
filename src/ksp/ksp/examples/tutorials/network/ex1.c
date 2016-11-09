@@ -291,13 +291,13 @@ int main(int argc,char ** argv)
   if (!rank) {
     ierr = DMNetworkGetEdgeRange(networkdm,&eStart,&eEnd);CHKERRQ(ierr);
     for (i = eStart; i < eEnd; i++) {
-      ierr = DMNetworkAddComponent(networkdm,i,componentkey[0],&branch[i-eStart]);CHKERRQ(ierr);
+      ierr = DMNetworkAddComponent(networkdm,i,componentkey[1],&branch[i-eStart]);CHKERRQ(ierr);
       ierr = DMNetworkAddNumVariables(networkdm,i,1);CHKERRQ(ierr);
     }
 
     ierr = DMNetworkGetVertexRange(networkdm,&vStart,&vEnd);CHKERRQ(ierr);
     for (i = vStart; i < vEnd; i++) {
-      ierr = DMNetworkAddComponent(networkdm,i,componentkey[1],&node[i-vStart]);CHKERRQ(ierr);
+      ierr = DMNetworkAddComponent(networkdm,i,componentkey[0],&node[i-vStart]);CHKERRQ(ierr);
       /* Add number of variables */
       ierr = DMNetworkAddNumVariables(networkdm,i,1);CHKERRQ(ierr);
     }

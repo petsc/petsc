@@ -670,6 +670,16 @@ runex19:
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex19, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19_1.tmp
+runex19_hypre:
+	-@${MPIEXEC} -n 2 ./ex19 -da_refine 3 -snes_monitor_short -pc_type hypre > ex19_1.tmp 2>&1; \
+	   if (${DIFF} output/ex19_hypre.out ex19_1.tmp) then true; \
+	   else  printf "${PWD}\nPossible problem with ex19_hypre, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex19_1.tmp
+runex19_ml:
+	-@${MPIEXEC} -n 2 ./ex19 -da_refine 3 -snes_monitor_short -pc_type ml > ex19_1.tmp 2>&1; \
+	   if (${DIFF} output/ex19_ml.out ex19_1.tmp) then true; \
+	   else  printf "${PWD}\nPossible problem with ex19_ml, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex19_1.tmp
 runex19_ibcgs:
 	-@${MPIEXEC} -n 2 ./ex19 -ksp_type ibcgs -ksp_monitor_short -da_refine 2  -snes_view > ex19_ibcgs.tmp 2>&1; \
 	   if (${DIFF} output/ex19_ibcgs.out ex19_ibcgs.tmp) then true; \
@@ -1022,15 +1032,14 @@ testex19: ex19.PETSc
 	   else echo "Possible error running C/C++ src/snes/examples/tutorials/ex19 with 1 MPI process"; \
            echo "See http://www.mcs.anl.gov/petsc/documentation/faq.html";\
            cat ex19_1.tmp; fi; \
-	if [ "${MPIEXEC}" != "${PETSC_DIR}/bin/petsc-mpiexec.uni" ]; then \
+	if [ ! "${MPI_IS_MPIUNI}" ]; then \
            ${MPIEXEC} -n 2 ./ex19 -da_refine 3 -pc_type mg -ksp_type fgmres  > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.testout ex19_1.tmp > /dev/null 2>&1) then \
            echo "C/C++ example src/snes/examples/tutorials/ex19 run successfully with 2 MPI processes"; \
 	   else echo "Possible error running C/C++ src/snes/examples/tutorials/ex19 with 2 MPI processes"; \
            echo "See http://www.mcs.anl.gov/petsc/documentation/faq.html";\
            cat ex19_1.tmp; fi; fi; \
-        ${RM} -f ex19_1.tmp; \
-        ${MAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ex19.rm ; fi
+        ${RM} -f ex19_1.tmp; fi
 
 runex19_cusp:
 	-@${MPIEXEC} -n 1 ./ex19 -dm_vec_type cusp -dm_mat_type aijcusp -pc_type none -ksp_type fgmres -snes_monitor_short -snes_rtol 1.e-5 > ex19.tmp 2>&1; \
@@ -1221,7 +1230,7 @@ runex48_5:
 	done
 
 runex56:
-	-@${MPIEXEC} -n 4 ./ex56 -cells 2,2,1 -max_conv_its 3 -lx 1. -alpha .01 -petscspace_poly_tensor -petscspace_order 2 -snes_max_it 10 -ksp_max_it 50 -ksp_type cg -ksp_rtol 1.e-6 -snes_rtol 1.e-5 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 100 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -pc_gamg_threshold 0.04 -ksp_converged_reason -snes_monitor_short -ksp_monitor_short -snes_converged_reason -use_mat_nearnullspace true -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_esteig_ksp_type cg -mg_levels_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type jacobi -petscpartitioner_type simple -mat_block_size 3 > ex.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex56 -cells 2,2,1 -max_conv_its 3 -petscspace_poly_tensor -petscspace_order 2 -snes_max_it 2 -ksp_max_it 100 -ksp_type cg -ksp_rtol 1.e-11 -ksp_norm_type unpreconditioned -snes_rtol 1.e-10 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 1000 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -ksp_converged_reason -snes_monitor_short -ksp_monitor_short -snes_converged_reason -use_mat_nearnullspace true -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -mg_levels_esteig_ksp_type cg -mg_levels_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type jacobi -petscpartitioner_type simple -mat_block_size 3 -matrap 0 -matptap_scalable -ex56_dm_view -run_type 1 > ex.tmp 2>&1; \
 	   ${DIFF} output/ex56_0.out ex.tmp || printf "${PWD}\nPossible problem with ex56_0.out, diffs above \n=========================================\n"; \
 	   ${RM} -f ex.tmp
 
@@ -1302,7 +1311,7 @@ TESTEXAMPLES_C		       =  ex2.PETSc runex2  runex2_3 ex2.rm ex3.PETSc runex3 \
                                  ex25.PETSc runex25 runex25_2 ex25.rm \
                                  ex28.PETSc runex28_0 runex28_1 runex28_2 runex28_3 ex28.rm \
                                  ex35.PETSc runex35_3 runex35_4 runex35_5 runex35_6 runex35_8 ex35.rm \
-                                 ex70.PETSc runex70 runex70_2 runex70_3 runex70_4 ex70.rm ex78.PETSc runex78 ex78.rm
+                                 ex70.PETSc runex70 runex70_2 runex70_3 runex70_4 ex70.rm
 TESTEXAMPLES_C_NOTSINGLE       = ex1.PETSc runex1 runex1_2 ex1.rm ex5.PETSc runex5_2 runex5_3 runex5_4 runex5_5_ls runex5_5_fas runex5_5_fas_monitor printdot \
                                  runex5_5_newton_asm_dmda runex5_5_newton_gasm_dmda runex5_6  ex5.rm printdot \
                                  ex14.PETSc runex14_4 ex14.rm ex15.PETSc runex15 runex15_3 runex15_lag_jac runex15_nleqerr runex15_lag_pc ex15.rm ex16.PETSc printdot \
@@ -1322,7 +1331,7 @@ TESTEXAMPLES_C_NOTSINGLE       = ex1.PETSc runex1 runex1_2 ex1.rm ex5.PETSc rune
                                  ex42.PETSc runex42 ex42.rm printdot \
                                  ex46.PETSc runex46 runex46_ew_1 runex46_ew_2 runex46_ew_3 runex46_fm_rise_2 runex46_fm_rise_4 ex46.rm printdot \
                                  ex48.PETSc runex48 runex48_2 runex48_3 runex48_4 runex48_5 ex48.rm printdot \
-                                 ex58.PETSc runex58 runex58_2 ex58.rm ex59.PETSc runex59 runex59_2 runex59_3 ex59.rm ex70.PETSc ex70.rm
+                                 ex58.PETSc runex58 runex58_2 ex58.rm ex59.PETSc runex59 runex59_2 runex59_3 ex59.rm ex70.PETSc ex70.rm ex78.PETSc runex78 ex78.rm
 TESTEXAMPLES_PARMS             = ex19.PETSc runex19_parms ex19.rm
 TESTEXAMPLES_PARMETIS          = ex56.PETSc runex56 ex56.rm
 TESTEXAMPLES_C_X	       = ex1.PETSc runex1_X ex1.rm ex19.PETSc runex19_draw runex19_18 runex19_drawports ex19.rm
@@ -1340,6 +1349,8 @@ TESTEXAMPLES_MATLAB_ENGINE     =
 TESTEXAMPLES_SAWS	       =
 TESTEXAMPLES_ADIFOR	       = ex5f.PETSc runex5f_2 ex5f.rm
 TESTEXAMPLES_MUMPS             = ex19.PETSc runex19_4 runex19_fieldsplit_mumps runex19_3 runex19_4  ex19.rm
+TESTEXAMPLES_ML                = ex19.PETSc runex19_ml ex19.rm
+TESTEXAMPLES_HYPRE             = ex19.PETSc runex19_hypre ex19.rm
 TESTEXAMPLES_SUPERLU           = ex19.PETSc runex19_superlu ex19.rm
 TESTEXAMPLES_SUPERLU_DIST      = ex19.PETSc runex19_superlu_dist runex19_superlu_dist_2 ex19.rm  ex19.PETSc  ex19.rm
 TESTEXAMPLES_PASTIX            = ex19.PETSc runex19_11 runex19_12 ex19.rm  ex19.PETSc runex19_11 runex19_12 ex19.rm

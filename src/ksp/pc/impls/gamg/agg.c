@@ -276,7 +276,7 @@ static const NState REMOVED =-3;
 */
 #undef __FUNCT__
 #define __FUNCT__ "smoothAggs"
-static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2)
+static PetscErrorCode smoothAggs(PC pc,Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2)
 {
   PetscErrorCode ierr;
   PetscBool      isMPI;
@@ -435,7 +435,7 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
               SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"found node %d times???",hav);
             }
           } else {            /* I'm stealing this local, owned by a ghost */
-            if (sgid != -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Have un-symmetric graph (apparently). Use '-pc_gamg_sym_graph true' to symetrize the graph or '-pc_gamg_threshold -1.0' if the matrix is structurally symmetric.");
+            if (sgid != -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Have un-symmetric graph (apparently). Use '-%spc_gamg_sym_graph true' to symetrize the graph or '-%spc_gamg_threshold -1' if the matrix is structurally symmetric.",((PetscObject)pc)->prefix,((PetscObject)pc)->prefix);
             ierr = PetscCDAppendID(aggs_2, lid, lidj+my0);CHKERRQ(ierr);
           }
         }
@@ -888,7 +888,7 @@ static PetscErrorCode PCGAMGGraph_AGG(PC pc,Mat Amat,Mat *a_Gmat)
   PetscErrorCode            ierr;
   PC_MG                     *mg          = (PC_MG*)pc->data;
   PC_GAMG                   *pc_gamg     = (PC_GAMG*)mg->innerctx;
-  const PetscReal           vfilter      = pc_gamg->threshold;
+  const PetscReal           vfilter      = pc_gamg->threshold[pc_gamg->current_level];
   PC_GAMG_AGG               *pc_gamg_agg = (PC_GAMG_AGG*)pc_gamg->subctx;
   Mat                       Gmat;
   MPI_Comm                  comm;
@@ -997,7 +997,7 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **
   /* smooth aggs */
   if (Gmat2 != Gmat1) {
     const PetscCoarsenData *llist = *agg_lists;
-    ierr     = smoothAggs(Gmat2, Gmat1, *agg_lists);CHKERRQ(ierr);
+    ierr     = smoothAggs(a_pc,Gmat2, Gmat1, *agg_lists);CHKERRQ(ierr);
     ierr     = MatDestroy(&Gmat1);CHKERRQ(ierr);
     *a_Gmat1 = Gmat2; /* output */
     ierr     = PetscCDGetMat(llist, &mat);CHKERRQ(ierr);

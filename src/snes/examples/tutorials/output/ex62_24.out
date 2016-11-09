@@ -1,5 +1,5 @@
 0 SNES Function norm 6.3332 
-  1 SNES Function norm 1.998e-10 
+  1 SNES Function norm 1.180e-10 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 3 MPI processes
   type: newtonls
@@ -40,14 +40,14 @@ Vec Object: 3 MPI processes
   type: mpi
 Process [0]
 0.
-1.125
 0.125
-1.5
+0.125
+-1.5
 Process [1]
-0.
 1.5
 3.
 1.5
+0.
 0.625
 0.875
 -3.
@@ -58,9 +58,9 @@ Process [2]
 0.
 -3.
 -1.5
-0.125
-0.125
--1.5
 0.625
 -0.125
 3.
+1.125
+0.125
+1.5

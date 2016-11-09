@@ -55,15 +55,8 @@ typedef struct {
   PetscReal     refinementLimit;   /* The largest allowable cell volume */
   PetscBool     testPartition;     /* Use a fixed partitioning for testing */
   PetscReal     mu;                /* The shear modulus */
+  PetscReal     p_wall;            /* The wall pressure */
 } AppCtx;
-
-/* Kronecker-delta */
-static const PetscInt delta2D[2*2] = {1,0,0,1};
-static const PetscInt delta3D[3*3] = {1,0,0,0,1,0,0,0,1};
-
-/* Levi-Civita symbol */
-static const PetscInt epsilon2D[2*2] = {0,1,-1,0};
-static const PetscInt epsilon3D[3*3*3] = {0,0,0,0,0,1,0,-1,0,0,0,-1,0,0,0,1,0,0,0,1,0,-1,0,0,0,0,0};
 
 PETSC_STATIC_INLINE void Det2D(PetscReal *detJ, const PetscReal J[])
 {
@@ -129,15 +122,11 @@ PetscErrorCode elasticityMaterial(PetscInt dim, PetscReal time, const PetscReal 
   return 0;
 }
 
-void f0_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-          const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-          const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-          PetscReal t, const PetscReal x[], PetscScalar f0[])
+PetscErrorCode wallPressure(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
-  const PetscInt Ncomp = dim;
-
-  PetscInt comp;
-  for (comp = 0; comp < Ncomp; ++comp) f0[comp] = 0.0;
+  AppCtx *user = (AppCtx *) ctx; 
+  u[0] = user->p_wall;
+  return 0;
 }
 
 void f1_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -146,17 +135,18 @@ void f1_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
           PetscReal t, const PetscReal x[], PetscScalar f1[])
 {
   const PetscInt  Ncomp = dim;
-  const PetscReal mu = a[0], p = u[Ncomp], kappa = 3.0;
-  PetscReal       cofu_x[Ncomp*dim], detu_x;
+  const PetscReal mu = a[0], kappa = 3.0;
+  PetscReal       cofu_x[Ncomp*dim], detu_x, p = u[Ncomp];
 
   Cof3D(cofu_x, u_x);
   Det3D(&detu_x, u_x);
+  p += kappa * (detu_x - 1.0);
 
   /* f1 is the first Piola-Kirchhoff tensor */
-  PetscInt        comp, d;
+  PetscInt comp, d;
   for (comp = 0; comp < Ncomp; ++comp) {
     for (d = 0; d < dim; ++d) {
-      f1[comp*dim+d] = mu * u_x[comp*dim+d] + cofu_x[comp*dim+d] * (p + kappa * (detu_x - 1.0));
+      f1[comp*dim+d] = mu * u_x[comp*dim+d] + p * cofu_x[comp*dim+d];
     }
   }
 }
@@ -167,24 +157,26 @@ void g3_uu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
           PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[])
 {
   const PetscInt  Ncomp = dim;
-  const PetscReal mu = a[0], p = u[Ncomp], kappa = 3.0;
-  PetscReal       cofu_x[Ncomp*dim], detu_x;
+  const PetscReal mu = a[0], kappa = 3.0;
+  PetscReal       cofu_x[Ncomp*dim], detu_x, pp, pm, p = u[Ncomp];
 
   Cof3D(cofu_x, u_x);
   Det3D(&detu_x, u_x);
+  p += kappa * (detu_x - 1.0);
+  pp = p/detu_x + kappa;
+  pm = p/detu_x;
 
   /* g3 is the first elasticity tensor, i.e. A_i^I_j^J = S^{IJ} g_{ij} + C^{KILJ} F^k_K F^l_L g_{kj} g_{li} */
-  PetscInt compI, compJ, compK, d1, d2, d3;
+  PetscInt compI, compJ, d1, d2;
   for (compI = 0; compI < Ncomp; ++compI) {
     for (compJ = 0; compJ < Ncomp; ++compJ) {
+      const PetscReal G = (compI == compJ) ? 1.0 : 0.0;
+
       for (d1 = 0; d1 < dim; ++d1) {
         for (d2 = 0; d2 < dim; ++d2) {
-          for (compK = 0; compK < Ncomp; ++compK) {
-            for (d3 = 0; d3 < dim; ++d3) {
-              g3[((compI*Ncomp+compJ)*dim+d1)*dim+d2] += (p + kappa * (detu_x - 1.0)) * epsilon3D[(compI*Ncomp+compJ)*Ncomp+compK] * epsilon3D[(d1*dim+d2)*dim+d3] * u_x[compK*dim+d3];
-            }
-          }
-          g3[((compI*Ncomp+compJ)*dim+d1)*dim+d2] += kappa * cofu_x[compI*dim+d1] * cofu_x[compJ*dim+d2] + delta3D[compI*Ncomp+compJ] * delta3D[d1*dim+d2] * mu;
+          const PetscReal g = (d1 == d2) ? 1.0 : 0.0;
+
+          g3[((compI*Ncomp+compJ)*dim+d1)*dim+d2] = g * G * mu + pp * cofu_x[compI*dim+d1] * cofu_x[compJ*dim+d2] - pm * cofu_x[compI*dim+d2] * cofu_x[compJ*dim+d1];
         }
       }
     }
@@ -196,31 +188,15 @@ void f0_bd_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
     PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f0[])
 {
-  const PetscInt  Ncomp = dim;
-  const PetscReal p = 0.4; /* Should this be specified as an auxiliary field? */
-  PetscReal       cofu_x[Ncomp*dim];
+  const PetscInt    Ncomp = dim;
+  const PetscScalar p = a[aOff[1]];
+  PetscReal         cofu_x[Ncomp*dim];
+  PetscInt          comp, d;
 
   Cof3D(cofu_x, u_x);
-
-  PetscInt comp, d;
   for (comp = 0; comp < Ncomp; ++comp) {
     for (d = 0, f0[comp] = 0.0; d < dim; ++d) f0[comp] += cofu_x[comp*dim+d] * n[d];
     f0[comp] *= p;
-  }
-}
-
-void f1_bd_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-                const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-                const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f1[])
-{
-  const PetscInt Ncomp = dim;
-
-  PetscInt       comp, d;
-  for (comp = 0; comp < Ncomp; ++comp) {
-    for (d = 0; d < dim; ++d) {
-      f1[comp*dim+d] = 0.0;
-    }
   }
 }
 
@@ -229,21 +205,20 @@ void g1_bd_uu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
     PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscScalar g1[])
 {
-  const PetscInt  Ncomp = dim;
-  const PetscReal p = 0.4; /* Should this be specified as an auxiliary field? */
+  const PetscInt Ncomp = dim;
+  PetscScalar    p = a[aOff[1]];
+  PetscReal      cofu_x[Ncomp*dim], m[Ncomp], detu_x;
 
-  PetscInt compI, compJ, compK, d1, d2, d3;
+  Cof3D(cofu_x, u_x);
+  Det3D(&detu_x, u_x);
+  p /= detu_x;
+
+  PetscInt comp, compI, compJ, d;
+  for (comp = 0; comp < Ncomp; ++comp) for (d = 0, m[comp] = 0.0; d < dim; ++d) m[comp] += cofu_x[comp*dim+d] * n[d];
   for (compI = 0; compI < Ncomp; ++compI) {
     for (compJ = 0; compJ < Ncomp; ++compJ) {
-      for (d2 = 0; d2 < dim; ++d2) {
-        for (compK = 0; compK < Ncomp; ++compK) {
-          for (d3 = 0; d3 < dim; ++d3) {
-            for (d1 = 0; d1 < dim; ++d1) {
-              g1[(compI*Ncomp+compJ)*dim+d2] += epsilon3D[(compI*Ncomp+compJ)*Ncomp+compK] * epsilon3D[(d2*dim+d3)*dim+d1] * u_x[compK*dim+d3] * n[d1];
-            }
-          }
-        }
-        g1[(compI*Ncomp+compJ)*dim+d2] *= p;
+      for (d = 0; d < dim; ++d) {
+        g1[(compI*Ncomp+compJ)*dim+d] = p * (m[compI] * cofu_x[compJ*dim+d] - cofu_x[compI*dim+d] * m[compJ]);
       }
     }
   }
@@ -257,31 +232,6 @@ void f0_p_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   PetscReal detu_x;
   Det3D(&detu_x, u_x);
   f0[0] = detu_x - 1.0;
-}
-
-void f1_p(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-          const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-          const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-          PetscReal t, const PetscReal x[], PetscScalar f1[])
-{
-  PetscInt d;
-  for (d = 0; d < dim; ++d) f1[d] = 0.0;
-}
-
-void f0_bd_p(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-    PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f0[])
-{
-  f0[0] = 0.0;
-}
-void f1_bd_p(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-                const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-                const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f1[])
-{
-  PetscInt d;
-  for (d = 0; d < dim; ++d) f1[d] = 0.0;
 }
 
 void g1_pu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -316,6 +266,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->simplex         = PETSC_TRUE;
   options->refinementLimit = 0.0;
   options->mu              = 1.0;
+  options->p_wall          = 0.4;
   options->testPartition   = PETSC_FALSE;
   options->showInitial     = PETSC_FALSE;
   options->showSolution    = PETSC_TRUE;
@@ -333,6 +284,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex77.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex77.c", options->testPartition, &options->testPartition, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-shear_modulus", "The shear modulus", "ex77.c", options->mu, &options->mu, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-wall_pressure", "The wall pressure", "ex77.c", options->p_wall, &options->p_wall, NULL);CHKERRQ(ierr);
 
   ierr = PetscOptionsBool("-show_initial", "Output the initial guess for verification", "ex77.c", options->showInitial, &options->showInitial, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-show_solution", "Output the solution for verification", "ex77.c", options->showSolution, &options->showSolution, NULL);CHKERRQ(ierr);
@@ -396,7 +348,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMGetLabel(*dm, "boundary", &label);CHKERRQ(ierr);
     ierr = DMPlexMarkBoundaryFaces(*dm, label);CHKERRQ(ierr);
     ierr = DMGetStratumIS(*dm, "boundary", 1,  &is);CHKERRQ(ierr);
-    ierr = DMCreateLabel(*dm, "Faces");CHKERRQ(ierr);
     if (is) {
       ierr = ISGetLocalSize(is, &Nf);CHKERRQ(ierr);
       ierr = ISGetIndices(is, &faces);CHKERRQ(ierr);
@@ -427,8 +378,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       ierr = ISRestoreIndices(is, &faces);CHKERRQ(ierr);
     }
     ierr = ISDestroy(&is);CHKERRQ(ierr);
-    ierr = DMGetLabel(*dm, "Faces", &label);CHKERRQ(ierr);
-    ierr = DMPlexLabelComplete(*dm, label);CHKERRQ(ierr);
   }
   {
     DM refinedMesh     = NULL;
@@ -501,27 +450,20 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 #define __FUNCT__ "SetupProblem"
 PetscErrorCode SetupProblem(PetscDS prob, PetscInt dim, AppCtx *user)
 {
-  const PetscInt Ncomp = dim;
-  const PetscInt components[] = {0,1,2};
-  const PetscInt Nfid = 1;
-  const PetscInt fid[] = {1}; /* The fixed faces */
-  const PetscInt Npid = 1;
-  const PetscInt pid[] = {2}; /* The faces with pressure loading */
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscDSSetResidual(prob, 0, f0_u, f1_u_3d);CHKERRQ(ierr);
-  ierr = PetscDSSetResidual(prob, 1, f0_p_3d, f1_p);CHKERRQ(ierr);
+  ierr = PetscDSSetResidual(prob, 0, NULL, f1_u_3d);CHKERRQ(ierr);
+  ierr = PetscDSSetResidual(prob, 1, f0_p_3d, NULL);CHKERRQ(ierr);
   ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL,  NULL,  g3_uu_3d);CHKERRQ(ierr);
   ierr = PetscDSSetJacobian(prob, 0, 1, NULL, NULL,  g2_up_3d, NULL);CHKERRQ(ierr);
   ierr = PetscDSSetJacobian(prob, 1, 0, NULL, g1_pu_3d, NULL,  NULL);CHKERRQ(ierr);
 
-  ierr = PetscDSSetBdResidual(prob, 0, f0_bd_u_3d, f1_bd_u);CHKERRQ(ierr);
-  ierr = PetscDSSetBdResidual(prob, 1, f0_bd_p, f1_bd_p);CHKERRQ(ierr);
+  ierr = PetscDSSetBdResidual(prob, 0, f0_bd_u_3d, NULL);CHKERRQ(ierr);
   ierr = PetscDSSetBdJacobian(prob, 0, 0, NULL, g1_bd_uu_3d, NULL, NULL);CHKERRQ(ierr);
 
-  ierr = PetscDSAddBoundary(prob, PETSC_TRUE, "fixed", "Faces", 0, Ncomp, components, (void (*)()) coordinates, Nfid, fid, user);CHKERRQ(ierr);
-  ierr = PetscDSAddBoundary(prob, PETSC_FALSE, "pressure", "Faces", 0, Ncomp, components, NULL, Npid, pid, user);CHKERRQ(ierr);
+  ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "fixed", "Faces", 0, 0, NULL, (void (*)()) coordinates, 0, NULL, user);CHKERRQ(ierr);
+  ierr = PetscDSAddBoundary(prob, DM_BC_NATURAL, "pressure", "Faces", 0, 0, NULL, NULL, 0, NULL, user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -529,16 +471,37 @@ PetscErrorCode SetupProblem(PetscDS prob, PetscInt dim, AppCtx *user)
 #define __FUNCT__ "SetupMaterial"
 PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
 {
-  PetscErrorCode (*matFuncs[1])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx) = {elasticityMaterial};
-  Vec            nu;
-  void *ctxs[] = {user};
+  PetscErrorCode (*matFuncs[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx) = {elasticityMaterial, wallPressure};
+  Vec            A;
+  void *ctxs[] = {user, user};
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMCreateLocalVector(dmAux, &nu);CHKERRQ(ierr);
-  ierr = DMProjectFunctionLocal(dmAux, 0.0, matFuncs, ctxs, INSERT_ALL_VALUES, nu);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject) dm, "A", (PetscObject) nu);CHKERRQ(ierr);
-  ierr = VecDestroy(&nu);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(dmAux, &A);CHKERRQ(ierr);
+  ierr = DMProjectFunctionLocal(dmAux, 0.0, matFuncs, ctxs, INSERT_ALL_VALUES, A);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject) dm, "A", (PetscObject) A);CHKERRQ(ierr);
+  ierr = VecDestroy(&A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SetupNearNullSpace"
+PetscErrorCode SetupNearNullSpace(DM dm, AppCtx *user)
+{
+  /* Set up the near null space (a.k.a. rigid body modes) that will be used by the multigrid preconditioner */
+  DM             subdm;
+  MatNullSpace   nearNullSpace;
+  PetscInt       fields = 0;
+  PetscObject    deformation;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = DMCreateSubDM(dm, 1, &fields, NULL, &subdm);CHKERRQ(ierr);
+  ierr = DMPlexCreateRigidBody(subdm, &nearNullSpace);CHKERRQ(ierr);
+  ierr = DMGetField(dm, 0, &deformation);CHKERRQ(ierr);
+  ierr = PetscObjectCompose(deformation, "nearnullspace", (PetscObject) nearNullSpace);CHKERRQ(ierr);
+  ierr = DMDestroy(&subdm);CHKERRQ(ierr);
+  ierr = MatNullSpaceDestroy(&nearNullSpace);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -546,10 +509,10 @@ PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
 #define __FUNCT__ "SetupDiscretization"
 PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 {
-  DM              cdm   = dm, coordDM, dmAux;
+  DM              cdm   = dm, dmAux;
   const PetscInt  dim   = user->dim;
   const PetscBool simplex = user->simplex;
-  PetscFE         fe[2], feBd[2], feAux;
+  PetscFE         fe[2], feAux[2];
   PetscQuadrature q;
   PetscDS         prob, probAux;
   PetscErrorCode  ierr;
@@ -561,33 +524,32 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   ierr = PetscFEGetQuadrature(fe[0], &q);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(dm, dim, 1, simplex, "pres_", PETSC_DEFAULT, &fe[1]);CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(fe[1], q);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dm, dim, 1, simplex, "elastMat_", PETSC_DEFAULT, &feAux);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) feAux, "elasticityMaterial");CHKERRQ(ierr);
-  ierr = PetscFESetQuadrature(feAux, q);CHKERRQ(ierr);
 
   ierr = PetscObjectSetName((PetscObject) fe[1], "pressure");CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dm, dim-1, dim, simplex, "bd_def_", PETSC_DEFAULT, &feBd[0]);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) feBd[0], "deformation");CHKERRQ(ierr);
-  ierr = PetscFEGetQuadrature(feBd[0], &q);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(dm, dim-1, 1, simplex, "bd_pres_", PETSC_DEFAULT, &feBd[1]);CHKERRQ(ierr);
-  ierr = PetscFESetQuadrature(feBd[1], q);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) feBd[1], "pressure");CHKERRQ(ierr);
 
+  ierr = PetscFECreateDefault(dm, dim, 1, simplex, "elastMat_", PETSC_DEFAULT, &feAux[0]);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) feAux[0], "elasticityMaterial");CHKERRQ(ierr);
+  ierr = PetscFESetQuadrature(feAux[0], q);CHKERRQ(ierr);
+  ierr = PetscFESetFaceQuadrature(feAux[0], q);CHKERRQ(ierr);
+  /* It is not yet possible to define a field on a submesh (e.g. a boundary), so we will use a normal finite element */
+  ierr = PetscFECreateDefault(dm, dim, 1, simplex, "wall_pres_", PETSC_DEFAULT, &feAux[1]);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) feAux[1], "wall_pressure");CHKERRQ(ierr);
+  ierr = PetscFESetQuadrature(feAux[1], q);CHKERRQ(ierr);
+  ierr = PetscFESetFaceQuadrature(feAux[1], q);CHKERRQ(ierr);
 
   /* Set discretization and boundary conditions for each mesh */
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe[0]);CHKERRQ(ierr);
   ierr = PetscDSSetDiscretization(prob, 1, (PetscObject) fe[1]);CHKERRQ(ierr);
-  ierr = PetscDSSetBdDiscretization(prob, 0, (PetscObject) feBd[0]);CHKERRQ(ierr);
-  ierr = PetscDSSetBdDiscretization(prob, 1, (PetscObject) feBd[1]);CHKERRQ(ierr);
   ierr = SetupProblem(prob, dim, user);CHKERRQ(ierr);
+  ierr = PetscDSSetFromOptions(prob);CHKERRQ(ierr);
   ierr = PetscDSCreate(PetscObjectComm((PetscObject)dm),&probAux);CHKERRQ(ierr);
-  ierr = PetscDSSetDiscretization(probAux, 0, (PetscObject) feAux);CHKERRQ(ierr);
+  ierr = PetscDSSetDiscretization(probAux, 0, (PetscObject) feAux[0]);CHKERRQ(ierr);
+  ierr = PetscDSSetDiscretization(probAux, 1, (PetscObject) feAux[1]);CHKERRQ(ierr);
+  ierr = PetscDSSetFromOptions(probAux);CHKERRQ(ierr);
   while (cdm) {
     ierr = DMSetDS(cdm, prob);CHKERRQ(ierr);
     ierr = DMClone(cdm, &dmAux);CHKERRQ(ierr);
-    ierr = DMGetCoordinateDM(cdm, &coordDM);CHKERRQ(ierr);
-    ierr = DMSetCoordinateDM(dmAux, coordDM);CHKERRQ(ierr);
     ierr = DMSetDS(dmAux, probAux);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject) cdm, "dmAux", (PetscObject) dmAux);CHKERRQ(ierr);
     ierr = SetupMaterial(cdm, dmAux, user);CHKERRQ(ierr);
@@ -596,26 +558,10 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
     ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
   ierr = PetscDSDestroy(&probAux);CHKERRQ(ierr);
-
-  {
-    /* Set up the near null space (a.k.a. rigid body modes) that will be used by the multigrid preconditioner */
-    DM           subdm;
-    MatNullSpace nearNullSpace;
-    PetscInt     fields = 0;
-    PetscObject  deformation;
-    ierr = DMCreateSubDM(dm, 1, &fields, NULL, &subdm);CHKERRQ(ierr);
-    ierr = DMPlexCreateRigidBody(subdm, &nearNullSpace);CHKERRQ(ierr);
-    ierr = DMGetField(dm, 0, &deformation);CHKERRQ(ierr);
-    ierr = PetscObjectCompose(deformation, "nearnullspace", (PetscObject) nearNullSpace);CHKERRQ(ierr);
-    ierr = DMDestroy(&subdm);CHKERRQ(ierr);
-    ierr = MatNullSpaceDestroy(&nearNullSpace);CHKERRQ(ierr);
-  }
-
   ierr = PetscFEDestroy(&fe[0]);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe[1]);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&feBd[0]);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&feBd[1]);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&feAux);CHKERRQ(ierr);
+  ierr = PetscFEDestroy(&feAux[0]);CHKERRQ(ierr);
+  ierr = PetscFEDestroy(&feAux[1]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -642,6 +588,7 @@ int main(int argc, char **argv)
 
   ierr = SetupDiscretization(dm, &user);CHKERRQ(ierr);
   ierr = DMPlexCreateClosureIndex(dm, NULL);CHKERRQ(ierr);
+  ierr = SetupNearNullSpace(dm, &user);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(dm, &u);CHKERRQ(ierr);
   ierr = VecDuplicate(u, &r);CHKERRQ(ierr);

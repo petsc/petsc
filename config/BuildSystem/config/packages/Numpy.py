@@ -6,6 +6,7 @@ class Configure(config.package.GNUPackage):
     self.includes         = ['']
     self.includedir       = ''
     self.libdir           = ''
+    self.useddirectly     = 0
     return
 
   def configureLibrary(self):

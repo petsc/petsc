@@ -156,7 +156,6 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 {
   DM             cdm   = dm;
   const PetscInt dim   = user->dim;
-  PetscFE        feBd  = NULL;
   PetscFE        fe;
   PetscDS        prob;
   PetscErrorCode ierr;
@@ -172,14 +171,12 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   /* Set discretization and boundary conditions for each mesh */
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
-  ierr = PetscDSSetBdDiscretization(prob, 0, (PetscObject) feBd);CHKERRQ(ierr);
   ierr = SetupProblem(prob, user);CHKERRQ(ierr);
   while (cdm) {
     ierr = DMSetDS(cdm, prob);CHKERRQ(ierr);
     ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&feBd);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1375,6 +1375,7 @@ static PetscErrorCode  PCFieldSplitGetSubKSP_FieldSplit_Schur(PC pc,PetscInt *n,
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!jac->schur) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must call KSPSetUp() or PCSetUp() before calling PCFieldSplitGetSubKSP()");
   ierr = PetscMalloc1(jac->nsplits,subksp);CHKERRQ(ierr);
   ierr = MatSchurComplementGetKSP(jac->schur,*subksp);CHKERRQ(ierr);
 
@@ -1854,10 +1855,10 @@ PetscErrorCode  PCFieldSplitSetBlockSize(PC pc,PetscInt bs)
 
    Output Parameters:
 +  n - the number of splits
--  pc - the array of KSP contexts
+-  subksp - the array of KSP contexts
 
    Note:
-   After PCFieldSplitGetSubKSP() the array of KSPs IS to be freed by the user
+   After PCFieldSplitGetSubKSP() the array of KSPs is to be freed by the user with PetscFree()
    (not the KSP just the array that contains them).
 
    You must call KSPSetUp() before calling PCFieldSplitGetSubKSP().

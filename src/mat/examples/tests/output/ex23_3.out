@@ -1,3 +1,11 @@
+Test MatGetInfo
+Process   0: 33 33 0 2 0
+Process   1: 33 33 0 1 0
+Process   2: 33 33 0 1 0
+Process   3: 33 33 0 1 0
+Process   4: 33 33 0 1 0
+GlobalMax  : 33 33 0 2 0
+GlobalSum  : 165 165 0 1 0
 Test MatView
 Mat Object: 5 MPI processes
   type: is

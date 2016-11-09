@@ -1584,7 +1584,7 @@ if (dlclose(handle)) {
             for cplr in cplrs:
               mpicplr = os.path.join(self.argDB['with-mpi-dir'], 'bin', cplr)
               if os.path.exists(mpicplr):
-                msg = '--'+opt+'='+self.argDB[opt]+' is specified with --with-mpi-dir='+self.argDB['with-mpi-dir']+'. However '+mpicplr+' exists and should be the prefered compiler! Suggest not specifying --'+opt+' option so that configure can use '+ mpicplr +' instead.'
+                msg = '--'+opt+'='+self.argDB[opt]+' is specified with --with-mpi-dir='+self.argDB['with-mpi-dir']+'. However '+mpicplr+' exists and should be the preferred compiler! Suggest not specifying --'+opt+' option so that configure can use '+ mpicplr +' instead.'
                 raise RuntimeError(msg)
     return
 

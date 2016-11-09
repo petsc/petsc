@@ -51,8 +51,6 @@ class Configure(config.package.Package):
     if self.argDB['with-mumps-serial']:
       if not self.mpi.usingMPIUni:
         raise RuntimeError('Serial MUMPS version is only compatible with MPIUni\nReconfigure using --with-mpi=0')
-      elif self.mpi.usingMPIUniFortranBinding:
-        raise RuntimeError('Serial MUMPS version is incompatible with the MPIUni Fortran bindings\nReconfigure using --with-mpiuni-fortran-binding=0')
     return
 
   def Install(self):

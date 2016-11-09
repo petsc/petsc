@@ -31,9 +31,9 @@ typedef struct Edge {
 
 #undef __FUNCT__
 #define __FUNCT__ "distance"
-PetscScalar distance(PetscScalar x1, PetscScalar x2, PetscScalar y1, PetscScalar y2)
+PetscReal distance(PetscReal x1, PetscReal x2, PetscReal y1, PetscReal y2)
 {
-  return PetscSqrtScalar(PetscPowScalar(x2-x1,2.0) + PetscPowScalar(y2-y1,2.0));
+  return PetscSqrtReal(PetscPowReal(x2-x1,2.0) + PetscPowReal(y2-y1,2.0));
 }
 
 /* 
@@ -50,7 +50,7 @@ PetscErrorCode random_network(PetscInt nvertex,PetscInt *pnbranch,Node **pnode,B
   int            *edgelist;
   PetscInt       nbat, ncurr, fr, to;
   PetscReal      *x, *y, value, xmax = 10.0; /* generate points in square */
-  PetscScalar    maxdist = 0.0, dist, alpha, beta, prob;
+  PetscReal    maxdist = 0.0, dist, alpha, beta, prob;
   PetscRandom    rnd;
   Branch         *branch;
   Node           *node;
@@ -73,8 +73,8 @@ PetscErrorCode random_network(PetscInt nvertex,PetscInt *pnbranch,Node **pnode,B
 
   ierr = PetscRandomSetInterval(rnd,0.0,xmax);CHKERRQ(ierr);
   for (i=0; i<nvertex; i++) {
-    ierr = PetscRandomGetValue(rnd,&x[i]);CHKERRQ(ierr);
-    ierr = PetscRandomGetValue(rnd,&y[i]);CHKERRQ(ierr);
+    ierr = PetscRandomGetValueReal(rnd,&x[i]);CHKERRQ(ierr);
+    ierr = PetscRandomGetValueReal(rnd,&y[i]);CHKERRQ(ierr);
   }
 
   /* find maximum distance */
@@ -91,7 +91,7 @@ PetscErrorCode random_network(PetscInt nvertex,PetscInt *pnbranch,Node **pnode,B
       if (j != i) {
         dist = distance(x[i],x[j],y[i],y[j]);
         prob = beta*PetscExpScalar(-dist/(maxdist*alpha));
-        ierr = PetscRandomGetValue(rnd,&value);CHKERRQ(ierr);
+        ierr = PetscRandomGetValueReal(rnd,&value);CHKERRQ(ierr);
         if (value <= prob) {
           ierr = PetscMalloc1(1,&nnew);CHKERRQ(ierr);
           if (head == NULL) {
@@ -144,13 +144,13 @@ PetscErrorCode random_network(PetscInt nvertex,PetscInt *pnbranch,Node **pnode,B
   
   /* Chose random node as ground voltage */
   ierr = PetscRandomSetInterval(rnd,0.0,nvertex);CHKERRQ(ierr);
-  ierr = PetscRandomGetValue(rnd,&value);CHKERRQ(ierr);
+  ierr = PetscRandomGetValueReal(rnd,&value);CHKERRQ(ierr);
   node[(int)value].gr = PETSC_TRUE;
   
   /* Create random current and battery injectionsa */
   for (i=0; i<ncurr; i++) {
     ierr = PetscRandomSetInterval(rnd,0.0,nvertex);CHKERRQ(ierr);
-    ierr = PetscRandomGetValue(rnd,&value);CHKERRQ(ierr);
+    ierr = PetscRandomGetValueReal(rnd,&value);CHKERRQ(ierr);
     fr   = edgelist[(int)value*2];
     to   = edgelist[(int)value*2 + 1];
     node[fr].inj += 1.0;
@@ -159,7 +159,7 @@ PetscErrorCode random_network(PetscInt nvertex,PetscInt *pnbranch,Node **pnode,B
 
   for (i=0; i<nbat; i++) {
     ierr = PetscRandomSetInterval(rnd,0.0,nedges);CHKERRQ(ierr);
-    ierr = PetscRandomGetValue(rnd,&value);CHKERRQ(ierr);
+    ierr = PetscRandomGetValueReal(rnd,&value);CHKERRQ(ierr);
     branch[(int)value].bat += 1.0;
   }
 
@@ -336,13 +336,13 @@ int main(int argc,char ** argv)
   if (!rank) {
     ierr = DMNetworkGetEdgeRange(networkdm,&eStart,&eEnd);CHKERRQ(ierr);
     for (i = eStart; i < eEnd; i++) {
-      ierr = DMNetworkAddComponent(networkdm,i,componentkey[0],&branch[i-eStart]);CHKERRQ(ierr);
+      ierr = DMNetworkAddComponent(networkdm,i,componentkey[1],&branch[i-eStart]);CHKERRQ(ierr);
       ierr = DMNetworkAddNumVariables(networkdm,i,1);CHKERRQ(ierr);
     }
 
     ierr = DMNetworkGetVertexRange(networkdm,&vStart,&vEnd);CHKERRQ(ierr);
     for (i = vStart; i < vEnd; i++) {
-      ierr = DMNetworkAddComponent(networkdm,i,componentkey[1],&node[i-vStart]);CHKERRQ(ierr);
+      ierr = DMNetworkAddComponent(networkdm,i,componentkey[0],&node[i-vStart]);CHKERRQ(ierr);
       /* Add number of variables */
       ierr = DMNetworkAddNumVariables(networkdm,i,1);CHKERRQ(ierr);
     }
@@ -358,6 +358,7 @@ int main(int argc,char ** argv)
     ierr = DMDestroy(&networkdm);CHKERRQ(ierr);
     networkdm = distnetworkdm;
   }
+  ierr = DMNetworkAssembleGraphStructures(networkdm);CHKERRQ(ierr);
 
   /* We don't use these data structures anymore since they have been copied to networkdm */
   if (!rank) {

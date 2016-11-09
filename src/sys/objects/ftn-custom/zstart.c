@@ -90,9 +90,23 @@ extern cublasHandle_t cublasv2handle;
   contained any _.
 */
 #if defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
-#undef mpi_init_
 #define mpi_init_             mpi_init__
 #endif
+
+#if defined(PETSC_HAVE_MPIUNI)
+#if defined(mpi_init_)
+#undef mpi_init_
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define mpi_init_             PETSC_MPI_INIT
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define mpi_init_             petsc_mpi_init
+#elif defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
+#define mpi_init_             petsc_mpi_init__
+#endif
+#else    /* mpi_init_ */
+#define mpi_init_             petsc_mpi_init_
+#endif   /* mpi_init_ */
+#endif   /* PETSC_HAVE_MPIUNI */
 
 PETSC_EXTERN void PETSC_STDCALL mpi_init_(int*);
 PETSC_EXTERN void PETSC_STDCALL petscgetcommoncomm_(PetscMPIInt*);
@@ -294,7 +308,7 @@ static void petscinitialize_internal(CHAR filename, PetscInt len, PetscBool read
   getarg_(&i,name,256);
 #endif
   /* Eliminate spaces at the end of the string */
-  for (j=sizeof(name)-1; j>=0; j--) {
+  for (j=sizeof(name)-2; j>=0; j--) {
     if (name[j] != ' ') {
       name[j+1] = 0;
       break;
@@ -311,12 +325,7 @@ static void petscinitialize_internal(CHAR filename, PetscInt len, PetscBool read
     PetscMPIInt mierr;
 
     if (f_petsc_comm_world) {(*PetscErrorPrintf)("You cannot set PETSC_COMM_WORLD if you have not initialized MPI first\n");return;}
-    /* MPI requires calling Fortran mpi_init() if main program is Fortran */
-#if defined(PETSC_HAVE_MPIUNI) && !defined(MPIUNI_FORTRAN_BINDING)
-    mierr = MPI_Init((int*)0, (char***)0);
-#else
     mpi_init_(&mierr);
-#endif
     if (mierr) {
       *ierr = mierr;
       (*PetscErrorPrintf)("PetscInitialize: Calling Fortran MPI_Init()\n");

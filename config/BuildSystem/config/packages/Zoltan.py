@@ -41,6 +41,10 @@ class Configure(config.package.GNUPackage):
       libs.append(ll[3:-2])
     libs = ' '.join(libs)
     args.append('--with-mpi-libs="'+libs+'"')
+    if hasattr(self.compilers, 'FC'):
+      if self.compilers.fortranIsF90:
+        if self.framework.argDB['with-fortran-interfaces']:
+          args.append('--enable-f90interface')
     if self.parmetis.found:
       args.append('--with-parmetis')
       args.append('--with-parmetis-incdir="'+self.parmetis.include[0]+'"')

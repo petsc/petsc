@@ -6,7 +6,7 @@
 #include <petscds.h>
 
 PetscClassId  DM_CLASSID;
-PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocalToLocal, DM_LocatePoints, DM_Coarsen, DM_CreateInterpolation, DM_CreateRestriction;
+PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocalToLocal, DM_LocatePoints, DM_Coarsen, DM_Refine, DM_CreateInterpolation, DM_CreateRestriction;
 
 const char *const DMBoundaryTypes[] = {"NONE","GHOSTED","MIRROR","PERIODIC","TWIST","DM_BOUNDARY_",0};
 
@@ -272,7 +272,7 @@ PetscErrorCode VecSetDM(Vec v, DM dm)
 
    Input Parameter:
 +  dm - the DM context
-.  ctype - the matrix type
+-  ctype - the matrix type
 
    Options Database:
 .   -dm_mat_type ctype
@@ -1691,6 +1691,7 @@ PetscErrorCode  DMRefine(DM dm,MPI_Comm comm,DM *dmf)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscLogEventBegin(DM_Refine,dm,0,0,0);CHKERRQ(ierr);
   if (!dm->ops->refine) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"This DM cannot refine");
   ierr = (*dm->ops->refine)(dm,comm,dmf);CHKERRQ(ierr);
   if (*dmf) {
@@ -1709,6 +1710,7 @@ PetscErrorCode  DMRefine(DM dm,MPI_Comm comm,DM *dmf)
       }
     }
   }
+  ierr = PetscLogEventEnd(DM_Refine,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4345,9 +4347,9 @@ PetscErrorCode DMSetCoordinateDM(DM dm, DM cdm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(cdm,DM_CLASSID,2);
+  ierr = PetscObjectReference((PetscObject)cdm);CHKERRQ(ierr);
   ierr = DMDestroy(&dm->coordinateDM);CHKERRQ(ierr);
   dm->coordinateDM = cdm;
-  ierr = PetscObjectReference((PetscObject) dm->coordinateDM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4714,19 +4716,19 @@ PetscErrorCode DMGetCoordinatesLocalized(DM dm,PetscBool *areLocalized)
   }
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(coordSection,&sStart,&sEnd);CHKERRQ(ierr);
-  alreadyLocalized = alreadyLocalizedGlobal = PETSC_TRUE;
+  alreadyLocalized = alreadyLocalizedGlobal = PETSC_FALSE;
   for (c = cStart; c < cEnd; ++c) {
     if (c < sStart || c >= sEnd) {
       alreadyLocalized = PETSC_FALSE;
       break;
     }
     ierr = PetscSectionGetDof(coordSection, c, &dof);CHKERRQ(ierr);
-    if (!dof) {
-      alreadyLocalized = PETSC_FALSE;
+    if (dof) {
+      alreadyLocalized = PETSC_TRUE;
       break;
     }
   }
-  ierr = MPI_Allreduce(&alreadyLocalized,&alreadyLocalizedGlobal,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&alreadyLocalized,&alreadyLocalizedGlobal,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
   *areLocalized = alreadyLocalizedGlobal;
   PetscFunctionReturn(0);
 }
@@ -4837,13 +4839,13 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
   }
   ierr = PetscSectionSetUp(cSection);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(cSection, &coordSize);CHKERRQ(ierr);
-  ierr = VecCreate(PetscObjectComm((PetscObject) dm), &cVec);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_SELF, &cVec);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)cVec,"coordinates");CHKERRQ(ierr);
   ierr = VecSetBlockSize(cVec,         bs);CHKERRQ(ierr);
   ierr = VecSetSizes(cVec, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = VecSetType(cVec,VECSTANDARD);CHKERRQ(ierr);
-  ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
-  ierr = VecGetArray(cVec,        &coords2);CHKERRQ(ierr);
+  ierr = VecSetType(cVec, VECSTANDARD);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(coordinates, (const PetscScalar**)&coords);CHKERRQ(ierr);
+  ierr = VecGetArray(cVec, &coords2);CHKERRQ(ierr);
   for (v = vStart; v < vEnd; ++v) {
     ierr = PetscSectionGetDof(coordSection, v, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
@@ -4868,8 +4870,8 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
   }
   ierr = DMRestoreWorkArray(dm, 2 * bs, PETSC_SCALAR, &anchor);CHKERRQ(ierr);
   ierr = DMRestoreWorkArray(dm,2*(maxHeight + 1),PETSC_INT,&pStart);CHKERRQ(ierr);
-  ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
-  ierr = VecRestoreArray(cVec,        &coords2);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(coordinates, (const PetscScalar**)&coords);CHKERRQ(ierr);
+  ierr = VecRestoreArray(cVec, &coords2);CHKERRQ(ierr);
   ierr = DMSetCoordinateSection(dm, PETSC_DETERMINE, cSection);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dm, cVec);CHKERRQ(ierr);
   ierr = VecDestroy(&cVec);CHKERRQ(ierr);
@@ -6004,7 +6006,7 @@ PetscErrorCode DMCopyBoundary(DM dm, DM dmNew)
 
   Input Parameters:
 + dm          - The DM, with a PetscDS that matches the problem being constrained
-. isEssential - Flag for an essential (Dirichlet) condition, as opposed to a natural (Neumann) condition
+. type        - The type of condition, e.g. DM_BC_ESSENTIAL_ANALYTIC/DM_BC_ESSENTIAL_FIELD (Dirichlet), or DM_BC_NATURAL (Neumann)
 . name        - The BC name
 . labelname   - The label defining constrained points
 . field       - The field to constrain
@@ -6023,13 +6025,13 @@ PetscErrorCode DMCopyBoundary(DM dm, DM dmNew)
 
 .seealso: DMGetBoundary()
 @*/
-PetscErrorCode DMAddBoundary(DM dm, PetscBool isEssential, const char name[], const char labelname[], PetscInt field, PetscInt numcomps, const PetscInt *comps, void (*bcFunc)(), PetscInt numids, const PetscInt *ids, void *ctx)
+PetscErrorCode DMAddBoundary(DM dm, DMBoundaryConditionType type, const char name[], const char labelname[], PetscInt field, PetscInt numcomps, const PetscInt *comps, void (*bcFunc)(), PetscInt numids, const PetscInt *ids, void *ctx)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = PetscDSAddBoundary(dm->prob,isEssential,name,labelname,field,numcomps,comps,bcFunc,numids,ids,ctx);CHKERRQ(ierr);
+  ierr = PetscDSAddBoundary(dm->prob,type,name,labelname,field,numcomps,comps,bcFunc,numids,ids,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -6068,7 +6070,7 @@ PetscErrorCode DMGetNumBoundary(DM dm, PetscInt *numBd)
 - bd          - The BC number
 
   Output Parameters:
-+ isEssential - Flag for an essential (Dirichlet) condition, as opposed to a natural (Neumann) condition
++ type        - The type of condition, e.g. DM_BC_ESSENTIAL_ANALYTIC/DM_BC_ESSENTIAL_FIELD (Dirichlet), or DM_BC_NATURAL (Neumann)
 . name        - The BC name
 . labelname   - The label defining constrained points
 . field       - The field to constrain
@@ -6087,13 +6089,13 @@ PetscErrorCode DMGetNumBoundary(DM dm, PetscInt *numBd)
 
 .seealso: DMAddBoundary()
 @*/
-PetscErrorCode DMGetBoundary(DM dm, PetscInt bd, PetscBool *isEssential, const char **name, const char **labelname, PetscInt *field, PetscInt *numcomps, const PetscInt **comps, void (**func)(), PetscInt *numids, const PetscInt **ids, void **ctx)
+PetscErrorCode DMGetBoundary(DM dm, PetscInt bd, DMBoundaryConditionType *type, const char **name, const char **labelname, PetscInt *field, PetscInt *numcomps, const PetscInt **comps, void (**func)(), PetscInt *numids, const PetscInt **ids, void **ctx)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = PetscDSGetBoundary(dm->prob,bd,isEssential,name,labelname,field,numcomps,comps,func,numids,ids,ctx);CHKERRQ(ierr);
+  ierr = PetscDSGetBoundary(dm->prob,bd,type,name,labelname,field,numcomps,comps,func,numids,ids,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -6225,26 +6227,6 @@ PetscErrorCode DMProjectFunctionLocal(DM dm, PetscReal time, PetscErrorCode (**f
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMProjectFieldLocal"
-PetscErrorCode DMProjectFieldLocal(DM dm, Vec localU,
-                                   void (**funcs)(PetscInt, PetscInt, PetscInt,
-                                                  const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
-                                                  const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
-                                                  PetscReal, const PetscReal[], PetscScalar[]),
-                                   InsertMode mode, Vec localX)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidHeaderSpecific(localU,VEC_CLASSID,2);
-  PetscValidHeaderSpecific(localX,VEC_CLASSID,5);
-  if (!dm->ops->projectfieldlocal) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implemnt DMProjectFieldLocal",((PetscObject)dm)->type_name);
-  ierr = (dm->ops->projectfieldlocal) (dm, localU, funcs, mode, localX);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "DMProjectFunctionLabelLocal"
 PetscErrorCode DMProjectFunctionLabelLocal(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
 {
@@ -6255,6 +6237,46 @@ PetscErrorCode DMProjectFunctionLabelLocal(DM dm, PetscReal time, DMLabel label,
   PetscValidHeaderSpecific(localX,VEC_CLASSID,5);
   if (!dm->ops->projectfunctionlabellocal) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implemnt DMProjectFunctionLabelLocal",((PetscObject)dm)->type_name);
   ierr = (dm->ops->projectfunctionlabellocal) (dm, time, label, numIds, ids, funcs, ctxs, mode, localX);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMProjectFieldLocal"
+PetscErrorCode DMProjectFieldLocal(DM dm, PetscReal time, Vec localU,
+                                   void (**funcs)(PetscInt, PetscInt, PetscInt,
+                                                  const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                  const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                  PetscReal, const PetscReal[], PetscScalar[]),
+                                   InsertMode mode, Vec localX)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(localU,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(localX,VEC_CLASSID,6);
+  if (!dm->ops->projectfieldlocal) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implemnt DMProjectFieldLocal",((PetscObject)dm)->type_name);
+  ierr = (dm->ops->projectfieldlocal) (dm, time, localU, funcs, mode, localX);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMProjectFieldLabelLocal"
+PetscErrorCode DMProjectFieldLabelLocal(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], Vec localU,
+                                        void (**funcs)(PetscInt, PetscInt, PetscInt,
+                                                       const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                       const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
+                                                       PetscReal, const PetscReal[], PetscScalar[]),
+                                        InsertMode mode, Vec localX)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(localU,VEC_CLASSID,6);
+  PetscValidHeaderSpecific(localX,VEC_CLASSID,9);
+  if (!dm->ops->projectfieldlabellocal) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implemnt DMProjectFieldLocal",((PetscObject)dm)->type_name);
+  ierr = (dm->ops->projectfieldlabellocal)(dm, time, label, numIds, ids, localU, funcs, mode, localX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

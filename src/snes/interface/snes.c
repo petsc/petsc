@@ -725,6 +725,7 @@ PetscErrorCode  SNESMonitorSetFromOptions(SNES snes,const char name[],const char
                 of the change in the solution between steps
 .  -snes_atol <abstol> - absolute tolerance of residual norm
 .  -snes_rtol <rtol> - relative decrease in tolerance norm from initial
+.  -snes_divergence_tolerance <divtol> - if the residual goes above divtol*rnorm0, exit with divergence
 .  -snes_max_it <max_it> - maximum number of iterations
 .  -snes_max_funcs <max_funcs> - maximum number of function evaluations
 .  -snes_max_fail <max_fail> - maximum number of line search failures allowed before stopping, default is none
@@ -794,6 +795,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   ierr = PetscOptionsReal("-snes_atol","Stop if function norm less than","SNESSetTolerances",snes->abstol,&snes->abstol,NULL);CHKERRQ(ierr);
 
   ierr = PetscOptionsReal("-snes_rtol","Stop if decrease in function norm less than","SNESSetTolerances",snes->rtol,&snes->rtol,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_divergence_tolerance","Stop if residual norm increases by this factor","SNESSetDivergenceTolerance",snes->divtol,&snes->divtol,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-snes_max_it","Maximum iterations","SNESSetTolerances",snes->max_its,&snes->max_its,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-snes_max_funcs","Maximum function evaluations","SNESSetTolerances",snes->max_funcs,&snes->max_funcs,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-snes_max_fail","Maximum nonlinear step failures","SNESSetMaxNonlinearStepFailures",snes->maxFailures,&snes->maxFailures,NULL);CHKERRQ(ierr);
@@ -3231,7 +3233,7 @@ PetscErrorCode  SNESSetLagPreconditionerPersists(SNES snes,PetscBool flg)
 
 .keywords: SNES, nonlinear, set, convergence, tolerances
 
-.seealso: SNESSetTrustRegionTolerance()
+.seealso: SNESSetTrustRegionTolerance(), SNESSetDivergenceTolerance()
 @*/
 PetscErrorCode  SNESSetTolerances(SNES snes,PetscReal abstol,PetscReal rtol,PetscReal stol,PetscInt maxit,PetscInt maxf)
 {
@@ -3264,6 +3266,44 @@ PetscErrorCode  SNESSetTolerances(SNES snes,PetscReal abstol,PetscReal rtol,Pets
     snes->max_funcs = maxf;
   }
   snes->tolerancesset = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESSetDivergenceTolerance"
+/*@
+   SNESSetDivergenceTolerance - Sets the divergence tolerance used for the SNES divergence test.
+
+   Logically Collective on SNES
+
+   Input Parameters:
++  snes - the SNES context
+-  divtol - the divergence tolerance. Use -1 to deactivate the test.
+
+   Options Database Keys:
++    -snes_divergence_tolerance <divtol> - Sets divtol
+
+   Notes:
+   The default divergence tolerance is 1e4.
+
+   Level: intermediate
+
+.keywords: SNES, nonlinear, set, divergence, tolerance
+
+.seealso: SNESSetTolerances(), SNESGetDivergenceTolerance
+@*/
+PetscErrorCode  SNESSetDivergenceTolerance(SNES snes,PetscReal divtol)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidLogicalCollectiveReal(snes,divtol,2);
+
+  if (divtol != PETSC_DEFAULT) {
+    snes->divtol = divtol;
+  }
+  else {
+    snes->divtol = 1.0e4;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -3301,6 +3341,31 @@ PetscErrorCode  SNESGetTolerances(SNES snes,PetscReal *atol,PetscReal *rtol,Pets
   if (stol)  *stol  = snes->stol;
   if (maxit) *maxit = snes->max_its;
   if (maxf)  *maxf  = snes->max_funcs;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESGetDivergenceTolerance"
+/*@
+   SNESGetDivergenceTolerance - Gets divergence tolerance used in divergence test.
+
+   Not Collective
+
+   Input Parameters:
++  snes - the SNES context
+-  divtol - divergence tolerance
+
+   Level: intermediate
+
+.keywords: SNES, nonlinear, get, divergence, tolerance
+
+.seealso: SNESSetDivergenceTolerance()
+@*/
+PetscErrorCode  SNESGetDivergenceTolerance(SNES snes,PetscReal *divtol)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  if (divtol) *divtol = snes->divtol;
   PetscFunctionReturn(0);
 }
 

@@ -10,6 +10,7 @@ class Configure(config.package.GNUPackage):
     self.liblist           = [['libhwloc.a'],['libhwloc.a','libxml2.a']]
     self.lookforbydefault  = 1
     self.downloadonWindows = 1
+    self.linkedbypetsc     = 0
     return
 
   def getSearchDirectories(self):

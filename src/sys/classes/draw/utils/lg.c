@@ -11,14 +11,17 @@
 
    Input Parameters:
 +  lg - the LineGraph data structure
-.   x - the common x coordiante point
+.   x - the common x coordinate point
 -   y - the new y coordinate point for each curve.
 
    Level: intermediate
 
+   Note: You must call PetscDrawLGDraw() to display any added points
+         Call PetscDrawLGReset() to remove all points
+
    Concepts: line graph^adding points
 
-.seealso: PetscDrawLGAddPoints(), PetscDrawLGAddPoint()
+.seealso: PetscDrawLGCreate(), PetscDrawLGAddPoints(), PetscDrawLGAddPoint(), PetscDrawLGReset(), PetscDrawLGDraw()
 @*/
 PetscErrorCode  PetscDrawLGAddCommonPoint(PetscDrawLG lg,const PetscReal x,const PetscReal *y)
 {
@@ -65,11 +68,14 @@ PetscErrorCode  PetscDrawLGAddCommonPoint(PetscDrawLG lg,const PetscReal x,const
 -  x, y - the points to two arrays containing the new x and y
           point for each curve.
 
+   Note: You must call PetscDrawLGDraw() to display any added points
+         Call PetscDrawLGReset() to remove all points
+
    Level: intermediate
 
    Concepts: line graph^adding points
 
-.seealso: PetscDrawLGAddPoints(), PetscDrawLGAddCommonPoint()
+.seealso: PetscDrawLGCreate(), PetscDrawLGAddPoints(), PetscDrawLGAddCommonPoint(), PetscDrawLGReset(), PetscDrawLGDraw()
 @*/
 PetscErrorCode  PetscDrawLGAddPoint(PetscDrawLG lg,const PetscReal *x,const PetscReal *y)
 {
@@ -125,10 +131,12 @@ PetscErrorCode  PetscDrawLGAddPoint(PetscDrawLG lg,const PetscReal *x,const Pets
 
    Level: intermediate
 
+   Note: You must call PetscDrawLGDraw() to display any added points
+         Call PetscDrawLGReset() to remove all points
 
    Concepts: line graph^adding points
 
-.seealso: PetscDrawLGAddPoint()
+.seealso: PetscDrawLGCreate(), PetscDrawLGAddPoint(), PetscDrawLGAddCommonPoint(), PetscDrawLGReset(), PetscDrawLGDraw()
 @*/
 PetscErrorCode  PetscDrawLGAddPoints(PetscDrawLG lg,PetscInt n,PetscReal **xx,PetscReal **yy)
 {

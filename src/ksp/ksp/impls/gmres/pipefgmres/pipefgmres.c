@@ -110,13 +110,6 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount,KSP ksp)
   Vec            *redux = pipefgmres->redux; /* workspace for single reduction */
 
   PetscFunctionBegin;
-
-  /* We have not checked these routines for use with complex numbers. The inner products
-     are likely not defined correctly for that case */
-#if (defined(PETSC_USE_COMPLEX) && !defined(PETSC_SKIP_COMPLEX))
-  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"PIPEFGMRES has not been implemented for use with complex scalars");
-#endif
-
   if (itcount) *itcount = 0;
 
   /* Assign simpler names to these vectors, allocated as pipelining workspace */
@@ -378,6 +371,13 @@ static PetscErrorCode KSPSolve_PIPEFGMRES(KSP ksp)
   PetscBool      guess_zero = ksp->guess_zero;
 
   PetscFunctionBegin;
+
+  /* We have not checked these routines for use with complex numbers. The inner products
+     are likely not defined correctly for that case */
+#if (defined(PETSC_USE_COMPLEX) && !defined(PETSC_SKIP_COMPLEX))
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"PIPEFGMRES has not been implemented for use with complex scalars");
+#endif
+
   ierr = PetscCitationsRegister(citation,&cited);CHKERRQ(ierr);
 
   if (ksp->calc_sings && !pipefgmres->Rsvd) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");

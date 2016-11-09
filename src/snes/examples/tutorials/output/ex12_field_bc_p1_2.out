@@ -1,0 +1,87 @@
+Local function:
+Vec Object: 1 MPI processes
+  type: seq
+0.
+0.25
+1.
+0.25
+0.5
+1.25
+1.
+1.25
+2.
+Initial guess
+Vec Object: potential 1 MPI processes
+  type: seq
+-2.08167e-17
+0.25
+1.
+0.25
+0.5
+1.25
+1.
+1.25
+2.
+L_2 Error: 0.0842399
+Residual:
+Vec Object: 1 MPI processes
+  type: seq
+-0.0833333
+0.
+0.0833333
+0.
+0.
+0.
+0.0833333
+0.
+-0.0833333
+Initial Residual
+Vec Object: 1 MPI processes
+  type: seq
+-0.0833333
+0.
+0.0833333
+0.
+0.
+0.
+0.0833333
+0.
+-0.0833333
+L_2 Residual: 0.166667
+Jacobian:
+Mat Object: 1 MPI processes
+  type: seqaij
+row 0: (0, 1.)  (1, -0.5)  (3, -0.5) 
+row 1: (0, -0.5)  (1, 2.)  (2, -0.5)  (3, 0.)  (4, -1.) 
+row 2: (1, -0.5)  (2, 1.)  (4, 0.)  (5, -0.5) 
+row 3: (0, -0.5)  (1, 0.)  (3, 2.)  (4, -1.)  (6, -0.5) 
+row 4: (1, -1.)  (2, 0.)  (3, -1.)  (4, 4.)  (5, -1.)  (6, 0.)  (7, -1.) 
+row 5: (2, -0.5)  (4, -1.)  (5, 2.)  (7, 0.)  (8, -0.5) 
+row 6: (3, -0.5)  (4, 0.)  (6, 1.)  (7, -0.5) 
+row 7: (4, -1.)  (5, 0.)  (6, -0.5)  (7, 2.)  (8, -0.5) 
+row 8: (5, -0.5)  (7, -0.5)  (8, 1.) 
+Residual:
+Vec Object: 1 MPI processes
+  type: seq
+0.166667
+0.5
+-0.166667
+0.5
+1.
+-0.5
+-0.166667
+-0.5
+-0.833333
+Au - b = Au + F(0)
+Vec Object: 1 MPI processes
+  type: seq
+-0.0833333
+0.
+0.0833333
+0.
+0.
+0.
+0.0833333
+0.
+-0.0833333
+Linear L_2 Residual: 0.166667

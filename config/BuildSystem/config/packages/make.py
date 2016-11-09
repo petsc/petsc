@@ -8,7 +8,7 @@ class Configure(config.package.GNUPackage):
     self.complex           = 1
     self.downloadonWindows = 1
     self.useddirectly      = 0
-
+    self.linkedbypetsc     = 0 
     self.printdirflag      = ''
     self.noprintdirflag    = ''
     self.paroutflg         = ''

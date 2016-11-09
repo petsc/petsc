@@ -2956,6 +2956,8 @@ static PetscErrorCode  MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,PetscInt bs,Pets
   b->nz               = 0;
   b->maxnz            = nz;
   B->info.nz_unneeded = (PetscReal)b->maxnz*bs2;
+  B->was_assembled    = PETSC_FALSE;
+  B->assembled        = PETSC_FALSE;
   if (realalloc) {ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }

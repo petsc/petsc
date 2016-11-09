@@ -1735,6 +1735,9 @@ static PetscErrorCode  MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,PetscInt bs,Pe
   b->anew    = 0;
   b->a2anew  = 0;
   b->permute = PETSC_FALSE;
+
+  B->was_assembled = PETSC_FALSE;
+  B->assembled     = PETSC_FALSE;
   if (realalloc) {ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }

@@ -15,7 +15,7 @@ struct _PCGAMGOps {
   PetscErrorCode (*destroy)(PC);
   PetscErrorCode (*view)(PC,PetscViewer);
 };
-
+#define PETSC_GAMG_MAXLEVELS 30
 /* Private context for the GAMG preconditioner */
 typedef struct gamg_TAG {
   PCGAMGType type;
@@ -27,8 +27,9 @@ typedef struct gamg_TAG {
   PetscBool use_parallel_coarse_grid_solver;
   PetscInt  min_eq_proc;
   PetscInt  coarse_eq_limit;
-  PetscReal threshold;      /* common quatity to many AMG methods so keep it up here */
+  PetscReal threshold_scale;
   PetscInt  current_level; /* stash construction state */
+  PetscReal threshold[PETSC_GAMG_MAXLEVELS]; /* common quatity to many AMG methods so keep it up here */
 
   /* these 4 are all related to the method data and should be in the subctx */
   PetscInt  data_sz;      /* nloc*data_rows*data_cols */

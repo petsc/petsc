@@ -41,7 +41,7 @@ static PetscErrorCode MatSetValuesBlockedLocal_LocalRef_Block(Mat A,PetscInt nro
 {
   Mat_LocalRef   *lr = (Mat_LocalRef*)A->data;
   PetscErrorCode ierr;
-  PetscInt       buf[4096],*irowm,*icolm;
+  PetscInt       buf[4096],*irowm=NULL,*icolm; /* suppress maybe-uninitialized warning */
 
   PetscFunctionBegin;
   if (!nrow || !ncol) PetscFunctionReturn(0);

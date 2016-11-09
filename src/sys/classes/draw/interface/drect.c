@@ -123,6 +123,9 @@ PetscErrorCode PetscDrawPixelToCoordinate(PetscDraw draw,int i,int j,PetscReal *
    Concepts: graphics^rectangle
    Concepts: rectangle
 
+.seealso: PetscDrawLine(), PetscDrawRectangle(), PetscDrawTriangle(), PetscDrawEllipse(),
+          PetscDrawMarker(), PetscDrawPoint(), PetscDrawString(), PetscDrawPoint(), PetscDrawArrow()
+
 @*/
 PetscErrorCode  PetscDrawRectangle(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int c1,int c2,int c3,int c4)
 {
