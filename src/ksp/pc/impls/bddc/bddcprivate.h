@@ -55,6 +55,7 @@ PetscErrorCode PCBDDCSetUseExactDirichlet(PC,PetscBool);
 PetscErrorCode PCBDDCSetLevel(PC,PetscInt);
 PetscErrorCode PCBDDCGlobalToLocal(VecScatter,Vec,Vec,IS,IS*);
 PetscErrorCode PCBDDCAdaptiveSelection(PC);
+PetscErrorCode PCBDDCConsistencyCheckIS(PC,MPI_Op,IS*);
 PetscErrorCode PCBDDCComputeLocalTopologyInfo(PC);
 PetscErrorCode MatGetSubMatrixUnsorted(Mat,IS,IS,Mat*);
 PetscErrorCode MatDetectDisconnectedComponents(Mat,PetscBool,PetscInt*,IS*[]);
@@ -63,7 +64,6 @@ PetscErrorCode PCBDDCReuseSolversBenignAdapt(PCBDDCReuseSolvers,Vec,Vec,PetscBoo
 PetscErrorCode PCBDDCComputeNoNetFlux(Mat,Mat,PetscBool,IS,PCBDDCGraph,MatNullSpace*);
 PetscErrorCode PCBDDCNullSpaceCreate(MPI_Comm,PetscBool,PetscInt,Vec[],MatNullSpace*);
 PetscErrorCode PCBDDCNedelecSupport(PC);
-
 
 /* benign subspace trick */
 PetscErrorCode PCBDDCBenignPopOrPushB0(PC,PetscBool);

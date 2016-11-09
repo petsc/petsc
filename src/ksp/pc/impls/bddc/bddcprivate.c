@@ -1669,20 +1669,77 @@ PetscErrorCode PCBDDCComputeLocalTopologyInfo(PC pc)
           ierr = ISCreateStride(PetscObjectComm((PetscObject)pc),n/pcbddc->n_ISForDofsLocal,i,pcbddc->n_ISForDofsLocal,&pcbddc->ISForDofsLocal[i]);CHKERRQ(ierr);
         }
       }
+    } else {
+      PetscInt i;
+      for (i=0;i<pcbddc->n_ISForDofsLocal;i++) {
+        ierr = PCBDDCConsistencyCheckIS(pc,MPI_LAND,&pcbddc->ISForDofsLocal[i]);CHKERRQ(ierr);
+      }
     }
   }
 
   if (!pcbddc->DirichletBoundariesLocal && pcbddc->DirichletBoundaries) {
     ierr = PCBDDCGlobalToLocal(matis->rctx,global,local,pcbddc->DirichletBoundaries,&pcbddc->DirichletBoundariesLocal);CHKERRQ(ierr);
+  } else if (pcbddc->DirichletBoundariesLocal) {
+    ierr = PCBDDCConsistencyCheckIS(pc,MPI_LAND,&pcbddc->DirichletBoundariesLocal);CHKERRQ(ierr);
   }
   if (!pcbddc->NeumannBoundariesLocal && pcbddc->NeumannBoundaries) {
     ierr = PCBDDCGlobalToLocal(matis->rctx,global,local,pcbddc->NeumannBoundaries,&pcbddc->NeumannBoundariesLocal);CHKERRQ(ierr);
+  } else if (pcbddc->NeumannBoundariesLocal) {
+    ierr = PCBDDCConsistencyCheckIS(pc,MPI_LOR,&pcbddc->NeumannBoundariesLocal);CHKERRQ(ierr);
   }
   if (!pcbddc->user_primal_vertices_local && pcbddc->user_primal_vertices) {
     ierr = PCBDDCGlobalToLocal(matis->rctx,global,local,pcbddc->user_primal_vertices,&pcbddc->user_primal_vertices_local);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&global);CHKERRQ(ierr);
   ierr = VecDestroy(&local);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCConsistencyCheckIS"
+PetscErrorCode PCBDDCConsistencyCheckIS(PC pc, MPI_Op mop, IS *is)
+{
+  Mat_IS          *matis = (Mat_IS*)(pc->pmat->data);
+  PetscErrorCode  ierr;
+  IS              nis;
+  const PetscInt  *idxs;
+  PetscInt        i,nd,n = matis->A->rmap->n,*nidxs,nnd;
+  PetscBool       *ld;
+
+  PetscFunctionBegin;
+  if (mop != MPI_LAND && mop != MPI_LOR) SETERRQ(PetscObjectComm((PetscObject)(pc)),PETSC_ERR_SUP,"Supported are MPI_LAND and MPI_LOR");
+  ierr = MatISSetUpSF(pc->pmat);CHKERRQ(ierr);
+  if (mop == MPI_LAND) {
+    /* init rootdata with true */
+    ld   = (PetscBool*) matis->sf_rootdata;
+    for (i=0;i<pc->pmat->rmap->n;i++) ld[i] = PETSC_TRUE;
+  } else {
+    ierr = PetscMemzero(matis->sf_rootdata,pc->pmat->rmap->n*sizeof(PetscBool));CHKERRQ(ierr);
+  }
+  ierr = PetscMemzero(matis->sf_leafdata,n*sizeof(PetscBool));CHKERRQ(ierr);
+  ierr = ISGetLocalSize(*is,&nd);CHKERRQ(ierr);
+  ierr = ISGetIndices(*is,&idxs);CHKERRQ(ierr);
+  ld   = (PetscBool*) matis->sf_leafdata;
+  for (i=0;i<nd;i++)
+    if (-1 < idxs[i] && idxs[i] < n)
+      ld[idxs[i]] = PETSC_TRUE;
+  ierr = ISRestoreIndices(*is,&idxs);CHKERRQ(ierr);
+  ierr = PetscSFReduceBegin(matis->sf,MPIU_BOOL,matis->sf_leafdata,matis->sf_rootdata,mop);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(matis->sf,MPIU_BOOL,matis->sf_leafdata,matis->sf_rootdata,mop);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(matis->sf,MPIU_BOOL,matis->sf_rootdata,matis->sf_leafdata);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(matis->sf,MPIU_BOOL,matis->sf_rootdata,matis->sf_leafdata);CHKERRQ(ierr);
+  if (mop == MPI_LAND) {
+    ierr = PetscMalloc1(nd,&nidxs);CHKERRQ(ierr);
+  } else {
+    ierr = PetscMalloc1(n,&nidxs);CHKERRQ(ierr);
+  }
+  for (i=0,nnd=0;i<n;i++)
+    if (ld[i])
+      nidxs[nnd++] = i;
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)(*is)),nnd,nidxs,PETSC_OWN_POINTER,&nis);CHKERRQ(ierr);
+  ierr = ISDestroy(is);CHKERRQ(ierr);
+  *is  = nis;
   PetscFunctionReturn(0);
 }
 
@@ -6303,6 +6360,9 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
     ierr = MatGetLocalToGlobalMapping(pc->pmat,&map,NULL);CHKERRQ(ierr);
     ierr = PCBDDCGraphInit(pcbddc->mat_graph,map,N,pcbddc->graphmaxcount);CHKERRQ(ierr);
 
+    if (pcbddc->user_primal_vertices_local && !pcbddc->user_primal_vertices) {
+      ierr = PCBDDCConsistencyCheckIS(pc,MPI_LOR,&pcbddc->user_primal_vertices_local);CHKERRQ(ierr);
+    }
     /* Check validity of the csr graph passed in by the user */
     if (pcbddc->mat_graph->nvtxs_csr && pcbddc->mat_graph->nvtxs_csr != pcbddc->mat_graph->nvtxs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid size of local CSR graph! Found %d, expected %d\n",pcbddc->mat_graph->nvtxs_csr,pcbddc->mat_graph->nvtxs);
 

@@ -676,11 +676,8 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponentsLocal(PCBDDCGraph graph)
 #define __FUNCT__ "PCBDDCGraphSetUp"
 PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size, IS neumann_is, IS dirichlet_is, PetscInt n_ISForDofs, IS ISForDofs[], IS custom_primal_vertices)
 {
-  VecScatter     scatter_ctx;
-  Vec            local_vec,local_vec2,global_vec;
-  IS             to,from,subset,subset_n;
+  IS             subset,subset_n;
   MPI_Comm       comm;
-  PetscScalar    *array,*array2;
   const PetscInt *is_indices;
   PetscInt       n_neigh,*neigh,*n_shared,**shared,*queue_global;
   PetscInt       i,j,k,s,total_counts,nodes_touched,is_size;
@@ -689,10 +686,25 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidLogicalCollectiveInt(graph->l2gmap,custom_minimal_size,2);
+  if (neumann_is) {
+    PetscValidHeaderSpecific(neumann_is,IS_CLASSID,3);
+    PetscCheckSameComm(graph->l2gmap,1,neumann_is,3);
+  }
   graph->has_dirichlet = PETSC_FALSE;
   if (dirichlet_is) {
+    PetscValidHeaderSpecific(dirichlet_is,IS_CLASSID,4);
     PetscCheckSameComm(graph->l2gmap,1,dirichlet_is,4);
     graph->has_dirichlet = PETSC_TRUE;
+  }
+  PetscValidLogicalCollectiveInt(graph->l2gmap,n_ISForDofs,5);
+  for (i=0;i<n_ISForDofs;i++) {
+    PetscValidHeaderSpecific(ISForDofs[i],IS_CLASSID,6);
+    PetscCheckSameComm(graph->l2gmap,1,ISForDofs[i],6);
+  }
+  if (custom_primal_vertices) {
+    PetscValidHeaderSpecific(custom_primal_vertices,IS_CLASSID,6);
+    PetscCheckSameComm(graph->l2gmap,1,custom_primal_vertices,7);
   }
   ierr = PetscObjectGetComm((PetscObject)(graph->l2gmap),&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&commsize);CHKERRQ(ierr);
@@ -712,31 +724,13 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
       }
     }
   }
-  /* create some workspace objects */
-  local_vec = NULL;
-  local_vec2 = NULL;
-  global_vec = NULL;
-  to = NULL;
-  from = NULL;
-  scatter_ctx = NULL;
-  if (n_ISForDofs || dirichlet_is || neumann_is || custom_primal_vertices) {
-    ierr = VecCreate(PETSC_COMM_SELF,&local_vec);CHKERRQ(ierr);
-    ierr = VecSetSizes(local_vec,PETSC_DECIDE,graph->nvtxs);CHKERRQ(ierr);
-    ierr = VecSetType(local_vec,VECSTANDARD);CHKERRQ(ierr);
-    ierr = VecDuplicate(local_vec,&local_vec2);CHKERRQ(ierr);
-    ierr = VecCreate(comm,&global_vec);CHKERRQ(ierr);
-    ierr = VecSetSizes(global_vec,PETSC_DECIDE,graph->nvtxs_global);CHKERRQ(ierr);
-    ierr = VecSetType(global_vec,VECSTANDARD);CHKERRQ(ierr);
-    ierr = ISCreateStride(PETSC_COMM_SELF,graph->nvtxs,0,1,&to);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingApplyIS(graph->l2gmap,to,&from);CHKERRQ(ierr);
-    ierr = VecScatterCreate(global_vec,from,local_vec,to,&scatter_ctx);CHKERRQ(ierr);
-  } else if (mirrors_found) {
-    ierr = ISCreateStride(PETSC_COMM_SELF,graph->nvtxs,0,1,&to);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingApplyIS(graph->l2gmap,to,&from);CHKERRQ(ierr);
-  }
   /* compute local mirrors (if any) */
   if (mirrors_found) {
+    IS       to,from;
     PetscInt *local_indices,*global_indices;
+
+    ierr = ISCreateStride(PETSC_COMM_SELF,graph->nvtxs,0,1,&to);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingApplyIS(graph->l2gmap,to,&from);CHKERRQ(ierr);
     /* get arrays of local and global indices */
     ierr = PetscMalloc1(graph->nvtxs,&local_indices);CHKERRQ(ierr);
     ierr = ISGetIndices(to,(const PetscInt**)&is_indices);CHKERRQ(ierr);
@@ -785,10 +779,10 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
     }
     ierr = PetscFree(local_indices);CHKERRQ(ierr);
     ierr = PetscFree(global_indices);CHKERRQ(ierr);
+    ierr = ISDestroy(&to);CHKERRQ(ierr);
+    ierr = ISDestroy(&from);CHKERRQ(ierr);
   }
   ierr = PetscMemzero(graph->count,graph->nvtxs*sizeof(*graph->count));CHKERRQ(ierr);
-  ierr = ISDestroy(&to);CHKERRQ(ierr);
-  ierr = ISDestroy(&from);CHKERRQ(ierr);
 
   /* Count total number of neigh per node */
   k = 0;
@@ -827,97 +821,42 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
      User can specify just a subset; an additional field is considered as a complementary field
   */
   for (i=0;i<graph->nvtxs;i++) graph->which_dof[i] = n_ISForDofs; /* by default a dof belongs to the complement set */
-  if (n_ISForDofs) {
-    ierr = VecSet(local_vec,-1.0);CHKERRQ(ierr);
-  }
   for (i=0;i<n_ISForDofs;i++) {
-    ierr = VecGetArray(local_vec,&array);CHKERRQ(ierr);
     ierr = ISGetLocalSize(ISForDofs[i],&is_size);CHKERRQ(ierr);
     ierr = ISGetIndices(ISForDofs[i],(const PetscInt**)&is_indices);CHKERRQ(ierr);
     for (j=0;j<is_size;j++) {
       if (is_indices[j] > -1 && is_indices[j] < graph->nvtxs) { /* out of bounds indices (if any) are skipped */
         graph->which_dof[is_indices[j]] = i;
-        array[is_indices[j]] = 1.*i;
       }
     }
     ierr = ISRestoreIndices(ISForDofs[i],(const PetscInt**)&is_indices);CHKERRQ(ierr);
-    ierr = VecRestoreArray(local_vec,&array);CHKERRQ(ierr);
   }
-  /* Check consistency among neighbours */
-  if (n_ISForDofs) {
-    ierr = VecScatterBegin(scatter_ctx,local_vec,global_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd(scatter_ctx,local_vec,global_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterBegin(scatter_ctx,global_vec,local_vec2,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(scatter_ctx,global_vec,local_vec2,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecGetArray(local_vec,&array);CHKERRQ(ierr);
-    ierr = VecGetArray(local_vec2,&array2);CHKERRQ(ierr);
-    for (i=0;i<graph->nvtxs;i++){
-      PetscInt field1,field2;
 
-      field1 = (PetscInt)PetscRealPart(array[i]);
-      field2 = (PetscInt)PetscRealPart(array2[i]);
-      if (field1 != field2) SETERRQ3(comm,PETSC_ERR_USER,"Local node %D have been assigned two different field ids %D and %D at the same time\n",i,field1,field2);
-    }
-    ierr = VecRestoreArray(local_vec,&array);CHKERRQ(ierr);
-    ierr = VecRestoreArray(local_vec2,&array2);CHKERRQ(ierr);
-  }
   /* Take into account Neumann nodes */
   if (neumann_is) {
-    ierr = VecSet(local_vec,0.0);CHKERRQ(ierr);
-    ierr = VecGetArray(local_vec,&array);CHKERRQ(ierr);
     ierr = ISGetLocalSize(neumann_is,&is_size);CHKERRQ(ierr);
     ierr = ISGetIndices(neumann_is,(const PetscInt**)&is_indices);CHKERRQ(ierr);
     for (i=0;i<is_size;i++) {
       if (is_indices[i] > -1 && is_indices[i] < graph->nvtxs) { /* out of bounds indices (if any) are skipped */
-        array[is_indices[i]] = 1.0;
+        graph->special_dof[is_indices[i]] = PCBDDCGRAPH_NEUMANN_MARK;
       }
     }
     ierr = ISRestoreIndices(neumann_is,(const PetscInt**)&is_indices);CHKERRQ(ierr);
-    ierr = VecRestoreArray(local_vec,&array);CHKERRQ(ierr);
-    /* Neumann nodes: impose consistency among neighbours */
-    ierr = VecSet(global_vec,0.0);CHKERRQ(ierr);
-    ierr = VecScatterBegin(scatter_ctx,local_vec,global_vec,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd(scatter_ctx,local_vec,global_vec,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterBegin(scatter_ctx,global_vec,local_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(scatter_ctx,global_vec,local_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecGetArray(local_vec,&array);CHKERRQ(ierr);
-    for (i=0;i<graph->nvtxs;i++) {
-      if (PetscRealPart(array[i]) > 0.1) {
-        graph->special_dof[i] = PCBDDCGRAPH_NEUMANN_MARK;
-      }
-    }
-    ierr = VecRestoreArray(local_vec,&array);CHKERRQ(ierr);
   }
-  /* Take into account Dirichlet nodes (they overwrite any Neumann boundary node previously set) */
+  /* Take into account Dirichlet nodes (they overwrite any neumann boundary mark previously set) */
   if (dirichlet_is) {
-    ierr = VecSet(local_vec,0.0);CHKERRQ(ierr);
-    ierr = VecGetArray(local_vec,&array);CHKERRQ(ierr);
     ierr = ISGetLocalSize(dirichlet_is,&is_size);CHKERRQ(ierr);
     ierr = ISGetIndices(dirichlet_is,(const PetscInt**)&is_indices);CHKERRQ(ierr);
     for (i=0;i<is_size;i++){
       if (is_indices[i] > -1 && is_indices[i] < graph->nvtxs) { /* out of bounds indices (if any) are skipped */
-        array[is_indices[i]] = 1.0;
+        if (commsize > graph->commsizelimit) { /* dirichlet nodes treated as internal */
+          ierr = PetscBTSet(graph->touched,is_indices[i]);CHKERRQ(ierr);
+          graph->subset[is_indices[i]] = 0;
+        }
+        graph->special_dof[is_indices[i]] = PCBDDCGRAPH_DIRICHLET_MARK;
       }
     }
     ierr = ISRestoreIndices(dirichlet_is,(const PetscInt**)&is_indices);CHKERRQ(ierr);
-    ierr = VecRestoreArray(local_vec,&array);CHKERRQ(ierr);
-    /* Dirichlet nodes: impose consistency among neighbours */
-    ierr = VecSet(global_vec,0.0);CHKERRQ(ierr);
-    ierr = VecScatterBegin(scatter_ctx,local_vec,global_vec,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd(scatter_ctx,local_vec,global_vec,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterBegin(scatter_ctx,global_vec,local_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(scatter_ctx,global_vec,local_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecGetArray(local_vec,&array);CHKERRQ(ierr);
-    for (i=0;i<graph->nvtxs;i++) {
-      if (PetscRealPart(array[i]) > 0.1) {
-        if (commsize > graph->commsizelimit) { /* dirichlet nodes treated as internal */
-          ierr = PetscBTSet(graph->touched,i);CHKERRQ(ierr);
-          graph->subset[i] = 0;
-        }
-        graph->special_dof[i] = PCBDDCGRAPH_DIRICHLET_MARK;
-      }
-    }
-    ierr = VecRestoreArray(local_vec,&array);CHKERRQ(ierr);
   }
   /* mark local periodic nodes (if any) and adapt CSR graph (if any) */
   if (graph->mirrors) {
@@ -963,32 +902,15 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
 
   /* mark special nodes (if any) -> each will become a single node equivalence class */
   if (custom_primal_vertices) {
-    ierr = VecSet(local_vec,0.0);CHKERRQ(ierr);
-    ierr = VecGetArray(local_vec,&array);CHKERRQ(ierr);
     ierr = ISGetLocalSize(custom_primal_vertices,&is_size);CHKERRQ(ierr);
     ierr = ISGetIndices(custom_primal_vertices,(const PetscInt**)&is_indices);CHKERRQ(ierr);
-    for (i=0;i<is_size;i++){
-      if (is_indices[i] > -1 && is_indices[i] < graph->nvtxs) { /* out of bounds indices (if any) are skipped */
-        array[is_indices[i]] = 1.0;
-      }
-    }
-    ierr = ISRestoreIndices(custom_primal_vertices,(const PetscInt**)&is_indices);CHKERRQ(ierr);
-    ierr = VecRestoreArray(local_vec,&array);CHKERRQ(ierr);
-    /* special nodes: impose consistency among neighbours */
-    ierr = VecSet(global_vec,0.0);CHKERRQ(ierr);
-    ierr = VecScatterBegin(scatter_ctx,local_vec,global_vec,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd(scatter_ctx,local_vec,global_vec,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterBegin(scatter_ctx,global_vec,local_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(scatter_ctx,global_vec,local_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecGetArray(local_vec,&array);CHKERRQ(ierr);
-    j = 0;
-    for (i=0;i<graph->nvtxs;i++) {
-      if (PetscRealPart(array[i]) > 0.1 && graph->special_dof[i] != PCBDDCGRAPH_DIRICHLET_MARK) {
-        graph->special_dof[i] = PCBDDCGRAPH_SPECIAL_MARK-j;
+    for (i=0,j=0;i<is_size;i++){
+      if (is_indices[i] > -1 && is_indices[i] < graph->nvtxs  && graph->special_dof[is_indices[i]] != PCBDDCGRAPH_DIRICHLET_MARK) { /* out of bounds indices (if any) are skipped */
+        graph->special_dof[is_indices[i]] = PCBDDCGRAPH_SPECIAL_MARK-j;
         j++;
       }
     }
-    ierr = VecRestoreArray(local_vec,&array);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(custom_primal_vertices,(const PetscInt**)&is_indices);CHKERRQ(ierr);
   }
 
   /* mark interior nodes (if commsize > graph->commsizelimit) as touched and belonging to partition number 0 */
@@ -1111,10 +1033,6 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   ierr = MPIU_Allreduce(&twodim,&graph->twodim,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)graph->l2gmap));CHKERRQ(ierr);
 
   /* free workspace */
-  ierr = VecDestroy(&local_vec);CHKERRQ(ierr);
-  ierr = VecDestroy(&local_vec2);CHKERRQ(ierr);
-  ierr = VecDestroy(&global_vec);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&scatter_ctx);CHKERRQ(ierr);
   graph->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
