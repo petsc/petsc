@@ -1524,8 +1524,8 @@ PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM)
   }
   /* Migrate DM data to target DM */
   ierr = DMPlexDistributeCones(dm, sf, ltogOriginal, ltogMigration, targetDM);CHKERRQ(ierr);
-  ierr = DMPlexDistributeCoordinates(dm, sf, targetDM);CHKERRQ(ierr);
   ierr = DMPlexDistributeLabels(dm, sf, targetDM);CHKERRQ(ierr);
+  ierr = DMPlexDistributeCoordinates(dm, sf, targetDM);CHKERRQ(ierr);
   ierr = DMPlexDistributeSetupHybrid(dm, sf, ltogMigration, targetDM);CHKERRQ(ierr);
   ierr = DMPlexDistributeSetupTree(dm, sf, ltogOriginal, ltogMigration, targetDM);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&ltogOriginal);CHKERRQ(ierr);
