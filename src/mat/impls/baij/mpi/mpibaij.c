@@ -482,7 +482,7 @@ PetscErrorCode MatSetValues_MPIBAIJ_HT(Mat mat,PetscInt m,const PetscInt im[],Pe
   PetscReal      tmp;
   MatScalar      **HD = baij->hd,value;
 #if defined(PETSC_USE_DEBUG)
-  PetscInt total_ct=baij->ht_total_ct,insert_ct=baij->ht_insert_ct;
+  PetscInt       total_ct=baij->ht_total_ct,insert_ct=baij->ht_insert_ct;
 #endif
 
   PetscFunctionBegin;
@@ -535,8 +535,8 @@ PetscErrorCode MatSetValues_MPIBAIJ_HT(Mat mat,PetscInt m,const PetscInt im[],Pe
     }
   }
 #if defined(PETSC_USE_DEBUG)
-  baij->ht_total_ct  = total_ct;
-  baij->ht_insert_ct = insert_ct;
+  baij->ht_total_ct  += total_ct;
+  baij->ht_insert_ct += insert_ct;
 #endif
   PetscFunctionReturn(0);
 }
@@ -556,7 +556,7 @@ PetscErrorCode MatSetValuesBlocked_MPIBAIJ_HT(Mat mat,PetscInt m,const PetscInt 
   MatScalar         **HD = baij->hd,*baij_a;
   const PetscScalar *v_t,*value;
 #if defined(PETSC_USE_DEBUG)
-  PetscInt total_ct=baij->ht_total_ct,insert_ct=baij->ht_insert_ct;
+  PetscInt          total_ct=baij->ht_total_ct,insert_ct=baij->ht_insert_ct;
 #endif
 
   PetscFunctionBegin;
@@ -645,8 +645,8 @@ PetscErrorCode MatSetValuesBlocked_MPIBAIJ_HT(Mat mat,PetscInt m,const PetscInt 
     }
   }
 #if defined(PETSC_USE_DEBUG)
-  baij->ht_total_ct  = total_ct;
-  baij->ht_insert_ct = insert_ct;
+  baij->ht_total_ct  += total_ct;
+  baij->ht_insert_ct += insert_ct;
 #endif
   PetscFunctionReturn(0);
 }
@@ -993,7 +993,7 @@ PetscErrorCode MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
 
 #if defined(PETSC_USE_INFO)
   if (baij->ht && mode== MAT_FINAL_ASSEMBLY) {
-    ierr = PetscInfo1(mat,"Average Hash Table Search in MatSetValues = %5.2f\n",((PetscReal)baij->ht_total_ct)/baij->ht_insert_ct);CHKERRQ(ierr);
+    ierr = PetscInfo1(mat,"Average Hash Table Search in MatSetValues = %5.2f\n",(double)((PetscReal)baij->ht_total_ct)/baij->ht_insert_ct);CHKERRQ(ierr);
 
     baij->ht_total_ct  = 0;
     baij->ht_insert_ct = 0;
@@ -1695,6 +1695,7 @@ PetscErrorCode MatSetOption_MPIBAIJ(Mat A,MatOption op,PetscBool flg)
     break;
   case MAT_USE_HASH_TABLE:
     a->ht_flag = flg;
+    a->ht_fact = 1.39;
     break;
   case MAT_SYMMETRIC:
   case MAT_STRUCTURALLY_SYMMETRIC:
@@ -3192,7 +3193,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIBAIJ(Mat B)
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIBAIJ);CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)B),NULL,"Options for loading MPIBAIJ matrix 1","Mat");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-mat_use_hash_table","Use hash table to save memory in constructing matrix","MatSetOption",flg,&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsName("-mat_use_hash_table","Use hash table to save time in constructing matrix","MatSetOption",&flg);CHKERRQ(ierr);
   if (flg) {
     PetscReal fact = 1.39;
     ierr = MatSetOption(B,MAT_USE_HASH_TABLE,PETSC_TRUE);CHKERRQ(ierr);
