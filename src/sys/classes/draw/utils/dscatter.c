@@ -5,7 +5,7 @@
     plots that change dynamically.
 */
 
-#include <petscdraw.h>         /*I "petscdraw.h" I*/
+#include <petscdraw.h>                       /*I "petscdraw.h" I*/
 #include <petsc/private/petscimpl.h>         /*I "petscsys.h" I*/
 
 PetscClassId PETSC_DRAWSP_CLASSID = 0;
@@ -39,9 +39,14 @@ struct _p_PetscDrawSP {
 
    Level: intermediate
 
+   Notes: Add points to the plot with PetscDrawSPAddPoint() or PetscDrawSPAddPoints(); the new points are not displayed until PetscDrawSPDraw() is called.
+
+   PetscDrawSPReset() removes all the points that have been added
+
    Concepts: scatter plot^creating
 
-.seealso:  PetscDrawSPDestroy()
+.seealso:  PetscDrawLGCreate(), PetscDrawLG, PetscDrawBarCreate(), PetscDrawBar, PetscDrawHGCreate(), PetscDrawHG, PetscDrawSPDestroy(), PetscDraw, PetscDrawSP, PetscDrawSPSetDimension(), PetscDrawSPReset(),
+           PetscDrawSPAddPoint(), PetscDrawSPAddPoints(), PetscDrawSPDraw(), PetscDrawSPSave(), PetscDrawSPSetLimits(), PetscDrawSPGetAxis(),PetscDrawAxis, PetscDrawSPGetDraw()
 @*/
 PetscErrorCode  PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
 {
@@ -96,6 +101,8 @@ PetscErrorCode  PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
 
    Concepts: scatter plot^setting number of data types
 
+.seealso: PetscDrawSP, PetscDrawSPCreate(), PetscDrawSPAddPoint(), PetscDrawSPAddPoints()
+
 @*/
 PetscErrorCode  PetscDrawSPSetDimension(PetscDrawSP sp,int dim)
 {
@@ -128,6 +135,7 @@ PetscErrorCode  PetscDrawSPSetDimension(PetscDrawSP sp,int dim)
 
   Concepts: scatter plot^resetting
 
+.seealso: PetscDrawSP, PetscDrawSPCreate(), PetscDrawSPAddPoint(), PetscDrawSPAddPoints(), PetscDrawSPDraw()
 @*/
 PetscErrorCode  PetscDrawSPReset(PetscDrawSP sp)
 {
@@ -154,7 +162,8 @@ PetscErrorCode  PetscDrawSPReset(PetscDrawSP sp)
 
    Level: intermediate
 
-.seealso:  PetscDrawSPCreate()
+.seealso:  PetscDrawSPCreate(), PetscDrawSP, PetscDrawSPReset()
+
 @*/
 PetscErrorCode  PetscDrawSPDestroy(PetscDrawSP *sp)
 {
@@ -186,9 +195,12 @@ PetscErrorCode  PetscDrawSPDestroy(PetscDrawSP *sp)
 
    Level: intermediate
 
+   Notes: the new points will not be displayed until a call to PetscDrawSPDraw() is made
+
    Concepts: scatter plot^adding points
 
-.seealso: PetscDrawSPAddPoints()
+.seealso: PetscDrawSPAddPoints(), PetscDrawSP, PetscDrawSPCreate(), PetscDrawSPReset(), PetscDrawSPDraw()
+
 @*/
 PetscErrorCode  PetscDrawSPAddPoint(PetscDrawSP sp,PetscReal *x,PetscReal *y)
 {
@@ -238,9 +250,11 @@ PetscErrorCode  PetscDrawSPAddPoint(PetscDrawSP sp,PetscReal *x,PetscReal *y)
 
    Level: intermediate
 
+   Notes: the new points will not be displayed until a call to PetscDrawSPDraw() is made
+
    Concepts: scatter plot^adding points
 
-.seealso: PetscDrawSPAddPoint()
+.seealso: PetscDrawSPAddPoint(), PetscDrawSP, PetscDrawSPCreate(), PetscDrawSPReset(), PetscDrawSPDraw()
 @*/
 PetscErrorCode  PetscDrawSPAddPoints(PetscDrawSP sp,int n,PetscReal **xx,PetscReal **yy)
 {
@@ -297,7 +311,7 @@ PetscErrorCode  PetscDrawSPAddPoints(PetscDrawSP sp,int n,PetscReal **xx,PetscRe
 
    Level: intermediate
 
-.seealso: PetscDrawLGDraw(), PetscDrawLGSPDraw()
+.seealso: PetscDrawLGDraw(), PetscDrawLGSPDraw(), PetscDrawSP, PetscDrawSPCreate(), PetscDrawSPReset(), PetscDrawSPAddPoint(), PetscDrawSPAddPoints()
 
 @*/
 PetscErrorCode  PetscDrawSPDraw(PetscDrawSP sp, PetscBool clear)
@@ -386,6 +400,7 @@ PetscErrorCode  PetscDrawSPSave(PetscDrawSP sp)
 
    Concepts: scatter plot^setting axis
 
+.seealso: PetscDrawSP, PetscDrawSPCreate(), PetscDrawSPDraw(), PetscDrawSPAddPoint(), PetscDrawSPAddPoints(), PetscDrawSPGetAxis()
 @*/
 PetscErrorCode  PetscDrawSPSetLimits(PetscDrawSP sp,PetscReal x_min,PetscReal x_max,PetscReal y_min,PetscReal y_max)
 {
@@ -416,6 +431,8 @@ PetscErrorCode  PetscDrawSPSetLimits(PetscDrawSP sp,PetscReal x_min,PetscReal x_
 
    Level: intermediate
 
+.seealso: PetscDrawSP, PetscDrawSPCreate(), PetscDrawSPDraw(), PetscDrawSPAddPoint(), PetscDrawSPAddPoints(), PetscDrawAxis, PetscDrawAxisCreate()
+
 @*/
 PetscErrorCode  PetscDrawSPGetAxis(PetscDrawSP sp,PetscDrawAxis *axis)
 {
@@ -441,6 +458,7 @@ PetscErrorCode  PetscDrawSPGetAxis(PetscDrawSP sp,PetscDrawAxis *axis)
 
    Level: intermediate
 
+.seealso: PetscDrawSP, PetscDrawSPCreate(), PetscDrawSPDraw(), PetscDraw
 @*/
 PetscErrorCode  PetscDrawSPGetDraw(PetscDrawSP sp,PetscDraw *draw)
 {
