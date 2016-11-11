@@ -376,6 +376,13 @@ PETSC_EXTERN PetscErrorCode VecMatlabEngineGet_Default(PetscObject,void*);
 PETSC_EXTERN PetscErrorCode PetscSectionGetField_Internal(PetscSection, PetscSection, Vec, PetscInt, PetscInt, PetscInt, IS *, Vec *);
 PETSC_EXTERN PetscErrorCode PetscSectionRestoreField_Internal(PetscSection, PetscSection, Vec, PetscInt, PetscInt, PetscInt, IS *, Vec *);
 
+#define VecCheckSameLocalSize(x,ar1,y,ar2)                                 \
+  if ((x)->map->n != (y)->map->n) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths parameter # %d local size %D != parameter # % local size %D", ar1,(x)->map->n, ar2,(y)->map->n);
+
+#define VecCheckSameSize(x,ar1,y,ar2)                                      \
+  if ((x)->map->N != (y)->map->N) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths parameter # %d %D != paramter # %d %D", ar1,(x)->map->N, ar2,(y)->map->N); \
+  if ((x)->map->n != (y)->map->n) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths parameter # %d %D != parameter # %d %D", ar1,(x)->map->n, ar2,(y)->map->n);
+
 /* Reset __FUNCT__ in case the user does not define it themselves */
 #undef __FUNCT__
 #define __FUNCT__ "User provided function"

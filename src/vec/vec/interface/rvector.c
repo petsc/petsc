@@ -6,10 +6,6 @@
 #include <petsc/private/vecimpl.h>       /*I  "petscvec.h"   I*/
 static PetscInt VecGetSubVectorSavedStateId = -1;
 
-#define PetscCheckSameSizeVec(x,y) \
-  if ((x)->map->N != (y)->map->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths %d != %d", (x)->map->N, (y)->map->N); \
-  if ((x)->map->n != (y)->map->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths %d != %d", (x)->map->n, (y)->map->n);
-
 #undef __FUNCT__
 #define __FUNCT__ "VecValidValues"
 PETSC_EXTERN PetscErrorCode VecValidValues(Vec vec,PetscInt argnum,PetscBool begin)
@@ -77,8 +73,7 @@ PetscErrorCode  VecMaxPointwiseDivide(Vec x,Vec y,PetscReal *max)
   PetscValidType(x,1);
   PetscValidType(y,2);
   PetscCheckSameTypeAndComm(x,1,y,2);
-  PetscCheckSameSizeVec(x,y);
-
+  VecCheckSameSize(x,1,y,2);
   ierr = (*x->ops->maxpointwisedivide)(x,y,max);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -130,7 +125,7 @@ PetscErrorCode  VecDot(Vec x,Vec y,PetscScalar *val)
   PetscValidType(x,1);
   PetscValidType(y,2);
   PetscCheckSameTypeAndComm(x,1,y,2);
-  PetscCheckSameSizeVec(x,y);
+  VecCheckSameSize(x,1,y,1);
 
   ierr = PetscLogEventBarrierBegin(VEC_DotBarrier,x,y,0,0,PetscObjectComm((PetscObject)x));CHKERRQ(ierr);
   ierr = (*x->ops->dot)(x,y,val);CHKERRQ(ierr);
@@ -471,7 +466,7 @@ PetscErrorCode  VecTDot(Vec x,Vec y,PetscScalar *val)
   PetscValidType(x,1);
   PetscValidType(y,2);
   PetscCheckSameTypeAndComm(x,1,y,2);
-  PetscCheckSameSizeVec(x,y);
+  VecCheckSameSize(x,1,y,2);
 
   ierr = PetscLogEventBegin(VEC_TDot,x,y,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->tdot)(x,y,val);CHKERRQ(ierr);
@@ -634,7 +629,7 @@ PetscErrorCode  VecAXPY(Vec y,PetscScalar alpha,Vec x)
   PetscValidType(x,3);
   PetscValidType(y,1);
   PetscCheckSameTypeAndComm(x,3,y,1);
-  PetscCheckSameSizeVec(x,y);
+  VecCheckSameSize(x,1,y,3);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_IDN,"x and y cannot be the same vector");
   PetscValidLogicalCollectiveScalar(y,alpha,2);
   VecLocked(y,1);
@@ -681,7 +676,7 @@ PetscErrorCode  VecAXPBY(Vec y,PetscScalar alpha,PetscScalar beta,Vec x)
   PetscValidType(x,4);
   PetscValidType(y,1);
   PetscCheckSameTypeAndComm(x,4,y,1);
-  PetscCheckSameSizeVec(x,y);
+  VecCheckSameSize(x,1,y,4);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_IDN,"x and y cannot be the same vector");
   PetscValidLogicalCollectiveScalar(y,alpha,2);
   PetscValidLogicalCollectiveScalar(y,beta,3);
@@ -731,8 +726,8 @@ PetscErrorCode  VecAXPBYPCZ(Vec z,PetscScalar alpha,PetscScalar beta,PetscScalar
   PetscValidType(z,1);
   PetscCheckSameTypeAndComm(x,5,y,6);
   PetscCheckSameTypeAndComm(x,5,z,1);
-  PetscCheckSameSizeVec(x,y);
-  PetscCheckSameSizeVec(x,z);
+  VecCheckSameSize(x,1,y,5);
+  VecCheckSameSize(x,1,z,6);
   if (x == y || x == z) SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_IDN,"x, y, and z must be different vectors");
   if (y == z) SETERRQ(PetscObjectComm((PetscObject)y),PETSC_ERR_ARG_IDN,"x, y, and z must be different vectors");
   PetscValidLogicalCollectiveScalar(z,alpha,2);
@@ -778,6 +773,8 @@ PetscErrorCode  VecAYPX(Vec y,PetscScalar alpha,Vec x)
   PetscValidHeaderSpecific(y,VEC_CLASSID,1);
   PetscValidType(x,3);
   PetscValidType(y,1);
+  PetscCheckSameTypeAndComm(x,3,y,1);
+  VecCheckSameSize(x,1,y,3);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   PetscValidLogicalCollectiveScalar(y,alpha,2);
 
@@ -825,8 +822,8 @@ PetscErrorCode  VecWAXPY(Vec w,PetscScalar alpha,Vec x,Vec y)
   PetscValidType(y,4);
   PetscCheckSameTypeAndComm(x,3,y,4);
   PetscCheckSameTypeAndComm(y,4,w,1);
-  PetscCheckSameSizeVec(x,y);
-  PetscCheckSameSizeVec(x,w);
+  VecCheckSameSize(x,3,y,4);
+  VecCheckSameSize(x,3,w,1);
   if (w == y) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Result vector w cannot be same as input vector y, suggest VecAXPY()");
   if (w == x) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Result vector w cannot be same as input vector x, suggest VecAYPX()");
   PetscValidLogicalCollectiveScalar(y,alpha,2);
@@ -1178,7 +1175,7 @@ PetscErrorCode  VecMTDot(Vec x,PetscInt nv,const Vec y[],PetscScalar val[])
   PetscValidType(x,2);
   PetscValidType(*y,3);
   PetscCheckSameTypeAndComm(x,2,*y,3);
-  PetscCheckSameSizeVec(x,*y);
+  VecCheckSameSize(x,1,*y,3);
 
   ierr = PetscLogEventBegin(VEC_MTDot,x,*y,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->mtdot)(x,nv,y,val);CHKERRQ(ierr);
@@ -1231,7 +1228,7 @@ PetscErrorCode  VecMDot(Vec x,PetscInt nv,const Vec y[],PetscScalar val[])
   PetscValidType(x,2);
   PetscValidType(*y,3);
   PetscCheckSameTypeAndComm(x,2,*y,3);
-  PetscCheckSameSizeVec(x,*y);
+  VecCheckSameSize(x,1,*y,3);
 
   ierr = PetscLogEventBarrierBegin(VEC_MDotBarrier,x,*y,0,0,PetscObjectComm((PetscObject)x));CHKERRQ(ierr);
   ierr = (*x->ops->mdot)(x,nv,y,val);CHKERRQ(ierr);
@@ -1275,7 +1272,7 @@ PetscErrorCode  VecMAXPY(Vec y,PetscInt nv,const PetscScalar alpha[],Vec x[])
   PetscValidType(y,1);
   PetscValidType(*x,4);
   PetscCheckSameTypeAndComm(y,1,*x,4);
-  PetscCheckSameSizeVec(y,*x);
+  VecCheckSameSize(y,1,*x,4);
   for (i=0; i<nv; i++) PetscValidLogicalCollectiveScalar(y,alpha[i],3);
 
   ierr = PetscLogEventBegin(VEC_MAXPY,*x,y,0,0);CHKERRQ(ierr);
@@ -1462,14 +1459,11 @@ PetscErrorCode VecGetLocalVectorRead(Vec v,Vec w)
 {
   PetscErrorCode ierr;
   PetscScalar    *a;
-  PetscInt       m1,m2;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidHeaderSpecific(w,VEC_CLASSID,2);
-  ierr = VecGetLocalSize(v,&m1);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(w,&m2);CHKERRQ(ierr);
-  if (m1 != m2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vectors of different local sizes.");
+  VecCheckSameLocalSize(v,1,w,2);
   if (v->ops->getlocalvectorread) {
     ierr = (*v->ops->getlocalvectorread)(v,w);CHKERRQ(ierr);
   } else {
@@ -1526,7 +1520,7 @@ PetscErrorCode VecRestoreLocalVectorRead(Vec v,Vec w)
 .  w - Upon exit this contains the local vector.
 
    Level: beginner
-   
+
    Notes:
    This function is similar to VecGetArray() which maps the local
    portion into a raw pointer.  VecGetLocalVector() is usually about as
@@ -1546,14 +1540,11 @@ PetscErrorCode VecGetLocalVector(Vec v,Vec w)
 {
   PetscErrorCode ierr;
   PetscScalar    *a;
-  PetscInt       m1,m2;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidHeaderSpecific(w,VEC_CLASSID,2);
-  ierr = VecGetLocalSize(v,&m1);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(w,&m2);CHKERRQ(ierr);
-  if (m1 != m2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vectors of different local sizes.");
+  VecCheckSameLocalSize(v,1,w,2);
   if (v->ops->getlocalvector) {
     ierr = (*v->ops->getlocalvector)(v,w);CHKERRQ(ierr);
   } else {
