@@ -435,6 +435,41 @@ cdef class DM(Object):
         self.set_attr('__operators__', context)
         CHKERR( DMKSPSetComputeOperators(self.dm, KSP_ComputeOps, <void*>context) )
 
+    def createFieldDecomposition(self):
+        cdef PetscInt clen = 0
+        cdef PetscIS *cis = NULL
+        cdef PetscDM *cdm = NULL
+        cdef char** cnamelist = NULL
+
+        CHKERR( DMCreateFieldDecomposition(self.dm, &clen, &cnamelist, &cis, &cdm) )
+
+        cdef list isets = [ref_IS(cis[i]) for i from 0 <= i < clen]
+        cdef list dms   = []
+        cdef list names = []
+        cdef DM dm = None
+
+        for i from 0 <= i < clen:
+            if cdm != NULL:
+                dm = subtype_DM(cdm[i])()
+                dm.dm = cdm[i]
+                PetscINCREF(dm.obj)
+                dms.append(dm)
+            else:
+                dms.append(None)
+
+            name = bytes2str(cnamelist[i])
+            names.append(name)
+            CHKERR( PetscFree(cnamelist[i]) )
+
+            CHKERR( ISDestroy(&cis[i]) )
+            CHKERR( DMDestroy(&cdm[i]) )
+
+        CHKERR( PetscFree(cis) )
+        CHKERR( PetscFree(cdm) )
+        CHKERR( PetscFree(cnamelist) )
+
+        return (names, isets, dms)
+
 # --------------------------------------------------------------------
 
 del DMType
