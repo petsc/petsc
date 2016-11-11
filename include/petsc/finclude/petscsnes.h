@@ -20,6 +20,7 @@
       PetscEnum SNES_DIVERGED_LINE_SEARCH
       PetscEnum SNES_DIVERGED_INNER
       PetscEnum SNES_DIVERGED_LOCAL_MIN
+      PetscEnum SNES_DIVERGED_DTOL
       PetscEnum SNES_CONVERGED_ITERATING
 
       parameter (SNES_CONVERGED_FNORM_ABS         =  2)
@@ -36,6 +37,7 @@
       parameter (SNES_DIVERGED_LINE_SEARCH        = -6)
       parameter (SNES_DIVERGED_INNER              = -7)
       parameter (SNES_DIVERGED_LOCAL_MIN          = -8)
+      parameter (SNES_DIVERGED_DTOL               = -9)
       parameter (SNES_CONVERGED_ITERATING         =  0)
 !
 !     SNESLineSearchReason
