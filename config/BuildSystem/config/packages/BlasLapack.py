@@ -161,6 +161,7 @@ class Configure(config.package.Package):
       if self.libraries.math:
         f2cLibs = f2cLibs+self.libraries.math
       yield ('f2cblaslapack', f2cLibs, os.path.join(libDir,'libf2clapack.a'), 0)
+      yield ('f2cblaslapack', f2cLibs+['-lquadmath'], os.path.join(libDir,'libf2clapack.a'), 0)
       raise RuntimeError('--download-f2cblaslapack libraries cannot be used')
     if self.fblaslapack.found:
       self.f2c = 0
