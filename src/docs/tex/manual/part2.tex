@@ -7731,6 +7731,30 @@ read into a block oriented data structure (for example,
 \lstinline{s1,s2,s3,...} indicates
 which (block) diagonals in the matrix have nonzero values.
 
+\section{Using SAWS with PETSc} \label{sec_saws}
+\sindex{saws}
+The Scientific Application Web server, SAWs, \href{https://bitbucket.org/saws/saws/wiki/Home}{\trl{https://bitbucket.org/saws/saws/wiki/Home}}
+allows one to monitor PETSc applications from a browser as they run. ./configure PETSc with the additional option -download-saws. The options
+to use SAWs include:
+\begin{lstlisting}
+-saws_options - allows setting values in the PETSc options database via the browser (works only on one process).
+-stack_view saws - allows monitoring the current stack frame that PETSc is in, refresh to see the new location.
+-ts_monitor_saws, -snes_monitor_saws, -ksp_monitor_saws - monitor the solvers iterations from the web browser.
+\end{lstlisting}
+For each of these you need to point your browser to \trl{https://hostname:8080}, for example \trl{https:/localhost:8080}.
+Options that control behavior of SAWs include
+\begin{lstlisting}
+-saws_log filename - log all actions of SAWs in a file
+-saws_https certfile - use HTTPS instead of HTTP with a certificate
+-saws_port_auto_select - have SAWs pick a port number instead of using 8080
+-saws_port port - use port instead of 8080
+-saws_root rootdirectory - local directory that the SAWs browser will have read access on
+-saws_local - use the local file system to obtain the SAWS javascript files (they much be located in rootdirectory/js)
+\end{lstlisting}
+See also the manual pages for PetscSAWsBlock, PetscObjectSAWsTakeAccess, PetscObjectSAWsGrantAccess, PetscObjectSAWsSetBlock, PetscStackSAWsGrantAccess
+PetscStackSAWsTakeAccess, KSPMonitorSAWs, SNESMonitorSAWs, TSMonitorSAWs.
+
+
 \section{Debugging} \sindex{debugging} \label{sec_debugging}
 
 PETSc programs may be debugged using one of the two options below.

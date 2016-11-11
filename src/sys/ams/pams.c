@@ -34,7 +34,7 @@ PetscErrorCode  PetscObjectSAWsTakeAccess(PetscObject obj)
 #undef __FUNCT__
 #define __FUNCT__ "PetscObjectSAWsGrantAccess"
 /*@C
-   PetscObjectSAWsGrantAccess - Grants access of the data fields that have been published to SAWs to the memory snooper to change
+   PetscObjectSAWsGrantAccess - Grants access of the data fields that have been published to SAWs to change
 
    Collective on PetscObject
 
@@ -62,9 +62,9 @@ PetscErrorCode  PetscObjectSAWsGrantAccess(PetscObject obj)
 #undef __FUNCT__
 #define __FUNCT__ "PetscSAWsBlock"
 /*@C
-   PetscSAWsBlock - Blocks on SAWs until a client unblocks
+   PetscSAWsBlock - Blocks on SAWs until a client (person using the web browser) unblocks
 
-   Not Collective 
+   Not Collective
 
    Level: advanced
 
