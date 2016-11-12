@@ -43,6 +43,9 @@ struct _p_PetscDrawSP {
 
    PetscDrawSPReset() removes all the points that have been added
 
+   The MPI communicator that owns the PetscDraw owns this PetscDrawSP, but the calls to set options and add points are ignored on all processes except the
+   zeroth MPI process in the communicator. All MPI processes in the communicator must call PetscDrawSPDraw() to display the updated graph.
+
    Concepts: scatter plot^creating
 
 .seealso:  PetscDrawLGCreate(), PetscDrawLG, PetscDrawBarCreate(), PetscDrawBar, PetscDrawHGCreate(), PetscDrawHG, PetscDrawSPDestroy(), PetscDraw, PetscDrawSP, PetscDrawSPSetDimension(), PetscDrawSPReset(),

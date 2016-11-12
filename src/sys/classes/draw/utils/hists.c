@@ -47,6 +47,9 @@ struct _p_PetscDrawHG {
 
    The histogram is only displayed when PetscDrawHGDraw() is called.
 
+   The MPI communicator that owns the PetscDraw owns this PetscDrawHG, but the calls to set options and add data are ignored on all processes except the
+   zeroth MPI process in the communicator. All MPI processes in the communicator must call PetscDrawHGDraw() to display the updated graph.
+
    Level: intermediate
 
    Concepts: histogram^creating

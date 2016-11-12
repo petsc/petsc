@@ -15,6 +15,9 @@ PetscClassId PETSC_DRAWAXIS_CLASSID = 0;
    Ouput Parameters:
 .  axis - the axis datastructure
 
+   Notes: the MPI communicator that owns the underlying draw object owns the PetscDrawAxis object, but calls to set PetscDrawAxis options are ignored by all processes
+          except the first MPI process in the communicator
+
    Level: advanced
 
 .seealso: PetscDrawLGCreate(), PetscDrawLG, PetscDrawSPCreate(), PetscDrawSP, PetscDrawHGCreate(), PetscDrawHG, PetscDrawBarCreate(), PetscDrawBar, PetscDrawLGGetAxis(), PetscDrawSPGetAxis(),
