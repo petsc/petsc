@@ -340,7 +340,7 @@ ALLTESTS_CHECK_FAILURES = no
 alltests:
 	-@${RM} ${PETSC_ARCH}/lib/petsc/conf/alltests.log alltests.log
 	-@ln -s ${PETSC_ARCH}/lib/petsc/conf/alltests.log alltests.log
-	-@${OMAKE} alltest DIFF=${PETSC_DIR}/bin/petscdiff PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} MPIEXEC="${MPIEXEC}" DATAFILESPATH=${DATAFILESPATH} 2>&1 | tee ${PETSC_ARCH}/lib/petsc/conf/alltests.log
+	-@${OMAKE} alltest PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} MPIEXEC="${MPIEXEC}" DATAFILESPATH=${DATAFILESPATH} 2>&1 | tee ${PETSC_ARCH}/lib/petsc/conf/alltests.log
 	@if [ x${ALLTESTS_CHECK_FAILURES} = xyes -a ${PETSC_PRECISION} != single ]; then \
             cat alltests.log | sed -e '1d' -e '$$d' | \
             grep -v '^[\*]\{7,7\} Testing: ${TESTMODE}_[a-zA-Z0-9_]* [\*]\{7,7\}$$' | \
@@ -351,7 +351,7 @@ alltest:
 	-@date
 	-@for i in ${TEST_RUNS} ; do \
           echo "******* Testing: ${TESTMODE}_$$i *******"; \
-	  ${OMAKE} PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=${TESTMODE}_$$i MPIEXEC="${MPIEXEC}" PRINT_PROGRESS=${ALLTESTS_PRINT_PROGRESS} tree ; \
+	  ${OMAKE} PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" DIFF=${PETSC_DIR}/bin/petscdiff PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=${TESTMODE}_$$i MPIEXEC="${MPIEXEC}" PRINT_PROGRESS=${ALLTESTS_PRINT_PROGRESS} tree ; \
 	  if [ ${ALLTESTS_PRINT_PROGRESS}foo = dotfoo ] ; then printf "\n"; fi; \
 	done
 	-@date
