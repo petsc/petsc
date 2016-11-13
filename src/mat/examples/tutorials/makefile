@@ -107,9 +107,10 @@ runex11:
 	   ${RM} -f ex11_1.tmp
 
 runex15:
-	-@${MPIEXEC} -n 3 ./ex15 -mat_partitioning_type parmetis > ex15_1.tmp 2>&1;   \
-	   if (${DIFF} output/ex15_1.out ex15_1.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex15, diffs above\n=========================================\n"; fi; \
+	-@x="bad"; ${MPIEXEC} -n 3 ./ex15 -mat_partitioning_type parmetis > ex15_1.tmp 2>&1;   \
+	   if (${DIFF} output/ex15_1.out ex15_1.tmp > /dev/null 2>&1) then x='good'; fi; \
+	   if (${DIFF} output/ex15_1_alt.out ex15_1.tmp > /dev/null 2>&1) then x='good'; fi; \
+           if [ "$$x" = "bad" ]; then ${DIFF} output/ex15_1.out ex15_1.tmp ; ${DIFF} output/ex15_1_alt.out ex15_1.tmp ; printf "${PWD}\nPossible problem with ex15, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex15_1.tmp
 
 runex15_2:
