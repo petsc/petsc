@@ -1060,7 +1060,8 @@ runex22:
 	-@x="bad"; ${MPIEXEC} -n 2 ./ex22 -da_grid_x 10 -snes_converged_reason -ksp_converged_reason -snes_view > ex22_1.tmp 2>&1; \
 	   if (${DIFF} output/ex22_1.out ex22_1.tmp > /dev/null 2>&1) then x='good'; fi ;\
 	   if (${DIFF} output/ex22_1_alt.out ex22_1.tmp > /dev/null 2>&1) then x='good'; fi; \
-	   if [ "$$x" = "bad" ]; then ${DIFF} output/ex22_1.out ex22_1.tmp ; ${DIFF} output/ex22_1_alt.out ex22_1.tmp ; printf "${PWD}\nPossible problem with ex22_1, diffs above\n=========================================\n"; fi; \
+	   if (${DIFF} output/ex22_1_alt_2.out ex22_1.tmp > /dev/null 2>&1) then x='good'; fi; \
+	   if [ "$$x" = "bad" ]; then ${DIFF} output/ex22_1.out ex22_1.tmp ; ${DIFF} output/ex22_1_alt.out ex22_1.tmp ; ${DIFF} output/ex22_1_alt_2.out ex22_1.tmp ; printf "${PWD}\nPossible problem with ex22_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex22_1.tmp
 
 runex25:
