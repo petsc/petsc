@@ -10,6 +10,9 @@
 #if !defined (__PETSCSYSDEF_H)
 #define __PETSCSYSDEF_H
 #include "petscconf.h"
+#if defined (PETSC_HAVE_MPIUNI)
+#include "mpiunifdef.h"
+#endif
 #include "petsc/finclude/petscviewerdef.h"
 #include "petsc/finclude/petscerrordef.h"
 #include "petsc/finclude/petsclogdef.h"
