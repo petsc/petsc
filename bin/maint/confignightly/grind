@@ -3,4 +3,4 @@
 set MACH=grind
 set USR=petsc
 set LOC=/sandbox/petsc/${RNAME}
-set CONF=arch-linux-without-fc
+set CONF=arch-pardiso
