@@ -112,6 +112,8 @@ cdef extern from * nogil:
 
     int DMKSPSetComputeOperators(PetscDM,PetscKSPComputeOpsFunction,void*)
 
+    int DMCreateFieldDecomposition(PetscDM,PetscInt*,char***,PetscIS**,PetscDM**)
+
 # --------------------------------------------------------------------
 
 cdef inline PetscDMBoundaryType asBoundaryType(object boundary) \
