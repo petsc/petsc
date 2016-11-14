@@ -8,9 +8,7 @@ configure_options = [
   '--with-clanguage=C++',
   '--with-debugging=0',
   '--with-shared-libraries=1',
-  #prereq packages
-  '--download-triangle=1', # for hdf5 tests
-  #'--download-chaco=1', # for hdf5 tests?; bundled with xsdk/trilinos
+  '--download-triangle=1', # for TRIANGLE_HDF5 test (with trilinos chaco)
   #test latest snapshot
   '--download-hypre-commit=origin/master',
   '--download-superlu_dist-commit=origin/master',
