@@ -111,6 +111,10 @@ class Configure(config.base.Configure):
             for j in self.framework.packages:
               if j.PACKAGE == 'HDF5':
                 ejobs.append('MOAB_HDF5')
+          if i.PACKAGE == 'TRIANGLE':
+            for j in self.framework.packages:
+              if j.PACKAGE == 'HDF5':
+                ejobs.append('TRIANGLE_HDF5')
       else:
         for i in self.framework.packages:
           if i.PACKAGE in ['FFTW','SUPERLU_DIST']:

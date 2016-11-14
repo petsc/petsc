@@ -127,6 +127,8 @@ testexamples_CHOMBO_DATAFILESPATH: ${TESTEXAMPLES_CHOMBO_DATAFILESPATH}
 	-@ if test ${PRINT_PROGRESS}foo = debugtestfoo -a -n "${TESTEXAMPLES_CHOMBO_DATAFILESPATH}"; then printf "Running examples in `pwd`:\n ${TESTEXAMPLES_CHOMBO_DATAFILESPATH}\n"; fi
 testexamples_HDF5: ${TESTEXAMPLES_HDF5}
 	-@ if test ${PRINT_PROGRESS}foo = debugtestfoo -a -n "${TESTEXAMPLES_HDF5}"; then printf "Running examples in `pwd`:\n ${TESTEXAMPLES_HDF5}\n"; fi
+testexamples_TRIANGLE_HDF5: ${TESTEXAMPLES_TRIANGLE_HDF5}
+	-@ if test ${PRINT_PROGRESS}foo = debugtestfoo -a -n "${TESTEXAMPLES_TRIANGLE_HDF5}"; then printf "Running examples in `pwd`:\n ${TESTEXAMPLES_TRIANGLE_HDF5}\n"; fi
 testexamples_CHACO: ${TESTEXAMPLES_CHACO}
 	-@ if test ${PRINT_PROGRESS}foo = debugtestfoo -a -n "${TESTEXAMPLES_CHACO}"; then printf "Running examples in `pwd`:\n ${TESTEXAMPLES_CHACO}\n"; fi
 testexamples_CHOMBO: ${TESTEXAMPLES_CHOMBO}
