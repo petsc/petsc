@@ -1,12 +1,22 @@
+MATLAB is selecting SOFTWARE OPENGL rendering.
 
                             < M A T L A B (R) >
-                (c) Copyright 1984-98 The MathWorks, Inc.
-                            All Rights Reserved
-                            Version 5.2.0.3084
-                                Jan 17 1998
+                  Copyright 1984-2016 The MathWorks, Inc.
+                   R2016a (9.0.0.341360) 64-bit (glnxa64)
+                             February 11, 2016
 
  
-  To get started, type one of these: helpwin, helpdesk, or demo.
-  For product information, type tour or visit www.mathworks.com.
+To get started, type one of these: helpwin, helpdesk, or demo.
+For product information, visit www.mathworks.com.
  
+
+opt =
+
+     ''
+
+
+Executing: ./ex12 -time 20  &
+result =
+
+     0
 
