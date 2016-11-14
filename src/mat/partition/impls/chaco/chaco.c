@@ -5,12 +5,16 @@
 #include <unistd.h>
 #endif
 
-/* Chaco does not have an include file */
+#if defined(PETSC_HAVE_CHACO_INT_ASSIGNMENT)
+#include <chaco.h>
+#else
+/* Older versions of Chaco do not have an include file */
 PETSC_EXTERN int interface(int nvtxs, int *start, int *adjacency, int *vwgts,
                      float *ewgts, float *x, float *y, float *z, char *outassignname,
                      char *outfilename, short *assignment, int architecture, int ndims_tot,
                      int mesh_dims[3], double *goal, int global_method, int local_method,
                      int rqi_flag, int vmax, int ndims, double eigtol, long seed);
+#endif
 
 extern int FREE_GRAPH;
 
@@ -63,7 +67,11 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
   IS                    isrow, iscol;
   int                   nvtxs,*start,*adjacency,*vwgts,architecture,ndims_tot;
   int                   mesh_dims[3],global_method,local_method,rqi_flag,vmax,ndims;
-  short                 *assignment;
+#if defined(PETSC_HAVE_CHACO_INT_ASSIGNMENT)
+  int                   *assignment;
+#else
+  short                 *assignment;  
+#endif
   double                eigtol;
   long                  seed;
   char                  *mesg_log;
