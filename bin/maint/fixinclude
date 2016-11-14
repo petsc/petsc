@@ -22,10 +22,10 @@ while [ 1 -ne 0 ]; do
 #
 #  look for include and replace them 
 #
-  r=`echo $line | egrep include`
+  r=`echo "$line" | egrep include`
   if [ "$?" = 0 ]; then \
-    includename=`echo $line | sed -e 's?#include [ ]*</font><font color=\"#666666\">\"\([a-z./]*\)\"</font>?\1?g' -e 's?<a name="line[0-9]*">[ 0-9]*: </a><font color="#A020F0">??g' -e 's?<font color="#A020F0">[ ]*</font><font color="#B22222">[/*a-z.I "]*</font><font color="#A020F0"></font>??g' -e 's?<font color="#A020F0">[ ]*</font>??g'` 
-    linenumber=`echo $line | sed 's?\(<a name="line[0-9]*">[ 0-9]*: </a>\)[.# =0-9><"a-z/A-Z:*]*?\1?g'` 
+    includename=`echo "$line" | sed -e 's?#include [ ]*</font><font color=\"#666666\">\"\([a-z./]*\)\"</font>?\1?g' -e 's?<a name="line[0-9]*">[ 0-9]*: </a><font color="#A020F0">??g' -e 's?<font color="#A020F0">[ ]*</font><font color="#B22222">[/*a-z.I "]*</font><font color="#A020F0"></font>??g' -e 's?<font color="#A020F0">[ ]*</font>??g'`
+    linenumber=`echo "$line" | sed 's?\(<a name="line[0-9]*">[ 0-9]*: </a>\)[.# =0-9><"a-z/A-Z:*]*?\1?g'` 
     if [ -f "$includename" ] ; then
       echo "${linenumber} #include <A href=\"${includename}.html\">${includename}</A>"  
     elif [ -f "${ROOT}/include/${includename}" ] ; then
