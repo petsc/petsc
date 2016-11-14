@@ -106,7 +106,7 @@ PetscErrorCode PetscGoogleDriveRefresh(MPI_Comm comm,const char refresh_token[],
     PetscGoogleDriveUpload(comm,NULL,filename);        will upload file with no user interaction
 
     Without PETSc option -google_refresh_token XXX given
-    PetscGoogleDriveUpload(comm,NULL,filename);        for first use will prompt user to authorize access to Google Drive with their processor
+    PetscGoogleDriveUpload(comm,NULL,filename);        for first use will prompt user to authorize access to Google Drive with their browser
 
     With PETSc option -google_refresh_token  XXX given
     PetscGoogleDriveRefresh(comm,NULL,access_token,sizeof(access_token));

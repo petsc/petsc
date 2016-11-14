@@ -80,11 +80,24 @@ static PetscErrorCode PetscViewerDestroy_Socket(PetscViewer viewer)
 /*--------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "PetscOpenSocket"
-/*
+/*@C
     PetscSocketOpen - handles connected to an open port where someone is waiting.
 
-.seealso:   PetscSocketListen(), PetscSocketEstablish()
-*/
+    Input Parameters:
++    url - for example www.mcs.anl.gov
+-    portnum - for example 80
+
+    Output Paramater:
+.    t - the socket number
+
+    Notes: Use close() to close the socket connection
+
+    Use read() or PetscHTTPRequest() to read from the socket
+
+    Level: advanced
+
+.seealso:   PetscSocketListen(), PetscSocketEstablish(), PetscHTTPRequest(), PetscHTTPSConnect()
+@*/
 PetscErrorCode  PetscOpenSocket(const char hostname[],int portnum,int *t)
 {
   struct sockaddr_in sa;
@@ -152,11 +165,20 @@ PetscErrorCode  PetscOpenSocket(const char hostname[],int portnum,int *t)
 #define MAXHOSTNAME 100
 #undef __FUNCT__
 #define __FUNCT__ "PetscSocketEstablish"
-/*
+/*@C
    PetscSocketEstablish - starts a listener on a socket
 
-.seealso:   PetscSocketListen()
-*/
+   Input Parameters:
+.    portnumber - the port to wait at
+
+   Output Parameters:
+.     ss - the socket to be used with PetscSocketListen()
+
+    Level: advanced
+
+.seealso:   PetscSocketListen(), PetscOpenSocket()
+
+@*/
 PETSC_INTERN PetscErrorCode PetscSocketEstablish(int portnum,int *ss)
 {
   char               myname[MAXHOSTNAME+1];
@@ -202,11 +224,19 @@ PETSC_INTERN PetscErrorCode PetscSocketEstablish(int portnum,int *ss)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSocketListen"
-/*
-   PetscSocketListens - Listens at a socket created with PetscSocketEstablish()
+/*@C
+   PetscSocketListen - Listens at a socket created with PetscSocketEstablish()
+
+   Input Parameter:
+.    listenport - obtained with PetscSocketEstablish()
+
+   Output Parameter:
+.     t - pass this to read() to read what is passed to this connection
+
+    Level: advanced
 
 .seealso:   PetscSocketEstablish()
-*/
+@*/
 PETSC_INTERN PetscErrorCode PetscSocketListen(int listenport,int *t)
 {
   struct sockaddr_in isa;

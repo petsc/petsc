@@ -8,7 +8,7 @@ enum storage_flags {VAR,VAL,SEQ};     /* "Store as" switch */
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscParseLayerYAML"
-PetscErrorCode PetscParseLayerYAML(yaml_parser_t *parser,int *lvl)
+static PetscErrorCode PetscParseLayerYAML(yaml_parser_t *parser,int *lvl)
 {
   yaml_event_t    event;
   int             storage = VAR; /* mapping cannot start with VAL definition w/o VAR key */

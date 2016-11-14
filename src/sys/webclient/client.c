@@ -22,18 +22,24 @@ static void sigpipe_handle(int x)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSSLInitializeContext"
-/*
+/*@C
     PetscSSLInitializeContext - Set up an SSL context suitable for initiating HTTPS requests.
 
-    If built with PETSC_USE_SSL_CERTIFICATE requires the user have created a self-signed certificate with
+    Output Parameter:
+.   octx - the SSL_CTX to be passed to PetscHTTPSConnect
 
+    Level: advanced
+
+    If PETSc was ./configure -with-ssl-certificate requires the user have created a self-signed certificate with
 $    saws/CA.pl  -newcert  (using the passphrase of password)
 $    cat newkey.pem newcert.pem > sslclient.pem
 
     and put the resulting file in either the current directory (with the application) or in the home directory. This seems kind of
     silly but it was all I could figure out.
 
-*/
+.seealso: PetscSSLDestroyContext(), PetscHTTPSConnect(), PetscHTTPSRequest()
+
+@*/
 PetscErrorCode PetscSSLInitializeContext(SSL_CTX **octx)
 {
     SSL_CTX        *ctx;
@@ -81,6 +87,16 @@ PetscErrorCode PetscSSLInitializeContext(SSL_CTX **octx)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSSLDestroyContext"
+/*@C
+     PetscSSLDestroyContext - frees a SSL_CTX obtained with PetscSSLInitializeContext() 
+
+     Input Parameter:
+.     ctx - the SSL_CTX
+
+    Level: advanced
+
+.seealso: PetscSSLInitializeContext(), PetscHTTPSConnect()
+@*/
 PetscErrorCode PetscSSLDestroyContext(SSL_CTX *ctx)
 {
   PetscFunctionBegin;
@@ -90,7 +106,7 @@ PetscErrorCode PetscSSLDestroyContext(SSL_CTX *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscHTTPBuildRequest"
-PetscErrorCode PetscHTTPBuildRequest(const char type[],const char url[],const char header[],const char ctype[],const char body[],char **outrequest)
+static PetscErrorCode PetscHTTPBuildRequest(const char type[],const char url[],const char header[],const char ctype[],const char body[],char **outrequest)
 {
   char           *request=0;
   char           contentlength[40],contenttype[80],*path,*host;
@@ -149,7 +165,7 @@ PetscErrorCode PetscHTTPBuildRequest(const char type[],const char url[],const ch
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscHTTPSRequest"
-/*
+/*@C
      PetscHTTPSRequest - Send a request to an HTTPS server
 
    Input Parameters:
@@ -163,7 +179,12 @@ PetscErrorCode PetscHTTPBuildRequest(const char type[],const char url[],const ch
 
    Output Parameter:
 .   buff - everything returned from server
- */
+
+    Level: advanced
+
+.seealso: PetscHTTPRequest(), PetscHTTPSConnect(), PetscSSLInitializeContext(), PetscSSLDestroyContext(), PetscPullJSONValue()
+
+@*/
 PetscErrorCode PetscHTTPSRequest(const char type[],const char url[],const char header[],const char ctype[],const char body[],SSL *ssl,char buff[],size_t buffsize)
 {
   char           *request;
@@ -236,7 +257,7 @@ PetscErrorCode PetscHTTPSRequest(const char type[],const char url[],const char h
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscHTTPRequest"
-/*
+/*@C
      PetscHTTPRequest - Send a request to an HTTP server
 
    Input Parameters:
@@ -250,7 +271,11 @@ PetscErrorCode PetscHTTPSRequest(const char type[],const char url[],const char h
 
    Output Parameter:
 .   buff - everything returned from server
- */
+
+    Level: advanced
+
+.seealso: PetscHTTPSRequest(), PetscOpenSocket(), PetscHTTPSConnect(), PetscPullJSONValue()
+@*/
 PetscErrorCode PetscHTTPRequest(const char type[],const char url[],const char header[],const char ctype[],const char body[],int sock,char buff[],size_t buffsize)
 {
   char           *request;
@@ -271,6 +296,22 @@ PetscErrorCode PetscHTTPRequest(const char type[],const char url[],const char he
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscHTTPSConnect"
+/*@C
+      PetscHTTPSConnect - connect to a HTTPS server
+
+    Input Parameters:
++    host - the name of the machine hosting the HTTPS server
+.    port - the port number where the server is hosting, usually 443
+-    ctx - value obtained with PetscSSLInitializeContext()
+
+    Output Parameters:
++    sock - socket to connect
+-    ssl - the argument passed to PetscHTTPSRequest()
+
+    Level: advanced
+
+.seealso: PetscOpenSocket(), PetscHTTPSRequest(), PetscSSLInitializeContext()
+@*/
 PetscErrorCode PetscHTTPSConnect(const char host[],int port,SSL_CTX *ctx,int *sock,SSL **ssl)
 {
   BIO            *sbio;
@@ -290,9 +331,21 @@ PetscErrorCode PetscHTTPSConnect(const char host[],int port,SSL_CTX *ctx,int *so
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscPullJSONValue"
-/*
-     Given a JSON response containing the substring with "key" : "value"  where there may or not be spaces around the : returns the value.
-*/
+/*@C
+     PetscPullJSONValue - Given a JSON response containing the substring with "key" : "value"  where there may or not be spaces around the : returns the value.
+
+    Input Parameters:
++    buff - the char array containing the possible values
+.    key - the key of the requested value
+-    valuelen - the length of the array to contain the value associated with the key
+
+    Output Parameters:
++    value - the value obtained
+-    found - flag indicating if the value was found in the buff
+
+    Level: advanced
+
+@*/
 PetscErrorCode PetscPullJSONValue(const char buff[],const char key[],char value[],size_t valuelen,PetscBool *found)
 {
   PetscErrorCode ierr;
@@ -337,11 +390,19 @@ PetscErrorCode PetscPullJSONValue(const char buff[],const char key[],char value[
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscPushJSONValue"
-/*
-     Pushs a "key" : "value" pair onto a string
+/*@C
+    PetscPushJSONValue -  Puts a "key" : "value" pair onto a string
 
-     Ignores lengths so can cause buffer overflow
-*/
+    Input Parameters:
++   buffer - the char array where the value will be put
+.   key - the key value to be set
+.   value - the value associated with the key
+-   bufflen - the size of the buffer (currently ignored)
+
+    Level: advanced
+
+    Notes: Ignores lengths so can cause buffer overflow
+@*/
 PetscErrorCode PetscPushJSONValue(char buff[],const char key[],const char value[],size_t bufflen)
 {
   PetscErrorCode ierr;
