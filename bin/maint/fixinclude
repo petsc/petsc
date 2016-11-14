@@ -22,10 +22,10 @@ while [ 1 -ne 0 ]; do
 #
 #  look for include and replace them 
 #
-  r=`echo $line | egrep include`
+  r=`echo "$line" | egrep include`
   if [ "$?" = 0 ]; then \
-    includename=`echo $line | sed -e 's?<a name="line[0-9]*">[ 0-9]*: </a><font color="#A020F0">??g' -e 's?#include [ ]*&lt;\([a-z./]*\)&gt;[a-zA-Z0-9/<>#*"=. ]*?\1?g'  ` 
-    linenumber=`echo $line | sed 's?\(<a name="line[0-9]*">[ 0-9]*: </a>\)[.# =0-9><"a-z/A-Z:*&;]*?\1?g'`
+    includename=`echo "$line" | sed -e 's?<a name="line[0-9]*">[ 0-9]*: </a><font color="#A020F0">??g' -e 's?#include [ ]*&lt;\([a-z./]*\)&gt;[a-zA-Z0-9/<>#*"=. ]*?\1?g'  ` 
+    linenumber=`echo "$line" | sed 's?\(<a name="line[0-9]*">[ 0-9]*: </a>\)[.# =0-9><"a-z/A-Z:*&;]*?\1?g'`
     if [ -f "$includename" ] ; then
       echo "${linenumber} #include <A href=\"${includename}.html\">&lt;${includename}&gt;</A>"  
     elif [ -f "${ROOT}include/${includename}" ] ; then
