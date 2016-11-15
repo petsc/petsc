@@ -1159,7 +1159,19 @@ class Configure(config.base.Configure):
   def checkFortran2003(self):
     '''Determine whether the Fortran compiler handles F2003'''
     self.pushLanguage('FC')
-    if self.fortranIsF90 and self.checkLink(body = '''
+    if self.fortranIsF90 and self.checkLink(includes = '''
+      module Base_module
+        type, public :: base_type
+           integer :: A
+         contains
+           procedure, public :: Print => BasePrint
+        end type base_type
+      contains
+        subroutine BasePrint(this)
+          class(base_type) :: this
+        end subroutine BasePrint
+      end module Base_module
+    ''',body = '''
       use,intrinsic :: iso_c_binding
       Type(C_Ptr),Dimension(:),Pointer :: CArray
       character(kind=c_char),pointer   :: nullc => null()
