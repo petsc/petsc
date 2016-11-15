@@ -1051,6 +1051,24 @@ PetscErrorCode  PetscFinalize(void)
     }
     ierr = PetscFree(buffs);CHKERRQ(ierr);
   }
+  {
+    PetscInt nmax = 2;
+    char     **buffs;
+    ierr = PetscMalloc1(2,&buffs);CHKERRQ(ierr);
+    ierr = PetscOptionsGetStringArray(NULL,NULL,"-tellmycell",buffs,&nmax,&flg1);CHKERRQ(ierr);
+    if (flg1) {
+      if (!nmax) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"-tellmycell requires either the phone number or number,\"message\"");
+      if (nmax == 1) {
+        ierr = PetscMalloc1(128,&buffs[1]);CHKERRQ(ierr);
+        ierr = PetscGetProgramName(buffs[1],32);CHKERRQ(ierr);
+        ierr = PetscStrcat(buffs[1]," has completed");CHKERRQ(ierr);
+      }
+      ierr = PetscTellMyCell(PETSC_COMM_WORLD,buffs[0],buffs[1],NULL);CHKERRQ(ierr);
+      ierr = PetscFree(buffs[0]);CHKERRQ(ierr);
+      ierr = PetscFree(buffs[1]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(buffs);CHKERRQ(ierr);
+  }
 #endif
   /*
     It should be safe to cancel the options monitors, since we don't expect to be setting options
