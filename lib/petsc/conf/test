@@ -338,14 +338,19 @@ ALLTESTS_PRINT_PROGRESS = no
 ALLTESTS_CHECK_FAILURES = no
 
 alltests:
-	-@${RM} ${PETSC_ARCH}/lib/petsc/conf/alltests.log alltests.log
-	-@ln -s ${PETSC_ARCH}/lib/petsc/conf/alltests.log alltests.log
-	-@${OMAKE} alltest PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} MPIEXEC="${MPIEXEC}" DATAFILESPATH=${DATAFILESPATH} 2>&1 | tee ${PETSC_ARCH}/lib/petsc/conf/alltests.log
-	@if [ x${ALLTESTS_CHECK_FAILURES} = xyes -a ${PETSC_PRECISION} != single ]; then \
-            cat alltests.log | sed -e '1d' -e '$$d' | \
+	-@${RM} -rf ${PETSC_ARCH}/lib/petsc/conf/alltests.log alltests.log
+	-@if [ x${PETSC_ARCH} != x -a -d "${PETSC_ARCH}" ]; then \
+            ln -s ${PETSC_ARCH}/lib/petsc/conf/alltests.log alltests.log ;\
+            ALLTESTSLOG=${PETSC_ARCH}/lib/petsc/conf/alltests.log ;\
+          else \
+            ALLTESTSLOG=alltests.log ;\
+          fi; \
+          ${OMAKE} alltest PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} MPIEXEC="${MPIEXEC}" DATAFILESPATH=${DATAFILESPATH} 2>&1 | tee $${ALLTESTSLOG};\
+          if [ x${ALLTESTS_CHECK_FAILURES} = xyes -a ${PETSC_PRECISION} != single ]; then \
+            cat $${ALLTESTSLOG} | sed -e '1d' -e '$$d' | \
             grep -v '^[\*]\{7,7\} Testing: ${TESTMODE}_[a-zA-Z0-9_]* [\*]\{7,7\}$$' | \
             grep -v '^[\.]*$$' | wc -l | grep '^[ ]*0$$' > /dev/null; \
-        fi;
+          fi;
 
 alltest:
 	-@date
