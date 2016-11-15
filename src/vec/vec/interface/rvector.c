@@ -197,7 +197,7 @@ PetscErrorCode  VecDotRealPart(Vec x,Vec y,PetscReal *val)
 
    Notes:
 $     NORM_1 denotes sum_i |x_i|
-$     NORM_2 denotes sqrt(sum_i (x_i)^2)
+$     NORM_2 denotes sqrt(sum_i |x_i|^2)
 $     NORM_INFINITY denotes max_i |x_i|
 
       For complex numbers NORM_1 will return the traditional 1 norm of the 2 norm of the complex numbers; that is the 1

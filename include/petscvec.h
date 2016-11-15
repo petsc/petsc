@@ -168,7 +168,7 @@ PETSC_EXTERN const char *const NormTypes[];
 M*/
 
 /*MC
-     NORM_2 - the two norm, ||v|| = sqrt(sum_i (v_i)^2) (vectors only)
+     NORM_2 - the two norm, ||v|| = sqrt(sum_i |v_i|^2) (vectors only)
 
    Level: beginner
 
@@ -178,7 +178,7 @@ M*/
 M*/
 
 /*MC
-     NORM_FROBENIUS - ||A|| = sqrt(sum_ij (A_ij)^2), same as NORM_2 for vectors
+     NORM_FROBENIUS - ||A|| = sqrt(sum_ij |A_ij|^2), same as NORM_2 for vectors
 
    Level: beginner
 
