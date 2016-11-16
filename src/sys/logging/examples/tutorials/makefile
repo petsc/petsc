@@ -5,7 +5,7 @@ CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/sys/logging/examples/tutorials/
 EXAMPLESC       =
-EXAMPLESF       =
+EXAMPLESF       = ex1f.F90
 MANSEC          = Profiling
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

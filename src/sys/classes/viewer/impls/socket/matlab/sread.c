@@ -16,7 +16,7 @@ PetscErrorCode PetscBinaryRead(int,void *p,int,PetscDataType);
 /*-----------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "mexFunction"
-void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
+PETSC_EXTERN void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
 {
   int            fd,cnt,dt;
   PetscErrorCode ierr;

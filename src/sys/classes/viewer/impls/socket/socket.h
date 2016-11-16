@@ -10,6 +10,7 @@ typedef struct {
 #if defined(PETSC_HAVE_MPIIO)
   PetscBool MPIIO;
 #endif
+  PetscBool skipheader;           /* don't write header, only raw data */
 } PetscViewer_Socket;
 
 #define PETSCSOCKETDEFAULTPORT    5005

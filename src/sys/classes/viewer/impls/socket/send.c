@@ -353,6 +353,37 @@ static PetscErrorCode PetscViewerSetFromOptions_Socket(PetscOptionItems *PetscOp
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerBinaryGetSkipHeader_Socket"
+static PetscErrorCode PetscViewerBinaryGetSkipHeader_Socket(PetscViewer viewer,PetscBool  *skip)
+{
+  PetscViewer_Socket *vsocket = (PetscViewer_Socket*)viewer->data;
+
+  PetscFunctionBegin;
+  *skip = vsocket->skipheader;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerBinarySetSkipHeader_Socket"
+static PetscErrorCode PetscViewerBinarySetSkipHeader_Socket(PetscViewer viewer,PetscBool skip)
+{
+  PetscViewer_Socket *vsocket = (PetscViewer_Socket*)viewer->data;
+
+  PetscFunctionBegin;
+  vsocket->skipheader = skip;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerBinaryGetFlowControl_Socket"
+static PetscErrorCode  PetscViewerBinaryGetFlowControl_Socket(PetscViewer viewer,PetscInt *fc)
+{
+  PetscFunctionBegin;
+  *fc = 0;
+  PetscFunctionReturn(0);
+}
+
 /*MC
    PETSCVIEWERSOCKET - A viewer that writes to a Unix socket
 
@@ -380,7 +411,11 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Socket(PetscViewer v)
   v->ops->setfromoptions = PetscViewerSetFromOptions_Socket;
 
   /* lie and say this is a binary viewer; then all the XXXView_Binary() methods will work correctly on it */
-  ierr                   = PetscObjectChangeTypeName((PetscObject)v,PETSCVIEWERBINARY);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)v,PETSCVIEWERBINARY);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinarySetSkipHeader_C",PetscViewerBinarySetSkipHeader_Socket);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinaryGetSkipHeader_C",PetscViewerBinaryGetSkipHeader_Socket);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinaryGetFlowControl_C",PetscViewerBinaryGetFlowControl_Socket);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
