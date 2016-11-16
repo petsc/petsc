@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# This test is done on cg.mcs.anl.gov. It uses IPL64 MKL/BLAS packaged
+# This test is done on grind.mcs.anl.gov. It uses IPL64 MKL/BLAS packaged
 # with MATLAB.
 
 # Note: regular BLAS [with 32bit integers] conflict wtih
@@ -17,6 +17,8 @@ if __name__ == '__main__':
   sys.path.insert(0, os.path.abspath('config'))
   import configure
   configure_options = [
+    '--download-mpich=1', # /usr/bin/mpicc does not resolve '__gcov_merge_add'? and gcc-4.4 gives gcov errors
+    '--with-display=140.221.10.20:0.0', # for matlab example with graphics
     '--with-blas-lapack-dir=/soft/com/packages/MATLAB/R2016a',
     '--with-matlab=1',
     '--with-matlab-engine=1',
