@@ -10,6 +10,7 @@ typedef struct {
 
 PETSC_INTERN PetscErrorCode MatMultTranspose_SeqDense(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMultAdd_SeqDense(Mat,Vec,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatMult_SeqDense(Mat,Vec,Vec);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMult_LRC"
@@ -20,24 +21,28 @@ PetscErrorCode MatMult_LRC(Mat N,Vec x,Vec y)
   PetscScalar    *w1,*w2;
 
   PetscFunctionBegin;
-  ierr = MatMult(Na->A,x,y);CHKERRQ(ierr);
-
   /* multiply the local part of V with the local part of x */
   /* note in this call x is treated as a sequential vector  */
   ierr = MatMultTranspose_SeqDense(Na->V,x,Na->work1);CHKERRQ(ierr);
 
-  /* Form the sum of all the local multiplies : this is work2 = V'*x =
+  /* form the sum of all the local multiplies: this is work2 = V'*x =
      sum_{all processors} work1 */
-
   ierr = VecGetArray(Na->work1,&w1);CHKERRQ(ierr);
   ierr = VecGetArray(Na->work2,&w2);CHKERRQ(ierr);
   ierr = MPIU_Allreduce(w1,w2,Na->nwork,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)N));CHKERRQ(ierr);
   ierr = VecRestoreArray(Na->work1,&w1);CHKERRQ(ierr);
   ierr = VecRestoreArray(Na->work2,&w2);CHKERRQ(ierr);
 
-  /* multiply-sub y = y  + U*work2 */
-  /* note in this call y is treated as a sequential vector  */
-  ierr = MatMultAdd_SeqDense(Na->U,Na->work2,y,y);CHKERRQ(ierr);
+  if (Na->A) {
+    /* form y = A*x */
+    ierr = MatMult(Na->A,x,y);CHKERRQ(ierr);
+    /* multiply-add y = y + U*work2 */
+    /* note in this call y is treated as a sequential vector  */
+    ierr = MatMultAdd_SeqDense(Na->U,Na->work2,y,y);CHKERRQ(ierr);
+  } else {
+    /* multiply y = U*work2 */
+    ierr = MatMult_SeqDense(Na->U,Na->work2,y);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -58,7 +63,6 @@ PetscErrorCode MatDestroy_LRC(Mat N)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateLRC"
 /*@
@@ -67,7 +71,7 @@ PetscErrorCode MatDestroy_LRC(Mat N)
    Collective on Mat
 
    Input Parameters:
-+  A  - the (sparse) matrix
++  A  - the (sparse) matrix (can be NULL)
 -  U, V - two dense rectangular (tall and skinny) matrices
 
    Output Parameter:
@@ -78,6 +82,10 @@ PetscErrorCode MatDestroy_LRC(Mat N)
    object performs the matrix-vector product by first multiplying by
    A and then adding the other term.
 
+   If A is NULL then the new object behaves like a low-rank matrix U*V'.
+
+   Use V=U (or V=NULL) for a symmetric low-rank correction, A + U*U'.
+
    Level: intermediate
 @*/
 PetscErrorCode MatCreateLRC(Mat A,Mat U,Mat V,Mat *N)
@@ -87,20 +95,25 @@ PetscErrorCode MatCreateLRC(Mat A,Mat U,Mat V,Mat *N)
   Mat_LRC        *Na;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  if (A) PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidHeaderSpecific(U,MAT_CLASSID,2);
-  PetscValidHeaderSpecific(V,MAT_CLASSID,3);
+  if (V) PetscValidHeaderSpecific(V,MAT_CLASSID,3);
+  else V=U;
+  if (A) PetscCheckSameComm(A,1,U,2);
+  PetscCheckSameComm(U,2,V,3);
 
   ierr = MatGetSize(U,NULL,&k);CHKERRQ(ierr);
   ierr = MatGetSize(V,NULL,&k1);CHKERRQ(ierr);
   if (k!=k1) SETERRQ(PetscObjectComm((PetscObject)U),PETSC_ERR_ARG_INCOMP,"U and V have different number of columns");
   ierr = MatGetLocalSize(U,&m,NULL);CHKERRQ(ierr);
   ierr = MatGetLocalSize(V,&n,NULL);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(A,&m1,&n1);CHKERRQ(ierr);
-  if (m!=m1) SETERRQ(PetscObjectComm((PetscObject)U),PETSC_ERR_ARG_INCOMP,"Local dimensions of U and A do not match");
-  if (n!=n1) SETERRQ(PetscObjectComm((PetscObject)V),PETSC_ERR_ARG_INCOMP,"Local dimensions of V and A do not match");
+  if (A) {
+    ierr = MatGetLocalSize(A,&m1,&n1);CHKERRQ(ierr);
+    if (m!=m1) SETERRQ(PetscObjectComm((PetscObject)U),PETSC_ERR_ARG_INCOMP,"Local dimensions of U and A do not match");
+    if (n!=n1) SETERRQ(PetscObjectComm((PetscObject)V),PETSC_ERR_ARG_INCOMP,"Local dimensions of V and A do not match");
+  }
 
-  ierr = MatCreate(PetscObjectComm((PetscObject)A),N);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)U),N);CHKERRQ(ierr);
   ierr = MatSetSizes(*N,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)*N,MATLRC);CHKERRQ(ierr);
 
@@ -110,7 +123,7 @@ PetscErrorCode MatCreateLRC(Mat A,Mat U,Mat V,Mat *N)
 
   ierr = MatDenseGetLocalMatrix(U,&Na->U);CHKERRQ(ierr);
   ierr = MatDenseGetLocalMatrix(V,&Na->V);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+  if (A) { ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr); }
   ierr = PetscObjectReference((PetscObject)Na->U);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)Na->V);CHKERRQ(ierr);
 

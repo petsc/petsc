@@ -77,9 +77,15 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(V,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(V,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-         Create low rank created matrix
+         Create low rank correction matrix
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = MatCreateLRC(A,U,V,&LR);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,NULL,"-low_rank",&flg);CHKERRQ(ierr);
+  if (flg) {
+    /* create a low-rank matrix, with no A-matrix */
+    ierr = MatCreateLRC(NULL,U,V,&LR);CHKERRQ(ierr);
+  } else {
+    ierr = MatCreateLRC(A,U,V,&LR);CHKERRQ(ierr);
+  }
   ierr = MatSetUp(LR);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
