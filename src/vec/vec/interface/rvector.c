@@ -838,7 +838,7 @@ PetscErrorCode  VecWAXPY(Vec w,PetscScalar alpha,Vec x,Vec y)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecSetValues"
-/*@
+/*@C
    VecSetValues - Inserts or adds values into certain locations of a vector.
 
    Not Collective

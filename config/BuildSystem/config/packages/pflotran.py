@@ -4,12 +4,12 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.hghash            = '611092f80ddb'
-    self.download          = ['hg://https://bitbucket.org/pflotran/pflotran-dev']
+#    self.hghash            = '611092f80ddb'
+    self.download          = ['hg://https://bitbucket.org/pflotran/pflotran-xsdk']
     self.functions         = []
     self.includes          = []
     self.hastests          = 1
-    self.fc                = 1    # 1 means requires fortran   
+    self.fc                = 1    # 1 means requires fortran
     self.linkedbypetsc     = 0
     self.useddirectly      = 0
     return

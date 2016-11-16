@@ -1190,7 +1190,7 @@ PetscErrorCode MatDestroy(Mat *A)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetValues"
-/*@
+/*@C
    MatSetValues - Inserts or adds a block of values into a matrix.
    These values may be cached, so MatAssemblyBegin() and MatAssemblyEnd()
    MUST be called after all calls to MatSetValues() have been completed.
@@ -1229,6 +1229,9 @@ PetscErrorCode MatDestroy(Mat *A)
    for users of block sparse formats (MATSEQBAIJ and MATMPIBAIJ).
 
    Level: beginner
+
+   Developer Notes: This is labeled with C so does not automatically generate Fortran stubs and interfaces
+                    because it requires multiple Fortran interfaces depending on which arguments are scalar or arrays.
 
    Concepts: matrices^putting entries in
 
@@ -1714,7 +1717,7 @@ PetscErrorCode MatSetStencil(Mat mat,PetscInt dim,const PetscInt dims[],const Pe
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetValuesBlocked"
-/*@
+/*@C
    MatSetValuesBlocked - Inserts or adds a block of values into a matrix.
 
    Not Collective
@@ -2065,7 +2068,7 @@ PetscErrorCode MatGetLayouts(Mat A,PetscLayout *rmap,PetscLayout *cmap)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetValuesLocal"
-/*@
+/*@C
    MatSetValuesLocal - Inserts or adds values into certain locations of a matrix,
    using a local ordering of the nodes.
 
@@ -2096,6 +2099,9 @@ PetscErrorCode MatGetLayouts(Mat A,PetscLayout *rmap,PetscLayout *cmap)
    Level: intermediate
 
    Concepts: matrices^putting entries in with local numbering
+
+   Developer Notes: This is labeled with C so does not automatically generate Fortran stubs and interfaces
+                    because it requires multiple Fortran interfaces depending on which arguments are scalar or arrays.
 
 .seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetLocalToGlobalMapping(),
            MatSetValueLocal()
@@ -2160,7 +2166,7 @@ PetscErrorCode MatSetValuesLocal(Mat mat,PetscInt nrow,const PetscInt irow[],Pet
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetValuesBlockedLocal"
-/*@
+/*@C
    MatSetValuesBlockedLocal - Inserts or adds values into certain locations of a matrix,
    using a local ordering of the nodes a block at a time.
 
@@ -2190,6 +2196,9 @@ PetscErrorCode MatSetValuesLocal(Mat mat,PetscInt nrow,const PetscInt irow[],Pet
    MUST be called after all calls to MatSetValuesBlockedLocal() have been completed.
 
    Level: intermediate
+
+   Developer Notes: This is labeled with C so does not automatically generate Fortran stubs and interfaces
+                    because it requires multiple Fortran interfaces depending on which arguments are scalar or arrays.
 
    Concepts: matrices^putting blocked values in with local numbering
 
