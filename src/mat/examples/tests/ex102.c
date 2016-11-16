@@ -86,7 +86,6 @@ int main(int argc,char **args)
   } else {
     ierr = MatCreateLRC(A,U,V,&LR);CHKERRQ(ierr);
   }
-  ierr = MatSetUp(LR);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Create test vectors

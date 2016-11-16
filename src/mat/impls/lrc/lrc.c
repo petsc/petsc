@@ -134,6 +134,7 @@ PetscErrorCode MatCreateLRC(Mat A,Mat U,Mat V,Mat *N)
   (*N)->ops->destroy = MatDestroy_LRC;
   (*N)->ops->mult    = MatMult_LRC;
   (*N)->assembled    = PETSC_TRUE;
+  (*N)->preallocated = PETSC_TRUE;
   (*N)->cmap->N      = V->rmap->N;
   (*N)->rmap->N      = U->rmap->N;
   (*N)->cmap->n      = V->rmap->n;
