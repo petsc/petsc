@@ -329,7 +329,7 @@ for dir in dirs:
 
   def installShare(self):
     self.copies.extend(self.copytree(self.rootShareDir, self.destShareDir))
-    if os.path.join(self.destShareDir,'petsc','examples'):
+    if os.path.exists(os.path.join(self.destShareDir,'petsc','examples')):
       shutil.rmtree(os.path.join(self.destShareDir,'petsc','examples'))
     os.mkdir(os.path.join(self.destShareDir,'petsc','examples'))
     self.copyExamples(self.rootDir,os.path.join(self.destShareDir,'petsc','examples'))
