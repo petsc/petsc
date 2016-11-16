@@ -11,7 +11,7 @@ foreach TEST ($*)
   source $dir/confignightly/${TNAME}
 
   $SSH $USR@$MACH $DASHN "$LOC/bin/maint/zapall" &
-  sleep 60 # If 2 invocations on the same machine - they stomp in each other
+  sleep 10 # If 2 invocations on the same machine - they stomp in each other
 end
 wait
 
