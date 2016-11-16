@@ -186,7 +186,13 @@ PetscErrorCode MatMultAdd_SeqELL(Mat A,Vec xx,Vec yy,Vec zz)
   PetscInt          m=A->rmap->n; /* number of rows */
   const PetscInt    *acolidx=a->colidx;
   PetscInt          i,j;
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__INTEL_COMPILER)
+  __m512d           vec_x,vec_y,vec_z,vec_vals;
+  __m256i           vec_idx;
+  __mmask8          mask=0xff;
+#else
   PetscScalar       sum1,sum2,sum3,sum4,sum5,sum6,sum7,sum8;
+#endif
 
 #if defined(PETSC_HAVE_PRAGMA_DISJOINT)
 #pragma disjoint(*x,*y,*aa)
@@ -196,6 +202,21 @@ PetscErrorCode MatMultAdd_SeqELL(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
   for (i=0; i<(m>>3); i++) { /* loop over slices */
+#if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__INTEL_COMPILER)
+    vec_y = _mm512_load_pd(&y[8*i]);
+    #pragma novector
+    for (j=0; j<a->rlenmax; acolidx+=8,aval+=8,j++) {
+      /*
+      vec_idx  = _mm512_loadunpackhi_epi32(vec_idx,acolidx);
+      vec_vals = _mm512_loadunpackhi_pd(vec_vals,aval);
+      */
+      vec_idx  = _mm256_mask_load_epi32(vec_idx,mask,acolidx);
+      vec_vals = _mm512_load_pd(aval);
+      vec_x    = _mm512_i32gather_pd(vec_idx,x,_MM_SCALE_8);
+      vec_y    = _mm512_fmadd_pd(vec_vals,vec_x,vec_y);
+    }
+    _mm512_store_pd(&z[8*i],vec_y);
+#else
     sum1 = y[8*i];
     sum2 = y[8*i+1];
     sum3 = y[8*i+2];
@@ -222,6 +243,7 @@ PetscErrorCode MatMultAdd_SeqELL(Mat A,Vec xx,Vec yy,Vec zz)
     z[8*i+5] = sum6;
     z[8*i+6] = sum7;
     z[8*i+7] = sum8;
+#endif
   }
 
   ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
