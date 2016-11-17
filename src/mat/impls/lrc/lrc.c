@@ -77,6 +77,52 @@ PetscErrorCode MatDestroy_LRC(Mat N)
   ierr = VecDestroy(&Na->xl);CHKERRQ(ierr);
   ierr = VecDestroy(&Na->yl);CHKERRQ(ierr);
   ierr = PetscFree(N->data);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)N,"MatLRCGetMats_C",0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatLRCGetMats_LRC"
+PetscErrorCode MatLRCGetMats_LRC(Mat N,Mat *A,Mat *U,Vec *c,Mat *V)
+{
+  Mat_LRC *Na = (Mat_LRC*)N->data;
+
+  PetscFunctionBegin;
+  if (A) *A = Na->A;
+  if (U) *U = Na->U;
+  if (c) *c = Na->c;
+  if (V) *V = Na->V;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatLRCGetMats"
+/*@
+   MatLRCGetMats - Returns the constituents of an LRC matrix
+
+   Collective on Mat
+
+   Input Parameter:
+.  N    - matrix of type LRC
+
+   Output Parameters:
++  A    - the (sparse) matrix
+.  U, V - two dense rectangular (tall and skinny) matrices
+-  c    - a sequential vector containing the diagonal of C
+
+   Note:
+   The returned matrices need not be destroyed by the caller.
+
+   Level: intermediate
+
+.seealso: MatCreateLRC()
+@*/
+PetscErrorCode  MatLRCGetMats(Mat N,Mat *A,Mat *U,Vec *c,Mat *V)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscUseMethod(N,"MatLRCGetMats_C",(Mat,Mat*,Mat*,Vec*,Mat*),(N,A,U,c,V));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -88,12 +134,12 @@ PetscErrorCode MatDestroy_LRC(Mat N)
    Collective on Mat
 
    Input Parameters:
-+  A  - the (sparse) matrix (can be NULL)
++  A    - the (sparse) matrix (can be NULL)
 .  U, V - two dense rectangular (tall and skinny) matrices
--  c  - a sequential vector containing the diagonal of C (can be NULL) 
+-  c    - a sequential vector containing the diagonal of C (can be NULL) 
 
    Output Parameter:
-.  N - the matrix that represents A + U*C*V'
+.  N    - the matrix that represents A + U*C*V'
 
    Notes:
    The matrix A + U*C*V' is not formed! Rather the new matrix
@@ -110,6 +156,8 @@ PetscErrorCode MatDestroy_LRC(Mat N)
    If c is NULL then the low-rank correction is just U*V'.
 
    Level: intermediate
+
+.seealso: MatLRCGetMats()
 @*/
 PetscErrorCode MatCreateLRC(Mat A,Mat U,Vec c,Mat V,Mat *N)
 {
@@ -182,6 +230,8 @@ PetscErrorCode MatCreateLRC(Mat A,Mat U,Vec c,Mat V,Mat *N)
   (*N)->rmap->N      = U->rmap->N;
   (*N)->cmap->n      = V->rmap->n;
   (*N)->rmap->n      = U->rmap->n;
+
+  ierr = PetscObjectComposeFunction((PetscObject)(*N),"MatLRCGetMats_C",MatLRCGetMats_LRC);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

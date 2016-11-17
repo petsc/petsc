@@ -216,6 +216,7 @@ PETSC_EXTERN PetscErrorCode MatCreateShell(MPI_Comm,PetscInt,PetscInt,PetscInt,P
 PETSC_EXTERN PetscErrorCode MatCreateNormal(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateNormalHermitian(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateLRC(Mat,Mat,Vec,Mat,Mat*);
+PETSC_EXTERN PetscErrorCode MatLRCGetMats(Mat,Mat*,Mat*,Vec*,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateIS(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,ISLocalToGlobalMapping,ISLocalToGlobalMapping,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateSeqAIJCRL(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateMPIAIJCRL(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
