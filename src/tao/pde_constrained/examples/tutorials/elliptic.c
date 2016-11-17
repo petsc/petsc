@@ -1086,7 +1086,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
     ierr = MatCreateDense(PETSC_COMM_WORLD,ysubnlocal,PETSC_DECIDE,user->ndesign,1,user->ones,&user->Ones);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(user->Ones, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(user->Ones, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatCreateLRC(user->DSG,user->Ones,user->Ones,&user->JsBlock);CHKERRQ(ierr);
+    ierr = MatCreateLRC(user->DSG,user->Ones,NULL,user->Ones,&user->JsBlock);CHKERRQ(ierr);
     ierr = MatSetUp(user->JsBlock);CHKERRQ(ierr);
   } else {
     /* Create matrix-free shell user->Js for computing (A + h^3*e*e^T)*x */

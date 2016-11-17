@@ -114,6 +114,9 @@
       <h4>VecScatter:</h4>
       <h4>PetscSection:</h4>
       <h4>Mat:</h4>
+      <ul>
+        <li>Added a new argument in MatCreateLRC() to express the low-rank correction as A+U*C*V'.</li>
+      </ul>
       <h4>PC:</h4>
       <ul>
         <li>Added PCMGSetNumberSmooth()</li>
@@ -138,6 +141,7 @@
         <li>Changed prototypes for DMCompositeGather() and DMCompositeGatherArray()</li>
       <li>Replace calls to DMDACreateXd() with DMDACreateXd(), [DMSetFromOptions()] DMSetUp()</li>
       <li>DMDACreateXd() no longer can take negative values for dimensons, instead pass positive values and call DMSetFromOptions() immediately after</li>
+      </ul>
       <h4>DMPlex:</h4>
       <h4>PetscViewer:</h4>
       <h4>SYS:</h4>
