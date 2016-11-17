@@ -7,25 +7,30 @@ typedef struct {
   Vec         c;           /* sequential vector containing the diagonal of C */
   Vec         work1,work2; /* sequential vectors that hold partial products */
   PetscMPIInt nwork;       /* length of work vectors */
+  Vec         xl,yl;       /* auxiliary sequential vectors for matmult operation */
 } Mat_LRC;
 
-
-PETSC_INTERN PetscErrorCode MatMultTranspose_SeqDense(Mat,Vec,Vec);
-PETSC_INTERN PetscErrorCode MatMultAdd_SeqDense(Mat,Vec,Vec,Vec);
-PETSC_INTERN PetscErrorCode MatMult_SeqDense(Mat,Vec,Vec);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMult_LRC"
 PetscErrorCode MatMult_LRC(Mat N,Vec x,Vec y)
 {
-  Mat_LRC        *Na = (Mat_LRC*)N->data;
-  PetscErrorCode ierr;
-  PetscScalar    *w1,*w2;
+  Mat_LRC           *Na = (Mat_LRC*)N->data;
+  PetscErrorCode    ierr;
+  PetscScalar       *w1,*w2;
+  const PetscScalar *a;
 
   PetscFunctionBegin;
+  ierr = VecGetArrayRead(x,&a);CHKERRQ(ierr);
+  ierr = VecPlaceArray(Na->xl,a);CHKERRQ(ierr);
+  ierr = VecGetLocalVector(y,Na->yl);CHKERRQ(ierr);
+
   /* multiply the local part of V with the local part of x */
-  /* note in this call x is treated as a sequential vector  */
-  ierr = MatMultTranspose_SeqDense(Na->V,x,Na->work1);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+  ierr = MatMultHermitianTranspose(Na->V,Na->xl,Na->work1);CHKERRQ(ierr);
+#else
+  ierr = MatMultTranspose(Na->V,Na->xl,Na->work1);CHKERRQ(ierr);
+#endif
 
   /* form the sum of all the local multiplies: this is work2 = V'*x =
      sum_{all processors} work1 */
@@ -43,12 +48,15 @@ PetscErrorCode MatMult_LRC(Mat N,Vec x,Vec y)
     /* form y = A*x */
     ierr = MatMult(Na->A,x,y);CHKERRQ(ierr);
     /* multiply-add y = y + U*work2 */
-    /* note in this call y is treated as a sequential vector  */
-    ierr = MatMultAdd_SeqDense(Na->U,Na->work2,y,y);CHKERRQ(ierr);
+    ierr = MatMultAdd(Na->U,Na->work2,Na->yl,Na->yl);CHKERRQ(ierr);
   } else {
     /* multiply y = U*work2 */
-    ierr = MatMult_SeqDense(Na->U,Na->work2,y);CHKERRQ(ierr);
+    ierr = MatMult(Na->U,Na->work2,Na->yl);CHKERRQ(ierr);
   }
+
+  ierr = VecRestoreArrayRead(x,&a);CHKERRQ(ierr);
+  ierr = VecResetArray(Na->xl);CHKERRQ(ierr);
+  ierr = VecRestoreLocalVector(y,Na->yl);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -66,6 +74,8 @@ PetscErrorCode MatDestroy_LRC(Mat N)
   ierr = VecDestroy(&Na->c);CHKERRQ(ierr);
   ierr = VecDestroy(&Na->work1);CHKERRQ(ierr);
   ierr = VecDestroy(&Na->work2);CHKERRQ(ierr);
+  ierr = VecDestroy(&Na->xl);CHKERRQ(ierr);
+  ierr = VecDestroy(&Na->yl);CHKERRQ(ierr);
   ierr = PetscFree(N->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -160,6 +170,9 @@ PetscErrorCode MatCreateLRC(Mat A,Mat U,Vec c,Mat V,Mat *N)
   ierr = VecCreateSeq(PETSC_COMM_SELF,U->cmap->N,&Na->work1);CHKERRQ(ierr);
   ierr = VecDuplicate(Na->work1,&Na->work2);CHKERRQ(ierr);
   ierr = PetscMPIIntCast(U->cmap->N,&Na->nwork);CHKERRQ(ierr);
+
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,V->rmap->n,NULL,&Na->xl);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,U->rmap->n,NULL,&Na->yl);CHKERRQ(ierr);
 
   (*N)->ops->destroy = MatDestroy_LRC;
   (*N)->ops->mult    = MatMult_LRC;
