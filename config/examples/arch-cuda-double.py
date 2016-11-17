@@ -1,7 +1,5 @@
 #!/usr/bin/python
 #
-# This test build is with Cuda 5.5, with default thrust, and cusplibrary-0.4.0 separately installed.
-#
 if __name__ == '__main__':
   import sys
   import os
@@ -14,7 +12,7 @@ if __name__ == '__main__':
     '--with-thrust=1',
     '--with-precision=double',
     '--with-clanguage=c',
-    '--with-cuda-arch=sm_13'
+    '--with-cuda-arch=sm_20'
 
   ]
   configure.petsc_configure(configure_options)

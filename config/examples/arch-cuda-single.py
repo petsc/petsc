@@ -11,6 +11,6 @@ if __name__ == '__main__':
     '--with-thrust=1',
     '--with-precision=single',
     '--with-clanguage=c',
-    '--with-cuda-arch=sm_10'
+    '--with-cuda-arch=sm_20'
   ]
   configure.petsc_configure(configure_options)
