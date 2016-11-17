@@ -247,6 +247,7 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
                           "warning: loop not entered at top",
                           "is deprecated",
                           "is superseded",
+                          "Warning: You are using gcc version '4.8.4'. The version of gcc is not supported. The version currently supported with MEX is '4.7.x'.",
                           "warning: no debug symbols in executable (-arch x86_64)",
                           "(aka 'const double *') doesn't match specified 'MPI' type tag that requires 'double *'",
                           "(aka 'const int *') doesn't match specified 'MPI' type tag that requires 'int *'",
