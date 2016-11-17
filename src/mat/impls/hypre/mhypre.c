@@ -476,8 +476,7 @@ static PetscErrorCode MatConvert_HYPRE_AIJ(Mat A, MatType mtype, MatReuse reuse,
       Mat_MPIAIJ *b;
       Mat_SeqAIJ *d,*o;
 
-      ierr = MatCreateMPIAIJWithSplitArrays(comm,m,n,PETSC_DECIDE,PETSC_DECIDE,dii,
-                                            djj,da,oii,ojj,oa,B);CHKERRQ(ierr);
+      ierr = MatCreateMPIAIJWithSplitArrays(comm,m,n,PETSC_DECIDE,PETSC_DECIDE,dii,djj,da,oii,ojj,oa,B);CHKERRQ(ierr);
       /* hack MPIAIJ */
       b          = (Mat_MPIAIJ*)((*B)->data);
       d          = (Mat_SeqAIJ*)b->A->data;
@@ -488,8 +487,7 @@ static PetscErrorCode MatConvert_HYPRE_AIJ(Mat A, MatType mtype, MatReuse reuse,
       o->free_ij = PETSC_TRUE;
     } else if (reuse == MAT_INPLACE_MATRIX) {
       Mat T;
-      ierr = MatCreateMPIAIJWithSplitArrays(comm,m,n,PETSC_DECIDE,PETSC_DECIDE,dii,
-                                            djj,da,oii,ojj,oa,&T);CHKERRQ(ierr);
+      ierr = MatCreateMPIAIJWithSplitArrays(comm,m,n,PETSC_DECIDE,PETSC_DECIDE,dii,djj,da,oii,ojj,oa,&T);CHKERRQ(ierr);
       hypre_CSRMatrixI(hdiag)    = NULL;
       hypre_CSRMatrixJ(hdiag)    = NULL;
       hypre_CSRMatrixData(hdiag) = NULL;
