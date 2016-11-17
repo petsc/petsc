@@ -81,7 +81,8 @@ static PetscErrorCode MatHYPRE_CreateFromMat(Mat A, Mat_HYPRE *hA)
   PetscInt       rstart,rend,cstart,cend;
 
   PetscFunctionBegin;
-  ierr   = MatSetUp(A);CHKERRQ(ierr);
+  ierr   = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
+  ierr   = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
   rstart = A->rmap->rstart;
   rend   = A->rmap->rend;
   cstart = A->cmap->rstart;
@@ -758,6 +759,7 @@ static PetscErrorCode MatDestroy_HYPRE(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_hypre_is_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatPtAP_seqaij_hypre_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatPtAP_mpiaij_hypre_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatHYPRESetPreallocation_C",NULL);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -791,7 +793,167 @@ static PetscErrorCode MatAssemblyEnd_HYPRE(Mat A, MatAssemblyType mode)
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
+  if (mode == MAT_FLUSH_ASSEMBLY) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MAT_FLUSH_ASSEMBLY currently not supported with MATHYPRE");
   PetscStackCallStandard(HYPRE_IJMatrixAssemble,(hA->ij));
+  PetscFunctionReturn(0);
+}
+
+#define MATHYPRE_SCRATCH 2048
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSetValues_HYPRE"
+PetscErrorCode MatSetValues_HYPRE(Mat A, PetscInt nr, const PetscInt rows[], PetscInt nc, const PetscInt cols[], const PetscScalar v[], InsertMode ins)
+{
+  Mat_HYPRE          *hA = (Mat_HYPRE*)A->data;
+  PetscScalar        *vals = (PetscScalar *)v;
+  PetscScalar        sscr[MATHYPRE_SCRATCH];
+  PetscInt           cscr[2][MATHYPRE_SCRATCH];
+  PetscInt           i,nzc;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  for (i=0,nzc=0;i<nc;i++) {
+    if (cols[i] >= 0) {
+      cscr[0][nzc  ] = cols[i];
+      cscr[1][nzc++] = i;
+    }
+  }
+  if (!nzc) PetscFunctionReturn(0);
+
+  if (ins == ADD_VALUES) {
+    for (i=0;i<nr;i++) {
+      if (rows[i] >= 0) {
+        PetscInt j;
+        for (j=0;j<nzc;j++) sscr[j] = vals[cscr[1][j]];
+        PetscStackCallStandard(HYPRE_IJMatrixAddToValues,(hA->ij,1,&nzc,rows+i,cscr[0],sscr));
+      }
+      vals += nc;
+    }
+  } else { /* INSERT_VALUES */
+#if defined(PETSC_USE_DEBUG)
+    /* Insert values cannot be used to insert offproc entries */
+    PetscInt rst,ren;
+    ierr = MatGetOwnershipRange(A,&rst,&ren);CHKERRQ(ierr);
+    for (i=0;i<nr;i++)
+      if (rows[i] >= 0 && (rows[i] < rst || rows[i] >= ren)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot use INSERT_VALUES for off-proc entries with MatHYPRE. Use ADD_VALUES instead");
+#endif
+    for (i=0;i<nr;i++) {
+      if (rows[i] >= 0) {
+        PetscInt j;
+        for (j=0;j<nzc;j++) sscr[j] = vals[cscr[1][j]];
+        PetscStackCallStandard(HYPRE_IJMatrixSetValues,(hA->ij,1,&nzc,rows+i,cscr[0],sscr));
+      }
+      vals += nc;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatHYPRESetPreallocation_HYPRE"
+static PetscErrorCode MatHYPRESetPreallocation_HYPRE(Mat A, PetscInt dnz, const PetscInt dnnz[], PetscInt onz, const PetscInt onnz[])
+{
+  Mat_HYPRE          *hA = (Mat_HYPRE*)A->data;
+  PetscInt           i,*hdnnz,*honnz;
+  PetscInt           rs,re,cs,ce;
+  PetscMPIInt        size;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
+  rs   = A->rmap->rstart;
+  re   = A->rmap->rend;
+  cs   = A->cmap->rstart;
+  ce   = A->cmap->rend;
+  if (!hA->ij) {
+    PetscStackCallStandard(HYPRE_IJMatrixCreate,(hA->comm,rs,re-1,cs,ce-1,&hA->ij));
+    PetscStackCallStandard(HYPRE_IJMatrixSetObjectType,(hA->ij,HYPRE_PARCSR));
+  } else {
+    PetscInt hrs,hre,hcs,hce;
+    PetscStackCallStandard(HYPRE_IJMatrixGetLocalRange,(hA->ij,&hrs,&hre,&hcs,&hce));
+    if (hre-hrs+1 != re -rs) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inconsistent local rows: IJMatrix [%D,%D), PETSc [%D,%d)",hrs,hre+1,rs,re);
+    if (hce-hcs+1 != ce -cs) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inconsistent local cols: IJMatrix [%D,%D), PETSc [%D,%d)",hcs,hce+1,cs,ce);
+  }
+  PetscStackCallStandard(HYPRE_IJMatrixInitialize,(hA->ij));
+
+  if (!dnnz) {
+    ierr = PetscMalloc1(A->rmap->n,&hdnnz);CHKERRQ(ierr);
+    for (i=0;i<A->rmap->n;i++) hdnnz[i] = dnz;
+  } else {
+    hdnnz = (PetscInt*)dnnz;
+  }
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  if (size > 1) {
+    if (!onnz) {
+      ierr = PetscMalloc1(A->rmap->n,&honnz);CHKERRQ(ierr);
+      for (i=0;i<A->rmap->n;i++) honnz[i] = onz;
+    } else {
+      honnz = (PetscInt*)onnz;
+    }
+    PetscStackCallStandard(HYPRE_IJMatrixSetDiagOffdSizes,(hA->ij,hdnnz,honnz));
+  } else {
+    honnz = NULL;
+    PetscStackCallStandard(HYPRE_IJMatrixSetRowSizes,(hA->ij,hdnnz));
+  }
+  if (!dnnz) {
+    ierr = PetscFree(hdnnz);CHKERRQ(ierr);
+  }
+  if (!onnz && honnz) {
+    ierr = PetscFree(honnz);CHKERRQ(ierr);
+  }
+  ierr = MatSetUp(A);CHKERRQ(ierr);
+
+  /* SetDiagOffdSizes sets hypre_AuxParCSRMatrixNeedAux(aux_matrix) = 0 */
+  {
+    hypre_AuxParCSRMatrix *aux_matrix;
+    aux_matrix = (hypre_AuxParCSRMatrix*)hypre_IJMatrixTranslator(hA->ij);
+    hypre_AuxParCSRMatrixNeedAux(aux_matrix) = 1;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatHYPRESetPreallocation - Preallocates memory for a sparse parallel matrix in HYPRE IJ format
+
+   Collective on Mat
+
+   Input Parameters:
++  A - the matrix
+.  dnz  - number of nonzeros per row in DIAGONAL portion of local submatrix
+          (same value is used for all local rows)
+.  dnnz - array containing the number of nonzeros in the various rows of the
+          DIAGONAL portion of the local submatrix (possibly different for each row)
+          or NULL (PETSC_NULL_INTEGER in Fortran), if d_nz is used to specify the nonzero structure.
+          The size of this array is equal to the number of local rows, i.e 'm'.
+          For matrices that will be factored, you must leave room for (and set)
+          the diagonal entry even if it is zero.
+.  onz  - number of nonzeros per row in the OFF-DIAGONAL portion of local
+          submatrix (same value is used for all local rows).
+-  onnz - array containing the number of nonzeros in the various rows of the
+          OFF-DIAGONAL portion of the local submatrix (possibly different for
+          each row) or NULL (PETSC_NULL_INTEGER in Fortran), if o_nz is used to specify the nonzero
+          structure. The size of this array is equal to the number
+          of local rows, i.e 'm'.
+
+   Notes: If the *nnz parameter is given then the *nz parameter is ignored; for sequential matrices, onz and onnz are ignored.
+
+   Level: intermediate
+
+.keywords: matrix, aij, compressed row, sparse, parallel
+
+.seealso: MatCreate(), MatMPIAIJSetPreallocation, MATHYPRE
+@*/
+#undef __FUNCT__
+#define __FUNCT__ "MatHYPRESetPreallocation"
+PetscErrorCode MatHYPRESetPreallocation(Mat A, PetscInt dnz, const PetscInt dnnz[], PetscInt onz, const PetscInt onnz[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidType(A,1);
+  ierr = PetscTryMethod(A,"MatHYPRESetPreallocation_C",(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]),(A,dnz,dnnz,onz,onnz));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -906,6 +1068,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
   B->ops->destroy       = MatDestroy_HYPRE;
   B->ops->assemblyend   = MatAssemblyEnd_HYPRE;
   B->ops->ptap          = MatPtAP_HYPRE_HYPRE;
+  B->ops->setvalues     = MatSetValues_HYPRE;
 
   ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)B),&hB->comm);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATHYPRE);CHKERRQ(ierr);
@@ -913,6 +1076,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_hypre_is_C",MatConvert_HYPRE_IS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatPtAP_seqaij_hypre_C",MatPtAP_AIJ_HYPRE);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatPtAP_mpiaij_hypre_C",MatPtAP_AIJ_HYPRE);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatHYPRESetPreallocation_C",MatHYPRESetPreallocation_HYPRE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
