@@ -12,7 +12,7 @@ class Configure(config.package.Package):
     self.cxx              = 0
     self.complex          = 1
     self.cudaArch         = ''
-    self.CUDAVersion      = '4020' # Minimal cuda version is 4.2
+    self.CUDAVersion      = '5000' # Minimal cuda version is 5.0
     self.CUDAVersionStr   = str(int(self.CUDAVersion)/1000) + '.' + str(int(self.CUDAVersion)/10%10)
     self.hastests         = 0
     self.hastestsdatafiles= 0
@@ -93,7 +93,7 @@ class Configure(config.package.Package):
       self.setCompilers.pushLanguage('CUDA')
 #Not setting -arch if with-cuda-arch is not specified uses nvcc default architecture
       if 'with-cuda-arch' in self.argDB:
-        if not self.argDB['with-cuda-arch'] in ['compute_10', 'compute_11', 'compute_12', 'compute_13', 'compute_20', 'compute_21', 'compute_30', 'compute_35', 'compute_50', 'sm_10', 'sm_11', 'sm_12', 'sm_13', 'sm_20', 'sm_21', 'sm_30', 'sm_35', 'sm_50']:
+        if not self.argDB['with-cuda-arch'] in ['compute_10','compute_11','compute_12','compute_13','compute_20','compute_30','compute_32','compute_35','compute_37','compute_50','compute_52','compute_53','compute_60','compute_61','compute_62','sm_10','sm_11','sm_12','sm_13','sm_20','sm_21','sm_30','sm_32','sm_35','sm_37','sm_50','sm_52','sm_53','sm_60','sm_61','sm_62']:
           raise RuntimeError('CUDA Error: specified CUDA architecture invalid.  Example of valid architecture: \'-with-cuda-arch=sm_20\'')
         else:
           self.cudaArch = '-arch='+ self.argDB['with-cuda-arch']
