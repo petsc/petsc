@@ -251,7 +251,7 @@
       End Interface
 
       Interface
-        Subroutine MatRowIJF90(v,sh,sym,bl,n,ia,ja,d,ierr)
+        Subroutine MatGetRowIJF90(v,sh,sym,bl,n,ia,ja,d,ierr)
           USE_MAT_HIDE
           PetscInt, pointer :: ia(:), ja(:)
           PetscInt  n,sh
