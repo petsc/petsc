@@ -1947,11 +1947,23 @@ runex101:
 	   else printf "${PWD}\nPossible problem with ex101_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex101.tmp
 
-runex102:
-	-@${MPIEXEC} -n 2 ./ex102 -view_product > ex102.tmp 2>&1; \
-	   if (${DIFF} output/ex102_1.out ex102.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex102, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex102.tmp
+runex102_1:
+	-@${MPIEXEC} -n 2 ./ex102 -view_product > ex102_1.tmp 2>&1; \
+	   if (${DIFF} output/ex102_1.out ex102_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex102_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex102_1.tmp
+
+runex102_2:
+	-@${MPIEXEC} -n 2 ./ex102 -low_rank -view_product > ex102_2.tmp 2>&1; \
+	   if (${DIFF} output/ex102_2.out ex102_2.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex102_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex102_2.tmp
+
+runex102_3:
+	-@${MPIEXEC} -n 2 ./ex102 -use_c -view_product > ex102_3.tmp 2>&1; \
+	   if (${DIFF} output/ex102_3.out ex102_3.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex102_3, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex102_3.tmp
 
 runex103:
 	-@${MPIEXEC} -n 6 ./ex103 > ex103.tmp 2>&1; \
@@ -2771,7 +2783,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 runex2_2 runex
                                  ex45.PETSc runex45 ex45.rm ex55.PETSc runex55 runex55_2 ex55.rm \
                                  ex59.PETSc runex59 runex59_2 runex59_baij runex59_2_baij  runex59_sbaij runex59_2_sbaij ex59.rm\
                                  ex60.PETSc runex60 ex60.rm ex61.PETSc runex61 runex61_2 ex61.rm ex65.PETSc \
-                                 ex65.rm ex66.PETSc ex66.rm ex68.PETSc runex68 ex68.rm ex98.PETSc runex98 ex98.rm ex102.PETSc runex102 ex102.rm\
+                                 ex65.rm ex66.PETSc ex66.rm ex68.PETSc runex68 ex68.rm ex98.PETSc runex98 ex98.rm ex102.PETSc runex102_1 runex102_2 runex102_3 ex102.rm\
                                  ex52.PETSc runex52_1 runex52_2 runex52_3 runex52_4 ex52.rm \
                                  ex86.PETSc runex86 runex86_2 runex86_3 ex86.rm printdot \
                                  ex88.PETSc runex88 ex88.rm ex92.PETSc runex92 runex92_2 runex92_3 runex92_4 ex92.rm \
