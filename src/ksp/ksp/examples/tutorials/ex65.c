@@ -112,10 +112,13 @@ static PetscErrorCode CreateRestriction(DM dm1,DM dm2,Mat *mat)
 {
   DM             da1,da2;
   PetscErrorCode ierr;
+  Mat            tmat;
 
   ierr = DMShellGetContext(dm1,(void**)&da1);CHKERRQ(ierr);
   ierr = DMShellGetContext(dm2,(void**)&da2);CHKERRQ(ierr);
-  ierr = DMCreateInterpolation(da1,da2,mat,NULL);CHKERRQ(ierr);
+  ierr = DMCreateInterpolation(da1,da2,&tmat,NULL);CHKERRQ(ierr);
+  ierr = MatTranspose(tmat,MAT_INITIAL_MATRIX,mat);CHKERRQ(ierr);
+  ierr = MatDestroy(&tmat);CHKERRQ(ierr);
   return 0;
 }
 

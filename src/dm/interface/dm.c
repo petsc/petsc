@@ -1090,6 +1090,7 @@ PetscErrorCode  DMCreateRestriction(DM dm1,DM dm2,Mat *mat)
   PetscValidHeaderSpecific(dm1,DM_CLASSID,1);
   PetscValidHeaderSpecific(dm2,DM_CLASSID,2);
   ierr = PetscLogEventBegin(DM_CreateRestriction,dm1,dm2,0,0);CHKERRQ(ierr);
+  if (!dm1->ops->createrestriction) SETERRQ(PetscObjectComm((PetscObject)dm1),PETSC_ERR_SUP,"DMCreateRestriction not implemented for this type");
   ierr = (*dm1->ops->createrestriction)(dm1,dm2,mat);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(DM_CreateRestriction,dm1,dm2,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
