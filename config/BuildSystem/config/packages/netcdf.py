@@ -4,8 +4,10 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download  = ['ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-4.3.2.tar.gz',
-                      'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/netcdf-4.3.2.tar.gz']
+    self.download        = ['ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-4.4.1.tar.gz',
+                            'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/netcdf-4.4.1.tar.gz']
+    self.download_bsd    = ['ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-4.3.2.tar.gz',
+                            'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/netcdf-4.3.2.tar.gz']
     self.functions       = ['nccreate']
     self.includes        = ['netcdf.h']
     self.liblist         = [['libnetcdf.a']]
@@ -28,3 +30,8 @@ class Configure(config.package.GNUPackage):
     args.append('--disable-dap')
     args.append('--disable-hdf4')
     return args
+
+  def configure(self):
+    if config.setCompilers.Configure.isFreeBSD(self.log):
+      self.download = self.download_bsd
+    return config.package.Package.configure(self)

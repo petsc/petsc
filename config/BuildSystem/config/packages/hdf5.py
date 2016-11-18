@@ -4,7 +4,11 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download     = ['http://www.hdfgroup.org/ftp/HDF5/prev-releases/hdf5-1.8.12/src/hdf5-1.8.12.tar.gz',
+    self.download     = ['https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.0-patch1/src/hdf5-1.10.0-patch1.tar.gz',
+                         'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hdf5-1.10.0-patch1.tar.gz']
+    self.download_sol = ['https://support.hdfgroup.org/ftp/HDF5/current18/src/hdf5-1.8.18.tar.gz',
+                         'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hdf5-1.8.18.tar.gz']
+    self.download_bsd = ['http://www.hdfgroup.org/ftp/HDF5/prev-releases/hdf5-1.8.12/src/hdf5-1.8.12.tar.gz',
                          'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hdf5-1.8.12.tar.gz']
 # David Moulton reports that HDF5 configure can fail on NERSC systems and this can be worked around by removing the
 #   getpwuid from the test for ac_func in gethostname getpwuid getrusage lstat
@@ -37,6 +41,7 @@ class Configure(config.package.GNUPackage):
   def formGNUConfigureArgs(self):
     ''' Add HDF5 specific --enable-parallel flag and enable Fortran if available '''
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
+    args.append('--with-default-api-version=v18') # for hdf-1.10
     args.append('--enable-parallel')
     if hasattr(self.compilers, 'FC'):
       self.setCompilers.pushLanguage('FC')
@@ -55,3 +60,10 @@ class Configure(config.package.GNUPackage):
     if self.libraries.check(self.dlib, 'H5Pset_fapl_mpio'):
       self.addDefine('HAVE_H5PSET_FAPL_MPIO', 1)
     return
+
+  def configure(self):
+    if config.setCompilers.Configure.isFreeBSD(self.log):
+      self.download = self.download_bsd
+    elif config.setCompilers.Configure.isSolaris(self.log):
+      self.download = self.download_sol
+    return config.package.Package.configure(self)
