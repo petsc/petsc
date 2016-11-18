@@ -4,11 +4,11 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download         = ['http://www.mpich.org/static/downloads/3.1.3/mpich-3.1.3.tar.gz',
-                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.1.3.tar.gz']
-    self.download_cygwin  = ['http://www.mpich.org/static/downloads/3.1/mpich-3.1.tar.gz',
+    self.download         = ['http://www.mpich.org/static/downloads/3.3a2/mpich-3.3a2.tar.gz',
+                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.3a2.tar.gz']
+    self.download_31      = ['http://www.mpich.org/static/downloads/3.1/mpich-3.1.tar.gz',
                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.1.tar.gz']
-    self.download_osx     = ['http://www.mpich.org/static/downloads/3.2/mpich-3.2.tar.gz',
+    self.download_32      = ['http://www.mpich.org/static/downloads/3.2/mpich-3.2.tar.gz',
                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.2.tar.gz']
     self.downloaddirname  = 'mpich'
     self.skippackagewithoptions = 1
@@ -60,11 +60,8 @@ class Configure(config.package.GNUPackage):
 
   def configure(self):
     if config.setCompilers.Configure.isCygwin(self.log) and config.setCompilers.Configure.isGNU(self.setCompilers.CC, self.log):
-      self.download = self.download_cygwin
-    elif self.setCompilers.isDarwin(self.log):
-      (output, error, status) = config.base.Configure.executeShellCommand('uname -r')
-      ver = tuple(map(int,output.split('.')))
-      if ver >= (15,0,0): # ElCapitan/10.11
-        self.download = self.download_osx
+      self.download = self.download_31
+    elif self.setCompilers.isDarwin(self.log) or config.setCompilers.Configure.isPGI(self.setCompilers.CC, self.log):
+      self.download = self.download_32
     return config.package.Package.configure(self)
 
