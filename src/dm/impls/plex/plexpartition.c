@@ -1223,13 +1223,16 @@ PetscErrorCode PetscPartitionerView_Chaco(PetscPartitioner part, PetscViewer vie
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
-/* Chaco does not have an include file */
+#if defined(PETSC_HAVE_CHACO_INT_ASSIGNMENT)
+#include <chaco.h>
+#else
+/* Older versions of Chaco do not have an include file */
 PETSC_EXTERN int interface(int nvtxs, int *start, int *adjacency, int *vwgts,
                        float *ewgts, float *x, float *y, float *z, char *outassignname,
                        char *outfilename, short *assignment, int architecture, int ndims_tot,
                        int mesh_dims[3], double *goal, int global_method, int local_method,
                        int rqi_flag, int vmax, int ndims, double eigtol, long seed);
-
+#endif
 extern int FREE_GRAPH;
 #endif
 
@@ -1257,7 +1260,11 @@ PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, DM dm, Pet
   int            ndims         = 1;       /* number of eigenvectors (2^d sets) */
   double         eigtol        = 0.001;   /* tolerance on eigenvectors */
   long           seed          = 123636512; /* for random graph mutations */
+#if defined(PETSC_HAVE_CHACO_INT_ASSIGNMENT)
+  int           *assignment;              /* Output partition */
+#else
   short int     *assignment;              /* Output partition */
+#endif
   int            fd_stdout, fd_pipe[2];
   PetscInt      *points;
   int            i, v, p;

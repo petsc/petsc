@@ -61,6 +61,7 @@ class Configure(config.package.CMakePackage):
     # should actually test that each of these is installed in the Trilinos libraries
     self.addDefine('HAVE_ML',1)
     self.addDefine('HAVE_CHACO',1)
+    self.addDefine('HAVE_CHACO_INT_ASSIGNMENT',1)
     self.addDefine('HAVE_ZOLTAN',1)
     self.addDefine('HAVE_EXODUSII',1)
 

@@ -181,12 +181,13 @@ runex6:
 	   else printf "${PWD}\nPossible problem with runex6, diffs above\n=========================================\n"; fi ;\
 	   ${RM} -f ex6.tmp
 
-runex15_0:
-	-@${MPIEXEC} -n 2 ./ex15 -verbose -globaltonatural_sf_view > ex15_0.tmp 2>&1;\
-          if (${DIFF} output/ex15_0.out ex15_0.tmp > /dev/null 2>&1) then x='good'; fi ;\
-           if (${DIFF} output/ex15_0_alt.out ex15_0.tmp > /dev/null 2>&1) then x='good'; fi; \
-           if [ "$$x" = "bad" ]; then ${DIFF} output/ex15_0.out ex15_0.tmp ; ${DIFF} output/ex15_0_alt.out ex15_0.tmp ; printf "${PWD}\nPossible problem with ex15_0, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex15_0.tmp
+runex15:
+	-@x='bad';${MPIEXEC} -n 2 ./ex15 -verbose -globaltonatural_sf_view > ex15.tmp 2>&1;\
+          if (${DIFF} output/ex15.out ex15.tmp > /dev/null 2>&1) then x='good'; fi ;\
+           if (${DIFF} output/ex15_alt.out ex15.tmp > /dev/null 2>&1) then x='good'; fi; \
+           if (${DIFF} output/ex15_alt_2.out ex15.tmp > /dev/null 2>&1) then x='good'; fi; \
+           if [ "$$x" = "bad" ]; then ${DIFF} output/ex15.out ex15.tmp ; ${DIFF} output/ex15_alt.out ex15.tmp ;${DIFF} output/ex15_alt_2.out ex15.tmp; printf "${PWD}\nPossible problem with ex15, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex15.tmp
 
 runex20_2d:
 	-@${MPIEXEC} -n 1 ./ex20 -pre_adapt_dm_view ::ascii_info_detail -post_adapt_dm_view ::ascii_info_detail -dim 2 > ex20_2d.tmp 2>&1;\
@@ -208,7 +209,7 @@ runex22:
 
 TESTEXAMPLES_C           = ex3.PETSc runex3_constraints runex3_nonconforming_tensor_2 runex3_nonconforming_tensor_3 runex3_nonconforming_tensor_2_fv runex3_nonconforming_tensor_3_fv ex3.rm ex6.PETSc runex6 ex6.rm ex22.PETSc runex22 ex22.rm
 TESTEXAMPLES_C_NOTSINGLE = ex3.PETSc runex3_nonconforming_tensor_2_hi ex3.rm
-TESTEXAMPLES_HDF5        = ex15.PETSc runex15_0 ex15.rm
+TESTEXAMPLES_TRIANGLE_HDF5 = ex15.PETSc runex15 ex15.rm
 TESTEXAMPLES_TRIANGLE    = ex3.PETSc runex3_nonconforming_simplex_2 runex3_nonconforming_simplex_2_hi runex3_nonconforming_simplex_2_fv ex3.rm ex20.PETSc runex20_2d ex20.rm
 TESTEXAMPLES_CTETGEN     = ex1.PETSc runex1 runex1_2 runex1_test_shape ex1.rm ex3.PETSc runex3 runex3_nonconforming_simplex_3 runex3_nonconforming_simplex_3_hi runex3_nonconforming_simplex_3_fv ex3.rm ex20.PETSc runex20_3d ex20.rm
 TESTEXAMPLES_F90         = ex1f90.PETSc runex1f90 ex1f90.rm ex2f90.PETSc runex2f90 ex2f90.rm

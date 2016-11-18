@@ -23,6 +23,7 @@ class Configure(config.package.CMakePackage):
     self.hypre    = framework.require('config.packages.hypre',self)
     self.x        = framework.require('config.packages.X',self)
     self.ssl      = framework.require('config.packages.ssl',self)
+    self.triangle = framework.require('config.packages.Triangle',self)
     self.exodusii = framework.require('config.packages.exodusii',self)
     #
     # also requires the ./configure option --with-cxx-dialect=C++11
@@ -64,7 +65,7 @@ class Configure(config.package.CMakePackage):
 
     args.append('-DTPL_ENABLE_PETSC=ON')
     # These are packages that PETSc may be using that Trilinos is not be using
-    plibs = self.exodusii.dlib+self.ssl.lib+self.x.lib
+    plibs = self.exodusii.dlib+self.triangle.lib+self.ssl.lib+self.x.lib
 
     if not hasattr(self.compilers, 'FC'):
       args.append('-DxSDKTrilinos_ENABLE_Fortran=OFF')
