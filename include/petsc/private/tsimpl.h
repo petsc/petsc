@@ -317,6 +317,7 @@ struct _n_TSEvent {
     PetscInt  **eventidx; /* Local indices of the events in the event list */
   } recorder;
   PetscInt  recsize; /* Size of recorder stack */
+  PetscInt  refct; /* reference count */
 };
 
 PETSC_EXTERN PetscErrorCode TSEventInitialize(TSEvent,TS,PetscReal,Vec);

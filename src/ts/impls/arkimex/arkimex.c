@@ -741,6 +741,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
     ierr = TSARKIMEXSetFullyImplicit(ts_start,PETSC_TRUE);CHKERRQ(ierr);
     ierr = TSARKIMEXSetType(ts_start,TSARKIMEX1BEE);CHKERRQ(ierr);
 
+    ts_start->steprestart = PETSC_TRUE;
     ierr = TSSolve(ts_start,ts->vec_sol);CHKERRQ(ierr);
     ierr = TSGetTime(ts_start,&ts->ptime);CHKERRQ(ierr);
     ierr = TSGetTimeStep(ts_start,&ts->time_step);CHKERRQ(ierr);
