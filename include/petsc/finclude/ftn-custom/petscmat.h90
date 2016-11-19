@@ -12,7 +12,8 @@
         ! picky Fortran requires seperate prototypes if args
         ! are arrays or scalars
         subroutine MatSetValues(a,b,c,d,e,f,g,z)
-          Mat a ! Mat
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
           PetscInt b ! PetscInt
           PetscInt c (*) ! PetscInt
           PetscInt d ! PetscInt
@@ -22,7 +23,8 @@
           integer z
         end subroutine
         subroutine MatSetValues11(a,b,c,d,e,f,g,z)
-          Mat a ! Mat
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
           PetscInt b ! PetscInt
           PetscInt c ! PetscInt
           PetscInt d ! PetscInt
@@ -32,7 +34,8 @@
           integer z
         end subroutine
         subroutine MatSetValues1n(a,b,c,d,e,f,g,z)
-          Mat a ! Mat
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
           PetscInt b ! PetscInt
           PetscInt c ! PetscInt
           PetscInt d ! PetscInt
@@ -42,7 +45,8 @@
           integer z
         end subroutine
         subroutine MatSetValuesn1(a,b,c,d,e,f,g,z)
-          Mat a ! Mat
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
           PetscInt b ! PetscInt
           PetscInt c (*) ! PetscInt
           PetscInt d ! PetscInt
@@ -57,7 +61,8 @@
         ! picky Fortran requires seperate prototypes if args
         ! are arrays or scalars
         subroutine MatSetValuesLocal(a,b,c,d,e,f,g,z)
-          Mat a ! Mat
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
           PetscInt b ! PetscInt
           PetscInt c (*) ! PetscInt
           PetscInt d ! PetscInt
@@ -67,7 +72,8 @@
           integer z
         end subroutine
         subroutine MatSetValuesLocal11(a,b,c,d,e,f,g,z)
-          Mat a ! Mat
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
           PetscInt b ! PetscInt
           PetscInt c ! PetscInt
           PetscInt d ! PetscInt
@@ -77,7 +83,8 @@
           integer z
         end subroutine
         subroutine MatSetValuesLocal11nn(a,b,c,d,e,f,g,z)
-          Mat a ! Mat
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
           PetscInt b ! PetscInt
           PetscInt c ! PetscInt
           PetscInt d ! PetscInt
@@ -87,7 +94,8 @@
           integer z
         end subroutine
         subroutine MatSetValuesLocal111(a,b,c,d,e,f,g,z)
-          Mat a ! Mat
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
           PetscInt b ! PetscInt
           PetscInt c ! PetscInt
           PetscInt d ! PetscInt
@@ -97,7 +105,8 @@
           integer z
         end subroutine
         subroutine MatSetValuesLocal1n(a,b,c,d,e,f,g,z)
-          Mat a ! Mat
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
           PetscInt b ! PetscInt
           PetscInt c ! PetscInt
           PetscInt d ! PetscInt
@@ -107,7 +116,8 @@
           integer z
         end subroutine
         subroutine MatSetValuesLocaln1(a,b,c,d,e,f,g,z)
-          Mat a ! Mat
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
           PetscInt b ! PetscInt
           PetscInt c (*) ! PetscInt
           PetscInt d ! PetscInt
@@ -122,7 +132,8 @@
         ! picky Fortran requires seperate prototypes if args
         ! are arrays or scalars
         subroutine MatSetValuesBlockedLocal(a,b,c,d,e,f,g,z)
-          Mat a ! Mat
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
           PetscInt b ! PetscInt
           PetscInt c (*) ! PetscInt
           PetscInt d ! PetscInt
@@ -132,7 +143,8 @@
           integer z
         end subroutine
         subroutine MatSetValuesBlockedLocal11(a,b,c,d,e,f,g,z)
-          Mat a ! Mat
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
           PetscInt b ! PetscInt
           PetscInt c ! PetscInt
           PetscInt d ! PetscInt
@@ -142,7 +154,8 @@
           integer z
         end subroutine
         subroutine MatSetValuesBlockedLocal111(a,b,c,d,e,f,g,z)
-          Mat a ! Mat
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
           PetscInt b ! PetscInt
           PetscInt c ! PetscInt
           PetscInt d ! PetscInt
@@ -152,7 +165,8 @@
           integer z
         end subroutine
         subroutine MatSetValuesBlockedLocal1n(a,b,c,d,e,f,g,z)
-          Mat a ! Mat
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
           PetscInt b ! PetscInt
           PetscInt c ! PetscInt
           PetscInt d ! PetscInt
@@ -162,7 +176,8 @@
           integer z
         end subroutine
         subroutine MatSetValuesBlockedLocaln1(a,b,c,d,e,f,g,z)
-          Mat a ! Mat
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
           PetscInt b ! PetscInt
           PetscInt c (*) ! PetscInt
           PetscInt d ! PetscInt
@@ -177,7 +192,8 @@
         ! picky Fortran requires seperate prototypes if args
         ! are arrays or scalars
         subroutine MatSetValuesBlocked(a,b,c,d,e,f,g,z)
-          Mat a ! Mat
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
           PetscInt b ! PetscInt
           PetscInt c (*) ! PetscInt
           PetscInt d ! PetscInt
@@ -187,7 +203,8 @@
           integer z
         end subroutine
         subroutine MatSetValuesBlocked11(a,b,c,d,e,f,g,z)
-          Mat a ! Mat
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
           PetscInt b ! PetscInt
           PetscInt c ! PetscInt
           PetscInt d ! PetscInt
@@ -197,7 +214,8 @@
           integer z
         end subroutine
         subroutine MatSetValuesBlocked111(a,b,c,d,e,f,g,z)
-          Mat a ! Mat
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
           PetscInt b ! PetscInt
           PetscInt c ! PetscInt
           PetscInt d ! PetscInt
@@ -207,7 +225,8 @@
           integer z
         end subroutine
         subroutine MatSetValuesBlocked1n(a,b,c,d,e,f,g,z)
-          Mat a ! Mat
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
           PetscInt b ! PetscInt
           PetscInt c ! PetscInt
           PetscInt d ! PetscInt
@@ -217,7 +236,8 @@
           integer z
         end subroutine
         subroutine MatSetValuesBlockedn1(a,b,c,d,e,f,g,z)
-          Mat a ! Mat
+          USE_MAT_HIDE
+          MAT_HIDE xa ! Mat
           PetscInt b ! PetscInt
           PetscInt c (*) ! PetscInt
           PetscInt d ! PetscInt

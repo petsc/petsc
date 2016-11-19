@@ -6,7 +6,8 @@
 
       Interface VecSetValues
         subroutine VecSetValues(a,b,c,d,e,z)
-          Vec a ! Vec
+          USE_VEC_HIDE
+          VEC_HIDE a ! Vec
           PetscInt b ! PetscInt
           PetscInt c (*) ! PetscInt
           PetscScalar d (*) ! PetscScalar
@@ -14,7 +15,8 @@
           integer z
         end subroutine
         subroutine VecSetValues1(a,b,c,d,e,z)
-          Vec a ! Vec
+          USE_VEC_HIDE
+          VEC_HIDE a ! Vec
           PetscInt b ! PetscInt
           PetscInt c ! PetscInt
           PetscScalar d (*) ! PetscScalar
@@ -22,7 +24,8 @@
           integer z
         end subroutine
         subroutine VecSetValues11(a,b,c,d,e,z)
-          Vec a ! Vec
+          USE_VEC_HIDE
+          VEC_HIDE a ! Vec
           PetscInt b ! PetscInt
           PetscInt c ! PetscInt
           PetscScalar d ! PetscScalar
