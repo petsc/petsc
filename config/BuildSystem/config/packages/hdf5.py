@@ -8,8 +8,6 @@ class Configure(config.package.GNUPackage):
                          'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hdf5-1.10.0-patch1.tar.gz']
     self.download_sol = ['https://support.hdfgroup.org/ftp/HDF5/current18/src/hdf5-1.8.18.tar.gz',
                          'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hdf5-1.8.18.tar.gz']
-    self.download_bsd = ['http://www.hdfgroup.org/ftp/HDF5/prev-releases/hdf5-1.8.12/src/hdf5-1.8.12.tar.gz',
-                         'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hdf5-1.8.12.tar.gz']
 # David Moulton reports that HDF5 configure can fail on NERSC systems and this can be worked around by removing the
 #   getpwuid from the test for ac_func in gethostname getpwuid getrusage lstat
     self.functions = ['H5T_init']
@@ -62,8 +60,6 @@ class Configure(config.package.GNUPackage):
     return
 
   def configure(self):
-    if config.setCompilers.Configure.isFreeBSD(self.log):
-      self.download = self.download_bsd
-    elif config.setCompilers.Configure.isSolaris(self.log):
+    if config.setCompilers.Configure.isFreeBSD(self.log) or config.setCompilers.Configure.isSolaris(self.log):
       self.download = self.download_sol
     return config.package.Package.configure(self)
