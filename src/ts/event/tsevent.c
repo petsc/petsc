@@ -164,8 +164,10 @@ PetscErrorCode TSSetEventHandler(TS ts,PetscInt nevents,PetscInt direction[],Pet
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidIntPointer(direction,2);
-  PetscValidIntPointer(terminate,3);
+  if(nevents) {
+    PetscValidIntPointer(direction,2);
+    PetscValidIntPointer(terminate,3);
+  }
 
   ierr = PetscNewLog(ts,&event);CHKERRQ(ierr);
   ierr = PetscMalloc1(nevents,&event->fvalue);CHKERRQ(ierr);
