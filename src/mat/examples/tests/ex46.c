@@ -21,8 +21,8 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   if (!flg) { /* Create a matrix and test MatSetValues */
     PetscMPIInt NP;
+
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&NP);CHKERRQ(ierr);
-    ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
     ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
     if (N < 6) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Matrix has to have more than 6 columns");
@@ -30,44 +30,45 @@ int main(int argc,char **args)
     ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(A,9,NULL);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(A,9,NULL,9,NULL);CHKERRQ(ierr);
+    ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
     ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
     ierr = MatSetType(B,MATHYPRE);CHKERRQ(ierr);
-    ierr = MatHYPRESetPreallocation(B,9,NULL,9,NULL);CHKERRQ(ierr);
-    for (i=0; i<M; i++) {
-      PetscInt    cols[] = {0,1,2,3,4,5};
-      PetscScalar vals[] = {0,1./NP,2./NP,3./NP,4./NP,5./NP};
-      for (j=i-2; j<i+1; j++) {
-        if (j >= N) {
-          ierr = MatSetValue(A,i,N-1,(1.*j*N+i)/(3.*N*NP),ADD_VALUES);CHKERRQ(ierr);
-          ierr = MatSetValue(B,i,N-1,(1.*j*N+i)/(3.*N*NP),ADD_VALUES);CHKERRQ(ierr);
-        } else if (i > j) {
-          ierr = MatSetValue(A,i,j,(1.*j*N+i)/(2.*N*NP),ADD_VALUES);CHKERRQ(ierr);
-          ierr = MatSetValue(B,i,j,(1.*j*N+i)/(2.*N*NP),ADD_VALUES);CHKERRQ(ierr);
-        } else {
-          ierr = MatSetValue(A,i,j,-1.-(1.*j*N+i)/(4.*N*NP),ADD_VALUES);CHKERRQ(ierr);
-          ierr = MatSetValue(B,i,j,-1.-(1.*j*N+i)/(4.*N*NP),ADD_VALUES);CHKERRQ(ierr);
+    if (M == N) {
+      ierr = MatHYPRESetPreallocation(B,9,NULL,9,NULL);CHKERRQ(ierr);
+    } else {
+      ierr = MatHYPRESetPreallocation(B,6,NULL,6,NULL);CHKERRQ(ierr);
+    }
+    if (M == N) {
+      for (i=0; i<M; i++) {
+        PetscInt    cols[] = {0,1,2,3,4,5};
+        PetscScalar vals[] = {0,1./NP,2./NP,3./NP,4./NP,5./NP};
+        for (j=i-2; j<i+1; j++) {
+          if (j >= N) {
+            ierr = MatSetValue(A,i,N-1,(1.*j*N+i)/(3.*N*NP),ADD_VALUES);CHKERRQ(ierr);
+            ierr = MatSetValue(B,i,N-1,(1.*j*N+i)/(3.*N*NP),ADD_VALUES);CHKERRQ(ierr);
+          } else if (i > j) {
+            ierr = MatSetValue(A,i,j,(1.*j*N+i)/(2.*N*NP),ADD_VALUES);CHKERRQ(ierr);
+            ierr = MatSetValue(B,i,j,(1.*j*N+i)/(2.*N*NP),ADD_VALUES);CHKERRQ(ierr);
+          } else {
+            ierr = MatSetValue(A,i,j,-1.-(1.*j*N+i)/(4.*N*NP),ADD_VALUES);CHKERRQ(ierr);
+            ierr = MatSetValue(B,i,j,-1.-(1.*j*N+i)/(4.*N*NP),ADD_VALUES);CHKERRQ(ierr);
+          }
         }
+        ierr = MatSetValues(A,1,&i,6,cols,vals,ADD_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValues(B,1,&i,6,cols,vals,ADD_VALUES);CHKERRQ(ierr);
       }
-      ierr = MatSetValues(A,1,&i,6,cols,vals,ADD_VALUES);CHKERRQ(ierr);
-      ierr = MatSetValues(B,1,&i,6,cols,vals,ADD_VALUES);CHKERRQ(ierr);
+    } else { /* HYPRE_IJMatrix does not support INSERT_VALUES with off-proc entries */
+      PetscInt rows[2];
+      ierr = MatGetOwnershipRange(A,&rows[0],&rows[1]);CHKERRQ(ierr);
+      for (i=rows[0];i<rows[1];i++) {
+        PetscInt    cols[] = {0,1,2,3,4,5};
+        PetscScalar vals[] = {-1,1,-2,2,-3,3};
+
+        ierr = MatSetValues(A,1,&i,6,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValues(B,1,&i,6,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
+      }
     }
     /* MAT_FLUSH_ASSEMBLY currently not supported */
-    if (0) { /* HYPRE_IJMatrix does not support INSERT_VALUES with off-proc entries */
-      PetscInt    cols[2],rows[2];
-      PetscScalar vals[] = {0,0,0,0};
-      ierr = MatAssemblyBegin(A,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(A,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
-      ierr = MatAssemblyBegin(B,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(B,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
-      ierr = MatGetOwnershipRange(A,&rows[0],&rows[1]);CHKERRQ(ierr);
-      ierr = MatGetOwnershipRangeColumn(A,&cols[0],&cols[1]);CHKERRQ(ierr);
-      if (rows[1] > rows[0]) rows[1] = rows[1]-1;
-      else rows[1] = rows[0];
-      if (cols[1] > cols[0]) cols[1] = cols[1]-1;
-      else cols[1] = cols[0];
-      ierr = MatSetValues(B,2,rows,2,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
-      ierr = MatSetValues(A,2,rows,2,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
-    }
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

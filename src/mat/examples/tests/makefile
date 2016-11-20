@@ -1450,19 +1450,17 @@ runex46_2:
 	   else printf "${PWD}\nPossible problem with ex46_2, diffs above\n==============================\n"; fi; \
 	   ${RM} -f ex46_2.tmp
 
-# There's some problem when assembling rectangular matrices after having set the values
-# drop the rectangular tests for now
-#runex46_3:
-#	-@${MPIEXEC} -n 4  ./ex46 -M 13 -N 7 > ex46_3.tmp 2>&1; \
-#	   if (${DIFF} output/ex46_3.out ex46_3.tmp) then true; \
-#	   else printf "${PWD}\nPossible problem with ex46_3, diffs above\n==============================\n"; fi; \
-#	   ${RM} -f ex46_3.tmp
+runex46_3:
+	-@${MPIEXEC} -n 4  ./ex46 -M 13 -N 7 > ex46_3.tmp 2>&1; \
+	   if (${DIFF} output/ex46_3.out ex46_3.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex46_3, diffs above\n==============================\n"; fi; \
+	   ${RM} -f ex46_3.tmp
 
-#runex46_4:
-#	-@${MPIEXEC} -n 5  ./ex46 -M 12 -N 21 > ex46_4.tmp 2>&1; \
-#	   if (${DIFF} output/ex46_4.out ex46_4.tmp) then true; \
-#	   else printf "${PWD}\nPossible problem with ex46_4, diffs above\n==============================\n"; fi; \
-#	   ${RM} -f ex46_4.tmp
+runex46_4:
+	-@${MPIEXEC} -n 2  ./ex46 -M 12 -N 19 > ex46_4.tmp 2>&1; \
+	   if (${DIFF} output/ex46_4.out ex46_4.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex46_4, diffs above\n==============================\n"; fi; \
+	   ${RM} -f ex46_4.tmp
 
 
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
@@ -2895,6 +2893,6 @@ TESTEXAMPLES_SUPERLU_DIST_COMPLEX_DATAFILESPATH = ex125.PETSc runex125_superlu_d
 TESTEXAMPLES_F90               = ex196f90.PETSc ex196f90.rm
 TESTEXAMPLES_VECCUDA           = ex2.PETSc runex2_aijcusparse runex2_2_aijcusparse runex2_3_aijcusparse ex2.rm \
                                  ex5.PETSc runex5_aijcusparse runex5_2_aijcusparse runex5_3_aijcusparse ex5.rm
-TESTEXAMPLES_HYPRE             = ex46.PETSc runex46_1 runex46_2 ex46.rm
+TESTEXAMPLES_HYPRE             = ex46.PETSc runex46_1 runex46_2 runex46_3 runex46_4 ex46.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test
