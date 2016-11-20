@@ -350,6 +350,8 @@ cdef extern from * nogil:
     int MatGetInertia(PetscMat,PetscInt*,PetscInt*,PetscInt*)
     int MatSetUnfactored(PetscMat)
 
+    int  MatLRCGetMats(PetscMat,PetscMat*,PetscMat*,PetscVec*,PetscMat*)
+
     int MatMumpsSetIcntl(PetscMat,PetscInt,PetscInt)
     int MatMumpsGetIcntl(PetscMat,PetscInt,PetscInt*)
     int MatMumpsSetCntl(PetscMat,PetscInt,PetscReal)

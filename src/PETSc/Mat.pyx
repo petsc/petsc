@@ -1323,6 +1323,20 @@ cdef class Mat(Object):
     def setUnfactored(self):
         CHKERR( MatSetUnfactored(self.mat) )
 
+    # LRC
+
+    def getLRCMats(self):
+        cdef Mat A = Mat()
+        cdef Mat U = Mat()
+        cdef Vec c = Vec()
+        cdef Mat V = Mat()
+        CHKERR( MatLRCGetMats(self.mat, &A.mat, &U.mat, &c.vec, &V.mat) )
+        PetscINCREF(A.obj)
+        PetscINCREF(U.obj)
+        PetscINCREF(c.obj)
+        PetscINCREF(V.obj)
+        return (A, U, c, V)
+
     # MUMPS
 
     def setMumpsIcntl(self, icntl, ival):
