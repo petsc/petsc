@@ -1,29 +1,27 @@
 
 static char help[] = "Tests MatHYPRE\n";
 
-#include <petscmat.h>
-#include <petsc/private/matimpl.h>
-/* there's no getter API to extract the ParCSR yet */
-#include <../src/mat/impls/hypre/mhypre.h>
-#include <_hypre_IJ_mv.h>
-#include <../src/mat/impls/aij/mpi/mpiaij.h>
+#include <petscmathypre.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat            A,B,C,D;
-  Vec            x,x2,y,y2;
-  PetscReal      err;
-  PetscInt       i,j,N = 6, M = 6;
-  PetscErrorCode ierr;
-  PetscBool      flg;
-  char           file[256];
+  Mat                A,B,C,D;
+  hypre_ParCSRMatrix *parcsr;
+  Vec                x,x2,y,y2;
+  PetscReal          err;
+  PetscInt           i,j,N = 6, M = 6;
+  PetscErrorCode     ierr;
+  PetscBool          flg;
+  char               file[256];
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,256,&flg);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   if (!flg) { /* Create a matrix and test MatSetValues */
+    PetscMPIInt NP;
+    ierr = MPI_Comm_size(PETSC_COMM_WORLD,&NP);CHKERRQ(ierr);
     ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
     ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
@@ -37,17 +35,17 @@ int main(int argc,char **args)
     ierr = MatHYPRESetPreallocation(B,9,NULL,9,NULL);CHKERRQ(ierr);
     for (i=0; i<M; i++) {
       PetscInt    cols[] = {0,1,2,3,4,5};
-      PetscScalar vals[] = {0,1./2.,2./3.,3./4.,4./.5,5./6.};
+      PetscScalar vals[] = {0,1./NP,2./NP,3./NP,4./NP,5./NP};
       for (j=i-2; j<i+1; j++) {
         if (j >= N) {
-          ierr = MatSetValue(A,i,N-1,(1.*j*N+i)/(3.*N*N),ADD_VALUES);CHKERRQ(ierr);
-          ierr = MatSetValue(B,i,N-1,(1.*j*N+i)/(3.*N*N),ADD_VALUES);CHKERRQ(ierr);
+          ierr = MatSetValue(A,i,N-1,(1.*j*N+i)/(3.*N*NP),ADD_VALUES);CHKERRQ(ierr);
+          ierr = MatSetValue(B,i,N-1,(1.*j*N+i)/(3.*N*NP),ADD_VALUES);CHKERRQ(ierr);
         } else if (i > j) {
-          ierr = MatSetValue(A,i,j,(1.*j*N+i)/(2.*N*N),ADD_VALUES);CHKERRQ(ierr);
-          ierr = MatSetValue(B,i,j,(1.*j*N+i)/(2.*N*N),ADD_VALUES);CHKERRQ(ierr);
+          ierr = MatSetValue(A,i,j,(1.*j*N+i)/(2.*N*NP),ADD_VALUES);CHKERRQ(ierr);
+          ierr = MatSetValue(B,i,j,(1.*j*N+i)/(2.*N*NP),ADD_VALUES);CHKERRQ(ierr);
         } else {
-          ierr = MatSetValue(A,i,j,-1.-(1.*j*N+i)/(4.*N*N),ADD_VALUES);CHKERRQ(ierr);
-          ierr = MatSetValue(B,i,j,-1.-(1.*j*N+i)/(4.*N*N),ADD_VALUES);CHKERRQ(ierr);
+          ierr = MatSetValue(A,i,j,-1.-(1.*j*N+i)/(4.*N*NP),ADD_VALUES);CHKERRQ(ierr);
+          ierr = MatSetValue(B,i,j,-1.-(1.*j*N+i)/(4.*N*NP),ADD_VALUES);CHKERRQ(ierr);
         }
       }
       ierr = MatSetValues(A,1,&i,6,cols,vals,ADD_VALUES);CHKERRQ(ierr);
@@ -109,13 +107,10 @@ int main(int argc,char **args)
   ierr = MatDestroy(&D);CHKERRQ(ierr);
 
   /* check MatCreateFromParCSR */
-  {
-    Mat_HYPRE *hB = (Mat_HYPRE*)(B->data);
-    hypre_ParCSRMatrix *parcsr = (hypre_ParCSRMatrix*)hypre_IJMatrixObject(hB->ij);
-    ierr = MatCreateFromParCSR(parcsr,MATAIJ,PETSC_COPY_VALUES,&D);CHKERRQ(ierr);
-    ierr = MatDestroy(&D);CHKERRQ(ierr);
-    ierr = MatCreateFromParCSR(parcsr,MATHYPRE,PETSC_USE_POINTER,&C);CHKERRQ(ierr);
-  }
+  ierr = MatHYPREGetParCSR(B,&parcsr);CHKERRQ(ierr);
+  ierr = MatCreateFromParCSR(parcsr,MATAIJ,PETSC_COPY_VALUES,&D);CHKERRQ(ierr);
+  ierr = MatDestroy(&D);CHKERRQ(ierr);
+  ierr = MatCreateFromParCSR(parcsr,MATHYPRE,PETSC_USE_POINTER,&C);CHKERRQ(ierr);
 
   /* check matmult */
   ierr = MatCreateVecs(A,&x,&y);CHKERRQ(ierr);

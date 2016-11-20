@@ -12,7 +12,7 @@
 .seealso: MatCreate()
 M*/
 
-#include <petscsys.h>
+#include <petscmathypre.h>
 #include <petsc/private/matimpl.h>
 #include <../src/mat/impls/hypre/mhypre.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
@@ -760,6 +760,7 @@ static PetscErrorCode MatDestroy_HYPRE(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatPtAP_seqaij_hypre_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatPtAP_mpiaij_hypre_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatHYPRESetPreallocation_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatHYPREGetParCSR_C",NULL);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -976,7 +977,7 @@ PetscErrorCode MatHYPRESetPreallocation(Mat A, PetscInt dnz, const PetscInt dnnz
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateFromParCSR"
-PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(void *vparcsr, MatType mtype, PetscCopyMode copymode, Mat* A)
+PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(hypre_ParCSRMatrix *vparcsr, MatType mtype, PetscCopyMode copymode, Mat* A)
 {
   Mat                   T;
   Mat_HYPRE             *hA;
@@ -1048,6 +1049,50 @@ PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(void *vparcsr, MatType mtype, Pe
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatHYPREGetParCSR_HYPRE"
+PetscErrorCode MatHYPREGetParCSR_HYPRE(Mat A, hypre_ParCSRMatrix **parcsr)
+{
+  Mat_HYPRE*            hA = (Mat_HYPRE*)A->data;
+  HYPRE_Int             type;
+  PetscErrorCode        ierr;
+
+  PetscFunctionBegin;
+  if (!hA->ij) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"HYPRE_IJMatrix not present");
+  PetscStackCallStandard(HYPRE_IJMatrixGetObjectType,(hA->ij,&type));
+  if (type != HYPRE_PARCSR) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"HYPRE_IJMatrix is not of type HYPRE_PARCSR");
+  PetscStackCallStandard(HYPRE_IJMatrixGetObject,(hA->ij,(void**)parcsr));
+  PetscFunctionReturn(0);
+}
+
+/*
+   MatHYPREGetParCSR - Gets the pointer to the ParCSR matrix
+
+   Not collective
+
+   Input Parameters:
++  A  - the MATHYPRE object
+
+   Output Parameter:
+.  parcsr  - the pointer to the hypre_ParCSRMatrix
+
+   Level: intermediate
+
+.seealso: MatHYPRE, PetscCopyMode
+*/
+#undef __FUNCT__
+#define __FUNCT__ "MatHYPREGetParCSR"
+PetscErrorCode MatHYPREGetParCSR(Mat A, hypre_ParCSRMatrix **parcsr)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidType(A,1);
+  ierr = PetscUseMethod(A,"MatHYPREGetParCSR_C",(Mat,hypre_ParCSRMatrix**),(A,parcsr));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatCreate_HYPRE"
 PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
 {
@@ -1077,6 +1122,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatPtAP_seqaij_hypre_C",MatPtAP_AIJ_HYPRE);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatPtAP_mpiaij_hypre_C",MatPtAP_AIJ_HYPRE);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatHYPRESetPreallocation_C",MatHYPRESetPreallocation_HYPRE);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatHYPREGetParCSR_C",MatHYPREGetParCSR_HYPRE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
