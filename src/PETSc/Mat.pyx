@@ -419,9 +419,16 @@ cdef class Mat(Object):
         PetscCLEAR(self.obj); self.mat = newmat
         return self
 
-    def createLRC(self, Mat A, Mat U not None, Vec c, Mat V not None):
+    def createLRC(self, Mat A, Mat U not None, Vec c, Mat V):
+        cdef PetscMat Amat = NULL
+        cdef PetscMat Umat = U.mat
+        cdef PetscVec cvec = NULL
+        cdef PetscMat Vmat = NULL
         cdef PetscMat newmat = NULL
-        CHKERR( MatCreateLRC(A.mat, U.mat, c.vec, V.mat, &newmat) )
+        if A is not None: Amat = A.mat
+        if c is not None: cvec = c.vec
+        if V is not None: Vmat = V.mat
+        CHKERR( MatCreateLRC(Amat, Umat, cvec, Vmat, &newmat) )
         PetscCLEAR(self.obj); self.mat = newmat
         return self
 
