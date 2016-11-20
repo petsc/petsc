@@ -10,7 +10,7 @@
 }
 
 {
-   <mpich issue with runex2_window in src/vec/is/sf/examples/tutorials>
+   <mpich-3.1.3 issue with runex2_window in src/vec/is/sf/examples/tutorials>
    Memcheck:Param
    writev(vector[...])
    fun:writev
@@ -19,5 +19,22 @@
    fun:MPIDI_CH3_iStartMsgv
    fun:recv_rma_msg
    fun:MPIDI_Win_fence
+}
+
+{
+   <mpich-3.3a2 issue with runex2_window in src/vec/is/sf/examples/tutorials>
+   Memcheck:Param
+   writev(vector[...])
+   fun:writev
+   fun:MPL_large_writev
+   fun:MPIDI_CH3I_Sock_writev
+   fun:MPIDI_CH3_iStartMsgv
+   fun:issue_get_op
+   fun:issue_rma_op
+   fun:issue_ops_target
+   fun:issue_ops_win
+   fun:MPIDI_CH3I_RMA_Make_progress_global
+   fun:MPIDI_CH3i_Progress_wait
+   fun:MPIDI_CH3I_Progress
 }
 
