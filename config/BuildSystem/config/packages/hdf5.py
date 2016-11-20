@@ -4,10 +4,9 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download     = ['https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.0-patch1/src/hdf5-1.10.0-patch1.tar.gz',
-                         'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hdf5-1.10.0-patch1.tar.gz']
-    self.download_sol = ['https://support.hdfgroup.org/ftp/HDF5/current18/src/hdf5-1.8.18.tar.gz',
-                         'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hdf5-1.8.18.tar.gz']
+    #hdf5-1.10.0-patch1 breaks with default MPI on ubuntu 12.04 [and freebsd/opensolaris]. So use hdf5-1.8.18 for now.
+    self.download  = ['https://support.hdfgroup.org/ftp/HDF5/current18/src/hdf5-1.8.18.tar.gz',
+                      'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hdf5-1.8.18.tar.gz']
 # David Moulton reports that HDF5 configure can fail on NERSC systems and this can be worked around by removing the
 #   getpwuid from the test for ac_func in gethostname getpwuid getrusage lstat
     self.functions = ['H5T_init']
@@ -58,8 +57,3 @@ class Configure(config.package.GNUPackage):
     if self.libraries.check(self.dlib, 'H5Pset_fapl_mpio'):
       self.addDefine('HAVE_H5PSET_FAPL_MPIO', 1)
     return
-
-  def configure(self):
-    if config.setCompilers.Configure.isFreeBSD(self.log) or config.setCompilers.Configure.isSolaris(self.log):
-      self.download = self.download_sol
-    return config.package.Package.configure(self)
