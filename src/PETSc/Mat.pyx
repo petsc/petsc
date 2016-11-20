@@ -419,9 +419,16 @@ cdef class Mat(Object):
         PetscCLEAR(self.obj); self.mat = newmat
         return self
 
-    def createLRC(self, Mat A not None, Mat U not None, Mat V not None):
+    def createLRC(self, Mat A, Mat U not None, Vec c, Mat V):
+        cdef PetscMat Amat = NULL
+        cdef PetscMat Umat = U.mat
+        cdef PetscVec cvec = NULL
+        cdef PetscMat Vmat = NULL
         cdef PetscMat newmat = NULL
-        CHKERR( MatCreateLRC(A.mat, U.mat, V.mat, &newmat) )
+        if A is not None: Amat = A.mat
+        if c is not None: cvec = c.vec
+        if V is not None: Vmat = V.mat
+        CHKERR( MatCreateLRC(Amat, Umat, cvec, Vmat, &newmat) )
         PetscCLEAR(self.obj); self.mat = newmat
         return self
 
@@ -1315,6 +1322,20 @@ cdef class Mat(Object):
 
     def setUnfactored(self):
         CHKERR( MatSetUnfactored(self.mat) )
+
+    # LRC
+
+    def getLRCMats(self):
+        cdef Mat A = Mat()
+        cdef Mat U = Mat()
+        cdef Vec c = Vec()
+        cdef Mat V = Mat()
+        CHKERR( MatLRCGetMats(self.mat, &A.mat, &U.mat, &c.vec, &V.mat) )
+        PetscINCREF(A.obj)
+        PetscINCREF(U.obj)
+        PetscINCREF(c.obj)
+        PetscINCREF(V.obj)
+        return (A, U, c, V)
 
     # MUMPS
 

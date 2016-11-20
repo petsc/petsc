@@ -151,7 +151,7 @@ cdef extern from * nogil:
 
     int MatCreateNormal(PetscMat,PetscMat*)
     int MatCreateTranspose(PetscMat,PetscMat*)
-    int MatCreateLRC(PetscMat,PetscMat,PetscMat,PetscMat*)
+    int MatCreateLRC(PetscMat,PetscMat,PetscVec,PetscMat,PetscMat*)
     int MatCreateSubMatrix(PetscMat,PetscIS,PetscIS,PetscMat*)
     int MatCreateRedundantMatrix(PetscMat,PetscInt,MPI_Comm,PetscMatReuse,PetscMat*)
     int MatCreateNest(MPI_Comm,PetscInt,PetscIS[],PetscInt,PetscIS[],PetscMat[],PetscMat*)
@@ -349,6 +349,8 @@ cdef extern from * nogil:
     int MatILUDTFactor(PetscMat,PetscIS,PetscIS,PetscMatFactorInfo*,PetscMat*)
     int MatGetInertia(PetscMat,PetscInt*,PetscInt*,PetscInt*)
     int MatSetUnfactored(PetscMat)
+
+    int  MatLRCGetMats(PetscMat,PetscMat*,PetscMat*,PetscVec*,PetscMat*)
 
     int MatMumpsSetIcntl(PetscMat,PetscInt,PetscInt)
     int MatMumpsGetIcntl(PetscMat,PetscInt,PetscInt*)
