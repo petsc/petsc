@@ -930,7 +930,7 @@ cdef PetscErrorCode MatMultTransposeAdd_Python(
     except IERR with gil:
     FunctionBegin(b"MatMultTransposeAdd_Python")
     cdef multTransposeAdd = PyMat(mat).multTransposeAdd
-    if multTransposeAdd is not None:
+    if multTransposeAdd is None:
         CHKERR( MatMultTranspose(mat,x,y) )
         CHKERR( VecAXPY(y,1.0,v)          )
         return FunctionEnd()
@@ -947,7 +947,7 @@ cdef PetscErrorCode MatMultHermitianAdd_Python(
     except IERR with gil:
     FunctionBegin(b"MatMultHermitianAdd_Python")
     cdef multHermitianAdd = PyMat(mat).multHermitianAdd
-    if multHermitianAdd is not None:
+    if multHermitianAdd is None:
         CHKERR( MatMultHermitian(mat,x,y) )
         CHKERR( VecAXPY(y,1.0,v)          )
         return FunctionEnd()
@@ -1024,7 +1024,7 @@ cdef PetscErrorCode MatSolveTransposeAdd_Python(
     except IERR with gil:
     FunctionBegin(b"MatSolveTransposeAdd_Python")
     cdef solveTransposeAdd = PyMat(mat).solveTransposeAdd
-    if solveTransposeAdd is not None:
+    if solveTransposeAdd is None:
         CHKERR( MatSolveTranspose(mat,b,x) )
         CHKERR( VecAXPY(x,1.0,y)           )
         return FunctionEnd()
