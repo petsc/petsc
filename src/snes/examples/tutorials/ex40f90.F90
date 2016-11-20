@@ -9,8 +9,11 @@
 !   your own FormJacobianLocal().
 
       program ex40f90
+#include <petsc/finclude/petscsnesdef.h>
+#include <petsc/finclude/petscdmdadef.h>
+      use petscsnes
+      use petscdmda
       implicit none
-#include <petsc/finclude/petsc.h>
 
       SNES             snes
       PetscErrorCode   ierr
@@ -38,12 +41,12 @@
       call SNESCreate(PETSC_COMM_WORLD,snes,ierr);CHKERRQ(ierr)
       call SNESSetDM(snes,da,ierr);CHKERRQ(ierr)
 
-      call DMDASNESSetFunctionLocal(da,INSERT_VALUES,FormFunctionLocal,PETSC_NULL_OBJECT,ierr);CHKERRQ(ierr)
+      call DMDASNESSetFunctionLocal(da,INSERT_VALUES,FormFunctionLocal,0,ierr);CHKERRQ(ierr)
       call SNESSetFromOptions(snes,ierr);CHKERRQ(ierr)
 
 !      Solve the nonlinear system
 !
-      call SNESSolve(snes,PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,ierr);CHKERRQ(ierr)
+      call SNESSolve(snes,PETSC_NULL_VEC,PETSC_NULL_VEC,ierr);CHKERRQ(ierr)
 
       call SNESDestroy(snes,ierr);CHKERRQ(ierr)
       call DMDestroy(da,ierr);CHKERRQ(ierr)

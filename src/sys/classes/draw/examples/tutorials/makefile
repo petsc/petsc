@@ -6,7 +6,8 @@ FPPFLAGS        =
 LOCDIR   = src/sys/classes/draw/examples/tutorials/
 EXAMPLESC       =
 EXAMPLESF       =
-MANSEC          = Draw
+MANSEC          = Sys
+SUBMANSEC       = Draw
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

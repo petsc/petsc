@@ -17,10 +17,10 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine ApplicationFunctionFortran(lambda,mx,my,x,f,ierr)
-
+#include <petsc/finclude/petscsnesdef.h>
+      use petscsnes
       implicit none
 
-#include <petsc/finclude/petscsys.h>
       integer  ierr,mx,my
 
 !  Input/output variables:

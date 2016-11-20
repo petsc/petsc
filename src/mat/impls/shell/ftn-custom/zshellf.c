@@ -90,7 +90,8 @@ static PetscErrorCode oursor(Mat mat,Vec b,PetscReal omega,MatSORType flg,PetscR
 static PetscErrorCode ourtranspose(Mat mat,MatReuse reuse,Mat *B)
 {
   PetscErrorCode ierr = 0;
-  Mat *b = (!B ? (Mat *) PETSC_NULL_OBJECT_Fortran : B);
+  Mat bb = (Mat)-1;
+  Mat *b = (!B ? &bb : B);
 
   (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,MatReuse*,Mat*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_TRANSPOSE]))(&mat,&reuse,b,&ierr);
   return ierr;
@@ -107,8 +108,9 @@ static PetscErrorCode ourgetdiagonal(Mat mat,Vec x)
 static PetscErrorCode ourdiagonalscale(Mat mat,Vec l,Vec r)
 {
   PetscErrorCode ierr = 0;
-  Vec *a = (!l ? (Vec*) PETSC_NULL_OBJECT_Fortran : &l);
-  Vec *b = (!r ? (Vec*) PETSC_NULL_OBJECT_Fortran : &r);
+  Vec aa = (Vec)-1;
+  Vec *a = (!l ? &aa : &l);
+  Vec *b = (!r ? &aa : &r);
 
   (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,Vec*,Vec*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_DIAGONAL_SCALE]))(&mat,a,b,&ierr);
   return ierr;
@@ -165,8 +167,9 @@ static PetscErrorCode ourview(Mat mat,PetscViewer v)
 static PetscErrorCode ourgetvecs(Mat mat,Vec *l,Vec *r)
 {
   PetscErrorCode ierr = 0;
-  Vec *a = (!l ? (Vec *) PETSC_NULL_OBJECT_Fortran : l);
-  Vec *b = (!r ? (Vec *) PETSC_NULL_OBJECT_Fortran : r);
+  Vec aa = (Vec)-1;
+  Vec *a = (!l ? &aa : l);
+  Vec *b = (!r ? &aa : r);
 
   (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,Vec*,Vec*,PetscErrorCode*))(((PetscObject) mat)->fortran_func_pointers[FORTRAN_MATOP_GET_VECS]))(&mat,a,b,&ierr);
   return ierr;

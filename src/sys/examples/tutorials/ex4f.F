@@ -10,8 +10,9 @@
 ! -----------------------------------------------------------------------
 
       program main
+#include <petsc/finclude/petscsysdef.h>
+      use petscsys
       implicit none
-#include <petsc/finclude/petscsys.h>
       PetscErrorCode ierr
       PetscMPIInt    rank, size
 

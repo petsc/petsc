@@ -393,6 +393,7 @@ static PetscErrorCode  PetscViewerBinaryGetFlowControl_Socket(PetscViewer viewer
            PetscViewerMatlabOpen(), VecView(), DMView(), PetscViewerMatlabPutArray(), PETSCVIEWERASCII, PETSCVIEWERMATLAB,
            PetscViewerFileSetName(), PetscViewerFileSetMode(), PetscViewerFormat, PetscViewerType, PetscViewerSetType()
 
+  Level: beginner
 M*/
 
 #undef __FUNCT__

@@ -6479,6 +6479,8 @@ PetscErrorCode  MatFDColoringApply_AIJDM(Mat J,MatFDColoring coloring,Vec x1,voi
 
     Developer Notes: this routine exists because the PETSc Mat library does not know about the DM objects
 
+    Level: advanced
+
 .seealso: MatFDColoring, MatFDColoringCreate(), ISColoringType
 @*/
 PetscErrorCode  MatFDColoringUseDM(Mat coloring,MatFDColoring fdcoloring)

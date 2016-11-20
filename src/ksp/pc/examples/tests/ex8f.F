@@ -4,19 +4,10 @@
 ! -----------------------------------------------------------------------
 
       program main
+#include <petsc/finclude/petsckspdef.h>
+      use petscksp
       implicit none
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!                    Include files
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!
-!
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscpc.h>
-#include <petsc/finclude/petscksp.h>
-!
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -141,7 +132,9 @@
       call KSPCreate(PETSC_COMM_WORLD,ksp,ierr)
       call KSPGetPC(ksp,pc,ierr)
       call PCSetType(pc,PCMG,ierr)
-      call PCMGSetLevels(pc,one,PETSC_NULL_OBJECT,ierr)
+! the passing of PETSC_NULL_VEC is bogus but we don't currently have
+! a PETSC_NULL_MPI_COMM
+      call PCMGSetLevels(pc,one,PETSC_NULL_VEC,ierr)
 
       call PCMGSetResidual(pc,zero,MyResidual,A,ierr)
 
@@ -161,6 +154,8 @@
       end
 
       subroutine MyResidual(A,b,x,r,ierr)
+      use petscksp
+      implicit none
       Mat A
       Vec b,x,r
       integer ierr

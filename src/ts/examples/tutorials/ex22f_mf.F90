@@ -14,33 +14,21 @@
 !     u(0,t) = 1-sin(12*t)^4
 !
 
-#define MF_EX22F_MF
-
-#ifdef MF_EX22F_MF
   module PETScShiftMod
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscts.h>
-#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petsctsdef.h>
+    use petscts
     PetscScalar::PETSC_SHIFT
     TS::tscontext
     Mat::Jmat
     PetscReal::MFuser(6)
   end module PETScShiftMod
-#endif
+
 
 program main
-#ifdef MF_EX22F_MF
-  use PETScShiftMod, only :  tscontext,Jmat
-#endif
+  use PETScShiftMod
+  use petscdmda
   implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscsys.h90>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscsnes.h>
-#include <petsc/finclude/petscts.h>
-#include <petsc/finclude/petscdm.h>
-#include <petsc/finclude/petscdmda.h>
+
   !
   !     Create an application context to contain data needed by the
   !     application-provided call-back routines, FormJacobian() and
@@ -53,14 +41,8 @@ program main
 
   external FormRHSFunction,FormIFunction
   external FormInitialSolution
-
-#ifndef MF_EX22F_MF
   external FormIJacobian
-#endif
-
-#ifdef MF_EX22F_MF
   external MyMult,FormIJacobianMF
-#endif
 
   TS             ts
   Vec            X
@@ -106,32 +88,29 @@ program main
   ! Initialize user application context
   ! Use zero-based indexing for command line parameters to match ex22.c
   user(user_a+1) = 1.0
-  call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-a0',user(user_a+1),flg,ierr);CHKERRQ(ierr)
+  call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-a0',user(user_a+1),flg,ierr);CHKERRQ(ierr)
   user(user_a+2) = 0.0
-  call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-a1',user(user_a+2),flg,ierr);CHKERRQ(ierr)
+  call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-a1',user(user_a+2),flg,ierr);CHKERRQ(ierr)
   user(user_k+1) = 1000000.0
-  call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-k0', user(user_k+1),flg,ierr);CHKERRQ(ierr)
+  call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-k0', user(user_k+1),flg,ierr);CHKERRQ(ierr)
   user(user_k+2) = 2*user(user_k+1)
-  call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-k1', user(user_k+2),flg,ierr);CHKERRQ(ierr)
+  call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-k1', user(user_k+2),flg,ierr);CHKERRQ(ierr)
   user(user_s+1) = 0.0
-  call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-s0',user(user_s+1),flg,ierr);CHKERRQ(ierr)
+  call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-s0',user(user_s+1),flg,ierr);CHKERRQ(ierr)
   user(user_s+2) = 1.0
-  call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-s1',user(user_s+2),flg,ierr);CHKERRQ(ierr)
+  call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-s1',user(user_s+2),flg,ierr);CHKERRQ(ierr)
 
   OptionSaveToDisk=.FALSE.
-      call PetscOptionsGetBool(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-sdisk',OptionSaveToDisk,flg,ierr);CHKERRQ(ierr)
+      call PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-sdisk',OptionSaveToDisk,flg,ierr);CHKERRQ(ierr)
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !    Create timestepping solver context
   !     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   call TSCreate(PETSC_COMM_WORLD,ts,ierr);CHKERRQ(ierr)
-#ifdef MF_EX22F_MF
   tscontext=ts
-#endif
   call TSSetDM(ts,da,ierr);CHKERRQ(ierr)
   call TSSetType(ts,TSARKIMEX,ierr);CHKERRQ(ierr)
-  call TSSetRHSFunction(ts,PETSC_NULL_OBJECT,FormRHSFunction,user,ierr);CHKERRQ(ierr)
+  call TSSetRHSFunction(ts,PETSC_NULL_VEC,FormRHSFunction,user,ierr);CHKERRQ(ierr)
 
-#ifdef MF_EX22F_MF
   ! - - - - - - - - -- - - - -
   !   Matrix free setup
   call GetLayout(da,mx,xs,xe,gxs,gxe,ierr);CHKERRQ(ierr)
@@ -141,22 +120,16 @@ program main
 
   call MatShellSetOperation(A,MATOP_MULT,MyMult,ierr);CHKERRQ(ierr)
   ! - - - - - - - - - - - -
-#endif
 
-  call TSSetIFunction(ts,PETSC_NULL_OBJECT,FormIFunction,user,ierr);CHKERRQ(ierr)
+  call TSSetIFunction(ts,PETSC_NULL_VEC,FormIFunction,user,ierr);CHKERRQ(ierr)
   call DMSetMatType(da,MATAIJ,ierr);CHKERRQ(ierr)
   call DMCreateMatrix(da,J,ierr);CHKERRQ(ierr)
 
-#ifdef MF_EX22F_MF
   Jmat=J
-#endif
 
-#ifndef MF_EX22F_MF
   call TSSetIJacobian(ts,J,J,FormIJacobian,user,ierr);CHKERRQ(ierr)
-#endif
-#ifdef MF_EX22F_MF
   call TSSetIJacobian(ts,A,A,FormIJacobianMF,user,ierr);CHKERRQ(ierr)
-#endif
+
 
   ftime = 1.0
   maxsteps = 10000
@@ -193,9 +166,7 @@ program main
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !  Free work space.
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-#ifdef MF_EX22F_MF
   call MatDestroy(A,ierr);CHKERRQ(ierr)
-#endif
   call MatDestroy(J,ierr);CHKERRQ(ierr)
   call VecDestroy(X,ierr);CHKERRQ(ierr)
   call TSDestroy(ts,ierr);CHKERRQ(ierr)
@@ -204,11 +175,10 @@ program main
 end program main
 
 ! Small helper to extract the layout, result uses 1-based indexing.
-subroutine GetLayout(da,mx,xs,xe,gxs,gxe,ierr)
+  subroutine GetLayout(da,mx,xs,xe,gxs,gxe,ierr)
+  use petscdmda
   implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscdm.h>
-#include <petsc/finclude/petscdmda.h>
+
   DM da
   PetscInt mx,xs,xe,gxs,gxe
   PetscErrorCode ierr
@@ -239,14 +209,10 @@ subroutine FormIFunctionLocal(mx,xs,xe,gxs,gxe,x,xdot,f,a,k,s,ierr)
 end subroutine FormIFunctionLocal
 
 subroutine FormIFunction(ts,t,X,Xdot,F,user,ierr)
+  use petscdmda
+  use petscts
   implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscsnes.h>
-#include <petsc/finclude/petscts.h>
-#include <petsc/finclude/petscdm.h>
-#include <petsc/finclude/petscdmda.h>
+
   TS ts
   PetscReal t
   Vec X,Xdot,F
@@ -328,14 +294,10 @@ subroutine FormRHSFunctionLocal(mx,xs,xe,gxs,gxe,t,x,f,a,k,s,ierr)
 end subroutine FormRHSFunctionLocal
 
 subroutine FormRHSFunction(ts,t,X,F,user,ierr)
+  use petscts
+  use petscdmda
   implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscsnes.h>
-#include <petsc/finclude/petscts.h>
-#include <petsc/finclude/petscdm.h>
-#include <petsc/finclude/petscdmda.h>
+
   TS ts
   PetscReal t
   Vec X,F
@@ -371,20 +333,15 @@ subroutine FormRHSFunction(ts,t,X,F,user,ierr)
   call DMRestoreLocalVector(da,Xloc,ierr);CHKERRQ(ierr)
 end subroutine FormRHSFunction
 
-#ifndef MF_EX22F_MF
 ! ---------------------------------------------------------------------
 !
 !  IJacobian - Compute IJacobian = dF/dU + shift*dF/dUdot
 !
 subroutine FormIJacobian(ts,t,X,Xdot,shift,J,Jpre,user,ierr)
+  use petscts
+  use petscdmda
   implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscsnes.h>
-#include <petsc/finclude/petscts.h>
-#include <petsc/finclude/petscdm.h>
-#include <petsc/finclude/petscdmda.h>
+
   TS ts
   PetscReal t,shift
   Vec X,Xdot
@@ -422,7 +379,6 @@ subroutine FormIJacobian(ts,t,X,Xdot,shift,J,Jpre,user,ierr)
      call MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY,ierr);CHKERRQ(ierr)
   end if
 end subroutine FormIJacobian
-#endif
 
 subroutine FormInitialSolutionLocal(mx,xs,xe,gxs,gxe,x,a,k,s,ierr)
   implicit none
@@ -448,14 +404,10 @@ subroutine FormInitialSolutionLocal(mx,xs,xe,gxs,gxe,x,a,k,s,ierr)
 end subroutine FormInitialSolutionLocal
 
 subroutine FormInitialSolution(ts,X,user,ierr)
+  use petscts
+  use petscdmda
   implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscsnes.h>
-#include <petsc/finclude/petscts.h>
-#include <petsc/finclude/petscdm.h>
-#include <petsc/finclude/petscdmda.h>
+
   TS ts
   Vec X
   PetscReal user(6)
@@ -480,21 +432,13 @@ subroutine FormInitialSolution(ts,X,user,ierr)
 end subroutine FormInitialSolution
 
 
-#ifdef MF_EX22F_MF
 ! ---------------------------------------------------------------------
 !
 !  IJacobian - Compute IJacobian = dF/dU + shift*dF/dUdot
 !
 subroutine FormIJacobianMF(ts,t,X,Xdot,shift,J,Jpre,user,ierr)
-  use PETScShiftMod, only :  PETSC_SHIFT,MFuser
+  use PETScShiftMod
   implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscsnes.h>
-#include <petsc/finclude/petscts.h>
-#include <petsc/finclude/petscdm.h>
-#include <petsc/finclude/petscdmda.h>
   TS ts
   PetscReal t,shift
   Vec X,Xdot
@@ -519,15 +463,8 @@ end subroutine FormIJacobianMF
 !.  F - function vector
 !
 subroutine  MyMult(A,X,F,ierr)
-  use PETScShiftMod, only :  PETSC_SHIFT,tscontext,Jmat,MFuser
+  use PETScShiftMod
   implicit none
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscpc.h>
-#include <petsc/finclude/petscts.h>
-#include <petsc/finclude/petscvec.h90>
 
   Mat     A
   Vec     X,F
@@ -580,19 +517,12 @@ subroutine  MyMult(A,X,F,ierr)
 
   return
 end subroutine MyMult
-#endif
 
 
 !
 subroutine SaveSolutionToDisk(da,X,gdof,xs,xe)
+  use petscdmda
   implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscsnes.h>
-#include <petsc/finclude/petscts.h>
-#include <petsc/finclude/petscdm.h>
-#include <petsc/finclude/petscdmda.h>
 
   Vec X
   DM             da
@@ -602,7 +532,6 @@ subroutine SaveSolutionToDisk(da,X,gdof,xs,xe)
   PetscOffset    ixx
   PetscScalar data2(2,xs:xe),data(gdof)
   PetscScalar    xx(0:1)
-
 
   call VecGetArrayRead(X,xx,ixx,ierr)
 

@@ -22,8 +22,6 @@
 
 ! ----------------------------------------------------------------------
 !
-      implicit none
-
 #include "rosenbrock1f.h"
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -73,9 +71,9 @@
 
 
 ! Check for command line arguments to override defaults
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,    &
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,    &
      &                        '-n',n,flg,ierr)
-      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,   &
+      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,   &
      &                         '-alpha',alpha,flg,ierr)
 
 !  Allocate vectors for the solution and gradient
@@ -98,10 +96,10 @@
 
 !  Set routines for function, gradient, and hessian evaluation
       call TaoSetObjectiveAndGradientRoutine(tao,                       &
-     &      FormFunctionGradient,PETSC_NULL_OBJECT,ierr)
+     &      FormFunctionGradient,0,ierr)
       CHKERRQ(ierr)
       call TaoSetHessianRoutine(tao,H,H,FormHessian,                    &
-     &     PETSC_NULL_OBJECT,ierr)
+     &     0,ierr)
       CHKERRQ(ierr)
 
 
@@ -148,9 +146,6 @@
 !  f - function value
 
       subroutine FormFunctionGradient(tao, X, f, G, dummy, ierr)
-      implicit none
-
-! n,alpha defined in rosenbrock1f.h
 #include "rosenbrock1f.h"
 
       Tao        tao
@@ -220,8 +215,6 @@
 !  require this matrix.
 
       subroutine FormHessian(tao,X,H,PrecH,dummy,ierr)
-      implicit none
-
 #include "rosenbrock1f.h"
 
 !  Input/output variables:

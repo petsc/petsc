@@ -3,10 +3,9 @@
 !  Formatted test for IS general routines
 !
       program main
+#include <petsc/finclude/petscisdef.h>
+      use petscis
       implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscis.h>
-
 
        PetscErrorCode ierr
        PetscInt i,n,indices(1000),ii(1)

@@ -8,7 +8,6 @@ SOURCEF  =
 SOURCEH  = ../../../../include/petscdmshell.h
 LIBBASE  = libpetscdm
 MANSEC   = DM
-SUBMANSEC= DMSHELL
 LOCDIR   = src/dm/impls/shell/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

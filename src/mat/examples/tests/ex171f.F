@@ -2,13 +2,9 @@
 !   This program tests MatNullSpaceCreate()
 !
       program main
+#include <petsc/finclude/petscmatdef.h>
+      use petscmat
       implicit none
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscis.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscviewer.h>
 
       PetscErrorCode ierr
       MatNullSpace nsp

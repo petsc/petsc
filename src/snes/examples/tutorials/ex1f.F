@@ -10,32 +10,11 @@
 ! -----------------------------------------------------------------------
 
       program main
+#include <petsc/finclude/petscdef.h>
+      use petsc
       implicit none
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!                    Include files
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!
-!  The following include statements are generally used in SNES Fortran
-!  programs:
-!     petscsys.h       - base PETSc routines
-!     petscvec.h    - vectors
-!     petscmat.h    - matrices
-!     petscksp.h    - Krylov subspace methods
-!     petscpc.h     - preconditioners
-!     petscsnes.h   - SNES interface
-!  Other include statements may be needed if using additional PETSc
-!  routines in a Fortran program, e.g.,
-!     petscviewer.h - viewers
-!     petscis.h     - index sets
-!
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscksp.h>
-#include <petsc/finclude/petscpc.h>
-#include <petsc/finclude/petscsnes.h>
-!
+
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -123,12 +102,11 @@
 
 !  Set function evaluation routine and vector
 
-      call SNESSetFunction(snes,r,FormFunction,PETSC_NULL_OBJECT,ierr)
+      call SNESSetFunction(snes,r,FormFunction,0,ierr)
 
 !  Set Jacobian matrix data structure and Jacobian evaluation routine
 
-      call SNESSetJacobian(snes,J,J,FormJacobian,PETSC_NULL_OBJECT,     &
-     &     ierr)
+      call SNESSetJacobian(snes,J,J,FormJacobian,0,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Customize nonlinear solver; set runtime options
@@ -154,14 +132,14 @@
 
       call SNESSetFromOptions(snes,ierr)
 
-      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,   &
+      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,   &
      &                         '-setls',setls,ierr)
 
       if (setls) then
         call SNESGetLineSearch(snes, linesearch, ierr)
         call SNESLineSearchSetType(linesearch, 'shell', ierr)
         call SNESLineSearchShellSetUserFunc(linesearch, MyLineSearch,   &
-     &PETSC_NULL_OBJECT, ierr)
+     &                                      0, ierr)
       endif
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -175,7 +153,7 @@
 
       pfive = 0.5
       call VecSet(x,pfive,ierr)
-      call SNESSolve(snes,PETSC_NULL_OBJECT,x,ierr)
+      call SNESSolve(snes,PETSC_NULL_VEC,x,ierr)
       call SNESGetIterationNumber(snes,its,ierr);
       if (rank .eq. 0) then
          write(6,100) its
@@ -207,11 +185,8 @@
 !  f - function vector
 !
       subroutine FormFunction(snes,x,f,dummy,ierr)
+      use petscsnes
       implicit none
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscsnes.h>
 
       SNES     snes
       Vec      x,f
@@ -264,13 +239,8 @@
 !  flag - flag indicating matrix structure
 !
       subroutine FormJacobian(snes,X,jac,B,dummy,ierr)
+      use petscsnes
       implicit none
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscpc.h>
-#include <petsc/finclude/petscsnes.h>
 
       SNES         snes
       Vec          X
@@ -318,13 +288,10 @@
 
 
       subroutine MyLineSearch(linesearch, lctx, ierr)
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscksp.h>
-#include <petsc/finclude/petscpc.h>
-#include <petsc/finclude/petscsnes.h>
+      use petscsnes
+      implicit none
 
+      SNESLineSearch    linesearch
       SNES              snes
       integer           lctx
       Vec               x, f,g, y, w

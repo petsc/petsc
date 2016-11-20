@@ -11,23 +11,9 @@
 ! -----------------------------------------------------------------------
 
       program main
+#include <petsc/finclude/petscvecdef.h>
+      use petscvec
       implicit none
-
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!                    Include files
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!
-!  The following include statements are required for Fortran programs
-!  that use PETSc vectors:
-!     petscsys.h       - base PETSc routines
-!     petscvec.h    - vectors
-!  Additional include statements may be needed if using additional
-!  PETSc routines in a Fortran program, e.g.,
-!     petscviewer.h - viewers
-!     petscis.h     - index sets
-!
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program

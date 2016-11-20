@@ -12,9 +12,10 @@
 #define DMType character*(80)
 #define DMBoundaryType      PetscEnum
 #define DMPointLocationType PetscEnum
+#define DMAdaptFlag         PetscEnum
 
-#if !defined(PETSC_USE_FORTRAN_DATATYPES)
-#define DM               PetscFortranAddr
+#define DM               type(tDM)
+
 #define PetscQuadrature  PetscFortranAddr
 #define PetscDS          PetscFortranAddr
 #define PetscFE          PetscFortranAddr
@@ -23,7 +24,7 @@
 #define PetscFV          PetscFortranAddr
 #define PetscLimiter     PetscFortranAddr
 #define PetscPartitioner PetscFortranAddr
-#endif
+
 
 #define DMDA        'da'
 #define DMCOMPOSITE 'composite'

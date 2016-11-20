@@ -8,12 +8,12 @@
 #include "petsc/finclude/petscmatdef.h"
 #include "petsc/finclude/petscdmdef.h"
 
-#if !defined(PETSC_USE_FORTRAN_DATATYPES)
-#define PC PetscFortranAddr
-#endif
+#define PC type(tPC)
+
 #define PCSide PetscEnum
 #define PCJacobiType PetscEnum
 #define PCASMType PetscEnum
+#define PCGASMType PetscEnum
 #define PCCompositeType PetscEnum
 #define PCRichardsonConvergedReason PetscEnum
 #define PCType character*(80)

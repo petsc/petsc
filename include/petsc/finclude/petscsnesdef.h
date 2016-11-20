@@ -6,9 +6,8 @@
 
 #include "petsc/finclude/petsckspdef.h"
 
-#if !defined(PETSC_USE_FORTRAN_DATATYPES)
-#define SNES PetscFortranAddr
-#endif
+#define SNES type(tSNES)
+
 #define SNESType character*(80)
 #define SNESMSType character*(80)
 #define SNESConvergedReason PetscEnum

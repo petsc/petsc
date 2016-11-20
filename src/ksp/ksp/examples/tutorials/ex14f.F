@@ -46,25 +46,10 @@
 !  -------------------------------------------------------------------------
 
       program main
+#include <petsc/finclude/petsckspdef.h>
+      use petscdmda
+      use petscksp
       implicit none
-
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!                    Include files
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!
-!     petscsys.h       - base PETSc routines   petscvec.h - vectors
-!     petscmat.h - matrices
-!     petscis.h     - index sets            petscksp.h - Krylov subspace methods
-!     petscviewer.h - viewers               petscpc.h  - preconditioners
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscis.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscpc.h>
-#include <petsc/finclude/petscksp.h>
-#include <petsc/finclude/petscdm.h>
-#include <petsc/finclude/petscdmda.h>
 
       MPI_Comm comm
       Vec      X,Y,F,localX
@@ -109,14 +94,14 @@
 !
       mx = 4
       my = 4
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,    &
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,    &
      &                        '-mx',mx,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,    &
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,    &
      &                        '-my',my,flg,ierr)
       N = mx*my
 
       nooutput = .false.
-      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,    &
+      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,    &
      &                         '-no_output',nooutput,ierr)
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -134,9 +119,9 @@
 !
       Nx = PETSC_DECIDE
       Ny = PETSC_DECIDE
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,   &
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,   &
      &                        '-Nx',Nx,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,   &
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,   &
      &                         '-Ny',Ny,flg,ierr)
       call DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,             &
      &     DMDA_STENCIL_STAR,mx,my,Nx,Ny,one,one,                           &
@@ -180,7 +165,7 @@
 !     Note: we put B into a common block so it will be visible to the
 !     mymult() routine
       usemf = .false.
-      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,       &
+      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,       &
      &                         '-mf',usemf,ierr)
       if (usemf) then
          call MatCreateShell(comm,m,m,N,N,PETSC_NULL_INTEGER,J,ierr)
@@ -304,21 +289,9 @@
 !   X - vector
 !
       subroutine FormInitialGuess(X,ierr)
+      use petscksp
       implicit none
 
-!     petscsys.h       - base PETSc routines   petscvec.h - vectors
-!     petscmat.h - matrices
-!     petscis.h     - index sets            petscksp.h - Krylov subspace methods
-!     petscviewer.h - viewers               petscpc.h  - preconditioners
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscis.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscpc.h>
-#include <petsc/finclude/petscksp.h>
-#include <petsc/finclude/petscdm.h>
-#include <petsc/finclude/petscdmda.h>
       PetscErrorCode    ierr
       PetscOffset      idx
       Vec       X,localX
@@ -382,21 +355,8 @@
 !.  F - function vector
 !
       subroutine  ComputeFunction(X,F,ierr)
+      use petscksp
       implicit none
-
-!     petscsys.h       - base PETSc routines   petscvec.h - vectors
-!     petscmat.h - matrices
-!     petscis.h     - index sets            petscksp.h - Krylov subspace methods
-!     petscviewer.h - viewers               petscpc.h  - preconditioners
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscis.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscpc.h>
-#include <petsc/finclude/petscksp.h>
-#include <petsc/finclude/petscdm.h>
-#include <petsc/finclude/petscdmda.h>
 
       Vec              X,F,localX
       PetscInt         gys,gxm,gym
@@ -488,21 +448,8 @@
 !   uniprocessor grid!
 !
       subroutine ComputeJacobian(X,jac,ierr)
+      use petscksp
       implicit none
-
-!     petscsys.h  - base PETSc routines   petscvec.h - vectors
-!     petscmat.h - matrices
-!     petscis.h     - index sets            petscksp.h - Krylov subspace methods
-!     petscviewer.h - viewers               petscpc.h  - preconditioners
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscis.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscpc.h>
-#include <petsc/finclude/petscksp.h>
-#include <petsc/finclude/petscdm.h>
-#include <petsc/finclude/petscdmda.h>
 
       Vec         X
       Mat         jac
@@ -620,7 +567,9 @@
 !.  F - function vector
 !
       subroutine  MyMult(J,X,F,ierr)
+      use petscksp
       implicit none
+      
       Mat     J,B
       Vec     X,F
       PetscErrorCode ierr

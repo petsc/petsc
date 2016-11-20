@@ -1,14 +1,9 @@
 !
       program main
-       implicit none
+#include <petsc/finclude/petsckspdef.h>
+      use petscksp
+      implicit none
 
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscpc.h>
-#include <petsc/finclude/petscksp.h>
-#include <petsc/finclude/petscviewer.h>
-#include <petsc/finclude/petscis.h>
 !
 !  This example is a modified Fortran version of ex6.c.  It tests the use of
 !  options prefixes in PETSc. Two linear problems are solved in this program.
@@ -24,7 +19,7 @@
 
       PetscErrorCode  ierr
       PetscInt its,ione,ifive,izero
-      PetscErrorCode flg
+      PetscBool flg
       PetscScalar      norm,none,five
       Vec              x,b,u
       Mat              A
@@ -45,8 +40,8 @@
       endif
 
 ! Read in matrix and RHS
-      call PetscOptionsGetString(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,       &
-     &                           '-f',f,flg,ierr)
+      call PetscOptionsGetString(PETSC_NULL_OPTIONS,                           &
+     &             PETSC_NULL_CHARACTER,'-f',f,flg,ierr)
       call PetscViewerBinaryOpen(PETSC_COMM_WORLD,f,FILE_MODE_READ,            &
      &     fd,ierr)
       if (ierr .ne. 0) then
@@ -90,8 +85,8 @@
 
 ! Create system 2 by striping off some rows of the matrix
       call ISCreateStride(PETSC_COMM_SELF,ifive,izero,ione,isrow,ierr)
-      call MatZeroRowsIS(A,isrow,five,PETSC_NULL_OBJECT,                   &
-     &                   PETSC_NULL_OBJECT,ierr)
+      call MatZeroRowsIS(A,isrow,five,PETSC_NULL_VEC,                   &
+     &                   PETSC_NULL_VEC,ierr)
 
 ! Solve system-2
       call KSPCreate(PETSC_COMM_WORLD,ksp2,ierr)

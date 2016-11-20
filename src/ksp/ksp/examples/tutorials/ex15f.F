@@ -13,21 +13,9 @@
 !  -------------------------------------------------------------------------
 
       program main
+#include <petsc/finclude/petsckspdef.h>
+      use petscksp
       implicit none
-
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!                    Include files
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!
-!     petscsys.h  - base PETSc routines      petscvec.h - vectors
-!     petscmat.h - matrices
-!     petscksp.h    - Krylov subspace methods  petscpc.h  - preconditioners
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscpc.h>
-#include <petsc/finclude/petscksp.h>
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -78,9 +66,9 @@
       m       = 8
       n       = 7
       five    = 5
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,     &
      &                        '-m',m,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,     &
      &                        '-n',n,flg,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
@@ -193,7 +181,7 @@
 !
 !  Set a user-defined shell preconditioner if desired
 !
-      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,        &
+      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,        &
      &                         '-user_defined_pc',user_defined_pc,ierr)
 
       if (user_defined_pc) then
@@ -283,14 +271,10 @@
 !   used within the routine SampleShellPCApply().
 !
       subroutine SampleShellPCSetUp(pc,ierr)
-
+      use petscksp
       implicit none
 
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
       PC      pc
-
       Mat     pmat
       integer ierr
 
@@ -301,8 +285,8 @@
       common /myshellpc/ diag
       Vec    diag
 
-      call PCGetOperators(pc,PETSC_NULL_OBJECT,pmat,ierr)
-      call MatCreateVecs(pmat,diag,PETSC_NULL_OBJECT,ierr)
+      call PCGetOperators(pc,PETSC_NULL_OPTIONS,pmat,ierr)
+      call MatCreateVecs(pmat,diag,PETSC_NULL_VEC,ierr)
       call MatGetDiagonal(pmat,diag,ierr)
       call VecReciprocal(diag,ierr)
 
@@ -327,11 +311,8 @@
 !   is already provided within PETSc.
 !
       subroutine SampleShellPCApply(pc,x,y,ierr)
-
+      use petscksp
       implicit none
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
 
       PC      pc
       Vec     x,y
@@ -361,12 +342,9 @@
 !
 
       subroutine SampleShellPCDestroy(pc,ierr)
-
+      use petscksp
       implicit none
 
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
       PC      pc
       PetscErrorCode ierr
 

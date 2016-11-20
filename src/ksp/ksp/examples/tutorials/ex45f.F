@@ -1,13 +1,8 @@
       program main
+#include <petsc/finclude/petsckspdef.h>
+      use petscdmda
+      use petscksp
       implicit none
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscpc.h>
-#include <petsc/finclude/petscksp.h>
-#include <petsc/finclude/petscdm.h>
-#include <petsc/finclude/petscdmda.h>
 
        PetscInt is,js,iw,jw
        PetscInt one,three
@@ -33,15 +28,15 @@
        call DMSetUp(dm,ierr)
        call KSPSetDM(ksp,dm,ierr)
        call KSPSetComputeInitialGuess(ksp,ComputeInitialGuess,             &
-     &                                PETSC_NULL_OBJECT,ierr)
-       call KSPSetComputeRHS(ksp,ComputeRHS,PETSC_NULL_OBJECT,ierr)
+     &                                0,ierr)
+       call KSPSetComputeRHS(ksp,ComputeRHS,0,ierr)
        call KSPSetComputeOperators(ksp,ComputeMatrix,                   &
-     &      PETSC_NULL_OBJECT,ierr)
+     &      0,ierr)
        call DMDAGetCorners(dm,is,js,PETSC_NULL_INTEGER,iw,jw,             &
      &                     PETSC_NULL_INTEGER,ierr)
        call KSPSetFromOptions(ksp,ierr)
        call KSPSetUp(ksp,ierr)
-       call KSPSolve(ksp,PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,ierr)
+       call KSPSolve(ksp,PETSC_NULL_VEC,PETSC_NULL_VEC,ierr)
        call KSPDestroy(ksp,ierr)
        call DMDestroy(dm,ierr)
        call PetscFinalize(ierr)
@@ -49,6 +44,7 @@
 
 
        subroutine ComputeInitialGuess(ksp,b,ctx,ierr)
+       use petscksp
        implicit none
        PetscErrorCode  ierr
        KSP ksp
@@ -61,10 +57,9 @@
        end subroutine
 
        subroutine ComputeRHS(ksp,b,dummy,ierr)
+       use petscksp
        implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
+
        PetscErrorCode  ierr
        KSP ksp
        Vec b
@@ -87,11 +82,9 @@
        call VecSet(b,h,ierr)
        end subroutine
 
-       subroutine ComputeMatrix(ksp,A,B,dummy,ierr)
+      subroutine ComputeMatrix(ksp,A,B,dummy,ierr)
+      use petscksp
        implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
        PetscErrorCode  ierr
        KSP ksp
        Mat A,B

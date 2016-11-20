@@ -3,12 +3,10 @@
 ! user-defined contexts in PETSc. Example contributed by Glenn Hammond.
 !
 module Base_module
-  implicit none
+#include "petsc/finclude/petscsnesdef.h"
+      implicit none
   private
-#include "petsc/finclude/petscsys.h"
-#include "petsc/finclude/petscvec.h"
-#include "petsc/finclude/petscvec.h90"
-#include "petsc/finclude/petscsnes.h"
+
   type, public :: base_type
     PetscInt :: A  ! junk
     PetscReal :: I ! junk
@@ -29,10 +27,6 @@ module Extended_module
   use Base_module
   implicit none
   private
-#include "petsc/finclude/petscsys.h"
-#include "petsc/finclude/petscvec.h"
-#include "petsc/finclude/petscvec.h90"
-#include "petsc/finclude/petscsnes.h"
   type, public, extends(base_type) :: extended_type
     PetscInt :: B  ! junk
     PetscReal :: J ! junk
@@ -50,6 +44,7 @@ end subroutine ExtendedPrint
 end module Extended_module
 
 module Function_module
+  use petscsnes
   implicit none
   public :: TestFunction
   contains
@@ -70,23 +65,13 @@ program ex18f90
   use Base_module
   use Extended_module
   use Function_module
-
   implicit none
-
-#include "petsc/finclude/petscsys.h"
-#include "petsc/finclude/petscmat.h"
-#include "petsc/finclude/petscmat.h90"
-#include "petsc/finclude/petscvec.h"
-#include "petsc/finclude/petscvec.h90"
-#include "petsc/finclude/petscis.h"
-#include "petsc/finclude/petscis.h90"
-#include "petsc/finclude/petscviewer.h"
-#include "petsc/finclude/petscsnes.h"
 
 ! ifort on windows requires this interface definition
 interface
   subroutine SNESSetFunction(snes_base,x,TestFunction,base,ierr)
     use Base_module
+    use petscsnes  
     SNES snes_base
     Vec x
     external TestFunction

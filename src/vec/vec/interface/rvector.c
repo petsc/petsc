@@ -1003,7 +1003,7 @@ PetscErrorCode  VecSetValuesBlocked(Vec x,PetscInt ni,const PetscInt ix[],const 
 
 #undef __FUNCT__
 #define __FUNCT__ "VecSetValuesLocal"
-/*@
+/*@C
    VecSetValuesLocal - Inserts or adds values into certain locations of a vector,
    using a local ordering of the nodes.
 

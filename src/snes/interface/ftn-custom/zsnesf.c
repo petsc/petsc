@@ -177,12 +177,11 @@ PETSC_EXTERN void PETSC_STDCALL snessetjacobian_(SNES *snes,Mat *A,Mat *B,
 }
 /* -------------------------------------------------------------*/
 
-PETSC_EXTERN void PETSC_STDCALL snessolve_(SNES *snes,Vec *b,Vec *x, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL snessolve_(SNES *snes,Vec *b,Vec *x, int *ierr)
 {
-  Vec B = *b,X = *x;
-  if (FORTRANNULLOBJECT(b)) B = NULL;
-  if (FORTRANNULLOBJECT(x)) X = NULL;
-  *__ierr = SNESSolve(*snes,B,X);
+  CHKFORTRANNULLOBJECTDEREFERENCE(b);
+  CHKFORTRANNULLOBJECTDEREFERENCE(x);
+  *ierr = SNESSolve(*snes,*b,*x);
 }
 
 PETSC_EXTERN void PETSC_STDCALL snesgetoptionsprefix_(SNES *snes,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))

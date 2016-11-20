@@ -1,8 +1,11 @@
 !
-!  Simple PETSc Program written in Fortran 77.
+!  Simple PETSc Program written in Fortran
 !
        program main
-#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscsysdef.h>
+       use petscsys
+       implicit none
+
        PetscErrorCode  ierr
        PetscMPIInt     rank
        character*(80) arch

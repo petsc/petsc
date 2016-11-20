@@ -11,16 +11,11 @@
 ! -----------------------------------------------------------------------
 
       program main
+#include <petsc/finclude/petscsysdef.h>
+#include <petsc/finclude/petsclogdef.h>
+      use petscsys
       implicit none
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!                    Include files
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!
-!  The following include statements are required for using PetscLog Routines
-!
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petsclog.h>
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations

@@ -1,13 +1,8 @@
 !
       program main
-       implicit none
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscpc.h>
-#include <petsc/finclude/petscksp.h>
-#include <petsc/finclude/petscviewer.h>
+#include <petsc/finclude/petsckspdef.h>
+      use petscksp
+      implicit none
 !
 !      Solves a linear system matrix free
 !
@@ -30,8 +25,7 @@
       one = 1.0
       call KSPCreate(PETSC_COMM_SELF,ksp,ierr)
 
-      call MatCreateShell(PETSC_COMM_SELF,m,m,m,m,PETSC_NULL_OBJECT,    &
-     &     A,ierr)
+      call MatCreateShell(PETSC_COMM_SELF,m,m,m,m,0,A,ierr)
       call MatShellSetOperation(A,MATOP_MULT,mymatmult,ierr)
 
       call VecCreateSeq(PETSC_COMM_SELF,m,x,ierr)
@@ -56,6 +50,8 @@
 !  an identity matrix A
 
       subroutine mymatmult(A,x,y,ierr)
+      use petscksp
+      implicit none
 
       Mat A
       Vec x,y

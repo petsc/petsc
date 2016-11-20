@@ -7,18 +7,11 @@
 !    Concepts: Fortran90^accessing indices of index set;
 !T*/
 !
-!  The following include statements are required for Fortran programs
-!  that use PETSc index sets:
-!     petscsys.h  - base PETSc routines
-!     petscis.h     - index sets (IS objects)
-!     petscis.h90   - to allow access to Fortran90 features of index sets
-!
-      program main
-      implicit none
 
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscis.h>
-#include <petsc/finclude/petscis.h90>
+      program main
+#include <petsc/finclude/petscisdef.h>
+      use petscis
+      implicit none
 
       PetscErrorCode ierr
       PetscInt indices(5),n

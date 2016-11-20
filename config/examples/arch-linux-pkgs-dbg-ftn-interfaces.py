@@ -5,7 +5,6 @@ configure_options = [
   '--with-cxx=clang++',
   '--with-fc=gfortran',
   '--with-debugging=1',
-  '--with-fortran-interfaces=1',
   '--download-mpich=1',
   '--download-fblaslapack=1',
   '--download-hypre=1',

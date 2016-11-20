@@ -1,0 +1,50 @@
+
+      Interface
+        Subroutine PetscQuadratureGetData(q,dim,np,p,w,ierr)
+          PetscInt     dim, np
+          PetscReal, pointer :: p(:)
+          PetscReal, pointer :: w(:)
+          PetscErrorCode ierr
+          PetscQuadrature q
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine PetscQuadratureRestoreData(q,dim,np,p,w,ierr)
+          PetscInt     dim, np
+          PetscReal, pointer :: p(:)
+          PetscReal, pointer :: w(:)
+          PetscErrorCode ierr
+          PetscQuadrature q
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine PetscQuadratureSetData(q,dim,np,p,w,ierr)
+          PetscInt     dim, np
+          PetscReal, pointer :: p(:)
+          PetscReal, pointer :: w(:)
+          PetscErrorCode ierr
+          PetscQuadrature q
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine PetscDSGetTabulation(prob,f,b,bDer,ierr)
+          PetscInt     f
+          PetscReal, pointer :: b(:)
+          PetscReal, pointer :: bDer(:)
+          PetscErrorCode ierr
+          PetscDS prob
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine PetscDSRestoreTabulation(prob,f,b,bDer,ierr)
+          PetscInt     f
+          PetscReal, pointer :: b(:)
+          PetscReal, pointer :: bDer(:)
+          PetscErrorCode ierr
+          PetscDS prob
+        End Subroutine
+      End Interface

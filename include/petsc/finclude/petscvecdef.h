@@ -7,10 +7,8 @@
 
 #include "petsc/finclude/petscaodef.h"
 
-#if !defined(PETSC_USE_FORTRAN_DATATYPES)
-#define Vec PetscFortranAddr
-#define VecScatter PetscFortranAddr
-#endif
+#define Vec type(tVec)
+#define VecScatter type(tVecScatter)
 
 #define NormType PetscEnum
 #define InsertMode PetscEnum

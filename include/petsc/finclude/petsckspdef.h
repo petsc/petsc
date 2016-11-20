@@ -7,10 +7,8 @@
 
 #include "petsc/finclude/petscpcdef.h"
 
-#if !defined(PETSC_USE_FORTRAN_DATATYPES)
-#define KSP PetscFortranAddr
-#define KSPFischerGuess PetscFortranAddr
-#endif
+#define KSP type(tKSP)
+#define KSPFischerGuess type(tKSPFischerGuess)
 
 #define KSPType character*(80)
 #define KSPCGType PetscEnum

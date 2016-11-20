@@ -1,0 +1,59 @@
+
+      Interface PetscViewerBinaryWrite
+        Subroutine PetscViewerBinaryWriteInt(v,a,cnt,tmp,ierr)
+          use petscdef
+          PetscViewer v
+          PetscInt a(*)
+          PetscInt cnt
+          PetscBool  tmp
+          PetscErrorCode ierr
+        End Subroutine
+
+        Subroutine PetscViewerBinaryWriteScalar(v,a,cnt,tmp,ierr)
+          use petscdef
+          PetscViewer v
+          PetscScalar a(*)
+          PetscInt cnt
+          PetscBool  tmp
+          PetscErrorCode ierr
+        End Subroutine
+
+#if defined(PETSC_USE_COMPLEX)
+        Subroutine PetscViewerBinaryWriteReal(v,a,cnt,tmp,ierr)
+          use petscdef
+          PetscViewer v
+          PetscReal a(*)
+          PetscInt cnt
+          PetscBool  tmp
+          PetscErrorCode ierr
+        End Subroutine
+#endif
+
+        Subroutine PetscViewerBinaryReadInt(v,a,cnt,ierr)
+          use petscdef
+          PetscViewer v
+          PetscInt a(*)
+          PetscInt cnt
+          PetscErrorCode ierr
+        End Subroutine
+
+        Subroutine PetscViewerBinaryReadScalar(v,a,cnt,ierr)
+          use petscdef
+          PetscViewer v
+          PetscScalar a(*)
+          PetscInt cnt
+          PetscErrorCode ierr
+        End Subroutine
+
+#if defined(PETSC_USE_COMPLEX)
+        Subroutine PetscViewerBinaryReadReal(v,a,cnt,ierr)
+          use petscdef
+          PetscViewer v
+          PetscReal a(*)
+          PetscInt cnt
+          PetscErrorCode ierr
+        End Subroutine
+#endif
+
+      End Interface
+

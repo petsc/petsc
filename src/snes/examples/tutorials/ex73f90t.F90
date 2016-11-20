@@ -45,6 +45,7 @@
       module petsc_kkt_solver
 #include <petsc/finclude/petscdmdef.h>
       use petscdmdef
+      use petscmatdef
       type petsc_kkt_solver_type
         DM::da
 !     temp A block stuff
@@ -64,6 +65,7 @@
       Interface SNESSetApplicationContext
         Subroutine SNESSetApplicationContext(snesIn,ctx,ierr)
 #include <petsc/finclude/petscsnesdef.h>
+        use petscsnes
         use petsc_kkt_solver
           SNES::    snesIn
           type(petsc_kkt_solver_type) ctx
@@ -74,6 +76,7 @@
       Interface SNESGetApplicationContext
         Subroutine SNESGetApplicationContext(snesIn,ctx,ierr)
 #include <petsc/finclude/petscsnesdef.h>
+        use petscsnes
         use petsc_kkt_solver
           SNES::     snesIn
           type(petsc_kkt_solver_type), pointer :: ctx
@@ -138,7 +141,7 @@
       ione = 1
       nfour = 4
       itwo = 2
-      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-par', solver%lambda,flg,ierr);CHKERRQ(ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-par', solver%lambda,flg,ierr);CHKERRQ(ierr)
       if (solver%lambda .ge. lambda_max .or. solver%lambda .lt. lambda_min) then
          if (solver%rank .eq. 0) write(6,*) 'Lambda is out of range'
          SETERRQ(PETSC_COMM_SELF,1,' ',ierr)
@@ -157,7 +160,7 @@
       N1 = solver%my*solver%mx
       N2 = solver%my
       flg = .false.
-      call PetscOptionsGetBool(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-no_constraints',flg,flg,ierr);CHKERRQ(ierr)
+      call PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-no_constraints',flg,flg,ierr);CHKERRQ(ierr)
       if (flg) then
          N2 = 0
       endif
@@ -300,7 +303,7 @@
 
 !  Extract global and local vectors from DMDA; then duplicate for remaining
 !     vectors that are the same types
-      call MatCreateVecs(KKTmat,x,PETSC_NULL_OBJECT,ierr);CHKERRQ(ierr)
+      call MatCreateVecs(KKTmat,x,PETSC_NULL_VEC,ierr);CHKERRQ(ierr)
       call VecDuplicate(x,r,ierr);CHKERRQ(ierr)
 
       call SNESCreate(PETSC_COMM_WORLD,mysnes,ierr);CHKERRQ(ierr)
@@ -331,7 +334,7 @@
 !  this vector to zero by calling VecSet().
 
       call FormInitialGuess(mysnes,x,ierr);CHKERRQ(ierr)
-      call SNESSolve(mysnes,PETSC_NULL_OBJECT,x,ierr);CHKERRQ(ierr)
+      call SNESSolve(mysnes,PETSC_NULL_VEC,x,ierr);CHKERRQ(ierr)
       call SNESGetIterationNumber(mysnes,its,ierr);CHKERRQ(ierr)
       if (solver%rank .eq. 0) then
          write(6,100) its

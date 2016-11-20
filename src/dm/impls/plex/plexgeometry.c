@@ -2557,10 +2557,12 @@ static PetscErrorCode DMPlexReferenceToCoordinates_FE(DM dm, PetscFE fe, PetscIn
                as a multilinear map for tensor-product elements
 . cell       - the cell whose map is used.
 . numPoints  - the number of points to locate
-+ realCoords - (numPoints x coordinate dimension) array of coordinates (see DMGetCoordinateDim())
+- realCoords - (numPoints x coordinate dimension) array of coordinates (see DMGetCoordinateDim())
 
   Output Parameters:
 . refCoords  - (numPoints x dimension) array of reference coordinates (see DMGetDimension())
+
+  Level: intermediate
 @*/
 PetscErrorCode DMPlexCoordinatesToReference(DM dm, PetscInt cell, PetscInt numPoints, const PetscReal realCoords[], PetscReal refCoords[])
 {
@@ -2641,6 +2643,8 @@ PetscErrorCode DMPlexCoordinatesToReference(DM dm, PetscInt cell, PetscInt numPo
 
   Output Parameters:
 . realCoords - (numPoints x coordinate dimension) array of coordinates (see DMGetCoordinateDim())
+
+   Level: intermediate
 @*/
 PetscErrorCode DMPlexReferenceToCoordinates(DM dm, PetscInt cell, PetscInt numPoints, const PetscReal refCoords[], PetscReal realCoords[])
 {

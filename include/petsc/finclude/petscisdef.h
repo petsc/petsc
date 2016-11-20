@@ -8,12 +8,10 @@
 #include "petsc/finclude/petscsysdef.h"
 #include "petsc/finclude/petscviewerdef.h"
 
-#if !defined(PETSC_USE_FORTRAN_DATATYPES)
-#define IS PetscFortranAddr
-#define ISColoring PetscFortranAddr
-#define PetscSection PetscFortranAddr
-#define PetscSectionSym PetscFortranAddr
-#endif
+#define IS type(tIS)
+#define ISColoring type(tISColoring)
+#define PetscSection type(tPetscSection)
+#define PetscSectionSym type(tPetscSectionSym)
 
 #define PetscSF PetscFortranAddr
 #define PetscLayout PetscFortranAddr

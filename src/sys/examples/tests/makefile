@@ -150,6 +150,12 @@ runex2:
 runex3:
 	-@${MPIEXEC} -n 1 ./ex3 -fp_trap 
 
+runex6f:
+	-@${MPIEXEC} -n 1 ./ex6f > ex6f.tmp 2>&1;\
+	   if (${DIFF} output/ex6f_1.out ex6f.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex6f_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex6f.tmp
+
 runex7:
 	-@${MPIEXEC} -n 1 ./ex7 > ex7.tmp 2>&1;\
 	   if (${DIFF} output/ex7.out ex7.tmp) then true; \

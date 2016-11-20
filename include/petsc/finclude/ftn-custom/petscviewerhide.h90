@@ -1,7 +1,0 @@
-#if defined(PETSC_USE_FORTRAN_DATATYPES) && !defined(PETSCVIEWER_HIDE)
-#define USE_PETSC_HIDE use petscsysdef
-#define PETSCVIEWER_HIDE type(PetscViewer)
-#elif !defined(USE_PETSC_HIDE)
-#define USE_PETSC_HIDE
-#define PETSCVIEWER_HIDE PetscViewer
-#endif

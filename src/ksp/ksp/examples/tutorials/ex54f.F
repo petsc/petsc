@@ -18,14 +18,10 @@
 !T*/
 ! -----------------------------------------------------------------------
       program main
+#include <petsc/finclude/petsckspdef.h>
+      use petscksp
       implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscksp.h>
-#include <petsc/finclude/petscpc.h>
-#include <petsc/finclude/petscviewer.h>
-#include <petsc/finclude/petscviewer.h90>
+
       Vec              xvec,bvec,uvec
       Mat              Amat
       KSP              ksp
@@ -63,20 +59,20 @@
       f9 = 9
       f6 = 6
       ne = 9
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,      &
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,      &
      &                        '-ne',ne,flg,ierr)
       h = 2.0/real(ne)
       M = (ne+1)*(ne+1)
       theta = 90.0
 !     theta is input in degrees
-      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
+      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,     &
      &                         '-theta',theta,flg,ierr)
       theta = theta / 57.2957795
       eps = 1.0
-      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
+      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,     &
      &                         '-epsilon',eps,flg,ierr)
       ki = 2
-      call PetscOptionsGetRealArray(PETSC_NULL_OBJECT,                     &
+      call PetscOptionsGetRealArray(PETSC_NULL_OPTIONS,                     &
      &           PETSC_NULL_CHARACTER,'-blob_center',blb,ki,flg,ierr)
       if ( .not. flg ) then
          blb(1) = 0.0
@@ -85,7 +81,7 @@
          print *, 'error: ', ki,                                            &
      &        ' arguments read for -blob_center.  Needs to be two.'
       endif
-      call PetscOptionsGetBool(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,      &
+      call PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,      &
      &                         '-out_matlab',out_matlab,flg,ierr)
       if (.not.flg) out_matlab = PETSC_FALSE;
 
@@ -111,7 +107,7 @@
       call MatGetOwnershipRange( Amat, Istart, Iend, ierr )
 !  Create vectors.  Note that we form 1 vector from scratch and
 !  then duplicate as needed.
-      call MatCreateVecs( Amat, PETSC_NULL_OBJECT, xvec, ierr )
+      call MatCreateVecs( Amat, PETSC_NULL_VEC, xvec, ierr )
       call VecSetFromOptions( xvec, ierr )
       call VecDuplicate( xvec, bvec, ierr )
       call VecDuplicate( xvec, uvec, ierr )
@@ -279,11 +275,9 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     thfx2d - compute material tensor
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-      subroutine thfx2d(ev,xl,shp,dd,ndm,ndf,nel,dir)
-
 !     Compute thermal gradient and flux
 
+      subroutine thfx2d(ev,xl,shp,dd,ndm,ndf,nel,dir)
       implicit  none
 
       PetscInt   ndm,ndf,nel,i

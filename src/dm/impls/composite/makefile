@@ -8,7 +8,6 @@ SOURCEF  =
 SOURCEH  = packimpl.h
 LIBBASE  = libpetscdm
 MANSEC   = DM
-SUBMANSEC= DMCOMPOSITE
 DIRS     =
 LOCDIR   = src/dm/impls/composite/
 

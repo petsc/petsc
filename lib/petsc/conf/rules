@@ -585,26 +585,29 @@ chk_mansec:
         fi
 
 chk_manualpage_dir:
-	@if [ ! -d "${LOC}/docs/manualpages/${MANSEC}" ]; then \
-	  echo Making directory ${LOC}/docs/manualpages/${MANSEC} for library; ${MKDIR} ${LOC}/docs/manualpages/${MANSEC}; fi
+	@if [ "${SUBMANSEC}" == "" ] ; then SUBMANSEC=${MANSEC}; else SUBMANSEC=${SUBMANSEC}; fi; \
+         if [ ! -d "${LOC}/docs/manualpages/${SUBMANSEC}" ]; then \
+	  echo Making directory ${LOC}/docs/manualpages/$${SUBMANSEC} for library; ${MKDIR} ${LOC}/docs/manualpages/$${SUBMANSEC}; fi
 
 manualpages_buildcite: chk_manualpage_dir
 	@-if [ "${MANSEC}" != "" ] ; then \
-	  DOCTEXT_PATH=${PETSC_DIR}/src/docs/tex/doctext; export DOCTEXT_PATH; \
+          if [ "${SUBMANSEC}" == "" ] ; then SUBMANSEC=${MANSEC}; else SUBMANSEC=${SUBMANSEC}; fi; \
+          DOCTEXT_PATH=${PETSC_DIR}/src/docs/tex/doctext; export DOCTEXT_PATH; \
 	  TEXTFILTER_PATH=${PETSC_DIR}/src/docs/tex/doctext; export TEXTFILTER_PATH; \
-          ${DOCTEXT} -html -indexdir ../${MANSEC} \
+          ${DOCTEXT} -html -indexdir ../$${SUBMANSEC} \
 		-index ${LOC}/docs/manualpages/manualpages.cit \
-		-mpath ${LOC}/docs/manualpages/${MANSEC} ${SOURCED};  fi
+		-mpath ${LOC}/docs/manualpages/$${SUBMANSEC} ${SOURCED};  fi
 #
 #
 manualpages:
 	-@if [ "${MANSEC}" != "" ] ; then \
-	  DOCTEXT_PATH=${PETSC_DIR}/src/docs/tex/doctext; export DOCTEXT_PATH; \
+          if [ "${SUBMANSEC}" == "" ] ; then SUBMANSEC=${MANSEC}; else SUBMANSEC=${SUBMANSEC}; fi; \
+          DOCTEXT_PATH=${PETSC_DIR}/src/docs/tex/doctext; export DOCTEXT_PATH; \
 	  ${DOCTEXT} -html \
-		-mpath ${LOC}/docs/manualpages/${MANSEC} -heading PETSc \
+		-mpath ${LOC}/docs/manualpages/$${SUBMANSEC} -heading PETSc \
 		-defn ${PETSC_DIR}/src/docs/tex/doctext/html.def \
 		-locdir ${LOCDIR} -mapref ${LOC}/docs/manualpages/manualpages.cit ${SOURCED};\
-		chmod -f g+w ${LOC}/docs/manualpages/${MANSEC}/* ; fi
+		chmod -f g+w ${LOC}/docs/manualpages/$${SUBMANSEC}/* ; fi
 #
 #   Example usage for manual pages; adds each example that uses a function to that functions
 # manual page up to a limit of 10 examples.

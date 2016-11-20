@@ -3,8 +3,10 @@
 !     Test for PetscFOpen() from Fortran
 !
        program main
-#include <petsc/finclude/petscsys.h>
-
+#include <petsc/finclude/petscsysdef.h>
+       use petscsys
+       implicit none
+       
       PetscErrorCode ierr
       PetscMPIInt rank
       PetscFortranAddr file

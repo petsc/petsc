@@ -3,11 +3,11 @@
 !   This program demonstrates use of MatShellSetOperation()
 !
       subroutine mymatmult(A, x, y, ierr)
+#include <petsc/finclude/petscmatdef.h>
+      use petscmat
       implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscis.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
+
+
       Mat A
       Vec x, y
       PetscErrorCode ierr
@@ -17,11 +17,8 @@
       end
 
       subroutine mymatmultadd(A, x, y, z, ierr)
+      use petscmat
       implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscis.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
       Mat A
       Vec x, y, z
       PetscErrorCode ierr
@@ -31,11 +28,8 @@
       end
 
       subroutine mymatmulttranspose(A, x, y, ierr)
+      use petscmat
       implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscis.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
       Mat A
       Vec x, y
       PetscErrorCode ierr
@@ -45,11 +39,8 @@
       end
 
       subroutine mymatmulttransposeadd(A, x, y, z, ierr)
+      use petscmat
       implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscis.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
       Mat A
       Vec x, y, z
       PetscErrorCode ierr
@@ -59,11 +50,8 @@
       end
 
       subroutine mymattranspose(A, reuse, B, ierr)
+      use petscmat
       implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscis.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
       Mat A, B
       MatReuse reuse
       PetscErrorCode ierr
@@ -80,11 +68,8 @@
       end
 
       subroutine mymatgetdiagonal(A, x, ierr)
+      use petscmat
       implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscis.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
       Mat A
       Vec x
       PetscErrorCode ierr
@@ -94,11 +79,8 @@
       end
 
       subroutine mymatdiagonalscale(A, x, y, ierr)
+      use petscmat
       implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscis.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
       Mat A
       Vec x, y
       PetscErrorCode ierr
@@ -108,11 +90,8 @@
       end
 
       subroutine mymatzeroentries(A, ierr)
+      use petscmat
       implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscis.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
       Mat A
       PetscErrorCode ierr
 
@@ -121,11 +100,8 @@
       end
 
       subroutine mymataxpy(A, alpha, B, str, ierr)
+      use petscmat
       implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscis.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
       Mat A, B
       PetscScalar alpha
       MatStructure str
@@ -136,11 +112,8 @@
       end
 
       subroutine mymatshift(A, alpha, ierr)
+      use petscmat
       implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscis.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
       Mat A
       PetscScalar alpha
       PetscErrorCode ierr
@@ -150,11 +123,8 @@
       end
 
       subroutine mymatdiagonalset(A, x, ins, ierr)
+      use petscmat
       implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscis.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
       Mat A
       Vec x
       InsertMode ins
@@ -165,11 +135,8 @@
       end
 
       subroutine mymatdestroy(A, ierr)
+      use petscmat
       implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscis.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
       Mat A
       PetscErrorCode ierr
 
@@ -178,11 +145,8 @@
       end
 
       subroutine mymatview(A, viewer, ierr)
+      use petscmat
       implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscis.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
       Mat A
       PetscViewer viewer
       PetscErrorCode ierr
@@ -192,11 +156,8 @@
       end
 
       subroutine mymatgetvecs(A, x, y, ierr)
+      use petscmat
       implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscis.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
       Mat A
       Vec x, y
       PetscErrorCode ierr
@@ -206,12 +167,8 @@
       end
 
       program main
+      use petscmat
       implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscis.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscviewer.h>
 
       Mat     m, mt
       Vec     x, y, z

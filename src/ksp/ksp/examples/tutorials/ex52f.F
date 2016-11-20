@@ -4,23 +4,16 @@
 !  -------------------------------------------------------------------------
 
       program main
+#include <petsc/finclude/petsckspdef.h>
+      use petscksp
       implicit none
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!                    Include files
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscpc.h>
-#include <petsc/finclude/petscksp.h>
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       Vec              x,b,u
       Mat              A
-      PC               pc
       KSP              ksp
       PetscScalar      v,one,neg_one
       PetscReal        norm,tol
@@ -49,9 +42,9 @@
       m       = 8
       n       = 7
       five    = 5
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,        &
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,        &
      &                        '-m',m,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,        &
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,        &
      &                        '-n',n,flg,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 

@@ -21,7 +21,9 @@
 
    You cannot change the sizes once they have been set
 
-.seealso: DMNetworkCreate
+   Level: intermediate
+
+.seealso: DMNetworkCreate()
 @*/
 PetscErrorCode DMNetworkSetSizes(DM dm, PetscInt nV, PetscInt nE, PetscInt NV, PetscInt NE)
 {

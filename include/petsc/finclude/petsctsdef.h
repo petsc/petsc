@@ -6,11 +6,10 @@
 
 #include "petsc/finclude/petscsnesdef.h"
 
-#if !defined(PETSC_USE_FORTRAN_DATATYPES)
-#define TS PetscFortranAddr
-#define TSAdapt PetscFortranAddr
-#define TSTrajectory PetscFortranAddr
-#endif
+#define TS type(tTS)
+#define TSAdapt type(tTSAdapt)
+#define TSTrajectory type(tTSTrajectory)
+
 #define TSType character*(80)
 #define TSAdaptType character*(80)
 #define TSTrajectoryType character*(80)

@@ -57,8 +57,10 @@
       end module assert_mod
 
       program tpetsc
+#include <petsc/finclude/petscdef.h>
       use assert_mod
       use omp_module
+      use petsc
       implicit none
 !     ----------------------------
 !     test concurrent petsc solver
@@ -69,8 +71,6 @@
       real(8), parameter :: tol = 1.0d-6
 
       integer, dimension(MAXTHREADS) :: ibeg,iend
-
-#include <petsc/finclude/petsc.h90>
 
 !$   integer, external :: omp_get_num_threads
 

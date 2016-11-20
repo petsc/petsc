@@ -22,28 +22,10 @@
 ! -----------------------------------------------------------------------
 
       program main
+#include <petsc/finclude/petsckspdef.h>
+      use petscksp
       implicit none
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!                    Include files
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!
-!  The following include statements are required for KSP Fortran programs:
-!     petscsys.h       - base PETSc routines
-!     petscvec.h    - vectors
-!     petscmat.h    - matrices
-!     petscpc.h     - preconditioners
-!     petscksp.h    - Krylov subspace methods
-!  Additional include statements may be needed if using other PETSc
-!  routines in a Fortran program, e.g.,
-!     petscviewer.h - viewers
-!     petscis.h     - index sets
-!
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscpc.h>
-#include <petsc/finclude/petscksp.h>
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -92,9 +74,9 @@
       czero  = 0.0
       cone   = PETSC_i
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
-      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
+      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,     &
      &                         '-sigma1',sigma1,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,      &
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,      &
      &                        '-n',n,flg,ierr)
       dim    = n*n
 
@@ -125,7 +107,7 @@
 !     appropriate processor during matrix assembly).
 !   - Always specify global rows and columns of matrix entries.
 
-      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,   &
+      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,   &
      &                         '-norandom',flg,ierr)
       if (flg) then
          use_random = .false.

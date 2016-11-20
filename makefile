@@ -304,8 +304,8 @@ allgtags:
 	-@find ${PETSC_DIR}/include ${PETSC_DIR}/src ${PETSC_DIR}/bin -regex '\(.*makefile\|.*\.\(cc\|hh\|cpp\|C\|hpp\|c\|h\|cu\|m\)$$\)' | grep -v ftn-auto  | gtags -f -
 
 allfortranstubs:
-	-@${RM} -rf include/petsc/finclude/ftn-auto/*-tmpdir
-	-@${PYTHON} bin/maint/generatefortranstubs.py ${BFORT}  ${VERBOSE}
+	-@${RM} -rf ${PETSC_ARCH}/include/petsc/finclude/ftn-auto/*-tmpdir
+	@${PYTHON} bin/maint/generatefortranstubs.py ${BFORT}  ${VERBOSE}
 	-@${PYTHON} bin/maint/generatefortranstubs.py -merge  ${VERBOSE}
 	-@${RM} -rf include/petsc/finclude/ftn-auto/*-tmpdir
 deletefortranstubs:
@@ -527,13 +527,10 @@ checkpackagetests:
 #
 # Automatically generates PETSc exercises in html from the tutorial examples.
 #
-# The introduction for each section is obtained from docs/manualpages/header_${MANSEC} is under RCS and may be edited
+# The introduction for each section is obtained from docs/manualpages-cite/header_${MANSEC} may be edited
 #  (used also in introductions to the manual pages)
-# The overall introduction is in docs/exercises/introduction.html and is under RCS and may be edited
-# The list of exercises is from TUTORIALS in each directory's makefile
 #
-# DO NOT EDIT the pageform.txt or *.htm files generated since they will be automatically replaced.
-# The pagemaker rule is in the file conf (at the bottom)
+# DO NOT EDIT the *.htm files generated since they will be automatically replaced.
 #
 # Eventually the line below will replace the two cd in the rule below, it is just this way now for speed
 #	-@${OMAKE} PETSC_DIR=${PETSC_DIR} pagemaker

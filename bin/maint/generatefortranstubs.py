@@ -52,7 +52,8 @@ def FixDir(petscdir,dir,verbose):
       + Fixes the C stub files to be compilable C
       + Generates a makefile
       + copies over Fortran interface files that are generated'''
-  mansec = 'unknown'
+  submansec = 'unknown'
+  mansec = 'unknown'  
   cnames = []
   hnames = []
   parentdir =os.path.abspath(os.path.join(dir,'..'))
@@ -83,8 +84,10 @@ def FixDir(petscdir,dir,verbose):
       elif line.find('LOCDIR') >=0:
         locdir = line.rstrip() + 'ftn-auto/'
       elif line.find('SUBMANSEC') >=0:
-        mansec = line.split('=')[1].lower().strip()
+        submansec = line.split('=')[1].lower().strip()
       elif line.find('MANSEC') >=0:
+        submansec = line.split('=')[1].lower().strip()
+      if line.find('MANSEC') >=0 and not line.find('SUBMANSEC') >=0:
         mansec = line.split('=')[1].lower().strip()
 
     # now assemble the makefile
@@ -120,9 +123,9 @@ def FixDir(petscdir,dir,verbose):
     txt = fd.read()
     fd.close()
     if txt:
-      if not os.path.isdir(os.path.join(petscdir,'include','petsc','finclude','ftn-auto')): os.mkdir(os.path.join(petscdir,'include','petsc','finclude','ftn-auto'))
-      if not os.path.isdir(os.path.join(petscdir,'include','petsc','finclude','ftn-auto',mansec+'-tmpdir')): os.mkdir(os.path.join(petscdir,'include','petsc','finclude','ftn-auto',mansec+'-tmpdir'))
-      fname =  os.path.join(petscdir,'include','petsc','finclude','ftn-auto',mansec+'-tmpdir',parentdir.replace('/','_')+'.h90')
+      if not os.path.isdir(os.path.join(petscdir,'src',mansec,'f90-mod','ftn-auto-interfaces')): os.mkdir(os.path.join(petscdir,'src',mansec,'f90-mod','ftn-auto-interfaces'))
+      if not os.path.isdir(os.path.join(petscdir,'src',mansec,'f90-mod','ftn-auto-interfaces',submansec+'-tmpdir')): os.mkdir(os.path.join(petscdir,'src',mansec,'f90-mod','ftn-auto-interfaces',submansec+'-tmpdir'))
+      fname =  os.path.join(petscdir,'src',mansec,'f90-mod','ftn-auto-interfaces',submansec+'-tmpdir',parentdir.replace('/','_')+'.h90')
       fd =open(fname,'w')
       fd.write(txt)
       fd.close()
@@ -165,15 +168,15 @@ def processDir(arg,dirname,names):
     (status,output) = commands.getstatusoutput(cmd)
     if status:
       raise RuntimeError('Error running bfort\n'+cmd+'\n'+output)
-    try:
-      FixDir(petscdir,outdir,verbose)
-    except:
-      print 'Error! with FixDir('+outdir+')'
+#    try:
+    FixDir(petscdir,outdir,verbose)
+#    except:
+#      print 'Error! with FixDir('+outdir+')'
 
   # remove from list of subdirectories all directories without source code
   rmnames=[]
   for name in names:
-    if name in ['.git','.hg','SCCS', 'output', 'BitKeeper', 'examples', 'externalpackages', 'bilinear', 'ftn-auto','fortran','bin','maint','ftn-custom','config','f90-custom','ftn-kernels']:
+    if name in ['.git','.hg','SCCS', 'output', 'BitKeeper', 'examples', 'externalpackages', 'bilinear', 'ftn-auto','ftn-auto-interfaces', 'fortran','bin','maint','ftn-custom','config','f90-custom','ftn-kernels']:
       rmnames.append(name)
     # skip for ./configure generated $PETSC_ARCH directories
     if os.path.isdir(os.path.join(dirname,name,'lib','petsc')) or os.path.isdir(os.path.join(dirname,name,'lib','petsc-conf')) or os.path.isdir(os.path.join(dirname,name,'conf')):
@@ -188,22 +191,27 @@ def processDir(arg,dirname,names):
 
 def processf90interfaces(petscdir,verbose):
   ''' Takes all the individually generated fortran interface files and merges them into one for each mansec'''
-  for mansec in os.listdir(os.path.join(petscdir,'include','petsc','finclude','ftn-auto')):
-    if verbose: print 'Processing F90 interface for '+mansec
-    if os.path.isdir(os.path.join(petscdir,'include','petsc','finclude','ftn-auto',mansec)):
-      mansec = mansec[:-7]
-      f90inc = os.path.join(petscdir,'include','petsc','finclude','ftn-auto','petsc'+mansec+'.h90')
-      fd = open(f90inc,'w')
-      for sfile in os.listdir(os.path.join(petscdir,'include','petsc','finclude','ftn-auto',mansec+'-tmpdir')):
-        if verbose: print '  Copying in '+sfile
-        fdr = open(os.path.join(petscdir,'include','petsc','finclude','ftn-auto',mansec+'-tmpdir',sfile))
-        txt = fdr.read()
-        fd.write(txt)
-        fdr.close()
-      fd.close()
-      import shutil
-      shutil.rmtree(os.path.join(petscdir,'include','petsc','finclude','ftn-auto',mansec+'-tmpdir'))
-  FixDir(petscdir,os.path.join(petscdir,'include','petsc','finclude','ftn-auto'),verbose)
+  for mansec in ['sys','vec','mat','dm','ksp','snes','ts','tao']:
+    for submansec in os.listdir(os.path.join(petscdir,'src',mansec,'f90-mod','ftn-auto-interfaces')):
+      if verbose: print 'Processing F90 interface for '+submansec
+      if os.path.isdir(os.path.join(petscdir,'src',mansec,'f90-mod','ftn-auto-interfaces',submansec)):
+        submansec = submansec[:-7]
+        f90inc = os.path.join(petscdir,'src',mansec,'f90-mod','ftn-auto-interfaces','petsc'+submansec+'.h90')
+        fd = open(f90inc,'w')
+        for sfile in os.listdir(os.path.join(petscdir,'src',mansec,'f90-mod','ftn-auto-interfaces',submansec+'-tmpdir')):
+          if verbose: print '  Copying in '+sfile
+          fdr = open(os.path.join(petscdir,'src',mansec,'f90-mod','ftn-auto-interfaces',submansec+'-tmpdir',sfile))
+          txt = fdr.readline()
+          while txt:
+            fd.write(txt)
+            if txt.find('subroutine ') > -1:
+              fd.write('      use petsc'+mansec+'def\n')
+            txt = fdr.readline()
+          fdr.close()
+        fd.close()
+        import shutil
+        shutil.rmtree(os.path.join(petscdir,'src',mansec,'f90-mod','ftn-auto-interfaces',submansec+'-tmpdir'))
+  # FixDir(petscdir,os.path.join(petscdir,'include','petsc','finclude','ftn-auto-interfaces'),verbose)
   return
 
 def main(petscdir,bfort,dir,verbose):

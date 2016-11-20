@@ -1,0 +1,94 @@
+!
+!  These are Fortran interfaces that are custom hand coded because
+!  they cannot currently be generated automatically
+!
+
+      Interface
+        Subroutine ISGetIndicesF90(i,array,ierr)
+          use petscisdef
+          PetscInt, pointer :: array(:)
+          PetscErrorCode  ierr
+         IS       i
+        End Subroutine
+      End Interface
+
+
+      Interface
+        Subroutine ISRestoreIndicesF90(i,array,ierr)
+          use petscisdef
+          PetscInt, pointer :: array(:)
+          PetscErrorCode ierr
+         IS      i
+        End Subroutine
+      End Interface
+
+! ------------------------------------------------------
+
+      Interface
+        Subroutine ISBlockGetIndicesF90(i,array,ierr)
+          use petscisdef
+          PetscInt, pointer :: array(:)
+          PetscErrorCode  ierr
+         IS       i
+        End Subroutine
+      End Interface
+
+
+      Interface
+        Subroutine ISBlockRestoreIndicesF90(i,array,ierr)
+          use petscisdef
+          PetscInt, pointer :: array(:)
+          PetscErrorCode ierr
+         IS      i
+        End Subroutine
+      End Interface
+
+! ------------------------------------------------------
+      Interface
+        Subroutine ISColoringGetISF90(ic,n,isa,ierr)
+          use petscisdef
+          IS, pointer :: isa(:)
+          PetscInt     n
+          PetscErrorCode ierr
+          ISColoring ic
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine ISColoringRestoreISF90(ic,isa,ierr)
+          use petscisdef
+          IS, pointer :: isa(:)
+          PetscErrorCode     ierr
+          ISColoring ic
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine PetscSectionGetConstraintIndicesF90(s,p,a,ierr)
+          use petscisdef
+          PetscInt p
+          PetscInt, pointer :: a(:)
+          PetscErrorCode  ierr
+          PetscSection       s
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine PetscSectionRestoreConstraintIndicesF90(s,p,a,ierr)
+          use petscisdef
+          PetscInt p
+          PetscInt, pointer :: a(:)
+          PetscErrorCode  ierr
+          PetscSection       s
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine PetscSectionSetConstraintIndicesF90(s,p,a,ierr)
+          use petscisdef
+          PetscInt p
+          PetscInt, pointer :: a(:)
+          PetscErrorCode  ierr
+          PetscSection       s
+        End Subroutine
+      End Interface

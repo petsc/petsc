@@ -8,7 +8,6 @@ SOURCEF  =
 SOURCEH  = ../../../../include/petscdmredundant.h
 LIBBASE  = libpetscdm
 MANSEC   = DM
-SUBMANSEC= DMREDUNDANT
 LOCDIR   = src/dm/impls/redundant/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

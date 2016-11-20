@@ -39,7 +39,7 @@
 #include <petsc/finclude/petscdmdef.h>
       use petscdmdef
       type userctx
-        type(DM) da
+        type(tDM) da
         PetscInt xs,xe,xm,gxs,gxe,gxm
         PetscInt ys,ye,ym,gys,gye,gym
         PetscInt mx,my
@@ -74,14 +74,14 @@
       use petscsnes
 
 !  Input/output variables:
-      type(SNES)     snesIn
-      type(Vec)      X,F
+      type(tSNES)     snesIn
+      type(tVec)      X,F
       PetscErrorCode ierr
       type (userctx) user
 
 !  Declarations for use with local arrays:
       PetscScalar,pointer :: lx_v(:),lf_v(:)
-      type(Vec)              localX
+      type(tVec)              localX
 
 !  Scatter ghost points to local vector, using the 2-step process
 !     DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
@@ -128,7 +128,7 @@
 #include <petsc/finclude/petscsnesdef.h>
         use petscsnes
         use f90module
-          type(SNES)    snesIn
+          type(tSNES)    snesIn
           type(userctx) ctx
           PetscErrorCode ierr
         End Subroutine
@@ -139,7 +139,7 @@
 #include <petsc/finclude/petscsnesdef.h>
         use petscsnes
         use f90module
-          type(SNES)     snesIn
+          type(tSNES)     snesIn
           type(userctx), pointer :: ctx
           PetscErrorCode ierr
         End Subroutine
@@ -167,9 +167,9 @@
 !     Nx, Ny      - number of preocessors in x- and y- directions
 !     matrix_free - flag - 1 indicates matrix-free version
 !
-      type(SNES)       mysnes
-      type(Vec)        x,r
-      type(Mat)        J
+      type(tSNES)       mysnes
+      type(tVec)        x,r
+      type(tMat)        J
       PetscErrorCode   ierr
       PetscInt         its
       PetscBool        flg,matrix_free,set
@@ -177,7 +177,7 @@
       PetscReal lambda_max,lambda_min
       type(userctx)    user
       type(userctx), pointer:: puser
-      type(PetscOptions) :: options
+      type(tPetscOptions) :: options
 
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
 !  MUST be declared as external.
@@ -308,7 +308,7 @@
 !  this vector to zero by calling VecSet().
 
       call FormInitialGuess(mysnes,x,ierr);CHKERRQ(ierr)
-      call SNESSolve(mysnes,PETSC_NULL_OBJECT,x,ierr);CHKERRQ(ierr)
+      call SNESSolve(mysnes,PETSC_NULL_VEC,x,ierr);CHKERRQ(ierr)
       call SNESGetIterationNumber(mysnes,its,ierr);CHKERRQ(ierr)
       if (user%rank .eq. 0) then
          write(6,100) its
@@ -352,9 +352,9 @@
       use f90module
       use f90moduleinterfaces
 !  Input/output variables:
-      type(SNES)     mysnes
+      type(tSNES)     mysnes
       type(userctx), pointer:: puser
-      type(Vec)      X
+      type(tVec)      X
       PetscErrorCode ierr
 
 !  Declarations for use with local arrays:
@@ -540,15 +540,15 @@
       use petscsnes
       use f90module
 !  Input/output variables:
-      type(SNES)     mysnes
-      type(Vec)      X
-      type(Mat)      jac,jac_prec
+      type(tSNES)     mysnes
+      type(tVec)      X
+      type(tMat)      jac,jac_prec
       type(userctx)  user
       PetscErrorCode ierr
 
 !  Declarations for use with local arrays:
       PetscScalar,pointer :: lx_v(:)
-      type(Vec)      localX
+      type(tVec)      localX
 
 !  Scatter ghost points to local vector, using the 2-step process
 !     DMGlobalToLocalBegin(), DMGlobalToLocalEnd()
@@ -630,7 +630,7 @@
 !  Input/output variables:
       type (userctx) user
       PetscScalar    x(user%gxs:user%gxe,user%gys:user%gye)
-      type(Mat)      jac_prec
+      type(tMat)      jac_prec
       PetscErrorCode ierr
 
 !  Local variables:

@@ -7,12 +7,11 @@
 
 #include "petsc/finclude/petscvecdef.h"
 
-#if !defined(PETSC_USE_FORTRAN_DATATYPES)
-#define Mat PetscFortranAddr
-#define MatNullSpace PetscFortranAddr
-#define MatFDColoring PetscFortranAddr
+#define Mat type(tMat)
+#define MatNullSpace type(tMatNullSpace)
+#define MatFDColoring type(tMatFDColoring)
+
 #define MatColoring PetscFortranAddr
-#endif
 #define MatPartitioning PetscFortranAddr
 #define MatCoarsen PetscFortranAddr
 #define MatAIJIndices PetscFortranAddr

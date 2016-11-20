@@ -7,7 +7,6 @@ FFLAGS		   =
 CPPFLAGS           =
 FPPFLAGS           =
 LOCDIR		   = src/ts/characteristic/examples/tutorials/
-MANSEC             = SemiLagrange
 EXAMPLESC	   =
 EXAMPLESF	   =
 EXAMPLESCH	   =

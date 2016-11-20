@@ -23,7 +23,7 @@
 
       write(*,20) list1(1)
 20    format(A99)
-      call PetscOptionsGetEnum(PETSC_NULL_OBJECT,'joe_','-jeff',list1,opt,set,ierr);CHKERRQ(ierr)
+      call PetscOptionsGetEnum(PETSC_NULL_OPTIONS,'joe_','-jeff',list1,opt,set,ierr);CHKERRQ(ierr)
       write(*,*) 'opt is ', opt
       write(*,*) 'set is ', set
 

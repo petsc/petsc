@@ -21,8 +21,6 @@
 !
 ! ----------------------------------------------------------------------
 !
-      implicit none
-
 #include "chwirut1f.h"
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -41,11 +39,8 @@
       PetscReal      hist(100) ! objective value history
       PetscReal      resid(100)! residual history
       PetscReal      cnorm(100)! cnorm history
-      PetscReal      lits(100) ! #ksp history
+      PetscInt      lits(100) ! #ksp history
       TaoConvergedReason reason
-
-
-
 
 !  Note: Any user-defined Fortran routines (such as FormGradient)
 !  MUST be declared as external.
@@ -90,7 +85,7 @@
 !  Set routines for function, gradient, and hessian evaluation
 
       call TaoSetSeparableObjectiveRoutine(tao,f,                       &
-     &      FormFunction,PETSC_NULL_OBJECT,ierr)
+     &      FormFunction,0,ierr)
       CHKERRQ(ierr)
 
 !  Optional: Set initial guess
@@ -142,9 +137,6 @@
 !  f - function vector
 
       subroutine FormFunction(tao, x, f, dummy, ierr)
-      implicit none
-
-! n,alpha defined in chwirut1f.h
 #include "chwirut1f.h"
 
       Tao        tao
@@ -189,15 +181,9 @@
       return
       end
 
-
-
-
-
       subroutine FormStartingPoint(x)
-      implicit none
-
-! n,alpha defined in chwirut1f.h
 #include "chwirut1f.h"
+
       Vec             x
       PetscReal       x_v(0:1)
       PetscOffset     x_i
@@ -211,12 +197,9 @@
       return
       end
 
-
       subroutine InitializeData()
-      implicit none
-
-! n,alpha defined in chwirut1f.h
 #include "chwirut1f.h"
+
       integer i
       i=0
       y(i) =    92.9000;  t(i) =  0.5000; i=i+1

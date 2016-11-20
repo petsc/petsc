@@ -2,15 +2,13 @@
 !   This program demonstrates use of MatGetSubMatrices() from Fortran
 !
       program main
+#include <petsc/finclude/petscmatdef.h>
+      use petscmat
       implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscis.h>
-#include <petsc/finclude/petscviewer.h>
 
       Mat      A,B
       PetscErrorCode  ierr
-      PetscInt one,zero
+      PetscInt one,zero(1)
       PetscViewer   v
       IS       isrow
 
@@ -36,7 +34,7 @@
       call MatLoad(A,v,ierr)
 
       one  = 1
-      zero = 0
+      zero(1) = 0
       call ISCreateGeneral(PETSC_COMM_SELF,one,zero,PETSC_COPY_VALUES,    &
      &                     isrow,ierr)
 

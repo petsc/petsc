@@ -2,7 +2,10 @@
 !  Progran to test random number generation routines from fortran.
 !
        program main
-#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscsysdef.h>
+       use petscsys
+       implicit none
+
       PetscErrorCode  ierr
       PetscRandom     r
       PetscScalar     rand

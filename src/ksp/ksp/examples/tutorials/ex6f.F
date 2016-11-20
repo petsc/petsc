@@ -10,23 +10,11 @@
 !  Processors: n
 !T*/
 !
-!  The following include statements are required for KSP Fortran programs:
-!     petscsys.h       - base PETSc routines
-!     petscvec.h    - vectors
-!     petscmat.h    - matrices
-!     petscpc.h     - preconditioners
-!     petscksp.h    - Krylov subspace methods
-!  Other include statements may be needed if using additional PETSc
-!  routines in a Fortran program, e.g.,
-!     petscviewer.h - viewers
-!     petscis.h     - index sets
-!
+
       program main
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscpc.h>
-#include <petsc/finclude/petscksp.h>
+#include <petsc/finclude/petsckspdef.h>
+      use petscksp
+      implicit none
 
 !  Variables:
 !
@@ -55,11 +43,11 @@
       n      = 3
       nsteps = 2
       one    = 1
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,    &
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,    &
      &                        '-m',m,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,    &
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,    &
      &                        '-n',n,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,    &
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,    &
      &                        '-nsteps',nsteps,flg,ierr)
 
 !  Create parallel matrix, specifying only its global dimensions.
@@ -155,12 +143,8 @@
 ! -----------------------------------------------------------------------
 !
       subroutine solve1(ksp,A,x,b,u,count,nsteps,ierr)
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscpc.h>
-#include <petsc/finclude/petscksp.h>
+      use petscksp
+      implicit none
 
 !
 !   solve1 - This routine is used for repeated linear system solves.
@@ -189,8 +173,8 @@
       if (count .eq. 1) then
         call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
         pflag = .false.
-        call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,     &
-     &                           '-mat_view',pflag,ierr)
+        call PetscOptionsHasName(PETSC_NULL_OPTIONS,                          &
+     &               PETSC_NULL_CHARACTER,'-mat_view',pflag,ierr)
         if (pflag) then
           if (rank .eq. 0) write(6,100)
           call flush(6)

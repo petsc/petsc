@@ -1,27 +1,15 @@
-#define PETSC_USE_FORTRAN_MODULES
 
         module petsctsdef
         use petscsnesdef
-#include <petsc/finclude/petscts.h>
-#include <petsc/finclude/ftn-custom/petsctsdef.h90>
+#include <../src/ts/f90-mod/petscts.h>
         end module
 
         module petscts
         use petsctsdef
         use petscsnes
-#include <petsc/finclude/petscts.h90>
+#include <../src/ts/f90-mod/petscts.h90>
+        interface
+#include <../src/ts/f90-mod/ftn-auto-interfaces/petscts.h90>
+        end interface
         end module
 
-
-! The all encompassing petsc module
-
-        module petscdef
-        use petscdmdadef
-        use petsctsdef
-        end module
-
-        module petsc
-        use petscdmda
-        use petscdmcomposite
-        use petscts
-        end module

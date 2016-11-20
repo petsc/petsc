@@ -1,9 +1,9 @@
 !
 !
       program main
+#include <petsc/finclude/petscvecdef.h>
+      use petscvec
       implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
 !
 !  This example demonstrates basic use of the PETSc Fortran interface
 !  to vectors.

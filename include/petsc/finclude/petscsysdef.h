@@ -214,9 +214,8 @@
 #define PetscBuildTwoSidedType PetscEnum
 #define PetscSubcommType PetscEnum
 
-#if !defined(PETSC_USE_FORTRAN_DATATYPES)
-#define PetscOptions PetscFortranAddr
-#endif
+#define PetscOptions type(tPetscOptions)
+
 #define PetscFunctionList PetscFortranAddr
 
 #endif

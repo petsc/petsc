@@ -52,10 +52,8 @@ class Configure(config.base.Configure):
         rjobs.append('Cxx')
       if self.x.found:
         jobs.append('C_X')
-      if hasattr(self.compilers, 'FC') and self.fortrancpp.fortranDatatypes:
-        if self.compilers.fortranIsF90FreeForm:
-          jobs.append('F90_DataTypes')
-      elif hasattr(self.compilers, 'FC'):
+      if hasattr(self.compilers, 'FC'):
+        jobs.append('F90_DataTypes')
         jobs.append('Fortran')
         if not self.scalartypes.precision == 'single':
           jobs.append('Fortran_NotSingle')
@@ -91,14 +89,14 @@ class Configure(config.base.Configure):
           rjobs.append('DATAFILESPATH')
           if hasattr(self.compilers, 'CXX'):
             rjobs.append('Cxx_DATAFILESPATH')
-          if hasattr(self.compilers, 'FC') and not self.fortrancpp.fortranDatatypes:
+          if hasattr(self.compilers, 'FC'):
             rjobs.append('Fortran_DATAFILESPATH')
           for j in self.framework.packages:
             if j.hastestsdatafiles:
                 ejobs.append(j.PACKAGE+'_DATAFILESPATH')
         if self.scalartypes.precision == 'double' and self.indextypes.integerSize == 32:
           rjobs.append('DOUBLEINT32')
-          if hasattr(self.compilers, 'FC') and not self.fortrancpp.fortranDatatypes:
+          if hasattr(self.compilers, 'FC'):
             rjobs.append('Fortran_DOUBLEINT32')
       # add jobs for each external package BUGBUGBUG may be run before all packages
       # Note: do these tests only for non-complex builds

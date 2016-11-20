@@ -36,10 +36,17 @@
 !
 
       module f90module
+      use petscsys
+      use petscis
+      use petscvec
+      use petscdm
+      use petscdmda
+      use petscmat
+      use petscpc
+      use petscksp
+      use petscsnes
+#include <petsc/finclude/petscsnesdef.h>
       type userctx
-#include <petsc/finclude/petscsysdef.h>
-#include <petsc/finclude/petscvecdef.h>
-#include <petsc/finclude/petscdmdef.h>
         PetscInt xs,xe,xm,gxs,gxe,gxm
         PetscInt ys,ye,ym,gys,gye,gym
         PetscInt mx,my
@@ -71,18 +78,6 @@
 !
       subroutine FormFunction(snes,X,F,user,ierr)
       implicit none
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscdm.h>
-#include <petsc/finclude/petscdmda.h>
-#include <petsc/finclude/petscis.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscksp.h>
-#include <petsc/finclude/petscpc.h>
-#include <petsc/finclude/petscsnes.h>
-#include <petsc/finclude/petscvec.h90>
-#include <petsc/finclude/petscsnes.h90>
 
 !  Input/output variables:
       SNES           snes
@@ -160,17 +155,6 @@
       use f90moduleinterfaces
       implicit none
 !
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscdm.h>
-#include <petsc/finclude/petscdmda.h>
-#include <petsc/finclude/petscis.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscksp.h>
-#include <petsc/finclude/petscpc.h>
-#include <petsc/finclude/petscsnes.h>
-#include <petsc/finclude/petscvec.h90>
-#include <petsc/finclude/petscdmda.h90>
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -215,7 +199,7 @@
       user%lambda = 6.0
       ione = 1
       nfour = 4
-      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-par',user%lambda,flg,ierr);CHKERRQ(ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-par',user%lambda,flg,ierr);CHKERRQ(ierr)
       if (user%lambda .ge. lambda_max .or. user%lambda .le. lambda_min) then
          if (user%rank .eq. 0) write(6,*) 'Lambda is out of range'
          SETERRQ(PETSC_COMM_SELF,1,' ',ierr)
@@ -296,7 +280,7 @@
 !     Jacobian.  See the users manual for a discussion of better techniques
 !     for preallocating matrix memory.
 
-      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-snes_mf',matrix_free,ierr);CHKERRQ(ierr)
+      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-snes_mf',matrix_free,ierr);CHKERRQ(ierr)
       if (.not. matrix_free) then
         call DMSetMatType(da,MATAIJ,ierr);CHKERRQ(ierr)
         call DMCreateMatrix(da,J,ierr);CHKERRQ(ierr)
@@ -320,7 +304,7 @@
 !  this vector to zero by calling VecSet().
 
       call FormInitialGuess(snes,x,ierr);CHKERRQ(ierr)
-      call SNESSolve(snes,PETSC_NULL_OBJECT,x,ierr);CHKERRQ(ierr)
+      call SNESSolve(snes,PETSC_NULL_VEC,x,ierr);CHKERRQ(ierr)
       call SNESGetIterationNumber(snes,its,ierr);;CHKERRQ(ierr)
       if (user%rank .eq. 0) then
          write(6,100) its
@@ -362,17 +346,6 @@
       use f90module
       use f90moduleinterfaces
       implicit none
-
-#include <petsc/finclude/petscvec.h90>
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscdm.h>
-#include <petsc/finclude/petscdmda.h>
-#include <petsc/finclude/petscis.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscksp.h>
-#include <petsc/finclude/petscpc.h>
-#include <petsc/finclude/petscsnes.h>
 
 !  Input/output variables:
       SNES           snes
@@ -426,16 +399,6 @@
       subroutine InitialGuessLocal(user,x,ierr)
       use f90module
       implicit none
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscdm.h>
-#include <petsc/finclude/petscdmda.h>
-#include <petsc/finclude/petscis.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscksp.h>
-#include <petsc/finclude/petscpc.h>
-#include <petsc/finclude/petscsnes.h>
 
 !  Input/output variables:
       type (userctx)         user
@@ -573,18 +536,6 @@
       use f90module
       implicit none
 
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscdm.h>
-#include <petsc/finclude/petscdmda.h>
-#include <petsc/finclude/petscis.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscksp.h>
-#include <petsc/finclude/petscpc.h>
-#include <petsc/finclude/petscsnes.h>
-
-#include <petsc/finclude/petscvec.h90>
-
 !  Input/output variables:
       SNES         snes
       Vec          X
@@ -676,15 +627,7 @@
       use f90module
       implicit none
 
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscdm.h>
-#include <petsc/finclude/petscdmda.h>
-#include <petsc/finclude/petscis.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscksp.h>
-#include <petsc/finclude/petscpc.h>
-#include <petsc/finclude/petscsnes.h>
+
 
 !  Input/output variables:
       type (userctx) user
