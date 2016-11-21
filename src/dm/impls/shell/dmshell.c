@@ -418,12 +418,25 @@ PetscErrorCode DMShellSetGlobalVector(DM dm,Vec X)
   DM_Shell       *shell = (DM_Shell*)dm->data;
   PetscErrorCode ierr;
   PetscBool      isshell;
+  DM             vdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(X,VEC_CLASSID,2);
   ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
   if (!isshell) PetscFunctionReturn(0);
+  ierr           = VecGetDM(X,&vdm);CHKERRQ(ierr);
+  /*
+      if the vector proposed as the new base global vector for the DM is a DM vector associated
+      with the same DM then the current base global vector for the DM is ok and if we replace it with the new one
+      we get a circular dependency that prevents the DM from being destroy when it should be.
+      This occurs when SNESSet/GetNPC() is used with a SNES that does not have a user provided
+      DM attached to it since the inner SNES (which shares the DM with the outer SNES) tries
+      to set its input vector (which is associated with the DM) as the base global vector.
+      Thanks to Juan P. Mendez Granado Re: [petsc-maint] Nonlinear conjugate gradien
+      for pointing out the problem.
+   */
+  if (vdm == dm) PetscFunctionReturn(0);
   ierr           = PetscObjectReference((PetscObject)X);CHKERRQ(ierr);
   ierr           = VecDestroy(&shell->Xglobal);CHKERRQ(ierr);
   shell->Xglobal = X;
@@ -474,12 +487,25 @@ PetscErrorCode DMShellSetLocalVector(DM dm,Vec X)
   DM_Shell       *shell = (DM_Shell*)dm->data;
   PetscErrorCode ierr;
   PetscBool      isshell;
+  DM             vdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(X,VEC_CLASSID,2);
   ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
   if (!isshell) PetscFunctionReturn(0);
+  ierr           = VecGetDM(X,&vdm);CHKERRQ(ierr);
+  /*
+      if the vector proposed as the new base global vector for the DM is a DM vector associated
+      with the same DM then the current base global vector for the DM is ok and if we replace it with the new one
+      we get a circular dependency that prevents the DM from being destroy when it should be.
+      This occurs when SNESSet/GetNPC() is used with a SNES that does not have a user provided
+      DM attached to it since the inner SNES (which shares the DM with the outer SNES) tries
+      to set its input vector (which is associated with the DM) as the base global vector.
+      Thanks to Juan P. Mendez Granado Re: [petsc-maint] Nonlinear conjugate gradien
+      for pointing out the problem.
+   */
+  if (vdm == dm) PetscFunctionReturn(0);
   ierr = PetscObjectReference((PetscObject)X);CHKERRQ(ierr);
   ierr = VecDestroy(&shell->Xlocal);CHKERRQ(ierr);
   shell->Xlocal = X;
