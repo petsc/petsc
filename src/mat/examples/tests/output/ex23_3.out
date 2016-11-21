@@ -76,6 +76,7 @@ row 9: (0, -10.)  (8, -10.)  (9, 20.)
 row 10: (0, 22.)  (1, -11.)  (9, -11.) 
 Test MatISGetMPIXAIJ
 Test MatGetLocalSubMatrix
+Test MatConvert_Nest_IS
 Test MatGetSubMatrix
 IS Object: 5 MPI processes
   type: stride

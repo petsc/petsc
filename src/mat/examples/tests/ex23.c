@@ -2,7 +2,8 @@
 static char help[] = "Tests the use of interface functions for MATIS matrices.\n\
 This example tests: MatZeroRows(), MatZeroRowsLocal(), MatView(), MatDuplicate(),\n\
 MatCopy(), MatGetSubMatrix(), MatGetLocalSubMatrix(), MatAXPY(), MatShift()\n\
-MatDiagonalSet(), MatTranspose() and MatISGetMPIXAIJ()\n";
+MatDiagonalSet(), MatTranspose() and MatISGetMPIXAIJ(). It also tests some\n\
+conversion routines.\n";
 
 #include <petscmat.h>
 
@@ -13,14 +14,17 @@ PetscErrorCode CheckMat(Mat,Mat,const char*);
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat                    A,B,A2,B2;
+  Mat                    A,B,A2,B2,T;
   Mat                    Aee,Aeo,Aoe,Aoo;
+  Mat                    *mats;
   Vec                    x;
   MatInfo                info;
   ISLocalToGlobalMapping cmap,rmap;
   IS                     is,is2,reven,rodd,ceven,codd;
+  IS                     *rows,*cols;
   PetscScalar            diag = 2.;
   PetscInt               n,m,i;
+  PetscInt               rst,ren,cst,cen,nr,nc;
   PetscMPIInt            rank,size;
   PetscErrorCode         ierr;
 
@@ -30,8 +34,9 @@ int main(int argc,char **args)
   m = n = 2*size;
   ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  if ((size > 1 && m < 4) || m < 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of rows should be more than two");
-  if (n < 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of cols should be more than two");
+  if (size > 1 && m < 4) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of rows should be more than 4 for parallel runs");
+  if (size == 1 && m < 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of rows should be more than 2 for uniprocessor runs");
+  if (n < 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of cols should be more than 2");
 
   /* create a MATIS matrix */
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
@@ -159,6 +164,49 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(A2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAXPY(A2,-1.,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = CheckMat(A2,NULL,"MatGetLocalSubMatrix");CHKERRQ(ierr);
+  ierr = MatDestroy(&A2);CHKERRQ(ierr);
+
+  /* test MatConvert_Nest_IS */
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatConvert_Nest_IS\n");CHKERRQ(ierr);
+  nr = 2;
+  nc = 2;
+  ierr = PetscOptionsGetInt(NULL,NULL,"-nr",&nr,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-nc",&nc,NULL);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(A,&rst,&ren);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRangeColumn(A,&cst,&cen);CHKERRQ(ierr);
+  ierr = PetscMalloc3(nr,&rows,nc,&cols,2*nr*nc,&mats);CHKERRQ(ierr);
+  for (i=0;i<nr*nc;i++) {
+    ierr = MatDuplicate(A,MAT_COPY_VALUES,&mats[i]);CHKERRQ(ierr);
+    ierr = MatDuplicate(B,MAT_COPY_VALUES,&mats[i+nr*nc]);CHKERRQ(ierr);
+  }
+  for (i=0;i<nr;i++) {
+    ierr = ISCreateStride(PETSC_COMM_WORLD,ren-rst,i+rst,nr,&rows[i]);CHKERRQ(ierr);
+  }
+  for (i=0;i<nc;i++) {
+    ierr = ISCreateStride(PETSC_COMM_WORLD,cen-cst,i+cst,nc,&cols[i]);CHKERRQ(ierr);
+  }
+  ierr = MatCreateNest(PETSC_COMM_WORLD,nr,rows,nc,cols,mats,&A2);CHKERRQ(ierr);
+  ierr = MatCreateNest(PETSC_COMM_WORLD,nr,rows,nc,cols,mats+nr*nc,&B2);CHKERRQ(ierr);
+  for (i=0;i<nr;i++) {
+    ierr = ISDestroy(&rows[i]);CHKERRQ(ierr);
+  }
+  for (i=0;i<nc;i++) {
+    ierr = ISDestroy(&cols[i]);CHKERRQ(ierr);
+  }
+  for (i=0;i<2*nr*nc;i++) {
+    ierr = MatDestroy(&mats[i]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree3(rows,cols,mats);CHKERRQ(ierr);
+  ierr = MatConvert(B2,MATAIJ,MAT_INITIAL_MATRIX,&T);CHKERRQ(ierr);
+  ierr = MatDestroy(&B2);CHKERRQ(ierr);
+  ierr = MatConvert(A2,MATIS,MAT_INITIAL_MATRIX,&B2);CHKERRQ(ierr);
+  ierr = CheckMat(B2,T,"MatConvert_Nest_IS MAT_INITIAL_MATRIX");CHKERRQ(ierr);
+  ierr = MatConvert(A2,MATIS,MAT_REUSE_MATRIX,&B2);CHKERRQ(ierr);
+  ierr = CheckMat(B2,T,"MatConvert_Nest_IS MAT_REUSE_MATRIX");CHKERRQ(ierr);
+  ierr = MatDestroy(&B2);CHKERRQ(ierr);
+  ierr = MatConvert(A2,MATIS,MAT_INPLACE_MATRIX,&A2);CHKERRQ(ierr);
+  ierr = CheckMat(A2,T,"MatConvert_Nest_IS MAT_INPLACE_MATRIX");CHKERRQ(ierr);
+  ierr = MatDestroy(&T);CHKERRQ(ierr);
   ierr = MatDestroy(&A2);CHKERRQ(ierr);
 
   /* test MatGetSubMatrix */
