@@ -2260,7 +2260,8 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
   }
   ierr = PetscFree(pcbddc->benign_zerodiag_subs);CHKERRQ(ierr);
   pcbddc->benign_n = 0;
-  /* if a local info on dofs is present, assumes that the last field represents  "pressures"
+
+  /* if a local info on dofs is present, uses the last field for "pressures" (or fid by command line)
      otherwise, it uses only zerodiagonal dofs (ok if the pressure block is all zero; it could fail if it is not)
      Checks if all the pressure dofs in each subdomain have a zero diagonal
      If not, a change of basis on pressures is not needed
@@ -2271,6 +2272,10 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
   if (pcbddc->n_ISForDofsLocal) {
     PetscInt npl,*idxs,p = pcbddc->n_ISForDofsLocal-1;
 
+    ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)pc),((PetscObject)pc)->prefix,"BDDC benign options","PC");CHKERRQ(ierr);
+    ierr = PetscOptionsInt ("-pc_bddc_pressure_field","Field id for pressures",NULL,p,&p,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    if (p < 0 || p > pcbddc->n_ISForDofsLocal-1) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"Invalid field id for pressures %D",p);
     /* Dofs splitting for BDDC cannot have PETSC_COMM_SELF, so create a sequential IS */
     ierr = ISGetLocalSize(pcbddc->ISForDofsLocal[p],&npl);CHKERRQ(ierr);
     ierr = ISGetIndices(pcbddc->ISForDofsLocal[p],(const PetscInt**)&idxs);CHKERRQ(ierr);
