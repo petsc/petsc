@@ -630,7 +630,7 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
     }
   }
 
-  lu->FactPattern = SamePattern; 
+  lu->FactPattern = SamePattern_SameRowPerm;
   ierr = PetscOptionsEList("-mat_superlu_dist_fact","Sparsity pattern for repeated matrix factorization","None",factPattern,2,factPattern[0],&indx,&flg);CHKERRQ(ierr);
   if (flg) {
     switch (indx) {
