@@ -103,6 +103,10 @@ testexamples_PARMETIS_DATAFILESPATH: ${TESTEXAMPLES_PARMETIS_DATAFILESPATH}
 	-@ if test ${PRINT_PROGRESS}foo = debugtestfoo -a -n "${TESTEXAMPLES_PARMETIS_DATAFILESPATH}"; then printf "Running examples in `pwd`:\n ${TESTEXAMPLES_PARMETIS_DATAFILESPATH}\n"; fi
 testexamples_ELEMENTAL: ${TESTEXAMPLES_ELEMENTAL}
 	-@ if test ${PRINT_PROGRESS}foo = debugtestfoo -a -n "${TESTEXAMPLES_ELEMENTAL}"; then printf "Running examples in `pwd`:\n ${TESTEXAMPLES_ELEMENTAL}\n"; fi
+testexamples_ELEMENTAL_DATAFILESPATH: ${TESTEXAMPLES_ELEMENTAL_DATAFILESPATH}
+	-@ if test ${PRINT_PROGRESS}foo = debugtestfoo -a -n "${TESTEXAMPLES_ELEMENTAL_DATAFILESPATH}"; then printf "Running examples in `pwd`:\n ${TESTEXAMPLES_ELEMENTAL_DATAFILESPATH}\n"; fi
+testexamples_ELEMENTAL_COMPLEX_DATAFILESPATH: ${TESTEXAMPLES_ELEMENTAL_COMPLEX_DATAFILESPATH}
+	-@ if test ${PRINT_PROGRESS}foo = debugtestfoo -a -n "${TESTEXAMPLES_ELEMENTAL_COMPLEX_DATAFILESPATH}"; then printf "Running examples in `pwd`:\n ${TESTEXAMPLES_ELEMENTAL_COMPLEX}\n"; fi
 testexamples_SUNDIALS: ${TESTEXAMPLES_SUNDIALS}
 	-@ if test ${PRINT_PROGRESS}foo = debugtestfoo -a -n "${TESTEXAMPLES_SUNDIALS}"; then printf "Running examples in `pwd`:\n ${TESTEXAMPLES_SUNDIALS}\n"; fi
 testexamples_SUITESPARSE: ${TESTEXAMPLES_SUITESPARSE}

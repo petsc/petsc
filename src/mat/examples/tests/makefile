@@ -2551,6 +2551,18 @@ runex174_2_sbaij:
 	   else printf "${PWD}\nPossible problem with ex174_2_sbaij, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex174.tmp
 
+runex174_complex:
+	-@${MPIEXEC} -n 1 ./ex174 -fA ${DATAFILESPATH}/matrices/nimrod/small_112905 > ex174.tmp 2>&1; \
+          if (${DIFF} output/ex174.out ex174.tmp) then true; \
+          else printf "${PWD}\nPossible problem with ex174_complex, diffs above\n=========================================\n"; fi; \
+          ${RM} -f ex174.tmp
+
+runex174_complex_2:
+	-@${MPIEXEC} -n 4 ./ex174 -fA ${DATAFILESPATH}/matrices/nimrod/small_112905 > ex174.tmp 2>&1; \
+          if (${DIFF} output/ex174.out ex174.tmp) then true; \
+          else printf "${PWD}\nPossible problem with ex174_complex_2, diffs above\n=========================================\n"; fi; \
+          ${RM} -f ex174.tmp
+
 runex175:
 	-@${MPIEXEC} -n 1 ./ex175 > ex175.tmp 2>&1; \
 	   if (${DIFF} output/ex175.out ex175.tmp) then true; \
@@ -2864,9 +2876,10 @@ TESTEXAMPLES_ELEMENTAL         = ex38.PETSc runex38 runex38_2 runex38_3 ex38.rm 
                                  ex39.PETSc runex39 runex39_2 ex39.rm \
                                  ex103.PETSc runex103 runex103_1 runex103_2 ex103.rm \
                                  ex104.PETSc runex104_2 runex104_elemental runex104_elemental_2 ex104.rm \
-                                 ex145.PETSc runex145 runex145_2 ex145.rm \
-                                 ex174.PETSc runex174 runex174_dense runex174_elemental runex174_sbaij \
+                                 ex145.PETSc runex145 runex145_2 ex145.rm
+TESTEXAMPLES_ELEMENTAL_DATAFILESPATH = ex174.PETSc runex174 runex174_dense runex174_elemental runex174_sbaij \
                                  runex174_2 runex174_2_dense runex174_2_elemental runex174_2_sbaij ex174.rm
+TESTEXAMPLES_ELEMENTAL_COMPLEX_DATAFILESPATH = ex174.PETSc runex174_complex runex174_complex_2 ex174.rm
 TESTEXAMPLES_MUMPS_DATAFILESPATH = ex125.PETSc runex125_mumps runex125_mumps_2 ex125.rm \
                                  ex192.PETSc runex192_mumps ex192.rm
 TESTEXAMPLES_MKL_PARDISO       = ex125.PETSc runex125_mkl_pardiso ex125.rm \
