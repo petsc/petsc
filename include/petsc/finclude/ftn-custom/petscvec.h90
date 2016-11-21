@@ -5,7 +5,7 @@
 #include "petsc/finclude/ftn-custom/petscvechide.h90"
 
       Interface VecSetValues
-        subroutine VecSetValues(a,b,c,d,e,z)
+        subroutine VecSetValues0(a,b,c,d,e,z)
           USE_VEC_HIDE
           VEC_HIDE a ! Vec
           PetscInt b ! PetscInt

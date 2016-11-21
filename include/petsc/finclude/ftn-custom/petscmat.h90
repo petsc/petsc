@@ -11,7 +11,7 @@
       Interface MatSetValues
         ! picky Fortran requires seperate prototypes if args
         ! are arrays or scalars
-        subroutine MatSetValues(a,b,c,d,e,f,g,z)
+        subroutine MatSetValues0(a,b,c,d,e,f,g,z)
           USE_MAT_HIDE
           MAT_HIDE a ! Mat
           PetscInt b ! PetscInt
@@ -60,7 +60,7 @@
       Interface MatSetValuesLocal
         ! picky Fortran requires seperate prototypes if args
         ! are arrays or scalars
-        subroutine MatSetValuesLocal(a,b,c,d,e,f,g,z)
+        subroutine MatSetValuesLocal0(a,b,c,d,e,f,g,z)
           USE_MAT_HIDE
           MAT_HIDE a ! Mat
           PetscInt b ! PetscInt
@@ -131,7 +131,7 @@
       Interface MatSetValuesBlockedLocal
         ! picky Fortran requires seperate prototypes if args
         ! are arrays or scalars
-        subroutine MatSetValuesBlockedLocal(a,b,c,d,e,f,g,z)
+        subroutine MatSetValuesBlockedLocal0(a,b,c,d,e,f,g,z)
           USE_MAT_HIDE
           MAT_HIDE a ! Mat
           PetscInt b ! PetscInt
@@ -191,7 +191,7 @@
       Interface MatSetValuesBlocked
         ! picky Fortran requires seperate prototypes if args
         ! are arrays or scalars
-        subroutine MatSetValuesBlocked(a,b,c,d,e,f,g,z)
+        subroutine MatSetValuesBlocked0(a,b,c,d,e,f,g,z)
           USE_MAT_HIDE
           MAT_HIDE a ! Mat
           PetscInt b ! PetscInt

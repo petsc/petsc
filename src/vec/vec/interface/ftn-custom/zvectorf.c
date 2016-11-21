@@ -4,6 +4,7 @@
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define vecsetvalues_             VECSETVALUES
+#define vecsetvalues0_            VECSETVALUES0
 #define vecsetvalues11_           VECSETVALUES11
 #define vecsetvalue_              VECSETVALUE
 #define vecsetvaluelocal_         VECSETVALUELOCAL
@@ -23,6 +24,7 @@
 #define vecsetoptionsprefix_      VECSETOPTIONSPREFIX
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define vecsetvalues_             vecsetvalues
+#define vecsetvalues0_            vecsetvalues0
 #define vecsetvalues11_           vecsetvalues11
 #define vecgetarrayaligned_       vecgetarrayaligned
 #define vecsetvalue_              vecsetvalue
@@ -46,6 +48,11 @@
 PETSC_EXTERN void PETSC_STDCALL  vecsetvalues_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],InsertMode *iora, int *ierr )
 {
   *ierr = VecSetValues(*x,*ni,ix,y,*iora);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  vecsetvalues0_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],InsertMode *iora, int *ierr )
+{
+  vecsetvalues_(x,ni,ix,y,iora,ierr);
 }
 
 PETSC_EXTERN void PETSC_STDCALL  vecsetvalues11_(Vec *x,PetscInt *ni, PetscInt ix[], PetscScalar y[],InsertMode *iora, int *ierr )

@@ -4,20 +4,23 @@
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define matsetvalues_                    MATSETVALUES
+#define matsetvalues0_                   MATSETVALUES0
 #define matsetvalues11_                  MATSETVALUES11
 #define matsetvalues1n_                  MATSETVALUES1N
 #define matsetvaluesn1_                  MATSETVALUESN1
-#define matsetvaluesblocked_             MATSETVALUESBLOCKED
+#define matsetvaluesblocked0_            MATSETVALUESBLOCKED0
 #define matsetvaluesblocked11_           MATSETVALUESBLOCKED11
 #define matsetvaluesblocked111_          MATSETVALUESBLOCKED111
 #define matsetvaluesblocked1n_           MATSETVALUESBLOCKED1N
 #define matsetvaluesblockedn1_           MATSETVALUESBLOCKEDN1
 #define matsetvaluesblockedlocal_        MATSETVALUESBLOCKEDLOCAL
+#define matsetvaluesblockedlocal0_       MATSETVALUESBLOCKEDLOCAL0
 #define matsetvaluesblockedlocal11_      MATSETVALUESBLOCKEDLOCAL11
 #define matsetvaluesblockedlocal111_     MATSETVALUESBLOCKEDLOCAL111
 #define matsetvaluesblockedlocal1n_      MATSETVALUESBLOCKEDLOCAL1N
 #define matsetvaluesblockedlocaln1_      MATSETVALUESBLOCKEDLOCALN1
 #define matsetvalueslocal_               MATSETVALUESLOCAL
+#define matsetvalueslocal0_              MATSETVALUESLOCAL0
 #define matsetvalueslocal11_             MATSETVALUESLOCAL11
 #define matsetvalueslocal11nn_           MATSETVALUESLOCAL11NN
 #define matsetvalueslocal111_            MATSETVALUESLOCAL111
@@ -71,26 +74,29 @@
 #define matfindnonzerorows_              MATFINDNONZEROROWS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matsetvalues_                    matsetvalues
+#define matsetvalues0_                   matsetvalues0
 #define matsetvalues11_                  matsetvalues11
 #define matsetvaluesn1_                  matsetvaluesn1
 #define matsetvalues1n_                  matsetvalues1n
 #define matsetvalueslocal_               matsetvalueslocal
+#define matsetvalueslocal0_              matsetvalueslocal0
 #define matsetvalueslocal11_             matsetvalueslocal11
 #define matsetvalueslocal11nn_           matsetvalueslocal11nn
 #define matsetvalueslocal111_            matsetvalueslocal111
 #define matsetvalueslocal1n_             matsetvalueslocal1n
 #define matsetvalueslocaln1_             matsetvalueslocaln1
 #define matsetvaluesblocked_             matsetvaluesblocked
+#define matsetvaluesblocked0_            matsetvaluesblocked0
 #define matsetvaluesblocked11_           matsetvaluesblocked11
 #define matsetvaluesblocked111_          matsetvaluesblocked111
 #define matsetvaluesblocked1n_           matsetvaluesblocked1n
 #define matsetvaluesblocked1n_           matsetvaluesblockedn1
 #define matsetvaluesblockedlocal_        matsetvaluesblockedlocal
+#define matsetvaluesblockedlocal0_       matsetvaluesblockedlocal0
 #define matsetvaluesblockedlocal11_      matsetvaluesblockedlocal11
 #define matsetvaluesblockedlocal111_     matsetvaluesblockedlocal111
 #define matsetvaluesblockedlocal1n_      matsetvaluesblockedlocal1n
 #define matsetvaluesblockedlocal1n_      matsetvaluesblockedlocaln1
-#define matsetvalueslocal_               matsetvalueslocal
 #define matgetrowmin_                    matgetrowmin
 #define matgetrowminabs_                 matgetrowminabs
 #define matgetrowmax_                    matgetrowmax
@@ -143,6 +149,10 @@ PETSC_EXTERN void PETSC_STDCALL  matsetvaluesblocked_(Mat *mat,PetscInt *m, Pets
   *ierr = MatSetValuesBlocked(*mat,*m,idxm,*n,idxn,v,*addv);
 }
 
+PETSC_EXTERN void PETSC_STDCALL  matsetvaluesblocked0_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr ){
+  matsetvaluesblocked_(mat,m,idxm,n,idxn,v,addv,ierr);
+}
+
 PETSC_EXTERN void PETSC_STDCALL  matsetvaluesblocked11_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr ){
   matsetvaluesblocked_(mat,m,idxm,n,idxn,v,addv,ierr);
 }
@@ -162,6 +172,10 @@ PETSC_EXTERN void PETSC_STDCALL  matsetvaluesblockedn1_(Mat *mat,PetscInt *m, Pe
 PETSC_EXTERN void PETSC_STDCALL  matsetvaluesblockedlocal_(Mat *mat,PetscInt *nrow, PetscInt irow[],PetscInt *ncol, PetscInt icol[], PetscScalar y[],InsertMode *addv, int *ierr )
 {
   *ierr = MatSetValuesBlockedLocal(*mat,*nrow,irow,*ncol,icol,y,*addv);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matsetvaluesblockedlocal0_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr ){
+  matsetvaluesblockedlocal_(mat,m,idxm,n,idxn,v,addv,ierr);
 }
 
 PETSC_EXTERN void PETSC_STDCALL  matsetvaluesblockedlocal11_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr ){
@@ -185,6 +199,11 @@ PETSC_EXTERN void PETSC_STDCALL  matsetvalues_(Mat *mat,PetscInt *m, PetscInt id
   *ierr = MatSetValues(*mat,*m,idxm,*n,idxn,v,*addv);
 }
 
+PETSC_EXTERN void PETSC_STDCALL  matsetvalues0_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr )
+{
+  matsetvalues_(mat,m,idxm,n,idxn,v,addv,ierr);
+}
+
 PETSC_EXTERN void PETSC_STDCALL  matsetvalues11_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr )
 {
   matsetvalues_(mat,m,idxm,n,idxn,v,addv,ierr);
@@ -203,6 +222,11 @@ PETSC_EXTERN void PETSC_STDCALL  matsetvalues1n_(Mat *mat,PetscInt *m, PetscInt 
 PETSC_EXTERN void PETSC_STDCALL  matsetvalueslocal_(Mat *mat,PetscInt *nrow, PetscInt irow[],PetscInt *ncol, PetscInt icol[], PetscScalar y[],InsertMode *addv, int *ierr )
 {
   *ierr = MatSetValuesLocal(*mat,*nrow,irow,*ncol,icol,y,*addv);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matsetvalueslocal0_(Mat *mat,PetscInt *nrow, PetscInt irow[],PetscInt *ncol, PetscInt icol[], PetscScalar y[],InsertMode *addv, int *ierr )
+{
+  matsetvalueslocal_(mat,nrow,irow,ncol,icol,y,addv,ierr);
 }
 
 PETSC_EXTERN void PETSC_STDCALL  matsetvalueslocal11_(Mat *mat,PetscInt *nrow, PetscInt irow[],PetscInt *ncol, PetscInt icol[], PetscScalar y[],InsertMode *addv, int *ierr )
