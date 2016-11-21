@@ -78,6 +78,7 @@ row 7: (6, -8.)  (7, 16.)  (8, -8.)
 row 8: (7, -9.)  (8, 18.)  (9, -9.) 
 Test MatISGetMPIXAIJ
 Test MatGetLocalSubMatrix
+Test MatConvert_Nest_IS
 Test MatGetSubMatrix
 IS Object: 6 MPI processes
   type: stride
