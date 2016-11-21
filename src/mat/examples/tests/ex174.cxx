@@ -1,8 +1,8 @@
 
-static char help[] = "Tests MatConvert(), MatLoad(), MatElementalHermitianGenDefEig() for MATELEMENTAL interface.\n\n";
+static char help[] = "Tests MatConvert(), MatLoad() for MATELEMENTAL interface.\n\n";
 /*
  Example:
-   mpiexec -n <np> ./ex173 -fA <A_data> -fB <B_data> -vl <vl> -vu <vu> -orig_mat_type <type> -orig_mat_type <mat_type>
+   mpiexec -n <np> ./ex173 -fA <A_data> -fB <B_data> -orig_mat_type <type> -orig_mat_type <mat_type>
 */
  
 #include <petscmat.h>
@@ -12,25 +12,14 @@ static char help[] = "Tests MatConvert(), MatLoad(), MatElementalHermitianGenDef
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat            A,Ae,B,Be,Ce,X,Xe,We,C1,C2,EVAL;
-  Vec            eval;
+  Mat            A,Ae,B,Be;
   PetscErrorCode ierr;
   PetscViewer    view;
   char           file[2][PETSC_MAX_PATH_LEN];
   PetscBool      flg,flgB,isElemental,isDense,isAij,isSbaij;
-  PetscScalar    one = 1.0,*Earray,alpha,beta;
+  PetscScalar    one = 1.0;
   PetscMPIInt    rank,size;
-  PetscReal      vl,vu,norm;
-  PetscInt       M,N,m;
-
-  /* Below are Elemental data types, see <elemental.hpp> */
-  El::Pencil       eigtype = El::AXBX;
-  El::UpperOrLower uplo    = El::UPPER;
-  El::SortType     sort    = El::UNSORTED; /* UNSORTED, DESCENDING, ASCENDING */
-  El::HermitianEigSubset<PetscElemScalar> subset;
-  El::HermitianEigCtrl<PetscElemScalar>   ctrl;
-
-  El::Orientation  orientation = El::NORMAL;
+  PetscInt       M,N;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
 #if !defined(PETSC_HAVE_ELEMENTAL)
@@ -112,75 +101,6 @@ int main(int argc,char **args)
     if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"B != B_elemental.");
   }
 
-  /* Test MatElementalHermitianGenDefEig() */
-  if (!rank) printf(" Compute Ax = lambda Bx... \n");
-  vl = -0.8, vu = -0.7;
-  ierr = PetscOptionsGetReal(NULL,NULL,"-vl",&vl,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,NULL,"-vu",&vu,NULL);CHKERRQ(ierr);
-  subset.rangeSubset = PETSC_TRUE; 
-  subset.lowerBound  = vl;
-  subset.upperBound  = vu;
-  ierr = MatElementalHermitianGenDefEig(eigtype,uplo,Ae,Be,&We,&Xe,sort,subset,ctrl);CHKERRQ(ierr);
-  //if (!rank) printf(" Eigenvalues:\n");
-  //ierr = MatView(We,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
-  /* Check || A*X - B*X*We || */
-  if (isAij) {
-    if (!rank) printf(" Convert Elemental matrices We and Xe into MATDENSE matrices... \n");
-    ierr = MatConvert(We,MATDENSE,MAT_INITIAL_MATRIX,&EVAL);CHKERRQ(ierr); /* EVAL is a Mx1 matrix */
-    ierr = MatConvert(Xe,MATDENSE,MAT_INITIAL_MATRIX,&X);CHKERRQ(ierr);
-    //ierr = MatView(EVAL,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
-    ierr = MatMatMult(A,X,MAT_INITIAL_MATRIX,1.0,&C1);CHKERRQ(ierr); /* C1 = A*X */
-    ierr = MatMatMult(B,X,MAT_INITIAL_MATRIX,1.0,&C2);CHKERRQ(ierr); /* C2 = B*X */
- 
-    /* Get vector eval from matrix EVAL for MatDiagonalScale() */
-    ierr = MatGetLocalSize(EVAL,&m,NULL);CHKERRQ(ierr); 
-    ierr = MatDenseGetArray(EVAL,&Earray);CHKERRQ(ierr);
-    ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)EVAL),1,m,PETSC_DECIDE,Earray,&eval);CHKERRQ(ierr);
-    ierr = MatDenseRestoreArray(EVAL,&Earray);CHKERRQ(ierr);
-    //ierr = VecView(eval,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
- 
-    ierr = MatDiagonalScale(C2,NULL,eval);CHKERRQ(ierr); /* C2 = B*X*eval */
-    ierr = MatAXPY(C1,-1.0,C2,SAME_NONZERO_PATTERN);CHKERRQ(ierr); /* C1 = - C2 + C1 */
-    ierr = MatNorm(C1,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
-    if (norm > 1.e-14) {
-      if (!rank) printf(" Warning: || A*X - B*X*We || = %g\n",norm);
-    }
-
-    ierr = MatDestroy(&C1);CHKERRQ(ierr);
-    ierr = MatDestroy(&C2);CHKERRQ(ierr);
-    ierr = VecDestroy(&eval);CHKERRQ(ierr);
-    ierr = MatDestroy(&EVAL);CHKERRQ(ierr);
-    ierr = MatDestroy(&X);CHKERRQ(ierr);
-  } 
-
-  /* Test MatElementalSyr2k() and MatElementalHer2k() */
-  alpha = 2.0;
-  beta  = 1.0;
-  ierr = MatDuplicate(Be,MAT_COPY_VALUES,&Ce);CHKERRQ(ierr);
-  ierr = MatElementalSyr2k(uplo,orientation,alpha,Ae,Be,beta,Ce,PETSC_FALSE);CHKERRQ(ierr);
-  //if (!rank) printf(" Test MatElementalSyr2k(), C = a(AB^T + BA^T)+bC: \n");
-  //ierr = MatView(Ce,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatDestroy(&Ce);CHKERRQ(ierr);
-
-  ierr = MatDuplicate(Be,MAT_COPY_VALUES,&Ce);CHKERRQ(ierr);
-  ierr = MatElementalHer2k(uplo,orientation,alpha,Ae,Be,beta,Ce);CHKERRQ(ierr);
-  //if (!rank) printf(" Test MatElementalHer2k(), C = a(AB^H + BA^H)+bC: \n");
-  //ierr = MatView(Ce,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatDestroy(&Ce);CHKERRQ(ierr);
-
-  /* Test MatElementalSyrk() and MatElementalHerk() */
-  ierr = MatDuplicate(Be,MAT_COPY_VALUES,&Ce);CHKERRQ(ierr);
-  ierr = MatElementalSyrk(uplo,orientation,alpha,Ae,beta,Ce,PETSC_FALSE);CHKERRQ(ierr);
-  //if (!rank) printf(" Test MatElementalSyrk(), Ce = alpha * Ae * Ae^T + beta * Ce: \n");
-  //ierr = MatView(Ce,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatDestroy(&Ce);CHKERRQ(ierr);
-
-  ierr = MatElementalSyrk(uplo,orientation,alpha,Ae,beta,Be,PETSC_FALSE);CHKERRQ(ierr);
-  //if (!rank) printf(" Test MatElementalHerk(), Be = alpha * Ae * Ae^H + beta * Be: \n");
-  //ierr = MatView(Be,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
   if (!isElemental) {
     ierr = MatDestroy(&Ae);CHKERRQ(ierr);
     ierr = MatDestroy(&Be);CHKERRQ(ierr);
@@ -190,8 +110,6 @@ int main(int argc,char **args)
     //ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
-  ierr = MatDestroy(&We);CHKERRQ(ierr);
-  ierr = MatDestroy(&Xe);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = PetscFinalize();

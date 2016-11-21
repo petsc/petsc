@@ -1710,19 +1710,6 @@ PETSC_EXTERN PetscErrorCode VecScatterFFTWToPetsc(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatCreateVecsFFTW(Mat,Vec*,Vec*,Vec*);
 #endif
 
-/*
-   PETSc interface to ELEMENTAL
-*/
-#if defined(PETSC_HAVE_ELEMENTAL)
-#if defined(PETSC_USE_COMPLEX)
-typedef El::Complex<PetscReal> PetscElemScalar;
-#else
-typedef PetscScalar PetscElemScalar;
-#endif
-PETSC_EXTERN PetscErrorCode PetscElementalInitializePackage(void);
-PETSC_EXTERN PetscErrorCode PetscElementalFinalizePackage(void);
-#endif
-
 PETSC_EXTERN PetscErrorCode MatCreateNest(MPI_Comm,PetscInt,const IS[],PetscInt,const IS[],const Mat[],Mat*);
 PETSC_EXTERN PetscErrorCode MatNestGetSize(Mat,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatNestGetISs(Mat,IS[],IS[]);
