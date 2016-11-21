@@ -4,12 +4,12 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.hghash            = '611092f80ddb'
-    self.download          = ['hg://https://bitbucket.org/pflotran/pflotran-dev']
+#    self.hghash            = '611092f80ddb'
+    self.download          = ['hg://https://bitbucket.org/pflotran/pflotran-xsdk']
     self.functions         = []
     self.includes          = []
     self.hastests          = 1
-    self.fc                = 1    # 1 means requires fortran   
+    self.fc                = 1    # 1 means requires fortran
     self.linkedbypetsc     = 0
     self.useddirectly      = 0
     return
@@ -49,26 +49,28 @@ class Configure(config.package.GNUPackage):
   def postProcess(self):
     self.compilePETSc()
 
-    # Patch the PETSc paths so that older versions of PFlotran can find Fortran include files and configuration files
     try:
-      if not os.path.isdir(os.path.join(self.petscdir.dir,'include','finclude')):
-        output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+os.path.join(self.petscdir.dir,'include')+' && ln -s petsc/finclude finclude',timeout=10, log = self.log)
-      if not os.path.isdir(os.path.join(self.petscdir.dir,'conf')):
-        output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.petscdir.dir+' && ln -s lib/petsc/conf conf',timeout=10, log = self.log)
-    except RuntimeError, e:
-      raise RuntimeError('Unable to make links required by older versions of PFlotran')
-    try:
-      self.logPrintBox('Compiling Pflotran; this may take several minutes')
-      # uses the regular PETSc library builder and then moves result 
-      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src','pflotran')+' && '+self.make.make+' have_hdf5=1 use_matseqaij_fix=1 PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch+' libpflotranchem.a',timeout=1000, log = self.log)
+      self.logPrintBox('Configure Pflotran; this may take several minutes')
+      if self.framework.argDB['prefix']:
+        PDIR   = 'PETSC_DIR='+self.framework.argDB['prefix']
+        PARCH  = ''
+        PREFIX = '--prefix='+self.framework.argDB['prefix']
+      else:
+        PDIR   = 'PETSC_DIR='+self.petscdir.dir
+        PARCH  = 'PETSC_ARCH='+self.arch
+        PREFIX = '--prefix='+os.path.join(self.petscdir.dir,self.arch)
+      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && '+PARCH+' '+PDIR+' ./configure all '+PREFIX,timeout=10, log = self.log)
       self.log.write(output+err)
+
+      self.logPrintBox('Compiling Pflotran; this may take several minutes')
+      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && make all',timeout=1000, log = self.log)
+      self.log.write(output+err)
+
       self.logPrintBox('Installing Pflotran; this may take several minutes')
       self.installDirProvider.printSudoPasswordMessage(1)
-      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && '+self.installDirProvider.installSudo+'cp -f '+os.path.join('src','pflotran','libpflotran*.a')+' '+os.path.join(self.installDir,'lib'),timeout=1000, log = self.log)
-      self.log.write(output+err)
-      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && '+self.installDirProvider.installSudo+'cp -f '+os.path.join('src','pflotran','*.mod')+' '+self.include[0],timeout=100, log = self.log)
+      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && '+self.installDirProvider.installSudo+' make install',timeout=100, log = self.log)
       self.log.write(output+err)
     except RuntimeError, e:
-      raise RuntimeError('Error running make on Pflotran: '+str(e))
+      raise RuntimeError('Error configuring/compiling or installing Pflotran: '+str(e))
 
 

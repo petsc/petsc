@@ -8,6 +8,246 @@
 #define MAT_INFO_SIZE MAT_INFO_SIZE_MOD
 #define MAT_FACTORINFO_SIZE MAT_FACTORINFO_SIZE_MOD
 
+      Interface MatSetValues
+        ! picky Fortran requires seperate prototypes if args
+        ! are arrays or scalars
+        subroutine MatSetValues0(a,b,c,d,e,f,g,z)
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c (*) ! PetscInt
+          PetscInt d ! PetscInt
+          PetscInt e (*) ! PetscInt
+          PetscScalar f (*) ! PetscScalar
+          InsertMode g ! InsertMode
+          integer z
+        end subroutine
+        subroutine MatSetValues11(a,b,c,d,e,f,g,z)
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c ! PetscInt
+          PetscInt d ! PetscInt
+          PetscInt e ! PetscInt
+          PetscScalar f  ! PetscScalar
+          InsertMode g ! InsertMode
+          integer z
+        end subroutine
+        subroutine MatSetValues1n(a,b,c,d,e,f,g,z)
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c ! PetscInt
+          PetscInt d ! PetscInt
+          PetscInt e (*) ! PetscInt
+          PetscScalar f (*)  ! PetscScalar
+          InsertMode g ! InsertMode
+          integer z
+        end subroutine
+        subroutine MatSetValuesn1(a,b,c,d,e,f,g,z)
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c (*) ! PetscInt
+          PetscInt d ! PetscInt
+          PetscInt e ! PetscInt
+          PetscScalar f (*) ! PetscScalar
+          InsertMode g ! InsertMode
+          integer z
+        end subroutine
+      End Interface MatSetValues
+
+      Interface MatSetValuesLocal
+        ! picky Fortran requires seperate prototypes if args
+        ! are arrays or scalars
+        subroutine MatSetValuesLocal0(a,b,c,d,e,f,g,z)
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c (*) ! PetscInt
+          PetscInt d ! PetscInt
+          PetscInt e (*) ! PetscInt
+          PetscScalar f (*) ! PetscScalar
+          InsertMode g ! InsertMode
+          integer z
+        end subroutine
+        subroutine MatSetValuesLocal11(a,b,c,d,e,f,g,z)
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c ! PetscInt
+          PetscInt d ! PetscInt
+          PetscInt e ! PetscInt
+          PetscScalar f(*)  ! PetscScalar
+          InsertMode g ! InsertMode
+          integer z
+        end subroutine
+        subroutine MatSetValuesLocal11nn(a,b,c,d,e,f,g,z)
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c ! PetscInt
+          PetscInt d ! PetscInt
+          PetscInt e ! PetscInt
+          PetscScalar f(1,1)  ! PetscScalar
+          InsertMode g ! InsertMode
+          integer z
+        end subroutine
+        subroutine MatSetValuesLocal111(a,b,c,d,e,f,g,z)
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c ! PetscInt
+          PetscInt d ! PetscInt
+          PetscInt e ! PetscInt
+          PetscScalar f  ! PetscScalar
+          InsertMode g ! InsertMode
+          integer z
+        end subroutine
+        subroutine MatSetValuesLocal1n(a,b,c,d,e,f,g,z)
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c ! PetscInt
+          PetscInt d ! PetscInt
+          PetscInt e (*) ! PetscInt
+          PetscScalar f (*)  ! PetscScalar
+          InsertMode g ! InsertMode
+          integer z
+        end subroutine
+        subroutine MatSetValuesLocaln1(a,b,c,d,e,f,g,z)
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c (*) ! PetscInt
+          PetscInt d ! PetscInt
+          PetscInt e ! PetscInt
+          PetscScalar f (*) ! PetscScalar
+          InsertMode g ! InsertMode
+          integer z
+        end subroutine
+      End Interface MatSetValuesLocal
+
+      Interface MatSetValuesBlockedLocal
+        ! picky Fortran requires seperate prototypes if args
+        ! are arrays or scalars
+        subroutine MatSetValuesBlockedLocal0(a,b,c,d,e,f,g,z)
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c (*) ! PetscInt
+          PetscInt d ! PetscInt
+          PetscInt e (*) ! PetscInt
+          PetscScalar f (*) ! PetscScalar
+          InsertMode g ! InsertMode
+          integer z
+        end subroutine
+        subroutine MatSetValuesBlockedLocal11(a,b,c,d,e,f,g,z)
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c ! PetscInt
+          PetscInt d ! PetscInt
+          PetscInt e ! PetscInt
+          PetscScalar f(*)  ! PetscScalar
+          InsertMode g ! InsertMode
+          integer z
+        end subroutine
+        subroutine MatSetValuesBlockedLocal111(a,b,c,d,e,f,g,z)
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c ! PetscInt
+          PetscInt d ! PetscInt
+          PetscInt e ! PetscInt
+          PetscScalar f(1,1)  ! PetscScalar
+          InsertMode g ! InsertMode
+          integer z
+        end subroutine
+        subroutine MatSetValuesBlockedLocal1n(a,b,c,d,e,f,g,z)
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c ! PetscInt
+          PetscInt d ! PetscInt
+          PetscInt e (*) ! PetscInt
+          PetscScalar f (*)  ! PetscScalar
+          InsertMode g ! InsertMode
+          integer z
+        end subroutine
+        subroutine MatSetValuesBlockedLocaln1(a,b,c,d,e,f,g,z)
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c (*) ! PetscInt
+          PetscInt d ! PetscInt
+          PetscInt e ! PetscInt
+          PetscScalar f (*) ! PetscScalar
+          InsertMode g ! InsertMode
+          integer z
+        end subroutine
+      End Interface MatSetValuesBlockedLocal
+
+      Interface MatSetValuesBlocked
+        ! picky Fortran requires seperate prototypes if args
+        ! are arrays or scalars
+        subroutine MatSetValuesBlocked0(a,b,c,d,e,f,g,z)
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c (*) ! PetscInt
+          PetscInt d ! PetscInt
+          PetscInt e (*) ! PetscInt
+          PetscScalar f (*) ! PetscScalar
+          InsertMode g ! InsertMode
+          integer z
+        end subroutine
+        subroutine MatSetValuesBlocked11(a,b,c,d,e,f,g,z)
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c ! PetscInt
+          PetscInt d ! PetscInt
+          PetscInt e ! PetscInt
+          PetscScalar f(*)  ! PetscScalar
+          InsertMode g ! InsertMode
+          integer z
+        end subroutine
+        subroutine MatSetValuesBlocked111(a,b,c,d,e,f,g,z)
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c ! PetscInt
+          PetscInt d ! PetscInt
+          PetscInt e ! PetscInt
+          PetscScalar f(1,1)  ! PetscScalar
+          InsertMode g ! InsertMode
+          integer z
+        end subroutine
+        subroutine MatSetValuesBlocked1n(a,b,c,d,e,f,g,z)
+          USE_MAT_HIDE
+          MAT_HIDE a ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c ! PetscInt
+          PetscInt d ! PetscInt
+          PetscInt e (*) ! PetscInt
+          PetscScalar f (*)  ! PetscScalar
+          InsertMode g ! InsertMode
+          integer z
+        end subroutine
+        subroutine MatSetValuesBlockedn1(a,b,c,d,e,f,g,z)
+          USE_MAT_HIDE
+          MAT_HIDE xa ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c (*) ! PetscInt
+          PetscInt d ! PetscInt
+          PetscInt e ! PetscInt
+          PetscScalar f (*) ! PetscScalar
+          InsertMode g ! InsertMode
+          integer z
+        end subroutine
+      End Interface MatSetValuesBlocked
+
       Interface
         Subroutine MatGetRow(v,row,ncols,cols,vals,ierr)
           USE_MAT_HIDE
@@ -31,7 +271,7 @@
       End Interface
 
       Interface
-        Subroutine MatRowIJF90(v,sh,sym,bl,n,ia,ja,d,ierr)
+        Subroutine MatGetRowIJF90(v,sh,sym,bl,n,ia,ja,d,ierr)
           USE_MAT_HIDE
           PetscInt, pointer :: ia(:), ja(:)
           PetscInt  n,sh

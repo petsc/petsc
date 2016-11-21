@@ -4,6 +4,36 @@
 #include "petsc/finclude/ftn-custom/petscishide.h90"
 #include "petsc/finclude/ftn-custom/petscvechide.h90"
 
+      Interface VecSetValues
+        subroutine VecSetValues0(a,b,c,d,e,z)
+          USE_VEC_HIDE
+          VEC_HIDE a ! Vec
+          PetscInt b ! PetscInt
+          PetscInt c (*) ! PetscInt
+          PetscScalar d (*) ! PetscScalar
+          InsertMode e ! InsertMode
+          integer z
+        end subroutine
+        subroutine VecSetValues1(a,b,c,d,e,z)
+          USE_VEC_HIDE
+          VEC_HIDE a ! Vec
+          PetscInt b ! PetscInt
+          PetscInt c ! PetscInt
+          PetscScalar d (*) ! PetscScalar
+          InsertMode e ! InsertMode
+          integer z
+        end subroutine
+        subroutine VecSetValues11(a,b,c,d,e,z)
+          USE_VEC_HIDE
+          VEC_HIDE a ! Vec
+          PetscInt b ! PetscInt
+          PetscInt c ! PetscInt
+          PetscScalar d ! PetscScalar
+          InsertMode e ! InsertMode
+          integer z
+        end subroutine
+      End Interface VecSetValues
+
       Interface
         Subroutine VecGetArrayF90(v,array,ierr)
           USE_VEC_HIDE
