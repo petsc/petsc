@@ -23,6 +23,21 @@
 #include <../src/ksp/pc/impls/bddc/bddcprivate.h>
 #include <petscblaslapack.h>
 
+static PetscBool  cited = PETSC_FALSE;
+static const char citation[] =
+"@article{ZampiniPCBDDC,\n"
+"author = {Stefano Zampini},\n"
+"title = {{PCBDDC}: A Class of Robust Dual-Primal Methods in {PETS}c},\n"
+"journal = {SIAM Journal on Scientific Computing},\n"
+"volume = {38},\n"
+"number = {5},\n"
+"pages = {S282-S306},\n"
+"year = {2016},\n"
+"doi = {10.1137/15M1025785},\n"
+"URL = {http://dx.doi.org/10.1137/15M1025785},\n"
+"eprint = {http://dx.doi.org/10.1137/15M1025785}\n"
+"}\n";
+
 /* temporarily declare it */
 PetscErrorCode PCApply_BDDC(PC,Vec,Vec);
 
@@ -1815,6 +1830,7 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
    Added support for M_3 preconditioner in the reference article (code is active if pcbddc->switch_static == PETSC_TRUE) */
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister(citation,&cited);CHKERRQ(ierr);
   if (pcbddc->ChangeOfBasisMatrix) {
     Vec swap;
 
@@ -1976,6 +1992,7 @@ PetscErrorCode PCApplyTranspose_BDDC(PC pc,Vec r,Vec z)
   const PetscScalar zero = 0.0;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister(citation,&cited);CHKERRQ(ierr);
   if (pcbddc->ChangeOfBasisMatrix) {
     Vec swap;
 
