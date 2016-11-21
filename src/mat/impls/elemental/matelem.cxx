@@ -640,31 +640,34 @@ static PetscErrorCode MatSolve_Elemental(Mat A,Vec B,Vec X)
   Mat_Elemental     *a = (Mat_Elemental*)A->data;
   PetscErrorCode    ierr;
   PetscElemScalar   *x;
+  PetscInt          pivoting = a->pivoting;
 
   PetscFunctionBegin;
   ierr = VecCopy(B,X);CHKERRQ(ierr);
   ierr = VecGetArray(X,(PetscScalar **)&x);CHKERRQ(ierr);
+
   El::DistMatrix<PetscElemScalar,El::VC,El::STAR> xe;
   xe.Attach(A->rmap->N,1,*a->grid,0,0,x,A->rmap->n);
   El::DistMatrix<PetscElemScalar,El::MC,El::MR> xer(xe);
   switch (A->factortype) {
   case MAT_FACTOR_LU:
-    if ((*a->pivot).AllocatedMemory()) {
-      El::lu::SolveAfter(El::NORMAL,*a->emat,*a->pivot,xer);
-      El::Copy(xer,xe);
-    } else {
+    if (pivoting == 0) {
       El::lu::SolveAfter(El::NORMAL,*a->emat,xer);
-      El::Copy(xer,xe);
+    } else if (pivoting == 1) {
+      El::lu::SolveAfter(El::NORMAL,*a->emat,*a->P,xer);
+    } else { /* pivoting == 2 */
+      El::lu::SolveAfter(El::NORMAL,*a->emat,*a->P,*a->Q,xer);
     }
     break;
   case MAT_FACTOR_CHOLESKY:
     El::cholesky::SolveAfter(El::UPPER,El::NORMAL,*a->emat,xer);
-    El::Copy(xer,xe);
     break;
   default:
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unfactored Matrix or Unsupported MatFactorType");
     break;
   }
+  El::Copy(xer,xe);
+
   ierr = VecRestoreArray(X,(PetscScalar **)&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -688,15 +691,18 @@ static PetscErrorCode MatMatSolve_Elemental(Mat A,Mat B,Mat X)
   Mat_Elemental *a=(Mat_Elemental*)A->data;
   Mat_Elemental *b=(Mat_Elemental*)B->data;
   Mat_Elemental *x=(Mat_Elemental*)X->data;
+  PetscInt      pivoting = a->pivoting;
 
   PetscFunctionBegin;
   El::Copy(*b->emat,*x->emat);
   switch (A->factortype) {
   case MAT_FACTOR_LU:
-    if ((*a->pivot).AllocatedMemory()) {
-      El::lu::SolveAfter(El::NORMAL,*a->emat,*a->pivot,*x->emat);
-    } else {
+    if (pivoting == 0) {
       El::lu::SolveAfter(El::NORMAL,*a->emat,*x->emat);
+    } else if (pivoting == 1) {
+      El::lu::SolveAfter(El::NORMAL,*a->emat,*a->P,*x->emat);
+    } else {
+      El::lu::SolveAfter(El::NORMAL,*a->emat,*a->P,*a->Q,*x->emat);
     }
     break;
   case MAT_FACTOR_CHOLESKY:
@@ -715,12 +721,15 @@ static PetscErrorCode MatLUFactor_Elemental(Mat A,IS row,IS col,const MatFactorI
 {
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
   PetscErrorCode ierr;
+  PetscInt       pivoting = a->pivoting;
 
   PetscFunctionBegin;
-  if (info->dtcol){
-    El::LU(*a->emat,*a->pivot);
-  } else {
+  if (pivoting == 0) {
     El::LU(*a->emat);
+  } else if (pivoting == 1) {
+    El::LU(*a->emat,*a->P);
+  } else {
+    El::LU(*a->emat,*a->P,*a->Q);
   }
   A->factortype = MAT_FACTOR_LU;
   A->assembled  = PETSC_TRUE;
@@ -1135,7 +1144,8 @@ static PetscErrorCode MatDestroy_Elemental(Mat A)
 
   PetscFunctionBegin;
   delete a->emat;
-  delete a->pivot;
+  delete a->P;
+  delete a->Q;
 
   El::mpi::Comm cxxcomm(PetscObjectComm((PetscObject)A));
   ierr = PetscCommDuplicate(cxxcomm.comm,&icomm,NULL);CHKERRQ(ierr);
@@ -1424,14 +1434,17 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
     }
     commgrid->grid_refct = 1;
     ierr = MPI_Attr_put(icomm,Petsc_Elemental_keyval,(void*)commgrid);CHKERRQ(ierr);
+
+    a->pivoting    = 1; 
+    ierr = PetscOptionsInt("-mat_elemental_pivoting","Pivoting","None",a->pivoting,&a->pivoting,NULL);CHKERRQ(ierr);
+
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
   } else {
     commgrid->grid_refct++;
   }
   ierr = PetscCommDestroy(&icomm);CHKERRQ(ierr);
-  a->grid      = commgrid->grid;
-  a->emat      = new El::DistMatrix<PetscElemScalar>(*a->grid);
-  a->pivot     = new El::DistMatrix<PetscInt,El::VC,El::STAR>(*a->grid);
+  a->grid        = commgrid->grid;
+  a->emat        = new El::DistMatrix<PetscElemScalar>(*a->grid);
   a->roworiented = PETSC_TRUE;
 
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetOwnershipIS_C",MatGetOwnershipIS_Elemental);CHKERRQ(ierr);
