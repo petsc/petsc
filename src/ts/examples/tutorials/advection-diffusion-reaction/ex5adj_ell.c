@@ -22,6 +22,7 @@ typedef struct {
 
 typedef struct {
   PetscReal D1,D2,gamma,kappa;
+  PetscBool aijpc;
 } AppCtx;
 
 /*
@@ -71,13 +72,14 @@ int main(int argc,char **argv)
 
 #ifdef PETSC_HAVE_LIBMKL_CORE
   PetscInt irc = mkl_enable_instructions(MKL_ENABLE_AVX512_MIC);
-  if (irc == 0) printf("Unable to enable avx512\n"); 
+  if (irc == 0) printf("Unable to enable avx512\n");
 #endif
-   
+
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  PetscFunctionBeginUser;
   ierr = PetscOptionsGetBool(NULL,NULL,"-forwardonly",&forwardonly,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-implicitform",&implicitform,NULL);CHKERRQ(ierr);
+  appctx.aijpc = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(NULL,NULL,"-aijpc",&appctx.aijpc,NULL);CHKERRQ(ierr);
 
   appctx.D1    = 8.0e-5;
   appctx.D2    = 4.0e-5;
@@ -111,7 +113,18 @@ int main(int argc,char **argv)
     ierr = TSSetRHSJacobian(ts,NULL,NULL,RHSJacobian,&appctx);CHKERRQ(ierr);
   } else {
     ierr = TSSetIFunction(ts,NULL,IFunction,&appctx);CHKERRQ(ierr);
-    ierr = TSSetIJacobian(ts,NULL,NULL,IJacobian,&appctx);CHKERRQ(ierr);
+    if (appctx.aijpc) {
+      Mat A,B;
+      ierr = DMSetMatType(da,MATELL);CHKERRQ(ierr);
+      ierr = DMCreateMatrix(da,&A);CHKERRQ(ierr);
+      ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
+      ierr = DMCreateMatrix(da,&B);CHKERRQ(ierr);
+      ierr = TSSetIJacobian(ts,A,B,IJacobian,&appctx);CHKERRQ(ierr);
+      ierr = MatDestroy(&A);CHKERRQ(ierr);
+      ierr = MatDestroy(&B);CHKERRQ(ierr);
+    } else {
+      ierr = TSSetIJacobian(ts,NULL,NULL,IJacobian,&appctx);CHKERRQ(ierr);
+    }
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -372,7 +385,9 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat BB,void *ctx)
       rowstencil.i = i; rowstencil.c = 0;
 
       ierr = MatSetValuesStencil(A,1,&rowstencil,6,stencil,entries,INSERT_VALUES);CHKERRQ(ierr);
-
+      if (appctx->aijpc) {
+        ierr = MatSetValuesStencil(BB,1,&rowstencil,6,stencil,entries,INSERT_VALUES);CHKERRQ(ierr);
+      }
       stencil[0].c = 1; entries[0] = appctx->D2*sy;
       stencil[1].c = 1; entries[1] = appctx->D2*sy;
       stencil[2].c = 1; entries[2] = appctx->D2*sx;
@@ -382,6 +397,9 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat BB,void *ctx)
       rowstencil.c = 1;
 
       ierr = MatSetValuesStencil(A,1,&rowstencil,6,stencil,entries,INSERT_VALUES);CHKERRQ(ierr);
+      if (appctx->aijpc) {
+        ierr = MatSetValuesStencil(BB,1,&rowstencil,6,stencil,entries,INSERT_VALUES);CHKERRQ(ierr);
+      }
       /* f[j][i].v = appctx->D2*(vxx + vyy) + uc*vc*vc - (appctx->gamma + appctx->kappa)*vc; */
     }
   }
@@ -395,6 +413,12 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat BB,void *ctx)
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  if (appctx->aijpc) {
+    ierr = MatAssemblyBegin(BB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(BB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatSetOption(BB,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  }
+
   PetscFunctionReturn(0);
 }
 
@@ -559,7 +583,9 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat 
       rowstencil.i = i; rowstencil.c = 0;
 
       ierr = MatSetValuesStencil(A,1,&rowstencil,6,stencil,entries,INSERT_VALUES);CHKERRQ(ierr);
-
+      if (appctx->aijpc) {
+        ierr = MatSetValuesStencil(BB,1,&rowstencil,6,stencil,entries,INSERT_VALUES);CHKERRQ(ierr);
+      }
       stencil[0].c = 1; entries[0] = -appctx->D2*sy;
       stencil[1].c = 1; entries[1] = -appctx->D2*sy;
       stencil[2].c = 1; entries[2] = -appctx->D2*sx;
@@ -569,6 +595,9 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat 
       rowstencil.c = 1;
 
       ierr = MatSetValuesStencil(A,1,&rowstencil,6,stencil,entries,INSERT_VALUES);CHKERRQ(ierr);
+      if (appctx->aijpc) {
+        ierr = MatSetValuesStencil(BB,1,&rowstencil,6,stencil,entries,INSERT_VALUES);CHKERRQ(ierr);
+      }
       /* f[j][i].v = appctx->D2*(vxx + vyy) + uc*vc*vc - (appctx->gamma + appctx->kappa)*vc; */
     }
   }
@@ -582,5 +611,10 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  if (appctx->aijpc) {
+    ierr = MatAssemblyBegin(BB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(BB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatSetOption(BB,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
