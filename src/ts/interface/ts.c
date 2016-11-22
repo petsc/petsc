@@ -4185,10 +4185,8 @@ PetscErrorCode TSSolve(TS ts,Vec u)
      restarts the step after an event. Resetting these counters in such a case causes
      TSTrajectory to incorrectly save the output files
   */
-  if(!ts->steprestart) {
-    ts->steps       = 0;
-    ts->total_steps = 0;
-  }
+
+  ts->steps             = 0;
   ts->ksp_its           = 0;
   ts->snes_its          = 0;
   ts->num_snes_failures = 0;
@@ -4203,19 +4201,17 @@ PetscErrorCode TSSolve(TS ts,Vec u)
     ts->solvetime = ts->ptime;
     solution = ts->vec_sol;
   } else { /* Step the requested number of timesteps. */
-    if(!ts->steprestart) {
-      if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
-      else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
-    }
+    if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
+    else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
  
-    ierr = TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+    ierr = TSTrajectorySet(ts->trajectory,ts,ts->total_steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
     ierr = TSEventInitialize(ts->event,ts,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
     
     ts->steprollback = PETSC_FALSE;
     ts->steprestart  = PETSC_TRUE;
 
     while (!ts->reason) {
-      ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+      ierr = TSMonitor(ts,ts->total_steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
       if (!ts->steprollback) {
         ierr = TSPreStep(ts);CHKERRQ(ierr);
       }
@@ -4226,11 +4222,11 @@ PetscErrorCode TSSolve(TS ts,Vec u)
       ierr = TSPostEvaluate(ts);CHKERRQ(ierr);
       ierr = TSEventHandler(ts);CHKERRQ(ierr); /* The right-hand side may be changed due to event. Be careful with Any computation using the RHS information after this point. */
       if (!ts->steprollback) {
-        ierr = TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+        ierr = TSTrajectorySet(ts->trajectory,ts,ts->total_steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
         ierr = TSPostStep(ts);CHKERRQ(ierr);
       }
     }
-    ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+    ierr = TSMonitor(ts,ts->total_steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
 
     if (ts->exact_final_time == TS_EXACTFINALTIME_INTERPOLATE && ts->ptime > ts->max_time) {
       ierr = TSInterpolate(ts,ts->max_time,u);CHKERRQ(ierr);
