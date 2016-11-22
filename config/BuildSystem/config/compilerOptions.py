@@ -18,7 +18,7 @@ class CompilerOptions(config.base.Configure):
     # GNU gcc
     if config.setCompilers.Configure.isGNU(compiler, self.log) or config.setCompilers.Configure.isClang(compiler, self.log):
       if bopt == '':
-        flags.extend(['-Wall', '-Wwrite-strings', '-Wno-strict-aliasing','-Wno-unknown-pragmas'])
+        flags.extend(['-Wall', '-Wwrite-strings', '-Wno-strict-aliasing','-Wno-unknown-pragmas','-fstack-protector'])
         if config.setCompilers.Configure.isClang(compiler, self.log):
           flags.extend(['-Qunused-arguments'])
         if self.argDB['with-visibility']:
@@ -100,7 +100,7 @@ class CompilerOptions(config.base.Configure):
     # GNU g++
     if config.setCompilers.Configure.isGNU(compiler, self.log) or config.setCompilers.Configure.isClang(compiler, self.log):
       if bopt == '':
-        flags.extend(['-Wall', '-Wwrite-strings', '-Wno-strict-aliasing','-Wno-unknown-pragmas'])
+        flags.extend(['-Wall', '-Wwrite-strings', '-Wno-strict-aliasing','-Wno-unknown-pragmas','-fstack-protector'])
         # The option below would prevent warnings about compiling C as C++ being deprecated, but it causes Clang to SEGV, http://llvm.org/bugs/show_bug.cgi?id=12924
         # flags.extend([('-x','c++')])
         if self.argDB['with-visibility']:
