@@ -76,7 +76,7 @@ int main(int argc,char **argv)
   ierr = DMDASetFieldName(da,1,"field2");CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)global,"da1");CHKERRQ(ierr);
   ierr = VecView(global,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerPopFormat(vv);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
   /* clean up and exit */
