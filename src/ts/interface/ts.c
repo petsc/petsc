@@ -8057,7 +8057,7 @@ PetscErrorCode  TSClone(TS tsin, TS *tsout)
   ierr = PetscObjectReference((PetscObject)t->trajectory);CHKERRQ(ierr);
 
   t->event = tsin->event;
-  t->event->refct++;
+  if (t->event) t->event->refct++;
 
   t->problem_type      = tsin->problem_type;
   t->ptime             = tsin->ptime;
