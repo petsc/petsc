@@ -354,12 +354,13 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFacto
       PetscStackCall("SuperLU_DIST:dallocateA_dist",dallocateA_dist(m, nz, &lu->val, &lu->col, &lu->row));
 #endif
     } else { /* successive numeric factorization, sparsity pattern and perm_c are reused. */
-      SUPERLU_FREE((void*)lu->A_sup.Store);
       if (lu->FactPattern == SamePattern_SameRowPerm) {
         lu->options.Fact = SamePattern_SameRowPerm; /* matrix has similar numerical values */
-      } else {
+      } else if (lu->FactPattern == SamePattern) {
         PetscStackCall("SuperLU_DIST:Destroy_LU",Destroy_LU(N, &lu->grid, &lu->LUstruct)); /* Deallocate storage associated with the L and U matrices. */
         lu->options.Fact = SamePattern;
+      } else {
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"options.Fact must be one of SamePattern SamePattern_SameRowPerm");
       }
     }
     nz = 0;
@@ -397,7 +398,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFacto
         lu->col[nz]   = rstart + ajj[j];
         lu->val[nz++] = *av++;
       }
-       
+
       /* B part, larger col index */
       for (j=jB; j<countB; j++) {
         lu->col[nz]   = garray[bjj[j]];
@@ -405,11 +406,14 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFacto
       }
     }
     lu->row[m] = nz;
+
+    if (lu->options.Fact == DOFACT) {
 #if defined(PETSC_USE_COMPLEX)
-    PetscStackCall("SuperLU_DIST:zCreate_CompRowLoc_Matrix_dist",zCreate_CompRowLoc_Matrix_dist(&lu->A_sup, M, N, nz, m, rstart,lu->val, lu->col, lu->row, SLU_NR_loc, SLU_Z, SLU_GE));
+      PetscStackCall("SuperLU_DIST:zCreate_CompRowLoc_Matrix_dist",zCreate_CompRowLoc_Matrix_dist(&lu->A_sup, M, N, nz, m, rstart,lu->val, lu->col, lu->row, SLU_NR_loc, SLU_Z, SLU_GE));
 #else
-    PetscStackCall("SuperLU_DIST:dCreate_CompRowLoc_Matrix_dist",dCreate_CompRowLoc_Matrix_dist(&lu->A_sup, M, N, nz, m, rstart,lu->val, lu->col, lu->row, SLU_NR_loc, SLU_D, SLU_GE));
+      PetscStackCall("SuperLU_DIST:dCreate_CompRowLoc_Matrix_dist",dCreate_CompRowLoc_Matrix_dist(&lu->A_sup, M, N, nz, m, rstart,lu->val, lu->col, lu->row, SLU_NR_loc, SLU_D, SLU_GE));
 #endif
+    }
   }
 
   /* Factor the matrix. */
@@ -455,7 +459,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFacto
   if (lu->options.PrintStat) {
     PStatPrint(&lu->options, &stat, &lu->grid);  /* Print the statistics. */
   }
-  PStatFree(&stat);
+  PetscStackCall("SuperLU_DIST:PStatFree",PStatFree(&stat));
   (F)->assembled    = PETSC_TRUE;
   (F)->preallocated = PETSC_TRUE;
   lu->options.Fact  = FACTORED; /* The factored form of A is supplied. Local option used by this func. only */
@@ -695,7 +699,7 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
     }
   }
 
-  lu->FactPattern = SamePattern; 
+  lu->FactPattern = SamePattern_SameRowPerm;
   ierr = PetscOptionsEList("-mat_superlu_dist_fact","Sparsity pattern for repeated matrix factorization","None",factPattern,2,factPattern[0],&indx,&flg);CHKERRQ(ierr);
   if (flg) {
     switch (indx) {
