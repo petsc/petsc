@@ -3436,6 +3436,9 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
     n = PetscMax(2*lda_rhs*n_vertices,n);
     n = PetscMax((lda_rhs+n_B)*n_vertices,n);
   }
+  if (!pcbddc->symmetric_primal) {
+    n = PetscMax(2*lda_rhs*pcbddc->local_primal_size,n);
+  }
   ierr = PetscMalloc1(n,&work);CHKERRQ(ierr);
 
   /* create dummy vector to modify rhs and sol of MatMatSolve (work array will never be used) */
