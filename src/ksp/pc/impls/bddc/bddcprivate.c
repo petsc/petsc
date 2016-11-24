@@ -3987,7 +3987,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
     if (n_constraints) {
       Mat S_CCT,C_CRT;
 
-      ierr = MatTranspose(C_CR,MAT_INPLACE_MATRIX,&C_CRT);CHKERRQ(ierr);
+      ierr = MatTranspose(C_CR,MAT_INITIAL_MATRIX,&C_CRT);CHKERRQ(ierr);
       ierr = MatTranspose(S_CC,MAT_INITIAL_MATRIX,&S_CCT);CHKERRQ(ierr);
       ierr = MatMatMult(C_CRT,S_CCT,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&B_C);CHKERRQ(ierr);
       ierr = MatDestroy(&S_CCT);CHKERRQ(ierr);
@@ -4023,15 +4023,17 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
     }
 
     /* currently there's no support for MatTransposeMatSolve(F,B,X) */
-    ierr = MatDenseGetArray(B_V,&marray);CHKERRQ(ierr);
-    for (i=0;i<n_vertices;i++) {
-      ierr = VecPlaceArray(pcbddc->vec1_R,marray+i*n_R);CHKERRQ(ierr);
-      ierr = VecPlaceArray(pcbddc->vec2_R,work+i*n_R);CHKERRQ(ierr);
-      ierr = KSPSolveTranspose(pcbddc->ksp_R,pcbddc->vec1_R,pcbddc->vec2_R);CHKERRQ(ierr);
-      ierr = VecResetArray(pcbddc->vec1_R);CHKERRQ(ierr);
-      ierr = VecResetArray(pcbddc->vec2_R);CHKERRQ(ierr);
+    if (n_vertices) {
+      ierr = MatDenseGetArray(B_V,&marray);CHKERRQ(ierr);
+      for (i=0;i<n_vertices;i++) {
+        ierr = VecPlaceArray(pcbddc->vec1_R,marray+i*n_R);CHKERRQ(ierr);
+        ierr = VecPlaceArray(pcbddc->vec2_R,work+i*n_R);CHKERRQ(ierr);
+        ierr = KSPSolveTranspose(pcbddc->ksp_R,pcbddc->vec1_R,pcbddc->vec2_R);CHKERRQ(ierr);
+        ierr = VecResetArray(pcbddc->vec1_R);CHKERRQ(ierr);
+        ierr = VecResetArray(pcbddc->vec2_R);CHKERRQ(ierr);
+      }
+      ierr = MatDenseRestoreArray(B_V,&marray);CHKERRQ(ierr);
     }
-    ierr = MatDenseRestoreArray(B_V,&marray);CHKERRQ(ierr);
     if (B_C) {
       ierr = MatDenseGetArray(B_C,&marray);CHKERRQ(ierr);
       for (i=n_vertices;i<n_constraints+n_vertices;i++) {
