@@ -261,9 +261,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
       for (i=0,j=0;i<n;i++) if (!count[i]) count[j++] = i;
       ierr = ISLocalToGlobalMappingRestoreInfo(l2g,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
       ierr = ISCreateGeneral(PETSC_COMM_SELF,j,count,PETSC_OWN_POINTER,&II);CHKERRQ(ierr);
-      ierr = ISComplement(II,0,n,&BB);CHKERRQ(ierr);
       ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_II",(PetscObject)II);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_BB",(PetscObject)BB);CHKERRQ(ierr);
 
       /* interior dofs in layout */
       ierr = MatISSetUpSF(A);CHKERRQ(ierr);
@@ -289,7 +287,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
       ierr = ISDestroy(&pII);CHKERRQ(ierr);
       ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_pP",(PetscObject)pP);CHKERRQ(ierr);
 
-      /* local pressures in subdomain-wise and global ordering */
+      /* local interface pressures in subdomain-wise and global ordering */
       ierr = PetscMemzero(matis->sf_leafdata,n*sizeof(PetscInt));CHKERRQ(ierr);
       ierr = PetscMemzero(matis->sf_rootdata,nl*sizeof(PetscInt));CHKERRQ(ierr);
       ierr = ISGetLocalSize(pP,&ni);CHKERRQ(ierr);
@@ -310,6 +308,12 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
       /* all but the interface pressure space */
       ierr = ISComplement(pP,rst,ren,&pPc);CHKERRQ(ierr);
       ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_pPc",(PetscObject)pPc);CHKERRQ(ierr);
+
+      /* local boundary but interface pressure */
+      ierr = ISComplement(II,0,n,&Pall);CHKERRQ(ierr);
+      ierr = ISDifference(Pall,lP,&BB);CHKERRQ(ierr);
+      ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_BB",(PetscObject)BB);CHKERRQ(ierr);
+      ierr = ISDestroy(&Pall);CHKERRQ(ierr);
     } else {
       ierr = PetscObjectReference((PetscObject)II);CHKERRQ(ierr);
       ierr = PetscObjectReference((PetscObject)BB);CHKERRQ(ierr);
