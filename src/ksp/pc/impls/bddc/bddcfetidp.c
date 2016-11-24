@@ -59,7 +59,7 @@ PetscErrorCode PCBDDCDestroyFETIDPMat(Mat A)
   ierr = VecScatterDestroy(&mat_ctx->l2g_lambda);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&mat_ctx->l2g_p);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&mat_ctx->g2g);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&mat_ctx->g2l_p);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&mat_ctx->g2g_p);CHKERRQ(ierr);
   ierr = PCDestroy(&mat_ctx->pc);CHKERRQ(ierr); /* decrease PCBDDC reference count */
   ierr = PetscFree(mat_ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -500,21 +500,24 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
     ierr = PCGetOperators(fetidpmat_ctx->pc,&nA,NULL);CHKERRQ(ierr);
     ierr = MatCreateVecs(nA,&fetidpmat_ctx->work,NULL);CHKERRQ(ierr);
     ierr = MatCreateVecs(oA,&ov,NULL);CHKERRQ(ierr);
-    /* scatter from alldofs to alldofs \setminus interfacepressures */
+    /* scatter from alldofs to alldofs \setminus interface pressures */
     ierr = MatGetOwnershipRange(oA,&rst,&ren);CHKERRQ(ierr);
     ierr = ISCreateStride(comm,ren-rst,rst,1,&ais);CHKERRQ(ierr);
     ierr = ISDifference(ais,pP,&AmgP);CHKERRQ(ierr);
     ierr = ISDestroy(&ais);CHKERRQ(ierr);
     ierr = VecScatterCreate(ov,AmgP,fetidpmat_ctx->work,NULL,&fetidpmat_ctx->g2g);CHKERRQ(ierr);
     ierr = ISDestroy(&AmgP);CHKERRQ(ierr);
-    /* scatter from alldofs to local interface pressures */
-    ierr = VecScatterCreate(ov,gP,fetidpmat_ctx->vP,NULL,&fetidpmat_ctx->g2l_p);CHKERRQ(ierr);
+    /* scatter from alldofs to interface pressures global fetidp vector */
+    ierr = PetscLayoutGetRange(alay,&rst,NULL);CHKERRQ(ierr);
+    ierr = ISCreateStride(comm,nPgl,rst,1,&ais);CHKERRQ(ierr);
+    ierr = VecScatterCreate(ov,pP,fetidp_global,ais,&fetidpmat_ctx->g2g_p);CHKERRQ(ierr);
+    ierr = ISDestroy(&ais);CHKERRQ(ierr);
     ierr = VecDestroy(&ov);CHKERRQ(ierr);
   }
   ierr = PetscLayoutDestroy(&llay);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&play);CHKERRQ(ierr);
   ierr = ISCreateGeneral(comm,n_local_lambda,l2g_indices,PETSC_OWN_POINTER,&IS_l2g_lambda);CHKERRQ(ierr);
-  /* scatter for multipliers */
+  /* scatter from local to global multipliers */
   ierr = VecScatterCreate(fetidpmat_ctx->lambda_local,NULL,fetidp_global,IS_l2g_lambda,&fetidpmat_ctx->l2g_lambda);CHKERRQ(ierr);
   ierr = ISDestroy(&IS_l2g_lambda);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&l2gmap_p);CHKERRQ(ierr);
