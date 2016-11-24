@@ -177,7 +177,9 @@ typedef struct _PCBDDCBenignMatMult_ctx *PCBDDCBenignMatMult_ctx;
 
 /* feti-dp mat */
 struct _FETIDPMat_ctx {
-  PetscInt   n_lambda;
+  PetscInt   n;               /* local number of rows */
+  PetscInt   N;               /* global number of rows */
+  PetscInt   n_lambda;        /* global number of multipliers */
   Vec        lambda_local;
   Vec        temp_solution_B;
   Vec        temp_solution_D;
@@ -186,16 +188,33 @@ struct _FETIDPMat_ctx {
   VecScatter l2g_lambda;
   PC         pc;
   PetscBool  fully_redundant;
+  /* saddle point */
+  Mat        B_BB;
+  Mat        B_BI;
+  Mat        Bt_BB;
+  Mat        Bt_BI;
+  Mat        C;
+  VecScatter l2g_p;
+  VecScatter g2g;
+  VecScatter g2l_p;
+  Vec        work;
+  Vec        vP;
+  Vec        xPg;
+  Vec        yPg;
 };
 typedef struct _FETIDPMat_ctx *FETIDPMat_ctx;
 
-/* feti-dp dirichlet preconditioner */
+/* feti-dp preconditioner */
 struct _FETIDPPC_ctx {
   Mat        S_j;
   Vec        lambda_local;
   Mat        B_Ddelta;
   VecScatter l2g_lambda;
   PC         pc;
+  /* saddle point */
+  KSP        kP;
+  Vec        xPg;
+  Vec        yPg;
 };
 typedef struct _FETIDPPC_ctx *FETIDPPC_ctx;
 
