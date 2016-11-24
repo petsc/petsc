@@ -330,6 +330,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
       Mat C;
 
       ierr = MatGetSubMatrix(Ap,pP,pP,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
+      ierr = MatScale(C,-1.);CHKERRQ(ierr);
       ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_C",(PetscObject)C);CHKERRQ(ierr);
       /* default operators for preconditioning boundary pressures */
       ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_PAmat",(PetscObject)C);CHKERRQ(ierr);
