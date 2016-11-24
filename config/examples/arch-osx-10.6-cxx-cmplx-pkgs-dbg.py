@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-# elemental breaks with complex?
-
 configure_options = [
   '--with-cc=gcc',
   '--with-fc=gfortran', # http://brew.sh/
@@ -25,6 +23,8 @@ configure_options = [
   '--download-hdf5',
   '--download-petsc4py=1',
   '--download-mpi4py=1',
+  '--with-cxx-dialect=C++11',
+  '--download-elemental=1'
   #'--download-sundials=1',
   #'--download-hypre=1',
   #'--download-suitesparse=1',
