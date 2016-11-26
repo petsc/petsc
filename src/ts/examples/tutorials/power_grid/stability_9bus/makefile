@@ -39,6 +39,11 @@ runex9bus_semiexplicit:
            if [ "$$x" = "bad" ]; then ${DIFF} output/ex9bus_2.out ex9bus_2.tmp ; ${DIFF} output/ex9bus_2_alt.out ex9bus_2.tmp ; printf "${PWD}\nPossible problem with ex9bus_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex9bus_2.tmp
 
+runex9bus_steprestart:
+	-@${MPIEXEC} -n 1 ./ex9bus -ts_monitor -snes_monitor_short -ts_type arkimex > ex9bus_3.tmp 2>&1;    \
+	   ${DIFF} output/ex9bus_3.out ex9bus_3.tmp || printf "${PWD}\nPossible problem with ex9bus_steprestart, diffs above\n=========================================\n"; \
+	   ${RM} -f ex9bus_3.tmp
+
 runex9busadj:
 	-@${MPIEXEC} -n 1 ./ex9busadj -viewer_binary_skip_info > ex9busadj_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex9busadj_1.out ex9busadj_1.tmp || printf "${PWD}\nPossible problem with ex9busadj_1, diffs above\n=========================================\n"; \
@@ -58,6 +63,6 @@ clean_files:
 	${RM} ex9busopt.o
 	-@${RM} ex9bus-SA-*
 
-TESTEXAMPLES_DOUBLEINT32 = ex9bus.PETSc runex9bus_implicit runex9bus_semiexplicit ex9bus.rm ex9busadj.PETSc runex9busadj ex9busadj.rm ex9busopt.PETSc runex9busopt ex9busopt.rm ex9busopt_fd.PETSc runex9busopt_fd ex9busopt_fd.rm
+TESTEXAMPLES_DOUBLEINT32 = ex9bus.PETSc runex9bus_implicit runex9bus_semiexplicit runex9bus_steprestart ex9bus.rm ex9busadj.PETSc runex9busadj ex9busadj.rm ex9busopt.PETSc runex9busopt ex9busopt.rm ex9busopt_fd.PETSc runex9busopt_fd ex9busopt_fd.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test

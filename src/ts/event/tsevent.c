@@ -17,8 +17,6 @@ PetscErrorCode TSEventInitialize(TSEvent event,TS ts,PetscReal t,Vec U)
   event->ptime_prev = t;
   event->iterctr = 0;
   ierr = (*event->eventhandler)(ts,t,U,event->fvalue_prev,event->ctx);CHKERRQ(ierr);
-  /* Initialize the event recorder */
-  event->recorder.ctr = 0;
   PetscFunctionReturn(0);
 }
 
@@ -32,6 +30,8 @@ PetscErrorCode TSEventDestroy(TSEvent *event)
   PetscFunctionBegin;
   PetscValidPointer(event,1);
   if (!*event) PetscFunctionReturn(0);
+  if (--(*event)->refct > 0) {*event = 0; PetscFunctionReturn(0);}
+
   ierr = PetscFree((*event)->fvalue);CHKERRQ(ierr);
   ierr = PetscFree((*event)->fvalue_prev);CHKERRQ(ierr);
   ierr = PetscFree((*event)->fvalue_right);CHKERRQ(ierr);
@@ -164,8 +164,10 @@ PetscErrorCode TSSetEventHandler(TS ts,PetscInt nevents,PetscInt direction[],Pet
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidIntPointer(direction,2);
-  PetscValidIntPointer(terminate,3);
+  if(nevents) {
+    PetscValidIntPointer(direction,2);
+    PetscValidIntPointer(terminate,3);
+  }
 
   ierr = PetscNewLog(ts,&event);CHKERRQ(ierr);
   ierr = PetscMalloc1(nevents,&event->fvalue);CHKERRQ(ierr);
@@ -204,12 +206,15 @@ PetscErrorCode TSSetEventHandler(TS ts,PetscInt nevents,PetscInt direction[],Pet
   for (i=0; i < event->recsize; i++) {
     ierr = PetscMalloc1(event->nevents,&event->recorder.eventidx[i]);CHKERRQ(ierr);
   }
+  /* Initialize the event recorder */
+  event->recorder.ctr = 0;
 
   for (i=0; i < event->nevents; i++) event->vtol[i] = tol;
   if (flg) {ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,"stdout",&event->monitor);CHKERRQ(ierr);}
 
   ierr = TSEventDestroy(&ts->event);CHKERRQ(ierr);
   ts->event = event;
+  ts->event->refct = 1;
   PetscFunctionReturn(0);
 }
 

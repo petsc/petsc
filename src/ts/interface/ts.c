@@ -2520,7 +2520,6 @@ PetscErrorCode  TSSetUp(TS ts)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (ts->setupcalled) PetscFunctionReturn(0);
 
-  ts->total_steps = 0;
   if (!((PetscObject)ts)->type_name) {
     ierr = TSGetIFunction(ts,NULL,&ifun,NULL);CHKERRQ(ierr);
     ierr = TSSetType(ts,ifun ? TSBEULER : TSEULER);CHKERRQ(ierr);
@@ -4182,14 +4181,18 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   if (ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"You must call TSSetExactFinalTime() or use -ts_exact_final_time <stepover,interpolate,matchstep> before calling TSSolve()");
   if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP && !ts->adapt) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Since TS is not adaptive you cannot use TS_EXACTFINALTIME_MATCHSTEP, suggest TS_EXACTFINALTIME_INTERPOLATE");
 
-  /* reset time step and iteration counters */
+  /* reset number of steps only when the step is not restarted. ARKIMEX
+     restarts the step after an event. Resetting these counters in such a case causes
+     TSTrajectory to incorrectly save the output files
+  */
+
   ts->steps             = 0;
   ts->ksp_its           = 0;
   ts->snes_its          = 0;
   ts->num_snes_failures = 0;
   ts->reject            = 0;
   ts->reason            = TS_CONVERGED_ITERATING;
-
+  
   ierr = TSViewFromOptions(ts,NULL,"-ts_view_pre");CHKERRQ(ierr);
 
   if (ts->ops->solve) { /* This private interface is transitional and should be removed when all implementations are updated. */
@@ -4200,13 +4203,15 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   } else { /* Step the requested number of timesteps. */
     if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
     else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
-    ierr = TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+ 
+    ierr = TSTrajectorySet(ts->trajectory,ts,ts->total_steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
     ierr = TSEventInitialize(ts->event,ts,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+    
     ts->steprollback = PETSC_FALSE;
     ts->steprestart  = PETSC_TRUE;
 
     while (!ts->reason) {
-      ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+      ierr = TSMonitor(ts,ts->total_steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
       if (!ts->steprollback) {
         ierr = TSPreStep(ts);CHKERRQ(ierr);
       }
@@ -4217,11 +4222,11 @@ PetscErrorCode TSSolve(TS ts,Vec u)
       ierr = TSPostEvaluate(ts);CHKERRQ(ierr);
       ierr = TSEventHandler(ts);CHKERRQ(ierr); /* The right-hand side may be changed due to event. Be careful with Any computation using the RHS information after this point. */
       if (!ts->steprollback) {
-        ierr = TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+        ierr = TSTrajectorySet(ts->trajectory,ts,ts->total_steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
         ierr = TSPostStep(ts);CHKERRQ(ierr);
       }
     }
-    ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+    ierr = TSMonitor(ts,ts->total_steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
 
     if (ts->exact_final_time == TS_EXACTFINALTIME_INTERPOLATE && ts->ptime > ts->max_time) {
       ierr = TSInterpolate(ts,ts->max_time,u);CHKERRQ(ierr);
@@ -8047,12 +8052,20 @@ PetscErrorCode  TSClone(TS tsin, TS *tsout)
 
   t->adapt = tsin->adapt;
   ierr = PetscObjectReference((PetscObject)t->adapt);CHKERRQ(ierr);
+  
+  t->trajectory = tsin->trajectory;
+  ierr = PetscObjectReference((PetscObject)t->trajectory);CHKERRQ(ierr);
+
+  t->event = tsin->event;
+  if (t->event) t->event->refct++;
 
   t->problem_type      = tsin->problem_type;
   t->ptime             = tsin->ptime;
+  t->ptime_prev        = tsin->ptime_prev;
   t->time_step         = tsin->time_step;
   t->max_time          = tsin->max_time;
   t->steps             = tsin->steps;
+  t->total_steps       = tsin->total_steps;
   t->max_steps         = tsin->max_steps;
   t->equation_type     = tsin->equation_type;
   t->atol              = tsin->atol;
