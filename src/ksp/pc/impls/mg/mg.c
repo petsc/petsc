@@ -685,20 +685,11 @@ PetscErrorCode PCSetUp_MG(PC pc)
       if (reuse == MAT_REUSE_MATRIX) {
         ierr = KSPGetOperators(mglevels[i]->smoothd,&A,&B);CHKERRQ(ierr);
       }
-      if (mglevels[i+1]->interpolate == mglevels[i+1]->restrct) {
-        if (doA) {
-          ierr = MatPtAP(dA,mglevels[i+1]->interpolate,reuse,1.0,&A);CHKERRQ(ierr);
-        }
-        if (doB) {
-          ierr = MatPtAP(dB,mglevels[i+1]->interpolate,reuse,1.0,&B);CHKERRQ(ierr);
-        }
-      } else {
-        if (doA) {
-          ierr = MatMatMatMult(mglevels[i+1]->restrct,dA,mglevels[i+1]->interpolate,reuse,1.0,&A);CHKERRQ(ierr);
-        }
-        if (doB) {
-          ierr = MatMatMatMult(mglevels[i+1]->restrct,dB,mglevels[i+1]->interpolate,reuse,1.0,&B);CHKERRQ(ierr);
-        }
+      if (doA) {
+        ierr = MatGalerkin(mglevels[i+1]->restrct,dA,mglevels[i+1]->interpolate,reuse,1.0,&A);CHKERRQ(ierr);
+      }
+      if (doB) {
+        ierr = MatGalerkin(mglevels[i+1]->restrct,dB,mglevels[i+1]->interpolate,reuse,1.0,&B);CHKERRQ(ierr);
       }
       /* the management of the PetscObjectReference() and PetscObjecDereference() below is rather delicate */
       if (!doA && dAeqdB) {

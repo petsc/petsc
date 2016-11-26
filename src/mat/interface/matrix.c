@@ -10603,3 +10603,67 @@ PetscErrorCode MatSubdomainsCreateCoalesce(Mat A,PetscInt N,PetscInt *n,IS *iss[
   ierr = MPI_Comm_free(&subcomm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "MatGalerkin"
+/*@
+   MatGalerkin - Constructs the coarse grid problem via Galerkin projection.
+
+   If the interpolation and restriction operators are the same, uses MatPtAP.
+   If they are not the same, use MatMatMatMult.
+
+   Once the coarse grid problem is constructed, correct for interpolation operators
+   that are not of full rank, which can legitimately happen in the case of non-nested
+   geometric multigrid.
+
+   Input Parameters:
++  restrct - restriction operator
+.  dA - fine grid matrix
+.  interpolate - interpolation operator
+.  reuse - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+-  fill - expected fill, use PETSC_DEFAULT if you do not have a good estimate
+
+   Output Parameters:
+.  A - the Galerkin coarse matrix
+
+   Options Database Key:
+.  -pc_mg_galerkin <both,pmat,mat,none>
+
+   Level: developer
+
+.keywords: MG, multigrid, Galerkin
+
+.seealso: MatPtAP(), MatMatMatMult()
+@*/
+PetscErrorCode  MatGalerkin(Mat restrct, Mat dA, Mat interpolate, MatReuse reuse, PetscReal fill, Mat *A)
+{
+  PetscErrorCode ierr;
+  IS zerodiag;
+  PetscInt zerosize;
+  Vec diag;
+
+  /* Construct the coarse grid matrix */
+  if (interpolate == restrct) {
+    ierr = MatPtAP(dA,interpolate,reuse,fill,A);CHKERRQ(ierr);
+  } else {
+    ierr = MatMatMatMult(restrct,dA,interpolate,reuse,fill,A);CHKERRQ(ierr);
+  }
+
+  /* If the interpolation matrix is not of full rank, A will have zero rows.
+     This can legitimately happen in the case of non-nested geometric multigrid.
+     In that event, we set the rows of the matrix to the rows of the identity,
+     ignoring the equations (as the RHS will also be zero). */
+
+  ierr = MatFindZeroDiagonals(*A, &zerodiag);CHKERRQ(ierr);
+  ierr = ISGetSize(zerodiag, &zerosize);CHKERRQ(ierr); /* get the number of zeros on the diagonal */
+  if (zerosize > 0) {
+    ierr = MatCreateVecs(*A, &diag, NULL);CHKERRQ(ierr);
+    ierr = MatGetDiagonal(*A, diag);CHKERRQ(ierr);
+    ierr = VecISSet(diag, zerodiag, 1.0);CHKERRQ(ierr);
+    ierr = MatDiagonalSet(*A, diag, INSERT_VALUES);CHKERRQ(ierr);
+    ierr = VecDestroy(&diag);CHKERRQ(ierr);
+  }
+  ierr = ISDestroy(&zerodiag);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
