@@ -1241,7 +1241,7 @@ runex22:
 	   else printf "${PWD}\nPossible problem with ex22_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex22_1.tmp
 runex23:
-	-@${MPIEXEC} -n 1  ./ex23 > ex23_1.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1  ./ex23 -test_trans > ex23_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex23_1.out ex23_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex23_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex23_1.tmp
@@ -1256,7 +1256,7 @@ runex23_3:
 	   else printf "${PWD}\nPossible problem with ex23_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex23_3.tmp
 runex23_4:
-	-@${MPIEXEC} -n 6  ./ex23 -m 9 -n 12 -matis_convert_local_nest -nr 1 -nc 7 > ex23_4.tmp 2>&1;   \
+	-@${MPIEXEC} -n 6  ./ex23 -m 9 -n 12 -test_trans -nr 2 -nc 7 > ex23_4.tmp 2>&1;   \
 	   if (${DIFF} output/ex23_4.out ex23_4.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex23_4, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex23_4.tmp

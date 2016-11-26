@@ -62,6 +62,7 @@ PetscErrorCode MatDestroy_Transpose(Mat N)
 
   PetscFunctionBegin;
   ierr = MatDestroy(&Na->A);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)N,"MatTransposeGetMat_C",NULL);CHKERRQ(ierr);
   ierr = PetscFree(N->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -83,6 +84,46 @@ PetscErrorCode MatDuplicate_Transpose(Mat N, MatDuplicateOption op, Mat* m)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatTransposeGetMat_Transpose"
+PetscErrorCode MatTransposeGetMat_Transpose(Mat A,Mat *M)
+{
+  Mat_Transpose  *Aa = (Mat_Transpose*)A->data;
+
+  PetscFunctionBegin;
+  *M = Aa->A;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatTransposeGetMat"
+/*@
+      MatTransposeGetMat - Gets the Mat object stored inside a MATTRANSPOSEMAT'
+
+   Logically collective on Mat
+
+   Input Parameter:
+.   A  - the MATTRANSPOSE matrix
+
+   Output Parameter:
+.   M - the matrix object stored inside A
+
+   Level: intermediate
+
+.seealso: MatCreateTranspose()
+
+@*/
+PetscErrorCode MatTransposeGetMat(Mat A,Mat *M)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidType(A,1);
+  PetscValidPointer(M,2);
+  ierr = PetscUseMethod(A,"MatTransposeGetMat_C",(Mat,Mat*),(A,M));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateTranspose"
@@ -133,6 +174,7 @@ PetscErrorCode  MatCreateTranspose(Mat A,Mat *N)
   (*N)->ops->duplicate        = MatDuplicate_Transpose;
   (*N)->assembled             = PETSC_TRUE;
 
+  ierr = PetscObjectComposeFunction((PetscObject)(*N),"MatTransposeGetMat_C",MatTransposeGetMat_Transpose);CHKERRQ(ierr);
   ierr = MatSetBlockSizes(*N,PetscAbs(A->cmap->bs),PetscAbs(A->rmap->bs));CHKERRQ(ierr);
   ierr = MatSetUp(*N);CHKERRQ(ierr);
   PetscFunctionReturn(0);
