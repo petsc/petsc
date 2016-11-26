@@ -59,7 +59,12 @@ PetscErrorCode PetscSSLInitializeContext(SSL_CTX **octx)
     /* Set up a SIGPIPE handler */
     signal(SIGPIPE,sigpipe_handle);
 
-    ctx  = SSL_CTX_new(SSLv23_method());
+/* suggested at https://mta.openssl.org/pipermail/openssl-dev/2015-May/001449.html */
+#if (OPENSSL_VERSION_NUMBER >= 0x10100000L)
+    ctx  = SSL_CTX_new(TLS_client_method());
+#else
+    ctx  = SSL_CTX_new(SSLv23_client_method());
+#endif
     SSL_CTX_set_mode(ctx,SSL_MODE_AUTO_RETRY);
 
 #if defined(PETSC_USE_SSL_CERTIFICATE)
