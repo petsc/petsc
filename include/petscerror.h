@@ -894,7 +894,7 @@ PETSC_STATIC_INLINE PetscBool PetscStackActive(void) {return PETSC_FALSE;}
 
 */
 #define PetscStackCallStandard(func,args) do {                        \
-    PetscStackPush(#func);ierr = func args;PetscStackPop; if (ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in %s()",#func); \
+    PetscStackPush(#func);ierr = func args;PetscStackPop; if (ierr) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in %s(): error code %d",#func,(int)ierr); \
   } while (0)
 
 PETSC_EXTERN PetscErrorCode PetscStackCreate(void);

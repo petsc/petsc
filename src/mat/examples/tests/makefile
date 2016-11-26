@@ -16,7 +16,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                 ex88.c ex91.c ex92.c ex93.c ex94.c ex95.c ex96.c ex97.c ex98.c \
                 ex100.c ex101.c ex102.c  ex104.c ex106.c \
                 ex108.c ex109.c ex110.c ex111.c ex112.c ex113.c \
-                ex114.c ex116.c ex117.c ex118.c ex119.c ex120.c \
+                ex114.c ex115.c ex116.c ex117.c ex118.c ex119.c ex120.c \
                 ex121.c ex122.c ex124.c ex125.c ex127.c ex128.c \
                 ex129.c ex130.c ex131.c ex132.c ex133.c ex134.c ex135.c \
                 ex136.c ex137.c ex138.c ex139.c ex140.c ex141.c ex142.c \
@@ -2079,21 +2079,48 @@ runex114_3:
 	   else printf "${PWD}\nPossible problem with ex114_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex114_3.tmp
 
+runex115_1:
+	-@${MPIEXEC} -n 1  ./ex115 -N 11 -M 11 > ex115_1.tmp 2>&1; \
+	   if (${DIFF} output/ex115_1.out ex115_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex115_1, diffs above\n==============================\n"; fi; \
+	   ${RM} -f ex115_1.tmp
+
+runex115_2:
+	-@${MPIEXEC} -n 3  ./ex115 -N 13 -M 13 > ex115_2.tmp 2>&1; \
+	   if (${DIFF} output/ex115_2.out ex115_2.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex115_2, diffs above\n==============================\n"; fi; \
+	   ${RM} -f ex115_2.tmp
+
+runex115_3:
+	-@${MPIEXEC} -n 4  ./ex115 -M 13 -N 7 > ex115_3.tmp 2>&1; \
+	   if (${DIFF} output/ex115_3.out ex115_3.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex115_3, diffs above\n==============================\n"; fi; \
+	   ${RM} -f ex115_3.tmp
+
+runex115_4:
+	-@${MPIEXEC} -n 2  ./ex115 -M 12 -N 19 > ex115_4.tmp 2>&1; \
+	   if (${DIFF} output/ex115_4.out ex115_4.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex115_4, diffs above\n==============================\n"; fi; \
+	   ${RM} -f ex115_4.tmp
+
 runex120:
 	-@${MPIEXEC} -n 1 ./ex120 > ex120_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex120_1.out ex120_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex120_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex120_1.tmp
+
 runex120_2:
 	-@${MPIEXEC} -n 1 ./ex120 -test_zheevx > ex120.tmp 2>&1;   \
 	   if (${DIFF} output/ex120_2.out ex120.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex120_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex120.tmp
+
 runex120_3:
 	-@${MPIEXEC} -n 1 ./ex120 -test_zhegv > ex120.tmp 2>&1;   \
 	   if (${DIFF} output/ex120_3.out ex120.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex120_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex120.tmp
+
 runex120_4:
 	-@${MPIEXEC} -n 1 ./ex120 -test_zhegvx > ex120.tmp 2>&1;   \
 	   if (${DIFF} output/ex120_4.out ex120.tmp) then true; \
@@ -2889,5 +2916,6 @@ TESTEXAMPLES_SUPERLU_DIST_COMPLEX_DATAFILESPATH = ex125.PETSc runex125_superlu_d
 TESTEXAMPLES_F90               = ex196f90.PETSc ex196f90.rm
 TESTEXAMPLES_VECCUDA           = ex2.PETSc runex2_aijcusparse runex2_2_aijcusparse runex2_3_aijcusparse ex2.rm \
                                  ex5.PETSc runex5_aijcusparse runex5_2_aijcusparse runex5_3_aijcusparse ex5.rm
+TESTEXAMPLES_HYPRE             = ex115.PETSc runex115_1 runex115_2 runex115_3 runex115_4 ex115.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test

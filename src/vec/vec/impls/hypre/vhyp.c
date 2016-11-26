@@ -4,10 +4,8 @@
 */
 
 #include <petsc/private/vecimpl.h>          /*I "petscvec.h" I*/
-EXTERN_C_BEGIN
+#include <../src/vec/vec/impls/hypre/vhyp.h>
 #include <HYPRE.h>
-#include <HYPRE_parcsr_ls.h>
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "VecHYPRE_IJVectorCreate"
