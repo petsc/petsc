@@ -211,18 +211,15 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   ierr = VecGetArray(pcis->vec1_N,&array);CHKERRQ(ierr);
   for (i=0;i<pcis->n;i++){
     j = mat_graph->count[i]; /* RECALL: mat_graph->count[i] does not count myself */
-    if ( j > 0 ) {
-      n_boundary_dofs++;
-    }
+    if (j > 0) n_boundary_dofs++;
     skip_node = PETSC_FALSE;
-    if ( s < n_vertices && vertex_indices[s]==i) { /* it works for a sorted set of vertices */
+    if (s < n_vertices && vertex_indices[s] == i) { /* it works for a sorted set of vertices */
       skip_node = PETSC_TRUE;
       s++;
     }
-    if (j < 1) {
-      skip_node = PETSC_TRUE;
-    }
-    if ( !skip_node ) {
+    if (j < 1) skip_node = PETSC_TRUE;
+    if (mat_graph->special_dof[i] == PCBDDCGRAPH_DIRICHLET_MARK) skip_node = PETSC_TRUE;
+    if (!skip_node) {
       if (fully_redundant) {
         /* fully redundant set of lagrange multipliers */
         n_lambda_for_dof = (j*(j+1))/2;
@@ -240,6 +237,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
     }
   }
   ierr = VecRestoreArray(pcis->vec1_N,&array);CHKERRQ(ierr);
+  dual_size = partial_sum;
 
   /* compute global ordering of lagrange multipliers and associate l2g map */
   ierr = ISCreateGeneral(comm,partial_sum,aux_local_numbering_1,PETSC_COPY_VALUES,&subset_n);CHKERRQ(ierr);
@@ -510,6 +508,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
 
   if (test_fetidp && !pcbddc->use_deluxe_scaling) {
     Vec       test_vec,test_vec_p = NULL;
+    IS        dirdofs;
     PetscReal real_value;
 
     ierr = PetscViewerASCIIGetStdout(comm,&viewer);CHKERRQ(ierr);
@@ -578,6 +577,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
       ierr = VecScatterEnd(fetidpmat_ctx->g2g_p,pcis->vec1_global,fetidp_global,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecSum(fetidp_global,&scalar_value);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"B[%04d]: CHECK loc to glob (p): % 1.14e\n",rank,PetscRealPart(scalar_value));CHKERRQ(ierr);
+      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     }
     /******************************************************************/
     /* TEST C: It should holds B_delta*w=0, w\in\widehat{W}           */
@@ -610,9 +610,20 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
 
     /* compute a random vector in \widetilde{W} */
     ierr = VecSetRandom(pcis->vec1_N,NULL);CHKERRQ(ierr);
-    scalar_value = 0.0;  /* set zero at vertices */
+    /* set zero at vertices and essential dofs */
+    scalar_value = 0.0;
     ierr = VecGetArray(pcis->vec1_N,&array);CHKERRQ(ierr);
     for (i=0;i<n_vertices;i++) { array[vertex_indices[i]]=scalar_value; }
+    ierr = PCBDDCGraphGetDirichletDofs(pcbddc->mat_graph,&dirdofs);CHKERRQ(ierr);
+    if (dirdofs) {
+      const PetscInt *idxs;
+      PetscInt       ndir;
+
+      ierr = ISGetLocalSize(dirdofs,&ndir);CHKERRQ(ierr);
+      ierr = ISGetIndices(dirdofs,&idxs);CHKERRQ(ierr);
+      for (i=0;i<ndir;i++) { array[idxs[i]]=scalar_value; }
+      ierr = ISRestoreIndices(dirdofs,&idxs);CHKERRQ(ierr);
+    }
     ierr = VecRestoreArray(pcis->vec1_N,&array);CHKERRQ(ierr);
     /* store w for final comparison */
     ierr = VecDuplicate(pcis->vec1_B,&test_vec);CHKERRQ(ierr);
@@ -651,14 +662,24 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
 
     /******************************************************************/
-    /* TEST E: It should holds R_D^TP_Dw=0 w\in\widetilde{W}          */
+    /* TEST E: It should hold R_D^TP_Dw=0 w\in\widetilde{W}           */
     /* eq.48 Mandel Tezaur and Dohrmann 2005                          */
     /******************************************************************/
 
     ierr = VecSetRandom(pcis->vec1_N,NULL);CHKERRQ(ierr);
+    /* set zero at vertices and essential dofs */
+    scalar_value = 0.0;
     ierr = VecGetArray(pcis->vec1_N,&array);CHKERRQ(ierr);
-    scalar_value = 0.0;  /* set zero at vertices */
     for (i=0;i<n_vertices;i++) { array[vertex_indices[i]]=scalar_value; }
+    if (dirdofs) {
+      const PetscInt *idxs;
+      PetscInt       ndir;
+
+      ierr = ISGetLocalSize(dirdofs,&ndir);CHKERRQ(ierr);
+      ierr = ISGetIndices(dirdofs,&idxs);CHKERRQ(ierr);
+      for (i=0;i<ndir;i++) { array[idxs[i]]=scalar_value; }
+      ierr = ISRestoreIndices(dirdofs,&idxs);CHKERRQ(ierr);
+    }
     ierr = VecRestoreArray(pcis->vec1_N,&array);CHKERRQ(ierr);
 
     /* Jump operator P_D : results stored in pcis->vec1_B */
@@ -710,6 +731,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
       ierr = VecDestroy(&test_vec);CHKERRQ(ierr);
     }
     ierr = VecDestroy(&test_vec_p);CHKERRQ(ierr);
+    ierr = ISDestroy(&dirdofs);CHKERRQ(ierr);
   }
   /* final cleanup */
   ierr = VecDestroy(&fetidp_global);CHKERRQ(ierr);
