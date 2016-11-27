@@ -309,9 +309,8 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
       ierr = ISComplement(pP,rst,ren,&pPc);CHKERRQ(ierr);
       ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_pPc",(PetscObject)pPc);CHKERRQ(ierr);
 
-      /* local boundary but interface pressure */
-      ierr = ISComplement(II,0,n,&Pall);CHKERRQ(ierr);
-      ierr = ISDifference(Pall,lP,&BB);CHKERRQ(ierr);
+      /* local boundary */
+      ierr = ISComplement(II,0,n,&BB);CHKERRQ(ierr);
       ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_BB",(PetscObject)BB);CHKERRQ(ierr);
       ierr = ISDestroy(&Pall);CHKERRQ(ierr);
     } else {
@@ -323,8 +322,12 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
     }
 
     /* Set operator for inner BDDC */
-    ierr = MatGetSubMatrix(A,pPc,pPc,MAT_INITIAL_MATRIX,&nA);CHKERRQ(ierr);
+    ierr = MatDuplicate(A,MAT_COPY_VALUES,&nA);CHKERRQ(ierr);
+    ierr = MatSetOption(nA,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = MatZeroRowsColumnsIS(nA,pP,1.,NULL,NULL);CHKERRQ(ierr);
     ierr = PCSetOperators(fetidp->innerbddc,nA,nA);CHKERRQ(ierr);
+    /* TODO preserve user-defined */
+    ierr = PCBDDCSetDirichletBoundaries(fetidp->innerbddc,pP);CHKERRQ(ierr);
     ierr = MatDestroy(&nA);CHKERRQ(ierr);
     /* non-zero rhs on interior dofs when applying the preconditioner */
     pcbddc->switch_static = PETSC_TRUE;
@@ -425,6 +428,7 @@ static PetscErrorCode KSPSolve_FETIDP(KSP ksp)
   Mat            F;
   Vec            X,B,Xl,Bl;
   KSP_FETIDP     *fetidp = (KSP_FETIDP*)ksp->data;
+  PC_BDDC        *pcbddc = (PC_BDDC*)fetidp->innerbddc->data;
 
   PetscFunctionBegin;
   ierr = KSPGetRhs(ksp,&B);CHKERRQ(ierr);
@@ -444,6 +448,10 @@ static PetscErrorCode KSPSolve_FETIDP(KSP ksp)
   ierr = KSPGetIterationNumber(fetidp->innerksp,&ksp->its);CHKERRQ(ierr);
   ksp->totalits += ksp->its;
   ierr = KSPGetResidualHistory(fetidp->innerksp,NULL,&ksp->res_hist_len);CHKERRQ(ierr);
+  /* restore defaults for inner BDDC (Pre/PostSolve flags) */
+  pcbddc->temp_solution_used        = PETSC_FALSE;
+  pcbddc->rhs_change                = PETSC_FALSE;
+  pcbddc->exact_dirichlet_trick_app = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 

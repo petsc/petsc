@@ -195,9 +195,7 @@ struct _FETIDPMat_ctx {
   Mat        Bt_BI;
   Mat        C;
   VecScatter l2g_p;
-  VecScatter g2g;
   VecScatter g2g_p;
-  Vec        work;
   Vec        vP;
   Vec        xPg;
   Vec        yPg;
