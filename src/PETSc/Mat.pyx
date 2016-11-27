@@ -1265,6 +1265,17 @@ cdef class Mat(Object):
         CHKERR( MatTransposeMatMult(self.mat, mat.mat, reuse, rval, &result.mat) )
         return result
 
+    def PtAP(self, Mat P not None, Mat result=None, fill=None):
+        cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX
+        cdef PetscReal cfill = PETSC_DEFAULT
+        if result is None:
+            result = Mat()
+        elif result.mat != NULL:
+            reuse = MAT_REUSE_MATRIX
+        if fill is not None: cfill = asReal(fill)
+        CHKERR( MatPtAP(self.mat, P.mat, reuse, cfill, &result.mat) )
+        return result
+
     # XXX factorization
 
     def getOrdering(self, ord_type):
