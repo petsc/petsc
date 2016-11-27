@@ -777,6 +777,22 @@ PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat fetimat, FETIDPPC_ctx fetidppc_ctx
     fetidppc_ctx->yPg = mat_ctx->yPg;
     ierr = PetscObjectQuery((PetscObject)fetidppc_ctx->pc,"__KSPFETIDP_PPmat",(PetscObject*)&PPmat);CHKERRQ(ierr);
     ierr = PetscObjectQuery((PetscObject)fetidppc_ctx->pc,"__KSPFETIDP_PAmat",(PetscObject*)&PAmat);CHKERRQ(ierr);
+    if (!PAmat) { /* Just use the identity */
+      PetscInt M,N,m,n;
+
+      ierr = VecGetSize(mat_ctx->xPg,&N);CHKERRQ(ierr);
+      ierr = VecGetLocalSize(mat_ctx->xPg,&n);CHKERRQ(ierr);
+      ierr = VecGetSize(mat_ctx->yPg,&M);CHKERRQ(ierr);
+      ierr = VecGetLocalSize(mat_ctx->yPg,&m);CHKERRQ(ierr);
+      ierr = MatCreate(PetscObjectComm((PetscObject)fetimat),&PAmat);CHKERRQ(ierr);
+      ierr = MatSetSizes(PAmat,m,n,M,N);CHKERRQ(ierr);
+      ierr = MatSetType(PAmat,MATAIJ);CHKERRQ(ierr);
+      ierr = MatMPIAIJSetPreallocation(PAmat,1,NULL,0,NULL);CHKERRQ(ierr);
+      ierr = MatSeqAIJSetPreallocation(PAmat,1,NULL);CHKERRQ(ierr);
+      ierr = MatAssemblyBegin(PAmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(PAmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatShift(PAmat,1.);CHKERRQ(ierr);
+    }
     ierr = KSPCreate(PetscObjectComm((PetscObject)fetidppc_ctx->pc),&fetidppc_ctx->kP);CHKERRQ(ierr);
     ierr = KSPSetOperators(fetidppc_ctx->kP,PAmat,PPmat);CHKERRQ(ierr);
     ierr = KSPSetOptionsPrefix(fetidppc_ctx->kP,"fetidp_pmass_");CHKERRQ(ierr);
@@ -914,7 +930,6 @@ PetscErrorCode FETIDPPCApply(PC fetipc, Vec x, Vec y)
     ierr = VecPlaceArray(pc_ctx->xPg,lx);CHKERRQ(ierr);
     ierr = VecPlaceArray(pc_ctx->yPg,ly);CHKERRQ(ierr);
     ierr = KSPSolve(pc_ctx->kP,pc_ctx->xPg,pc_ctx->yPg);CHKERRQ(ierr);
-    ierr = VecCopy(pc_ctx->xPg,pc_ctx->yPg);CHKERRQ(ierr);
     ierr = VecResetArray(pc_ctx->xPg);CHKERRQ(ierr);
     ierr = VecResetArray(pc_ctx->yPg);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(x,&lx);CHKERRQ(ierr);
