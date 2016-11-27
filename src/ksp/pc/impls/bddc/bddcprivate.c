@@ -4393,7 +4393,7 @@ PetscErrorCode PCBDDCComputeLocalMatrix(PC pc, Mat ChangeOfBasisMatrix)
 {
   Mat_IS*        matis = (Mat_IS*)pc->pmat->data;
   PC_BDDC*       pcbddc = (PC_BDDC*)pc->data;
-  Mat            new_mat;
+  Mat            new_mat,lA;
   IS             is_local,is_global;
   PetscInt       local_size;
   PetscBool      isseqaij;
@@ -4457,11 +4457,20 @@ PetscErrorCode PCBDDCComputeLocalMatrix(PC pc, Mat ChangeOfBasisMatrix)
     ierr = VecDestroy(&x_change);CHKERRQ(ierr);
   }
 
+  /* lA is present if we are setting up an inner BDDC for a saddle point FETI-DP */
+  ierr = PetscObjectQuery((PetscObject)pc,"__KSPFETIDP_lA" ,(PetscObject*)&lA);CHKERRQ(ierr);
+
   /* TODO: HOW TO WORK WITH BAIJ and SBAIJ and SEQDENSE? */
   ierr = PetscObjectTypeCompare((PetscObject)matis->A,MATSEQAIJ,&isseqaij);CHKERRQ(ierr);
   if (isseqaij) {
     ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
     ierr = MatPtAP(matis->A,new_mat,MAT_INITIAL_MATRIX,2.0,&pcbddc->local_mat);CHKERRQ(ierr);
+    if (lA) {
+      Mat work;
+      ierr = MatPtAP(lA,new_mat,MAT_INITIAL_MATRIX,2.0,&work);CHKERRQ(ierr);
+      ierr = PetscObjectCompose((PetscObject)pc,"__KSPFETIDP_lA" ,(PetscObject)work);CHKERRQ(ierr);
+      ierr = MatDestroy(&work);CHKERRQ(ierr);
+    }
   } else {
     Mat work_mat;
 
@@ -4469,6 +4478,13 @@ PetscErrorCode PCBDDCComputeLocalMatrix(PC pc, Mat ChangeOfBasisMatrix)
     ierr = MatConvert(matis->A,MATSEQAIJ,MAT_INITIAL_MATRIX,&work_mat);CHKERRQ(ierr);
     ierr = MatPtAP(work_mat,new_mat,MAT_INITIAL_MATRIX,2.0,&pcbddc->local_mat);CHKERRQ(ierr);
     ierr = MatDestroy(&work_mat);CHKERRQ(ierr);
+    if (lA) {
+      Mat work;
+      ierr = MatConvert(lA,MATSEQAIJ,MAT_INITIAL_MATRIX,&work_mat);CHKERRQ(ierr);
+      ierr = MatPtAP(work_mat,new_mat,MAT_INITIAL_MATRIX,2.0,&work);CHKERRQ(ierr);
+      ierr = PetscObjectCompose((PetscObject)pc,"__KSPFETIDP_lA" ,(PetscObject)work);CHKERRQ(ierr);
+      ierr = MatDestroy(&work);CHKERRQ(ierr);
+    }
   }
   if (matis->A->symmetric_set) {
     ierr = MatSetOption(pcbddc->local_mat,MAT_SYMMETRIC,matis->A->symmetric);CHKERRQ(ierr);

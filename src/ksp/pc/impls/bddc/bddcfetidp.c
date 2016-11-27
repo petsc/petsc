@@ -118,7 +118,6 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   PetscBool      test_fetidp;
   PetscViewer    viewer;
   /* saddlepoint */
-  Mat                    oA;
   ISLocalToGlobalMapping l2gmap_p;
   PetscLayout            play;
   IS                     gP,pP;
@@ -137,13 +136,8 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   pP       = NULL;
   l2gmap_p = NULL;
   play     = NULL;
-  oA       = NULL;
-  ierr = PetscObjectQuery((PetscObject)fetidpmat_ctx->pc,"__KSPFETIDP_A",(PetscObject*)&oA);CHKERRQ(ierr);
-  if (oA) { /* oA is the original matrix */
-    /* pressures in parallel layout of oA */
-    ierr = PetscObjectQuery((PetscObject)fetidpmat_ctx->pc,"__KSPFETIDP_pP",(PetscObject*)&pP);CHKERRQ(ierr);
-    if (!pP) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"pP not present");
-
+  ierr = PetscObjectQuery((PetscObject)fetidpmat_ctx->pc,"__KSPFETIDP_pP",(PetscObject*)&pP);CHKERRQ(ierr);
+  if (pP) { /* saddle point */
     /* subdomain pressures in global numbering */
     ierr = PetscObjectQuery((PetscObject)fetidpmat_ctx->pc,"__KSPFETIDP_gP",(PetscObject*)&gP);CHKERRQ(ierr);
     if (!gP) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"gP not present");
