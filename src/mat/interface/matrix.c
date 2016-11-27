@@ -10227,7 +10227,7 @@ PetscErrorCode MatRestoreLocalSubMatrix(Mat mat,IS isrow,IS iscol,Mat *submat)
 #undef __FUNCT__
 #define __FUNCT__ "MatFindZeroDiagonals"
 /*@
-   MatFindZeroDiagonals - Finds all the rows of a matrix that have zero or no entry in the matrix
+   MatFindZeroDiagonals - Finds all the rows of a matrix that have zero or no diagonal entry in the matrix
 
    Collective on Mat
 
