@@ -133,8 +133,6 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computesolvers)
   PC_IS          *pcis  = (PC_IS*)(pc->data);
   Mat_IS         *matis;
   MatReuse       reuse;
-  Mat            lA;
-  IS             lP;
   PetscErrorCode ierr;
   PetscBool      flg,issbaij;
   Vec            counter;
@@ -258,33 +256,6 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computesolvers)
     ierr = MatGetSubMatrix(newmat,pcis->is_I_local,pcis->is_B_local,reuse,&pcis->A_IB);CHKERRQ(ierr);
     ierr = MatGetSubMatrix(newmat,pcis->is_B_local,pcis->is_I_local,reuse,&pcis->A_BI);CHKERRQ(ierr);
     ierr = MatDestroy(&newmat);CHKERRQ(ierr);
-  }
-  /* interface pressure block row for B_C */
-  ierr = PetscObjectQuery((PetscObject)pc,"__KSPFETIDP_lP" ,(PetscObject*)&lP);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject)pc,"__KSPFETIDP_lA" ,(PetscObject*)&lA);CHKERRQ(ierr);
-  if (lA && lP) {
-    Mat       B_BI,B_BB,Bt_BI,Bt_BB;
-    PetscBool issym;
-    ierr = MatIsSymmetric(lA,PETSC_SMALL,&issym);CHKERRQ(ierr);
-    if (issym) { /* symmetric elimination of essential dofs */
-      ierr = MatGetSubMatrix(lA,lP,pcis->is_I_local,MAT_INITIAL_MATRIX,&B_BI);CHKERRQ(ierr);
-      ierr = MatGetSubMatrix(lA,lP,pcis->is_B_local,MAT_INITIAL_MATRIX,&B_BB);CHKERRQ(ierr);
-      ierr = MatCreateTranspose(B_BI,&Bt_BI);CHKERRQ(ierr);
-      ierr = MatCreateTranspose(B_BB,&Bt_BB);CHKERRQ(ierr);
-    } else {
-      ierr = MatGetSubMatrix(lA,pcis->is_I_local,lP,MAT_INITIAL_MATRIX,&Bt_BI);CHKERRQ(ierr);
-      ierr = MatGetSubMatrix(lA,pcis->is_B_local,lP,MAT_INITIAL_MATRIX,&Bt_BB);CHKERRQ(ierr);
-      ierr = MatCreateTranspose(Bt_BI,&B_BI);CHKERRQ(ierr);
-      ierr = MatCreateTranspose(Bt_BB,&B_BB);CHKERRQ(ierr);
-    }
-    ierr = PetscObjectCompose((PetscObject)pc,"__KSPFETIDP_B_BI",(PetscObject)B_BI);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject)pc,"__KSPFETIDP_B_BB",(PetscObject)B_BB);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject)pc,"__KSPFETIDP_Bt_BI",(PetscObject)Bt_BI);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject)pc,"__KSPFETIDP_Bt_BB",(PetscObject)Bt_BB);CHKERRQ(ierr);
-    ierr = MatDestroy(&B_BI);CHKERRQ(ierr);
-    ierr = MatDestroy(&B_BB);CHKERRQ(ierr);
-    ierr = MatDestroy(&Bt_BI);CHKERRQ(ierr);
-    ierr = MatDestroy(&Bt_BB);CHKERRQ(ierr);
   }
 
   /* Creating scaling vector D */
