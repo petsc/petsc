@@ -881,6 +881,23 @@ PetscErrorCode FETIDPPCApply(PC fetipc, Vec x, Vec y)
   ierr = VecSet(y,0.0);CHKERRQ(ierr);
   ierr = VecScatterBegin(pc_ctx->l2g_lambda,pc_ctx->lambda_local,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(pc_ctx->l2g_lambda,pc_ctx->lambda_local,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  /* interface pressure preconditioner */
+  if (pc_ctx->kP) {
+    const PetscScalar *lx;
+    PetscScalar *ly;
+
+    /* pressures ordered first in x and y */
+    ierr = VecGetArrayRead(x,&lx);CHKERRQ(ierr);
+    ierr = VecGetArray(y,&ly);CHKERRQ(ierr);
+    ierr = VecPlaceArray(pc_ctx->xPg,lx);CHKERRQ(ierr);
+    ierr = VecPlaceArray(pc_ctx->yPg,ly);CHKERRQ(ierr);
+    ierr = KSPSolve(pc_ctx->kP,pc_ctx->xPg,pc_ctx->yPg);CHKERRQ(ierr);
+    ierr = VecCopy(pc_ctx->xPg,pc_ctx->yPg);CHKERRQ(ierr);
+    ierr = VecResetArray(pc_ctx->xPg);CHKERRQ(ierr);
+    ierr = VecResetArray(pc_ctx->yPg);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(x,&lx);CHKERRQ(ierr);
+    ierr = VecRestoreArray(y,&ly);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
