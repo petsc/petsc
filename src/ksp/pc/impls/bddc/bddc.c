@@ -2373,10 +2373,8 @@ static PetscErrorCode PCBDDCMatFETIDPGetSolution_BDDC(Mat fetidp_mat, Vec fetidp
   }
   ierr = PCPostSolve_BDDC(mat_ctx->pc,NULL,NULL,standard_sol);CHKERRQ(ierr);
   if (mat_ctx->g2g_p) {
-    ierr = VecScale(fetidp_flux_sol,-1.);CHKERRQ(ierr);
     ierr = VecScatterBegin(mat_ctx->g2g_p,fetidp_flux_sol,standard_sol,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(mat_ctx->g2g_p,fetidp_flux_sol,standard_sol,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScale(fetidp_flux_sol,-1.);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
