@@ -3611,27 +3611,24 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
   }
 
   if (!pcbddc->coarse_phi_B) {
-    PetscScalar *marray;
+    PetscScalar *marr;
 
+    /* memory size */
     n = n_B*pcbddc->local_primal_size;
+    if (pcbddc->switch_static || pcbddc->dbg_flag) n += n_D*pcbddc->local_primal_size;
+    if (!pcbddc->symmetric_primal) n *= 2;
+    ierr  = PetscCalloc1(n,&marr);CHKERRQ(ierr);
+    ierr  = MatCreateSeqDense(PETSC_COMM_SELF,n_B,pcbddc->local_primal_size,marr,&pcbddc->coarse_phi_B);CHKERRQ(ierr);
+    marr += n_B*pcbddc->local_primal_size;
     if (pcbddc->switch_static || pcbddc->dbg_flag) {
-      n += n_D*pcbddc->local_primal_size;
+      ierr  = MatCreateSeqDense(PETSC_COMM_SELF,n_D,pcbddc->local_primal_size,marr,&pcbddc->coarse_phi_D);CHKERRQ(ierr);
+      marr += n_D*pcbddc->local_primal_size;
     }
     if (!pcbddc->symmetric_primal) {
-      n *= 2;
-    }
-    ierr = PetscCalloc1(n,&marray);CHKERRQ(ierr);
-    ierr = MatCreateSeqDense(PETSC_COMM_SELF,n_B,pcbddc->local_primal_size,marray,&pcbddc->coarse_phi_B);CHKERRQ(ierr);
-    n = n_B*pcbddc->local_primal_size;
-    if (pcbddc->switch_static || pcbddc->dbg_flag) {
-      ierr = MatCreateSeqDense(PETSC_COMM_SELF,n_D,pcbddc->local_primal_size,marray+n,&pcbddc->coarse_phi_D);CHKERRQ(ierr);
-      n += n_D*pcbddc->local_primal_size;
-    }
-    if (!pcbddc->symmetric_primal) {
-      ierr = MatCreateSeqDense(PETSC_COMM_SELF,n_B,pcbddc->local_primal_size,marray+n,&pcbddc->coarse_psi_B);CHKERRQ(ierr);
+      ierr  = MatCreateSeqDense(PETSC_COMM_SELF,n_B,pcbddc->local_primal_size,marr,&pcbddc->coarse_psi_B);CHKERRQ(ierr);
+      marr += n_B*pcbddc->local_primal_size;
       if (pcbddc->switch_static || pcbddc->dbg_flag) {
-        n = n_B*pcbddc->local_primal_size;
-        ierr = MatCreateSeqDense(PETSC_COMM_SELF,n_D,pcbddc->local_primal_size,marray+n,&pcbddc->coarse_psi_D);CHKERRQ(ierr);
+        ierr = MatCreateSeqDense(PETSC_COMM_SELF,n_D,pcbddc->local_primal_size,marr,&pcbddc->coarse_psi_D);CHKERRQ(ierr);
       }
     } else {
       ierr = PetscObjectReference((PetscObject)pcbddc->coarse_phi_B);CHKERRQ(ierr);
@@ -4076,6 +4073,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
     ierr = MatDestroy(&B_V);CHKERRQ(ierr);
     ierr = MatDestroy(&B_C);CHKERRQ(ierr);
   }
+
   /* free memory */
   ierr = PetscFree(idx_V_B);CHKERRQ(ierr);
   ierr = MatDestroy(&S_VV);CHKERRQ(ierr);
