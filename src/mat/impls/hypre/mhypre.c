@@ -774,6 +774,9 @@ static PetscErrorCode MatSetUp_HYPRE(Mat A)
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
+  if (!A->preallocated) {
+    ierr = MatHYPRESetPreallocation(A,PETSC_DEFAULT,NULL,PETSC_DEFAULT,NULL);CHKERRQ(ierr);
+  }
   if (hA->x) PetscFunctionReturn(0);
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
@@ -856,11 +859,12 @@ static PetscErrorCode MatHYPRESetPreallocation_HYPRE(Mat A, PetscInt dnz, const 
 {
   Mat_HYPRE          *hA = (Mat_HYPRE*)A->data;
   HYPRE_Int          *hdnnz,*honnz;
-  PetscInt           i,rs,re,cs,ce;
+  PetscInt           i,rs,re,cs,ce,bs;
   PetscMPIInt        size;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
+  ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
   rs   = A->rmap->rstart;
@@ -877,6 +881,9 @@ static PetscErrorCode MatHYPRESetPreallocation_HYPRE(Mat A, PetscInt dnz, const 
     if (hce-hcs+1 != ce -cs) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inconsistent local cols: IJMatrix [%D,%D), PETSc [%D,%d)",hcs,hce+1,cs,ce);
   }
   PetscStackCallStandard(HYPRE_IJMatrixInitialize,(hA->ij));
+
+  if (dnz == PETSC_DEFAULT || dnz == PETSC_DECIDE) dnz = 10*bs;
+  if (onz == PETSC_DEFAULT || onz == PETSC_DECIDE) onz = 10*bs;
 
   if (!dnnz) {
     ierr = PetscMalloc1(A->rmap->n,&hdnnz);CHKERRQ(ierr);
@@ -903,7 +910,7 @@ static PetscErrorCode MatHYPRESetPreallocation_HYPRE(Mat A, PetscInt dnz, const 
   if (!onnz && honnz) {
     ierr = PetscFree(honnz);CHKERRQ(ierr);
   }
-  ierr = MatSetUp(A);CHKERRQ(ierr);
+  A->preallocated = PETSC_TRUE;
 
   /* SetDiagOffdSizes sets hypre_AuxParCSRMatrixNeedAux(aux_matrix) = 0 */
   {
@@ -911,6 +918,8 @@ static PetscErrorCode MatHYPRESetPreallocation_HYPRE(Mat A, PetscInt dnz, const 
     aux_matrix = (hypre_AuxParCSRMatrix*)hypre_IJMatrixTranslator(hA->ij);
     hypre_AuxParCSRMatrixNeedAux(aux_matrix) = 1;
   }
+
+  ierr = MatSetUp(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
