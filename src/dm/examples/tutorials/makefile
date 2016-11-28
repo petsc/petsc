@@ -125,6 +125,11 @@ runex5_2:
 	   if (${DIFF} output/ex5_2.out ex5_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex5_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5_2.tmp
+runex7:
+	-@${MPIEXEC} -n 1 ./ex7  > ex7.tmp 2>&1;   \
+	   if (${DIFF} output/ex7.out ex7.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex7, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex7.tmp output_file output_file.info
 runex9:
 	-@${MPIEXEC} -n 4 ./ex9
 	-@${MPIEXEC} -n 4 ./ex9 -ndof 2
