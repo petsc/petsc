@@ -374,8 +374,10 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         ierr = PCBDDCSetDirichletBoundariesLocal(fetidp->innerbddc,isout);CHKERRQ(ierr);
         ierr = ISDestroy(&isout);CHKERRQ(ierr);
       } else if (pcbddc->DirichletBoundaries) {
-        IS list[] = {pP,pcbddc->DirichletBoundaries},isout;
+        IS list[2],isout;
 
+        list[0] = pP;
+        list[1] = pcbddc->DirichletBoundaries;
         ierr = ISConcatenate(PetscObjectComm((PetscObject)ksp),2,list,&isout);CHKERRQ(ierr);
         ierr = PCBDDCSetDirichletBoundaries(fetidp->innerbddc,isout);CHKERRQ(ierr);
         ierr = ISDestroy(&isout);CHKERRQ(ierr);
