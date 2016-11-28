@@ -1,19 +1,27 @@
 #define PETSC_USE_FORTRAN_MODULES
 
-        module petscmatdef
+        module petscmatdefdummy
         use petscvecdef
 #include <../src/mat/f90-mod/petscmat.h>
-        interface operator(.ne.)
-          procedure matnotequal
-        end interface operator (.ne.)
+        end module
 
-        contains
+        module petscmatdef
+        use petscmatdefdummy
+        interface operator(.ne.)
           function matnotequal(A,B)
+            use petscmatdefdummy
+            logical matnotequal
+            type(tMat), intent(in) :: A,B
+          end function
+        end interface operator (.ne.)
+        end module
+
+        function matnotequal(A,B)
+          use petscmatdefdummy
           logical matnotequal
           type(tMat), intent(in) :: A,B
           matnotequal = (A%v .ne. B%v)
-          end function
-        end module
+        end function
 
         module petscmat
         use petscmatdef

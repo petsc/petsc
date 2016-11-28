@@ -484,7 +484,7 @@
  20   continue
       call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
-      if (A%v .ne. jac%v) then
+      if (A .ne. jac) then
          call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
          call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
       endif

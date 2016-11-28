@@ -56,6 +56,7 @@ native TSConvergedReason
 native BCArrayPart
 native PetscLogDouble
 native PetscInt
+native PetscObjectID
 native PetscMPIInt
 native PetscErrorCode
 native PetscCookie
