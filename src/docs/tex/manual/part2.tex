@@ -6313,11 +6313,11 @@ Figure \ref{fig_make1} shows a sample makefile that can be used for
 PETSc programs.  In this makefile, one can compile and run a debugging version
 of the Fortran program \trl{ex3.F} with the actions \trl{make}  \trl{ex3} and
 \trl{make} \trl{runex3}, respectively. The compilation command is restated below:
-\begin{lstlisting}
+\begin{makelisting}
 ex3: ex3.o 
        -${FLINKER}} -o ex3 ex3.o ${PETSC_LIB}
         ${RM} ex3.o
-\end{lstlisting}
+\end{makelisting}
 
 \subsection{Routines with Different Fortran Interfaces}
 \label{sec_fortran_exceptions}
