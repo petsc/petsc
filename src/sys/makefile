@@ -1,8 +1,8 @@
 
 ALL: lib
 SOURCEH   =
-DIRS      = classes  error dll fileio memory objects time utils logging mpiuni \
-	    examples info fsrc f90-src f90-mod python ams totalview yaml \
+DIRS      = f90-mod classes  error dll fileio memory objects time utils logging mpiuni \
+	    examples info fsrc f90-src python ams totalview yaml \
             webclient
 LOCDIR    = src/sys/
 MANSEC    = Sys
