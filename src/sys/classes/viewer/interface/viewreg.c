@@ -104,6 +104,84 @@ PetscErrorCode PetscOptionsHelpPrintedCheck(PetscOptionsHelpPrinted hp,const cha
   PetscFunctionReturn(0);
 }
 
+static PetscBool noviewer = PETSC_FALSE;
+static PetscBool noviewers[PETSCVIEWERGETVIEWEROFFPUSHESMAX];
+static PetscInt  inoviewers = 0;
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscOptionsPushGetViewerOff"
+/*@
+  PetscOptionsPushGetViewerOff - control whether PetscOptionsGetViewer returns a viewer.
+
+  Logically Collective
+
+  Input Parameter:
+. flg - PETSC_TRUE to turn off viewer creation, PETSC_FALSE to turn it on.
+
+  Level: developer
+
+  Notes: Calling XXXViewFromOptions in an inner loop can be very expensive.  This can appear, for example, when using
+   many small subsolves.  Call this function to control viewer creation in PetscOptionsGetViewer, thus removing the expensive XXXViewFromOptions calls.
+
+.seealso: PetscOptionsGetViewer(), PetscOptionsPopGetViewerOff()
+@*/
+PetscErrorCode  PetscOptionsPushGetViewerOff(PetscBool flg)
+{
+  PetscFunctionBegin;
+  if (inoviewers > PETSCVIEWERGETVIEWEROFFPUSHESMAX - 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many PetscOptionsPushGetViewerOff(), perhaps you forgot PetscOptionsPopGetViewerOff()?");
+
+  noviewers[inoviewers++] = noviewer;
+  noviewer = flg;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscOptionsPopGetViewerOff"
+/*@
+  PetscOptionsPopGetViewerOff - reset whether PetscOptionsGetViewer returns a viewer.
+
+  Logically Collective
+
+  Level: developer
+
+  Notes: Calling XXXViewFromOptions in an inner loop can be very expensive.  This can appear, for example, when using
+   many small subsolves.  Call this function to control viewer creation in PetscOptionsGetViewer, thus removing the expensive XXXViewFromOptions calls.
+
+.seealso: PetscOptionsGetViewer(), PetscOptionsPushGetViewerOff()
+@*/
+PetscErrorCode  PetscOptionsPopGetViewerOff()
+{
+  PetscFunctionBegin;
+  if (!inoviewers) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many PetscOptionsPopGetViewerOff(), perhaps you forgot PetscOptionsPushGetViewerOff()?");
+  noviewer = noviewers[--inoviewers];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscOptionsGetViewerOff"
+/*@
+  PetscOptionsGetViewerOff - does PetscOptionsGetViewer return a viewer?
+
+  Logically Collective
+
+  Output Parameter:
+. flg - whether viewers are returned.
+
+  Level: developer
+
+  Notes: Calling XXXViewFromOptions in an inner loop can be very expensive.  This can appear, for example, when using
+   many small subsolves.
+
+.seealso: PetscOptionsGetViewer(), PetscOptionsPushGetViewerOff(), PetscOptionsPopGetViewerOff()
+@*/
+PetscErrorCode  PetscOptionsGetViewerOff(PetscBool *flg)
+{
+  PetscFunctionBegin;
+  PetscValidPointer(flg,0);
+  *flg = noviewer;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsGetViewer"
 /*@C
@@ -134,6 +212,10 @@ $       saws[:communicatorname]                    publishes object to the Scien
 
    Use PetscViewerDestroy() after using the viewer, otherwise a memory leak will occur
 
+   You can control whether calls to this function create a viewer (or return early with *set of PETSC_FALSE) with
+   PetscOptionsPushGetViewerOff.  This is useful if calling many small subsolves, in which case XXXViewFromOptions can take
+   an appreciable fraction of the runtime.
+
    If PETSc is configured with --with-viewfromoptions=0 this function always returns with *set of PETSC_FALSE
 
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(),
@@ -142,7 +224,8 @@ $       saws[:communicatorname]                    publishes object to the Scien
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsFList(), PetscOptionsEList()
+          PetscOptionsFList(), PetscOptionsEList(), PetscOptionsPushGetViewerOff(), PetscOptionsPopGetViewerOff(),
+          PetscOptionsGetViewerOff()
 @*/
 PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char name[],PetscViewer *viewer,PetscViewerFormat *format,PetscBool  *set)
 {
@@ -157,6 +240,8 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
 #if defined(PETSC_SKIP_VIEWFROMOPTIONS)
   PetscFunctionReturn(0);
 #endif
+  ierr = PetscOptionsGetViewerOff(&flag);CHKERRQ(ierr);
+  if (flag) PetscFunctionReturn(0);
 
   ierr = PetscOptionsHasName(NULL,NULL,"-help",&hashelp);CHKERRQ(ierr);
   if (hashelp) {
