@@ -46,9 +46,8 @@ class Configure(config.package.GNUPackage):
     self.checkDownload()
 
   def configure(self):
-    if (self.framework.clArgDB.has_key('with-sowing') and not self.argDB['with-sowing']) or \
-          (self.framework.clArgDB.has_key('download-sowing') and not self.argDB['download-sowing']):
-      self.logPrint("Not checking sowing on user request\n")
+    if (self.framework.clArgDB.has_key('with-sowing') and not self.argDB['with-sowing']):
+      self.logPrint("Not checking sowing on user request of --with-sowing=0\n")
       return
 
     if self.framework.batchBodies:
