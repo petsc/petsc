@@ -6517,7 +6517,7 @@ PetscViewerPushFormat(viewer,PETSC_VIEWER_BINARY_MATLAB}
 \end{lstlisting}
 to dump both a PETSc binary file and a corresponding \trl{.info} file which 
 \lstinline{PetscReadBinaryMatlab.m} will use to format the binary file in more complex cases, such as using a \lstinline{DMDA}. 
-For an example, see \href{http://www.mcs.anl.gov/petsc/petsc-current/src/dm/examples/tutorials/ex7.c.html}{\trl{PETSC_DIR/src/dm/examples/tutorials/ex7.c}}.
+For an example, see \href{http://www.mcs.anl.gov/petsc/petsc-current/src/dm/examples/tutorials/ex7.c.html}{\trl{${PETSC_DIR}/src/dm/examples/tutorials/ex7.c}}.
 In MATLAB (R2015b), one may then generate a useful structure. For example:
 \begin{outputlisting}[\normalsize\ttfamily]
 setenv('PETSC_DIR','~/petsc');
@@ -6540,16 +6540,19 @@ and then sends matrices or vectors via
 VecView(Vec A,v);
 MatView(Mat B,v);
 \end{lstlisting}
-One can also send arrays or integer arrays via \lstinline{PetscIntView()}, \lstinline{PetscRealView()} and \break\lstinline{PetscScalarView()}.
+See Section \ref{sec_viewers} for more on PETSc viewers.
 One may start the MATLAB program manually or use the PETSc command
-\break \lstinline{PetscStartMATLAB(MPI_Comm,char *machine,char *script,FILE **fp)}; where \lstinline{machine} and \lstinline{script} may be \lstinline{NULL}.
-
-To receive the objects in MATLAB you must first make sure that \trl{${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/matlab}
-is in your MATLAB path. Use \lstinline{p = sopen;} (or \lstinline{p = sopen(portnum)} if you provided a port number in
-your call to \lstinline{PetscViewerSocketOpen()}), then \lstinline{a = PetscBinaryRead(p);} returns the object you have passed from PETSc.
-\lstinline{PetscBinaryRead()} may be called any number of times. Each call should correspond on the PETSc side with
-viewing a single vector or matrix. You many call \lstinline{sclose()} to close the connection from MATLAB.
+\lstinline{PetscStartMatlab(MPI_Comm,char *machine,char *script,FILE **fp)}; where \lstinline{machine} and \lstinline{script} may be \lstinline{NULL}.
 It is also possible to start your PETSc program from MATLAB via \lstinline{launch()}.
+
+To receive the objects in MATLAB, make sure that \trl{${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/matlab} and \trl{${PETSC_DIR}/share/petsc/matlab}
+are in the MATLAB path. Use \break\lstinline{p = PetscOpenSocket();} (or \lstinline{p = PetscOpenSocket(portnum)} if you provided a port number in
+your call to \lstinline{PetscViewerSocketOpen()}), and then \lstinline{a = PetscBinaryRead(p);} returns the object passed from PETSc.
+\lstinline{PetscBinaryRead()} may be called any number of times. Each call should correspond on the PETSc side with
+viewing a single vector or matrix. \lstinline{close()} closes the connection from MATLAB.
+On the PETSc side, one should destroy the viewer object with \lstinline{PetscViewerDestroy()}. 
+
+For an example, which includes sending data back to PETSc, see \href{http://www.mcs.anl.gov/petsc/petsc-current/src/vec/vec/examples/tutorials/ex42.c.html}{\trl{${PETSC_DIR}/src/vec/vec/examples/tutorials/ex42.c}} and the associated \trl{.m} file.
 
 \section{Using the MATLAB Compute Engine}
 \label{sec_matlabengine}
@@ -7661,13 +7664,7 @@ predefined viewers:
 \begin{lstlisting}
 PetscViewerSocketOpen(MPI_Comm comm,char *machine,int port,PetscViewer *viewer).
 \end{lstlisting}
-      On the MATLAB side, one must first run \lstinline{v = sreader(int port)}
-      and then \break\lstinline{A = PetscBinaryRead(v)} to obtain the matrix or vector. Once all
-      objects have been received, the port can be closed from the MATLAB end
-      with \lstinline{close(v)}. On the PETSc side, one should destroy
-      the viewer object with  \break\lstinline{PetscViewerDestroy()}. 
-      The corresponding MATLAB \trl{mex}
-      files are located in \trl{${PETSC_DIR}/src/sys/classes/viewer/impls/socket/matlab}.
+    For more, see Section \ref{sec_matlabsocket}.
 \end{itemize}
 
 The user can control the format of ASCII printed objects with viewers
