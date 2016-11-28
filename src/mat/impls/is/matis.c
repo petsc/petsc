@@ -446,6 +446,48 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_IS(Mat A,MatType type,MatReuse reuse
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatDiagonalScale_IS"
+static PetscErrorCode MatDiagonalScale_IS(Mat A, Vec l, Vec r)
+{
+  Mat_IS            *matis = (Mat_IS*)A->data;
+  Vec               ll,rr;
+  const PetscScalar *Y,*X;
+  PetscScalar       *x,*y;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = MatISSetUpSF(A);CHKERRQ(ierr);
+  if (l) {
+    ll   = matis->y;
+    ierr = VecGetArrayRead(l,&Y);CHKERRQ(ierr);
+    ierr = VecGetArray(ll,&y);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(matis->sf,MPIU_SCALAR,Y,y);CHKERRQ(ierr);
+  } else {
+    ll = NULL;
+  }
+  if (r) {
+    rr   = matis->x;
+    ierr = VecGetArrayRead(r,&X);CHKERRQ(ierr);
+    ierr = VecGetArray(rr,&x);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(matis->csf,MPIU_SCALAR,X,x);CHKERRQ(ierr);
+  } else {
+    rr = NULL;
+  }
+  if (ll) {
+    ierr = PetscSFBcastEnd(matis->sf,MPIU_SCALAR,Y,y);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(l,&Y);CHKERRQ(ierr);
+    ierr = VecRestoreArray(ll,&y);CHKERRQ(ierr);
+  }
+  if (rr) {
+    ierr = PetscSFBcastEnd(matis->csf,MPIU_SCALAR,X,x);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(r,&X);CHKERRQ(ierr);
+    ierr = VecRestoreArray(rr,&x);CHKERRQ(ierr);
+  }
+  ierr = MatDiagonalScale(matis->A,ll,rr);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatGetInfo_IS"
 static PetscErrorCode MatGetInfo_IS(Mat A,MatInfoType flag,MatInfo *ginfo)
 {
@@ -2252,6 +2294,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
   A->ops->shift                   = MatShift_IS;
   A->ops->transpose               = MatTranspose_IS;
   A->ops->getinfo                 = MatGetInfo_IS;
+  A->ops->diagonalscale           = MatDiagonalScale_IS;
 
   /* special MATIS functions */
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISGetLocalMat_C",MatISGetLocalMat_IS);CHKERRQ(ierr);

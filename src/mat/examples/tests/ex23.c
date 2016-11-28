@@ -17,7 +17,7 @@ int main(int argc,char **args)
   Mat                    A,B,A2,B2,T;
   Mat                    Aee,Aeo,Aoe,Aoo;
   Mat                    *mats;
-  Vec                    x;
+  Vec                    x,y;
   MatInfo                info;
   ISLocalToGlobalMapping cmap,rmap;
   IS                     is,is2,reven,rodd,ceven,codd;
@@ -115,6 +115,22 @@ int main(int argc,char **args)
   /* test MatISGetMPIXAIJ */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatISGetMPIXAIJ\n");CHKERRQ(ierr);
   ierr = CheckMat(A,B,"MatISGetMPIXAIJ");CHKERRQ(ierr);
+
+  /* test MatDiagonalScale */
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatDiagonalScale\n");CHKERRQ(ierr);
+  ierr = MatDuplicate(A,MAT_COPY_VALUES,&A2);CHKERRQ(ierr);
+  ierr = MatDuplicate(B,MAT_COPY_VALUES,&B2);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&x,&y);CHKERRQ(ierr);
+  ierr = VecSetRandom(x,NULL);CHKERRQ(ierr);
+  ierr = VecSetRandom(y,NULL);CHKERRQ(ierr);
+  ierr = VecScale(y,8.);CHKERRQ(ierr);
+  ierr = MatDiagonalScale(A2,y,x);CHKERRQ(ierr);
+  ierr = MatDiagonalScale(B2,y,x);CHKERRQ(ierr);
+  ierr = CheckMat(A2,B2,"MatDiagonalScale");CHKERRQ(ierr);
+  ierr = MatDestroy(&A2);CHKERRQ(ierr);
+  ierr = MatDestroy(&B2);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&y);CHKERRQ(ierr);
 
   /* test MatGetLocalSubMatrix */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatGetLocalSubMatrix\n");CHKERRQ(ierr);
