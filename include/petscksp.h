@@ -216,6 +216,7 @@ PETSC_EXTERN PetscErrorCode KSPGCRSetModifyPC(KSP,PetscErrorCode (*)(KSP,PetscIn
 PETSC_EXTERN PetscErrorCode KSPFETIDPGetInnerBDDC(KSP,PC*);
 PETSC_EXTERN PetscErrorCode KSPFETIDPSetInnerBDDC(KSP,PC);
 PETSC_EXTERN PetscErrorCode KSPFETIDPGetInnerKSP(KSP,KSP*);
+PETSC_EXTERN PetscErrorCode KSPFETIDPSetPressureOperators(KSP,Mat,Mat);
 /*E
     KSPGMRESCGSRefinementType - How the classical (unmodified) Gram-Schmidt is performed.
 

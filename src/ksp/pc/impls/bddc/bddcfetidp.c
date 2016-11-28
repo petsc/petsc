@@ -52,6 +52,7 @@ PetscErrorCode PCBDDCDestroyFETIDPMat(Mat A)
   ierr = MatDestroy(&mat_ctx->Bt_BB);CHKERRQ(ierr);
   ierr = MatDestroy(&mat_ctx->Bt_BI);CHKERRQ(ierr);
   ierr = MatDestroy(&mat_ctx->C);CHKERRQ(ierr);
+  ierr = VecDestroy(&mat_ctx->rhs_flip);CHKERRQ(ierr);
   ierr = VecDestroy(&mat_ctx->vP);CHKERRQ(ierr);
   ierr = VecDestroy(&mat_ctx->xPg);CHKERRQ(ierr);
   ierr = VecDestroy(&mat_ctx->yPg);CHKERRQ(ierr);
@@ -189,6 +190,11 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
     ierr = PetscObjectQuery((PetscObject)fetidpmat_ctx->pc,"__KSPFETIDP_Bt_BB",(PetscObject*)&fetidpmat_ctx->Bt_BB);CHKERRQ(ierr);
     if (!fetidpmat_ctx->Bt_BB) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Bt_BB not present");
     ierr = PetscObjectReference((PetscObject)fetidpmat_ctx->Bt_BB);CHKERRQ(ierr);
+
+    ierr = PetscObjectQuery((PetscObject)fetidpmat_ctx->pc,"__KSPFETIDP_flip" ,(PetscObject*)&fetidpmat_ctx->rhs_flip);CHKERRQ(ierr);
+    if (fetidpmat_ctx->rhs_flip) {
+      ierr = PetscObjectReference((PetscObject)fetidpmat_ctx->rhs_flip);CHKERRQ(ierr);
+    }
   }
 
   /* Default type of lagrange multipliers is non-redundant */
@@ -769,34 +775,12 @@ PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat fetimat, FETIDPPC_ctx fetidppc_ctx
   }
   /* saddle-point */
   if (mat_ctx->xPg) {
-    Mat PAmat = NULL,PPmat = NULL;
-
     ierr = PetscObjectReference((PetscObject)mat_ctx->xPg);CHKERRQ(ierr);
     fetidppc_ctx->xPg = mat_ctx->xPg;
     ierr = PetscObjectReference((PetscObject)mat_ctx->yPg);CHKERRQ(ierr);
     fetidppc_ctx->yPg = mat_ctx->yPg;
-    ierr = PetscObjectQuery((PetscObject)fetidppc_ctx->pc,"__KSPFETIDP_PPmat",(PetscObject*)&PPmat);CHKERRQ(ierr);
-    ierr = PetscObjectQuery((PetscObject)fetidppc_ctx->pc,"__KSPFETIDP_PAmat",(PetscObject*)&PAmat);CHKERRQ(ierr);
-    if (!PAmat) { /* Just use the identity */
-      PetscInt M,N,m,n;
-
-      ierr = VecGetSize(mat_ctx->xPg,&N);CHKERRQ(ierr);
-      ierr = VecGetLocalSize(mat_ctx->xPg,&n);CHKERRQ(ierr);
-      ierr = VecGetSize(mat_ctx->yPg,&M);CHKERRQ(ierr);
-      ierr = VecGetLocalSize(mat_ctx->yPg,&m);CHKERRQ(ierr);
-      ierr = MatCreate(PetscObjectComm((PetscObject)fetimat),&PAmat);CHKERRQ(ierr);
-      ierr = MatSetSizes(PAmat,m,n,M,N);CHKERRQ(ierr);
-      ierr = MatSetType(PAmat,MATAIJ);CHKERRQ(ierr);
-      ierr = MatMPIAIJSetPreallocation(PAmat,1,NULL,0,NULL);CHKERRQ(ierr);
-      ierr = MatSeqAIJSetPreallocation(PAmat,1,NULL);CHKERRQ(ierr);
-      ierr = MatAssemblyBegin(PAmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(PAmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      ierr = MatShift(PAmat,1.);CHKERRQ(ierr);
-    }
-    ierr = KSPCreate(PetscObjectComm((PetscObject)fetidppc_ctx->pc),&fetidppc_ctx->kP);CHKERRQ(ierr);
-    ierr = KSPSetOperators(fetidppc_ctx->kP,PAmat,PPmat);CHKERRQ(ierr);
-    ierr = KSPSetOptionsPrefix(fetidppc_ctx->kP,"fetidp_pmass_");CHKERRQ(ierr);
-    ierr = KSPSetFromOptions(fetidppc_ctx->kP);CHKERRQ(ierr);
+    ierr = PetscObjectQuery((PetscObject)fetidppc_ctx->pc,"__KSPFETIDP_PKSP",(PetscObject*)&fetidppc_ctx->kP);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)fetidppc_ctx->kP);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

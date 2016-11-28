@@ -199,6 +199,7 @@ struct _FETIDPMat_ctx {
   Vec        vP;
   Vec        xPg;
   Vec        yPg;
+  Vec        rhs_flip;
 };
 typedef struct _FETIDPMat_ctx *FETIDPMat_ctx;
 
