@@ -2450,13 +2450,6 @@ PetscErrorCode PCBDDCMatFETIDPGetSolution(Mat fetidp_mat, Vec fetidp_flux_sol, V
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode FETIDPMatMult(Mat,Vec,Vec);
-PETSC_EXTERN PetscErrorCode FETIDPMatMultTranspose(Mat,Vec,Vec);
-PETSC_EXTERN PetscErrorCode PCBDDCDestroyFETIDPMat(Mat);
-PETSC_EXTERN PetscErrorCode FETIDPPCApply(PC,Vec,Vec);
-PETSC_EXTERN PetscErrorCode FETIDPPCApplyTranspose(PC,Vec,Vec);
-PETSC_EXTERN PetscErrorCode PCBDDCDestroyFETIDPPC(PC);
-
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCCreateFETIDPOperators_BDDC"
 static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_redundant, Mat *fetidp_mat, PC *fetidp_pc)

@@ -74,14 +74,16 @@ PetscErrorCode PCBDDCBenignShellMat(PC,PetscBool);
 PetscErrorCode PCBDDCBenignRemoveInterior(PC,Vec,Vec);
 
 /* feti-dp */
-PETSC_EXTERN PetscErrorCode PCBDDCCreateFETIDPMatContext(PC,FETIDPMat_ctx*);
-PETSC_EXTERN PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx);
-PETSC_EXTERN PetscErrorCode PCBDDCCreateFETIDPPCContext(PC,FETIDPPC_ctx*);
-PETSC_EXTERN PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat,FETIDPPC_ctx);
-PETSC_EXTERN PetscErrorCode FETIDPPCApply(PC,Vec,Vec);
-PETSC_EXTERN PetscErrorCode PCBDDCDestroyFETIDPPC(PC);
-PETSC_EXTERN PetscErrorCode FETIDPMatMult(Mat,Vec,Vec);
-PETSC_EXTERN PetscErrorCode PCBDDCDestroyFETIDPMat(Mat);
+PetscErrorCode PCBDDCCreateFETIDPMatContext(PC,FETIDPMat_ctx*);
+PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx);
+PetscErrorCode PCBDDCCreateFETIDPPCContext(PC,FETIDPPC_ctx*);
+PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat,FETIDPPC_ctx);
+PetscErrorCode FETIDPPCApply(PC,Vec,Vec);
+PetscErrorCode FETIDPPCApplyTranspose(PC,Vec,Vec);
+PetscErrorCode PCBDDCDestroyFETIDPPC(PC);
+PetscErrorCode FETIDPMatMult(Mat,Vec,Vec);
+PetscErrorCode FETIDPMatMultTranspose(Mat,Vec,Vec);
+PetscErrorCode PCBDDCDestroyFETIDPMat(Mat);
 
 /* interface to SubSchurs */
 PetscErrorCode PCBDDCInitSubSchurs(PC);
