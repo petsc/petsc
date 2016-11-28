@@ -6256,8 +6256,8 @@ that the C convention of passing NULL (or 0) {\em cannot}
 be used.  For example, when no options prefix is desired in the
 routine \lstinline{PetscOptionsGetInt()}, one must use the following command in
 Fortran:
-\begin{lstlisting}
-call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-name',N,flg,ierr)
+\begin{lstlisting}[breakatwhitespace=false]
+call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,PETSC_NULL_CHARACTER,'-name',N,flg,ierr)
 \end{lstlisting}
 
 This Fortran requirement is inconsistent with C, where the
