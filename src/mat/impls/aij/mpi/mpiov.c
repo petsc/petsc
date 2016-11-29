@@ -1269,7 +1269,8 @@ PetscErrorCode MatDestroy_MPIAIJ_MatGetSubmatrices(Mat C)
 
 #if defined(PETSC_USE_CTABLE)
   ierr = PetscTableDestroy((PetscTable*)&submatj->rmap);CHKERRQ(ierr);
-  ierr = PetscFree2(submatj->cmap_loc,submatj->rmap_loc);CHKERRQ(ierr);
+  if (submatj->cmap_loc) {ierr = PetscFree(submatj->cmap_loc);CHKERRQ(ierr);}
+  ierr = PetscFree(submatj->rmap_loc);CHKERRQ(ierr);
 #else
   ierr = PetscFree(submatj->rmap);CHKERRQ(ierr);
 #endif
@@ -1567,7 +1568,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,cons
 #if defined(PETSC_USE_CTABLE)
     if (!allcolumns) {
       ierr = PetscTableCreate(ncol+1,C->cmap->N+1,&cmap);CHKERRQ(ierr);
-      ierr = PetscCalloc2(C->cmap->n,&cmap_loc,C->rmap->n,&rmap_loc);CHKERRQ(ierr);
+      ierr = PetscCalloc1(C->cmap->n,&cmap_loc);CHKERRQ(ierr);
       for (j=0; j<ncol; j++) { /* use array cmap_loc[] for local col indices */
         if (icol[j] >= cstart && icol[j] <cend) {
           cmap_loc[icol[j] - cstart] = j+1;
@@ -1576,8 +1577,10 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,cons
         }
       }
     } else {
-      cmap = NULL;
+      cmap     = NULL;
+      cmap_loc = NULL;
     }
+    ierr = PetscCalloc1(C->rmap->n,&rmap_loc);CHKERRQ(ierr);
 #else
     if (!allcolumns) {
       ierr   = PetscCalloc1(C->cmap->N,&cmap);CHKERRQ(ierr);
