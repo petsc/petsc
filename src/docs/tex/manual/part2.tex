@@ -2271,6 +2271,7 @@ KSPSetNormType(KSP ksp,KSP_NORM_UNPRECONDITIONED);
   \ Generalized Conjugate Residual                          & \lstinline|KSPGCR|        & \trl{gcr}        \\
   \ Pipelined Conjugate Residual                            & \lstinline|KSPPIPECR|     & \trl{pipecr}     \\
   \ Pipelined, Flexible Conjugate Residual                  & \lstinline|KSPPIPEGCR|    & \trl{pipegcr}    \\
+  FETI-DP                                                   & \lstinline|KSPFETIDP|     & \trl{fetidp}     \\
   Conjugate Gradient Squared \cite{so:89}                   & \lstinline|KSPCGS|        & \trl{cgs}        \\
   Transpose-Free Quasi-Minimal Residual (1) \cite{f:93}     & \lstinline|KSPTFQMR|      & \trl{tfqmr}      \\
   Transpose-Free Quasi-Minimal Residual (2)                 & \lstinline|KSPTCQMR|      & \trl{tcqmr}      \\
@@ -2291,6 +2292,11 @@ Note: the bi-conjugate gradient method requires application of both the matrix a
 its transpose plus the preconditioner and its transpose. Currently not all matrices
 and preconditioners provide this support and thus the \lstinline{KSPBICG} cannot always
 be used. \sindex{Bi-conjugate gradient}
+
+Note: PETSc implements the FETI-DP (Finite Element Tearing and Interconnecting
+Dual-Primal) method as a KSP since it recasts the original problem into a contstrained
+minimization one with Lagrange multipliers. The only matrix type supported is
+\lstinline{MATIS}.
 
 \subsection{Convergence Tests}
 \label{section_convergencetests}
@@ -3020,13 +3026,6 @@ associated with \lstinline{PCBDDC} by using the command line switch \trl{-pc_bdd
 The latter can be requested by specifying the number of requested level at command line (\trl{-pc_bddc_levels}) or by using \lstinline{PCBDDCSetLevels()}.
 An additional parameter (see \lstinline{PCBDDCSetCoarseningRatio()}) controls the number of subdomains that will be generated at the next level;
 the larger the coarsening ratio, the lower the number of coarser subdomains.
-
-PETSc currently provides an experimental interface to the FETI-DP method, which is the dual method of BDDC. Users interested in 
-experimenting with FETI-DP should use \break\lstinline{PCBDDCCreateFETIDPOperators()} in order access
-the \lstinline{Mat} and \lstinline{PC} objects needed by the FETI-DP method. The latter call should be performed after having called \lstinline{PCSetUp()} on the \lstinline{PCBDDC} object.
-\lstinline{PCBDDCMatFETIDPGetRHS()} maps the original right-hand side to a suitable right-hand side for the FETI-DP solver.
-The physical solution can be recovered by using \lstinline{PCBDDCMatFETIDPGetSolution()}.
-A stand-alone class for FETI-DP will be provided in future releases.
 
 For further details, see the example \href{http://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/ex59.c}{\trl{${PETSC_DIR}/src/ksp/ksp/examples/tutorials/ex59.c}} and the online documentation for \lstinline{PCBDDC}.
 
