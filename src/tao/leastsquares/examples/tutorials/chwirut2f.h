@@ -18,8 +18,8 @@
       PetscReal t(0:213)
       PetscReal y(0:213)
       PetscInt  m,n
-      PetscInt  rank
-      PetscInt  size
+      PetscMPIInt  rank
+      PetscMPIInt  size
       PetscInt  idle_tag, die_tag
       parameter (m=214)
       parameter (n=3)
