@@ -36,7 +36,7 @@
       implicit none
 
       SNES ::           snes
-      PetscInt ::       its
+      PetscInt ::       its,one,mone
       PetscScalar ::    norm
       type(monctx) ::   snesm
       PetscErrorCode :: ierr
@@ -46,10 +46,12 @@ c      write(6,*) '    its ',its,snesm%its,'lag',
 c     &            snesm%lag
 c      call flush(6)
       if (mod(snesm%its,snesm%lag).eq.0)
-     &      then
-        call SNESSetLagJacobian(snes,1,ierr)  ! build jacobian
+     &     then
+        one = 1
+        call SNESSetLagJacobian(snes,one,ierr)  ! build jacobian
       else
-        call SNESSetLagJacobian(snes,-1,ierr) ! do NOT build jacobian
+        mone = -1
+        call SNESSetLagJacobian(snes,mone,ierr) ! do NOT build jacobian
       endif
       snesm%its = snesm%its + 1
       end subroutine FormMonitor

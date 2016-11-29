@@ -9,7 +9,7 @@
       PetscErrorCode ierr
       MatNullSpace nsp
       Vec     v(1)
-      PetscInt nloc
+      PetscInt nloc,on
       PetscScalar one
       PetscReal norm
 
@@ -24,7 +24,8 @@
       one = 1.0
       call VecSet(v(1),one,ierr)
       call VecNormalize(v(1),norm,ierr)
-      call MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_FALSE,1,v(1),         &
+      on = 1
+      call MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_FALSE,on,v(1),       &
      &                        nsp,ierr)
       call MatNullSpaceDestroy(nsp,ierr)
       call VecDestroy(v(1),ierr)

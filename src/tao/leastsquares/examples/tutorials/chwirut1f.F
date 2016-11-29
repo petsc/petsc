@@ -34,12 +34,13 @@
       Vec              f       ! vector of functions
       Tao        tao     ! Tao context
       PetscInt         nhist
-      integer          size,rank    ! number of processes running
+      PetscMPIInt  size,rank    ! number of processes running
       PetscReal      zero
       PetscReal      hist(100) ! objective value history
       PetscReal      resid(100)! residual history
       PetscReal      cnorm(100)! cnorm history
-      PetscInt      lits(100) ! #ksp history
+      PetscInt      lits(100)   ! #ksp history
+      PetscInt oh
       TaoConvergedReason reason
 
 !  Note: Any user-defined Fortran routines (such as FormGradient)
@@ -98,8 +99,9 @@
 !  Check for TAO command line options
       call TaoSetFromOptions(tao,ierr)
       CHKERRQ(ierr)
+      oh = 100
       call TaoSetConvergenceHistory(tao,hist,resid,cnorm,lits,          &
-     &     100,PETSC_TRUE,ierr)
+     &     oh,PETSC_TRUE,ierr)
       CHKERRQ(ierr)
 !  SOLVE THE APPLICATION
       call TaoSolve(tao,ierr)

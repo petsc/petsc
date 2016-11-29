@@ -9,9 +9,11 @@
       PetscErrorCode ierr
       Mat A
       Vec x,y
+      PetscInt tw
 
-      call VecCreateSeq(PETSC_COMM_SELF,12,x,ierr)
-      call VecCreateSeq(PETSC_COMM_SELF,12,y,ierr)
+      tw = 12
+      call VecCreateSeq(PETSC_COMM_SELF,tw,x,ierr)
+      call VecCreateSeq(PETSC_COMM_SELF,tw,y,ierr)
       return
       end
 

@@ -29,7 +29,7 @@
       PetscViewer viewer
       PetscInt qj,qi,ne,M,Istart,Iend,geq,ix
       PetscInt ki,kj,lint,nel,ll,j1,i1,ndf,f4
-      PetscInt f2,f9,f6
+      PetscInt f2,f9,f6, one
       PetscInt :: idx(4)
       PetscBool  flg,out_matlab
       PetscMPIInt size,rank
@@ -173,7 +173,8 @@
 
             val = h*h*exp(-100.*((x+h/2)-blb(1))**2)*                            &
      &           exp(-100*((y+h/2)-blb(2))**2)
-            call VecSetValues(bvec,1,geq,val,INSERT_VALUES,ierr)
+            one = 1
+            call VecSetValues(bvec,one,geq,val,INSERT_VALUES,ierr)
          endif
       enddo
       call MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY,ierr)
