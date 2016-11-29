@@ -765,10 +765,69 @@ PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat fetimat, FETIDPPC_ctx fetidppc_ctx
   /* create preconditioner */
   pcis = (PC_IS*)fetidppc_ctx->pc->data;
   /* Dirichlet preconditioner */
-  ierr = PetscOptionsGetBool(NULL,NULL,"-fetidp_lumped",&lumped,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,((PetscObject)fetimat)->prefix,"-pc_lumped",&lumped,NULL);CHKERRQ(ierr);
   if (!lumped) {
-    ierr = MatCreateSchurComplement(pcis->A_II,pcis->A_II,pcis->A_IB,pcis->A_BI,pcis->A_BB,&fetidppc_ctx->S_j);CHKERRQ(ierr);
-    ierr = MatSchurComplementSetKSP(fetidppc_ctx->S_j,pcis->ksp_D);CHKERRQ(ierr);
+    IS        iP;
+    PetscBool discrete_harmonic = PETSC_FALSE;
+
+    ierr = PetscObjectQuery((PetscObject)fetidppc_ctx->pc,"__KSPFETIDP_iP",(PetscObject*)&iP);CHKERRQ(ierr);
+    if (iP) {
+      ierr = PetscOptionsGetBool(NULL,((PetscObject)fetimat)->prefix,"-pc_discrete_harmonic",&discrete_harmonic,NULL);CHKERRQ(ierr);
+    }
+    if (discrete_harmonic) {
+      KSP              sksp;
+      PC               pc;
+      Mat              A_II,A_IB,A_BI;
+      IS               aB;
+      PetscInt         nb;
+      MatSolverPackage solver;
+      KSPType          ksptype;
+      PCType           pctype;
+      const char       *prefix;
+
+      /*
+        We constructs a Schur complement for
+
+        | A_II A_ID |
+        | A_DI A_DD |
+
+        instead of
+
+        | A_II  B^t_II A_ID |
+        | B_II -C_II   B_ID |
+        | A_DI  B^t_ID A_DD |
+
+      */
+      ierr = ISGetLocalSize(pcis->is_B_local,&nb);CHKERRQ(ierr);
+      ierr = ISCreateStride(PetscObjectComm((PetscObject)pcis->A_II),nb,0,1,&aB);CHKERRQ(ierr);
+      ierr = MatGetSubMatrix(pcis->A_II,iP,iP,MAT_INITIAL_MATRIX,&A_II);CHKERRQ(ierr);
+      ierr = MatGetSubMatrix(pcis->A_IB,iP,aB,MAT_INITIAL_MATRIX,&A_IB);CHKERRQ(ierr);
+      ierr = MatGetSubMatrix(pcis->A_BI,aB,iP,MAT_INITIAL_MATRIX,&A_BI);CHKERRQ(ierr);
+      ierr = MatCreateSchurComplement(A_II,A_II,A_IB,A_BI,pcis->A_BB,&fetidppc_ctx->S_j);CHKERRQ(ierr);
+
+      /* propagate settings of solver */
+      ierr = MatSchurComplementGetKSP(fetidppc_ctx->S_j,&sksp);CHKERRQ(ierr);
+      ierr = KSPGetType(pcis->ksp_D,&ksptype);CHKERRQ(ierr);
+      ierr = KSPSetType(sksp,ksptype);CHKERRQ(ierr);
+      ierr = KSPGetPC(pcis->ksp_D,&pc);CHKERRQ(ierr);
+      ierr = PCGetType(pc,&pctype);CHKERRQ(ierr);
+      ierr = PCFactorGetMatSolverPackage(pc,(const MatSolverPackage*)&solver);CHKERRQ(ierr);
+      ierr = KSPGetPC(sksp,&pc);CHKERRQ(ierr);
+      ierr = PCSetType(pc,pctype);CHKERRQ(ierr);
+      if (solver) {
+        ierr = PCFactorSetMatSolverPackage(pc,solver);CHKERRQ(ierr);
+      }
+      ierr = MatDestroy(&A_II);CHKERRQ(ierr);
+      ierr = MatDestroy(&A_IB);CHKERRQ(ierr);
+      ierr = MatDestroy(&A_BI);CHKERRQ(ierr);
+      ierr = ISDestroy(&aB);CHKERRQ(ierr);
+      ierr = MatGetOptionsPrefix(fetimat,&prefix);CHKERRQ(ierr);
+      ierr = KSPSetOptionsPrefix(sksp,prefix);CHKERRQ(ierr);
+      ierr = KSPAppendOptionsPrefix(sksp,"harmonic_");CHKERRQ(ierr);
+    } else { /* default Dirichlet preconditioner is pde-harmonic */
+      ierr = MatCreateSchurComplement(pcis->A_II,pcis->A_II,pcis->A_IB,pcis->A_BI,pcis->A_BB,&fetidppc_ctx->S_j);CHKERRQ(ierr);
+      ierr = MatSchurComplementSetKSP(fetidppc_ctx->S_j,pcis->ksp_D);CHKERRQ(ierr);
+    }
   } else {
     ierr = PetscObjectReference((PetscObject)pcis->A_BB);CHKERRQ(ierr);
     fetidppc_ctx->S_j = pcis->A_BB;
