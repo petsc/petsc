@@ -52,8 +52,13 @@
 #define PetscInt integer4
 #endif
 #define PetscInt64 integer8
+#if defined(PETSC_USING_F90) && !defined(PETSC_USE_FORTRANKIND)
+#define PetscObjectState integer4
+#define PetscObjectId integer4
+#else
 #define PetscObjectState PetscInt64
 #define PetscObjectId PetscInt64
+#endif
 
 #if (PETSC_SIZEOF_INT == 4)
 #define PetscFortranInt integer4
