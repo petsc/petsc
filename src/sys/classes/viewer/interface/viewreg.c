@@ -243,6 +243,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
   ierr = PetscOptionsGetViewerOff(&flag);CHKERRQ(ierr);
   if (flag) PetscFunctionReturn(0);
 
+  ierr = PetscLogEventBegin(PetscOptions_GetViewer,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,NULL,"-help",&hashelp);CHKERRQ(ierr);
   if (hashelp) {
     PetscBool found;
@@ -363,6 +364,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
       ierr = PetscFree(loc0_vtype);CHKERRQ(ierr);
     }
   }
+  ierr = PetscLogEventEnd(PetscOptions_GetViewer,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
