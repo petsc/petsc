@@ -2452,7 +2452,7 @@ PetscErrorCode PCBDDCMatFETIDPGetSolution(Mat fetidp_mat, Vec fetidp_flux_sol, V
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCCreateFETIDPOperators_BDDC"
-static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_redundant, Mat *fetidp_mat, PC *fetidp_pc)
+static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_redundant, const char* prefix, Mat *fetidp_mat, PC *fetidp_pc)
 {
 
   FETIDPMat_ctx  fetidpmat_ctx;
@@ -2472,6 +2472,8 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
   ierr = MatShellSetOperation(newmat,MATOP_MULT,(void (*)(void))FETIDPMatMult);CHKERRQ(ierr);
   ierr = MatShellSetOperation(newmat,MATOP_MULT_TRANSPOSE,(void (*)(void))FETIDPMatMultTranspose);CHKERRQ(ierr);
   ierr = MatShellSetOperation(newmat,MATOP_DESTROY,(void (*)(void))PCBDDCDestroyFETIDPMat);CHKERRQ(ierr);
+  ierr = MatSetOptionsPrefix(newmat,prefix);CHKERRQ(ierr);
+  ierr = MatAppendOptionsPrefix(newmat,"fetidp_");CHKERRQ(ierr);
   ierr = MatSetUp(newmat);CHKERRQ(ierr);
   /* FETIDP preconditioner */
   ierr = PCBDDCCreateFETIDPPCContext(pc,&fetidppc_ctx);CHKERRQ(ierr);
@@ -2483,7 +2485,8 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
   ierr = PCShellSetApplyTranspose(newpc,FETIDPPCApplyTranspose);CHKERRQ(ierr);
   ierr = PCShellSetDestroy(newpc,PCBDDCDestroyFETIDPPC);CHKERRQ(ierr);
   ierr = PCSetOperators(newpc,newmat,newmat);CHKERRQ(ierr);
-  ierr = PCSetUp(newpc);CHKERRQ(ierr);
+  ierr = PCSetOptionsPrefix(newpc,prefix);CHKERRQ(ierr);
+  ierr = PCAppendOptionsPrefix(newpc,"fetidp_");CHKERRQ(ierr);
   /* return pointers for objects created */
   *fetidp_mat=newmat;
   *fetidp_pc=newpc;
@@ -2499,7 +2502,8 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
 
    Input Parameters:
 +  pc - the BDDC preconditioning context (setup should have been called before)
--  fully_redundant - true for a fully redundant set of Lagrange multipliers
+.  fully_redundant - true for a fully redundant set of Lagrange multipliers
+-  prefix - optional options database prefix for the objects to be created (can be NULL)
 
    Output Parameters:
 +  fetidp_mat - shell FETI-DP matrix object
@@ -2512,14 +2516,14 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
 
 .seealso: PCBDDC, PCBDDCMatFETIDPGetRHS, PCBDDCMatFETIDPGetSolution
 @*/
-PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, Mat *fetidp_mat, PC *fetidp_pc)
+PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, const char *prefix, Mat *fetidp_mat, PC *fetidp_pc)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (pc->setupcalled) {
-    ierr = PetscUseMethod(pc,"PCBDDCCreateFETIDPOperators_C",(PC,PetscBool,Mat*,PC*),(pc,fully_redundant,fetidp_mat,fetidp_pc));CHKERRQ(ierr);
+    ierr = PetscUseMethod(pc,"PCBDDCCreateFETIDPOperators_C",(PC,PetscBool,const char*,Mat*,PC*),(pc,fully_redundant,prefix,fetidp_mat,fetidp_pc));CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"You must call PCSetup_BDDC() first \n");
   PetscFunctionReturn(0);
 }

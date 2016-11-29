@@ -680,7 +680,7 @@ static PetscErrorCode KSPSetUp_FETIDP(KSP ksp)
     Mat F; /* the FETI-DP matrix */
     PC  D; /* the FETI-DP preconditioner */
     ierr = KSPReset(fetidp->innerksp);CHKERRQ(ierr);
-    ierr = PCBDDCCreateFETIDPOperators(fetidp->innerbddc,fetidp->fully_redundant,&F,&D);CHKERRQ(ierr);
+    ierr = PCBDDCCreateFETIDPOperators(fetidp->innerbddc,fetidp->fully_redundant,((PetscObject)ksp)->prefix,&F,&D);CHKERRQ(ierr);
     ierr = KSPSetOperators(fetidp->innerksp,F,F);CHKERRQ(ierr);
     ierr = KSPSetTolerances(fetidp->innerksp,ksp->rtol,ksp->abstol,ksp->divtol,ksp->max_it);CHKERRQ(ierr);
     ierr = KSPSetPC(fetidp->innerksp,D);CHKERRQ(ierr);

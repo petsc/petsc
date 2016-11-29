@@ -810,7 +810,7 @@ static PetscErrorCode ComputeKSPFETIDP(DomainData dd, KSP ksp_bddc, KSP *ksp_fet
     PC  D;
     Mat F;
 
-    ierr = PCBDDCCreateFETIDPOperators(pc,PETSC_TRUE,&F,&D);CHKERRQ(ierr);
+    ierr = PCBDDCCreateFETIDPOperators(pc,PETSC_TRUE,NULL,&F,&D);CHKERRQ(ierr);
     ierr = KSPCreate(PetscObjectComm((PetscObject)F),&temp_ksp);CHKERRQ(ierr);
     ierr = KSPSetOperators(temp_ksp,F,F);CHKERRQ(ierr);
     ierr = KSPSetType(temp_ksp,KSPCG);CHKERRQ(ierr);
