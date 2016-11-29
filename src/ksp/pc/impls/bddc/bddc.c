@@ -2483,6 +2483,7 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
   ierr = PCShellSetContext(newpc,fetidppc_ctx);CHKERRQ(ierr);
   ierr = PCShellSetApply(newpc,FETIDPPCApply);CHKERRQ(ierr);
   ierr = PCShellSetApplyTranspose(newpc,FETIDPPCApplyTranspose);CHKERRQ(ierr);
+  ierr = PCShellSetView(newpc,FETIDPPCView);CHKERRQ(ierr);
   ierr = PCShellSetDestroy(newpc,PCBDDCDestroyFETIDPPC);CHKERRQ(ierr);
   ierr = PCSetOperators(newpc,newmat,newmat);CHKERRQ(ierr);
   ierr = PCSetOptionsPrefix(newpc,prefix);CHKERRQ(ierr);

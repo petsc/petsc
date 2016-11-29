@@ -947,3 +947,46 @@ PetscErrorCode FETIDPPCApplyTranspose(PC fetipc, Vec x, Vec y)
   ierr = VecScatterEnd(pc_ctx->l2g_lambda,pc_ctx->lambda_local,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "FETIDPPCView"
+PetscErrorCode FETIDPPCView(PC pc, PetscViewer viewer)
+{
+  FETIDPPC_ctx      pc_ctx;
+  PetscBool         iascii;
+  PetscViewer       sviewer;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
+    PetscMPIInt rank;
+    PetscBool   isschur;
+
+    ierr = PCShellGetContext(pc,(void**)&pc_ctx);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)pc_ctx->S_j,MATSCHURCOMPLEMENT,&isschur);CHKERRQ(ierr);
+    if (isschur) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  FETI-DP multipliers Dirichlet preconditioner (just from rank 0)\n");CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"  FETI-DP multipliers Lumped preconditioner (just from rank 0)\n");CHKERRQ(ierr);
+    }
+    ierr = PetscViewerGetSubViewer(viewer,PetscObjectComm((PetscObject)pc_ctx->S_j),&sviewer);CHKERRQ(ierr);
+    if (!rank) {
+      ierr = PetscViewerPushFormat(sviewer,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIAddTab(sviewer,2);CHKERRQ(ierr);
+      ierr = MatView(pc_ctx->S_j,sviewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISubtractTab(sviewer,2);CHKERRQ(ierr);
+      ierr = PetscViewerPopFormat(sviewer);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerRestoreSubViewer(viewer,PetscObjectComm((PetscObject)pc_ctx->S_j),&sviewer);CHKERRQ(ierr);
+    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+    if (pc_ctx->kP) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  FETI-DP pressure preconditioner\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIAddTab(viewer,2);CHKERRQ(ierr);
+      ierr = KSPView(pc_ctx->kP,viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISubtractTab(viewer,2);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}

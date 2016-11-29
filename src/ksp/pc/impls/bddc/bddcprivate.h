@@ -80,6 +80,7 @@ PetscErrorCode PCBDDCCreateFETIDPPCContext(PC,FETIDPPC_ctx*);
 PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat,FETIDPPC_ctx);
 PetscErrorCode FETIDPPCApply(PC,Vec,Vec);
 PetscErrorCode FETIDPPCApplyTranspose(PC,Vec,Vec);
+PetscErrorCode FETIDPPCView(PC,PetscViewer);
 PetscErrorCode PCBDDCDestroyFETIDPPC(PC);
 PetscErrorCode FETIDPMatMult(Mat,Vec,Vec);
 PetscErrorCode FETIDPMatMultTranspose(Mat,Vec,Vec);
