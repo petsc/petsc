@@ -111,6 +111,8 @@ PetscErrorCode MatMult_SeqELL(Mat A,Vec xx,Vec yy)
   __m512d           vec_x,vec_y,vec_vals;
   __m256i           vec_idx;
   __mmask8          mask=0xff;
+  __m512d           vec_x2,vec_y2,vec_vals2,vec_x3,vec_y3,vec_vals3,vec_x4,vec_y4,vec_vals4;
+  __m256i           vec_idx2,vec_idx3,vec_idx4;
 #else
   PetscScalar       sum1,sum2,sum3,sum4,sum5,sum6,sum7,sum8;
 #endif
@@ -124,9 +126,59 @@ PetscErrorCode MatMult_SeqELL(Mat A,Vec xx,Vec yy)
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   for (i=0; i<(m>>3); i++) { /* loop over slices */
 #if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__INTEL_COMPILER)
-    vec_y = _mm512_setzero_pd();
+    PetscPrefetchBlock(acolidx,a->rlenmax*8,0,PETSC_PREFETCH_HINT_T0);
+    PetscPrefetchBlock(aval,a->rlenmax*8,0,PETSC_PREFETCH_HINT_T0);
+
+    vec_y  = _mm512_setzero_pd();
+    vec_y2 = _mm512_setzero_pd();
+    vec_y3 = _mm512_setzero_pd();
+    vec_y4 = _mm512_setzero_pd();
+
+    switch (a->rlenmax & 3) {
+    case 3:
+      vec_idx  = _mm256_mask_load_epi32(vec_idx,mask,acolidx);
+      vec_vals = _mm512_load_pd(aval);
+      vec_x    = _mm512_i32gather_pd(vec_idx,x,_MM_SCALE_8);
+      vec_y    = _mm512_fmadd_pd(vec_vals,vec_x,vec_y);
+
+      vec_idx2  = _mm256_mask_load_epi32(vec_idx2,mask,acolidx+8);
+      vec_vals2 = _mm512_load_pd(aval+8);
+      vec_x2    = _mm512_i32gather_pd(vec_idx2,x,_MM_SCALE_8);
+      vec_y2    = _mm512_fmadd_pd(vec_vals2,vec_x2,vec_y2);
+
+      vec_idx3  = _mm256_mask_load_epi32(vec_idx3,mask,acolidx+16);
+      vec_vals3 = _mm512_load_pd(aval+16);
+      vec_x3    = _mm512_i32gather_pd(vec_idx3,x,_MM_SCALE_8);
+      vec_y3    = _mm512_fmadd_pd(vec_vals3,vec_x3,vec_y3);
+      
+      acolidx += 24; aval += 24; j = 3;  
+      break; 
+    case 2:
+      vec_idx  = _mm256_mask_load_epi32(vec_idx,mask,acolidx);
+      vec_vals = _mm512_load_pd(aval);
+      vec_x    = _mm512_i32gather_pd(vec_idx,x,_MM_SCALE_8);
+      vec_y    = _mm512_fmadd_pd(vec_vals,vec_x,vec_y);
+
+      vec_idx2  = _mm256_mask_load_epi32(vec_idx2,mask,acolidx+8);
+      vec_vals2 = _mm512_load_pd(aval+8);
+      vec_x2    = _mm512_i32gather_pd(vec_idx2,x,_MM_SCALE_8);
+      vec_y2    = _mm512_fmadd_pd(vec_vals2,vec_x2,vec_y2);
+
+      acolidx += 16; aval += 16; j = 2;
+      break;
+    case 1:
+      vec_idx  = _mm256_mask_load_epi32(vec_idx,mask,acolidx);
+      vec_vals = _mm512_load_pd(aval);
+      vec_x    = _mm512_i32gather_pd(vec_idx,x,_MM_SCALE_8);
+      vec_y    = _mm512_fmadd_pd(vec_vals,vec_x,vec_y);
+
+      acolidx += 8; aval += 8; j = 1;
+      break;
+    default:
+      j = 0;
+    }
     #pragma novector
-    for (j=0; j<a->rlenmax; acolidx+=8,aval+=8,j++) {
+    for (; j<a->rlenmax; acolidx+=32,aval+=32,j+=4) {
       /*
       vec_idx  = _mm512_loadunpackhi_epi32(vec_idx,acolidx);
       vec_vals = _mm512_loadunpackhi_pd(vec_vals,aval);
@@ -135,7 +187,26 @@ PetscErrorCode MatMult_SeqELL(Mat A,Vec xx,Vec yy)
       vec_vals = _mm512_load_pd(aval);
       vec_x    = _mm512_i32gather_pd(vec_idx,x,_MM_SCALE_8);
       vec_y    = _mm512_fmadd_pd(vec_vals,vec_x,vec_y);
+
+      vec_idx2  = _mm256_mask_load_epi32(vec_idx2,mask,acolidx+8);
+      vec_vals2 = _mm512_load_pd(aval+8);
+      vec_x2    = _mm512_i32gather_pd(vec_idx2,x,_MM_SCALE_8);
+      vec_y2    = _mm512_fmadd_pd(vec_vals2,vec_x2,vec_y2);
+
+      vec_idx3  = _mm256_mask_load_epi32(vec_idx3,mask,acolidx+16);
+      vec_vals3 = _mm512_load_pd(aval+16);
+      vec_x3    = _mm512_i32gather_pd(vec_idx3,x,_MM_SCALE_8);
+      vec_y3    = _mm512_fmadd_pd(vec_vals3,vec_x3,vec_y3);
+
+      vec_idx4  = _mm256_mask_load_epi32(vec_idx4,mask,acolidx+24);
+      vec_vals4 = _mm512_load_pd(aval+24);
+      vec_x4    = _mm512_i32gather_pd(vec_idx4,x,_MM_SCALE_8);
+      vec_y4    = _mm512_fmadd_pd(vec_vals4,vec_x4,vec_y4);
     }
+
+    vec_y = _mm512_add_pd(vec_y,vec_y2);
+    vec_y = _mm512_add_pd(vec_y,vec_y3);
+    vec_y = _mm512_add_pd(vec_y,vec_y4);
     _mm512_store_pd(&y[8*i],vec_y);
 #else
     sum1 = 0.0;
