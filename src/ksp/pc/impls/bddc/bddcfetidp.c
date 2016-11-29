@@ -824,6 +824,7 @@ PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat fetimat, FETIDPPC_ctx fetidppc_ctx
       ierr = MatGetOptionsPrefix(fetimat,&prefix);CHKERRQ(ierr);
       ierr = KSPSetOptionsPrefix(sksp,prefix);CHKERRQ(ierr);
       ierr = KSPAppendOptionsPrefix(sksp,"harmonic_");CHKERRQ(ierr);
+      ierr = KSPSetFromOptions(sksp);CHKERRQ(ierr);
     } else { /* default Dirichlet preconditioner is pde-harmonic */
       ierr = MatCreateSchurComplement(pcis->A_II,pcis->A_II,pcis->A_IB,pcis->A_BI,pcis->A_BB,&fetidppc_ctx->S_j);CHKERRQ(ierr);
       ierr = MatSchurComplementSetKSP(fetidppc_ctx->S_j,pcis->ksp_D);CHKERRQ(ierr);

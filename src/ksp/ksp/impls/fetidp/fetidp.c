@@ -684,6 +684,7 @@ static PetscErrorCode KSPSetUp_FETIDP(KSP ksp)
     ierr = KSPSetOperators(fetidp->innerksp,F,F);CHKERRQ(ierr);
     ierr = KSPSetTolerances(fetidp->innerksp,ksp->rtol,ksp->abstol,ksp->divtol,ksp->max_it);CHKERRQ(ierr);
     ierr = KSPSetPC(fetidp->innerksp,D);CHKERRQ(ierr);
+    ierr = KSPSetFromOptions(fetidp->innerksp);CHKERRQ(ierr);
     ierr = MatCreateVecs(F,&(fetidp->innerksp)->vec_rhs,&(fetidp->innerksp)->vec_sol);CHKERRQ(ierr);
     ierr = MatDestroy(&F);CHKERRQ(ierr);
     ierr = PCDestroy(&D);CHKERRQ(ierr);
@@ -802,7 +803,6 @@ static PetscErrorCode KSPSetFromOptions_FETIDP(PetscOptionItems *PetscOptionsObj
   ierr = PetscOptionsBool("-ksp_fetidp_saddlepoint","Activates support for saddle-point problems",NULL,fetidp->saddlepoint,&fetidp->saddlepoint,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = PCSetFromOptions(fetidp->innerbddc);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(fetidp->innerksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
