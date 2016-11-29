@@ -4,6 +4,7 @@
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define matsetvalues_                    MATSETVALUES
+#define matsetvaluesnnnn_                MATSETVALUESNNNN
 #define matsetvalues0_                   MATSETVALUES0
 #define matsetvaluesnn1_                 MATSETVALUESNN1
 #define matsetvalues11_                  MATSETVALUES11
@@ -75,6 +76,7 @@
 #define matfindnonzerorows_              MATFINDNONZEROROWS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matsetvalues_                    matsetvalues
+#define matsetvaluesnnnn_                matsetvaluesnnnn
 #define matsetvalues0_                   matsetvalues0
 #define matsetvaluesnn1_                 matsetvaluesnn1
 #define matsetvalues11_                  matsetvalues11
