@@ -33,6 +33,8 @@ class Configure(config.package.CMakePackage):
     args.append('-DENABLE_VTK=OFF')
     args.append('-DENABLE_OPENMP=OFF')
     args.append('-DEIGEN_INCLUDE_DIR='+self.eigen.include[0])
+    if not self.compilerFlags.debugging:
+      args.append('-DCMAKE_BUILD_TYPE=Release')
     if self.checkSharedLibrariesEnabled():
       args.append('-DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=ON')
     if self.indexTypes.integerSize == 64:
