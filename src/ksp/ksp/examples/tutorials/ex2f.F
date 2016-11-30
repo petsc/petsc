@@ -15,7 +15,11 @@
 #include <petsc/finclude/petsckspdef.h>
       use petscksp
       implicit none
-
+#if defined(PETSC_USING_F90) && !defined(PETSC_USE_FORTRANKIND)
+      external PETSC_NULL_FUNCTION
+      external KSPMONITORDEFAULT
+      external PETSCVIEWERANDFORMATDESTROY
+#endif
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations

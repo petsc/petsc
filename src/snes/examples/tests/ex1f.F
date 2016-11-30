@@ -36,7 +36,9 @@
 #include <petsc/finclude/petscsnesdef.h>
       use petscsnes
       implicit none
-
+#if defined(PETSC_USING_F90) && !defined(PETSC_USE_FORTRANKIND)
+      external SNESCOMPUTEJACOBIANDEFAULTCOLOR
+#endif
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
