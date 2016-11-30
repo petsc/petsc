@@ -1674,6 +1674,7 @@ PetscErrorCode PCBDDCSubSchursReset(PCBDDCSubSchurs sub_schurs)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!sub_schurs) PetscFunctionReturn(0);
   ierr = MatDestroy(&sub_schurs->A);CHKERRQ(ierr);
   ierr = MatDestroy(&sub_schurs->S);CHKERRQ(ierr);
   ierr = ISDestroy(&sub_schurs->is_I);CHKERRQ(ierr);
@@ -1707,6 +1708,18 @@ PetscErrorCode PCBDDCSubSchursReset(PCBDDCSubSchurs sub_schurs)
   ierr = PetscFree(sub_schurs->change);CHKERRQ(ierr);
   ierr = PetscFree(sub_schurs->change_primal_sub);CHKERRQ(ierr);
   sub_schurs->n_subs = 0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCSubSchursDestroy"
+PetscErrorCode PCBDDCSubSchursDestroy(PCBDDCSubSchurs* sub_schurs)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PCBDDCSubSchursReset(*sub_schurs);CHKERRQ(ierr);
+  ierr = PetscFree(*sub_schurs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
