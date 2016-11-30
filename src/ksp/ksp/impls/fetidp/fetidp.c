@@ -374,7 +374,13 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
           Pall = pcbddc->ISForDofs[fid];
         } else SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Missing fields! Use PCBDDCSetDofsSplitting/Local");
       } else { /* fallback to zero pressure block */
-        ierr = MatFindZeroDiagonals(Ap,&Pall);CHKERRQ(ierr);
+        IS list[2];
+
+        ierr = MatFindZeroDiagonals(Ap,&list[1]);CHKERRQ(ierr);
+        ierr = ISComplement(list[1],rst,ren,&list[0]);CHKERRQ(ierr);
+        ierr = PCBDDCSetDofsSplitting(fetidp->innerbddc,2,list);CHKERRQ(ierr);
+        ierr = ISDestroy(&list[0]);CHKERRQ(ierr);
+        Pall = list[1];
       }
       if (ploc) {
         ierr = ISDifference(lPall,II,&lP);CHKERRQ(ierr);
