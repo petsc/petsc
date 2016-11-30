@@ -13,6 +13,7 @@ class Configure(config.package.CMakePackage):
     self.requirescxx11    = 1
     self.downloadonWindows= 0
     self.hastests         = 1
+    self.requiresrpath    = 1
     return
 
   def setupDependencies(self, framework):
@@ -65,7 +66,47 @@ class Configure(config.package.CMakePackage):
     self.addDefine('HAVE_ZOLTAN',1)
     self.addDefine('HAVE_EXODUSII',1)
 
+  # older versions of Trilinos require passing rpath with the various library paths
+  # this caused problems on Apple with cmake generating command lines that are too long
+  # Trilinos was fixed to handled the rpath internally using cmake 
+  def toStringNoDupes(self,string):
+    string    = self.libraries.toStringNoDupes(string)
+    if self.requiresrpath: return string
+    newstring = ''
+    for i in string.split(' '):
+      if i.find('-rpath') == -1:
+        newstring = newstring+' '+i
+    return newstring.strip()
+
+  def toString(self,string):
+    string    = self.libraries.toString(string)
+    if self.requiresrpath: return string
+    newstring = ''
+    for i in string.split(' '):
+      if i.find('-rpath') == -1:
+        newstring = newstring+' '+i
+    return newstring.strip()
+
   def formCMakeConfigureArgs(self):
+    #  Get trilinos version
+    # if version is 120900 (Dev) or higher than don't require rpaths
+    trequires = 0
+    fd = open(os.path.join(self.packageDir,'Version.cmake'))
+    bf = fd.readline()
+    while bf:
+      if bf.startswith('SET(Trilinos_MAJOR_MINOR_VERSION'):
+        bf = bf[34:39]
+        bf = int(bf)
+        if bf > 120900:
+          self.requiresrpath = 0
+        if bf == 120900:
+          trequires = 1
+      if trequires:
+        if bf.find('(Dev)') > -1:
+          self.requirespath = 0
+      bf = fd.readline()
+    fd.close()
+
     self.checkTrilinosDuplicates()
     if not self.netcdf.found:
       raise RuntimeError('Trilinos requires netcdf so make sure you have --download-netcdf or --with-netcdf-dir if you are building Trilinos')
@@ -92,7 +133,7 @@ class Configure(config.package.CMakePackage):
     # Roscoe says I should set this so that any Trilinos parts that depend on missing external packages such as netcdf will be automatically turned off
     args.append('-DTrilinos_DISABLE_ENABLED_FORWARD_DEP_PACKAGES=ON')
 
-    args.append('-DTrilinos_EXTRA_LINK_FLAGS="'+self.libraries.toStringNoDupes(self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs)+' '+self.compilers.LIBS+'"')
+    args.append('-DTrilinos_EXTRA_LINK_FLAGS="'+self.toStringNoDupes(self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs)+' '+self.compilers.LIBS+'"')
 
     # Turn off single precision and complex
     args.append('-DTeuchos_ENABLE_FLOAT=OFF')
@@ -140,8 +181,8 @@ class Configure(config.package.CMakePackage):
     #     TPL_BLAS_LIBRARIES:PATH="-L/some/dir -llib1 -llib2 ..."
     #     This is not compatible with proper CMake usage and it not guaranteed to be supported.
     # We do it anyways because the precribed way of providing the BLAS/LAPACK libraries is insane
-    args.append('-DTPL_BLAS_LIBRARIES="'+self.libraries.toString(self.blasLapack.dlib)+'"')
-    args.append('-DTPL_LAPACK_LIBRARIES="'+self.libraries.toString(self.blasLapack.dlib)+'"')
+    args.append('-DTPL_BLAS_LIBRARIES="'+self.toString(self.blasLapack.dlib)+'"')
+    args.append('-DTPL_LAPACK_LIBRARIES="'+self.toString(self.blasLapack.dlib)+'"')
 
     # From the docs at http://trilinos.org/download/public-git-repository/
     #TIP: The arguments passed to CMake when building from the Trilinos public repository must include
@@ -150,7 +191,7 @@ class Configure(config.package.CMakePackage):
     if self.hwloc.found:
       args.append('-DTPL_ENABLE_HWLOC:BOOL=ON')
       args.append('-DTPL_HWLOC_INCLUDE_DIRS="'+';'.join(self.hwloc.include)+'"')
-      args.append('-DTPL_HWLOC_LIBRARIES="'+self.libraries.toStringNoDupes(self.hwloc.lib)+'"')
+      args.append('-DTPL_HWLOC_LIBRARIES="'+self.toStringNoDupes(self.hwloc.lib)+'"')
 
     if self.superlu.found and self.superlu_dist.found:
       raise RuntimeError('Trilinos cannot currently support SuperLU and SuperLU_DIST in the same configuration')
@@ -158,21 +199,21 @@ class Configure(config.package.CMakePackage):
     if self.superlu.found:
       args.append('-DTPL_ENABLE_SuperLU:BOOL=ON')
       args.append('-DTPL_SuperLU_INCLUDE_DIRS="'+';'.join(self.superlu.include)+'"')
-      args.append('-DTPL_SuperLU_LIBRARIES="'+self.libraries.toStringNoDupes(self.superlu.lib)+'"')
+      args.append('-DTPL_SuperLU_LIBRARIES="'+self.toStringNoDupes(self.superlu.lib)+'"')
     else:
       args.append('-DTPL_ENABLE_TPL_SuperLU:BOOL=OFF')
 
     if self.superlu_dist.found:
       args.append('-DTPL_ENABLE_SuperLUDist:BOOL=ON')
       args.append('-DTPL_SuperLUDist_INCLUDE_DIRS="'+';'.join(self.superlu_dist.include)+'"')
-      args.append('-DTPL_SuperLUDist_LIBRARIES="'+self.libraries.toStringNoDupes(self.superlu_dist.lib)+'"')
+      args.append('-DTPL_SuperLUDist_LIBRARIES="'+self.toStringNoDupes(self.superlu_dist.lib)+'"')
     else:
       args.append('-DTPL_ENABLE_TPL_SuperLUDist:BOOL=OFF')
 
     if self.hypre.found:
       args.append('-DTPL_ENABLE_HYPRE:BOOL=ON')
       args.append('-DTPL_HYPRE_INCLUDE_DIRS="'+';'.join(self.hypre.include)+'"')
-      args.append('-DTPL_HYPRE_LIBRARIES="'+self.libraries.toStringNoDupes(self.hypre.lib)+'"')
+      args.append('-DTPL_HYPRE_LIBRARIES="'+self.toStringNoDupes(self.hypre.lib)+'"')
     else:
       args.append('-DTPL_ENABLE_HYPRE:BOOL=OFF')
 
@@ -181,47 +222,47 @@ class Configure(config.package.CMakePackage):
     #if self.mumps.found:
     #  args.append('-DTPL_ENABLE_MUMPS:BOOL=ON')
     #  args.append('-DTPL_MUMPS_INCLUDE_DIRS="'+';'.join(self.mumps.include)+'"')
-    #  args.append('-DTPL_MUMPS_LIBRARIES="'+self.libraries.toStringNoDupes(self.mumps.lib+self.scalapack.lib)+'"')
+    #  args.append('-DTPL_MUMPS_LIBRARIES="'+self.toStringNoDupes(self.mumps.lib+self.scalapack.lib)+'"')
 
     if self.mkl_pardiso.found:
       args.append('-DTPL_ENABLE_PARDISO_MKL:BOOL=ON')
       args.append('-DTPL_PARDISO_MKL_INCLUDE_DIRS="'+';'.join(self.mkl_pardiso.include)+'"')
-      args.append('-DTPL_PARDISO_MKL_LIBRARIES="'+self.libraries.toStringNoDupes(self.mkl_pardiso.lib)+'"')
+      args.append('-DTPL_PARDISO_MKL_LIBRARIES="'+self.toStringNoDupes(self.mkl_pardiso.lib)+'"')
     else:
       args.append('-DTPL_ENABLE_TPL_PARDISO_MKL:BOOL=OFF')
 
     if self.metis.found:
       args.append('-DTPL_ENABLE_METIS:BOOL=ON')
       args.append('-DTPL_METIS_INCLUDE_DIRS="'+';'.join(self.metis.include)+'"')
-      args.append('-DTPL_METIS_LIBRARIES="'+self.libraries.toStringNoDupes(self.metis.lib)+'"')
+      args.append('-DTPL_METIS_LIBRARIES="'+self.toStringNoDupes(self.metis.lib)+'"')
     else:
       args.append('-DTPL_ENABLE_METIS:BOOL=OFF')
 
     if self.parmetis.found:
       args.append('-DTPL_ENABLE_ParMETIS:BOOL=ON')
       args.append('-DTPL_ParMETIS_INCLUDE_DIRS="'+';'.join(self.parmetis.include)+'"')
-      args.append('-DTPL_ParMETIS_LIBRARIES="'+self.libraries.toStringNoDupes(self.parmetis.lib)+'"')
+      args.append('-DTPL_ParMETIS_LIBRARIES="'+self.toStringNoDupes(self.parmetis.lib)+'"')
     else:
       args.append('-DTPL_ENABLE_ParMETIS:BOOL=OFF')
 
     if self.ptscotch.found:
       args.append('-DTPL_ENABLE_Scotch:BOOL=ON')
       args.append('-DTPL_Scotch_INCLUDE_DIRS="'+';'.join(self.ptscotch.include)+'"')
-      args.append('-DTPL_Scotch_LIBRARIES="'+self.libraries.toStringNoDupes(self.ptscotch.lib)+'"')
+      args.append('-DTPL_Scotch_LIBRARIES="'+self.toStringNoDupes(self.ptscotch.lib)+'"')
     else:
       args.append('-DTPL_ENABLE_Scotch:BOOL=OFF')
 
     if self.hdf5.found:
       args.append('-DTPL_ENABLE_HDF5:BOOL=ON')
       args.append('-DTPL_HDF5_INCLUDE_DIRS="'+';'.join(self.hdf5.include)+'"')
-      args.append('-DTPL_HDF5_LIBRARIES="'+self.libraries.toStringNoDupes(self.hdf5.lib)+'"')
+      args.append('-DTPL_HDF5_LIBRARIES="'+self.toStringNoDupes(self.hdf5.lib)+'"')
     else:
       args.append('-DTPL_ENABLE_HDF5:BOOL=OFF')
 
     if self.netcdf.found:
       args.append('-DTPL_ENABLE_Netcdf:BOOL=ON')
       args.append('-DTPL_Netcdf_INCLUDE_DIRS="'+';'.join(self.netcdf.include)+'"')
-      args.append('-DTPL_Netcdf_LIBRARIES="'+self.libraries.toStringNoDupes(self.netcdf.lib+self.hdf5.lib)+'"')
+      args.append('-DTPL_Netcdf_LIBRARIES="'+self.toStringNoDupes(self.netcdf.lib+self.hdf5.lib)+'"')
     else:
       args.append('-DTPL_ENABLE_Netcdf:BOOL=OFF')
 
