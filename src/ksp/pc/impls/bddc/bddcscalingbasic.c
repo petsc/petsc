@@ -323,7 +323,7 @@ PetscErrorCode PCBDDCScalingSetUp(PC pc)
 #define __FUNCT__ "PCBDDCScalingDestroy"
 PetscErrorCode PCBDDCScalingDestroy(PC pc)
 {
-  PC_BDDC* pcbddc=(PC_BDDC*)pc->data;
+  PC_BDDC*       pcbddc=(PC_BDDC*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -331,7 +331,6 @@ PetscErrorCode PCBDDCScalingDestroy(PC pc)
     ierr = PCBDDCScalingDestroy_Deluxe(pc);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&pcbddc->work_scaling);CHKERRQ(ierr);
-  /* remove functions */
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCScalingRestriction_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCScalingExtension_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);

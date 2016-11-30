@@ -3231,8 +3231,7 @@ PetscErrorCode PCBDDCResetTopography(PC pc)
   ierr = MatDestroy(&pcbddc->ConstraintMatrix);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->divudotp);CHKERRQ(ierr);
   ierr = ISDestroy(&pcbddc->divudotp_vl2l);CHKERRQ(ierr);
-  ierr = PCBDDCGraphResetCSR(pcbddc->mat_graph);CHKERRQ(ierr);
-  ierr = PCBDDCGraphReset(pcbddc->mat_graph);CHKERRQ(ierr);
+  ierr = PCBDDCGraphDestroy(&pcbddc->mat_graph);CHKERRQ(ierr);
   for (i=0;i<pcbddc->n_local_subs;i++) {
     ierr = ISDestroy(&pcbddc->local_subs[i]);CHKERRQ(ierr);
   }
@@ -3272,9 +3271,9 @@ PetscErrorCode PCBDDCResetSolvers(PC pc)
   ierr = VecScatterDestroy(&pcbddc->R_to_B);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&pcbddc->R_to_D);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&pcbddc->coarse_loc_to_glob);CHKERRQ(ierr);
-  ierr = KSPDestroy(&pcbddc->ksp_D);CHKERRQ(ierr);
-  ierr = KSPDestroy(&pcbddc->ksp_R);CHKERRQ(ierr);
-  ierr = KSPDestroy(&pcbddc->coarse_ksp);CHKERRQ(ierr);
+  ierr = KSPReset(pcbddc->ksp_D);CHKERRQ(ierr);
+  ierr = KSPReset(pcbddc->ksp_R);CHKERRQ(ierr);
+  ierr = KSPReset(pcbddc->coarse_ksp);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
   ierr = PetscFree(pcbddc->primal_indices_local_idxs);CHKERRQ(ierr);
   ierr = PetscFree2(pcbddc->local_primal_ref_node,pcbddc->local_primal_ref_mult);CHKERRQ(ierr);
@@ -7313,17 +7312,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     if (pcbddc->coarse_ksp) { /* coarse ksp has already been created */
       /* if the coarse size is different or we are using adaptive selection, better to not reuse the coarse matrix */
       if (ocoarse_size != pcbddc->coarse_size || pcbddc->adaptive_selection) {
-        PC        pc;
-        PetscBool isbddc;
-
-        /* temporary workaround since PCBDDC does not have a reset method so far */
-        ierr = KSPGetPC(pcbddc->coarse_ksp,&pc);CHKERRQ(ierr);
-        ierr = PetscObjectTypeCompare((PetscObject)pc,PCBDDC,&isbddc);CHKERRQ(ierr);
-        if (isbddc) {
-          ierr = KSPDestroy(&pcbddc->coarse_ksp);CHKERRQ(ierr);
-        } else {
-          ierr = KSPReset(pcbddc->coarse_ksp);CHKERRQ(ierr);
-        }
+        ierr = KSPReset(pcbddc->coarse_ksp);CHKERRQ(ierr);
         coarse_reuse = PETSC_FALSE;
       } else { /* we can safely reuse already computed coarse matrix */
         coarse_reuse = PETSC_TRUE;
@@ -7702,6 +7691,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     if (isredundant) {
       KSP inner_ksp;
       PC  inner_pc;
+
       ierr = PCRedundantGetKSP(pc_temp,&inner_ksp);CHKERRQ(ierr);
       ierr = KSPGetPC(inner_ksp,&inner_pc);CHKERRQ(ierr);
       ierr = PCFactorSetReuseFill(inner_pc,PETSC_TRUE);CHKERRQ(ierr);

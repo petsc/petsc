@@ -2156,10 +2156,12 @@ PetscErrorCode PCApplyTranspose_BDDC(PC pc,Vec r,Vec z)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCDestroy_BDDC"
-PetscErrorCode PCDestroy_BDDC(PC pc)
+#define __FUNCT__ "PCReset_BDDC"
+PetscErrorCode PCReset_BDDC(PC pc)
 {
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
+  PC_IS          *pcis = (PC_IS*)pc->data;
+  KSP            kspD,kspR,kspC;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2167,13 +2169,8 @@ PetscErrorCode PCDestroy_BDDC(PC pc)
   ierr = PCBDDCResetCustomization(pc);CHKERRQ(ierr);
   /* destroy objects related to topography */
   ierr = PCBDDCResetTopography(pc);CHKERRQ(ierr);
-  /* free allocated graph structure */
-  ierr = PetscFree(pcbddc->mat_graph);CHKERRQ(ierr);
-  /* free allocated sub schurs structure */
-  ierr = PetscFree(pcbddc->sub_schurs);CHKERRQ(ierr);
   /* destroy objects for scaling operator */
   ierr = PCBDDCScalingDestroy(pc);CHKERRQ(ierr);
-  ierr = PetscFree(pcbddc->deluxe_ctx);CHKERRQ(ierr);
   /* free solvers stuff */
   ierr = PCBDDCResetSolvers(pc);CHKERRQ(ierr);
   /* free global vectors needed in presolve */
@@ -2181,7 +2178,48 @@ PetscErrorCode PCDestroy_BDDC(PC pc)
   ierr = VecDestroy(&pcbddc->original_rhs);CHKERRQ(ierr);
   /* free data created by PCIS */
   ierr = PCISDestroy(pc);CHKERRQ(ierr);
-  /* remove functions */
+
+  /* restore defaults */
+  kspD = pcbddc->ksp_D;
+  kspR = pcbddc->ksp_R;
+  kspC = pcbddc->coarse_ksp;
+  ierr = PetscMemzero(pc->data,sizeof(*pcbddc));CHKERRQ(ierr);
+  pcis->n_neigh                     = -1;
+  pcis->scaling_factor              = 1.0;
+  pcis->reusesubmatrices            = PETSC_TRUE;
+  pcbddc->use_local_adj             = PETSC_TRUE;
+  pcbddc->use_vertices              = PETSC_TRUE;
+  pcbddc->use_edges                 = PETSC_TRUE;
+  pcbddc->symmetric_primal          = PETSC_TRUE;
+  pcbddc->vertex_size               = 1;
+  pcbddc->recompute_topography      = PETSC_TRUE;
+  pcbddc->coarse_size               = -1;
+  pcbddc->use_exact_dirichlet_trick = PETSC_TRUE;
+  pcbddc->coarsening_ratio          = 8;
+  pcbddc->coarse_eqs_per_proc       = 1;
+  pcbddc->benign_compute_correction = PETSC_TRUE;
+  pcbddc->nedfield                  = -1;
+  pcbddc->nedglobal                 = PETSC_TRUE;
+  pcbddc->graphmaxcount             = PETSC_MAX_INT;
+  pcbddc->sub_schurs_layers         = -1;
+  pcbddc->ksp_D                     = kspD;
+  pcbddc->ksp_R                     = kspR;
+  pcbddc->coarse_ksp                = kspC;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCDestroy_BDDC"
+PetscErrorCode PCDestroy_BDDC(PC pc)
+{
+  PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PCReset_BDDC(pc);CHKERRQ(ierr);
+  ierr = KSPDestroy(&pcbddc->ksp_D);CHKERRQ(ierr);
+  ierr = KSPDestroy(&pcbddc->ksp_R);CHKERRQ(ierr);
+  ierr = KSPDestroy(&pcbddc->coarse_ksp);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetDiscreteGradient_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetDivergenceMat_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetChangeOfBasisMat_C",NULL);CHKERRQ(ierr);
@@ -2206,7 +2244,6 @@ PetscErrorCode PCDestroy_BDDC(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCMatFETIDPGetRHS_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCMatFETIDPGetSolution_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPreSolveChangeRHS_C",NULL);CHKERRQ(ierr);
-  /* Free the private data structure */
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2621,124 +2658,31 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   PC_BDDC             *pcbddc;
 
   PetscFunctionBegin;
-  /* Creates the private data structure for this preconditioner and attach it to the PC object. */
-  ierr      = PetscNewLog(pc,&pcbddc);CHKERRQ(ierr);
-  pc->data  = (void*)pcbddc;
+  ierr     = PetscNewLog(pc,&pcbddc);CHKERRQ(ierr);
+  pc->data = (void*)pcbddc;
 
   /* create PCIS data structure */
   ierr = PCISCreate(pc);CHKERRQ(ierr);
 
-  /* BDDC customization */
-  pcbddc->use_local_adj       = PETSC_TRUE;
-  pcbddc->use_vertices        = PETSC_TRUE;
-  pcbddc->use_edges           = PETSC_TRUE;
-  pcbddc->use_faces           = PETSC_FALSE;
-  pcbddc->use_change_of_basis = PETSC_FALSE;
-  pcbddc->use_change_on_faces = PETSC_FALSE;
-  pcbddc->switch_static       = PETSC_FALSE;
-  pcbddc->use_nnsp_true       = PETSC_FALSE;
-  pcbddc->use_qr_single       = PETSC_FALSE;
-  pcbddc->symmetric_primal    = PETSC_TRUE;
-  pcbddc->benign_saddle_point = PETSC_FALSE;
-  pcbddc->benign_have_null    = PETSC_FALSE;
-  pcbddc->vertex_size         = 1;
-  pcbddc->dbg_flag            = 0;
-  /* private */
-  pcbddc->local_primal_size          = 0;
-  pcbddc->local_primal_size_cc       = 0;
-  pcbddc->local_primal_ref_node      = 0;
-  pcbddc->local_primal_ref_mult      = 0;
-  pcbddc->n_vertices                 = 0;
-  pcbddc->primal_indices_local_idxs  = 0;
-  pcbddc->recompute_topography       = PETSC_TRUE;
-  pcbddc->coarse_size                = -1;
-  pcbddc->new_primal_space           = PETSC_FALSE;
-  pcbddc->new_primal_space_local     = PETSC_FALSE;
-  pcbddc->global_primal_indices      = 0;
-  pcbddc->onearnullspace             = 0;
-  pcbddc->onearnullvecs_state        = 0;
-  pcbddc->user_primal_vertices       = 0;
-  pcbddc->user_primal_vertices_local = 0;
-  pcbddc->temp_solution              = 0;
-  pcbddc->original_rhs               = 0;
-  pcbddc->local_mat                  = 0;
-  pcbddc->ChangeOfBasisMatrix        = 0;
-  pcbddc->user_ChangeOfBasisMatrix   = 0;
-  pcbddc->coarse_vec                 = 0;
-  pcbddc->coarse_ksp                 = 0;
-  pcbddc->coarse_phi_B               = 0;
-  pcbddc->coarse_phi_D               = 0;
-  pcbddc->coarse_psi_B               = 0;
-  pcbddc->coarse_psi_D               = 0;
-  pcbddc->vec1_P                     = 0;
-  pcbddc->vec1_R                     = 0;
-  pcbddc->vec2_R                     = 0;
-  pcbddc->local_auxmat1              = 0;
-  pcbddc->local_auxmat2              = 0;
-  pcbddc->R_to_B                     = 0;
-  pcbddc->R_to_D                     = 0;
-  pcbddc->ksp_D                      = 0;
-  pcbddc->ksp_R                      = 0;
-  pcbddc->NeumannBoundaries          = 0;
-  pcbddc->NeumannBoundariesLocal     = 0;
-  pcbddc->DirichletBoundaries        = 0;
-  pcbddc->DirichletBoundariesLocal   = 0;
-  pcbddc->user_provided_isfordofs    = PETSC_FALSE;
-  pcbddc->n_ISForDofs                = 0;
-  pcbddc->n_ISForDofsLocal           = 0;
-  pcbddc->ISForDofs                  = 0;
-  pcbddc->ISForDofsLocal             = 0;
-  pcbddc->ConstraintMatrix           = 0;
-  pcbddc->use_exact_dirichlet_trick  = PETSC_TRUE;
-  pcbddc->exact_dirichlet_trick_app  = PETSC_FALSE;
-  pcbddc->coarse_loc_to_glob         = 0;
-  pcbddc->coarsening_ratio           = 8;
-  pcbddc->coarse_adj_red             = 0;
-  pcbddc->current_level              = 0;
-  pcbddc->max_levels                 = 0;
-  pcbddc->use_coarse_estimates       = PETSC_FALSE;
-  pcbddc->coarse_eqs_per_proc        = 1;
-  pcbddc->coarse_subassembling       = 0;
-  pcbddc->detect_disconnected        = PETSC_FALSE;
-  pcbddc->n_local_subs               = 0;
-  pcbddc->local_subs                 = NULL;
-
-  /* benign subspace trick */
-  pcbddc->benign_change              = 0;
-  pcbddc->benign_compute_correction  = PETSC_TRUE;
-  pcbddc->benign_vec                 = 0;
-  pcbddc->benign_original_mat        = 0;
-  pcbddc->benign_sf                  = 0;
-  pcbddc->benign_B0                  = 0;
-  pcbddc->benign_n                   = 0;
-  pcbddc->benign_p0                  = NULL;
-  pcbddc->benign_p0_lidx             = NULL;
-  pcbddc->benign_p0_gidx             = NULL;
-  pcbddc->benign_null                = PETSC_FALSE;
-
-  /* Nedelec */
-  pcbddc->nedfield  = -1;
-  pcbddc->nedglobal = PETSC_TRUE;
-
   /* create local graph structure */
   ierr = PCBDDCGraphCreate(&pcbddc->mat_graph);CHKERRQ(ierr);
-  pcbddc->graphmaxcount = PETSC_MAX_INT;
 
-  /* scaling */
-  pcbddc->work_scaling          = 0;
-  pcbddc->use_deluxe_scaling    = PETSC_FALSE;
-
-  /* sub schurs options */
-  pcbddc->sub_schurs_rebuild     = PETSC_FALSE;
-  pcbddc->sub_schurs_layers      = -1;
-  pcbddc->sub_schurs_use_useradj = PETSC_FALSE;
-
-  pcbddc->computed_rowadj = PETSC_FALSE;
-
-  /* adaptivity */
-  pcbddc->adaptive_threshold      = 0.0;
-  pcbddc->adaptive_nmax           = 0;
-  pcbddc->adaptive_nmin           = 0;
+  /* BDDC nonzero defaults */
+  pcbddc->use_local_adj             = PETSC_TRUE;
+  pcbddc->use_vertices              = PETSC_TRUE;
+  pcbddc->use_edges                 = PETSC_TRUE;
+  pcbddc->symmetric_primal          = PETSC_TRUE;
+  pcbddc->vertex_size               = 1;
+  pcbddc->recompute_topography      = PETSC_TRUE;
+  pcbddc->coarse_size               = -1;
+  pcbddc->use_exact_dirichlet_trick = PETSC_TRUE;
+  pcbddc->coarsening_ratio          = 8;
+  pcbddc->coarse_eqs_per_proc       = 1;
+  pcbddc->benign_compute_correction = PETSC_TRUE;
+  pcbddc->nedfield                  = -1;
+  pcbddc->nedglobal                 = PETSC_TRUE;
+  pcbddc->graphmaxcount             = PETSC_MAX_INT;
+  pcbddc->sub_schurs_layers         = -1;
 
   /* function pointers */
   pc->ops->apply               = PCApply_BDDC;
@@ -2752,6 +2696,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pc->ops->applysymmetricright = 0;
   pc->ops->presolve            = PCPreSolve_BDDC;
   pc->ops->postsolve           = PCPostSolve_BDDC;
+  pc->ops->reset               = PCReset_BDDC;
 
   /* composing function */
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetDiscreteGradient_C",PCBDDCSetDiscreteGradient_BDDC);CHKERRQ(ierr);
