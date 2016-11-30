@@ -4,7 +4,7 @@
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define vecsetvalueslocal0_       VECSETVALUESLOCAL0
-#define vecsetvalueslocal111_     VECSETVALUESLOCAL11
+#define vecsetvalueslocal11_      VECSETVALUESLOCAL11
 #define vecsetvalues_             VECSETVALUES
 #define vecsetvalues0_            VECSETVALUES0
 #define vecsetvalues11_           VECSETVALUES11
@@ -26,7 +26,7 @@
 #define vecsetoptionsprefix_      VECSETOPTIONSPREFIX
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define vecsetvalueslocal0_       vecsetvalueslocal0
-#define vecsetvalueslocal111_     vecsetvalueslocal11
+#define vecsetvalueslocal11_      vecsetvalueslocal11
 #define vecsetvalues_             vecsetvalues
 #define vecsetvalues0_            vecsetvalues0
 #define vecsetvalues11_           vecsetvalues11
