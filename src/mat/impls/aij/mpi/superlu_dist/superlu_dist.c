@@ -357,8 +357,12 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFacto
       if (lu->FactPattern == SamePattern_SameRowPerm) {
         lu->options.Fact = SamePattern_SameRowPerm; /* matrix has similar numerical values */
       } else if (lu->FactPattern == SamePattern) {
-        PetscStackCall("SuperLU_DIST:Destroy_LU",Destroy_LU(N, &lu->grid, &lu->LUstruct)); /* Deallocate storage associated with the L and U matrices. */
+        PetscStackCall("SuperLU_DIST:Destroy_LU",Destroy_LU(N, &lu->grid, &lu->LUstruct)); /* Deallocate L and U matrices. */
         lu->options.Fact = SamePattern;
+      } else if (lu->FactPattern == DOFACT) {
+        SUPERLU_FREE( lu->A_sup.Store );
+        PetscStackCall("SuperLU_DIST:Destroy_LU",Destroy_LU(N, &lu->grid, &lu->LUstruct));
+        lu->options.Fact = DOFACT;
       } else {
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"options.Fact must be one of SamePattern SamePattern_SameRowPerm");
       }
@@ -581,7 +585,7 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
   PetscBool              flg;
   const char             *colperm[]     = {"NATURAL","MMD_AT_PLUS_A","MMD_ATA","METIS_AT_PLUS_A","PARMETIS"};
   const char             *rowperm[]     = {"LargeDiag","NATURAL"};
-  const char             *factPattern[] = {"SamePattern","SamePattern_SameRowPerm"};
+  const char             *factPattern[] = {"SamePattern","SamePattern_SameRowPerm","DOFACT"};
   PetscBool              set;
 
   PetscFunctionBegin;
@@ -601,7 +605,7 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
   ierr = PetscFree(B->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATSOLVERSUPERLU_DIST,&B->solvertype);CHKERRQ(ierr);
 
-  ierr     = PetscNewLog(B,&lu);CHKERRQ(ierr);
+  ierr    = PetscNewLog(B,&lu);CHKERRQ(ierr);
   B->data = lu;
 
   /* Set the default input options:
@@ -700,7 +704,7 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
   }
 
   lu->FactPattern = SamePattern_SameRowPerm;
-  ierr = PetscOptionsEList("-mat_superlu_dist_fact","Sparsity pattern for repeated matrix factorization","None",factPattern,2,factPattern[0],&indx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-mat_superlu_dist_fact","Sparsity pattern for repeated matrix factorization","None",factPattern,3,factPattern[0],&indx,&flg);CHKERRQ(ierr);
   if (flg) {
     switch (indx) {
     case 0:
@@ -708,6 +712,9 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
       break;
     case 1:
       lu->FactPattern = SamePattern_SameRowPerm;
+      break;
+    case 2:
+      lu->FactPattern = DOFACT;
       break;
     }
   }
