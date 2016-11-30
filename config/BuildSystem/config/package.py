@@ -340,7 +340,8 @@ class Package(config.base.Configure):
 
   def getIncludeDirs(self, prefix, includeDir):
     if isinstance(includeDir, list):
-      return [inc for inc in includeDir if os.path.isabs(inc)] + [os.path.join(prefix, inc) for inc in includeDir if not os.path.isabs(inc)]
+      iDirs = [inc for inc in includeDir if os.path.isabs(inc)] + [os.path.join(prefix, inc) for inc in includeDir if not os.path.isabs(inc)]
+      return [inc for inc in iDirs if os.path.exists(inc)]
     return os.path.join(prefix, includeDir)
 
   def generateGuesses(self):
