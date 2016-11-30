@@ -3236,10 +3236,9 @@ PetscErrorCode PCBDDCResetTopography(PC pc)
   for (i=0;i<pcbddc->n_local_subs;i++) {
     ierr = ISDestroy(&pcbddc->local_subs[i]);CHKERRQ(ierr);
   }
+  pcbddc->n_local_subs = 0;
   ierr = PetscFree(pcbddc->local_subs);CHKERRQ(ierr);
-  if (pcbddc->sub_schurs) {
-    ierr = PCBDDCSubSchursReset(pcbddc->sub_schurs);CHKERRQ(ierr);
-  }
+  ierr = PCBDDCSubSchursDestroy(&pcbddc->sub_schurs);CHKERRQ(ierr);
   pcbddc->graphanalyzed        = PETSC_FALSE;
   pcbddc->recompute_topography = PETSC_TRUE;
   PetscFunctionReturn(0);
