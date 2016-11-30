@@ -7,6 +7,7 @@ if __name__ == '__main__':
   configure_options = [
     '--download-f2cblaslapack',
     '--with-cc=win32fe cl',
+    '--with-shared-libraries=1',
     '--with-cxx=0',
     '--with-fc=0',
     '--with-mpi=0',
