@@ -8,7 +8,7 @@ if __name__ == '__main__':
   configure_options = [
     '--with-cuda=1',
     '--with-cusp=1',
-    '-with-cusp-dir=/home/balay/soft/cusplibrary-0.4.0',
+    '--with-cusp-dir=/home/balay/soft/cusplibrary-g0a21327',
     '--with-thrust=1',
     '--with-precision=double',
     '--with-clanguage=c',
