@@ -110,17 +110,17 @@ if (flg) {                                   \
     "Use PETSC_NULL_REAL"); *ierr = 1; return; } \
   else if (FORTRANNULLREAL(a)) { a = NULL; }
 
+/*
+   The next two macros can generate false positives for Valgrind if the object passed
+   in has never been set before because the location (void**)a has never had a value
+   set to it. To prevent the false positive in the Fortran code one can initialize the
+   object with a = tXXX(0); for example a = tVec(0)
+*/
 #define CHKFORTRANNULLOBJECT(a)  \
   if (FORTRANNULLINTEGER(a) || FORTRANNULLDOUBLE(a) || FORTRANNULLSCALAR(a) || FORTRANNULLREAL(a) || FORTRANNULLBOOL(a) || FORTRANNULLFUNCTION(a)) { \
     PetscError(PETSC_COMM_SELF,__LINE__,"fortran_interface_unknown_file",__FILE__,PETSC_ERR_ARG_WRONG,PETSC_ERROR_INITIAL, \
     "Use PETSC_NULL_XXXX"); *ierr = 1; return; } \
   else if (*(void**)a == (void*)-1) { a = NULL; }
-
-#define CHKFORTRANNULLBOOL(a)  \
-  if (FORTRANNULLINTEGER(a) || FORTRANNULLDOUBLE(a) || FORTRANNULLSCALAR(a) || FORTRANNULLREAL(a)  || FORTRANNULLFUNCTION(a)) { \
-    PetscError(PETSC_COMM_SELF,__LINE__,"fortran_interface_unknown_file",__FILE__,PETSC_ERR_ARG_WRONG,PETSC_ERROR_INITIAL, \
-    "Use PETSC_NULL_BOOL"); *ierr = 1; return; } \
-  else if (FORTRANNULLBOOL(a)) { a = NULL; }
 
 PETSC_EXTERN void  *PETSCNULLPOINTERADDRESS;
 
@@ -129,6 +129,13 @@ PETSC_EXTERN void  *PETSCNULLPOINTERADDRESS;
     PetscError(PETSC_COMM_SELF,__LINE__,"fortran_interface_unknown_file",__FILE__,PETSC_ERR_ARG_WRONG,PETSC_ERROR_INITIAL, \
     "Use PETSC_NULL_XXX"); *ierr = 1; return; } \
   else if (*(void**)a == (void*)-1) { *((void***)&a) = &PETSCNULLPOINTERADDRESS; }
+
+
+#define CHKFORTRANNULLBOOL(a)  \
+  if (FORTRANNULLINTEGER(a) || FORTRANNULLDOUBLE(a) || FORTRANNULLSCALAR(a) || FORTRANNULLREAL(a)  || FORTRANNULLFUNCTION(a)) { \
+    PetscError(PETSC_COMM_SELF,__LINE__,"fortran_interface_unknown_file",__FILE__,PETSC_ERR_ARG_WRONG,PETSC_ERROR_INITIAL, \
+    "Use PETSC_NULL_BOOL"); *ierr = 1; return; } \
+  else if (FORTRANNULLBOOL(a)) { a = NULL; }
 
 #define CHKFORTRANNULLFUNCTION(a)  \
   if (FORTRANNULLSCALAR(a) || FORTRANNULLDOUBLE(a) || FORTRANNULLREAL(a) || FORTRANNULLINTEGER(a) || FORTRANNULLBOOL(a) ) { \

@@ -25,8 +25,8 @@ PETSC_EXTERN void PETSC_STDCALL pcview_(PC *pc,PetscViewer *viewer, PetscErrorCo
 
 PETSC_EXTERN void PETSC_STDCALL pcgetoperators_(PC *pc,Mat *mat,Mat *pmat,PetscErrorCode *ierr)
 {
-  CHKFORTRANNULLOBJECT(mat);
-  CHKFORTRANNULLOBJECT(pmat);
+  CHKFORTRANNULLOBJECTDEREFERENCE(mat);
+  CHKFORTRANNULLOBJECTDEREFERENCE(pmat);
   *ierr = PCGetOperators(*pc,mat,pmat);
 }
 

@@ -278,6 +278,7 @@
       PC jacobi,sor
       Vec work
 
+      pmat = tMat(0)
       call PCGetOperators(pc,PETSC_NULL_MAT,pmat,ierr)
       call PCCreate(PETSC_COMM_WORLD,jacobi,ierr)
       call PCSetType(jacobi,PCJACOBI,ierr)

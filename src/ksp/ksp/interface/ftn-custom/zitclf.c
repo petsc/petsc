@@ -28,22 +28,17 @@
 
 PETSC_EXTERN void PETSC_STDCALL kspbuildsolution_(KSP *ksp,Vec *v,Vec *V, int *ierr)
 {
-  Vec vp = 0;
-  CHKFORTRANNULLOBJECT(v);
+  CHKFORTRANNULLOBJECTDEREFERENCE(v);
   CHKFORTRANNULLOBJECT(V);
-  if (v) vp = *v;
-  *ierr = KSPBuildSolution(*ksp,vp,V);
+  *ierr = KSPBuildSolution(*ksp,*v,V);
 }
 
 PETSC_EXTERN void PETSC_STDCALL kspbuildresidual_(KSP *ksp,Vec *t,Vec *v,Vec *V, int *ierr)
 {
-  Vec tp = 0,vp = 0;
-  CHKFORTRANNULLOBJECT(t);
-  CHKFORTRANNULLOBJECT(v);
+  CHKFORTRANNULLOBJECTDEREFERENCE(t);
+  CHKFORTRANNULLOBJECTDEREFERENCE(v);
   CHKFORTRANNULLOBJECT(V);
-  if (t) tp = *t;
-  if (v) vp = *v;
-  *ierr = KSPBuildResidual(*ksp,tp,vp,V);
+  *ierr = KSPBuildResidual(*ksp,*t,*v,V);
 }
 
 PETSC_EXTERN void PETSC_STDCALL kspgetoptionsprefix_(KSP *ksp,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))

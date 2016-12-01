@@ -285,7 +285,8 @@
       common /myshellpc/ diag
       Vec    diag
 
-      call PCGetOperators(pc,PETSC_NULL_OPTIONS,pmat,ierr)
+      pmat = tMat(0)
+      call PCGetOperators(pc,PETSC_NULL_MAT,pmat,ierr)
       call MatCreateVecs(pmat,diag,PETSC_NULL_VEC,ierr)
       call MatGetDiagonal(pmat,diag,ierr)
       call VecReciprocal(diag,ierr)

@@ -324,7 +324,7 @@
       PetscReal rnorm
 
 !  Build the solution vector
-
+      x = tVec(0)
       call KSPBuildSolution(ksp,PETSC_NULL_VEC,x,ierr)
 
 !  Write the solution vector and residual norm to stdout
