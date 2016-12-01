@@ -416,17 +416,17 @@
 
       ierr   = 0
       one    = 1.0
-      hx     = one/(dble(user%mx-1))
-      hy     = one/(dble(user%my-1))
+      hx     = one/(PetscIntToReal(user%mx-1))
+      hy     = one/(PetscIntToReal(user%my-1))
       temp1  = user%lambda/(user%lambda + one)
 
       do 20 j=user%ys,user%ye
-         temp = dble(min(j-1,user%my-j))*hy
+         temp = PetscIntToReal(min(j-1,user%my-j))*hy
          do 10 i=user%xs,user%xe
             if (i .eq. 1 .or. j .eq. 1 .or. i .eq. user%mx .or. j .eq. user%my) then
               x(i,j) = 0.0
             else
-              x(i,j) = temp1 * sqrt(min(dble(min(i-1,user%mx-i)*hx),dble(temp)))
+              x(i,j) = temp1 * sqrt(min(PetscIntToReal(min(i-1,user%mx-i)*hx),PetscIntToReal(temp)))
             endif
  10      continue
  20   continue
@@ -466,8 +466,8 @@
 
       one    = 1.0
       two    = 2.0
-      hx     = one/dble(user%mx-1)
-      hy     = one/dble(user%my-1)
+      hx     = one/PetscIntToReal(user%mx-1)
+      hy     = one/PetscIntToReal(user%my-1)
       sc     = hx*hy*user%lambda
       hxdhy  = hx/hy
       hydhx  = hy/hx
@@ -644,8 +644,8 @@
       ifive  = 5
       one    = 1.0
       two    = 2.0
-      hx     = one/dble(user%mx-1)
-      hy     = one/dble(user%my-1)
+      hx     = one/PetscIntToReal(user%mx-1)
+      hy     = one/PetscIntToReal(user%my-1)
       sc     = hx*hy
       hxdhy  = hx/hy
       hydhx  = hy/hx

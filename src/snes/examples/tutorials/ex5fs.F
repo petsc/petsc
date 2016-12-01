@@ -34,8 +34,8 @@
 
       one    = 1.0
       two    = 2.0
-      hx     = one/dble(mx-1)
-      hy     = one/dble(my-1)
+      hx     = one/PetscIntToReal(mx-1)
+      hy     = one/PetscIntToReal(my-1)
       sc     = hx*hy*lambda
       hxdhy  = hx/hy
       hydhx  = hy/hx

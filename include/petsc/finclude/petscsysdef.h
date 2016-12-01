@@ -138,10 +138,13 @@
 #endif
 #if defined(PETSC_USE_REAL_SINGLE)
 #define  PETSC_REAL  PETSC_FLOAT
+#define PetscIntToReal(a) real(a)
 #elif defined(PETSC_USE_REAL___FLOAT128)
 #define PETSC_REAL PETSC___FLOAT128
+#define PetscIntToReal(a) dble(a)
 #else
 #define  PETSC_REAL  PETSC_DOUBLE
+#define PetscIntToReal(a) dble(a)
 #endif
 !
 !     Macro for templating between real and complex
