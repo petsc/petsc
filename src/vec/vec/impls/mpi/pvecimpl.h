@@ -21,7 +21,7 @@ typedef struct {
 
 typedef struct {
   VECHEADER
-  PetscInt    nghost;                   /* length of local portion including ghost padding */
+  PetscInt    nghost;                   /* number of ghost points on this process */
   Vec         localrep;                 /* local representation of vector */
   VecScatter  localupdate;              /* scatter to update ghost values */
 
