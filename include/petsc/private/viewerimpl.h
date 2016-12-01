@@ -7,7 +7,6 @@
 
 PETSC_EXTERN PetscBool      PetscViewerRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PetscViewerRegisterAll(void);
-PETSC_EXTERN PetscLogEvent  PetscOptions_GetViewer;
 
 struct _PetscViewerOps {
    PetscErrorCode (*destroy)(PetscViewer);
