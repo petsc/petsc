@@ -53,12 +53,13 @@ class Configure(config.base.Configure):
       if self.x.found:
         jobs.append('C_X')
       if hasattr(self.compilers, 'FC'):
-        jobs.append('F90_DataTypes')
         jobs.append('Fortran')
         if not self.scalartypes.precision == 'single':
           jobs.append('Fortran_NotSingle')
         if self.compilers.fortranIsF90FreeForm and self.compilers.fortranIsF90:
           rjobs.append('F90')
+          if self.datafilespath.datafilespath and self.scalartypes.precision == 'double' and self.indextypes.integerSize == 32:
+            jobs.append('F90_DataTypes')
           if self.libraryOptions.useThreadSafety:
             jobs.append('F90_Threadsafety')
           if not self.scalartypes.precision == 'single':
