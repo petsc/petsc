@@ -352,7 +352,7 @@ runex19f:
 runex20f:
 	-@${MPIEXEC} -n 1 ./ex20f > ex20_1.tmp 2>&1;\
 	   if (${DIFF} output/ex20f_1.out ex20_1.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex20_1, diffs above\n=========================================\n"; fi;\
+	   else printf "${PWD}\nPossible problem with ex20f_1, diffs above\n=========================================\n"; fi;\
 	   ${RM} -f ex20_1.tmp vector.dat
 runex21:
 	-@${MPIEXEC} -n 1 ./ex21 > ex21_1.tmp 2>&1;\
