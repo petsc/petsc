@@ -13,7 +13,8 @@
       PetscErrorCode  ierr
       PetscInt its,m,n,mlocal,nlocal
       PetscBool  flg
-      PetscScalar      norm,none
+      PetscScalar      none
+      PetscReal        norm
       Vec              x,b,u
       Mat              A
       character*(128)  f
