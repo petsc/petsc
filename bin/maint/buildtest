@@ -52,7 +52,7 @@ echo "Cleaning throughly at $nPETSC_DIR" >>& build.log
 # externalpackages can be a git repo - so one has to explicitly remove them
 rm -rf ./${ARCH}
 echo "Currently building git branch:" `git describe --contains --all HEAD` >>& build.log
-git log -1 >>& build.log
+git log --oneline -1 >>& build.log
 
 setenv PETSC_DIR $nPETSC_DIR
 set PETSC_ARCH=${ARCH}
@@ -124,7 +124,7 @@ else
 endif
 rm -f examples.log
 echo "Build on $MACH $PETSC_ARCH TESTMODE=$TESTMODE ${VALGRIND} ${ANALYZER_PCC} `date` " > examples.log
-git log -1 >>& examples.log
+git log --oneline -1 >>& examples.log
 if ( "${BUILDER}" == "yes" ) then
   env PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR ./config/builder2.py regression >>& examples.log
 else
