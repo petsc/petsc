@@ -23,6 +23,7 @@
       PetscMPIInt      rank
       PetscBool        flg
 #if defined(PETSC_HAVE_MUMPS)
+      PC               pc
       Mat              F
       PetscInt         ival,icntl,infog34
       PetscReal        cntl,rinfo12,rinfo13,val
