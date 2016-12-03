@@ -5,8 +5,8 @@
 #if !defined (__PETSCISDEF_H)
 #define __PETSCISDEF_H
 
-#include "petsc/finclude/petscsysdef.h"
-#include "petsc/finclude/petscviewerdef.h"
+#include "petsc/finclude/petscsys.h"
+#include "petsc/finclude/petscviewer.h"
 
 #define IS type(tIS)
 #define ISColoring type(tISColoring)

@@ -1,8 +1,8 @@
 !
 !
       program main
-#include <petsc/finclude/petscsysdef.h>
-#include <petsc/finclude/petscdrawdef.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscdraw.h>
       use petscsys
       implicit none
 !

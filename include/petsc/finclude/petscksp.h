@@ -5,7 +5,7 @@
 #if !defined (__PETSCKSPDEF_H)
 #define __PETSCKSPDEF_H
 
-#include "petsc/finclude/petscpcdef.h"
+#include "petsc/finclude/petscpc.h"
 
 #define KSP type(tKSP)
 #define KSPFischerGuess type(tKSPFischerGuess)

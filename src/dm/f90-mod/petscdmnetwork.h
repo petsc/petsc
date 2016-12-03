@@ -1,6 +1,6 @@
 
 !
 !
-#include "petsc/finclude/petscdmnetworkdef.h"
+#include "petsc/finclude/petscdmnetwork.h"
 
 

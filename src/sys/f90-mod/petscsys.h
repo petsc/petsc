@@ -4,7 +4,7 @@
 !
 #include "petscconf.h"
 #include "petscversion.h"
-#include "petsc/finclude/petscsysdef.h"
+#include "petsc/finclude/petscsys.h"
 
 !
 !    The following block allows one to write constants that match the

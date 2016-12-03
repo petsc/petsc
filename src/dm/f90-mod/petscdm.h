@@ -3,7 +3,7 @@
 !
 !  Include file for Fortran use of the DM package in PETSc
 !
-#include "petsc/finclude/petscdmdef.h"
+#include "petsc/finclude/petscdm.h"
 
       type tDM
         sequence

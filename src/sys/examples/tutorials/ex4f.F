@@ -10,7 +10,7 @@
 ! -----------------------------------------------------------------------
 
       program main
-#include <petsc/finclude/petscsysdef.h>
+#include <petsc/finclude/petscsys.h>
       use petscsys
       implicit none
       PetscErrorCode ierr

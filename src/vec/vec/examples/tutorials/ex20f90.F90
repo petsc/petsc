@@ -17,7 +17,7 @@
 !     This examples uses Fortran 90 MODULES instead of include files
 !   see the manual page UsingFortran
 !
-#include <petsc/finclude/petscvecdef.h>
+#include <petsc/finclude/petscvec.h>
       use petscvec
       implicit none
 

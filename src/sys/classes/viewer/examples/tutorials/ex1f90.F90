@@ -1,6 +1,6 @@
 
       program ex5f90
-#include <petsc/finclude/petscsysdef.h>
+#include <petsc/finclude/petscsys.h>
       use petscsys
       implicit none
 

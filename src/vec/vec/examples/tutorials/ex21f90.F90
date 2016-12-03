@@ -6,7 +6,7 @@
 ! -----------------------------------------------------------------------
 
       module mymodule
-#include <petsc/finclude/petscsysdef.h>
+#include <petsc/finclude/petscsys.h>
       type MyStruct
         sequence
         PetscScalar :: a,b,c
@@ -19,7 +19,7 @@
 !  customized for exactly the derived type in question
 !
       subroutine F90Array1dCreateMyStruct(array,start,len,ptr)
-#include <petsc/finclude/petscsysdef.h>
+#include <petsc/finclude/petscsys.h>
       use petscsys
       use mymodule
       implicit none
@@ -31,7 +31,7 @@
       end subroutine
 
       subroutine F90Array1dAccessMyStruct(ptr,address)
-#include <petsc/finclude/petscsysdef.h>
+#include <petsc/finclude/petscsys.h>
       use petscsys
       use mymodule
       implicit none
@@ -44,7 +44,7 @@
       end subroutine
 
       subroutine F90Array1dDestroyMyStruct(ptr)
-#include <petsc/finclude/petscsysdef.h>
+#include <petsc/finclude/petscsys.h>
       use petscsys
       use mymodule
       implicit none
@@ -55,7 +55,7 @@
 
 
       program main
-#include <petsc/finclude/petscvecdef.h>
+#include <petsc/finclude/petscvec.h>
       use petscvec
       use mymodule
       implicit none

@@ -1,7 +1,7 @@
 !
 !  Include file for Fortran use of the PetscViewer package in PETSc
 !
-#include "petsc/finclude/petscviewerdef.h"
+#include "petsc/finclude/petscviewer.h"
 
       type tPetscViewer
         PetscFortranAddr:: v

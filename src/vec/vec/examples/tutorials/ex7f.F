@@ -1,7 +1,7 @@
 !
 !
        subroutine ex7f(vec,comm)
-#include <petsc/finclude/petscvecdef.h>
+#include <petsc/finclude/petscvec.h>
        use petscvec
        implicit none
 !

@@ -31,7 +31,7 @@
 !  --------------------------------------------------------------------------
 
       program main
-#include <petsc/finclude/petscsnesdef.h>
+#include <petsc/finclude/petscsnes.h>
       use petscdmda
       use petscsnes
       implicit none
@@ -317,7 +317,7 @@
 !
 !
       subroutine FormFunctionLocal(info,x,f,dummy,ierr)
-#include <petsc/finclude/petscdmdadef.h>
+#include <petsc/finclude/petscdmda.h>
       use petscsnes
       implicit none
 

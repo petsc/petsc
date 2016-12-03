@@ -15,7 +15,7 @@
 !
 
   module PETScShiftMod
-#include <petsc/finclude/petsctsdef.h>
+#include <petsc/finclude/petscts.h>
     use petscts
     PetscScalar::PETSC_SHIFT
     TS::tscontext

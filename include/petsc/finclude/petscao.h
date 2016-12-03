@@ -5,7 +5,7 @@
 #if !defined (__PETSCAODEF_H)
 #define __PETSCAODEF_H
 
-#include "petsc/finclude/petscisdef.h"
+#include "petsc/finclude/petscis.h"
 
 #define AO PetscFortranAddr
 #define AOType character*(80)

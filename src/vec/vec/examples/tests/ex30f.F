@@ -3,7 +3,7 @@
 !  Tests parallel to parallel scatter where a to from index are
 !  duplicated
       program main
-#include <petsc/finclude/petscvecdef.h>
+#include <petsc/finclude/petscvec.h>
       use petscvec
       implicit none
 

@@ -5,10 +5,10 @@
 #if !defined (__PETSCDMDADEF_H)
 #define __PETSCDMDADEF_H
 
-#include "petsc/finclude/petscisdef.h"
-#include "petsc/finclude/petscvecdef.h"
-#include "petsc/finclude/petscmatdef.h"
-#include "petsc/finclude/petscdmdef.h"
+#include "petsc/finclude/petscis.h"
+#include "petsc/finclude/petscvec.h"
+#include "petsc/finclude/petscmat.h"
+#include "petsc/finclude/petscdm.h"
 
 #define DMDAStencilType PetscEnum
 #define DMDADirection PetscEnum

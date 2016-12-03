@@ -36,7 +36,7 @@
 !
 
       module f90module
-#include <petsc/finclude/petscdmdef.h>
+#include <petsc/finclude/petscdm.h>
       use petscdmdef
       type userctx
         type(tDM) da
@@ -70,7 +70,7 @@
 !  the local vector data via VecGetArrayF90() and VecRestoreArrayF90().
 !
       subroutine FormFunction(snesIn,X,F,user,ierr)
-#include <petsc/finclude/petscsnesdef.h>
+#include <petsc/finclude/petscsnes.h>
       use petscsnes
 
 !  Input/output variables:
@@ -125,7 +125,7 @@
 
       Interface SNESSetApplicationContext
         Subroutine SNESSetApplicationContext(snesIn,ctx,ierr)
-#include <petsc/finclude/petscsnesdef.h>
+#include <petsc/finclude/petscsnes.h>
         use petscsnes
         use f90module
           type(tSNES)    snesIn
@@ -136,7 +136,7 @@
 
       Interface SNESGetApplicationContext
         Subroutine SNESGetApplicationContext(snesIn,ctx,ierr)
-#include <petsc/finclude/petscsnesdef.h>
+#include <petsc/finclude/petscsnes.h>
         use petscsnes
         use f90module
           type(tSNES)     snesIn
@@ -147,8 +147,8 @@
       end module f90moduleinterfaces
 
       program main
-#include <petsc/finclude/petscdmdef.h>
-#include <petsc/finclude/petscsnesdef.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscsnes.h>
       use petscdmda
       use petscdm
       use petscsnes
@@ -347,7 +347,7 @@
 !  the local vector data via VecGetArrayF90() and VecRestoreArrayF90().
 !
       subroutine FormInitialGuess(mysnes,X,ierr)
-#include <petsc/finclude/petscsnesdef.h>
+#include <petsc/finclude/petscsnes.h>
       use petscsnes
       use f90module
       use f90moduleinterfaces
@@ -399,7 +399,7 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine InitialGuessLocal(user,x,ierr)
-#include <petsc/finclude/petscsysdef.h>
+#include <petsc/finclude/petscsys.h>
       use petscsys
       use f90module
 !  Input/output variables:
@@ -450,7 +450,7 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine FormFunctionLocal(x,f,user,ierr)
-#include <petsc/finclude/petscsysdef.h>
+#include <petsc/finclude/petscsys.h>
       use petscsys
       use f90module
 !  Input/output variables:
@@ -536,7 +536,7 @@
 !  used in this example.
 !
       subroutine FormJacobian(mysnes,X,jac,jac_prec,user,ierr)
-#include <petsc/finclude/petscsnesdef.h>
+#include <petsc/finclude/petscsnes.h>
       use petscsnes
       use f90module
 !  Input/output variables:
@@ -624,7 +624,7 @@
 !  used in this example.
 !
       subroutine FormJacobianLocal(x,jac_prec,user,ierr)
-#include <petsc/finclude/petscmatdef.h>
+#include <petsc/finclude/petscmat.h>
       use petscmat
       use f90module
 !  Input/output variables:

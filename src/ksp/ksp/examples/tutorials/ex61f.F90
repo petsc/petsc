@@ -57,7 +57,7 @@
       end module assert_mod
 
       program tpetsc
-#include <petsc/finclude/petscdef.h>
+#include <petsc/finclude/petsc.h>
       use assert_mod
       use omp_module
       use petsc

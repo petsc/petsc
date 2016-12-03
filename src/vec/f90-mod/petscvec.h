@@ -2,7 +2,7 @@
 !
 !  Include file for Fortran use of the Vec package in PETSc
 !
-#include "petsc/finclude/petscvecdef.h"
+#include "petsc/finclude/petscvec.h"
 
       type tVec
         sequence

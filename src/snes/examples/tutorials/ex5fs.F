@@ -17,7 +17,7 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine ApplicationFunctionFortran(lambda,mx,my,x,f,ierr)
-#include <petsc/finclude/petscsnesdef.h>
+#include <petsc/finclude/petscsnes.h>
       use petscsnes
       implicit none
 

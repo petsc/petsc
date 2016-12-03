@@ -1,7 +1,7 @@
 !
 !  Include file for Fortran use of the FAS nonlinear solvers in PETSc
 !
-#include "petsc/finclude/petscsnesfasdef.h"
+#include "petsc/finclude/petscsnesfas.h"
 
 !  SNESFASType
       PetscEnum SNES_FAS_MULTIPLICATIVE

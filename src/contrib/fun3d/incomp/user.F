@@ -45,7 +45,7 @@
 !=====================================================================72
       block data Block_Initialization
       implicit none
-#include <petsc/finclude/petscsysdef.h>
+#include <petsc/finclude/petscsys.h>
       PetscScalar vkar,cmu,ce1,ce2
       PetscScalar aplus1,aplus2,turbinf
       PetscScalar cb1,sig,cb2,cw1,cw2

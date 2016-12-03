@@ -5,9 +5,9 @@
 #if !defined (__PETSCDMDEF_H)
 #define __PETSCDMDEF_H
 
-#include "petsc/finclude/petscisdef.h"
-#include "petsc/finclude/petscvecdef.h"
-#include "petsc/finclude/petscmatdef.h"
+#include "petsc/finclude/petscis.h"
+#include "petsc/finclude/petscvec.h"
+#include "petsc/finclude/petscmat.h"
 
 #define DMType character*(80)
 #define DMBoundaryType      PetscEnum

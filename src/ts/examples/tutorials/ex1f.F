@@ -22,7 +22,7 @@
 !
 !23456789012345678901234567890123456789012345678901234567890123456789012
       program main
-#include <petsc/finclude/petsctsdef.h>
+#include <petsc/finclude/petscts.h>
       use petscts
       implicit none
 

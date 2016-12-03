@@ -8,7 +8,7 @@
 ! -----------------------------------------------------------------------
 
       program main
-#include <petsc/finclude/petscvecdef.h>
+#include <petsc/finclude/petscvec.h>
       use petscvec
       implicit none
 

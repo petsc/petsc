@@ -2,7 +2,7 @@
 !
 !  Include file for Fortran use of the PC (preconditioner) package in PETSc
 !
-#include "petsc/finclude/petscpcdef.h"
+#include "petsc/finclude/petscpc.h"
 
       type tPC
         sequence

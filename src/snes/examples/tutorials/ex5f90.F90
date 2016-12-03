@@ -45,7 +45,7 @@
       use petscpc
       use petscksp
       use petscsnes
-#include <petsc/finclude/petscsnesdef.h>
+#include <petsc/finclude/petscsnes.h>
       type userctx
         PetscInt xs,xe,xm,gxs,gxe,gxm
         PetscInt ys,ye,ym,gys,gye,gym

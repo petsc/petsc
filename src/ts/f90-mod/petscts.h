@@ -1,7 +1,7 @@
 !
 !  Include file for Fortran use of the TS (timestepping) package in PETSc
 !
-#include "petsc/finclude/petsctsdef.h"
+#include "petsc/finclude/petscts.h"
 
       type tTS
         PetscFortranAddr:: v

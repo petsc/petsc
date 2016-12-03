@@ -5,7 +5,7 @@
 !-----------------------------------------------------------------------
 !
 
-#include <petsc/finclude/petscdmdef.h>
+#include <petsc/finclude/petscdm.h>
       use petsc
       implicit none
 

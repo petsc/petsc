@@ -5,7 +5,7 @@
 #if !defined (__PETSCDMPLEXDEF_H)
 #define __PETSCDMPLEXDEF_H
 
-#include "petsc/finclude/petscdmdef.h"
+#include "petsc/finclude/petscdm.h"
 
 #define DMLabel PetscFortranAddr
 

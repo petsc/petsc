@@ -2,7 +2,7 @@
 !
 !  Include file for Fortran use of the IS (index set) package in PETSc
 !
-#include "petsc/finclude/petscisdef.h"
+#include "petsc/finclude/petscis.h"
 
       type tIS
         PetscFortranAddr:: v

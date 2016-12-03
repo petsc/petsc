@@ -3,7 +3,7 @@
 !   This program demonstrates use of PETSc dense matrices.
 !
       program main
-#include <petsc/finclude/petscsysdef.h>
+#include <petsc/finclude/petscsys.h>
       use petscsys
       implicit none
       
@@ -37,7 +37,7 @@
 !  location.)
 !
       subroutine Demo1()
-#include <petsc/finclude/petscmatdef.h>
+#include <petsc/finclude/petscmat.h>
       use petscmat
       implicit none
 
@@ -89,7 +89,7 @@
 !  matrix storage.
 !
       subroutine Demo2()
-#include <petsc/finclude/petscmatdef.h>
+#include <petsc/finclude/petscmat.h>
       use petscmat
       implicit none
 

@@ -2,7 +2,7 @@
 !   This program tests MatGetDiagonal()
 !
       program main
-#include <petsc/finclude/petscmatdef.h>
+#include <petsc/finclude/petscmat.h>
       use petscmat
       implicit none
 

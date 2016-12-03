@@ -4,7 +4,7 @@
 !
 !
         module UserModule
-#include <petsc/finclude/petscsnesdef.h>
+#include <petsc/finclude/petscsnes.h>
         use petscsnes
         type User
           DM  da

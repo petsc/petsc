@@ -1,4 +1,4 @@
 !
 !  Include file for Fortran use of the DMPlex package in PETSc
 !
-#include "petsc/finclude/petscdmplexdef.h"
+#include "petsc/finclude/petscdmplex.h"

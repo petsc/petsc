@@ -10,7 +10,7 @@
 !     Include petscis.h so we can use PETSc IS objects.
 !
       program main
-#include <petsc/finclude/petscisdef.h>
+#include <petsc/finclude/petscis.h>
       use petscis
       implicit none
 

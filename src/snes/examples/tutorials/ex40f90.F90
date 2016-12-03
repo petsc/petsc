@@ -9,8 +9,8 @@
 !   your own FormJacobianLocal().
 
       program ex40f90
-#include <petsc/finclude/petscsnesdef.h>
-#include <petsc/finclude/petscdmdadef.h>
+#include <petsc/finclude/petscsnes.h>
+#include <petsc/finclude/petscdmda.h>
       use petscsnes
       use petscdmda
       implicit none

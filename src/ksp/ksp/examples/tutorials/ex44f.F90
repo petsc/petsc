@@ -1,5 +1,5 @@
       program main              !   Solves the linear system  J x = f
-#include <petsc/finclude/petscdef.h>
+#include <petsc/finclude/petsc.h>
       use petscksp
       implicit none
       Vec x,f

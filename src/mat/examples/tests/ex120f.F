@@ -2,7 +2,7 @@
 !   This program tests MatCreateVecs() for Shell Matrix
 !
       subroutine mymatgetvecs(A,x,y,ierr)
-#include <petsc/finclude/petscmatdef.h>
+#include <petsc/finclude/petscmat.h>
       use petscmat
       implicit none
 
@@ -19,7 +19,7 @@
 
 
       program main
-#include <petsc/finclude/petscmatdef.h>
+#include <petsc/finclude/petscmat.h>
       use petscmat
       implicit none
 

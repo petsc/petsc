@@ -1,4 +1,4 @@
-#include "petsc/finclude/petsctaodef.h"
+#include "petsc/finclude/petsctao.h"
       use petsctao
       implicit none
 

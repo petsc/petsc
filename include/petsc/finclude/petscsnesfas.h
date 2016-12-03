@@ -4,7 +4,7 @@
 #if !defined (__PETSCSNESFASDEF_H)
 #define __PETSCSNESFASDEF_H
 
-#include "petsc/finclude/petscsnesdef.h"
+#include "petsc/finclude/petscsnes.h"
 
 #define SNESFASType PetscEnum
 

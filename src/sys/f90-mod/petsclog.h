@@ -1,2 +1,2 @@
 !
-#include "petsc/finclude/petsclogdef.h"
+#include "petsc/finclude/petsclog.h"

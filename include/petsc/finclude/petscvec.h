@@ -5,7 +5,7 @@
 #if !defined (__PETSCVECDEF_H)
 #define __PETSCVECDEF_H
 
-#include "petsc/finclude/petscaodef.h"
+#include "petsc/finclude/petscao.h"
 
 #define Vec type(tVec)
 #define VecScatter type(tVecScatter)

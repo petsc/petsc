@@ -32,8 +32,8 @@
 !  --------------------------------------------------------------------------
 
       program main
-#include <petsc/finclude/petscdrawdef.h>
-#include <petsc/finclude/petscsnesdef.h>
+#include <petsc/finclude/petscdraw.h>
+#include <petsc/finclude/petscsnes.h>
       use petscsnes
       implicit none
 #if defined(PETSC_USING_F90) && !defined(PETSC_USE_FORTRANKIND)

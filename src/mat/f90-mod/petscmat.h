@@ -2,7 +2,7 @@
 !
 !  Include file for Fortran use of the Mat package in PETSc
 !
-#include "petsc/finclude/petscmatdef.h"
+#include "petsc/finclude/petscmat.h"
 
       type tMat
         sequence

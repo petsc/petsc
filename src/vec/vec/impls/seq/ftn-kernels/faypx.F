@@ -2,7 +2,7 @@
 !
 !    Fortran kernel for the AYPX() vector routine
 !
-#include <petsc/finclude/petscsysdef.h>
+#include <petsc/finclude/petscsys.h>
 !
       subroutine FortranAYPX(n,a,x,y)
       implicit none

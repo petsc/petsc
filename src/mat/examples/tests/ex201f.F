@@ -3,7 +3,7 @@
 !   This program demonstrates use of MatShellSetOperation()
 !
       subroutine mymatmult(A, x, y, ierr)
-#include <petsc/finclude/petscmatdef.h>
+#include <petsc/finclude/petscmat.h>
       use petscmat
       implicit none
 

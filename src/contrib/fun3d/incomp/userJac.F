@@ -856,7 +856,7 @@
 #define __FUNCT__ "CHK_ERR"
       subroutine CHK_ERR(irank, ierr, irow, icol)
       implicit none
-#include <petsc/finclude/petscsysdef.h>
+#include <petsc/finclude/petscsys.h>
       integer irank,ierr,irow,icol
       if (ierr .gt. 0) then
        write(*,*) 'On processor ',irank, ': Non-zero entry in row ',     &

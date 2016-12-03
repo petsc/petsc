@@ -10,7 +10,7 @@
 !   This uses multigrid to solve the linear system
 
       program main
-#include <petsc/finclude/petsckspdef.h>
+#include <petsc/finclude/petscksp.h>
       use petscdmda
       use petscksp
       implicit none

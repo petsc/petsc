@@ -3,7 +3,7 @@
 ! user-defined contexts in PETSc. Example contributed by Glenn Hammond.
 !
 module Base_module
-#include "petsc/finclude/petscsnesdef.h"
+#include "petsc/finclude/petscsnes.h"
       implicit none
   private
 

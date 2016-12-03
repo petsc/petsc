@@ -2525,7 +2525,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscIntSumError(PetscInt a,PetscInt b,PetscI
       of every function and module definition you need something like
 
 $
-$#include "petsc/finclude/petscXXXdef.h"
+$#include "petsc/finclude/petscXXX.h"
 $         use petscXXXX
 
      You can delcare PETSc variables using either 
@@ -2535,7 +2535,7 @@ $    type(tXXX) variablename
 
     for example
 
-$#include "petsc/finclude/petscvecdef.h"
+$#include "petsc/finclude/petscvec.h"
 $         use petscvec
 $
 $    Vec  A

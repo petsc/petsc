@@ -4,7 +4,7 @@
 #if !defined (__PETSCTSDEF_H)
 #define __PETSCTSDEF_H
 
-#include "petsc/finclude/petscsnesdef.h"
+#include "petsc/finclude/petscsnes.h"
 
 #define TS type(tTS)
 #define TSAdapt type(tTSAdapt)

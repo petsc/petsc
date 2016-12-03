@@ -5,7 +5,7 @@
 #if !defined (__PETSCMATDEF_H)
 #define __PETSCMATDEF_H
 
-#include "petsc/finclude/petscvecdef.h"
+#include "petsc/finclude/petscvec.h"
 
 #define Mat type(tMat)
 #define MatNullSpace type(tMatNullSpace)

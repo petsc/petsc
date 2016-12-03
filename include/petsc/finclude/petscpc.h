@@ -5,8 +5,8 @@
 #if !defined (__PETSCPCDEF_H)
 #define __PETSCPCDEF_H
 
-#include "petsc/finclude/petscmatdef.h"
-#include "petsc/finclude/petscdmdef.h"
+#include "petsc/finclude/petscmat.h"
+#include "petsc/finclude/petscdm.h"
 
 #define PC type(tPC)
 

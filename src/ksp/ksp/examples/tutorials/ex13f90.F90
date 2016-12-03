@@ -9,7 +9,7 @@
 ! -----------------------------------------------------------------------
 
       module UserModule
-#include <petsc/finclude/petsckspdef.h>
+#include <petsc/finclude/petscksp.h>
         use petscksp
         type User
           Vec x

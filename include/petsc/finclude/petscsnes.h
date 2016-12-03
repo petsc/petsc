@@ -4,7 +4,7 @@
 #if !defined (__PETSCSNESDEF_H)
 #define __PETSCSNESDEF_H
 
-#include "petsc/finclude/petsckspdef.h"
+#include "petsc/finclude/petscksp.h"
 
 #define SNES type(tSNES)
 

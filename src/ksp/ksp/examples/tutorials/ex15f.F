@@ -13,7 +13,7 @@
 !  -------------------------------------------------------------------------
 
       program main
-#include <petsc/finclude/petsckspdef.h>
+#include <petsc/finclude/petscksp.h>
       use petscksp
       implicit none
 

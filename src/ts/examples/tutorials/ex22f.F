@@ -15,8 +15,8 @@
 !
 
       program main
-#include <petsc/finclude/petsctsdef.h>
-#include <petsc/finclude/petscdmdadef.h>
+#include <petsc/finclude/petscts.h>
+#include <petsc/finclude/petscdmda.h>
       use petscts
       implicit none
 

@@ -6,9 +6,9 @@ CFLAGS    =
 FFLAGS    =
 SOURCEC   =
 SOURCEF   =
-SOURCEH   = petscdef.h  petscsysdef.h petsclogdef.h petscvecdef.h petscsnesdef.h petscdmdef.h petscdmdadef.h \
-            petscdrawdef.h petscmatdef.h petsckspdef.h petscpcdef.h petscviewerdef.h petscisdef.h petscaodef.h \
-	    petsctsdef.h petsctaodef.h
+SOURCEH   = petsc.h  petscsys.h petsclog.h petscvec.h petscsnes.h petscdm.h petscdmda.h \
+            petscdraw.h petscmat.h petscksp.h petscpc.h petscviewer.h petscis.h petscao.h \
+	    petscts.h petsctao.h
 LIBBASE   = libpetscvec
 DIRS      =
 MANSEC    = Sys

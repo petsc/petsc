@@ -5,7 +5,7 @@
 !  See the Fortran section of the PETSc users manual for details.
 !
 
-#include "petsc/finclude/petsctaodef.h"
+#include "petsc/finclude/petsctao.h"
       use petscdmda
       use petsctao
       implicit none

@@ -2,7 +2,7 @@
 !
 !  Include file for Fortran use of the KSP package in PETSc
 !
-#include "petsc/finclude/petsckspdef.h"
+#include "petsc/finclude/petscksp.h"
 
 !
 !  CG Types

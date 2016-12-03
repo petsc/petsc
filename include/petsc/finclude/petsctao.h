@@ -1,7 +1,7 @@
 #if !defined(__TAODEF_H)
 #define __TAODEF_H
 
-#include "petsc/finclude/petsctsdef.h"
+#include "petsc/finclude/petscts.h"
 
 #define Tao PetscFortranAddr
 #define TaoLineSearch PetscFortranAddr

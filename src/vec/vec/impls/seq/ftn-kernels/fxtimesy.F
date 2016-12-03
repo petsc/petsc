@@ -1,4 +1,4 @@
-#include <petsc/finclude/petscsysdef.h>
+#include <petsc/finclude/petscsys.h>
 !
 
       subroutine Fortranxtimesy(x,y,z,n)

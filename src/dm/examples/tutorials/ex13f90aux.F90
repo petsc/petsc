@@ -5,7 +5,7 @@ contains
   ! A subroutine which returns the boundary conditions.
   !
   subroutine get_boundary_cond(b_x,b_y,b_z)
-#include <petsc/finclude/petscdmdef.h>
+#include <petsc/finclude/petscdm.h>
     use petscdm
     DMBoundaryType,intent(inout) :: b_x,b_y,b_z
     

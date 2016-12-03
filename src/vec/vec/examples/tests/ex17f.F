@@ -3,7 +3,7 @@
 !   "Scatters from a parallel vector to a sequential vector.  In
 !  this case each local vector is as long as the entire parallel vector.
 !
-#include <petsc/finclude/petscvecdef.h>
+#include <petsc/finclude/petscvec.h>
       use petscvec
       implicit none
 

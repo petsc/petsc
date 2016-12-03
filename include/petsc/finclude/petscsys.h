@@ -13,10 +13,10 @@
 #if defined (PETSC_HAVE_MPIUNI)
 #include "mpiunifdef.h"
 #endif
-#include "petsc/finclude/petscviewerdef.h"
-#include "petsc/finclude/petscerrordef.h"
-#include "petsc/finclude/petsclogdef.h"
-#include "petsc/finclude/petscbagdef.h"
+#include "petsc/finclude/petscviewer.h"
+#include "petsc/finclude/petscerror.h"
+#include "petsc/finclude/petsclog.h"
+#include "petsc/finclude/petscbag.h"
 
 !
 ! The real*8,complex*16 notatiton is used so that the

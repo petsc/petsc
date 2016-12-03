@@ -2,8 +2,8 @@
 !             Include file for program plate.f
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
-#include "petsc/finclude/petscdmdadef.h"
-#include "petsc/finclude/petsctaodef.h"
+#include "petsc/finclude/petscdmda.h"
+#include "petsc/finclude/petsctao.h"
       use petscdmda
       use petsctao
       implicit none

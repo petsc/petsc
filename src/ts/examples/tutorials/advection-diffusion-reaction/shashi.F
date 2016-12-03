@@ -1,7 +1,7 @@
 
 
       program main
-#include <petsc/finclude/petscsdef.h>
+#include <petsc/finclude/petscs.h>
       use petsc
       implicit none
 

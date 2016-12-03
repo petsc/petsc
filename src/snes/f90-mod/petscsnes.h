@@ -1,7 +1,7 @@
 !
 !  Include file for Fortran use of the SNES package in PETSc
 !
-#include "petsc/finclude/petscsnesdef.h"
+#include "petsc/finclude/petscsnes.h"
 
       type tSNES
         PetscFortranAddr:: v

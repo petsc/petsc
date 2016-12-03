@@ -3,7 +3,7 @@
 !  Formatted test for IS general routines
 !
       program main
-#include <petsc/finclude/petscisdef.h>
+#include <petsc/finclude/petscis.h>
       use petscis
       implicit none
 

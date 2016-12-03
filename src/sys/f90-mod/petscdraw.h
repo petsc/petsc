@@ -2,7 +2,7 @@
 !
 !  Include file for Fortran use of the PetscDraw package in PETSc
 !
-#include "petsc/finclude/petscdrawdef.h"
+#include "petsc/finclude/petscdraw.h"
 !
 !  Flags for draw
 !

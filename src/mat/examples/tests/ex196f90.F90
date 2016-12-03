@@ -3,7 +3,7 @@
 !   This program demonstrates use of MatSeqAIJGetArrayF90()
 !
       program main
-#include <petsc/finclude/petscmatdef.h>
+#include <petsc/finclude/petscmat.h>
       use petscmat
       implicit none
 

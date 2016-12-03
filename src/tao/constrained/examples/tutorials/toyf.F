@@ -8,7 +8,7 @@
 !----------------------------------------------------------------------
 
       program toyf
-#include <petsc/finclude/petsctaodef.h>
+#include <petsc/finclude/petsctao.h>
       use petsctao
       implicit none
 #include "toyf.h"
