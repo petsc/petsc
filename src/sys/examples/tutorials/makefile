@@ -165,25 +165,25 @@ runex8f90:
 	   ${RM} -f ex8f90_1.tmp
 
 runex9_1:
-	-@PETSC_OPTIONS= ${MPIEXEC} -n 1 ./ex9 -f petsc.yml > ex9_1.tmp 2>&1; \
+	-@ ${MPIEXEC} -n 1 ./ex9 -f petsc.yml > ex9_1.tmp 2>&1; \
 	   if (${DIFF} output/ex9_1.out ex9_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex9_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex9_1.tmp
 
 runex9_2:
-	-@PETSC_OPTIONS= ${MPIEXEC} -n 1 ./ex9 -options_file_yaml petsc.yml > ex9_2.tmp 2>&1; \
+	-@ ${MPIEXEC} -n 1 ./ex9 -options_file_yaml petsc.yml > ex9_2.tmp 2>&1; \
 	   if (${DIFF} output/ex9_2.out ex9_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex9_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex9_2.tmp
 
 runex10f90_1:
-	-@PETSC_OPTIONS= ${MPIEXEC} -n 1 ./ex10f90 -f petsc.yml > ex10f90_1.tmp 2>&1; \
+	-@ ${MPIEXEC} -n 1 ./ex10f90 -f petsc.yml > ex10f90_1.tmp 2>&1; \
 	   if (${DIFF} output/ex10f90_1.out ex10f90_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex10f90_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10f90_1.tmp
 
 runex10f90_2:
-	-@PETSC_OPTIONS= ${MPIEXEC} -n 1 ./ex10f90 -options_file_yaml petsc.yml > ex10f90_2.tmp 2>&1; \
+	-@ ${MPIEXEC} -n 1 ./ex10f90 -options_file_yaml petsc.yml > ex10f90_2.tmp 2>&1; \
 	   if (${DIFF} output/ex10f90_2.out ex10f90_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex10f90_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10f90_2.tmp
@@ -201,13 +201,13 @@ runex14:
 	-@${MPIEXEC} -n 3 ./ex14
 
 runex15:
-	-@PETSC_OPTIONS= ${MPIEXEC} -n 4 ./ex15 -viewer > ex15.tmp 2>&1; \
+	-@ ${MPIEXEC} -n 4 ./ex15 -viewer > ex15.tmp 2>&1; \
 	   if (${DIFF} output/ex15_1.out ex15.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex15, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex15.tmp
 
 runex16:
-	-@PETSC_OPTIONS= ${MPIEXEC} -n 2  ./ex16 -options_view -get_total_flops |grep -v malloc | grep -v display | grep -v nox | grep -v "Total flops" > ex16.tmp 2>&1; \
+	-@ ${MPIEXEC} -n 2  ./ex16 -options_view -get_total_flops |grep -v malloc | grep -v display | grep -v nox | grep -v "Total flops" > ex16.tmp 2>&1; \
 	   if (${DIFF} output/ex16_1.out ex16.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex16, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex16.tmp
