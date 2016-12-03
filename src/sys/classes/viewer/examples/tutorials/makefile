@@ -27,7 +27,7 @@ ex1f90: ex1f90.o  chkopts
 #----------------------------------------------------------------------------
 
 runex1f90:
-	-@${MPIEXEC} -n 1 ./ex1f90 > ex1f90_1.tmp 5>&1; \
+	-@${MPIEXEC} -n 1 ./ex1f90 > ex1f90_1.tmp 2>&1; \
 	   if (${DIFF} output/ex1f90_1.out ex1f90_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex1f90_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex1f90_1.tmp

@@ -2517,7 +2517,7 @@ runex172_mpisbaij:
 	   ${DIFF} output/ex172.out ex172.tmp || printf "${PWD}\nPossible problem with ex172_mpisbaij, diffs above\n=========================================\n"; \
 	   ${RM} -f ex172.tmp
 runex173:
-	-@${MPIEXEC} -n 1 ./ex173 -f0 ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 > ex173.tmp 3>&1; \
+	-@${MPIEXEC} -n 1 ./ex173 -f0 ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 > ex173.tmp 2>&1; \
 	   ${DIFF} output/ex173_1.out ex173.tmp || printf "${PWD}\nPossible problem with ex173, diffs above\n=========================================\n"; \
 	   ${RM} -f ex173.tmp
 
