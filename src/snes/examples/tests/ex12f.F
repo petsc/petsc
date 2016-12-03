@@ -41,10 +41,10 @@
       type(monctx) ::   snesm
       PetscErrorCode :: ierr
 
-c      write(6,*) ' '
-c      write(6,*) '    its ',its,snesm%its,'lag',
-c     &            snesm%lag
-c      call flush(6)
+!      write(6,*) ' '
+!      write(6,*) '    its ',its,snesm%its,'lag',
+!     &            snesm%lag
+!      call flush(6)
       if (mod(snesm%its,snesm%lag).eq.0)
      &     then
         one = 1
