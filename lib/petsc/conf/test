@@ -354,6 +354,9 @@ alltests:
             grep -v '^[\.]*$$' | wc -l | grep '^[ ]*0$$' > /dev/null; \
           fi;
 
+allgtest:
+	-@cd ${PETSC_DIR}; make -f gmakefile test
+
 alltest:
 	-@date
 	-@for i in ${TEST_RUNS} ; do \
