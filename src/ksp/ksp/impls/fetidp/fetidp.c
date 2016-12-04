@@ -736,12 +736,14 @@ static PetscErrorCode KSPSetUp_FETIDP(KSP ksp)
 static PetscErrorCode KSPSolve_FETIDP(KSP ksp)
 {
   PetscErrorCode ierr;
-  Mat            F;
+  Mat            F,A;
+  MatNullSpace   nsp;
   Vec            X,B,Xl,Bl;
   KSP_FETIDP     *fetidp = (KSP_FETIDP*)ksp->data;
   PC_BDDC        *pcbddc = (PC_BDDC*)fetidp->innerbddc->data;
 
   PetscFunctionBegin;
+  ierr = KSPGetOperators(ksp,&A,NULL);CHKERRQ(ierr);
   ierr = KSPGetRhs(ksp,&B);CHKERRQ(ierr);
   ierr = KSPGetSolution(ksp,&X);CHKERRQ(ierr);
   ierr = KSPGetOperators(fetidp->innerksp,&F,NULL);CHKERRQ(ierr);
@@ -754,6 +756,10 @@ static PetscErrorCode KSPSolve_FETIDP(KSP ksp)
     ierr = KSPSolve(fetidp->innerksp,Bl,Xl);CHKERRQ(ierr);
   }
   ierr = PCBDDCMatFETIDPGetSolution(F,Xl,X);CHKERRQ(ierr);
+  ierr = MatGetNullSpace(A,&nsp);CHKERRQ(ierr);
+  if (nsp) {
+    ierr = MatNullSpaceRemove(nsp,X);CHKERRQ(ierr);
+  }
   /* update ksp with stats from inner ksp */
   ierr = KSPGetConvergedReason(fetidp->innerksp,&ksp->reason);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(fetidp->innerksp,&ksp->its);CHKERRQ(ierr);
