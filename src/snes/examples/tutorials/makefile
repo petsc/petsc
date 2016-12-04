@@ -1272,6 +1272,10 @@ runex59_3:
 	   if (${DIFF} output/ex59_3_alt.out ex59_3.tmp > /dev/null 2>&1) then x='good'; fi; \
            if [ "$$x" = "bad" ]; then ${DIFF} output/ex59_3.out ex59_3.tmp ; ${DIFF} output/ex59_3_alt.out ex59_3.tmp ; printf "${PWD}\nPossible problem with ex59_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex59_3.tmp
+runex62_fetidp:
+	-@${MPIEXEC} -n 3 ./ex62 -run_type full -refinement_limit 0.001 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fetidp -ksp_rtol 1.0e-8 -snes_converged_reason -ksp_converged_reason -snes_view -show_solution 0 -dm_mat_type is -ksp_type fetidp -ksp_fetidp_saddlepoint -fetidp_ksp_type cg -fetidp_p_ksp_type preonly -fetidp_p_pc_type none -ksp_fetidp_saddlepoint_flip 1 -fetidp_bddc_pc_bddc_vertex_size 2 > ex62_fetidp.tmp 2>&1; \
+	   ${DIFF} output/ex62_fetidp.out ex62_fetidp.tmp || printf "${PWD}\nPossible problem with ex62_fetidp, diffs above\n=========================================\n"; \
+	   ${RM} -f ex62_fetidp.tmp
 runex70:
 	-@${MPIEXEC} -n 2 ./ex70 -nx 32 -ny 48 -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type lower -fieldsplit_1_pc_type none   > ex70.tmp 2>&1; \
 	   ${DIFF} output/ex70_1.out ex70.tmp || printf "${PWD}\nPossible problem with ex70_1, diffs above\n=========================================\n"; \
@@ -1311,7 +1315,7 @@ TESTEXAMPLES_C		       =  ex2.PETSc runex2  runex2_3 ex2.rm ex3.PETSc runex3 \
                                  ex25.PETSc runex25 runex25_2 ex25.rm \
                                  ex28.PETSc runex28_0 runex28_1 runex28_2 runex28_3 ex28.rm \
                                  ex35.PETSc runex35_3 runex35_4 runex35_5 runex35_6 runex35_8 ex35.rm \
-                                 ex70.PETSc runex70 runex70_2 runex70_3 runex70_4 ex70.rm
+                                 ex62.PETSc runex62_fetidp ex62.rm ex70.PETSc runex70 runex70_2 runex70_3 runex70_4 ex70.rm
 TESTEXAMPLES_C_NOTSINGLE       = ex1.PETSc runex1 runex1_2 ex1.rm ex5.PETSc runex5_2 runex5_3 runex5_4 runex5_5_ls runex5_5_fas runex5_5_fas_monitor printdot \
                                  runex5_5_newton_asm_dmda runex5_5_newton_gasm_dmda runex5_6  ex5.rm printdot \
                                  ex14.PETSc runex14_4 ex14.rm ex15.PETSc runex15 runex15_3 runex15_lag_jac runex15_nleqerr runex15_lag_pc ex15.rm ex16.PETSc printdot \
