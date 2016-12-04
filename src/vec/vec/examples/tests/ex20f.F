@@ -39,7 +39,7 @@
        call PetscBinaryWrite(fd,n,ione,PETSC_INT,PETSC_FALSE,ierr)
 !      Write the array
        call PetscBinaryWrite(fd,array,n,PETSC_SCALAR,                        &
-      &                      PETSC_FALSE,ierr)
+     &                      PETSC_FALSE,ierr)
 !      Close the file
        call PetscBinaryClose(fd,ierr)
 
