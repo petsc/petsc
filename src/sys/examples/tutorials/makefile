@@ -210,13 +210,13 @@ runex12:
 	   ${RM} -f ex12.tmp
 
 runex13:
-	-@${MPIEXEC} -n 3 ./ex13 > ex13.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex13 | grep -v "Tpetra in Trilinos" > ex13.tmp 2>&1; \
 	   if (${DIFF} output/ex13_1.out ex13.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex13, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex13.tmp
 
 runex14:
-	-@${MPIEXEC} -n 3 ./ex14 > ex14.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex14 | grep -v "Tpetra in Trilinos" > ex14.tmp 2>&1; \
 	   if (${DIFF} output/ex14_1.out ex14.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex14, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex14.tmp
