@@ -7298,6 +7298,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   PetscScalar            *array;
   MatReuse               coarse_mat_reuse;
   PetscBool              restr, full_restr, have_void;
+  PetscMPIInt            commsize;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
@@ -7305,6 +7306,8 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   if (pcbddc->new_primal_space || pcbddc->coarse_size == -1) { /* a new primal space is present or it is the first initialization, so recompute global numbering */
     PetscInt ocoarse_size;
     compute_vecs = PETSC_TRUE;
+
+    pcbddc->new_primal_space = PETSC_TRUE;
     ocoarse_size = pcbddc->coarse_size;
     ierr = PetscFree(pcbddc->global_primal_indices);CHKERRQ(ierr);
     ierr = PCBDDCComputePrimalNumbering(pc,&pcbddc->coarse_size,&pcbddc->global_primal_indices);CHKERRQ(ierr);
@@ -7359,6 +7362,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   /* determine number of processes partecipating to coarse solver and compute subassembling pattern */
   /* restr : whether if we want to exclude senders (which are not receivers) from the subassembling pattern */
   /* full_restr : just use the receivers from the subassembling pattern */
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&commsize);CHKERRQ(ierr);
   coarse_mat_is = NULL;
   multilevel_allowed = PETSC_FALSE;
   multilevel_requested = PETSC_FALSE;
@@ -7373,7 +7377,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     restr = PETSC_TRUE;
     full_restr = PETSC_TRUE;
   }
-  if (!pcbddc->coarse_size) multilevel_allowed = multilevel_requested = restr = full_restr = PETSC_FALSE;
+  if (!pcbddc->coarse_size || commsize == 1) multilevel_allowed = multilevel_requested = restr = full_restr = PETSC_FALSE;
   ncoarse = PetscMax(1,ncoarse);
   if (!pcbddc->coarse_subassembling) {
     if (pcbddc->coarsening_ratio > 1) {
@@ -7383,20 +7387,17 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
         ierr = PCBDDCMatISGetSubassemblingPattern(t_coarse_mat_is,&ncoarse,pcbddc->coarse_adj_red,&pcbddc->coarse_subassembling,&have_void);CHKERRQ(ierr);
       }
     } else {
-      PetscMPIInt size,rank;
-      ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
+      PetscMPIInt rank;
       ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRQ(ierr);
-      have_void = (active_procs == (PetscInt)size) ? PETSC_FALSE : PETSC_TRUE;
+      have_void = (active_procs == (PetscInt)commsize) ? PETSC_FALSE : PETSC_TRUE;
       ierr = ISCreateStride(PetscObjectComm((PetscObject)pc),1,rank,1,&pcbddc->coarse_subassembling);CHKERRQ(ierr);
     }
   } else { /* if a subassembling pattern exists, then we can reuse the coarse ksp and compute the number of process involved */
     PetscInt    psum;
-    PetscMPIInt size;
     if (pcbddc->coarse_ksp) psum = 1;
     else psum = 0;
     ierr = MPIU_Allreduce(&psum,&ncoarse,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
-    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
-    if (ncoarse < size) have_void = PETSC_TRUE;
+    if (ncoarse < commsize) have_void = PETSC_TRUE;
   }
   /* determine if we can go multilevel */
   if (multilevel_requested) {
