@@ -32,8 +32,8 @@ static PetscErrorCode KSPFETIDPSetPressureOperators_FETIDP(KSP ksp, Mat A, Mat P
 
   PetscFunctionBegin;
   if (A || P) fetidp->saddlepoint = PETSC_TRUE;
-  ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_AAmat",(PetscObject)A);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_PAmat",(PetscObject)P);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_PAmat",(PetscObject)A);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_PPmat",(PetscObject)P);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
