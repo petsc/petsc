@@ -1025,7 +1025,8 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   twodim = PETSC_TRUE;
   for (i=0;i<graph->ncc;i++) {
     PetscInt repdof = graph->queue[graph->cptr[i]];
-    if (graph->count[repdof] > 1) {
+    PetscInt ccsize = graph->cptr[i+1]-graph->cptr[i];
+    if (graph->count[repdof] > 1 && ccsize > custom_minimal_size) {
       twodim = PETSC_FALSE;
       break;
     }
