@@ -7,6 +7,7 @@
 
 PETSC_EXTERN PetscBool      PetscViewerRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PetscViewerRegisterAll(void);
+PETSC_EXTERN PetscLogEvent  PetscOptions_GetViewer;
 
 struct _PetscViewerOps {
    PetscErrorCode (*destroy)(PetscViewer);
@@ -18,6 +19,8 @@ struct _PetscViewerOps {
    PetscErrorCode (*setfromoptions)(PetscOptionItems*,PetscViewer);
    PetscErrorCode (*setup)(PetscViewer);
 };
+
+#define PETSCVIEWERGETVIEWEROFFPUSHESMAX 25
 
 #define PETSCVIEWERFORMATPUSHESMAX 25
 /*
