@@ -355,7 +355,7 @@ alltests:
           fi;
 
 allgtest:
-	-@cd ${PETSC_DIR}; make -f gmakefile test
+	-@cd ${PETSC_DIR}; make -f gmakefile test V=${V}
 
 alltest:
 	-@date

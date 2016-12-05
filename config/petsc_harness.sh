@@ -82,18 +82,23 @@ function petsc_testrun() {
   else
     cmd="$1 | $filter > $2 2> $3"
   fi
-  if "${verbose}"; then 
-    printf "${cmd}\n"
-  fi
   eval $cmd
   if test $? == 0; then
+    if "${verbose}"; then 
       printf "ok $tlabel $cmd\n"
-      let success=$success+1
+    else
+      printf "ok $tlabel\n"
+    fi
+    let success=$success+1
   else
+    if "${verbose}"; then 
+      printf "not ok $tlabel $cmd\n"
+    else
       printf "not ok $tlabel\n"
-      awk '{print "#\t" $0}' < $3
-      let failed=$failed+1
-      failures="$failures $tlabel"
+    fi
+    awk '{print "#\t" $0}' < $3
+    let failed=$failed+1
+    failures="$failures $tlabel"
   fi
   let total=$success+$failed
 }

@@ -344,8 +344,8 @@ class makeParse(object):
       # For various reasons, this is at an awkward level
       if srcDict[runex].has_key("TODO"):
         if srcDict[runex]["TODO"]:
-          if srcDict[runex]["TODO"]=="True":
-            testStr=testStr+indent*2+"TODO: True\n"
+          todostr=re.sub("TODO:","",srcDict[runex]["TODO"])
+          testStr=testStr+indent*2+"TODO: "+todostr+"\n"
       # Need to check and see if we have to push this down
       if srcDict[runex].has_key("requires"):
         print srcDict[runex]["requires"]
@@ -361,6 +361,11 @@ class makeParse(object):
           for tkey in self.getOrderedKeys(rDict[rkey]):
             rval=(rDict[rkey][tkey] if tkey!="requires" else " ".join(rDict[rkey][tkey]))
             testStr=testStr+indent*3+tkey+": "+str(rval)+"\n"
+      # For various reasons, this is at an awkward level
+      if rDict.has_key("TODO"):
+        if rDict["TODO"]:
+          todostr=re.sub("TODO:","",rDict["TODO"])
+          testStr=testStr+indent*2+"TODO: "+todostr+"\n"
     # If no test, then put it on the TODO list
     if not testStr.strip(): 
       testStr=testStr+"\n"+indent+"test:"+"\n"+indent*2+"TODO: Need to implement test\n"
@@ -488,7 +493,9 @@ class makeParse(object):
       if self._hasFilter(line):
         splitl=line.split(">")[0]
         if "|" in splitl:
-          testFilter=" ".join(splitl.split("|")[1:]).strip()
+          testFilter="|".join(splitl.split("|")[1:]).strip()
+          # This picks up filtering of output file in sys-tutorials
+          if "; then" in testFilter: testFilter="TODO: Need to check for filter and/or filter_output"
         else:
           if splitl[-1].endswith(".tmp"):
             testFilter=" ".join(splitl[:-1])
@@ -500,7 +507,7 @@ class makeParse(object):
               testFilter=" ".join(splitl[:])
         allFilters.append(testFilter)
 
-    return ",".join(allFilters)
+    return " | ".join(allFilters)
 
   def abstractTest(self,runexName,scriptStr,subDict,subdir):
     """

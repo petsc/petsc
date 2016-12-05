@@ -219,13 +219,10 @@ $(TESTDIR)/%.o : %.cu | $$(@D)/.DIR
 	$(PETSC_COMPILE.cu) $(abspath $<) -o $@ # Compile first so that if there is an error, it comes from a normal compile
 	@$(PETSC_GENDEPS.cu) $(abspath $<) -o $(@:%.o=%.d) # Generate the dependencies for later
 
-#TODO: Make the testfiles have just the *.sh: <exfile>
-#  -- but how do I get the wildcard searching to work?
-#TODO: Shell script to be invokable either in rundir or PETSC_DIR dir
-#TODO: Simplify the dependency of testparse.py? and gmakegentest.py
-# Tis is the one that runs the shell scripts
-#$(TESTDIR)/% : %.sh | $$(@D)/.DIR
-#	-@$(SHELL) $< $(if $(V),-v,)
+# Pass the verbosity flags to test shell scripts
+ifeq ($(V),1)
+TESTFLAGS=-v
+endif
 
 $(TESTDIR)/%.o : %.F | $$(@D)/.DIR
 ifeq ($(FC_MODULE_OUTPUT_FLAG),)

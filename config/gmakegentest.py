@@ -213,6 +213,8 @@ class generateExamples(Petsc):
     # Handle defaults
     if not testDict.has_key('nsize'): testDict['nsize']=1
     if not testDict.has_key('filter'): testDict['filter']=""
+    if not testDict.has_key('filter_output'): testDict['filter_output']=""
+    if not testDict.has_key('localrunfiles'): testDict['localrunfiles']=""
     if not testDict.has_key('args'): testDict['args']=""
     defroot=(re.sub("run","",testname) if testname.startswith("run") else testname)
     if not testDict.has_key('redirect_file'): testDict['redirect_file']=defroot+".tmp"
@@ -224,7 +226,9 @@ class generateExamples(Petsc):
     subst['output_file']=os.path.join(subst['srcdir'],testDict['output_file'])
     subst['exec']="../"+testDict['execname']
     subst['redirect_file']=testDict['redirect_file']
-    subst['filter']=testDict['filter']
+    subst['filter']="'"+testDict['filter']+"'"   # Quotes are tricky
+    subst['filter_output']=testDict['filter_output']
+    subst['localrunfiles']=testDict['localrunfiles']
     subst['testroot']=self.testroot_dir
     subst['testname']=testname
 
@@ -258,7 +262,10 @@ class generateExamples(Petsc):
       cmd=indent*nindent+self._substVars(subst,example_template.commandtest)
     cmdLines=cmdLines+cmd+"\n\n"
 
-    cmd=indent*nindent+self._substVars(subst,example_template.difftest)
+    if not subst['filter_output']:
+      cmd=indent*nindent+self._substVars(subst,example_template.difftest)
+    else:
+      cmd=indent*nindent+self._substVars(subst,example_template.filterdifftest)
     cmdLines=cmdLines+cmd+"\n"
     return cmdLines
 
@@ -287,6 +294,19 @@ class generateExamples(Petsc):
     petscvarfile=os.path.join(self.arch_dir,'lib','petsc','conf','petscvariables')
     
     subst=self.getSubstVars(testDict,rpath,testname)
+
+    #Handle runfiles
+    if subst['localrunfiles']: 
+      for lfile in subst['localrunfiles'].split():
+        fullfile=os.path.join(self.petsc_dir,rpath,lfile)
+        shutil.copy(fullfile,runscript_dir)
+    # Check subtests for local runfiles
+    if testDict.has_key("subtests"):
+      for stest in testDict["subtests"]:
+        if testDict[stest].has_key('localrunfiles'):
+          for lfile in testDict[stest]['localrunfiles'].split():
+            fullfile=os.path.join(self.petsc_dir,rpath,lfile)
+            shutil.copy(fullfile,self.runscript_dir)
 
     # Now substitute the key variables into the header and footer
     header=self._substVars(subst,example_template.header)
@@ -523,7 +543,7 @@ class generateExamples(Petsc):
     indent="   "
     fhname="GenPetscTests_summarize.txt"
     fh=open(fhname,"w")
-    print "See ", fhname
+    #print "See ", fhname
     for root in dataDict:
       relroot=self.relpath(self.petsc_dir,root)
       pkg=relroot.split("/")[1]
@@ -694,7 +714,7 @@ class generateExamples(Petsc):
           else:
             # Still add dependency to file
             fd.write(nmtest+": "+fullex+"\n")
-          cmd=testdir+"/"+script
+          cmd=testdir+"/"+script+" ${TESTFLAGS} | tee ${PETSC_ARCH}/test.log"
           fd.write("\t-@"+cmd+"\n")
           # Now write the args:
           fa.write(nmtest+"_ARGS='"+self.tests[pkg][lang][ftest]['argLabel']+"'\n")
