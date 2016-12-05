@@ -1379,6 +1379,31 @@ With this background, these keywords are are:
 
       \end{itemize}
 
+    \item[]  \textbf{filter\_output}: (\emph{Optional}; \emph{Default:} \lstinline{""})
+
+      \begin{itemize}
+
+      \item Sometimes filtering the output is useful for standardizing
+            tests; for example, to handle the issues related to parallel
+            output.  This works the same as filter to implement this
+            feature
+
+      \end{itemize}
+
+    \item[]  \textbf{localrunfiles}: (\emph{Optional}; \emph{Default:} \lstinline{""})
+
+      \begin{itemize}
+
+      \item The tests are run under \lstinline{PETSC_ARCH/tests}, but
+            some tests require runtime files that are maintained in the
+            source tree.  Files in this (space-delimited) list will be
+            copied over.
+
+      \item The copying is done by the file generator and not by
+            creating makefile dependencies.
+
+      \end{itemize}
+
     \item[]  \textbf{requires}: (\emph{Optional}; \emph{Default:} \lstinline{""})
       \begin{itemize}
 
