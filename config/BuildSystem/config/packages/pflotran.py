@@ -39,7 +39,7 @@ class Configure(config.package.GNUPackage):
 
     self.checkDownload()
     self.include = [os.path.join(self.installDir,'include')]
-    self.lib     = [os.path.join(self.installDir,'lib','libpflotranchem.a')]
+    self.lib     = [os.path.join(self.installDir,'lib','libpflotranchem.a'),os.path.join(self.installDir,'lib','libpflotran.a')]
     self.found   = 1
     self.dlib    = self.lib
     if not hasattr(self.framework, 'packages'):
