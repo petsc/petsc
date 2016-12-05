@@ -502,7 +502,7 @@ class generateExamples(Petsc):
           testDict['SKIP']="Requires DATAFILESPATH"
           return False
         # Defines -- not sure I have comments matching
-        if "define(" in requirement:
+        if "define(" in requirement.lower():
           reqdef=requirement.split("(")[1].split(")")[0]
           val=(reqdef.split()[1] if " " in reqdef else "")
           if self.conf.has_key(reqdef):
@@ -518,6 +518,8 @@ class generateExamples(Petsc):
               if isNull: 
                 testDict['SKIP']="Null requirement not met: "+requirement
                 return False
+              else:
+                return True
           else:
             testDict['SKIP']="Requirement not met: "+requirement
             return False
@@ -667,7 +669,11 @@ class generateExamples(Petsc):
     fd.write("\n#Tests and executables\n")    # Delimiter
     testdeps=" ".join(["test-"+pkg for pkg in PKGS])
     testexdeps=" ".join(["test-ex-"+pkg for pkg in PKGS])
-    fd.write("test: testex "+testdeps+" report_tests\n")    # Main test target
+    fd.write("test: testinit testex "+testdeps+" report_tests\n")    # Main test target
+    # Testinit handles the logging
+    fd.write("testinit:\n")
+    fd.write("\t-@rm -f ${PETSC_ARCH}/tests/test.log\n")
+    fd.write("\t-@touch ${PETSC_ARCH}/tests/test.log\n")
     # Add executables to build right way to make the `make test` look
     # nicer
     fd.write("testex: "+testexdeps+"\n")    # Main test target
@@ -714,7 +720,7 @@ class generateExamples(Petsc):
           else:
             # Still add dependency to file
             fd.write(nmtest+": "+fullex+"\n")
-          cmd=testdir+"/"+script+" ${TESTFLAGS} | tee ${PETSC_ARCH}/test.log"
+          cmd=testdir+"/"+script+" ${TESTFLAGS} | tee -a ${PETSC_ARCH}/tests/test.log"
           fd.write("\t-@"+cmd+"\n")
           # Now write the args:
           fa.write(nmtest+"_ARGS='"+self.tests[pkg][lang][ftest]['argLabel']+"'\n")
