@@ -103,7 +103,7 @@ typedef struct { /* used by MatGetSubMatrices_MPIAIJ_SingleIS_Local() */
   PetscInt   *pa; /* proc array */
   PetscInt   *req_size,*req_source1,*req_source2;
   PetscBool  allcolumns;
-  PetscInt   *r2pmap; /* row to proc map */
+  PetscInt   *row2proc; /* row to proc map */
 #if defined(PETSC_USE_CTABLE)
   PetscTable     cmap,rmap;
   PetscInt       *cmap_loc,*rmap_loc;
