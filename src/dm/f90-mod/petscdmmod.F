@@ -1,43 +1,93 @@
-#define PETSC_USE_FORTRAN_MODULES
 
-        module  petscaodef
-        use petscmatdef
-#include <petsc/finclude/petscao.h>
-!#include <petsc/finclude/ftn-custom/petscaodef.h90>
-        end module
-
-        module petscao
-        use petscaodef
-        use petscmat
-!#include <petsc/finclude/petscao.h90>
-        end module
 
         module petscdmdef
-        use petscaodef
-#include <petsc/finclude/petscdm.h>
-#include <petsc/finclude/ftn-custom/petscdmdef.h90>
-        end module
-
-        module petscdm
-        use petscdmdef
-        use petscao
-#include <petsc/finclude/petscdm.h90>
+        use petscmatdef
+#include <../src/dm/f90-mod/petscdm.h>
         end module
 
         module petscdmdadef
         use petscdmdef
-#include <petsc/finclude/petscdmda.h>
-!#include <petsc/finclude/ftn-custom/petscdmdadef.h90>
+#include <../src/dm/f90-mod/petscdmda.h>
+        end module
+
+        module petscdmpatchdef
+        use petscdmdef
+        end module
+
+        module petscdmforestdef
+        use petscdmdef
+        end module
+
+        module petscdmplexdef
+        use petscdmdef
+#include <../src/dm/f90-mod/petscdmplex.h>
+        end module
+
+        module petscdmnetworkdef
+        use petscdmplexdef
+#include <../src/dm/f90-mod/petscdmnetwork.h>
+        end module
+
+        module petscdmlabeldef
+        use petscdmdef
+        end module
+
+        module petscdm
+        use petscdmdef
+        use petscmat
+#include <../src/dm/f90-mod/petscdm.h90>
+        interface
+#include <../src/dm/f90-mod/ftn-auto-interfaces/petscdm.h90>
+        end interface
         end module
 
         module petscdmda
         use petscdmdadef
         use petscdm
-#include <petsc/finclude/petscdmda.h90>
+#include <../src/dm/f90-mod/petscdmda.h90>
+        interface
+#include <../src/dm/f90-mod/ftn-auto-interfaces/petscdmda.h90>
+        end interface
         end module
 
-        module petscdmcomposite
-        use petscdm
-#include <petsc/finclude/petscdmcomposite.h90>
+        module petscdmpatch
+        use petscdmpatchdef
+#include <../src/dm/f90-mod/petscdmpatch.h90>
+        interface
+#include <../src/dm/f90-mod/ftn-auto-interfaces/petscdmpatch.h90>
+        end interface
         end module
+
+        module petscdmforest
+        use petscdmforestdef
+#include <../src/dm/f90-mod/petscdmforest.h90>
+        interface
+#include <../src/dm/f90-mod/ftn-auto-interfaces/petscdmforest.h90>
+        end interface
+        end module
+
+        module petscdmplex
+        use petscdmplexdef
+#include <../src/dm/f90-mod/petscdmplex.h90>
+        interface
+#include <../src/dm/f90-mod/ftn-auto-interfaces/petscdmplex.h90>
+        end interface
+        end module
+
+        module petscdmnetwork
+        use petscdmplex
+#include <../src/dm/f90-mod/petscdmnetwork.h90>
+        interface
+#include <../src/dm/f90-mod/ftn-auto-interfaces/petscdmnetwork.h90>
+        end interface
+        end module
+
+        module petscdmlabel
+        use petscdmlabeldef
+#include <../src/dm/f90-mod/petscdmlabel.h90>
+        interface
+#include <../src/dm/f90-mod/ftn-auto-interfaces/petscdmlabel.h90>
+        end interface
+        end module
+
 

@@ -13,12 +13,6 @@ class Configure(config.base.Configure):
   def __str__(self):
     return ''
 
-  def setupHelp(self, help):
-    import nargs
-    help.addArgument('PETSc', '-with-fortran-datatypes=<bool>', nargs.ArgBool(None, 0, 'Declare PETSc objects in Fortran like type(Vec) instead of Vec'))
-    help.addArgument('PETSc', '-with-fortran-interfaces=<bool>', nargs.ArgBool(None, 1, 'Generate Fortran interface definitions for PETSc functions'))
-    return
-
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
     self.compilers = framework.require('config.compilers', self)
@@ -56,16 +50,6 @@ class Configure(config.base.Configure):
         self.addMakeRule('.F.a','',       ['${PETSC_MAKE_STOP_ON_ERROR}${FC} -c ${FC_FLAGS} ${FFLAGS} ${FCPPFLAGS} $<',\
                                            '-${AR} ${AR_FLAGS} ${LIBNAME} $*.o',\
                                            '-${RM} $*.o'])
-
-      if self.framework.argDB['with-fortran-datatypes']:
-        self.fortranDatatypes = True
-        self.addDefine('USE_FORTRAN_DATATYPES', '1')
-      else:
-        self.fortranDatatypes = False
-      if self.framework.argDB['with-fortran-interfaces']:
-        if self.framework.argDB['with-fortran-datatypes']:
-          raise RuntimeError('Cannot use generated fortran interface definitions with fortran datatypes')
-        self.addDefine('USE_FORTRAN_INTERFACES', '1')
 
     else:
       self.addMakeRule('.F.o','',['-@echo "Your system was not configured for Fortran use"', \

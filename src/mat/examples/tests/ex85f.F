@@ -2,13 +2,9 @@
 !   This program tests MatGetDiagonal()
 !
       program main
-      implicit none
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscis.h>
-#include <petsc/finclude/petscvec.h>
 #include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscviewer.h>
+      use petscmat
+      implicit none
 
       PetscErrorCode ierr
       PetscInt i,one,twelve

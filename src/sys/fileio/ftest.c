@@ -156,6 +156,8 @@ static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t
    Output Parameter:
 .  flg - the file exists and satisfies the mode
 
+   Level: intermediate
+
 .seealso: PetscTestDirectory(), PetscLs()
 @*/
 PetscErrorCode  PetscTestFile(const char fname[], char mode, PetscBool  *flg)
@@ -192,6 +194,8 @@ PetscErrorCode  PetscTestFile(const char fname[], char mode, PetscBool  *flg)
 
    Output Parameter:
 .  flg - the directory exists and satisfies the mode
+
+   Level: intermediate
 
 .seealso: PetscTestFile(), PetscLs()
 @*/
@@ -232,6 +236,8 @@ PetscErrorCode  PetscTestDirectory(const char dirname[],char mode,PetscBool  *fl
    Output Parameter:
 +  found - listing of files
 -  flg - the directory exists
+
+   Level: intermediate
 
 .seealso: PetscTestFile(), PetscLs()
 @*/

@@ -2,13 +2,9 @@
 !   This program tests MatGetDiagonal()
 !
       program main
-      implicit none
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscis.h>
-#include <petsc/finclude/petscvec.h>
 #include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscviewer.h>
+      use petscmat
+      implicit none
 
       PetscErrorCode ierr
       PetscInt i,one,twelve,j
@@ -25,6 +21,7 @@
       call MatCreate(PETSC_COMM_WORLD,m,ierr)
       call MatSetSizes(m,PETSC_DECIDE,PETSC_DECIDE,twelve,twelve,ierr)
       call MatSetFromOptions(m,ierr)
+      call MatSetUp(m,ierr)
 
       value = 3.0
       i     = 4

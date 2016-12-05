@@ -501,7 +501,7 @@ PetscErrorCode KSPReasonViewFromOptions(KSP ksp)
 #include <petscdraw.h>
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve"
-/*@
+/*@C
    KSPSolve - Solves linear system.
 
    Collective on KSP

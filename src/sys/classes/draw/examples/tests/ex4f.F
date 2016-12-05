@@ -8,6 +8,9 @@
       subroutine zoomfunction(draw,dummy,ierr)
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscdraw.h>
+      use petscsys
+      implicit none
+
       PetscDraw    draw
       integer dummy
       PetscErrorCode ierr
@@ -21,8 +24,9 @@
       end
 
       program main
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscdraw.h>
+      use petscsys
+      implicit none
+
       PetscDraw draw
       PetscErrorCode ierr
       integer  x,y,width,height

@@ -8,26 +8,22 @@
 !T*/
 ! -----------------------------------------------------------------------
 
-      program main
-      implicit none
-
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!                    Include files
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!
-!  The following include statements are required for KSP Fortran programs:
-!     petscsys.h  - base PETSc routines
-!     petscvec.h    - vectors
-!     petscmat.h    - matrices
-!     petscksp.h    - Krylov subspace methods
-!     petscpc.h     - preconditioners
-!
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscsys.h90>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
+      module UserModule
 #include <petsc/finclude/petscksp.h>
-#include <petsc/finclude/petscpc.h>
+        use petscksp
+        type User
+          Vec x
+          Vec b
+          Mat A
+          KSP ksp
+          PetscInt m
+          PetscInt n
+        end type User
+      end module
+
+      program main
+      use UserModule
+      implicit none
 
 !    User-defined context that contains all the data structures used
 !    in the linear solution process.
@@ -56,7 +52,7 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       PetscScalar  hx,hy,x,y
-      PetscFortranAddr userctx(6)
+      type(User) userctx
       PetscErrorCode ierr
       PetscInt m,n,t,tmax,i,j
       PetscBool  flg
@@ -96,8 +92,8 @@
 !  The next two lines are for testing only; these allow the user to
 !  decide the grid size at runtime.
 
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-m',m,flg,ierr);CHKERRQ(ierr)
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-n',n,flg,ierr);CHKERRQ(ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-m',m,flg,ierr);CHKERRQ(ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',n,flg,ierr);CHKERRQ(ierr)
 
 !  Create the empty sparse matrix and linear solver data structures
 
@@ -171,18 +167,12 @@
 
 ! ----------------------------------------------------------------
       subroutine UserInitializeLinearSolver(m,n,userctx,ierr)
-
+      use UserModule
       implicit none
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscksp.h>
-#include <petsc/finclude/petscpc.h>
 
       PetscInt m,n
       PetscErrorCode ierr
-      PetscFortranAddr userctx(*)
+      type(User) userctx
 
       common /param/ hx2,hy2
       PetscReal hx2,hy2
@@ -222,12 +212,12 @@
 
       call KSPCreate(PETSC_COMM_SELF,ksp,ierr);CHKERRQ(ierr)
 
-      userctx(1) = x
-      userctx(2) = b
-      userctx(3) = A
-      userctx(4) = ksp
-      userctx(5) = m
-      userctx(6) = n
+      userctx%x = x
+      userctx%b = b
+      userctx%A = A
+      userctx%ksp = ksp
+      userctx%m = m
+      userctx%n = n
 
       return
       end
@@ -238,17 +228,11 @@
 !   style by columns. userb is a standard one-dimensional array.
 
       subroutine UserDoLinearSolver(rho,userctx,userb,userx,ierr)
-
+      use UserModule
       implicit none
 
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscksp.h>
-#include <petsc/finclude/petscpc.h>
-
       PetscErrorCode ierr
-      PetscFortranAddr userctx(*)
+      type(User) userctx
       PetscScalar rho(*),userb(*),userx(*)
 
 
@@ -263,15 +247,13 @@
       PetscInt i,j,II,JJ
       PetscScalar  v
 
-!      PetscScalar tmpx(*),tmpb(*)
-
       one  = 1
-      x    = userctx(1)
-      b    = userctx(2)
-      A    = userctx(3)
-      ksp  = userctx(4)
-      m    = int(userctx(5))
-      n    = int(userctx(6))
+      x    = userctx%x
+      b    = userctx%b
+      A    = userctx%A
+      ksp  = userctx%ksp
+      m    = userctx%m
+      n    = userctx%n
 
 !  This is not the most efficient way of generating the matrix,
 !  but let's not worry about it.  We should have separate code for
@@ -373,37 +355,21 @@
 ! ------------------------------------------------------------------------
 
       subroutine UserFinalizeLinearSolver(userctx,ierr)
-
+      use UserModule
       implicit none
 
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscksp.h>
-#include <petsc/finclude/petscpc.h>
-
       PetscErrorCode ierr
-      PetscFortranAddr userctx(*)
+      type(User) userctx
 
-!  Local variable declararions
-
-      Vec  x,b
-      Mat  A
-      KSP ksp
 !
 !     We are all done and don't need to solve any more linear systems, so
 !     we free the work space.  All PETSc objects should be destroyed when
 !     they are no longer needed.
 !
-      x    = userctx(1)
-      b    = userctx(2)
-      A    = userctx(3)
-      ksp = userctx(4)
-
-      call VecDestroy(x,ierr);CHKERRQ(ierr)
-      call VecDestroy(b,ierr);CHKERRQ(ierr)
-      call MatDestroy(A,ierr);CHKERRQ(ierr)
-      call KSPDestroy(ksp,ierr);CHKERRQ(ierr)
+      call VecDestroy(userctx%x,ierr);CHKERRQ(ierr)
+      call VecDestroy(userctx%b,ierr);CHKERRQ(ierr)
+      call MatDestroy(userctx%A,ierr);CHKERRQ(ierr)
+      call KSPDestroy(userctx%ksp,ierr);CHKERRQ(ierr)
 
       return
       end

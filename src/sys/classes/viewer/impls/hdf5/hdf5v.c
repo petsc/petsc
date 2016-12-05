@@ -294,6 +294,7 @@ static PetscErrorCode PetscViewerFileGetName_HDF5(PetscViewer viewer,const char 
            PetscViewerMatlabOpen(), VecView(), DMView(), PetscViewerMatlabPutArray(), PETSCVIEWERASCII, PETSCVIEWERMATLAB,
            PetscViewerFileSetName(), PetscViewerFileSetMode(), PetscViewerFormat, PetscViewerType, PetscViewerSetType()
 
+  Level: beginner
 M*/
 
 #undef __FUNCT__

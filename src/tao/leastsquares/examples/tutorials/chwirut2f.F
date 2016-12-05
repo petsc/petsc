@@ -21,8 +21,6 @@
 !
 ! ----------------------------------------------------------------------
 !
-      implicit none
-
 #include "chwirut2f.h"
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -74,7 +72,7 @@
 
 !     Set routines for function, gradient, and hessian evaluation
          call TaoSetSeparableObjectiveRoutine(tao,f,                    &
-     &        FormFunction,PETSC_NULL_OBJECT,ierr)
+     &        FormFunction,0,ierr)
          CHKERRQ(ierr)
 
 !     Optional: Set initial guess
@@ -123,9 +121,6 @@
 !  f - function vector
 
       subroutine FormFunction(tao, x, f, dummy, ierr)
-      implicit none
-
-! n,alpha defined in chwirut2f.h
 #include "chwirut2f.h"
 
       Tao        tao
@@ -198,15 +193,9 @@
       return
       end
 
-
-
-
-
       subroutine FormStartingPoint(x)
-      implicit none
-
-! n,alpha defined in chwirut2f.h
 #include "chwirut2f.h"
+
       Vec             x
       PetscReal       x_v(0:1)
       PetscOffset     x_i
@@ -224,10 +213,8 @@
 
 
       subroutine InitializeData()
-      implicit none
-
-! n,alpha defined in chwirut2f.h
 #include "chwirut2f.h"
+
       PetscInt i
       i=0
       y(i) =    92.9000;  t(i) =  0.5000; i=i+1
@@ -451,8 +438,8 @@
 
 
       subroutine TaskWorker(ierr)
-      implicit none
 #include "chwirut2f.h"
+
       PetscErrorCode ierr
       PetscReal x(n),f
       integer tag
@@ -491,8 +478,8 @@
 
 
       subroutine RunSimulation(x,i,f,ierr)
-      implicit none
 #include "chwirut2f.h"
+
       PetscReal x(n),f
       PetscInt i
       PetscErrorCode ierr
@@ -502,8 +489,8 @@
       end
 
       subroutine StopWorkers(ierr)
-      implicit none
 #include "chwirut2f.h"
+
       integer checkedin
       integer status(MPI_STATUS_SIZE)
       integer source

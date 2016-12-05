@@ -2508,7 +2508,7 @@ PetscErrorCode TaoMonitor(Tao tao, PetscInt its, PetscReal f, PetscReal res, Pet
 .seealso: TaoGetConvergenceHistory()
 
 @*/
-PetscErrorCode TaoSetConvergenceHistory(Tao tao, PetscReal *obj, PetscReal *resid, PetscReal *cnorm, PetscInt *lits, PetscInt na,PetscBool reset)
+PetscErrorCode TaoSetConvergenceHistory(Tao tao, PetscReal obj[], PetscReal resid[], PetscReal cnorm[], PetscInt lits[], PetscInt na,PetscBool reset)
 {
   PetscErrorCode ierr;
 

@@ -1,9 +1,8 @@
 !
       program main
-      implicit none
-#include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscviewer.h>
+      use petscvec
+      implicit none
 
 !
 !      This example demonstrates writing an array to a file in binary
@@ -39,7 +38,8 @@
 !      Write the array length
        call PetscBinaryWrite(fd,n,ione,PETSC_INT,PETSC_FALSE,ierr)
 !      Write the array
-       call PetscBinaryWrite(fd,array,n,PETSC_DOUBLE,PETSC_FALSE,ierr)
+       call PetscBinaryWrite(fd,array,n,PETSC_SCALAR,                        &
+     &                      PETSC_FALSE,ierr)
 !      Close the file
        call PetscBinaryClose(fd,ierr)
 

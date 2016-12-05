@@ -471,7 +471,7 @@ M*/
           some default
 
           This macro does not exist in Fortran; you must use PETSC_NULL_INTEGER,
-          PETSC_NULL_DOUBLE_PRECISION, PETSC_NULL_FUNCTION, PETSC_NULL_OBJECT etc
+          PETSC_NULL_DOUBLE_PRECISION, PETSC_NULL_FUNCTION, PETSC_NULL_VEC etc
 
 .seealso: PETSC_DECIDE, PETSC_DEFAULT, PETSC_IGNORE, PETSC_DETERMINE
 
@@ -1572,7 +1572,11 @@ typedef struct _p_PetscObject* PetscObject;
 
 .seealso: PetscObjectState, PetscObjectGetId()
 M*/
+#if defined(PETSC_USING_F90) && !defined(PETSC_USE_FORTRANKIND) /* compaq F90 */
+typedef int PetscObjectId;
+#else
 typedef PetscInt64 PetscObjectId;
+#endif
 
 /*MC
     PetscObjectState - integer state for a PetscObject
@@ -1585,7 +1589,11 @@ typedef PetscInt64 PetscObjectId;
 
 .seealso: PetscObjectId, PetscObjectStateGet(), PetscObjectStateIncrease(), PetscObjectStateSet()
 M*/
+#if defined(PETSC_USING_F90) && !defined(PETSC_USE_FORTRANKIND) /* compaq F90 */
+typedef int PetscObjectState;
+#else
 typedef PetscInt64 PetscObjectState;
+#endif
 
 /*S
      PetscFunctionList - Linked list of functions, possibly stored in dynamic libraries, accessed
@@ -2513,78 +2521,25 @@ PETSC_STATIC_INLINE PetscErrorCode PetscIntSumError(PetscInt a,PetscInt b,PetscI
 
 /*MC
 
-    UsingFortran - Fortran can be used with PETSc in four distinct approaches
+    UsingFortran - To use PETSc with Fortran you must use both PETSc include files and modules. At the beginning
+      of every function and module definition you need something like
 
-$    1) classic Fortran 77 style
-$#include "petsc/finclude/petscXXX.h" to work with material from the XXX component of PETSc
-$       XXX variablename
-$      You cannot use this approach if you wish to use the Fortran 90 specific PETSc routines
-$      which end in F90; such as VecGetArrayF90()
 $
-$    2) classic Fortran 90 style
 $#include "petsc/finclude/petscXXX.h"
-$#include "petsc/finclude/petscXXX.h90" to work with material from the XXX component of PETSc
-$       XXX variablename
-$
-$    3) Using Fortran modules
-$#include "petsc/finclude/petscXXXdef.h"
 $         use petscXXXX
-$       XXX variablename
+
+     You can delcare PETSc variables using either 
+
+$    XXX variablename
+$    type(tXXX) variablename
+
+    for example
+
+$#include "petsc/finclude/petscvec.h"
+$         use petscvec
 $
-$    4) Use Fortran modules and Fortran data types for PETSc types
-$#include "petsc/finclude/petscXXXdef.h"
-$         use petscXXXX
-$       type(XXX) variablename
-$      To use this approach you must ./configure PETSc with the additional
-$      option --with-fortran-datatypes You cannot use the type(XXX) declaration approach without using Fortran modules
-
-    Finally if you absolutely do not want to use any #include you can use either
-
-$    3a) skip the #include BUT you cannot use any PETSc data type names like Vec, Mat, PetscInt, PetscErrorCode etc
-$        and you must declare the variables as integer, for example
-$        integer variablename
-$
-$    4a) skip the #include, you use the object types like type(Vec) type(Mat) but cannot use the data type
-$        names like PetscErrorCode, PetscInt etc. again for those you must use integer
-
-   We recommend either 2 or 3. Approaches 2 and 3 provide type checking for most PETSc function calls; 4 has type checking
-for only a few PETSc functions.
-
-   Fortran type checking with interfaces is strict, this means you cannot pass a scalar value when an array value
-is expected (even though it is legal Fortran). For example when setting a single value in a matrix with MatSetValues()
-you cannot have something like
-$      PetscInt row,col
-$      PetscScalar val
-$        ...
-$      call MatSetValues(mat,1,row,1,col,val,INSERT_VALUES,ierr)
-You must instead have
-$      PetscInt row(1),col(1)
-$      PetscScalar val(1)
-$        ...
-$      call MatSetValues(mat,1,row,1,col,val,INSERT_VALUES,ierr)
-
-
-    See the example src/vec/vec/examples/tutorials/ex20f90.F90 for an example that can use all four approaches
-
-    Developer Notes: The petsc/finclude/petscXXXdef.h contain all the #defines (would be typedefs in C code) these
-     automatically include their predecessors; for example petsc/finclude/petscvecdef.h includes petsc/finclude/petscisdef.h
-
-     The petsc/finclude/petscXXXX.h contain all the parameter statements for that package. These automatically include
-     their petsc/finclude/petscXXXdef.h file but DO NOT automatically include their predecessors;  for example
-     petsc/finclude/petscvec.h does NOT automatically include petsc/finclude/petscis.h
-
-     The petsc/finclude/ftn-custom/petscXXXdef.h90 are not intended to be used directly in code, they define the
-     Fortran data type type(XXX) (for example type(Vec)) when PETSc is ./configure with the --with-fortran-datatypes option.
-
-     The petsc/finclude/ftn-custom/petscXXX.h90 (not included directly by code) contain interface definitions for
-     the PETSc Fortran stubs that have different bindings then their C version (for example VecGetArrayF90).
-
-     The petsc/finclude/ftn-auto/petscXXX.h90 (not included directly by code) contain interface definitions generated
-     automatically by "make allfortranstubs".
-
-     The petsc/finclude/petscXXX.h90 includes the custom petsc/finclude/ftn-custom/petscXXX.h90 and if ./configure
-     was run with --with-fortran-interfaces it also includes the petsc/finclude/ftn-auto/petscXXX.h90 These DO NOT automatically
-     include their predecessors
+$    Vec  A
+$    type(tVec) A
 
     Level: beginner
 

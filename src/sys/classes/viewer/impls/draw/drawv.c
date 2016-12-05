@@ -510,6 +510,8 @@ PetscErrorCode PetscViewerView_Draw(PetscViewer viewer,PetscViewer v)
            PetscViewerMatlabOpen(), VecView(), DMView(), PetscViewerMatlabPutArray(), PETSCVIEWERASCII, PETSCVIEWERMATLAB,
            PetscViewerFileSetName(), PetscViewerFileSetMode(), PetscViewerFormat, PetscViewerType, PetscViewerSetType()
 
+  Level: beginner
+
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerCreate_Draw"

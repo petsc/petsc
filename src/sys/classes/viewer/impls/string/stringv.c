@@ -141,6 +141,7 @@ PetscErrorCode PetscViewerRestoreSubViewer_String(PetscViewer viewer,MPI_Comm co
            PetscViewerMatlabOpen(), VecView(), DMView(), PetscViewerMatlabPutArray(), PETSCVIEWERASCII, PETSCVIEWERMATLAB,
            PetscViewerFileSetName(), PetscViewerFileSetMode(), PetscViewerFormat, PetscViewerType, PetscViewerSetType()
 
+  Level: beginner
 M*/
 
 #undef __FUNCT__

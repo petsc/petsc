@@ -66,24 +66,9 @@ def check_petsc_arch(opts):
 def chkenable():
   #Replace all 'enable-'/'disable-' with 'with-'=0/1/tail
   #enable-fortran is a special case, the resulting --with-fortran is ambiguous.
-  #Would it mean --with-fc= or --with-fortran-interfaces=?
+  #Would it mean --with-fc=
   for l in range(0,len(sys.argv)):
     name = sys.argv[l]
-    if name.find('enable-fortran') >= 0:
-      if name.find('=') == -1:
-        sys.argv[l] = name.replace('enable-fortran','with-fortran-interfaces')+'=1'
-      else:
-        head, tail = name.split('=', 1)
-        sys.argv[l] = head.replace('enable-fortran','with-fortran-interfaces')+'='+tail
-      continue
-    if name.find('disable-fortran') >= 0:
-      if name.find('=') == -1:
-        sys.argv[l] = name.replace('disable-fortran','with-fortran-interfaces')+'=0'
-      else:
-        head, tail = name.split('=', 1)
-        if tail == '1': tail = '0'
-        sys.argv[l] = head.replace('disable-fortran','with-fortran-interfaces')+'='+tail
-      continue
 
     if name.find('enable-cxx') >= 0:
       if name.find('=') == -1:

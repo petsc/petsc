@@ -9,21 +9,9 @@
 ! -----------------------------------------------------------------------
 
       program main
-      implicit none
-
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!                    Include files
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!
-!  The following include statements are required for Fortran programs
-!  that use PETSc vectors:
-!     petscsys.h       - base PETSc routines
-!     petscvec.h    - vectors
-!  Include petscviewer.h so that we can use the PETSc viewers.
-!
-#include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscviewer.h>
+      use petscvec
+      implicit none
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
@@ -42,7 +30,7 @@
          stop
       endif
       n = 50
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,      &
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,      &
      &                        '-n',n,flg,ierr)
 
 !  Create a vector, specifying only its global dimension.

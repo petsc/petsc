@@ -11,14 +11,10 @@
 ! -----------------------------------------------------------------------
 
       program SchoolDay
-
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petsclog.h>
+      use petscsys
       implicit none
-
-! Petsc types are needed:
-#include <petsc/finclude/petscsys.h> 
-
-! Petsc Logging is needed:
-#include <petsc/finclude/petsclog.h> 
 
 !====================================================================
 !     Local Variables

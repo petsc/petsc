@@ -2,35 +2,26 @@
 !   This program tests MatCreateVecs() for Shell Matrix
 !
       subroutine mymatgetvecs(A,x,y,ierr)
+#include <petsc/finclude/petscmat.h>
+      use petscmat
       implicit none
 
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscis.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
       PetscErrorCode ierr
       Mat A
       Vec x,y
+      PetscInt tw
 
-      if (x .ne. -1) then
-        call VecCreateSeq(PETSC_COMM_SELF,12,x,ierr)
-      endif
-      if (y .ne. -1) then
-        call VecCreateSeq(PETSC_COMM_SELF,12,y,ierr)
-      endif
-
+      tw = 12
+      call VecCreateSeq(PETSC_COMM_SELF,tw,x,ierr)
+      call VecCreateSeq(PETSC_COMM_SELF,tw,y,ierr)
       return
       end
 
 
       program main
-      implicit none
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscis.h>
-#include <petsc/finclude/petscvec.h>
 #include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscviewer.h>
+      use petscmat
+      implicit none
 
       PetscErrorCode ierr
       Vec     x,y

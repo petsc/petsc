@@ -1,6 +1,8 @@
       program DMPlexTestField
+#include "petsc/finclude/petscdmplex.h"
+      use petscdmplex
       implicit none
-#include "petsc/finclude/petsc.h90"
+
       DM :: dm
       DMLabel :: label
       Vec :: u
@@ -27,7 +29,7 @@
         stop
       endif
       dim = 2
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-dim', dim,PETSC_NULL_BOOL, ierr);CHKERRQ(ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-dim', dim,PETSC_NULL_BOOL, ierr);CHKERRQ(ierr)
       interpolate = PETSC_TRUE
 !     Create a mesh
       if (dim .eq. 2) then
@@ -73,7 +75,7 @@
       call DMGetStratumIS(dm, 'marker', 1, bcPointIS(1),ierr);CHKERRQ(ierr)
       pBcPointIS => bcPointIS
 !     Create a PetscSection with this data layout
-      call DMPlexCreateSection(dm,dim,numFields,pNumComp,pNumDof,numBC,pBcField,pBcCompIS,pBcPointIS,PETSC_NULL_OBJECT,section,ierr);CHKERRQ(ierr)
+      call DMPlexCreateSection(dm,dim,numFields,pNumComp,pNumDof,numBC,pBcField,pBcCompIS,pBcPointIS,PETSC_NULL_IS,section,ierr);CHKERRQ(ierr)
       call ISDestroy(bcCompIS(1), ierr);CHKERRQ(ierr)
       call ISDestroy(bcPointIS(1), ierr);CHKERRQ(ierr)
 !     Name the Field variables

@@ -43,8 +43,9 @@
 !  in them
 !
       module petsc_kkt_solver
-#include <petsc/finclude/petscdmdef.h>
+#include <petsc/finclude/petscdm.h>
       use petscdmdef
+      use petscmatdef
       type petsc_kkt_solver_type
         DM::da
 !     temp A block stuff
@@ -63,7 +64,8 @@
 
       Interface SNESSetApplicationContext
         Subroutine SNESSetApplicationContext(snesIn,ctx,ierr)
-#include <petsc/finclude/petscsnesdef.h>
+#include <petsc/finclude/petscsnes.h>
+        use petscsnes
         use petsc_kkt_solver
           SNES::    snesIn
           type(petsc_kkt_solver_type) ctx
@@ -73,7 +75,8 @@
 
       Interface SNESGetApplicationContext
         Subroutine SNESGetApplicationContext(snesIn,ctx,ierr)
-#include <petsc/finclude/petscsnesdef.h>
+#include <petsc/finclude/petscsnes.h>
+        use petscsnes
         use petsc_kkt_solver
           SNES::     snesIn
           type(petsc_kkt_solver_type), pointer :: ctx
@@ -83,8 +86,8 @@
       end module petsc_kkt_solver_interfaces
 
       program main
-#include <petsc/finclude/petscdmdef.h>
-#include <petsc/finclude/petscsnesdef.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscsnes.h>
       use petscdm
       use petscdmda
       use petscsnes
@@ -138,7 +141,7 @@
       ione = 1
       nfour = 4
       itwo = 2
-      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-par', solver%lambda,flg,ierr);CHKERRQ(ierr)
+      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-par', solver%lambda,flg,ierr);CHKERRQ(ierr)
       if (solver%lambda .ge. lambda_max .or. solver%lambda .lt. lambda_min) then
          if (solver%rank .eq. 0) write(6,*) 'Lambda is out of range'
          SETERRQ(PETSC_COMM_SELF,1,' ',ierr)
@@ -157,7 +160,7 @@
       N1 = solver%my*solver%mx
       N2 = solver%my
       flg = .false.
-      call PetscOptionsGetBool(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-no_constraints',flg,flg,ierr);CHKERRQ(ierr)
+      call PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-no_constraints',flg,flg,ierr);CHKERRQ(ierr)
       if (flg) then
          N2 = 0
       endif
@@ -300,7 +303,8 @@
 
 !  Extract global and local vectors from DMDA; then duplicate for remaining
 !     vectors that are the same types
-      call MatCreateVecs(KKTmat,x,PETSC_NULL_OBJECT,ierr);CHKERRQ(ierr)
+      x = tVec(0)
+      call MatCreateVecs(KKTmat,x,PETSC_NULL_VEC,ierr);CHKERRQ(ierr)
       call VecDuplicate(x,r,ierr);CHKERRQ(ierr)
 
       call SNESCreate(PETSC_COMM_WORLD,mysnes,ierr);CHKERRQ(ierr)
@@ -331,7 +335,7 @@
 !  this vector to zero by calling VecSet().
 
       call FormInitialGuess(mysnes,x,ierr);CHKERRQ(ierr)
-      call SNESSolve(mysnes,PETSC_NULL_OBJECT,x,ierr);CHKERRQ(ierr)
+      call SNESSolve(mysnes,PETSC_NULL_VEC,x,ierr);CHKERRQ(ierr)
       call SNESGetIterationNumber(mysnes,its,ierr);CHKERRQ(ierr)
       if (solver%rank .eq. 0) then
          write(6,100) its
@@ -383,7 +387,7 @@
 !  the local vector data via VecGetArrayF90() and VecRestoreArrayF90().
 !
       subroutine FormInitialGuess(mysnes,Xnest,ierr)
-#include <petsc/finclude/petscsnesdef.h>
+#include <petsc/finclude/petscsnes.h>
       use petscsnes
       use petsc_kkt_solver
       use petsc_kkt_solver_interfaces
@@ -432,7 +436,7 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine InitialGuessLocal(solver,X1,ierr)
-#include <petsc/finclude/petscsysdef.h>
+#include <petsc/finclude/petscsys.h>
       use petscsys
       use petsc_kkt_solver
       implicit none
@@ -487,7 +491,7 @@
 !  flag     - flag indicating matrix structure
 !
       subroutine FormJacobian(dummy,X,jac,jac_prec,solver,ierr)
-#include <petsc/finclude/petscsnesdef.h>
+#include <petsc/finclude/petscsnes.h>
       use petscsnes
       use petsc_kkt_solver
       implicit none
@@ -546,7 +550,7 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine FormJacobianLocal(X1,jac,solver,add_nl_term,ierr)
-#include <petsc/finclude/petscmatdef.h>
+#include <petsc/finclude/petscmat.h>
       use petscmat
       use petsc_kkt_solver
       implicit none
@@ -631,7 +635,7 @@
 !  F - function vector
 !
       subroutine FormFunction(snesIn,X,F,solver,ierr)
-#include <petsc/finclude/petscsnesdef.h>
+#include <petsc/finclude/petscsnes.h>
       use petscsnes
       use petsc_kkt_solver
       implicit none
@@ -686,7 +690,7 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine FormFunctionNLTerm(X1,F1,solver,ierr)
-#include <petsc/finclude/petscvecdef.h>
+#include <petsc/finclude/petscvec.h>
       use petscvec
       use petsc_kkt_solver
       implicit none

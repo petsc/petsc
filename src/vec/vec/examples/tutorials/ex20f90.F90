@@ -17,19 +17,10 @@
 !     This examples uses Fortran 90 MODULES instead of include files
 !   see the manual page UsingFortran
 !
-#define PETSC_USE_FORTRAN_MODULES
-#include <petsc/finclude/petscsysdef.h>
-#include <petsc/finclude/petscvecdef.h>
-#if defined(PETSC_USE_FORTRAN_MODULES)
-      use petscvec
-#endif
-      implicit none
-#if !defined(PETSC_USE_FORTRAN_MODULES)
-#include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscvec.h90>
+      use petscvec
+      implicit none
 
-#endif
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -39,13 +30,9 @@
 !     x, y, w - vectors
 !     z       - array of vectors
 !
-#if defined(PETSC_USE_FORTRAN_DATATYPES)
-      type(Vec)       x,y,w
-      type(Vec), pointer :: z(:)
-#else
-      Vec              x,y,w
-      Vec, pointer :: z(:)
-#endif
+      type(tVec)       x,y,w
+      type(tVec), pointer :: z(:)
+
       PetscReal norm,v,v1,v2,tol
       PetscInt  n,ithree
       PetscErrorCode ierr
@@ -72,7 +59,7 @@
       n     = 20
       ithree = 3
 
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-n',n,flg,ierr);CHKERRQ(ierr)
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',n,flg,ierr);CHKERRQ(ierr)
       nfloat = n
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr);CHKERRQ(ierr)
 

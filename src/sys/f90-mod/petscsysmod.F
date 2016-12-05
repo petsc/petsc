@@ -1,4 +1,3 @@
-#define PETSC_USE_FORTRAN_MODULES
 
         module petscsysdef
 #include <petscconf.h>
@@ -6,17 +5,16 @@
         use mpi
 #define PETSC_AVOID_MPIF_H
 #endif
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscdraw.h>
-#include <petsc/finclude/petscviewer.h>
-#include <petsc/finclude/ftn-custom/petscsysdef.h90>
-#include <petsc/finclude/petscdrawdef.h>
-#include <petsc/finclude/ftn-custom/petscviewerdef.h90>
+#include <../src/sys/f90-mod/petscsys.h>
+#include <../src/sys/f90-mod/petscdraw.h>
+#include <../src/sys/f90-mod/petscviewer.h>
         end module
 
         module petscsys
         use petscsysdef
-#include <petsc/finclude/petscsys.h90>
-#include <petsc/finclude/petscviewer.h90>
+#include <../src/sys/f90-mod/petscsys.h90>
+        interface
+#include <../src/sys/f90-mod/ftn-auto-interfaces/petscsys.h90>
+        end interface
         end module
 

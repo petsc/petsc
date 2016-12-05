@@ -7,16 +7,10 @@
 !T*/
 !
 !
-!  The following include statements are required for Fortran programs
-!  that use PETSc index sets:
-!     petscsys.h  - base PETSc routines
-!     petscis.h     - index sets (IS objects)
-!
       program main
-      implicit none
-
-#include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscis.h>
+      use petscis
+      implicit none
 
       PetscErrorCode ierr
       PetscInt indices(5),n,index1,index5

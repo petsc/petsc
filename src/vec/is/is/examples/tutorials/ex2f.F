@@ -10,9 +10,9 @@
 !     Include petscis.h so we can use PETSc IS objects.
 !
       program main
-      implicit none
-#include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscis.h>
+      use petscis
+      implicit none
 
       PetscErrorCode ierr
       PetscInt    i,n,index(1),first,step,val

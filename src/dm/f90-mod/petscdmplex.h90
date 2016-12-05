@@ -1,0 +1,244 @@
+
+      Interface
+        Subroutine DMPlexGetCone(m,p,cone,ierr)
+          use petscdmdef
+          PetscInt     p
+          PetscInt, pointer :: cone(:)
+          PetscErrorCode ierr
+          DM m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexRestoreCone(m,p,cone,ierr)
+          use petscdmdef
+          PetscInt     p
+          PetscInt, pointer :: cone(:)
+          PetscErrorCode ierr
+          DM m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexGetConeOrientation(m,p,coneOrient,ierr)
+          use petscdmdef
+          PetscInt     p
+          PetscInt, pointer :: coneOrient(:)
+          PetscErrorCode ierr
+          DM m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexGetSupport(m,p,support,ierr)
+          use petscdmdef
+          PetscInt     p
+          PetscInt, pointer :: support(:)
+          PetscErrorCode ierr
+          DM m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexRestoreSupport(m,p,support,ierr)
+          use petscdmdef
+          PetscInt     p
+          PetscInt, pointer :: support(:)
+          PetscErrorCode ierr
+          DM m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexGetTransitiveClosure(m,p,useCone,points,ierr)
+          use petscdmdef
+          PetscInt     p
+          PetscBool    useCone
+          PetscInt, pointer :: points(:)
+          PetscErrorCode ierr
+          DM m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexRestoreTransitiveClosure(m,p,uC,points,ierr)
+          use petscdmdef
+          PetscInt     p
+          PetscBool    uC
+          PetscInt, pointer :: points(:)
+          PetscErrorCode ierr
+          DM m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexGetJoin(m,numPoints,points,join,ierr)
+          use petscdmdef
+          PetscInt     numPoints
+          PetscInt, pointer :: points(:)
+          PetscInt, pointer :: join(:)
+          PetscErrorCode ierr
+          DM m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexGetFullJoin(m,numPoints,points,join,ierr)
+          use petscdmdef
+          PetscInt     numPoints
+          PetscInt, pointer :: points(:)
+          PetscInt, pointer :: join(:)
+          PetscErrorCode ierr
+          DM m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexRestoreJoin(m,numPoints,points,join,ierr)
+          use petscdmdef
+          PetscInt     numPoints
+          PetscInt, pointer :: points(:)
+          PetscInt, pointer :: join(:)
+          PetscErrorCode ierr
+          DM m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexGetMeet(m,numPoints,points,meet,ierr)
+          use petscdmdef
+          PetscInt     numPoints
+          PetscInt, pointer :: points(:)
+          PetscInt, pointer :: meet(:)
+          PetscErrorCode ierr
+          DM m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexGetFullMeet(m,numPoints,points,meet,ierr)
+          use petscdmdef
+          PetscInt     numPoints
+          PetscInt, pointer :: points(:)
+          PetscInt, pointer :: meet(:)
+          PetscErrorCode ierr
+          DM m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexRestoreMeet(m,numPoints,points,meet,ierr)
+          use petscdmdef
+          PetscInt     numPoints
+          PetscInt, pointer :: points(:)
+          PetscInt, pointer :: meet(:)
+          PetscErrorCode ierr
+          DM m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexVecGetClosure(m,section,v,point,values,ierr)
+          use petscdmdef
+          PetscSection section
+          Vec     v
+          PetscInt     point
+          PetscScalar, pointer :: values(:)
+          PetscErrorCode ierr
+          DM m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexVecRestoreClosure(m,section,v,point,vs,ierr)
+          use petscdmdef
+          PetscSection section
+          Vec     v
+          PetscInt     point
+          PetscScalar, pointer :: vs(:)
+          PetscErrorCode ierr
+          DM m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexVecSetClosure(m,sec,v,point,vs,mode,ierr)
+          use petscdmdef
+          PetscSection sec
+          Vec     v
+          PetscInt     point
+          InsertMode   mode
+          PetscScalar, pointer :: vs(:)
+          PetscErrorCode ierr
+          DM m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexMatSetClosure(m,s,gS,A,p,v,mode,ierr)
+          use petscdmdef
+          PetscSection s
+          PetscSection gS
+          Mat     A
+          PetscInt     p
+          InsertMode   mode
+          PetscScalar, pointer :: v(:)
+          PetscErrorCode ierr
+          DM m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexCreateSection(m,d,nF,nC,nD,nB,bF,bC,bP,pm,sc,e)
+          use petscdmdef
+          PetscSection sc
+          PetscInt     d, nF, nB
+          PetscInt, pointer :: nC(:)
+          PetscInt, pointer :: nD(:)
+          PetscInt, pointer :: bF(:)
+          IS,  pointer :: bC(:)
+          IS,  pointer :: bP(:)
+          IS pm
+          PetscErrorCode e
+          DM m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexComputeCellGeometryAffineFEM(m,c,v0,J,iJ,dJ,er)
+          use petscdmdef
+          PetscInt   c
+          PetscReal, pointer :: v0(:)
+          PetscReal, pointer :: J(:)
+          PetscReal, pointer :: iJ(:)
+          PetscReal  dJ
+          PetscErrorCode er
+          DM m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexComputeCellGeometryFEM(m,c,fe,v0,J,iJ,dJ,er)
+          use petscdmdef
+          PetscInt   c
+          PetscReal, pointer :: v0(:)
+          PetscReal, pointer :: J(:)
+          PetscReal, pointer :: iJ(:)
+          PetscReal  dJ
+          PetscErrorCode er
+          PetscFE fe
+          DM m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexComputeCellGeometryFVM(m,cell,vol,ct,nm,ierr)
+          use petscdmdef
+          PetscInt   cell
+          PetscReal  vol
+          PetscReal, pointer :: ct(:)
+          PetscReal, pointer :: nm(:)
+          PetscErrorCode ierr
+          DM m
+        End Subroutine
+      End Interface

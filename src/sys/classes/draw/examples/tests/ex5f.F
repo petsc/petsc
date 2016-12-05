@@ -3,6 +3,8 @@
       program main
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscdraw.h>
+      use petscsys
+      implicit none
 !
 !  This example demonstrates basic use of the Fortran interface for
 !  PetscDraw routines.
@@ -14,6 +16,7 @@
       PetscBool         flg
       integer           x,y,width,height
       PetscScalar       xd,yd
+      PetscReal         ten
       PetscInt          i,n,w,h
 
       n      = 15
@@ -21,6 +24,7 @@
       y      = 0
       w      = 400
       h      = 300
+      ten    = 10.0
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       if (ierr .ne. 0) then
@@ -29,13 +33,13 @@
       endif
 
 !  GetInt requires a PetscInt so have to do this ugly setting
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,         &
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,         &
      &                        '-width',w, flg,ierr)
       width = int(w)
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,         &
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,         &
      &                        '-height',h,flg,ierr)
       height = int(h)
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,         &
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,         &
      &                        '-n',n,flg,ierr)
 
       call PetscDrawCreate(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,        &
@@ -58,7 +62,7 @@
       call PetscDrawLGSetUseMarkers(lg,PETSC_TRUE,ierr)
       call PetscDrawLGDraw(lg,ierr)
 
-      call PetscSleep(10,ierr)
+      call PetscSleep(ten,ierr)
 
       call PetscDrawLGDestroy(lg,ierr)
       call PetscDrawDestroy(draw,ierr)

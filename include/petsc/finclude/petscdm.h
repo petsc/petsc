@@ -1,33 +1,44 @@
 
-
 !
 !  Include file for Fortran use of the DM package in PETSc
 !
-#include "petsc/finclude/petscdmdef.h"
+#if !defined (__PETSCDMDEF_H)
+#define __PETSCDMDEF_H
 
-!
-!  Types of periodicity
-!
-      PetscEnum DM_BOUNDARY_NONE
-      PetscEnum DM_BOUNDARY_GHOSTED
-      PetscEnum DM_BOUNDARY_MIRROR
-      PetscEnum DM_BOUNDARY_PERIODIC
-      PetscEnum DM_BOUNDARY_TWIST
+#include "petsc/finclude/petscis.h"
+#include "petsc/finclude/petscvec.h"
+#include "petsc/finclude/petscmat.h"
 
-      parameter (DM_BOUNDARY_NONE = 0)
-      parameter (DM_BOUNDARY_GHOSTED = 1)
-      parameter (DM_BOUNDARY_MIRROR = 2)
-      parameter (DM_BOUNDARY_PERIODIC = 3)
-      parameter (DM_BOUNDARY_TWIST = 4)
+#define DMType character*(80)
+#define DMBoundaryType      PetscEnum
+#define DMPointLocationType PetscEnum
+#define DMAdaptFlag         PetscEnum
 
-!
-!  Types of point location
-!
-      PetscEnum DM_POINTLOCATION_NONE
-      PetscEnum DM_POINTLOCATION_NEAREST
-      PetscEnum DM_POINTLOCATION_REMOVE
+#define DM               type(tDM)
 
-      parameter (DM_POINTLOCATION_NONE = 0)
-      parameter (DM_POINTLOCATION_NEAREST = 1)
-      parameter (DM_POINTLOCATION_REMOVE = 2)
+#define PetscQuadrature  PetscFortranAddr
+#define PetscDS          PetscFortranAddr
+#define PetscFE          PetscFortranAddr
+#define PetscSpace       PetscFortranAddr
+#define PetscDualSpace   PetscFortranAddr
+#define PetscFV          PetscFortranAddr
+#define PetscLimiter     PetscFortranAddr
+#define PetscPartitioner PetscFortranAddr
 
+
+#define DMDA        'da'
+#define DMCOMPOSITE 'composite'
+#define DMSLICED    'sliced'
+#define DMSHELL     'shell'
+#define DMPLEX      'plex'
+#define DMCARTESIAN 'cartesian'
+#define DMREDUNDANT 'redundant'
+#define DMPATCH     'patch'
+#define DMMOAB      'moab'
+#define DMNETWORK   'network'
+#define DMFOREST    'forest'
+#define DMP4EST     'p4est'
+#define DMP8EST     'p8est'
+#define DMSWARM     'swarm'
+
+#endif

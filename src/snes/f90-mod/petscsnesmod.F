@@ -1,14 +1,15 @@
-#define PETSC_USE_FORTRAN_MODULES
 
         module petscsnesdef
         use petsckspdef
-#include <petsc/finclude/petscsnes.h>
-#include <petsc/finclude/ftn-custom/petscsnesdef.h90>
+#include <../src/snes/f90-mod/petscsnes.h>
         end module
 
         module petscsnes
         use petscsnesdef
         use petscksp
-#include <petsc/finclude/petscsnes.h90>
+#include <../src/snes/f90-mod/petscsnes.h90>
+        interface
+#include <../src/snes/f90-mod/ftn-auto-interfaces/petscsnes.h90>
+        end interface
         end module
 

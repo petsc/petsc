@@ -7,7 +7,8 @@ LOCDIR          = src/vec/is/examples/tests/
 DIRS            =
 EXAMPLESC       = ex1.c ex2.c
 EXAMPLESF       =
-MANSEC          = IS
+MANSEC          = Vec
+SUBMANSEC       = IS
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

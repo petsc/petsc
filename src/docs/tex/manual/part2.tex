@@ -6143,27 +6143,12 @@ for(v=Start; v  < End; v++) {
 \label{ch_fortran}
 
 Most of the functionality of PETSc can be obtained by people who
-program purely in Fortran 77 or Fortran 90.
-The PETSc Fortran interface works with both F77 and F90 compilers.
-
-Since Fortran77 does not provide type checking of routine input/output
-parameters, we find that many errors encountered within PETSc Fortran
-programs result from accidentally using incorrect calling sequences.
-Such mistakes are immediately detected during compilation when using
-C/C++.  Thus, using a mixture of C/C++ and Fortran often works well
-for programmers who wish to employ Fortran for the core numerical
-routines within their applications.  In particular, one can
-effectively write PETSc driver routines in C/C++, thereby preserving
-flexibility within the program, and still use Fortran when desired for
-underlying numerical computations. With Fortran 90 compilers we now
-can provide some type checking from Fortran.
+program purely in Fortran.
 
 \section{C vs. Fortran Interfaces}
 
 Only a few differences exist between the C and Fortran PETSc
-interfaces, all of which are due to Fortran 77 syntax limitations.
-Since PETSc is primarily written in C, the FORTRAN 90
-dynamic allocation is not easily accessible.
+interfaces, are due to Fortran syntax differences.
 All Fortran routines have the same names as the corresponding C
 versions, and PETSc command line options are fully supported. The
 routine arguments follow the usual Fortran conventions; the user need
@@ -6180,33 +6165,20 @@ The Fortran include files for PETSc are located in the directory
 \trl{${PETSC_DIR}/include/petsc/finclude} and should be used via statements
 such as the following:
 \begin{lstlisting}
-#include "petsc/finclude/includefile.h"
+#include <petsc/finclude/petscXXX.h>
 \end{lstlisting}
-Since one must be very careful to include each file no more than once
-in a Fortran routine, application programmers must manually include
-each file needed for the various PETSc libraries within their
-program.  This approach differs from the PETSc C/C++ interface, where
-the user need only include the highest level file, for example, \trl{
-petscsnes.h}, which then automatically includes all of the required lower
-level files.  As shown in the examples of Section
-\ref{sec_fortran-examples}, in Fortran one must explicitly list {\em
-each} of the include files. One must employ
-the Fortran file suffix \trl{.F}
-rather than \trl{.f}.  This convention enables use of the CPP
-preprocessor, which allows the use of the \lstinline{#include} statements
-that define PETSc objects and variables. (Familiarity with the CPP
-preprocessor is not needed for writing PETSc Fortran code; one can simply
-begin by copying a PETSc Fortran example and its corresponding
-makefile.)
-
-For some of the Fortran 90 functionality of PETSc and type checking
-of PETSc function calls you can use
+for example,
 \begin{lstlisting}
-#include "petsc/finclude/includefile.h"
-#include "petsc/finclude/includefile.h90"
+#include <petsc/finclude/petscksp.h>
 \end{lstlisting}
-See the manual page UsingFortran for how you can use PETSc Fortran
-module files in your code.
+You must also use the appropriate Fortran module which is done with
+\begin{lstlisting}
+      use petscXXX
+\end{lstlisting}
+for example,
+\begin{lstlisting}
+      use petscksp
+\end{lstlisting}
 
 \subsection{Error Checking}
 \label{sec_fortran_errors}
@@ -6242,70 +6214,6 @@ if (ierr .ne. 0) then
 end if
 \end{lstlisting}
 
-The most common reason for crashing PETSc Fortran code is forgetting the
-final \lstinline{ierr} argument.
-
-\subsection{Array Arguments}
-\label{sec_fortranarrays}
-
-Since Fortran 77 does not allow arrays to be returned in routine
-arguments, all PETSc routines that return arrays, such as
-\lstinline{VecGetArray()}, \lstinline{MatDenseGetArray()},
-and \lstinline{ISGetIndices()},
-are defined slightly differently in Fortran than in C.
-Instead of returning the array itself, these routines
-accept as input a user-specified array of dimension one and return an
-integer index to the actual array used for data storage within PETSc.
-The Fortran interface for several routines is as follows:
-\begin{lstlisting}
-double precision xx_v(1), aa_v(1)
-PetscErrorCode ierr
-integer          ss_v(1), dd_v(1), nloc
-PetscOffset      ss_i, xx_i, aa_i, dd_i
-Vec x
-Mat A
-IS  s
-DM  d 
-
-call VecGetArray(x,xx_v,xx_i,ierr)
-call MatDenseGetArray(A,aa_v,aa_i,ierr)
-call ISGetIndices(s,ss_v,ss_i,ierr)
-\end{lstlisting}
-
-To access array elements directly, both the user-specified array and
-the integer index {\em must} then be used together.
-For example, the following Fortran program fragment illustrates
-directly setting the values of a vector array instead of using \lstinline{VecSetValues()}.  Note the (optional) use of the preprocessor
-\lstinline{#define} statement to enable array manipulations in the conventional
-Fortran manner.
-\begin{lstlisting}
-#define xx_a(ib)  xx_v(xx_i + (ib))
-
-   double precision xx_v(1)
-   PetscOffset      xx_i
-   PetscErrorCode ierr
-   integer          i, n
-   Vec              x
-   call VecGetArray(x,xx_v,xx_i,ierr)
-   call VecGetLocalSize(x,n,ierr)
-   do 10, i=1,n
-     xx_a(i) = 3*i + 1
-10 continue
-   call VecRestoreArray(x,xx_v,xx_i,ierr)
-\end{lstlisting}
-Figure \ref{fig_vec2-Fortran} contains an example of using \lstinline{VecGetArray()}
-within a Fortran routine.
-
-Since in this case the array is accessed directly from Fortran,
-indexing begins with 1, not 0 (unless the array is declared as \lstinline{xx_v(0:1)}).
-This is different from the use of \lstinline{VecSetValues()}
-where, indexing always starts with 0.
-
-{\em Note}: If using \lstinline{VecGetArray()}, \lstinline{MatDenseGetArray()}, or \lstinline{ISGetIndices()},
-from Fortran, the user {\em must not} compile the Fortran code with options
-to check for ``array entries out of bounds'' (e.g., on the IBM RS/6000 this
-is done with the \trl{-C} compiler option, so never use the \trl{-C} option with this).
-
 \subsection{Calling Fortran Routines from C (and C Routines from Fortran)}
 
 
@@ -6337,7 +6245,7 @@ dabsc_( &n,x,y); /* call the Fortran function */
 
 \subsection{Passing Null Pointers}
 
-In several PETSc C functions, one has the option of passing a 0 (null)
+In several PETSc C functions, one has the option of passing a NULL (0)
 argument (for example, the fifth argument of \lstinline{MatCreateSeqAIJ()}).
 From Fortran, users {\em must} pass \lstinline{PETSC_NULL_XXX} to indicate a
 null argument (where \lstinline{XXX} is \lstinline{INTEGER}, \lstinline{DOUBLE}, \lstinline{CHARACTER},
@@ -6350,7 +6258,7 @@ be used.  For example, when no options prefix is desired in the
 routine \lstinline{PetscOptionsGetInt()}, one must use the following command in
 Fortran:
 \begin{lstlisting}
-call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-name',N,flg,ierr)
+call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-name',N,flg,ierr)
 \end{lstlisting}
 
 This Fortran requirement is inconsistent with C, where the
@@ -6360,7 +6268,7 @@ user can employ \lstinline{NULL} for all null arguments.
 \label{sec_fortvecd}
 
 The Fortran interface to \lstinline{VecDuplicateVecs()} differs slightly
-from the C/C++ variant because Fortran does not allow arrays to be
+from the C/C++ variant because Fortran does not allow conventional arrays to be
 returned in routine arguments.  To create \lstinline{n} vectors of the same
 format as an existing vector, the user must declare a vector array,
 \lstinline{v_new} of size \lstinline{n}.  Then, after \lstinline{VecDuplicateVecs()} has
@@ -6437,9 +6345,7 @@ PetscViewerStringOpen(), PetscViewerStringSPrintf()
 PetscOptionsGetStringArray()
 \end{lstlisting}
 
-\subsection{Fortran90}
-
-PETSc includes limited support for direct use of Fortran90 pointers.
+PETSc includes some support for direct use of Fortran90 pointers.
 Current routines include:
 \begin{lstlisting}
 VecGetArrayF90(), VecRestoreArrayF90()
@@ -6450,7 +6356,8 @@ MatDenseGetArrayF90(), MatDenseRestoreArrayF90()
 ISGetIndicesF90(), ISRestoreIndicesF90()
 \end{lstlisting}
 See the manual pages for details and pointers to example programs.  To
-use the routines \lstinline{VecGetArrayF90()}, \lstinline{VecRestoreArrayF90()}, \lstinline{VecGetArrayReadF90()}, \lstinline{VecRestoreArrayReadF90()},
+use the
+routines \lstinline{VecGetArrayF90()}, \lstinline{VecRestoreArrayF90()}, \lstinline{VecGetArrayReadF90()}, \lstinline{VecRestoreArrayReadF90()},
 \lstinline{VecDuplicateVecsF90()}, and \lstinline{VecDestroyVecsF90()}, one must
 use the Fortran90 vector include file,
 \begin{lstlisting}
@@ -6459,7 +6366,7 @@ use the Fortran90 vector include file,
 Analogous include files for other libraries are \trl{petscdm.h90},
 \trl{petscmat.h90}, and \trl{petscis.h90}.
 
-\section{Sample Fortran77 Programs}
+\section{Sample Fortran Programs}
 \label{sec_fortran-examples}
 
 Sample programs that illustrate the PETSc interface for Fortran
@@ -6496,6 +6403,70 @@ since PETSc usage within the two languages differs only slightly.
 \caption{Sample Fortran Program:  Using PETSc Nonlinear Solvers}
 \label{fig_SNES-Fortran}
 \end{figure}
+
+\subsection{Array Arguments}
+\label{sec_fortranarrays}
+
+This material is no longer relevent since one should use \lstinline{VecGetArrayF90()} and the other routines that utilize Fortran pointers, instead of the code below, but it is included for historical reasons and because many of the Fortran examples still utilize the old approach.
+
+Since Fortran 77 does not allow arrays to be returned in routine
+arguments, all PETSc routines that return arrays, such as
+\lstinline{VecGetArray()}, \lstinline{MatDenseGetArray()},
+and \lstinline{ISGetIndices()},
+are defined slightly differently in Fortran than in C.
+Instead of returning the array itself, these routines
+accept as input a user-specified array of dimension one and return an
+integer index to the actual array used for data storage within PETSc.
+The Fortran interface for several routines is as follows:
+\begin{lstlisting}
+double precision xx_v(1), aa_v(1)
+PetscErrorCode ierr
+integer          ss_v(1), dd_v(1), nloc
+PetscOffset      ss_i, xx_i, aa_i, dd_i
+Vec x
+Mat A
+IS  s
+DM  d 
+
+call VecGetArray(x,xx_v,xx_i,ierr)
+call MatDenseGetArray(A,aa_v,aa_i,ierr)
+call ISGetIndices(s,ss_v,ss_i,ierr)
+\end{lstlisting}
+
+To access array elements directly, both the user-specified array and
+the integer index {\em must} then be used together.
+For example, the following Fortran program fragment illustrates
+directly setting the values of a vector array instead of using \lstinline{VecSetValues()}.  Note the (optional) use of the preprocessor
+\lstinline{#define} statement to enable array manipulations in the conventional
+Fortran manner.
+\begin{lstlisting}
+#define xx_a(ib)  xx_v(xx_i + (ib))
+
+   double precision xx_v(1)
+   PetscOffset      xx_i
+   PetscErrorCode ierr
+   integer          i, n
+   Vec              x
+   call VecGetArray(x,xx_v,xx_i,ierr)
+   call VecGetLocalSize(x,n,ierr)
+   do 10, i=1,n
+     xx_a(i) = 3*i + 1
+10 continue
+   call VecRestoreArray(x,xx_v,xx_i,ierr)
+\end{lstlisting}
+Figure \ref{fig_vec2-Fortran} contains an example of using \lstinline{VecGetArray()}
+within a Fortran routine.
+
+Since in this case the array is accessed directly from Fortran,
+indexing begins with 1, not 0 (unless the array is declared as \lstinline{xx_v(0:1)}).
+This is different from the use of \lstinline{VecSetValues()}
+where, indexing always starts with 0.
+
+{\em Note}: If using \lstinline{VecGetArray()}, \lstinline{MatDenseGetArray()}, or \lstinline{ISGetIndices()},
+from Fortran, the user {\em must not} compile the Fortran code with options
+to check for ``array entries out of bounds'' (e.g., on the IBM RS/6000 this
+is done with the \trl{-C} compiler option, so never use the \trl{-C} option with this).
+
 
 %------------------------------------------------------------------
 \cleardoublepage

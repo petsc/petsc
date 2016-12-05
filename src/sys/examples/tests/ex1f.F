@@ -3,6 +3,7 @@
 !
       subroutine GenerateErr(line,ierr)
 #include <petsc/finclude/petscsys.h>
+      use petscsysdef
       PetscErrorCode  ierr
       integer line
 
@@ -12,7 +13,7 @@
       end
 
       subroutine MyErrHandler(comm,line,fun,file,n,p,mess,ctx,ierr)
-#include <petsc/finclude/petscsys.h>
+      use petscsysdef
       integer line,n,p
       PetscInt ctx
       PetscErrorCode ierr
@@ -24,7 +25,7 @@
       end
 
       program main
-#include <petsc/finclude/petscsys.h>
+      use petscsysdef
       PetscErrorCode ierr
       external       MyErrHandler
 

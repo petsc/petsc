@@ -29,6 +29,7 @@ conf/petscvariables
 configure.log*
 externalpackages/*
 ftn-auto
+ftn-auto-interfaces
 lib/*
 make_log_*
 test_log_*

@@ -2,7 +2,18 @@
 !
 !  Include file for Fortran use of the AO (application ordering) package in PETSc
 !
-#include "petsc/finclude/petscaodef.h"
+#if !defined (__PETSCAODEF_H)
+#define __PETSCAODEF_H
 
-!
-!  End of Fortran include file for the AO package in PETSc
+#include "petsc/finclude/petscis.h"
+
+#define AO PetscFortranAddr
+#define AOType character*(80)
+#define AOData2dGrid PetscFortranAddr
+
+#define AOBASIC           'basic'
+#define AOADVANCED        'advanced'
+#define AOMAPPING         'mapping'
+#define AOMEMORYSCALABLE  'memoryscalable'
+
+#endif

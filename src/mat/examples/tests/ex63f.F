@@ -6,11 +6,10 @@
 !   matrix, and prints out the contents.
 !
       program main
-      implicit none
-#include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscviewer.h>
+      use petscmat
+      implicit none
+
       PetscErrorCode ierr
       PetscInt row,col,ten
       PetscMPIInt rank

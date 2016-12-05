@@ -1958,9 +1958,8 @@ class PETScMaker(script.Script):
      self.logPrint('Compiling C files '+str(sourceMap['C']))
      self.compileC(sourceMap['C'])
    if sourceMap['Fortran']:
-     if not self.fortrancpp.fortranDatatypes:
-       self.logPrint('Compiling Fortran files '+str(sourceMap['Fortran']))
-       self.compileF(sourceMap['Fortran'])
+     self.logPrint('Compiling Fortran files '+str(sourceMap['Fortran']))
+     self.compileF(sourceMap['Fortran'])
    if sourceMap['Objects']:
      packageNames = set([p.name for p in self.framework.packages])
      for obj in sourceMap['Objects']:

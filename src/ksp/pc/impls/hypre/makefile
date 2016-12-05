@@ -4,14 +4,15 @@
 
 ALL: lib
 
-CFLAGS   = ${HYPRE_INCLUDE}
-FFLAGS   =
-SOURCEC  = hypre.c
-SOURCEF  =
-SOURCEH  =
-LIBBASE  = libpetscksp
-MANSEC   = PC
-LOCDIR   = src/ksp/pc/impls/hypre/
+CFLAGS    = ${HYPRE_INCLUDE}
+FFLAGS    =
+SOURCEC   = hypre.c
+SOURCEF   =
+SOURCEH   =
+LIBBASE   = libpetscksp
+MANSEC    = KSP
+SUBMANSEC = PC
+LOCDIR    = src/ksp/pc/impls/hypre/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

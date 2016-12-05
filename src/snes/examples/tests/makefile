@@ -5,7 +5,7 @@ CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/snes/examples/tests/
 EXAMPLESC       = ex1.c ex7.c ex8.c ex15.c ex16.c ex17.c ex68.c ex69.c
-EXAMPLESF       = ex1f.F ex12f.F ex14f.F ex18f90.F90
+EXAMPLESF       = ex1f.F ex12f.F ex18f90.F90
 DIRS	        =
 MANSEC          = SNES
 
@@ -196,12 +196,6 @@ runex12f:
 	   if (${DIFF} output/ex12_1.out ex12_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex12f_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex12_1.tmp
-runex14f:
-	-@${MPIEXEC} -n 1 ./ex14f -snes_monitor_short > ex14_1.tmp 2>&1; \
-	   if (${DIFF} output/ex14_1.out ex14_1.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex14f_1, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex14_1.tmp
-
 runex17:
 	-@${MPIEXEC} -n 1 ./ex17 -snes_monitor_short > ex17_1.tmp 2>&1; \
 	   ${DIFF} output/ex17_1.out ex17_1.tmp || printf "${PWD}\nPossible problem with ex17, diffs above\n=========================================\n"; \

@@ -4,7 +4,9 @@
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define matsetvalues_                    MATSETVALUES
+#define matsetvaluesnnnn_                MATSETVALUESNNNN
 #define matsetvalues0_                   MATSETVALUES0
+#define matsetvaluesnn1_                 MATSETVALUESNN1
 #define matsetvalues11_                  MATSETVALUES11
 #define matsetvalues1n_                  MATSETVALUES1N
 #define matsetvaluesn1_                  MATSETVALUESN1
@@ -74,7 +76,9 @@
 #define matfindnonzerorows_              MATFINDNONZEROROWS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matsetvalues_                    matsetvalues
+#define matsetvaluesnnnn_                matsetvaluesnnnn
 #define matsetvalues0_                   matsetvalues0
+#define matsetvaluesnn1_                 matsetvaluesnn1
 #define matsetvalues11_                  matsetvalues11
 #define matsetvaluesn1_                  matsetvaluesn1
 #define matsetvalues1n_                  matsetvalues1n
@@ -199,7 +203,17 @@ PETSC_EXTERN void PETSC_STDCALL  matsetvalues_(Mat *mat,PetscInt *m, PetscInt id
   *ierr = MatSetValues(*mat,*m,idxm,*n,idxn,v,*addv);
 }
 
+PETSC_EXTERN void PETSC_STDCALL  matsetvaluesnnnn_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr )
+{
+  matsetvalues_(mat,m,idxm,n,idxn,v,addv,ierr);
+}
+
 PETSC_EXTERN void PETSC_STDCALL  matsetvalues0_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr )
+{
+  matsetvalues_(mat,m,idxm,n,idxn,v,addv,ierr);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matsetvaluesnn1_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr )
 {
   matsetvalues_(mat,m,idxm,n,idxn,v,addv,ierr);
 }

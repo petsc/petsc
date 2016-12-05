@@ -4,24 +4,9 @@
 !
 
       program main
-      implicit none
-
-
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!                    Include files
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!
-!  The following include statements are required for Fortran programs
-!  that use PETSc vectors:
-!     petscsys.h  - base PETSc routines
-!     petscvec.h - defines (INSERT_VALUES)
-!     petscmat.h    - matrices
-!     petscmat.h90  - to allow access to Fortran 90 features of matrices
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
 #include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscmat.h90>
+      use petscmat
+      implicit none
 
       Mat A
       PetscErrorCode ierr

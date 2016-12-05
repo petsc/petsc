@@ -2,9 +2,9 @@
 !  Formatted Test for IS stride routines
 !
       program main
-      implicit none
-#include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscis.h>
+      use petscis
+      implicit none
 
       PetscErrorCode ierr
       PetscInt  i,n,ii(1),start

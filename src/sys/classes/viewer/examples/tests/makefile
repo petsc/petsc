@@ -5,7 +5,8 @@ CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR  = src/sys/classes/viewer/examples/tests/
 EXAMPLESC       = ex3.c ex4.c
-MANSEC          = Viewer
+MANSEC          = Sys
+SUBMANSEC       = Viewer
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

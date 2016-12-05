@@ -2,11 +2,9 @@
 !   This program demonstrates use of MatGetRowIJ() from Fortran
 !
       program main
-      implicit none
-#include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscis.h>
-#include <petsc/finclude/petscviewer.h>
+      use petscmat
+      implicit none
 
       Mat         A,Ad,Ao
       PetscErrorCode ierr

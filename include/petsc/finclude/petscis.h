@@ -2,22 +2,28 @@
 !
 !  Include file for Fortran use of the IS (index set) package in PETSc
 !
-#include "petsc/finclude/petscisdef.h"
+#if !defined (__PETSCISDEF_H)
+#define __PETSCISDEF_H
 
+#include "petsc/finclude/petscsys.h"
+#include "petsc/finclude/petscviewer.h"
 
-      PetscEnum IS_COLORING_GLOBAL
-      PetscEnum IS_COLORING_LOCAL
-      parameter (IS_COLORING_GLOBAL = 0,IS_COLORING_LOCAL = 1)
+#define IS type(tIS)
+#define ISColoring type(tISColoring)
+#define PetscSection type(tPetscSection)
+#define PetscSectionSym type(tPetscSectionSym)
 
-      PetscEnum IS_GENERAL
-      PetscEnum IS_STRIDE
-      PetscEnum IS_BLOCK
-      parameter (IS_GENERAL = 0,IS_STRIDE = 1,IS_BLOCK = 2)
+#define PetscSF PetscFortranAddr
+#define PetscLayout PetscFortranAddr
 
-      PetscEnum IS_GTOLM_MASK
-      PetscEnum IS_GTOLM_DROP
-      parameter (IS_GTOLM_MASK =0,IS_GTOLM_DROP = 1)
+#define ISType PetscEnum
+#define ISLocalToGlobalMapping PetscFortranAddr
+#define ISGlobalToLocalMappingType PetscEnum
+#define ISColoringType PetscEnum
 
-!
-!  End of Fortran include file for the IS package in PETSc
+#define ISColoringValue PETSC_IS_COLOR_VALUE_TYPE_F
 
+#define ISGENERAL 'general'
+#define ISSTRIDE 'stride'
+#define ISBLOCK 'block'
+#endif

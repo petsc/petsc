@@ -1,5 +1,5 @@
 
-#include "petsc/finclude/petscsysdef.h"
+#include "petsc/finclude/petscsys.h"
 
       Subroutine PetscBagRegisterEnum(bag,addr,FArray,def,n,h,ierr)
       use,intrinsic :: iso_c_binding

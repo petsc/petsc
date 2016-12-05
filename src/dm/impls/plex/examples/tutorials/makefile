@@ -4,7 +4,7 @@ CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/dm/impls/plex/examples/tutorials/
 EXAMPLESC       = ex1.c
-EXAMPLESF       = ex1f90.F
+EXAMPLESF       = ex1f90.F90
 MANSEC          = DM
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
