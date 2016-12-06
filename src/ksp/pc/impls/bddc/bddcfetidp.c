@@ -267,7 +267,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   ierr = PetscMalloc1(pcis->n_neigh,&ptrs_buffer);CHKERRQ(ierr);
   ierr = PetscMalloc1(PetscMax(pcis->n_neigh-1,0),&send_reqs);CHKERRQ(ierr);
   ierr = PetscMalloc1(PetscMax(pcis->n_neigh-1,0),&recv_reqs);CHKERRQ(ierr);
-  ierr = PetscMalloc1(pcis->n,&all_factors);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pcis->n+1,&all_factors);CHKERRQ(ierr);
   if (pcis->n_neigh > 0) ptrs_buffer[0]=0;
   for (i=1;i<pcis->n_neigh;i++) {
     partial_sum += pcis->n_shared[i];
