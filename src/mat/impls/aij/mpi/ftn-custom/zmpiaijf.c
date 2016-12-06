@@ -3,12 +3,14 @@
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define matmpiaijgetseqaij_              MATMPIAIJGETSEQAIJ
-#define matcreateaij_                 MATCREATEAIJ
+#define matcreateaij_                    MATCREATEAIJ
 #define matmpiaijsetpreallocation_       MATMPIAIJSETPREALLOCATION
+#define matxaijsetpreallocation_         MATXAIJSETPREALLOCATION
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matmpiaijgetseqaij_              matmpiaijgetseqaij
-#define matcreateaij_                 matcreateaij
+#define matcreateaij_                    matcreateaij
 #define matmpiaijsetpreallocation_       matmpiaijsetpreallocation
+#define matxaijsetpreallocation_         matxaijsetpreallocation
 #endif
 
 PETSC_EXTERN void PETSC_STDCALL matmpiaijgetseqaij_(Mat *A,Mat *Ad,Mat *Ao,PetscInt *ic,size_t *iic,PetscErrorCode *ierr)
@@ -31,5 +33,14 @@ PETSC_EXTERN void PETSC_STDCALL matmpiaijsetpreallocation_(Mat *mat,PetscInt *d_
   CHKFORTRANNULLINTEGER(d_nnz);
   CHKFORTRANNULLINTEGER(o_nnz);
   *ierr = MatMPIAIJSetPreallocation(*mat,*d_nz,d_nnz,*o_nz,o_nnz);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matxaijsetpreallocation_(Mat *A,PetscInt *bs,PetscInt dnnz[],PetscInt onnz[],PetscInt dnnzu[],PetscInt onnzu[],PetscErrorCode *ierr )
+{
+  CHKFORTRANNULLINTEGER(dnnz);
+  CHKFORTRANNULLINTEGER(onnz);
+  CHKFORTRANNULLINTEGER(dnnzu);
+  CHKFORTRANNULLINTEGER(onnzu);
+  *ierr = MatXAIJSetPreallocation(*A,*bs,dnnz,onnz,dnnzu,onnzu);
 }
 

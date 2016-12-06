@@ -1,14 +1,50 @@
 
-        module petscpcdef
+        module petscpcdefdummy
         use petscdmdef
         use petscmatdef
 #include <../src/ksp/f90-mod/petscpc.h>
 #include <../src/ksp/f90-mod/petscksp.h>
         end module
 
-        module petsckspdef
+        module petscpcdef
+        use petscpcdefdummy
+        interface operator(.ne.)
+          function pcnotequal(A,B)
+            use petscpcdefdummy
+            logical pcnotequal
+            type(tPC), intent(in) :: A,B
+          end function
+        end interface operator (.ne.)
+        end module
+
+        function pcnotequal(A,B)
+          use petscpcdefdummy
+          logical pcnotequal
+          type(tPC), intent(in) :: A,B
+          pcnotequal = (A%v .ne. B%v)
+        end function
+
+        module petsckspdefdummy
         use petscpcdef
         end module
+
+        module petsckspdef
+        use petsckspdefdummy
+        interface operator(.ne.)
+          function kspnotequal(A,B)
+            use petsckspdefdummy
+            logical kspnotequal
+            type(tKSP), intent(in) :: A,B
+          end function
+        end interface operator (.ne.)
+        end module
+
+        function kspnotequal(A,B)
+          use petsckspdefdummy
+          logical kspnotequal
+          type(tKSP), intent(in) :: A,B
+          kspnotequal = (A%v .ne. B%v)
+        end function
 
         module petscpc
         use petsckspdef

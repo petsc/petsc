@@ -7,6 +7,7 @@
         PetscFortranAddr:: v
       end type tSNES
 
+      SNES, parameter :: PETSC_NULL_SNES = tSNES(-1)
 !
 !  Convergence flags
 !

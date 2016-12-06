@@ -9,6 +9,8 @@
         sequence
         PetscFortranAddr:: v
       end type tDM
+
+      DM, parameter :: PETSC_NULL_DM = tDM(-1)
 !
 !  Types of periodicity
 !

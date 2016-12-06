@@ -8,6 +8,8 @@
         sequence
         PetscFortranAddr:: v
       end type tPC
+
+      PC, parameter :: PETSC_NULL_PC = tPC(-1)
 !
 !  PCSide
 !

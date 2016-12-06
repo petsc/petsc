@@ -11,6 +11,8 @@
         PetscFortranAddr:: v
       end type tKSP
 
+      KSP, parameter :: PETSC_NULL_KSP = tKSP(-1)
+
       PetscEnum KSP_CG_SYMMETRIC
       PetscEnum KSP_CG_HERMITIAN
       parameter (KSP_CG_SYMMETRIC=0,KSP_CG_HERMITIAN=1)
