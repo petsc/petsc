@@ -1,6 +1,7 @@
 #include <../src/ksp/pc/impls/bddc/bddc.h>
 #include <../src/ksp/pc/impls/bddc/bddcprivate.h>
 #include <petscblaslapack.h>
+#include <../src/mat/impls/dense/seq/dense.h>
 
 /* prototypes for deluxe functions */
 static PetscErrorCode PCBDDCScalingCreate_Deluxe(PC);
@@ -8,6 +9,54 @@ static PetscErrorCode PCBDDCScalingDestroy_Deluxe(PC);
 static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC);
 static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Private(PC);
 static PetscErrorCode PCBDDCScalingReset_Deluxe_Solvers(PCBDDCDeluxeScaling);
+
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCMatTransposeMatSolve_SeqDense"
+static PetscErrorCode PCBDDCMatTransposeMatSolve_SeqDense(Mat A,Mat B,Mat X)
+{
+  Mat_SeqDense   *mat = (Mat_SeqDense*)A->data;
+  PetscErrorCode ierr;
+  PetscScalar    *b,*x;
+  PetscInt       n;
+  PetscBLASInt   nrhs,info,m;
+  PetscBool      flg;
+
+  PetscFunctionBegin;
+  ierr = PetscBLASIntCast(A->rmap->n,&m);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompareAny((PetscObject)B,&flg,MATSEQDENSE,MATMPIDENSE,NULL);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix B must be MATDENSE matrix");
+  ierr = PetscObjectTypeCompareAny((PetscObject)X,&flg,MATSEQDENSE,MATMPIDENSE,NULL);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix X must be MATDENSE matrix");
+
+  ierr = MatGetSize(B,NULL,&n);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast(n,&nrhs);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(B,&b);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(X,&x);CHKERRQ(ierr);
+
+  ierr = PetscMemcpy(x,b,m*nrhs*sizeof(PetscScalar));CHKERRQ(ierr);
+
+  if (A->factortype == MAT_FACTOR_LU) {
+#if defined(PETSC_MISSING_LAPACK_GETRS)
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"GETRS - Lapack routine is unavailable.");
+#else
+    PetscStackCallBLAS("LAPACKgetrs",LAPACKgetrs_("T",&m,&nrhs,mat->v,&mat->lda,mat->pivots,x,&m,&info));
+    if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"GETRS - Bad solve");
+#endif
+  } else if (A->factortype == MAT_FACTOR_CHOLESKY) {
+#if defined(PETSC_MISSING_LAPACK_POTRS)
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"POTRS - Lapack routine is unavailable.");
+#else
+    PetscStackCallBLAS("LAPACKpotrs",LAPACKpotrs_("L",&m,&nrhs,mat->v,&mat->lda,x,&m,&info));
+    if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"POTRS Bad solve");
+#endif
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix must be factored to solve");
+
+  ierr = MatDenseRestoreArray(B,&b);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = PetscLogFlops(nrhs*(2.0*m*m - m));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCScalingExtension_Basic"
@@ -489,10 +538,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Private(PC pc)
   cum = cum2 = 0;
   ierr = ISGetIndices(sub_schurs->is_Ej_all,&idxs);CHKERRQ(ierr);
   ierr = MatSeqAIJGetArray(sub_schurs->S_Ej_all,&matdata);CHKERRQ(ierr);
-  matdata2 = NULL;
-  if (sub_schurs->sum_S_Ej_all) {
-    ierr = MatSeqAIJGetArray(sub_schurs->sum_S_Ej_all,&matdata2);CHKERRQ(ierr);
-  }
+  ierr = MatSeqAIJGetArray(sub_schurs->sum_S_Ej_all,&matdata2);CHKERRQ(ierr);
   for (i=0;i<deluxe_ctx->seq_n;i++) {
     PetscInt     subset_size;
 
@@ -507,28 +553,47 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Private(PC pc)
       ierr = ISCreateGeneral(PETSC_COMM_SELF,subset_size,idxs+cum,PETSC_COPY_VALUES,&sub);CHKERRQ(ierr);
       ierr = VecScatterCreate(pcbddc->work_scaling,sub,deluxe_ctx->seq_work1[i],NULL,&deluxe_ctx->seq_scctx[i]);CHKERRQ(ierr);
       ierr = ISDestroy(&sub);CHKERRQ(ierr);
-
-      /* S_E_j */
-      ierr = MatCreateSeqDense(PETSC_COMM_SELF,subset_size,subset_size,matdata+cum2,&deluxe_ctx->seq_mat[i]);CHKERRQ(ierr);
     }
+
+    /* S_E_j */
+    ierr = MatDestroy(&deluxe_ctx->seq_mat[i]);CHKERRQ(ierr);
+    ierr = MatCreateSeqDense(PETSC_COMM_SELF,subset_size,subset_size,matdata+cum2,&deluxe_ctx->seq_mat[i]);CHKERRQ(ierr);
+
     /* \sum_k S^k_E_j */
-    if (matdata2) {
-      ierr = MatDestroy(&deluxe_ctx->seq_mat_inv_sum[i]);CHKERRQ(ierr);
-      ierr = MatCreateSeqDense(PETSC_COMM_SELF,subset_size,subset_size,matdata2+cum2,&deluxe_ctx->seq_mat_inv_sum[i]);CHKERRQ(ierr);
-      if (sub_schurs->is_hermitian && sub_schurs->is_posdef) {
-        ierr = MatCholeskyFactor(deluxe_ctx->seq_mat_inv_sum[i],NULL,NULL);CHKERRQ(ierr);
+    ierr = MatDestroy(&deluxe_ctx->seq_mat_inv_sum[i]);CHKERRQ(ierr);
+    ierr = MatCreateSeqDense(PETSC_COMM_SELF,subset_size,subset_size,matdata2+cum2,&deluxe_ctx->seq_mat_inv_sum[i]);CHKERRQ(ierr);
+    if (sub_schurs->is_hermitian && sub_schurs->is_posdef) {
+      ierr = MatCholeskyFactor(deluxe_ctx->seq_mat_inv_sum[i],NULL,NULL);CHKERRQ(ierr);
+    } else {
+      ierr = MatLUFactor(deluxe_ctx->seq_mat_inv_sum[i],NULL,NULL,NULL);CHKERRQ(ierr);
+    }
+    if (pcbddc->deluxe_singlemat) {
+      Mat X,Y;
+
+      if (!sub_schurs->is_hermitian || !sub_schurs->is_posdef) {
+        ierr = MatTranspose(deluxe_ctx->seq_mat[i],MAT_INITIAL_MATRIX,&X);CHKERRQ(ierr);
       } else {
-        ierr = MatLUFactor(deluxe_ctx->seq_mat_inv_sum[i],NULL,NULL,NULL);CHKERRQ(ierr);
+        ierr = PetscObjectReference((PetscObject)deluxe_ctx->seq_mat[i]);CHKERRQ(ierr);
+        X    = deluxe_ctx->seq_mat[i];
       }
+      ierr = MatDuplicate(X,MAT_DO_NOT_COPY_VALUES,&Y);CHKERRQ(ierr);
+      if (!sub_schurs->is_hermitian || !sub_schurs->is_posdef) {
+        ierr = PCBDDCMatTransposeMatSolve_SeqDense(deluxe_ctx->seq_mat_inv_sum[i],X,Y);CHKERRQ(ierr);
+      } else {
+        ierr = MatMatSolve(deluxe_ctx->seq_mat_inv_sum[i],X,Y);CHKERRQ(ierr);
+      }
+      ierr = MatDestroy(&deluxe_ctx->seq_mat_inv_sum[i]);CHKERRQ(ierr);
+      ierr = MatDestroy(&deluxe_ctx->seq_mat[i]);CHKERRQ(ierr);
+      ierr = MatDestroy(&X);CHKERRQ(ierr);
+      ierr = MatTranspose(Y,MAT_INPLACE_MATRIX,&Y);CHKERRQ(ierr);
+      deluxe_ctx->seq_mat[i] = Y;
     }
     cum += subset_size;
     cum2 += subset_size*subset_size;
   }
   ierr = ISRestoreIndices(sub_schurs->is_Ej_all,&idxs);CHKERRQ(ierr);
   ierr = MatSeqAIJRestoreArray(sub_schurs->S_Ej_all,&matdata);CHKERRQ(ierr);
-  if (sub_schurs->sum_S_Ej_all) {
-    ierr = MatSeqAIJRestoreArray(sub_schurs->sum_S_Ej_all,&matdata2);CHKERRQ(ierr);
-  }
+  ierr = MatSeqAIJRestoreArray(sub_schurs->sum_S_Ej_all,&matdata2);CHKERRQ(ierr);
 
   /* the change of basis is just a reference to sub_schurs->change (if any) */
   deluxe_ctx->change = sub_schurs->change;

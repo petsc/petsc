@@ -139,6 +139,7 @@ typedef struct {
   PetscBool           use_deluxe_scaling;
   PCBDDCDeluxeScaling deluxe_ctx;
   PetscBool           deluxe_zerorows;
+  PetscBool           deluxe_singlemat;
 
   /* schur complements on interface's subsets */
   PCBDDCSubSchurs sub_schurs;
