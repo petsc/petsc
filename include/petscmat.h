@@ -938,6 +938,7 @@ PETSC_EXTERN PetscErrorCode MatRetrieveValues(Mat);
 PETSC_EXTERN PetscErrorCode MatDAADSetCtx(Mat,void*);
 
 PETSC_EXTERN PetscErrorCode MatFindNonzeroRows(Mat,IS*);
+PETSC_EXTERN PetscErrorCode MatFindZeroRows(Mat,IS*);
 /*
   These routines are not usually accessed directly, rather solving is
   done through the KSP and PC interfaces.

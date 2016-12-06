@@ -193,6 +193,8 @@ PetscErrorCode MatFactorClearError(Mat mat)
   Output Parameter:
 .    keptrows - the rows that are not completely zero
 
+  Notes: keptrows is set to NULL if all rows are nonzero.
+
   Level: intermediate
 
  @*/
@@ -206,6 +208,45 @@ PetscErrorCode MatFindNonzeroRows(Mat mat,IS *keptrows)
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   if (!mat->ops->findnonzerorows) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Not coded for this matrix type");
   ierr = (*mat->ops->findnonzerorows)(mat,keptrows);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatFindZeroRows"
+/*@
+      MatFindZeroRows - Locate all rows that are completely zero in the matrix
+
+  Input Parameter:
+.    A  - the matrix
+
+  Output Parameter:
+.    zerorows - the rows that are completely zero
+
+  Notes: zerorows is set to NULL if no rows are zero.
+
+  Level: intermediate
+
+ @*/
+PetscErrorCode MatFindZeroRows(Mat mat,IS *zerorows)
+{
+  PetscErrorCode ierr;
+  IS keptrows;
+  PetscInt m, n;
+
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidType(mat,1);
+
+  ierr = MatFindNonzeroRows(mat, &keptrows);CHKERRQ(ierr);
+  /* MatFindNonzeroRows sets keptrows to NULL if there are no zero rows.
+     In keeping with this convention, we set zerorows to NULL if there are no zero
+     rows. */
+  if (keptrows == NULL) {
+    *zerorows = NULL;
+  } else {
+    ierr = MatGetOwnershipRange(mat,&m,&n);CHKERRQ(ierr);
+    ierr = ISComplement(keptrows,m,n,zerorows);CHKERRQ(ierr);
+    ierr = ISDestroy(&keptrows);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -10638,8 +10679,7 @@ PetscErrorCode MatSubdomainsCreateCoalesce(Mat A,PetscInt N,PetscInt *n,IS *iss[
 PetscErrorCode  MatGalerkin(Mat restrct, Mat dA, Mat interpolate, MatReuse reuse, PetscReal fill, Mat *A)
 {
   PetscErrorCode ierr;
-  IS zerodiag;
-  PetscInt zerosize;
+  IS zerorows;
   Vec diag;
 
   /* Construct the coarse grid matrix */
@@ -10654,16 +10694,16 @@ PetscErrorCode  MatGalerkin(Mat restrct, Mat dA, Mat interpolate, MatReuse reuse
      In that event, we set the rows of the matrix to the rows of the identity,
      ignoring the equations (as the RHS will also be zero). */
 
-  ierr = MatFindZeroDiagonals(*A, &zerodiag);CHKERRQ(ierr);
-  ierr = ISGetSize(zerodiag, &zerosize);CHKERRQ(ierr); /* get the number of zeros on the diagonal */
-  if (zerosize > 0) {
+  ierr = MatFindZeroRows(*A, &zerorows);CHKERRQ(ierr);
+
+  if (zerorows != NULL) { /* if there are any zero rows */
     ierr = MatCreateVecs(*A, &diag, NULL);CHKERRQ(ierr);
     ierr = MatGetDiagonal(*A, diag);CHKERRQ(ierr);
-    ierr = VecISSet(diag, zerodiag, 1.0);CHKERRQ(ierr);
+    ierr = VecISSet(diag, zerorows, 1.0);CHKERRQ(ierr);
     ierr = MatDiagonalSet(*A, diag, INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecDestroy(&diag);CHKERRQ(ierr);
+    ierr = ISDestroy(&zerorows);CHKERRQ(ierr);
   }
-  ierr = ISDestroy(&zerodiag);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
