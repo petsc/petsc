@@ -571,21 +571,22 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,PetscInt imax,IS is[]
 
   /* Memory for doing local proc's work */
   {
+    PetscInt M_BPB_imax = 0;
 #if defined(PETSC_USE_CTABLE)
+    ierr = PetscIntMultError((M/PETSC_BITS_PER_BYTE+1),imax, &M_BPB_imax);CHKERRQ(ierr);
     ierr = PetscMalloc1(imax,&table_data);CHKERRQ(ierr);
     for (i=0; i<imax; i++) {
       ierr = PetscTableCreate(n[i]+1,M+1,&table_data[i]);CHKERRQ(ierr);
     }
-    ierr = PetscCalloc4(imax,&table,imax,&data,imax,&isz,(M/PETSC_BITS_PER_BYTE+1)*imax,&t_p);CHKERRQ(ierr);
+    ierr = PetscCalloc4(imax,&table, imax,&data, imax,&isz, M_BPB_imax,&t_p);CHKERRQ(ierr);
     for (i=0; i<imax; i++) {
       table[i] = t_p + (M/PETSC_BITS_PER_BYTE+1)*i;
     }
 #else
-    PetscInt Mimax = 0,M_BPB_imax = 0;
+    PetscInt Mimax = 0;
     ierr = PetscIntMultError(M,imax, &Mimax);CHKERRQ(ierr);
     ierr = PetscIntMultError((M/PETSC_BITS_PER_BYTE+1),imax, &M_BPB_imax);CHKERRQ(ierr);
     ierr = PetscCalloc5(imax,&table, imax,&data, imax,&isz, Mimax,&d_p, M_BPB_imax,&t_p);CHKERRQ(ierr);
-    ierr = PetscCalloc5(imax,&table,imax,&data,imax,&isz,M*imax,&d_p,(M/PETSC_BITS_PER_BYTE+1)*imax,&t_p);CHKERRQ(ierr);
     for (i=0; i<imax; i++) {
       table[i] = t_p + (M/PETSC_BITS_PER_BYTE+1)*i;
       data[i]  = d_p + M*i;
@@ -1598,24 +1599,37 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,cons
       row  = irow[j];
       proc = row2proc[j];
       if (proc == rank) {
-        ierr = MatGetRow_MPIAIJ(C,row,&ncols,&cols,0);CHKERRQ(ierr);
+        /* diagonal part A = c->A */
+        ncols = ai[row-rstart+1] - ai[row-rstart];
+        cols  = aj + ai[row-rstart];
         if (!allcolumns) {
           for (k=0; k<ncols; k++) {
 #if defined(PETSC_USE_CTABLE)
-            if (cols[k] >= cstart && cols[k] <cend) {
-              tcol = cmap_loc[cols[k] - cstart];
-            } else {
-              ierr = PetscTableFind(cmap,cols[k]+1,&tcol);CHKERRQ(ierr);
-            }
+            tcol = cmap_loc[cols[k]];
 #else
-            tcol = cmap[cols[k]];
+            tcol = cmap[cols[k]+cstart];
 #endif
             if (tcol) lens[j]++;
           }
         } else { /* allcolumns */
           lens[j] = ncols;
         }
-        ierr = MatRestoreRow_MPIAIJ(C,row,&ncols,&cols,0);CHKERRQ(ierr);
+
+        /* off-diagonal part B = c->B */
+        ncols = bi[row-rstart+1] - bi[row-rstart];
+        cols  = bj + bi[row-rstart];
+        if (!allcolumns) {
+          for (k=0; k<ncols; k++) {
+#if defined(PETSC_USE_CTABLE)
+            ierr = PetscTableFind(cmap,bmap[cols[k]]+1,&tcol);CHKERRQ(ierr);
+#else
+            tcol = cmap[bmap[cols[k]]];
+#endif
+            if (tcol) lens[j]++;
+          }
+        } else { /* allcolumns */
+          lens[j] += ncols;
+        }
       }
     }
 
