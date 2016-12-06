@@ -2,7 +2,6 @@
 #include <petsc/private/viewerimpl.h>  /*I "petscviewer.h" I*/
 
 PetscClassId PETSC_VIEWER_CLASSID;
-PetscLogEvent PetscOptions_GetViewer;
 
 static PetscBool PetscViewerPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__
@@ -69,7 +68,6 @@ PetscErrorCode  PetscViewerInitializePackage(void)
       ierr = PetscLogEventDeactivateClass(0);CHKERRQ(ierr);
     }
   }
-  ierr = PetscLogEventRegister("OptGetViewer",PETSC_VIEWER_CLASSID,&PetscOptions_GetViewer);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATHEMATICA)
   ierr = PetscViewerMathematicaInitializePackage();CHKERRQ(ierr);
 #endif
