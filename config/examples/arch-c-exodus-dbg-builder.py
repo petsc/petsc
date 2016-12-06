@@ -6,6 +6,7 @@ if __name__ == '__main__':
   sys.path.insert(0, os.path.abspath('config'))
   import configure
   configure_options = [
+    '--download-suitesparse',
     '--download-chaco',
     '--download-ctetgen',
     '--download-exodusii',
