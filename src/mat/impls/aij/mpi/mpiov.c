@@ -1359,7 +1359,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,cons
     ierr = PetscCalloc2(size,&w1,size,&w2);CHKERRQ(ierr);
     ierr = PetscMalloc1(nrow,&row2proc);CHKERRQ(ierr);
 
-    /* w1[proc] = num of rows sent to proc */
+    /* w1[proc] = num of rows owned by proc -- to be requested */
     proc = 0;
     nrqs = 0; /* num of outgoing messages */
     for (j=0; j<nrow; j++) {
@@ -1372,7 +1372,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,cons
         w2[proc] = 1; nrqs++;
       }
     }
-    w1[rank] = 0;  /* num of rows sent to self */
+    w1[rank] = 0;  /* rows owned by self will not be requested */
 
     ierr = PetscMalloc1(nrqs+1,&pa);CHKERRQ(ierr); /*(proc -array)*/
     for (proc=0,j=0; proc<size; proc++) {
