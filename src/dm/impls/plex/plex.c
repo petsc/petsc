@@ -995,6 +995,7 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
     ierr = DMPlexPreallocateOperator(dm, bs, dnz, onz, dnzu, onzu, *J, fillMatrix);CHKERRQ(ierr);
     ierr = PetscFree4(dnz, onz, dnzu, onzu);CHKERRQ(ierr);
   }
+  ierr = MatSetDM(*J, dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
