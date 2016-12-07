@@ -1306,7 +1306,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,cons
   PetscInt       **sbuf1,**sbuf2,i,j,k,l,ct1,ct2,ct3,**rbuf1,row,proc;
   PetscInt       nrqs=0,msz,**ptr,*req_size,*ctr,*pa,*tmp,tcol,*iptr;
   PetscInt       **rbuf3,*req_source1,*req_source2,**sbuf_aj,**rbuf2,max1,nnz;
-  PetscInt       *lens,ncols,*cols,Crow;
+  PetscInt       *lens,rmax,ncols,*cols,Crow;
 #if defined(PETSC_USE_CTABLE)
   PetscTable     cmap,rmap;
   PetscInt       *cmap_loc,*rmap_loc;
@@ -1736,11 +1736,16 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,cons
     submat->ops->destroy = MatDestroy_MPIAIJ_MatGetSubmatrices;
     submat->factortype   = C->factortype;
 
+    /* compute rmax */
+    rmax = 0;
+    for (i=0; i<nrow; i++) rmax = PetscMax(rmax,lens[i]);
+
   } else { /* scall == MAT_REUSE_MATRIX */
     submat = submats[0];
     if (submat->rmap->n != nrow || submat->cmap->n != ncol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong size");
 
     subc    = (Mat_SeqAIJ*)submat->data;
+    rmax    = subc->rmax;
     smatis1 = subc->submatis1;
     nrqs        = smatis1->nrqs;
     nrqr        = smatis1->nrqr;
@@ -1819,7 +1824,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,cons
   }
 
   /* Assemble submat */
-  ierr = PetscCalloc2(ncol,&subcols,ncol,&subvals);CHKERRQ(ierr);
+  ierr = PetscCalloc2(rmax,&subcols,rmax,&subvals);CHKERRQ(ierr);
 
   /* First assemble the local rows */
   for (j=0; j<nrow; j++) {
