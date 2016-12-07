@@ -1359,21 +1359,20 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,cons
     ierr = PetscCalloc2(size,&w1,size,&w2);CHKERRQ(ierr);
     ierr = PetscMalloc1(nrow,&row2proc);CHKERRQ(ierr);
 
-    /* w1[proc] = num of rows owned by proc */
+    /* w1[proc] = num of rows sent to proc */
     proc = 0;
+    nrqs = 0; /* num of outgoing messages */
     for (j=0; j<nrow; j++) {
       row  = irow[j]; /* sorted! */
       while (row >= C->rmap->range[proc+1]) proc++;
       w1[proc]++;
       row2proc[j] = proc; /* map row index to proc */
-    }
 
-    nrqs     = 0;              /* num of outgoing messages */
-    msz      = 0;              /* total mesg length (for all procs) */
-    w1[rank] = 0;              /* num mesg sent to self */
-    for (proc=0; proc<size; proc++) {
-      if (w1[proc])  { w2[proc] = 1; nrqs++;} /* there exists a message to this proc */
+      if (proc != rank && !w2[proc]) {
+        w2[proc] = 1; nrqs++;
+      }
     }
+    w1[rank] = 0;  /* num of rows sent to self */
 
     ierr = PetscMalloc1(nrqs+1,&pa);CHKERRQ(ierr); /*(proc -array)*/
     for (proc=0,j=0; proc<size; proc++) {
@@ -1381,6 +1380,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,cons
     }
 
     /* Each message would have a header = 1 + 2*(num of IS) + data (here,num of IS = 1) */
+    msz = 0;              /* total mesg length (for all procs) */
     for (i=0; i<nrqs; i++) {
       proc      = pa[i];
       w1[proc] += 3;
@@ -1410,17 +1410,17 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,cons
     /* subf1[pa[0]] = tmp, subf1[pa[i]] = subf1[pa[i-1]] + w1[pa[i-1]] */
     iptr = tmp;
     for (i=0; i<nrqs; i++) {
-      proc     = pa[i];
+      proc        = pa[i];
       sbuf1[proc] = iptr;
-      iptr += w1[proc];
+      iptr       += w1[proc];
     }
 
     /* Form the outgoing messages */
     /* Initialize the header space */
     for (i=0; i<nrqs; i++) {
-      proc           = pa[i];
-      ierr           = PetscMemzero(sbuf1[proc],3*sizeof(PetscInt));CHKERRQ(ierr);
-      ptr[proc]      = sbuf1[proc] + 3;
+      proc      = pa[i];
+      ierr      = PetscMemzero(sbuf1[proc],3*sizeof(PetscInt));CHKERRQ(ierr);
+      ptr[proc] = sbuf1[proc] + 3;
     }
 
     /* Parse the isrow and copy data into outbuf */
@@ -1530,7 +1530,8 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,cons
       kmax = rbuf1[i][2];
       for (k=0; k<kmax; k++,ct1++) { /* for each row */
         row    = rbuf1_i[ct1] - rstart;
-        nzA    = ai[row+1] - ai[row];     nzB = bi[row+1] - bi[row];
+        nzA    = ai[row+1] - ai[row];
+        nzB    = bi[row+1] - bi[row];
         ncols  = nzA + nzB;
         cworkA = aj + ai[row]; cworkB = bj + bi[row];
 
@@ -1675,13 +1676,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,cons
 #else
             tcol = cmap[rbuf3_i[ct2]]; /* column index in submat */
 #endif
-            if (tcol) {
-              lens[row]++;
-
-              /* We receive an entire column of C, but a subset of it needs to be inserted into submat.
-               For reuse, we replace received C->j with index that should be inserted to submat */
-              /* rbuf3_i[ct3++] = ct2; ??? */
-            }
+            if (tcol) lens[row]++;
           }
         } else { /* allcolumns */
           lens[row] += nnz;
@@ -1775,7 +1770,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,cons
   }
 
   /* Post recv matrix values */
-  ierr = PetscMalloc1(nrqs+1,&rbuf4);CHKERRQ(ierr);
+  ierr = PetscMalloc3(nrqs+1,&rbuf4, rmax,&subcols, rmax,&subvals);CHKERRQ(ierr);
   ierr = PetscMalloc4(nrqs+1,&r_waits4,nrqr+1,&s_waits4,nrqs+1,&r_status4,nrqr+1,&s_status4);CHKERRQ(ierr);
   ierr = PetscObjectGetNewTag((PetscObject)C,&tag4);CHKERRQ(ierr);
   for (i=0; i<nrqs; ++i) {
@@ -1824,8 +1819,6 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,cons
   }
 
   /* Assemble submat */
-  ierr = PetscCalloc2(rmax,&subcols,rmax,&subvals);CHKERRQ(ierr);
-
   /* First assemble the local rows */
   for (j=0; j<nrow; j++) {
     row  = irow[j];
@@ -1997,12 +1990,11 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,cons
 
   /* Destroy allocated memory */
   for (i=0; i<nrqs; ++i) {
-    ierr = PetscFree(rbuf4[i]);CHKERRQ(ierr);
+    ierr = PetscFree3(rbuf4[i],subcols,subvals);CHKERRQ(ierr);
   }
   ierr = PetscFree(rbuf4);CHKERRQ(ierr);
   ierr = PetscFree(sbuf_aa[0]);CHKERRQ(ierr);
   ierr = PetscFree(sbuf_aa);CHKERRQ(ierr);
-  ierr = PetscFree2(subcols,subvals);CHKERRQ(ierr);
 
   if (scall == MAT_INITIAL_MATRIX) {
     ierr = PetscFree(lens);CHKERRQ(ierr);
