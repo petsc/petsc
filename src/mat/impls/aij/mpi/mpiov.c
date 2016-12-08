@@ -1992,7 +1992,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,cons
   for (i=0; i<nrqs; ++i) {
     ierr = PetscFree3(rbuf4[i],subcols,subvals);CHKERRQ(ierr);
   }
-  ierr = PetscFree(rbuf4);CHKERRQ(ierr);
+  ierr = PetscFree3(rbuf4,subcols,subvals);CHKERRQ(ierr);
   ierr = PetscFree(sbuf_aa[0]);CHKERRQ(ierr);
   ierr = PetscFree(sbuf_aa);CHKERRQ(ierr);
 
