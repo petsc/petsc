@@ -205,7 +205,7 @@ static PetscErrorCode PCBDDCScalingRestriction_Deluxe(PC pc, Vec x, Vec y)
     ierr = VecRestoreArrayRead(pcis->D,&array_D);CHKERRQ(ierr);
     ierr = VecRestoreArray(y,&array_y);CHKERRQ(ierr);
   }
-  /* sequential part : all problems and Schur applications collapsed into a single matrix vector multiplication and ksp solution */
+  /* sequential part : all problems and Schur applications collapsed into a single matrix vector multiplication or a matvec and a solve */
   if (deluxe_ctx->seq_mat) {
     PetscInt i;
     for (i=0;i<deluxe_ctx->seq_n;i++) {
@@ -562,6 +562,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Private(PC pc)
     /* \sum_k S^k_E_j */
     ierr = MatDestroy(&deluxe_ctx->seq_mat_inv_sum[i]);CHKERRQ(ierr);
     ierr = MatCreateSeqDense(PETSC_COMM_SELF,subset_size,subset_size,matdata2+cum2,&deluxe_ctx->seq_mat_inv_sum[i]);CHKERRQ(ierr);
+
     if (sub_schurs->is_hermitian && sub_schurs->is_posdef) {
       ierr = MatCholeskyFactor(deluxe_ctx->seq_mat_inv_sum[i],NULL,NULL);CHKERRQ(ierr);
     } else {
@@ -582,10 +583,11 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Private(PC pc)
       } else {
         ierr = MatMatSolve(deluxe_ctx->seq_mat_inv_sum[i],X,Y);CHKERRQ(ierr);
       }
+
       ierr = MatDestroy(&deluxe_ctx->seq_mat_inv_sum[i]);CHKERRQ(ierr);
       ierr = MatDestroy(&deluxe_ctx->seq_mat[i]);CHKERRQ(ierr);
       ierr = MatDestroy(&X);CHKERRQ(ierr);
-      ierr = MatTranspose(Y,MAT_INPLACE_MATRIX,&Y);CHKERRQ(ierr);
+      ierr = MatTranspose(Y,MAT_REUSE_MATRIX,&Y);CHKERRQ(ierr);
       deluxe_ctx->seq_mat[i] = Y;
     }
     cum += subset_size;
