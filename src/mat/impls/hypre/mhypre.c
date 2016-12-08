@@ -359,11 +359,11 @@ PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat A, MatType type, MatReuse r
     ierr = MatCreate(comm,B);CHKERRQ(ierr);
     ierr = MatSetType(*B,MATHYPRE);CHKERRQ(ierr);
     ierr = MatSetSizes(*B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
-    ierr = MatSetUp(*B);CHKERRQ(ierr);
     hB   = (Mat_HYPRE*)((*B)->data);
   }
   ierr = MatHYPRE_CreateFromMat(A,hB);CHKERRQ(ierr);
   ierr = MatHYPRE_IJMatrixCopy(A,hB->ij);CHKERRQ(ierr);
+  (*B)->preallocated = PETSC_TRUE;
   ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -769,11 +769,24 @@ static PetscErrorCode MatDestroy_HYPRE(Mat A)
 #define __FUNCT__ "MatSetUp_HYPRE"
 static PetscErrorCode MatSetUp_HYPRE(Mat A)
 {
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatHYPRESetPreallocation(A,PETSC_DEFAULT,NULL,PETSC_DEFAULT,NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatAssemblyEnd_HYPRE"
+static PetscErrorCode MatAssemblyEnd_HYPRE(Mat A, MatAssemblyType mode)
+{
   Mat_HYPRE          *hA = (Mat_HYPRE*)A->data;
   Vec                x,b;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
+  if (mode == MAT_FLUSH_ASSEMBLY) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MAT_FLUSH_ASSEMBLY currently not supported with MATHYPRE");
+  PetscStackCallStandard(HYPRE_IJMatrixAssemble,(hA->ij));
   if (hA->x) PetscFunctionReturn(0);
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
@@ -783,19 +796,6 @@ static PetscErrorCode MatSetUp_HYPRE(Mat A)
   ierr = VecHYPRE_IJVectorCreate(b,&hA->b);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&b);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd_HYPRE"
-static PetscErrorCode MatAssemblyEnd_HYPRE(Mat A, MatAssemblyType mode)
-{
-  Mat_HYPRE          *hA = (Mat_HYPRE*)A->data;
-  PetscErrorCode     ierr;
-
-  PetscFunctionBegin;
-  if (mode == MAT_FLUSH_ASSEMBLY) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MAT_FLUSH_ASSEMBLY currently not supported with MATHYPRE");
-  PetscStackCallStandard(HYPRE_IJMatrixAssemble,(hA->ij));
   PetscFunctionReturn(0);
 }
 
@@ -856,11 +856,12 @@ static PetscErrorCode MatHYPRESetPreallocation_HYPRE(Mat A, PetscInt dnz, const 
 {
   Mat_HYPRE          *hA = (Mat_HYPRE*)A->data;
   HYPRE_Int          *hdnnz,*honnz;
-  PetscInt           i,rs,re,cs,ce;
+  PetscInt           i,rs,re,cs,ce,bs;
   PetscMPIInt        size;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
+  ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
   rs   = A->rmap->rstart;
@@ -877,6 +878,9 @@ static PetscErrorCode MatHYPRESetPreallocation_HYPRE(Mat A, PetscInt dnz, const 
     if (hce-hcs+1 != ce -cs) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inconsistent local cols: IJMatrix [%D,%D), PETSc [%D,%d)",hcs,hce+1,cs,ce);
   }
   PetscStackCallStandard(HYPRE_IJMatrixInitialize,(hA->ij));
+
+  if (dnz == PETSC_DEFAULT || dnz == PETSC_DECIDE) dnz = 10*bs;
+  if (onz == PETSC_DEFAULT || onz == PETSC_DECIDE) onz = 10*bs;
 
   if (!dnnz) {
     ierr = PetscMalloc1(A->rmap->n,&hdnnz);CHKERRQ(ierr);
@@ -903,7 +907,7 @@ static PetscErrorCode MatHYPRESetPreallocation_HYPRE(Mat A, PetscInt dnz, const 
   if (!onnz && honnz) {
     ierr = PetscFree(honnz);CHKERRQ(ierr);
   }
-  ierr = MatSetUp(A);CHKERRQ(ierr);
+  A->preallocated = PETSC_TRUE;
 
   /* SetDiagOffdSizes sets hypre_AuxParCSRMatrixNeedAux(aux_matrix) = 0 */
   {
@@ -1011,7 +1015,6 @@ PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(hypre_ParCSRMatrix *vparcsr, Mat
   ierr = MatCreate(comm,&T);CHKERRQ(ierr);
   ierr = MatSetSizes(T,rend-rstart+1,cend-cstart+1,M,N);CHKERRQ(ierr);
   ierr = MatSetType(T,MATHYPRE);CHKERRQ(ierr);
-  ierr = MatSetUp(T);CHKERRQ(ierr);
   hA   = (Mat_HYPRE*)(T->data);
 
   /* create HYPRE_IJMatrix */
@@ -1020,6 +1023,7 @@ PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(hypre_ParCSRMatrix *vparcsr, Mat
   /* set ParCSR object */
   PetscStackCallStandard(HYPRE_IJMatrixSetObjectType,(hA->ij,HYPRE_PARCSR));
   hypre_IJMatrixObject(hA->ij) = parcsr;
+  T->preallocated = PETSC_TRUE;
 
   /* set assembled flag */
   hypre_IJMatrixAssembleFlag(hA->ij) = 1;
