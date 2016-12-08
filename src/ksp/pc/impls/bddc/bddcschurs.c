@@ -418,64 +418,21 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
-  /* update info in sub_schurs */
   ierr = MatDestroy(&sub_schurs->A);CHKERRQ(ierr);
   ierr = MatDestroy(&sub_schurs->S);CHKERRQ(ierr);
-  sub_schurs->is_hermitian = PETSC_FALSE;
-  sub_schurs->is_posdef = PETSC_FALSE;
+
+  sub_schurs->is_hermitian = PETSC_TRUE;
+  sub_schurs->is_posdef    = PETSC_TRUE;
+  if (benign_trick) sub_schurs->is_posdef = PETSC_FALSE;
+  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)sub_schurs->l2gmap),sub_schurs->prefix,"BDDC sub_schurs options","PC");CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-sub_schurs_hermitian","Hermitian problem",NULL,sub_schurs->is_hermitian,&sub_schurs->is_hermitian,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-sub_schurs_posdef","Positive definite problem",NULL,sub_schurs->is_posdef,&sub_schurs->is_posdef,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
+  /* convert matrix if needed */
   if (Ain) {
     PetscBool isseqaij;
-    /* determine if we are dealing with hermitian positive definite problems */
-#if !defined(PETSC_USE_COMPLEX)
-    if (Ain->symmetric_set) sub_schurs->is_hermitian = Ain->symmetric;
-#else
-    if (Ain->hermitian_set) sub_schurs->is_hermitian = Ain->hermitian;
-#endif
-    if (Ain->spd_set) sub_schurs->is_posdef = Ain->spd;
-
-    /* check */
     ierr = PetscObjectTypeCompare((PetscObject)Ain,MATSEQAIJ,&isseqaij);CHKERRQ(ierr);
-    if (!Ain->hermitian_set || !Ain->spd_set) { /* these are lazy checks, maybe I should add a command line switch */
-      PetscInt lsize;
-
-      ierr = MatGetSize(Ain,&lsize,NULL);CHKERRQ(ierr);
-      if (lsize) {
-        PetscScalar val;
-        PetscReal   norm;
-        Vec         vec1,vec2,vec3;
-
-        ierr = MatCreateVecs(Ain,&vec1,&vec2);CHKERRQ(ierr);
-        ierr = VecSetRandom(vec1,NULL);CHKERRQ(ierr);
-        ierr = MatMult(Ain,vec1,vec2);CHKERRQ(ierr);
-        if (!Ain->spd_set && !benign_trick) {
-          ierr = VecDot(vec1,vec2,&val);CHKERRQ(ierr);
-          if (PetscRealPart(val) > 0. && PetscAbsReal(PetscImaginaryPart(val)) < PETSC_SMALL) sub_schurs->is_posdef = PETSC_TRUE;
-        }
-        if (!Ain->hermitian_set) {
-          ierr = VecDuplicate(vec1,&vec3);CHKERRQ(ierr);
-#if !defined(PETSC_USE_COMPLEX)
-          ierr = MatMultTranspose(Ain,vec1,vec3);CHKERRQ(ierr);
-#else
-          ierr = MatMultHermitianTranspose(Ain,vec1,vec3);CHKERRQ(ierr);
-#endif
-          ierr = VecAXPY(vec3,-1.0,vec2);CHKERRQ(ierr);
-          ierr = VecNorm(vec3,NORM_INFINITY,&norm);CHKERRQ(ierr);
-          if (!Ain->hermitian_set) {
-            if (norm > PetscSqrtReal(PETSC_SMALL)) {
-              sub_schurs->is_hermitian = PETSC_FALSE;
-            } else {
-              sub_schurs->is_hermitian = PETSC_TRUE;
-            }
-          }
-          ierr = VecDestroy(&vec3);CHKERRQ(ierr);
-        }
-        ierr = VecDestroy(&vec1);CHKERRQ(ierr);
-        ierr = VecDestroy(&vec2);CHKERRQ(ierr);
-      } else {
-        sub_schurs->is_hermitian = PETSC_TRUE;
-        sub_schurs->is_posdef = PETSC_TRUE;
-      }
-    }
     if (isseqaij) {
       ierr = PetscObjectReference((PetscObject)Ain);CHKERRQ(ierr);
       sub_schurs->A = Ain;
@@ -730,7 +687,8 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       }
       ierr = KSPSetOperators(sub_schurs->change[i],change_sub,change_sub);CHKERRQ(ierr);
       ierr = MatDestroy(&change_sub);CHKERRQ(ierr);
-      ierr = KSPSetOptionsPrefix(sub_schurs->change[i],"sub_schurs_change_");CHKERRQ(ierr);
+      ierr = KSPSetOptionsPrefix(sub_schurs->change[i],sub_schurs->prefix);CHKERRQ(ierr);
+      ierr = KSPAppendOptionsPrefix(sub_schurs->change[i],"sub_schurs_change_");CHKERRQ(ierr);
     }
     ierr = ISDestroy(&change_primal_all);CHKERRQ(ierr);
   }
@@ -903,7 +861,8 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     } else {
       ierr = MatGetSubMatrix(sub_schurs->A,is_A_all,is_A_all,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
     }
-    ierr = MatSetOptionsPrefix(A,"sub_schurs_");CHKERRQ(ierr);
+    ierr = MatSetOptionsPrefix(A,sub_schurs->prefix);CHKERRQ(ierr);
+    ierr = MatAppendOptionsPrefix(A,"sub_schurs_");CHKERRQ(ierr);
 
     /* if we actually change the basis for the pressures, LDL^T factors will use a lot of memory
        n^2 instead of n^1.5 or something. This is a workaround */
@@ -968,7 +927,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 #else
     ierr = PetscStrcpy(solver,MATSOLVERMKL_PARDISO);CHKERRQ(ierr);
 #endif
-    ierr = PetscOptionsGetString(NULL,"sub_schurs_","-mat_solver_package",solver,256,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,((PetscObject)A)->prefix,"-mat_solver_package",solver,256,NULL);CHKERRQ(ierr);
 
     /* when using the benign subspace trick, the local Schur complements are SPD */
     if (benign_trick) sub_schurs->is_posdef = PETSC_TRUE;

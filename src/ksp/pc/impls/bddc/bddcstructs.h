@@ -127,6 +127,8 @@ struct _PCBDDCSubSchurs {
   KSP       *change;
   IS        *change_primal_sub;
   PetscBool change_with_qr;
+  /* prefix */
+  char      *prefix;
 };
 typedef struct _PCBDDCSubSchurs *PCBDDCSubSchurs;
 
