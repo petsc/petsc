@@ -72,68 +72,72 @@ PetscErrorCode MatCreateColmap_MPIELL_Private(Mat mat)
 }
 
 #define MatSetValues_SeqELL_A_Private(row,col,value,addv,orow,ocol)     \
-{ \
+  { \
     if (col <= lastcol1) low1 = 0; \
-    else                 high1 = nrow1; \
+    else                high1 = nrow1; \
     lastcol1 = col; \
     while (high1-low1 > 5) { \
       t = (low1+high1)/2; \
       if (*(cp1+8*t) > col) high1 = t; \
-      else              low1  = t; \
+      else                   low1 = t; \
     } \
     for (_i=low1; _i<high1; _i++) { \
       if (*(cp1+8*_i) > col) break; \
       if (*(cp1+8*_i) == col) { \
         if (addv == ADD_VALUES) *(vp1+8*_i) += value;   \
-        else                    *(vp1+8*_i) = value; \
+        else                     *(vp1+8*_i) = value; \
         goto a_noinsert; \
       } \
     }  \
     if (value == 0.0 && ignorezeroentries) {low1 = 0; high1 = nrow1;goto a_noinsert;} \
     if (nonew == 1) {low1 = 0; high1 = nrow1; goto a_noinsert;} \
     if (nonew == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at global row/column (%D, %D) into matrix", orow, ocol); \
-    MatSeqXELLReallocateELL(A,am,1,nrow1,a->maxallocrow,row,col,cp1,vp1,nonew,MatScalar); \
+    MatSeqXELLReallocateELL(A,am,1,nrow1,a->sliidx,row/8,row,col,a->colidx,a->val,a->bt,cp1,vp1,bp1,nonew,MatScalar); \
     /* shift up all the later entries in this row */ \
     for (ii=nrow1-1; ii>=_i; ii--) { \
       *(cp1+8*(ii+1)) = *(cp1+8*ii); \
       *(vp1+8*(ii+1)) = *(vp1+8*ii); \
+      if (*(bp1+ii) & (char)1<<(row&0x07)) *(bp1+ii+1) |= (char)1<<(row&0x07); \
     } \
-    *(cp1+8*_i) = col;  \
-    *(vp1+8*_i) = value;  \
+    *(cp1+8*_i) = col; \
+    *(vp1+8*_i) = value; \
+    *(bp1+_i)  |= (char)1<<(row&0x07); \
     a->nz++; nrow1++; A->nonzerostate++; \
     a_noinsert: ; \
     a->rlen[row] = nrow1; \
-}
+  }
 
 #define MatSetValues_SeqELL_B_Private(row,col,value,addv,orow,ocol) \
   { \
     if (col <= lastcol2) low2 = 0; \
-    else high2 = nrow2; \
+    else                high2 = nrow2; \
     lastcol2 = col; \
     while (high2-low2 > 5) { \
       t = (low2+high2)/2; \
       if (*(cp2+8*t) > col) high2 = t; \
-      else             low2  = t; \
+      else low2  = t; \
     } \
     for (_i=low2; _i<high2; _i++) { \
       if (*(cp2+8*_i) > col) break; \
       if (*(cp2+8*_i) == col) { \
         if (addv == ADD_VALUES) *(vp2+8*_i) += value; \
-        else                    *(vp2+8*_i) = value; \
+        else                     *(vp2+8*_i) = value; \
         goto b_noinsert; \
       } \
     } \
     if (value == 0.0 && ignorezeroentries) {low2 = 0; high2 = nrow2; goto b_noinsert;} \
     if (nonew == 1) {low2 = 0; high2 = nrow2; goto b_noinsert;} \
     if (nonew == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at global row/column (%D, %D) into matrix", orow, ocol); \
-    MatSeqXELLReallocateELL(B,bm,1,nrow2,b->maxallocrow,row,col,cp2,vp2,nonew,MatScalar); \
+    MatSeqXELLReallocateELL(B,bm,1,nrow2,b->sliidx,row/8,row,col,b->colidx,b->val,b->bt,cp2,vp2,bp2,nonew,MatScalar); \
     /* shift up all the later entries in this row */ \
     for (ii=nrow2-1; ii>=_i; ii--) { \
       *(cp2+8*(ii+1)) = *(cp2+8*ii); \
       *(vp2+8*(ii+1)) = *(vp2+8*ii); \
+      if (*(bp2+ii) & (char)1<<(row&0x07)) *(bp2+ii+1) |= (char)1<<(row&0x07); \
     } \
     *(cp2+8*_i) = col; \
     *(vp2+8*_i) = value; \
+    *(bp2+_i)  |= (char)1<<(row&0x07); \
     b->nz++; nrow2++; B->nonzerostate++; \
     b_noinsert: ; \
     b->rlen[row] = nrow2; \
@@ -161,6 +165,7 @@ PetscErrorCode MatSetValues_MPIELL(Mat mat,PetscInt m,const PetscInt im[],PetscI
   PetscInt       *cp1,*cp2,ii,nrow1,nrow2,_i,low1,high1,low2,high2,t,lastcol1,lastcol2;
   PetscInt       nonew;
   MatScalar      *vp1,*vp2;
+  char           *bp1,*bp2;
 
   PetscFunctionBegin;
   for (i=0; i<m; i++) {
@@ -171,16 +176,18 @@ PetscErrorCode MatSetValues_MPIELL(Mat mat,PetscInt m,const PetscInt im[],PetscI
     if (im[i] >= rstart && im[i] < rend) {
       row      = im[i] - rstart;
       lastcol1 = -1;
-      shift1   = (row & ~0x07)*a->rlenmax+(row & 0x07); /* starting index of the row */
+      shift1   = a->sliidx[row>>3]+(row&0x07); /* starting index of the row */
       cp1      = a->colidx+shift1;
       vp1      = a->val+shift1;
+      bp1      = a->bt+shift1/8;
       nrow1    = a->rlen[row];
       low1     = 0;
       high1    = nrow1;
       lastcol2 = -1;
-      shift2   = (row & ~0x07)*b->rlenmax+(row & 0x07); /* starting index of the row */
+      shift2   = b->sliidx[row>>3]+(row&0x07); /* starting index of the row */
       cp2      = b->colidx+shift2;
       vp2      = b->val+shift2;
+      bp2      = b->bt+shift2/8;
       nrow2    = b->rlen[row];
       low2     = 0;
       high2    = nrow2;
@@ -192,7 +199,7 @@ PetscErrorCode MatSetValues_MPIELL(Mat mat,PetscInt m,const PetscInt im[],PetscI
         if (in[j] >= cstart && in[j] < cend) {
           col   = in[j] - cstart;
           nonew = a->nonew;
-          MatSetValues_SeqELL_A_Private(row,col,value,addv,im[i],in[j]);
+          MatSetValues_SeqELL_A_Private(row,col,value,addv,im[i],in[j]); /* set one value */
         } else if (in[j] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
         else if (in[j] >= mat->cmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",in[j],mat->cmap->N-1);
@@ -214,9 +221,10 @@ PetscErrorCode MatSetValues_MPIELL(Mat mat,PetscInt m,const PetscInt im[],PetscI
               /* Reinitialize the variables required by MatSetValues_SeqELL_B_Private() */
               B      = ell->B;
               b      = (Mat_SeqELL*)B->data;
-              shift2 = (row & ~0x07)*b->rlenmax+(row & 0x07); /* starting index of the row */
+              shift2 = b->sliidx[row>>3]+(row&0x07); /* starting index of the row */
               cp2    = b->colidx+shift2;
               vp2    = b->val+shift2;
+              bp2    = b->bt+shift2/8;
               nrow2  = b->rlen[row];
               low2   = 0;
               high2  = nrow2;
@@ -309,7 +317,7 @@ PetscErrorCode MatAssemblyEnd_MPIELL(Mat mat,MatAssemblyType mode)
   Mat_MPIELL     *ell = (Mat_MPIELL*)mat->data;
   PetscErrorCode ierr;
   PetscMPIInt    n;
-  PetscInt       i,j,rstart,ncols,flg;
+  PetscInt       i,flg;
   PetscInt       *row,*col;
   PetscScalar    *val;
   PetscBool      other_disassembled;
@@ -322,17 +330,8 @@ PetscErrorCode MatAssemblyEnd_MPIELL(Mat mat,MatAssemblyType mode)
       ierr = MatStashScatterGetMesg_Private(&mat->stash,&n,&row,&col,&val,&flg);CHKERRQ(ierr);
       if (!flg) break;
 
-      for (i=0; i<n; ) {
-        /* Now identify the consecutive vals belonging to the same row */
-        for (j=i,rstart=row[j]; j<n; j++) {
-          if (row[j] != rstart) break;
-        }
-        if (j < n) ncols = j-i;
-        else       ncols = n-i;
-        /* Now assemble all these values with a single function call */
-        ierr = MatSetValues_MPIELL(mat,1,row+i,ncols,col+i,val+i,mat->insertmode);CHKERRQ(ierr);
-
-        i = j;
+      for (i=0; i<n; i++) { /* assemble one by one */
+        ierr = MatSetValues_MPIELL(mat,1,row+i,1,col+i,val+i,mat->insertmode);CHKERRQ(ierr);
       }
     }
     ierr = MatStashScatterEnd_Private(&mat->stash);CHKERRQ(ierr);
@@ -689,10 +688,12 @@ PetscErrorCode MatView_MPIELL_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     Aloc = (Mat_SeqELL*)ell->A->data;
     m    = ell->A->rmap->n; acolidx = Aloc->colidx; aval = Aloc->val;
     for (i=0; i<(m>>3); i++) { /* loop over slices */
-      for (j=0; j<Aloc->rlenmax*8; j++) {
-        row  = (i<<3)+(j & 0x07) + mat->rmap->rstart; /* i<<3 is the starting row of this slice */
-        col  = *acolidx + mat->rmap->rstart;
-        ierr = MatSetValues(A,1,&row,1,&col,aval,INSERT_VALUES);CHKERRQ(ierr);
+      for (j=Aloc->sliidx[i]; j<Aloc->sliidx[i+1]; j++) {
+        if (Aloc->bt[j>>3] & (char)(1<<(j&0x07))) { /* check the mask bit */
+          row  = (i<<3)+(j&0x07) + mat->rmap->rstart; /* i<<3 is the starting row of this slice */
+          col  = *acolidx + mat->rmap->rstart;
+          ierr = MatSetValues(A,1,&row,1,&col,aval,INSERT_VALUES);CHKERRQ(ierr);
+        }
         aval++; acolidx++;
       }
     }
@@ -700,14 +701,17 @@ PetscErrorCode MatView_MPIELL_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     /* copy over the B part */
     Aloc = (Mat_SeqELL*)ell->B->data;
     m    = ell->B->rmap->n;  acolidx = Aloc->colidx; aval = Aloc->val;
-    for (i=0; i<(m>>3); i++) { /* loop over slices */
-      for (j=0; j<Aloc->rlenmax*8; j++) {
-        row  = (i<<3)+(j & 0x07) + mat->rmap->rstart; /* i<<3 is the starting row of this slice */
-        col  = ell->garray[*acolidx];
-        ierr = MatSetValues(A,1,&row,1,&col,aval,INSERT_VALUES);CHKERRQ(ierr);
+    for (i=0; i<(m>>3); i++) {
+      for (j=Aloc->sliidx[i]; j<Aloc->sliidx[i+1]; j++) {
+        if (Aloc->bt[j>>3] & (char)(1<<(j&0x07))) {
+          row  = (i<<3)+(j&0x07) + mat->rmap->rstart;
+          col  = ell->garray[*acolidx];
+          ierr = MatSetValues(A,1,&row,1,&col,aval,INSERT_VALUES);CHKERRQ(ierr);
+        }
         aval++; acolidx++;
       }
     }
+
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     /*

@@ -24,15 +24,18 @@ PetscErrorCode MatSetUpMultiply_MPIELL(Mat mat)
 #endif
 
   PetscFunctionBegin;
+  /* ec counts the number of columns that contain nonzeros */
 #if defined(PETSC_USE_CTABLE)
   /* use a table */
   ierr = PetscTableCreate(ell->B->rmap->n,mat->cmap->N+1,&gid1_lid1);CHKERRQ(ierr);
-  for (i=0; i<B->rlenmax*ell->B->rmap->n; i++) {
-    PetscInt data,gid1 = bcolidx[i] + 1;
-    ierr = PetscTableFind(gid1_lid1,gid1,&data);CHKERRQ(ierr);
-    if (!data) {
-      /* one based table */
-      ierr = PetscTableAdd(gid1_lid1,gid1,++ec,INSERT_VALUES);CHKERRQ(ierr);
+  for (i=0; i<B->sliidx[ell->B->rmap->n/8]; i++) { /* loop over all elements */
+    if (B->bt[i>>3] & (char)(1<<(i&0x07))) { /* check the mask bit */
+      PetscInt data,gid1 = bcolidx[i] + 1;
+      ierr = PetscTableFind(gid1_lid1,gid1,&data);CHKERRQ(ierr);
+      if (!data) {
+        /* one based table */
+        ierr = PetscTableAdd(gid1_lid1,gid1,++ec,INSERT_VALUES);CHKERRQ(ierr);
+      }
     }
   }
 
@@ -51,11 +54,13 @@ PetscErrorCode MatSetUpMultiply_MPIELL(Mat mat)
     ierr = PetscTableAdd(gid1_lid1,garray[i]+1,i+1,INSERT_VALUES);CHKERRQ(ierr);
   }
   /* compact out the extra columns in B */
-  for (i=0; i<B->rlenmax*ell->B->rmap->n; i++) {
-    PetscInt gid1 = bcolidx[i] + 1;
-    ierr = PetscTableFind(gid1_lid1,gid1,&lid);CHKERRQ(ierr);
-    lid--;
-    bcolidx[i] = lid;
+  for (i=0; i<B->sliidx[ell->B->rmap->n/8]; i++) {
+    if (B->bt[i>>3] & (char)(1<<(i&0x07))) {
+      PetscInt gid1 = bcolidx[i] + 1;
+      ierr = PetscTableFind(gid1_lid1,gid1,&lid);CHKERRQ(ierr);
+      lid--;
+      bcolidx[i] = lid;
+    }
   }
   ell->B->cmap->n = ell->B->cmap->N = ec;
   ell->B->cmap->bs = 1;
@@ -67,8 +72,8 @@ PetscErrorCode MatSetUpMultiply_MPIELL(Mat mat)
   /* mark those columns that are in ell->B */
   ierr = PetscCalloc1(N+1,&indices);CHKERRQ(ierr);
 
-  for (i=0; i<B->rlenmax*ell->B->rmap->n; i++) {
-    if (!indices[bcolidx[i]]) ec++;
+  for (i=0; i<B->sliidx[ell->B->rmap->n/8]; i++) {
+    if ((B->bt[i>>3] & (char)(1<<(i&0x07))) && !indices[bcolidx[i]]) ec++;
     indices[bcolidx[i]] = 1;
   }
 
@@ -85,7 +90,9 @@ PetscErrorCode MatSetUpMultiply_MPIELL(Mat mat)
   }
 
   /* compact out the extra columns in B */
-  for (i=0; i<B->rlenmax*ell->B->rmap->n; i++) bcolidx[i] = indices[bcolidx[i]];
+  for (i=0; i<B->sliidx[ell->B->rmap->n/8]; i++) {
+    if (B->bt[i>>3] & (char)(1<<(i&0x07))) bcolidx[i] = indices[bcolidx[i]];
+  }
   ell->B->cmap->n = ell->B->cmap->N = ec; /* number of columns that are not all zeros */
   ell->B->cmap->bs = 1;
 

@@ -7,10 +7,61 @@
 #include <petsc/private/kernels/blocktranspose.h>
 #if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__INTEL_COMPILER)
 #include <immintrin.h>
+
+/* these do not work
+ vec_idx  = _mm512_loadunpackhi_epi32(vec_idx,acolidx);
+ vec_vals = _mm512_loadunpackhi_pd(vec_vals,aval);
+*/
+#define AVX512_Mult_Private(mask,vec_idx,vec_x,vec_vals,vec_y) \
+/* if the mast bit is set, copy from acolidx, otherwise from vec_idx */ \
+vec_idx  = _mm256_maskz_load_epi32(maskallset,acolidx); \
+vec_vals = _mm512_load_pd(aval); \
+vec_x    = _mm512_mask_i32gather_pd(vec_x,mask,vec_idx,x,_MM_SCALE_8); \
+vec_y    = _mm512_mask3_fmadd_pd(vec_x,vec_vals,vec_y,mask); \
+
 #endif
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSeqELLSetPreallocation"
+/*@C
+ MatSeqELLSetPreallocation - For good matrix assembly performance
+ the user should preallocate the matrix storage by setting the parameter nz
+ (or the array nnz).  By setting these parameters accurately, performance
+ during matrix assembly can be increased significantly.
+
+ Collective on MPI_Comm
+
+ Input Parameters:
+ +  B - The matrix
+ .  nz - number of nonzeros per row (same for all rows)
+ -  nnz - array containing the number of nonzeros in the various rows
+ (possibly different for each row) or NULL
+
+ Notes:
+ If nnz is given then nz is ignored.
+
+ Specify the preallocated storage with either nz or nnz (not both).
+ Set nz=PETSC_DEFAULT and nnz=NULL for PETSc to control dynamic memory
+ allocation.  For large problems you MUST preallocate memory or you
+ will get TERRIBLE performance, see the users' manual chapter on matrices.
+
+ You can call MatGetInfo() to get information on how effective the preallocation was;
+ for example the fields mallocs,nz_allocated,nz_used,nz_unneeded;
+ You can also run with the option -info and look for messages with the string
+ malloc in them to see if additional memory allocation was needed.
+
+ Developers: Use nz of MAT_SKIP_ALLOCATION to not allocate any space for the matrix
+ entries or columns indices.
+ 
+ The maximum number of nonzeos in any row should be as accuate as possible. 
+ If it is underesitmated, you will get bad performance due to reallocation
+ (MatSeqXELLReallocateELL).
+
+ Level: intermediate
+
+ .seealso: MatCreate(), MatCreateELL(), MatSetValues(), MatGetInfo()
+
+ @*/
 PetscErrorCode  MatSeqELLSetPreallocation(Mat B,PetscInt rlenmax,const PetscInt rlen[])
 {
   PetscErrorCode ierr;
@@ -28,7 +79,7 @@ PetscErrorCode  MatSeqELLSetPreallocation_SeqELL(Mat B,PetscInt maxallocrow,cons
 {
   Mat_SeqELL     *b;
   PetscErrorCode ierr;
-  PetscInt       i;
+  PetscInt       i,j;
   PetscBool      skipallocation=PETSC_FALSE,realalloc=PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -40,8 +91,6 @@ PetscErrorCode  MatSeqELLSetPreallocation_SeqELL(Mat B,PetscInt maxallocrow,cons
 
   ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
-
-  B->preallocated = PETSC_TRUE;
 
   if (maxallocrow == PETSC_DEFAULT || maxallocrow == PETSC_DECIDE) maxallocrow = 5;
   if (maxallocrow < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"maxallocrow cannot be less than 0: value %D",maxallocrow);
@@ -58,36 +107,51 @@ PetscErrorCode  MatSeqELLSetPreallocation_SeqELL(Mat B,PetscInt maxallocrow,cons
 
   if (!skipallocation) {
     if (!b->rlen) {
+      /* sliidx gives the starting index of each slice, the last element is the total space allocated */
       ierr = PetscMalloc1(B->rmap->n,&b->rlen);CHKERRQ(ierr);
       ierr = PetscLogObjectMemory((PetscObject)B,B->rmap->n*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscMalloc1(B->rmap->n/8+1,&b->sliidx);CHKERRQ(ierr);
+      ierr = PetscLogObjectMemory((PetscObject)B,(B->rmap->n/8+1)*sizeof(PetscInt));CHKERRQ(ierr);
     }
-    if (!rlen) {
+    if (!rlen) { /* if rlen is not provided, allocate same space for all the slices */
       if (maxallocrow == PETSC_DEFAULT || maxallocrow == PETSC_DECIDE) maxallocrow = 10;
       else if (maxallocrow < 0) maxallocrow = 1;
+      for (i=0; i<=B->rmap->n/8; i++) b->sliidx[i] = i*8*maxallocrow;
     } else {
       maxallocrow = 0;
-      for (i=0; i<B->rmap->n; i++) maxallocrow = PetscMax(maxallocrow,rlen[i]);
+      b->sliidx[0] = 0;
+      for (i=1; i<=B->rmap->n/8; i++) {
+        b->sliidx[i] = 0;
+        for (j=0;j<8;j++) {
+          b->sliidx[i] = PetscMax(b->sliidx[i],rlen[8*(i-1)+j]);
+        }
+        maxallocrow = PetscMax(b->sliidx[i],maxallocrow);
+        b->sliidx[i] = b->sliidx[i-1] + 8*b->sliidx[i];
+      }
     }
-    /* b->rlen will count nonzeros in each row so far. */
+    /* b->rlen will count nonzeros in each row so far. We dont copy rlen to b->rlen because the matrix has not been set. */
     for (i=0; i<B->rmap->n; i++) b->rlen[i] = 0;
 
-    /* allocate the matrix space */
+    /* allocate space for val, colidx and bt */
     /* FIXME: should B's old memory be unlogged? */
-    ierr = MatSeqXELLFreeELL(B,&b->val,&b->colidx);CHKERRQ(ierr);
-    ierr = PetscMalloc2(maxallocrow*B->rmap->n,&b->val,maxallocrow*B->rmap->n,&b->colidx);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory((PetscObject)B,maxallocrow*B->rmap->n*(sizeof(PetscScalar)+sizeof(PetscInt)));CHKERRQ(ierr);
+    ierr = MatSeqXELLFreeELL(B,&b->val,&b->colidx,&b->bt);CHKERRQ(ierr);
+    ierr = PetscMalloc3(b->sliidx[B->rmap->n/8],&b->val,b->sliidx[B->rmap->n/8],&b->colidx,b->sliidx[B->rmap->n/8]/8,&b->bt);CHKERRQ(ierr);
+    ierr = PetscMemzero(b->bt,b->sliidx[B->rmap->n/8]/8);CHKERRQ(ierr); /* must set to zero */
+    ierr = PetscLogObjectMemory((PetscObject)B,b->sliidx[B->rmap->n/8]*(sizeof(PetscScalar)+sizeof(PetscInt))+b->sliidx[B->rmap->n/8]/4);CHKERRQ(ierr);
     b->singlemalloc = PETSC_TRUE;
     b->free_val     = PETSC_TRUE;
     b->free_colidx  = PETSC_TRUE;
+    b->free_bt      = PETSC_TRUE;
   } else {
     b->free_val    = PETSC_FALSE;
     b->free_colidx = PETSC_FALSE;
+    b->free_bt     = PETSC_FALSE;
   }
 
   b->nz               = 0;
   b->maxallocrow      = maxallocrow;
   b->rlenmax          = maxallocrow;
-  b->maxallocmat      = maxallocrow*B->rmap->n;
+  b->maxallocmat      = b->sliidx[B->rmap->n/8];
   B->info.nz_unneeded = (double)b->maxallocmat;
   if (realalloc) {
     ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
@@ -110,11 +174,13 @@ PetscErrorCode MatMult_SeqELL(Mat A,Vec xx,Vec yy)
 #if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__INTEL_COMPILER)
   __m512d           vec_x,vec_y,vec_vals;
   __m256i           vec_idx;
-  __mmask8          mask=0xff;
+  __mmask8          mask,maskallset=0xff;
   __m512d           vec_x2,vec_y2,vec_vals2,vec_x3,vec_y3,vec_vals3,vec_x4,vec_y4,vec_vals4;
   __m256i           vec_idx2,vec_idx3,vec_idx4;
+  __mmask8          mask2,mask3,mask4;
 #else
   PetscScalar       sum1,sum2,sum3,sum4,sum5,sum6,sum7,sum8;
+  char              bflag1,bflag2,bflag3,bflag4,bflag5,bflag6,bflag7,bflag8;
 #endif
 
 #if defined(PETSC_HAVE_PRAGMA_DISJOINT)
@@ -126,82 +192,62 @@ PetscErrorCode MatMult_SeqELL(Mat A,Vec xx,Vec yy)
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   for (i=0; i<(m>>3); i++) { /* loop over slices */
 #if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__INTEL_COMPILER)
-    PetscPrefetchBlock(acolidx,a->rlenmax*8,0,PETSC_PREFETCH_HINT_T0);
-    PetscPrefetchBlock(aval,a->rlenmax*8,0,PETSC_PREFETCH_HINT_T0);
+    PetscPrefetchBlock(acolidx,a->sliidx[i+1]-a->sliidx[i],0,PETSC_PREFETCH_HINT_T0);
+    PetscPrefetchBlock(aval,a->sliidx[i+1]-a->sliidx[i],0,PETSC_PREFETCH_HINT_T0);
 
     vec_y  = _mm512_setzero_pd();
     vec_y2 = _mm512_setzero_pd();
     vec_y3 = _mm512_setzero_pd();
     vec_y4 = _mm512_setzero_pd();
 
-    switch (a->rlenmax & 3) {
+    j = a->sliidx[i]>>3; /* index of the bit array; 8 bits are read at each time, corresponding to a slice columnn */
+    switch ((a->sliidx[i+1]-a->sliidx[i])/8 & 3) {
     case 3:
-      vec_idx  = _mm256_mask_load_epi32(vec_idx,mask,acolidx);
-      vec_vals = _mm512_load_pd(aval);
-      vec_x    = _mm512_i32gather_pd(vec_idx,x,_MM_SCALE_8);
-      vec_y    = _mm512_fmadd_pd(vec_vals,vec_x,vec_y);
-
-      vec_idx2  = _mm256_mask_load_epi32(vec_idx2,mask,acolidx+8);
-      vec_vals2 = _mm512_load_pd(aval+8);
-      vec_x2    = _mm512_i32gather_pd(vec_idx2,x,_MM_SCALE_8);
-      vec_y2    = _mm512_fmadd_pd(vec_vals2,vec_x2,vec_y2);
-
-      vec_idx3  = _mm256_mask_load_epi32(vec_idx3,mask,acolidx+16);
-      vec_vals3 = _mm512_load_pd(aval+16);
-      vec_x3    = _mm512_i32gather_pd(vec_idx3,x,_MM_SCALE_8);
-      vec_y3    = _mm512_fmadd_pd(vec_vals3,vec_x3,vec_y3);
-      
-      acolidx += 24; aval += 24; j = 3;  
-      break; 
+      mask  = (__mmask8)a->bt[j];
+      mask2 = (__mmask8)a->bt[j+1];
+      mask3 = (__mmask8)a->bt[j+2];
+      AVX512_Mult_Private(mask,vec_idx,vec_x,vec_vals,vec_y);
+      acolidx += 8; aval += 8;
+      AVX512_Mult_Private(mask2,vec_idx2,vec_x2,vec_vals2,vec_y2);
+      acolidx += 8; aval += 8;
+      AVX512_Mult_Private(mask3,vec_idx3,vec_x3,vec_vals3,vec_y3);
+      acolidx += 8; aval += 8;
+      j += 3;
+      break;
     case 2:
-      vec_idx  = _mm256_mask_load_epi32(vec_idx,mask,acolidx);
-      vec_vals = _mm512_load_pd(aval);
-      vec_x    = _mm512_i32gather_pd(vec_idx,x,_MM_SCALE_8);
-      vec_y    = _mm512_fmadd_pd(vec_vals,vec_x,vec_y);
-
-      vec_idx2  = _mm256_mask_load_epi32(vec_idx2,mask,acolidx+8);
-      vec_vals2 = _mm512_load_pd(aval+8);
-      vec_x2    = _mm512_i32gather_pd(vec_idx2,x,_MM_SCALE_8);
-      vec_y2    = _mm512_fmadd_pd(vec_vals2,vec_x2,vec_y2);
-
-      acolidx += 16; aval += 16; j = 2;
+      mask  = (__mmask8)a->bt[j];
+      mask2 = (__mmask8)a->bt[j+1];
+      AVX512_Mult_Private(mask,vec_idx,vec_x,vec_vals,vec_y);
+      acolidx += 8; aval += 8;
+      AVX512_Mult_Private(mask2,vec_idx2,vec_x2,vec_vals2,vec_y2);
+      acolidx += 8; aval += 8;
+      j += 2;
       break;
     case 1:
-      vec_idx  = _mm256_mask_load_epi32(vec_idx,mask,acolidx);
-      vec_vals = _mm512_load_pd(aval);
-      vec_x    = _mm512_i32gather_pd(vec_idx,x,_MM_SCALE_8);
-      vec_y    = _mm512_fmadd_pd(vec_vals,vec_x,vec_y);
-
-      acolidx += 8; aval += 8; j = 1;
+      mask = (__mmask8)a->bt[j];
+      AVX512_Mult_Private(mask,vec_idx,vec_x,vec_vals,vec_y);
+      acolidx += 8; aval += 8;
+      j += 1;
       break;
-    default:
-      j = 0;
     }
     #pragma novector
-    for (; j<a->rlenmax; acolidx+=32,aval+=32,j+=4) {
+    for (; j<(a->sliidx[i+1]>>3); j+=4) {
+      mask  = (__mmask8)a->bt[j];
+      mask2 = (__mmask8)a->bt[j+1];
+      mask3 = (__mmask8)a->bt[j+2];
+      mask4 = (__mmask8)a->bt[j+3];
       /*
       vec_idx  = _mm512_loadunpackhi_epi32(vec_idx,acolidx);
       vec_vals = _mm512_loadunpackhi_pd(vec_vals,aval);
       */
-      vec_idx  = _mm256_mask_load_epi32(vec_idx,mask,acolidx);
-      vec_vals = _mm512_load_pd(aval);
-      vec_x    = _mm512_i32gather_pd(vec_idx,x,_MM_SCALE_8);
-      vec_y    = _mm512_fmadd_pd(vec_vals,vec_x,vec_y);
-
-      vec_idx2  = _mm256_mask_load_epi32(vec_idx2,mask,acolidx+8);
-      vec_vals2 = _mm512_load_pd(aval+8);
-      vec_x2    = _mm512_i32gather_pd(vec_idx2,x,_MM_SCALE_8);
-      vec_y2    = _mm512_fmadd_pd(vec_vals2,vec_x2,vec_y2);
-
-      vec_idx3  = _mm256_mask_load_epi32(vec_idx3,mask,acolidx+16);
-      vec_vals3 = _mm512_load_pd(aval+16);
-      vec_x3    = _mm512_i32gather_pd(vec_idx3,x,_MM_SCALE_8);
-      vec_y3    = _mm512_fmadd_pd(vec_vals3,vec_x3,vec_y3);
-
-      vec_idx4  = _mm256_mask_load_epi32(vec_idx4,mask,acolidx+24);
-      vec_vals4 = _mm512_load_pd(aval+24);
-      vec_x4    = _mm512_i32gather_pd(vec_idx4,x,_MM_SCALE_8);
-      vec_y4    = _mm512_fmadd_pd(vec_vals4,vec_x4,vec_y4);
+      AVX512_Mult_Private(mask,vec_idx,vec_x,vec_vals,vec_y);
+      acolidx += 8; aval += 8;
+      AVX512_Mult_Private(mask2,vec_idx2,vec_x2,vec_vals2,vec_y2);
+      acolidx += 8; aval += 8;
+      AVX512_Mult_Private(mask3,vec_idx3,vec_x3,vec_vals3,vec_y3);
+      acolidx += 8; aval += 8;
+      AVX512_Mult_Private(mask4,vec_idx4,vec_x4,vec_vals4,vec_y4);
+      acolidx += 8; aval += 8;
     }
 
     vec_y = _mm512_add_pd(vec_y,vec_y2);
@@ -217,15 +263,23 @@ PetscErrorCode MatMult_SeqELL(Mat A,Vec xx,Vec yy)
     sum6 = 0.0;
     sum7 = 0.0;
     sum8 = 0.0;
-    for (j=0; j<a->rlenmax; j++) {
-       sum1 += *aval++*x[*acolidx++];
-       sum2 += *aval++*x[*acolidx++];
-       sum3 += *aval++*x[*acolidx++];
-       sum4 += *aval++*x[*acolidx++];
-       sum5 += *aval++*x[*acolidx++];
-       sum6 += *aval++*x[*acolidx++];
-       sum7 += *aval++*x[*acolidx++];
-       sum8 += *aval++*x[*acolidx++];
+    for (j=a->sliidx[i]; j<a->sliidx[i+1]; j+=8) {
+      bflag1 = a->bt[j>>3] & (char)(1);
+      bflag2 = a->bt[j>>3] & (char)(1<<1);
+      bflag3 = a->bt[j>>3] & (char)(1<<2);
+      bflag4 = a->bt[j>>3] & (char)(1<<3);
+      bflag5 = a->bt[j>>3] & (char)(1<<4);
+      bflag6 = a->bt[j>>3] & (char)(1<<5);
+      bflag7 = a->bt[j>>3] & (char)(1<<6);
+      bflag8 = a->bt[j>>3] & (char)(1<<7);
+      if (bflag1) sum1 += aval[j]*x[acolidx[j]] ;
+      if (bflag2) sum2 += aval[j+1]*x[acolidx[j+1]];
+      if (bflag3) sum3 += aval[j+2]*x[acolidx[j+2]];
+      if (bflag4) sum4 += aval[j+3]*x[acolidx[j+3]];
+      if (bflag5) sum5 += aval[j+4]*x[acolidx[j+4]];
+      if (bflag6) sum6 += aval[j+5]*x[acolidx[j+5]];
+      if (bflag7) sum7 += aval[j+6]*x[acolidx[j+6]];
+      if (bflag8) sum8 += aval[j+7]*x[acolidx[j+7]];
     }
     y[8*i]   = sum1;
     y[8*i+1] = sum2;
@@ -260,9 +314,10 @@ PetscErrorCode MatMultAdd_SeqELL(Mat A,Vec xx,Vec yy,Vec zz)
 #if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__INTEL_COMPILER)
   __m512d           vec_x,vec_y,vec_z,vec_vals;
   __m256i           vec_idx;
-  __mmask8          mask=0xff;
+  __mmask8          mask,maskallset=0xff;
 #else
   PetscScalar       sum1,sum2,sum3,sum4,sum5,sum6,sum7,sum8;
+  char              bflag1,bflag2,bflag3,bflag4,bflag5,bflag6,bflag7,bflag8;
 #endif
 
 #if defined(PETSC_HAVE_PRAGMA_DISJOINT)
@@ -276,15 +331,10 @@ PetscErrorCode MatMultAdd_SeqELL(Mat A,Vec xx,Vec yy,Vec zz)
 #if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__INTEL_COMPILER)
     vec_y = _mm512_load_pd(&y[8*i]);
     #pragma novector
-    for (j=0; j<a->rlenmax; acolidx+=8,aval+=8,j++) {
-      /*
-      vec_idx  = _mm512_loadunpackhi_epi32(vec_idx,acolidx);
-      vec_vals = _mm512_loadunpackhi_pd(vec_vals,aval);
-      */
-      vec_idx  = _mm256_mask_load_epi32(vec_idx,mask,acolidx);
-      vec_vals = _mm512_load_pd(aval);
-      vec_x    = _mm512_i32gather_pd(vec_idx,x,_MM_SCALE_8);
-      vec_y    = _mm512_fmadd_pd(vec_vals,vec_x,vec_y);
+    for (j=a->sliidx[i]; j<a->sliidx[i+1]; j+=8) {
+      mask = (__mmask8)a->bt[j>>3];
+      AVX512_Mult_Private(mask,vec_idx,vec_x,vec_vals,vec_y);
+      acolidx += 8; aval += 8;
     }
     _mm512_store_pd(&z[8*i],vec_y);
 #else
@@ -296,15 +346,23 @@ PetscErrorCode MatMultAdd_SeqELL(Mat A,Vec xx,Vec yy,Vec zz)
     sum6 = y[8*i+5];
     sum7 = y[8*i+6];
     sum8 = y[8*i+7];
-    for (j=0; j<8*a->rlenmax; j+=8) {
-      sum1 += *aval++*x[*acolidx++];
-      sum2 += *aval++*x[*acolidx++];
-      sum3 += *aval++*x[*acolidx++];
-      sum4 += *aval++*x[*acolidx++];
-      sum5 += *aval++*x[*acolidx++];
-      sum6 += *aval++*x[*acolidx++];
-      sum7 += *aval++*x[*acolidx++];
-      sum8 += *aval++*x[*acolidx++];
+    for (j=a->sliidx[i]; j<a->sliidx[i+1]; j+=8) {
+      bflag1 = a->bt[j>>3] & (char)(1);
+      bflag2 = a->bt[j>>3] & (char)(1<<1);
+      bflag3 = a->bt[j>>3] & (char)(1<<2);
+      bflag4 = a->bt[j>>3] & (char)(1<<3);
+      bflag5 = a->bt[j>>3] & (char)(1<<4);
+      bflag6 = a->bt[j>>3] & (char)(1<<5);
+      bflag7 = a->bt[j>>3] & (char)(1<<6);
+      bflag8 = a->bt[j>>3] & (char)(1<<7);
+      if (bflag1) sum1 += aval[j]*x[acolidx[j]];
+      if (bflag2) sum2 += aval[j+1]*x[acolidx[j+1]];
+      if (bflag3) sum3 += aval[j+2]*x[acolidx[j+2]];
+      if (bflag4) sum4 += aval[j+3]*x[acolidx[j+3]];
+      if (bflag5) sum5 += aval[j+4]*x[acolidx[j+4]];
+      if (bflag6) sum6 += aval[j+5]*x[acolidx[j+5]];
+      if (bflag7) sum7 += aval[j+6]*x[acolidx[j+6]];
+      if (bflag8) sum8 += aval[j+7]*x[acolidx[j+7]];
     }
     z[8*i]   = sum1;
     z[8*i+1] = sum2;
@@ -368,7 +426,7 @@ PetscErrorCode MatMarkDiagonal_SeqELL(Mat A)
     a->free_diag = PETSC_TRUE;
   }
   for (i=0; i<m; i++) { /* loop over rows */
-    shift = (i & ~0x07)*a->rlenmax+(i & 0x07); /* starting index of the row i */
+    shift = a->sliidx[i>>3]+(i&0x07); /* starting index of the row i */
     a->diag[i] = -1;
     for (j=0; j<a->rlen[i]; j++) {
       if (a->colidx[shift+j*8] == i) {
@@ -388,7 +446,7 @@ PetscErrorCode MatZeroEntries_SeqELL(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMemzero(a->val,(a->rlenmax*A->rmap->n)*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscMemzero(a->val,(a->sliidx[A->rmap->n/8])*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = MatSeqELLInvalidateDiagonal(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -404,12 +462,13 @@ PetscErrorCode MatDestroy_SeqELL(Mat A)
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)A,"Rows=%D, Cols=%D, NZ=%D",A->rmap->n,A->cmap->n,a->nz);
 #endif
-  ierr = MatSeqXELLFreeELL(A,&a->val,&a->colidx);CHKERRQ(ierr);
+  ierr = MatSeqXELLFreeELL(A,&a->val,&a->colidx,&a->bt);CHKERRQ(ierr);
   ierr = ISDestroy(&a->row);CHKERRQ(ierr);
   ierr = ISDestroy(&a->col);CHKERRQ(ierr);
   ierr = PetscFree(a->diag);CHKERRQ(ierr);
   ierr = PetscFree(a->ibdiag);CHKERRQ(ierr);
   ierr = PetscFree(a->rlen);CHKERRQ(ierr);
+  ierr = PetscFree(a->sliidx);CHKERRQ(ierr);
   ierr = PetscFree3(a->idiag,a->mdiag,a->ssor_work);CHKERRQ(ierr);
   ierr = PetscFree(a->solve_work);CHKERRQ(ierr);
   ierr = ISDestroy(&a->icol);CHKERRQ(ierr);
@@ -495,7 +554,7 @@ PetscErrorCode MatGetDiagonal_SeqELL(Mat A,Vec v)
   ierr = VecSet(v,zero);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   for (i=0; i<n; i++) { /* loop over rows */
-    shift = (i & ~0x07)*a->rlenmax+(i & 0x07); /* starting index of the row i */
+    shift = a->sliidx[i>>3]+(i&0x07); /* starting index of the row i */
     x[i] = 0;
     for (j=0; j<a->rlen[i]; j++) {
       if (a->colidx[shift+j*8] == i) {
@@ -526,7 +585,7 @@ PetscErrorCode MatGetValues_SeqELL(Mat A,PetscInt m,const PetscInt im[],PetscInt
 #if defined(PETSC_USE_DEBUG)
     if (row >= A->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",row,A->rmap->n-1);
 #endif
-    shift = (row & ~0x07)*a->rlenmax+(row & 0x07); /* starting index of the row */
+    shift = a->sliidx[row>>3]+(row&0x07); /* starting index of the row */
     cp = a->colidx+shift; /* pointer to the row */
     vp = a->val+shift; /* pointer to the row */
     for (l=0; l<n; l++) { /* loop over added rows */
@@ -585,7 +644,7 @@ PetscErrorCode MatView_SeqELL_ASCII(Mat A,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"zzz = [\n");CHKERRQ(ierr);
 
     for (i=0; i<m; i++) {
-      shift = (i & ~0x07)*a->rlenmax+(i & 0x07);
+      shift = a->sliidx[i>>3]+(i&0x07);
       for (j=0; j<a->rlen[i]; j++) {
 #if defined(PETSC_USE_COMPLEX)
         ierr = PetscViewerASCIIPrintf(viewer,"%D %D  %18.16e %18.16e\n",i+1,a->colidx[shift+8*j]+1,(double)PetscRealPart(a->val[shift+8*j]),(double)PetscImaginaryPart(a->val[shift+8*j]));CHKERRQ(ierr);
@@ -612,7 +671,7 @@ PetscErrorCode MatView_SeqELL_ASCII(Mat A,PetscViewer viewer)
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
     for (i=0; i<m; i++) {
       ierr = PetscViewerASCIIPrintf(viewer,"row %D:",i);CHKERRQ(ierr);
-      shift = (i & ~0x07)*a->rlenmax+(i & 0x07);
+      shift = a->sliidx[i>>3]+(i&0x07);
       for (j=0; j<a->rlen[i]; j++) {
 #if defined(PETSC_USE_COMPLEX)
         if (PetscImaginaryPart(a->val[shift+8*j]) > 0.0 && PetscRealPart(a->val[shift+8*j]) != 0.0) {
@@ -635,7 +694,7 @@ PetscErrorCode MatView_SeqELL_ASCII(Mat A,PetscViewer viewer)
 #if defined(PETSC_USE_COMPLEX)
     PetscBool   realonly = PETSC_TRUE;
 
-    for (i=0; i<a->rlenmax*A->rmap->n; i++) {
+    for (i=0; i<a->sliidx[A->rmap->n/8]; i++) {
       if (PetscImaginaryPart(a->val[i]) != 0.0) {
         realonly = PETSC_FALSE;
         break;
@@ -646,7 +705,7 @@ PetscErrorCode MatView_SeqELL_ASCII(Mat A,PetscViewer viewer)
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
     for (i=0; i<m; i++) {
       jcnt = 0;
-      shift = (i & ~0x07)*a->rlenmax+(i & 0x07);
+      shift = a->sliidx[i>>3]+(i&0x07);
       for (j=0; j<A->cmap->n; j++) {
         if (jcnt < a->rlen[i] && j == a->colidx[shift+8*j]) {
           value = a->val[cnt++];
@@ -677,12 +736,12 @@ PetscErrorCode MatView_SeqELL_ASCII(Mat A,PetscViewer viewer)
 #endif
     ierr = PetscViewerASCIIPrintf(viewer,"%D %D %D\n", m, A->cmap->n, a->nz);CHKERRQ(ierr);
     for (i=0; i<m; i++) {
-      shift = (i & ~0x07)*a->rlenmax+(i & 0x07);
+      shift = a->sliidx[i>>3]+(i&0x07);
       for (j=0; j<a->rlen[i]; j++) {
 #if defined(PETSC_USE_COMPLEX)
-        ierr = PetscViewerASCIIPrintf(viewer,"%D %D %g %g\n", i+fshift,a->colidx[shift+8*j]+fshift,(double)PetscRealPart(a->val[shift+8*j]),(double)PetscImaginaryPart(a->val[shift+8*j]));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%D %D %g %g\n",i+fshift,a->colidx[shift+8*j]+fshift,(double)PetscRealPart(a->val[shift+8*j]),(double)PetscImaginaryPart(a->val[shift+8*j]));CHKERRQ(ierr);
 #else
-        ierr = PetscViewerASCIIPrintf(viewer,"%D %D %g\n", i+fshift, a->colidx[shift+8*j]+fshift, (double)a->val[shift+8*j]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%D %D %g\n",i+fshift,a->colidx[shift+8*j]+fshift,(double)a->val[shift+8*j]);CHKERRQ(ierr);
 #endif
       }
     }
@@ -691,7 +750,7 @@ PetscErrorCode MatView_SeqELL_ASCII(Mat A,PetscViewer viewer)
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
     if (A->factortype) {
       for (i=0; i<m; i++) {
-        shift = (i & ~0x07)*a->rlenmax+(i & 0x07);
+        shift = a->sliidx[i>>3]+(i&0x07);
         ierr = PetscViewerASCIIPrintf(viewer,"row %D:",i);CHKERRQ(ierr);
         /* L part */
         for (j=shift; j<a->diag[i]; j+=8) {
@@ -739,7 +798,7 @@ PetscErrorCode MatView_SeqELL_ASCII(Mat A,PetscViewer viewer)
       }
     } else {
       for (i=0; i<m; i++) {
-        shift = (i & ~0x07)*a->rlenmax+(i & 0x07);
+        shift = a->sliidx[i>>3]+(i&0x07);
         ierr = PetscViewerASCIIPrintf(viewer,"row %D:",i);CHKERRQ(ierr);
         for (j=0; j<a->rlen[i]; j++) {
 #if defined(PETSC_USE_COMPLEX)
@@ -789,7 +848,7 @@ PetscErrorCode MatView_SeqELL_Draw_Zoom(PetscDraw draw,void *Aa)
     /* Blue for negative, Cyan for zero and  Red for positive */
     color = PETSC_DRAW_BLUE;
     for (i=0; i<m; i++) {
-      shift = (i & ~0x07)*a->rlenmax+(i & 0x07); /* starting index of the row i */
+      shift = a->sliidx[i>>3]+(i&0x07); /* starting index of the row i */
       y_l = m - i - 1.0; y_r = y_l + 1.0;
       for (j=0; j<a->rlen[i]; j++) {
         x_l = a->colidx[shift+j*8]; x_r = x_l + 1.0;
@@ -799,7 +858,7 @@ PetscErrorCode MatView_SeqELL_Draw_Zoom(PetscDraw draw,void *Aa)
     }
     color = PETSC_DRAW_CYAN;
     for (i=0; i<m; i++) {
-      shift = (i & ~0x07)*a->rlenmax+(i & 0x07);
+      shift = a->sliidx[i>>3]+(i&0x07);
       y_l = m - i - 1.0; y_r = y_l + 1.0;
       for (j=0; j<a->rlen[i]; j++) {
         x_l = a->colidx[shift+j*8]; x_r = x_l + 1.0;
@@ -809,7 +868,7 @@ PetscErrorCode MatView_SeqELL_Draw_Zoom(PetscDraw draw,void *Aa)
     }
     color = PETSC_DRAW_RED;
     for (i=0; i<m; i++) {
-      shift = (i & ~0x07)*a->rlenmax+(i & 0x07);
+      shift = a->sliidx[i>>3]+(i&0x07);
       y_l = m - i - 1.0; y_r = y_l + 1.0;
       for (j=0; j<a->rlen[i]; j++) {
         x_l = a->colidx[shift+j*8]; x_r = x_l + 1.0;
@@ -825,7 +884,7 @@ PetscErrorCode MatView_SeqELL_Draw_Zoom(PetscDraw draw,void *Aa)
     PetscInt  count = 0;
     PetscDraw popup;
 
-    for (i=0; i<a->rlenmax*A->rmap->n; i++) {
+    for (i=0; i<a->sliidx[A->rmap->n/8]; i++) {
       if (PetscAbsScalar(a->val[i]) > maxv) maxv = PetscAbsScalar(a->val[i]);
     }
     if (minv >= maxv) maxv = minv + PETSC_SMALL;
@@ -834,7 +893,7 @@ PetscErrorCode MatView_SeqELL_Draw_Zoom(PetscDraw draw,void *Aa)
 
     ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
     for (i=0; i<m; i++) {
-      shift = (i & ~0x07)*a->rlenmax+(i & 0x07);
+      shift = a->sliidx[i>>3]+(i&0x07);
       y_l = m - i - 1.0;
       y_r = y_l + 1.0;
       for (j=0; j<a->rlen[j]; j++) {
@@ -905,8 +964,10 @@ PetscErrorCode MatAssemblyEnd_SeqELL(Mat A,MatAssemblyType mode)
 
   PetscFunctionBegin;
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
+  /* To do: compress out the unused elements */
+
   ierr = MatMarkDiagonal_SeqELL(A);CHKERRQ(ierr);
-  ierr = PetscInfo4(A,"Matrix size: %D X %D; storage space: %D nonzeros %D used\n",A->rmap->n,A->cmap->n,a->nz,a->rlenmax*A->rmap->n);CHKERRQ(ierr);
+  ierr = PetscInfo6(A,"Matrix size: %D X %D; storage space: %D allocated %D used (%D nonzeros+%D paddedzeros)\n",A->rmap->n,A->cmap->n,a->maxallocmat,a->sliidx[A->rmap->n/8],a->nz,a->sliidx[A->rmap->n/8]-a->nz);CHKERRQ(ierr);
   ierr = PetscInfo1(A,"Number of mallocs during MatSetValues() is %D\n",a->reallocs);CHKERRQ(ierr);
   ierr = PetscInfo1(A,"Maximum nonzeros in any row is %D\n",a->rlenmax);CHKERRQ(ierr);
 
@@ -926,8 +987,8 @@ PetscErrorCode MatGetInfo_SeqELL(Mat A,MatInfoType flag,MatInfo *info)
   PetscFunctionBegin;
   info->block_size   = 1.0;
   info->nz_allocated = (double)a->maxallocmat;
-  info->nz_used      = (double)a->rlenmax*A->rmap->n; /* include padding zeros */
-  info->nz_unneeded  = (double)(a->maxallocmat-a->rlenmax*A->rmap->n);
+  info->nz_used      = (double)a->sliidx[A->rmap->n/8]; /* include padding zeros */
+  info->nz_unneeded  = (double)(a->maxallocmat-a->sliidx[A->rmap->n/8]);
   info->assemblies   = (double)A->num_ass;
   info->mallocs      = (double)A->info.mallocs;
   info->memory       = ((PetscObject)A)->mem;
@@ -951,6 +1012,7 @@ PetscErrorCode MatSetValues_SeqELL(Mat A,PetscInt m,const PetscInt im[],PetscInt
   PetscInt       shift,i,k,l,low,high,t,ii,row,col,nrow;
   PetscInt       *cp,nonew=a->nonew,lastcol=-1;
   MatScalar      *vp,value;
+  char           *bp;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -960,9 +1022,10 @@ PetscErrorCode MatSetValues_SeqELL(Mat A,PetscInt m,const PetscInt im[],PetscInt
 #if defined(PETSC_USE_DEBUG)
     if (row >= A->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",row,A->rmap->n-1);
 #endif
-    shift = (row & ~0x07)*a->rlenmax+(row & 0x07); /* starting index of the row */
+    shift = a->sliidx[row>>3]+(row&0x07); /* starting index of the row */
     cp    = a->colidx+shift; /* pointer to the row */
     vp    = a->val+shift; /* pointer to the row */
+    bp    = a->bt+shift/8; /* pointer to the row */
     nrow  = a->rlen[row];
     low   = 0;
     high  = nrow;
@@ -980,7 +1043,7 @@ PetscErrorCode MatSetValues_SeqELL(Mat A,PetscInt m,const PetscInt im[],PetscInt
       }
       if ((value == 0.0 && a->ignorezeroentries) && (is == ADD_VALUES)) continue;
 
-      /* search in this row for the specified colmun */
+      /* search in this row for the specified colmun, i indicates the column to be set */
       if (col <= lastcol) low = 0;
       else high = nrow;
       lastcol = col;
@@ -1002,16 +1065,18 @@ PetscErrorCode MatSetValues_SeqELL(Mat A,PetscInt m,const PetscInt im[],PetscInt
       if (value == 0.0 && a->ignorezeroentries) goto noinsert;
       if (nonew == 1) goto noinsert;
       if (nonew == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) in the matrix", row, col);
-      /* Allocate a new space only if there is a->rlen[row]==a->maxallocrow */
-      MatSeqXELLReallocateELL(A,A->rmap->n,1,nrow,a->maxallocrow,row,col,cp,vp,nonew,MatScalar);
-      /* add the new nonzero to the high position */
+      /* If the current row length exceeds the slice width (e.g. nrow==slice_width), allocate a new space, otherwise do nothing */
+      MatSeqXELLReallocateELL(A,A->rmap->n,1,nrow,a->sliidx,row/8,row,col,a->colidx,a->val,a->bt,cp,vp,bp,nonew,MatScalar);
+      /* add the new nonzero to the high position, shift the remaining elements in current row to the right by one slot */
       for (ii=nrow-1; ii>=i; ii--) {
         *(cp+(ii+1)*8) = *(cp+ii*8);
         *(vp+(ii+1)*8) = *(vp+ii*8);
+        if (*(bp+ii) & (char)1<<(row&0x07)) *(bp+ii+1) |= (char)1<<(row&0x07);
       }
       a->rlen[row]++;
       *(cp+i*8) = col;
       *(vp+i*8) = value;
+      *(bp+i)  |= (char)1<<(row&0x07); /* set the mask bit */
       a->nz++;
       A->nonzerostate++;
       low = i+1; high++; nrow++;
@@ -1034,8 +1099,8 @@ PetscErrorCode MatCopy_SeqELL(Mat A,Mat B,MatStructure str)
     Mat_SeqELL *a = (Mat_SeqELL*)A->data;
     Mat_SeqELL *b = (Mat_SeqELL*)B->data;
 
-    if (a->rlenmax != b->rlenmax) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of nonzeros in two matrices are different");
-    ierr = PetscMemcpy(b->val,a->val,(a->rlenmax*A->rmap->n)*sizeof(PetscScalar));CHKERRQ(ierr);
+    if (a->sliidx[A->rmap->n/8] != b->sliidx[B->rmap->n/8]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of nonzeros in two matrices are different");
+    ierr = PetscMemcpy(b->val,a->val,a->sliidx[A->rmap->n/8]*sizeof(PetscScalar));CHKERRQ(ierr);
   } else {
     ierr = MatCopy_Basic(A,B,str);CHKERRQ(ierr);
   }
@@ -1077,7 +1142,7 @@ PetscErrorCode MatSeqELLRestoreArray_SeqELL(Mat A,PetscScalar *array[])
 PetscErrorCode MatRealPart_SeqELL(Mat A)
 {
   Mat_SeqELL  *a=(Mat_SeqELL*)A->data;
-  PetscInt    i,matsize=a->rlenmax*A->rmap->n;
+  PetscInt    i,matsize=a->sliidx[A->rmap->n/8];
   MatScalar   *aval=a->val;
 
   PetscFunctionBegin;
@@ -1090,7 +1155,7 @@ PetscErrorCode MatRealPart_SeqELL(Mat A)
 PetscErrorCode MatImaginaryPart_SeqELL(Mat A)
 {
   Mat_SeqELL     *a=(Mat_SeqELL*)A->data;
-  PetscInt       i,matsize=a->rlenmax*A->rmap->n;
+  PetscInt       i,matsize=a->sliidx[A->rmap->n/8];
   MatScalar      *aval=a->val;
   PetscErrorCode ierr;
 
@@ -1269,7 +1334,7 @@ PetscErrorCode  MatStoreValues_SeqELL(Mat mat)
 {
   Mat_SeqELL     *a=(Mat_SeqELL*)mat->data;
   PetscErrorCode ierr;
-  size_t         matsize=a->rlenmax*mat->rmap->n;
+  size_t         matsize=a->sliidx[mat->rmap->n/8];
 
   PetscFunctionBegin;
   if (!a->nonew) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
@@ -1291,7 +1356,7 @@ PetscErrorCode  MatRetrieveValues_SeqELL(Mat mat)
 {
   Mat_SeqELL     *a=(Mat_SeqELL*)mat->data;
   PetscErrorCode ierr;
-  PetscInt       matsize=a->rlenmax*mat->rmap->n;
+  PetscInt       matsize=a->sliidx[mat->rmap->n/8];
 
   PetscFunctionBegin;
   if (!a->nonew) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
@@ -1399,17 +1464,22 @@ PetscErrorCode MatDuplicateNoCreate_SeqELL(Mat C,Mat A,MatDuplicateOption cpvalu
 
   ierr = PetscMalloc1(m,&c->rlen);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)C, m*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMalloc1(m/8+1,&c->sliidx);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)C, (m/8+1)*sizeof(PetscInt));CHKERRQ(ierr);
+
   for (i=0; i<m; i++) c->rlen[i] = a->rlen[i];
+  for (i=0; i<m/8+1; i++) c->sliidx[i] = a->sliidx[i];
 
   /* allocate the matrix space */
   if (mallocmatspace) {
-    ierr = PetscMalloc2(a->maxallocmat,&c->val,a->maxallocmat,&c->colidx);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory((PetscObject)C, a->maxallocmat*(sizeof(PetscScalar)+sizeof(PetscInt)));CHKERRQ(ierr);
+    ierr = PetscMalloc3(a->maxallocmat,&c->val,a->maxallocmat,&c->colidx,a->maxallocmat/8,&c->bt);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)C,a->maxallocmat*(sizeof(PetscScalar)+sizeof(PetscInt))+a->maxallocmat/8*sizeof(char));CHKERRQ(ierr);
 
     c->singlemalloc = PETSC_TRUE;
 
     if (m > 0) {
       ierr = PetscMemcpy(c->colidx,a->colidx,(a->maxallocmat)*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscMemcpy(c->bt,a->bt,a->maxallocmat/8*sizeof(char));CHKERRQ(ierr);
       if (cpvalues == MAT_COPY_VALUES) {
         ierr = PetscMemcpy(c->val,a->val,a->maxallocmat*sizeof(PetscScalar));CHKERRQ(ierr);
       } else {
@@ -1422,8 +1492,8 @@ PetscErrorCode MatDuplicateNoCreate_SeqELL(Mat C,Mat A,MatDuplicateOption cpvalu
   c->roworiented       = a->roworiented;
   c->nonew             = a->nonew;
   if (a->diag) {
-    ierr = PetscMalloc1(m+1,&c->diag);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory((PetscObject)C,(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMalloc1(m,&c->diag);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)C,m*sizeof(PetscInt));CHKERRQ(ierr);
     for (i=0; i<m; i++) {
       c->diag[i] = a->diag[i];
     }
@@ -1531,11 +1601,13 @@ PetscErrorCode MatEqual_SeqELL(Mat A,Mat B,PetscBool * flg)
     *flg = PETSC_FALSE;
     PetscFunctionReturn(0);
   }
-  matsize = a->rlenmax*A->rmap->n;
+  matsize = a->sliidx[A->rmap->n/8];
+  /* if the a->bt are the same */
+  ierr = PetscMemcmp(a->bt,b->bt,matsize/8*sizeof(char),flg);CHKERRQ(ierr);
+  if (!*flg) PetscFunctionReturn(0);
   /* if the a->colidx are the same */
   ierr = PetscMemcmp(a->colidx,b->colidx,(matsize)*sizeof(PetscInt),flg);CHKERRQ(ierr);
   if (!*flg) PetscFunctionReturn(0);
-
   /* if a->val are the same */
 #if defined(PETSC_USE_COMPLEX)
   for (k=0; k<matsize; k++) {
