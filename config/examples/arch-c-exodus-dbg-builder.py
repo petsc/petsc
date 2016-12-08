@@ -7,6 +7,7 @@ if __name__ == '__main__':
   import configure
   configure_options = [
     '--download-suitesparse',
+    '--download-mumps',
     '--download-chaco',
     '--download-ctetgen',
     '--download-exodusii',

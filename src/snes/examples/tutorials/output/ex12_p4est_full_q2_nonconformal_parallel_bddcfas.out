@@ -1,15 +1,15 @@
   0 SNES Function norm 18.4477 
     0 SNES Function norm 18.4477 
-    1 SNES Function norm 4.61998e-06 
-      0 SNES Function norm 4.18216e-06 
-      1 SNES Function norm 2.677e-11 
-        0 SNES Function norm 2.533e-11 
-        1 SNES Function norm < 1.e-11
-      0 SNES Function norm 1.899e-11 
+    1 SNES Function norm 1.38178e-06 
+      0 SNES Function norm 1.25163e-06 
       1 SNES Function norm < 1.e-11
-    0 SNES Function norm 4.0154e-06 
-    1 SNES Function norm 1.387e-11 
-  1 SNES Function norm 1.387e-11 
+        0 SNES Function norm < 1.e-11
+        1 SNES Function norm < 1.e-11
+      0 SNES Function norm < 1.e-11
+      1 SNES Function norm < 1.e-11
+    0 SNES Function norm 1.35277e-06 
+    1 SNES Function norm < 1.e-11
+  1 SNES Function norm < 1.e-11
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 7 MPI processes
   type: fas
@@ -57,6 +57,7 @@ SNES Object: 7 MPI processes
           BDDC: Use estimated eigs for coarse problem: 0
           BDDC: Use deluxe scaling: 0
           BDDC: Use deluxe zerorows: 0
+          BDDC: Use deluxe singlemat: 0
           BDDC: Rebuild interface graph for Schur principal minors: 0
           BDDC: Number of dofs' layers for the computation of principal minors: -1
           BDDC: Use user CSR graph to compute successive layers: 0
@@ -138,7 +139,7 @@ SNES Object: 7 MPI processes
       type: newtonls
       maximum iterations=1, maximum function evaluations=30000
       tolerances: relative=0., absolute=0., solution=0.
-      total number of linear solver iterations=5
+      total number of linear solver iterations=6
       total number of function evaluations=2
       norm schedule FINALONLY
       SNESLineSearch Object: (fas_levels_1_) 7 MPI processes
@@ -178,6 +179,7 @@ SNES Object: 7 MPI processes
           BDDC: Use estimated eigs for coarse problem: 0
           BDDC: Use deluxe scaling: 0
           BDDC: Use deluxe zerorows: 0
+          BDDC: Use deluxe singlemat: 0
           BDDC: Rebuild interface graph for Schur principal minors: 0
           BDDC: Number of dofs' layers for the computation of principal minors: -1
           BDDC: Use user CSR graph to compute successive layers: 0
@@ -260,7 +262,7 @@ SNES Object: 7 MPI processes
       type: newtonls
       maximum iterations=1, maximum function evaluations=30000
       tolerances: relative=0., absolute=0., solution=0.
-      total number of linear solver iterations=8
+      total number of linear solver iterations=6
       total number of function evaluations=2
       norm schedule FINALONLY
       SNESLineSearch Object: (fas_levels_2_) 7 MPI processes
@@ -281,7 +283,7 @@ SNES Object: 7 MPI processes
           BDDC: Use verbose output: 0
           BDDC: Use user-defined CSR: 0
           BDDC: Use local mat graph: 1
-          BDDC: Connectivity graph topological dimension: 3
+          BDDC: Connectivity graph topological dimension: 2
           BDDC: Graph max count: 2147483647
           BDDC: Use vertices: 1 (vertex size 1)
           BDDC: Use edges: 1
@@ -300,6 +302,7 @@ SNES Object: 7 MPI processes
           BDDC: Use estimated eigs for coarse problem: 0
           BDDC: Use deluxe scaling: 0
           BDDC: Use deluxe zerorows: 0
+          BDDC: Use deluxe singlemat: 0
           BDDC: Rebuild interface graph for Schur principal minors: 0
           BDDC: Number of dofs' layers for the computation of principal minors: -1
           BDDC: Use user CSR graph to compute successive layers: 0
@@ -315,14 +318,14 @@ SNES Object: 7 MPI processes
           BDDC: Benign subspace trick is active: 0
           BDDC: Algebraic computation of no-net-flux 0
           BDDC: ********************************** STATISTICS AT LEVEL 0 **********************************
-          BDDC: Global dofs sizes: all 1507 interface 173 coarse 6
-          BDDC: Coarsening ratios: all/coarse 251 interface/coarse 28
+          BDDC: Global dofs sizes: all 1507 interface 173 coarse 19
+          BDDC: Coarsening ratios: all/coarse 79 interface/coarse 9
           BDDC: Active processes : 7
           BDDC: Total subdomains : 7
           BDDC: Dofs type        :	MIN	MAX	MEAN
           BDDC: Interior  dofs   :	182	203	190
           BDDC: Interface dofs   :	46	58	50
-          BDDC: Primal    dofs   :	1	4	2
+          BDDC: Primal    dofs   :	4	9	6
           BDDC: Local     dofs   :	232	250	241
           BDDC: Local     subs   :	1	1
           BDDC: ********************************** COARSE PROBLEM DETAILS *********************************
@@ -338,10 +341,10 @@ SNES Object: 7 MPI processes
           linear system matrix = precond matrix:
           Mat Object: 7 MPI processes
             type: mpiaij
-            rows=6, cols=6
-            total: nonzeros=30, allocated nonzeros=34
+            rows=19, cols=19
+            total: nonzeros=221, allocated nonzeros=267
             total number of mallocs used during MatSetValues calls =0
-              not using I-node (on process 0) routines
+              using I-node (on process 0) routines: found 1 nodes, limit used is 5
                     KSP Object:         (fas_levels_2_pc_bddc_coarse_redundant_)         1 MPI processes
                       type: preonly
                       maximum iterations=10000, initial guess is zero
@@ -354,22 +357,22 @@ SNES Object: 7 MPI processes
                         Reusing fill from past factorization
                         tolerance for zero pivot 2.22045e-14
                         matrix ordering: nd
-                        factor fill ratio given 5., needed 1.
+                        factor fill ratio given 5., needed 1.42534
                           Factored matrix follows:
                             Mat Object:         1 MPI processes
                               type: seqaij
-                              rows=6, cols=6
+                              rows=19, cols=19
                               package used to perform factorization: petsc
-                              total: nonzeros=30, allocated nonzeros=30
+                              total: nonzeros=315, allocated nonzeros=315
                               total number of mallocs used during MatSetValues calls =0
-                                using I-node routines: found 3 nodes, limit used is 5
+                                using I-node routines: found 10 nodes, limit used is 5
                       linear system matrix = precond matrix:
                       Mat Object:         1 MPI processes
                         type: seqaij
-                        rows=6, cols=6
-                        total: nonzeros=30, allocated nonzeros=30
+                        rows=19, cols=19
+                        total: nonzeros=221, allocated nonzeros=221
                         total number of mallocs used during MatSetValues calls =0
-                          using I-node routines: found 4 nodes, limit used is 5
+                          not using I-node routines
         linear system matrix = precond matrix:
         Mat Object: 7 MPI processes
           type: is
