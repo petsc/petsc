@@ -132,4 +132,4 @@ cdef extern from * nogil:
     int DMPlexCreateSection(PetscDM,PetscInt,PetscInt,const_PetscInt[],const_PetscInt[],PetscInt,const_PetscInt[],const_PetscIS[],const_PetscIS[],PetscIS,PetscSection*)
 
     int DMPlexComputeCellGeometryFVM(PetscDM,PetscInt,PetscReal*,PetscReal[],PetscReal[])
-    int DMPlexConstructGhostCells(PetscDM dm, const char labelName[], PetscInt *numGhostCells, PetscDM *dmGhosted)
+    int DMPlexConstructGhostCells(PetscDM,const char[],PetscInt*,PetscDM*)
