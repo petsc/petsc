@@ -98,26 +98,25 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   Mat            ScalingMat;
   Vec            fetidp_global;
   IS             IS_l2g_lambda;
-  IS             subset,subset_mult,subset_n;
+  IS             subset,subset_mult,subset_n,isvert;
   PetscBool      skip_node,fully_redundant;
   PetscInt       i,j,k,s,n_boundary_dofs,n_global_lambda,n_vertices,partial_sum;
   PetscInt       cum,n_local_lambda,n_lambda_for_dof,dual_size,n_neg_values,n_pos_values;
   PetscMPIInt    rank,size,buf_size,neigh;
   PetscScalar    scalar_value;
-  PetscInt       *vertex_indices;
+  const PetscInt *vertex_indices;
   PetscInt       *dual_dofs_boundary_indices,*aux_local_numbering_1;
   const PetscInt *aux_global_numbering;
   PetscInt       *aux_sums,*cols_B_delta,*l2g_indices;
   PetscScalar    *array,*scaling_factors,*vals_B_delta;
   PetscInt       *aux_local_numbering_2;
   PetscLayout    llay;
+
   /* For communication of scaling factors */
   PetscInt       *ptrs_buffer,neigh_position;
   PetscScalar    **all_factors,*send_buffer,*recv_buffer;
   MPI_Request    *send_reqs,*recv_reqs;
-  /* tests */
-  PetscBool      test_fetidp;
-  PetscViewer    viewer;
+
   /* saddlepoint */
   ISLocalToGlobalMapping l2gmap_p;
   PetscLayout            play;
@@ -206,9 +205,12 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   partial_sum = 0;
   n_boundary_dofs = 0;
   s = 0;
+
   /* Get Vertices used to define the BDDC */
-  n_vertices = pcbddc->n_vertices;
-  vertex_indices = pcbddc->local_primal_ref_node;
+  ierr = PCBDDCGraphGetCandidatesIS(pcbddc->mat_graph,NULL,NULL,NULL,NULL,&isvert);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(isvert,&n_vertices);CHKERRQ(ierr);
+  ierr = ISGetIndices(isvert,&vertex_indices);CHKERRQ(ierr);
+
   dual_size = pcis->n_B-n_vertices;
   ierr = PetscMalloc1(dual_size,&dual_dofs_boundary_indices);CHKERRQ(ierr);
   ierr = PetscMalloc1(dual_size,&aux_local_numbering_1);CHKERRQ(ierr);
@@ -243,6 +245,8 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
     }
   }
   ierr = VecRestoreArray(pcis->vec1_N,&array);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isvert,&vertex_indices);CHKERRQ(ierr);
+  ierr = PCBDDCGraphRestoreCandidatesIS(pcbddc->mat_graph,NULL,NULL,NULL,NULL,&isvert);CHKERRQ(ierr);
   dual_size = partial_sum;
 
   /* compute global ordering of lagrange multipliers and associate l2g map */
@@ -500,247 +504,16 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   ierr = PetscLayoutDestroy(&llay);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&play);CHKERRQ(ierr);
   ierr = ISCreateGeneral(comm,n_local_lambda,l2g_indices,PETSC_OWN_POINTER,&IS_l2g_lambda);CHKERRQ(ierr);
+
   /* scatter from local to global multipliers */
   ierr = VecScatterCreate(fetidpmat_ctx->lambda_local,NULL,fetidp_global,IS_l2g_lambda,&fetidpmat_ctx->l2g_lambda);CHKERRQ(ierr);
   ierr = ISDestroy(&IS_l2g_lambda);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&l2gmap_p);CHKERRQ(ierr);
+  ierr = VecDestroy(&fetidp_global);CHKERRQ(ierr);
 
-  /* Create some vectors needed by fetidp */
+  /* Create some work vectors needed by fetidp */
   ierr = VecDuplicate(pcis->vec1_B,&fetidpmat_ctx->temp_solution_B);CHKERRQ(ierr);
   ierr = VecDuplicate(pcis->vec1_D,&fetidpmat_ctx->temp_solution_D);CHKERRQ(ierr);
-
-  test_fetidp = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-fetidp_check",&test_fetidp,NULL);CHKERRQ(ierr);
-
-  if (test_fetidp && !pcbddc->use_deluxe_scaling) {
-    Vec       test_vec,test_vec_p = NULL;
-    IS        dirdofs;
-    PetscReal real_value;
-
-    ierr = PetscViewerASCIIGetStdout(comm,&viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"----------FETI_DP SIZES--------------\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%04d]: Sizes %D %D %D %D %D\n",rank,fetidpmat_ctx->n,fetidpmat_ctx->N,nPgl,nPg,nPl);CHKERRQ(ierr);
-    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"----------FETI_DP TESTS--------------\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"All tests should return zero!\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"FETIDP MAT context in the ");CHKERRQ(ierr);
-    if (fully_redundant) {
-      ierr = PetscViewerASCIIPrintf(viewer,"fully redundant case for lagrange multipliers.\n");CHKERRQ(ierr);
-    } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"Non-fully redundant case for lagrange multiplier.\n");CHKERRQ(ierr);
-    }
-    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-
-    /******************************************************************/
-    /* TEST A/B: Test numbering of global fetidp dofs             */
-    /******************************************************************/
-
-    ierr = VecDuplicate(fetidpmat_ctx->lambda_local,&test_vec);CHKERRQ(ierr);
-    ierr = VecSet(fetidp_global,1.0);CHKERRQ(ierr);
-    ierr = VecSet(test_vec,1.);CHKERRQ(ierr);
-    ierr = VecScatterBegin(fetidpmat_ctx->l2g_lambda,fetidp_global,fetidpmat_ctx->lambda_local,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd(fetidpmat_ctx->l2g_lambda,fetidp_global,fetidpmat_ctx->lambda_local,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    if (fetidpmat_ctx->l2g_p) {
-      ierr = VecDuplicate(fetidpmat_ctx->vP,&test_vec_p);CHKERRQ(ierr);
-      ierr = VecSet(test_vec_p,1.);CHKERRQ(ierr);
-      ierr = VecScatterBegin(fetidpmat_ctx->l2g_p,fetidp_global,fetidpmat_ctx->vP,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-      ierr = VecScatterEnd(fetidpmat_ctx->l2g_p,fetidp_global,fetidpmat_ctx->vP,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    }
-    scalar_value = -1.0;
-    ierr = VecAXPY(test_vec,scalar_value,fetidpmat_ctx->lambda_local);CHKERRQ(ierr);
-    ierr = VecNorm(test_vec,NORM_INFINITY,&real_value);CHKERRQ(ierr);
-    ierr = VecDestroy(&test_vec);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"A[%04d]: CHECK glob to loc: % 1.14e\n",rank,real_value);CHKERRQ(ierr);
-    if (fetidpmat_ctx->l2g_p) {
-      ierr = VecAXPY(test_vec_p,scalar_value,fetidpmat_ctx->vP);CHKERRQ(ierr);
-      ierr = VecNorm(test_vec_p,NORM_INFINITY,&real_value);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"A[%04d]: CHECK glob to loc (p): % 1.14e\n",rank,real_value);CHKERRQ(ierr);
-    }
-    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-    if (fully_redundant) {
-      ierr = VecSet(fetidp_global,0.0);CHKERRQ(ierr);
-      ierr = VecSet(fetidpmat_ctx->lambda_local,0.5);CHKERRQ(ierr);
-      ierr = VecScatterBegin(fetidpmat_ctx->l2g_lambda,fetidpmat_ctx->lambda_local,fetidp_global,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterEnd(fetidpmat_ctx->l2g_lambda,fetidpmat_ctx->lambda_local,fetidp_global,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecSum(fetidp_global,&scalar_value);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"B[%04d]: CHECK loc to glob: % 1.14e\n",rank,PetscRealPart(scalar_value)-fetidpmat_ctx->n_lambda);CHKERRQ(ierr);
-      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-    }
-    if (fetidpmat_ctx->l2g_p) {
-      ierr = VecSet(pcis->vec1_N,1.0);CHKERRQ(ierr);
-      ierr = VecSet(pcis->vec1_global,0.0);CHKERRQ(ierr);
-      ierr = VecScatterBegin(matis->rctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-      ierr = VecScatterEnd(matis->rctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-
-      ierr = VecSet(fetidp_global,0.0);CHKERRQ(ierr);
-      ierr = VecSet(fetidpmat_ctx->vP,-1.0);CHKERRQ(ierr);
-      ierr = VecScatterBegin(fetidpmat_ctx->l2g_p,fetidpmat_ctx->vP,fetidp_global,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterEnd(fetidpmat_ctx->l2g_p,fetidpmat_ctx->vP,fetidp_global,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterBegin(fetidpmat_ctx->g2g_p,fetidp_global,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-      ierr = VecScatterEnd(fetidpmat_ctx->g2g_p,fetidp_global,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-      ierr = VecScatterBegin(fetidpmat_ctx->g2g_p,pcis->vec1_global,fetidp_global,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterEnd(fetidpmat_ctx->g2g_p,pcis->vec1_global,fetidp_global,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecSum(fetidp_global,&scalar_value);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"B[%04d]: CHECK loc to glob (p): % 1.14e\n",rank,PetscRealPart(scalar_value));CHKERRQ(ierr);
-      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-    }
-    /******************************************************************/
-    /* TEST C: It should holds B_delta*w=0, w\in\widehat{W}           */
-    /* This is the meaning of the B matrix                            */
-    /******************************************************************/
-
-    ierr = VecSetRandom(pcis->vec1_N,NULL);CHKERRQ(ierr);
-    ierr = VecSet(pcis->vec1_global,0.0);CHKERRQ(ierr);
-    ierr = VecScatterBegin(matis->rctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd(matis->rctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterBegin(matis->rctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(matis->rctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterBegin(pcis->N_to_B,pcis->vec1_N,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(pcis->N_to_B,pcis->vec1_N,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    /* Action of B_delta */
-    ierr = MatMult(fetidpmat_ctx->B_delta,pcis->vec1_B,fetidpmat_ctx->lambda_local);CHKERRQ(ierr);
-    ierr = VecSet(fetidp_global,0.0);CHKERRQ(ierr);
-    ierr = VecScatterBegin(fetidpmat_ctx->l2g_lambda,fetidpmat_ctx->lambda_local,fetidp_global,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(fetidpmat_ctx->l2g_lambda,fetidpmat_ctx->lambda_local,fetidp_global,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecNorm(fetidp_global,NORM_INFINITY,&real_value);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"C[coll]: CHECK infty norm of B_delta*w (w continuous): % 1.14e\n",real_value);CHKERRQ(ierr);
-    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-
-    /******************************************************************/
-    /* TEST D: It should holds E_Dw = w - P_Dw w\in\widetilde{W}     */
-    /* E_D = R_D^TR                                                   */
-    /* P_D = B_{D,delta}^T B_{delta}                                  */
-    /* eq.44 Mandel Tezaur and Dohrmann 2005                          */
-    /******************************************************************/
-
-    /* compute a random vector in \widetilde{W} */
-    ierr = VecSetRandom(pcis->vec1_N,NULL);CHKERRQ(ierr);
-    /* set zero at vertices and essential dofs */
-    scalar_value = 0.0;
-    ierr = VecGetArray(pcis->vec1_N,&array);CHKERRQ(ierr);
-    for (i=0;i<n_vertices;i++) { array[vertex_indices[i]]=scalar_value; }
-    ierr = PCBDDCGraphGetDirichletDofs(pcbddc->mat_graph,&dirdofs);CHKERRQ(ierr);
-    if (dirdofs) {
-      const PetscInt *idxs;
-      PetscInt       ndir;
-
-      ierr = ISGetLocalSize(dirdofs,&ndir);CHKERRQ(ierr);
-      ierr = ISGetIndices(dirdofs,&idxs);CHKERRQ(ierr);
-      for (i=0;i<ndir;i++) { array[idxs[i]]=scalar_value; }
-      ierr = ISRestoreIndices(dirdofs,&idxs);CHKERRQ(ierr);
-    }
-    ierr = VecRestoreArray(pcis->vec1_N,&array);CHKERRQ(ierr);
-    /* store w for final comparison */
-    ierr = VecDuplicate(pcis->vec1_B,&test_vec);CHKERRQ(ierr);
-    ierr = VecScatterBegin(pcis->N_to_B,pcis->vec1_N,test_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(pcis->N_to_B,pcis->vec1_N,test_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-
-    /* Jump operator P_D : results stored in pcis->vec1_B */
-
-    ierr = VecScatterBegin(pcis->N_to_B,pcis->vec1_N,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(pcis->N_to_B,pcis->vec1_N,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    /* Action of B_delta */
-    ierr = MatMult(fetidpmat_ctx->B_delta,pcis->vec1_B,fetidpmat_ctx->lambda_local);CHKERRQ(ierr);
-    ierr = VecSet(fetidp_global,0.0);CHKERRQ(ierr);
-    ierr = VecScatterBegin(fetidpmat_ctx->l2g_lambda,fetidpmat_ctx->lambda_local,fetidp_global,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(fetidpmat_ctx->l2g_lambda,fetidpmat_ctx->lambda_local,fetidp_global,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    /* Action of B_Ddelta^T */
-    ierr = VecScatterBegin(fetidpmat_ctx->l2g_lambda,fetidp_global,fetidpmat_ctx->lambda_local,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd(fetidpmat_ctx->l2g_lambda,fetidp_global,fetidpmat_ctx->lambda_local,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = MatMultTranspose(fetidpmat_ctx->B_Ddelta,fetidpmat_ctx->lambda_local,pcis->vec1_B);CHKERRQ(ierr);
-
-    /* Average operator E_D : results stored in pcis->vec2_B */
-    ierr = VecScatterBegin(pcis->N_to_B,pcis->vec1_N,pcis->vec2_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(pcis->N_to_B,pcis->vec1_N,pcis->vec2_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = PCBDDCScalingExtension(fetidpmat_ctx->pc,pcis->vec2_B,pcis->vec1_global);CHKERRQ(ierr);
-    ierr = VecScatterBegin(pcis->global_to_B,pcis->vec1_global,pcis->vec2_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(pcis->global_to_B,pcis->vec1_global,pcis->vec2_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-
-    /* test E_D=I-P_D */
-    scalar_value = 1.0;
-    ierr = VecAXPY(pcis->vec1_B,scalar_value,pcis->vec2_B);CHKERRQ(ierr);
-    scalar_value = -1.0;
-    ierr = VecAXPY(pcis->vec1_B,scalar_value,test_vec);CHKERRQ(ierr);
-    ierr = VecNorm(pcis->vec1_B,NORM_INFINITY,&real_value);CHKERRQ(ierr);
-    ierr = VecDestroy(&test_vec);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"D[%04d] CHECK infty norm of E_D + P_D - I: % 1.14e\n",rank,real_value);CHKERRQ(ierr);
-    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-
-    /******************************************************************/
-    /* TEST E: It should hold R_D^TP_Dw=0 w\in\widetilde{W}           */
-    /* eq.48 Mandel Tezaur and Dohrmann 2005                          */
-    /******************************************************************/
-
-    ierr = VecSetRandom(pcis->vec1_N,NULL);CHKERRQ(ierr);
-    /* set zero at vertices and essential dofs */
-    scalar_value = 0.0;
-    ierr = VecGetArray(pcis->vec1_N,&array);CHKERRQ(ierr);
-    for (i=0;i<n_vertices;i++) { array[vertex_indices[i]]=scalar_value; }
-    if (dirdofs) {
-      const PetscInt *idxs;
-      PetscInt       ndir;
-
-      ierr = ISGetLocalSize(dirdofs,&ndir);CHKERRQ(ierr);
-      ierr = ISGetIndices(dirdofs,&idxs);CHKERRQ(ierr);
-      for (i=0;i<ndir;i++) { array[idxs[i]]=scalar_value; }
-      ierr = ISRestoreIndices(dirdofs,&idxs);CHKERRQ(ierr);
-    }
-    ierr = VecRestoreArray(pcis->vec1_N,&array);CHKERRQ(ierr);
-
-    /* Jump operator P_D : results stored in pcis->vec1_B */
-
-    ierr = VecScatterBegin(pcis->N_to_B,pcis->vec1_N,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(pcis->N_to_B,pcis->vec1_N,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    /* Action of B_delta */
-    ierr = MatMult(fetidpmat_ctx->B_delta,pcis->vec1_B,fetidpmat_ctx->lambda_local);CHKERRQ(ierr);
-    ierr = VecSet(fetidp_global,0.0);CHKERRQ(ierr);
-    ierr = VecScatterBegin(fetidpmat_ctx->l2g_lambda,fetidpmat_ctx->lambda_local,fetidp_global,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(fetidpmat_ctx->l2g_lambda,fetidpmat_ctx->lambda_local,fetidp_global,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    /* Action of B_Ddelta^T */
-    ierr = VecScatterBegin(fetidpmat_ctx->l2g_lambda,fetidp_global,fetidpmat_ctx->lambda_local,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd(fetidpmat_ctx->l2g_lambda,fetidp_global,fetidpmat_ctx->lambda_local,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = MatMultTranspose(fetidpmat_ctx->B_Ddelta,fetidpmat_ctx->lambda_local,pcis->vec1_B);CHKERRQ(ierr);
-    /* scaling */
-    ierr = PCBDDCScalingExtension(fetidpmat_ctx->pc,pcis->vec1_B,pcis->vec1_global);CHKERRQ(ierr);
-    ierr = VecNorm(pcis->vec1_global,NORM_INFINITY,&real_value);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"E[coll]: CHECK infty norm of R^T_D P_D: % 1.14e\n",real_value);CHKERRQ(ierr);
-    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-
-    if (!fully_redundant) {
-      /******************************************************************/
-      /* TEST F: It should holds B_{delta}B^T_{D,delta}=I               */
-      /* Corollary thm 14 Mandel Tezaur and Dohrmann 2005               */
-      /******************************************************************/
-      ierr = VecDuplicate(fetidp_global,&test_vec);CHKERRQ(ierr);
-      ierr = VecSetRandom(fetidp_global,NULL);CHKERRQ(ierr);
-      if (fetidpmat_ctx->l2g_p) {
-        ierr = VecSet(fetidpmat_ctx->vP,0.);CHKERRQ(ierr);
-        ierr = VecScatterBegin(fetidpmat_ctx->l2g_p,fetidpmat_ctx->vP,fetidp_global,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-        ierr = VecScatterEnd(fetidpmat_ctx->l2g_p,fetidpmat_ctx->vP,fetidp_global,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      }
-      /* Action of B_Ddelta^T */
-      ierr = VecScatterBegin(fetidpmat_ctx->l2g_lambda,fetidp_global,fetidpmat_ctx->lambda_local,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-      ierr = VecScatterEnd(fetidpmat_ctx->l2g_lambda,fetidp_global,fetidpmat_ctx->lambda_local,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-      ierr = MatMultTranspose(fetidpmat_ctx->B_Ddelta,fetidpmat_ctx->lambda_local,pcis->vec1_B);CHKERRQ(ierr);
-      /* Action of B_delta */
-      ierr = MatMult(fetidpmat_ctx->B_delta,pcis->vec1_B,fetidpmat_ctx->lambda_local);CHKERRQ(ierr);
-      ierr = VecSet(test_vec,0.0);CHKERRQ(ierr);
-      ierr = VecScatterBegin(fetidpmat_ctx->l2g_lambda,fetidpmat_ctx->lambda_local,test_vec,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterEnd(fetidpmat_ctx->l2g_lambda,fetidpmat_ctx->lambda_local,test_vec,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      scalar_value = -1.0;
-      ierr = VecAXPY(fetidp_global,scalar_value,test_vec);CHKERRQ(ierr);
-      ierr = VecNorm(fetidp_global,NORM_INFINITY,&real_value);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"E[coll]: CHECK infty norm of P^T_D - I: % 1.14e\n",real_value);CHKERRQ(ierr);
-      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-      ierr = VecDestroy(&test_vec);CHKERRQ(ierr);
-    }
-    ierr = VecDestroy(&test_vec_p);CHKERRQ(ierr);
-    ierr = ISDestroy(&dirdofs);CHKERRQ(ierr);
-  }
-  /* final cleanup */
-  ierr = VecDestroy(&fetidp_global);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
