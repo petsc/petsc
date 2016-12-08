@@ -1,8 +1,7 @@
-static char help[] = "Heat Equation in 2d and 3d with tensor product finite elements.\n\
+static char help[] = "Heat Equation in 2d and 3d with finite elements.\n\
 We solve the heat equation in a rectangular\n\
 domain, using a parallel unstructured mesh (DMPLEX) to discretize it.\n\
-This example supports discretized auxiliary fields (conductivity) as well as\n\
-multilevel nonlinear solvers.\n\n\n";
+Contributed by: Julian Andrej <juan@tf.uni-kiel.de>\n\n\n";
 
 #include <petscdmplex.h>
 #include <petscds.h>
@@ -89,9 +88,9 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->dim     = 2;
   options->simplex = PETSC_TRUE;
 
-  ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex12.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-simplex", "Simplicial (true) or tensor (false) mesh", "ex12.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "Heat Equation Options", "DMPLEX");CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex45.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-simplex", "Simplicial (true) or tensor (false) mesh", "ex45.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -143,10 +142,25 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *ctx)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "SetupProblem"
+static PetscErrorCode SetupProblem(PetscDS prob, AppCtx *ctx)
+{
+  const PetscInt id = 1;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = PetscDSSetResidual(prob, 0, f0_temp, f1_temp);CHKERRQ(ierr);
+  ierr = PetscDSSetJacobian(prob, 0, 0, g0_temp, NULL, NULL, g3_temp);CHKERRQ(ierr);
+  ctx->exactFuncs[0] = analytic_temp;
+  ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)()) ctx->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "SetupDiscretization"
 static PetscErrorCode SetupDiscretization(DM dm, AppCtx* ctx)
 {
-  DM             cdm   = dm;
+  DM             cdm = dm;
   const PetscInt dim = ctx->dim;
   const PetscInt id  = 1;
   PetscDS        prob;
@@ -154,13 +168,13 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx* ctx)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
+  /* Create finite element */
   ierr = PetscFECreateDefault(dm, dim, 1, ctx->simplex, "temp_", -1, &fe);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe, "temperature");CHKERRQ(ierr);
+  /* Set discretization and boundary conditions for each mesh */
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
-
-  ierr = PetscDSSetResidual(prob, 0, f0_temp, f1_temp);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(prob, 0, 0, g0_temp, NULL, NULL, g3_temp);CHKERRQ(ierr);
+  ierr = SetupProblem(prob, ctx);CHKERRQ(ierr);
   while (cdm) {
     PetscBool hasLabel;
 
@@ -169,8 +183,6 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx* ctx)
     if (!hasLabel) {ierr = CreateBCLabel(cdm, "marker");CHKERRQ(ierr);}
     ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
-  ctx->exactFuncs[0] = analytic_temp;
-  ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)()) ctx->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -186,7 +198,7 @@ int main(int argc, char **argv)
   PetscReal      t       = 0.0;
   PetscReal      L2error = 0.0;
   PetscErrorCode ierr;
-  
+
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   ierr = ProcessOptions(PETSC_COMM_WORLD, &ctx);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &dm, &ctx);CHKERRQ(ierr);
@@ -203,9 +215,6 @@ int main(int argc, char **argv)
   ierr = DMTSSetBoundaryLocal(dm, DMPlexTSComputeBoundary, &ctx);CHKERRQ(ierr);
   ierr = DMTSSetIFunctionLocal(dm, DMPlexTSComputeIFunctionFEM, &ctx);CHKERRQ(ierr);
   ierr = DMTSSetIJacobianLocal(dm, DMPlexTSComputeIJacobianFEM, &ctx);CHKERRQ(ierr);
-  ierr = TSSetType(ts, TSBEULER);CHKERRQ(ierr);
-  ierr = TSSetDuration(ts, 1, 1.0);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts, t, 0.001);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts, TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
@@ -213,12 +222,11 @@ int main(int argc, char **argv)
   ierr = TSSolve(ts, u);CHKERRQ(ierr);
 
   ierr = TSGetTime(ts, &t);CHKERRQ(ierr);
-  //ierr = DMProjectFunction(dm, t, ctx.exactFuncs, NULL, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
   ierr = DMComputeL2Diff(dm, t, ctx.exactFuncs, NULL, u, &L2error);CHKERRQ(ierr);
   if (L2error < 1.0e-11) {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: < 1.0e-11\n");CHKERRQ(ierr);}
   else                   {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", L2error);CHKERRQ(ierr);}
-  ierr = VecViewFromOptions(u, NULL, "-sol_view");CHKERRQ(ierr);
-  
+  ierr = VecViewFromOptions(u, NULL, "-sol_vec_view");CHKERRQ(ierr);
+
   ierr = VecDestroy(&u);CHKERRQ(ierr);
   ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
