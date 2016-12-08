@@ -7,7 +7,7 @@
         PetscFortranAddr:: v
       end type tPetscViewer
 
-      PetscViewer, parameter :: PETSC_NULL_VIEWER                &
+      PetscViewer, parameter :: PETSC_NULL_VIEWER                          &
      &            = tPetscViewer(-1)
 !
 !     The numbers used below should match those in
