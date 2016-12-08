@@ -1,0 +1,229 @@
+static char help[] = "Heat Equation in 2d and 3d with tensor product finite elements.\n\
+We solve the heat equation in a rectangular\n\
+domain, using a parallel unstructured mesh (DMPLEX) to discretize it.\n\
+This example supports discretized auxiliary fields (conductivity) as well as\n\
+multilevel nonlinear solvers.\n\n\n";
+
+#include <petscdmplex.h>
+#include <petscds.h>
+#include <petscts.h>
+
+/*
+  Heat equation:
+
+    du/dt - \Delta u = -1 * dim
+
+  Exact 2D solution:
+
+    u = 2t + x^2 + y^2
+
+    2 - (2 + 2) + 2 = 0
+
+  Exact 3D solution:
+
+    u = 3t + x^2 + y^2 + z^2
+
+    3 - (2 + 2 + 2) + 3 = 0
+*/
+
+typedef struct {
+  PetscInt          dim;
+  PetscBool         simplex;
+  PetscErrorCode (**exactFuncs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
+} AppCtx;
+
+static PetscErrorCode analytic_temp(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+{
+  PetscInt d;
+
+  *u = dim*time;
+  for (d = 0; d < dim; ++d) *u += x[d]*x[d];
+  return 0;
+}
+
+static void f0_temp(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                    PetscReal t, const PetscReal x[], PetscScalar f0[])
+{
+  f0[0] = u_t[0] + dim;
+}
+
+static void f1_temp(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                    PetscReal t, const PetscReal x[], PetscScalar f1[])
+{
+  PetscInt d;
+  for (d = 0; d < dim; ++d) {
+    f1[d] = u_x[d];
+  }
+}
+
+static void g3_temp(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                    PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[])
+{
+  PetscInt d;
+  for (d = 0; d < dim; ++d) {
+    g3[d*dim+d] = 1.0;
+  }
+}
+
+static void g0_temp(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                    PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g0[])
+{
+  g0[0] = u_tShift*1.0;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ProcessOptions"
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  options->dim     = 2;
+  options->simplex = PETSC_TRUE;
+
+  ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex12.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-simplex", "Simplicial (true) or tensor (false) mesh", "ex12.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CreateBCLabel"
+static PetscErrorCode CreateBCLabel(DM dm, const char name[])
+{
+  DMLabel        label;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = DMCreateLabel(dm, name);CHKERRQ(ierr);
+  ierr = DMGetLabel(dm, name, &label);CHKERRQ(ierr);
+  ierr = DMPlexMarkBoundaryFaces(dm, label);CHKERRQ(ierr);
+  ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CreateMesh"
+static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *ctx)
+{
+  DM             pdm = NULL;
+  const PetscInt dim = ctx->dim;
+  PetscInt       cells[3] = {1, 1, 1}; /* coarse mesh is one cell; refine from there */
+  PetscBool      hasLabel;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  if (ctx->simplex) {
+    ierr = DMPlexCreateBoxMesh(comm, dim, dim == 2 ? 2 : 1, PETSC_TRUE, dm);CHKERRQ(ierr);
+  } else {
+    ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);
+  }
+  ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
+  /* If no boundary marker exists, mark the whole boundary */
+  ierr = DMHasLabel(*dm, "marker", &hasLabel);CHKERRQ(ierr);
+  if (!hasLabel) {ierr = CreateBCLabel(*dm, "marker");CHKERRQ(ierr);}
+  /* Distribute mesh over processes */
+  ierr = DMPlexDistribute(*dm, 0, NULL, &pdm);CHKERRQ(ierr);
+  if (pdm) {
+    ierr = DMDestroy(dm);CHKERRQ(ierr);
+    *dm  = pdm;
+  }
+  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SetupDiscretization"
+static PetscErrorCode SetupDiscretization(DM dm, AppCtx* ctx)
+{
+  DM             cdm   = dm;
+  const PetscInt dim = ctx->dim;
+  const PetscInt id  = 1;
+  PetscDS        prob;
+  PetscFE        fe;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = PetscFECreateDefault(dm, dim, 1, ctx->simplex, "temp_", -1, &fe);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) fe, "temperature");CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
+
+  ierr = PetscDSSetResidual(prob, 0, f0_temp, f1_temp);CHKERRQ(ierr);
+  ierr = PetscDSSetJacobian(prob, 0, 0, g0_temp, NULL, NULL, g3_temp);CHKERRQ(ierr);
+  while (cdm) {
+    PetscBool hasLabel;
+
+    ierr = DMSetDS(cdm, prob);CHKERRQ(ierr);
+    ierr = DMHasLabel(cdm, "marker", &hasLabel);CHKERRQ(ierr);
+    if (!hasLabel) {ierr = CreateBCLabel(cdm, "marker");CHKERRQ(ierr);}
+    ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
+  }
+  ctx->exactFuncs[0] = analytic_temp;
+  ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)()) ctx->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
+  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "main"
+int main(int argc, char **argv)
+{
+  AppCtx         ctx;
+  DM             dm;
+  TS             ts;
+  Vec            u, r;
+  PetscReal      t       = 0.0;
+  PetscReal      L2error = 0.0;
+  PetscErrorCode ierr;
+  
+  ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
+  ierr = ProcessOptions(PETSC_COMM_WORLD, &ctx);CHKERRQ(ierr);
+  ierr = CreateMesh(PETSC_COMM_WORLD, &dm, &ctx);CHKERRQ(ierr);
+  ierr = DMSetApplicationContext(dm, &ctx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(1, &ctx.exactFuncs);CHKERRQ(ierr);
+  ierr = SetupDiscretization(dm, &ctx);CHKERRQ(ierr);
+
+  ierr = DMCreateGlobalVector(dm, &u);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) u, "temperature");CHKERRQ(ierr);
+  ierr = VecDuplicate(u, &r);CHKERRQ(ierr);
+
+  ierr = TSCreate(PETSC_COMM_WORLD, &ts);CHKERRQ(ierr);
+  ierr = TSSetDM(ts, dm);CHKERRQ(ierr);
+  ierr = DMTSSetBoundaryLocal(dm, DMPlexTSComputeBoundary, &ctx);CHKERRQ(ierr);
+  ierr = DMTSSetIFunctionLocal(dm, DMPlexTSComputeIFunctionFEM, &ctx);CHKERRQ(ierr);
+  ierr = DMTSSetIJacobianLocal(dm, DMPlexTSComputeIJacobianFEM, &ctx);CHKERRQ(ierr);
+  ierr = TSSetType(ts, TSBEULER);CHKERRQ(ierr);
+  ierr = TSSetDuration(ts, 1, 1.0);CHKERRQ(ierr);
+  ierr = TSSetInitialTimeStep(ts, t, 0.001);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts, TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
+  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+
+  ierr = DMProjectFunction(dm, t, ctx.exactFuncs, NULL, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+  ierr = TSSolve(ts, u);CHKERRQ(ierr);
+
+  ierr = TSGetTime(ts, &t);CHKERRQ(ierr);
+  //ierr = DMProjectFunction(dm, t, ctx.exactFuncs, NULL, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+  ierr = DMComputeL2Diff(dm, t, ctx.exactFuncs, NULL, u, &L2error);CHKERRQ(ierr);
+  if (L2error < 1.0e-11) {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: < 1.0e-11\n");CHKERRQ(ierr);}
+  else                   {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", L2error);CHKERRQ(ierr);}
+  ierr = VecViewFromOptions(u, NULL, "-sol_view");CHKERRQ(ierr);
+  
+  ierr = VecDestroy(&u);CHKERRQ(ierr);
+  ierr = VecDestroy(&r);CHKERRQ(ierr);
+  ierr = TSDestroy(&ts);CHKERRQ(ierr);
+  ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  ierr = PetscFree(ctx.exactFuncs);CHKERRQ(ierr);
+  ierr = PetscFinalize();
+  return ierr;
+}
