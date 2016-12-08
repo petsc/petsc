@@ -791,8 +791,8 @@ class SolverParser(object):
     import re
 
     self.atol    = atol
-    self.reSNES  = re.compile(r'\s*(?P<it>\d+) SNES Function norm (?P<norm>\d+\.\d+(e(\+|-)\d+)?)')
-    self.reKSP   = re.compile(r'\s*(?P<it>\d+) KSP Residual norm (?P<norm>\d+\.\d+(e(\+|-)\d+)?)')
+    self.reSNES  = re.compile(r'\s*(?P<it>\d+) SNES Function norm (?P<norm>\d+\.\d*(e(\+|-)\d+)?)')
+    self.reKSP   = re.compile(r'\s*(?P<it>\d+) KSP Residual norm (?P<norm>\d+\.\d*(e(\+|-)\d+)?)')
     self.reError = re.compile(r'L_2 Error: (?P<norm>\d+\.\d+(e(\+|-)\d+)?)')
     return
 
