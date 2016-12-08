@@ -1,5 +1,51 @@
 #include <../src/ksp/pc/impls/bddc/bddc.h>
 #include <../src/ksp/pc/impls/bddc/bddcprivate.h>
+#include <petscblaslapack.h>
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMult_BDdelta_deluxe_nonred"
+static PetscErrorCode MatMult_BDdelta_deluxe_nonred(Mat A, Vec x, Vec y)
+{
+  BDdelta_DN     ctx;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatShellGetContext(A,(void**)&ctx);CHKERRQ(ierr);
+  ierr = MatMultTranspose(ctx->BD,x,ctx->work);CHKERRQ(ierr);
+  ierr = KSPSolveTranspose(ctx->kBD,ctx->work,y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMultTranspose_BDdelta_deluxe_nonred"
+static PetscErrorCode MatMultTranspose_BDdelta_deluxe_nonred(Mat A, Vec x, Vec y)
+{
+  BDdelta_DN     ctx;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatShellGetContext(A,(void**)&ctx);CHKERRQ(ierr);
+  ierr = KSPSolve(ctx->kBD,x,ctx->work);CHKERRQ(ierr);
+  ierr = MatMult(ctx->BD,ctx->work,y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatDestroy_BDdelta_deluxe_nonred"
+static PetscErrorCode MatDestroy_BDdelta_deluxe_nonred(Mat A)
+{
+  BDdelta_DN     ctx;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatShellGetContext(A,(void**)&ctx);CHKERRQ(ierr);
+  ierr = MatDestroy(&ctx->BD);CHKERRQ(ierr);
+  ierr = KSPDestroy(&ctx->kBD);CHKERRQ(ierr);
+  ierr = VecDestroy(&ctx->work);CHKERRQ(ierr);
+  ierr = PetscFree(ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCCreateFETIDPMatContext"
@@ -95,7 +141,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   PCBDDCGraph    mat_graph=pcbddc->mat_graph;
   Mat_IS         *matis  = (Mat_IS*)fetidpmat_ctx->pc->pmat->data;
   MPI_Comm       comm;
-  Mat            ScalingMat;
+  Mat            ScalingMat,BD1,BD2;
   Vec            fetidp_global;
   IS             IS_l2g_lambda;
   IS             subset,subset_mult,subset_n,isvert;
@@ -109,13 +155,9 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   const PetscInt *aux_global_numbering;
   PetscInt       *aux_sums,*cols_B_delta,*l2g_indices;
   PetscScalar    *array,*scaling_factors,*vals_B_delta;
+  PetscScalar    **all_factors;
   PetscInt       *aux_local_numbering_2;
   PetscLayout    llay;
-
-  /* For communication of scaling factors */
-  PetscInt       *ptrs_buffer,neigh_position;
-  PetscScalar    **all_factors,*send_buffer,*recv_buffer;
-  MPI_Request    *send_reqs,*recv_reqs;
 
   /* saddlepoint */
   ISLocalToGlobalMapping l2gmap_p;
@@ -267,65 +309,77 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
 #endif
 
   /* init data for scaling factors exchange */
-  partial_sum = 0;
-  ierr = PetscMalloc1(pcis->n_neigh,&ptrs_buffer);CHKERRQ(ierr);
-  ierr = PetscMalloc1(PetscMax(pcis->n_neigh-1,0),&send_reqs);CHKERRQ(ierr);
-  ierr = PetscMalloc1(PetscMax(pcis->n_neigh-1,0),&recv_reqs);CHKERRQ(ierr);
-  ierr = PetscMalloc1(pcis->n+1,&all_factors);CHKERRQ(ierr);
-  if (pcis->n_neigh > 0) ptrs_buffer[0]=0;
-  for (i=1;i<pcis->n_neigh;i++) {
-    partial_sum += pcis->n_shared[i];
-    ptrs_buffer[i] = ptrs_buffer[i-1]+pcis->n_shared[i];
-  }
-  ierr = PetscMalloc1(partial_sum,&send_buffer);CHKERRQ(ierr);
-  ierr = PetscMalloc1(partial_sum,&recv_buffer);CHKERRQ(ierr);
-  ierr = PetscMalloc1(partial_sum,&all_factors[0]);CHKERRQ(ierr);
-  for (i=0;i<pcis->n-1;i++) {
-    j = mat_graph->count[i];
-    all_factors[i+1]=all_factors[i]+j;
-  }
-  /* scatter B scaling to N vec */
-  ierr = VecScatterBegin(pcis->N_to_B,pcis->D,pcis->vec1_N,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(pcis->N_to_B,pcis->D,pcis->vec1_N,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  /* communications */
-  ierr = VecGetArrayRead(pcis->vec1_N,(const PetscScalar**)&array);CHKERRQ(ierr);
-  for (i=1;i<pcis->n_neigh;i++) {
-    for (j=0;j<pcis->n_shared[i];j++) {
-      send_buffer[ptrs_buffer[i-1]+j]=array[pcis->shared[i][j]];
+  if (!pcbddc->use_deluxe_scaling) {
+    PetscInt    *ptrs_buffer,neigh_position;
+    PetscScalar *send_buffer,*recv_buffer;
+    MPI_Request *send_reqs,*recv_reqs;
+
+    partial_sum = 0;
+    ierr = PetscMalloc1(pcis->n_neigh,&ptrs_buffer);CHKERRQ(ierr);
+    ierr = PetscMalloc1(PetscMax(pcis->n_neigh-1,0),&send_reqs);CHKERRQ(ierr);
+    ierr = PetscMalloc1(PetscMax(pcis->n_neigh-1,0),&recv_reqs);CHKERRQ(ierr);
+    ierr = PetscMalloc1(pcis->n+1,&all_factors);CHKERRQ(ierr);
+    if (pcis->n_neigh > 0) ptrs_buffer[0]=0;
+    for (i=1;i<pcis->n_neigh;i++) {
+      partial_sum += pcis->n_shared[i];
+      ptrs_buffer[i] = ptrs_buffer[i-1]+pcis->n_shared[i];
     }
-    ierr = PetscMPIIntCast(ptrs_buffer[i]-ptrs_buffer[i-1],&buf_size);CHKERRQ(ierr);
-    ierr = PetscMPIIntCast(pcis->neigh[i],&neigh);CHKERRQ(ierr);
-    ierr = MPI_Isend(&send_buffer[ptrs_buffer[i-1]],buf_size,MPIU_SCALAR,neigh,0,comm,&send_reqs[i-1]);CHKERRQ(ierr);
-    ierr = MPI_Irecv(&recv_buffer[ptrs_buffer[i-1]],buf_size,MPIU_SCALAR,neigh,0,comm,&recv_reqs[i-1]);CHKERRQ(ierr);
-  }
-  ierr = VecRestoreArrayRead(pcis->vec1_N,(const PetscScalar**)&array);CHKERRQ(ierr);
-  if (pcis->n_neigh > 0) {
-    ierr = MPI_Waitall(pcis->n_neigh-1,recv_reqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
-  }
-  /* put values in correct places */
-  for (i=1;i<pcis->n_neigh;i++) {
-    for (j=0;j<pcis->n_shared[i];j++) {
-      k = pcis->shared[i][j];
-      neigh_position = 0;
-      while(mat_graph->neighbours_set[k][neigh_position] != pcis->neigh[i]) {neigh_position++;}
-      all_factors[k][neigh_position]=recv_buffer[ptrs_buffer[i-1]+j];
+    ierr = PetscMalloc1(partial_sum,&send_buffer);CHKERRQ(ierr);
+    ierr = PetscMalloc1(partial_sum,&recv_buffer);CHKERRQ(ierr);
+    ierr = PetscMalloc1(partial_sum,&all_factors[0]);CHKERRQ(ierr);
+    for (i=0;i<pcis->n-1;i++) {
+      j = mat_graph->count[i];
+      all_factors[i+1]=all_factors[i]+j;
     }
+
+    /* scatter B scaling to N vec */
+    ierr = VecScatterBegin(pcis->N_to_B,pcis->D,pcis->vec1_N,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(pcis->N_to_B,pcis->D,pcis->vec1_N,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    /* communications */
+    ierr = VecGetArrayRead(pcis->vec1_N,(const PetscScalar**)&array);CHKERRQ(ierr);
+    for (i=1;i<pcis->n_neigh;i++) {
+      for (j=0;j<pcis->n_shared[i];j++) {
+        send_buffer[ptrs_buffer[i-1]+j]=array[pcis->shared[i][j]];
+      }
+      ierr = PetscMPIIntCast(ptrs_buffer[i]-ptrs_buffer[i-1],&buf_size);CHKERRQ(ierr);
+      ierr = PetscMPIIntCast(pcis->neigh[i],&neigh);CHKERRQ(ierr);
+      ierr = MPI_Isend(&send_buffer[ptrs_buffer[i-1]],buf_size,MPIU_SCALAR,neigh,0,comm,&send_reqs[i-1]);CHKERRQ(ierr);
+      ierr = MPI_Irecv(&recv_buffer[ptrs_buffer[i-1]],buf_size,MPIU_SCALAR,neigh,0,comm,&recv_reqs[i-1]);CHKERRQ(ierr);
+    }
+    ierr = VecRestoreArrayRead(pcis->vec1_N,(const PetscScalar**)&array);CHKERRQ(ierr);
+    if (pcis->n_neigh > 0) {
+      ierr = MPI_Waitall(pcis->n_neigh-1,recv_reqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+    }
+    /* put values in correct places */
+    for (i=1;i<pcis->n_neigh;i++) {
+      for (j=0;j<pcis->n_shared[i];j++) {
+        k = pcis->shared[i][j];
+        neigh_position = 0;
+        while(mat_graph->neighbours_set[k][neigh_position] != pcis->neigh[i]) {neigh_position++;}
+        all_factors[k][neigh_position]=recv_buffer[ptrs_buffer[i-1]+j];
+      }
+    }
+    if (pcis->n_neigh > 0) {
+      ierr = MPI_Waitall(pcis->n_neigh-1,send_reqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(send_reqs);CHKERRQ(ierr);
+    ierr = PetscFree(recv_reqs);CHKERRQ(ierr);
+    ierr = PetscFree(send_buffer);CHKERRQ(ierr);
+    ierr = PetscFree(recv_buffer);CHKERRQ(ierr);
+    ierr = PetscFree(ptrs_buffer);CHKERRQ(ierr);
   }
-  if (pcis->n_neigh > 0) {
-    ierr = MPI_Waitall(pcis->n_neigh-1,send_reqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(send_reqs);CHKERRQ(ierr);
-  ierr = PetscFree(recv_reqs);CHKERRQ(ierr);
-  ierr = PetscFree(send_buffer);CHKERRQ(ierr);
-  ierr = PetscFree(recv_buffer);CHKERRQ(ierr);
-  ierr = PetscFree(ptrs_buffer);CHKERRQ(ierr);
 
   /* Compute B and B_delta (local actions) */
   ierr = PetscMalloc1(pcis->n_neigh,&aux_sums);CHKERRQ(ierr);
   ierr = PetscMalloc1(n_local_lambda,&l2g_indices);CHKERRQ(ierr);
   ierr = PetscMalloc1(n_local_lambda,&vals_B_delta);CHKERRQ(ierr);
   ierr = PetscMalloc1(n_local_lambda,&cols_B_delta);CHKERRQ(ierr);
-  ierr = PetscMalloc1(n_local_lambda,&scaling_factors);CHKERRQ(ierr);
+  if (!pcbddc->use_deluxe_scaling) {
+    ierr = PetscMalloc1(n_local_lambda,&scaling_factors);CHKERRQ(ierr);
+  } else {
+    scaling_factors = NULL;
+    all_factors     = NULL;
+  }
   ierr = ISGetIndices(subset_n,&aux_global_numbering);CHKERRQ(ierr);
   partial_sum=0;
   cum = 0;
@@ -336,7 +390,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
     for (s=1;s<j;s++) {
       aux_sums[s]=aux_sums[s-1]+j-s+1;
     }
-    array = all_factors[aux_local_numbering_1[i]];
+    if (all_factors) array = all_factors[aux_local_numbering_1[i]];
     n_neg_values = 0;
     while(n_neg_values < j && mat_graph->neighbours_set[aux_local_numbering_1[i]][n_neg_values] < rank) {n_neg_values++;}
     n_pos_values = j - n_neg_values;
@@ -345,13 +399,13 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
         l2g_indices    [partial_sum+s]=aux_sums[s]+n_neg_values-s-1+n_global_lambda;
         cols_B_delta   [partial_sum+s]=dual_dofs_boundary_indices[i];
         vals_B_delta   [partial_sum+s]=-1.0;
-        scaling_factors[partial_sum+s]=array[s];
+        if (!pcbddc->use_deluxe_scaling) scaling_factors[partial_sum+s]=array[s];
       }
       for (s=0;s<n_pos_values;s++) {
         l2g_indices    [partial_sum+s+n_neg_values]=aux_sums[n_neg_values]+s+n_global_lambda;
         cols_B_delta   [partial_sum+s+n_neg_values]=dual_dofs_boundary_indices[i];
         vals_B_delta   [partial_sum+s+n_neg_values]=1.0;
-        scaling_factors[partial_sum+s+n_neg_values]=array[s+n_neg_values];
+        if (!pcbddc->use_deluxe_scaling) scaling_factors[partial_sum+s+n_neg_values]=array[s+n_neg_values];
       }
       partial_sum += j;
     } else {
@@ -368,20 +422,18 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
       if ( n_neg_values < j ) { /* there's a rank next to me to the right */
         vals_B_delta   [partial_sum+n_neg_values]=1.0;
       }
-      /* scaling as in Klawonn-Widlund 1999*/
-      for (s=0;s<n_neg_values;s++) {
-        scalar_value = 0.0;
-        for (k=0;k<s+1;k++) {
-          scalar_value += array[k];
+      /* scaling as in Klawonn-Widlund 1999 */
+      if (!pcbddc->use_deluxe_scaling) {
+        for (s=0;s<n_neg_values;s++) {
+          scalar_value = 0.0;
+          for (k=0;k<s+1;k++) scalar_value += array[k];
+          scaling_factors[partial_sum+s] = -scalar_value;
         }
-        scaling_factors[partial_sum+s] = -scalar_value;
-      }
-      for (s=0;s<n_pos_values;s++) {
-        scalar_value = 0.0;
-        for (k=s+n_neg_values;k<j;k++) {
-          scalar_value += array[k];
+        for (s=0;s<n_pos_values;s++) {
+          scalar_value = 0.0;
+          for (k=s+n_neg_values;k<j;k++) scalar_value += array[k];
+          scaling_factors[partial_sum+s+n_neg_values] = scalar_value;
         }
-        scaling_factors[partial_sum+s+n_neg_values] = scalar_value;
       }
       partial_sum += j;
     }
@@ -393,8 +445,10 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   ierr = PetscFree(aux_sums);CHKERRQ(ierr);
   ierr = PetscFree(aux_local_numbering_1);CHKERRQ(ierr);
   ierr = PetscFree(dual_dofs_boundary_indices);CHKERRQ(ierr);
-  ierr = PetscFree(all_factors[0]);CHKERRQ(ierr);
-  ierr = PetscFree(all_factors);CHKERRQ(ierr);
+  if (all_factors) {
+    ierr = PetscFree(all_factors[0]);CHKERRQ(ierr);
+    ierr = PetscFree(all_factors);CHKERRQ(ierr);
+  }
 
   /* Create local part of B_delta */
   ierr = MatCreate(PETSC_COMM_SELF,&fetidpmat_ctx->B_delta);CHKERRQ(ierr);
@@ -407,9 +461,12 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   }
   ierr = PetscFree(vals_B_delta);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(fetidpmat_ctx->B_delta,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd  (fetidpmat_ctx->B_delta,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(fetidpmat_ctx->B_delta,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
+  BD1 = NULL;
+  BD2 = NULL;
   if (fully_redundant) {
+    if (pcbddc->use_deluxe_scaling) SETERRQ(comm,PETSC_ERR_SUP,"Deluxe FETIDP with fully-redundant multipliers to be implemented");
     ierr = MatCreate(PETSC_COMM_SELF,&ScalingMat);CHKERRQ(ierr);
     ierr = MatSetSizes(ScalingMat,n_local_lambda,n_local_lambda,n_local_lambda,n_local_lambda);CHKERRQ(ierr);
     ierr = MatSetType(ScalingMat,MATSEQAIJ);CHKERRQ(ierr);
@@ -418,19 +475,90 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
       ierr = MatSetValue(ScalingMat,i,i,scaling_factors[i],INSERT_VALUES);CHKERRQ(ierr);
     }
     ierr = MatAssemblyBegin(ScalingMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd  (ScalingMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(ScalingMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatMatMult(ScalingMat,fetidpmat_ctx->B_delta,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&fetidpmat_ctx->B_Ddelta);CHKERRQ(ierr);
     ierr = MatDestroy(&ScalingMat);CHKERRQ(ierr);
   } else {
     ierr = MatCreate(PETSC_COMM_SELF,&fetidpmat_ctx->B_Ddelta);CHKERRQ(ierr);
     ierr = MatSetSizes(fetidpmat_ctx->B_Ddelta,n_local_lambda,pcis->n_B,n_local_lambda,pcis->n_B);CHKERRQ(ierr);
-    ierr = MatSetType(fetidpmat_ctx->B_Ddelta,MATSEQAIJ);CHKERRQ(ierr);
-    ierr = MatSeqAIJSetPreallocation(fetidpmat_ctx->B_Ddelta,1,NULL);CHKERRQ(ierr);
-    for (i=0;i<n_local_lambda;i++) {
-      ierr = MatSetValue(fetidpmat_ctx->B_Ddelta,i,cols_B_delta[i],scaling_factors[i],INSERT_VALUES);CHKERRQ(ierr);
+    if (!pcbddc->use_deluxe_scaling) {
+      ierr = MatSetType(fetidpmat_ctx->B_Ddelta,MATSEQAIJ);CHKERRQ(ierr);
+      ierr = MatSeqAIJSetPreallocation(fetidpmat_ctx->B_Ddelta,1,NULL);CHKERRQ(ierr);
+      for (i=0;i<n_local_lambda;i++) {
+        ierr = MatSetValue(fetidpmat_ctx->B_Ddelta,i,cols_B_delta[i],scaling_factors[i],INSERT_VALUES);CHKERRQ(ierr);
+      }
+      ierr = MatAssemblyBegin(fetidpmat_ctx->B_Ddelta,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(fetidpmat_ctx->B_Ddelta,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    } else {
+      /* scaling as in Klawonn-Widlund 1999 */
+      PCBDDCDeluxeScaling deluxe_ctx = pcbddc->deluxe_ctx;
+      PCBDDCSubSchurs     sub_schurs = pcbddc->sub_schurs;
+      Mat                 T;
+      PetscScalar         *W,lwork,*Bwork;
+      const PetscInt      *idxs;
+      PetscInt            cum,mss,*nnz;
+      PetscBLASInt        *pivots,B_lwork,B_N,B_ierr;
+
+      if (!pcbddc->deluxe_singlemat) SETERRQ(comm,PETSC_ERR_USER,"Cannot compute B_Ddelta! rerun with -pc_bddc_deluxe_singlemat");
+      if (deluxe_ctx->change) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot compute B_Ddelta with deluxe scaling with active change context");
+
+      mss  = 0;
+      ierr = PetscCalloc1(pcis->n_B,&nnz);CHKERRQ(ierr);
+      if (sub_schurs->is_Ej_all) {
+        ierr = ISGetIndices(sub_schurs->is_Ej_all,&idxs);CHKERRQ(ierr);
+        for (i=0,cum=0;i<sub_schurs->n_subs;i++) {
+          PetscInt subset_size;
+
+          ierr = ISGetLocalSize(sub_schurs->is_subs[i],&subset_size);CHKERRQ(ierr);
+          for (j=0;j<subset_size;j++) nnz[idxs[j+cum]] = subset_size;
+          mss  = PetscMax(mss,subset_size);
+          cum += subset_size;
+        }
+      }
+      ierr = MatCreate(PETSC_COMM_SELF,&T);CHKERRQ(ierr);
+      ierr = MatSetSizes(T,pcis->n_B,pcis->n_B,pcis->n_B,pcis->n_B);CHKERRQ(ierr);
+      ierr = MatSetType(T,MATSEQAIJ);CHKERRQ(ierr);
+      ierr = MatSeqAIJSetPreallocation(T,0,nnz);CHKERRQ(ierr);
+      ierr = PetscFree(nnz);CHKERRQ(ierr);
+
+      /* workspace allocation */
+      B_lwork = -1;
+      ierr = PetscBLASIntCast(mss,&B_N);CHKERRQ(ierr);
+      ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+      PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,W,&B_N,&B_N,&lwork,&B_lwork,&B_ierr));
+      ierr = PetscFPTrapPop();CHKERRQ(ierr);
+      if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to GETRI Lapack routine %d",(int)B_ierr);
+      ierr = PetscBLASIntCast((PetscInt)PetscRealPart(lwork),&B_lwork);CHKERRQ(ierr);
+      ierr = PetscMalloc3(mss*mss,&W,mss,&pivots,B_lwork,&Bwork);CHKERRQ(ierr);
+
+      for (i=0,cum=0;i<sub_schurs->n_subs;i++) {
+        PetscScalar  *M;
+        PetscInt     subset_size;
+
+        ierr = ISGetLocalSize(sub_schurs->is_subs[i],&subset_size);CHKERRQ(ierr);
+        ierr = PetscBLASIntCast(subset_size,&B_N);CHKERRQ(ierr);
+        ierr = MatDenseGetArray(deluxe_ctx->seq_mat[i],&M);CHKERRQ(ierr);
+        ierr = PetscMemcpy(W,M,subset_size*subset_size*sizeof(PetscScalar));CHKERRQ(ierr);
+        ierr = MatDenseRestoreArray(deluxe_ctx->seq_mat[i],&M);CHKERRQ(ierr);
+        ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+        PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&B_N,&B_N,W,&B_N,pivots,&B_ierr));
+        if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)B_ierr);
+        PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,W,&B_N,pivots,Bwork,&B_lwork,&B_ierr));
+        if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRI Lapack routine %d",(int)B_ierr);
+        ierr = PetscFPTrapPop();CHKERRQ(ierr);
+        ierr = MatSetValues(T,subset_size,idxs+cum,subset_size,idxs+cum,W,INSERT_VALUES);CHKERRQ(ierr);
+        cum += subset_size;
+      }
+      ierr = MatAssemblyBegin(T,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(T,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatMatTransposeMult(T,fetidpmat_ctx->B_delta,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&BD1);CHKERRQ(ierr);
+      ierr = MatMatMult(fetidpmat_ctx->B_delta,BD1,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&BD2);CHKERRQ(ierr);
+      ierr = MatDestroy(&T);CHKERRQ(ierr);
+      ierr = PetscFree3(W,pivots,Bwork);CHKERRQ(ierr);
+      if (sub_schurs->is_Ej_all) {
+        ierr = ISRestoreIndices(sub_schurs->is_Ej_all,&idxs);CHKERRQ(ierr);
+      }
     }
-    ierr = MatAssemblyBegin(fetidpmat_ctx->B_Ddelta,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd  (fetidpmat_ctx->B_Ddelta,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   ierr = PetscFree(scaling_factors);CHKERRQ(ierr);
   ierr = PetscFree(cols_B_delta);CHKERRQ(ierr);
@@ -442,14 +570,59 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   ierr = PetscLayoutSetUp(llay);CHKERRQ(ierr);
   ierr = PetscLayoutGetLocalSize(llay,&fetidpmat_ctx->n);CHKERRQ(ierr);
 
-  /* fetidpmat sizes */
-  fetidpmat_ctx->n += nPgl;
-  fetidpmat_ctx->N  = fetidpmat_ctx->n_lambda+nPg;
-
   /* Local work vector of multipliers */
   ierr = VecCreate(PETSC_COMM_SELF,&fetidpmat_ctx->lambda_local);CHKERRQ(ierr);
   ierr = VecSetSizes(fetidpmat_ctx->lambda_local,n_local_lambda,n_local_lambda);CHKERRQ(ierr);
   ierr = VecSetType(fetidpmat_ctx->lambda_local,VECSEQ);CHKERRQ(ierr);
+
+  if (BD2) {
+    ISLocalToGlobalMapping l2g;
+    Mat                    T,TA,*pT;
+    IS                     is;
+    PetscInt               nl,N;
+    BDdelta_DN             ctx;
+
+    ierr = PetscLayoutGetLocalSize(llay,&nl);CHKERRQ(ierr);
+    ierr = PetscLayoutGetSize(llay,&N);CHKERRQ(ierr);
+    ierr = MatCreate(comm,&T);CHKERRQ(ierr);
+    ierr = MatSetSizes(T,nl,nl,N,N);CHKERRQ(ierr);
+    ierr = MatSetType(T,MATIS);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingCreate(comm,1,n_local_lambda,l2g_indices,PETSC_COPY_VALUES,&l2g);CHKERRQ(ierr);
+    ierr = MatSetLocalToGlobalMapping(T,l2g,l2g);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingDestroy(&l2g);CHKERRQ(ierr);
+    ierr = MatISSetLocalMat(T,BD2);CHKERRQ(ierr);
+    ierr = MatDestroy(&BD2);CHKERRQ(ierr);
+    ierr = MatISGetMPIXAIJ(T,MAT_INITIAL_MATRIX,&TA);CHKERRQ(ierr);
+    ierr = MatDestroy(&T);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(comm,n_local_lambda,l2g_indices,PETSC_USE_POINTER,&is);CHKERRQ(ierr);
+    ierr = MatGetSubMatrices(TA,1,&is,&is,MAT_INITIAL_MATRIX,&pT);CHKERRQ(ierr);
+    ierr = MatDestroy(&TA);CHKERRQ(ierr);
+    ierr = ISDestroy(&is);CHKERRQ(ierr);
+    BD2  = pT[0];
+    ierr = PetscFree(pT);CHKERRQ(ierr);
+
+    /* B_Ddelta for non-redundant multipliers with deluxe scaling */
+    ierr = PetscNew(&ctx);CHKERRQ(ierr);
+    ierr = MatSetType(fetidpmat_ctx->B_Ddelta,MATSHELL);CHKERRQ(ierr);
+    ierr = MatShellSetContext(fetidpmat_ctx->B_Ddelta,(void *)ctx);CHKERRQ(ierr);
+    ierr = MatShellSetOperation(fetidpmat_ctx->B_Ddelta,MATOP_MULT,(void (*)(void))MatMult_BDdelta_deluxe_nonred);CHKERRQ(ierr);
+    ierr = MatShellSetOperation(fetidpmat_ctx->B_Ddelta,MATOP_MULT_TRANSPOSE,(void (*)(void))MatMultTranspose_BDdelta_deluxe_nonred);CHKERRQ(ierr);
+    ierr = MatShellSetOperation(fetidpmat_ctx->B_Ddelta,MATOP_DESTROY,(void (*)(void))MatDestroy_BDdelta_deluxe_nonred);CHKERRQ(ierr);
+    ierr = MatSetUp(fetidpmat_ctx->B_Ddelta);CHKERRQ(ierr);
+
+    ierr = PetscObjectReference((PetscObject)BD1);CHKERRQ(ierr);
+    ctx->BD = BD1;
+    ierr = KSPCreate(PETSC_COMM_SELF,&ctx->kBD);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ctx->kBD,BD2,BD2);CHKERRQ(ierr);
+    ierr = VecDuplicate(fetidpmat_ctx->lambda_local,&ctx->work);CHKERRQ(ierr);
+    fetidpmat_ctx->deluxe_nonred = PETSC_TRUE;
+  }
+  ierr = MatDestroy(&BD1);CHKERRQ(ierr);
+  ierr = MatDestroy(&BD2);CHKERRQ(ierr);
+
+  /* fetidpmat sizes */
+  fetidpmat_ctx->n += nPgl;
+  fetidpmat_ctx->N  = fetidpmat_ctx->n_lambda+nPg;
 
   /* Global vector for FETI-DP linear system */
   ierr = VecCreate(comm,&fetidp_global);CHKERRQ(ierr);
@@ -517,12 +690,14 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   PetscFunctionReturn(0);
 }
 
+
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetupFETIDPPCContext"
 PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat fetimat, FETIDPPC_ctx fetidppc_ctx)
 {
   FETIDPMat_ctx  mat_ctx;
-  PC_IS          *pcis;
+  PC_BDDC        *pcbddc = (PC_BDDC*)fetidppc_ctx->pc->data;
+  PC_IS          *pcis = (PC_IS*)fetidppc_ctx->pc->data;
   PetscBool      lumped = PETSC_FALSE;
   PetscErrorCode ierr;
 
@@ -533,10 +708,29 @@ PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat fetimat, FETIDPPC_ctx fetidppc_ctx
   fetidppc_ctx->lambda_local = mat_ctx->lambda_local;
   ierr = PetscObjectReference((PetscObject)mat_ctx->B_Ddelta);CHKERRQ(ierr);
   fetidppc_ctx->B_Ddelta = mat_ctx->B_Ddelta;
+  if (mat_ctx->deluxe_nonred) {
+    PC               pc,mpc;
+    BDdelta_DN       ctx;
+    MatSolverPackage solver;
+    const char       *prefix;
+
+    ierr = MatShellGetContext(mat_ctx->B_Ddelta,&ctx);CHKERRQ(ierr);
+    ierr = KSPSetType(ctx->kBD,KSPPREONLY);CHKERRQ(ierr);
+    ierr = KSPGetPC(ctx->kBD,&mpc);CHKERRQ(ierr);
+    ierr = KSPGetPC(pcbddc->ksp_D,&pc);CHKERRQ(ierr);
+    ierr = PCSetType(mpc,PCLU);CHKERRQ(ierr);
+    ierr = PCFactorGetMatSolverPackage(pc,(const MatSolverPackage*)&solver);CHKERRQ(ierr);
+    if (solver) {
+      ierr = PCFactorSetMatSolverPackage(mpc,solver);CHKERRQ(ierr);
+    }
+    ierr = MatGetOptionsPrefix(fetimat,&prefix);CHKERRQ(ierr);
+    ierr = KSPSetOptionsPrefix(ctx->kBD,prefix);CHKERRQ(ierr);
+    ierr = KSPAppendOptionsPrefix(ctx->kBD,"bddelta_");CHKERRQ(ierr);
+    ierr = KSPSetFromOptions(ctx->kBD);CHKERRQ(ierr);
+  }
+
   ierr = PetscObjectReference((PetscObject)mat_ctx->l2g_lambda);CHKERRQ(ierr);
   fetidppc_ctx->l2g_lambda = mat_ctx->l2g_lambda;
-  /* create preconditioner */
-  pcis = (PC_IS*)fetidppc_ctx->pc->data;
   /* Dirichlet preconditioner */
   ierr = PetscOptionsGetBool(NULL,((PetscObject)fetimat)->prefix,"-pc_lumped",&lumped,NULL);CHKERRQ(ierr);
   if (!lumped) {
@@ -802,7 +996,7 @@ PetscErrorCode FETIDPPCView(PC pc, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     PetscMPIInt rank;
-    PetscBool   isschur;
+    PetscBool   isschur,isshell;
 
     ierr = PCShellGetContext(pc,(void**)&pc_ctx);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRQ(ierr);
@@ -819,6 +1013,20 @@ PetscErrorCode FETIDPPCView(PC pc, PetscViewer viewer)
       ierr = MatView(pc_ctx->S_j,sviewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIISubtractTab(sviewer,2);CHKERRQ(ierr);
       ierr = PetscViewerPopFormat(sviewer);CHKERRQ(ierr);
+    }
+    ierr = PetscObjectTypeCompare((PetscObject)pc_ctx->B_Ddelta,MATSHELL,&isshell);CHKERRQ(ierr);
+    if (isshell) {
+      BDdelta_DN ctx;
+      ierr = PetscViewerASCIIPrintf(viewer,"  FETI-DP BDdelta: DB^t * (B D^-1 B^t)^-1 for deluxe scaling (just from rank 0)\n");CHKERRQ(ierr);
+      ierr = MatShellGetContext(pc_ctx->B_Ddelta,&ctx);CHKERRQ(ierr);
+      if (!rank) {
+        ierr = PetscViewerASCIIAddTab(sviewer,2);CHKERRQ(ierr);
+        ierr = KSPView(ctx->kBD,sviewer);CHKERRQ(ierr);
+        ierr = PetscViewerPushFormat(sviewer,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
+        ierr = MatView(ctx->BD,sviewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISubtractTab(sviewer,2);CHKERRQ(ierr);
+        ierr = PetscViewerPopFormat(sviewer);CHKERRQ(ierr);
+      }
     }
     ierr = PetscViewerRestoreSubViewer(viewer,PetscObjectComm((PetscObject)pc_ctx->S_j),&sviewer);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);

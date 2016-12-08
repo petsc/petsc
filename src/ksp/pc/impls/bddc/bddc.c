@@ -2528,8 +2528,8 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
   ierr = PCSetOptionsPrefix(newpc,prefix);CHKERRQ(ierr);
   ierr = PCAppendOptionsPrefix(newpc,"fetidp_");CHKERRQ(ierr);
   /* return pointers for objects created */
-  *fetidp_mat=newmat;
-  *fetidp_pc=newpc;
+  *fetidp_mat = newmat;
+  *fetidp_pc = newpc;
   PetscFunctionReturn(0);
 }
 

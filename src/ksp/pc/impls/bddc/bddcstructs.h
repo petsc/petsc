@@ -188,6 +188,7 @@ struct _FETIDPMat_ctx {
   Vec        temp_solution_D;
   Mat        B_delta;
   Mat        B_Ddelta;
+  PetscBool  deluxe_nonred;
   VecScatter l2g_lambda;
   PC         pc;
   PetscBool  fully_redundant;
@@ -219,5 +220,12 @@ struct _FETIDPPC_ctx {
   Vec        yPg;
 };
 typedef struct _FETIDPPC_ctx *FETIDPPC_ctx;
+
+struct _BDdelta_DN {
+  Mat BD;
+  KSP kBD;
+  Vec work;
+};
+typedef struct _BDdelta_DN *BDdelta_DN;
 
 #endif
