@@ -522,13 +522,16 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
       ierr = PetscFree(nnz);CHKERRQ(ierr);
 
       /* workspace allocation */
-      B_lwork = -1;
-      ierr = PetscBLASIntCast(mss,&B_N);CHKERRQ(ierr);
-      ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-      PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,W,&B_N,&B_N,&lwork,&B_lwork,&B_ierr));
-      ierr = PetscFPTrapPop();CHKERRQ(ierr);
-      if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to GETRI Lapack routine %d",(int)B_ierr);
-      ierr = PetscBLASIntCast((PetscInt)PetscRealPart(lwork),&B_lwork);CHKERRQ(ierr);
+      B_lwork = 0;
+      if (mss) {
+        B_lwork = -1;
+        ierr = PetscBLASIntCast(mss,&B_N);CHKERRQ(ierr);
+        ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+        PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,W,&B_N,&B_N,&lwork,&B_lwork,&B_ierr));
+        ierr = PetscFPTrapPop();CHKERRQ(ierr);
+        if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to GETRI Lapack routine %d",(int)B_ierr);
+        ierr = PetscBLASIntCast((PetscInt)PetscRealPart(lwork),&B_lwork);CHKERRQ(ierr);
+      }
       ierr = PetscMalloc3(mss*mss,&W,mss,&pivots,B_lwork,&Bwork);CHKERRQ(ierr);
 
       for (i=0,cum=0;i<sub_schurs->n_subs;i++) {
