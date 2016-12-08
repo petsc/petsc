@@ -45,8 +45,7 @@
 !      write(6,*) '    its ',its,snesm%its,'lag',
 !     &            snesm%lag
 !      call flush(6)
-      if (mod(snesm%its,snesm%lag).eq.0)
-     &     then
+      if (mod(snesm%its,snesm%lag).eq.0) then
         one = 1
         call SNESSetLagJacobian(snes,one,ierr)  ! build jacobian
       else
