@@ -79,7 +79,7 @@ PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level,
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Number of vertices %d\n",graph->nvtxs);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Custom minimal size %d\n",graph->custom_minimal_size);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Max count %d\n",graph->maxcount);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Topological two dim? %d\n",graph->twodim);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Topological two dim? %d (set %d)\n",graph->twodim,graph->twodimset);CHKERRQ(ierr);
   if (verbosity_level > 2) {
     for (i=0;i<graph->nvtxs;i++) {
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%d:\n",i);CHKERRQ(ierr);
@@ -526,6 +526,20 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
     ierr = PetscBTDestroy(&subset_cc_adapt);CHKERRQ(ierr);
   }
 
+  /* Determine if we are in 2D or 3D */
+  if (!graph->twodimset) {
+    PetscBool twodim = PETSC_TRUE;
+    for (i=0;i<graph->ncc;i++) {
+      PetscInt repdof = graph->queue[graph->cptr[i]];
+      PetscInt ccsize = graph->cptr[i+1]-graph->cptr[i];
+      if (graph->count[repdof] > 1 && ccsize > graph->custom_minimal_size) {
+        twodim = PETSC_FALSE;
+        break;
+      }
+    }
+    ierr = MPIU_Allreduce(&twodim,&graph->twodim,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)graph->l2gmap));CHKERRQ(ierr);
+    graph->twodimset = PETSC_TRUE;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -682,7 +696,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   PetscInt       n_neigh,*neigh,*n_shared,**shared,*queue_global;
   PetscInt       i,j,k,s,total_counts,nodes_touched,is_size;
   PetscMPIInt    commsize;
-  PetscBool      same_set,mirrors_found,twodim;
+  PetscBool      same_set,mirrors_found;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1021,18 +1035,6 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   ierr = ISRestoreIndices(subset_n,&is_indices);CHKERRQ(ierr);
   ierr = ISDestroy(&subset_n);CHKERRQ(ierr);
 
-  /* Determine if we are in 2D or 3D */
-  twodim = PETSC_TRUE;
-  for (i=0;i<graph->ncc;i++) {
-    PetscInt repdof = graph->queue[graph->cptr[i]];
-    PetscInt ccsize = graph->cptr[i+1]-graph->cptr[i];
-    if (graph->count[repdof] > 1 && ccsize > custom_minimal_size) {
-      twodim = PETSC_FALSE;
-      break;
-    }
-  }
-  ierr = MPIU_Allreduce(&twodim,&graph->twodim,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)graph->l2gmap));CHKERRQ(ierr);
-
   /* free workspace */
   graph->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -1093,6 +1095,8 @@ PetscErrorCode PCBDDCGraphReset(PCBDDCGraph graph)
     ierr = PetscFree(graph->local_subs);CHKERRQ(ierr);
   }
   graph->has_dirichlet       = PETSC_FALSE;
+  graph->twodimset           = PETSC_FALSE;
+  graph->twodim              = PETSC_FALSE;
   graph->nvtxs               = 0;
   graph->nvtxs_global        = 0;
   graph->n_subsets           = 0;

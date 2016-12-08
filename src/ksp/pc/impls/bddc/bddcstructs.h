@@ -25,6 +25,7 @@ struct _PCBDDCGraph {
   PetscInt               *special_dof;
   PetscInt               custom_minimal_size;
   PetscBool              twodim;
+  PetscBool              twodimset;
   PetscBool              has_dirichlet;
   IS                     dirdofs;
   IS                     dirdofsB;
