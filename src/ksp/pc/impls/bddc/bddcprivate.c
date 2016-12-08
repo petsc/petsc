@@ -7024,13 +7024,8 @@ PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomain
     }
     switch (new_local_type_private) {
       case MATDENSE_PRIVATE:
-        if (n_recvs>1) { /* subassembling of dense matrices does not give a dense matrix! */
-          new_local_type = MATSEQAIJ;
-          bs = 1;
-        } else { /* if I receive only 1 dense matrix */
-          new_local_type = MATSEQDENSE;
-          bs = 1;
-        }
+        new_local_type = MATSEQAIJ;
+        bs = 1;
         break;
       case MATAIJ_PRIVATE:
         new_local_type = MATSEQAIJ;
@@ -7046,8 +7041,8 @@ PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomain
         SETERRQ2(comm,PETSC_ERR_SUP,"Unsupported private type %d in %s",new_local_type_private,__FUNCT__);
         break;
     }
-  } else { /* by default, new_local_type is seqdense */
-    new_local_type = MATSEQDENSE;
+  } else { /* by default, new_local_type is seqaij */
+    new_local_type = MATSEQAIJ;
     bs = 1;
   }
 
