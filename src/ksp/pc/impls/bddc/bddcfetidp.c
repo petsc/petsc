@@ -548,15 +548,14 @@ PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat fetimat, FETIDPPC_ctx fetidppc_ctx
       ierr = PetscOptionsGetBool(NULL,((PetscObject)fetimat)->prefix,"-pc_discrete_harmonic",&discrete_harmonic,NULL);CHKERRQ(ierr);
     }
     if (discrete_harmonic) {
-      KSP              sksp;
-      PC               pc;
-      Mat              A_II,A_IB,A_BI;
-      IS               aB;
-      PetscInt         nb;
-      MatSolverPackage solver;
-      KSPType          ksptype;
-      PCType           pctype;
-      const char       *prefix;
+      KSP        sksp;
+      PC         pc;
+      Mat        A_II,A_IB,A_BI;
+      IS         aB;
+      PetscInt   nb;
+      PetscBool  isshell;
+      KSPType    ksptype;
+      const char *prefix;
 
       /*
         We constructs a Schur complement for
@@ -583,12 +582,21 @@ PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat fetimat, FETIDPPC_ctx fetidppc_ctx
       ierr = KSPGetType(pcis->ksp_D,&ksptype);CHKERRQ(ierr);
       ierr = KSPSetType(sksp,ksptype);CHKERRQ(ierr);
       ierr = KSPGetPC(pcis->ksp_D,&pc);CHKERRQ(ierr);
-      ierr = PCGetType(pc,&pctype);CHKERRQ(ierr);
-      ierr = PCFactorGetMatSolverPackage(pc,(const MatSolverPackage*)&solver);CHKERRQ(ierr);
-      ierr = KSPGetPC(sksp,&pc);CHKERRQ(ierr);
-      ierr = PCSetType(pc,pctype);CHKERRQ(ierr);
-      if (solver) {
-        ierr = PCFactorSetMatSolverPackage(pc,solver);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare((PetscObject)pc,PCSHELL,&isshell);CHKERRQ(ierr);
+      if (!isshell) {
+        MatSolverPackage solver;
+        PCType           pctype;
+
+        ierr = PCGetType(pc,&pctype);CHKERRQ(ierr);
+        ierr = PCFactorGetMatSolverPackage(pc,(const MatSolverPackage*)&solver);CHKERRQ(ierr);
+        ierr = KSPGetPC(sksp,&pc);CHKERRQ(ierr);
+        ierr = PCSetType(pc,pctype);CHKERRQ(ierr);
+        if (solver) {
+          ierr = PCFactorSetMatSolverPackage(pc,solver);CHKERRQ(ierr);
+        }
+      } else {
+        ierr = KSPGetPC(sksp,&pc);CHKERRQ(ierr);
+        ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
       }
       ierr = MatDestroy(&A_II);CHKERRQ(ierr);
       ierr = MatDestroy(&A_IB);CHKERRQ(ierr);
