@@ -622,3 +622,12 @@ cdef class DMPlex(DM):
         cdef PetscReal vol = 0, centroid[3], normal[3]
         CHKERR( DMPlexComputeCellGeometryFVM(self.dm, ccell, &vol, centroid, normal) )
         return (toReal(vol), array_r(dim, centroid), array_r(dim, normal))
+
+    def constructGhostCells(self, labelName):
+        cdef const_char *cname = NULL
+        labelName = str2bytes(labelName, &cname)
+        cdef PetscInt numGhostCells = 0
+        cdef PetscDM dmGhosted = NULL
+        CHKERR( DMPlexConstructGhostCells(self.dm, cname, &numGhostCells, &dmGhosted))
+        PetscCLEAR(self.obj); self.dm = dmGhosted
+        return toInt(numGhostCells)
