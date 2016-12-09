@@ -8,6 +8,7 @@ if __name__ == '__main__':
   configure_options = [
     '--download-suitesparse',
     '--download-mumps',
+    '--download-scalapack',
     '--download-chaco',
     '--download-ctetgen',
     '--download-exodusii',
