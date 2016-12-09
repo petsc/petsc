@@ -170,15 +170,15 @@
 !     Fortran Null
 !
       PetscChar(80)       PETSC_NULL_CHARACTER
-      PetscInt            PETSC_NULL_INTEGER
-      PetscFortranDouble  PETSC_NULL_DOUBLE
+      PetscInt         PETSC_NULL_INTEGER(1)
+      PetscFortranDouble PETSC_NULL_DOUBLE(1)
 !
 !      A PETSC_NULL_FUNCTION pointer
 !
       external PETSC_NULL_FUNCTION
-      PetscScalar   PETSC_NULL_SCALAR
-      PetscReal     PETSC_NULL_REAL
-      PetscBool     PETSC_NULL_BOOL
+      PetscScalar PETSC_NULL_SCALAR(1)
+      PetscReal   PETSC_NULL_REAL(1)
+      PetscBool   PETSC_NULL_BOOL(1)
 !
 #if defined(PETSC_USE_REAL___FLOAT128)
       integer MPIU_REAL
@@ -204,7 +204,7 @@
 !     which can be set - only at runtime.
 !
       common /petscfortran1/ PETSC_NULL_CHARACTER
-      common /petscfortran2/ PETSC_NULL_INTEGER
+      common /petscfortran2/PETSC_NULL_INTEGER
       common /petscfortran4/ PETSC_NULL_SCALAR
       common /petscfortran5/ PETSC_NULL_DOUBLE
       common /petscfortran6/ PETSC_NULL_REAL

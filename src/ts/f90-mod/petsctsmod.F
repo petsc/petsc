@@ -1,8 +1,26 @@
 
-        module petsctsdef
+        module petsctsdefdummy
         use petscsnesdef
 #include <../src/ts/f90-mod/petscts.h>
         end module
+
+        module petsctsdef
+        use petsctsdefdummy
+        interface operator(.ne.)
+          function tsnotequal(A,B)
+            use petsctsdefdummy
+            logical tsnotequal
+            type(tTS), intent(in) :: A,B
+          end function
+        end interface operator (.ne.)
+        end module
+
+        function tsnotequal(A,B)
+          use petsctsdefdummy
+          logical tsnotequal
+          type(tTS), intent(in) :: A,B
+          tsnotequal = (A%v .ne. B%v)
+        end function
 
         module petscts
         use petsctsdef

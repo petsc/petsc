@@ -1,9 +1,27 @@
 
 
-        module petscdmdef
+        module petscdmdefdummy
         use petscmatdef
 #include <../src/dm/f90-mod/petscdm.h>
         end module
+
+        module petscdmdef
+        use petscdmdefdummy
+        interface operator(.ne.)
+          function dmnotequal(A,B)
+            use petscdmdefdummy
+            logical dmnotequal
+            type(tDM), intent(in) :: A,B
+          end function
+        end interface operator (.ne.)
+        end module
+
+        function dmnotequal(A,B)
+          use petscdmdefdummy
+          logical dmnotequal
+          type(tDM), intent(in) :: A,B
+          dmnotequal = (A%v .ne. B%v)
+        end function
 
         module petscdmdadef
         use petscdmdef

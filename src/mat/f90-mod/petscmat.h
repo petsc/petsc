@@ -18,6 +18,8 @@
       end type tMatFDColoring
 
       Mat, parameter :: PETSC_NULL_MAT = tMat(-1)
+      MatFDColoring, parameter :: PETSC_NULL_MATFDCOLORING               &
+     &               = tMatFDColoring(-1)
 !
 !  Flag for matrix assembly
 !

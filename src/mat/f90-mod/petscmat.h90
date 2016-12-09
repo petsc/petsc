@@ -4,7 +4,64 @@
 #define MAT_INFO_SIZE MAT_INFO_SIZE_MOD
 #define MAT_FACTORINFO_SIZE MAT_FACTORINFO_SIZE_MOD
 
-      Interface MatSetValues
+        Interface
+        subroutine MatCreateMPIAIJ(a,b,c,d,e,f,g,h,i,j,z)
+          use petscmatdef
+          MPI_Comm a
+          PetscInt b
+          PetscInt c
+          PetscInt d
+          PetscInt e
+          PetscInt f
+          PetscInt g (*)
+          PetscInt h
+          PetscInt i (*)
+          Mat j
+          integer z
+        end subroutine
+
+        subroutine MatCreateSeqAIJ(a,b,c,d,e,f,z)
+          use petscmatdef
+          MPI_Comm a
+          PetscInt b
+          PetscInt c
+          PetscInt d
+          PetscInt e(*)
+          Mat f
+          integer z
+        end subroutine
+
+        subroutine MatSeqAIJSetPreallocation(a,b,c,z)
+          use petscmatdef
+          Mat a
+          PetscInt b
+          PetscInt c(*)
+          integer z
+        end subroutine
+
+        subroutine MatMPIAIJSetPreallocation(a,b,c,d,e,z)
+          use petscmatdef
+          Mat a
+          PetscInt b
+          PetscInt c(*)
+          PetscInt d
+          PetscInt e(*)
+          integer z
+        end subroutine
+
+        subroutine MatXAIJSetPreallocationb(a,b,c,d,e,f,z)
+          use petscmatdef
+          Mat a ! Mat
+          PetscInt b ! PetscInt
+          PetscInt c (*) ! PetscInt
+          PetscInt d (*) ! PetscInt
+          PetscInt e (*) ! PetscInt
+          PetscInt f (*) ! PetscInt
+          integer z
+        end subroutine
+        end interface
+
+        Interface MatSetValues
         ! picky Fortran requires seperate prototypes if args
         ! are arrays or scalars
         subroutine MatSetValues0(a,b,c,d,e,f,g,z)
