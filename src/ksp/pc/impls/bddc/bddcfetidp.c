@@ -139,7 +139,9 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   PC_IS          *pcis=(PC_IS*)fetidpmat_ctx->pc->data;
   PC_BDDC        *pcbddc=(PC_BDDC*)fetidpmat_ctx->pc->data;
   PCBDDCGraph    mat_graph=pcbddc->mat_graph;
+#if defined(PETSC_USE_DEBUG)
   Mat_IS         *matis  = (Mat_IS*)fetidpmat_ctx->pc->pmat->data;
+#endif
   MPI_Comm       comm;
   Mat            ScalingMat,BD1,BD2;
   Vec            fetidp_global;
@@ -524,10 +526,12 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
       /* workspace allocation */
       B_lwork = 0;
       if (mss) {
+        PetscScalar dummy = 1;
+
         B_lwork = -1;
         ierr = PetscBLASIntCast(mss,&B_N);CHKERRQ(ierr);
         ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-        PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,W,&B_N,&B_N,&lwork,&B_lwork,&B_ierr));
+        PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,&dummy,&B_N,&B_N,&lwork,&B_lwork,&B_ierr));
         ierr = PetscFPTrapPop();CHKERRQ(ierr);
         if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to GETRI Lapack routine %d",(int)B_ierr);
         ierr = PetscBLASIntCast((PetscInt)PetscRealPart(lwork),&B_lwork);CHKERRQ(ierr);
