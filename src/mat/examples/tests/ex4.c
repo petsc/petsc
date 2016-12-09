@@ -10,7 +10,7 @@ int main(int argc,char **argv)
   Mat            mat,submat,*submatrices;
   PetscInt       m = 10,n = 10,i = 4,tmp,rstart,rend;
   PetscErrorCode ierr;
-  IS             irkeep,ickeep;
+  IS             irow,icol;
   PetscScalar    value = 1.0;
   PetscViewer    sviewer;
 
@@ -33,15 +33,32 @@ int main(int argc,char **argv)
   ierr = MatView(mat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Form submatrix with rows 2-4 and columns 4-8 */
-  ierr   = ISCreateStride(PETSC_COMM_SELF,3,2,1,&irkeep);CHKERRQ(ierr);
-  ierr   = ISCreateStride(PETSC_COMM_SELF,5,4,1,&ickeep);CHKERRQ(ierr);
-  ierr   = MatGetSubMatrices(mat,1,&irkeep,&ickeep,MAT_INITIAL_MATRIX,&submatrices);CHKERRQ(ierr);
+  ierr   = ISCreateStride(PETSC_COMM_SELF,3,2,1,&irow);CHKERRQ(ierr);
+  ierr   = ISCreateStride(PETSC_COMM_SELF,5,4,1,&icol);CHKERRQ(ierr);
+  ierr   = MatGetSubMatrices(mat,1,&irow,&icol,MAT_INITIAL_MATRIX,&submatrices);CHKERRQ(ierr);
+  submat = *submatrices;
+
+  /* Test reuse submatrices */
+  ierr = MatGetSubMatrices(mat,1,&irow,&icol,MAT_REUSE_MATRIX,&submatrices);CHKERRQ(ierr);
+  ierr = PetscFree(submatrices);CHKERRQ(ierr);
+
+  /* sviewer will cause the submatrices (one per processor) to be printed in the correct order */
+  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"\nSubmatrices\n");CHKERRQ(ierr);
+  ierr = PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
+  ierr = MatView(submat,sviewer);CHKERRQ(ierr);
+  ierr = PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
+  ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+  /* Form submatrix with rows 2-4 and all columns */
+  ierr   = ISDestroy(&icol);CHKERRQ(ierr);
+  ierr   = MatDestroy(&submat);CHKERRQ(ierr);
+  ierr   = ISCreateStride(PETSC_COMM_SELF,10,0,1,&icol);CHKERRQ(ierr);
+  ierr   = MatGetSubMatrices(mat,1,&irow,&icol,MAT_INITIAL_MATRIX,&submatrices);CHKERRQ(ierr);
+  ierr   = MatGetSubMatrices(mat,1,&irow,&icol,MAT_REUSE_MATRIX,&submatrices);CHKERRQ(ierr);
   submat = *submatrices;
   ierr   = PetscFree(submatrices);CHKERRQ(ierr);
-  /*
-     sviewer will cause the submatrices (one per processor) to be printed in the correct order
-  */
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"Submatrices\n");CHKERRQ(ierr);
+
+  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"\nSubmatrices with allcolumns\n");CHKERRQ(ierr);
   ierr = PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
   ierr = MatView(submat,sviewer);CHKERRQ(ierr);
   ierr = PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
@@ -52,8 +69,8 @@ int main(int argc,char **argv)
   ierr = MatZeroEntries(mat);CHKERRQ(ierr);
   ierr = MatView(mat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = ISDestroy(&irkeep);CHKERRQ(ierr);
-  ierr = ISDestroy(&ickeep);CHKERRQ(ierr);
+  ierr = ISDestroy(&irow);CHKERRQ(ierr);
+  ierr = ISDestroy(&icol);CHKERRQ(ierr);
   ierr = MatDestroy(&submat);CHKERRQ(ierr);
   ierr = MatDestroy(&mat);CHKERRQ(ierr);
   ierr = PetscFinalize();

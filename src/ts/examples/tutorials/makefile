@@ -705,6 +705,12 @@ runex26_4:
 	   ${DIFF} output/ex26_4.out ex26_4.tmp || printf "${PWD}\nPossible problem with ex26_4, diffs above\n=========================================\n";  \
 	   ${RM} -f ex26_4.tmp
 
+runex26_asm:
+	-@${MPIEXEC} -n 4 ./ex26 -da_refine 1 -lidvelocity 100 -grashof 1e3 -ts_max_steps 10 -ts_rtol 1e-3 -ts_atol 1e-3 \
+        -ts_type beuler -ts_monitor -snes_converged_reason -pc_type asm > ex26_4.tmp 2>&1; \
+	   ${DIFF} output/ex26_asm.out ex26_4.tmp || printf "${PWD}\nPossible problem with ex26_asm, diffs above\n=========================================\n";  \
+	   ${RM} -f ex26_4.tmp
+
 runex29:
 	-@${MPIEXEC} -n 16 ./ex29 -da_refine 4 -ts_max_steps 10 -ts_rtol 1e-3 -ts_atol 1e-3 \
         -ts_type arkimex -ts_monitor -snes_monitor -snes_type ngmres \
@@ -848,7 +854,8 @@ TESTEXAMPLES_C_NOTSINGLE  = ex2.PETSc runex2 ex2.rm ex3.PETSc runex3_3 ex3.rm ex
                             printdot ex12.PETSc runex12 runex12_2 ex12.rm ex15.PETSc runex15_3 runex15_4 ex15.rm printdot \
                             ex16.PETSc runex16  ex16.rm ex17.PETSc runex17 runex17_2 ex17.rm  ex22.PETSc runex22  ex22.rm printdot \
                             ex29.PETSc runex29 ex29.rm ex43.PETSc runex43_a runex43_b ex43.rm
-TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE  = ex9.PETSc runex9 runex9_2 runex9_3 ex9.rm ex26.PETSc runex26 runex26_2 runex26_3 runex26_4 ex26.rm\
+TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE  = ex9.PETSc runex9 runex9_2 runex9_3 ex9.rm \
+                            ex26.PETSc runex26 runex26_2 runex26_3 runex26_4 runex26_asm ex26.rm\
                             ex16opt_p.PETSc  runex16opt_p  ex16opt_p.rm \
                             printdot ex16opt_ic.PETSc runex16opt_ic ex16opt_ic.rm \
                             ex20opt_p.PETSc   ex20opt_p.rm \

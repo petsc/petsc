@@ -232,11 +232,19 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     }
     { /* determine the global and max number of subdomains */
       struct {PetscInt max,sum;} inwork,outwork;
+      PetscMPIInt size;
+
       inwork.max   = osm->n_local_true;
       inwork.sum   = osm->n_local_true;
       ierr         = MPIU_Allreduce(&inwork,&outwork,1,MPIU_2INT,MPIU_MAXSUM_OP,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
       osm->n_local = outwork.max;
       osm->n       = outwork.sum;
+
+      ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
+      if (outwork.max == 1 && outwork.sum == size) {
+        /* osm->n_local_true = 1 on all processes, set this option may enable use of optimized MatGetSubMatrices() implementation */
+        ierr = MatSetOption(pc->pmat,MAT_SUBMAT_SINGLEIS,PETSC_TRUE);CHKERRQ(ierr);
+      } 
     }
     if (!osm->is) { /* create the index sets */
       ierr = PCASMCreateSubdomains(pc->pmat,osm->n_local_true,&osm->is);CHKERRQ(ierr);

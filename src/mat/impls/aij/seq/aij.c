@@ -1166,6 +1166,9 @@ PetscErrorCode MatSetOption_SeqAIJ(Mat A,MatOption op,PetscBool flg)
   case MAT_USE_INODES:
     /* Not an error because MatSetOption_SeqAIJ_Inode handles this one */
     break;
+  case MAT_SUBMAT_SINGLEIS:
+    A->submat_singleis = flg;
+    break;
   default:
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"unknown option %d",op);
   }
