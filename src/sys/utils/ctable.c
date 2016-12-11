@@ -49,7 +49,7 @@ PetscErrorCode  PetscTableCreate(const PetscInt n,PetscInt maxkey,PetscTable *rt
   PetscFunctionBegin;
   if (n < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"n < 0");
   ierr       = PetscNew(&ta);CHKERRQ(ierr);
-  ierr       = PetscTableCreateHashSize(n,&ta->tablesize);
+  ierr       = PetscTableCreateHashSize(n,&ta->tablesize);CHKERRQ(ierr);
   ierr       = PetscCalloc1(ta->tablesize,&ta->keytable);CHKERRQ(ierr);
   ierr       = PetscMalloc1(ta->tablesize,&ta->table);CHKERRQ(ierr);
   ta->head   = 0;
@@ -145,7 +145,7 @@ PetscErrorCode  PetscTableAddExpand(PetscTable ta,PetscInt key,PetscInt data,Ins
   PetscInt       *oldtab = ta->table,*oldkt = ta->keytable,newk,ndata;
 
   PetscFunctionBegin;
-  ierr = PetscTableCreateHashSize(ta->tablesize,&ta->tablesize);
+  ierr = PetscTableCreateHashSize(ta->tablesize,&ta->tablesize);CHKERRQ(ierr);
   ierr = PetscMalloc1(ta->tablesize,&ta->table);CHKERRQ(ierr);
   ierr = PetscCalloc1(ta->tablesize,&ta->keytable);CHKERRQ(ierr);
 
