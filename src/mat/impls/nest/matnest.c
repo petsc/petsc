@@ -1499,6 +1499,7 @@ PetscErrorCode MatCreateNest(MPI_Comm comm,PetscInt nr,const IS is_row[],PetscIn
 static PetscErrorCode MatConvert_Nest_SeqAIJ_fast(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat_Nest       *nest = (Mat_Nest*)A->data;
+  Mat            *trans;
   PetscScalar    **avv;
   PetscScalar    *vv;
   PetscInt       **aii,**ajj;
@@ -1519,14 +1520,23 @@ static PetscErrorCode MatConvert_Nest_SeqAIJ_fast(Mat A,MatType newtype,MatReuse
   }
   /* extract CSR for nested SeqAIJ matrices */
   nnz  = 0;
-  ierr = PetscCalloc3(nest->nr*nest->nc,&aii,nest->nr*nest->nc,&ajj,nest->nr*nest->nc,&avv);CHKERRQ(ierr);
+  ierr = PetscCalloc4(nest->nr*nest->nc,&aii,nest->nr*nest->nc,&ajj,nest->nr*nest->nc,&avv,nest->nr*nest->nc,&trans);CHKERRQ(ierr);
   for (i=0; i<nest->nr; ++i) {
     for (j=0; j<nest->nc; ++j) {
       Mat B = nest->m[i][j];
       if (B) {
         PetscScalar *naa;
         PetscInt    *nii,*njj,nnr;
+        PetscBool   istrans;
 
+        ierr = PetscObjectTypeCompare((PetscObject)B,MATTRANSPOSEMAT,&istrans);CHKERRQ(ierr);
+        if (istrans) {
+          Mat Bt;
+
+          ierr = MatTransposeGetMat(B,&Bt);CHKERRQ(ierr);
+          ierr = MatTranspose(Bt,MAT_INITIAL_MATRIX,&trans[i*nest->nc+j]);CHKERRQ(ierr);
+          B    = trans[i*nest->nc+j];
+        }
         ierr = MatGetRowIJ(B,0,PETSC_FALSE,PETSC_FALSE,&nnr,(const PetscInt**)&nii,(const PetscInt**)&njj,&done);CHKERRQ(ierr);
         if (!done) SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"MatGetRowIJ");
         ierr = MatSeqAIJGetArray(B,&naa);CHKERRQ(ierr);
@@ -1605,13 +1615,16 @@ static PetscErrorCode MatConvert_Nest_SeqAIJ_fast(Mat A,MatType newtype,MatReuse
       Mat B = nest->m[i][j];
       if (B) {
         PetscInt nnr = 0, k = i*nest->nc+j;
+
+        B    = (trans[k] ? trans[k] : B);
         ierr = MatRestoreRowIJ(B,0,PETSC_FALSE,PETSC_FALSE,&nnr,(const PetscInt**)&aii[k],(const PetscInt**)&ajj[k],&done);CHKERRQ(ierr);
         if (!done) SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"MatRestoreRowIJ");
         ierr = MatSeqAIJRestoreArray(B,&avv[k]);CHKERRQ(ierr);
+        ierr = MatDestroy(&trans[k]);CHKERRQ(ierr);
       }
     }
   }
-  ierr = PetscFree3(aii,ajj,avv);CHKERRQ(ierr);
+  ierr = PetscFree4(aii,ajj,avv,trans);CHKERRQ(ierr);
 
   /* finalize newmat */
   if (reuse == MAT_INITIAL_MATRIX) {
@@ -1657,9 +1670,17 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse r
       for (j=0; j<nest->nc && fast; ++j) {
         Mat B = nest->m[i][j];
         if (B) {
-          ierr = PetscObjectTypeCompare((PetscObject)B,MATAIJ,&fast);CHKERRQ(ierr);
+          ierr = PetscObjectTypeCompare((PetscObject)B,MATSEQAIJ,&fast);CHKERRQ(ierr);
           if (!fast) {
-            ierr = PetscObjectTypeCompare((PetscObject)B,MATSEQAIJ,&fast);CHKERRQ(ierr);
+            PetscBool istrans;
+
+            ierr = PetscObjectTypeCompare((PetscObject)B,MATTRANSPOSEMAT,&istrans);CHKERRQ(ierr);
+            if (istrans) {
+              Mat Bt;
+
+              ierr = MatTransposeGetMat(B,&Bt);CHKERRQ(ierr);
+              ierr = PetscObjectTypeCompare((PetscObject)Bt,MATSEQAIJ,&fast);CHKERRQ(ierr);
+            }
           }
         }
       }
@@ -1689,6 +1710,9 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse r
           nf  += f;
         }
       }
+    }
+    if (fast) {
+      ierr = PetscOptionsGetBool(NULL,NULL,"-use_fast",&fast,NULL);CHKERRQ(ierr);
     }
     if (fast) {
       ierr = MatConvert_Nest_SeqAIJ_fast(A,newtype,reuse,newmat);CHKERRQ(ierr);
