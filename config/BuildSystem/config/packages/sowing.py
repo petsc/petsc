@@ -24,6 +24,7 @@ class Configure(config.package.GNUPackage):
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
+    self.petscclone = framework.require('PETSc.options.petscclone', None)
     return
 
   def formGNUConfigureArgs(self):
@@ -47,6 +48,8 @@ class Configure(config.package.GNUPackage):
 
   def configure(self):
     if (self.framework.clArgDB.has_key('with-sowing') and not self.argDB['with-sowing']):
+      if hasattr(self.compilers, 'FC') and self.petscclone.isClone:
+        raise RuntimeError('Cannot use --with-sowing=0 if using Fortran and git repository for PETSc')
       self.logPrint("Not checking sowing on user request of --with-sowing=0\n")
       return
 
