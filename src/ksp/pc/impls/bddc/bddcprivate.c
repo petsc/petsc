@@ -8196,27 +8196,30 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
       ierr = PCCreate(PetscObjectComm((PetscObject)pc),&pcf);CHKERRQ(ierr);
       ierr = PCSetOperators(pcf,pc->mat,pc->pmat);CHKERRQ(ierr);
       ierr = PCSetType(pcf,PCBDDC);CHKERRQ(ierr);
+
       /* hacks */
-      pcisf = (PC_IS*)pcf->data;
-      pcisf->is_B_local = pcis->is_B_local;
-      pcisf->vec1_N = pcis->vec1_N;
-      pcisf->BtoNmap = pcis->BtoNmap;
-      pcisf->n = pcis->n;
-      pcisf->n_B = pcis->n_B;
-      pcbddcf = (PC_BDDC*)pcf->data;
-      ierr = PetscFree(pcbddcf->mat_graph);CHKERRQ(ierr);
-      pcbddcf->mat_graph = pcbddc->mat_graph;
-      pcbddcf->use_faces = PETSC_TRUE;
+      pcisf                        = (PC_IS*)pcf->data;
+      pcisf->is_B_local            = pcis->is_B_local;
+      pcisf->vec1_N                = pcis->vec1_N;
+      pcisf->BtoNmap               = pcis->BtoNmap;
+      pcisf->n                     = pcis->n;
+      pcisf->n_B                   = pcis->n_B;
+      pcbddcf                      = (PC_BDDC*)pcf->data;
+      ierr                         = PetscFree(pcbddcf->mat_graph);CHKERRQ(ierr);
+      pcbddcf->mat_graph           = pcbddc->mat_graph;
+      pcbddcf->use_faces           = PETSC_TRUE;
       pcbddcf->use_change_of_basis = PETSC_TRUE;
       pcbddcf->use_change_on_faces = PETSC_TRUE;
-      pcbddcf->use_qr_single = PETSC_TRUE;
-      pcbddcf->fake_change = PETSC_TRUE;
+      pcbddcf->use_qr_single       = PETSC_TRUE;
+      pcbddcf->fake_change         = PETSC_TRUE;
+
+      /* setup constraints so that we can get information on primal vertices and change of basis (in local numbering) */
       ierr = PCBDDCConstraintsSetUp(pcf);CHKERRQ(ierr);
-      /* store information on primal vertices and change of basis (in local numbering) */
       sub_schurs->change_with_qr = pcbddcf->use_qr_single;
       ierr = ISCreateGeneral(PETSC_COMM_SELF,pcbddcf->n_vertices,pcbddcf->local_primal_ref_node,PETSC_COPY_VALUES,&change_primal);CHKERRQ(ierr);
       change = pcbddcf->ConstraintMatrix;
       pcbddcf->ConstraintMatrix = NULL;
+
       /* free unneeded memory allocated in PCBDDCConstraintsSetUp */
       ierr = PetscFree(pcbddcf->sub_schurs);CHKERRQ(ierr);
       ierr = MatNullSpaceDestroy(&pcbddcf->onearnullspace);CHKERRQ(ierr);
@@ -8225,6 +8228,7 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
       ierr = PetscFree(pcbddcf->onearnullvecs_state);CHKERRQ(ierr);
       ierr = PetscFree(pcf->data);CHKERRQ(ierr);
       pcf->ops->destroy = NULL;
+      pcf->ops->reset   = NULL;
       ierr = PCDestroy(&pcf);CHKERRQ(ierr);
     }
     if (!pcbddc->use_deluxe_scaling) scaling = pcis->D;
