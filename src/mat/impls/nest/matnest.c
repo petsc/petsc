@@ -1,5 +1,6 @@
 
 #include <../src/mat/impls/nest/matnestimpl.h> /*I   "petscmat.h"   I*/
+#include <../src/mat/impls/aij/seq/aij.h>
 #include <petscsf.h>
 
 static PetscErrorCode MatSetUp_NestIS_Private(Mat,PetscInt,const IS[],PetscInt,const IS[]);
@@ -1494,6 +1495,144 @@ PetscErrorCode MatCreateNest(MPI_Comm comm,PetscInt nr,const IS is_row[],PetscIn
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatConvert_Nest_SeqAIJ_fast"
+static PetscErrorCode MatConvert_Nest_SeqAIJ_fast(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
+{
+  Mat_Nest       *nest = (Mat_Nest*)A->data;
+  PetscScalar    **avv;
+  PetscScalar    *vv;
+  PetscInt       **aii,**ajj;
+  PetscInt       *ii,*jj,*ci;
+  PetscInt       nr,nc,nnz,i,j;
+  PetscBool      done;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatGetSize(A,&nr,&nc);CHKERRQ(ierr);
+  if (reuse == MAT_REUSE_MATRIX) {
+    PetscInt rnr;
+
+    ierr = MatGetRowIJ(*newmat,0,PETSC_FALSE,PETSC_FALSE,&rnr,(const PetscInt**)&ii,(const PetscInt**)&jj,&done);CHKERRQ(ierr);
+    if (!done) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"MatGetRowIJ");
+    if (rnr != nr) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"Cannot reuse matrix, wrong number of rows");
+    ierr = MatSeqAIJGetArray(*newmat,&vv);CHKERRQ(ierr);
+  }
+  /* extract CSR for nested SeqAIJ matrices */
+  nnz  = 0;
+  ierr = PetscCalloc3(nest->nr*nest->nc,&aii,nest->nr*nest->nc,&ajj,nest->nr*nest->nc,&avv);CHKERRQ(ierr);
+  for (i=0; i<nest->nr; ++i) {
+    for (j=0; j<nest->nc; ++j) {
+      Mat B = nest->m[i][j];
+      if (B) {
+        PetscScalar *naa;
+        PetscInt    *nii,*njj,nnr;
+
+        ierr = MatGetRowIJ(B,0,PETSC_FALSE,PETSC_FALSE,&nnr,(const PetscInt**)&nii,(const PetscInt**)&njj,&done);CHKERRQ(ierr);
+        if (!done) SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"MatGetRowIJ");
+        ierr = MatSeqAIJGetArray(B,&naa);CHKERRQ(ierr);
+        nnz += nii[nnr];
+
+        aii[i*nest->nc+j] = nii;
+        ajj[i*nest->nc+j] = njj;
+        avv[i*nest->nc+j] = naa;
+      }
+    }
+  }
+  if (reuse != MAT_REUSE_MATRIX) {
+    ierr = PetscMalloc1(nr+1,&ii);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nnz,&jj);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nnz,&vv);CHKERRQ(ierr);
+  } else {
+    if (nnz != ii[nr]) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"Cannot reuse matrix, wrong number of nonzeros");
+  }
+
+  /* new row pointer */
+  ierr = PetscMemzero(ii,(nr+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  for (i=0; i<nest->nr; ++i) {
+    PetscInt       ncr,rst;
+
+    ierr = ISStrideGetInfo(nest->isglobal.row[i],&rst,NULL);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(nest->isglobal.row[i],&ncr);CHKERRQ(ierr);
+    for (j=0; j<nest->nc; ++j) {
+      if (aii[i*nest->nc+j]) {
+        PetscInt    *nii = aii[i*nest->nc+j];
+        PetscInt    ir;
+
+        for (ir=rst; ir<ncr+rst; ++ir) {
+          ii[ir+1] += nii[1]-nii[0];
+          nii++;
+        } 
+      }
+    }
+  }
+  for (i=0; i<nr; i++) ii[i+1] += ii[i];
+
+  /* construct CSR for the new matrix */
+  ierr = PetscCalloc1(nr,&ci);CHKERRQ(ierr);
+  for (i=0; i<nest->nr; ++i) {
+    PetscInt       ncr,rst;
+
+    ierr = ISStrideGetInfo(nest->isglobal.row[i],&rst,NULL);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(nest->isglobal.row[i],&ncr);CHKERRQ(ierr);
+    for (j=0; j<nest->nc; ++j) {
+      if (aii[i*nest->nc+j]) {
+        PetscScalar *nvv = avv[i*nest->nc+j];
+        PetscInt    *nii = aii[i*nest->nc+j];
+        PetscInt    *njj = ajj[i*nest->nc+j];
+        PetscInt    ir,cst;
+
+        ierr = ISStrideGetInfo(nest->isglobal.col[j],&cst,NULL);CHKERRQ(ierr);
+        for (ir=rst; ir<ncr+rst; ++ir) {
+          PetscInt ij,rsize = nii[1]-nii[0],ist = ii[ir]+ci[ir];
+
+          for (ij=0;ij<rsize;ij++) {
+            jj[ist+ij] = *njj+cst;
+            vv[ist+ij] = *nvv;
+            njj++;
+            nvv++;
+          }
+          ci[ir] += rsize;
+          nii++;
+        } 
+      }
+    }
+  }
+  ierr = PetscFree(ci);CHKERRQ(ierr);
+
+  /* restore info */
+  for (i=0; i<nest->nr; ++i) {
+    for (j=0; j<nest->nc; ++j) {
+      Mat B = nest->m[i][j];
+      if (B) {
+        PetscInt nnr = 0, k = i*nest->nc+j;
+        ierr = MatRestoreRowIJ(B,0,PETSC_FALSE,PETSC_FALSE,&nnr,(const PetscInt**)&aii[k],(const PetscInt**)&ajj[k],&done);CHKERRQ(ierr);
+        if (!done) SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"MatRestoreRowIJ");
+        ierr = MatSeqAIJRestoreArray(B,&avv[k]);CHKERRQ(ierr);
+      }
+    }
+  }
+  ierr = PetscFree3(aii,ajj,avv);CHKERRQ(ierr);
+
+  /* finalize newmat */
+  if (reuse == MAT_INITIAL_MATRIX) {
+    ierr = MatCreateSeqAIJWithArrays(PetscObjectComm((PetscObject)A),nr,nc,ii,jj,vv,newmat);CHKERRQ(ierr);
+  } else if (reuse == MAT_INPLACE_MATRIX) {
+    Mat B;
+
+    ierr = MatCreateSeqAIJWithArrays(PetscObjectComm((PetscObject)A),nr,nc,ii,jj,vv,&B);CHKERRQ(ierr);
+    ierr = MatHeaderReplace(A,&B);CHKERRQ(ierr);
+  }
+  ierr = MatAssemblyBegin(*newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  {
+    Mat_SeqAIJ *a = (Mat_SeqAIJ*)((*newmat)->data);
+    a->free_a     = PETSC_TRUE;
+    a->free_ij    = PETSC_TRUE;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatConvert_Nest_AIJ"
 PETSC_INTERN PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
 {
@@ -1501,9 +1640,61 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse r
   Mat_Nest       *nest = (Mat_Nest*)A->data;
   PetscInt       m,n,M,N,i,j,k,*dnnz,*onnz,rstart;
   PetscInt       cstart,cend;
+  PetscMPIInt    size;
   Mat            C;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
+  if (size == 1) { /* look for a special case with SeqAIJ matrices and strided-1, contiguous, blocks */
+    PetscInt  nf;
+    PetscBool fast;
+
+    ierr = PetscStrcmp(newtype,MATAIJ,&fast);CHKERRQ(ierr);
+    if (!fast) {
+      ierr = PetscStrcmp(newtype,MATSEQAIJ,&fast);CHKERRQ(ierr);
+    }
+    for (i=0; i<nest->nr && fast; ++i) {
+      for (j=0; j<nest->nc && fast; ++j) {
+        Mat B = nest->m[i][j];
+        if (B) {
+          ierr = PetscObjectTypeCompare((PetscObject)B,MATAIJ,&fast);CHKERRQ(ierr);
+          if (!fast) {
+            ierr = PetscObjectTypeCompare((PetscObject)B,MATSEQAIJ,&fast);CHKERRQ(ierr);
+          }
+        }
+      }
+    }
+    for (i=0, nf=0; i<nest->nr && fast; ++i) {
+      ierr = PetscObjectTypeCompare((PetscObject)nest->isglobal.row[i],ISSTRIDE,&fast);CHKERRQ(ierr);
+      if (fast) {
+        PetscInt f,s;
+
+        ierr = ISStrideGetInfo(nest->isglobal.row[i],&f,&s);CHKERRQ(ierr);
+        if (f != nf || s != 1) { fast = PETSC_FALSE; }
+        else {
+          ierr = ISGetSize(nest->isglobal.row[i],&f);CHKERRQ(ierr);
+          nf  += f;
+        }
+      }
+    }
+    for (i=0, nf=0; i<nest->nc && fast; ++i) {
+      ierr = PetscObjectTypeCompare((PetscObject)nest->isglobal.col[i],ISSTRIDE,&fast);CHKERRQ(ierr);
+      if (fast) {
+        PetscInt f,s;
+
+        ierr = ISStrideGetInfo(nest->isglobal.col[i],&f,&s);CHKERRQ(ierr);
+        if (f != nf || s != 1) { fast = PETSC_FALSE; }
+        else {
+          ierr = ISGetSize(nest->isglobal.col[i],&f);CHKERRQ(ierr);
+          nf  += f;
+        }
+      }
+    }
+    if (fast) {
+      ierr = MatConvert_Nest_SeqAIJ_fast(A,newtype,reuse,newmat);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
+  }
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   ierr = MatGetOwnershipRangeColumn(A,&cstart,&cend);CHKERRQ(ierr);
