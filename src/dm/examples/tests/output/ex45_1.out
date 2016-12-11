@@ -1,0 +1,12 @@
+DM Object: 5 MPI processes
+  type: da
+Processor [0] M 2 N 2 P 128 m 1 n 1 p 5 w 1 s 2
+X range of indices: 0 2, Y range of indices: 0 2, Z range of indices: 0 26
+Processor [1] M 2 N 2 P 128 m 1 n 1 p 5 w 1 s 2
+X range of indices: 0 2, Y range of indices: 0 2, Z range of indices: 26 52
+Processor [2] M 2 N 2 P 128 m 1 n 1 p 5 w 1 s 2
+X range of indices: 0 2, Y range of indices: 0 2, Z range of indices: 52 78
+Processor [3] M 2 N 2 P 128 m 1 n 1 p 5 w 1 s 2
+X range of indices: 0 2, Y range of indices: 0 2, Z range of indices: 78 103
+Processor [4] M 2 N 2 P 128 m 1 n 1 p 5 w 1 s 2
+X range of indices: 0 2, Y range of indices: 0 2, Z range of indices: 103 128

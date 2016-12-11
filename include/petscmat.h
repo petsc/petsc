@@ -661,13 +661,56 @@ M*/
   Concepts: preallocation^Matrix
 
 .seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock(), MatPreallocateInitialize(),
-          MatPreallocateInitialize(), MatPreallocateSymmetricSetLocalBlock()
+          MatPreallocateInitialize(), MatPreallocateSymmetricSetLocalBlock(), MatPreallocateSetLocalRemoveDups()
 M*/
 #define MatPreallocateSetLocal(rmap,nrows,rows,cmap,ncols,cols,dnz,onz) 0; \
 {\
   PetscInt __l;\
   _4_ierr = ISLocalToGlobalMappingApply(rmap,nrows,rows,rows);CHKERRQ(_4_ierr);\
   _4_ierr = ISLocalToGlobalMappingApply(cmap,ncols,cols,cols);CHKERRQ(_4_ierr);\
+  for (__l=0;__l<nrows;__l++) {\
+    _4_ierr = MatPreallocateSet((rows)[__l],ncols,cols,dnz,onz);CHKERRQ(_4_ierr);\
+  }\
+}
+
+/*MC
+   MatPreallocateSetLocalRemoveDups - Indicates the locations (rows and columns) in the matrix where nonzeros will be
+       inserted using a local number of the rows and columns. This version removes any duplicate columns in cols
+
+   Synopsis:
+   #include <petscmat.h>
+   PetscErrorCode MatPreallocateSetLocalRemoveDups(ISLocalToGlobalMappping map,PetscInt nrows, PetscInt *rows,PetscInt ncols, PetscInt *cols,PetscInt *dnz, PetscInt *onz)
+
+   Not Collective
+
+   Input Parameters:
++  map - the row mapping from local numbering to global numbering
+.  nrows - the number of rows indicated
+.  rows - the indices of the rows (these values are mapped to the global values)
+.  cmap - the column mapping from local to global numbering
+.  ncols - the number of columns in the matrix   (this value will be changed if duplicate columns are found)
+.  cols - the columns indicated (these values are mapped to the global values, they are then sorted and duplicates removed)
+.  dnz - the array that will be passed to the matrix preallocation routines
+-  ozn - the other array passed to the matrix preallocation routines
+
+   Level: intermediate
+
+   Notes:
+    See Users-Manual: ch_performance for more details.
+
+   Do not malloc or free dnz and onz, that is handled internally by these routines
+
+  Concepts: preallocation^Matrix
+
+.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock(), MatPreallocateInitialize(),
+          MatPreallocateInitialize(), MatPreallocateSymmetricSetLocalBlock(), MatPreallocateSetLocal()
+M*/
+#define MatPreallocateSetLocalRemoveDups(rmap,nrows,rows,cmap,ncols,cols,dnz,onz) 0; \
+{\
+  PetscInt __l;\
+  _4_ierr = ISLocalToGlobalMappingApply(rmap,nrows,rows,rows);CHKERRQ(_4_ierr);\
+  _4_ierr = ISLocalToGlobalMappingApply(cmap,ncols,cols,cols);CHKERRQ(_4_ierr);\
+  _4_ierr = PetscSortRemoveDupsInt(&ncols,cols);CHKERRQ(_4_ierr);\
   for (__l=0;__l<nrows;__l++) {\
     _4_ierr = MatPreallocateSet((rows)[__l],ncols,cols,dnz,onz);CHKERRQ(_4_ierr);\
   }\
