@@ -21,6 +21,7 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   if (!flg) { /* Create a matrix and test MatSetValues */
     PetscMPIInt NP;
+    PetscBool   test_rectangular = PETSC_FALSE;
 
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&NP);CHKERRQ(ierr);
     ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
@@ -74,17 +75,18 @@ int main(int argc,char **args)
     ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-#if 1
-    ierr = MatConvert(B,MATAIJ,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
-    ierr = MatAXPY(C,-1.,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-#else
-    /* MatAXPY_Basic further exercises MatSetValues_HYPRE */
-    /* however this code is disabled since there are still some issues
-       with rectangular matrices.
-       mpiexec -n 3 ./ex115 -M 7 -N 6 */
-    ierr = MatAXPY(B,-1.,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr = MatConvert(B,MATAIJ,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
-#endif
+    ierr = PetscOptionsGetBool(NULL,NULL,"-test_rectangular",&test_rectangular,NULL);
+    if (M != N && !test_rectangular) {
+      ierr = MatConvert(B,MATAIJ,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
+      ierr = MatAXPY(C,-1.,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    } else {
+      /* MatAXPY_Basic further exercises MatSetValues_HYPRE */
+      /* however there are still some issues
+         with rectangular matrices.
+         try, e.g., mpiexec -n 3 ./ex115 -M 7 -N 6 -test_rectangular */
+      ierr = MatAXPY(B,-1.,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = MatConvert(B,MATAIJ,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
+    }
     ierr = MatNorm(C,NORM_INFINITY,&err);CHKERRQ(ierr);
     if (err > PETSC_SMALL) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error MatSetValues %g",err);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
