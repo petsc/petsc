@@ -1033,6 +1033,26 @@ PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(hypre_ParCSRMatrix *vparcsr, Mat
   hypre_IJMatrixAssembleFlag(hA->ij) = 1;
   PetscStackCallStandard(HYPRE_IJMatrixInitialize,(hA->ij));
   if (ishyp) {
+    PetscMPIInt myid = 0;
+
+    /* make sure we always have row_starts and col_starts available */
+    if (HYPRE_AssumedPartitionCheck()) {
+      ierr = MPI_Comm_rank(comm,&myid);CHKERRQ(ierr);
+    }
+    if (!hypre_ParCSRMatrixOwnsColStarts(parcsr)) {
+      PetscLayout map;
+
+      ierr = MatGetLayouts(T,NULL,&map);CHKERRQ(ierr);
+      ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
+      hypre_ParCSRMatrixColStarts(parcsr) = map->range + myid;
+    }
+    if (!hypre_ParCSRMatrixOwnsRowStarts(parcsr)) {
+      PetscLayout map;
+
+      ierr = MatGetLayouts(T,&map,NULL);CHKERRQ(ierr);
+      ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
+      hypre_ParCSRMatrixRowStarts(parcsr) = map->range + myid;
+    }
     /* prevent from freeing the pointer */
     if (copymode == PETSC_USE_POINTER) hA->inner_free = PETSC_FALSE;
     *A = T;
