@@ -7679,9 +7679,16 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     ierr = PetscObjectTypeCompare((PetscObject)pc_temp,PCNN,&isnn);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)pc_temp,PCBDDC,&isbddc);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)pc_temp,PCREDUNDANT,&isredundant);CHKERRQ(ierr);
-    if (isbddc && !multilevel_allowed) { /* multilevel can only be requested via pc_bddc_set_levels */
-      ierr = PCSetType(pc_temp,coarse_pc_type);CHKERRQ(ierr);
+    /* multilevel can only be requested via -pc_bddc_levels or PCBDDCSetLevels */
+    if (isbddc && !multilevel_allowed) {
+      ierr   = PCSetType(pc_temp,coarse_pc_type);CHKERRQ(ierr);
       isbddc = PETSC_FALSE;
+    }
+    /* multilevel cannot be done with coarse PCs different from BDDC or NN */
+    if (multilevel_requested && !isbddc && !isnn) {
+      ierr   = PCSetType(pc_temp,PCBDDC);CHKERRQ(ierr);
+      isbddc = PETSC_TRUE;
+      isnn   = PETSC_FALSE;
     }
     ierr = PCFactorSetReuseFill(pc_temp,PETSC_TRUE);CHKERRQ(ierr);
     if (isredundant) {
@@ -7708,7 +7715,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
 
         ierr = MatGetSize(coarsedivudotp,&n,NULL);CHKERRQ(ierr);
         ierr = MPI_Scan(&n,&st,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)coarse_mat));CHKERRQ(ierr);
-        st = st-n;
+        st   = st-n;
         ierr = ISCreateStride(PetscObjectComm((PetscObject)coarse_mat),1,st,1,&row);CHKERRQ(ierr);
         ierr = MatGetLocalToGlobalMapping(coarse_mat,&l2gmap,NULL);CHKERRQ(ierr);
         ierr = ISLocalToGlobalMappingGetSize(l2gmap,&n);CHKERRQ(ierr);
