@@ -9110,6 +9110,66 @@ PetscErrorCode MatFactorInvertSchurComplement(Mat F)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatFactorFactorizeSchurComplement"
+/*@
+  MatFactorFactorizeSchurComplement - Factorize the raw Schur data computed during the factorization step
+
+   Logically Collective on Mat
+
+   Input Parameters:
++  F - the factored matrix obtained by calling MatGetFactor()
+
+   Notes:
+   The routine uses the pointer to the raw data of the Schur Complement stored within the solver.
+
+   Level: advanced
+
+   References:
+
+.seealso: MatGetFactor(), MatMumpsSetSchurIS()
+@*/
+PetscErrorCode MatFactorFactorizeSchurComplement(Mat F)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(F,MAT_CLASSID,1);
+  ierr = PetscUseMethod(F,"MatFactorFactorizeSchurComplement_C",(Mat),(F));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatFactorSetSchurComplementSolverType"
+/*@
+  MatFactorSetSchurComplementSolverType - Set type of solver for Schur complement
+
+   Logically Collective on Mat
+
+   Input Parameters:
++  F - the factored matrix obtained by calling MatGetFactor()
+-  type - either 0 (non-symmetric), 1 (symmetric positive definite) or 2 (symmetric indefinite)
+
+   Notes:
+   The parameter is used to compute the correct factorization of the Schur complement matrices
+   This could be useful in case the nature of the Schur complement is different from that of the matrix to be factored
+
+   Level: advanced
+
+   References:
+
+.seealso: MatGetFactor(), MatFactorSetSchurIS()
+@*/
+PetscErrorCode MatFactorSetSchurComplementSolverType(Mat F, PetscInt type)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(F,MAT_CLASSID,1);
+  PetscValidLogicalCollectiveInt(F,type,2);
+  ierr = PetscTryMethod(F,"MatFactorSetSchurComplementSolverType_C",(Mat,PetscInt),(F,type));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAP"

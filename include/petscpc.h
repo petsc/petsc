@@ -277,7 +277,10 @@ PETSC_EXTERN PetscErrorCode PCGAMGRegister(PCGAMGType,PetscErrorCode (*)(PC));
 PETSC_EXTERN PetscErrorCode PCGAMGClassicalSetType(PC,PCGAMGClassicalType);
 PETSC_EXTERN PetscErrorCode PCGAMGClassicalGetType(PC,PCGAMGClassicalType*);
 
-PETSC_EXTERN PetscErrorCode PCBDDCSetChangeOfBasisMat(PC,Mat);
+PETSC_EXTERN PetscErrorCode PCBDDCSetDiscreteGradient(PC,Mat,PetscInt,PetscInt,PetscBool,PetscBool);
+PETSC_EXTERN PetscErrorCode PCBDDCSetDivergenceMat(PC,Mat,PetscBool,IS);
+PETSC_EXTERN PetscErrorCode PCBDDCSetChangeOfBasisMat(PC,Mat,PetscBool);
+PETSC_EXTERN PetscErrorCode PCBDDCSetPrimalVerticesIS(PC,IS);
 PETSC_EXTERN PetscErrorCode PCBDDCSetPrimalVerticesLocalIS(PC,IS);
 PETSC_EXTERN PetscErrorCode PCBDDCSetCoarseningRatio(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCBDDCSetLevels(PC,PetscInt);
@@ -292,7 +295,7 @@ PETSC_EXTERN PetscErrorCode PCBDDCGetNeumannBoundariesLocal(PC,IS*);
 PETSC_EXTERN PetscErrorCode PCBDDCSetDofsSplitting(PC,PetscInt,IS[]);
 PETSC_EXTERN PetscErrorCode PCBDDCSetDofsSplittingLocal(PC,PetscInt,IS[]);
 PETSC_EXTERN PetscErrorCode PCBDDCSetLocalAdjacencyGraph(PC,PetscInt,const PetscInt[],const PetscInt[],PetscCopyMode);
-PETSC_EXTERN PetscErrorCode PCBDDCCreateFETIDPOperators(PC,PetscBool,Mat*,PC*);
+PETSC_EXTERN PetscErrorCode PCBDDCCreateFETIDPOperators(PC,PetscBool,const char*,Mat*,PC*);
 PETSC_EXTERN PetscErrorCode PCBDDCMatFETIDPGetRHS(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode PCBDDCMatFETIDPGetSolution(Mat,Vec,Vec);
 

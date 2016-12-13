@@ -936,6 +936,7 @@ PETSC_EXTERN PetscErrorCode MatMPIBAIJGetSeqBAIJ(Mat,Mat*,Mat*,const PetscInt*[]
 PETSC_EXTERN PetscErrorCode MatMPIAdjCreateNonemptySubcommMat(Mat,Mat*);
 
 PETSC_EXTERN PetscErrorCode MatISSetPreallocation(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
+PETSC_EXTERN PetscErrorCode MatISSetUpSF(Mat);
 PETSC_EXTERN PetscErrorCode MatSeqDenseSetLDA(Mat,PetscInt);
 PETSC_EXTERN PetscErrorCode MatDenseGetLocalMatrix(Mat,Mat*);
 
@@ -1058,6 +1059,8 @@ PETSC_EXTERN PetscErrorCode MatFactorInvertSchurComplement(Mat);
 PETSC_EXTERN PetscErrorCode MatFactorCreateSchurComplement(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatFactorSolveSchurComplement(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatFactorSolveSchurComplementTranspose(Mat,Vec,Vec);
+PETSC_EXTERN PetscErrorCode MatFactorFactorizeSchurComplement(Mat);
+PETSC_EXTERN PetscErrorCode MatFactorSetSchurComplementSolverType(Mat,PetscInt);
 PETSC_EXTERN PetscErrorCode MatSetUnfactored(Mat);
 
 /*E

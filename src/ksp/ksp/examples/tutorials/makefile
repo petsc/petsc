@@ -1459,7 +1459,7 @@ runex58_sbaij:
 	${RM} -f ex58.tmp
 
 runex59:
-	-@${MPIEXEC} -n 4 ./ex59 -nex 7 > ex59_1.tmp 2>&1;         \
+	-@${MPIEXEC} -n 4 ./ex59 -nex 7 -physical_pc_bddc_coarse_eqs_per_proc 3 > ex59_1.tmp 2>&1;         \
 	${DIFF} output/ex59_1.out ex59_1.tmp || printf "${PWD}\nPossible problem with ex59, diffs above\n=========================================\n"; \
 	${RM} -f ex59_1.tmp
 runex59_2:

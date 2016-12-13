@@ -119,6 +119,8 @@
 #define BLAStrmv_    PETSCBLAS(trmv,TRMV)
 #define BLASgemm_    PETSCBLAS(gemm,GEMM)
 #define BLASsymm_    PETSCBLAS(symm,SYMM)
+#define BLASsyrk_    PETSCBLAS(syrk,SYRK)
+#define BLASsyr2k_   PETSCBLAS(syr2k,SYR2K)
 #define BLAStrsm_    PETSCBLAS(trsm,TRSM)
 #define LAPACKgesvd_ PETSCBLAS(gesvd,GESVD)
 #define LAPACKgeev_  PETSCBLAS(geev,GEEV)

@@ -43,15 +43,39 @@ typedef struct {
   PetscInt      *local_primal_ref_mult;
   PetscBool     use_change_of_basis;
   PetscBool     use_change_on_faces;
+  PetscBool     fake_change;
   Mat           ChangeOfBasisMatrix;
   Mat           user_ChangeOfBasisMatrix;
-  Mat           new_global_mat;
+  PetscBool     change_interior;
+  Mat           switch_static_change;
+  Vec           work_change;
   Vec           original_rhs;
   Vec           temp_solution;
   Mat           local_mat;
   PetscBool     use_exact_dirichlet_trick;
+  PetscBool     exact_dirichlet_trick_app;
   PetscBool     ksp_guess_nonzero;
   PetscBool     rhs_change;
+  PetscBool     temp_solution_used;
+  /* benign subspace trick */
+  PetscBool     benign_saddle_point;
+  PetscBool     benign_have_null;
+  PetscBool     benign_skip_correction;
+  PetscBool     benign_compute_correction;
+  Mat           benign_change;
+  Mat           benign_original_mat;
+  IS            *benign_zerodiag_subs;
+  Vec           benign_vec;
+  Mat           benign_B0;
+  PetscSF       benign_sf;
+  PetscScalar   *benign_p0;
+  PetscInt      benign_n;
+  PetscInt      *benign_p0_lidx;
+  PetscInt      *benign_p0_gidx;
+  PetscBool     benign_null;
+  PetscBool     benign_change_explicit;
+  PetscBool     benign_apply_coarse_only;
+
   /* Some defaults on selecting vertices and constraints*/
   PetscBool     use_local_adj;
   PetscBool     use_vertices;
@@ -59,11 +83,14 @@ typedef struct {
   PetscBool     use_edges;
   /* Some customization is possible */
   PetscBool           recompute_topography;
+  PetscBool           graphanalyzed;
   PCBDDCGraph         mat_graph;
+  PetscInt            graphmaxcount;
   MatNullSpace        onearnullspace;
   PetscObjectState    *onearnullvecs_state;
   PetscBool           NullSpace_corr[4];
   IS                  user_primal_vertices;
+  IS                  user_primal_vertices_local;
   PetscBool           use_nnsp_true;
   PetscBool           use_qr_single;
   PetscBool           user_provided_isfordofs;
@@ -75,31 +102,56 @@ typedef struct {
   IS                  NeumannBoundariesLocal;
   IS                  DirichletBoundaries;
   IS                  DirichletBoundariesLocal;
+  PetscBool           eliminate_dirdofs;
   PetscBool           switch_static;
   PetscInt            coarsening_ratio;
   PetscInt            coarse_adj_red;
   PetscInt            current_level;
   PetscInt            max_levels;
-  PetscInt            redistribute_coarse;
+  PetscInt            coarse_eqs_per_proc;
   IS                  coarse_subassembling;
-  IS                  coarse_subassembling_init;
   PetscBool           use_coarse_estimates;
   PetscBool           symmetric_primal;
+  PetscInt            vertex_size;
+
+  /* no-net-flux */
+  PetscBool compute_nonetflux;
+  Mat       divudotp;
+  PetscBool divudotp_trans;
+  IS        divudotp_vl2l;
+
+  /* nedelec */
+  Mat       discretegradient;
+  PetscInt  nedorder;
+  PetscBool conforming;
+  PetscInt  nedfield;
+  PetscBool nedglobal;
+  Mat       nedcG;
+  IS        nedclocal;
+
+  /* local disconnected subdomains */
+  PetscBool detect_disconnected;
+  PetscInt  n_local_subs;
+  IS        *local_subs;
+
   /* scaling */
   Vec                 work_scaling;
   PetscBool           use_deluxe_scaling;
   PCBDDCDeluxeScaling deluxe_ctx;
-  PetscBool           faster_deluxe;
+  PetscBool           deluxe_zerorows;
+  PetscBool           deluxe_singlemat;
 
   /* schur complements on interface's subsets */
   PCBDDCSubSchurs sub_schurs;
   PetscBool       sub_schurs_rebuild;
+  PetscBool       sub_schurs_exact_schur;
   PetscInt        sub_schurs_layers;
   PetscBool       sub_schurs_use_useradj;
   PetscBool       computed_rowadj;
 
   /* adaptive selection of constraints */
   PetscBool    adaptive_selection;
+  PetscBool    adaptive_userdefined;
   PetscReal    adaptive_threshold;
   PetscInt     adaptive_nmin;
   PetscInt     adaptive_nmax;

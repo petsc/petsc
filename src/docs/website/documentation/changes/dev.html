@@ -123,8 +123,10 @@
       <ul>
         <li>Added PCMGSetNumberSmooth()</li>
         <li>PCMGSetGalerkin() and -pc_mg_galerkin now take PC_MG_GALERKIN_BOTH,PC_MG_GALERKIN_PMAT,PC_MG_GALERKIN_MAT, PC_MG_GALERKIN_NONE as arguments instead of PetscBool</li>
+        <li>Added PCBDDCSetDivergenceMat to help BDDC to compute the flux across the subdomain interfaces.</li>
         <li>Removed PCBDDCSetNullSpace. Local nullspace information should now be attached to the subdomain matrix via MatSetNullSpace.</li>
         <li>Added additional PetscBool parameter to PCBDDCCreateFETIDPOperators for the specification of the type of multipliers.</li>
+        <li>Added additional string parameter to PCBDDCCreateFETIDPOperators for the specification of the prefix (can be NULL).</li>
         <li>FIELDSPLIT now extracts off-diag fieldsplit blocks from the preconditioner instead of the jacobian by default. Use -pc_fieldsplit_off_diag_use_amat to use the jacobian matrix.</li>
       </ul>
       <h4>KSP:</h4>
