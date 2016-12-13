@@ -1011,6 +1011,10 @@ PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(hypre_ParCSRMatrix *vparcsr, Mat
   M      = hypre_ParCSRMatrixGlobalNumRows(parcsr);
   N      = hypre_ParCSRMatrixGlobalNumCols(parcsr);
 
+  /* fix for empty local rows/columns */
+  if (rend < rstart) rend = rstart;
+  if (cend < cstart) cend = cstart;
+
   /* create PETSc matrix with MatHYPRE */
   ierr = MatCreate(comm,&T);CHKERRQ(ierr);
   ierr = MatSetSizes(T,rend-rstart+1,cend-cstart+1,M,N);CHKERRQ(ierr);
