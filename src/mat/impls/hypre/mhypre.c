@@ -660,21 +660,33 @@ static PetscErrorCode MatHYPRE_ParCSR_RAP(hypre_ParCSRMatrix *hR, hypre_ParCSRMa
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatPtAP_AIJ_AIJ_wHYPRE"
-PETSC_INTERN PetscErrorCode MatPtAP_AIJ_AIJ_wHYPRE(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
+#define __FUNCT__ "MatPtAPNumeric_AIJ_AIJ_wHYPRE"
+static PetscErrorCode MatPtAPNumeric_AIJ_AIJ_wHYPRE(Mat A,Mat P,Mat C)
 {
+  Mat                B;
   hypre_ParCSRMatrix *hA,*hP,*hPtAP;
-  PetscErrorCode ierr;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
   ierr = MatAIJGetParCSR_Private(A,&hA);CHKERRQ(ierr);
   ierr = MatAIJGetParCSR_Private(P,&hP);CHKERRQ(ierr);
   ierr = MatHYPRE_ParCSR_RAP(hP,hA,hP,&hPtAP);CHKERRQ(ierr);
-  ierr = MatCreateFromParCSR(hPtAP,MATAIJ,PETSC_OWN_POINTER,C);CHKERRQ(ierr);
+  ierr = MatCreateFromParCSR(hPtAP,MATAIJ,PETSC_OWN_POINTER,&B);CHKERRQ(ierr);
+  ierr = MatHeaderMerge(C,&B);CHKERRQ(ierr);
   ierr = MatAIJRestoreParCSR_Private(A,&hA);CHKERRQ(ierr);
   ierr = MatAIJRestoreParCSR_Private(P,&hP);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatPtAPSymbolic_AIJ_AIJ_wHYPRE"
+PETSC_INTERN PetscErrorCode MatPtAPSymbolic_AIJ_AIJ_wHYPRE(Mat A,Mat P,PetscReal fill,Mat *C)
+{
+  PetscErrorCode     ierr;
+  PetscFunctionBegin;
+  ierr                   = MatCreate(PetscObjectComm((PetscObject)A),C);CHKERRQ(ierr);
+  ierr                   = MatSetType(*C,MATAIJ);CHKERRQ(ierr);
+  (*C)->ops->ptapnumeric = MatPtAPNumeric_AIJ_AIJ_wHYPRE;
   PetscFunctionReturn(0);
 }
 

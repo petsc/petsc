@@ -2111,6 +2111,12 @@ runex115_4:
 	   else printf "${PWD}\nPossible problem with ex115_4, diffs above\n==============================\n"; fi; \
 	   ${RM} -f ex115_4.tmp
 
+runex115_5:
+	-@${MPIEXEC} -n 1  ./ex115 -M 13 -N 13 -matptap_via hypre > ex115_5.tmp 2>&1; \
+	   if (${DIFF} output/ex115_5.out ex115_5.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex115_5, diffs above\n==============================\n"; fi; \
+	   ${RM} -f ex115_5.tmp
+
 runex120:
 	-@${MPIEXEC} -n 1 ./ex120 > ex120_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex120_1.out ex120_1.tmp) then true; \
@@ -2927,6 +2933,6 @@ TESTEXAMPLES_SUPERLU_DIST_COMPLEX_DATAFILESPATH = ex125.PETSc runex125_superlu_d
 TESTEXAMPLES_F90               = ex196f90.PETSc ex196f90.rm
 TESTEXAMPLES_VECCUDA           = ex2.PETSc runex2_aijcusparse runex2_2_aijcusparse runex2_3_aijcusparse ex2.rm \
                                  ex5.PETSc runex5_aijcusparse runex5_2_aijcusparse runex5_3_aijcusparse ex5.rm
-TESTEXAMPLES_HYPRE             = ex115.PETSc runex115_1 runex115_2 runex115_3 runex115_4 ex115.rm
+TESTEXAMPLES_HYPRE             = ex115.PETSc runex115_1 runex115_2 runex115_3 runex115_4 runex115_5 ex115.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test
