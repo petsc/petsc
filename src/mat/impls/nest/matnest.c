@@ -1712,9 +1712,6 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse r
       }
     }
     if (fast) {
-      ierr = PetscOptionsGetBool(NULL,NULL,"-use_fast",&fast,NULL);CHKERRQ(ierr);
-    }
-    if (fast) {
       ierr = MatConvert_Nest_SeqAIJ_fast(A,newtype,reuse,newmat);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
