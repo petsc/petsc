@@ -193,6 +193,8 @@ PetscErrorCode MatFactorClearError(Mat mat)
   Output Parameter:
 .    keptrows - the rows that are not completely zero
 
+  Notes: keptrows is set to NULL if all rows are nonzero.
+
   Level: intermediate
 
  @*/
@@ -206,6 +208,45 @@ PetscErrorCode MatFindNonzeroRows(Mat mat,IS *keptrows)
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   if (!mat->ops->findnonzerorows) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Not coded for this matrix type");
   ierr = (*mat->ops->findnonzerorows)(mat,keptrows);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatFindZeroRows"
+/*@
+      MatFindZeroRows - Locate all rows that are completely zero in the matrix
+
+  Input Parameter:
+.    A  - the matrix
+
+  Output Parameter:
+.    zerorows - the rows that are completely zero
+
+  Notes: zerorows is set to NULL if no rows are zero.
+
+  Level: intermediate
+
+ @*/
+PetscErrorCode MatFindZeroRows(Mat mat,IS *zerorows)
+{
+  PetscErrorCode ierr;
+  IS keptrows;
+  PetscInt m, n;
+
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidType(mat,1);
+
+  ierr = MatFindNonzeroRows(mat, &keptrows);CHKERRQ(ierr);
+  /* MatFindNonzeroRows sets keptrows to NULL if there are no zero rows.
+     In keeping with this convention, we set zerorows to NULL if there are no zero
+     rows. */
+  if (keptrows == NULL) {
+    *zerorows = NULL;
+  } else {
+    ierr = MatGetOwnershipRange(mat,&m,&n);CHKERRQ(ierr);
+    ierr = ISComplement(keptrows,m,n,zerorows);CHKERRQ(ierr);
+    ierr = ISDestroy(&keptrows);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -10670,5 +10711,68 @@ PetscErrorCode MatSubdomainsCreateCoalesce(Mat A,PetscInt N,PetscInt *n,IS *iss[
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
   ierr = ISCreateStride(subcomm,rend-rstart,rstart,1,iss[0]);CHKERRQ(ierr);
   ierr = MPI_Comm_free(&subcomm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatGalerkin"
+/*@
+   MatGalerkin - Constructs the coarse grid problem via Galerkin projection.
+
+   If the interpolation and restriction operators are the same, uses MatPtAP.
+   If they are not the same, use MatMatMatMult.
+
+   Once the coarse grid problem is constructed, correct for interpolation operators
+   that are not of full rank, which can legitimately happen in the case of non-nested
+   geometric multigrid.
+
+   Input Parameters:
++  restrct - restriction operator
+.  dA - fine grid matrix
+.  interpolate - interpolation operator
+.  reuse - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+-  fill - expected fill, use PETSC_DEFAULT if you do not have a good estimate
+
+   Output Parameters:
+.  A - the Galerkin coarse matrix
+
+   Options Database Key:
+.  -pc_mg_galerkin <both,pmat,mat,none>
+
+   Level: developer
+
+.keywords: MG, multigrid, Galerkin
+
+.seealso: MatPtAP(), MatMatMatMult()
+@*/
+PetscErrorCode  MatGalerkin(Mat restrct, Mat dA, Mat interpolate, MatReuse reuse, PetscReal fill, Mat *A)
+{
+  PetscErrorCode ierr;
+  IS zerorows;
+  Vec diag;
+
+  /* Construct the coarse grid matrix */
+  if (interpolate == restrct) {
+    ierr = MatPtAP(dA,interpolate,reuse,fill,A);CHKERRQ(ierr);
+  } else {
+    ierr = MatMatMatMult(restrct,dA,interpolate,reuse,fill,A);CHKERRQ(ierr);
+  }
+
+  /* If the interpolation matrix is not of full rank, A will have zero rows.
+     This can legitimately happen in the case of non-nested geometric multigrid.
+     In that event, we set the rows of the matrix to the rows of the identity,
+     ignoring the equations (as the RHS will also be zero). */
+
+  ierr = MatFindZeroRows(*A, &zerorows);CHKERRQ(ierr);
+
+  if (zerorows != NULL) { /* if there are any zero rows */
+    ierr = MatCreateVecs(*A, &diag, NULL);CHKERRQ(ierr);
+    ierr = MatGetDiagonal(*A, diag);CHKERRQ(ierr);
+    ierr = VecISSet(diag, zerorows, 1.0);CHKERRQ(ierr);
+    ierr = MatDiagonalSet(*A, diag, INSERT_VALUES);CHKERRQ(ierr);
+    ierr = VecDestroy(&diag);CHKERRQ(ierr);
+    ierr = ISDestroy(&zerorows);CHKERRQ(ierr);
+  }
+
   PetscFunctionReturn(0);
 }

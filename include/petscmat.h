@@ -513,6 +513,7 @@ PETSC_EXTERN PetscErrorCode MatMatMultSymbolic(Mat,Mat,PetscReal,Mat*);
 PETSC_EXTERN PetscErrorCode MatMatMultNumeric(Mat,Mat,Mat);
 
 PETSC_EXTERN PetscErrorCode MatMatMatMult(Mat,Mat,Mat,MatReuse,PetscReal,Mat*);
+PETSC_EXTERN PetscErrorCode MatGalerkin(Mat,Mat,Mat,MatReuse,PetscReal,Mat*);
 
 PETSC_EXTERN PetscErrorCode MatPtAP(Mat,Mat,MatReuse,PetscReal,Mat*);
 PETSC_EXTERN PetscErrorCode MatPtAPSymbolic(Mat,Mat,PetscReal,Mat*);
@@ -989,6 +990,7 @@ PETSC_EXTERN PetscErrorCode MatRetrieveValues(Mat);
 PETSC_EXTERN PetscErrorCode MatDAADSetCtx(Mat,void*);
 
 PETSC_EXTERN PetscErrorCode MatFindNonzeroRows(Mat,IS*);
+PETSC_EXTERN PetscErrorCode MatFindZeroRows(Mat,IS*);
 /*
   These routines are not usually accessed directly, rather solving is
   done through the KSP and PC interfaces.
