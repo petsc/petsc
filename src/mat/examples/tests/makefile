@@ -2094,25 +2094,25 @@ runex115_1:
 	   ${RM} -f ex115_1.tmp
 
 runex115_2:
-	-@${MPIEXEC} -n 3  ./ex115 -N 13 -M 13 > ex115_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex115 -N 13 -M 13 -matmatmult_via hypre > ex115_2.tmp 2>&1; \
 	   if (${DIFF} output/ex115_2.out ex115_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex115_2, diffs above\n==============================\n"; fi; \
 	   ${RM} -f ex115_2.tmp
 
 runex115_3:
-	-@${MPIEXEC} -n 4  ./ex115 -M 13 -N 7 > ex115_3.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex115 -M 13 -N 7 -matmatmult_via hypre > ex115_3.tmp 2>&1; \
 	   if (${DIFF} output/ex115_3.out ex115_3.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex115_3, diffs above\n==============================\n"; fi; \
 	   ${RM} -f ex115_3.tmp
 
 runex115_4:
-	-@${MPIEXEC} -n 2  ./ex115 -M 12 -N 19 > ex115_4.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex115 -M 12 -N 19 > ex115_4.tmp 2>&1; \
 	   if (${DIFF} output/ex115_4.out ex115_4.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex115_4, diffs above\n==============================\n"; fi; \
 	   ${RM} -f ex115_4.tmp
 
 runex115_5:
-	-@${MPIEXEC} -n 3  ./ex115 -M 13 -N 13 -matptap_via hypre > ex115_5.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex115 -M 13 -N 13 -matptap_via hypre -matptap_hypre_outtype hypre > ex115_5.tmp 2>&1; \
 	   if (${DIFF} output/ex115_5.out ex115_5.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex115_5, diffs above\n==============================\n"; fi; \
 	   ${RM} -f ex115_5.tmp

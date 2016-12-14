@@ -8,18 +8,20 @@ static char help[] = "Tests MatHYPRE\n";
 int main(int argc,char **args)
 {
   Mat                A,B,C,D;
+  Mat                pAB,CD;
   hypre_ParCSRMatrix *parcsr;
   Vec                x,x2,y,y2;
   PetscReal          err;
   PetscInt           i,j,N = 6, M = 6;
   PetscErrorCode     ierr;
-  PetscBool          flg;
+  PetscBool          fileflg;
+  PetscReal          norm;
   char               file[256];
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,256,&fileflg);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  if (!flg) { /* Create a matrix and test MatSetValues */
+  if (!fileflg) { /* Create a matrix and test MatSetValues */
     PetscMPIInt NP;
     PetscBool   test_rectangular = PETSC_FALSE;
 
@@ -149,10 +151,9 @@ int main(int argc,char **args)
 
   /* check PtAP */
   if (M == N) {
-    Mat       pP,hP;
-    PetscReal norm;
+    Mat pP,hP;
 
-    /* PETSc PtAP -> output is a MatAIJ
+    /* PETSc MatPtAP -> output is a MatAIJ
        It uses HYPRE functions when -matptap_via hypre is specified at command line */
     ierr = MatPtAP(A,A,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&pP);CHKERRQ(ierr);
     ierr = MatPtAP(A,A,MAT_REUSE_MATRIX,PETSC_DEFAULT,&pP);CHKERRQ(ierr);
@@ -180,6 +181,43 @@ int main(int argc,char **args)
 
     ierr = MatDestroy(&pP);CHKERRQ(ierr);
   }
+
+  /* check MatMatMult */
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  if (fileflg) {
+    ierr = PetscOptionsGetString(NULL,NULL,"-fB",file,256,&fileflg);CHKERRQ(ierr);
+    if (fileflg) {
+      PetscViewer viewer;
+      ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+      ierr = MatSetFromOptions(B);CHKERRQ(ierr);
+      ierr = MatLoad(B,viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    }
+  }
+  if (!B) {
+    ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+  }
+  ierr = MatConvert(A,MATHYPRE,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
+  ierr = MatConvert(B,MATHYPRE,MAT_INITIAL_MATRIX,&D);CHKERRQ(ierr);
+
+  /* PETSc MatMatMult -> output is a MatAIJ
+     It uses HYPRE functions when -matmatmult_via hypre is specified at command line */
+  ierr = MatMatMult(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&pAB);CHKERRQ(ierr);
+  ierr = MatMatMult(A,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&pAB);CHKERRQ(ierr);
+  ierr = MatNorm(pAB,NORM_INFINITY,&norm);CHKERRQ(ierr);
+
+  /* MatMatMult_HYPRE_HYPRE -> output is a MatHYPRE */
+  ierr = MatMatMult(C,D,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&CD);CHKERRQ(ierr);
+  ierr = MatMatMult(C,D,MAT_REUSE_MATRIX,PETSC_DEFAULT,&CD);CHKERRQ(ierr);
+  ierr = MatDestroy(&D);CHKERRQ(ierr);
+  ierr = MatConvert(CD,MATAIJ,MAT_INITIAL_MATRIX,&D);CHKERRQ(ierr);
+  ierr = MatAXPY(D,-1.,pAB,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatNorm(D,NORM_INFINITY,&err);CHKERRQ(ierr);
+  if (err/norm > PETSC_SMALL) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error MatMatMult %g %g",err,norm);
+  ierr = MatDestroy(&D);CHKERRQ(ierr);
+  ierr = MatDestroy(&CD);CHKERRQ(ierr);
+  ierr = MatDestroy(&pAB);CHKERRQ(ierr);
 
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&x2);CHKERRQ(ierr);
