@@ -829,11 +829,46 @@ static PetscErrorCode MatMatMultNumeric_AIJ_AIJ_wHYPRE(Mat A,Mat B,Mat C)
 #define __FUNCT__ "MatMatMultSymbolic_AIJ_AIJ_wHYPRE"
 PETSC_INTERN PetscErrorCode MatMatMultSymbolic_AIJ_AIJ_wHYPRE(Mat A,Mat B,PetscReal fill,Mat *C)
 {
-  PetscErrorCode     ierr;
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   ierr                      = MatCreate(PetscObjectComm((PetscObject)A),C);CHKERRQ(ierr);
   ierr                      = MatSetType(*C,MATAIJ);CHKERRQ(ierr);
   (*C)->ops->matmultnumeric = MatMatMultNumeric_AIJ_AIJ_wHYPRE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMatMultNumeric_AIJ_AIJ_AIJ_wHYPRE"
+static PetscErrorCode MatMatMatMultNumeric_AIJ_AIJ_AIJ_wHYPRE(Mat A,Mat B,Mat C,Mat D)
+{
+  Mat                E;
+  hypre_ParCSRMatrix *hA,*hB,*hC,*hABC;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = MatAIJGetParCSR_Private(A,&hA);CHKERRQ(ierr);
+  ierr = MatAIJGetParCSR_Private(B,&hB);CHKERRQ(ierr);
+  ierr = MatAIJGetParCSR_Private(C,&hC);CHKERRQ(ierr);
+  ierr = MatHYPRE_ParCSR_RAP(hA,hB,hC,&hABC);CHKERRQ(ierr);
+  ierr = MatCreateFromParCSR(hABC,MATAIJ,PETSC_OWN_POINTER,&E);CHKERRQ(ierr);
+  ierr = MatHeaderMerge(D,&E);CHKERRQ(ierr);
+  ierr = MatAIJRestoreParCSR_Private(A,&hA);CHKERRQ(ierr);
+  ierr = MatAIJRestoreParCSR_Private(B,&hB);CHKERRQ(ierr);
+  ierr = MatAIJRestoreParCSR_Private(C,&hC);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMatMultSymbolic_AIJ_AIJ_AIJ_wHYPRE"
+PETSC_INTERN PetscErrorCode MatMatMatMultSymbolic_AIJ_AIJ_AIJ_wHYPRE(Mat A,Mat B,Mat C,PetscReal fill,Mat *D)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr                         = MatCreate(PetscObjectComm((PetscObject)A),D);CHKERRQ(ierr);
+  ierr                         = MatSetType(*D,MATAIJ);CHKERRQ(ierr);
+  (*D)->ops->matmatmultnumeric = MatMatMatMultNumeric_AIJ_AIJ_AIJ_wHYPRE;
   PetscFunctionReturn(0);
 }
 
@@ -1208,7 +1243,7 @@ PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(hypre_ParCSRMatrix *vparcsr, Mat
     }
     /* prevent from freeing the pointer */
     if (copymode == PETSC_USE_POINTER) hA->inner_free = PETSC_FALSE;
-    *A = T;
+    *A   = T;
     ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   } else if (isaij) {
