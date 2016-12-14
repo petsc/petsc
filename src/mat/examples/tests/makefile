@@ -2112,7 +2112,7 @@ runex115_4:
 	   ${RM} -f ex115_4.tmp
 
 runex115_5:
-	-@${MPIEXEC} -n 1  ./ex115 -M 13 -N 13 -matptap_via hypre > ex115_5.tmp 2>&1; \
+	-@${MPIEXEC} -n 3  ./ex115 -M 13 -N 13 -matptap_via hypre > ex115_5.tmp 2>&1; \
 	   if (${DIFF} output/ex115_5.out ex115_5.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex115_5, diffs above\n==============================\n"; fi; \
 	   ${RM} -f ex115_5.tmp

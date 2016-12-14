@@ -152,7 +152,8 @@ int main(int argc,char **args)
     Mat       pP,hP;
     PetscReal norm;
 
-    /* PETSc PtAP */
+    /* PETSc PtAP
+       It uses HYPRE when -matptap_via hypre is specified at command line */
     ierr = MatPtAP(A,A,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&pP);CHKERRQ(ierr);
     ierr = MatPtAP(A,A,MAT_REUSE_MATRIX,PETSC_DEFAULT,&pP);CHKERRQ(ierr);
     ierr = MatNorm(pP,NORM_INFINITY,&norm);CHKERRQ(ierr);
