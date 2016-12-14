@@ -146,7 +146,9 @@ static PetscErrorCode MatHYPRE_IJMatrixCopy(Mat A, HYPRE_IJMatrix ij)
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
     ierr = MatGetRow(A,i,&ncols,&cols,&values);CHKERRQ(ierr);
-    PetscStackCallStandard(HYPRE_IJMatrixSetValues,(ij,1,(HYPRE_Int *)&ncols,(HYPRE_Int *)&i,(HYPRE_Int *)cols,values));
+    if (ncols) {
+      PetscStackCallStandard(HYPRE_IJMatrixSetValues,(ij,1,(HYPRE_Int *)&ncols,(HYPRE_Int *)&i,(HYPRE_Int *)cols,values));
+    }
     ierr = MatRestoreRow(A,i,&ncols,&cols,&values);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1011,7 +1013,7 @@ PetscErrorCode MatSetValues_HYPRE(Mat A, PetscInt nr, const PetscInt rows[], Pet
 
   if (ins == ADD_VALUES) {
     for (i=0;i<nr;i++) {
-      if (rows[i] >= 0) {
+      if (rows[i] >= 0 && nzc) {
         PetscInt j;
         for (j=0;j<nzc;j++) sscr[j] = vals[cscr[1][j]];
         PetscStackCallStandard(HYPRE_IJMatrixAddToValues,(hA->ij,1,&nzc,(HYPRE_Int*)(rows+i),cscr[0],sscr));
@@ -1027,7 +1029,7 @@ PetscErrorCode MatSetValues_HYPRE(Mat A, PetscInt nr, const PetscInt rows[], Pet
       if (rows[i] >= 0 && (rows[i] < rst || rows[i] >= ren)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot use INSERT_VALUES for off-proc entries with MatHYPRE. Use ADD_VALUES instead");
 #endif
     for (i=0;i<nr;i++) {
-      if (rows[i] >= 0) {
+      if (rows[i] >= 0 && nzc) {
         PetscInt j;
         for (j=0;j<nzc;j++) sscr[j] = vals[cscr[1][j]];
         PetscStackCallStandard(HYPRE_IJMatrixSetValues,(hA->ij,1,&nzc,(HYPRE_Int*)(rows+i),cscr[0],sscr));
