@@ -152,14 +152,15 @@ int main(int argc,char **args)
     Mat       pP,hP;
     PetscReal norm;
 
-    /* PETSc PtAP
-       It uses HYPRE when -matptap_via hypre is specified at command line */
+    /* PETSc PtAP -> output is a MatAIJ
+       It uses HYPRE functions when -matptap_via hypre is specified at command line */
     ierr = MatPtAP(A,A,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&pP);CHKERRQ(ierr);
     ierr = MatPtAP(A,A,MAT_REUSE_MATRIX,PETSC_DEFAULT,&pP);CHKERRQ(ierr);
     ierr = MatNorm(pP,NORM_INFINITY,&norm);CHKERRQ(ierr);
 
-    /* MatPtAP_HYPRE_HYPRE */
+    /* MatPtAP_HYPRE_HYPRE -> output is a MatHYPRE */
     ierr = MatPtAP(C,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&hP);CHKERRQ(ierr);
+    ierr = MatPtAP(C,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&hP);CHKERRQ(ierr);
     ierr = MatConvert(hP,MATAIJ,MAT_INITIAL_MATRIX,&D);CHKERRQ(ierr);
     ierr = MatAXPY(D,-1.,pP,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatNorm(D,NORM_INFINITY,&err);CHKERRQ(ierr);
@@ -167,8 +168,9 @@ int main(int argc,char **args)
     ierr = MatDestroy(&hP);CHKERRQ(ierr);
     ierr = MatDestroy(&D);CHKERRQ(ierr);
 
-    /* MatPtAP_AIJ_HYPRE */
+    /* MatPtAP_AIJ_HYPRE -> output can be decided at runtime with -matptap_hypre_outtype */
     ierr = MatPtAP(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&hP);CHKERRQ(ierr);
+    ierr = MatPtAP(A,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&hP);CHKERRQ(ierr);
     ierr = MatConvert(hP,MATAIJ,MAT_INITIAL_MATRIX,&D);CHKERRQ(ierr);
     ierr = MatAXPY(D,-1.,pP,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatNorm(D,NORM_INFINITY,&err);CHKERRQ(ierr);
