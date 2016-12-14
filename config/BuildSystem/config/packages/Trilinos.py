@@ -58,13 +58,16 @@ class Configure(config.package.CMakePackage):
 
   def configureLibrary(self):
     self.checkTrilinosDuplicates()
-    config.package.CMakePackage.configureLibrary(self)
-    # should actually test that each of these is installed in the Trilinos libraries
-    self.addDefine('HAVE_ML',1)
-    self.addDefine('HAVE_CHACO',1)
-    self.addDefine('HAVE_CHACO_INT_ASSIGNMENT',1)
-    self.addDefine('HAVE_ZOLTAN',1)
-    self.addDefine('HAVE_EXODUSII',1)
+    config.package.Package.configureLibrary(self)
+    if self.libraries.check(self.dlib, "interface"):
+      self.addDefine('HAVE_CHACO',1)
+      self.addDefine('HAVE_CHACO_INT_ASSIGNMENT',1)
+    if self.libraries.check(self.dlib, "ML_Set_PrintLevel"):
+      self.addDefine('HAVE_ML',1)
+    if self.libraries.check(self.dlib, "Zoltan_LB_Partition"):
+      self.addDefine('HAVE_ZOLTAN',1)
+    if self.libraries.check(self.dlib, "ex_close"):
+      self.addDefine('HAVE_EXODUSII',1)
 
   # older versions of Trilinos require passing rpath with the various library paths
   # this caused problems on Apple with cmake generating command lines that are too long
@@ -293,5 +296,4 @@ class Configure(config.package.CMakePackage):
     llp = ll
     llp.append('libpthread.a')
     return [ll,llp]
-
 
