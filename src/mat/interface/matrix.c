@@ -6382,7 +6382,7 @@ PetscErrorCode MatZeroRowsColumnsLocalIS(Mat mat,IS is,PetscScalar diag,Vec x,Ve
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetSize"
-/*@
+/*@C
    MatGetSize - Returns the numbers of rows and columns in a matrix.
 
    Not Collective
@@ -6413,7 +6413,7 @@ PetscErrorCode MatGetSize(Mat mat,PetscInt *m,PetscInt *n)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetLocalSize"
-/*@
+/*@C
    MatGetLocalSize - Returns the number of rows and columns in a matrix
    stored locally.  This information may be implementation dependent, so
    use with care.

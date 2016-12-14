@@ -4,6 +4,54 @@
 #define MAT_INFO_SIZE MAT_INFO_SIZE_MOD
 #define MAT_FACTORINFO_SIZE MAT_FACTORINFO_SIZE_MOD
 
+      interface MatGetSize
+      subroutine MatGetSize00(a,b,c,z)
+      use petscmatdef
+       Mat a
+       PetscInt b
+       PetscInt c
+       integer z
+       end subroutine
+      subroutine MatGetSize10(a,b,c,z)
+      use petscmatdef
+       Mat a
+       PetscInt b(*)
+       PetscInt c
+       integer z
+       end subroutine
+      subroutine MatGetSize01(a,b,c,z)
+      use petscmatdef
+       Mat a
+       PetscInt b
+       PetscInt c(*)
+       integer z
+       end subroutine
+      end interface
+
+      interface MatGetLocalSize
+      subroutine MatGetLocalSize00(a,b,c,z)
+      use petscmatdef
+       Mat a
+       PetscInt b
+       PetscInt c
+       integer z
+       end subroutine
+      subroutine MatGetLocalSize10(a,b,c,z)
+      use petscmatdef
+       Mat a
+       PetscInt b(*)
+       PetscInt c
+       integer z
+       end subroutine
+      subroutine MatGetLocalSize01(a,b,c,z)
+      use petscmatdef
+       Mat a
+       PetscInt b
+       PetscInt c(*)
+       integer z
+       end subroutine
+       end interface
+
         Interface
         subroutine MatCreateMPIAIJ(a,b,c,d,e,f,g,h,i,j,z)
           use petscmatdef

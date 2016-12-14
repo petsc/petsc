@@ -74,6 +74,12 @@
 #define matfactorinfoinitialize_         MATFACTORINFOINITIALIZE
 #define matnullspacesetfunction_         MATNULLSPACESETFUNCTION
 #define matfindnonzerorows_              MATFINDNONZEROROWS
+#define matgetsize00_                    MATGETSIZE00
+#define matgetsize10_                    MATGETSIZE10
+#define matgetsize01_                    MATGETSIZE01
+#define matgetlocalsize00_               MATGETLOCALSIZE00
+#define matgetlocalsize10_               MATGETLOCALSIZE10
+#define matgetlocalsize01_               MATGETLOCALSIZE01
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matsetvalues_                    matsetvalues
 #define matsetvaluesnnnn_                matsetvaluesnnnn
@@ -147,7 +153,57 @@
 #define matfactorinfoinitialize_         matfactorinfoinitialize
 #define matnullspacesetfunction_         matnullspacesetfunction
 #define matfindnonzerorows_              matfindnonzerorows
+#define matgetsize00_                    matgetsize00
+#define matgetsize10_                    matgetsize10
+#define matgetsize01_                    matgetsize01
+#define matgetlocalsize00_               matgetlocalsize00
+#define matgetlocalsize10_               matgetlocalsize10
+#define matgetlocalsize01_               matgetlocalsize01
 #endif
+
+PETSC_EXTERN void PETSC_STDCALL  matgetsize_(Mat *mat,PetscInt *m,PetscInt *n, int *ierr )
+{
+  CHKFORTRANNULLINTEGER(m);
+  CHKFORTRANNULLINTEGER(n);
+  *ierr = MatGetSize(*mat,m,n);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matgetsize00_(Mat *mat,PetscInt *m,PetscInt *n, int *ierr )
+{
+  matgetsize_(mat,m,n,ierr);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matgetsize10_(Mat *mat,PetscInt *m,PetscInt *n, int *ierr )
+{
+  matgetsize_(mat,m,n,ierr);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matgetsize01_(Mat *mat,PetscInt *m,PetscInt *n, int *ierr )
+{
+  matgetsize_(mat,m,n,ierr);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matgetlocalsize_(Mat *mat,PetscInt *m,PetscInt *n, int *ierr )
+{
+  CHKFORTRANNULLINTEGER(m);
+  CHKFORTRANNULLINTEGER(n);
+  *ierr = MatGetLocalSize(*mat,m,n);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matgetlocalsize00_(Mat *mat,PetscInt *m,PetscInt *n, int *ierr )
+{
+  matgetlocalsize_(mat,m,n,ierr);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matgetlocalsize10_(Mat *mat,PetscInt *m,PetscInt *n, int *ierr )
+{
+  matgetlocalsize_(mat,m,n,ierr);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matgetlocalsize01_(Mat *mat,PetscInt *m,PetscInt *n, int *ierr )
+{
+  matgetlocalsize_(mat,m,n,ierr);
+}
 
 PETSC_EXTERN void PETSC_STDCALL  matsetvaluesblocked_(Mat *mat,PetscInt *m, PetscInt idxm[],PetscInt *n, PetscInt idxn[], PetscScalar v[],InsertMode *addv, int *ierr ){
   *ierr = MatSetValuesBlocked(*mat,*m,idxm,*n,idxn,v,*addv);

@@ -181,6 +181,7 @@ typedef PETSC_UINTPTR_T PetscFortranAddr;
 
 #define PetscPatchDefaultViewers_Fortran(vin,v) \
 { \
+    CHKFORTRANNULLOBJECTDEREFERENCE(vin);\
     if ((*(PetscFortranAddr*)vin) == PETSC_VIEWER_DRAW_WORLD_FORTRAN) { \
       v = PETSC_VIEWER_DRAW_WORLD; \
     } else if ((*(PetscFortranAddr*)vin) == PETSC_VIEWER_DRAW_SELF_FORTRAN) { \
