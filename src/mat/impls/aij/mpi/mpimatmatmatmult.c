@@ -19,7 +19,7 @@ PETSC_INTERN PetscErrorCode MatMatMatMult_Transpose_AIJ_AIJ(Mat R,Mat A,Mat P,Ma
   PetscFunctionBegin;
   ierr = MatTransposeGetMat(R,&Rt);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompareAny((PetscObject)Rt,&flg,MATSEQAIJ,MATMPIAIJ,NULL);CHKERRQ(ierr);
-  if (!flg) SETERRQ1(PetscObjectComm((PetscObject)Rt),PETSC_ERR_SUP,"Not for matrix type %s\n",((PetscObject)Rt)->type_name);
+  if (!flg) SETERRQ1(PetscObjectComm((PetscObject)Rt),PETSC_ERR_SUP,"Not for matrix type %s",((PetscObject)Rt)->type_name);
   if (scall == MAT_INITIAL_MATRIX) {
     ierr = PetscLogEventBegin(MAT_MatMatMultSymbolic,R,A,P,0);CHKERRQ(ierr);
     ierr = MatTransposeMatMatMultSymbolic_AIJ_AIJ_AIJ_wHYPRE(Rt,A,P,fill,RAP);CHKERRQ(ierr);
