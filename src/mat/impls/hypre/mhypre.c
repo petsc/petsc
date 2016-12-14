@@ -1301,14 +1301,14 @@ PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(hypre_ParCSRMatrix *vparcsr, Mat
 
       ierr = MatGetLayouts(T,NULL,&map);CHKERRQ(ierr);
       ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
-      hypre_ParCSRMatrixColStarts(parcsr) = map->range + myid;
+      hypre_ParCSRMatrixColStarts(parcsr) = (HYPRE_Int*)(map->range + myid);
     }
     if (!hypre_ParCSRMatrixOwnsRowStarts(parcsr)) {
       PetscLayout map;
 
       ierr = MatGetLayouts(T,&map,NULL);CHKERRQ(ierr);
       ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
-      hypre_ParCSRMatrixRowStarts(parcsr) = map->range + myid;
+      hypre_ParCSRMatrixRowStarts(parcsr) = (HYPRE_Int*)(map->range + myid);
     }
     /* prevent from freeing the pointer */
     if (copymode == PETSC_USE_POINTER) hA->inner_free = PETSC_FALSE;
