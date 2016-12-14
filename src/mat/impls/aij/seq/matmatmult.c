@@ -13,18 +13,28 @@
 
 static PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_LLCondensed(Mat,Mat,PetscReal,Mat*);
 
+#if defined(PETSC_HAVE_HYPRE)
+PETSC_INTERN PetscErrorCode MatMatMultSymbolic_AIJ_AIJ_wHYPRE(Mat,Mat,PetscReal,Mat*);
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMult_SeqAIJ_SeqAIJ"
 PETSC_INTERN PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
+#if !defined(PETSC_HAVE_HYPRE)
   const char     *algTypes[6] = {"sorted","scalable","scalable_fast","heap","btheap","llcondensed"};
-  PetscInt       alg=0; /* set default algorithm */
+  PetscInt       nalg = 6;
+#else
+  const char     *algTypes[7] = {"sorted","scalable","scalable_fast","heap","btheap","llcondensed","hypre"};
+  PetscInt       nalg = 7;
+#endif
+  PetscInt       alg = 0; /* set default algorithm */
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
     ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
-    ierr = PetscOptionsEList("-matmatmult_via","Algorithmic approach","MatMatMult",algTypes,6,algTypes[0],&alg,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-matmatmult_via","Algorithmic approach","MatMatMult",algTypes,nalg,algTypes[0],&alg,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     ierr = PetscLogEventBegin(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
     switch (alg) {
@@ -43,6 +53,11 @@ PETSC_INTERN PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,
     case 5:
       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_LLCondensed(A,B,fill,C);CHKERRQ(ierr);
       break;
+#if defined(PETSC_HAVE_HYPRE)
+    case 6:
+      ierr = MatMatMultSymbolic_AIJ_AIJ_wHYPRE(A,B,fill,C);CHKERRQ(ierr);
+      break;
+#endif
     default:
       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(A,B,fill,C);CHKERRQ(ierr);
      break;

@@ -805,6 +805,39 @@ static PetscErrorCode MatPtAP_HYPRE_HYPRE(Mat A,Mat P,MatReuse scall,PetscReal f
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatMatMultNumeric_AIJ_AIJ_wHYPRE"
+static PetscErrorCode MatMatMultNumeric_AIJ_AIJ_wHYPRE(Mat A,Mat B,Mat C)
+{
+  Mat                D;
+  hypre_ParCSRMatrix *hA,*hB,*hAB;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = MatAIJGetParCSR_Private(A,&hA);CHKERRQ(ierr);
+  ierr = MatAIJGetParCSR_Private(B,&hB);CHKERRQ(ierr);
+  PetscStackPush("hypre_ParMatmul");
+  hAB  = hypre_ParMatmul(hA,hB);
+  PetscStackPop;
+  ierr = MatCreateFromParCSR(hAB,MATAIJ,PETSC_OWN_POINTER,&D);CHKERRQ(ierr);
+  ierr = MatHeaderMerge(C,&D);CHKERRQ(ierr);
+  ierr = MatAIJRestoreParCSR_Private(A,&hA);CHKERRQ(ierr);
+  ierr = MatAIJRestoreParCSR_Private(B,&hB);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMultSymbolic_AIJ_AIJ_wHYPRE"
+PETSC_INTERN PetscErrorCode MatMatMultSymbolic_AIJ_AIJ_wHYPRE(Mat A,Mat B,PetscReal fill,Mat *C)
+{
+  PetscErrorCode     ierr;
+  PetscFunctionBegin;
+  ierr                      = MatCreate(PetscObjectComm((PetscObject)A),C);CHKERRQ(ierr);
+  ierr                      = MatSetType(*C,MATAIJ);CHKERRQ(ierr);
+  (*C)->ops->matmultnumeric = MatMatMultNumeric_AIJ_AIJ_wHYPRE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatMultTranspose_HYPRE"
 static PetscErrorCode MatMultTranspose_HYPRE(Mat A, Vec x, Vec y)
 {
