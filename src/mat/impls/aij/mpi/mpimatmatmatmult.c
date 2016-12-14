@@ -4,6 +4,34 @@
 */
 #include <../src/mat/impls/aij/mpi/mpiaij.h> /*I "petscmat.h" I*/
 
+#if defined(PETSC_HAVE_HYPRE)
+PETSC_INTERN PetscErrorCode MatTransposeMatMatMultSymbolic_AIJ_AIJ_AIJ_wHYPRE(Mat,Mat,Mat,PetscReal,Mat*);
+PETSC_INTERN PetscErrorCode MatTransposeMatMatMultNumeric_AIJ_AIJ_AIJ_wHYPRE(Mat,Mat,Mat,Mat);
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMatMult_Transpose_AIJ_AIJ"
+PETSC_INTERN PetscErrorCode MatMatMatMult_Transpose_AIJ_AIJ(Mat R,Mat A,Mat P,MatReuse scall, PetscReal fill, Mat *RAP)
+{
+  Mat            Rt;
+  PetscBool      flg;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatTransposeGetMat(R,&Rt);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompareAny((PetscObject)Rt,&flg,MATSEQAIJ,MATMPIAIJ,NULL);CHKERRQ(ierr);
+  if (!flg) SETERRQ1(PetscObjectComm((PetscObject)Rt),PETSC_ERR_SUP,"Not for matrix type %s\n",((PetscObject)Rt)->type_name);
+  if (scall == MAT_INITIAL_MATRIX) {
+    ierr = PetscLogEventBegin(MAT_MatMatMultSymbolic,R,A,P,0);CHKERRQ(ierr);
+    ierr = MatTransposeMatMatMultSymbolic_AIJ_AIJ_AIJ_wHYPRE(Rt,A,P,fill,RAP);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_MatMatMultSymbolic,R,A,P,0);CHKERRQ(ierr);
+  }
+  ierr = PetscLogEventBegin(MAT_MatMatMultNumeric,R,A,P,0);CHKERRQ(ierr);
+  ierr = MatTransposeMatMatMultNumeric_AIJ_AIJ_AIJ_wHYPRE(Rt,A,P,*RAP);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MatMatMultNumeric,R,A,P,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_MPIAIJ_MatMatMatMult"
 PetscErrorCode MatDestroy_MPIAIJ_MatMatMatMult(Mat A)
@@ -19,10 +47,6 @@ PetscErrorCode MatDestroy_MPIAIJ_MatMatMatMult(Mat A)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_HYPRE)
-PETSC_INTERN PetscErrorCode MatMatMatMultSymbolic_AIJ_AIJ_AIJ_wHYPRE(Mat,Mat,Mat,PetscReal,Mat*);
-#endif
-
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMatMult_MPIAIJ_MPIAIJ_MPIAIJ"
 PETSC_INTERN PetscErrorCode MatMatMatMult_MPIAIJ_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Mat *D)
@@ -31,23 +55,8 @@ PETSC_INTERN PetscErrorCode MatMatMatMult_MPIAIJ_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
-#if defined(PETSC_HAVE_HYPRE)
-    PetscBool hypre = PETSC_FALSE;
-
-    ierr = PetscObjectOptionsBegin((PetscObject)B);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-matmatmatmult_viahypre","Use HYPRE to perform D=A*B*C","",hypre,&hypre,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsEnd();CHKERRQ(ierr);
-#endif
     ierr = PetscLogEventBegin(MAT_MatMatMultSymbolic,A,B,C,0);CHKERRQ(ierr);
-#if !defined(PETSC_HAVE_HYPRE)
     ierr = MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ(A,B,C,fill,D);CHKERRQ(ierr);
-#else
-    if (hypre) {
-      ierr = MatMatMatMultSymbolic_AIJ_AIJ_AIJ_wHYPRE(A,B,C,fill,D);CHKERRQ(ierr);
-    } else {
-      ierr = MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ(A,B,C,fill,D);CHKERRQ(ierr);
-    }
-#endif
     ierr = PetscLogEventEnd(MAT_MatMatMultSymbolic,A,B,C,0);CHKERRQ(ierr);
   }
   ierr = PetscLogEventBegin(MAT_MatMatMultNumeric,A,B,C,0);CHKERRQ(ierr);

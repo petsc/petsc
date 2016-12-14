@@ -1156,6 +1156,7 @@ PetscErrorCode MatDestroy_MPIAIJ(Mat mat)
 #endif
 #if defined(PETSC_HAVE_HYPRE)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpiaij_hypre_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMatMult_transpose_mpiaij_mpiaij_C",NULL);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
@@ -4880,6 +4881,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_Elemental(Mat,MatType,MatReuse,Mat
 #endif
 #if defined(PETSC_HAVE_HYPRE)
 PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat,MatType,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatMatMatMult_Transpose_AIJ_AIJ(Mat,Mat,Mat,MatReuse,PetscReal,Mat*);
 #endif
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_IS(Mat,MatType,MatReuse,Mat*);
 
@@ -5024,6 +5026,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_mpidense_mpiaij_C",MatMatMult_MPIDense_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultSymbolic_mpidense_mpiaij_C",MatMatMultSymbolic_MPIDense_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_mpidense_mpiaij_C",MatMatMultNumeric_MPIDense_MPIAIJ);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_HYPRE)
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMatMult_transpose_mpiaij_mpiaij_C",MatMatMatMult_Transpose_AIJ_AIJ);CHKERRQ(ierr);
+#endif
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

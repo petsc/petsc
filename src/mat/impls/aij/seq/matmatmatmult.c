@@ -19,10 +19,6 @@ PetscErrorCode MatDestroy_SeqAIJ_MatMatMatMult(Mat A)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_HYPRE)
-PETSC_INTERN PetscErrorCode MatMatMatMultSymbolic_AIJ_AIJ_AIJ_wHYPRE(Mat,Mat,Mat,PetscReal,Mat*);
-#endif
-
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMatMult_SeqAIJ_SeqAIJ_SeqAIJ"
 PETSC_INTERN PetscErrorCode MatMatMatMult_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Mat *D)
@@ -31,23 +27,8 @@ PETSC_INTERN PetscErrorCode MatMatMatMult_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
-#if defined(PETSC_HAVE_HYPRE)
-    PetscBool hypre = PETSC_FALSE;
-
-    ierr = PetscObjectOptionsBegin((PetscObject)B);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-matmatmatmult_viahypre","Use HYPRE to perform D=A*B*C","",hypre,&hypre,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsEnd();CHKERRQ(ierr);
-#endif
     ierr = PetscLogEventBegin(MAT_MatMatMultSymbolic,A,B,C,0);CHKERRQ(ierr);
-#if !defined(PETSC_HAVE_HYPRE)
     ierr = MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ(A,B,C,fill,D);CHKERRQ(ierr);
-#else
-    if (hypre) {
-      ierr = MatMatMatMultSymbolic_AIJ_AIJ_AIJ_wHYPRE(A,B,C,fill,D);CHKERRQ(ierr);
-    } else {
-      ierr = MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ(A,B,C,fill,D);CHKERRQ(ierr);
-    }
-#endif
     ierr = PetscLogEventEnd(MAT_MatMatMultSymbolic,A,B,C,0);CHKERRQ(ierr);
   }
   ierr = PetscLogEventBegin(MAT_MatMatMultNumeric,A,B,C,0);CHKERRQ(ierr);

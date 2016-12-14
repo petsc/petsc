@@ -8,7 +8,7 @@ static char help[] = "Tests MatHYPRE\n";
 int main(int argc,char **args)
 {
   Mat                A,B,C,D;
-  Mat                pAB,CD;
+  Mat                pAB,CD,CAB;
   hypre_ParCSRMatrix *parcsr;
   Vec                x,x2,y,y2;
   PetscReal          err;
@@ -215,9 +215,26 @@ int main(int argc,char **args)
   ierr = MatAXPY(D,-1.,pAB,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatNorm(D,NORM_INFINITY,&err);CHKERRQ(ierr);
   if (err/norm > PETSC_SMALL) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error MatMatMult %g %g",err,norm);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&D);CHKERRQ(ierr);
   ierr = MatDestroy(&CD);CHKERRQ(ierr);
   ierr = MatDestroy(&pAB);CHKERRQ(ierr);
+
+  /* When configured with HYPRE, MatMatMatMult is available for the triplet transpose(aij)-aij-aij */
+  ierr = MatCreateTranspose(A,&C);CHKERRQ(ierr);
+  ierr = MatMatMatMult(C,A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&CAB);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
+  ierr = MatMatMult(C,A,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&D);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  ierr = MatMatMult(D,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
+  ierr = MatNorm(C,NORM_INFINITY,&norm);CHKERRQ(ierr);
+  ierr = MatAXPY(C,-1.,CAB,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatNorm(C,NORM_INFINITY,&err);CHKERRQ(ierr);
+  if (err/norm > PETSC_SMALL) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Error MatMatMatMult %g %g",err,norm);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  ierr = MatDestroy(&D);CHKERRQ(ierr);
+  ierr = MatDestroy(&CAB);CHKERRQ(ierr);
 
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&x2);CHKERRQ(ierr);
@@ -225,7 +242,6 @@ int main(int argc,char **args)
   ierr = VecDestroy(&y2);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return ierr;
