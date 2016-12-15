@@ -74,13 +74,13 @@ typedef struct {
 
 /* Utility struct to store the contents of a Fluent file in memory */
 typedef struct {
-  int   index;    /* Type of section */
-  int   zoneID;
-  int   first;
-  int   last;
-  int   type;
-  int   nd;       /* Either ND or element-type */
-  void *data;
+  int          index;    /* Type of section */
+  unsigned int zoneID;
+  unsigned int first;
+  unsigned int last;
+  int          type;
+  int          nd;       /* Either ND or element-type */
+  void        *data;
 } FluentSection;
 
 struct _PetscGridHash {
