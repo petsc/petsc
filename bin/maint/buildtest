@@ -6,12 +6,9 @@
 #
 # Example usage: ${PETSC_DIR}/bin/maint/buildtest solaris
 #                ./bin/maint/buildtest solaris
-#                ./bin/maint/buildtest 
 #
 set day=`date | cut -f1 -d" "`
-#
-# on cygwin - tcsh gives funky paths - so reset it to normal bash one so 'chkpetsc_dir' doesn't complain
-set nPETSC_DIR=`pwd | sed s~/cygdrive/h~~`
+set nPETSC_DIR=`pwd`
 if ( ! -f ${nPETSC_DIR}/include/petscsys.h ) then
   set maintdir=`dirname $0`
   set nPETSC_DIR=`dirname $maintdir`
@@ -32,7 +29,8 @@ endif
 if (${#argv} > 0) then 
   set ARCH=${1}
 else
-  set ARCH=`${nPETSC_DIR}/bin/configarch`
+  echo "ARCH not specified to buildtest"
+  exit
 endif
 if (${#argv} > 1) then 
   set CONFIGURE_ARGS="${argv[2-]}"
@@ -58,6 +56,12 @@ setenv PETSC_DIR $nPETSC_DIR
 set PETSC_ARCH=${ARCH}
 set CONFIGURE='yes'
 set CONFIGURE_FILE=$PETSC_ARCH
+endif
+
+# check for cygwin/windows build - and use TMP=PETSC_DIR/tmp for win32fe
+if ( -f /usr/bin/cygcheck.exe ) then
+  setenv TMP ${PETSC_DIR}/tmp
+  mkdir -p $TMP
 endif
 
 # Run Configure
