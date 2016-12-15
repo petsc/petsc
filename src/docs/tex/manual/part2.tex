@@ -7562,8 +7562,8 @@ spaces.  Note that the option values cannot
 have intervening spaces either, and tab characters cannot be used
 between the option names and values.
 The user can employ any naming convention.  For uniformity throughout
-PETSc, we employ the format \trl{-package_option} (for instance,
-\trl{-ksp_type} and \trl{-mat_view ::info}).
+PETSc, we employ the format \trl{-[prefix_]package_option} (for instance,
+\trl{-ksp_type}, \trl{-mat_view ::info}, or \trl{-mg_levels_ksp_type}).
 
 Users can specify an alias for any option name (to avoid typing the
 sometimes lengthy default name) by adding an alias to the
@@ -7578,6 +7578,16 @@ alias -kspt -ksp_type
 alias -sd -start_in_debugger
 \end{lstlisting}
 Comments can be placed in the \trl{.petscrc} file by using \lstinline{#} in the first column of a line.
+
+\subsection{Options Prefixes}
+Options prefixes allow specific objects to be controlled from the options database.
+For instance, \lstinline{PCMG} gives prefixes to its nested \lstinline{KSP} objects;
+one may control the coarse grid solver by adding the \trl{mg_coarse} prefix, for example 
+\trl{-mg_coarse_ksp_type preonly}.
+One may also use \break \lstinline{KSPSetOptionsPrefix()},\lstinline{DMSetOptionsPrefix()}
+, \lstinline{SNESSetOptionsPrefix()}, \lstinline{TSSetOptionsPrefix()}, and similar 
+functions to assign custom prefixes, useful for applications with multiple or nested 
+solvers.
 
 \subsection{User-Defined PetscOptions}
 
