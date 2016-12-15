@@ -5131,12 +5131,6 @@ PetscErrorCode  MatCreateMPIAIJWithSplitArrays(MPI_Comm comm,PetscInt m,PetscInt
 */
 #include <petsc/private/fortranimpl.h>
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define matsetvaluesmpiaij_ MATSETVALUESMPIAIJ
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define matsetvaluesmpiaij_ matsetvaluesmpiaij
-#endif
-
 /* Change these macros so can be used in void function */
 #undef CHKERRQ
 #define CHKERRQ(ierr) CHKERRABORT(PETSC_COMM_WORLD,ierr)
@@ -5148,7 +5142,15 @@ PetscErrorCode  MatCreateMPIAIJWithSplitArrays(MPI_Comm comm,PetscInt m,PetscInt
 #define SETERRQ(c,ierr,b) CHKERRABORT(c,ierr)
 
 #undef __FUNCT__
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define matsetvaluesmpiaij_ MATSETVALUESMPIAIJ
+#define __FUNCT__ "MATSETVALUESMPIAIJ"
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define matsetvaluesmpiaij_ matsetvaluesmpiaij
+#define __FUNCT__ "matsetvaluesmpiaij"
+#else
 #define __FUNCT__ "matsetvaluesmpiaij_"
+#endif
 PETSC_EXTERN void PETSC_STDCALL matsetvaluesmpiaij_(Mat *mmat,PetscInt *mm,const PetscInt im[],PetscInt *mn,const PetscInt in[],const PetscScalar v[],InsertMode *maddv,PetscErrorCode *_ierr)
 {
   Mat            mat  = *mmat;
