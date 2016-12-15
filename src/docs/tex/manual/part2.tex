@@ -6277,8 +6277,8 @@ destroy them by calling \lstinline{VecDestroyVecs()}.
 For example, the following code fragment
 duplicates \lstinline{v_old} to form two new vectors, \lstinline{v_new(1)} and \lstinline{v_new(2)}.
 \begin{lstlisting}
-Vec     v_old, v_new(2)
-integer ierr
+Vec          v_old, v_new(2)
+PetscInt     ierr
 PetscScalar  alpha
 ....
 call VecDuplicateVecs(v_old,2,v_new,ierr)
@@ -6418,14 +6418,14 @@ accept as input a user-specified array of dimension one and return an
 integer index to the actual array used for data storage within PETSc.
 The Fortran interface for several routines is as follows:
 \begin{lstlisting}
-double precision xx_v(1), aa_v(1)
+PetscScalar    xx_v(1), aa_v(1)
 PetscErrorCode ierr
-integer          ss_v(1), dd_v(1), nloc
-PetscOffset      ss_i, xx_i, aa_i, dd_i
-Vec x
-Mat A
-IS  s
-DM  d 
+PetscInt       ss_v(1), dd_v(1), nloc
+PetscOffset    ss_i, xx_i, aa_i, dd_i
+Vec            x
+Mat            A
+IS             s
+DM             d 
 
 call VecGetArray(x,xx_v,xx_i,ierr)
 call MatDenseGetArray(A,aa_v,aa_i,ierr)
@@ -6443,8 +6443,8 @@ Fortran manner.
 
    double precision xx_v(1)
    PetscOffset      xx_i
-   PetscErrorCode ierr
-   integer          i, n
+   PetscErrorCode   ierr
+   PetscInt         i, n
    Vec              x
    call VecGetArray(x,xx_v,xx_i,ierr)
    call VecGetLocalSize(x,n,ierr)
