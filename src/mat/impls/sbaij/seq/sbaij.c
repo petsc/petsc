@@ -1547,7 +1547,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
                                        0,
                                        0,
                                        0,
-                               /*139*/ 0,
+                               /*139*/ MatSetBlockSizes_Default,
                                        0,
                                        0,
                                        0,
@@ -1604,12 +1604,13 @@ static PetscErrorCode  MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,PetscInt bs,Pe
 
   PetscFunctionBegin;
   if (nz >= 0 || nnz) realalloc = PETSC_TRUE;
-  B->preallocated = PETSC_TRUE;
 
   ierr = MatSetBlockSize(B,PetscAbs(bs));CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
   ierr = PetscLayoutGetBlockSize(B->rmap,&bs);CHKERRQ(ierr);
+
+  B->preallocated = PETSC_TRUE;
 
   mbs = B->rmap->N/bs;
   nbs = B->cmap->n/bs;
@@ -1727,11 +1728,9 @@ static PetscErrorCode  MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,PetscInt bs,Pe
     b->free_ij = PETSC_FALSE;
   }
 
-  B->rmap->bs = bs;
-  b->bs2      = bs2;
-  b->nz       = 0;
-  b->maxnz    = nz;
-
+  b->bs2     = bs2;
+  b->nz      = 0;
+  b->maxnz   = nz;
   b->inew    = 0;
   b->jnew    = 0;
   b->anew    = 0;

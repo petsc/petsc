@@ -7,6 +7,35 @@ PetscClassId IS_LTOGM_CLASSID;
 static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGlobalMapping,PetscInt*,PetscInt**,PetscInt**,PetscInt***);
 
 #undef __FUNCT__
+#define __FUNCT__ "ISLocalToGlobalMappingDuplicate"
+/*@
+    ISLocalToGlobalMappingDuplicate - Duplicates the local to global mapping object
+
+    Not Collective
+
+    Input Parameter:
+.   ltog - local to global mapping
+
+    Output Parameter:
+.   nltog - the duplicated local to global mapping
+
+    Level: advanced
+
+    Concepts: mapping^local to global
+
+.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate()
+@*/
+PetscErrorCode  ISLocalToGlobalMappingDuplicate(ISLocalToGlobalMapping ltog,ISLocalToGlobalMapping* nltog)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ltog,IS_LTOGM_CLASSID,1);
+  ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)ltog),ltog->bs,ltog->n,ltog->indices,PETSC_COPY_VALUES,nltog);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ISLocalToGlobalMappingGetSize"
 /*@
     ISLocalToGlobalMappingGetSize - Gets the local size of a local to global mapping
@@ -174,6 +203,68 @@ PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF sf,PetscInt start,ISLocalT
   ierr = PetscSFBcastEnd(sf,MPIU_INT,globals,ltog);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreate(comm,1,maxlocal,ltog,PETSC_OWN_POINTER,mapping);CHKERRQ(ierr);
   ierr = PetscFree(globals);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ISLocalToGlobalMappingSetBlockSize"
+/*@
+    ISLocalToGlobalMappingSetBlockSize - Sets the blocksize of the mapping
+
+    Not collective
+
+    Input Parameters:
+.   mapping - mapping data structure
+.   bs - the blocksize
+
+    Level: advanced
+
+    Concepts: mapping^local to global
+
+.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS()
+@*/
+PetscErrorCode  ISLocalToGlobalMappingSetBlockSize(ISLocalToGlobalMapping mapping,PetscInt bs)
+{
+  PetscInt       *nid;
+  const PetscInt *oid;
+  PetscInt       i,cn,on,obs,nn;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,1);
+  if (bs < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid block size %D",bs);
+  if (bs == mapping->bs) PetscFunctionReturn(0);
+  on  = mapping->n;
+  obs = mapping->bs;
+  oid = mapping->indices;
+  nn  = (on*obs)/bs;
+  if ((on*obs)%bs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Block size %D is inconsistent with block size %D and number of block indices %D",bs,obs,on);
+
+  ierr = PetscMalloc1(nn,&nid);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetIndices(mapping,&oid);CHKERRQ(ierr);
+  for (i=0;i<nn;i++) {
+    PetscInt j;
+    for (j=0,cn=0;j<bs-1;j++) {
+      if (oid[i*bs+j] < 0) { cn++; continue; }
+      if (oid[i*bs+j] != oid[i*bs+j+1]-1) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Block sizes %D and %D are incompatible with the block indices: non consecutive indices %D %D",bs,obs,oid[i*bs+j],oid[i*bs+j+1]);
+    }
+    if (oid[i*bs+j] < 0) cn++;
+    if (cn) {
+      if (cn != bs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Block sizes %D and %D are incompatible with the block indices: invalid number of negative entries in block %D",bs,obs,cn);
+      nid[i] = -1;
+    } else {
+      nid[i] = oid[i*bs]/bs;
+    }
+  }
+  ierr = ISLocalToGlobalMappingRestoreIndices(mapping,&oid);CHKERRQ(ierr);
+
+  mapping->n           = nn;
+  mapping->bs          = bs;
+  ierr                 = PetscFree(mapping->indices);CHKERRQ(ierr);
+  mapping->indices     = nid;
+  ierr                 = PetscFree(mapping->globals);CHKERRQ(ierr);
+  mapping->globalstart = 0;
+  mapping->globalend   = 0;
   PetscFunctionReturn(0);
 }
 
@@ -416,7 +507,7 @@ PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,PetscI
 #undef __FUNCT__
 #define __FUNCT__ "ISLocalToGlobalMappingApplyBlock"
 /*@
-   ISLocalToGlobalMappingApplyBlock - Takes a list of integers in a local block numbering  and converts them to the global block numbering
+   ISLocalToGlobalMappingApplyBlock - Takes a list of integers in a local block numbering and converts them to the global block numbering
 
    Not collective
 

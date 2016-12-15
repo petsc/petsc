@@ -46,6 +46,10 @@ ex7: ex7.o chkopts
 	-${CLINKER} -o ex7 ex7.o  ${PETSC_VEC_LIB}
 	${RM} -f ex7.o
 
+ex8: ex8.o chkopts
+	-${CLINKER} -o ex8 ex8.o  ${PETSC_VEC_LIB}
+	${RM} -f ex8.o
+
 #-------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1  ./ex1
@@ -71,7 +75,12 @@ runex6_3:
 runex7:
 	-@${MPIEXEC} -n 1  ./ex7
 
-TESTEXAMPLES_C		    = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex5.PETSc runex5 ex5.rm ex6.PETSc runex6_3 ex6.rm ex7.PETSc runex7 ex7.rm
+runex8:
+	-@${MPIEXEC} -n 1  ./ex8 > ex8_1.tmp 2>&1; \
+	  ${DIFF} output/ex8_1.out ex8_1.tmp || printf "${PWD}\nPossible problems with ex8_1, diffs above\n=========================================\n"; \
+	  ${RM} -f ex8_1.tmp
+
+TESTEXAMPLES_C		    = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex5.PETSc runex5 ex5.rm ex6.PETSc runex6_3 ex6.rm ex7.PETSc runex7 ex7.rm ex8.PETSc runex8 ex8.rm
 TESTEXAMPLES_C_X	    =
 TESTEXAMPLES_FORTRAN	    = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI =

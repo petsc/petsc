@@ -43,6 +43,21 @@ M*/
 M*/
 
 #undef __FUNCT__
+#define __FUNCT__ "MatSetBlockSizes_MPIAIJ"
+PetscErrorCode MatSetBlockSizes_MPIAIJ(Mat M, PetscInt rbs, PetscInt cbs)
+{
+  PetscErrorCode ierr;
+  Mat_MPIAIJ     *mat = (Mat_MPIAIJ*)M->data;
+
+  PetscFunctionBegin;
+  if (mat->A) {
+    ierr = MatSetBlockSizes(mat->A,rbs,cbs);CHKERRQ(ierr);
+    ierr = MatSetBlockSizes(mat->B,rbs,1);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatFindNonzeroRows_MPIAIJ"
 PetscErrorCode MatFindNonzeroRows_MPIAIJ(Mat M,IS *keptrows)
 {
@@ -2702,7 +2717,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        0,
                                        0,
                                        0,
-                                /*139*/0,
+                                /*139*/MatSetBlockSizes_MPIAIJ,
                                        0,
                                        0,
                                        MatFDColoringSetUp_MPIXAIJ,

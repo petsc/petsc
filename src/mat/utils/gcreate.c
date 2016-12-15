@@ -2,6 +2,17 @@
 #include <petsc/private/matimpl.h>       /*I "petscmat.h"  I*/
 
 #undef __FUNCT__
+#define __FUNCT__ "MatSetBlockSizes_Default"
+PETSC_INTERN PetscErrorCode MatSetBlockSizes_Default(Mat mat,PetscInt rbs, PetscInt cbs)
+{
+  PetscFunctionBegin;
+  if (!mat->preallocated) PetscFunctionReturn(0);
+  if (mat->rmap->bs > 0 && mat->rmap->bs != rbs) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot change row block size %D to %D\n",mat->rmap->bs,rbs);
+  if (mat->cmap->bs > 0 && mat->cmap->bs != cbs) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot change column block size %D to %D\n",mat->cmap->bs,cbs);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatShift_Basic"
 PETSC_INTERN PetscErrorCode MatShift_Basic(Mat Y,PetscScalar a)
 {

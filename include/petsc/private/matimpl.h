@@ -600,6 +600,7 @@ typedef struct {
 
 PETSC_EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
 PETSC_INTERN PetscErrorCode MatShift_Basic(Mat,PetscScalar);
+PETSC_INTERN PetscErrorCode MatSetBlockSizes_Default(Mat,PetscInt,PetscInt);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPivotCheck_nz"
