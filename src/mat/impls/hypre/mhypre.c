@@ -867,7 +867,6 @@ static PetscErrorCode MatMatMultNumeric_HYPRE_HYPRE(Mat A,Mat B,Mat C)
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = PetscPrintf(PetscObjectComm((PetscObject)A),"USING %s\n",__FUNCT__);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)B,MATHYPRE,&ishypre);CHKERRQ(ierr);
   if (!ishypre) SETERRQ1(PetscObjectComm((PetscObject)B),PETSC_ERR_USER,"B should be of type %s",MATHYPRE);
   ierr = PetscObjectTypeCompare((PetscObject)A,MATHYPRE,&ishypre);CHKERRQ(ierr);
@@ -895,7 +894,6 @@ static PetscErrorCode MatMatMult_HYPRE_HYPRE(Mat A,Mat B,MatReuse scall,PetscRea
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscPrintf(PetscObjectComm((PetscObject)A),"USING %s\n",__FUNCT__);CHKERRQ(ierr);
   if (scall == MAT_INITIAL_MATRIX) {
     ierr = PetscLogEventBegin(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
     ierr                      = MatCreate(PetscObjectComm((PetscObject)A),C);CHKERRQ(ierr);
