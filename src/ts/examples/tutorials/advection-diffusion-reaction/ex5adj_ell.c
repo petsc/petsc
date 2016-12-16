@@ -115,10 +115,10 @@ int main(int argc,char **argv)
     ierr = TSSetIFunction(ts,NULL,IFunction,&appctx);CHKERRQ(ierr);
     if (appctx.aijpc) {
       Mat A,B;
-      ierr = DMSetMatType(da,MATELL);CHKERRQ(ierr);
-      ierr = DMCreateMatrix(da,&A);CHKERRQ(ierr);
       ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
       ierr = DMCreateMatrix(da,&B);CHKERRQ(ierr);
+      ierr = DMSetMatType(da,MATELL);CHKERRQ(ierr);
+      ierr = DMCreateMatrix(da,&A);CHKERRQ(ierr);
       ierr = TSSetIJacobian(ts,A,B,IJacobian,&appctx);CHKERRQ(ierr);
       ierr = MatDestroy(&A);CHKERRQ(ierr);
       ierr = MatDestroy(&B);CHKERRQ(ierr);
