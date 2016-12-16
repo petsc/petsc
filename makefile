@@ -142,6 +142,7 @@ matlabbin:
 #
 # Builds PETSc test examples for a given architecture
 #
+test_install: test
 check: test
 test:
 	-@${OMAKE} PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} test_build 2>&1 | tee ./${PETSC_ARCH}/lib/petsc/conf/test.log
