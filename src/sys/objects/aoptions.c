@@ -318,6 +318,10 @@ PetscErrorCode PetscOptionsGetFromTextInput(PetscOptionItems *PetscOptionsObject
       if (str[0]) {
 #if defined(PETSC_USE_REAL_SINGLE)
         sscanf(str,"%e",&ir);
+#elif defined(PETSC_USE_REAL___FP16)
+        float irtemp;
+        sscanf(str,"%e",&irtemp);
+        ir = irtemp;
 #elif defined(PETSC_USE_REAL_DOUBLE)
         sscanf(str,"%le",&ir);
 #elif defined(PETSC_USE_REAL___FLOAT128)

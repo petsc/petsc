@@ -333,7 +333,7 @@ PETSC_INTERN PetscErrorCode PCPreSolveChangeRHS(PC,PetscBool*);
       PetscInt       sendbuf,pcreason_max; \
       ierr = PCGetSetUpFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr);\
       sendbuf = (PetscInt)pcreason; \
-      ierr = MPI_Allreduce(&sendbuf,&pcreason_max,1,MPIU_INT,MPIU_MAX,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr); \
+      ierr = MPI_Allreduce(&sendbuf,&pcreason_max,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr); \
       if (pcreason_max) {\
         ksp->reason = KSP_DIVERGED_PCSETUP_FAILED;\
         ierr        = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);\
@@ -356,7 +356,7 @@ PETSC_INTERN PetscErrorCode PCPreSolveChangeRHS(PC,PetscBool*);
       PetscInt       sendbuf,pcreason_max; \
       ierr = PCGetSetUpFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr);\
       sendbuf = (PetscInt)pcreason; \
-      ierr = MPI_Allreduce(&sendbuf,&pcreason_max,1,MPIU_INT,MPIU_MAX,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr); \
+      ierr = MPI_Allreduce(&sendbuf,&pcreason_max,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr); \
       if (pcreason_max) {\
         ksp->reason = KSP_DIVERGED_PCSETUP_FAILED;\
         ierr        = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);\

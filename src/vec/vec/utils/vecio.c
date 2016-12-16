@@ -254,6 +254,8 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   scalartype = H5T_NATIVE_FLOAT;
 #elif defined(PETSC_USE_REAL___FLOAT128)
 #error "HDF5 output with 128 bit floats not supported."
+#elif defined(PETSC_USE_REAL___FP16)
+#error "HDF5 output with 16 bit floats not supported."
 #else
   scalartype = H5T_NATIVE_DOUBLE;
 #endif

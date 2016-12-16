@@ -1499,11 +1499,17 @@ static PetscErrorCode MatNorm_SeqDense(Mat A,NormType type,PetscReal *nrm)
         }
       }
     } else {
+#if defined(PETSC_USE_REAL___FP16)
+      PetscBLASInt one = 1,cnt = A->cmap->n*A->rmap->n;
+      *nrm = BLASnrm2_(&cnt,v,&one);
+    }
+#else
       for (i=0; i<A->cmap->n*A->rmap->n; i++) {
         sum += PetscRealPart(PetscConj(*v)*(*v)); v++;
       }
     }
     *nrm = PetscSqrtReal(sum);
+#endif
     ierr = PetscLogFlops(2.0*A->cmap->n*A->rmap->n);CHKERRQ(ierr);
   } else if (type == NORM_1) {
     *nrm = 0.0;

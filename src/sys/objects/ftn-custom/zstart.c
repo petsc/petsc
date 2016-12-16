@@ -140,13 +140,13 @@ PETSC_EXTERN void PXFGETARG(int*,_fcd,int*,int*);
 #endif
 #endif
 
-#if (defined(PETSC_HAVE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128)
+#if (defined(PETSC_HAVE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128) || defined(PETSC_USE_REAL___FP16)
 extern MPI_Op MPIU_SUM;
 
 PETSC_EXTERN void MPIAPI PetscSum_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
 
 #endif
-#if defined(PETSC_USE_REAL___FLOAT128)
+#if defined(PETSC_USE_REAL___FLOAT128) || defined(PETSC_USE_REAL___FP16)
 
 PETSC_EXTERN void MPIAPI PetscSum_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
 PETSC_EXTERN void MPIAPI PetscMax_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
@@ -403,6 +403,18 @@ static void petscinitialize_internal(CHAR filename, PetscInt len, PetscBool read
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops\n");return;}
   *ierr = MPI_Op_create(PetscMin_Local,1,&MPIU_MIN);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops\n");return;}
+#elif defined(PETSC_USE_REAL___FP16)
+  *ierr = MPI_Type_contiguous(2,MPI_CHAR,&MPIU___FP16);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types\n");return;}
+  *ierr = MPI_Type_commit(&MPIU___FP16);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types\n");return;}
+  *ierr = MPI_Op_create(PetscSum_Local,1,&MPIU_SUM);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops\n");return;}
+  *ierr = MPI_Op_create(PetscMax_Local,1,&MPIU_MAX);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops\n");return;}
+  *ierr = MPI_Op_create(PetscMin_Local,1,&MPIU_MIN);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops\n");return;}
+#endif
 #endif
 
   /*

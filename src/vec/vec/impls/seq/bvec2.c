@@ -241,8 +241,12 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal *z)
   ierr = PetscBLASIntCast(n,&bn);CHKERRQ(ierr);
   if (type == NORM_2 || type == NORM_FROBENIUS) {
     ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
+#if defined(PETSC_USE_REAL___FP16)
+    *z   = BLASnrm2_(&bn,xx,&one);
+#else
     *z   = PetscRealPart(BLASdot_(&bn,xx,&one,xx,&one));
     *z   = PetscSqrtReal(*z);
+#endif
     ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
     ierr = PetscLogFlops(PetscMax(2.0*n-1,0.0));CHKERRQ(ierr);
   } else if (type == NORM_INFINITY) {

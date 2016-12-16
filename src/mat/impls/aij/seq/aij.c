@@ -1969,10 +1969,15 @@ PetscErrorCode MatNorm_SeqAIJ(Mat A,NormType type,PetscReal *nrm)
 
   PetscFunctionBegin;
   if (type == NORM_FROBENIUS) {
+#if defined(PETSC_USE_REAL___FP16)
+    PetscBLASInt one = 1,nz = a->nz;
+    *nrm = BLASnrm2_(&nz,v,&one);
+#else
     for (i=0; i<a->nz; i++) {
       sum += PetscRealPart(PetscConj(*v)*(*v)); v++;
     }
     *nrm = PetscSqrtReal(sum);
+#endif
     ierr = PetscLogFlops(2*a->nz);CHKERRQ(ierr);
   } else if (type == NORM_1) {
     PetscReal *tmp;

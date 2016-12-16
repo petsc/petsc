@@ -79,6 +79,7 @@ There are two compile-time options:
      && !defined PETSC_USE_COMPLEX             \
      && !defined PETSC_USE_REAL_SINGLE         \
      && !defined PETSC_USE_REAL___FLOAT128     \
+     && !defined PETSC_USE_REAL___FP16         \
      && defined __SSE2__
 #define USE_SSE2_KERNELS 1
 #else

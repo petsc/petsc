@@ -1908,9 +1908,14 @@ PetscErrorCode MatNorm_SeqBAIJ(Mat A,NormType type,PetscReal *norm)
 
   PetscFunctionBegin;
   if (type == NORM_FROBENIUS) {
-    for (i=0; i< bs2*nz; i++) {
+#if defined(PETSC_USE_REAL___FP16)
+    PetscBLASInt one = 1,cnt = bs2*nz;
+    *norm = BLASnrm2_(&cnt,v,&one);
+#else
+    for (i=0; i<bs2*nz; i++) {
       sum += PetscRealPart(PetscConj(*v)*(*v)); v++;
     }
+#endif
     *norm = PetscSqrtReal(sum);
     ierr = PetscLogFlops(2*bs2*nz);CHKERRQ(ierr);
   } else if (type == NORM_1) { /* maximum column sum */

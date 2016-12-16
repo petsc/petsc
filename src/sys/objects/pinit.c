@@ -246,7 +246,7 @@ PetscErrorCode  PetscMaxSum(MPI_Comm comm,const PetscInt sizes[],PetscInt *max,P
 
 /* ----------------------------------------------------------------------------*/
 
-#if (defined(PETSC_HAVE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128)
+#if (defined(PETSC_HAVE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128) || defined(PETSC_USE_REAL___FP16)
 MPI_Op MPIU_SUM = 0;
 
 #undef __FUNCT__
@@ -274,7 +274,7 @@ PETSC_EXTERN void PetscSum_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatyp
 }
 #endif
 
-#if defined(PETSC_USE_REAL___FLOAT128)
+#if defined(PETSC_USE_REAL___FLOAT128) || defined(PETSC_USE_REAL___FP16)
 MPI_Op MPIU_MAX = 0;
 MPI_Op MPIU_MIN = 0;
 
@@ -843,9 +843,14 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 #endif
   ierr = MPI_Op_create(PetscMax_Local,1,&MPIU_MAX);CHKERRQ(ierr);
   ierr = MPI_Op_create(PetscMin_Local,1,&MPIU_MIN);CHKERRQ(ierr);
+#elif defined(PETSC_USE_REAL___FP16)
+  ierr = MPI_Type_contiguous(2,MPI_CHAR,&MPIU___FP16);CHKERRQ(ierr);
+  ierr = MPI_Type_commit(&MPIU___FP16);CHKERRQ(ierr);
+  ierr = MPI_Op_create(PetscMax_Local,1,&MPIU_MAX);CHKERRQ(ierr);
+  ierr = MPI_Op_create(PetscMin_Local,1,&MPIU_MIN);CHKERRQ(ierr);
 #endif
 
-#if (defined(PETSC_HAVE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128)
+#if (defined(PETSC_HAVE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128) || defined(PETSC_USE_REAL___FP16)
   ierr = MPI_Op_create(PetscSum_Local,1,&MPIU_SUM);CHKERRQ(ierr);
 #endif
 
@@ -1375,6 +1380,10 @@ PetscErrorCode  PetscFinalize(void)
 #endif
   ierr = MPI_Op_free(&MPIU_MAX);CHKERRQ(ierr);
   ierr = MPI_Op_free(&MPIU_MIN);CHKERRQ(ierr);
+#elif defined(PETSC_USE_REAL___FP16)
+  ierr = MPI_Type_free(&MPIU___FP16);CHKERRQ(ierr);
+  ierr = MPI_Op_free(&MPIU_MAX);CHKERRQ(ierr);
+  ierr = MPI_Op_free(&MPIU_MIN);CHKERRQ(ierr);
 #endif
 
 #if defined(PETSC_HAVE_COMPLEX)
@@ -1384,7 +1393,7 @@ PetscErrorCode  PetscFinalize(void)
 #endif
 #endif
 
-#if (defined(PETSC_HAVE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128)
+#if (defined(PETSC_HAVE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128) || defined(PETSC_USE_REAL___FP16)
   ierr = MPI_Op_free(&MPIU_SUM);CHKERRQ(ierr);
 #endif
 
