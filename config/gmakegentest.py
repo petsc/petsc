@@ -669,7 +669,8 @@ class generateExamples(Petsc):
     fd.write("\n#Tests and executables\n")    # Delimiter
     testdeps=" ".join(["test-"+pkg for pkg in PKGS])
     testexdeps=" ".join(["test-ex-"+pkg for pkg in PKGS])
-    fd.write("test: testinit testex "+testdeps+" report_tests\n")    # Main test target
+    fd.write("test: testinit testex testpkgs report_tests\n")    # Main test target
+    fd.write("testpkgs: "+testdeps+"\n")    # The test for the pkgs
     # Testinit handles the logging
     fd.write("testinit:\n")
     fd.write("\t-@rm -f ${PETSC_ARCH}/tests/test.log\n")

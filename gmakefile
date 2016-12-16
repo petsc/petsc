@@ -308,7 +308,7 @@ else ifdef argsearch
     NEW_TESTTARGETS=$(call filterargs)
     ACTUAL_RUN=$(NEW_TESTTARGETS)
 else
-    ACTUAL_RUN=$(TESTTARGETS)
+    ACTUAL_RUN=testpkgs
 endif
 
 ACTUAL_RUN += report_tests
@@ -323,5 +323,5 @@ echo_test:
 echo_testsearch:
 	-@echo $(ACTUAL_RUN)
 
-report_tests:
+report_tests: $(ACTUAL_RUN)
 	-@cd $(TESTDIR); ./report_tests.sh
