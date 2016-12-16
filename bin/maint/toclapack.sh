@@ -16,11 +16,17 @@
 #  contain the fortran sources for BLAS and LAPACK, respectively.
 #
 #  This script needs the following tools:
-#	*) f2c
+#	*) f2c available from http://www.netlib.org/f2c or as a tarball at http://pkgs.fedoraproject.org/repo/pkgs/f2c/
 #	*) lex
 #	*) c compiler (cc)
 #	*) awk
-#	*) sed
+#	*) sed - the sed on Apple does not work with this script so you must do
+#          brew install gnu-sed
+#          to install a suitable sed. This script will automatically use that version once you have installed it
+#       *) the BLAS and LAPACK source code. Download the tarball from http://www.netlib.org/lapack/lapack-3.4.2.tgz
+#             blas-src-dir is lapack-version/BLAS/SRC
+#             lapack-src-dir is lapack-version/SRC
+#             newer releases of LAPACK will not work
 #
 #  This script should be run with bash, because it uses the 'echo -n' option. 
 
@@ -51,6 +57,11 @@ LAPACKSRC="$2"
 ORIG="$PWD"
 MAXPROCS="16"
 TESTING="0"   # 0: don't include second, dsecnd and qsecnd
+
+if [ `uname` = Darwin ]
+then
+  SED=gsed
+fi
 
 # 0) Create the temp directory and compile some scripts
 mkdir $TMP
@@ -107,7 +118,8 @@ echo '
 
 ########################################################################################
 # f2cblaslapack: BLAS/LAPACK in C for being linked with PETSc.
-# Created by toclapack.sh script
+# Created by $PETSC_DIR/bin/maint/petsc/toclapack.sh script
+# You may obtain PETSc at http://www.mcs.anl.gov/petsc
 ########################################################################################
 
 ALL: blas_lib lapack_lib
