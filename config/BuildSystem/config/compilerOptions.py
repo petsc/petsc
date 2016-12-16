@@ -139,9 +139,9 @@ class CompilerOptions(config.base.Configure):
       elif compiler.find('win32fe icl') >= 0:
         if bopt == '':
           if self.argDB['with-shared-libraries']:
-            flags.extend(['-MD','-GX','-GR'])
+            flags.extend(['-MD','-GR','-EHsc'])
           else:
-            flags.extend(['-MT','-GX','-GR'])
+            flags.extend(['-MT','-GR','-EHsc']) # removing GX in favor of EHsc
         elif bopt in ['g']:
           flags.extend(['-Z7'])
         elif bopt in ['O']:
