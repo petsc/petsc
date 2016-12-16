@@ -2535,7 +2535,7 @@ PetscErrorCode PetscDSCopyBoundary(PetscDS probA, PetscDS probB)
   for (b = probA->boundary; b; b = b->next) {
     DSBoundary bNew;
 
-    ierr = PetscNew(&bNew);
+    ierr = PetscNew(&bNew);CHKERRQ(ierr);
     bNew->numcomps = b->numcomps;
     ierr = PetscMalloc1(bNew->numcomps, &bNew->comps);CHKERRQ(ierr);
     ierr = PetscMemcpy(bNew->comps, b->comps, bNew->numcomps*sizeof(PetscInt));CHKERRQ(ierr);

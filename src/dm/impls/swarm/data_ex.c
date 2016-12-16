@@ -377,7 +377,7 @@ PetscErrorCode DataExTopologyFinalize(DataEx d)
   /* given infomation about all my neighbours, make map symmetric */
   ierr = _DataExCompleteCommunicationMap( d->comm,d->n_neighbour_procs,d->neighbour_procs, &symm_nn, &symm_procs );CHKERRQ(ierr);
   /* update my arrays */
-  ierr = PetscFree(d->neighbour_procs);
+  ierr = PetscFree(d->neighbour_procs);CHKERRQ(ierr);
   d->n_neighbour_procs = symm_nn;
   d->neighbour_procs   = symm_procs;
   /* allocates memory */
@@ -685,7 +685,7 @@ PetscErrorCode DataExEnd(DataEx de)
     ierr = MPI_Irecv( dest, length, MPI_CHAR, de->neighbour_procs[i], de->recv_tags[i], de->comm, &de->_requests[np+i] );CHKERRQ(ierr);
   }
   ierr = MPI_Waitall( 2*np, de->_requests, de->_stats );CHKERRQ(ierr);
-  ierr = PetscFree(message_recv_offsets);
+  ierr = PetscFree(message_recv_offsets);CHKERRQ(ierr);
   de->communication_status = DEOBJECT_FINALIZED;
   ierr = PetscLogEventEnd(PTATIN_DataExchangerEnd,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);

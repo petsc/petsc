@@ -66,7 +66,7 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
   }
   ierr  = MatGetSize(jac->A,&n,NULL);CHKERRQ(ierr);
   if (!n) {
-    ierr = PetscInfo(pc,"Matrix has zero rows, skipping svd\n");
+    ierr = PetscInfo(pc,"Matrix has zero rows, skipping svd\n");CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   ierr  = PetscBLASIntCast(n,&nb);CHKERRQ(ierr);

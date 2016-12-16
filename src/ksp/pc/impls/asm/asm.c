@@ -710,7 +710,7 @@ static PetscErrorCode PCSetFromOptions_ASM(PetscOptionItems *PetscOptionsObject,
   if (flg) {ierr = PCASMSetLocalType(pc,loctype);CHKERRQ(ierr); }
   ierr = PetscOptionsFList("-pc_asm_sub_mat_type","Subsolve Matrix Type","PCASMSetSubMatType",MatList,NULL,sub_mat_type,256,&flg);CHKERRQ(ierr);
   if(flg){
-    ierr = PCASMSetSubMatType(pc,sub_mat_type);
+    ierr = PCASMSetSubMatType(pc,sub_mat_type);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

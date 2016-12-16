@@ -784,7 +784,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         ierr = ISDestroy(&plP);CHKERRQ(ierr);
         ierr = ISRestoreIndices(lP,&idxs);CHKERRQ(ierr);
       }
-      ierr = ISDestroy(&lP);
+      ierr = ISDestroy(&lP);CHKERRQ(ierr);
       fetidp->pP = pP;
     }
 

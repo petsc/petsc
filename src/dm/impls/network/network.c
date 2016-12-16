@@ -663,7 +663,7 @@ PetscErrorCode DMNetworkSetSubMap_private(PetscInt pstart, PetscInt pend, ISLoca
   for (i = pstart; i < pend; i++) {
     subpoints[i - pstart] = i;
   }
-  ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD,1,pend-pstart,subpoints,PETSC_COPY_VALUES,map);
+  ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD,1,pend-pstart,subpoints,PETSC_COPY_VALUES,map);CHKERRQ(ierr);
   ierr = PetscFree(subpoints);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
