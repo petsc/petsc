@@ -4024,8 +4024,8 @@ PetscErrorCode MatCopy(Mat A,Mat B,MatStructure str)
 .  newtype - new matrix type.  Use MATSAME to create a new matrix of the
    same type as the original matrix.
 -  reuse - denotes if the destination matrix is to be created or reused.
-   Use MAT_INPLACE_MATRIX for inplace conversion, otherwise use
-   MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX.
+   Use MAT_INPLACE_MATRIX for inplace conversion (that is when you want the input mat to be changed to contain the matrix in the new format), otherwise use
+   MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX (can only be used after the first call was made with MAT_INITIAL_MATRIX, causes the matrix space in M to be reused).
 
    Output Parameter:
 .  M - pointer to place new matrix
