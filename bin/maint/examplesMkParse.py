@@ -326,6 +326,8 @@ class makeParse(object):
       if subDict["output_file"].strip(): order.append("output_file")
     if subDict.has_key("redirect_file"):
       if subDict["redirect_file"].strip(): order.append("redirect_file")
+    if subDict.has_key("localrunfiles"):
+      if subDict["localrunfiles"].strip(): order.append("localrunfiles")
      
     tests=[]
     for k in subDict: 
@@ -536,6 +538,8 @@ class makeParse(object):
           rqList=argMap[matchStr].split("requires:")[1].strip().split()
           allRqs=allRqs+rqList
       subDict['requires']=list(set(allRqs))  # Uniquify the requirements
+      if 'options_file_yaml' in subDict['args']:
+        subDict['localrunfiles']=subDict['args'].split('options_file_yaml')[1].split()[0]
 
     # Pull out the redirect file
     if "> " in scriptStr:
@@ -596,10 +600,10 @@ class makeParse(object):
     # Help in parsing
     runexBase=runexName.split("_")[0]
     exName=runexBase[3:]
-    firstPart=mpiLine.split(" >")[0]
+    firstPart=mpiLine.split(" >")[0]+" "
 
     # Args
-    args=firstPart.split(exName)[1].strip().strip("\\")
+    args=firstPart.split(exName+" ")[1].strip().strip("\\")
     # Peel off filters with "|" and remove extraneous white space with split/join
     if args.strip(): subDict['args']=" ".join(args.split("|")[0].split())
 
@@ -617,6 +621,8 @@ class makeParse(object):
           rqList=argMap[matchStr].split("requires:")[1].strip().split()
           allRqs=allRqs+rqList
       subDict['requires']=list(set(allRqs))  # Uniquify the requirements
+      if 'options_file_yaml' in subDict['args']:
+        subDict['localrunfiles']=subDict['args'].split('options_file_yaml')[1].strip().split()[0]
 
     # Pull out the redirect file
     if "> " in mpiLine:

@@ -57,8 +57,13 @@ for pkg in bldpkgs: makefileMap[pkg]="buildrequires: "+ pkg.lower()
 
 #  Map of "string" in arguments to package requirements; i.e.,
 #    argMap[patternString]=packageRequired
+#  I dislike this because it is such a crude hack.
+#  But TESTEXAMPLES doesn't have all of the information for crufty tests.
 #
 argMap={}
+# Things that are too short to do simple pattern search
+reqpkgs.remove('ML') 
+bldpkgs.remove('X') 
 for pkg in reqpkgs+bldpkgs:
   argMap[pkg]="requires: "+pkg.lower()
 argMap['DATAFILESPATH']='requires: datafilespath'

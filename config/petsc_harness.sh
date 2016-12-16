@@ -7,6 +7,7 @@ if test "$PWD"!=`dirname $0`; then
   cd `dirname $0`
 fi
 mkdir -p ${rundir}
+cp ${runfiles} ${rundir}
 cd ${rundir}
 
 #

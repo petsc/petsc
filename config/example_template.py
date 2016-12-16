@@ -6,6 +6,7 @@ mpiexec='@MPIEXEC@'
 exec=@EXEC@
 testname='@TESTNAME@'
 label=@LABEL@
+runfiles=@LOCALRUNFILES@
 
 . @TESTROOT@/petsc_harness.sh
 """

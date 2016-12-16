@@ -84,8 +84,7 @@ $(generated) : $(petscconf) $(petscvariables)
 $(generatedtest) : $(petscconf) $(petscvariables)
 	$(PYTHON) ./config/gmakegentest.py --petsc-arch=$(PETSC_ARCH)
 
-$(generatedtestargs) : $(petscconf) $(petscvariables)
-	$(PYTHON) ./config/gmakegentest.py --petsc-arch=$(PETSC_ARCH)
+$(generatedtestargs) : $(generatedtest) 
 
 -include $(generated)
 -include $(generatedtest)
@@ -258,9 +257,6 @@ $(OBJDIR)/src/sys/classes/bag/f2003-src/fsrc/bagenum.o  : $(OBJDIR)/src/sys/f90-
 $(srcs.o) : $(petscvariables)
 $(testsrcs.o) : $(petscvariables)
 
-# all test sources should be recompiled when the library changes
-$(testsrcs.o) : $(libpetscall)
-
 %/.DIR :
 	@mkdir -p $(@D)
 	@touch $@
@@ -298,7 +294,7 @@ $(alltest.d) : ;
 #    make -f gmakefile testsearch argsearch='cuda%' 
 
 # filtertest is because normal filter command cannot search for two wildcards!!
-TESTTARGETS := $(shell grep '^[a-z]' $(generatedtest) | grep -v "+=" | cut -f1 -d':')
+TESTTARGETS = $(shell grep '^[a-z]' $(generatedtest) | grep -v "+=" | cut -f1 -d':')
 TESTARGTARGETS=$(foreach testt, $(TESTTARGETS), $(testt)_ARGS)
 filtertest = $(foreach v,$(TESTTARGETS),$(if $(findstring $(searchin),$(v)),$(v)))
 filterargs = $(foreach v,$(TESTTARGETS),$(if $(findstring $(argsearch),$(v)),$(v)))
@@ -317,7 +313,7 @@ endif
 
 ACTUAL_RUN += report_tests
 
-testsearch: $(ACTUAL_RUNS)
+testsearch: $(ACTUAL_RUN)
 
 .PHONY: report_tests
 

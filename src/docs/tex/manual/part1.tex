@@ -327,13 +327,13 @@ wildcards, but rather whether the string is within the arguments.
 
 Some examples are:
 \begin{bashlisting}
-      make -f gmakefile search='ts%' test  # Run all ts examples
+      make -f gmakefile search='ts\%' testsearch  # Run all ts examples
 \end{bashlisting}
 \begin{bashlisting}
-      make -f gmakefile searchin='tutorials' test  # Run all tutorials
+      make -f gmakefile searchin='tutorials' testsearch  # Run all tutorials
 \end{bashlisting}
 \begin{bashlisting}
-      make -f gmakefile argsearch='cuda' test  # Run examples with cuda in arguments
+      make -f gmakefile argsearch='cuda' testsearch  # Run examples with cuda in arguments
 \end{bashlisting}
 
 Finally, it is useful before invoking the tests to see what targets will
