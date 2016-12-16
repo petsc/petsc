@@ -1215,12 +1215,12 @@ static PetscErrorCode PCView_GAMG(PC pc,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscViewerASCIIPrintf(viewer,"    GAMG specific options\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"      Threshold for dropping small values in graph on each level =");
+  ierr = PetscViewerASCIIPrintf(viewer,"      Threshold for dropping small values in graph on each level =");CHKERRQ(ierr);
   for (i=0;i<pc_gamg->current_level;i++) {
     ierr = PetscViewerASCIIPrintf(viewer," %g",(double)pc_gamg->threshold[i]);CHKERRQ(ierr);
   }
-  ierr = PetscViewerASCIIPrintf(viewer,"\n");
-  ierr = PetscViewerASCIIPrintf(viewer,"      Threshold scaling factor for each level not specified = %g\n",(double)pc_gamg->threshold_scale);
+  ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"      Threshold scaling factor for each level not specified = %g\n",(double)pc_gamg->threshold_scale);CHKERRQ(ierr);
   if (pc_gamg->use_aggs_in_asm) {
     ierr = PetscViewerASCIIPrintf(viewer,"      Using aggregates from coarsening process to define subdomains for PCASM\n");CHKERRQ(ierr);
   }
