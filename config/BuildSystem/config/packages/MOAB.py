@@ -6,7 +6,7 @@ class Configure(config.package.GNUPackage):
     # To track MOAB.git, update gitcommit to 'git describe --always' or 'git rev-parse HEAD'
     self.gitcommit         = 'c97ac0f30a3f927637ba3d27ab6df55ef973e0c6' # HEAD of MOAB/petsc branch: Jun 23, 2014
     self.download          = ['git://https://bitbucket.org/fathomteam/moab.git','http://ftp.mcs.anl.gov/pub/fathom/moab-c97ac0f30a3f.tar.gz']
-    self.downloaddirname   = 'moab'
+    self.downloaddirnames  = ['moab']
     # Check for moab::Core and includes/libraries to verify build
     self.functions         = ['Core']
     self.functionsCxx     = [1, 'namespace moab {class Core {public: Core();};}','moab::Core *mb = new moab::Core()']

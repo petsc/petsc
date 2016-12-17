@@ -6,7 +6,7 @@ class Configure(config.package.Package):
     config.package.Package.__init__(self, framework)
     self.download          = ['http://downloads.sourceforge.net/project/viennacl/1.7.x/ViennaCL-1.7.0.tar.gz',
                               'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ViennaCL-1.7.0.tar.gz' ]
-    self.downloaddirname   = str('ViennaCL-1.7.0')
+    self.downloaddirnames  = [str('ViennaCL-1.7.0')]
     self.includes          = ['viennacl/forwards.h']
     self.cxx               = 1
     self.downloadonWindows = 1
