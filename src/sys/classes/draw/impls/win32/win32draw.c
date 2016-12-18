@@ -826,7 +826,7 @@ PETSC_EXTERN PetscErrorCode  PetscDrawCreate_Win32(PetscDraw draw)
 #define __FUNCT__ "PetscWndProc"
 LRESULT CALLBACK PetscWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-  int wmId, wmEvent;
+  int wmId;
 
   PetscFunctionBegin;
   switch (message) {
@@ -834,7 +834,6 @@ LRESULT CALLBACK PetscWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
     HANDLE_MSG(hWnd,WM_DESTROY,OnDestroy_Win32);
   case WM_COMMAND:
     wmId    = LOWORD(wParam);
-    wmEvent = HIWORD(wParam);
     /* Parse the menu selections:*/
     switch (wmId) {
     case IDM_EXIT:
