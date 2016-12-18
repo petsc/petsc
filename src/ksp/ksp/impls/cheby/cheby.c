@@ -321,13 +321,15 @@ static PetscErrorCode KSPChebyshevComputeExtremeEigenvalues_Private(KSP kspest,P
   PetscFunctionReturn(0);
 }
 
-static PetscScalar chebyhash(PetscInt xx) {
+PETSC_STATIC_INLINE PetscScalar chebyhash(PetscInt xx)
+{
   unsigned int x = xx;
   x = ((x >> 16) ^ x) * 0x45d9f3b;
   x = ((x >> 16) ^ x) * 0x45d9f3b;
   x = ((x >> 16) ^ x);
   return (PetscScalar)((PetscInt64)x-2147483648)*5.e-10; /* center around zero, scaled about -1. to 1.*/
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_Chebyshev"
 static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
