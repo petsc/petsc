@@ -26,6 +26,7 @@
 PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
 {
   PetscMPIInt     rank, numProcs;
+#if defined(PETSC_HAVE_MED)
   PetscInt        i, nstep, ngeo, fileID, cellID, facetID, spaceDim, meshDim;
   PetscInt        numVertices = 0, numCells = 0, numCorners, numCellsLocal, numVerticesLocal;
   PetscInt       *cellList;
@@ -33,7 +34,6 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
   PetscLayout     vLayout, cLayout;
   const PetscInt *vrange, *crange;
   PetscSF         sfVertices;
-#if defined(PETSC_HAVE_MED)
   char           *axisname, *unitname, meshname[MED_NAME_SIZE+1], geotypename[MED_NAME_SIZE+1];
   char            meshdescription[MED_COMMENT_SIZE+1], dtunit[MED_SNAME_SIZE+1];
   med_sorting_type sortingtype;
