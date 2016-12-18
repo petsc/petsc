@@ -2,11 +2,10 @@
 
 configure_options = [
   # Blas autodetec with cygwin blas at /usr/lib/liblapack,a,libblas.a
-  '--with-cc=gcc',
-  '--with-fc=gfortran',
-  '--with-cxx=g++',
-  'DATAFILESPATH=/home/sbalay/datafiles',
-  '--download-mpich=1',
+  '--with-mpi-dir=/home/petsc/soft/mpich-3.1',
+  '--with-shared-libraries=0',
+  '--with-debugging=0',
+  '--with-visibility=0',
   ]
 
 if __name__ == '__main__':
