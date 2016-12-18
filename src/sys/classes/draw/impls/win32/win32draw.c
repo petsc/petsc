@@ -484,7 +484,7 @@ static PetscErrorCode PetscDrawResizeWindow_Win32(PetscDraw draw,int w,int h)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscDrawCheckResizeWindow_Win32"
+#define __FUNCT__ "PetscDrawCheckResizedWindow_Win32"
 static PetscErrorCode PetscDrawCheckResizedWindow_Win32(PetscDraw draw)
 {
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
