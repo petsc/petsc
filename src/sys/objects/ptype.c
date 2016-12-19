@@ -106,9 +106,9 @@ typedef enum {PETSC_INT_SIZE         = sizeof(PetscInt),
               PETSC_BIT_LOGICAL_SIZE = sizeof(char),
               PETSC_ENUM_SIZE        = sizeof(PetscBool),
               PETSC_BOOL_SIZE        = sizeof(PetscBool)
-#if defined(PETSC_USE___FLOAT128)
+#if defined(PETSC_USE_REAL___FLOAT128)
               ,PETSC___FLOAT128_SIZE  = sizeof(__float128)
-#elif defined(PETSC_USE___FP16)
+#elif defined(PETSC_USE_REAL___FP16)
               ,PETSC___FP16_SIZE      = sizeof(__fp16)
 #endif
              } PetscDataTypeSize;
@@ -150,9 +150,9 @@ PetscErrorCode  PetscDataTypeGetSize(PetscDataType ptype,size_t *size)
   else if (ptype == PETSC_ENUM)        *size = PETSC_ENUM_SIZE;
   else if (ptype == PETSC_BIT_LOGICAL) *size = PETSC_BIT_LOGICAL_SIZE;
   else if (ptype == PETSC_BOOL)        *size = PETSC_BOOL_SIZE;
-#if defined(PETSC_USE___FLOAT128)
+#if defined(PETSC_USE_REAL___FLOAT128)
   else if (ptype == PETSC___FLOAT128)  *size = PETSC___FLOAT128_SIZE;
-#elif defined(PETSC_USE___FP16)
+#elif defined(PETSC_USE_REAL___FP16)
   else if (ptype == PETSC___FP16)      *size = PETSC___FP16_SIZE;
 #endif
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown PETSc datatype");
