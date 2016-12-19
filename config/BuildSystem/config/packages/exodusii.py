@@ -7,7 +7,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.download        = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/exodus-5.24.tar.bz2']
-    self.downloaddirname = 'exodus'
+    self.downloaddirnames = ['exodus']
     self.functions       = ['ex_close']
     self.includes        = ['exodusII.h']
     self.includedir      = ['include']

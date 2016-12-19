@@ -916,10 +916,21 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
   }
   if (imex) {
     if (!ijacobian) {  /* system was written as Udot = G(t,U) */
+      PetscBool assembled;
       ierr = MatZeroEntries(A);CHKERRQ(ierr);
+      ierr = MatAssembled(A,&assembled);CHKERRQ(ierr);
+      if (!assembled) {
+        ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+        ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      }
       ierr = MatShift(A,shift);CHKERRQ(ierr);
       if (A != B) {
         ierr = MatZeroEntries(B);CHKERRQ(ierr);
+        ierr = MatAssembled(B,&assembled);CHKERRQ(ierr);
+        if (!assembled) {
+          ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+          ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+        }
         ierr = MatShift(B,shift);CHKERRQ(ierr);
       }
     }

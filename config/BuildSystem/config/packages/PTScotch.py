@@ -6,7 +6,7 @@ class Configure(config.package.Package):
     self.gitcommit       = '6.0.4-p1'
     self.download        = ['git://https://bitbucket.org/petsc/pkg-scotch.git',
                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/scotch_'+self.gitcommit+'.tar.gz']
-    self.downloaddirname = 'scotch'
+    self.downloaddirnames = ['scotch']
     self.liblist         = [['libptesmumps.a','libptscotch.a','libptscotcherr.a','libscotch.a','libscotcherr.a']]
     self.functions       = ['SCOTCH_archBuild']
     self.includes        = ['ptscotch.h']

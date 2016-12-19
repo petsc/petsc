@@ -6,7 +6,7 @@ class Configure(config.package.GNUPackage):
     config.package.GNUPackage.__init__(self, framework)
     self.download               = ['http://www.open-mpi.org/software/ompi/v1.8/downloads/openmpi-1.8.5.tar.gz',
                                    'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/openmpi-1.8.5.tar.gz']
-    self.downloaddirname        = 'openmpi'
+    self.downloaddirnames       = ['openmpi']
     self.skippackagewithoptions = 1
     self.isMPI                  = 1
     return

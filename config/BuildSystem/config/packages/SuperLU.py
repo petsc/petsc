@@ -6,7 +6,7 @@ class Configure(config.package.CMakePackage):
     config.package.CMakePackage.__init__(self, framework)
     self.gitcommit        = 'a081941' #master/v5.2.1+ from sept-30-2016
     self.download         = ['git://https://github.com/xiaoyeli/superlu','https://github.com/xiaoyeli/superlu/archive/'+self.gitcommit+'.tar.gz']
-    self.downloaddirname  = 'superlu'
+    self.downloaddirnames  = ['superlu']
     self.functions        = ['set_default_options']
     self.includes         = ['slu_ddefs.h']
     self.liblist          = [['libsuperlu.a']]
