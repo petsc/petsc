@@ -415,7 +415,6 @@ static void petscinitialize_internal(CHAR filename, PetscInt len, PetscBool read
   *ierr = MPI_Op_create(PetscMin_Local,1,&MPIU_MIN);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops\n");return;}
 #endif
-#endif
 
   /*
        Create the PETSc MPI reduction operator that sums of the first
