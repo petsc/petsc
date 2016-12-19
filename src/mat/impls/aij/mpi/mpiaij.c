@@ -1,4 +1,5 @@
 
+
 #include <../src/mat/impls/aij/mpi/mpiaij.h>   /*I "petscmat.h" I*/
 #include <petsc/private/vecimpl.h>
 #include <petsc/private/isimpl.h>
@@ -4646,7 +4647,7 @@ PetscErrorCode  MatGetBrowsOfAoCols_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscInt *
   MPI_Comm               comm;
   PetscMPIInt            *rprocs,*sprocs,tag=((PetscObject)ctx)->tag,rank;
   PetscInt               *rowlen,*bufj,*bufJ,ncols,aBn=a->B->cmap->n,row,*b_othi,*b_othj;
-  PetscScalar            *rvalues,*svalues;
+  PetscInt               *rvalues,*svalues;
   MatScalar              *b_otha,*bufa,*bufA;
   PetscInt               i,j,k,l,ll,nrecvs,nsends,nrows,*srow,*rstarts,*rstartsj = 0,*sstarts,*sstartsj,len;
   MPI_Request            *rwaits = NULL,*swaits = NULL;
@@ -4667,8 +4668,6 @@ PetscErrorCode  MatGetBrowsOfAoCols_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscInt *
 
   gen_to   = (VecScatter_MPI_General*)ctx->todata;
   gen_from = (VecScatter_MPI_General*)ctx->fromdata;
-  rvalues  = gen_from->values; /* holds the length of receiving row */
-  svalues  = gen_to->values;   /* holds the length of sending row */
   nrecvs   = gen_from->n;
   nsends   = gen_to->n;
 
@@ -4687,8 +4686,9 @@ PetscErrorCode  MatGetBrowsOfAoCols_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscInt *
     /* i-array */
     /*---------*/
     /*  post receives */
+    ierr = PetscMalloc1(rbs*(rstarts[nrecvs] - rstarts[0]),&rvalues);CHKERRQ(ierr);
     for (i=0; i<nrecvs; i++) {
-      rowlen = (PetscInt*)rvalues + rstarts[i]*rbs;
+      rowlen = rvalues + rstarts[i]*rbs;
       nrows  = (rstarts[i+1]-rstarts[i])*rbs; /* num of indices to be received */
       ierr   = MPI_Irecv(rowlen,nrows,MPIU_INT,rprocs[i],tag,comm,rwaits+i);CHKERRQ(ierr);
     }
@@ -4700,8 +4700,9 @@ PetscErrorCode  MatGetBrowsOfAoCols_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscInt *
     rstartsj[0] = 0;
     len         = 0; /* total length of j or a array to be sent */
     k           = 0;
+    ierr = PetscMalloc1(sbs*(sstarts[nsends] - sstarts[0]),&svalues);CHKERRQ(ierr);
     for (i=0; i<nsends; i++) {
-      rowlen = (PetscInt*)svalues + sstarts[i]*sbs;
+      rowlen = svalues + sstarts[i]*sbs;
       nrows  = sstarts[i+1]-sstarts[i]; /* num of block rows */
       for (j=0; j<nrows; j++) {
         row = srow[k] + B->rmap->range[rank]; /* global row idx */
@@ -4725,6 +4726,7 @@ PetscErrorCode  MatGetBrowsOfAoCols_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscInt *
       ierr = MPI_Waitany(nrecvs,rwaits,&jj,&rstatus);CHKERRQ(ierr);
     }
     if (nsends) {ierr = MPI_Waitall(nsends,swaits,sstatus);CHKERRQ(ierr);}
+    ierr = PetscFree(svalues);CHKERRQ(ierr);
 
     /* allocate buffers for sending j and a arrays */
     ierr = PetscMalloc1(len+1,&bufj);CHKERRQ(ierr);
@@ -4737,7 +4739,7 @@ PetscErrorCode  MatGetBrowsOfAoCols_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscInt *
     len       = 0; /* total length of j or a array to be received */
     k         = 0;
     for (i=0; i<nrecvs; i++) {
-      rowlen = (PetscInt*)rvalues + rstarts[i]*rbs;
+      rowlen = rvalues + rstarts[i]*rbs;
       nrows  = rbs*(rstarts[i+1]-rstarts[i]); /* num of rows to be received */
       for (j=0; j<nrows; j++) {
         b_othi[k+1] = b_othi[k] + rowlen[j];
@@ -4746,6 +4748,7 @@ PetscErrorCode  MatGetBrowsOfAoCols_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscInt *
       }
       rstartsj[i+1] = len; /* starting point of (i+1)-th incoming msg in bufj and bufa */
     }
+    ierr = PetscFree(rvalues);CHKERRQ(ierr);
 
     /* allocate space for j and a arrrays of B_oth */
     ierr = PetscMalloc1(b_othi[aBn]+1,&b_othj);CHKERRQ(ierr);
