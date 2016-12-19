@@ -153,8 +153,6 @@ typedef struct {
 } PetscFE_Composite;
 
 /* Utility functions */
-#undef __FUNCT__
-#define __FUNCT__ "CoordinatesRefToReal"
 PETSC_STATIC_INLINE void CoordinatesRefToReal(PetscInt dimReal, PetscInt dimRef, const PetscReal v0[], const PetscReal J[], const PetscReal xi[], PetscReal x[])
 {
   PetscInt d, e;
@@ -167,8 +165,6 @@ PETSC_STATIC_INLINE void CoordinatesRefToReal(PetscInt dimReal, PetscInt dimRef,
   }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CoordinatesRealToRef"
 PETSC_STATIC_INLINE void CoordinatesRealToRef(PetscInt dimReal, PetscInt dimRef, const PetscReal v0[], const PetscReal invJ[], const PetscReal x[], PetscReal xi[])
 {
   PetscInt d, e;
@@ -181,8 +177,6 @@ PETSC_STATIC_INLINE void CoordinatesRealToRef(PetscInt dimReal, PetscInt dimRef,
   }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "EvaluateFieldJets"
 PETSC_STATIC_INLINE void EvaluateFieldJets(PetscInt dim, PetscInt Nf, const PetscInt Nb[], const PetscInt Nc[], PetscInt q, PetscReal *basisField[], PetscReal *basisFieldDer[], PetscScalar refSpaceDer[], const PetscReal invJ[], const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscScalar u[], PetscScalar u_x[], PetscScalar u_t[])
 {
   PetscInt dOffset = 0, fOffset = 0, f;
@@ -228,8 +222,6 @@ PETSC_STATIC_INLINE void EvaluateFieldJets(PetscInt dim, PetscInt Nf, const Pets
   }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "EvaluateFaceFields"
 PETSC_STATIC_INLINE PetscErrorCode EvaluateFaceFields(PetscDS prob, PetscInt field, PetscInt faceLoc, const PetscScalar coefficients[], PetscScalar u[])
 {
   PetscFE        fe;
@@ -253,8 +245,6 @@ PETSC_STATIC_INLINE PetscErrorCode EvaluateFaceFields(PetscDS prob, PetscInt fie
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TransformF"
 PETSC_STATIC_INLINE void TransformF(PetscInt dim, PetscInt Nc, PetscInt q, const PetscReal invJ[], PetscReal detJ, const PetscReal quadWeights[], PetscScalar refSpaceDer[], PetscScalar f0[], PetscScalar f1[])
 {
   const PetscReal w = detJ*quadWeights[q];
@@ -282,8 +272,6 @@ PETSC_STATIC_INLINE void TransformF(PetscInt dim, PetscInt Nc, PetscInt q, const
 #endif
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "UpdateElementVec"
 PETSC_STATIC_INLINE void UpdateElementVec(PetscInt dim, PetscInt Nq, PetscInt Nb, PetscInt Nc, PetscReal basis[], PetscReal basisDer[], PetscScalar f0[], PetscScalar f1[], PetscScalar elemVec[])
 {
   PetscInt b, c;
@@ -313,8 +301,6 @@ PETSC_STATIC_INLINE void UpdateElementVec(PetscInt dim, PetscInt Nq, PetscInt Nb
 #endif
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEInterpolate_Static"
 PETSC_STATIC_INLINE PetscErrorCode PetscFEInterpolate_Static(PetscFE fe, const PetscScalar x[], PetscInt q, PetscScalar interpolant[])
 {
   PetscReal     *basis;

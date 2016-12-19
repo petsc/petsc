@@ -30,8 +30,6 @@ static PetscScalar CPowF(PetscScalar c,PetscInt p)
   return PetscPowRealInt(PetscRealPart(c),p)/Factorial(p);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLLEGetVecs"
 static PetscErrorCode TSGLLEGetVecs(TS ts,DM dm,Vec *Z,Vec *Ydotstage)
 {
   TS_GLLE        *gl = (TS_GLLE*)ts->data;
@@ -52,8 +50,6 @@ static PetscErrorCode TSGLLEGetVecs(TS ts,DM dm,Vec *Z,Vec *Ydotstage)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLLERestoreVecs"
 static PetscErrorCode TSGLLERestoreVecs(TS ts,DM dm,Vec *Z,Vec *Ydotstage)
 {
   PetscErrorCode ierr;
@@ -73,16 +69,12 @@ static PetscErrorCode TSGLLERestoreVecs(TS ts,DM dm,Vec *Z,Vec *Ydotstage)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCoarsenHook_TSGLLE"
 static PetscErrorCode DMCoarsenHook_TSGLLE(DM fine,DM coarse,void *ctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRestrictHook_TSGLLE"
 static PetscErrorCode DMRestrictHook_TSGLLE(DM fine,Mat restrct,Vec rscale,Mat inject,DM coarse,void *ctx)
 {
   TS             ts = (TS)ctx;
@@ -99,16 +91,12 @@ static PetscErrorCode DMRestrictHook_TSGLLE(DM fine,Mat restrct,Vec rscale,Mat i
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSubDomainHook_TSGLLE"
 static PetscErrorCode DMSubDomainHook_TSGLLE(DM dm,DM subdm,void *ctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSubDomainRestrictHook_TSGLLE"
 static PetscErrorCode DMSubDomainRestrictHook_TSGLLE(DM dm,VecScatter gscat, VecScatter lscat,DM subdm,void *ctx)
 {
   TS             ts = (TS)ctx;
@@ -127,8 +115,6 @@ static PetscErrorCode DMSubDomainRestrictHook_TSGLLE(DM dm,VecScatter gscat, Vec
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLLESchemeCreate"
 static PetscErrorCode TSGLLESchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt s,const PetscScalar *c,
                                        const PetscScalar *a,const PetscScalar *b,const PetscScalar *u,const PetscScalar *v,TSGLLEScheme *inscheme)
 {
@@ -308,8 +294,6 @@ static PetscErrorCode TSGLLESchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLLESchemeDestroy"
 static PetscErrorCode TSGLLESchemeDestroy(TSGLLEScheme sc)
 {
   PetscErrorCode ierr;
@@ -321,8 +305,6 @@ static PetscErrorCode TSGLLESchemeDestroy(TSGLLEScheme sc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLLEDestroy_Default"
 static PetscErrorCode TSGLLEDestroy_Default(TS_GLLE *gl)
 {
   PetscErrorCode ierr;
@@ -338,8 +320,6 @@ static PetscErrorCode TSGLLEDestroy_Default(TS_GLLE *gl)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLLEViewTable_Private"
 static PetscErrorCode TSGLLEViewTable_Private(PetscViewer viewer,PetscInt m,PetscInt n,const PetscScalar a[],const char name[])
 {
   PetscErrorCode ierr;
@@ -364,8 +344,6 @@ static PetscErrorCode TSGLLEViewTable_Private(PetscViewer viewer,PetscInt m,Pets
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLLESchemeView"
 static PetscErrorCode TSGLLESchemeView(TSGLLEScheme sc,PetscBool view_details,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -398,8 +376,6 @@ static PetscErrorCode TSGLLESchemeView(TSGLLEScheme sc,PetscBool view_details,Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLLEEstimateHigherMoments_Default"
 static PetscErrorCode TSGLLEEstimateHigherMoments_Default(TSGLLEScheme sc,PetscReal h,Vec Ydot[],Vec Xold[],Vec hm[])
 {
   PetscErrorCode ierr;
@@ -419,8 +395,6 @@ static PetscErrorCode TSGLLEEstimateHigherMoments_Default(TSGLLEScheme sc,PetscR
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLLECompleteStep_Rescale"
 static PetscErrorCode TSGLLECompleteStep_Rescale(TSGLLEScheme sc,PetscReal h,TSGLLEScheme next_sc,PetscReal next_h,Vec Ydot[],Vec Xold[],Vec X[])
 {
   PetscErrorCode ierr;
@@ -441,8 +415,6 @@ static PetscErrorCode TSGLLECompleteStep_Rescale(TSGLLEScheme sc,PetscReal h,TSG
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLLECompleteStep_RescaleAndModify"
 static PetscErrorCode TSGLLECompleteStep_RescaleAndModify(TSGLLEScheme sc,PetscReal h,TSGLLEScheme next_sc,PetscReal next_h,Vec Ydot[],Vec Xold[],Vec X[])
 {
   PetscErrorCode ierr;
@@ -484,8 +456,6 @@ static PetscErrorCode TSGLLECompleteStep_RescaleAndModify(TSGLLEScheme sc,PetscR
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLLECreate_IRKS"
 static PetscErrorCode TSGLLECreate_IRKS(TS ts)
 {
   TS_GLLE        *gl = (TS_GLLE*)ts->data;
@@ -621,8 +591,6 @@ static PetscErrorCode TSGLLECreate_IRKS(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLLESetType"
 /*@C
    TSGLLESetType - sets the class of general linear method to use for time-stepping
 
@@ -665,8 +633,6 @@ PetscErrorCode  TSGLLESetType(TS ts,TSGLLEType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLLESetAcceptType"
 /*@C
    TSGLLESetAcceptType - sets the acceptance test
 
@@ -697,8 +663,6 @@ PetscErrorCode  TSGLLESetAcceptType(TS ts,TSGLLEAcceptType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLLEGetAdapt"
 /*@C
    TSGLLEGetAdapt - gets the TSGLLEAdapt object from the TS
 
@@ -729,8 +693,6 @@ PetscErrorCode  TSGLLEGetAdapt(TS ts,TSGLLEAdapt *adapt)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLLEAccept_Always"
 static PetscErrorCode TSGLLEAccept_Always(TS ts,PetscReal tleft,PetscReal h,const PetscReal enorms[],PetscBool  *accept)
 {
   PetscFunctionBegin;
@@ -738,8 +700,6 @@ static PetscErrorCode TSGLLEAccept_Always(TS ts,PetscReal tleft,PetscReal h,cons
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLLEUpdateWRMS"
 static PetscErrorCode TSGLLEUpdateWRMS(TS ts)
 {
   TS_GLLE        *gl = (TS_GLLE*)ts->data;
@@ -757,8 +717,6 @@ static PetscErrorCode TSGLLEUpdateWRMS(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLLEVecNormWRMS"
 static PetscErrorCode TSGLLEVecNormWRMS(TS ts,Vec X,PetscReal *nrm)
 {
   TS_GLLE        *gl = (TS_GLLE*)ts->data;
@@ -780,8 +738,6 @@ static PetscErrorCode TSGLLEVecNormWRMS(TS ts,Vec X,PetscReal *nrm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLLESetType_GLLE"
 static PetscErrorCode TSGLLESetType_GLLE(TS ts,TSGLLEType type)
 {
   PetscErrorCode ierr,(*r)(TS);
@@ -802,8 +758,6 @@ static PetscErrorCode TSGLLESetType_GLLE(TS ts,TSGLLEType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLLESetAcceptType_GLLE"
 static PetscErrorCode TSGLLESetAcceptType_GLLE(TS ts,TSGLLEAcceptType type)
 {
   PetscErrorCode       ierr;
@@ -818,8 +772,6 @@ static PetscErrorCode TSGLLESetAcceptType_GLLE(TS ts,TSGLLEAcceptType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLLEGetAdapt_GLLE"
 static PetscErrorCode TSGLLEGetAdapt_GLLE(TS ts,TSGLLEAdapt *adapt)
 {
   PetscErrorCode ierr;
@@ -835,8 +787,6 @@ static PetscErrorCode TSGLLEGetAdapt_GLLE(TS ts,TSGLLEAdapt *adapt)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLLEChooseNextScheme"
 static PetscErrorCode TSGLLEChooseNextScheme(TS ts,PetscReal h,const PetscReal hmnorm[],PetscInt *next_scheme,PetscReal *next_h,PetscBool  *finish)
 {
   PetscErrorCode ierr;
@@ -868,8 +818,6 @@ static PetscErrorCode TSGLLEChooseNextScheme(TS ts,PetscReal h,const PetscReal h
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLLEGetMaxSizes"
 static PetscErrorCode TSGLLEGetMaxSizes(TS ts,PetscInt *max_r,PetscInt *max_s)
 {
   TS_GLLE *gl = (TS_GLLE*)ts->data;
@@ -880,8 +828,6 @@ static PetscErrorCode TSGLLEGetMaxSizes(TS ts,PetscInt *max_r,PetscInt *max_s)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSSolve_GLLE"
 static PetscErrorCode TSSolve_GLLE(TS ts)
 {
   TS_GLLE             *gl = (TS_GLLE*)ts->data;
@@ -1065,8 +1011,6 @@ accepted:
 
 /*------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "TSReset_GLLE"
 static PetscErrorCode TSReset_GLLE(TS ts)
 {
   TS_GLLE        *gl = (TS_GLLE*)ts->data;
@@ -1088,8 +1032,6 @@ static PetscErrorCode TSReset_GLLE(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSDestroy_GLLE"
 static PetscErrorCode TSDestroy_GLLE(TS ts)
 {
   TS_GLLE        *gl = (TS_GLLE*)ts->data;
@@ -1110,8 +1052,6 @@ static PetscErrorCode TSDestroy_GLLE(TS ts)
     This defines the nonlinear equation that is to be solved with SNES
     g(x) = f(t,x,z+shift*x) = 0
 */
-#undef __FUNCT__
-#define __FUNCT__ "SNESTSFormFunction_GLLE"
 static PetscErrorCode SNESTSFormFunction_GLLE(SNES snes,Vec x,Vec f,TS ts)
 {
   TS_GLLE        *gl = (TS_GLLE*)ts->data;
@@ -1131,8 +1071,6 @@ static PetscErrorCode SNESTSFormFunction_GLLE(SNES snes,Vec x,Vec f,TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESTSFormJacobian_GLLE"
 static PetscErrorCode SNESTSFormJacobian_GLLE(SNES snes,Vec x,Mat A,Mat B,TS ts)
 {
   TS_GLLE        *gl = (TS_GLLE*)ts->data;
@@ -1153,8 +1091,6 @@ static PetscErrorCode SNESTSFormJacobian_GLLE(SNES snes,Vec x,Mat A,Mat B,TS ts)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TSSetUp_GLLE"
 static PetscErrorCode TSSetUp_GLLE(TS ts)
 {
   TS_GLLE        *gl = (TS_GLLE*)ts->data;
@@ -1194,8 +1130,6 @@ static PetscErrorCode TSSetUp_GLLE(TS ts)
 }
 /*------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "TSSetFromOptions_GLLE"
 static PetscErrorCode TSSetFromOptions_GLLE(PetscOptionItems *PetscOptionsObject,TS ts)
 {
   TS_GLLE        *gl        = (TS_GLLE*)ts->data;
@@ -1244,8 +1178,6 @@ static PetscErrorCode TSSetFromOptions_GLLE(PetscOptionItems *PetscOptionsObject
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSView_GLLE"
 static PetscErrorCode TSView_GLLE(TS ts,PetscViewer viewer)
 {
   TS_GLLE        *gl = (TS_GLLE*)ts->data;
@@ -1280,8 +1212,6 @@ static PetscErrorCode TSView_GLLE(TS ts,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLLERegister"
 /*@C
    TSGLLERegister -  adds a TSGLLE implementation
 
@@ -1319,8 +1249,6 @@ PetscErrorCode  TSGLLERegister(const char sname[],PetscErrorCode (*function)(TS)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLLEAcceptRegister"
 /*@C
    TSGLLEAcceptRegister -  adds a TSGLLE acceptance scheme
 
@@ -1358,8 +1286,6 @@ PetscErrorCode  TSGLLEAcceptRegister(const char sname[],TSGLLEAcceptFunction fun
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLLERegisterAll"
 /*@C
   TSGLLERegisterAll - Registers all of the general linear methods in TSGLLE
 
@@ -1384,8 +1310,6 @@ PetscErrorCode  TSGLLERegisterAll(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLLEInitializePackage"
 /*@C
   TSGLLEInitializePackage - This function initializes everything in the TSGLLE package. It is called
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to TSCreate_GLLE()
@@ -1408,8 +1332,6 @@ PetscErrorCode  TSGLLEInitializePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLLEFinalizePackage"
 /*@C
   TSGLLEFinalizePackage - This function destroys everything in the TSGLLE package. It is
   called from PetscFinalize().
@@ -1524,8 +1446,6 @@ PetscErrorCode  TSGLLEFinalizePackage(void)
 .seealso:  TSCreate(), TS, TSSetType()
 
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "TSCreate_GLLE"
 PETSC_EXTERN PetscErrorCode TSCreate_GLLE(TS ts)
 {
   TS_GLLE        *gl;

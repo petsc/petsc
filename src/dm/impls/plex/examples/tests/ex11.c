@@ -2,8 +2,6 @@ static char help[] = "Tests for DMLabel\n\n";
 
 #include <petscdmplex.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "TestInsertion"
 static PetscErrorCode TestInsertion()
 {
   DMLabel        label, label2;
@@ -60,8 +58,6 @@ static PetscErrorCode TestInsertion()
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestEmptyStrata"
 static PetscErrorCode TestEmptyStrata(MPI_Comm comm)
 {
   DM             dm, dmDist;
@@ -165,8 +161,6 @@ static PetscErrorCode TestEmptyStrata(MPI_Comm comm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestDistribution"
 static PetscErrorCode TestDistribution(MPI_Comm comm)
 {
   DM             dm, dmDist;
@@ -205,8 +199,6 @@ static PetscErrorCode TestDistribution(MPI_Comm comm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   PetscErrorCode ierr;

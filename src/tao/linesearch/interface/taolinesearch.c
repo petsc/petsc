@@ -7,8 +7,6 @@ PetscFunctionList TaoLineSearchList = NULL;
 PetscClassId TAOLINESEARCH_CLASSID=0;
 PetscLogEvent TaoLineSearch_ApplyEvent = 0, TaoLineSearch_EvalEvent=0;
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchView"
 /*@C
   TaoLineSearchView - Prints information about the TaoLineSearch
 
@@ -87,8 +85,6 @@ PetscErrorCode TaoLineSearchView(TaoLineSearch ls, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchCreate"
 /*@C
   TaoLineSearchCreate - Creates a TAO Line Search object.  Algorithms in TAO that use
   line-searches will automatically create one.
@@ -161,8 +157,6 @@ PetscErrorCode TaoLineSearchCreate(MPI_Comm comm, TaoLineSearch *newls)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchSetUp"
 /*@
   TaoLineSearchSetUp - Sets up the internal data structures for the later use
   of a Tao solver
@@ -226,8 +220,6 @@ PetscErrorCode TaoLineSearchSetUp(TaoLineSearch ls)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchReset"
 /*@
   TaoLineSearchReset - Some line searches may carry state information
   from one TaoLineSearchApply() to the next.  This function resets this
@@ -254,8 +246,6 @@ PetscErrorCode TaoLineSearchReset(TaoLineSearch ls)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchDestroy"
 /*@
   TaoLineSearchDestroy - Destroys the TAO context that was created with
   TaoLineSearchCreate()
@@ -286,8 +276,6 @@ PetscErrorCode TaoLineSearchDestroy(TaoLineSearch *ls)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchApply"
 /*@
   TaoLineSearchApply - Performs a line-search in a given step direction.  Criteria for acceptable step length depends on the line-search algorithm chosen
 
@@ -412,8 +400,6 @@ PetscErrorCode TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchSetType"
 /*@C
    TaoLineSearchSetType - Sets the algorithm used in a line search
 
@@ -481,8 +467,6 @@ PetscErrorCode TaoLineSearchSetType(TaoLineSearch ls, const TaoLineSearchType ty
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchSetFromOptions"
 /*@
   TaoLineSearchSetFromOptions - Sets various TaoLineSearch parameters from user
   options.
@@ -541,8 +525,6 @@ PetscErrorCode TaoLineSearchSetFromOptions(TaoLineSearch ls)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchGetType"
 /*@C
   TaoLineSearchGetType - Gets the current line search algorithm
 
@@ -566,8 +548,6 @@ PetscErrorCode TaoLineSearchGetType(TaoLineSearch ls, const TaoLineSearchType *t
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchGetNumberFunctionEvaluations"
 /*@
   TaoLineSearchGetNumberFunctionEvaluations - Gets the number of function and gradient evaluation
   routines used by the line search in last application (not cumulative).
@@ -600,8 +580,6 @@ PetscErrorCode TaoLineSearchGetNumberFunctionEvaluations(TaoLineSearch ls, Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchIsUsingTaoRoutines"
 /*@
   TaoLineSearchIsUsingTaoRoutines - Checks whether the line search is using
   Tao evaluation routines.
@@ -625,8 +603,6 @@ PetscErrorCode TaoLineSearchIsUsingTaoRoutines(TaoLineSearch ls, PetscBool *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchSetObjectiveRoutine"
 /*@C
   TaoLineSearchSetObjectiveRoutine - Sets the function evaluation routine for the line search
 
@@ -670,8 +646,6 @@ PetscErrorCode TaoLineSearchSetObjectiveRoutine(TaoLineSearch ls, PetscErrorCode
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchSetGradientRoutine"
 /*@C
   TaoLineSearchSetGradientRoutine - Sets the gradient evaluation routine for the line search
 
@@ -714,8 +688,6 @@ PetscErrorCode TaoLineSearchSetGradientRoutine(TaoLineSearch ls, PetscErrorCode(
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchSetObjectiveAndGradientRoutine"
 /*@C
   TaoLineSearchSetObjectiveAndGradientRoutine - Sets the objective/gradient evaluation routine for the line search
 
@@ -758,8 +730,6 @@ PetscErrorCode TaoLineSearchSetObjectiveAndGradientRoutine(TaoLineSearch ls, Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchSetObjectiveAndGTSRoutine"
 /*@C
   TaoLineSearchSetObjectiveAndGTSRoutine - Sets the objective and
   (gradient'*stepdirection) evaluation routine for the line search.
@@ -811,8 +781,6 @@ PetscErrorCode TaoLineSearchSetObjectiveAndGTSRoutine(TaoLineSearch ls, PetscErr
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchUseTaoRoutines"
 /*@C
   TaoLineSearchUseTaoRoutines - Informs the TaoLineSearch to use the
   objective and gradient evaluation routines from the given Tao object.
@@ -837,8 +805,6 @@ PetscErrorCode TaoLineSearchUseTaoRoutines(TaoLineSearch ls, Tao ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchComputeObjective"
 /*@
   TaoLineSearchComputeObjective - Computes the objective function value at a given point
 
@@ -891,8 +857,6 @@ PetscErrorCode TaoLineSearchComputeObjective(TaoLineSearch ls, Vec x, PetscReal 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchComputeObjectiveAndGradient"
 /*@
   TaoLineSearchComputeObjectiveAndGradient - Computes the objective function value at a given point
 
@@ -946,8 +910,6 @@ PetscErrorCode TaoLineSearchComputeObjectiveAndGradient(TaoLineSearch ls, Vec x,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchComputeGradient"
 /*@
   TaoLineSearchComputeGradient - Computes the gradient of the objective function
 
@@ -996,8 +958,6 @@ PetscErrorCode TaoLineSearchComputeGradient(TaoLineSearch ls, Vec x, Vec g)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchComputeObjectiveAndGTS"
 /*@
   TaoLineSearchComputeObjectiveAndGTS - Computes the objective function value and inner product of gradient and step direction at a given point
 
@@ -1038,8 +998,6 @@ PetscErrorCode TaoLineSearchComputeObjectiveAndGTS(TaoLineSearch ls, Vec x, Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchGetSolution"
 /*@
   TaoLineSearchGetSolution - Returns the solution to the line search
 
@@ -1097,8 +1055,6 @@ PetscErrorCode TaoLineSearchGetSolution(TaoLineSearch ls, Vec x, PetscReal *f, V
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchGetStartingVector"
 /*@
   TaoLineSearchGetStartingVector - Gets a the initial point of the line
   search.
@@ -1123,8 +1079,6 @@ PetscErrorCode TaoLineSearchGetStartingVector(TaoLineSearch ls, Vec *x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchGetStepDirection"
 /*@
   TaoLineSearchGetStepDirection - Gets the step direction of the line
   search.
@@ -1150,8 +1104,6 @@ PetscErrorCode TaoLineSearchGetStepDirection(TaoLineSearch ls, Vec *s)
 
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchGetFullStepObjective"
 /*@
   TaoLineSearchGetFullStepObjective - Returns the objective function value at the full step.  Useful for some minimization algorithms.
 
@@ -1174,8 +1126,6 @@ PetscErrorCode TaoLineSearchGetFullStepObjective(TaoLineSearch ls, PetscReal *f_
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchSetVariableBounds"
 /*@
   TaoLineSearchSetVariableBounds - Sets the upper and lower bounds.
 
@@ -1205,8 +1155,6 @@ PetscErrorCode TaoLineSearchSetVariableBounds(TaoLineSearch ls,Vec xl, Vec xu)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchSetInitialStepLength"
 /*@
   TaoLineSearchSetInitialStepLength - Sets the initial step length of a line
   search.  If this value is not set then 1.0 is assumed.
@@ -1229,8 +1177,6 @@ PetscErrorCode TaoLineSearchSetInitialStepLength(TaoLineSearch ls,PetscReal s)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchGetStepLength"
 /*@
   TaoLineSearchGetStepLength - Get the current step length
 
@@ -1254,8 +1200,6 @@ PetscErrorCode TaoLineSearchGetStepLength(TaoLineSearch ls,PetscReal *s)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchRegister"
 /*MC
    TaoLineSearchRegister - Adds a line-search algorithm to the registry
 
@@ -1290,8 +1234,6 @@ PetscErrorCode TaoLineSearchRegister(const char sname[], PetscErrorCode (*func)(
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchRegisterDestroy"
 /*@C
    TaoLineSearchRegisterDestroy - Frees the list of line-search algorithms that were
    registered by TaoLineSearchRegister().
@@ -1311,8 +1253,6 @@ PetscErrorCode TaoLineSearchRegisterDestroy(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchAppendOptionsPrefix"
 /*@C
    TaoLineSearchAppendOptionsPrefix - Appends to the prefix used for searching
    for all TaoLineSearch options in the database.
@@ -1338,8 +1278,6 @@ PetscErrorCode TaoLineSearchAppendOptionsPrefix(TaoLineSearch ls, const char p[]
   return PetscObjectAppendOptionsPrefix((PetscObject)ls,p);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchGetOptionsPrefix"
 /*@C
   TaoLineSearchGetOptionsPrefix - Gets the prefix used for searching for all
   TaoLineSearch options in the database
@@ -1364,8 +1302,6 @@ PetscErrorCode TaoLineSearchGetOptionsPrefix(TaoLineSearch ls, const char *p[])
   return PetscObjectGetOptionsPrefix((PetscObject)ls,p);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchSetOptionsPrefix"
 /*@C
    TaoLineSearchSetOptionsPrefix - Sets the prefix used for searching for all
    TaoLineSearch options in the database.

@@ -35,8 +35,6 @@ static const char *NLS_UPDATE[64] = {"step", "reduction", "interpolation"};
 
 /* Routine for BFGS preconditioner */
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLMVMSolveShell"
 static PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x)
 {
   PetscErrorCode ierr;
@@ -70,8 +68,6 @@ static PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x)
 #define NLS_SCALED_GRADIENT     2
 #define NLS_GRADIENT            3
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSolve_NLS"
 static PetscErrorCode TaoSolve_NLS(Tao tao)
 {
   PetscErrorCode               ierr;
@@ -833,8 +829,6 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
 }
 
 /* ---------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetUp_NLS"
 static PetscErrorCode TaoSetUp_NLS(Tao tao)
 {
   TAO_NLS        *nlsP = (TAO_NLS *)tao->data;
@@ -853,8 +847,6 @@ static PetscErrorCode TaoSetUp_NLS(Tao tao)
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoDestroy_NLS"
 static PetscErrorCode TaoDestroy_NLS(Tao tao)
 {
   TAO_NLS        *nlsP = (TAO_NLS *)tao->data;
@@ -874,8 +866,6 @@ static PetscErrorCode TaoDestroy_NLS(Tao tao)
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetFromOptions_NLS"
 static PetscErrorCode TaoSetFromOptions_NLS(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   TAO_NLS        *nlsP = (TAO_NLS *)tao->data;
@@ -940,8 +930,6 @@ static PetscErrorCode TaoSetFromOptions_NLS(PetscOptionItems *PetscOptionsObject
 
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoView_NLS"
 static PetscErrorCode TaoView_NLS(Tao tao, PetscViewer viewer)
 {
   TAO_NLS        *nlsP = (TAO_NLS *)tao->data;
@@ -1031,8 +1019,6 @@ static PetscErrorCode TaoView_NLS(Tao tao, PetscViewer viewer)
   Level: beginner
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoCreate_NLS"
 PETSC_EXTERN PetscErrorCode TaoCreate_NLS(Tao tao)
 {
   TAO_NLS        *nlsP;

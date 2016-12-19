@@ -11,8 +11,6 @@ Test MatMatSolve().  Input parameters include\n\
 #include <petscksp.h>
 extern PetscErrorCode PCShellApply_Matinv(PC,Vec,Vec);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   KSP            ksp;
@@ -127,8 +125,6 @@ int main(int argc,char **args)
   return ierr;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCShellApply_Matinv"
 PetscErrorCode PCShellApply_Matinv(PC pc,Vec xin,Vec xout)
 {
   PetscErrorCode ierr;

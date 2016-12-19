@@ -21,8 +21,6 @@
 
 #include <petsc/private/vecimpl.h>    /*I   "petscvec.h"    I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MPIPetsc_Iallreduce"
 static PetscErrorCode MPIPetsc_Iallreduce(void *sendbuf,void *recvbuf,PetscMPIInt count,MPI_Datatype datatype,MPI_Op op,MPI_Comm comm,MPI_Request *request)
 {
   PETSC_UNUSED PetscErrorCode ierr;
@@ -48,8 +46,6 @@ some of each.
 
 static PetscErrorCode PetscSplitReductionApply(PetscSplitReduction*);
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSplitReductionCreate"
 /*
    PetscSplitReductionCreate - Creates a data structure to contain the queued information.
 */
@@ -86,8 +82,6 @@ static PetscErrorCode  PetscSplitReductionCreate(MPI_Comm comm,PetscSplitReducti
 */
 MPI_Op PetscSplitReduction_Op = 0;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSplitReduction_Local"
 PETSC_EXTERN void MPIAPI PetscSplitReduction_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscScalar *xin = (PetscScalar*)in,*xout = (PetscScalar*)out;
@@ -112,8 +106,6 @@ PETSC_EXTERN void MPIAPI PetscSplitReduction_Local(void *in,void *out,PetscMPIIn
   PetscFunctionReturnVoid();
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscCommSplitReductionBegin"
 /*@
    PetscCommSplitReductionBegin - Begin an asynchronous split-mode reduction
 
@@ -181,8 +173,6 @@ PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm comm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSplitReductionEnd"
 PetscErrorCode PetscSplitReductionEnd(PetscSplitReduction *sr)
 {
   PetscErrorCode ierr;
@@ -206,8 +196,6 @@ PetscErrorCode PetscSplitReductionEnd(PetscSplitReduction *sr)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSplitReductionApply"
 /*
    PetscSplitReductionApply - Actually do the communication required for a split phase reduction
 */
@@ -255,8 +243,6 @@ static PetscErrorCode PetscSplitReductionApply(PetscSplitReduction *sr)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSplitReductionExtend"
 /*
    PetscSplitReductionExtend - Double the amount of space (slots) allocated for a split reduction object.
 */
@@ -284,8 +270,6 @@ PetscErrorCode  PetscSplitReductionExtend(PetscSplitReduction *sr)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSplitReductionDestroy"
 PetscErrorCode  PetscSplitReductionDestroy(PetscSplitReduction *sr)
 {
   PetscErrorCode ierr;
@@ -301,8 +285,6 @@ PetscErrorCode  PetscSplitReductionDestroy(PetscSplitReduction *sr)
 
 static PetscMPIInt Petsc_Reduction_keyval = MPI_KEYVAL_INVALID;
 
-#undef __FUNCT__
-#define __FUNCT__ "Petsc_DelReduction"
 /*
    Private routine to delete internal storage when a communicator is freed.
   This is called by MPI, not by users.
@@ -325,8 +307,6 @@ PETSC_EXTERN int MPIAPI Petsc_DelReduction(MPI_Comm comm,int keyval,void* attr_v
         PETSc vector, creates if it does not exit.
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "PetscSplitReductionGet"
 PetscErrorCode PetscSplitReductionGet(MPI_Comm comm,PetscSplitReduction **sr)
 {
   PetscErrorCode ierr;
@@ -354,8 +334,6 @@ PetscErrorCode PetscSplitReductionGet(MPI_Comm comm,PetscSplitReduction **sr)
 
 /* ----------------------------------------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "VecDotBegin"
 /*@
    VecDotBegin - Starts a split phase dot product computation.
 
@@ -396,8 +374,6 @@ PetscErrorCode  VecDotBegin(Vec x,Vec y,PetscScalar *result)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecDotEnd"
 /*@
    VecDotEnd - Ends a split phase dot product computation.
 
@@ -442,8 +418,6 @@ PetscErrorCode  VecDotEnd(Vec x,Vec y,PetscScalar *result)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecTDotBegin"
 /*@
    VecTDotBegin - Starts a split phase transpose dot product computation.
 
@@ -483,8 +457,6 @@ PetscErrorCode  VecTDotBegin(Vec x,Vec y,PetscScalar *result)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecTDotEnd"
 /*@
    VecTDotEnd - Ends a split phase transpose dot product computation.
 
@@ -515,8 +487,6 @@ PetscErrorCode  VecTDotEnd(Vec x,Vec y,PetscScalar *result)
 
 /* -------------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "VecNormBegin"
 /*@
    VecNormBegin - Starts a split phase norm computation.
 
@@ -566,8 +536,6 @@ PetscErrorCode  VecNormBegin(Vec x,NormType ntype,PetscReal *result)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecNormEnd"
 /*@
    VecNormEnd - Ends a split phase norm computation.
 
@@ -629,8 +597,6 @@ PetscErrorCode  VecNormEnd(Vec x,NormType ntype,PetscReal *result)
    or have more like MPI with a single function with flag for Op? Like first better
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "VecMDotBegin"
 /*@
    VecMDotBegin - Starts a split phase multiple dot product computation.
 
@@ -674,8 +640,6 @@ PetscErrorCode  VecMDotBegin(Vec x,PetscInt nv,const Vec y[],PetscScalar result[
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecMDotEnd"
 /*@
    VecMDotEnd - Ends a split phase multiple dot product computation.
 
@@ -724,8 +688,6 @@ PetscErrorCode  VecMDotEnd(Vec x,PetscInt nv,const Vec y[],PetscScalar result[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecMTDotBegin"
 /*@
    VecMTDotBegin - Starts a split phase transpose multiple dot product computation.
 
@@ -770,8 +732,6 @@ PetscErrorCode  VecMTDotBegin(Vec x,PetscInt nv,const Vec y[],PetscScalar result
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecMTDotEnd"
 /*@
    VecMTDotEnd - Ends a split phase transpose multiple dot product computation.
 

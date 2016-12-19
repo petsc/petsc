@@ -4,8 +4,6 @@ static char help[] = "Writes a matrix using the PETSc sparse format. Input argum
 
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            A;

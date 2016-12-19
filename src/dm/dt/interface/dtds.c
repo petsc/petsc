@@ -5,8 +5,6 @@ PetscClassId PETSCDS_CLASSID = 0;
 PetscFunctionList PetscDSList              = NULL;
 PetscBool         PetscDSRegisterAllCalled = PETSC_FALSE;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSRegister"
 /*@C
   PetscDSRegister - Adds a new PetscDS implementation
 
@@ -49,8 +47,6 @@ PetscErrorCode PetscDSRegister(const char sname[], PetscErrorCode (*function)(Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSSetType"
 /*@C
   PetscDSSetType - Builds a particular PetscDS
 
@@ -92,8 +88,6 @@ PetscErrorCode PetscDSSetType(PetscDS prob, PetscDSType name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetType"
 /*@C
   PetscDSGetType - Gets the PetscDS type name (as a string) from the object.
 
@@ -122,8 +116,6 @@ PetscErrorCode PetscDSGetType(PetscDS prob, PetscDSType *name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSView_Ascii"
 static PetscErrorCode PetscDSView_Ascii(PetscDS prob, PetscViewer viewer)
 {
   PetscViewerFormat format;
@@ -173,8 +165,6 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS prob, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSView"
 /*@C
   PetscDSView - Views a PetscDS
 
@@ -203,8 +193,6 @@ PetscErrorCode PetscDSView(PetscDS prob, PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSSetFromOptions"
 /*@
   PetscDSSetFromOptions - sets parameters in a PetscDS from the options database
 
@@ -276,8 +264,6 @@ PetscErrorCode PetscDSSetFromOptions(PetscDS prob)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSSetUp"
 /*@C
   PetscDSSetUp - Construct data structures for the PetscDS
 
@@ -349,8 +335,6 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSDestroyStructs_Static"
 static PetscErrorCode PetscDSDestroyStructs_Static(PetscDS prob)
 {
   PetscErrorCode ierr;
@@ -364,8 +348,6 @@ static PetscErrorCode PetscDSDestroyStructs_Static(PetscDS prob)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSEnlarge_Static"
 static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew)
 {
   PetscObject      *tmpd;
@@ -424,8 +406,6 @@ static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSDestroy"
 /*@
   PetscDSDestroy - Destroys a PetscDS object
 
@@ -473,8 +453,6 @@ PetscErrorCode PetscDSDestroy(PetscDS *prob)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSCreate"
 /*@
   PetscDSCreate - Creates an empty PetscDS object. The type can then be set with PetscDSSetType().
 
@@ -509,8 +487,6 @@ PetscErrorCode PetscDSCreate(MPI_Comm comm, PetscDS *prob)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetNumFields"
 /*@
   PetscDSGetNumFields - Returns the number of fields in the DS
 
@@ -535,8 +511,6 @@ PetscErrorCode PetscDSGetNumFields(PetscDS prob, PetscInt *Nf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetSpatialDimension"
 /*@
   PetscDSGetSpatialDimension - Returns the spatial dimension of the DS
 
@@ -573,8 +547,6 @@ PetscErrorCode PetscDSGetSpatialDimension(PetscDS prob, PetscInt *dim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetTotalDimension"
 /*@
   PetscDSGetTotalDimension - Returns the total size of the approximation space for this system
 
@@ -602,8 +574,6 @@ PetscErrorCode PetscDSGetTotalDimension(PetscDS prob, PetscInt *dim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetTotalComponents"
 /*@
   PetscDSGetTotalComponents - Returns the total number of components in this system
 
@@ -631,8 +601,6 @@ PetscErrorCode PetscDSGetTotalComponents(PetscDS prob, PetscInt *Nc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetDiscretization"
 /*@
   PetscDSGetDiscretization - Returns the discretization object for the given field
 
@@ -659,8 +627,6 @@ PetscErrorCode PetscDSGetDiscretization(PetscDS prob, PetscInt f, PetscObject *d
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSSetDiscretization"
 /*@
   PetscDSSetDiscretization - Sets the discretization object for the given field
 
@@ -700,8 +666,6 @@ PetscErrorCode PetscDSSetDiscretization(PetscDS prob, PetscInt f, PetscObject di
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSAddDiscretization"
 /*@
   PetscDSAddDiscretization - Adds a discretization object
 
@@ -724,8 +688,6 @@ PetscErrorCode PetscDSAddDiscretization(PetscDS prob, PetscObject disc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetImplicit"
 /*@
   PetscDSGetImplicit - Returns the flag for implicit solve for this field. This is just a guide for IMEX
 
@@ -752,8 +714,6 @@ PetscErrorCode PetscDSGetImplicit(PetscDS prob, PetscInt f, PetscBool *implicit)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSSetImplicit"
 /*@
   PetscDSSetImplicit - Set the flag for implicit solve for this field. This is just a guide for IMEX
 
@@ -777,8 +737,6 @@ PetscErrorCode PetscDSSetImplicit(PetscDS prob, PetscInt f, PetscBool implicit)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetAdjacency"
 /*@
   PetscDSGetAdjacency - Returns the flags for determining variable influence
 
@@ -810,8 +768,6 @@ PetscErrorCode PetscDSGetAdjacency(PetscDS prob, PetscInt f, PetscBool *useCone,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSSetAdjacency"
 /*@
   PetscDSSetAdjacency - Set the flags for determining variable influence
 
@@ -839,8 +795,6 @@ PetscErrorCode PetscDSSetAdjacency(PetscDS prob, PetscInt f, PetscBool useCone, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetObjective"
 PetscErrorCode PetscDSGetObjective(PetscDS prob, PetscInt f,
                                    void (**obj)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                 const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
@@ -855,8 +809,6 @@ PetscErrorCode PetscDSGetObjective(PetscDS prob, PetscInt f,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSSetObjective"
 PetscErrorCode PetscDSSetObjective(PetscDS prob, PetscInt f,
                                    void (*obj)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
@@ -874,8 +826,6 @@ PetscErrorCode PetscDSSetObjective(PetscDS prob, PetscInt f,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetResidual"
 /*@C
   PetscDSGetResidual - Get the pointwise residual function for a given test field
 
@@ -938,8 +888,6 @@ PetscErrorCode PetscDSGetResidual(PetscDS prob, PetscInt f,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSSetResidual"
 /*@C
   PetscDSSetResidual - Set the pointwise residual function for a given test field
 
@@ -1005,8 +953,6 @@ PetscErrorCode PetscDSSetResidual(PetscDS prob, PetscInt f,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSHasJacobian"
 /*@C
   PetscDSHasJacobian - Signals that Jacobian functions have been set
 
@@ -1039,8 +985,6 @@ PetscErrorCode PetscDSHasJacobian(PetscDS prob, PetscBool *hasJac)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetJacobian"
 /*@C
   PetscDSGetJacobian - Get the pointwise Jacobian function for given test and basis field
 
@@ -1118,8 +1062,6 @@ PetscErrorCode PetscDSGetJacobian(PetscDS prob, PetscInt f, PetscInt g,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSSetJacobian"
 /*@C
   PetscDSSetJacobian - Set the pointwise Jacobian function for given test and basis fields
 
@@ -1202,8 +1144,6 @@ PetscErrorCode PetscDSSetJacobian(PetscDS prob, PetscInt f, PetscInt g,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSHasJacobianPreconditioner"
 /*@C
   PetscDSHasJacobianPreconditioner - Signals that a Jacobian preconditioner matrix has been set
 
@@ -1236,8 +1176,6 @@ PetscErrorCode PetscDSHasJacobianPreconditioner(PetscDS prob, PetscBool *hasJacP
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetJacobianPreconditioner"
 /*@C
   PetscDSGetJacobianPreconditioner - Get the pointwise Jacobian preconditioner function for given test and basis field. If this is missing, the system matrix is used to build the preconditioner.
 
@@ -1315,8 +1253,6 @@ PetscErrorCode PetscDSGetJacobianPreconditioner(PetscDS prob, PetscInt f, PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSSetJacobianPreconditioner"
 /*@C
   PetscDSSetJacobianPreconditioner - Set the pointwise Jacobian preconditioner function for given test and basis fields. If this is missing, the system matrix is used to build the preconditioner.
 
@@ -1399,8 +1335,6 @@ PetscErrorCode PetscDSSetJacobianPreconditioner(PetscDS prob, PetscInt f, PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSHasDynamicJacobian"
 /*@C
   PetscDSHasDynamicJacobian - Signals that a dynamic Jacobian, dF/du_t, has been set
 
@@ -1433,8 +1367,6 @@ PetscErrorCode PetscDSHasDynamicJacobian(PetscDS prob, PetscBool *hasDynJac)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetDynamicJacobian"
 /*@C
   PetscDSGetDynamicJacobian - Get the pointwise dynamic Jacobian, dF/du_t, function for given test and basis field
 
@@ -1512,8 +1444,6 @@ PetscErrorCode PetscDSGetDynamicJacobian(PetscDS prob, PetscInt f, PetscInt g,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSSetDynamicJacobian"
 /*@C
   PetscDSSetDynamicJacobian - Set the pointwise dynamic Jacobian, dF/du_t, function for given test and basis fields
 
@@ -1596,8 +1526,6 @@ PetscErrorCode PetscDSSetDynamicJacobian(PetscDS prob, PetscInt f, PetscInt g,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetRiemannSolver"
 /*@C
   PetscDSGetRiemannSolver - Returns the Riemann solver for the given field
 
@@ -1638,8 +1566,6 @@ PetscErrorCode PetscDSGetRiemannSolver(PetscDS prob, PetscInt f,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSSetRiemannSolver"
 /*@C
   PetscDSSetRiemannSolver - Sets the Riemann solver for the given field
 
@@ -1681,8 +1607,6 @@ PetscErrorCode PetscDSSetRiemannSolver(PetscDS prob, PetscInt f,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetContext"
 PetscErrorCode PetscDSGetContext(PetscDS prob, PetscInt f, void **ctx)
 {
   PetscFunctionBegin;
@@ -1693,8 +1617,6 @@ PetscErrorCode PetscDSGetContext(PetscDS prob, PetscInt f, void **ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSSetContext"
 PetscErrorCode PetscDSSetContext(PetscDS prob, PetscInt f, void *ctx)
 {
   PetscErrorCode ierr;
@@ -1707,8 +1629,6 @@ PetscErrorCode PetscDSSetContext(PetscDS prob, PetscInt f, void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetBdResidual"
 /*@C
   PetscDSGetBdResidual - Get the pointwise boundary residual function for a given test field
 
@@ -1772,8 +1692,6 @@ PetscErrorCode PetscDSGetBdResidual(PetscDS prob, PetscInt f,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSSetBdResidual"
 /*@C
   PetscDSSetBdResidual - Get the pointwise boundary residual function for a given test field
 
@@ -1838,8 +1756,6 @@ PetscErrorCode PetscDSSetBdResidual(PetscDS prob, PetscInt f,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetBdJacobian"
 /*@C
   PetscDSGetBdJacobian - Get the pointwise boundary Jacobian function for given test and basis field
 
@@ -1918,8 +1834,6 @@ PetscErrorCode PetscDSGetBdJacobian(PetscDS prob, PetscInt f, PetscInt g,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSSetBdJacobian"
 /*@C
   PetscDSSetBdJacobian - Set the pointwise boundary Jacobian function for given test and basis field
 
@@ -2003,8 +1917,6 @@ PetscErrorCode PetscDSSetBdJacobian(PetscDS prob, PetscInt f, PetscInt g,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetFieldIndex"
 /*@
   PetscDSGetFieldIndex - Returns the index of the given field
 
@@ -2035,8 +1947,6 @@ PetscErrorCode PetscDSGetFieldIndex(PetscDS prob, PetscObject disc, PetscInt *f)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetFieldSize"
 /*@
   PetscDSGetFieldSize - Returns the size of the given field in the full space basis
 
@@ -2066,8 +1976,6 @@ PetscErrorCode PetscDSGetFieldSize(PetscDS prob, PetscInt f, PetscInt *size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetFieldOffset"
 /*@
   PetscDSGetFieldOffset - Returns the offset of the given field in the full space basis
 
@@ -2101,8 +2009,6 @@ PetscErrorCode PetscDSGetFieldOffset(PetscDS prob, PetscInt f, PetscInt *off)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetDimensions"
 /*@
   PetscDSGetDimensions - Returns the size of the approximation space for each field on an evaluation point 
 
@@ -2130,8 +2036,6 @@ PetscErrorCode PetscDSGetDimensions(PetscDS prob, PetscInt *dimensions[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetComponents"
 /*@
   PetscDSGetComponents - Returns the number of components for each field on an evaluation point
 
@@ -2159,8 +2063,6 @@ PetscErrorCode PetscDSGetComponents(PetscDS prob, PetscInt *components[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetComponentOffset"
 /*@
   PetscDSGetComponentOffset - Returns the offset of the given field on an evaluation point
 
@@ -2187,8 +2089,6 @@ PetscErrorCode PetscDSGetComponentOffset(PetscDS prob, PetscInt f, PetscInt *off
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetComponentOffsets"
 /*@
   PetscDSGetComponentOffsets - Returns the offset of each field on an evaluation point
 
@@ -2213,8 +2113,6 @@ PetscErrorCode PetscDSGetComponentOffsets(PetscDS prob, PetscInt *offsets[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetComponentDerivativeOffsets"
 /*@
   PetscDSGetComponentDerivativeOffsets - Returns the offset of each field derivative on an evaluation point
 
@@ -2239,8 +2137,6 @@ PetscErrorCode PetscDSGetComponentDerivativeOffsets(PetscDS prob, PetscInt *offs
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetTabulation"
 /*@C
   PetscDSGetTabulation - Return the basis tabulation at quadrature points for the volume discretization
 
@@ -2269,8 +2165,6 @@ PetscErrorCode PetscDSGetTabulation(PetscDS prob, PetscReal ***basis, PetscReal 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetFaceTabulation"
 /*@C
   PetscDSGetFaceTabulation - Return the basis tabulation at quadrature points on the faces
 
@@ -2299,8 +2193,6 @@ PetscErrorCode PetscDSGetFaceTabulation(PetscDS prob, PetscReal ***basis, PetscR
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetEvaluationArrays"
 PetscErrorCode PetscDSGetEvaluationArrays(PetscDS prob, PetscScalar **u, PetscScalar **u_t, PetscScalar **u_x)
 {
   PetscErrorCode ierr;
@@ -2314,8 +2206,6 @@ PetscErrorCode PetscDSGetEvaluationArrays(PetscDS prob, PetscScalar **u, PetscSc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetWeakFormArrays"
 PetscErrorCode PetscDSGetWeakFormArrays(PetscDS prob, PetscScalar **f0, PetscScalar **f1, PetscScalar **g0, PetscScalar **g1, PetscScalar **g2, PetscScalar **g3)
 {
   PetscErrorCode ierr;
@@ -2332,8 +2222,6 @@ PetscErrorCode PetscDSGetWeakFormArrays(PetscDS prob, PetscScalar **f0, PetscSca
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetRefCoordArrays"
 PetscErrorCode PetscDSGetRefCoordArrays(PetscDS prob, PetscReal **x, PetscScalar **refSpaceDer)
 {
   PetscErrorCode ierr;
@@ -2346,8 +2234,6 @@ PetscErrorCode PetscDSGetRefCoordArrays(PetscDS prob, PetscReal **x, PetscScalar
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSAddBoundary"
 /*@C
   PetscDSAddBoundary - Add a boundary condition to the model
 
@@ -2397,8 +2283,6 @@ PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, cons
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetNumBoundary"
 /*@
   PetscDSGetNumBoundary - Get the number of registered BC
 
@@ -2424,8 +2308,6 @@ PetscErrorCode PetscDSGetNumBoundary(PetscDS ds, PetscInt *numBd)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSGetBoundary"
 /*@C
   PetscDSGetBoundary - Add a boundary condition to the model
 
@@ -2509,8 +2391,6 @@ PetscErrorCode PetscDSGetBoundary(PetscDS ds, PetscInt bd, DMBoundaryConditionTy
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSCopyBoundary"
 PetscErrorCode PetscDSCopyBoundary(PetscDS probA, PetscDS probB)
 {
   DSBoundary     b, next, *lastnext;
@@ -2555,8 +2435,6 @@ PetscErrorCode PetscDSCopyBoundary(PetscDS probA, PetscDS probB)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSCopyEquations"
 /*@
   PetscDSCopyEquations - Copy all pointwise function pointers to the new problem
 
@@ -2609,8 +2487,6 @@ PetscErrorCode PetscDSCopyEquations(PetscDS prob, PetscDS newprob)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSDestroy_Basic"
 static PetscErrorCode PetscDSDestroy_Basic(PetscDS prob)
 {
   PetscErrorCode      ierr;
@@ -2620,8 +2496,6 @@ static PetscErrorCode PetscDSDestroy_Basic(PetscDS prob)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSInitialize_Basic"
 static PetscErrorCode PetscDSInitialize_Basic(PetscDS prob)
 {
   PetscFunctionBegin;
@@ -2640,8 +2514,6 @@ static PetscErrorCode PetscDSInitialize_Basic(PetscDS prob)
 .seealso: PetscDSType, PetscDSCreate(), PetscDSSetType()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSCreate_Basic"
 PETSC_EXTERN PetscErrorCode PetscDSCreate_Basic(PetscDS prob)
 {
   PetscDS_Basic *b;

@@ -3,8 +3,6 @@
 
 /* ---------------------------------------------------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchDestroy_GPCG"
 static PetscErrorCode TaoLineSearchDestroy_GPCG(TaoLineSearch ls)
 {
   PetscErrorCode     ierr;
@@ -21,8 +19,6 @@ static PetscErrorCode TaoLineSearchDestroy_GPCG(TaoLineSearch ls)
 
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchView_GPCG"
 static PetscErrorCode TaoLineSearchView_GPCG(TaoLineSearch ls, PetscViewer viewer)
 {
   PetscBool      isascii;
@@ -37,8 +33,6 @@ static PetscErrorCode TaoLineSearchView_GPCG(TaoLineSearch ls, PetscViewer viewe
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchApply_GPCG"
 static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, Vec s)
 {
   TaoLineSearch_GPCG *neP = (TaoLineSearch_GPCG *)ls->data;
@@ -195,8 +189,6 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x, PetscReal
 }
 
 /* ---------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchCreate_GPCG"
 PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_GPCG(TaoLineSearch ls)
 {
   PetscErrorCode     ierr;

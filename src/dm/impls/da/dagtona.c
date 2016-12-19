@@ -9,8 +9,6 @@
 
 #include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGlobalToNaturalAllCreate"
 /*@
    DMDAGlobalToNaturalAllCreate - Creates a scatter context that maps from the
      global vector the entire vector to each processor in natural numbering
@@ -59,8 +57,6 @@ PetscErrorCode  DMDAGlobalToNaturalAllCreate(DM da,VecScatter *scatter)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDANaturalAllToGlobalCreate"
 /*@
    DMDANaturalAllToGlobalCreate - Creates a scatter context that maps from a copy
      of the entire vector on each processor to its local part in the global vector.

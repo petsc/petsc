@@ -13,8 +13,6 @@ typedef struct  {
   DMSlicedBlockFills *dfill,*ofill;
 } DM_Sliced;
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateMatrix_Sliced"
 PetscErrorCode  DMCreateMatrix_Sliced(DM dm, Mat *J)
 {
   PetscErrorCode         ierr;
@@ -74,8 +72,6 @@ PetscErrorCode  DMCreateMatrix_Sliced(DM dm, Mat *J)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSlicedSetGhosts"
 /*@C
     DMSlicedSetGhosts - Sets the global indices of other processes elements that will
       be ghosts on this process
@@ -110,8 +106,6 @@ PetscErrorCode  DMSlicedSetGhosts(DM dm,PetscInt bs,PetscInt nlocal,PetscInt Ngh
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSlicedSetPreallocation"
 /*@C
     DMSlicedSetPreallocation - sets the matrix memory preallocation for matrices computed by DMSliced
 
@@ -153,8 +147,6 @@ PetscErrorCode  DMSlicedSetPreallocation(DM dm,PetscInt d_nz,const PetscInt d_nn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSlicedSetBlockFills_Private"
 static PetscErrorCode DMSlicedSetBlockFills_Private(PetscInt bs,const PetscInt *fill,DMSlicedBlockFills **inf)
 {
   PetscErrorCode     ierr;
@@ -180,8 +172,6 @@ static PetscErrorCode DMSlicedSetBlockFills_Private(PetscInt bs,const PetscInt *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSlicedSetBlockFills"
 /*@C
     DMSlicedSetBlockFills - Sets the fill pattern in each block for a multi-component problem
     of the matrix returned by DMSlicedGetMatrix().
@@ -213,8 +203,6 @@ PetscErrorCode  DMSlicedSetBlockFills(DM dm,const PetscInt *dfill,const PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDestroy_Sliced"
 static PetscErrorCode  DMDestroy_Sliced(DM dm)
 {
   PetscErrorCode ierr;
@@ -229,8 +217,6 @@ static PetscErrorCode  DMDestroy_Sliced(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateGlobalVector_Sliced"
 static PetscErrorCode  DMCreateGlobalVector_Sliced(DM dm,Vec *gvec)
 {
   PetscErrorCode ierr;
@@ -245,8 +231,6 @@ static PetscErrorCode  DMCreateGlobalVector_Sliced(DM dm,Vec *gvec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGlobalToLocalBegin_Sliced"
 static PetscErrorCode  DMGlobalToLocalBegin_Sliced(DM da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
@@ -260,8 +244,6 @@ static PetscErrorCode  DMGlobalToLocalBegin_Sliced(DM da,Vec g,InsertMode mode,V
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGlobalToLocalEnd_Sliced"
 static PetscErrorCode  DMGlobalToLocalEnd_Sliced(DM da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
@@ -284,8 +266,6 @@ static PetscErrorCode  DMGlobalToLocalEnd_Sliced(DM da,Vec g,InsertMode mode,Vec
 .seealso: DMType, DMCOMPOSITE, DMCreateSliced(), DMCreate()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreate_Sliced"
 PETSC_EXTERN PetscErrorCode DMCreate_Sliced(DM p)
 {
   PetscErrorCode ierr;
@@ -305,8 +285,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Sliced(DM p)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSlicedCreate"
 /*@C
     DMSlicedCreate - Creates a DM object, used to manage data for a unstructured problem
 

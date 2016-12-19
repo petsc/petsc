@@ -1,7 +1,5 @@
 #include <../src/snes/impls/gs/gsimpl.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESComputeNGSDefaultSecant"
 PETSC_EXTERN PetscErrorCode SNESComputeNGSDefaultSecant(SNES snes,Vec X,Vec B,void *ctx)
 {
   PetscErrorCode ierr;

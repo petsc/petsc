@@ -13,8 +13,6 @@ typedef struct {
   PetscBool uninterpolate;  /* Uninterpolate the mesh at the end */
 } AppCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscErrorCode ierr;
@@ -42,8 +40,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateSimplex_1D"
 /* Two segments
 
   2-------0-------3-------1-------4
@@ -78,8 +74,6 @@ PetscErrorCode CreateSimplex_1D(MPI_Comm comm, DM *dm)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateSimplex_2D"
 /* Two triangles
         4
       / | \
@@ -134,8 +128,6 @@ PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateSimplexHybrid_2D"
 /* Two triangles separated by a zero-volume cell with 4 vertices/2 edges
         5--16--8
       / |      | \
@@ -213,8 +205,6 @@ PetscErrorCode CreateSimplexHybrid_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateTensorProduct_2D"
 /* Two quadrilaterals
 
   5----10-----4----14-----7
@@ -251,8 +241,6 @@ PetscErrorCode CreateTensorProduct_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateTensorProductHybrid_2D"
 PetscErrorCode CreateTensorProductHybrid_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
 {
   DM             idm = NULL, hdm = NULL;
@@ -296,8 +284,6 @@ PetscErrorCode CreateTensorProductHybrid_2D(MPI_Comm comm, PetscInt testNum, DM 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateSimplex_3D"
 /* Two tetrahedrons
 
  cell   5          5______    cell
@@ -385,8 +371,6 @@ PetscErrorCode CreateSimplex_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateSimplexHybrid_3D"
 /* Two tetrahedrons separated by a zero-volume cell with 6 vertices
 
  cell   6 ___33___10______    cell
@@ -471,8 +455,6 @@ PetscErrorCode CreateSimplexHybrid_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateTensorProduct_3D"
 PetscErrorCode CreateTensorProduct_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
 {
   DM             idm = NULL;
@@ -523,8 +505,6 @@ PetscErrorCode CreateTensorProduct_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateTensorProductHybrid_3D"
 PetscErrorCode CreateTensorProductHybrid_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
 {
   DM             idm = NULL, hdm = NULL;
@@ -602,8 +582,6 @@ PetscErrorCode CreateTensorProductHybrid_3D(MPI_Comm comm, PetscInt testNum, DM 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateMesh"
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscInt       dim            = user->dim;
@@ -824,8 +802,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   DM             dm;

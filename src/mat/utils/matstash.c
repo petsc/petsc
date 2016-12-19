@@ -25,8 +25,6 @@ static PetscErrorCode MatStashScatterDestroy_BTS(MatStash*);
   Output Parameters:
   stash    - the newly created stash
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatStashCreate_Private"
 PetscErrorCode MatStashCreate_Private(MPI_Comm comm,PetscInt bs,MatStash *stash)
 {
   PetscErrorCode ierr;
@@ -99,8 +97,6 @@ PetscErrorCode MatStashCreate_Private(MPI_Comm comm,PetscInt bs,MatStash *stash)
 /*
    MatStashDestroy_Private - Destroy the stash
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatStashDestroy_Private"
 PetscErrorCode MatStashDestroy_Private(MatStash *stash)
 {
   PetscErrorCode ierr;
@@ -123,8 +119,6 @@ PetscErrorCode MatStashDestroy_Private(MatStash *stash)
    for the stash. It also keeps track of the current memory usage
    so that the same value can be used the next time through.
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatStashScatterEnd_Private"
 PetscErrorCode MatStashScatterEnd_Private(MatStash *stash)
 {
   PetscErrorCode ierr;
@@ -134,8 +128,6 @@ PetscErrorCode MatStashScatterEnd_Private(MatStash *stash)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatStashScatterEnd_Ref"
 static PetscErrorCode MatStashScatterEnd_Ref(MatStash *stash)
 {
   PetscErrorCode ierr;
@@ -188,8 +180,6 @@ static PetscErrorCode MatStashScatterEnd_Ref(MatStash *stash)
    reallocs - the number of additional mallocs incurred.
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatStashGetInfo_Private"
 PetscErrorCode MatStashGetInfo_Private(MatStash *stash,PetscInt *nstash,PetscInt *reallocs)
 {
   PetscInt bs2 = stash->bs*stash->bs;
@@ -211,8 +201,6 @@ PetscErrorCode MatStashGetInfo_Private(MatStash *stash,PetscInt *nstash,PetscInt
    max    - the value that is used as the max size of the stash.
             this value is used while allocating memory.
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatStashSetInitialSize_Private"
 PetscErrorCode MatStashSetInitialSize_Private(MatStash *stash,PetscInt max)
 {
   PetscFunctionBegin;
@@ -231,8 +219,6 @@ PetscErrorCode MatStashSetInitialSize_Private(MatStash *stash,PetscInt max)
    Notes:
    This routine doubles the currently used memory.
  */
-#undef __FUNCT__
-#define __FUNCT__ "MatStashExpand_Private"
 static PetscErrorCode MatStashExpand_Private(MatStash *stash,PetscInt incr)
 {
   PetscErrorCode ierr;
@@ -271,8 +257,6 @@ static PetscErrorCode MatStashExpand_Private(MatStash *stash,PetscInt incr)
   idxn   - the global column indices corresponding to each of the values.
   values - the values inserted
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatStashValuesRow_Private"
 PetscErrorCode MatStashValuesRow_Private(MatStash *stash,PetscInt row,PetscInt n,const PetscInt idxn[],const PetscScalar values[],PetscBool ignorezeroentries)
 {
   PetscErrorCode     ierr;
@@ -314,8 +298,6 @@ PetscErrorCode MatStashValuesRow_Private(MatStash *stash,PetscInt row,PetscInt n
   stepval - the consecutive values are sepated by a distance of stepval.
             this happens because the input is columnoriented.
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatStashValuesCol_Private"
 PetscErrorCode MatStashValuesCol_Private(MatStash *stash,PetscInt row,PetscInt n,const PetscInt idxn[],const PetscScalar values[],PetscInt stepval,PetscBool ignorezeroentries)
 {
   PetscErrorCode     ierr;
@@ -361,8 +343,6 @@ PetscErrorCode MatStashValuesCol_Private(MatStash *stash,PetscInt row,PetscInt n
   cmax   - the number of block-columsn on the original block.
   idx    - the index of the current block-row in the original block.
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatStashValuesRowBlocked_Private"
 PetscErrorCode MatStashValuesRowBlocked_Private(MatStash *stash,PetscInt row,PetscInt n,const PetscInt idxn[],const PetscScalar values[],PetscInt rmax,PetscInt cmax,PetscInt idx)
 {
   PetscErrorCode     ierr;
@@ -417,8 +397,6 @@ PetscErrorCode MatStashValuesRowBlocked_Private(MatStash *stash,PetscInt row,Pet
   cmax   - the number of block-columsn on the original block.
   idx    - the index of the current block-row in the original block.
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatStashValuesColBlocked_Private"
 PetscErrorCode MatStashValuesColBlocked_Private(MatStash *stash,PetscInt row,PetscInt n,const PetscInt idxn[],const PetscScalar values[],PetscInt rmax,PetscInt cmax,PetscInt idx)
 {
   PetscErrorCode     ierr;
@@ -469,8 +447,6 @@ PetscErrorCode MatStashValuesColBlocked_Private(MatStash *stash,PetscInt row,Pet
   ranges specified blocked global indices, and for the regular stash in
   the proper global indices.
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatStashScatterBegin_Private"
 PetscErrorCode MatStashScatterBegin_Private(Mat mat,MatStash *stash,PetscInt *owners)
 {
   PetscErrorCode ierr;
@@ -480,8 +456,6 @@ PetscErrorCode MatStashScatterBegin_Private(Mat mat,MatStash *stash,PetscInt *ow
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatStashScatterBegin_Ref"
 static PetscErrorCode MatStashScatterBegin_Ref(Mat mat,MatStash *stash,PetscInt *owners)
 {
   PetscInt           *owner,*startv,*starti,tag1=stash->tag1,tag2=stash->tag2,bs2;
@@ -653,8 +627,6 @@ static PetscErrorCode MatStashScatterBegin_Ref(Mat mat,MatStash *stash,PetscInt 
            1 indicates that the current call successfully received a message, and the
              other output parameters nvals,rows,cols,vals are set appropriately.
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatStashScatterGetMesg_Private"
 PetscErrorCode MatStashScatterGetMesg_Private(MatStash *stash,PetscMPIInt *nvals,PetscInt **rows,PetscInt **cols,PetscScalar **vals,PetscInt *flg)
 {
   PetscErrorCode ierr;
@@ -664,8 +636,6 @@ PetscErrorCode MatStashScatterGetMesg_Private(MatStash *stash,PetscMPIInt *nvals
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatStashScatterGetMesg_Ref"
 static PetscErrorCode MatStashScatterGetMesg_Ref(MatStash *stash,PetscMPIInt *nvals,PetscInt **rows,PetscInt **cols,PetscScalar **vals,PetscInt *flg)
 {
   PetscErrorCode ierr;
@@ -727,8 +697,6 @@ typedef struct {
   PetscScalar vals[1];          /* Actually an array of length bs2 */
 } MatStashBlock;
 
-#undef __FUNCT__
-#define __FUNCT__ "MatStashSortCompress_Private"
 static PetscErrorCode MatStashSortCompress_Private(MatStash *stash,InsertMode insertmode)
 {
   PetscErrorCode ierr;
@@ -777,8 +745,6 @@ static PetscErrorCode MatStashSortCompress_Private(MatStash *stash,InsertMode in
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatStashBlockTypeSetUp"
 static PetscErrorCode MatStashBlockTypeSetUp(MatStash *stash)
 {
   PetscErrorCode ierr;
@@ -817,8 +783,6 @@ static PetscErrorCode MatStashBlockTypeSetUp(MatStash *stash)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatStashBTSSend_Private"
 /* Callback invoked after target rank has initiatied receive of rendezvous message.
  * Here we post the main sends.
  */
@@ -836,8 +800,6 @@ static PetscErrorCode MatStashBTSSend_Private(MPI_Comm comm,const PetscMPIInt ta
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatStashBTSRecv_Private"
 /* Callback invoked by target after receiving rendezvous message.
  * Here we post the main recvs.
  */
@@ -857,8 +819,6 @@ static PetscErrorCode MatStashBTSRecv_Private(MPI_Comm comm,const PetscMPIInt ta
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatStashScatterBegin_BTS"
 /*
  * owners[] contains the ownership ranges; may be indexed by either blocks or scalars
  */
@@ -979,8 +939,6 @@ static PetscErrorCode MatStashScatterBegin_BTS(Mat mat,MatStash *stash,PetscInt 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatStashScatterGetMesg_BTS"
 static PetscErrorCode MatStashScatterGetMesg_BTS(MatStash *stash,PetscMPIInt *n,PetscInt **row,PetscInt **col,PetscScalar **val,PetscInt *flg)
 {
   PetscErrorCode ierr;
@@ -1020,8 +978,6 @@ static PetscErrorCode MatStashScatterGetMesg_BTS(MatStash *stash,PetscMPIInt *n,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatStashScatterEnd_BTS"
 static PetscErrorCode MatStashScatterEnd_BTS(MatStash *stash)
 {
   PetscErrorCode ierr;
@@ -1056,8 +1012,6 @@ static PetscErrorCode MatStashScatterEnd_BTS(MatStash *stash)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatStashScatterDestroy_BTS"
 static PetscErrorCode MatStashScatterDestroy_BTS(MatStash *stash)
 {
   PetscErrorCode ierr;

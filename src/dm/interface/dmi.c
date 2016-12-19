@@ -1,8 +1,6 @@
 #include <petsc/private/dmimpl.h>     /*I      "petscdm.h"     I*/
 #include <petscds.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateGlobalVector_Section_Private"
 PetscErrorCode DMCreateGlobalVector_Section_Private(DM dm,Vec *vec)
 {
   PetscSection   gSection;
@@ -37,8 +35,6 @@ PetscErrorCode DMCreateGlobalVector_Section_Private(DM dm,Vec *vec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateLocalVector_Section_Private"
 PetscErrorCode DMCreateLocalVector_Section_Private(DM dm,Vec *vec)
 {
   PetscSection   section;
@@ -67,8 +63,6 @@ PetscErrorCode DMCreateLocalVector_Section_Private(DM dm,Vec *vec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateSubDM_Section_Private"
 /* This assumes that the DM has been cloned prior to the call */
 PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm)
 {

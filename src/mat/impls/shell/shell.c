@@ -94,8 +94,6 @@ static PetscErrorCode MatMultTranspose_Shell(Mat,Vec,Vec);
 static PetscErrorCode MatGetDiagonal_Shell(Mat,Vec);
 static PetscErrorCode MatCopy_Shell(Mat,Mat,MatStructure);
 
-#undef __FUNCT__
-#define __FUNCT__ "MatShellUseScaledMethods"
 static PetscErrorCode MatShellUseScaledMethods(Mat Y)
 {
   Mat_Shell *shell = (Mat_Shell*)Y->data;
@@ -120,8 +118,6 @@ static PetscErrorCode MatShellUseScaledMethods(Mat Y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatShellPreScaleLeft"
 static PetscErrorCode MatShellPreScaleLeft(Mat A,Vec x,Vec *xx)
 {
   Mat_Shell      *shell = (Mat_Shell*)A->data;
@@ -139,8 +135,6 @@ static PetscErrorCode MatShellPreScaleLeft(Mat A,Vec x,Vec *xx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatShellPreScaleRight"
 static PetscErrorCode MatShellPreScaleRight(Mat A,Vec x,Vec *xx)
 {
   Mat_Shell      *shell = (Mat_Shell*)A->data;
@@ -158,8 +152,6 @@ static PetscErrorCode MatShellPreScaleRight(Mat A,Vec x,Vec *xx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatShellPostScaleLeft"
 static PetscErrorCode MatShellPostScaleLeft(Mat A,Vec x)
 {
   Mat_Shell      *shell = (Mat_Shell*)A->data;
@@ -170,8 +162,6 @@ static PetscErrorCode MatShellPostScaleLeft(Mat A,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatShellPostScaleRight"
 static PetscErrorCode MatShellPostScaleRight(Mat A,Vec x)
 {
   Mat_Shell      *shell = (Mat_Shell*)A->data;
@@ -182,8 +172,6 @@ static PetscErrorCode MatShellPostScaleRight(Mat A,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatShellShiftAndScale"
 static PetscErrorCode MatShellShiftAndScale(Mat A,Vec X,Vec Y)
 {
   Mat_Shell      *shell = (Mat_Shell*)A->data;
@@ -210,8 +198,6 @@ static PetscErrorCode MatShellShiftAndScale(Mat A,Vec X,Vec Y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatShellGetContext"
 /*@
     MatShellGetContext - Returns the user-provided context associated with a shell matrix.
 
@@ -246,8 +232,6 @@ PetscErrorCode  MatShellGetContext(Mat mat,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_Shell"
 PetscErrorCode MatDestroy_Shell(Mat mat)
 {
   PetscErrorCode ierr;
@@ -268,8 +252,6 @@ PetscErrorCode MatDestroy_Shell(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCopy_Shell"
 PetscErrorCode MatCopy_Shell(Mat A,Mat B,MatStructure str)
 {
   Mat_Shell       *shellA = (Mat_Shell*)A->data,*shellB = (Mat_Shell*)B->data;
@@ -318,8 +300,6 @@ PetscErrorCode MatCopy_Shell(Mat A,Mat B,MatStructure str)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_Shell"
 PetscErrorCode MatMult_Shell(Mat A,Vec x,Vec y)
 {
   Mat_Shell        *shell = (Mat_Shell*)A->data;
@@ -341,8 +321,6 @@ PetscErrorCode MatMult_Shell(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultAdd_Shell"
 PetscErrorCode MatMultAdd_Shell(Mat A,Vec x,Vec y,Vec z)
 {
   Mat_Shell      *shell = (Mat_Shell*)A->data;
@@ -360,8 +338,6 @@ PetscErrorCode MatMultAdd_Shell(Mat A,Vec x,Vec y,Vec z)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultTranspose_Shell"
 PetscErrorCode MatMultTranspose_Shell(Mat A,Vec x,Vec y)
 {
   Mat_Shell        *shell = (Mat_Shell*)A->data;
@@ -383,8 +359,6 @@ PetscErrorCode MatMultTranspose_Shell(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultTransposeAdd_Shell"
 PetscErrorCode MatMultTransposeAdd_Shell(Mat A,Vec x,Vec y,Vec z)
 {
   Mat_Shell      *shell = (Mat_Shell*)A->data;
@@ -402,8 +376,6 @@ PetscErrorCode MatMultTransposeAdd_Shell(Mat A,Vec x,Vec y,Vec z)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetDiagonal_Shell"
 PetscErrorCode MatGetDiagonal_Shell(Mat A,Vec v)
 {
   Mat_Shell      *shell = (Mat_Shell*)A->data;
@@ -422,8 +394,6 @@ PetscErrorCode MatGetDiagonal_Shell(Mat A,Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatShift_Shell"
 PetscErrorCode MatShift_Shell(Mat Y,PetscScalar a)
 {
   Mat_Shell      *shell = (Mat_Shell*)Y->data;
@@ -443,8 +413,6 @@ PetscErrorCode MatShift_Shell(Mat Y,PetscScalar a)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDiagonalSet_Shell"
 PetscErrorCode MatDiagonalSet_Shell(Mat A,Vec D,InsertMode ins)
 {
   Mat_Shell      *shell = (Mat_Shell*)A->data;
@@ -463,8 +431,6 @@ PetscErrorCode MatDiagonalSet_Shell(Mat A,Vec D,InsertMode ins)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatScale_Shell"
 PetscErrorCode MatScale_Shell(Mat Y,PetscScalar a)
 {
   Mat_Shell      *shell = (Mat_Shell*)Y->data;
@@ -479,8 +445,6 @@ PetscErrorCode MatScale_Shell(Mat Y,PetscScalar a)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDiagonalScale_Shell"
 static PetscErrorCode MatDiagonalScale_Shell(Mat Y,Vec left,Vec right)
 {
   Mat_Shell      *shell = (Mat_Shell*)Y->data;
@@ -509,8 +473,6 @@ static PetscErrorCode MatDiagonalScale_Shell(Mat Y,Vec left,Vec right)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd_Shell"
 PetscErrorCode MatAssemblyEnd_Shell(Mat Y,MatAssemblyType t)
 {
   Mat_Shell *shell = (Mat_Shell*)Y->data;
@@ -545,8 +507,6 @@ PetscErrorCode MatAssemblyEnd_Shell(Mat Y,MatAssemblyType t)
 
 PETSC_INTERN PetscErrorCode MatConvert_Shell(Mat, MatType,MatReuse,Mat*);
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMissingDiagonal_Shell"
 static PetscErrorCode MatMissingDiagonal_Shell(Mat A,PetscBool  *missing,PetscInt *d)
 {
   PetscFunctionBegin;
@@ -706,8 +666,6 @@ static struct _MatOps MatOps_Values = {0,
 .seealso: MatCreateShell
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_Shell"
 PETSC_EXTERN PetscErrorCode MatCreate_Shell(Mat A)
 {
   Mat_Shell      *b;
@@ -732,8 +690,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_Shell(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateShell"
 /*@C
    MatCreateShell - Creates a new matrix class for use with a user-defined
    private data storage format.
@@ -812,8 +768,6 @@ PetscErrorCode  MatCreateShell(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatShellSetContext"
 /*@
     MatShellSetContext - sets the context for a shell matrix
 
@@ -845,8 +799,6 @@ PetscErrorCode  MatShellSetContext(Mat mat,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatShellSetOperation"
 /*@C
     MatShellSetOperation - Allows user to set a matrix operation for
                            a shell matrix.
@@ -932,8 +884,6 @@ PetscErrorCode  MatShellSetOperation(Mat mat,MatOperation op,void (*f)(void))
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatShellGetOperation"
 /*@C
     MatShellGetOperation - Gets a matrix function for a shell matrix.
 

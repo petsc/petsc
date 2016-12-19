@@ -4,8 +4,6 @@ Example: mpiexec -n <np> ./ex130 -f <matrix binary file> -mat_solver_package 1 -
 
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            A,F;

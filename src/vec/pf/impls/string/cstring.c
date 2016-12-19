@@ -6,8 +6,6 @@
    program.
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "PFView_String"
 static PetscErrorCode PFView_String(void *value,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -21,8 +19,6 @@ static PetscErrorCode PFView_String(void *value,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PFDestroy_String"
 static PetscErrorCode PFDestroy_String(void *value)
 {
   PetscErrorCode ierr;
@@ -32,8 +28,6 @@ static PetscErrorCode PFDestroy_String(void *value)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PFStringCreateFunction"
 /*
     PFStringCreateFunction - Creates a function from a string
 
@@ -99,8 +93,6 @@ PetscErrorCode  PFStringCreateFunction(PF pf,char *string,void **f)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PFSetFromOptions_String"
 static PetscErrorCode PFSetFromOptions_String(PetscOptionItems *PetscOptionsObject,PF pf)
 {
   PetscErrorCode ierr;
@@ -121,8 +113,6 @@ static PetscErrorCode PFSetFromOptions_String(PetscOptionItems *PetscOptionsObje
 
 typedef PetscErrorCode (*FCN)(void*,PetscInt,const PetscScalar*,PetscScalar*); /* force argument to next function to not be extern C*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PFCreate_String"
 PETSC_EXTERN PetscErrorCode PFCreate_String(PF pf,void *value)
 {
   PetscErrorCode ierr;

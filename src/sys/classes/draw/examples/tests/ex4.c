@@ -9,8 +9,6 @@ static char help[] = "Demonstrates use of PetscDrawZoom()\n";
 #include <petscdraw.h>
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "zoomfunction"
 PetscErrorCode zoomfunction(PetscDraw draw,void *dummy)
 {
   int            i;
@@ -27,8 +25,6 @@ PetscErrorCode zoomfunction(PetscDraw draw,void *dummy)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int            x = 0,y = 0,width = 256,height = 256;

@@ -3,8 +3,6 @@
 
 static PetscErrorCode KSPQCGQuadraticRoots(Vec,Vec,PetscReal,PetscReal*,PetscReal*);
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPQCGSetTrustRegionRadius"
 /*@
     KSPQCGSetTrustRegionRadius - Sets the radius of the trust region.
 
@@ -32,8 +30,6 @@ PetscErrorCode  KSPQCGSetTrustRegionRadius(KSP ksp,PetscReal delta)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPQCGGetTrialStepNorm"
 /*@
     KSPQCGGetTrialStepNorm - Gets the norm of a trial step vector.  The WCG step may be
     constrained, so this is not necessarily the length of the ultimate step taken in QCG.
@@ -58,8 +54,6 @@ PetscErrorCode  KSPQCGGetTrialStepNorm(KSP ksp,PetscReal *tsnorm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPQCGGetQuadratic"
 /*@
     KSPQCGGetQuadratic - Gets the value of the quadratic function, evaluated at the new iterate:
 
@@ -96,8 +90,6 @@ PetscErrorCode  KSPQCGGetQuadratic(KSP ksp,PetscReal *quadratic)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_QCG"
 
 PetscErrorCode KSPSolve_QCG(KSP ksp)
 {
@@ -278,8 +270,6 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_QCG"
 PetscErrorCode KSPSetUp_QCG(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -290,8 +280,6 @@ PetscErrorCode KSPSetUp_QCG(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPDestroy_QCG"
 PetscErrorCode KSPDestroy_QCG(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -304,8 +292,6 @@ PetscErrorCode KSPDestroy_QCG(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPQCGSetTrustRegionRadius_QCG"
 static PetscErrorCode  KSPQCGSetTrustRegionRadius_QCG(KSP ksp,PetscReal delta)
 {
   KSP_QCG *cgP = (KSP_QCG*)ksp->data;
@@ -315,8 +301,6 @@ static PetscErrorCode  KSPQCGSetTrustRegionRadius_QCG(KSP ksp,PetscReal delta)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPQCGGetTrialStepNorm_QCG"
 static PetscErrorCode  KSPQCGGetTrialStepNorm_QCG(KSP ksp,PetscReal *ltsnrm)
 {
   KSP_QCG *cgP = (KSP_QCG*)ksp->data;
@@ -326,8 +310,6 @@ static PetscErrorCode  KSPQCGGetTrialStepNorm_QCG(KSP ksp,PetscReal *ltsnrm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPQCGGetQuadratic_QCG"
 static PetscErrorCode  KSPQCGGetQuadratic_QCG(KSP ksp,PetscReal *quadratic)
 {
   KSP_QCG *cgP = (KSP_QCG*)ksp->data;
@@ -337,8 +319,6 @@ static PetscErrorCode  KSPQCGGetQuadratic_QCG(KSP ksp,PetscReal *quadratic)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetFromOptions_QCG"
 PetscErrorCode KSPSetFromOptions_QCG(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
@@ -402,8 +382,6 @@ $  other KSP converged/diverged reasons
            KSPQCGGetTrialStepNorm(), KSPQCGGetQuadratic()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_QCG"
 PETSC_EXTERN PetscErrorCode KSPCreate_QCG(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -431,8 +409,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_QCG(KSP ksp)
 }
 
 /* ---------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "KSPQCGQuadraticRoots"
 /*
   KSPQCGQuadraticRoots - Computes the roots of the quadratic,
          ||s + step*p|| - delta = 0

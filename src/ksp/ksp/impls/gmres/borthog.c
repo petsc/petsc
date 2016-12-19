@@ -26,8 +26,6 @@
 .seealso:  KSPGMRESSetOrthogonalization(), KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESGetOrthogonalization()
 
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "KSPGMRESModifiedGramSchmidtOrthogonalization"
 PetscErrorCode  KSPGMRESModifiedGramSchmidtOrthogonalization(KSP ksp,PetscInt it)
 {
   KSP_GMRES      *gmres = (KSP_GMRES*)(ksp->data);

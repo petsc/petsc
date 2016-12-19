@@ -144,8 +144,6 @@ extern PetscErrorCode potential_temperature(PetscScalar, PetscScalar, PetscScala
 extern PetscErrorCode latentflux(PetscScalar, PetscScalar, PetscScalar, PetscScalar, PetscScalar*);             /* calculates latent heat flux */
 extern PetscErrorCode calc_gflux(PetscScalar, PetscScalar, PetscScalar*);                                       /* calculates flux between top soil layer and underlying earth */
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
@@ -335,8 +333,6 @@ int main(int argc,char **argv)
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
-#undef __FUNCT__
-#define __FUNCT__ "calcfluxs"
 PetscErrorCode calcfluxs(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar emma, PetscScalar fract, PetscScalar cloudTemp, PetscScalar *flux)
 {
   PetscFunctionBeginUser;
@@ -344,8 +340,6 @@ PetscErrorCode calcfluxs(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar e
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "calcfluxa"
 PetscErrorCode calcfluxa(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar emma, PetscScalar *flux)   /* this function is not currently called upon */
 {
   PetscScalar emm = 0.001;
@@ -354,8 +348,6 @@ PetscErrorCode calcfluxa(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar e
   *flux = SIG*(-emm*(PetscPowScalarInt(airtemp,4)));      /* calculates flux usinge Stefan-Boltzmann relation */
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "sensibleflux"
 PetscErrorCode sensibleflux(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar wind, PetscScalar *sheat)
 {
   PetscScalar density = 1;    /* air density */
@@ -368,8 +360,6 @@ PetscErrorCode sensibleflux(PetscScalar sfctemp, PetscScalar airtemp, PetscScala
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "latentflux"
 PetscErrorCode latentflux(PetscScalar sfctemp, PetscScalar dewtemp, PetscScalar wind, PetscScalar pressure1, PetscScalar *latentheat)
 {
   PetscScalar density = 1;   /* density of dry air */
@@ -395,8 +385,6 @@ PetscErrorCode latentflux(PetscScalar sfctemp, PetscScalar dewtemp, PetscScalar 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "potential_temperature"
 PetscErrorCode potential_temperature(PetscScalar temp, PetscScalar pressure1, PetscScalar pressure2, PetscScalar sfctemp, PetscScalar *pottemp)
 {
   PetscScalar kdry;     /* poisson constant for dry atmosphere */
@@ -435,8 +423,6 @@ extern PetscScalar calc_q(PetscScalar rv)
   return specific_humidity;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "calc_gflux"
 PetscErrorCode calc_gflux(PetscScalar sfctemp, PetscScalar deep_grnd_temp, PetscScalar* Gflux)
 {
   PetscScalar k;                       /* thermal conductivity parameter */
@@ -449,8 +435,6 @@ PetscErrorCode calc_gflux(PetscScalar sfctemp, PetscScalar deep_grnd_temp, Petsc
   *Gflux = (k*(deep_grnd_temp - sfctemp)/dz);   /* calculates flux from deep ground layer */
   PetscFunctionReturn(0);
 }
-/* #undef __FUNCT__ */
-/* #define __FUNCT__ "emission" */
 extern PetscScalar emission(PetscScalar pwat)
 {
   PetscScalar emma;
@@ -546,8 +530,6 @@ void readinput(struct in *put)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormInitialSolution"
 PetscErrorCode FormInitialSolution(DM da,Vec Xglobal,void *ctx)
 {
   PetscErrorCode ierr;
@@ -596,8 +578,6 @@ PetscErrorCode FormInitialSolution(DM da,Vec Xglobal,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "RhsFunc"
 /*
    RhsFunc - Evaluates nonlinear function F(u).
 
@@ -731,8 +711,6 @@ PetscErrorCode RhsFunc(TS ts,PetscReal t,Vec Xglobal,Vec F,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Monitor"
 PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec T,void *ctx)
 {
   PetscErrorCode    ierr;

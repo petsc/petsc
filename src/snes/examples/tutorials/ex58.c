@@ -56,8 +56,6 @@ extern PetscErrorCode FormGradient(SNES, Vec, Vec, void*);
 extern PetscErrorCode FormJacobian(SNES, Vec, Mat, Mat, void*);
 extern PetscErrorCode FormBounds(SNES,Vec,Vec);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   PetscErrorCode ierr;              /* used to check for functions returning nonzeros */
@@ -113,8 +111,6 @@ int main(int argc, char **argv)
 }
 
 /* -------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormBounds"
 
 /*  FormBounds - sets the upper and lower bounds
 
@@ -138,8 +134,6 @@ PetscErrorCode FormBounds(SNES snes, Vec xl, Vec xu)
 }
 
 /* -------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormGradient"
 
 /*  FormGradient - Evaluates gradient of f.
 
@@ -266,8 +260,6 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobian"
 /*
    FormJacobian - Evaluates Jacobian matrix.
 
@@ -444,8 +436,6 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat H, Mat tHPre, void *ptr)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormBoundaryConditions"
 /*
    FormBoundaryConditions -  Calculates the boundary conditions for
    the region.
@@ -539,8 +529,6 @@ PetscErrorCode FormBoundaryConditions(SNES snes,AppCtx **ouser)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DestroyBoundaryConditions"
 PetscErrorCode DestroyBoundaryConditions(AppCtx **ouser)
 {
   PetscErrorCode ierr;
@@ -557,8 +545,6 @@ PetscErrorCode DestroyBoundaryConditions(AppCtx **ouser)
 
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "ComputeInitialGuess"
 /*
    ComputeInitialGuess - Calculates the initial guess
 

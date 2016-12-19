@@ -9,8 +9,6 @@
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>   /*I  "petscvec.h"   I*/
 #include <../src/vec/vec/impls/seq/seqcusp/cuspvecimpl.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "VecDestroy_MPICUSP"
 PetscErrorCode VecDestroy_MPICUSP(Vec v)
 {
   PetscErrorCode ierr;
@@ -28,8 +26,6 @@ PetscErrorCode VecDestroy_MPICUSP(Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecNorm_MPICUSP"
 PetscErrorCode VecNorm_MPICUSP(Vec xin,NormType type,PetscReal *z)
 {
   PetscReal      sum,work = 0.0;
@@ -62,8 +58,6 @@ PetscErrorCode VecNorm_MPICUSP(Vec xin,NormType type,PetscReal *z)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecDot_MPICUSP"
 PetscErrorCode VecDot_MPICUSP(Vec xin,Vec yin,PetscScalar *z)
 {
   PetscScalar    sum,work;
@@ -76,8 +70,6 @@ PetscErrorCode VecDot_MPICUSP(Vec xin,Vec yin,PetscScalar *z)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecTDot_MPICUSP"
 PetscErrorCode VecTDot_MPICUSP(Vec xin,Vec yin,PetscScalar *z)
 {
   PetscScalar    sum,work;
@@ -90,8 +82,6 @@ PetscErrorCode VecTDot_MPICUSP(Vec xin,Vec yin,PetscScalar *z)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecMDot_MPICUSP"
 PetscErrorCode VecMDot_MPICUSP(Vec xin,PetscInt nv,const Vec y[],PetscScalar *z)
 {
   PetscScalar    awork[128],*work = awork;
@@ -121,8 +111,6 @@ PetscErrorCode VecMDot_MPICUSP(Vec xin,PetscInt nv,const Vec y[],PetscScalar *z)
 M*/
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecDuplicate_MPICUSP"
 PetscErrorCode VecDuplicate_MPICUSP(Vec win,Vec *v)
 {
   PetscErrorCode ierr;
@@ -164,8 +152,6 @@ PetscErrorCode VecDuplicate_MPICUSP(Vec win,Vec *v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecDotNorm2_MPICUSP"
 PetscErrorCode VecDotNorm2_MPICUSP(Vec s,Vec t,PetscScalar *dp,PetscScalar *nm)
 {
   PetscErrorCode ierr;
@@ -179,8 +165,6 @@ PetscErrorCode VecDotNorm2_MPICUSP(Vec s,Vec t,PetscScalar *dp,PetscScalar *nm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCreate_MPICUSP"
 PETSC_EXTERN PetscErrorCode VecCreate_MPICUSP(Vec vv)
 {
   PetscErrorCode ierr;
@@ -226,8 +210,6 @@ PETSC_EXTERN PetscErrorCode VecCreate_MPICUSP(Vec vv)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCreate_CUSP"
 PETSC_EXTERN PetscErrorCode VecCreate_CUSP(Vec v)
 {
   PetscErrorCode ierr;

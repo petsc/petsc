@@ -1,7 +1,5 @@
 #include <../src/snes/impls/gs/gsimpl.h>      /*I "petscsnes.h"  I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESNGSSetTolerances"
 /*@
    SNESNGSSetTolerances - Sets various parameters used in convergence tests.
 
@@ -53,8 +51,6 @@ PetscErrorCode  SNESNGSSetTolerances(SNES snes,PetscReal abstol,PetscReal rtol,P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESNGSGetTolerances"
 /*@
    SNESNGSGetTolerances - Gets various parameters used in convergence tests.
 
@@ -90,8 +86,6 @@ PetscErrorCode  SNESNGSGetTolerances(SNES snes,PetscReal *atol,PetscReal *rtol,P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESNGSSetSweeps"
 /*@
    SNESNGSSetSweeps - Sets the number of sweeps of GS to use.
 
@@ -116,8 +110,6 @@ PetscErrorCode SNESNGSSetSweeps(SNES snes, PetscInt sweeps)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESNGSGetSweeps"
 /*@
    SNESNGSGetSweeps - Gets the number of sweeps GS will use.
 
@@ -143,8 +135,6 @@ PetscErrorCode SNESNGSGetSweeps(SNES snes, PetscInt * sweeps)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESReset_NGS"
 PetscErrorCode SNESReset_NGS(SNES snes)
 {
   SNES_NGS       *gs = (SNES_NGS*)snes->data;
@@ -155,8 +145,6 @@ PetscErrorCode SNESReset_NGS(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESDestroy_NGS"
 PetscErrorCode SNESDestroy_NGS(SNES snes)
 {
   PetscErrorCode ierr;
@@ -167,8 +155,6 @@ PetscErrorCode SNESDestroy_NGS(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetUp_NGS"
 PetscErrorCode SNESSetUp_NGS(SNES snes)
 {
   PetscErrorCode ierr;
@@ -182,8 +168,6 @@ PetscErrorCode SNESSetUp_NGS(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetFromOptions_NGS"
 PetscErrorCode SNESSetFromOptions_NGS(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   SNES_NGS       *gs = (SNES_NGS*)snes->data;
@@ -219,8 +203,6 @@ PetscErrorCode SNESSetFromOptions_NGS(PetscOptionItems *PetscOptionsObject,SNES 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESView_NGS"
 PetscErrorCode SNESView_NGS(SNES snes, PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -239,8 +221,6 @@ PetscErrorCode SNESView_NGS(SNES snes, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSolve_NGS"
 PetscErrorCode SNESSolve_NGS(SNES snes)
 {
   Vec              F;
@@ -357,8 +337,6 @@ PetscErrorCode SNESSolve_NGS(SNES snes)
 .seealso: SNESCreate(), SNES, SNESSetType(), SNESSetNGS(), SNESType (for list of available types), SNESNGSSetSweeps(), SNESNGSSetTolerances()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESCreate_NGS"
 PETSC_EXTERN PetscErrorCode SNESCreate_NGS(SNES snes)
 {
   SNES_NGS        *gs;

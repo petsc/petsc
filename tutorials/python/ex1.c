@@ -2,8 +2,6 @@
 
 /* ------------------------------------------------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "RunTest"
 PetscErrorCode RunTest(void)
 {
   PetscInt       N    = 100;
@@ -77,8 +75,6 @@ static char help[] = "Python-implemented Mat/KSP/PC.\n\n";
 #define PYTHON_LIB 0
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char *argv[])
 {
   PetscErrorCode ierr;

@@ -218,8 +218,6 @@ PETSC_INTERN PetscErrorCode DMPlexCreateCellNumbering_Internal(DM, PetscBool, IS
 PETSC_INTERN PetscErrorCode DMPlexCreateVertexNumbering_Internal(DM, PetscBool, IS *);
 PETSC_INTERN PetscErrorCode DMPlexRemesh_Internal(DM, Vec, const char[], PetscBool, DM *);
 
-#undef __FUNCT__
-#define __FUNCT__ "DihedralInvert"
 /* invert dihedral symmetry: return a^-1,
  * using the representation described in
  * DMPlexGetConeOrientation() */
@@ -228,8 +226,6 @@ PETSC_STATIC_INLINE PetscInt DihedralInvert(PetscInt N, PetscInt a)
   return (a <= 0) ? a : (N - a);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DihedralCompose"
 /* invert dihedral symmetry: return b * a,
  * using the representation described in
  * DMPlexGetConeOrientation() */
@@ -241,8 +237,6 @@ PETSC_STATIC_INLINE PetscInt DihedralCompose(PetscInt N, PetscInt a, PetscInt b)
          ((b >= 0) ? -(((N - b - a - 1) % N) + 1) : ((N + b - a) % N));
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DihedralSwap"
 /* swap dihedral symmetries: return b * a^-1,
  * using the representation described in
  * DMPlexGetConeOrientation() */
@@ -255,8 +249,6 @@ PETSC_EXTERN PetscErrorCode DMPlexComputeResidual_Internal(DM, PetscInt, PetscIn
 PETSC_EXTERN PetscErrorCode DMPlexComputeJacobian_Internal(DM, PetscInt, PetscInt, PetscReal, PetscReal, Vec, Vec, Mat, Mat, void *);
 PETSC_EXTERN PetscErrorCode DMPlexReconstructGradients_Internal(DM, PetscFV, PetscInt, PetscInt, Vec, Vec, Vec, Vec);
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlex_Invert2D_Internal"
 PETSC_STATIC_INLINE void DMPlex_Invert2D_Internal(PetscReal invJ[], PetscReal J[], PetscReal detJ)
 {
   const PetscReal invDet = 1.0/detJ;
@@ -268,8 +260,6 @@ PETSC_STATIC_INLINE void DMPlex_Invert2D_Internal(PetscReal invJ[], PetscReal J[
   (void)PetscLogFlops(5.0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlex_Invert3D_Internal"
 PETSC_STATIC_INLINE void DMPlex_Invert3D_Internal(PetscReal invJ[], PetscReal J[], PetscReal detJ)
 {
   const PetscReal invDet = 1.0/detJ;
@@ -286,16 +276,12 @@ PETSC_STATIC_INLINE void DMPlex_Invert3D_Internal(PetscReal invJ[], PetscReal J[
   (void)PetscLogFlops(37.0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlex_Det2D_Internal"
 PETSC_STATIC_INLINE void DMPlex_Det2D_Internal(PetscReal *detJ, PetscReal J[])
 {
   *detJ = J[0]*J[3] - J[1]*J[2];
   (void)PetscLogFlops(3.0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlex_Det3D_Internal"
 PETSC_STATIC_INLINE void DMPlex_Det3D_Internal(PetscReal *detJ, PetscReal J[])
 {
   *detJ = (J[0*3+0]*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]) +
@@ -304,25 +290,14 @@ PETSC_STATIC_INLINE void DMPlex_Det3D_Internal(PetscReal *detJ, PetscReal J[])
   (void)PetscLogFlops(12.0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlex_WaxpyD_Internal"
 PETSC_STATIC_INLINE void DMPlex_WaxpyD_Internal(PetscInt dim, PetscReal a, const PetscReal *x, const PetscReal *y, PetscReal *w) {PetscInt d; for (d = 0; d < dim; ++d) w[d] = a*x[d] + y[d];}
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlex_DotD_Internal"
 PETSC_STATIC_INLINE PetscReal DMPlex_DotD_Internal(PetscInt dim, const PetscScalar *x, const PetscReal *y) {PetscReal sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += PetscRealPart(x[d])*y[d]; return sum;}
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlex_DotRealD_Internal"
 PETSC_STATIC_INLINE PetscReal DMPlex_DotRealD_Internal(PetscInt dim, const PetscReal *x, const PetscReal *y) {PetscReal sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += x[d]*y[d]; return sum;}
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlex_NormD_Internal"
 PETSC_STATIC_INLINE PetscReal DMPlex_NormD_Internal(PetscInt dim, const PetscReal *x) {PetscReal sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += x[d]*x[d]; return PetscSqrtReal(sum);}
 
-
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetLocalOffset_Private"
 PETSC_STATIC_INLINE PetscErrorCode DMPlexGetLocalOffset_Private(DM dm, PetscInt point, PetscInt *start, PetscInt *end)
 {
   PetscFunctionBeginHot;
@@ -346,8 +321,6 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexGetLocalOffset_Private(DM dm, PetscInt 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetLocalFieldOffset_Private"
 PETSC_STATIC_INLINE PetscErrorCode DMPlexGetLocalFieldOffset_Private(DM dm, PetscInt point, PetscInt field, PetscInt *start, PetscInt *end)
 {
   PetscFunctionBegin;
@@ -371,8 +344,6 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexGetLocalFieldOffset_Private(DM dm, Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetGlobalOffset_Private"
 PETSC_STATIC_INLINE PetscErrorCode DMPlexGetGlobalOffset_Private(DM dm, PetscInt point, PetscInt *start, PetscInt *end)
 {
   PetscFunctionBegin;
@@ -400,8 +371,6 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexGetGlobalOffset_Private(DM dm, PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetGlobalFieldOffset_Private"
 PETSC_STATIC_INLINE PetscErrorCode DMPlexGetGlobalFieldOffset_Private(DM dm, PetscInt point, PetscInt field, PetscInt *start, PetscInt *end)
 {
   PetscFunctionBegin;

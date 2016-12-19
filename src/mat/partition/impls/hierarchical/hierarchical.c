@@ -29,8 +29,6 @@ typedef struct {
    Uses a hierarchical partitioning strategy to partition the matrix in parallel.
    Use this interface to make the partitioner consistent with others
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningApply_Hierarchical"
 static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS *partitioning)
 {
   MatPartitioning_Hierarchical *hpart  = (MatPartitioning_Hierarchical*)part->data;
@@ -147,8 +145,6 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningHierarchical_ReassembleFineparts"
 PetscErrorCode MatPartitioningHierarchical_ReassembleFineparts(Mat adj, IS fineparts, ISLocalToGlobalMapping mapping, IS *sfineparts)
 {
   PetscInt            *local_indices, *global_indices,*owners,*sfineparts_indices,localsize,i;
@@ -200,8 +196,6 @@ PetscErrorCode MatPartitioningHierarchical_ReassembleFineparts(Mat adj, IS finep
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningHierarchical_AssembleSubdomain"
 PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat adj,IS destination,Mat *sadj, ISLocalToGlobalMapping *mapping)
 {
   IS              irows,icols;
@@ -228,8 +222,6 @@ PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat adj,IS destinat
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningHierarchical_DetermineDestination"
 PetscErrorCode MatPartitioningHierarchical_DetermineDestination(MatPartitioning part, IS partitioning, PetscInt pstart, PetscInt pend, IS *destination)
 {
   MPI_Comm            comm;
@@ -259,8 +251,6 @@ PetscErrorCode MatPartitioningHierarchical_DetermineDestination(MatPartitioning 
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningView_Hierarchical"
 PetscErrorCode MatPartitioningView_Hierarchical(MatPartitioning part,PetscViewer viewer)
 {
   MatPartitioning_Hierarchical *hpart = (MatPartitioning_Hierarchical*)part->data;
@@ -281,8 +271,6 @@ PetscErrorCode MatPartitioningView_Hierarchical(MatPartitioning part,PetscViewer
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningHierarchicalGetFineparts"
 PetscErrorCode MatPartitioningHierarchicalGetFineparts(MatPartitioning part,IS *fineparts)
 {
   MatPartitioning_Hierarchical *hpart = (MatPartitioning_Hierarchical*)part->data;
@@ -294,8 +282,6 @@ PetscErrorCode MatPartitioningHierarchicalGetFineparts(MatPartitioning part,IS *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningHierarchicalGetCoarseparts"
 PetscErrorCode MatPartitioningHierarchicalGetCoarseparts(MatPartitioning part,IS *coarseparts)
 {
   MatPartitioning_Hierarchical *hpart = (MatPartitioning_Hierarchical*)part->data;
@@ -307,8 +293,6 @@ PetscErrorCode MatPartitioningHierarchicalGetCoarseparts(MatPartitioning part,IS
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningHierarchicalSetNcoarseparts"
 PetscErrorCode MatPartitioningHierarchicalSetNcoarseparts(MatPartitioning part, PetscInt Ncoarseparts)
 {
   MatPartitioning_Hierarchical *hpart = (MatPartitioning_Hierarchical*)part->data;
@@ -318,8 +302,6 @@ PetscErrorCode MatPartitioningHierarchicalSetNcoarseparts(MatPartitioning part, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningHierarchicalSetNfineparts"
 PetscErrorCode MatPartitioningHierarchicalSetNfineparts(MatPartitioning part, PetscInt Nfineparts)
 {
   MatPartitioning_Hierarchical *hpart = (MatPartitioning_Hierarchical*)part->data;
@@ -329,8 +311,6 @@ PetscErrorCode MatPartitioningHierarchicalSetNfineparts(MatPartitioning part, Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningSetFromOptions_Hierarchical"
 PetscErrorCode MatPartitioningSetFromOptions_Hierarchical(PetscOptionItems *PetscOptionsObject,MatPartitioning part)
 {
   MatPartitioning_Hierarchical *hpart = (MatPartitioning_Hierarchical*)part->data;
@@ -357,8 +337,6 @@ PetscErrorCode MatPartitioningSetFromOptions_Hierarchical(PetscOptionItems *Pets
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningDestroy_Hierarchical"
 PetscErrorCode MatPartitioningDestroy_Hierarchical(MatPartitioning part)
 {
   MatPartitioning_Hierarchical *hpart = (MatPartitioning_Hierarchical*)part->data;
@@ -392,8 +370,6 @@ PetscErrorCode MatPartitioningDestroy_Hierarchical(MatPartitioning part)
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningCreate_Hierarchical"
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Hierarchical(MatPartitioning part)
 {
   PetscErrorCode                ierr;

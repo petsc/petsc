@@ -21,8 +21,6 @@
 #include <sys/systeminfo.h>
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscGetWorkingDirectory"
 /*@C
    PetscGetWorkingDirectory - Gets the current working directory.
 

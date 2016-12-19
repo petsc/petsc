@@ -8,8 +8,6 @@
 #include <../src/ksp/pc/impls/factor/lu/lu.h>  /*I "petscpc.h" I*/
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFactorReorderForNonzeroDiagonal_LU"
 PetscErrorCode PCFactorReorderForNonzeroDiagonal_LU(PC pc,PetscReal z)
 {
   PC_LU *lu = (PC_LU*)pc->data;
@@ -21,8 +19,6 @@ PetscErrorCode PCFactorReorderForNonzeroDiagonal_LU(PC pc,PetscReal z)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_LU"
 static PetscErrorCode PCSetFromOptions_LU(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_LU          *lu = (PC_LU*)pc->data;
@@ -44,8 +40,6 @@ static PetscErrorCode PCSetFromOptions_LU(PetscOptionItems *PetscOptionsObject,P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCView_LU"
 static PetscErrorCode PCView_LU(PC pc,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -55,8 +49,6 @@ static PetscErrorCode PCView_LU(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_LU"
 static PetscErrorCode PCSetUp_LU(PC pc)
 {
   PetscErrorCode         ierr;
@@ -153,8 +145,6 @@ static PetscErrorCode PCSetUp_LU(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCReset_LU"
 static PetscErrorCode PCReset_LU(PC pc)
 {
   PC_LU          *dir = (PC_LU*)pc->data;
@@ -167,8 +157,6 @@ static PetscErrorCode PCReset_LU(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_LU"
 static PetscErrorCode PCDestroy_LU(PC pc)
 {
   PC_LU          *dir = (PC_LU*)pc->data;
@@ -182,8 +170,6 @@ static PetscErrorCode PCDestroy_LU(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_LU"
 static PetscErrorCode PCApply_LU(PC pc,Vec x,Vec y)
 {
   PC_LU          *dir = (PC_LU*)pc->data;
@@ -198,8 +184,6 @@ static PetscErrorCode PCApply_LU(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApplyTranspose_LU"
 static PetscErrorCode PCApplyTranspose_LU(PC pc,Vec x,Vec y)
 {
   PC_LU          *dir = (PC_LU*)pc->data;
@@ -252,8 +236,6 @@ static PetscErrorCode PCApplyTranspose_LU(PC pc,Vec x,Vec y)
            PCFactorReorderForNonzeroDiagonal()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_LU"
 PETSC_EXTERN PetscErrorCode PCCreate_LU(PC pc)
 {
   PetscErrorCode ierr;

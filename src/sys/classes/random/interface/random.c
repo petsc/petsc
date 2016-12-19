@@ -14,8 +14,6 @@
 
 #include <../src/sys/classes/random/randomimpl.h>                              /*I "petscsys.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscRandomGetValue"
 /*@
    PetscRandomGetValue - Generates a random number.  Call this after first calling
    PetscRandomCreate().
@@ -67,8 +65,6 @@ PetscErrorCode  PetscRandomGetValue(PetscRandom r,PetscScalar *val)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscRandomGetValueReal"
 /*@
    PetscRandomGetValueReal - Generates a purely real random number.  Call this after first calling
    PetscRandomCreate().
@@ -113,8 +109,6 @@ PetscErrorCode  PetscRandomGetValueReal(PetscRandom r,PetscReal *val)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscRandomGetInterval"
 /*@
    PetscRandomGetInterval - Gets the interval over which the random numbers
    will be randomly distributed.  By default, this interval is [0,1).
@@ -149,8 +143,6 @@ PetscErrorCode  PetscRandomGetInterval(PetscRandom r,PetscScalar *low,PetscScala
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscRandomSetInterval"
 /*@
    PetscRandomSetInterval - Sets the interval over which the random numbers
    will be randomly distributed.  By default, this interval is [0,1).

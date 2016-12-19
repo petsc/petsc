@@ -2,8 +2,6 @@
 
 typedef struct {PetscErrorCode (*solve)(SNES,Vec);void *ctx;} SNES_Shell;
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESShellSetSolve"
 /*@C
    SNESShellSetSolve - Sets routine to apply as solver
 
@@ -39,16 +37,12 @@ PetscErrorCode  SNESShellSetSolve(SNES snes,PetscErrorCode (*solve)(SNES,Vec))
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESReset_Shell"
 PetscErrorCode SNESReset_Shell(SNES snes)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESDestroy_Shell"
 PetscErrorCode SNESDestroy_Shell(SNES snes)
 {
   PetscErrorCode ierr;
@@ -59,16 +53,12 @@ PetscErrorCode SNESDestroy_Shell(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetUp_Shell"
 PetscErrorCode SNESSetUp_Shell(SNES snes)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetFromOptions_Shell"
 PetscErrorCode SNESSetFromOptions_Shell(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   PetscErrorCode ierr;
@@ -78,16 +68,12 @@ PetscErrorCode SNESSetFromOptions_Shell(PetscOptionItems *PetscOptionsObject,SNE
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESView_Shell"
 PetscErrorCode SNESView_Shell(SNES snes, PetscViewer viewer)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESShellGetContext"
 /*@
     SNESShellGetContext - Returns the user-provided context associated with a shell SNES
 
@@ -122,8 +108,6 @@ PetscErrorCode  SNESShellGetContext(SNES snes,void **ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESShellSetContext"
 /*@
     SNESShellSetContext - sets the context for a shell SNES
 
@@ -154,8 +138,6 @@ PetscErrorCode  SNESShellSetContext(SNES snes,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSolve_Shell"
 PetscErrorCode SNESSolve_Shell(SNES snes)
 {
   SNES_Shell     *shell = (SNES_Shell*) snes->data;
@@ -168,8 +150,6 @@ PetscErrorCode SNESSolve_Shell(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESShellSetSolve_Shell"
 PetscErrorCode  SNESShellSetSolve_Shell(SNES snes,PetscErrorCode (*solve)(SNES,Vec))
 {
   SNES_Shell *shell = (SNES_Shell*)snes->data;
@@ -187,8 +167,6 @@ PetscErrorCode  SNESShellSetSolve_Shell(SNES snes,PetscErrorCode (*solve)(SNES,V
 .seealso: SNESCreate(), SNES, SNESSetType(), SNESType (for list of available types)
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESCreate_Shell"
 PETSC_EXTERN PetscErrorCode SNESCreate_Shell(SNES snes)
 {
   SNES_Shell     *shell;

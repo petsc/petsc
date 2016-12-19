@@ -15,8 +15,6 @@ static const char precision[] = "Float64";
 static const char precision[] = "UnknownPrecision";
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "TransferWrite"
 static PetscErrorCode TransferWrite(PetscViewer viewer,FILE *fp,PetscMPIInt srank,PetscMPIInt root,const void *send,void *recv,PetscMPIInt count,PetscDataType datatype,PetscMPIInt tag)
 {
   PetscMPIInt    rank;
@@ -48,8 +46,6 @@ static PetscErrorCode TransferWrite(PetscViewer viewer,FILE *fp,PetscMPIInt sran
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetVTKConnectivity"
 static PetscErrorCode DMPlexGetVTKConnectivity(DM dm,PieceInfo *piece,PetscVTKInt **oconn,PetscVTKInt **ooffsets,PetscVTKType **otypes)
 {
   PetscErrorCode ierr;
@@ -109,8 +105,6 @@ static PetscErrorCode DMPlexGetVTKConnectivity(DM dm,PieceInfo *piece,PetscVTKIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexVTKWriteAll_VTU"
 /*
   Write all fields that have been provided to the viewer
   Multi-block XML format with binary appended data.

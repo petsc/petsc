@@ -1,8 +1,6 @@
 
 #include <petscwebclient.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscTextBelt"
 /*@C
      PetscTextBelt - Sends an SMS to an American/Canadian phone number
 

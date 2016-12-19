@@ -17,8 +17,6 @@ static char help[] = "Test file for the PCFactorSetShiftType()\n";
 
 #include <petscksp.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   KSP                solver;

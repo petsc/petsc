@@ -7,8 +7,6 @@ typedef struct  {
   PetscInt    n;                   /* owned number of dofs, n=N on owner, n=0 on non-owners */
 } DM_Redundant;
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateMatrix_Redundant"
 static PetscErrorCode DMCreateMatrix_Redundant(DM dm,Mat *J)
 {
   DM_Redundant           *red = (DM_Redundant*)dm->data;
@@ -44,8 +42,6 @@ static PetscErrorCode DMCreateMatrix_Redundant(DM dm,Mat *J)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDestroy_Redundant"
 static PetscErrorCode DMDestroy_Redundant(DM dm)
 {
   PetscErrorCode ierr;
@@ -58,8 +54,6 @@ static PetscErrorCode DMDestroy_Redundant(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateGlobalVector_Redundant"
 static PetscErrorCode DMCreateGlobalVector_Redundant(DM dm,Vec *gvec)
 {
   PetscErrorCode         ierr;
@@ -79,8 +73,6 @@ static PetscErrorCode DMCreateGlobalVector_Redundant(DM dm,Vec *gvec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateLocalVector_Redundant"
 static PetscErrorCode DMCreateLocalVector_Redundant(DM dm,Vec *lvec)
 {
   PetscErrorCode ierr;
@@ -97,8 +89,6 @@ static PetscErrorCode DMCreateLocalVector_Redundant(DM dm,Vec *lvec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLocalToGlobalBegin_Redundant"
 static PetscErrorCode DMLocalToGlobalBegin_Redundant(DM dm,Vec l,InsertMode imode,Vec g)
 {
   PetscErrorCode    ierr;
@@ -146,16 +136,12 @@ static PetscErrorCode DMLocalToGlobalBegin_Redundant(DM dm,Vec l,InsertMode imod
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLocalToGlobalEnd_Redundant"
 static PetscErrorCode DMLocalToGlobalEnd_Redundant(DM dm,Vec l,InsertMode imode,Vec g)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGlobalToLocalBegin_Redundant"
 static PetscErrorCode DMGlobalToLocalBegin_Redundant(DM dm,Vec g,InsertMode imode,Vec l)
 {
   PetscErrorCode    ierr;
@@ -178,16 +164,12 @@ static PetscErrorCode DMGlobalToLocalBegin_Redundant(DM dm,Vec g,InsertMode imod
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGlobalToLocalEnd_Redundant"
 static PetscErrorCode DMGlobalToLocalEnd_Redundant(DM dm,Vec g,InsertMode imode,Vec l)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetUp_Redundant"
 static PetscErrorCode DMSetUp_Redundant(DM dm)
 {
   PetscErrorCode ierr;
@@ -201,8 +183,6 @@ static PetscErrorCode DMSetUp_Redundant(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMView_Redundant"
 static PetscErrorCode DMView_Redundant(DM dm,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -217,8 +197,6 @@ static PetscErrorCode DMView_Redundant(DM dm,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateColoring_Redundant"
 static PetscErrorCode DMCreateColoring_Redundant(DM dm,ISColoringType ctype,ISColoring *coloring)
 {
   DM_Redundant    *red = (DM_Redundant*)dm->data;
@@ -243,8 +221,6 @@ static PetscErrorCode DMCreateColoring_Redundant(DM dm,ISColoringType ctype,ISCo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRefine_Redundant"
 static PetscErrorCode DMRefine_Redundant(DM dmc,MPI_Comm comm,DM *dmf)
 {
   PetscErrorCode ierr;
@@ -261,8 +237,6 @@ static PetscErrorCode DMRefine_Redundant(DM dmc,MPI_Comm comm,DM *dmf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCoarsen_Redundant"
 static PetscErrorCode DMCoarsen_Redundant(DM dmf,MPI_Comm comm,DM *dmc)
 {
   PetscErrorCode ierr;
@@ -279,8 +253,6 @@ static PetscErrorCode DMCoarsen_Redundant(DM dmf,MPI_Comm comm,DM *dmc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateInterpolation_Redundant"
 static PetscErrorCode DMCreateInterpolation_Redundant(DM dmc,DM dmf,Mat *P,Vec *scale)
 {
   PetscErrorCode ierr;
@@ -307,8 +279,6 @@ static PetscErrorCode DMCreateInterpolation_Redundant(DM dmc,DM dmf,Mat *P,Vec *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRedundantSetSize"
 /*@
     DMRedundantSetSize - Sets the size of a densely coupled redundant object
 
@@ -336,8 +306,6 @@ PetscErrorCode DMRedundantSetSize(DM dm,PetscMPIInt rank,PetscInt N)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRedundantGetSize"
 /*@
     DMRedundantGetSize - Gets the size of a densely coupled redundant object
 
@@ -365,8 +333,6 @@ PetscErrorCode DMRedundantGetSize(DM dm,PetscMPIInt *rank,PetscInt *N)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRedundantSetSize_Redundant"
 static PetscErrorCode DMRedundantSetSize_Redundant(DM dm,PetscMPIInt rank,PetscInt N)
 {
   DM_Redundant   *red = (DM_Redundant*)dm->data;
@@ -381,8 +347,6 @@ static PetscErrorCode DMRedundantSetSize_Redundant(DM dm,PetscMPIInt rank,PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRedundantGetSize_Redundant"
 static PetscErrorCode DMRedundantGetSize_Redundant(DM dm,PetscInt *rank,PetscInt *N)
 {
   DM_Redundant *red = (DM_Redundant*)dm->data;
@@ -407,8 +371,6 @@ static PetscErrorCode DMRedundantGetSize_Redundant(DM dm,PetscInt *rank,PetscInt
 .seealso: DMType, DMCOMPOSITE,  DMCreate(), DMRedundantSetSize(), DMRedundantGetSize()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreate_Redundant"
 PETSC_EXTERN PetscErrorCode DMCreate_Redundant(DM dm)
 {
   PetscErrorCode ierr;
@@ -440,8 +402,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Redundant(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRedundantCreate"
 /*@C
     DMRedundantCreate - Creates a DM object, used to manage data for dense globally coupled variables
 

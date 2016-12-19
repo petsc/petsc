@@ -1,8 +1,6 @@
 #include <petsc/private/linesearchimpl.h>
 #include <petsc/private/snesimpl.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchApply_Basic"
 static PetscErrorCode  SNESLineSearchApply_Basic(SNESLineSearch linesearch)
 {
   PetscBool      changed_y, changed_w;
@@ -67,8 +65,6 @@ static PetscErrorCode  SNESLineSearchApply_Basic(SNESLineSearch linesearch)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchCreate_Basic"
 /*MC
    SNESLINESEARCHBASIC - This line search implementation is not a line
    search at all; it simply uses the full step.  Thus, this routine is intended

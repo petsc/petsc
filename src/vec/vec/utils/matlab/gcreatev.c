@@ -5,8 +5,6 @@
 #include <engine.h>   /* MATLAB include file */
 #include <mex.h>      /* MATLAB include file */
 
-#undef __FUNCT__
-#define __FUNCT__ "VecMatlabEnginePut_Default"
 PETSC_EXTERN PetscErrorCode  VecMatlabEnginePut_Default(PetscObject obj,void *mengine)
 {
   PetscErrorCode    ierr;
@@ -31,8 +29,6 @@ PETSC_EXTERN PetscErrorCode  VecMatlabEnginePut_Default(PetscObject obj,void *me
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecMatlabEngineGet_Default"
 PETSC_EXTERN PetscErrorCode  VecMatlabEngineGet_Default(PetscObject obj,void *mengine)
 {
   PetscErrorCode ierr;

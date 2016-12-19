@@ -7,8 +7,6 @@
 #include <cgns_io.h>
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateCGNSFromFile"
 /*@C
   DMPlexCreateCGNS - Create a DMPlex mesh from a CGNS file.
 
@@ -53,8 +51,6 @@ PetscErrorCode DMPlexCreateCGNSFromFile(MPI_Comm comm, const char filename[], Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateCGNS"
 /*@
   DMPlexCreateCGNS - Create a DMPlex mesh from a CGNS file ID.
 

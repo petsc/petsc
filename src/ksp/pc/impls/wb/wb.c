@@ -13,8 +13,6 @@ typedef struct {
 const char *const PCExoticTypes[] = {"face","wirebasket","PCExoticType","PC_Exotic",0};
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetWireBasketInterpolation"
 /*
       DMDAGetWireBasketInterpolation - Gets the interpolation for a wirebasket based coarse space
 
@@ -323,8 +321,6 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetFaceInterpolation"
 /*
       DMDAGetFaceInterpolation - Gets the interpolation for a face based coarse space
 
@@ -603,8 +599,6 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PCExoticSetType"
 /*@
    PCExoticSetType - Sets the type of coarse grid interpolation to use
 
@@ -643,8 +637,6 @@ PetscErrorCode  PCExoticSetType(PC pc,PCExoticType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCExoticSetType_Exotic"
 static PetscErrorCode  PCExoticSetType_Exotic(PC pc,PCExoticType type)
 {
   PC_MG     *mg  = (PC_MG*)pc->data;
@@ -655,8 +647,6 @@ static PetscErrorCode  PCExoticSetType_Exotic(PC pc,PCExoticType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_Exotic"
 PetscErrorCode PCSetUp_Exotic(PC pc)
 {
   PetscErrorCode ierr;
@@ -680,8 +670,6 @@ PetscErrorCode PCSetUp_Exotic(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_Exotic"
 PetscErrorCode PCDestroy_Exotic(PC pc)
 {
   PetscErrorCode ierr;
@@ -696,8 +684,6 @@ PetscErrorCode PCDestroy_Exotic(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCView_Exotic"
 PetscErrorCode PCView_Exotic(PC pc,PetscViewer viewer)
 {
   PC_MG          *mg = (PC_MG*)pc->data;
@@ -732,8 +718,6 @@ PetscErrorCode PCView_Exotic(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_Exotic"
 PetscErrorCode PCSetFromOptions_Exotic(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
@@ -811,8 +795,6 @@ PetscErrorCode PCSetFromOptions_Exotic(PetscOptionItems *PetscOptionsObject,PC p
 .seealso:  PCMG, PCSetDM(), PCExoticType, PCExoticSetType()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_Exotic"
 PETSC_EXTERN PetscErrorCode PCCreate_Exotic(PC pc)
 {
   PetscErrorCode ierr;

@@ -2,8 +2,6 @@
 #include <../src/ksp/ksp/impls/gmres/gmresimpl.h>
 #include <petscblaslapack.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPComputeExtremeSingularValues_GMRES"
 PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP ksp,PetscReal *emax,PetscReal *emin)
 {
 #if defined(PETSC_MISSING_LAPACK_GESVD)
@@ -54,8 +52,6 @@ PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP ksp,PetscReal *emax,Pet
 
 /* ------------------------------------------------------------------------ */
 /* ESSL has a different calling sequence for dgeev() and zgeev() than standard LAPACK */
-#undef __FUNCT__
-#define __FUNCT__ "KSPComputeEigenvalues_GMRES"
 PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,PetscReal *c,PetscInt *neig)
 {
 #if defined(PETSC_HAVE_ESSL)
@@ -194,8 +190,6 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,Pe
 }
 
 #if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_HAVE_ESSL)
-#undef __FUNCT__
-#define __FUNCT__ "KSPComputeRitz_GMRES"
 PetscErrorCode KSPComputeRitz_GMRES(KSP ksp,PetscBool ritz,PetscBool small,PetscInt *nrit,Vec S[],PetscReal *tetar,PetscReal *tetai)
 {
   KSP_GMRES      *gmres = (KSP_GMRES*)ksp->data;

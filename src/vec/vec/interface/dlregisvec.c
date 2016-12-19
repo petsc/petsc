@@ -6,8 +6,6 @@
 #include <petscao.h>
 
 static PetscBool ISPackageInitialized = PETSC_FALSE;
-#undef __FUNCT__
-#define __FUNCT__ "ISFinalizePackage"
 /*@C
   ISFinalizePackage - This function destroys everything in the IS package. It is
   called from PetscFinalize().
@@ -29,8 +27,6 @@ PetscErrorCode  ISFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISInitializePackage"
 /*@C
       ISInitializePackage - This function initializes everything in the IS package. It is called
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to ISCreateXXXX()
@@ -91,8 +87,6 @@ extern MPI_Op PetscSplitReduction_Op;
 MPI_Op MPIU_MAXINDEX_OP = 0;
 MPI_Op MPIU_MININDEX_OP = 0;
 
-#undef __FUNCT__
-#define __FUNCT__ "MPIU_MaxIndex_Local"
 static void MPIAPI MPIU_MaxIndex_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscReal *xin = (PetscReal*)in,*xout = (PetscReal*)out;
@@ -111,8 +105,6 @@ static void MPIAPI MPIU_MaxIndex_Local(void *in,void *out,PetscMPIInt *cnt,MPI_D
   PetscFunctionReturnVoid(); /* cannot return a value */
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MPIU_MinIndex_Local"
 static void MPIAPI MPIU_MinIndex_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscReal *xin = (PetscReal*)in,*xout = (PetscReal*)out;
@@ -138,8 +130,6 @@ PetscInt          NormIds[7];  /* map from NormType to IDs used to cache Normval
 
 static PetscBool  VecPackageInitialized = PETSC_FALSE;
 
-#undef __FUNCT__
-#define __FUNCT__ "VecInitializePackage"
 /*@C
   VecInitializePackage - This function initializes everything in the Vec package. It is called
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to VecCreate()
@@ -272,8 +262,6 @@ PetscErrorCode  VecInitializePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecFinalizePackage"
 /*@C
   VecFinalizePackage - This function finalizes everything in the Vec package. It is called
   from PetscFinalize().
@@ -298,8 +286,6 @@ PetscErrorCode  VecFinalizePackage(void)
 }
 
 #if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
-#undef __FUNCT__
-#define __FUNCT__ "PetscDLLibraryRegister_petscvec"
 /*
   PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.
 

@@ -4,8 +4,6 @@ static char help[] = "Tests converting a matrix to another format with MatConver
 #include <petscmat.h>
 /* Usage: mpiexec -n <np> ex55 -verbose <0 or 1> */
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            C,A,B,D;

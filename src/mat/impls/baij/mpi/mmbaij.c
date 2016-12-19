@@ -7,8 +7,6 @@
 
 extern PetscErrorCode MatSetValuesBlocked_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetUpMultiply_MPIBAIJ"
 PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
 {
   Mat_MPIBAIJ    *baij = (Mat_MPIBAIJ*)mat->data;
@@ -143,8 +141,6 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
    Kind of slow! But that's what application programmers get when
    they are sloppy.
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatDisAssemble_MPIBAIJ"
 PetscErrorCode MatDisAssemble_MPIBAIJ(Mat A)
 {
   Mat_MPIBAIJ    *baij  = (Mat_MPIBAIJ*)A->data;
@@ -221,8 +217,6 @@ static PetscInt *uglyrmapd = 0,*uglyrmapo = 0;  /* mapping from the local orderi
 static Vec      uglydd     = 0,uglyoo     = 0;  /* work vectors used to scale the two parts of the local matrix */
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMPIBAIJDiagonalScaleLocalSetUp"
 PetscErrorCode MatMPIBAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
 {
   Mat_MPIBAIJ    *ina = (Mat_MPIBAIJ*) inA->data; /*access private part of matrix */
@@ -282,8 +276,6 @@ PetscErrorCode MatMPIBAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMPIBAIJDiagonalScaleLocal"
 PetscErrorCode  MatMPIBAIJDiagonalScaleLocal(Mat A,Vec scale)
 {
   /* This routine should really be abandoned as it duplicates MatDiagonalScaleLocal */
@@ -294,8 +286,6 @@ PetscErrorCode  MatMPIBAIJDiagonalScaleLocal(Mat A,Vec scale)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDiagonalScaleLocal_MPIBAIJ"
 PetscErrorCode  MatDiagonalScaleLocal_MPIBAIJ(Mat A,Vec scale)
 {
   Mat_MPIBAIJ    *a = (Mat_MPIBAIJ*) A->data; /*access private part of matrix */

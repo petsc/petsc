@@ -4,8 +4,6 @@
 */
 #include <petsc/private/drawimpl.h>  /*I "petscdraw.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSetViewPort"
 /*@
    PetscDrawSetViewPort - Sets the portion of the window (page) to which draw
    routines will write.
@@ -39,8 +37,6 @@ PetscErrorCode  PetscDrawSetViewPort(PetscDraw draw,PetscReal xl,PetscReal yl,Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawGetViewPort"
 /*@
    PetscDrawGetViewPort - Gets the portion of the window (page) to which draw
    routines will write.
@@ -76,8 +72,6 @@ PetscErrorCode  PetscDrawGetViewPort(PetscDraw draw,PetscReal *xl,PetscReal *yl,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSplitViewPort"
 /*@
    PetscDrawSplitViewPort - Splits a window shared by several processes into smaller
    view ports. One for each process.
@@ -137,8 +131,6 @@ PetscErrorCode  PetscDrawSplitViewPort(PetscDraw draw)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawViewPortsCreate"
 /*@C
    PetscDrawViewPortsCreate - Splits a window into smaller view ports. Each processor shares all the viewports.
 
@@ -220,8 +212,6 @@ PetscErrorCode  PetscDrawViewPortsCreate(PetscDraw draw,PetscInt nports,PetscDra
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawViewPortsCreateRect"
 /*@C
    PetscDrawViewPortsCreateRect - Splits a window into smaller
        view ports. Each processor shares all the viewports. The number
@@ -306,8 +296,6 @@ PetscErrorCode  PetscDrawViewPortsCreateRect(PetscDraw draw,PetscInt nx,PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawViewPortsDestroy"
 /*@C
    PetscDrawViewPortsDestroy - frees a PetscDrawViewPorts object
 
@@ -336,8 +324,6 @@ PetscErrorCode  PetscDrawViewPortsDestroy(PetscDrawViewPorts *ports)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawViewPortsSet"
 /*@C
    PetscDrawViewPortsSet - sets a draw object to use a particular subport
 

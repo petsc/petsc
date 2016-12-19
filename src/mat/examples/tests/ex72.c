@@ -8,8 +8,6 @@ static char help[] = "Read in a Symmetric matrix in MatrixMarket format (only th
     -fin <filename> : input file   \n\
     -fout <filename> : output file \n\n";
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            A;

@@ -16,8 +16,6 @@ Test 2:
   solution: u_1 = b_3, u_2 = b_2, u_3 = b_1 - b_3
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeFunctionLinear"
 PetscErrorCode ComputeFunctionLinear(SNES snes, Vec x, Vec f, void *ctx)
 {
   Mat            A = (Mat) ctx;
@@ -28,16 +26,12 @@ PetscErrorCode ComputeFunctionLinear(SNES snes, Vec x, Vec f, void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeJacobianLinear"
 PetscErrorCode ComputeJacobianLinear(SNES snes, Vec x, Mat A, Mat J, void *ctx)
 {
   PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ConstructProblem1"
 PetscErrorCode ConstructProblem1(Mat A, Vec b)
 {
   PetscInt       rStart, rEnd, row;
@@ -56,8 +50,6 @@ PetscErrorCode ConstructProblem1(Mat A, Vec b)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CheckProblem1"
 PetscErrorCode CheckProblem1(Mat A, Vec b, Vec u)
 {
   Vec            errorVec;
@@ -74,8 +66,6 @@ PetscErrorCode CheckProblem1(Mat A, Vec b, Vec u)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ConstructProblem2"
 PetscErrorCode ConstructProblem2(Mat A, Vec b)
 {
   PetscInt       N = 10, constraintSize = 4;
@@ -107,8 +97,6 @@ PetscErrorCode ConstructProblem2(Mat A, Vec b)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CheckProblem2"
 PetscErrorCode CheckProblem2(Mat A, Vec b, Vec u)
 {
   PetscInt          N = 10, constraintSize = 4, r;
@@ -137,8 +125,6 @@ PetscErrorCode CheckProblem2(Mat A, Vec b, Vec u)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   MPI_Comm       comm;

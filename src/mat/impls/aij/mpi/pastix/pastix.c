@@ -61,8 +61,6 @@ typedef struct Mat_Pastix_ {
 
 extern PetscErrorCode MatDuplicate_Pastix(Mat,MatDuplicateOption,Mat*);
 
-#undef __FUNCT__
-#define __FUNCT__ "MatConvertToCSC"
 /*
    convert Petsc seqaij matrix to CSC: colptr[n], row[nz], val[nz]
 
@@ -210,8 +208,6 @@ PetscErrorCode MatConvertToCSC(Mat A,PetscBool valOnly,PetscInt *n,PetscInt **co
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_Pastix"
 /*
   Call clean step of PaStiX if lu->CleanUpPastix == true.
   Free the CSC matrix.
@@ -255,8 +251,6 @@ PetscErrorCode MatDestroy_Pastix(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolve_PaStiX"
 /*
   Gather right-hand-side.
   Call for Solve step.
@@ -326,8 +320,6 @@ PetscErrorCode MatSolve_PaStiX(Mat A,Vec b,Vec x)
   Numeric factorisation using PaStiX solver.
 
  */
-#undef __FUNCT__
-#define __FUNCT__ "MatFactorNumeric_PaStiX"
 PetscErrorCode MatFactorNumeric_PaStiX(Mat F,Mat A,const MatFactorInfo *info)
 {
   Mat_Pastix     *lu =(Mat_Pastix*)(F)->data;
@@ -479,8 +471,6 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F,Mat A,const MatFactorInfo *info)
 }
 
 /* Note the Petsc r and c permutations are ignored */
-#undef __FUNCT__
-#define __FUNCT__ "MatLUFactorSymbolic_AIJPASTIX"
 PetscErrorCode MatLUFactorSymbolic_AIJPASTIX(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   Mat_Pastix *lu = (Mat_Pastix*)F->data;
@@ -495,8 +485,6 @@ PetscErrorCode MatLUFactorSymbolic_AIJPASTIX(Mat F,Mat A,IS r,IS c,const MatFact
 
 
 /* Note the Petsc r permutation is ignored */
-#undef __FUNCT__
-#define __FUNCT__ "MatCholeskyFactorSymbolic_SBAIJPASTIX"
 PetscErrorCode MatCholeskyFactorSymbolic_SBAIJPASTIX(Mat F,Mat A,IS r,const MatFactorInfo *info)
 {
   Mat_Pastix *lu = (Mat_Pastix*)(F)->data;
@@ -509,8 +497,6 @@ PetscErrorCode MatCholeskyFactorSymbolic_SBAIJPASTIX(Mat F,Mat A,IS r,const MatF
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatView_PaStiX"
 PetscErrorCode MatView_PaStiX(Mat A,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
@@ -554,8 +540,6 @@ PetscErrorCode MatView_PaStiX(Mat A,PetscViewer viewer)
 M*/
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetInfo_PaStiX"
 PetscErrorCode MatGetInfo_PaStiX(Mat A,MatInfoType flag,MatInfo *info)
 {
   Mat_Pastix *lu =(Mat_Pastix*)A->data;
@@ -574,8 +558,6 @@ PetscErrorCode MatGetInfo_PaStiX(Mat A,MatInfoType flag,MatInfo *info)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFactorGetSolverPackage_pastix"
 static PetscErrorCode MatFactorGetSolverPackage_pastix(Mat A,const MatSolverPackage *type)
 {
   PetscFunctionBegin;
@@ -586,8 +568,6 @@ static PetscErrorCode MatFactorGetSolverPackage_pastix(Mat A,const MatSolverPack
 /*
     The seq and mpi versions of this function are the same
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatGetFactor_seqaij_pastix"
 static PetscErrorCode MatGetFactor_seqaij_pastix(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
@@ -627,8 +607,6 @@ static PetscErrorCode MatGetFactor_seqaij_pastix(Mat A,MatFactorType ftype,Mat *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetFactor_mpiaij_pastix"
 static PetscErrorCode MatGetFactor_mpiaij_pastix(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
@@ -667,8 +645,6 @@ static PetscErrorCode MatGetFactor_mpiaij_pastix(Mat A,MatFactorType ftype,Mat *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetFactor_seqsbaij_pastix"
 static PetscErrorCode MatGetFactor_seqsbaij_pastix(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
@@ -707,8 +683,6 @@ static PetscErrorCode MatGetFactor_seqsbaij_pastix(Mat A,MatFactorType ftype,Mat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetFactor_mpisbaij_pastix"
 static PetscErrorCode MatGetFactor_mpisbaij_pastix(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
@@ -747,8 +721,6 @@ static PetscErrorCode MatGetFactor_mpisbaij_pastix(Mat A,MatFactorType ftype,Mat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolverPackageRegister_Pastix"
 PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Pastix(void)
 {
   PetscErrorCode ierr;

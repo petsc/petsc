@@ -17,8 +17,6 @@ typedef struct {
   PetscBool     testShape;                    /* Test the cell shape quality */
 } AppCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscErrorCode ierr;
@@ -50,8 +48,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateMesh"
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscInt       dim             = user->dim;
@@ -156,8 +152,6 @@ static void ex1_stats_reduce(void *a, void *b, int * len, MPI_Datatype *datatype
   }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestCellShape"
 static PetscErrorCode TestCellShape(DM dm)
 {
   PetscMPIInt    rank;
@@ -233,8 +227,6 @@ static PetscErrorCode TestCellShape(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   AppCtx         user;                 /* user-defined work context */

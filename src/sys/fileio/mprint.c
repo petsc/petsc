@@ -26,8 +26,6 @@ FILE *PETSC_STDERR = 0;
 */
 #define PETSC_MAX_LENGTH_FORMAT(l) (l+l/8)
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFormatConvert"
 /*@C
      PetscFormatConvert - Takes a PETSc format string and converts it to a reqular C format string
 
@@ -91,8 +89,6 @@ PetscErrorCode  PetscFormatConvert(const char *format,char *newformat,size_t siz
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscVSNPrintf"
 /*@C
      PetscVSNPrintf - The PETSc version of vsnprintf(). Converts a PETSc format string into a standard C format string and then puts all the
        function arguments into a string using the format statement.
@@ -202,8 +198,6 @@ PetscErrorCode  PetscVSNPrintf(char *str,size_t len,const char *format,size_t *f
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscVFPrintfDefault"
 /*@C
      PetscVFPrintf -  All PETSc standard out and error messages are sent through this function; so, in theory, this can
         can be replaced with something that does not simply write to a file.
@@ -250,8 +244,6 @@ PetscErrorCode  PetscVFPrintfDefault(FILE *fd,const char *format,va_list Argp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSNPrintf"
 /*@C
     PetscSNPrintf - Prints to a string of given length
 
@@ -280,8 +272,6 @@ PetscErrorCode  PetscSNPrintf(char *str,size_t len,const char format[],...)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSNPrintfCount"
 /*@C
     PetscSNPrintfCount - Prints to a string of given length, returns count
 
@@ -315,8 +305,6 @@ PetscErrorCode  PetscSNPrintfCount(char *str,size_t len,const char format[],size
 PrintfQueue petsc_printfqueue       = 0,petsc_printfqueuebase = 0;
 int         petsc_printfqueuelength = 0;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSynchronizedPrintf"
 /*@C
     PetscSynchronizedPrintf - Prints synchronized output from several processors.
     Output of the first processor is followed by that of the second, etc.
@@ -385,8 +373,6 @@ PetscErrorCode  PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSynchronizedFPrintf"
 /*@C
     PetscSynchronizedFPrintf - Prints synchronized output to the specified file from
     several processors.  Output of the first processor is followed by that of the
@@ -452,8 +438,6 @@ PetscErrorCode  PetscSynchronizedFPrintf(MPI_Comm comm,FILE *fp,const char forma
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSynchronizedFlush"
 /*@C
     PetscSynchronizedFlush - Flushes to the screen output from all processors
     involved in previous PetscSynchronizedPrintf()/PetscSynchronizedFPrintf() calls.
@@ -526,8 +510,6 @@ PetscErrorCode  PetscSynchronizedFlush(MPI_Comm comm,FILE *fd)
 
 /* ---------------------------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFPrintf"
 /*@C
     PetscFPrintf - Prints to a file, only from the first
     processor in the communicator.
@@ -571,8 +553,6 @@ PetscErrorCode  PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscPrintf"
 /*@C
     PetscPrintf - Prints to standard out, only from the first
     processor in the communicator. Calls from other processes are ignored.
@@ -616,8 +596,6 @@ PetscErrorCode  PetscPrintf(MPI_Comm comm,const char format[],...)
 }
 
 /* ---------------------------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "PetscHelpPrintfDefault"
 /*@C
      PetscHelpPrintf -  All PETSc help messages are passing through this function. You can change how help messages are printed by
         replacinng it  with something that does not simply write to a stdout.
@@ -660,8 +638,6 @@ PetscErrorCode  PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
 /* ---------------------------------------------------------------------------------------*/
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSynchronizedFGets"
 /*@C
     PetscSynchronizedFGets - Several processors all get the same line from a file.
 
@@ -704,8 +680,6 @@ PetscErrorCode  PetscSynchronizedFGets(MPI_Comm comm,FILE *fp,size_t len,char st
 #if defined(PETSC_HAVE_CLOSURES)
 int (^SwiftClosure)(const char*) = 0;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscVFPrintfToString"
 PetscErrorCode  PetscVFPrintfToString(FILE *fd,const char format[],va_list Argp)
 {
   PetscErrorCode ierr;
@@ -736,8 +710,6 @@ PetscErrorCode PetscVFPrintfSetClosure(int (^closure)(const char*))
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 #include <mex.h>
-#undef __FUNCT__
-#define __FUNCT__ "PetscVFPrintf_Matlab"
 PetscErrorCode  PetscVFPrintf_Matlab(FILE *fd,const char format[],va_list Argp)
 {
   PetscErrorCode ierr;
@@ -756,8 +728,6 @@ PetscErrorCode  PetscVFPrintf_Matlab(FILE *fd,const char format[],va_list Argp)
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFormatStrip"
 /*@C
      PetscFormatStrip - Takes a PETSc format string and removes all numerical modifiers to % operations
 

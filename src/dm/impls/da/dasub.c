@@ -5,8 +5,6 @@
 
 #include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetLogicalCoordinate"
 /*@C
    DMDAGetLogicalCoordinate - Returns a the i,j,k logical coordinate for the closest mesh point to a x,y,z point in the coordinates of the DMDA
 
@@ -77,8 +75,6 @@ PetscErrorCode  DMDAGetLogicalCoordinate(DM da,PetscScalar x,PetscScalar y,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetRay"
 /*@C
    DMDAGetRay - Returns a vector on process zero that contains a row or column of the values in a DMDA vector
 
@@ -168,8 +164,6 @@ PetscErrorCode  DMDAGetRay(DM da,DMDADirection dir,PetscInt gp,Vec *newvec,VecSc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetProcessorSubset"
 /*@C
    DMDAGetProcessorSubset - Returns a communicator consisting only of the
    processors in a DMDA that own a particular global x, y, or z grid point
@@ -242,8 +236,6 @@ PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDADirection dir,PetscInt gp,MPI_C
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetProcessorSubsets"
 /*@C
    DMDAGetProcessorSubsets - Returns communicators consisting only of the
    processors in a DMDA adjacent in a particular dimension,

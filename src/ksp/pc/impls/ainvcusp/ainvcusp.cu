@@ -46,8 +46,6 @@ typedef struct {
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_AINVCUSP"
 static PetscErrorCode PCSetUp_AINVCUSP(PC pc)
 {
   PC_AINVCUSP *ainv = (PC_AINVCUSP*)pc->data;
@@ -110,8 +108,6 @@ static PetscErrorCode PCSetUp_AINVCUSP(PC pc)
 
    Application Interface Routine: PCApply()
  */
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_AINVCUSP"
 static PetscErrorCode PCApply_AINVCUSP(PC pc,Vec x,Vec y)
 {
   PC_AINVCUSP    *ainv = (PC_AINVCUSP*)pc->data;
@@ -142,8 +138,6 @@ static PetscErrorCode PCApply_AINVCUSP(PC pc,Vec x,Vec y)
 }
 /* -------------------------------------------------------------------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "PCReset_AINVCUSP"
 static PetscErrorCode PCReset_AINVCUSP(PC pc)
 {
   PC_AINVCUSP *ainv = (PC_AINVCUSP*)pc->data;
@@ -170,8 +164,6 @@ static PetscErrorCode PCReset_AINVCUSP(PC pc)
 
    Application Interface Routine: PCDestroy()
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_AINVCUSP"
 static PetscErrorCode PCDestroy_AINVCUSP(PC pc)
 {
   PetscErrorCode ierr;
@@ -186,10 +178,6 @@ static PetscErrorCode PCDestroy_AINVCUSP(PC pc)
   PetscFunctionReturn(0);
 }
 
-
-
-#undef __FUNCT__
-#define __FUNCT__ "PCAINVCUSPSetDropTolerance_AINVCUSP"
 static PetscErrorCode PCAINVCUSPSetDropTolerance_AINVCUSP(PC pc, PetscReal droptolerance)
 {
   PC_AINVCUSP *ainv = (PC_AINVCUSP*)pc->data;
@@ -202,8 +190,6 @@ static PetscErrorCode PCAINVCUSPSetDropTolerance_AINVCUSP(PC pc, PetscReal dropt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCAINVCUSPSetDropTolerance"
 PetscErrorCode PCAINVCUSPSetDropTolerance(PC pc, PetscReal droptolerance)
 {
   PetscErrorCode ierr;
@@ -213,8 +199,7 @@ PetscErrorCode PCAINVCUSPSetDropTolerance(PC pc, PetscReal droptolerance)
   ierr = PetscTryMethod(pc, "PCAINVCUSPSetDropTolerance_C",(PC,PetscReal),(pc,droptolerance));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "PCAINVCUSPSetNonzeros_AINVCUSP"
+
 static PetscErrorCode PCAINVCUSPSetNonzeros_AINVCUSP(PC pc, PetscInt nonzeros)
 {
   PC_AINVCUSP *ainv = (PC_AINVCUSP*)pc->data;
@@ -227,8 +212,6 @@ static PetscErrorCode PCAINVCUSPSetNonzeros_AINVCUSP(PC pc, PetscInt nonzeros)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCAINVCUSPSetNonzeros"
 PetscErrorCode PCAINVCUSPSetNonzeros(PC pc, PetscInt nonzeros)
 {
   PetscErrorCode ierr;
@@ -238,8 +221,7 @@ PetscErrorCode PCAINVCUSPSetNonzeros(PC pc, PetscInt nonzeros)
   ierr = PetscTryMethod(pc, "PCAINVCUSPSetNonzeros_C",(PC,PetscInt),(pc,nonzeros));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "PCAINVCUSPSetLinParameter_AINVCUSP"
+
 static PetscErrorCode PCAINVCUSPSetLinParameter_AINVCUSP(PC pc, PetscInt param)
 {
   PC_AINVCUSP *ainv = (PC_AINVCUSP*)pc->data;
@@ -252,8 +234,6 @@ static PetscErrorCode PCAINVCUSPSetLinParameter_AINVCUSP(PC pc, PetscInt param)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCAINVCUSPSetLinParameter"
 PetscErrorCode PCAINVCUSPSetLinParameter(PC pc, PetscInt param)
 {
   PetscErrorCode ierr;
@@ -263,8 +243,7 @@ PetscErrorCode PCAINVCUSPSetLinParameter(PC pc, PetscInt param)
   ierr = PetscTryMethod(pc, "PCAINVCUSPSetLinParameter_C",(PC,PetscInt),(pc,param));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "PCAINVCUSPUseScaling_AINVCUSP"
+
 static PetscErrorCode PCAINVCUSPUseScaling_AINVCUSP(PC pc, PetscBool scaled)
 {
   PC_AINVCUSP *ainv = (PC_AINVCUSP*)pc->data;
@@ -274,8 +253,6 @@ static PetscErrorCode PCAINVCUSPUseScaling_AINVCUSP(PC pc, PetscBool scaled)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCAINVCUSPUseScaling"
 PetscErrorCode PCAINVCUSPUseScaling(PC pc, PetscBool scaled)
 {
   PetscErrorCode ierr;
@@ -286,8 +263,6 @@ PetscErrorCode PCAINVCUSPUseScaling(PC pc, PetscBool scaled)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_AINVCUSP"
 static PetscErrorCode PCSetFromOptions_AINVCUSP(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_AINVCUSP    *ainv = (PC_AINVCUSP*)pc->data;
@@ -336,8 +311,6 @@ static PetscErrorCode PCSetFromOptions_AINVCUSP(PetscOptionItems *PetscOptionsOb
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_AINVCUSP"
 PETSC_EXTERN PetscErrorCode PCCreate_AINVCUSP(PC pc)
 {
   PC_AINVCUSP    *ainv;

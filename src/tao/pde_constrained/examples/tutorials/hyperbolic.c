@@ -110,8 +110,6 @@ PetscErrorCode Gather_uxi_uyi(Vec,Vec*,VecScatter*,Vec*,VecScatter*,PetscInt);
 
 static  char help[]="";
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   PetscErrorCode     ierr;
@@ -232,8 +230,6 @@ int main(int argc, char **argv)
   return ierr;
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormFunction"
 /*
    dwork = Qy - d
    lwork = L*(u-ur).^2
@@ -260,8 +256,6 @@ PetscErrorCode FormFunction(Tao tao,Vec X,PetscReal *f,void *ptr)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormGradient"
 /*
     state: g_s = Q' *(Qy - d) + 0.5*alpha*L*(u-ur).^2
     design: g_d = alpha*(L'y).*(u-ur)
@@ -291,8 +285,6 @@ PetscErrorCode FormGradient(Tao tao,Vec X,Vec G,void *ptr)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionGradient"
 PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *ptr)
 {
   PetscErrorCode ierr;
@@ -325,8 +317,6 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *p
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobianState"
 /* A
 MatShell object
 */
@@ -354,8 +344,6 @@ PetscErrorCode FormJacobianState(Tao tao, Vec X, Mat J, Mat JPre, Mat JInv, void
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobianDesign"
 /* B */
 PetscErrorCode FormJacobianDesign(Tao tao, Vec X, Mat J, void *ptr)
 {
@@ -367,8 +355,6 @@ PetscErrorCode FormJacobianDesign(Tao tao, Vec X, Mat J, void *ptr)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "StateMatMult"
 PetscErrorCode StateMatMult(Mat J_shell, Vec X, Vec Y)
 {
   PetscErrorCode ierr;
@@ -391,8 +377,6 @@ PetscErrorCode StateMatMult(Mat J_shell, Vec X, Vec Y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "StateMatMultTranspose"
 PetscErrorCode StateMatMultTranspose(Mat J_shell, Vec X, Vec Y)
 {
   PetscErrorCode ierr;
@@ -417,8 +401,6 @@ PetscErrorCode StateMatMultTranspose(Mat J_shell, Vec X, Vec Y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "StateMatBlockMult"
 PetscErrorCode StateMatBlockMult(Mat J_shell, Vec X, Vec Y)
 {
   PetscErrorCode ierr;
@@ -436,8 +418,6 @@ PetscErrorCode StateMatBlockMult(Mat J_shell, Vec X, Vec Y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "StateMatBlockMultTranspose"
 PetscErrorCode StateMatBlockMultTranspose(Mat J_shell, Vec X, Vec Y)
 {
   PetscErrorCode ierr;
@@ -456,8 +436,6 @@ PetscErrorCode StateMatBlockMultTranspose(Mat J_shell, Vec X, Vec Y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DesignMatMult"
 PetscErrorCode DesignMatMult(Mat J_shell, Vec X, Vec Y)
 {
   PetscErrorCode ierr;
@@ -479,8 +457,6 @@ PetscErrorCode DesignMatMult(Mat J_shell, Vec X, Vec Y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DesignMatMultTranspose"
 PetscErrorCode DesignMatMultTranspose(Mat J_shell, Vec X, Vec Y)
 {
   PetscErrorCode ierr;
@@ -503,8 +479,6 @@ PetscErrorCode DesignMatMultTranspose(Mat J_shell, Vec X, Vec Y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "StateMatBlockPrecMult"
 PetscErrorCode StateMatBlockPrecMult(PC PC_shell, Vec X, Vec Y)
 {
   PetscErrorCode ierr;
@@ -520,8 +494,6 @@ PetscErrorCode StateMatBlockPrecMult(PC PC_shell, Vec X, Vec Y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "StateMatBlockPrecMultTranspose"
 PetscErrorCode StateMatBlockPrecMultTranspose(PC PC_shell, Vec X, Vec Y)
 {
   PetscErrorCode ierr;
@@ -538,8 +510,6 @@ PetscErrorCode StateMatBlockPrecMultTranspose(PC PC_shell, Vec X, Vec Y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "StateMatInvMult"
 PetscErrorCode StateMatInvMult(Mat J_shell, Vec X, Vec Y)
 {
   PetscErrorCode ierr;
@@ -577,8 +547,6 @@ PetscErrorCode StateMatInvMult(Mat J_shell, Vec X, Vec Y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "StateMatInvTransposeMult"
 PetscErrorCode StateMatInvTransposeMult(Mat J_shell, Vec X, Vec Y)
 {
   PetscErrorCode ierr;
@@ -612,8 +580,6 @@ PetscErrorCode StateMatInvTransposeMult(Mat J_shell, Vec X, Vec Y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "StateMatDuplicate"
 PetscErrorCode StateMatDuplicate(Mat J_shell, MatDuplicateOption opt, Mat *new_shell)
 {
   PetscErrorCode ierr;
@@ -630,8 +596,6 @@ PetscErrorCode StateMatDuplicate(Mat J_shell, MatDuplicateOption opt, Mat *new_s
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "StateMatGetDiagonal"
 PetscErrorCode StateMatGetDiagonal(Mat J_shell, Vec X)
 {
   PetscErrorCode ierr;
@@ -643,8 +607,6 @@ PetscErrorCode StateMatGetDiagonal(Mat J_shell, Vec X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormConstraints"
 PetscErrorCode FormConstraints(Tao tao, Vec X, Vec C, void *ptr)
 {
   /* con = Ay - q, A = [C(u1)  0     0     ...   0;
@@ -679,8 +641,6 @@ PetscErrorCode FormConstraints(Tao tao, Vec X, Vec C, void *ptr)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "Scatter"
 PetscErrorCode Scatter(Vec x, Vec state, VecScatter s_scat, Vec design, VecScatter d_scat)
 {
   PetscErrorCode ierr;
@@ -693,8 +653,6 @@ PetscErrorCode Scatter(Vec x, Vec state, VecScatter s_scat, Vec design, VecScatt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Scatter_uxi_uyi"
 PetscErrorCode Scatter_uxi_uyi(Vec u, Vec *uxi, VecScatter *scatx, Vec *uyi, VecScatter *scaty, PetscInt nt)
 {
   PetscErrorCode ierr;
@@ -710,8 +668,6 @@ PetscErrorCode Scatter_uxi_uyi(Vec u, Vec *uxi, VecScatter *scatx, Vec *uyi, Vec
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Gather"
 PetscErrorCode Gather(Vec x, Vec state, VecScatter s_scat, Vec design, VecScatter d_scat)
 {
   PetscErrorCode ierr;
@@ -724,8 +680,6 @@ PetscErrorCode Gather(Vec x, Vec state, VecScatter s_scat, Vec design, VecScatte
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Gather_uxi_uyi"
 PetscErrorCode Gather_uxi_uyi(Vec u, Vec *uxi, VecScatter *scatx, Vec *uyi, VecScatter *scaty, PetscInt nt)
 {
   PetscErrorCode ierr;
@@ -741,8 +695,6 @@ PetscErrorCode Gather_uxi_uyi(Vec u, Vec *uxi, VecScatter *scatx, Vec *uyi, VecS
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Scatter_yi"
 PetscErrorCode Scatter_yi(Vec y, Vec *yi, VecScatter *scat, PetscInt nt)
 {
   PetscErrorCode ierr;
@@ -756,8 +708,6 @@ PetscErrorCode Scatter_yi(Vec y, Vec *yi, VecScatter *scat, PetscInt nt)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Gather_yi"
 PetscErrorCode Gather_yi(Vec y, Vec *yi, VecScatter *scat, PetscInt nt)
 {
   PetscErrorCode ierr;
@@ -771,8 +721,6 @@ PetscErrorCode Gather_yi(Vec y, Vec *yi, VecScatter *scat, PetscInt nt)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "HyperbolicInitialize"
 PetscErrorCode HyperbolicInitialize(AppCtx *user)
 {
   PetscErrorCode ierr;
@@ -1220,8 +1168,6 @@ PetscErrorCode HyperbolicInitialize(AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "HyperbolicDestroy"
 PetscErrorCode HyperbolicDestroy(AppCtx *user)
 {
   PetscErrorCode ierr;
@@ -1297,8 +1243,6 @@ PetscErrorCode HyperbolicDestroy(AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "HyperbolicMonitor"
 PetscErrorCode HyperbolicMonitor(Tao tao, void *ptr)
 {
   PetscErrorCode ierr;

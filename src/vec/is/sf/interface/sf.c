@@ -15,8 +15,6 @@ PetscLogEvent PETSCSF_SetGraph, PETSCSF_BcastBegin, PETSCSF_BcastEnd, PETSCSF_Re
 
 const char *const PetscSFDuplicateOptions[] = {"CONFONLY","RANKS","GRAPH","PetscSFDuplicateOption","PETSCSF_DUPLICATE_",0};
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFCreate"
 /*@C
    PetscSFCreate - create a star forest communication context
 
@@ -55,8 +53,6 @@ PetscErrorCode PetscSFCreate(MPI_Comm comm,PetscSF *sf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFReset"
 /*@C
    PetscSFReset - Reset a star forest so that different sizes or neighbors can be used
 
@@ -90,8 +86,6 @@ PetscErrorCode PetscSFReset(PetscSF sf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFSetType"
 /*@C
    PetscSFSetType - set the PetscSF communication implementation
 
@@ -140,8 +134,6 @@ PetscErrorCode PetscSFSetType(PetscSF sf,PetscSFType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFDestroy"
 /*@
    PetscSFDestroy - destroy star forest
 
@@ -168,8 +160,6 @@ PetscErrorCode PetscSFDestroy(PetscSF *sf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFSetUp"
 /*@
    PetscSFSetUp - set up communication structures
 
@@ -194,8 +184,6 @@ PetscErrorCode PetscSFSetUp(PetscSF sf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFSetFromOptions"
 /*@C
    PetscSFSetFromOptions - set PetscSF options using the options database
 
@@ -233,8 +221,6 @@ PetscErrorCode PetscSFSetFromOptions(PetscSF sf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFSetRankOrder"
 /*@C
    PetscSFSetRankOrder - sort multi-points for gathers and scatters by rank order
 
@@ -259,8 +245,6 @@ PetscErrorCode PetscSFSetRankOrder(PetscSF sf,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFSetGraph"
 /*@C
    PetscSFSetGraph - Set a parallel star forest
 
@@ -414,8 +398,6 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf,PetscInt nroots,PetscInt nleaves,const
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFCreateInverseSF"
 /*@C
    PetscSFCreateInverseSF - given a PetscSF in which all vertices have degree 1, creates the inverse map
 
@@ -481,8 +463,6 @@ PetscErrorCode PetscSFCreateInverseSF(PetscSF sf,PetscSF *isf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFDuplicate"
 /*@
    PetscSFDuplicate - duplicate a PetscSF, optionally preserving rank connectivity and graph
 
@@ -517,8 +497,6 @@ PetscErrorCode PetscSFDuplicate(PetscSF sf,PetscSFDuplicateOption opt,PetscSF *n
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFGetGraph"
 /*@C
    PetscSFGetGraph - Get the graph specifying a parallel star forest
 
@@ -551,8 +529,6 @@ PetscErrorCode PetscSFGetGraph(PetscSF sf,PetscInt *nroots,PetscInt *nleaves,con
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFGetLeafRange"
 /*@C
    PetscSFGetLeafRange - Get the active leaf ranges
 
@@ -579,8 +555,6 @@ PetscErrorCode PetscSFGetLeafRange(PetscSF sf,PetscInt *minleaf,PetscInt *maxlea
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFView"
 /*@C
    PetscSFView - view a star forest
 
@@ -637,8 +611,6 @@ PetscErrorCode PetscSFView(PetscSF sf,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFGetRanks"
 /*@C
    PetscSFGetRanks - Get ranks and number of vertices referenced by leaves on this process
 
@@ -671,8 +643,6 @@ PetscErrorCode PetscSFGetRanks(PetscSF sf,PetscInt *nranks,const PetscMPIInt **r
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFGetGroups"
 /*@C
    PetscSFGetGroups - gets incoming and outgoing process groups
 
@@ -736,8 +706,6 @@ PetscErrorCode PetscSFGetGroups(PetscSF sf,MPI_Group *incoming,MPI_Group *outgoi
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFGetMultiSF"
 /*@C
    PetscSFGetMultiSF - gets the inner SF implemeting gathers and scatters
 
@@ -832,8 +800,6 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf,PetscSF *multi)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFCreateEmbeddedSF"
 /*@C
    PetscSFCreateEmbeddedSF - removes edges from all but the selected roots, does not remap indices
 
@@ -893,8 +859,6 @@ PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf,PetscInt nroots,const PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFCreateEmbeddedLeafSF"
 /*@C
   PetscSFCreateEmbeddedLeafSF - removes edges from all but the selected leaves, does not remap indices
 
@@ -937,8 +901,6 @@ PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF sf, PetscInt nleaves, const P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFBcastBegin"
 /*@C
    PetscSFBcastBegin - begin pointwise broadcast to be concluded with call to PetscSFBcastEnd()
 
@@ -970,8 +932,6 @@ PetscErrorCode PetscSFBcastBegin(PetscSF sf,MPI_Datatype unit,const void *rootda
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFBcastEnd"
 /*@C
    PetscSFBcastEnd - end a broadcast operation started with PetscSFBcastBegin()
 
@@ -1003,8 +963,6 @@ PetscErrorCode PetscSFBcastEnd(PetscSF sf,MPI_Datatype unit,const void *rootdata
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFReduceBegin"
 /*@C
    PetscSFReduceBegin - begin reduction of leafdata into rootdata, to be completed with call to PetscSFReduceEnd()
 
@@ -1037,8 +995,6 @@ PetscErrorCode PetscSFReduceBegin(PetscSF sf,MPI_Datatype unit,const void *leafd
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFReduceEnd"
 /*@C
    PetscSFReduceEnd - end a reduction operation started with PetscSFReduceBegin()
 
@@ -1071,8 +1027,6 @@ PetscErrorCode PetscSFReduceEnd(PetscSF sf,MPI_Datatype unit,const void *leafdat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFComputeDegreeBegin"
 /*@C
    PetscSFComputeDegreeBegin - begin computation of degree for each root vertex, to be completed with PetscSFComputeDegreeEnd()
 
@@ -1110,8 +1064,6 @@ PetscErrorCode PetscSFComputeDegreeBegin(PetscSF sf,const PetscInt **degree)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFComputeDegreeEnd"
 /*@C
    PetscSFComputeDegreeEnd - complete computation of degree for each root vertex, started with PetscSFComputeDegreeBegin()
 
@@ -1144,8 +1096,6 @@ PetscErrorCode PetscSFComputeDegreeEnd(PetscSF sf,const PetscInt **degree)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFFetchAndOpBegin"
 /*@C
    PetscSFFetchAndOpBegin - begin operation that fetches values from root and updates atomically by applying operation using my leaf value, to be completed with PetscSFFetchAndOpEnd()
 
@@ -1185,8 +1135,6 @@ PetscErrorCode PetscSFFetchAndOpBegin(PetscSF sf,MPI_Datatype unit,void *rootdat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFFetchAndOpEnd"
 /*@C
    PetscSFFetchAndOpEnd - end operation started in matching call to PetscSFFetchAndOpBegin() to fetch values from roots and update atomically by applying operation using my leaf value
 
@@ -1220,8 +1168,6 @@ PetscErrorCode PetscSFFetchAndOpEnd(PetscSF sf,MPI_Datatype unit,void *rootdata,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFGatherBegin"
 /*@C
    PetscSFGatherBegin - begin pointwise gather of all leaves into multi-roots, to be completed with PetscSFGatherEnd()
 
@@ -1251,8 +1197,6 @@ PetscErrorCode PetscSFGatherBegin(PetscSF sf,MPI_Datatype unit,const void *leafd
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFGatherEnd"
 /*@C
    PetscSFGatherEnd - ends pointwise gather operation that was started with PetscSFGatherBegin()
 
@@ -1284,8 +1228,6 @@ PetscErrorCode PetscSFGatherEnd(PetscSF sf,MPI_Datatype unit,const void *leafdat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFScatterBegin"
 /*@C
    PetscSFScatterBegin - begin pointwise scatter operation from multi-roots to leaves, to be completed with PetscSFScatterEnd()
 
@@ -1317,8 +1259,6 @@ PetscErrorCode PetscSFScatterBegin(PetscSF sf,MPI_Datatype unit,const void *mult
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFScatterEnd"
 /*@C
    PetscSFScatterEnd - ends pointwise scatter operation that was started with PetscSFScatterBegin()
 
@@ -1350,8 +1290,6 @@ PetscErrorCode PetscSFScatterEnd(PetscSF sf,MPI_Datatype unit,const void *multir
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFCompose"
 /*@
   PetscSFCompose - Compose a new PetscSF equivalent to action to PetscSFs
 

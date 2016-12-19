@@ -1,7 +1,5 @@
 #include <petsc/private/taoimpl.h> /*I "petsctao.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetVariableBounds"
 /*@
   TaoSetVariableBounds - Sets the upper and lower bounds
 
@@ -38,8 +36,6 @@ PetscErrorCode TaoSetVariableBounds(Tao tao, Vec XL, Vec XU)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetVariableBoundsRoutine"
 /*@C
   TaoSetVariableBoundsRoutine - Sets a function to be used to compute variable bounds
 
@@ -75,8 +71,6 @@ PetscErrorCode TaoSetVariableBoundsRoutine(Tao tao, PetscErrorCode (*func)(Tao, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoGetVariableBounds"
 PetscErrorCode TaoGetVariableBounds(Tao tao, Vec *XL, Vec *XU)
 {
   PetscFunctionBegin;
@@ -90,8 +84,6 @@ PetscErrorCode TaoGetVariableBounds(Tao tao, Vec *XL, Vec *XU)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoComputeVariableBounds"
 /*@C
    TaoComputeVariableBounds - Compute the variable bounds using the
    routine set by TaoSetVariableBoundsRoutine().
@@ -126,8 +118,6 @@ PetscErrorCode TaoComputeVariableBounds(Tao tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetInequalityBounds"
 /*@
   TaoSetInequalityBounds - Sets the upper and lower bounds
 
@@ -165,8 +155,6 @@ PetscErrorCode TaoSetInequalityBounds(Tao tao, Vec IL, Vec IU)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoGetInequalityBounds"
 PetscErrorCode TaoGetInequalityBounds(Tao tao, Vec *IL, Vec *IU)
 {
   PetscFunctionBegin;
@@ -180,8 +168,6 @@ PetscErrorCode TaoGetInequalityBounds(Tao tao, Vec *IL, Vec *IU)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoComputeConstraints"
 /*@C
    TaoComputeConstraints - Compute the variable bounds using the
    routine set by TaoSetConstraintsRoutine().
@@ -218,8 +204,6 @@ PetscErrorCode TaoComputeConstraints(Tao tao, Vec X, Vec C)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetConstraintsRoutine"
 /*@C
   TaoSetConstraintsRoutine - Sets a function to be used to compute constraints.  TAO only handles constraints under certain conditions, see manual for details
 
@@ -254,8 +238,6 @@ PetscErrorCode TaoSetConstraintsRoutine(Tao tao, Vec c, PetscErrorCode (*func)(T
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoComputeDualVariables"
 /*@
   TaoComputeDualVariables - Computes the dual vectors corresponding to the bounds
   of the variables
@@ -298,8 +280,6 @@ PetscErrorCode TaoComputeDualVariables(Tao tao, Vec DL, Vec DU)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoGetDualVariables"
 /*@
   TaoGetDualVariables - Gets pointers to the dual vectors
 
@@ -329,8 +309,6 @@ PetscErrorCode TaoGetDualVariables(Tao tao, Vec *DE, Vec *DI)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetEqualityConstraintsRoutine"
 /*@C
   TaoSetEqualityConstraintsRoutine - Sets a function to be used to compute constraints.  TAO only handles constraints under certain conditions, see manual for details
 
@@ -374,8 +352,6 @@ PetscErrorCode TaoSetEqualityConstraintsRoutine(Tao tao, Vec ce, PetscErrorCode 
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetInequalityConstraintsRoutine"
 /*@C
   TaoSetInequalityConstraintsRoutine - Sets a function to be used to compute constraints.  TAO only handles constraints under certain conditions, see manual for details
 
@@ -419,8 +395,6 @@ PetscErrorCode TaoSetInequalityConstraintsRoutine(Tao tao, Vec ci, PetscErrorCod
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoComputeEqualityConstraints"
 /*@C
    TaoComputeEqualityConstraints - Compute the variable bounds using the
    routine set by TaoSetEqualityConstraintsRoutine().
@@ -458,8 +432,6 @@ PetscErrorCode TaoComputeEqualityConstraints(Tao tao, Vec X, Vec CE)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoComputeInequalityConstraints"
 /*@C
    TaoComputeInequalityConstraints - Compute the variable bounds using the
    routine set by TaoSetInequalityConstraintsRoutine().

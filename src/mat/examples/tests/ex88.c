@@ -8,8 +8,6 @@ struct _n_User {
   Mat B;
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "MatView_User"
 static PetscErrorCode MatView_User(Mat A,PetscViewer viewer)
 {
   User           user;
@@ -21,8 +19,6 @@ static PetscErrorCode MatView_User(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_User"
 static PetscErrorCode MatMult_User(Mat A,Vec X,Vec Y)
 {
   User           user;
@@ -34,8 +30,6 @@ static PetscErrorCode MatMult_User(Mat A,Vec X,Vec Y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultTranspose_User"
 static PetscErrorCode MatMultTranspose_User(Mat A,Vec X,Vec Y)
 {
   User           user;
@@ -47,8 +41,6 @@ static PetscErrorCode MatMultTranspose_User(Mat A,Vec X,Vec Y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetDiagonal_User"
 static PetscErrorCode MatGetDiagonal_User(Mat A,Vec X)
 {
   User           user;
@@ -60,8 +52,6 @@ static PetscErrorCode MatGetDiagonal_User(Mat A,Vec X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDiagonalSet_User"
 static PetscErrorCode MatDiagonalSet_User(Mat A,Vec D,InsertMode is)
 {
   User           user;
@@ -74,8 +64,6 @@ static PetscErrorCode MatDiagonalSet_User(Mat A,Vec D,InsertMode is)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TestMatrix"
 static PetscErrorCode TestMatrix(Mat A,Vec X,Vec Y,Vec Z)
 {
   PetscErrorCode ierr;
@@ -116,8 +104,6 @@ static PetscErrorCode TestMatrix(Mat A,Vec X,Vec Y,Vec Z)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   const PetscScalar xvals[] = {11,13},yvals[] = {17,19},zvals[] = {23,29};

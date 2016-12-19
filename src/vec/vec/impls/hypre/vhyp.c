@@ -7,8 +7,6 @@
 #include <../src/vec/vec/impls/hypre/vhyp.h>
 #include <HYPRE.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "VecHYPRE_IJVectorCreate"
 PETSC_EXTERN PetscErrorCode VecHYPRE_IJVectorCreate(Vec v,HYPRE_IJVector *ij)
 {
   PetscErrorCode ierr;
@@ -21,8 +19,6 @@ PETSC_EXTERN PetscErrorCode VecHYPRE_IJVectorCreate(Vec v,HYPRE_IJVector *ij)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecHYPRE_IJVectorCopy"
 PETSC_EXTERN PetscErrorCode VecHYPRE_IJVectorCopy(Vec v,HYPRE_IJVector ij)
 {
   PetscErrorCode ierr;
@@ -37,8 +33,6 @@ PETSC_EXTERN PetscErrorCode VecHYPRE_IJVectorCopy(Vec v,HYPRE_IJVector ij)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecHYPRE_IJVectorCopyFrom"
 PetscErrorCode VecHYPRE_IJVectorCopyFrom(HYPRE_IJVector ij,Vec v)
 {
   PetscErrorCode ierr;

@@ -32,8 +32,6 @@
 /*       FNROOT.                                                 */
 /*                                                               */
 /*****************************************************************/
-#undef __FUNCT__
-#define __FUNCT__ "SPARSEPACKfndsep"
 PetscErrorCode SPARSEPACKfndsep(PetscInt *root,const PetscInt *inxadj,const PetscInt *adjncy,PetscInt *mask, PetscInt *nsep, PetscInt *sep, PetscInt *xls, PetscInt *ls)
 {
   PetscInt *xadj = (PetscInt*)inxadj; /* Used as temporary and reset within this function */

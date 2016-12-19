@@ -6,8 +6,6 @@
 
 #include "wash.h"
 
-#undef __FUNCT__
-#define __FUNCT__ "WASHIFunction"
 PetscErrorCode WASHIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void* ctx)
 {
   PetscErrorCode ierr;
@@ -141,8 +139,6 @@ PetscErrorCode WASHIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void* ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "WASHSetInitialSolution"
 PetscErrorCode WASHSetInitialSolution(DM networkdm,Vec X,Wash wash)
 {
   PetscErrorCode ierr;
@@ -236,8 +232,6 @@ PetscErrorCode WASHSetInitialSolution(DM networkdm,Vec X,Wash wash)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSDMNetworkMonitor"
 PetscErrorCode TSDMNetworkMonitor(TS ts, PetscInt step, PetscReal t, Vec x, void *context)
 {
   PetscErrorCode     ierr;
@@ -249,8 +243,6 @@ PetscErrorCode TSDMNetworkMonitor(TS ts, PetscInt step, PetscReal t, Vec x, void
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PipesView"
 PetscErrorCode PipesView(Vec X,DM networkdm,Wash wash)
 {
   PetscErrorCode       ierr;
@@ -340,8 +332,6 @@ PetscErrorCode PipesView(Vec X,DM networkdm,Wash wash)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "WashNetworkCleanUp"
 PetscErrorCode WashNetworkCleanUp(Wash wash,int *edgelist)
 {
   PetscErrorCode ierr;
@@ -356,8 +346,6 @@ PetscErrorCode WashNetworkCleanUp(Wash wash,int *edgelist)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "WashNetworkCreate"
 PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr,int **elist)
 {
   PetscErrorCode ierr;
@@ -547,8 +535,6 @@ PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char ** argv)
 {
   PetscErrorCode    ierr;

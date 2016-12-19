@@ -1,8 +1,6 @@
 #include <petsc/private/snesimpl.h>   /*I "petscsnes.h" I*/
 #include <petsc/private/dmimpl.h>     /*I "petscdm.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSNESDestroy"
 static PetscErrorCode DMSNESDestroy(DMSNES *kdm)
 {
   PetscErrorCode ierr;
@@ -16,8 +14,6 @@ static PetscErrorCode DMSNESDestroy(DMSNES *kdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSNESLoad"
 PetscErrorCode DMSNESLoad(DMSNES kdm,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -28,8 +24,6 @@ PetscErrorCode DMSNESLoad(DMSNES kdm,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSNESView"
 PetscErrorCode DMSNESView(DMSNES kdm,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -66,8 +60,6 @@ PetscErrorCode DMSNESView(DMSNES kdm,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSNESCreate"
 static PetscErrorCode DMSNESCreate(MPI_Comm comm,DMSNES *kdm)
 {
   PetscErrorCode ierr;
@@ -78,8 +70,6 @@ static PetscErrorCode DMSNESCreate(MPI_Comm comm,DMSNES *kdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCoarsenHook_DMSNES"
 /* Attaches the DMSNES to the coarse level.
  * Under what conditions should we copy versus duplicate?
  */
@@ -92,8 +82,6 @@ static PetscErrorCode DMCoarsenHook_DMSNES(DM dm,DM dmc,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRestrictHook_DMSNES"
 /* This could restrict auxiliary information to the coarse level.
  */
 static PetscErrorCode DMRestrictHook_DMSNES(DM dm,Mat Restrict,Vec rscale,Mat Inject,DM dmc,void *ctx)
@@ -103,8 +91,6 @@ static PetscErrorCode DMRestrictHook_DMSNES(DM dm,Mat Restrict,Vec rscale,Mat In
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSubDomainHook_DMSNES"
 /* Attaches the DMSNES to the subdomain. */
 static PetscErrorCode DMSubDomainHook_DMSNES(DM dm,DM subdm,void *ctx)
 {
@@ -115,8 +101,6 @@ static PetscErrorCode DMSubDomainHook_DMSNES(DM dm,DM subdm,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSubDomainRestrictHook_DMSNES"
 /* This could restrict auxiliary information to the coarse level.
  */
 static PetscErrorCode DMSubDomainRestrictHook_DMSNES(DM dm,VecScatter gscat,VecScatter lscat,DM subdm,void *ctx)
@@ -126,8 +110,6 @@ static PetscErrorCode DMSubDomainRestrictHook_DMSNES(DM dm,VecScatter gscat,VecS
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRefineHook_DMSNES"
 static PetscErrorCode DMRefineHook_DMSNES(DM dm,DM dmf,void *ctx)
 {
   PetscErrorCode ierr;
@@ -137,8 +119,6 @@ static PetscErrorCode DMRefineHook_DMSNES(DM dm,DM dmf,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMInterpolateHook_DMSNES"
 /* This could restrict auxiliary information to the coarse level.
  */
 static PetscErrorCode DMInterpolateHook_DMSNES(DM dm,Mat Interp,DM dmf,void *ctx)
@@ -148,8 +128,6 @@ static PetscErrorCode DMInterpolateHook_DMSNES(DM dm,Mat Interp,DM dmf,void *ctx
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSNESCopy"
 /*@C
    DMSNESCopy - copies the information in a DMSNES to another DMSNES
 
@@ -197,8 +175,6 @@ PetscErrorCode DMSNESCopy(DMSNES kdm,DMSNES nkdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetDMSNES"
 /*@C
    DMGetDMSNES - get read-only private DMSNES context from a DM
 
@@ -237,8 +213,6 @@ PetscErrorCode DMGetDMSNES(DM dm,DMSNES *snesdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetDMSNESWrite"
 /*@C
    DMGetDMSNESWrite - get write access to private DMSNES context from a DM
 
@@ -275,8 +249,6 @@ PetscErrorCode DMGetDMSNESWrite(DM dm,DMSNES *snesdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCopyDMSNES"
 /*@C
    DMCopyDMSNES - copies a DM context to a new DM
 
@@ -308,8 +280,6 @@ PetscErrorCode DMCopyDMSNES(DM dmsrc,DM dmdest)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSNESSetFunction"
 /*@C
    DMSNESSetFunction - set SNES residual evaluation function
 
@@ -344,8 +314,6 @@ PetscErrorCode DMSNESSetFunction(DM dm,PetscErrorCode (*f)(SNES,Vec,Vec,void*),v
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSNESGetFunction"
 /*@C
    DMSNESGetFunction - get SNES residual evaluation function
 
@@ -379,8 +347,6 @@ PetscErrorCode DMSNESGetFunction(DM dm,PetscErrorCode (**f)(SNES,Vec,Vec,void*),
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSNESSetObjective"
 /*@C
    DMSNESSetObjective - set SNES objective evaluation function
 
@@ -410,8 +376,6 @@ PetscErrorCode DMSNESSetObjective(DM dm,PetscErrorCode (*obj)(SNES,Vec,PetscReal
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSNESGetObjective"
 /*@C
    DMSNESGetObjective - get SNES objective evaluation function
 
@@ -445,8 +409,6 @@ PetscErrorCode DMSNESGetObjective(DM dm,PetscErrorCode (**obj)(SNES,Vec,PetscRea
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSNESSetNGS"
 /*@C
    DMSNESSetNGS - set SNES Gauss-Seidel relaxation function
 
@@ -481,8 +443,6 @@ PetscErrorCode DMSNESSetNGS(DM dm,PetscErrorCode (*f)(SNES,Vec,Vec,void*),void *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSNESGetNGS"
 /*@C
    DMSNESGetNGS - get SNES Gauss-Seidel relaxation function
 
@@ -517,8 +477,6 @@ PetscErrorCode DMSNESGetNGS(DM dm,PetscErrorCode (**f)(SNES,Vec,Vec,void*),void 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSNESSetJacobian"
 /*@C
    DMSNESSetJacobian - set SNES Jacobian evaluation function
 
@@ -553,8 +511,6 @@ PetscErrorCode DMSNESSetJacobian(DM dm,PetscErrorCode (*J)(SNES,Vec,Mat,Mat,void
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSNESGetJacobian"
 /*@C
    DMSNESGetJacobian - get SNES Jacobian evaluation function
 
@@ -589,8 +545,6 @@ PetscErrorCode DMSNESGetJacobian(DM dm,PetscErrorCode (**J)(SNES,Vec,Mat,Mat,voi
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSNESSetPicard"
 /*@C
    DMSNESSetPicard - set SNES Picard iteration matrix and RHS evaluation functions.
 
@@ -620,8 +574,6 @@ PetscErrorCode DMSNESSetPicard(DM dm,PetscErrorCode (*b)(SNES,Vec,Vec,void*),Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSNESGetPicard"
 /*@C
    DMSNESGetPicard - get SNES Picard iteration evaluation functions
 

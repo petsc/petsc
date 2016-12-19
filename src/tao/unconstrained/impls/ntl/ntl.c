@@ -32,8 +32,6 @@ static const char *NTL_UPDATE[64] = {"reduction","interpolation"};
 
 /* Routine for BFGS preconditioner */
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLMVMSolveShell"
 static PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x)
 {
   PetscErrorCode ierr;
@@ -58,8 +56,6 @@ static PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x)
 #define NTL_SCALED_GRADIENT     2
 #define NTL_GRADIENT            3
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSolve_NTL"
 static PetscErrorCode TaoSolve_NTL(Tao tao)
 {
   TAO_NTL                      *tl = (TAO_NTL *)tao->data;
@@ -726,8 +722,6 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
 }
 
 /* ---------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetUp_NTL"
 static PetscErrorCode TaoSetUp_NTL(Tao tao)
 {
   TAO_NTL        *tl = (TAO_NTL *)tao->data;
@@ -745,8 +739,6 @@ static PetscErrorCode TaoSetUp_NTL(Tao tao)
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoDestroy_NTL"
 static PetscErrorCode TaoDestroy_NTL(Tao tao)
 {
   TAO_NTL        *tl = (TAO_NTL *)tao->data;
@@ -765,8 +757,6 @@ static PetscErrorCode TaoDestroy_NTL(Tao tao)
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetFromOptions_NTL"
 static PetscErrorCode TaoSetFromOptions_NTL(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   TAO_NTL        *tl = (TAO_NTL *)tao->data;
@@ -820,8 +810,6 @@ static PetscErrorCode TaoSetFromOptions_NTL(PetscOptionItems *PetscOptionsObject
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoView_NTL"
 static PetscErrorCode TaoView_NTL(Tao tao, PetscViewer viewer)
 {
   TAO_NTL        *tl = (TAO_NTL *)tao->data;
@@ -891,8 +879,6 @@ static PetscErrorCode TaoView_NTL(Tao tao, PetscViewer viewer)
   Level: beginner
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoCreate_NTL"
 PETSC_EXTERN PetscErrorCode TaoCreate_NTL(Tao tao)
 {
   TAO_NTL        *tl;

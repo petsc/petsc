@@ -86,8 +86,6 @@ PetscLogEvent PTATIN_DataExchangerTopologySetup;
 PetscLogEvent PTATIN_DataExchangerBegin;
 PetscLogEvent PTATIN_DataExchangerEnd;
 
-#undef __FUNCT__
-#define __FUNCT__ "DataExCreate"
 PetscErrorCode DataExCreate(MPI_Comm comm,const PetscInt count, DataEx *ex)
 {
   PetscErrorCode ierr;
@@ -130,8 +128,6 @@ PetscErrorCode DataExCreate(MPI_Comm comm,const PetscInt count, DataEx *ex)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataExView"
 PetscErrorCode DataExView(DataEx d)
 {
   PetscMPIInt p;
@@ -166,8 +162,6 @@ PetscErrorCode DataExView(DataEx d)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataExDestroy"
 PetscErrorCode DataExDestroy(DataEx d)
 {
   PetscErrorCode ierr;
@@ -191,8 +185,6 @@ PetscErrorCode DataExDestroy(DataEx d)
 
 /* === Phase A === */
 
-#undef __FUNCT__
-#define __FUNCT__ "DataExTopologyInitialize"
 PetscErrorCode DataExTopologyInitialize(DataEx d)
 {
   PetscErrorCode ierr;
@@ -210,8 +202,6 @@ PetscErrorCode DataExTopologyInitialize(DataEx d)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataExTopologyAddNeighbour"
 PetscErrorCode DataExTopologyAddNeighbour(DataEx d,const PetscMPIInt proc_id)
 {
   PetscMPIInt    n,found;
@@ -290,8 +280,6 @@ static void _get_tags(PetscInt counter, PetscMPIInt N, PetscMPIInt r0,PetscMPIIn
 /*
 Makes the communication map symmetric
 */
-#undef __FUNCT__
-#define __FUNCT__ "_DataExCompleteCommunicationMap"
 PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,PetscMPIInt proc_neighbours[],PetscMPIInt *n_new,PetscMPIInt **proc_neighbours_new)
 {
   Mat               A;
@@ -360,8 +348,6 @@ PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataExTopologyFinalize"
 PetscErrorCode DataExTopologyFinalize(DataEx d)
 {
   PetscMPIInt    symm_nn;
@@ -405,8 +391,6 @@ PetscErrorCode DataExTopologyFinalize(DataEx d)
 }
 
 /* === Phase B === */
-#undef __FUNCT__
-#define __FUNCT__ "_DataExConvertProcIdToLocalIndex"
 PetscErrorCode _DataExConvertProcIdToLocalIndex(DataEx de,PetscMPIInt proc_id,PetscMPIInt *local)
 {
   PetscMPIInt i,np;
@@ -423,8 +407,6 @@ PetscErrorCode _DataExConvertProcIdToLocalIndex(DataEx de,PetscMPIInt proc_id,Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataExInitializeSendCount"
 PetscErrorCode DataExInitializeSendCount(DataEx de)
 {
   PetscMPIInt i;
@@ -441,8 +423,6 @@ PetscErrorCode DataExInitializeSendCount(DataEx de)
 /*
 1) only allows counters to be set on neighbouring cpus
 */
-#undef __FUNCT__
-#define __FUNCT__ "DataExAddToSendCount"
 PetscErrorCode DataExAddToSendCount(DataEx de,const PetscMPIInt proc_id,const PetscInt count)
 {
   PetscMPIInt    local_val;
@@ -459,8 +439,6 @@ PetscErrorCode DataExAddToSendCount(DataEx de,const PetscMPIInt proc_id,const Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataExFinalizeSendCount"
 PetscErrorCode DataExFinalizeSendCount(DataEx de)
 {
   PetscFunctionBegin;
@@ -478,8 +456,6 @@ PetscErrorCode DataExFinalizeSendCount(DataEx de)
  * zeros out all counters
  * zero out packed data counters
 */
-#undef __FUNCT__
-#define __FUNCT__ "_DataExInitializeTmpStorage"
 PetscErrorCode _DataExInitializeTmpStorage(DataEx de)
 {
   PetscMPIInt    i, np;
@@ -507,8 +483,6 @@ PetscErrorCode _DataExInitializeTmpStorage(DataEx de)
 *) Checks send counts properly initialized
 *) allocates space for pack data
 */
-#undef __FUNCT__
-#define __FUNCT__ "DataExPackInitialize"
 PetscErrorCode DataExPackInitialize(DataEx de,size_t unit_message_size)
 {
   PetscMPIInt    i,np;
@@ -553,8 +527,6 @@ PetscErrorCode DataExPackInitialize(DataEx de,size_t unit_message_size)
 /*
 *) Ensures data gets been packed appropriately and no overlaps occur
 */
-#undef __FUNCT__
-#define __FUNCT__ "DataExPackData"
 PetscErrorCode DataExPackData(DataEx de,PetscMPIInt proc_id,PetscInt n,void *data)
 {
   PetscMPIInt    local;
@@ -584,8 +556,6 @@ PetscErrorCode DataExPackData(DataEx de,PetscMPIInt proc_id,PetscInt n,void *dat
 /*
 *) Ensures all data has been packed
 */
-#undef __FUNCT__
-#define __FUNCT__ "DataExPackFinalize"
 PetscErrorCode DataExPackFinalize(DataEx de)
 {
   PetscMPIInt i,np;
@@ -627,8 +597,6 @@ PetscErrorCode DataExPackFinalize(DataEx de)
 }
 
 /* do the actual message passing now */
-#undef __FUNCT__
-#define __FUNCT__ "DataExBegin"
 PetscErrorCode DataExBegin(DataEx de)
 {
   PetscMPIInt i,np;
@@ -655,8 +623,6 @@ PetscErrorCode DataExBegin(DataEx de)
 }
 
 /* do the actual message passing now */
-#undef __FUNCT__
-#define __FUNCT__ "DataExEnd"
 PetscErrorCode DataExEnd(DataEx de)
 {
   PetscMPIInt  i,np;
@@ -691,8 +657,6 @@ PetscErrorCode DataExEnd(DataEx de)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataExGetSendData"
 PetscErrorCode DataExGetSendData(DataEx de,PetscInt *length,void **send)
 {
   PetscFunctionBegin;
@@ -702,8 +666,6 @@ PetscErrorCode DataExGetSendData(DataEx de,PetscInt *length,void **send)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataExGetRecvData"
 PetscErrorCode DataExGetRecvData(DataEx de,PetscInt *length,void **recv)
 {
   PetscFunctionBegin;
@@ -713,8 +675,6 @@ PetscErrorCode DataExGetRecvData(DataEx de,PetscInt *length,void **recv)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DataExTopologyGetNeighbours"
 PetscErrorCode DataExTopologyGetNeighbours(DataEx de,PetscMPIInt *n,PetscMPIInt *neigh[])
 {
   PetscFunctionBegin;

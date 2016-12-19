@@ -11,8 +11,6 @@ typedef struct {
   PetscInt  testNum;                      /* Labels the different test partitions */
 } AppCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "ProcessOptions"
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscErrorCode ierr;
@@ -34,8 +32,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateMesh"
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   DM             dmDist      = NULL;
@@ -110,8 +106,6 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ScrambleOrientation"
 static PetscErrorCode ScrambleOrientation(DM dm, AppCtx *user)
 {
   PetscInt       h, cStart, cEnd, c;
@@ -127,8 +121,6 @@ static PetscErrorCode ScrambleOrientation(DM dm, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestOrientation"
 static PetscErrorCode TestOrientation(DM dm, AppCtx *user)
 {
   PetscErrorCode ierr;
@@ -140,8 +132,6 @@ static PetscErrorCode TestOrientation(DM dm, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   DM             dm;

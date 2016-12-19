@@ -19,8 +19,6 @@ T*/
 #include <petscmat.h>
 #include <../src/mat/impls/aij/seq/aij.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PadMatrix"
 PetscErrorCode PadMatrix(Mat A,Vec v,PetscScalar c,Mat *B)
 {
   PetscErrorCode ierr;
@@ -62,8 +60,6 @@ PetscErrorCode PadMatrix(Mat A,Vec v,PetscScalar c,Mat *B)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            A,B;

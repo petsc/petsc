@@ -45,8 +45,6 @@ typedef struct {
   PetscReal          stol;           /* restart tolerance for the combination */
 } SNES_Composite;
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESCompositeApply_Multiplicative"
 static PetscErrorCode SNESCompositeApply_Multiplicative(SNES snes,Vec X,Vec B,Vec F,PetscReal *fnorm)
 {
   PetscErrorCode      ierr;
@@ -114,8 +112,6 @@ static PetscErrorCode SNESCompositeApply_Multiplicative(SNES snes,Vec X,Vec B,Ve
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESCompositeApply_Additive"
 static PetscErrorCode SNESCompositeApply_Additive(SNES snes,Vec X,Vec B,Vec F,PetscReal *fnorm)
 {
   PetscErrorCode      ierr;
@@ -179,8 +175,6 @@ static PetscErrorCode SNESCompositeApply_Additive(SNES snes,Vec X,Vec B,Vec F,Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESCompositeApply_AdditiveOptimal"
 /* approximately solve the overdetermined system:
 
  2*F(x_i)\cdot F(\x_j)\alpha_i = 0
@@ -326,8 +320,6 @@ static PetscErrorCode SNESCompositeApply_AdditiveOptimal(SNES snes,Vec X,Vec B,V
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetUp_Composite"
 static PetscErrorCode SNESSetUp_Composite(SNES snes)
 {
   PetscErrorCode     ierr;
@@ -396,8 +388,6 @@ static PetscErrorCode SNESSetUp_Composite(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESReset_Composite"
 static PetscErrorCode SNESReset_Composite(SNES snes)
 {
   SNES_Composite     *jac = (SNES_Composite*)snes->data;
@@ -422,8 +412,6 @@ static PetscErrorCode SNESReset_Composite(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESDestroy_Composite"
 static PetscErrorCode SNESDestroy_Composite(SNES snes)
 {
   SNES_Composite     *jac = (SNES_Composite*)snes->data;
@@ -442,8 +430,6 @@ static PetscErrorCode SNESDestroy_Composite(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetFromOptions_Composite"
 static PetscErrorCode SNESSetFromOptions_Composite(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   SNES_Composite     *jac = (SNES_Composite*)snes->data;
@@ -485,8 +471,6 @@ static PetscErrorCode SNESSetFromOptions_Composite(PetscOptionItems *PetscOption
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESView_Composite"
 static PetscErrorCode SNESView_Composite(SNES snes,PetscViewer viewer)
 {
   SNES_Composite     *jac = (SNES_Composite*)snes->data;
@@ -517,8 +501,6 @@ static PetscErrorCode SNESView_Composite(SNES snes,PetscViewer viewer)
 
 /* ------------------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESCompositeSetType_Composite"
 static PetscErrorCode  SNESCompositeSetType_Composite(SNES snes,SNESCompositeType type)
 {
   SNES_Composite *jac = (SNES_Composite*)snes->data;
@@ -528,8 +510,6 @@ static PetscErrorCode  SNESCompositeSetType_Composite(SNES snes,SNESCompositeTyp
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESCompositeAddSNES_Composite"
 static PetscErrorCode  SNESCompositeAddSNES_Composite(SNES snes,SNESType type)
 {
   SNES_Composite     *jac;
@@ -575,8 +555,6 @@ static PetscErrorCode  SNESCompositeAddSNES_Composite(SNES snes,SNESType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESCompositeGetSNES_Composite"
 static PetscErrorCode  SNESCompositeGetSNES_Composite(SNES snes,PetscInt n,SNES *subsnes)
 {
   SNES_Composite     *jac;
@@ -595,8 +573,6 @@ static PetscErrorCode  SNESCompositeGetSNES_Composite(SNES snes,PetscInt n,SNES 
 }
 
 /* -------------------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "SNESCompositeSetType"
 /*@C
    SNESCompositeSetType - Sets the type of composite preconditioner.
 
@@ -624,8 +600,6 @@ PetscErrorCode  SNESCompositeSetType(SNES snes,SNESCompositeType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESCompositeAddSNES"
 /*@C
    SNESCompositeAddSNES - Adds another SNES to the composite SNES.
 
@@ -648,8 +622,6 @@ PetscErrorCode  SNESCompositeAddSNES(SNES snes,SNESType type)
   ierr = PetscTryMethod(snes,"SNESCompositeAddSNES_C",(SNES,SNESType),(snes,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "SNESCompositeGetSNES"
 /*@
    SNESCompositeGetSNES - Gets one of the SNES objects in the composite SNES.
 
@@ -679,8 +651,6 @@ PetscErrorCode  SNESCompositeGetSNES(SNES snes,PetscInt n,SNES *subsnes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESCompositeGetNumber"
 /*@
    SNESCompositeGetNumber - Get the number of subsolvers in the composite SNES.
 
@@ -713,8 +683,6 @@ PetscErrorCode  SNESCompositeGetNumber(SNES snes,PetscInt *n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESCompositeSetDamping_Composite"
 static PetscErrorCode  SNESCompositeSetDamping_Composite(SNES snes,PetscInt n,PetscReal dmp)
 {
   SNES_Composite     *jac;
@@ -732,8 +700,6 @@ static PetscErrorCode  SNESCompositeSetDamping_Composite(SNES snes,PetscInt n,Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESCompositeSetDamping"
 /*@
    SNESCompositeSetDamping - Sets the damping of a subsolver when using additive composite SNES.
 
@@ -760,8 +726,6 @@ PetscErrorCode  SNESCompositeSetDamping(SNES snes,PetscInt n,PetscReal dmp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSolve_Composite"
 static PetscErrorCode SNESSolve_Composite(SNES snes)
 {
   Vec            F;
@@ -906,8 +870,6 @@ static PetscErrorCode SNESSolve_Composite(SNES snes)
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESCreate_Composite"
 PETSC_EXTERN PetscErrorCode SNESCreate_Composite(SNES snes)
 {
   PetscErrorCode ierr;

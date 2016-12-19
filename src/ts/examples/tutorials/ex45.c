@@ -78,8 +78,6 @@ static void g0_temp(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   g0[0] = u_tShift*1.0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ProcessOptions"
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscErrorCode ierr;
@@ -95,8 +93,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateBCLabel"
 static PetscErrorCode CreateBCLabel(DM dm, const char name[])
 {
   DMLabel        label;
@@ -110,8 +106,6 @@ static PetscErrorCode CreateBCLabel(DM dm, const char name[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateMesh"
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *ctx)
 {
   DM             pdm = NULL;
@@ -141,8 +135,6 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetupProblem"
 static PetscErrorCode SetupProblem(PetscDS prob, AppCtx *ctx)
 {
   const PetscInt id = 1;
@@ -156,8 +148,6 @@ static PetscErrorCode SetupProblem(PetscDS prob, AppCtx *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetupDiscretization"
 static PetscErrorCode SetupDiscretization(DM dm, AppCtx* ctx)
 {
   DM             cdm = dm;
@@ -187,8 +177,6 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx* ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   AppCtx         ctx;

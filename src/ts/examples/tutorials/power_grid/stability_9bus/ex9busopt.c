@@ -108,8 +108,6 @@ typedef struct {
 
 
 /* Converts from machine frame (dq) to network (phase a real,imag) reference frame */
-#undef __FUNCT__
-#define __FUNCT__ "dq2ri"
 PetscErrorCode dq2ri(PetscScalar Fd,PetscScalar Fq,PetscScalar delta,PetscScalar *Fr, PetscScalar *Fi)
 {
   PetscFunctionBegin;
@@ -119,8 +117,6 @@ PetscErrorCode dq2ri(PetscScalar Fd,PetscScalar Fq,PetscScalar delta,PetscScalar
 }
 
 /* Converts from network frame ([phase a real,imag) to machine (dq) reference frame */
-#undef __FUNCT__
-#define __FUNCT__ "ri2dq"
 PetscErrorCode ri2dq(PetscScalar Fr,PetscScalar Fi,PetscScalar delta,PetscScalar *Fd, PetscScalar *Fq)
 {
   PetscFunctionBegin;
@@ -130,8 +126,6 @@ PetscErrorCode ri2dq(PetscScalar Fr,PetscScalar Fi,PetscScalar delta,PetscScalar
 }
 
 /* Saves the solution at each time to a matrix */
-#undef __FUNCT__
-#define __FUNCT__ "SaveSolution"
 PetscErrorCode SaveSolution(TS ts)
 {
   PetscErrorCode    ierr;
@@ -157,8 +151,6 @@ PetscErrorCode SaveSolution(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetInitialGuess"
 PetscErrorCode SetInitialGuess(Vec X,Userctx *user)
 {
   PetscErrorCode ierr;
@@ -243,8 +235,6 @@ PetscErrorCode SetInitialGuess(Vec X,Userctx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "InitialGuess"
 PetscErrorCode InitialGuess(Vec X,Userctx *user, const PetscScalar PGv[])
 {
   PetscErrorCode ierr;
@@ -325,8 +315,6 @@ PetscErrorCode InitialGuess(Vec X,Userctx *user, const PetscScalar PGv[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DICDPFiniteDifference"
 PetscErrorCode DICDPFiniteDifference(Vec X,Vec *DICDP, Userctx *user)
 {
   Vec            Y;
@@ -353,8 +341,6 @@ PetscErrorCode DICDPFiniteDifference(Vec X,Vec *DICDP, Userctx *user)
 
 
 /* Computes F = [-f(x,y);g(x,y)] */
-#undef __FUNCT__
-#define __FUNCT__ "ResidualFunction"
 PetscErrorCode ResidualFunction(SNES snes,Vec X, Vec F, Userctx *user)
 {
   PetscErrorCode ierr;
@@ -477,8 +463,6 @@ PetscErrorCode ResidualFunction(SNES snes,Vec X, Vec F, Userctx *user)
 /* \dot{x} - f(x,y)
      g(x,y) = 0
  */
-#undef __FUNCT__
-#define __FUNCT__ "IFunction"
 PetscErrorCode IFunction(TS ts,PetscReal t, Vec X, Vec Xdot, Vec F, Userctx *user)
 {
   PetscErrorCode    ierr;
@@ -513,8 +497,6 @@ PetscErrorCode IFunction(TS ts,PetscReal t, Vec X, Vec Xdot, Vec F, Userctx *use
    differential equations
  F = [0;g(y)];
 */
-#undef __FUNCT__
-#define __FUNCT__ "AlgFunction"
 PetscErrorCode AlgFunction(SNES snes, Vec X, Vec F, void *ctx)
 {
   PetscErrorCode ierr;
@@ -538,8 +520,6 @@ PetscErrorCode AlgFunction(SNES snes, Vec X, Vec F, void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PreallocateJacobian"
 PetscErrorCode PreallocateJacobian(Mat J, Userctx *user)
 {
   PetscErrorCode ierr;
@@ -587,8 +567,6 @@ PetscErrorCode PreallocateJacobian(Mat J, Userctx *user)
    J = [-df_dx, -df_dy
         dg_dx, dg_dy]
 */
-#undef __FUNCT__
-#define __FUNCT__ "ResidualJacobian"
 PetscErrorCode ResidualJacobian(SNES snes,Vec X,Mat J,Mat B,void *ctx)
 {
   PetscErrorCode    ierr;
@@ -822,8 +800,6 @@ PetscErrorCode ResidualJacobian(SNES snes,Vec X,Mat J,Mat B,void *ctx)
    J = [I, 0
         dg_dx, dg_dy]
 */
-#undef __FUNCT__
-#define __FUNCT__ "AlgJacobian"
 PetscErrorCode AlgJacobian(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
@@ -841,8 +817,6 @@ PetscErrorCode AlgJacobian(SNES snes,Vec X,Mat A,Mat B,void *ctx)
         dg_dx, dg_dy]
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "IJacobian"
 PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat B,Userctx *user)
 {
   PetscErrorCode ierr;
@@ -877,8 +851,6 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat 
 }
 
 /* Matrix JacobianP is constant so that it only needs to be evaluated once */
-#undef __FUNCT__
-#define __FUNCT__ "RHSJacobianP"
 static PetscErrorCode RHSJacobianP(TS ts,PetscReal t,Vec X,Mat A, void *ctx0)
 {
   PetscErrorCode ierr;
@@ -905,8 +877,6 @@ static PetscErrorCode RHSJacobianP(TS ts,PetscReal t,Vec X,Mat A, void *ctx0)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CostIntegrand"
 static PetscErrorCode CostIntegrand(TS ts,PetscReal t,Vec U,Vec R,Userctx *user)
 {
   PetscErrorCode ierr;
@@ -935,8 +905,6 @@ static PetscErrorCode CostIntegrand(TS ts,PetscReal t,Vec U,Vec R,Userctx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DRDYFunction"
 static PetscErrorCode DRDYFunction(TS ts,PetscReal t,Vec U,Vec *drdy,Userctx *user)
 {
   PetscErrorCode ierr;
@@ -969,16 +937,12 @@ static PetscErrorCode DRDYFunction(TS ts,PetscReal t,Vec U,Vec *drdy,Userctx *us
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DRDPFunction"
 static PetscErrorCode DRDPFunction(TS ts,PetscReal t,Vec U,Vec *drdp,Userctx *user)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeSensiP"
 PetscErrorCode ComputeSensiP(Vec lambda,Vec mu,Vec *DICDP,Userctx *user)
 {
   PetscErrorCode ierr;
@@ -999,8 +963,6 @@ PetscErrorCode ComputeSensiP(Vec lambda,Vec mu,Vec *DICDP,Userctx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   Userctx            user;
@@ -1164,8 +1126,6 @@ int main(int argc,char **argv)
 }
 
 /* ------------------------------------------------------------------ */
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionGradient"
 /*
    FormFunction - Evaluates the function and corresponding gradient.
 

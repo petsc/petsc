@@ -51,8 +51,6 @@ extern PetscErrorCode KSPComputeEigenvalues_CG(KSP,PetscInt,PetscReal*,PetscReal
       This is called once, usually automatically by KSPSolve() or KSPSetUp()
      but can be called directly by KSPSetUp()
 */
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_CG"
 static PetscErrorCode KSPSetUp_CG(KSP ksp)
 {
   KSP_CG         *cgP = (KSP_CG*)ksp->data;
@@ -94,8 +92,6 @@ static PetscErrorCode KSPSetUp_CG(KSP ksp)
 .     ksp - the Krylov space object that was set to use conjugate gradient, by, for
             example, KSPCreate(MPI_Comm,KSP *ksp); KSPSetType(ksp,KSPCG);
 */
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_CG"
 static PetscErrorCode KSPSolve_CG(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -250,8 +246,6 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
        See KSPCGUseSingleReduction_CG()
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_CG_SingleReduction"
 static PetscErrorCode KSPSolve_CG_SingleReduction(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -419,8 +413,6 @@ static PetscErrorCode KSPSolve_CG_SingleReduction(KSP ksp)
                      you must be sure to free all allocated resources here to prevent
                      leaks.
 */
-#undef __FUNCT__
-#define __FUNCT__ "KSPDestroy_CG"
 PetscErrorCode KSPDestroy_CG(KSP ksp)
 {
   KSP_CG         *cg = (KSP_CG*)ksp->data;
@@ -442,8 +434,6 @@ PetscErrorCode KSPDestroy_CG(KSP ksp)
                   If your Krylov method has special options or flags that information 
                   should be printed here.
 */
-#undef __FUNCT__
-#define __FUNCT__ "KSPView_CG"
 PetscErrorCode KSPView_CG(KSP ksp,PetscViewer viewer)
 {
   KSP_CG         *cg = (KSP_CG*)ksp->data;
@@ -467,8 +457,6 @@ PetscErrorCode KSPView_CG(KSP ksp,PetscViewer viewer)
     KSPSetFromOptions_CG - Checks the options database for options related to the
                            conjugate gradient method.
 */
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetFromOptions_CG"
 PetscErrorCode KSPSetFromOptions_CG(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
@@ -490,8 +478,6 @@ PetscErrorCode KSPSetFromOptions_CG(PetscOptionItems *PetscOptionsObject,KSP ksp
                       This routine is registered below in KSPCreate_CG() and called from the
                       routine KSPCGSetType() (see the file cgtype.c).
 */
-#undef __FUNCT__
-#define __FUNCT__ "KSPCGSetType_CG"
 PetscErrorCode  KSPCGSetType_CG(KSP ksp,KSPCGType type)
 {
   KSP_CG *cg = (KSP_CG*)ksp->data;
@@ -508,8 +494,6 @@ PetscErrorCode  KSPCGSetType_CG(KSP ksp,KSPCGType type)
     atypical fashion) it also swaps out the routine called when KSPSolve()
     is invoked.
 */
-#undef __FUNCT__
-#define __FUNCT__ "KSPCGUseSingleReduction_CG"
 static PetscErrorCode  KSPCGUseSingleReduction_CG(KSP ksp,PetscBool flg)
 {
   KSP_CG *cg = (KSP_CG*)ksp->data;
@@ -557,8 +541,6 @@ static PetscErrorCode  KSPCGUseSingleReduction_CG(KSP ksp,PetscBool flg)
            KSPCGSetType(), KSPCGUseSingleReduction(), KSPPIPECG, KSPGROPPCG
 
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_CG"
 PETSC_EXTERN PetscErrorCode KSPCreate_CG(KSP ksp)
 {
   PetscErrorCode ierr;

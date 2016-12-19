@@ -8,8 +8,6 @@ typedef struct {
 } SNES_Test;
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSolve_Test"
 PetscErrorCode SNESSolve_Test(SNES snes)
 {
   Mat            A = snes->jacobian,B,C;
@@ -176,8 +174,6 @@ PetscErrorCode SNESSolve_Test(SNES snes)
 
 
 /* ------------------------------------------------------------ */
-#undef __FUNCT__
-#define __FUNCT__ "SNESDestroy_Test"
 PetscErrorCode SNESDestroy_Test(SNES snes)
 {
   PetscErrorCode ierr;
@@ -187,8 +183,6 @@ PetscErrorCode SNESDestroy_Test(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetFromOptions_Test"
 static PetscErrorCode SNESSetFromOptions_Test(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   SNES_Test      *ls = (SNES_Test*)snes->data;
@@ -202,8 +196,6 @@ static PetscErrorCode SNESSetFromOptions_Test(PetscOptionItems *PetscOptionsObje
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetUp_Test"
 PetscErrorCode SNESSetUp_Test(SNES snes)
 {
   PetscErrorCode ierr;
@@ -238,8 +230,6 @@ PetscErrorCode SNESSetUp_Test(SNES snes)
 .seealso:  SNESCreate(), SNES, SNESSetType(), SNESUpdateCheckJacobian(), SNESNEWTONLS, SNESNEWTONTR
 
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "SNESCreate_Test"
 PETSC_EXTERN PetscErrorCode SNESCreate_Test(SNES snes)
 {
   SNES_Test      *neP;
@@ -263,8 +253,6 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Test(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESUpdateCheckJacobian"
 /*@C
     SNESUpdateCheckJacobian - Checks each Jacobian computed by the nonlinear solver comparing the users function with a finite difference computation.
 

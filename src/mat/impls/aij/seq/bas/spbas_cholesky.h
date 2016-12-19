@@ -5,8 +5,6 @@
       Return PETSC_ERR_MEM if there is insufficient space to store the
       row, so garbage collection and/or re-allocation may be done.
 */
-#undef __FUNCT__
-#define __FUNCT__ "spbas_cholesky_row_alloc"
 PetscErrorCode spbas_cholesky_row_alloc(spbas_matrix retval, PetscInt k, PetscInt r_nnz,PetscInt * n_alloc_used)
 {
   PetscFunctionBegin;
@@ -30,8 +28,6 @@ PetscErrorCode spbas_cholesky_row_alloc(spbas_matrix retval, PetscInt k, PetscIn
          PetscRealloc does not seem to exist.
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "spbas_cholesky_garbage_collect"
 PetscErrorCode spbas_cholesky_garbage_collect(spbas_matrix *result,         /* I/O: the Cholesky factor matrix being constructed.
                                                                                     Only the storage, not the contents of this matrix is changed in this function */
                                               PetscInt     i_row,           /* I  : Number of rows for which the final contents are known */
@@ -259,8 +255,6 @@ PetscErrorCode spbas_cholesky_garbage_collect(spbas_matrix *result,         /* I
      with a larger epsdiag_in, a less sparse pattern, and/or a smaller
      droptol
 */
-#undef __FUNCT__
-#define __FUNCT__ "spbas_incomplete_cholesky"
 PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const PetscInt *riip, spbas_matrix pattern, PetscReal droptol, PetscReal epsdiag_in, spbas_matrix * matrix_L)
 {
   PetscInt        jL;

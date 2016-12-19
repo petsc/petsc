@@ -6,8 +6,6 @@
 #define LMVM_SCALED_GRADIENT     1
 #define LMVM_GRADIENT            2
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSolve_LMVM"
 static PetscErrorCode TaoSolve_LMVM(Tao tao)
 {
   TAO_LMVM                     *lmP = (TAO_LMVM *)tao->data;
@@ -173,8 +171,6 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetUp_LMVM"
 static PetscErrorCode TaoSetUp_LMVM(Tao tao)
 {
   TAO_LMVM       *lmP = (TAO_LMVM *)tao->data;
@@ -218,8 +214,6 @@ static PetscErrorCode TaoSetUp_LMVM(Tao tao)
 }
 
 /* ---------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "TaoDestroy_LMVM"
 static PetscErrorCode TaoDestroy_LMVM(Tao tao)
 {
   TAO_LMVM       *lmP = (TAO_LMVM *)tao->data;
@@ -243,8 +237,6 @@ static PetscErrorCode TaoDestroy_LMVM(Tao tao)
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetFromOptions_LMVM"
 static PetscErrorCode TaoSetFromOptions_LMVM(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   PetscErrorCode ierr;
@@ -257,8 +249,6 @@ static PetscErrorCode TaoSetFromOptions_LMVM(PetscOptionItems *PetscOptionsObjec
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoView_LMVM"
 static PetscErrorCode TaoView_LMVM(Tao tao, PetscViewer viewer)
 {
   TAO_LMVM       *lm = (TAO_LMVM *)tao->data;
@@ -308,8 +298,6 @@ static PetscErrorCode TaoView_LMVM(Tao tao, PetscViewer viewer)
   Level: beginner
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoCreate_LMVM"
 PETSC_EXTERN PetscErrorCode TaoCreate_LMVM(Tao tao)
 {
   TAO_LMVM       *lmP;

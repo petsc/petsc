@@ -134,8 +134,6 @@ typedef struct {
 .seealso: TSGLEE
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLEERegisterAll"
 /*@C
   TSGLEERegisterAll - Registers all of the General Linear with Error Estimation methods in TSGLEE
 
@@ -359,8 +357,6 @@ PetscErrorCode TSGLEERegisterAll(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLEERegisterDestroy"
 /*@C
    TSGLEERegisterDestroy - Frees the list of schemes that were registered by TSGLEERegister().
 
@@ -393,8 +389,6 @@ PetscErrorCode TSGLEERegisterDestroy(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLEEInitializePackage"
 /*@C
   TSGLEEInitializePackage - This function initializes everything in the TSGLEE package. It is called
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to TSCreate_GLEE()
@@ -418,8 +412,6 @@ PetscErrorCode TSGLEEInitializePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLEEFinalizePackage"
 /*@C
   TSGLEEFinalizePackage - This function destroys everything in the TSGLEE package. It is
   called from PetscFinalize().
@@ -439,8 +431,6 @@ PetscErrorCode TSGLEEFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLEERegister"
 /*@C
    TSGLEERegister - register an GLEE scheme by providing the entries in the Butcher tableau
 
@@ -526,8 +516,6 @@ PetscErrorCode TSGLEERegister(TSGLEEType name,PetscInt order,PetscInt s, PetscIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSEvaluateStep_GLEE"
 static PetscErrorCode TSEvaluateStep_GLEE(TS ts,PetscInt order,Vec X,PetscBool *done)
 {
   TS_GLEE         *glee = (TS_GLEE*) ts->data;
@@ -593,8 +581,6 @@ static PetscErrorCode TSEvaluateStep_GLEE(TS ts,PetscInt order,Vec X,PetscBool *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSStep_GLEE"
 static PetscErrorCode TSStep_GLEE(TS ts)
 {
   TS_GLEE         *glee = (TS_GLEE*)ts->data;
@@ -696,8 +682,6 @@ reject_step: continue;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSInterpolate_GLEE"
 static PetscErrorCode TSInterpolate_GLEE(TS ts,PetscReal itime,Vec X)
 {
   TS_GLEE         *glee = (TS_GLEE*)ts->data;
@@ -735,8 +719,6 @@ static PetscErrorCode TSInterpolate_GLEE(TS ts,PetscReal itime,Vec X)
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TSReset_GLEE"
 static PetscErrorCode TSReset_GLEE(TS ts)
 {
   TS_GLEE        *glee = (TS_GLEE*)ts->data;
@@ -758,8 +740,6 @@ static PetscErrorCode TSReset_GLEE(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSDestroy_GLEE"
 static PetscErrorCode TSDestroy_GLEE(TS ts)
 {
   PetscErrorCode ierr;
@@ -772,8 +752,6 @@ static PetscErrorCode TSDestroy_GLEE(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLEEGetVecs"
 static PetscErrorCode TSGLEEGetVecs(TS ts,DM dm,Vec *Ydot)
 {
   TS_GLEE     *glee = (TS_GLEE*)ts->data;
@@ -789,8 +767,6 @@ static PetscErrorCode TSGLEEGetVecs(TS ts,DM dm,Vec *Ydot)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLEERestoreVecs"
 static PetscErrorCode TSGLEERestoreVecs(TS ts,DM dm,Vec *Ydot)
 {
   PetscErrorCode ierr;
@@ -807,8 +783,6 @@ static PetscErrorCode TSGLEERestoreVecs(TS ts,DM dm,Vec *Ydot)
 /*
   This defines the nonlinear equation that is to be solved with SNES
 */
-#undef __FUNCT__
-#define __FUNCT__ "SNESTSFormFunction_GLEE"
 static PetscErrorCode SNESTSFormFunction_GLEE(SNES snes,Vec X,Vec F,TS ts)
 {
   TS_GLEE       *glee = (TS_GLEE*)ts->data;
@@ -833,8 +807,6 @@ static PetscErrorCode SNESTSFormFunction_GLEE(SNES snes,Vec X,Vec F,TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESTSFormJacobian_GLEE"
 static PetscErrorCode SNESTSFormJacobian_GLEE(SNES snes,Vec X,Mat A,Mat B,TS ts)
 {
   TS_GLEE        *glee = (TS_GLEE*)ts->data;
@@ -857,16 +829,12 @@ static PetscErrorCode SNESTSFormJacobian_GLEE(SNES snes,Vec X,Mat A,Mat B,TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCoarsenHook_TSGLEE"
 static PetscErrorCode DMCoarsenHook_TSGLEE(DM fine,DM coarse,void *ctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRestrictHook_TSGLEE"
 static PetscErrorCode DMRestrictHook_TSGLEE(DM fine,Mat restrct,Vec rscale,Mat inject,DM coarse,void *ctx)
 {
   PetscFunctionBegin;
@@ -874,24 +842,18 @@ static PetscErrorCode DMRestrictHook_TSGLEE(DM fine,Mat restrct,Vec rscale,Mat i
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSubDomainHook_TSGLEE"
 static PetscErrorCode DMSubDomainHook_TSGLEE(DM dm,DM subdm,void *ctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSubDomainRestrictHook_TSGLEE"
 static PetscErrorCode DMSubDomainRestrictHook_TSGLEE(DM dm,VecScatter gscat,VecScatter lscat,DM subdm,void *ctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSSetUp_GLEE"
 static PetscErrorCode TSSetUp_GLEE(TS ts)
 {
   TS_GLEE        *glee = (TS_GLEE*)ts->data;
@@ -924,8 +886,6 @@ static PetscErrorCode TSSetUp_GLEE(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSStartingMethod_GLEE"
 PetscErrorCode TSStartingMethod_GLEE(TS ts)
 {
   TS_GLEE        *glee = (TS_GLEE*)ts->data;
@@ -946,8 +906,6 @@ PetscErrorCode TSStartingMethod_GLEE(TS ts)
 
 /*------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "TSSetFromOptions_GLEE"
 static PetscErrorCode TSSetFromOptions_GLEE(PetscOptionItems *PetscOptionsObject,TS ts)
 {
   PetscErrorCode ierr;
@@ -973,8 +931,6 @@ static PetscErrorCode TSSetFromOptions_GLEE(PetscOptionItems *PetscOptionsObject
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFormatRealArray"
 static PetscErrorCode PetscFormatRealArray(char buf[],size_t len,const char *fmt,PetscInt n,const PetscReal x[])
 {
   PetscErrorCode ierr;
@@ -994,8 +950,6 @@ static PetscErrorCode PetscFormatRealArray(char buf[],size_t len,const char *fmt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSView_GLEE"
 static PetscErrorCode TSView_GLEE(TS ts,PetscViewer viewer)
 {
   TS_GLEE        *glee   = (TS_GLEE*)ts->data;
@@ -1020,8 +974,6 @@ static PetscErrorCode TSView_GLEE(TS ts,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSLoad_GLEE"
 static PetscErrorCode TSLoad_GLEE(TS ts,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -1039,8 +991,6 @@ static PetscErrorCode TSLoad_GLEE(TS ts,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLEESetType"
 /*@C
   TSGLEESetType - Set the type of GLEE scheme
 
@@ -1064,8 +1014,6 @@ PetscErrorCode TSGLEESetType(TS ts,TSGLEEType gleetype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLEEGetType"
 /*@C
   TSGLEEGetType - Get the type of GLEE scheme
 
@@ -1091,8 +1039,6 @@ PetscErrorCode TSGLEEGetType(TS ts,TSGLEEType *gleetype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGLEEGetType_GLEE"
 PetscErrorCode  TSGLEEGetType_GLEE(TS ts,TSGLEEType *gleetype)
 {
   TS_GLEE     *glee = (TS_GLEE*)ts->data;
@@ -1105,8 +1051,6 @@ PetscErrorCode  TSGLEEGetType_GLEE(TS ts,TSGLEEType *gleetype)
   *gleetype = glee->tableau->name;
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "TSGLEESetType_GLEE"
 PetscErrorCode  TSGLEESetType_GLEE(TS ts,TSGLEEType gleetype)
 {
   TS_GLEE         *glee = (TS_GLEE*)ts->data;
@@ -1131,8 +1075,6 @@ PetscErrorCode  TSGLEESetType_GLEE(TS ts,TSGLEEType gleetype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGetStages_GLEE"
 static PetscErrorCode  TSGetStages_GLEE(TS ts,PetscInt *ns,Vec **Y)
 {
   TS_GLEE *glee = (TS_GLEE*)ts->data;
@@ -1143,8 +1085,6 @@ static PetscErrorCode  TSGetStages_GLEE(TS ts,PetscInt *ns,Vec **Y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGetSolutionComponents_GLEE"
 PetscErrorCode TSGetSolutionComponents_GLEE(TS ts,PetscInt *n,Vec *Y)
 {
   TS_GLEE         *glee = (TS_GLEE*)ts->data;
@@ -1161,8 +1101,6 @@ PetscErrorCode TSGetSolutionComponents_GLEE(TS ts,PetscInt *n,Vec *Y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGetAuxSolution_GLEE"
 PetscErrorCode TSGetAuxSolution_GLEE(TS ts,Vec *X)
 {
   TS_GLEE         *glee = (TS_GLEE*)ts->data;
@@ -1181,8 +1119,6 @@ PetscErrorCode TSGetAuxSolution_GLEE(TS ts,Vec *X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGetTimeError_GLEE"
 PetscErrorCode TSGetTimeError_GLEE(TS ts,PetscInt n,Vec *X)
 {
   TS_GLEE         *glee = (TS_GLEE*)ts->data;
@@ -1205,8 +1141,6 @@ PetscErrorCode TSGetTimeError_GLEE(TS ts,PetscInt n,Vec *X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSSetTimeError_GLEE"
 PetscErrorCode TSSetTimeError_GLEE(TS ts,Vec X)
 {
   TS_GLEE         *glee = (TS_GLEE*)ts->data;
@@ -1243,8 +1177,6 @@ PetscErrorCode TSSetTimeError_GLEE(TS ts,Vec X)
            TSGLEERK32G1, TSGLEERK285EX, TSGLEEType, TSGLEERegister()
 
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "TSCreate_GLEE"
 PETSC_EXTERN PetscErrorCode TSCreate_GLEE(TS ts)
 {
   TS_GLEE         *th;

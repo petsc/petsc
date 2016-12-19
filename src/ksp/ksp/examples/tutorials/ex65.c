@@ -49,8 +49,6 @@ static PetscErrorCode MyDMShellCreate(MPI_Comm comm,DM da,DM *shell)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
@@ -81,8 +79,6 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateMatrix"
 static PetscErrorCode CreateMatrix(DM shell,Mat *A)
 {
   PetscErrorCode ierr;
@@ -93,8 +89,6 @@ static PetscErrorCode CreateMatrix(DM shell,Mat *A)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateInterpolation"
 static PetscErrorCode CreateInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
 {
   DM             da1,da2;
@@ -106,8 +100,6 @@ static PetscErrorCode CreateInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateRestriction"
 static PetscErrorCode CreateRestriction(DM dm1,DM dm2,Mat *mat)
 {
   DM             da1,da2;
@@ -122,8 +114,6 @@ static PetscErrorCode CreateRestriction(DM dm1,DM dm2,Mat *mat)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateGlobalVector"
 static PetscErrorCode CreateGlobalVector(DM shell,Vec *x)
 {
   PetscErrorCode ierr;
@@ -135,8 +125,6 @@ static PetscErrorCode CreateGlobalVector(DM shell,Vec *x)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateLocalVector"
 static PetscErrorCode CreateLocalVector(DM shell,Vec *x)
 {
   PetscErrorCode ierr;
@@ -148,8 +136,6 @@ static PetscErrorCode CreateLocalVector(DM shell,Vec *x)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Refine"
 static PetscErrorCode Refine(DM shell,MPI_Comm comm,DM *dmnew)
 {
   PetscErrorCode ierr;
@@ -161,8 +147,6 @@ static PetscErrorCode Refine(DM shell,MPI_Comm comm,DM *dmnew)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Coarsen"
 static PetscErrorCode Coarsen(DM shell,MPI_Comm comm,DM *dmnew)
 {
   PetscErrorCode ierr;
@@ -176,8 +160,6 @@ static PetscErrorCode Coarsen(DM shell,MPI_Comm comm,DM *dmnew)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeRHS"
 static PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
 {
   PetscErrorCode ierr;
@@ -199,8 +181,6 @@ static PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeMatrix"
 static PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,void *ctx)
 {
   PetscErrorCode ierr;

@@ -5,8 +5,6 @@
 #include <../src/mat/impls/baij/seq/baij.h>
 #include <petsc/private/kernels/blockinvert.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSeqBAIJSetNumericFactorization"
 /*
    This is used to set the numeric factorization for both LU and ILU symbolic factorization
 */
@@ -74,8 +72,6 @@ PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat fact,PetscBool natural)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSeqBAIJSetNumericFactorization_inplace"
 PetscErrorCode MatSeqBAIJSetNumericFactorization_inplace(Mat inA,PetscBool natural)
 {
   PetscFunctionBegin;
@@ -181,8 +177,6 @@ PetscErrorCode MatSeqBAIJSetNumericFactorization_inplace(Mat inA,PetscBool natur
 #include <petscbt.h>
 #include <../src/mat/utils/freespace.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLUFactorSymbolic_SeqBAIJ"
 PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
 {
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data,*b;
@@ -343,8 +337,6 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const M
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLUFactorSymbolic_SeqBAIJ_inplace"
 PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
 {
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data,*b;

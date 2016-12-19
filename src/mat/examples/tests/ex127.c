@@ -7,8 +7,6 @@ static char help[] = "Test MatMult() for Hermitian matrix.\n\n";
 
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            A,As;

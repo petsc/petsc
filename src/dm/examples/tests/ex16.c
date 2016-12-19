@@ -7,8 +7,6 @@ static char help[] = "Tests DMComposite routines.\n\n";
 #include <petscdmcomposite.h>
 #include <petscpf.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode         ierr;

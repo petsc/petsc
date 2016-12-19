@@ -69,8 +69,6 @@ extern PetscErrorCode ComputeMatrix(KSP,Mat,Mat,void*);
 extern PetscErrorCode ComputeRHS(KSP,Vec,void*);
 extern PetscErrorCode ComputeCorrector(DM,Vec,Vec);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   KSP            ksp;
@@ -115,8 +113,6 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateStructures"
 PetscErrorCode CreateStructures(DM da, UserContext *user)
 {
   const PetscInt *necon;
@@ -153,8 +149,6 @@ PetscErrorCode CreateStructures(DM da, UserContext *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DestroyStructures"
 PetscErrorCode DestroyStructures(DM da, UserContext   *user)
 {
   PetscErrorCode ierr;
@@ -185,8 +179,6 @@ PetscErrorCode DestroyStructures(DM da, UserContext   *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CalculateElementVelocity"
 /* Average the velocity (u,v) at time t^n over each element for time n+\phi */
 PetscErrorCode CalculateElementVelocity(DM da, UserContext *user)
 {
@@ -220,8 +212,6 @@ PetscErrorCode CalculateElementVelocity(DM da, UserContext *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaylorGalerkinStepI"
 /* This is equation 32,
 
    U^{n+\phi}_E = {1\over Vol_E} \left(\int_\Omega [N]{U^n} d\Omega - \phi\Delta t \int_\Omega [\nabla N]\cdot{F^n} d\Omega \right) + \phi\Delta t Q^n
@@ -321,8 +311,6 @@ PetscErrorCode TaylorGalerkinStepI(DM da, UserContext *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaylorGalerkinStepIIMomentum"
 /*
 The element stiffness matrix for the identity in linear elements is
 
@@ -450,8 +438,6 @@ PetscErrorCode TaylorGalerkinStepIIMomentum(DM da, UserContext *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaylorGalerkinStepIIMassEnergy"
 /* Notice that this requires the previous momentum solution.
 
 The element stiffness matrix for the identity in linear elements is
@@ -605,8 +591,6 @@ PetscErrorCode TaylorGalerkinStepIIMassEnergy(DM da, UserContext *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputePredictor"
 PetscErrorCode ComputePredictor(DM da, UserContext *user)
 {
   Vec            uOldLocal, uLocal,uOld;
@@ -647,8 +631,6 @@ PetscErrorCode ComputePredictor(DM da, UserContext *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeRHS"
 /*
   We integrate over each cell
 
@@ -698,8 +680,6 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeMatrix"
 /*
   We integrate over each cell
 
@@ -773,8 +753,6 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeCorrector"
 PetscErrorCode ComputeCorrector(DM da, Vec uOld, Vec u)
 {
   Vec            uOldLocal, uLocal;

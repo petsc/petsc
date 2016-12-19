@@ -3,8 +3,6 @@
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
 #include <../src/mat/impls/aij/seq/bas/spbas.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatICCFactorSymbolic_SeqAIJ_Bas"
 PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact,Mat A,IS perm,const MatFactorInfo *info)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -102,8 +100,6 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact,Mat A,IS perm,const MatF
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCholeskyFactorNumeric_SeqAIJ_Bas"
 PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B,Mat A,const MatFactorInfo *info)
 {
   Mat            C = B;
@@ -181,8 +177,6 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B,Mat A,const MatFactorIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFactorGetSolverPackage_seqaij_bas"
 PetscErrorCode MatFactorGetSolverPackage_seqaij_bas(Mat A,const MatSolverPackage *type)
 {
   PetscFunctionBegin;
@@ -190,8 +184,6 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_bas(Mat A,const MatSolverPackage
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetFactor_seqaij_bas"
 PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_bas(Mat A,MatFactorType ftype,Mat *B)
 {
   PetscInt       n = A->rmap->n;

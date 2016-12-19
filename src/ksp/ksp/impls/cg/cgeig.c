@@ -7,8 +7,6 @@
 #include <../src/ksp/ksp/impls/cg/cgimpl.h>
 static PetscErrorCode LINPACKcgtql1(PetscInt*,PetscReal*,PetscReal*,PetscInt*);
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPComputeEigenvalues_CG"
 PetscErrorCode KSPComputeEigenvalues_CG(KSP ksp,PetscInt nmax,PetscReal *r,PetscReal *c,PetscInt *neig)
 {
   KSP_CG         *cgP = (KSP_CG*)ksp->data;
@@ -39,8 +37,6 @@ PetscErrorCode KSPComputeEigenvalues_CG(KSP ksp,PetscInt nmax,PetscReal *r,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPComputeExtremeSingularValues_CG"
 PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP ksp,PetscReal *emax,PetscReal *emin)
 {
   KSP_CG      *cgP = (KSP_CG*)ksp->data;
@@ -79,8 +75,6 @@ PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP ksp,PetscReal *emax,PetscR
 
 static PetscReal LINPACKcgpthy(PetscReal*,PetscReal*);
 
-#undef __FUNCT__
-#define __FUNCT__ "LINPACKcgtql1"
 static PetscErrorCode LINPACKcgtql1(PetscInt *n,PetscReal *d,PetscReal *e,PetscInt *ierr)
 {
   /* System generated locals */
@@ -252,8 +246,6 @@ L1001:
   PetscFunctionReturn(0);
 } /* cgtql1_ */
 
-#undef __FUNCT__
-#define __FUNCT__ "LINPACKcgpthy"
 static PetscReal LINPACKcgpthy(PetscReal *a,PetscReal *b)
 {
   /* System generated locals */

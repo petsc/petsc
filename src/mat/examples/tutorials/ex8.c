@@ -78,8 +78,6 @@ PetscErrorCode MatScaleUserImpl(Mat mat,PetscScalar a)
 
 /* Main user code that uses MatScaleUserImpl() */
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            mat;

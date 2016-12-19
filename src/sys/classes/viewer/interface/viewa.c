@@ -37,8 +37,6 @@ const char *const PetscViewerFormats[] = {
   0
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerSetFormat"
 /*@C
    PetscViewerSetFormat - Sets the format for PetscViewers.
 
@@ -100,8 +98,6 @@ PetscErrorCode  PetscViewerSetFormat(PetscViewer viewer,PetscViewerFormat format
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerPushFormat"
 /*@C
    PetscViewerPushFormat - Sets the format for file PetscViewers.
 
@@ -153,8 +149,6 @@ PetscErrorCode  PetscViewerPushFormat(PetscViewer viewer,PetscViewerFormat forma
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerPopFormat"
 /*@C
    PetscViewerPopFormat - Resets the format for file PetscViewers.
 
@@ -180,8 +174,6 @@ PetscErrorCode  PetscViewerPopFormat(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerGetFormat"
 PetscErrorCode  PetscViewerGetFormat(PetscViewer viewer,PetscViewerFormat *format)
 {
   PetscFunctionBegin;

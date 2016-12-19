@@ -66,8 +66,6 @@ PetscScalar       vwa  = 22.317142184449754;
 PetscReal         tmax = 20.0;
 
 /* Saves the solution at each time to a matrix */
-#undef __FUNCT__
-#define __FUNCT__ "SaveSolution"
 PetscErrorCode SaveSolution(TS ts)
 {
   PetscErrorCode    ierr;
@@ -94,8 +92,6 @@ PetscErrorCode SaveSolution(TS ts)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "WindSpeeds"
 /* Computes the wind speed using Weibull distribution */
 PetscErrorCode WindSpeeds(AppCtx *user)
 {
@@ -140,8 +136,6 @@ PetscErrorCode WindSpeeds(AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetWindTurbineParams"
 /* Sets the parameters for wind turbine */
 PetscErrorCode SetWindTurbineParams(AppCtx *user)
 {
@@ -154,8 +148,6 @@ PetscErrorCode SetWindTurbineParams(AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetInductionGeneratorParams"
 /* Sets the parameters for induction generator */
 PetscErrorCode SetInductionGeneratorParams(AppCtx *user)
 {
@@ -172,8 +164,6 @@ PetscErrorCode SetInductionGeneratorParams(AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GetWindPower"
 /* Computes the power extracted from wind */
 PetscErrorCode GetWindPower(PetscScalar wm,PetscScalar vw,PetscScalar *Pw,AppCtx *user)
 {
@@ -188,8 +178,6 @@ PetscErrorCode GetWindPower(PetscScalar wm,PetscScalar vw,PetscScalar *Pw,AppCtx
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "IFunction"
 /*
      Defines the ODE passed to the ODE solver
 */
@@ -220,8 +208,6 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *u
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   TS             ts;            /* ODE integrator */

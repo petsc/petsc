@@ -203,8 +203,6 @@ struct is_nonlocal
 
 .seealso MatSetValues()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "MatSetValuesBatch_MPIAIJCUSP"
 PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, PetscInt *elemRows, const PetscScalar *elemMats)
 {
   // Assumptions:

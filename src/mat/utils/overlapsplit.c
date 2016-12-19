@@ -8,8 +8,6 @@
 #include <petsc/private/matimpl.h>
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatIncreaseOverlapSplit_Single"
 
 /*
  * Increase overlap for the sub-matrix across sub communicator

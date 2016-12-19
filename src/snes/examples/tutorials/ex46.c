@@ -29,8 +29,6 @@ typedef struct {
 extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
 extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,AppCtx*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   SNES           snes;                         /* nonlinear solver */
@@ -101,15 +99,11 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "funcU"
 PetscScalar funcU(DMDACoor2d *coords)
 {
   return coords->x + coords->y;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "funcA"
 PetscScalar funcA(PetscScalar z, AppCtx *user)
 {
   PetscScalar v = 1.0;
@@ -119,8 +113,6 @@ PetscScalar funcA(PetscScalar z, AppCtx *user)
   return v;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "funcADer"
 PetscScalar funcADer(PetscScalar z, AppCtx *user)
 {
   PetscScalar v = 1.0;
@@ -130,8 +122,6 @@ PetscScalar funcADer(PetscScalar z, AppCtx *user)
   return (PetscScalar)user->m*v;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionLocal"
 /*
    FormFunctionLocal - Evaluates nonlinear function, F(x).
 */
@@ -177,8 +167,6 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobianLocal"
 /*
    FormJacobianLocal - Evaluates Jacobian matrix.
 */

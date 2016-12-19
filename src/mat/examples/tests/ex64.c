@@ -3,8 +3,6 @@ static char help[] = "Saves 4by4 block matrix.\n\n";
 
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            A;

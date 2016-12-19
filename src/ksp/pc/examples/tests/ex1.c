@@ -3,8 +3,6 @@ static char help[] = "Tests the creation of a PC context.\n\n";
 
 #include <petscpc.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   PC             pc;

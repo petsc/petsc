@@ -3,8 +3,6 @@
 
 PETSC_EXTERN PetscErrorCode MatColoringCreateBipartiteGraph(MatColoring,PetscSF *,PetscSF *);
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringTestValid"
 PETSC_EXTERN PetscErrorCode MatColoringTestValid(MatColoring mc,ISColoring coloring)
 {
   PetscErrorCode ierr;

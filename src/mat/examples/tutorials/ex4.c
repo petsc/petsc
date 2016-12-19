@@ -13,8 +13,6 @@ static char help[] = "Reads U and V matrices from a file and performs y = V*U'*x
 extern PetscErrorCode LowRankUpdate(Mat,Mat,Vec,Vec,Vec,Vec,PetscInt);
 
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            U,V;                       /* matrix */
@@ -90,8 +88,6 @@ int main(int argc,char **args)
 
 #include <../src/mat/impls/dense/mpi/mpidense.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "LowRankUpdate"
 /*
      Computes y = V*U'*x where U and V are  N by n (N >> n).
 

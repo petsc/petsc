@@ -7,8 +7,6 @@ static char help[] = "Test procedural KSPSetFromOptions() or at runtime; Test PC
 T*/
 #include <petscksp.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Vec            x, b, u;     /* approx solution, RHS, exact solution */

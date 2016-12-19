@@ -1,7 +1,5 @@
 #include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexInvertCell_Internal"
 PetscErrorCode DMPlexInvertCell_Internal(PetscInt dim, PetscInt numCorners, PetscInt cone[])
 {
   int tmpc;
@@ -24,8 +22,6 @@ PetscErrorCode DMPlexInvertCell_Internal(PetscInt dim, PetscInt numCorners, Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexInvertCell"
 /*@C
   DMPlexInvertCell - This flips tetrahedron and hexahedron orientation since Plex stores them internally with outward normals. Other cells are left untouched.
 
@@ -62,8 +58,6 @@ PetscErrorCode DMPlexInvertCell(PetscInt dim, PetscInt numCorners, int cone[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexInvertCells_Internal"
 /* This is to fix the tetrahedron orientation from TetGen */
 PETSC_UNUSED static PetscErrorCode DMPlexInvertCells_Internal(PetscInt dim, PetscInt numCells, PetscInt numCorners, int cells[])
 {
@@ -77,8 +71,6 @@ PETSC_UNUSED static PetscErrorCode DMPlexInvertCells_Internal(PetscInt dim, Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexTriangleSetOptions"
 /*@
   DMPlexTriangleSetOptions - Set the options used for the Triangle mesh generator
 
@@ -106,8 +98,6 @@ PetscErrorCode DMPlexTriangleSetOptions(DM dm, const char *opts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexTetgenSetOptions"
 /*@
   DMPlexTetgenSetOptions - Set the options used for the Tetgen mesh generator
 
@@ -138,8 +128,6 @@ PetscErrorCode DMPlexTetgenSetOptions(DM dm, const char *opts)
 #if defined(PETSC_HAVE_TRIANGLE)
 #include <triangle.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "InitInput_Triangle"
 PetscErrorCode InitInput_Triangle(struct triangulateio *inputCtx)
 {
   PetscFunctionBegin;
@@ -160,8 +148,6 @@ PetscErrorCode InitInput_Triangle(struct triangulateio *inputCtx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "InitOutput_Triangle"
 PetscErrorCode InitOutput_Triangle(struct triangulateio *outputCtx)
 {
   PetscFunctionBegin;
@@ -181,8 +167,6 @@ PetscErrorCode InitOutput_Triangle(struct triangulateio *outputCtx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FiniOutput_Triangle"
 PetscErrorCode FiniOutput_Triangle(struct triangulateio *outputCtx)
 {
   PetscFunctionBegin;
@@ -197,8 +181,6 @@ PetscErrorCode FiniOutput_Triangle(struct triangulateio *outputCtx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGenerate_Triangle"
 PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool interpolate, DM *dm)
 {
   MPI_Comm             comm;
@@ -331,8 +313,6 @@ PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool interpolate, DM *d
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexRefine_Triangle"
 PetscErrorCode DMPlexRefine_Triangle(DM dm, double *maxVolumes, DM *dmRefined)
 {
   MPI_Comm             comm;
@@ -472,8 +452,6 @@ PetscErrorCode DMPlexRefine_Triangle(DM dm, double *maxVolumes, DM *dmRefined)
 
 #if defined(PETSC_HAVE_TETGEN)
 #include <tetgen.h>
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGenerate_Tetgen"
 PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpolate, DM *dm)
 {
   MPI_Comm       comm;
@@ -605,8 +583,6 @@ PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpolate, DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexRefine_Tetgen"
 PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
 {
   MPI_Comm       comm;
@@ -736,8 +712,6 @@ PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
 #if defined(PETSC_HAVE_CTETGEN)
 #include <ctetgen.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGenerate_CTetgen"
 PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM *dm)
 {
   MPI_Comm       comm;
@@ -901,8 +875,6 @@ PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM *dm
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexRefine_CTetgen"
 PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, DM *dmRefined)
 {
   MPI_Comm       comm;
@@ -1056,8 +1028,6 @@ PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, DM *dmRefined)
 }
 #endif /* PETSC_HAVE_CTETGEN */
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGenerate"
 /*@C
   DMPlexGenerate - Generates a mesh.
 
@@ -1126,8 +1096,6 @@ PetscErrorCode DMPlexGenerate(DM boundary, const char name[], PetscBool interpol
 }
 
 #if defined(PETSC_HAVE_TRIANGLE) || defined(PETSC_HAVE_CTETGEN) || defined(PETSC_HAVE_TETGEN)
-#undef __FUNCT__
-#define __FUNCT__ "DMRefine_Plex_Label"
 static PetscErrorCode DMRefine_Plex_Label(DM dm, DMLabel adaptLabel, PetscInt cStart, PetscInt cEnd, PetscReal maxVolumes[])
 {
   PetscInt       dim, c;
@@ -1183,8 +1151,6 @@ static PetscErrorCode DMRefine_Plex_Label(DM dm, DMLabel adaptLabel, PetscInt cS
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRefine_Plex_Internal"
 static PetscErrorCode DMRefine_Plex_Internal(DM dm, MPI_Comm comm, DMLabel adaptLabel, DM *dmRefined)
 {
   PetscErrorCode (*refinementFunc)(const PetscReal [], PetscReal *);
@@ -1306,8 +1272,6 @@ static PetscErrorCode DMRefine_Plex_Internal(DM dm, MPI_Comm comm, DMLabel adapt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRefine_Plex"
 PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
 {
   PetscErrorCode ierr;
@@ -1317,8 +1281,6 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMAdaptLabel_Plex"
 PetscErrorCode DMAdaptLabel_Plex(DM dm, DMLabel adaptLabel, DM *dmAdapted)
 {
   PetscInt       defFlag, minFlag, maxFlag, numFlags, i;
@@ -1373,8 +1335,6 @@ PetscErrorCode DMAdaptLabel_Plex(DM dm, DMLabel adaptLabel, DM *dmAdapted)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRefineHierarchy_Plex"
 PetscErrorCode DMRefineHierarchy_Plex(DM dm, PetscInt nlevels, DM dmRefined[])
 {
   DM             cdm = dm;

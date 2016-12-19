@@ -5,8 +5,6 @@ static char help[] = "Solves a tridiagonal linear system with KSP. \n\
 
 #include <petscksp.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Vec            x,x2,b,u;     /* approx solution, RHS, exact solution */

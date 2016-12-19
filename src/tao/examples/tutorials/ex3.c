@@ -52,8 +52,6 @@ typedef struct {
   PetscBool use_riesz;
 } AppCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateMesh"
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   DM             distributedMesh = NULL;
@@ -188,8 +186,6 @@ PetscErrorCode zero(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar 
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateCtx"
 PetscErrorCode CreateCtx(DM dm, AppCtx* user)
 {
   PetscErrorCode ierr;
@@ -293,8 +289,6 @@ PetscErrorCode CreateCtx(DM dm, AppCtx* user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DestroyCtx"
 PetscErrorCode DestroyCtx(AppCtx* user)
 {
   PetscErrorCode ierr;
@@ -315,8 +309,6 @@ PetscErrorCode DestroyCtx(AppCtx* user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ReducedFunctionGradient"
 PetscErrorCode ReducedFunctionGradient(Tao tao, Vec u, PetscReal* func, Vec g, void* userv)
 {
   PetscErrorCode ierr;
@@ -358,8 +350,6 @@ PetscErrorCode ReducedFunctionGradient(Tao tao, Vec u, PetscReal* func, Vec g, v
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   DM             dm;

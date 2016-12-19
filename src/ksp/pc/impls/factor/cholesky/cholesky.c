@@ -11,8 +11,6 @@ typedef struct {
   IS        row,col;                 /* index sets used for reordering */
 } PC_Cholesky;
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_Cholesky"
 static PetscErrorCode PCSetFromOptions_Cholesky(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
@@ -24,8 +22,6 @@ static PetscErrorCode PCSetFromOptions_Cholesky(PetscOptionItems *PetscOptionsOb
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCView_Cholesky"
 static PetscErrorCode PCView_Cholesky(PC pc,PetscViewer viewer)
 {
   PC_Cholesky    *chol = (PC_Cholesky*)pc->data;
@@ -48,8 +44,6 @@ static PetscErrorCode PCView_Cholesky(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_Cholesky"
 static PetscErrorCode PCSetUp_Cholesky(PC pc)
 {
   PetscErrorCode         ierr;
@@ -156,8 +150,6 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCReset_Cholesky"
 static PetscErrorCode PCReset_Cholesky(PC pc)
 {
   PC_Cholesky    *dir = (PC_Cholesky*)pc->data;
@@ -170,8 +162,6 @@ static PetscErrorCode PCReset_Cholesky(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_Cholesky"
 static PetscErrorCode PCDestroy_Cholesky(PC pc)
 {
   PC_Cholesky    *dir = (PC_Cholesky*)pc->data;
@@ -185,8 +175,6 @@ static PetscErrorCode PCDestroy_Cholesky(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_Cholesky"
 static PetscErrorCode PCApply_Cholesky(PC pc,Vec x,Vec y)
 {
   PC_Cholesky    *dir = (PC_Cholesky*)pc->data;
@@ -201,8 +189,6 @@ static PetscErrorCode PCApply_Cholesky(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApplyTranspose_Cholesky"
 static PetscErrorCode PCApplyTranspose_Cholesky(PC pc,Vec x,Vec y)
 {
   PC_Cholesky    *dir = (PC_Cholesky*)pc->data;
@@ -221,8 +207,6 @@ static PetscErrorCode PCApplyTranspose_Cholesky(PC pc,Vec x,Vec y)
 
 /* -----------------------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFactorSetReuseOrdering"
 /*@
    PCFactorSetReuseOrdering - When similar matrices are factored, this
    causes the ordering computed in the first factor to be used for all
@@ -282,8 +266,6 @@ PetscErrorCode  PCFactorSetReuseOrdering(PC pc,PetscBool flag)
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_Cholesky"
 PETSC_EXTERN PetscErrorCode PCCreate_Cholesky(PC pc)
 {
   PetscErrorCode ierr;

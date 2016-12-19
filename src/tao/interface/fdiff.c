@@ -6,8 +6,6 @@
    For finited difference computations of the Hessian, we use PETSc's SNESComputeJacobianDefault
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "Fsnes"
 static PetscErrorCode Fsnes(SNES snes ,Vec X,Vec G,void*ctx)
 {
   PetscErrorCode ierr;
@@ -19,8 +17,6 @@ static PetscErrorCode Fsnes(SNES snes ,Vec X,Vec G,void*ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoDefaultComputeGradient"
 /*@C
   TaoDefaultComputeGradient - computes the gradient using finite differences.
 
@@ -99,8 +95,6 @@ PetscErrorCode TaoDefaultComputeGradient(Tao tao,Vec X,Vec G,void *dummy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoDefaultComputeHessian"
 /*@C
    TaoDefaultComputeHessian - Computes the Hessian using finite differences.
 
@@ -156,8 +150,6 @@ PetscErrorCode TaoDefaultComputeHessian(Tao tao,Vec V,Mat H,Mat B,void *dummy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoDefaultComputeHessianColor"
 /*@C
    TaoDefaultComputeHessianColor - Computes the Hessian using colored finite differences.
 

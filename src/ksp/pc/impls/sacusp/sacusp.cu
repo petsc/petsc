@@ -29,8 +29,6 @@ typedef struct {
   /*int cycles; */
 } PC_SACUSP;
 
-/*#undef __FUNCT__
-#define __FUNCT__ "PCSACUSPSetCycles"
 static PetscErrorCode PCSACUSPSetCycles(PC pc, int n)
 {
   PC_SACUSP      *sac = (PC_SACUSP*)pc->data;
@@ -55,8 +53,6 @@ static PetscErrorCode PCSACUSPSetCycles(PC pc, int n)
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_SACUSP"
 static PetscErrorCode PCSetUp_SACUSP(PC pc)
 {
   PC_SACUSP      *sa = (PC_SACUSP*)pc->data;
@@ -105,8 +101,6 @@ static PetscErrorCode PCSetUp_SACUSP(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApplyRichardson_SACUSP"
 static PetscErrorCode PCApplyRichardson_SACUSP(PC pc, Vec b, Vec y, Vec w,PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt its, PetscBool guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
 #if !defined(PETSC_USE_COMPLEX)
@@ -155,8 +149,6 @@ static PetscErrorCode PCApplyRichardson_SACUSP(PC pc, Vec b, Vec y, Vec w,PetscR
 
    Application Interface Routine: PCApply()
  */
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_SACUSP"
 static PetscErrorCode PCApply_SACUSP(PC pc,Vec x,Vec y)
 {
   PC_SACUSP      *sac = (PC_SACUSP*)pc->data;
@@ -199,8 +191,6 @@ static PetscErrorCode PCApply_SACUSP(PC pc,Vec x,Vec y)
 
    Application Interface Routine: PCDestroy()
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_SACUSP"
 static PetscErrorCode PCDestroy_SACUSP(PC pc)
 {
   PC_SACUSP      *sac = (PC_SACUSP*)pc->data;
@@ -222,8 +212,6 @@ static PetscErrorCode PCDestroy_SACUSP(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_SACUSP"
 static PetscErrorCode PCSetFromOptions_SACUSP(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
@@ -249,8 +237,6 @@ static PetscErrorCode PCSetFromOptions_SACUSP(PetscOptionItems *PetscOptionsObje
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_SACUSP"
 PETSC_EXTERN PetscErrorCode PCCreate_SACUSP(PC pc)
 {
   PC_SACUSP      *sac;

@@ -2,8 +2,6 @@
 #include <petsc/private/kspimpl.h>
 #include <petsc/private/vecimpl.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_IBCGS"
 static PetscErrorCode KSPSetUp_IBCGS(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -40,8 +38,6 @@ static PetscErrorCode KSPSetUp_IBCGS(KSP ksp)
 #define qn_1 qn
 #define Zn_1 Zn
 #define zn_1 zn
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_IBCGS"
 static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -322,8 +318,6 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPBCGSL, KSPIBCGS, KSPSetLagNorm()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_IBCGS"
 PETSC_EXTERN PetscErrorCode KSPCreate_IBCGS(KSP ksp)
 {
   PetscErrorCode ierr;

@@ -8,8 +8,6 @@
 
 PetscClassId PETSC_SECTION_CLASSID;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionCreate"
 /*@
   PetscSectionCreate - Allocates PetscSection space and sets the map contents to the default.
 
@@ -66,8 +64,6 @@ PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionCopy"
 /*@
   PetscSectionCopy - Creates a shallow (if possible) copy of the PetscSection
 
@@ -145,8 +141,6 @@ PetscErrorCode PetscSectionCopy(PetscSection section, PetscSection newSection)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionClone"
 /*@
   PetscSectionClone - Creates a shallow (if possible) copy of the PetscSection
 
@@ -172,8 +166,6 @@ PetscErrorCode PetscSectionClone(PetscSection section, PetscSection *newSection)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetNumFields"
 /*@
   PetscSectionGetNumFields - Returns the number of fields, or 0 if no fields were defined.
 
@@ -197,8 +189,6 @@ PetscErrorCode PetscSectionGetNumFields(PetscSection s, PetscInt *numFields)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionSetNumFields"
 /*@
   PetscSectionSetNumFields - Sets the number of fields.
 
@@ -237,8 +227,6 @@ PetscErrorCode PetscSectionSetNumFields(PetscSection s, PetscInt numFields)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetFieldName"
 /*@C
   PetscSectionGetFieldName - Returns the name of a field in the PetscSection
 
@@ -264,8 +252,6 @@ PetscErrorCode PetscSectionGetFieldName(PetscSection s, PetscInt field, const ch
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionSetFieldName"
 /*@C
   PetscSectionSetFieldName - Sets the name of a field in the PetscSection
 
@@ -292,8 +278,6 @@ PetscErrorCode PetscSectionSetFieldName(PetscSection s, PetscInt field, const ch
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetFieldComponents"
 /*@
   PetscSectionGetFieldComponents - Returns the number of field components for the given field.
 
@@ -319,8 +303,6 @@ PetscErrorCode PetscSectionGetFieldComponents(PetscSection s, PetscInt field, Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionSetFieldComponents"
 /*@
   PetscSectionSetFieldComponents - Sets the number of field components for the given field.
 
@@ -343,8 +325,6 @@ PetscErrorCode PetscSectionSetFieldComponents(PetscSection s, PetscInt field, Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionCheckConstraints_Static"
 static PetscErrorCode PetscSectionCheckConstraints_Static(PetscSection s)
 {
   PetscErrorCode ierr;
@@ -357,8 +337,6 @@ static PetscErrorCode PetscSectionCheckConstraints_Static(PetscSection s)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetChart"
 /*@
   PetscSectionGetChart - Returns the range [pStart, pEnd) in which points in the lie.
 
@@ -384,8 +362,6 @@ PetscErrorCode PetscSectionGetChart(PetscSection s, PetscInt *pStart, PetscInt *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionSetChart"
 /*@
   PetscSectionSetChart - Sets the range [pStart, pEnd) in which points in the lie.
 
@@ -423,8 +399,6 @@ PetscErrorCode PetscSectionSetChart(PetscSection s, PetscInt pStart, PetscInt pE
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetPermutation"
 /*@
   PetscSectionGetPermutation - Returns the permutation of [0, pEnd-pStart) or NULL
 
@@ -448,8 +422,6 @@ PetscErrorCode PetscSectionGetPermutation(PetscSection s, IS *perm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionSetPermutation"
 /*@
   PetscSectionSetPermutation - Sets the permutation for [0, pEnd-pStart)
 
@@ -477,8 +449,6 @@ PetscErrorCode PetscSectionSetPermutation(PetscSection s, IS perm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetDof"
 /*@
   PetscSectionGetDof - Return the number of degrees of freedom associated with a given point.
 
@@ -505,8 +475,6 @@ PetscErrorCode PetscSectionGetDof(PetscSection s, PetscInt point, PetscInt *numD
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionSetDof"
 /*@
   PetscSectionSetDof - Sets the number of degrees of freedom associated with a given point.
 
@@ -529,8 +497,6 @@ PetscErrorCode PetscSectionSetDof(PetscSection s, PetscInt point, PetscInt numDo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionAddDof"
 /*@
   PetscSectionAddDof - Adds to the number of degrees of freedom associated with a given point.
 
@@ -553,8 +519,6 @@ PetscErrorCode PetscSectionAddDof(PetscSection s, PetscInt point, PetscInt numDo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetFieldDof"
 /*@
   PetscSectionGetFieldDof - Return the number of degrees of freedom associated with a field on a given point.
 
@@ -582,8 +546,6 @@ PetscErrorCode PetscSectionGetFieldDof(PetscSection s, PetscInt point, PetscInt 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionSetFieldDof"
 /*@
   PetscSectionSetFieldDof - Sets the number of degrees of freedom associated with a field on a given point.
 
@@ -609,8 +571,6 @@ PetscErrorCode PetscSectionSetFieldDof(PetscSection s, PetscInt point, PetscInt 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionAddFieldDof"
 /*@
   PetscSectionAddFieldDof - Adds a number of degrees of freedom associated with a field on a given point.
 
@@ -636,8 +596,6 @@ PetscErrorCode PetscSectionAddFieldDof(PetscSection s, PetscInt point, PetscInt 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetConstraintDof"
 /*@
   PetscSectionGetConstraintDof - Return the number of constrained degrees of freedom associated with a given point.
 
@@ -665,8 +623,6 @@ PetscErrorCode PetscSectionGetConstraintDof(PetscSection s, PetscInt point, Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionSetConstraintDof"
 /*@
   PetscSectionSetConstraintDof - Set the number of constrained degrees of freedom associated with a given point.
 
@@ -693,8 +649,6 @@ PetscErrorCode PetscSectionSetConstraintDof(PetscSection s, PetscInt point, Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionAddConstraintDof"
 /*@
   PetscSectionAddConstraintDof - Increment the number of constrained degrees of freedom associated with a given point.
 
@@ -721,8 +675,6 @@ PetscErrorCode PetscSectionAddConstraintDof(PetscSection s, PetscInt point, Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetFieldConstraintDof"
 /*@
   PetscSectionGetFieldConstraintDof - Return the number of constrained degrees of freedom associated with a given field on a point.
 
@@ -750,8 +702,6 @@ PetscErrorCode PetscSectionGetFieldConstraintDof(PetscSection s, PetscInt point,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionSetFieldConstraintDof"
 /*@
   PetscSectionSetFieldConstraintDof - Set the number of constrained degrees of freedom associated with a given field on a point.
 
@@ -777,8 +727,6 @@ PetscErrorCode PetscSectionSetFieldConstraintDof(PetscSection s, PetscInt point,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionAddFieldConstraintDof"
 /*@
   PetscSectionAddFieldConstraintDof - Increment the number of constrained degrees of freedom associated with a given field on a point.
 
@@ -804,8 +752,6 @@ PetscErrorCode PetscSectionAddFieldConstraintDof(PetscSection s, PetscInt point,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionSetUpBC"
 PetscErrorCode PetscSectionSetUpBC(PetscSection s)
 {
   PetscErrorCode ierr;
@@ -820,8 +766,6 @@ PetscErrorCode PetscSectionSetUpBC(PetscSection s)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionSetUp"
 /*@
   PetscSectionSetUp - Calculate offsets based upon the number of degrees of freedom for each point.
 
@@ -871,8 +815,6 @@ PetscErrorCode PetscSectionSetUp(PetscSection s)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetMaxDof"
 /*@
   PetscSectionGetMaxDof - Return the maximum number of degrees of freedom on any point in the chart
 
@@ -895,8 +837,6 @@ PetscErrorCode PetscSectionGetMaxDof(PetscSection s, PetscInt *maxDof)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetStorageSize"
 /*@
   PetscSectionGetStorageSize - Return the size of an array or local Vec capable of holding all the degrees of freedom.
 
@@ -923,8 +863,6 @@ PetscErrorCode PetscSectionGetStorageSize(PetscSection s, PetscInt *size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetConstrainedStorageSize"
 /*@
   PetscSectionGetConstrainedStorageSize - Return the size of an array or local Vec capable of holding all unconstrained degrees of freedom.
 
@@ -954,8 +892,6 @@ PetscErrorCode PetscSectionGetConstrainedStorageSize(PetscSection s, PetscInt *s
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionCreateGlobalSection"
 /*@
   PetscSectionCreateGlobalSection - Create a section describing the global field layout using
   the local section and an SF describing the section point overlap.
@@ -1047,8 +983,6 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionCreateGlobalSectionCensored"
 /*@
   PetscSectionCreateGlobalSectionCensored - Create a section describing the global field layout using
   the local section and an SF describing the section point overlap.
@@ -1143,8 +1077,6 @@ PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection s, PetscSF s
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetPointLayout"
 PetscErrorCode PetscSectionGetPointLayout(MPI_Comm comm, PetscSection s, PetscLayout *layout)
 {
   PetscInt       pStart, pEnd, p, localSize = 0;
@@ -1165,8 +1097,6 @@ PetscErrorCode PetscSectionGetPointLayout(MPI_Comm comm, PetscSection s, PetscLa
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetValueLayout"
 /*@
   PetscSectionGetValueLayout - Get the PetscLayout associated with a section, usually the default global section.
 
@@ -1202,8 +1132,6 @@ PetscErrorCode PetscSectionGetValueLayout(MPI_Comm comm, PetscSection s, PetscLa
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetOffset"
 /*@
   PetscSectionGetOffset - Return the offset into an array or local Vec for the dof associated with the given point.
 
@@ -1230,8 +1158,6 @@ PetscErrorCode PetscSectionGetOffset(PetscSection s, PetscInt point, PetscInt *o
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionSetOffset"
 /*@
   PetscSectionSetOffset - Set the offset into an array or local Vec for the dof associated with the given point.
 
@@ -1256,8 +1182,6 @@ PetscErrorCode PetscSectionSetOffset(PetscSection s, PetscInt point, PetscInt of
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetFieldOffset"
 /*@
   PetscSectionGetFieldOffset - Return the offset into an array or local Vec for the dof associated with the given point.
 
@@ -1285,8 +1209,6 @@ PetscErrorCode PetscSectionGetFieldOffset(PetscSection s, PetscInt point, PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionSetFieldOffset"
 /*@
   PetscSectionSetFieldOffset - Set the offset into an array or local Vec for the dof associated with the given point.
 
@@ -1314,8 +1236,6 @@ PetscErrorCode PetscSectionSetFieldOffset(PetscSection s, PetscInt point, PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetFieldPointOffset"
 /* This gives the offset on a point of the field, ignoring constraints */
 PetscErrorCode PetscSectionGetFieldPointOffset(PetscSection s, PetscInt point, PetscInt field, PetscInt *offset)
 {
@@ -1330,8 +1250,6 @@ PetscErrorCode PetscSectionGetFieldPointOffset(PetscSection s, PetscInt point, P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetOffsetRange"
 /*@
   PetscSectionGetOffsetRange - Return the full range of offsets [start, end)
 
@@ -1369,8 +1287,6 @@ PetscErrorCode PetscSectionGetOffsetRange(PetscSection s, PetscInt *start, Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionCreateSubsection"
 PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt numFields, PetscInt fields[], PetscSection *subs)
 {
   PetscInt       nF, f, pStart, pEnd, p, maxCdof = 0;
@@ -1446,8 +1362,6 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt numFields, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionCreateSubmeshSection"
 PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, PetscSection *subs)
 {
   const PetscInt *points = NULL, *indices = NULL;
@@ -1522,8 +1436,6 @@ PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionView_ASCII"
 PetscErrorCode  PetscSectionView_ASCII(PetscSection s, PetscViewer viewer)
 {
   PetscInt       p;
@@ -1557,8 +1469,6 @@ PetscErrorCode  PetscSectionView_ASCII(PetscSection s, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionView"
 /*@C
   PetscSectionView - Views a PetscSection
 
@@ -1598,8 +1508,6 @@ PetscErrorCode PetscSectionView(PetscSection s, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionReset"
 /*@
   PetscSectionReset - Frees all section data.
 
@@ -1644,8 +1552,6 @@ PetscErrorCode PetscSectionReset(PetscSection s)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionDestroy"
 /*@
   PetscSectionDestroy - Frees a section object and frees its range if that exists.
 
@@ -1677,8 +1583,6 @@ PetscErrorCode PetscSectionDestroy(PetscSection *s)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecIntGetValuesSection"
 PetscErrorCode VecIntGetValuesSection(PetscInt *baseArray, PetscSection s, PetscInt point, const PetscInt **values)
 {
   const PetscInt p = point - s->pStart;
@@ -1688,8 +1592,6 @@ PetscErrorCode VecIntGetValuesSection(PetscInt *baseArray, PetscSection s, Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecIntSetValuesSection"
 PetscErrorCode VecIntSetValuesSection(PetscInt *baseArray, PetscSection s, PetscInt point, const PetscInt values[], InsertMode mode)
 {
   PetscInt       *array;
@@ -1765,8 +1667,6 @@ PetscErrorCode VecIntSetValuesSection(PetscInt *baseArray, PetscSection s, Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionHasConstraints"
 PetscErrorCode PetscSectionHasConstraints(PetscSection s, PetscBool *hasConstraints)
 {
   PetscFunctionBegin;
@@ -1776,8 +1676,6 @@ PetscErrorCode PetscSectionHasConstraints(PetscSection s, PetscBool *hasConstrai
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetConstraintIndices"
 /*@C
   PetscSectionGetConstraintIndices - Get the point dof numbers, in [0, dof), which are constrained
 
@@ -1805,8 +1703,6 @@ PetscErrorCode PetscSectionGetConstraintIndices(PetscSection s, PetscInt point, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionSetConstraintIndices"
 /*@C
   PetscSectionSetConstraintIndices - Set the point dof numbers, in [0, dof), which are constrained
 
@@ -1832,8 +1728,6 @@ PetscErrorCode PetscSectionSetConstraintIndices(PetscSection s, PetscInt point, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetFieldConstraintIndices"
 PetscErrorCode PetscSectionGetFieldConstraintIndices(PetscSection s, PetscInt point, PetscInt field, const PetscInt **indices)
 {
   PetscErrorCode ierr;
@@ -1844,8 +1738,6 @@ PetscErrorCode PetscSectionGetFieldConstraintIndices(PetscSection s, PetscInt po
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionSetFieldConstraintIndices"
 PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection s, PetscInt point, PetscInt field, const PetscInt indices[])
 {
   PetscErrorCode ierr;
@@ -1856,8 +1748,6 @@ PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection s, PetscInt po
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionPermute"
 /*@
   PetscSectionPermute - Reorder the section according to the input point permutation
 
@@ -1940,8 +1830,6 @@ PetscErrorCode PetscSectionPermute(PetscSection section, IS permutation, PetscSe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFDistributeSection"
 /*@C
   PetscSFDistributeSection - Create a new PetscSection reorganized, moving from the root to the leaves of the SF
 
@@ -2013,8 +1901,6 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFCreateRemoteOffsets"
 PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, PetscSection leafSection, PetscInt **remoteOffsets)
 {
   PetscSF         embedSF;
@@ -2041,8 +1927,6 @@ PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFCreateSectionSF"
 /*@C
   PetscSFCreateSectionSF - Create an expanded SF of dofs, assuming the input SF relates points
 
@@ -2119,8 +2003,6 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionSetClosureIndex"
 /*@
   PetscSectionSetClosureIndex - Set a cache of points in the closure of each point in the section
 
@@ -2150,8 +2032,6 @@ PetscErrorCode PetscSectionSetClosureIndex(PetscSection section, PetscObject obj
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetClosureIndex"
 /*@
   PetscSectionGetClosureIndex - Get the cache of points in the closure of each point in the section
 
@@ -2182,8 +2062,6 @@ PetscErrorCode PetscSectionGetClosureIndex(PetscSection section, PetscObject obj
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionSetClosurePermutation_Internal"
 PetscErrorCode PetscSectionSetClosurePermutation_Internal(PetscSection section, PetscObject obj, PetscInt clSize, PetscCopyMode mode, PetscInt *clPerm)
 {
   PetscInt       i;
@@ -2210,8 +2088,6 @@ PetscErrorCode PetscSectionSetClosurePermutation_Internal(PetscSection section, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionSetClosurePermutation"
 /*@
   PetscSectionSetClosurePermutation - Get the dof permutation for the closure of each cell in the section, meaning clPerm[newIndex] = oldIndex.
 
@@ -2243,8 +2119,6 @@ PetscErrorCode PetscSectionSetClosurePermutation(PetscSection section, PetscObje
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetClosurePermutation_Internal"
 PetscErrorCode PetscSectionGetClosurePermutation_Internal(PetscSection section, PetscObject obj, PetscInt *size, const PetscInt *perm[])
 {
   PetscFunctionBegin;
@@ -2258,8 +2132,6 @@ PetscErrorCode PetscSectionGetClosurePermutation_Internal(PetscSection section, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetClosurePermutation"
 /*@
   PetscSectionGetClosurePermutation - Get the dof permutation for the closure of each cell in the section, meaning clPerm[newIndex] = oldIndex.
 
@@ -2291,8 +2163,6 @@ PetscErrorCode PetscSectionGetClosurePermutation(PetscSection section, PetscObje
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetClosureInversePermutation_Internal"
 PetscErrorCode PetscSectionGetClosureInversePermutation_Internal(PetscSection section, PetscObject obj, PetscInt *size, const PetscInt *perm[])
 {
   PetscFunctionBegin;
@@ -2306,8 +2176,6 @@ PetscErrorCode PetscSectionGetClosureInversePermutation_Internal(PetscSection se
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetClosureInversePermutation"
 /*@
   PetscSectionGetClosureInversePermutation - Get the inverse dof permutation for the closure of each cell in the section, meaning clPerm[oldIndex] = newIndex.
 
@@ -2340,8 +2208,6 @@ PetscErrorCode PetscSectionGetClosureInversePermutation(PetscSection section, Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetField"
 /*@
   PetscSectionGetField - Get the subsection associated with a single field
 
@@ -2372,8 +2238,6 @@ PetscErrorCode PetscSectionGetField(PetscSection s, PetscInt field, PetscSection
 PetscClassId      PETSC_SECTION_SYM_CLASSID;
 PetscFunctionList PetscSectionSymList = NULL;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionSymCreate"
 /*@
   PetscSectionSymCreate - Creates an empty PetscSectionSym object.
 
@@ -2400,8 +2264,6 @@ PetscErrorCode PetscSectionSymCreate(MPI_Comm comm, PetscSectionSym *sym)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionSymSetType"
 /*@C
   PetscSectionSymSetType - Builds a PetscSection symmetry, for a particular implementation.
 
@@ -2438,8 +2300,6 @@ PetscErrorCode  PetscSectionSymSetType(PetscSectionSym sym, PetscSectionSymType 
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionSymGetType"
 /*@C
   PetscSectionSymGetType - Gets the section symmetry type name (as a string) from the PetscSectionSym.
 
@@ -2464,8 +2324,6 @@ PetscErrorCode PetscSectionSymGetType(PetscSectionSym sym, PetscSectionSymType *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionSymRegister"
 /*@C
   PetscSectionSymRegister - Adds a new section symmetry implementation
 
@@ -2492,8 +2350,6 @@ PetscErrorCode PetscSectionSymRegister(const char sname[], PetscErrorCode (*func
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionSymDestroy"
 /*@
    PetscSectionSymDestroy - Destroys a section symmetry.
 
@@ -2529,8 +2385,6 @@ PetscErrorCode PetscSectionSymDestroy(PetscSectionSym *sym)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionSymView"
 /*@C
    PetscSectionSymView - Displays a section symmetry
 
@@ -2562,8 +2416,6 @@ PetscErrorCode PetscSectionSymView(PetscSectionSym sym,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionSetSym"
 /*@
   PetscSectionSetSym - Set the symmetries for the data referred to by the section
 
@@ -2591,8 +2443,6 @@ PetscErrorCode PetscSectionSetSym(PetscSection section, PetscSectionSym sym)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetSym"
 /*@
   PetscSectionGetSym - Get the symmetries for the data referred to by the section
 
@@ -2616,8 +2466,6 @@ PetscErrorCode PetscSectionGetSym(PetscSection section, PetscSectionSym *sym)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionSetFieldSym"
 /*@
   PetscSectionSetFieldSym - Set the symmetries for the data referred to by a field of the section
 
@@ -2643,8 +2491,6 @@ PetscErrorCode PetscSectionSetFieldSym(PetscSection section, PetscInt field, Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetFieldSym"
 /*@
   PetscSectionGetFieldSym - Get the symmetries for the data referred to by a field of the section
 
@@ -2670,8 +2516,6 @@ PetscErrorCode PetscSectionGetFieldSym(PetscSection section, PetscInt field, Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetPointSyms"
 /*@C
   PetscSectionGetPointSyms - Get the symmetries for a set of points in a PetscSection under specific orientations.
 
@@ -2774,8 +2618,6 @@ PetscErrorCode PetscSectionGetPointSyms(PetscSection section, PetscInt numPoints
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionRestorePointSyms"
 /*@C
   PetscSectionRestorePointSyms - Restore the symmetries returned by PetscSectionGetPointSyms()
 
@@ -2821,8 +2663,6 @@ PetscErrorCode PetscSectionRestorePointSyms(PetscSection section, PetscInt numPo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetFieldPointSyms"
 /*@C
   PetscSectionGetFieldPointSyms - Get the symmetries for a set of points in a field of a PetscSection under specific orientations.
 
@@ -2856,8 +2696,6 @@ PetscErrorCode PetscSectionGetFieldPointSyms(PetscSection section, PetscInt fiel
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionRestoreFieldPointSyms"
 /*@C
   PetscSectionRestoreFieldPointSyms - Restore the symmetries returned by PetscSectionGetFieldPointSyms()
 

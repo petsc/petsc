@@ -4,8 +4,6 @@
 */
 #include <petsc/private/pcimpl.h>          /*I "petscpc.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_None"
 PetscErrorCode PCApply_None(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
@@ -28,8 +26,6 @@ PetscErrorCode PCApply_None(PC pc,Vec x,Vec y)
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_None"
 PETSC_EXTERN PetscErrorCode PCCreate_None(PC pc)
 {
   PetscFunctionBegin;

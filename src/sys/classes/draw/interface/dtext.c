@@ -3,8 +3,6 @@
 */
 #include <petsc/private/drawimpl.h>  /*I "petscdraw.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawString"
 /*@C
    PetscDrawString - PetscDraws text onto a drawable.
 
@@ -38,8 +36,6 @@ PetscErrorCode  PetscDrawString(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawStringVertical"
 /*@C
    PetscDrawStringVertical - PetscDraws text onto a drawable.
 
@@ -81,8 +77,6 @@ PetscErrorCode  PetscDrawStringVertical(PetscDraw draw,PetscReal xl,PetscReal yl
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawStringCentered"
 /*@C
    PetscDrawStringCentered - PetscDraws text onto a drawable centered at a point
 
@@ -121,8 +115,6 @@ PetscErrorCode  PetscDrawStringCentered(PetscDraw draw,PetscReal xc,PetscReal yl
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawStringBoxed"
 /*@C
    PetscDrawStringBoxed - Draws a string with a box around it
 
@@ -199,8 +191,6 @@ PetscErrorCode  PetscDrawStringBoxed(PetscDraw draw,PetscReal sxl,PetscReal syl,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawStringSetSize"
 /*@
    PetscDrawStringSetSize - Sets the size for character text.
 
@@ -234,8 +224,6 @@ PetscErrorCode  PetscDrawStringSetSize(PetscDraw draw,PetscReal width,PetscReal 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawStringGetSize"
 /*@
    PetscDrawStringGetSize - Gets the size for character text.  The width is
    relative to the user coordinates of the window.

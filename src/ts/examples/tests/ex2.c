@@ -26,8 +26,6 @@ extern PetscReal solx(PetscReal);
 extern PetscReal soly(PetscReal);
 extern PetscReal solz(PetscReal);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
@@ -90,8 +88,6 @@ int main(int argc,char **argv)
 }
 
 /* -------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "Initial"
 /* this test problem has initial values (1,1,1).                      */
 PetscErrorCode Initial(Vec global,void *ctx)
 {
@@ -113,8 +109,6 @@ PetscErrorCode Initial(Vec global,void *ctx)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Monitor"
 PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
 {
   VecScatter        scatter;
@@ -155,8 +149,6 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "RHSFunction"
 PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ctx)
 {
   PetscScalar       *outptr;
@@ -213,8 +205,6 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "RHSJacobian"
 PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec x,Mat A,Mat BB,void *ctx)
 {
   PetscScalar       v[3];

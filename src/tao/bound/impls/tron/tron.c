@@ -5,8 +5,6 @@
 /* TRON Routines */
 static PetscErrorCode TronGradientProjections(Tao,TAO_TRON*);
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoDestroy_TRON"
 static PetscErrorCode TaoDestroy_TRON(Tao tao)
 {
   TAO_TRON       *tron = (TAO_TRON *)tao->data;
@@ -28,8 +26,6 @@ static PetscErrorCode TaoDestroy_TRON(Tao tao)
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetFromOptions_TRON"
 static PetscErrorCode TaoSetFromOptions_TRON(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   TAO_TRON       *tron = (TAO_TRON *)tao->data;
@@ -46,8 +42,6 @@ static PetscErrorCode TaoSetFromOptions_TRON(PetscOptionItems *PetscOptionsObjec
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoView_TRON"
 static PetscErrorCode TaoView_TRON(Tao tao, PetscViewer viewer)
 {
   TAO_TRON         *tron = (TAO_TRON *)tao->data;
@@ -67,8 +61,6 @@ static PetscErrorCode TaoView_TRON(Tao tao, PetscViewer viewer)
 
 
 /* ---------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetup_TRON"
 static PetscErrorCode TaoSetup_TRON(Tao tao)
 {
   PetscErrorCode ierr;
@@ -96,8 +88,6 @@ static PetscErrorCode TaoSetup_TRON(Tao tao)
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSolve_TRON"
 static PetscErrorCode TaoSolve_TRON(Tao tao)
 {
   TAO_TRON                     *tron = (TAO_TRON *)tao->data;
@@ -247,8 +237,6 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TronGradientProjections"
 static PetscErrorCode TronGradientProjections(Tao tao,TAO_TRON *tron)
 {
   PetscErrorCode                 ierr;
@@ -296,8 +284,6 @@ static PetscErrorCode TronGradientProjections(Tao tao,TAO_TRON *tron)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoComputeDual_TRON"
 static PetscErrorCode TaoComputeDual_TRON(Tao tao, Vec DXL, Vec DXU) {
 
   TAO_TRON       *tron = (TAO_TRON *)tao->data;
@@ -333,8 +319,6 @@ static PetscErrorCode TaoComputeDual_TRON(Tao tao, Vec DXL, Vec DXU) {
 
   Level: beginner
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoCreate_TRON"
 PETSC_EXTERN PetscErrorCode TaoCreate_TRON(Tao tao)
 {
   TAO_TRON       *tron;

@@ -6,8 +6,6 @@ and run with -f underworld32.gz\n\n";
 #include <petscksp.h>
 #include <petscdmda.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "LSCLoadTestOperators"
 PetscErrorCode LSCLoadTestOperators(Mat *A11,Mat *A12,Mat *A21,Mat *A22,Vec *b1,Vec *b2)
 {
   PetscViewer    viewer;
@@ -40,8 +38,6 @@ PetscErrorCode LSCLoadTestOperators(Mat *A11,Mat *A12,Mat *A21,Mat *A22,Vec *b1,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "LoadTestMatrices"
 PetscErrorCode LoadTestMatrices(Mat *_A,Vec *_x,Vec *_b,IS *_isu,IS *_isp)
 {
   Vec            f,h,x,b,bX[2];
@@ -117,8 +113,6 @@ PetscErrorCode LoadTestMatrices(Mat *_A,Vec *_x,Vec *_b,IS *_isu,IS *_isp)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "port_lsd_bfbt"
 PetscErrorCode port_lsd_bfbt(void)
 {
   Mat            A;
@@ -217,8 +211,6 @@ PetscErrorCode port_lsd_bfbt(void)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;

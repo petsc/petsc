@@ -2,8 +2,6 @@ static const char help[] = "Test MatNest solving a linear system\n\n";
 
 #include <petscksp.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "test_solve"
 PetscErrorCode test_solve(void)
 {
   Mat            A11, A12,A21,A22, A, tmp[2][2];
@@ -119,8 +117,6 @@ PetscErrorCode test_solve(void)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "test_solve_matgetvecs"
 PetscErrorCode test_solve_matgetvecs(void)
 {
   Mat            A11, A12,A21, A;
@@ -223,8 +219,6 @@ PetscErrorCode test_solve_matgetvecs(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **args)
 {
   PetscErrorCode ierr;

@@ -15,8 +15,6 @@ PetscLogEvent KSP_GMRESOrthogonalization, KSP_SetUp, KSP_Solve;
 PetscFunctionList KSPList              = 0;
 PetscBool         KSPRegisterAllCalled = PETSC_FALSE;
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPLoad"
 /*@C
   KSPLoad - Loads a KSP that has been stored in binary  with KSPView().
 
@@ -73,8 +71,6 @@ PetscErrorCode  KSPLoad(KSP newdm, PetscViewer viewer)
 #if defined(PETSC_HAVE_SAWS)
 #include <petscviewersaws.h>
 #endif
-#undef __FUNCT__
-#define __FUNCT__ "KSPView"
 /*@C
    KSPView - Prints the KSP data structure.
 
@@ -221,8 +217,6 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetNormType"
 /*@
    KSPSetNormType - Sets the norm that is used for convergence testing.
 
@@ -266,8 +260,6 @@ PetscErrorCode  KSPSetNormType(KSP ksp,KSPNormType normtype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetCheckNormIteration"
 /*@
    KSPSetCheckNormIteration - Sets the first iteration at which the norm of the residual will be
      computed and used in the convergence test.
@@ -300,8 +292,6 @@ PetscErrorCode  KSPSetCheckNormIteration(KSP ksp,PetscInt it)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetLagNorm"
 /*@
    KSPSetLagNorm - Lags the residual norm calculation so that it is computed as part of the MPI_Allreduce() for
    computing the inner products for the next iteration.  This can reduce communication costs at the expense of doing
@@ -338,8 +328,6 @@ PetscErrorCode  KSPSetLagNorm(KSP ksp,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetSupportedNorm"
 /*@
    KSPSetSupportedNorm - Sets a norm and preconditioner side supported by a KSP
 
@@ -373,8 +361,6 @@ PetscErrorCode KSPSetSupportedNorm(KSP ksp,KSPNormType normtype,PCSide pcside,Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPNormSupportTableReset_Private"
 PetscErrorCode KSPNormSupportTableReset_Private(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -388,8 +374,6 @@ PetscErrorCode KSPNormSupportTableReset_Private(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUpNorms_Private"
 PetscErrorCode KSPSetUpNorms_Private(KSP ksp,KSPNormType *normtype,PCSide *pcside)
 {
   PetscInt i,j,best,ibest = 0,jbest = 0;
@@ -418,8 +402,6 @@ PetscErrorCode KSPSetUpNorms_Private(KSP ksp,KSPNormType *normtype,PCSide *pcsid
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGetNormType"
 /*@
    KSPGetNormType - Gets the norm that is used for convergence testing.
 
@@ -453,8 +435,6 @@ PetscErrorCode  KSPGetNormType(KSP ksp, KSPNormType *normtype)
 #include <petscviewersaws.h>
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetOperators"
 /*@
    KSPSetOperators - Sets the matrix associated with the linear system
    and a (possibly) different one associated with the preconditioner.
@@ -541,8 +521,6 @@ PetscErrorCode  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGetOperators"
 /*@
    KSPGetOperators - Gets the matrix associated with the linear system
    and a (possibly) different one associated with the preconditioner.
@@ -575,8 +553,6 @@ PetscErrorCode  KSPGetOperators(KSP ksp,Mat *Amat,Mat *Pmat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGetOperatorsSet"
 /*@C
    KSPGetOperatorsSet - Determines if the matrix associated with the linear system and
    possibly a different one associated with the preconditioner have been set in the KSP.
@@ -607,8 +583,6 @@ PetscErrorCode  KSPGetOperatorsSet(KSP ksp,PetscBool  *mat,PetscBool  *pmat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetPreSolve"
 /*@C
    KSPSetPreSolve - Sets a function that is called before every KSPSolve() is started
 
@@ -634,8 +608,6 @@ PetscErrorCode  KSPSetPreSolve(KSP ksp,PetscErrorCode (*presolve)(KSP,Vec,Vec,vo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetPostSolve"
 /*@C
    KSPSetPostSolve - Sets a function that is called after every KSPSolve() completes (whether it converges or not)
 
@@ -661,8 +633,6 @@ PetscErrorCode  KSPSetPostSolve(KSP ksp,PetscErrorCode (*postsolve)(KSP,Vec,Vec,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate"
 /*@
    KSPCreate - Creates the default KSP context.
 
@@ -740,8 +710,6 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetType"
 /*@C
    KSPSetType - Builds KSP for a particular solver.
 
@@ -812,8 +780,6 @@ PetscErrorCode  KSPSetType(KSP ksp, KSPType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGetType"
 /*@C
    KSPGetType - Gets the KSP type as a string from the KSP object.
 
@@ -840,8 +806,6 @@ PetscErrorCode  KSPGetType(KSP ksp,KSPType *type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPRegister"
 /*@C
   KSPRegister -  Adds a method to the Krylov subspace solver package.
 

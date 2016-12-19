@@ -11,8 +11,6 @@ T*/
 #define VEC_LEN 10
 const PetscReal test_values[] = { 0.311256, 88.068, 11.077444, 9953.62, 7.345, 64.8943, 3.1458, 6699.95, 0.00084, 0.0647 };
 
-#undef __FUNCT__
-#define __FUNCT__ "MyVecDump"
 PetscErrorCode MyVecDump(const char fname[],PetscBool skippheader,PetscBool usempiio,Vec x)
 {
   MPI_Comm       comm;
@@ -41,8 +39,6 @@ PetscErrorCode MyVecDump(const char fname[],PetscBool skippheader,PetscBool usem
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MyVecLoad"
 PetscErrorCode MyVecLoad(const char fname[],PetscBool skippheader,PetscBool usempiio,Vec x)
 {
   MPI_Comm       comm;
@@ -71,8 +67,6 @@ PetscErrorCode MyVecLoad(const char fname[],PetscBool skippheader,PetscBool usem
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecFill"
 PetscErrorCode VecFill(Vec x)
 {
   PetscErrorCode ierr;
@@ -88,8 +82,6 @@ PetscErrorCode VecFill(Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCompare"
 PetscErrorCode VecCompare(Vec a,Vec b)
 {
   PetscInt       locmin[2],locmax[2];
@@ -125,8 +117,6 @@ PetscErrorCode VecCompare(Vec a,Vec b)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "HeaderlessBinaryRead"
 PetscErrorCode HeaderlessBinaryRead(const char name[])
 {
   PetscErrorCode ierr;
@@ -165,8 +155,6 @@ PetscErrorCode HeaderlessBinaryRead(const char name[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestBinary"
 PetscErrorCode TestBinary(void)
 {
   PetscErrorCode ierr;
@@ -196,8 +184,6 @@ PetscErrorCode TestBinary(void)
 }
 
 #if defined(PETSC_HAVE_MPIIO)
-#undef __FUNCT__
-#define __FUNCT__ "TestBinaryMPIIO"
 PetscErrorCode TestBinaryMPIIO(void)
 {
   PetscErrorCode ierr;
@@ -227,8 +213,6 @@ PetscErrorCode TestBinaryMPIIO(void)
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   PetscErrorCode ierr;

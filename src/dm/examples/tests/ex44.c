@@ -5,8 +5,6 @@ static char help[] = "Tests various DMComposite routines.\n\n";
 #include <petscdmda.h>
 #include <petscdmcomposite.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscMPIInt            rank;

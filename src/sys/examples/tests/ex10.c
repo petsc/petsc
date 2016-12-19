@@ -3,8 +3,6 @@ static char help[] = "Tests PetscMemmove()\n";
 
 #include <petscsys.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int i,*a,*b,ierr;

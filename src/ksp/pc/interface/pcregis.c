@@ -61,8 +61,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_PARMS(PC);
 #endif
 PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC);
 
-#undef __FUNCT__
-#define __FUNCT__ "PCRegisterAll"
 /*@C
    PCRegisterAll - Registers all of the preconditioners in the PC package.
 

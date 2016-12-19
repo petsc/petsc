@@ -16,8 +16,6 @@ struct  _n_PetscOptionsHelpPrinted{
   PetscSegBuffer     strings;
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsHelpPrintedDestroy"
 PetscErrorCode PetscOptionsHelpPrintedDestroy(PetscOptionsHelpPrinted *hp)
 {
   PetscErrorCode ierr;
@@ -30,8 +28,6 @@ PetscErrorCode PetscOptionsHelpPrintedDestroy(PetscOptionsHelpPrinted *hp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsHelpPrintedCreate"
 /*@C
       PetscOptionsHelpPrintedCreate - Creates an object used to manage tracking which help messages have
          been printed so they will not be printed again.
@@ -53,8 +49,6 @@ PetscErrorCode PetscOptionsHelpPrintedCreate(PetscOptionsHelpPrinted *hp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsHelpPrintedCheck"
 /*@C
       PetscOptionsHelpPrintedCheck - Checks if a particular pre, name pair has previous been entered (meaning the help message was printed)
 
@@ -108,8 +102,6 @@ static PetscBool noviewer = PETSC_FALSE;
 static PetscBool noviewers[PETSCVIEWERGETVIEWEROFFPUSHESMAX];
 static PetscInt  inoviewers = 0;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsPushGetViewerOff"
 /*@
   PetscOptionsPushGetViewerOff - control whether PetscOptionsGetViewer returns a viewer.
 
@@ -135,8 +127,6 @@ PetscErrorCode  PetscOptionsPushGetViewerOff(PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsPopGetViewerOff"
 /*@
   PetscOptionsPopGetViewerOff - reset whether PetscOptionsGetViewer returns a viewer.
 
@@ -157,8 +147,6 @@ PetscErrorCode  PetscOptionsPopGetViewerOff()
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsGetViewerOff"
 /*@
   PetscOptionsGetViewerOff - does PetscOptionsGetViewer return a viewer?
 
@@ -182,8 +170,6 @@ PetscErrorCode  PetscOptionsGetViewerOff(PetscBool *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsGetViewer"
 /*@C
    PetscOptionsGetViewer - Gets a viewer appropriate for the type indicated by the user
 
@@ -366,8 +352,6 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerCreate"
 /*@
    PetscViewerCreate - Creates a viewing context
 
@@ -402,8 +386,6 @@ PetscErrorCode  PetscViewerCreate(MPI_Comm comm,PetscViewer *inviewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerSetType"
 /*@C
    PetscViewerSetType - Builds PetscViewer for a particular implementation.
 
@@ -453,8 +435,6 @@ PetscErrorCode  PetscViewerSetType(PetscViewer viewer,PetscViewerType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerRegister"
 /*@C
    PetscViewerRegister - Adds a viewer
 
@@ -491,8 +471,6 @@ PetscErrorCode  PetscViewerRegister(const char *sname,PetscErrorCode (*function)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerSetFromOptions"
 /*@C
    PetscViewerSetFromOptions - Sets the graphics type from the options database.
       Defaults to a PETSc X windows graphics.
@@ -544,8 +522,6 @@ PetscErrorCode  PetscViewerSetFromOptions(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFlowControlStart"
 PetscErrorCode PetscViewerFlowControlStart(PetscViewer viewer,PetscInt *mcnt,PetscInt *cnt)
 {
   PetscErrorCode ierr;
@@ -555,8 +531,6 @@ PetscErrorCode PetscViewerFlowControlStart(PetscViewer viewer,PetscInt *mcnt,Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFlowControlStepMaster"
 PetscErrorCode PetscViewerFlowControlStepMaster(PetscViewer viewer,PetscInt i,PetscInt *mcnt,PetscInt cnt)
 {
   PetscErrorCode ierr;
@@ -571,8 +545,6 @@ PetscErrorCode PetscViewerFlowControlStepMaster(PetscViewer viewer,PetscInt i,Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFlowControlEndMaster"
 PetscErrorCode PetscViewerFlowControlEndMaster(PetscViewer viewer,PetscInt *mcnt)
 {
   PetscErrorCode ierr;
@@ -584,8 +556,6 @@ PetscErrorCode PetscViewerFlowControlEndMaster(PetscViewer viewer,PetscInt *mcnt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFlowControlStepWorker"
 PetscErrorCode PetscViewerFlowControlStepWorker(PetscViewer viewer,PetscMPIInt rank,PetscInt *mcnt)
 {
   PetscErrorCode ierr;
@@ -599,8 +569,6 @@ PetscErrorCode PetscViewerFlowControlStepWorker(PetscViewer viewer,PetscMPIInt r
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFlowControlEndWorker"
 PetscErrorCode PetscViewerFlowControlEndWorker(PetscViewer viewer,PetscInt *mcnt)
 {
   PetscErrorCode ierr;

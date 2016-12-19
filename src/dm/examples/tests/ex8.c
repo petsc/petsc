@@ -4,8 +4,6 @@ static char help[] = "Demonstrates generating a slice from a DMDA Vector.\n\n";
 #include <petscdmda.h>
 #include <petscao.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "GenerateSliceScatter"
 /*
     Given a DMDA generates a VecScatter context that will deliver a slice
   of the global vector to each processor. In this example, each processor
@@ -77,8 +75,6 @@ PetscErrorCode GenerateSliceScatter(DM da,VecScatter *scatter,Vec *vslice)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscMPIInt      rank;

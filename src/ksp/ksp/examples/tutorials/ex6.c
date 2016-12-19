@@ -2,8 +2,6 @@ static char help[] = "Working out corner cases of the ASM preconditioner.\n\n";
 
 #include <petscksp.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   KSP            ksp;

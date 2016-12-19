@@ -13,8 +13,6 @@
 #include <../src/vec/vec/impls/dvecimpl.h>
 #include <../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCUDAAllocateCheckHost"
 /*
     Allocates space for the vector array on the Host if it does not exist.
     Does NOT change the PetscCUDAFlag for the vector
@@ -44,8 +42,6 @@ PetscErrorCode VecCUDAAllocateCheckHost(Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCopy_SeqCUDA_Private"
 PetscErrorCode VecCopy_SeqCUDA_Private(Vec xin,Vec yin)
 {
   PetscScalar       *ya;
@@ -65,8 +61,6 @@ PetscErrorCode VecCopy_SeqCUDA_Private(Vec xin,Vec yin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecSetRandom_SeqCUDA_Private"
 PetscErrorCode VecSetRandom_SeqCUDA_Private(Vec xin,PetscRandom r)
 {
   PetscErrorCode ierr;
@@ -80,8 +74,6 @@ PetscErrorCode VecSetRandom_SeqCUDA_Private(Vec xin,PetscRandom r)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecDestroy_SeqCUDA_Private"
 PetscErrorCode VecDestroy_SeqCUDA_Private(Vec v)
 {
   Vec_Seq        *vs = (Vec_Seq*)v->data;
@@ -99,8 +91,6 @@ PetscErrorCode VecDestroy_SeqCUDA_Private(Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecResetArray_SeqCUDA_Private"
 PetscErrorCode VecResetArray_SeqCUDA_Private(Vec vin)
 {
   Vec_Seq *v = (Vec_Seq*)vin->data;
@@ -111,8 +101,6 @@ PetscErrorCode VecResetArray_SeqCUDA_Private(Vec vin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCUDAAllocateCheck_Public"
 PetscErrorCode VecCUDAAllocateCheck_Public(Vec v)
 {
   PetscErrorCode ierr;
@@ -122,8 +110,6 @@ PetscErrorCode VecCUDAAllocateCheck_Public(Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCUDACopyToGPU_Public"
 PetscErrorCode VecCUDACopyToGPU_Public(Vec v)
 {
   PetscErrorCode ierr;
@@ -133,8 +119,6 @@ PetscErrorCode VecCUDACopyToGPU_Public(Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCUDACopyToGPUSome_Public"
 /*
     VecCUDACopyToGPUSome_Public - Copies certain entries down to the GPU from the CPU of a vector
 
@@ -152,8 +136,6 @@ PetscErrorCode VecCUDACopyToGPUSome_Public(Vec v,PetscCUDAIndices ci)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCUDACopyFromGPUSome_Public"
 /*
   VecCUDACopyFromGPUSome_Public - Copies certain entries up to the CPU from the GPU of a vector
 
@@ -170,8 +152,6 @@ PetscErrorCode VecCUDACopyFromGPUSome_Public(Vec v,PetscCUDAIndices ci)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecSetRandom_SeqCUDA"
 PetscErrorCode VecSetRandom_SeqCUDA(Vec xin,PetscRandom r)
 {
   PetscErrorCode ierr;
@@ -182,8 +162,6 @@ PetscErrorCode VecSetRandom_SeqCUDA(Vec xin,PetscRandom r)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecResetArray_SeqCUDA"
 PetscErrorCode VecResetArray_SeqCUDA(Vec vin)
 {
   PetscErrorCode ierr;
@@ -195,8 +173,6 @@ PetscErrorCode VecResetArray_SeqCUDA(Vec vin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecPlaceArray_SeqCUDA"
 PetscErrorCode VecPlaceArray_SeqCUDA(Vec vin,const PetscScalar *a)
 {
   PetscErrorCode ierr;
@@ -208,8 +184,6 @@ PetscErrorCode VecPlaceArray_SeqCUDA(Vec vin,const PetscScalar *a)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecReplaceArray_SeqCUDA"
 PetscErrorCode VecReplaceArray_SeqCUDA(Vec vin,const PetscScalar *a)
 {
   PetscErrorCode ierr;
@@ -221,8 +195,6 @@ PetscErrorCode VecReplaceArray_SeqCUDA(Vec vin,const PetscScalar *a)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCreateSeqCUDA"
 /*@
  VecCreateSeqCUDA - Creates a standard, sequential array-style vector.
 
@@ -256,8 +228,6 @@ PetscErrorCode VecCreateSeqCUDA(MPI_Comm comm,PetscInt n,Vec *v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecDuplicate_SeqCUDA"
 PetscErrorCode VecDuplicate_SeqCUDA(Vec win,Vec *V)
 {
   PetscErrorCode ierr;
@@ -271,8 +241,6 @@ PetscErrorCode VecDuplicate_SeqCUDA(Vec win,Vec *V)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCreate_SeqCUDA"
 PetscErrorCode VecCreate_SeqCUDA(Vec V)
 {
   PetscErrorCode ierr;
@@ -286,8 +254,6 @@ PetscErrorCode VecCreate_SeqCUDA(Vec V)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCreateSeqCUDAWithArray"
 /*@C
    VecCreateSeqCUDAWithArray - Creates a CUDA sequential array-style vector,
    where the user provides the array space to store the vector values. The array
@@ -337,8 +303,6 @@ PetscErrorCode  VecCreateSeqCUDAWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,c
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCreate_SeqCUDA_Private"
 PetscErrorCode VecCreate_SeqCUDA_Private(Vec V,const PetscScalar *array)
 {
   PetscErrorCode ierr;

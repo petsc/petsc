@@ -21,8 +21,6 @@ PETSC_EXTERN void PETSC_STDCALL petscsynchronizedflush_(MPI_Fint * comm, FILE **
   *ierr = PetscSynchronizedFlush(MPI_Comm_f2c( *(comm) ),f);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFixSlashN"
 static PetscErrorCode PetscFixSlashN(const char *in, char **out)
 {
   PetscErrorCode ierr;

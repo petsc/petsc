@@ -18,8 +18,6 @@ PETSC_EXTERN PetscErrorCode TSCreate_Mimex(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_BDF(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_GLEE(TS);
 
-#undef __FUNCT__
-#define __FUNCT__ "TSRegisterAll"
 /*@C
   TSRegisterAll - Registers all of the timesteppers in the TS package.
 

@@ -17,8 +17,6 @@ typedef struct {
   PetscReal rhs_norm;   /* Norm of the right hand side */
 } KSP_LSQR;
 
-#undef __FUNCT__
-#define __FUNCT__ "VecSquare"
 static PetscErrorCode  VecSquare(Vec v)
 {
   PetscErrorCode ierr;
@@ -33,8 +31,6 @@ static PetscErrorCode  VecSquare(Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_LSQR"
 static PetscErrorCode KSPSetUp_LSQR(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -66,8 +62,6 @@ static PetscErrorCode KSPSetUp_LSQR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_LSQR"
 static PetscErrorCode KSPSolve_LSQR(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -242,8 +236,6 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPDestroy_LSQR"
 PetscErrorCode KSPDestroy_LSQR(KSP ksp)
 {
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
@@ -264,8 +256,6 @@ PetscErrorCode KSPDestroy_LSQR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPLSQRSetStandardErrorVec"
 PetscErrorCode  KSPLSQRSetStandardErrorVec(KSP ksp, Vec se)
 {
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
@@ -277,8 +267,6 @@ PetscErrorCode  KSPLSQRSetStandardErrorVec(KSP ksp, Vec se)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPLSQRGetStandardErrorVec"
 PetscErrorCode  KSPLSQRGetStandardErrorVec(KSP ksp,Vec *se)
 {
   KSP_LSQR *lsqr = (KSP_LSQR*)ksp->data;
@@ -288,8 +276,6 @@ PetscErrorCode  KSPLSQRGetStandardErrorVec(KSP ksp,Vec *se)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPLSQRGetArnorm"
 PetscErrorCode  KSPLSQRGetArnorm(KSP ksp,PetscReal *arnorm, PetscReal *rhs_norm, PetscReal *anorm)
 {
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
@@ -311,8 +297,6 @@ PetscErrorCode  KSPLSQRGetArnorm(KSP ksp,PetscReal *arnorm, PetscReal *rhs_norm,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPLSQRMonitorDefault"
 /*@C
    KSPLSQRMonitorDefault - Print the residual norm at each iteration of the LSQR method and the norm of the residual of the normal equations A'*A x = A' b
 
@@ -352,8 +336,6 @@ PetscErrorCode  KSPLSQRMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,PetscVi
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetFromOptions_LSQR"
 PetscErrorCode KSPSetFromOptions_LSQR(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
@@ -367,8 +349,6 @@ PetscErrorCode KSPSetFromOptions_LSQR(PetscOptionItems *PetscOptionsObject,KSP k
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPView_LSQR"
 PetscErrorCode KSPView_LSQR(KSP ksp,PetscViewer viewer)
 {
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
@@ -388,8 +368,6 @@ PetscErrorCode KSPView_LSQR(KSP ksp,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPLSQRDefaultConverged"
 /*@C
    KSPLSQRDefaultConverged - Determines convergence of the LSQR Krylov method. This calls KSPConvergedDefault() and if that does not determine convergence then checks
       convergence for the least squares problem.
@@ -467,8 +445,6 @@ PetscErrorCode  KSPLSQRDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPCo
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPLSQRDefaultConverged()
 
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_LSQR"
 PETSC_EXTERN PetscErrorCode KSPCreate_LSQR(KSP ksp)
 {
   KSP_LSQR       *lsqr;

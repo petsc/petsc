@@ -57,8 +57,6 @@ PetscClassId PETSCSPACE_CLASSID = 0;
 PetscFunctionList PetscSpaceList              = NULL;
 PetscBool         PetscSpaceRegisterAllCalled = PETSC_FALSE;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceRegister"
 /*@C
   PetscSpaceRegister - Adds a new PetscSpace implementation
 
@@ -101,8 +99,6 @@ PetscErrorCode PetscSpaceRegister(const char sname[], PetscErrorCode (*function)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceSetType"
 /*@C
   PetscSpaceSetType - Builds a particular PetscSpace
 
@@ -144,8 +140,6 @@ PetscErrorCode PetscSpaceSetType(PetscSpace sp, PetscSpaceType name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceGetType"
 /*@C
   PetscSpaceGetType - Gets the PetscSpace type name (as a string) from the object.
 
@@ -176,8 +170,6 @@ PetscErrorCode PetscSpaceGetType(PetscSpace sp, PetscSpaceType *name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceView"
 /*@C
   PetscSpaceView - Views a PetscSpace
 
@@ -206,8 +198,6 @@ PetscErrorCode PetscSpaceView(PetscSpace sp, PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceSetFromOptions"
 /*@
   PetscSpaceSetFromOptions - sets parameters in a PetscSpace from the options database
 
@@ -257,8 +247,6 @@ PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceSetUp"
 /*@C
   PetscSpaceSetUp - Construct data structures for the PetscSpace
 
@@ -281,8 +269,6 @@ PetscErrorCode PetscSpaceSetUp(PetscSpace sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceDestroy"
 /*@
   PetscSpaceDestroy - Destroys a PetscSpace object
 
@@ -312,8 +298,6 @@ PetscErrorCode PetscSpaceDestroy(PetscSpace *sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceCreate"
 /*@
   PetscSpaceCreate - Creates an empty PetscSpace object. The type can then be set with PetscSpaceSetType().
 
@@ -349,8 +333,6 @@ PetscErrorCode PetscSpaceCreate(MPI_Comm comm, PetscSpace *sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceGetDimension"
 /* Dimension of the space, i.e. number of basis vectors */
 PetscErrorCode PetscSpaceGetDimension(PetscSpace sp, PetscInt *dim)
 {
@@ -364,8 +346,6 @@ PetscErrorCode PetscSpaceGetDimension(PetscSpace sp, PetscInt *dim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceGetOrder"
 /*@
   PetscSpaceGetOrder - Return the order of approximation for this space
 
@@ -388,8 +368,6 @@ PetscErrorCode PetscSpaceGetOrder(PetscSpace sp, PetscInt *order)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceSetOrder"
 /*@
   PetscSpaceSetOrder - Set the order of approximation for this space
 
@@ -409,8 +387,6 @@ PetscErrorCode PetscSpaceSetOrder(PetscSpace sp, PetscInt order)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceEvaluate"
 /*@C
   PetscSpaceEvaluate - Evaluate the basis functions and their derivatives (jet) at each point
 
@@ -442,8 +418,6 @@ PetscErrorCode PetscSpaceEvaluate(PetscSpace sp, PetscInt npoints, const PetscRe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceSetFromOptions_Polynomial"
 PetscErrorCode PetscSpaceSetFromOptions_Polynomial(PetscOptionItems *PetscOptionsObject,PetscSpace sp)
 {
   PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
@@ -458,8 +432,6 @@ PetscErrorCode PetscSpaceSetFromOptions_Polynomial(PetscOptionItems *PetscOption
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpacePolynomialView_Ascii"
 static PetscErrorCode PetscSpacePolynomialView_Ascii(PetscSpace sp, PetscViewer viewer)
 {
   PetscSpace_Poly  *poly = (PetscSpace_Poly *) sp->data;
@@ -478,8 +450,6 @@ static PetscErrorCode PetscSpacePolynomialView_Ascii(PetscSpace sp, PetscViewer 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceView_Polynomial"
 PetscErrorCode PetscSpaceView_Polynomial(PetscSpace sp, PetscViewer viewer)
 {
   PetscBool      iascii;
@@ -493,8 +463,6 @@ PetscErrorCode PetscSpaceView_Polynomial(PetscSpace sp, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceSetUp_Polynomial"
 PetscErrorCode PetscSpaceSetUp_Polynomial(PetscSpace sp)
 {
   PetscSpace_Poly *poly    = (PetscSpace_Poly *) sp->data;
@@ -508,8 +476,6 @@ PetscErrorCode PetscSpaceSetUp_Polynomial(PetscSpace sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceDestroy_Polynomial"
 PetscErrorCode PetscSpaceDestroy_Polynomial(PetscSpace sp)
 {
   PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
@@ -523,8 +489,6 @@ PetscErrorCode PetscSpaceDestroy_Polynomial(PetscSpace sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceGetDimension_Polynomial"
 PetscErrorCode PetscSpaceGetDimension_Polynomial(PetscSpace sp, PetscInt *dim)
 {
   PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
@@ -545,8 +509,6 @@ PetscErrorCode PetscSpaceGetDimension_Polynomial(PetscSpace sp, PetscInt *dim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "LatticePoint_Internal"
 /*
   LatticePoint_Internal - Returns all tuples of size 'len' with nonnegative integers that sum up to 'sum'.
 
@@ -585,8 +547,6 @@ static PetscErrorCode LatticePoint_Internal(PetscInt len, PetscInt sum, PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "LatticePointLexicographic_Internal"
 /*
   LatticePointLexicographic_Internal - Returns all tuples of size 'len' with nonnegative integers that sum up to at most 'max'.
                                        Ordering is lexicographic with lowest index as least significant in ordering.
@@ -614,8 +574,6 @@ static PetscErrorCode LatticePointLexicographic_Internal(PetscInt len, PetscInt 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TensorPoint_Internal"
 /*
   TensorPoint_Internal - Returns all tuples of size 'len' with nonnegative integers that are less than 'max'.
 
@@ -655,8 +613,6 @@ static PetscErrorCode TensorPoint_Internal(PetscInt len, PetscInt max, PetscInt 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TensorPointLexicographic_Internal"
 /*
   TensorPointLexicographic_Internal - Returns all tuples of size 'len' with nonnegative integers that are all less than or equal to 'max'.
                                       Ordering is lexicographic with lowest index as least significant in ordering.
@@ -686,8 +642,6 @@ static PetscErrorCode TensorPointLexicographic_Internal(PetscInt len, PetscInt m
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceEvaluate_Polynomial"
 PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, const PetscReal points[], PetscReal B[], PetscReal D[], PetscReal H[])
 {
   PetscSpace_Poly *poly    = (PetscSpace_Poly *) sp->data;
@@ -809,8 +763,6 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpacePolynomialSetTensor"
 /*@
   PetscSpacePolynomialSetTensor - Set whether a function space is a space of tensor polynomials (the space is spanned
   by polynomials whose degree in each variabl is bounded by the given order), as opposed to polynomials (the space is
@@ -834,8 +786,6 @@ PetscErrorCode PetscSpacePolynomialSetTensor(PetscSpace sp, PetscBool tensor)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpacePolynomialGetTensor"
 /*@
   PetscSpacePolynomialGetTensor - Get whether a function space is a space of tensor polynomials (the space is spanned
   by polynomials whose degree in each variabl is bounded by the given order), as opposed to polynomials (the space is
@@ -862,8 +812,6 @@ PetscErrorCode PetscSpacePolynomialGetTensor(PetscSpace sp, PetscBool *tensor)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpacePolynomialSetTensor_Polynomial"
 static PetscErrorCode PetscSpacePolynomialSetTensor_Polynomial(PetscSpace sp, PetscBool tensor)
 {
   PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
@@ -873,8 +821,6 @@ static PetscErrorCode PetscSpacePolynomialSetTensor_Polynomial(PetscSpace sp, Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpacePolynomialGetTensor_Polynomial"
 static PetscErrorCode PetscSpacePolynomialGetTensor_Polynomial(PetscSpace sp, PetscBool *tensor)
 {
   PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
@@ -886,8 +832,6 @@ static PetscErrorCode PetscSpacePolynomialGetTensor_Polynomial(PetscSpace sp, Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceInitialize_Polynomial"
 PetscErrorCode PetscSpaceInitialize_Polynomial(PetscSpace sp)
 {
   PetscErrorCode ierr;
@@ -912,8 +856,6 @@ PetscErrorCode PetscSpaceInitialize_Polynomial(PetscSpace sp)
 .seealso: PetscSpaceType, PetscSpaceCreate(), PetscSpaceSetType()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceCreate_Polynomial"
 PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Polynomial(PetscSpace sp)
 {
   PetscSpace_Poly *poly;
@@ -933,8 +875,6 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Polynomial(PetscSpace sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpacePolynomialSetSymmetric"
 PetscErrorCode PetscSpacePolynomialSetSymmetric(PetscSpace sp, PetscBool sym)
 {
   PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
@@ -945,8 +885,6 @@ PetscErrorCode PetscSpacePolynomialSetSymmetric(PetscSpace sp, PetscBool sym)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpacePolynomialGetSymmetric"
 PetscErrorCode PetscSpacePolynomialGetSymmetric(PetscSpace sp, PetscBool *sym)
 {
   PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
@@ -958,8 +896,6 @@ PetscErrorCode PetscSpacePolynomialGetSymmetric(PetscSpace sp, PetscBool *sym)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpacePolynomialSetNumVariables"
 PetscErrorCode PetscSpacePolynomialSetNumVariables(PetscSpace sp, PetscInt n)
 {
   PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
@@ -970,8 +906,6 @@ PetscErrorCode PetscSpacePolynomialSetNumVariables(PetscSpace sp, PetscInt n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpacePolynomialGetNumVariables"
 PetscErrorCode PetscSpacePolynomialGetNumVariables(PetscSpace sp, PetscInt *n)
 {
   PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
@@ -983,8 +917,6 @@ PetscErrorCode PetscSpacePolynomialGetNumVariables(PetscSpace sp, PetscInt *n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceSetFromOptions_DG"
 PetscErrorCode PetscSpaceSetFromOptions_DG(PetscOptionItems *PetscOptionsObject,PetscSpace sp)
 {
   PetscSpace_DG *dg = (PetscSpace_DG *) sp->data;
@@ -997,8 +929,6 @@ PetscErrorCode PetscSpaceSetFromOptions_DG(PetscOptionItems *PetscOptionsObject,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceDGView_Ascii"
 PetscErrorCode PetscSpaceDGView_Ascii(PetscSpace sp, PetscViewer viewer)
 {
   PetscSpace_DG    *dg = (PetscSpace_DG *) sp->data;
@@ -1018,8 +948,6 @@ PetscErrorCode PetscSpaceDGView_Ascii(PetscSpace sp, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceView_DG"
 PetscErrorCode PetscSpaceView_DG(PetscSpace sp, PetscViewer viewer)
 {
   PetscBool      iascii;
@@ -1033,8 +961,6 @@ PetscErrorCode PetscSpaceView_DG(PetscSpace sp, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceSetUp_DG"
 PetscErrorCode PetscSpaceSetUp_DG(PetscSpace sp)
 {
   PetscSpace_DG *dg = (PetscSpace_DG *) sp->data;
@@ -1047,8 +973,6 @@ PetscErrorCode PetscSpaceSetUp_DG(PetscSpace sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceDestroy_DG"
 PetscErrorCode PetscSpaceDestroy_DG(PetscSpace sp)
 {
   PetscSpace_DG *dg = (PetscSpace_DG *) sp->data;
@@ -1059,8 +983,6 @@ PetscErrorCode PetscSpaceDestroy_DG(PetscSpace sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceGetDimension_DG"
 PetscErrorCode PetscSpaceGetDimension_DG(PetscSpace sp, PetscInt *dim)
 {
   PetscSpace_DG *dg = (PetscSpace_DG *) sp->data;
@@ -1070,8 +992,6 @@ PetscErrorCode PetscSpaceGetDimension_DG(PetscSpace sp, PetscInt *dim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceEvaluate_DG"
 PetscErrorCode PetscSpaceEvaluate_DG(PetscSpace sp, PetscInt npoints, const PetscReal points[], PetscReal B[], PetscReal D[], PetscReal H[])
 {
   PetscSpace_DG *dg  = (PetscSpace_DG *) sp->data;
@@ -1091,8 +1011,6 @@ PetscErrorCode PetscSpaceEvaluate_DG(PetscSpace sp, PetscInt npoints, const Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceInitialize_DG"
 PetscErrorCode PetscSpaceInitialize_DG(PetscSpace sp)
 {
   PetscFunctionBegin;
@@ -1113,8 +1031,6 @@ PetscErrorCode PetscSpaceInitialize_DG(PetscSpace sp)
 .seealso: PetscSpaceType, PetscSpaceCreate(), PetscSpaceSetType()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceCreate_DG"
 PETSC_EXTERN PetscErrorCode PetscSpaceCreate_DG(PetscSpace sp)
 {
   PetscSpace_DG *dg;
@@ -1141,8 +1057,6 @@ PetscClassId PETSCDUALSPACE_CLASSID = 0;
 PetscFunctionList PetscDualSpaceList              = NULL;
 PetscBool         PetscDualSpaceRegisterAllCalled = PETSC_FALSE;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceRegister"
 /*@C
   PetscDualSpaceRegister - Adds a new PetscDualSpace implementation
 
@@ -1185,8 +1099,6 @@ PetscErrorCode PetscDualSpaceRegister(const char sname[], PetscErrorCode (*funct
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceSetType"
 /*@C
   PetscDualSpaceSetType - Builds a particular PetscDualSpace
 
@@ -1228,8 +1140,6 @@ PetscErrorCode PetscDualSpaceSetType(PetscDualSpace sp, PetscDualSpaceType name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceGetType"
 /*@C
   PetscDualSpaceGetType - Gets the PetscDualSpace type name (as a string) from the object.
 
@@ -1260,8 +1170,6 @@ PetscErrorCode PetscDualSpaceGetType(PetscDualSpace sp, PetscDualSpaceType *name
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceView"
 /*@
   PetscDualSpaceView - Views a PetscDualSpace
 
@@ -1290,8 +1198,6 @@ PetscErrorCode PetscDualSpaceView(PetscDualSpace sp, PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceSetFromOptions"
 /*@
   PetscDualSpaceSetFromOptions - sets parameters in a PetscDualSpace from the options database
 
@@ -1341,8 +1247,6 @@ PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceSetUp"
 /*@
   PetscDualSpaceSetUp - Construct a basis for the PetscDualSpace
 
@@ -1367,8 +1271,6 @@ PetscErrorCode PetscDualSpaceSetUp(PetscDualSpace sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceDestroy"
 /*@
   PetscDualSpaceDestroy - Destroys a PetscDualSpace object
 
@@ -1405,8 +1307,6 @@ PetscErrorCode PetscDualSpaceDestroy(PetscDualSpace *sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceCreate"
 /*@
   PetscDualSpaceCreate - Creates an empty PetscDualSpace object. The type can then be set with PetscDualSpaceSetType().
 
@@ -1442,8 +1342,6 @@ PetscErrorCode PetscDualSpaceCreate(MPI_Comm comm, PetscDualSpace *sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceDuplicate"
 /*@
   PetscDualSpaceDuplicate - Creates a duplicate PetscDualSpace object, however it is not setup.
 
@@ -1470,8 +1368,6 @@ PetscErrorCode PetscDualSpaceDuplicate(PetscDualSpace sp, PetscDualSpace *spNew)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceGetDM"
 /*@
   PetscDualSpaceGetDM - Get the DM representing the reference cell
 
@@ -1496,8 +1392,6 @@ PetscErrorCode PetscDualSpaceGetDM(PetscDualSpace sp, DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceSetDM"
 /*@
   PetscDualSpaceSetDM - Get the DM representing the reference cell
 
@@ -1524,8 +1418,6 @@ PetscErrorCode PetscDualSpaceSetDM(PetscDualSpace sp, DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceGetOrder"
 /*@
   PetscDualSpaceGetOrder - Get the order of the dual space
 
@@ -1550,8 +1442,6 @@ PetscErrorCode PetscDualSpaceGetOrder(PetscDualSpace sp, PetscInt *order)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceSetOrder"
 /*@
   PetscDualSpaceSetOrder - Set the order of the dual space
 
@@ -1573,8 +1463,6 @@ PetscErrorCode PetscDualSpaceSetOrder(PetscDualSpace sp, PetscInt order)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceLagrangeGetTensor"
 /*@
   PetscDualSpaceLagrangeGetTensor - Get the tensor nature of the dual space
 
@@ -1601,8 +1489,6 @@ PetscErrorCode PetscDualSpaceLagrangeGetTensor(PetscDualSpace sp, PetscBool *ten
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceLagrangeSetTensor"
 /*@
   PetscDualSpaceLagrangeSetTensor - Set the tensor nature of the dual space
 
@@ -1626,8 +1512,6 @@ PetscErrorCode PetscDualSpaceLagrangeSetTensor(PetscDualSpace sp, PetscBool tens
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceGetFunctional"
 /*@
   PetscDualSpaceGetFunctional - Get the i-th basis functional in the dual space
 
@@ -1658,8 +1542,6 @@ PetscErrorCode PetscDualSpaceGetFunctional(PetscDualSpace sp, PetscInt i, PetscQ
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceGetDimension"
 /*@
   PetscDualSpaceGetDimension - Get the dimension of the dual space, i.e. the number of basis functionals
 
@@ -1687,8 +1569,6 @@ PetscErrorCode PetscDualSpaceGetDimension(PetscDualSpace sp, PetscInt *dim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceGetNumDof"
 /*@C
   PetscDualSpaceGetNumDof - Get the number of degrees of freedom for each spatial (topological) dimension
 
@@ -1716,8 +1596,6 @@ PetscErrorCode PetscDualSpaceGetNumDof(PetscDualSpace sp, const PetscInt **numDo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceCreateReferenceCell"
 /*@
   PetscDualSpaceCreateReferenceCell - Create a DMPLEX with the appropriate FEM reference cell
 
@@ -1745,8 +1623,6 @@ PetscErrorCode PetscDualSpaceCreateReferenceCell(PetscDualSpace sp, PetscInt dim
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceApply"
 /*@C
   PetscDualSpaceApply - Apply a functional from the dual space basis to an input function
 
@@ -1799,8 +1675,6 @@ PetscErrorCode PetscDualSpaceApply(PetscDualSpace sp, PetscInt f, PetscReal time
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceApplyFVM"
 /*@C
   PetscDualSpaceApplyFVM - Apply a functional from the dual space basis to an input function
 
@@ -1851,8 +1725,6 @@ PetscErrorCode PetscDualSpaceApplyFVM(PetscDualSpace sp, PetscInt f, PetscReal t
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceGetHeightSubspace"
 /*@
   PetscDualSpaceGetHeightSubspace - Get the subset of the dual space basis that is supported on a mesh point of a given height.
 
@@ -1889,8 +1761,6 @@ PetscErrorCode PetscDualSpaceGetHeightSubspace(PetscDualSpace sp, PetscInt heigh
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceLagrangeGetTensor_Lagrange"
 static PetscErrorCode PetscDualSpaceLagrangeGetTensor_Lagrange(PetscDualSpace sp, PetscBool *tensor)
 {
   PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *)sp->data;
@@ -1900,8 +1770,6 @@ static PetscErrorCode PetscDualSpaceLagrangeGetTensor_Lagrange(PetscDualSpace sp
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceLagrangeSetTensor_Lagrange"
 static PetscErrorCode PetscDualSpaceLagrangeSetTensor_Lagrange(PetscDualSpace sp, PetscBool tensor)
 {
   PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *)sp->data;
@@ -1915,8 +1783,6 @@ static PetscErrorCode PetscDualSpaceLagrangeSetTensor_Lagrange(PetscDualSpace sp
 
 #define CartIndex(perEdge,a,b) (perEdge*(a)+b)
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceGetSymmetries_Lagrange"
 static PetscErrorCode PetscDualSpaceGetSymmetries_Lagrange(PetscDualSpace sp, const PetscInt ****perms, const PetscScalar ****flips)
 {
 
@@ -2073,8 +1939,6 @@ static PetscErrorCode PetscDualSpaceGetSymmetries_Lagrange(PetscDualSpace sp, co
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceGetSymmetries"
 PETSC_EXTERN PetscErrorCode PetscDualSpaceGetSymmetries(PetscDualSpace sp, const PetscInt ****perms, const PetscScalar ****flips)
 {
   PetscErrorCode ierr;
@@ -2095,8 +1959,6 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceGetSymmetries(PetscDualSpace sp, const
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceGetDimension_SingleCell_Lagrange"
 static PetscErrorCode PetscDualSpaceGetDimension_SingleCell_Lagrange(PetscDualSpace sp, PetscInt order, PetscInt *dim)
 {
   PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
@@ -2119,8 +1981,6 @@ static PetscErrorCode PetscDualSpaceGetDimension_SingleCell_Lagrange(PetscDualSp
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceCreateHeightSubspace_Lagrange"
 static PetscErrorCode PetscDualSpaceCreateHeightSubspace_Lagrange(PetscDualSpace sp, PetscInt height, PetscDualSpace *bdsp)
 {
   PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
@@ -2158,8 +2018,6 @@ static PetscErrorCode PetscDualSpaceCreateHeightSubspace_Lagrange(PetscDualSpace
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceSetUp_Lagrange"
 PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
 {
   PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
@@ -2366,8 +2224,6 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceDestroy_Lagrange"
 PetscErrorCode PetscDualSpaceDestroy_Lagrange(PetscDualSpace sp)
 {
   PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
@@ -2401,8 +2257,6 @@ PetscErrorCode PetscDualSpaceDestroy_Lagrange(PetscDualSpace sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceDuplicate_Lagrange"
 PetscErrorCode PetscDualSpaceDuplicate_Lagrange(PetscDualSpace sp, PetscDualSpace *spNew)
 {
   PetscInt       order;
@@ -2421,8 +2275,6 @@ PetscErrorCode PetscDualSpaceDuplicate_Lagrange(PetscDualSpace sp, PetscDualSpac
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceSetFromOptions_Lagrange"
 PetscErrorCode PetscDualSpaceSetFromOptions_Lagrange(PetscOptionItems *PetscOptionsObject,PetscDualSpace sp)
 {
   PetscBool      continuous, tensor, flg;
@@ -2440,8 +2292,6 @@ PetscErrorCode PetscDualSpaceSetFromOptions_Lagrange(PetscOptionItems *PetscOpti
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceGetDimension_Lagrange"
 PetscErrorCode PetscDualSpaceGetDimension_Lagrange(PetscDualSpace sp, PetscInt *dim)
 {
   DM              K;
@@ -2465,8 +2315,6 @@ PetscErrorCode PetscDualSpaceGetDimension_Lagrange(PetscDualSpace sp, PetscInt *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceGetNumDof_Lagrange"
 PetscErrorCode PetscDualSpaceGetNumDof_Lagrange(PetscDualSpace sp, const PetscInt **numDof)
 {
   PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
@@ -2476,8 +2324,6 @@ PetscErrorCode PetscDualSpaceGetNumDof_Lagrange(PetscDualSpace sp, const PetscIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceLagrangeGetContinuity_Lagrange"
 static PetscErrorCode PetscDualSpaceLagrangeGetContinuity_Lagrange(PetscDualSpace sp, PetscBool *continuous)
 {
   PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
@@ -2489,8 +2335,6 @@ static PetscErrorCode PetscDualSpaceLagrangeGetContinuity_Lagrange(PetscDualSpac
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceLagrangeSetContinuity_Lagrange"
 static PetscErrorCode PetscDualSpaceLagrangeSetContinuity_Lagrange(PetscDualSpace sp, PetscBool continuous)
 {
   PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
@@ -2501,8 +2345,6 @@ static PetscErrorCode PetscDualSpaceLagrangeSetContinuity_Lagrange(PetscDualSpac
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceLagrangeGetContinuity"
 /*@
   PetscDualSpaceLagrangeGetContinuity - Retrieves the flag for element continuity
 
@@ -2530,8 +2372,6 @@ PetscErrorCode PetscDualSpaceLagrangeGetContinuity(PetscDualSpace sp, PetscBool 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceLagrangeSetContinuity"
 /*@
   PetscDualSpaceLagrangeSetContinuity - Indicate whether the element is continuous
 
@@ -2560,8 +2400,6 @@ PetscErrorCode PetscDualSpaceLagrangeSetContinuity(PetscDualSpace sp, PetscBool 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceGetHeightSubspace_Lagrange"
 PetscErrorCode PetscDualSpaceGetHeightSubspace_Lagrange(PetscDualSpace sp, PetscInt height, PetscDualSpace *bdsp)
 {
   PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
@@ -2590,8 +2428,6 @@ PetscErrorCode PetscDualSpaceGetHeightSubspace_Lagrange(PetscDualSpace sp, Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceInitialize_Lagrange"
 PetscErrorCode PetscDualSpaceInitialize_Lagrange(PetscDualSpace sp)
 {
   PetscFunctionBegin;
@@ -2615,8 +2451,6 @@ PetscErrorCode PetscDualSpaceInitialize_Lagrange(PetscDualSpace sp)
 .seealso: PetscDualSpaceType, PetscDualSpaceCreate(), PetscDualSpaceSetType()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceCreate_Lagrange"
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Lagrange(PetscDualSpace sp)
 {
   PetscDualSpace_Lag *lag;
@@ -2640,8 +2474,6 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Lagrange(PetscDualSpace sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceSetUp_Simple"
 PetscErrorCode PetscDualSpaceSetUp_Simple(PetscDualSpace sp)
 {
   PetscDualSpace_Simple *s  = (PetscDualSpace_Simple *) sp->data;
@@ -2655,8 +2487,6 @@ PetscErrorCode PetscDualSpaceSetUp_Simple(PetscDualSpace sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceDestroy_Simple"
 PetscErrorCode PetscDualSpaceDestroy_Simple(PetscDualSpace sp)
 {
   PetscDualSpace_Simple *s = (PetscDualSpace_Simple *) sp->data;
@@ -2670,8 +2500,6 @@ PetscErrorCode PetscDualSpaceDestroy_Simple(PetscDualSpace sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceDuplicate_Simple"
 PetscErrorCode PetscDualSpaceDuplicate_Simple(PetscDualSpace sp, PetscDualSpace *spNew)
 {
   PetscInt       dim, d;
@@ -2691,16 +2519,12 @@ PetscErrorCode PetscDualSpaceDuplicate_Simple(PetscDualSpace sp, PetscDualSpace 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceSetFromOptions_Simple"
 PetscErrorCode PetscDualSpaceSetFromOptions_Simple(PetscOptionItems *PetscOptionsObject,PetscDualSpace sp)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceGetDimension_Simple"
 PetscErrorCode PetscDualSpaceGetDimension_Simple(PetscDualSpace sp, PetscInt *dim)
 {
   PetscDualSpace_Simple *s = (PetscDualSpace_Simple *) sp->data;
@@ -2710,8 +2534,6 @@ PetscErrorCode PetscDualSpaceGetDimension_Simple(PetscDualSpace sp, PetscInt *di
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceSimpleSetDimension_Simple"
 PetscErrorCode PetscDualSpaceSimpleSetDimension_Simple(PetscDualSpace sp, const PetscInt dim)
 {
   PetscDualSpace_Simple *s = (PetscDualSpace_Simple *) sp->data;
@@ -2732,8 +2554,6 @@ PetscErrorCode PetscDualSpaceSimpleSetDimension_Simple(PetscDualSpace sp, const 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceGetNumDof_Simple"
 PetscErrorCode PetscDualSpaceGetNumDof_Simple(PetscDualSpace sp, const PetscInt **numDof)
 {
   PetscDualSpace_Simple *s = (PetscDualSpace_Simple *) sp->data;
@@ -2743,8 +2563,6 @@ PetscErrorCode PetscDualSpaceGetNumDof_Simple(PetscDualSpace sp, const PetscInt 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceSimpleSetFunctional_Simple"
 PetscErrorCode PetscDualSpaceSimpleSetFunctional_Simple(PetscDualSpace sp, PetscInt f, PetscQuadrature q)
 {
   PetscDualSpace_Simple *s   = (PetscDualSpace_Simple *) sp->data;
@@ -2763,8 +2581,6 @@ PetscErrorCode PetscDualSpaceSimpleSetFunctional_Simple(PetscDualSpace sp, Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceSimpleSetDimension"
 /*@
   PetscDualSpaceSimpleSetDimension - Set the number of functionals in the dual space basis
 
@@ -2790,8 +2606,6 @@ PetscErrorCode PetscDualSpaceSimpleSetDimension(PetscDualSpace sp, PetscInt dim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceSimpleSetFunctional"
 /*@
   PetscDualSpaceSimpleSetFunctional - Set the given basis element for this dual space
 
@@ -2819,8 +2633,6 @@ PetscErrorCode PetscDualSpaceSimpleSetFunctional(PetscDualSpace sp, PetscInt fun
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceInitialize_Simple"
 PetscErrorCode PetscDualSpaceInitialize_Simple(PetscDualSpace sp)
 {
   PetscFunctionBegin;
@@ -2842,8 +2654,6 @@ PetscErrorCode PetscDualSpaceInitialize_Simple(PetscDualSpace sp)
 .seealso: PetscDualSpaceType, PetscDualSpaceCreate(), PetscDualSpaceSetType()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceCreate_Simple"
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Simple(PetscDualSpace sp)
 {
   PetscDualSpace_Simple *s;
@@ -2869,8 +2679,6 @@ PetscClassId PETSCFE_CLASSID = 0;
 PetscFunctionList PetscFEList              = NULL;
 PetscBool         PetscFERegisterAllCalled = PETSC_FALSE;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFERegister"
 /*@C
   PetscFERegister - Adds a new PetscFE implementation
 
@@ -2913,8 +2721,6 @@ PetscErrorCode PetscFERegister(const char sname[], PetscErrorCode (*function)(Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFESetType"
 /*@C
   PetscFESetType - Builds a particular PetscFE
 
@@ -2956,8 +2762,6 @@ PetscErrorCode PetscFESetType(PetscFE fem, PetscFEType name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEGetType"
 /*@C
   PetscFEGetType - Gets the PetscFE type name (as a string) from the object.
 
@@ -2988,8 +2792,6 @@ PetscErrorCode PetscFEGetType(PetscFE fem, PetscFEType *name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEView"
 /*@C
   PetscFEView - Views a PetscFE
 
@@ -3018,8 +2820,6 @@ PetscErrorCode PetscFEView(PetscFE fem, PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFESetFromOptions"
 /*@
   PetscFESetFromOptions - sets parameters in a PetscFE from the options database
 
@@ -3071,8 +2871,6 @@ PetscErrorCode PetscFESetFromOptions(PetscFE fem)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFESetUp"
 /*@C
   PetscFESetUp - Construct data structures for the PetscFE
 
@@ -3095,8 +2893,6 @@ PetscErrorCode PetscFESetUp(PetscFE fem)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEDestroy"
 /*@
   PetscFEDestroy - Destroys a PetscFE object
 
@@ -3135,8 +2931,6 @@ PetscErrorCode PetscFEDestroy(PetscFE *fem)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFECreate"
 /*@
   PetscFECreate - Creates an empty PetscFE object. The type can then be set with PetscFESetType().
 
@@ -3187,8 +2981,6 @@ PetscErrorCode PetscFECreate(MPI_Comm comm, PetscFE *fem)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEGetSpatialDimension"
 /*@
   PetscFEGetSpatialDimension - Returns the spatial dimension of the element
 
@@ -3217,8 +3009,6 @@ PetscErrorCode PetscFEGetSpatialDimension(PetscFE fem, PetscInt *dim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFESetNumComponents"
 /*@
   PetscFESetNumComponents - Sets the number of components in the element
 
@@ -3240,8 +3030,6 @@ PetscErrorCode PetscFESetNumComponents(PetscFE fem, PetscInt comp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEGetNumComponents"
 /*@
   PetscFEGetNumComponents - Returns the number of components in the element
 
@@ -3266,8 +3054,6 @@ PetscErrorCode PetscFEGetNumComponents(PetscFE fem, PetscInt *comp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFESetTileSizes"
 /*@
   PetscFESetTileSizes - Sets the tile sizes for evaluation
 
@@ -3295,8 +3081,6 @@ PetscErrorCode PetscFESetTileSizes(PetscFE fem, PetscInt blockSize, PetscInt num
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEGetTileSizes"
 /*@
   PetscFEGetTileSizes - Returns the tile sizes for evaluation
 
@@ -3330,8 +3114,6 @@ PetscErrorCode PetscFEGetTileSizes(PetscFE fem, PetscInt *blockSize, PetscInt *n
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEGetBasisSpace"
 /*@
   PetscFEGetBasisSpace - Returns the PetscSpace used for approximation of the solution
 
@@ -3356,8 +3138,6 @@ PetscErrorCode PetscFEGetBasisSpace(PetscFE fem, PetscSpace *sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFESetBasisSpace"
 /*@
   PetscFESetBasisSpace - Sets the PetscSpace used for approximation of the solution
 
@@ -3384,8 +3164,6 @@ PetscErrorCode PetscFESetBasisSpace(PetscFE fem, PetscSpace sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEGetDualSpace"
 /*@
   PetscFEGetDualSpace - Returns the PetscDualSpace used to define the inner product
 
@@ -3410,8 +3188,6 @@ PetscErrorCode PetscFEGetDualSpace(PetscFE fem, PetscDualSpace *sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFESetDualSpace"
 /*@
   PetscFESetDualSpace - Sets the PetscDualSpace used to define the inner product
 
@@ -3438,8 +3214,6 @@ PetscErrorCode PetscFESetDualSpace(PetscFE fem, PetscDualSpace sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEGetQuadrature"
 /*@
   PetscFEGetQuadrature - Returns the PetscQuadrature used to calculate inner products
 
@@ -3464,8 +3238,6 @@ PetscErrorCode PetscFEGetQuadrature(PetscFE fem, PetscQuadrature *q)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFESetQuadrature"
 /*@
   PetscFESetQuadrature - Sets the PetscQuadrature used to calculate inner products
 
@@ -3492,8 +3264,6 @@ PetscErrorCode PetscFESetQuadrature(PetscFE fem, PetscQuadrature q)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEGetFaceQuadrature"
 /*@
   PetscFEGetFaceQuadrature - Returns the PetscQuadrature used to calculate inner products on faces
 
@@ -3518,8 +3288,6 @@ PetscErrorCode PetscFEGetFaceQuadrature(PetscFE fem, PetscQuadrature *q)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFESetFaceQuadrature"
 /*@
   PetscFESetFaceQuadrature - Sets the PetscQuadrature used to calculate inner products on faces
 
@@ -3546,8 +3314,6 @@ PetscErrorCode PetscFESetFaceQuadrature(PetscFE fem, PetscQuadrature q)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEGetNumDof"
 /*@C
   PetscFEGetNumDof - Returns the number of dofs (dual basis vectors) associated to mesh points on the reference cell of a given dimension
 
@@ -3587,8 +3353,6 @@ PetscErrorCode PetscFEGetNumDof(PetscFE fem, const PetscInt **numDof)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEGetDefaultTabulation"
 /*@C
   PetscFEGetDefaultTabulation - Returns the tabulation of the basis functions at the quadrature points
 
@@ -3630,8 +3394,6 @@ PetscErrorCode PetscFEGetDefaultTabulation(PetscFE fem, PetscReal **B, PetscReal
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEGetFaceTabulation"
 PetscErrorCode PetscFEGetFaceTabulation(PetscFE fem, PetscReal **Bf, PetscReal **Df, PetscReal **Hf)
 {
   PetscErrorCode   ierr;
@@ -3672,8 +3434,6 @@ PetscErrorCode PetscFEGetFaceTabulation(PetscFE fem, PetscReal **Bf, PetscReal *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEGetFaceCentroidTabulation"
 PetscErrorCode PetscFEGetFaceCentroidTabulation(PetscFE fem, PetscReal **F)
 {
   PetscErrorCode   ierr;
@@ -3702,8 +3462,6 @@ PetscErrorCode PetscFEGetFaceCentroidTabulation(PetscFE fem, PetscReal **F)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEGetTabulation"
 /*@C
   PetscFEGetTabulation - Tabulates the basis functions, and perhaps derivatives, at the points provided.
 
@@ -3753,8 +3511,6 @@ PetscErrorCode PetscFEGetTabulation(PetscFE fem, PetscInt npoints, const PetscRe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFERestoreTabulation"
 PetscErrorCode PetscFERestoreTabulation(PetscFE fem, PetscInt npoints, const PetscReal points[], PetscReal **B, PetscReal **D, PetscReal **H)
 {
   DM             dm;
@@ -3769,8 +3525,6 @@ PetscErrorCode PetscFERestoreTabulation(PetscFE fem, PetscInt npoints, const Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEDestroy_Basic"
 PetscErrorCode PetscFEDestroy_Basic(PetscFE fem)
 {
   PetscFE_Basic *b = (PetscFE_Basic *) fem->data;
@@ -3781,8 +3535,6 @@ PetscErrorCode PetscFEDestroy_Basic(PetscFE fem)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEView_Basic_Ascii"
 PetscErrorCode PetscFEView_Basic_Ascii(PetscFE fe, PetscViewer viewer)
 {
   PetscSpace        basis;
@@ -3816,8 +3568,6 @@ PetscErrorCode PetscFEView_Basic_Ascii(PetscFE fe, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEView_Basic"
 PetscErrorCode PetscFEView_Basic(PetscFE fe, PetscViewer viewer)
 {
   PetscBool      iascii;
@@ -3831,8 +3581,6 @@ PetscErrorCode PetscFEView_Basic(PetscFE fe, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFESetUp_Basic"
 /* Construct the change of basis from prime basis to nodal basis */
 PetscErrorCode PetscFESetUp_Basic(PetscFE fem)
 {
@@ -3879,8 +3627,6 @@ PetscErrorCode PetscFESetUp_Basic(PetscFE fem)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEGetDimension_Basic"
 PetscErrorCode PetscFEGetDimension_Basic(PetscFE fem, PetscInt *dim)
 {
   PetscErrorCode ierr;
@@ -3890,8 +3636,6 @@ PetscErrorCode PetscFEGetDimension_Basic(PetscFE fem, PetscInt *dim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEGetTabulation_Basic"
 PetscErrorCode PetscFEGetTabulation_Basic(PetscFE fem, PetscInt npoints, const PetscReal points[], PetscReal *B, PetscReal *D, PetscReal *H)
 {
   DM               dm;
@@ -3970,8 +3714,6 @@ PetscErrorCode PetscFEGetTabulation_Basic(PetscFE fem, PetscInt npoints, const P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEIntegrate_Basic"
 PetscErrorCode PetscFEIntegrate_Basic(PetscFE fem, PetscDS prob, PetscInt field, PetscInt Ne, PetscFECellGeom *cgeom,
                                       const PetscScalar coefficients[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal integral[])
 {
@@ -4043,8 +3785,6 @@ PetscErrorCode PetscFEIntegrate_Basic(PetscFE fem, PetscDS prob, PetscInt field,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEIntegrateResidual_Basic"
 PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE fem, PetscDS prob, PetscInt field, PetscInt Ne, PetscFECellGeom *cgeom,
                                               const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscScalar elemVec[])
 {
@@ -4122,8 +3862,6 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE fem, PetscDS prob, PetscIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEIntegrateBdResidual_Basic"
 PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscFE fem, PetscDS prob, PetscInt field, PetscInt Ne, PetscFEFaceGeom *fgeom,
                                                 const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscScalar elemVec[])
 {
@@ -4205,8 +3943,6 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscFE fem, PetscDS prob, Petsc
 }
   
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEIntegrateJacobian_Basic"
 PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscFE fem, PetscDS prob, PetscFEJacobianType jtype, PetscInt fieldI, PetscInt fieldJ, PetscInt Ne, PetscFECellGeom *geom,
                                               const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscReal u_tshift, PetscScalar elemMat[])
 {
@@ -4391,8 +4127,6 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscFE fem, PetscDS prob, PetscFE
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEIntegrateBdJacobian_Basic"
 PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscFE fem, PetscDS prob, PetscInt fieldI, PetscInt fieldJ, PetscInt Ne, PetscFEFaceGeom *fgeom,
                                                 const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscReal u_tshift, PetscScalar elemMat[])
 {
@@ -4574,8 +4308,6 @@ PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscFE fem, PetscDS prob, Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEInitialize_Basic"
 PetscErrorCode PetscFEInitialize_Basic(PetscFE fem)
 {
   PetscFunctionBegin;
@@ -4602,8 +4334,6 @@ PetscErrorCode PetscFEInitialize_Basic(PetscFE fem)
 .seealso: PetscFEType, PetscFECreate(), PetscFESetType()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFECreate_Basic"
 PETSC_EXTERN PetscErrorCode PetscFECreate_Basic(PetscFE fem)
 {
   PetscFE_Basic *b;
@@ -4618,8 +4348,6 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_Basic(PetscFE fem)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEDestroy_Nonaffine"
 PetscErrorCode PetscFEDestroy_Nonaffine(PetscFE fem)
 {
   PetscFE_Nonaffine *na = (PetscFE_Nonaffine *) fem->data;
@@ -4630,8 +4358,6 @@ PetscErrorCode PetscFEDestroy_Nonaffine(PetscFE fem)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEIntegrateResidual_Nonaffine"
 PetscErrorCode PetscFEIntegrateResidual_Nonaffine(PetscFE fem, PetscDS prob, PetscInt field, PetscInt Ne, PetscFECellGeom *cgeom,
                                                   const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscScalar elemVec[])
 {
@@ -4704,8 +4430,6 @@ PetscErrorCode PetscFEIntegrateResidual_Nonaffine(PetscFE fem, PetscDS prob, Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEIntegrateBdResidual_Nonaffine"
 PetscErrorCode PetscFEIntegrateBdResidual_Nonaffine(PetscFE fem, PetscDS prob, PetscInt field, PetscInt Ne, PetscFEFaceGeom *fgeom,
                                                 const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscScalar elemVec[])
 {
@@ -4781,8 +4505,6 @@ PetscErrorCode PetscFEIntegrateBdResidual_Nonaffine(PetscFE fem, PetscDS prob, P
    PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEIntegrateJacobian_Nonaffine"
 PetscErrorCode PetscFEIntegrateJacobian_Nonaffine(PetscFE fem, PetscDS prob, PetscFEJacobianType jtype, PetscInt fieldI, PetscInt fieldJ, PetscInt Ne, PetscFECellGeom *cgeom,
                                                   const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscReal u_tshift, PetscScalar elemMat[])
 {
@@ -4966,8 +4688,6 @@ PetscErrorCode PetscFEIntegrateJacobian_Nonaffine(PetscFE fem, PetscDS prob, Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEInitialize_Nonaffine"
 PetscErrorCode PetscFEInitialize_Nonaffine(PetscFE fem)
 {
   PetscFunctionBegin;
@@ -4992,8 +4712,6 @@ PetscErrorCode PetscFEInitialize_Nonaffine(PetscFE fem)
 .seealso: PetscFEType, PetscFECreate(), PetscFESetType()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFECreate_Nonaffine"
 PETSC_EXTERN PetscErrorCode PetscFECreate_Nonaffine(PetscFE fem)
 {
   PetscFE_Nonaffine *na;
@@ -5010,8 +4728,6 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_Nonaffine(PetscFE fem)
 
 #ifdef PETSC_HAVE_OPENCL
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEDestroy_OpenCL"
 PetscErrorCode PetscFEDestroy_OpenCL(PetscFE fem)
 {
   PetscFE_OpenCL *ocl = (PetscFE_OpenCL *) fem->data;
@@ -5029,8 +4745,6 @@ PetscErrorCode PetscFEDestroy_OpenCL(PetscFE fem)
 #define STRING_ERROR_CHECK(MSG) do {CHKERRQ(ierr); string_tail += count; if (string_tail == end_of_buffer) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, MSG);} while(0)
 enum {LAPLACIAN = 0, ELASTICITY = 1};
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEOpenCLGenerateIntegrationCode"
 /* dim     Number of spatial dimensions:          2                   */
 /* N_b     Number of basis functions:             generated           */
 /* N_{bt}  Number of total basis functions:       N_b * N_{comp}      */
@@ -5457,8 +5171,6 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEOpenCLGetIntegrationKernel"
 PetscErrorCode PetscFEOpenCLGetIntegrationKernel(PetscFE fem, PetscBool useAux, cl_program *ocl_prog, cl_kernel *ocl_kernel)
 {
   PetscFE_OpenCL *ocl = (PetscFE_OpenCL *) fem->data;
@@ -5489,8 +5201,6 @@ PetscErrorCode PetscFEOpenCLGetIntegrationKernel(PetscFE fem, PetscBool useAux, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEOpenCLCalculateGrid"
 PetscErrorCode PetscFEOpenCLCalculateGrid(PetscFE fem, PetscInt N, PetscInt blockSize, size_t *x, size_t *y, size_t *z)
 {
   const PetscInt Nblocks = N/blockSize;
@@ -5506,8 +5216,6 @@ PetscErrorCode PetscFEOpenCLCalculateGrid(PetscFE fem, PetscInt N, PetscInt bloc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEOpenCLLogResidual"
 PetscErrorCode PetscFEOpenCLLogResidual(PetscFE fem, PetscLogDouble time, PetscLogDouble flops)
 {
   PetscFE_OpenCL   *ocl = (PetscFE_OpenCL *) fem->data;
@@ -5527,8 +5235,6 @@ PetscErrorCode PetscFEOpenCLLogResidual(PetscFE fem, PetscLogDouble time, PetscL
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEIntegrateResidual_OpenCL"
 PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscDS prob, PetscInt field, PetscInt Ne, PetscFECellGeom *cgeom,
                                                const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscScalar elemVec[])
 {
@@ -5782,8 +5488,6 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscDS prob, PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEInitialize_OpenCL"
 PetscErrorCode PetscFEInitialize_OpenCL(PetscFE fem)
 {
   PetscFunctionBegin;
@@ -5808,8 +5512,6 @@ PetscErrorCode PetscFEInitialize_OpenCL(PetscFE fem)
 .seealso: PetscFEType, PetscFECreate(), PetscFESetType()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFECreate_OpenCL"
 PETSC_EXTERN PetscErrorCode PetscFECreate_OpenCL(PetscFE fem)
 {
   PetscFE_OpenCL *ocl;
@@ -5847,8 +5549,6 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_OpenCL(PetscFE fem)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEOpenCLSetRealType"
 PetscErrorCode PetscFEOpenCLSetRealType(PetscFE fem, PetscDataType realType)
 {
   PetscFE_OpenCL *ocl = (PetscFE_OpenCL *) fem->data;
@@ -5859,8 +5559,6 @@ PetscErrorCode PetscFEOpenCLSetRealType(PetscFE fem, PetscDataType realType)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEOpenCLGetRealType"
 PetscErrorCode PetscFEOpenCLGetRealType(PetscFE fem, PetscDataType *realType)
 {
   PetscFE_OpenCL *ocl = (PetscFE_OpenCL *) fem->data;
@@ -5874,8 +5572,6 @@ PetscErrorCode PetscFEOpenCLGetRealType(PetscFE fem, PetscDataType *realType)
 
 #endif /* PETSC_HAVE_OPENCL */
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEDestroy_Composite"
 PetscErrorCode PetscFEDestroy_Composite(PetscFE fem)
 {
   PetscFE_Composite *cmp = (PetscFE_Composite *) fem->data;
@@ -5888,8 +5584,6 @@ PetscErrorCode PetscFEDestroy_Composite(PetscFE fem)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFESetUp_Composite"
 PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
 {
   PetscFE_Composite *cmp = (PetscFE_Composite *) fem->data;
@@ -5970,8 +5664,6 @@ PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEGetTabulation_Composite"
 PetscErrorCode PetscFEGetTabulation_Composite(PetscFE fem, PetscInt npoints, const PetscReal points[], PetscReal *B, PetscReal *D, PetscReal *H)
 {
   PetscFE_Composite *cmp = (PetscFE_Composite *) fem->data;
@@ -6078,8 +5770,6 @@ PetscErrorCode PetscFEGetTabulation_Composite(PetscFE fem, PetscInt npoints, con
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEInitialize_Composite"
 PetscErrorCode PetscFEInitialize_Composite(PetscFE fem)
 {
   PetscFunctionBegin;
@@ -6104,8 +5794,6 @@ PetscErrorCode PetscFEInitialize_Composite(PetscFE fem)
 .seealso: PetscFEType, PetscFECreate(), PetscFESetType()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFECreate_Composite"
 PETSC_EXTERN PetscErrorCode PetscFECreate_Composite(PetscFE fem)
 {
   PetscFE_Composite *cmp;
@@ -6125,8 +5813,6 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_Composite(PetscFE fem)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFECompositeGetMapping"
 /*@C
   PetscFECompositeGetMapping - Returns the mappings from the reference element to each subelement
 
@@ -6158,8 +5844,6 @@ PetscErrorCode PetscFECompositeGetMapping(PetscFE fem, PetscInt *numSubelements,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEGetDimension"
 /*@
   PetscFEGetDimension - Get the dimension of the finite element space on a cell
 
@@ -6274,8 +5958,6 @@ PETSC_EXTERN PetscErrorCode IntegrateElementBatchGPU(PetscInt spatial_dim, Petsc
 __kernel void integrateElementQuadrature(int N_cb, __global float *coefficients, __global float *jacobianInverses, __global float *jacobianDeterminants, __global float *elemVec)
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEIntegrate"
 /*@C
   PetscFEIntegrate - Produce the integral for the given field for a chunk of elements by quadrature integration
 
@@ -6310,8 +5992,6 @@ PetscErrorCode PetscFEIntegrate(PetscFE fem, PetscDS prob, PetscInt field, Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEIntegrateResidual"
 /*@C
   PetscFEIntegrateResidual - Produce the element residual vector for a chunk of elements by quadrature integration
 
@@ -6356,8 +6036,6 @@ PetscErrorCode PetscFEIntegrateResidual(PetscFE fem, PetscDS prob, PetscInt fiel
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEIntegrateBdResidual"
 /*@C
   PetscFEIntegrateBdResidual - Produce the element residual vector for a chunk of elements by quadrature integration over a boundary
 
@@ -6393,8 +6071,6 @@ PetscErrorCode PetscFEIntegrateBdResidual(PetscFE fem, PetscDS prob, PetscInt fi
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEIntegrateJacobian"
 /*@C
   PetscFEIntegrateJacobian - Produce the element Jacobian for a chunk of elements by quadrature integration
 
@@ -6439,8 +6115,6 @@ PetscErrorCode PetscFEIntegrateJacobian(PetscFE fem, PetscDS prob, PetscFEJacobi
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEIntegrateBdJacobian"
 /*C
   PetscFEIntegrateBdJacobian - Produce the boundary element Jacobian for a chunk of elements by quadrature integration
 
@@ -6484,8 +6158,6 @@ PetscErrorCode PetscFEIntegrateBdJacobian(PetscFE fem, PetscDS prob, PetscInt fi
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFERefine"
 /*@
   PetscFERefine - Create a "refined" PetscFE object that refines the reference cell into smaller copies. This is typically used
   to precondition a higher order method with a lower order method on a refined mesh having the same number of dofs (but more
@@ -6543,8 +6215,6 @@ PetscErrorCode PetscFERefine(PetscFE fe, PetscFE *feRef)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFECreateDefault"
 /*@
   PetscFECreateDefault - Create a PetscFE for basic FEM computation
 

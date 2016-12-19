@@ -9,8 +9,6 @@ T*/
 #include <petscvec.h>
 #include <petscviewerhdf5.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   Vec            x1, x2, y1, y2, y3, y4;

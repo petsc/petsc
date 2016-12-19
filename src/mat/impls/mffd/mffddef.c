@@ -46,8 +46,6 @@ typedef struct {
   PetscReal umin;          /* minimum allowable u'a value relative to |u|_1 */
 } MatMFFD_DS;
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDCompute_DS"
 /*
    MatMFFDCompute_DS - Standard PETSc code for computing the
    differencing paramter (h) for use with matrix-free finite differences.
@@ -103,8 +101,6 @@ static PetscErrorCode MatMFFDCompute_DS(MatMFFD ctx,Vec U,Vec a,PetscScalar *h,P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDView_DS"
 /*
    MatMFFDView_DS - Prints information about this particular
    method for computing h. Note that this does not print the general
@@ -134,8 +130,6 @@ static PetscErrorCode MatMFFDView_DS(MatMFFD ctx,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDSetFromOptions_DS"
 /*
    MatMFFDSetFromOptions_DS - Looks in the options database for
    any options appropriate for this method.
@@ -156,8 +150,6 @@ static PetscErrorCode MatMFFDSetFromOptions_DS(PetscOptionItems *PetscOptionsObj
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDDestroy_DS"
 /*
    MatMFFDDestroy_DS - Frees the space allocated by
    MatCreateMFFD_DS().
@@ -177,8 +169,6 @@ static PetscErrorCode MatMFFDDestroy_DS(MatMFFD ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDDSSetUmin_DS"
 /*
    The following two routines use the PetscObjectCompose() and PetscObjectQuery()
    mechanism to allow the user to change the Umin parameter used in this method.
@@ -195,8 +185,6 @@ PetscErrorCode MatMFFDDSSetUmin_DS(Mat mat,PetscReal umin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDDSSetUmin"
 /*@
     MatMFFDDSSetUmin - Sets the "umin" parameter used by the
     PETSc routine for computing the differencing parameter, h, which is used
@@ -251,8 +239,6 @@ PetscErrorCode  MatMFFDDSSetUmin(Mat A,PetscReal umin)
 .seealso: MATMFFD, MatCreateMFFD(), MatCreateSNESMF(), MATMFFD_WP, MatMFFDDSSetUmin()
 
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateMFFD_DS"
 PETSC_EXTERN PetscErrorCode MatCreateMFFD_DS(MatMFFD ctx)
 {
   MatMFFD_DS     *hctx;

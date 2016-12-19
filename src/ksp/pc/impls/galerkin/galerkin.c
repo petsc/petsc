@@ -11,8 +11,6 @@ typedef struct {
   Vec b,x;
 } PC_Galerkin;
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_Galerkin"
 static PetscErrorCode PCApply_Galerkin(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
@@ -33,8 +31,6 @@ static PetscErrorCode PCApply_Galerkin(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_Galerkin"
 static PetscErrorCode PCSetUp_Galerkin(PC pc)
 {
   PetscErrorCode ierr;
@@ -57,8 +53,6 @@ static PetscErrorCode PCSetUp_Galerkin(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCReset_Galerkin"
 static PetscErrorCode PCReset_Galerkin(PC pc)
 {
   PC_Galerkin    *jac = (PC_Galerkin*)pc->data;
@@ -73,8 +67,6 @@ static PetscErrorCode PCReset_Galerkin(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_Galerkin"
 static PetscErrorCode PCDestroy_Galerkin(PC pc)
 {
   PC_Galerkin    *jac = (PC_Galerkin*)pc->data;
@@ -87,8 +79,6 @@ static PetscErrorCode PCDestroy_Galerkin(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCView_Galerkin"
 static PetscErrorCode PCView_Galerkin(PC pc,PetscViewer viewer)
 {
   PC_Galerkin    *jac = (PC_Galerkin*)pc->data;
@@ -106,8 +96,6 @@ static PetscErrorCode PCView_Galerkin(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGalerkinGetKSP_Galerkin"
 static PetscErrorCode  PCGalerkinGetKSP_Galerkin(PC pc,KSP *ksp)
 {
   PC_Galerkin *jac = (PC_Galerkin*)pc->data;
@@ -117,8 +105,6 @@ static PetscErrorCode  PCGalerkinGetKSP_Galerkin(PC pc,KSP *ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGalerkinSetRestriction_Galerkin"
 static PetscErrorCode  PCGalerkinSetRestriction_Galerkin(PC pc,Mat R)
 {
   PC_Galerkin    *jac = (PC_Galerkin*)pc->data;
@@ -131,8 +117,6 @@ static PetscErrorCode  PCGalerkinSetRestriction_Galerkin(PC pc,Mat R)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGalerkinSetInterpolation_Galerkin"
 static PetscErrorCode  PCGalerkinSetInterpolation_Galerkin(PC pc,Mat P)
 {
   PC_Galerkin    *jac = (PC_Galerkin*)pc->data;
@@ -146,8 +130,6 @@ static PetscErrorCode  PCGalerkinSetInterpolation_Galerkin(PC pc,Mat P)
 }
 
 /* -------------------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "PCGalerkinSetRestriction"
 /*@
    PCGalerkinSetRestriction - Sets the restriction operator for the "Galerkin-type" preconditioner
 
@@ -177,8 +159,6 @@ PetscErrorCode  PCGalerkinSetRestriction(PC pc,Mat R)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGalerkinSetInterpolation"
 /*@
    PCGalerkinSetInterpolation - Sets the interpolation operator for the "Galerkin-type" preconditioner
 
@@ -208,8 +188,6 @@ PetscErrorCode  PCGalerkinSetInterpolation(PC pc,Mat P)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGalerkinGetKSP"
 /*@
    PCGalerkinGetKSP - Gets the KSP object in the Galerkin PC.
 
@@ -261,8 +239,6 @@ $   PCGalerkinGetKSP(pc,&ksp); KSPSetOperators(ksp,A,....)
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_Galerkin"
 PETSC_EXTERN PetscErrorCode PCCreate_Galerkin(PC pc)
 {
   PetscErrorCode ierr;

@@ -11,8 +11,6 @@ static PetscClassId P4ESTLOGGING_CLASSID;
 
 PetscObject P4estLoggingObject; /* Just a vehicle for its classid */
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscScLogHandler"
 static void PetscScLogHandler(FILE *log_stream, const char *filename, int lineno,int package, int category,int priority, const char *msg)
 {
   PetscInfo_Private(filename,P4estLoggingObject,":%d{%s} %s",lineno,package == sc_package_id ? "sc" : package == p4est_package_id ? "p4est" : "",msg);
@@ -34,8 +32,6 @@ PETSC_INTERN void PetscScAbort_longjmp(void)
 #define PetscScAbort NULL
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscP4estFinalize"
 static PetscErrorCode PetscP4estFinalize(void)
 {
   PetscErrorCode ierr;
@@ -52,8 +48,6 @@ static PetscErrorCode PetscP4estFinalize(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscP4estInitialize"
 PetscErrorCode PetscP4estInitialize(void)
 {
   PetscBool      psc_catch_signals    = PETSC_FALSE;

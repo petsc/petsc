@@ -4,8 +4,6 @@
 PetscFunctionList ISList              = NULL;
 PetscBool         ISRegisterAllCalled = PETSC_FALSE;
 
-#undef __FUNCT__
-#define __FUNCT__ "ISCreate"
 /*@
    ISCreate - Creates an index set object.
 
@@ -43,8 +41,6 @@ PetscErrorCode  ISCreate(MPI_Comm comm,IS *is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISSetType"
 /*@C
   ISSetType - Builds a index set, for a particular implementation.
 
@@ -90,8 +86,6 @@ PetscErrorCode  ISSetType(IS is, ISType method)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISGetType"
 /*@C
   ISGetType - Gets the index set type name (as a string) from the IS.
 
@@ -124,8 +118,6 @@ PetscErrorCode  ISGetType(IS is, ISType *type)
 
 /*--------------------------------------------------------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "ISRegister"
 /*@C
   ISRegister - Adds a new index set implementation
 

@@ -6,8 +6,6 @@ PetscFunctionList SNESLineSearchList              = NULL;
 PetscClassId  SNESLINESEARCH_CLASSID;
 PetscLogEvent SNESLINESEARCH_Apply;
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchMonitorCancel"
 /*@
    SNESLineSearchMonitorCancel - Clears all the monitor functions for a SNESLineSearch object.
 
@@ -49,8 +47,6 @@ PetscErrorCode  SNESLineSearchMonitorCancel(SNESLineSearch ls)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchMonitor"
 /*@
    SNESLineSearchMonitor - runs the user provided monitor routines, if they exist
 
@@ -79,8 +75,6 @@ PetscErrorCode  SNESLineSearchMonitor(SNESLineSearch ls)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchMonitorSet"
 /*@C
    SNESLineSearchMonitorSet - Sets an ADDITIONAL function that is to be used at every
    iteration of the nonlinear solver to display the iteration's
@@ -128,8 +122,6 @@ PetscErrorCode  SNESLineSearchMonitorSet(SNESLineSearch ls,PetscErrorCode (*f)(S
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchMonitorSolutionUpdate"
 /*@C
    SNESLineSearchMonitorSolutionUpdate - Monitors each update a new function value the linesearch tries
 
@@ -164,8 +156,6 @@ PetscErrorCode  SNESLineSearchMonitorSolutionUpdate(SNESLineSearch ls,PetscViewe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchCreate"
 /*@
    SNESLineSearchCreate - Creates the line search context.
 
@@ -227,8 +217,6 @@ PetscErrorCode SNESLineSearchCreate(MPI_Comm comm, SNESLineSearch *outlinesearch
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchSetUp"
 /*@
    SNESLineSearchSetUp - Prepares the line search for being applied by allocating
    any required vectors.
@@ -277,8 +265,6 @@ PetscErrorCode SNESLineSearchSetUp(SNESLineSearch linesearch)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchReset"
 
 /*@
    SNESLineSearchReset - Undoes the SNESLineSearchSetUp() and deletes any Vecs or Mats allocated by the line search.
@@ -314,8 +300,6 @@ PetscErrorCode SNESLineSearchReset(SNESLineSearch linesearch)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchSetFunction"
 /*@C
    SNESLineSearchSetFunction - Sets the function evaluation used by the SNES line search
 
@@ -360,8 +344,6 @@ PetscErrorCode  SNESLineSearchSetFunction(SNESLineSearch linesearch, PetscErrorC
 .seealso:   SNESLineSearchSetPreCheck(), SNESLineSearchGetPreCheck(), SNESLineSearchSetPostCheck(), SNESLineSearchGetPostCheck() 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchSetPreCheck"
 /*@C
    SNESLineSearchSetPreCheck - Sets a user function that is called after the initial search direction has been computed but 
          before the line search routine has been applied. Allows the user to adjust the result of (usually a linear solve) that
@@ -389,8 +371,6 @@ PetscErrorCode  SNESLineSearchSetPreCheck(SNESLineSearch linesearch, PetscErrorC
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchGetPreCheck"
 /*@C
    SNESLineSearchGetPreCheck - Gets the pre-check function for the line search routine.
 
@@ -438,8 +418,6 @@ PetscErrorCode  SNESLineSearchGetPreCheck(SNESLineSearch linesearch, PetscErrorC
 .seealso:   SNESLineSearchSetPreCheck(), SNESLineSearchSetPostCheck(), SNESLineSearchGetPreCheck(), SNESLineSearchGetPostCheck()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchSetPostCheck"
 /*@C
    SNESLineSearchSetPostCheck - Sets a user function that is called after the line search has been applied to determine the step
        direction and length. Allows the user a chance to change or override the decision of the line search routine
@@ -466,8 +444,6 @@ PetscErrorCode  SNESLineSearchSetPostCheck(SNESLineSearch linesearch, PetscError
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchGetPostCheck"
 /*@C
    SNESLineSearchGetPostCheck - Gets the post-check function for the line search routine.
 
@@ -493,8 +469,6 @@ PetscErrorCode  SNESLineSearchGetPostCheck(SNESLineSearch linesearch, PetscError
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchPreCheck"
 /*@
    SNESLineSearchPreCheck - Prepares the line search for being applied.
 
@@ -527,8 +501,6 @@ PetscErrorCode SNESLineSearchPreCheck(SNESLineSearch linesearch,Vec X,Vec Y,Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchPostCheck"
 /*@
    SNESLineSearchPostCheck - Prepares the line search for being applied.
 
@@ -565,8 +537,6 @@ PetscErrorCode SNESLineSearchPostCheck(SNESLineSearch linesearch,Vec X,Vec Y,Vec
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchPreCheckPicard"
 /*@C
    SNESLineSearchPreCheckPicard - Implements a correction that is sometimes useful to improve the convergence rate of Picard iteration
 
@@ -648,8 +618,6 @@ PetscErrorCode SNESLineSearchPreCheckPicard(SNESLineSearch linesearch,Vec X,Vec 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchApply"
 /*@
    SNESLineSearchApply - Computes the line-search update.
 
@@ -724,8 +692,6 @@ PetscErrorCode SNESLineSearchApply(SNESLineSearch linesearch, Vec X, Vec F, Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchDestroy"
 /*@
    SNESLineSearchDestroy - Destroys the line search instance.
 
@@ -757,8 +723,6 @@ PetscErrorCode SNESLineSearchDestroy(SNESLineSearch * linesearch)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchSetDefaultMonitor"
 /*@
    SNESLineSearchSetDefaultMonitor - Turns on/off printing useful information and debugging output about the line search.
 
@@ -790,8 +754,6 @@ PetscErrorCode  SNESLineSearchSetDefaultMonitor(SNESLineSearch linesearch, Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchGetDefaultMonitor"
 /*@
    SNESLineSearchGetDefaultMonitor - Gets the PetscViewer instance for the line search monitor.
 
@@ -821,8 +783,6 @@ PetscErrorCode  SNESLineSearchGetDefaultMonitor(SNESLineSearch linesearch, Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchMonitorSetFromOptions"
 /*@C
    SNESLineSearchMonitorSetFromOptions - Sets a monitor function and viewer appropriate for the type indicated by the user
 
@@ -867,8 +827,6 @@ PetscErrorCode  SNESLineSearchMonitorSetFromOptions(SNESLineSearch ls,const char
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchSetFromOptions"
 /*@
    SNESLineSearchSetFromOptions - Sets options for the line search
 
@@ -963,8 +921,6 @@ PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchView"
 /*@
    SNESLineSearchView - Prints useful information about the line search
 
@@ -1015,8 +971,6 @@ PetscErrorCode SNESLineSearchView(SNESLineSearch linesearch, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchSetType"
 /*@C
    SNESLineSearchSetType - Sets the linesearch type
 
@@ -1069,8 +1023,6 @@ PetscErrorCode SNESLineSearchSetType(SNESLineSearch linesearch, SNESLineSearchTy
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchSetSNES"
 /*@
    SNESLineSearchSetSNES - Sets the SNES for the linesearch for function evaluation.
 
@@ -1098,8 +1050,6 @@ PetscErrorCode  SNESLineSearchSetSNES(SNESLineSearch linesearch, SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchGetSNES"
 /*@
    SNESLineSearchGetSNES - Gets the SNES instance associated with the line search.
    Having an associated SNES is necessary because most line search implementations must be able to
@@ -1125,8 +1075,6 @@ PetscErrorCode  SNESLineSearchGetSNES(SNESLineSearch linesearch, SNES *snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchGetLambda"
 /*@
    SNESLineSearchGetLambda - Gets the last linesearch steplength discovered.
 
@@ -1155,8 +1103,6 @@ PetscErrorCode  SNESLineSearchGetLambda(SNESLineSearch linesearch,PetscReal *lam
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchSetLambda"
 /*@
    SNESLineSearchSetLambda - Sets the linesearch steplength.
 
@@ -1182,8 +1128,6 @@ PetscErrorCode  SNESLineSearchSetLambda(SNESLineSearch linesearch, PetscReal lam
   PetscFunctionReturn(0);
 }
 
-#undef  __FUNCT__
-#define __FUNCT__ "SNESLineSearchGetTolerances"
 /*@
    SNESLineSearchGetTolerances - Gets the tolerances for the linesearch.  These include
    tolerances for the relative and absolute change in the function norm, the change
@@ -1240,8 +1184,6 @@ PetscErrorCode  SNESLineSearchGetTolerances(SNESLineSearch linesearch,PetscReal 
   PetscFunctionReturn(0);
 }
 
-#undef  __FUNCT__
-#define __FUNCT__ "SNESLineSearchSetTolerances"
 /*@
    SNESLineSearchSetTolerances -  Gets the tolerances for the linesearch.  These include
    tolerances for the relative and absolute change in the function norm, the change
@@ -1308,8 +1250,6 @@ PetscErrorCode  SNESLineSearchSetTolerances(SNESLineSearch linesearch,PetscReal 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchGetDamping"
 /*@
    SNESLineSearchGetDamping - Gets the line search damping parameter.
 
@@ -1333,8 +1273,6 @@ PetscErrorCode  SNESLineSearchGetDamping(SNESLineSearch linesearch,PetscReal *da
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchSetDamping"
 /*@
    SNESLineSearchSetDamping - Sets the line search damping paramter.
 
@@ -1363,8 +1301,6 @@ PetscErrorCode  SNESLineSearchSetDamping(SNESLineSearch linesearch,PetscReal dam
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchGetOrder"
 /*@
    SNESLineSearchGetOrder - Gets the line search approximation order.
 
@@ -1393,8 +1329,6 @@ PetscErrorCode  SNESLineSearchGetOrder(SNESLineSearch linesearch,PetscInt *order
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchSetOrder"
 /*@
    SNESLineSearchSetOrder - Sets the line search damping paramter.
 
@@ -1424,8 +1358,6 @@ PetscErrorCode  SNESLineSearchSetOrder(SNESLineSearch linesearch,PetscInt order)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchGetNorms"
 /*@
    SNESLineSearchGetNorms - Gets the norms for for X, Y, and F.
 
@@ -1454,8 +1386,6 @@ PetscErrorCode  SNESLineSearchGetNorms(SNESLineSearch linesearch, PetscReal * xn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchSetNorms"
 /*@
    SNESLineSearchSetNorms - Gets the computed norms for for X, Y, and F.
 
@@ -1479,8 +1409,6 @@ PetscErrorCode  SNESLineSearchSetNorms(SNESLineSearch linesearch, PetscReal xnor
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchComputeNorms"
 /*@
    SNESLineSearchComputeNorms - Computes the norms of X, F, and Y.
 
@@ -1518,8 +1446,6 @@ PetscErrorCode SNESLineSearchComputeNorms(SNESLineSearch linesearch)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchSetComputeNorms"
 /*@
    SNESLineSearchSetComputeNorms - Turns on or off the computation of final norms in the line search.
 
@@ -1544,8 +1470,6 @@ PetscErrorCode SNESLineSearchSetComputeNorms(SNESLineSearch linesearch, PetscBoo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchGetVecs"
 /*@
    SNESLineSearchGetVecs - Gets the vectors from the SNESLineSearch context
 
@@ -1598,8 +1522,6 @@ PetscErrorCode SNESLineSearchGetVecs(SNESLineSearch linesearch,Vec *X,Vec *F, Ve
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchSetVecs"
 /*@
    SNESLineSearchSetVecs - Sets the vectors on the SNESLineSearch context
 
@@ -1642,8 +1564,6 @@ PetscErrorCode SNESLineSearchSetVecs(SNESLineSearch linesearch,Vec X,Vec F,Vec Y
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchAppendOptionsPrefix"
 /*@C
    SNESLineSearchAppendOptionsPrefix - Appends to the prefix used for searching for all
    SNES options in the database.
@@ -1674,8 +1594,6 @@ PetscErrorCode  SNESLineSearchAppendOptionsPrefix(SNESLineSearch linesearch,cons
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchGetOptionsPrefix"
 /*@C
    SNESLineSearchGetOptionsPrefix - Sets the prefix used for searching for all
    SNESLineSearch options in the database.
@@ -1708,8 +1626,6 @@ PetscErrorCode  SNESLineSearchGetOptionsPrefix(SNESLineSearch linesearch,const c
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchSetWorkVecs"
 /*@C
    SNESLineSearchSetWorkVecs - Gets work vectors for the line search.
 
@@ -1736,8 +1652,6 @@ PetscErrorCode  SNESLineSearchSetWorkVecs(SNESLineSearch linesearch, PetscInt nw
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchGetReason"
 /*@
    SNESLineSearchGetReason - Gets the success/failure status of the last line search application
 
@@ -1764,8 +1678,6 @@ PetscErrorCode  SNESLineSearchGetReason(SNESLineSearch linesearch, SNESLineSearc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchSetReason"
 /*@
    SNESLineSearchSetReason - Sets the success/failure status of the last line search application
 
@@ -1789,8 +1701,6 @@ PetscErrorCode  SNESLineSearchSetReason(SNESLineSearch linesearch, SNESLineSearc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchSetVIFunctions"
 /*@C
    SNESLineSearchSetVIFunctions - Sets VI-specific functions for line search computation.
 
@@ -1847,8 +1757,6 @@ extern PetscErrorCode SNESLineSearchSetVIFunctions(SNESLineSearch linesearch, SN
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchGetVIFunctions"
 /*@C
    SNESLineSearchGetVIFunctions - Sets VI-specific functions for line search computation.
 
@@ -1875,8 +1783,6 @@ extern PetscErrorCode SNESLineSearchGetVIFunctions(SNESLineSearch linesearch, SN
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchRegister"
 /*@C
   SNESLineSearchRegister - See SNESLineSearchRegister()
 

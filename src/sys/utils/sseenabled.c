@@ -6,8 +6,6 @@
 #include PETSC_HAVE_SSE
 #define SSE_FEATURE_FLAG 0x2000000 /* Mask for bit 25 (from bit 0) */
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSSEHardwareTest"
 PetscErrorCode  PetscSSEHardwareTest(PetscBool  *flag)
 {
   PetscErrorCode ierr;
@@ -48,8 +46,6 @@ static void PetscSSEDisabledHandler(int sig)
   exit(-1);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSSEOSEnabledTest_Linux"
 PetscErrorCode  PetscSSEOSEnabledTest_Linux(PetscBool  *flag)
 {
   int status, pid = 0;
@@ -76,8 +72,6 @@ PetscErrorCode  PetscSSEOSEnabledTest_Linux(PetscBool  *flag)
 #define PetscSSEOSEnabledTest(arg) PetscSSEOSEnabledTest_TRUE(arg)
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSSEOSEnabledTest_TRUE"
 PetscErrorCode  PetscSSEOSEnabledTest_TRUE(PetscBool  *flag)
 {
   PetscFunctionBegin;
@@ -90,8 +84,6 @@ PetscErrorCode  PetscSSEOSEnabledTest_TRUE(PetscBool  *flag)
 #define PetscSSEHardwareTest(arg) PetscSSEEnabledTest_FALSE(arg)
 #define PetscSSEOSEnabledTest(arg) PetscSSEEnabledTest_FALSE(arg)
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSSEEnabledTest_FALSE"
 PetscErrorCode  PetscSSEEnabledTest_FALSE(PetscBool  *flag)
 {
   PetscFunctionBegin;
@@ -101,8 +93,6 @@ PetscErrorCode  PetscSSEEnabledTest_FALSE(PetscBool  *flag)
 
 #endif /* defined PETSC_HAVE_SSE */
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSSEIsEnabled"
 /*@C
      PetscSSEIsEnabled - Determines if Intel Streaming SIMD Extensions (SSE) to the x86 instruction
      set can be used.  Some operating systems do not allow the use of these instructions despite

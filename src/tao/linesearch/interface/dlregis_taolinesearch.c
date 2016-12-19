@@ -9,8 +9,6 @@ PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_Armijo(TaoLineSearch);
 PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_OWArmijo(TaoLineSearch);
 static PetscBool TaoLineSearchPackageInitialized = PETSC_FALSE;
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchFinalizePackage"
 /*@C
   TaoLineSearchFinalizePackage - This function destroys everything in the PETSc/TAO
   interface to the TaoLineSearch package. It is called from PetscFinalize().
@@ -27,8 +25,6 @@ PetscErrorCode TaoLineSearchFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchInitializePackage"
 /*@C
   TaoLineSearchInitializePackage - This function registers the line-search
   algorithms in TAO.

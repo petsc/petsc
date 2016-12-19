@@ -19,8 +19,6 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Send_Scalable(Mat,PetscInt,Petsc
 static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Receive_Scalable(Mat,PetscInt,IS*,PetscInt,PetscInt *);
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatIncreaseOverlap_MPIAIJ"
 PetscErrorCode MatIncreaseOverlap_MPIAIJ(Mat C,PetscInt imax,IS is[],PetscInt ov)
 {
   PetscErrorCode ierr;
@@ -34,8 +32,6 @@ PetscErrorCode MatIncreaseOverlap_MPIAIJ(Mat C,PetscInt imax,IS is[],PetscInt ov
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatIncreaseOverlap_MPIAIJ_Scalable"
 PetscErrorCode MatIncreaseOverlap_MPIAIJ_Scalable(Mat C,PetscInt imax,IS is[],PetscInt ov)
 {
   PetscErrorCode ierr;
@@ -50,8 +46,6 @@ PetscErrorCode MatIncreaseOverlap_MPIAIJ_Scalable(Mat C,PetscInt imax,IS is[],Pe
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatIncreaseOverlap_MPIAIJ_Once_Scalable"
 static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt nidx,IS is[])
 {
   PetscErrorCode   ierr;
@@ -195,8 +189,6 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once_Scalable(Mat mat,PetscInt n
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatIncreaseOverlap_MPIAIJ_Receive_Scalable"
 static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Receive_Scalable(Mat mat,PetscInt nidx, IS is[], PetscInt nrecvs, PetscInt *recvdata)
 {
   PetscInt         *isz,isz_i,i,j,is_id, data_size;
@@ -243,8 +235,6 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Receive_Scalable(Mat mat,PetscIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatIncreaseOverlap_MPIAIJ_Send_Scalable"
 static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Send_Scalable(Mat mat,PetscInt nidx, PetscMPIInt nfrom,PetscMPIInt *fromranks,PetscInt *fromsizes, PetscInt *fromrows, PetscInt **sbrowsizes, PetscInt **sbrows)
 {
   PetscLayout       rmap,cmap;
@@ -367,8 +357,6 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Send_Scalable(Mat mat,PetscInt n
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatIncreaseOverlap_MPIAIJ_Local_Scalable"
 static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Local_Scalable(Mat mat,PetscInt nidx, IS is[])
 {
   const PetscInt   *gcols,*ai,*aj,*bi,*bj, *indices;
@@ -457,8 +445,6 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Local_Scalable(Mat mat,PetscInt 
   nrqs - no of requests sent (or to be sent out)
   nrqr - no of requests recieved (which have to be or which have been processed
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatIncreaseOverlap_MPIAIJ_Once"
 static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,PetscInt imax,IS is[])
 {
   Mat_MPIAIJ     *c = (Mat_MPIAIJ*)C->data;
@@ -808,8 +794,6 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,PetscInt imax,IS is[]
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatIncreaseOverlap_MPIAIJ_Local"
 /*
    MatIncreaseOverlap_MPIAIJ_Local - Called by MatincreaseOverlap, to do
        the work on the local processor.
@@ -913,8 +897,6 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Local(Mat C,PetscInt imax,PetscB
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatIncreaseOverlap_MPIAIJ_Receive"
 /*
       MatIncreaseOverlap_MPIAIJ_Receive - Process the recieved messages,
          and return the output
@@ -1056,8 +1038,6 @@ extern PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat,MatAssemblyType);
 /*
     Every processor gets the entire matrix
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatGetSubMatrix_MPIAIJ_All"
 PetscErrorCode MatGetSubMatrix_MPIAIJ_All(Mat A,MatGetSubMatrixOption flag,MatReuse scall,Mat *Bin[])
 {
   Mat            B;
@@ -1240,8 +1220,6 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ_All(Mat A,MatGetSubMatrixOption flag,MatRe
   }
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_MPIAIJ_MatGetSubmatrices"
 PetscErrorCode MatDestroy_MPIAIJ_MatGetSubmatrices(Mat C)
 {
   PetscErrorCode ierr;
@@ -1290,8 +1268,6 @@ PetscErrorCode MatDestroy_MPIAIJ_MatGetSubmatrices(Mat C)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetSubMatrices_MPIAIJ_SingleIS_Local"
 PetscErrorCode MatGetSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,PetscBool allcolumns,Mat *submats)
 {
   Mat_MPIAIJ     *c = (Mat_MPIAIJ*)C->data;
@@ -2004,8 +1980,6 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,cons
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetSubMatrices_MPIAIJ_SingleIS"
 PetscErrorCode MatGetSubMatrices_MPIAIJ_SingleIS(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[])
 {
   PetscErrorCode ierr;
@@ -2027,8 +2001,6 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_SingleIS(Mat C,PetscInt ismax,const IS i
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetSubMatrices_MPIAIJ"
 PetscErrorCode MatGetSubMatrices_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[])
 {
   PetscErrorCode ierr;
@@ -2103,8 +2075,6 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[],co
 }
 
 /* -------------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "MatGetSubMatrices_MPIAIJ_Local"
 PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,PetscBool *allcolumns,Mat *submats)
 {
   Mat_MPIAIJ     *c = (Mat_MPIAIJ*)C->data;
@@ -2866,8 +2836,6 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
  This function may be called in lieu of preallocation, so C should not be expected to be preallocated.
  Following this call, C->A & C->B have been created, even if empty.
  */
-#undef __FUNCT__
-#define __FUNCT__ "MatSetSeqMats_MPIAIJ"
 PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C,IS rowemb,IS dcolemb,IS ocolemb,MatStructure pattern,Mat A,Mat B)
 {
   /* If making this function public, change the error returned in this function away from _PLIB. */
@@ -3032,8 +3000,6 @@ PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C,IS rowemb,IS dcolemb,IS ocolemb,MatStr
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetSeqMats_MPIAIJ"
 /*
   B uses local indices with column indices ranging between 0 and N-n; they  must be interpreted using garray.
  */
@@ -3055,8 +3021,6 @@ PetscErrorCode MatGetSeqMats_MPIAIJ(Mat C,Mat *A,Mat *B)
   Extract MPI submatrices encoded by pairs of IS that may live on subcomms of C.
   NOT SCALABLE due to the use of ISGetNonlocalIS() (see below).
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatGetSubMatricesMPI_MPIXAIJ"
 PetscErrorCode MatGetSubMatricesMPI_MPIXAIJ(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[],
                                                  PetscErrorCode(*getsubmats_seq)(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat**),
 					         PetscErrorCode(*getlocalmats)(Mat,Mat*,Mat*),
@@ -3318,8 +3282,6 @@ PetscErrorCode MatGetSubMatricesMPI_MPIXAIJ(Mat C,PetscInt ismax,const IS isrow[
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetSubMatricesMPI_MPIAIJ"
 PetscErrorCode MatGetSubMatricesMPI_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[])
 {
   PetscErrorCode ierr;

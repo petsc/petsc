@@ -15,8 +15,6 @@ difference. Input parameters include:\n\
   -beta      : beta (default 0.01/h^2)\n\n";
 
 #include <petscksp.h>
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Vec            x,b,u;                 /* approx solution, RHS, working vector */

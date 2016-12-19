@@ -14,8 +14,6 @@
 #  define MPI_COMBINER_CONTIGUOUS -1
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "MPIPetsc_Type_free"
 static PetscErrorCode MPIPetsc_Type_free(MPI_Datatype *a)
 {
   PetscMPIInt    nints,naddrs,ntypes,combiner;
@@ -32,8 +30,6 @@ static PetscErrorCode MPIPetsc_Type_free(MPI_Datatype *a)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MPIPetsc_Type_unwrap"
 PetscErrorCode MPIPetsc_Type_unwrap(MPI_Datatype a,MPI_Datatype *atype,PetscBool *flg)
 {
   PetscMPIInt    nints,naddrs,ntypes,combiner;
@@ -62,8 +58,6 @@ PetscErrorCode MPIPetsc_Type_unwrap(MPI_Datatype a,MPI_Datatype *atype,PetscBool
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MPIPetsc_Type_compare"
 PetscErrorCode MPIPetsc_Type_compare(MPI_Datatype a,MPI_Datatype b,PetscBool *match)
 {
   PetscErrorCode ierr;
@@ -124,8 +118,6 @@ free_types:
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MPIPetsc_Type_compare_contig"
 /* Check whether a was created via MPI_Type_contiguous from b
  *
  */

@@ -8,8 +8,6 @@ static char help[] = "Test sequential FFTW interface \n\n";
 */
 
 #include <petscmat.h>
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   typedef enum {RANDOM, CONSTANT, TANH, NUM_FUNCS} FuncType;

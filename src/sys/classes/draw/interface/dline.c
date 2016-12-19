@@ -4,8 +4,6 @@
 */
 #include <petsc/private/drawimpl.h>  /*I "petscdraw.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawGetBoundingBox"
 /*@
    PetscDrawGetBoundingBox - Gets the bounding box of all PetscDrawStringBoxed() commands
 
@@ -36,8 +34,6 @@ PetscErrorCode  PetscDrawGetBoundingBox(PetscDraw draw,PetscReal *xl,PetscReal *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawGetCurrentPoint"
 /*@
    PetscDrawGetCurrentPoint - Gets the current draw point, some codes use this point to determine where to draw next
 
@@ -64,8 +60,6 @@ PetscErrorCode  PetscDrawGetCurrentPoint(PetscDraw draw,PetscReal *x,PetscReal *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSetCurrentPoint"
 /*@
    PetscDrawSetCurrentPoint - Sets the current draw point, some codes use this point to determine where to draw next
 
@@ -88,8 +82,6 @@ PetscErrorCode  PetscDrawSetCurrentPoint(PetscDraw draw,PetscReal x,PetscReal y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawPushCurrentPoint"
 /*@
    PetscDrawPushCurrentPoint - Pushes a new current draw point, retaining the old one, some codes use this point to determine where to draw next
 
@@ -113,8 +105,6 @@ PetscErrorCode  PetscDrawPushCurrentPoint(PetscDraw draw,PetscReal x,PetscReal y
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawPopCurrentPoint"
 /*@
    PetscDrawPopCurrentPoint - Pops a current draw point (discarding it)
 
@@ -135,8 +125,6 @@ PetscErrorCode  PetscDrawPopCurrentPoint(PetscDraw draw)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawLine"
 /*@
    PetscDrawLine - PetscDraws a line onto a drawable.
 
@@ -167,8 +155,6 @@ PetscErrorCode  PetscDrawLine(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawArrow"
 /*@
    PetscDrawArrow - PetscDraws a line with arrow head at end if the line is long enough
 
@@ -199,8 +185,6 @@ PetscErrorCode  PetscDrawArrow(PetscDraw draw,PetscReal xl,PetscReal yl,PetscRea
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawLineSetWidth"
 /*@
    PetscDrawLineSetWidth - Sets the line width for future draws.  The width is
    relative to the user coordinates of the window; 0.0 denotes the natural
@@ -230,8 +214,6 @@ PetscErrorCode  PetscDrawLineSetWidth(PetscDraw draw,PetscReal width)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawLineGetWidth"
 /*@
    PetscDrawLineGetWidth - Gets the line width for future draws.  The width is
    relative to the user coordinates of the window; 0.0 denotes the natural

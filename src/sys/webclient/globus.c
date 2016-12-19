@@ -83,8 +83,6 @@ PETSC_UNUSED static PetscErrorCode base64_decode(const unsigned char *data,unsig
 #include <unistd.h>
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscGlobusAuthorize"
 /*@C
      PetscGlobusAuthorize - Get an access token allowing PETSc applications to make Globus file transfer requests
 
@@ -153,8 +151,6 @@ PetscErrorCode PetscGlobusAuthorize(MPI_Comm comm,char access_token[],size_t tok
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscGlobusGetTransfers"
 /*@C
      PetscGlobusGetTransfers - Get a record of current transfers requested from Globus
 
@@ -207,8 +203,6 @@ PetscErrorCode PetscGlobusGetTransfers(MPI_Comm comm,const char access_token[],c
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscGlobusUpload"
 /*@C
      PetscGlobusUpload - Loads a file to Globus
 

@@ -6,8 +6,6 @@ static PetscBool PetscSFPackageInitialized = PETSC_FALSE;
 
 PetscBool PetscSFRegisterAllCalled;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFInitializePackage"
 /*@C
    PetscSFInitializePackage - Initialize SF package
 
@@ -38,8 +36,6 @@ PetscErrorCode PetscSFInitializePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFFinalizePackage"
 /*@C
    PetscSFFinalizePackage - Finalize PetscSF package, it is called from PetscFinalize()
 

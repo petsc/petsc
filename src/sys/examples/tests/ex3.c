@@ -3,8 +3,6 @@ static char help[] = "Tests catching of floating point exceptions.\n\n";
 
 #include <petscsys.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateError"
 int CreateError(PetscReal x)
 {
   PetscErrorCode ierr;
@@ -15,8 +13,6 @@ int CreateError(PetscReal x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;

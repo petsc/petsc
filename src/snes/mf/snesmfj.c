@@ -4,8 +4,6 @@
 #include <../src/mat/impls/mffd/mffdimpl.h>
 #include <petsc/private/matimpl.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDComputeJacobian"
 /*@C
    MatMFFDComputeJacobian - Tells the matrix-free Jacobian object the new location at which
        Jacobian matrix vector products will be computed at, i.e. J(x) * a. The x is obtained
@@ -52,8 +50,6 @@ PetscErrorCode  MatMFFDComputeJacobian(SNES snes,Vec x,Mat jac,Mat B,void *dummy
 PETSC_EXTERN PetscErrorCode MatAssemblyEnd_MFFD(Mat,MatAssemblyType);
 PETSC_EXTERN PetscErrorCode MatMFFDSetBase_MFFD(Mat,Vec,Vec);
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd_SNESMF"
 /*
    MatAssemblyEnd_SNESMF - Calls MatAssemblyEnd_MFFD() and then sets the
     base from the SNES context
@@ -84,8 +80,6 @@ static PetscErrorCode MatAssemblyEnd_SNESMF(Mat J,MatAssemblyType mt)
     This routine resets the MatAssemblyEnd() for the MatMFFD created from MatCreateSNESMF() so that it NO longer
   uses the solution in the SNES object to update the base. See the warning in MatCreateSNESMF().
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDSetBase_SNESMF"
 static PetscErrorCode  MatMFFDSetBase_SNESMF(Mat J,Vec U,Vec F)
 {
   PetscErrorCode ierr;
@@ -97,8 +91,6 @@ static PetscErrorCode  MatMFFDSetBase_SNESMF(Mat J,Vec U,Vec F)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateSNESMF"
 /*@
    MatCreateSNESMF - Creates a matrix-free matrix context for use with
    a SNES solver.  This matrix can be used as the Jacobian argument for

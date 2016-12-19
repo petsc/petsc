@@ -1,8 +1,6 @@
 
 #include <petsc/private/matimpl.h>        /*I "petscmat.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatHasOperation"
 /*@
     MatHasOperation - Determines whether the given matrix supports the particular
     operation.

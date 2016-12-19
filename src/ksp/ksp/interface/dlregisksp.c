@@ -13,8 +13,6 @@ const char *const        PCPARMSLocalTypes[]  = {"ILU0","ILUK","ILUT","ARMS","PC
 const char *const        PCFailedReasons[]    = {"FACTOR_NOERROR","FACTOR_STRUCT_ZEROPIVOT","FACTOR_NUMERIC_ZEROPIVOT","FACTOR_OUTMEMORY","FACTOR_OTHER","SUBPC_ERROR",0};
 
 static PetscBool PCPackageInitialized = PETSC_FALSE;
-#undef __FUNCT__
-#define __FUNCT__ "PCFinalizePackage"
 /*@C
   PCFinalizePackage - This function destroys everything in the Petsc interface to the characteristics package. It is
   called from PetscFinalize().
@@ -35,8 +33,6 @@ PetscErrorCode  PCFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCInitializePackage"
 /*@C
   PCInitializePackage - This function initializes everything in the PC package. It is called
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to PCCreate()
@@ -120,8 +116,6 @@ const char *const*KSPConvergedReasons = KSPConvergedReasons_Shifted + 11;
 const char *const KSPFCDTruncationTypes[] = {"STANDARD","NOTAY","KSPFCDTruncationTypes","KSP_FCD_TRUNC_TYPE_",0};
 
 static PetscBool KSPPackageInitialized = PETSC_FALSE;
-#undef __FUNCT__
-#define __FUNCT__ "KSPFinalizePackage"
 /*@C
   KSPFinalizePackage - This function destroys everything in the Petsc interface to the KSP package. It is
   called from PetscFinalize().
@@ -142,8 +136,6 @@ PetscErrorCode  KSPFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPInitializePackage"
 /*@C
   KSPInitializePackage - This function initializes everything in the KSP package. It is called
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to KSPCreate()
@@ -198,8 +190,6 @@ PetscErrorCode  KSPInitializePackage(void)
 
 #if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDLLibraryRegister_petscksp"
 /*
   PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.
 

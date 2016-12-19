@@ -18,8 +18,6 @@ typedef struct {
   cufftComplex *devArray;
 } Mat_CUFFT;
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_SeqCUFFT"
 PetscErrorCode MatMult_SeqCUFFT(Mat A, Vec x, Vec y)
 {
   Mat_CUFFT      *cufft    = (Mat_CUFFT*) A->data;
@@ -60,8 +58,6 @@ PetscErrorCode MatMult_SeqCUFFT(Mat A, Vec x, Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultTranspose_SeqCUFFT"
 PetscErrorCode MatMultTranspose_SeqCUFFT(Mat A, Vec x, Vec y)
 {
   Mat_CUFFT      *cufft    = (Mat_CUFFT*) A->data;
@@ -101,8 +97,6 @@ PetscErrorCode MatMultTranspose_SeqCUFFT(Mat A, Vec x, Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_SeqCUFFT"
 PetscErrorCode MatDestroy_SeqCUFFT(Mat A)
 {
   Mat_CUFFT      *cufft = (Mat_CUFFT*) A->data;
@@ -119,8 +113,6 @@ PetscErrorCode MatDestroy_SeqCUFFT(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateSeqCUFFT"
 /*@
   MatCreateSeqCUFFT - Creates a matrix object that provides sequential FFT via the external package CUFFT
 

@@ -3,8 +3,6 @@
  Provides an interface to the Clique sparse solver (http://poulson.github.com/Clique/)
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscCliqueFinalizePackage"
 PetscErrorCode PetscCliqueFinalizePackage(void)
 {
   PetscFunctionBegin;
@@ -12,8 +10,6 @@ PetscErrorCode PetscCliqueFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscCliqueInitializePackage"
 PetscErrorCode PetscCliqueInitializePackage(void)
 {
   PetscErrorCode ierr;
@@ -40,8 +36,6 @@ PetscErrorCode PetscCliqueInitializePackage(void)
   output:
 .   cliq - Clique context
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatConvertToClique"
 PetscErrorCode MatConvertToClique(Mat A,MatReuse reuse,Mat_Clique *cliq)
 {
   PetscErrorCode                          ierr;
@@ -77,8 +71,6 @@ PetscErrorCode MatConvertToClique(Mat A,MatReuse reuse,Mat_Clique *cliq)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_Clique"
 static PetscErrorCode MatMult_Clique(Mat A,Vec X,Vec Y)
 {
   PetscErrorCode                          ierr;
@@ -108,8 +100,6 @@ static PetscErrorCode MatMult_Clique(Mat A,Vec X,Vec Y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatView_Clique"
 PetscErrorCode MatView_Clique(Mat A,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -135,8 +125,6 @@ PetscErrorCode MatView_Clique(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_Clique"
 PetscErrorCode MatDestroy_Clique(Mat A)
 {
   PetscErrorCode ierr;
@@ -161,8 +149,6 @@ PetscErrorCode MatDestroy_Clique(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolve_Clique"
 PetscErrorCode MatSolve_Clique(Mat A,Vec B,Vec X)
 {
   PetscErrorCode                           ierr;
@@ -192,8 +178,6 @@ PetscErrorCode MatSolve_Clique(Mat A,Vec B,Vec X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCholeskyFactorNumeric_Clique"
 PetscErrorCode MatCholeskyFactorNumeric_Clique(Mat F,Mat A,const MatFactorInfo *info)
 {
   PetscErrorCode                          ierr;
@@ -222,8 +206,6 @@ PetscErrorCode MatCholeskyFactorNumeric_Clique(Mat F,Mat A,const MatFactorInfo *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCholeskyFactorSymbolic_Clique"
 PetscErrorCode MatCholeskyFactorSymbolic_Clique(Mat F,Mat A,IS r,const MatFactorInfo *info)
 {
   PetscErrorCode                          ierr;
@@ -264,8 +246,6 @@ PetscErrorCode MatCholeskyFactorSymbolic_Clique(Mat F,Mat A,IS r,const MatFactor
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFactorGetSolverPackage_Clique"
 static PetscErrorCode MatFactorGetSolverPackage_Clique(Mat A,const MatSolverPackage *type)
 {
   PetscFunctionBegin;
@@ -273,8 +253,6 @@ static PetscErrorCode MatFactorGetSolverPackage_Clique(Mat A,const MatSolverPack
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetFactor_aij_clique"
 static PetscErrorCode MatGetFactor_aij_clique(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
@@ -327,8 +305,6 @@ static PetscErrorCode MatGetFactor_aij_clique(Mat A,MatFactorType ftype,Mat *F)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolverPackageRegister_Clique"
 PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Clique(void)
 {
   PetscErrorCode ierr;

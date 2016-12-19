@@ -1,8 +1,6 @@
 #include <petsc/private/snesimpl.h>             /*I   "petscsnes.h"   I*/
 #include <petscdm.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultASPIN"
 PetscErrorCode MatMultASPIN(Mat m,Vec X,Vec Y)
 {
   PetscErrorCode ierr;
@@ -53,8 +51,6 @@ PetscErrorCode MatMultASPIN(Mat m,Vec X,Vec Y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESDestroy_ASPIN"
 static PetscErrorCode SNESDestroy_ASPIN(SNES snes)
 {
   PetscErrorCode ierr;
@@ -67,8 +63,6 @@ static PetscErrorCode SNESDestroy_ASPIN(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESCreate_ASPIN"
 /* -------------------------------------------------------------------------- */
 /*MC
       SNESASPIN - Helper SNES type for Additive-Schwarz Preconditioned Inexact Newton

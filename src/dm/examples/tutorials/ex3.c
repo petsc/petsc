@@ -4,8 +4,6 @@ static char help[] = "Tests DMCreateInterpolation() for nonuniform DMDA coordina
 #include <petscdm.h>
 #include <petscdmda.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "SetCoordinates1d"
 PetscErrorCode SetCoordinates1d(DM da)
 {
   PetscErrorCode ierr;
@@ -34,8 +32,6 @@ PetscErrorCode SetCoordinates1d(DM da)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetCoordinates2d"
 PetscErrorCode SetCoordinates2d(DM da)
 {
   PetscErrorCode ierr;
@@ -70,8 +66,6 @@ PetscErrorCode SetCoordinates2d(DM da)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetCoordinates3d"
 PetscErrorCode SetCoordinates3d(DM da)
 {
   PetscErrorCode ierr;
@@ -110,8 +104,6 @@ PetscErrorCode SetCoordinates3d(DM da)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscInt         M = 5,N = 4,P = 3, m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE,dim = 1;

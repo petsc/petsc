@@ -8,8 +8,6 @@ static char help[] = "Tests I/O of vectors for different data formats (binary,HD
   the same program.  This example is intended only to demonstrate
   both input and output and is written for use with either 1,2,or 4 processors. */
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   PetscErrorCode ierr;

@@ -21,8 +21,6 @@ F*/
 FILE *gfilepointer_data,*gfilepointer_info;
 
 /* Defines the source  */
-/*#undef __FUNCT__
-#define __FUNCT__ "Ue"
 PetscErrorCode Ue(PetscScalar t,PetscScalar *U)
 {
   PetscFunctionBegin;
@@ -31,8 +29,6 @@ PetscErrorCode Ue(PetscScalar t,PetscScalar *U)
   }*/
 
 
-#undef __FUNCT__
-#define __FUNCT__ "IFunctionImplicit"
 /*
      Defines the DAE passed to the time solver
 */
@@ -61,8 +57,6 @@ static PetscErrorCode IFunctionImplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,Vec F,v
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "IJacobianImplicit"
 /*
      Defines the Jacobian of the ODE passed to the ODE solver. See TSSetIJacobian() for the meaning of a and the Jacobian.
 */
@@ -109,8 +103,6 @@ static PetscErrorCode IJacobianImplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,PetscRe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   TS             ts;            /* ODE integrator */

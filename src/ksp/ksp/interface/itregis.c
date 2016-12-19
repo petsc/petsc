@@ -51,8 +51,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FETIDP(KSP);
 */
 extern PetscBool KSPRegisterAllCalled;
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPRegisterAll"
 /*@C
   KSPRegisterAll - Registers all of the Krylov subspace methods in the KSP package.
 

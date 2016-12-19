@@ -46,8 +46,6 @@ typedef struct {
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_SACUSPPoly"
 static PetscErrorCode PCSetUp_SACUSPPoly(PC pc)
 {
   PC_SACUSPPoly  *sa = (PC_SACUSPPoly*)pc->data;
@@ -94,8 +92,6 @@ static PetscErrorCode PCSetUp_SACUSPPoly(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApplyRichardson_SACUSPPoly"
 static PetscErrorCode PCApplyRichardson_SACUSPPoly(PC pc, Vec b, Vec y, Vec w,PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt its, PetscBool guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
 #if !defined(PETSC_USE_COMPLEX)
@@ -144,8 +140,6 @@ static PetscErrorCode PCApplyRichardson_SACUSPPoly(PC pc, Vec b, Vec y, Vec w,Pe
 
    Application Interface Routine: PCApply()
  */
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_SACUSPPoly"
 static PetscErrorCode PCApply_SACUSPPoly(PC pc,Vec x,Vec y)
 {
   PC_SACUSPPoly  *sac = (PC_SACUSPPoly*)pc->data;
@@ -188,8 +182,6 @@ static PetscErrorCode PCApply_SACUSPPoly(PC pc,Vec x,Vec y)
 
    Application Interface Routine: PCDestroy()
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_SACUSPPoly"
 static PetscErrorCode PCDestroy_SACUSPPoly(PC pc)
 {
   PC_SACUSPPoly  *sac = (PC_SACUSPPoly*)pc->data;
@@ -211,8 +203,6 @@ static PetscErrorCode PCDestroy_SACUSPPoly(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_SACUSPPoly"
 static PetscErrorCode PCSetFromOptions_SACUSPPoly(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
@@ -225,8 +215,6 @@ static PetscErrorCode PCSetFromOptions_SACUSPPoly(PetscOptionItems *PetscOptions
 
 /* -------------------------------------------------------------------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_SACUSPPoly"
 PETSC_EXTERN PetscErrorCode PCCreate_SACUSPPoly(PC pc)
 {
   PC_SACUSPPoly  *sac;

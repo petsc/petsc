@@ -1,8 +1,6 @@
 
 #include <petsc/private/vecimpl.h>    /*I   "petscvec.h"    I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "VecScatterCreateToAll"
 /*@
       VecScatterCreateToAll - Creates a vector and a scatter context that copies all
           vector values to each processor
@@ -72,8 +70,6 @@ PetscErrorCode  VecScatterCreateToAll(Vec vin,VecScatter *ctx,Vec *vout)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecScatterCreateToZero"
 /*@
       VecScatterCreateToZero - Creates an output vector and a scatter context used to
               copy all vector values into the output vector on the zeroth processor

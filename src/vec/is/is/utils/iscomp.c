@@ -1,8 +1,6 @@
 
 #include <petsc/private/isimpl.h>    /*I "petscis.h"  I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "ISEqual"
 /*@
    ISEqual  - Compares if two index sets have the same set of indices.
 

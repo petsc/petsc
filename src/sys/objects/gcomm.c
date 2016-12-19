@@ -4,8 +4,6 @@
 */
 #include <petsc/private/petscimpl.h>  /*I   "petscsys.h"    I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectComm"
 /*@C
    PetscObjectComm - Gets the MPI communicator for any PetscObject   regardless of the type.
 
@@ -36,8 +34,6 @@ MPI_Comm  PetscObjectComm(PetscObject obj)
   return obj->comm;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectGetComm"
 /*@C
    PetscObjectGetComm - Gets the MPI communicator for any PetscObject,
    regardless of the type.
@@ -72,8 +68,6 @@ PetscErrorCode  PetscObjectGetComm(PetscObject obj,MPI_Comm *comm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectGetTabLevel"
 /*@
    PetscObjectGetTabLevel - Gets the number of tabs that ASCII output for that object use
 
@@ -104,8 +98,6 @@ PetscErrorCode  PetscObjectGetTabLevel(PetscObject obj,PetscInt *tab)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectSetTabLevel"
 /*@
    PetscObjectSetTabLevel - Sets the number of tabs that ASCII output for that object use
 
@@ -133,8 +125,6 @@ PetscErrorCode  PetscObjectSetTabLevel(PetscObject obj,PetscInt tab)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectIncrementTabLevel"
 /*@
    PetscObjectIncrementTabLevel - Sets the number of tabs that ASCII output for that object use based on
          the tablevel of another object. This should be called immediately after the object is created.

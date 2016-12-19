@@ -19,8 +19,6 @@ static PetscReal Peaks(PetscReal x,PetscReal y)
        - 1./3 * Exp(-Pow(x+1,2) - Pow(y,2));
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DrawFunction"
 static PetscErrorCode DrawFunction(PetscDraw draw,void *ctx)
 {
   int            i,j,w,h;
@@ -53,8 +51,6 @@ static PetscErrorCode DrawFunction(PetscDraw draw,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   char           title[64],cmap[32] = "";

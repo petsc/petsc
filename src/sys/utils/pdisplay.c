@@ -1,8 +1,6 @@
 
 #include <petscsys.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsGetenv"
 /*@C
      PetscOptionsGetenv - Gets an environmental variable, broadcasts to all
           processors in communicator from first.
@@ -79,8 +77,6 @@ PetscErrorCode  PetscOptionsGetenv(MPI_Comm comm,const char name[],char env[],si
 */
 static char PetscDisplay[256];
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscWorldIsSingleHost"
 static PetscErrorCode PetscWorldIsSingleHost(PetscBool  *onehost)
 {
   PetscErrorCode ierr;
@@ -103,8 +99,6 @@ static PetscErrorCode PetscWorldIsSingleHost(PetscBool  *onehost)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSetDisplay"
 PetscErrorCode  PetscSetDisplay(void)
 {
   PetscErrorCode ierr;
@@ -151,8 +145,6 @@ PetscErrorCode  PetscSetDisplay(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscGetDisplay"
 /*
      PetscGetDisplay - Gets the display variable for all processors.
 

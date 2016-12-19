@@ -32,8 +32,6 @@ extern PetscErrorCode Solution(TS,PetscReal,Vec,AppCtx*);
 extern PetscErrorCode IFunction_LaxFriedrichs(TS,PetscReal,Vec,Vec,Vec,void*);
 extern PetscErrorCode IFunction_LaxWendroff(TS,PetscReal,Vec,Vec,Vec,void*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   AppCtx         appctx;                 /* user-defined application context */
@@ -105,8 +103,6 @@ int main(int argc,char **argv)
   return ierr;
 }
 /* --------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "InitialConditions"
 /*
    InitialConditions - Computes the solution at the initial time.
 
@@ -153,8 +149,6 @@ PetscErrorCode InitialConditions(TS ts,Vec U,AppCtx *appctx)
   return 0;
 }
 /* --------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "Solution"
 /*
    Solution - Computes the exact solution at a given time
 
@@ -202,8 +196,6 @@ PetscErrorCode Solution(TS ts,PetscReal t,Vec U,AppCtx *appctx)
 
  See https://en.wikipedia.org/wiki/Lax%E2%80%93Friedrichs_method
  */
-#undef __FUNCT__
-#define __FUNCT__ "IFunction_LaxFriedrichs"
 PetscErrorCode IFunction_LaxFriedrichs(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void* ctx)
 {
   PetscErrorCode ierr;
@@ -253,8 +245,6 @@ PetscErrorCode IFunction_LaxFriedrichs(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,vo
 /*
  Use Lax-Wendroff method to evaluate F(u,t) = du/dt + a *  du/dx
 */
-#undef __FUNCT__
-#define __FUNCT__ "IFunction_LaxWendroff"
 PetscErrorCode IFunction_LaxWendroff(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void* ctx)
 {
   PetscErrorCode ierr;

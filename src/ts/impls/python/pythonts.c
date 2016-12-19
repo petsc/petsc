@@ -1,7 +1,5 @@
 #include <petsc/private/tsimpl.h>          /*I "petscts.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "TSPythonSetType"
 /*@C
    TSPythonSetType - Initalize a TS object implemented in Python.
 

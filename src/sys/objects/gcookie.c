@@ -4,8 +4,6 @@
 */
 #include <petsc/private/petscimpl.h>  /*I   "petscsys.h"    I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectGetClassId"
 /*@C
    PetscObjectGetClassId - Gets the classid for any PetscObject
 
@@ -30,8 +28,6 @@ PetscErrorCode  PetscObjectGetClassId(PetscObject obj,PetscClassId *classid)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectGetClassName"
 /*@C
    PetscObjectGetClassName - Gets the class name for any PetscObject
 

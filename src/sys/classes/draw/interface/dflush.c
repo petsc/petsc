@@ -3,8 +3,6 @@
 */
 #include <petsc/private/drawimpl.h>  /*I "petscdraw.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawFlush"
 /*@
    PetscDrawFlush - Flushes graphical output.
 

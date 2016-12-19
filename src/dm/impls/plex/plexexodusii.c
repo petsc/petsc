@@ -6,8 +6,6 @@
 #include <exodusII.h>
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateExodusFromFile"
 /*@C
   DMPlexCreateExodus - Create a DMPlex mesh from an ExodusII file.
 
@@ -51,8 +49,6 @@ PetscErrorCode DMPlexCreateExodusFromFile(MPI_Comm comm, const char filename[], 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateExodus"
 /*@
   DMPlexCreateExodus - Create a DMPlex mesh from an ExodusII file ID.
 

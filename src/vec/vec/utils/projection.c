@@ -1,7 +1,5 @@
 #include <petsc/private/vecimpl.h>    /*I   "petscvec.h"  I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "VecWhichEqual"
 /*@
   VecWhichEqual - Creates an index set containing the indices
              where the vectors Vec1 and Vec2 have identical elements.
@@ -64,8 +62,6 @@ PetscErrorCode VecWhichEqual(Vec Vec1, Vec Vec2, IS * S)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecWhichLessThan"
 /*@
   VecWhichLessThan - Creates an index set containing the indices
   where the vectors Vec1 < Vec2
@@ -130,8 +126,6 @@ PetscErrorCode VecWhichLessThan(Vec Vec1, Vec Vec2, IS * S)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecWhichGreaterThan"
 /*@
   VecWhichGreaterThan - Creates an index set containing the indices
   where the vectors Vec1 > Vec2
@@ -197,8 +191,6 @@ PetscErrorCode VecWhichGreaterThan(Vec Vec1, Vec Vec2, IS * S)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecWhichBetween"
 /*@
   VecWhichBetween - Creates an index set containing the indices
                where  VecLow < V < VecHigh
@@ -273,8 +265,6 @@ PetscErrorCode VecWhichBetween(Vec VecLow, Vec V, Vec VecHigh, IS *S)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecWhichBetweenOrEqual"
 /*@
   VecWhichBetweenOrEqual - Creates an index set containing the indices
   where  VecLow <= V <= VecHigh
@@ -344,8 +334,6 @@ PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS * S)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecISAXPY"
 /*@
   VecISAXPY - Adds a reduced vector to the appropriate elements of a full-space vector. 
                   vfull[is[i]] += alpha*vreduced[i]
@@ -409,8 +397,6 @@ PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha,Vec vreduced)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISComplementVec"
 /*@
    ISComplementVec - Creates the complement of the index set relative to a layout defined by a Vec
 
@@ -438,8 +424,6 @@ PetscErrorCode ISComplementVec(IS S, Vec V, IS *T)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecISSet"
 /*@
    VecISSet - Sets the elements of a vector, specified by an index set, to a constant
 
@@ -478,8 +462,6 @@ PetscErrorCode VecISSet(Vec V,IS S, PetscScalar c)
 }
 
 #if !defined(PETSC_USE_COMPLEX)
-#undef __FUNCT__
-#define __FUNCT__ "VecBoundGradientProjection"
 /*@C
   VecBoundGradientProjection - Projects  vector according to this definition.
   If XL[i] < X[i] < XU[i], then GP[i] = G[i];
@@ -548,8 +530,6 @@ PetscErrorCode VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP)
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "VecStepMaxBounded"
 /*@
      VecStepMaxBounded - See below
 
@@ -600,8 +580,6 @@ PetscErrorCode VecStepMaxBounded(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *stepm
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecStepBoundInfo"
 /*@
      VecStepBoundInfo - See below
 
@@ -682,8 +660,6 @@ PetscErrorCode VecStepBoundInfo(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *boundm
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecStepMax"
 /*@
      VecStepMax - Returns the largest value so that x[i] + step*DX[i] >= 0 for all i
 
@@ -726,8 +702,6 @@ PetscErrorCode VecStepMax(Vec X, Vec DX, PetscReal *step)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecPow"
 /*@
   VecPow - Replaces each component of a vector by x_i^p
 
@@ -805,8 +779,6 @@ PetscErrorCode VecPow(Vec v, PetscScalar p)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecMedian"
 /*@
   VecMedian - Computes the componentwise median of three vectors
   and stores the result in this vector.  Used primarily for projecting

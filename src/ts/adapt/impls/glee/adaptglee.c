@@ -10,8 +10,6 @@ typedef struct {
   Vec       E;
 } TSAdapt_GLEE;
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptChoose_GLEE"
 static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,PetscReal *next_h,PetscBool *accept,PetscReal *wlte,PetscReal *wltea,PetscReal *wlter)
 {
   TSAdapt_GLEE  *glee = (TSAdapt_GLEE*)adapt->data;
@@ -108,8 +106,6 @@ static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt,TS ts,PetscReal h,PetscIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptReset_GLEE"
 static PetscErrorCode TSAdaptReset_GLEE(TSAdapt adapt)
 {
   TSAdapt_GLEE  *glee = (TSAdapt_GLEE*)adapt->data;
@@ -120,8 +116,6 @@ static PetscErrorCode TSAdaptReset_GLEE(TSAdapt adapt)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptDestroy_GLEE"
 static PetscErrorCode TSAdaptDestroy_GLEE(TSAdapt adapt)
 {
   PetscErrorCode ierr;
@@ -132,8 +126,6 @@ static PetscErrorCode TSAdaptDestroy_GLEE(TSAdapt adapt)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptSetFromOptions_GLEE"
 static PetscErrorCode TSAdaptSetFromOptions_GLEE(PetscOptionItems *PetscOptionsObject,TSAdapt adapt)
 {
   TSAdapt_GLEE  *glee = (TSAdapt_GLEE*)adapt->data;
@@ -153,8 +145,6 @@ static PetscErrorCode TSAdaptSetFromOptions_GLEE(PetscOptionItems *PetscOptionsO
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptView_GLEE"
 static PetscErrorCode TSAdaptView_GLEE(TSAdapt adapt,PetscViewer viewer)
 {
   TSAdapt_GLEE  *glee = (TSAdapt_GLEE*)adapt->data;
@@ -171,8 +161,6 @@ static PetscErrorCode TSAdaptView_GLEE(TSAdapt adapt,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptCreate_GLEE"
 /*MC
    TSADAPTGLEE - GLEE adaptive controller for time stepping
 

@@ -133,8 +133,6 @@ typedef struct {
   to check the min/max limits on the state variable VR. A non windup limiter is used for
   the VR limits.
 */
-#undef __FUNCT__
-#define __FUNCT__ "EventFunction"
 PetscErrorCode EventFunction(TS ts,PetscReal t,Vec X,PetscScalar *fvalue,void *ctx)
 {
   Userctx        *user=(Userctx*)ctx;
@@ -186,8 +184,6 @@ PetscErrorCode EventFunction(TS ts,PetscReal t,Vec X,PetscScalar *fvalue,void *c
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PostEventFunction"
 PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],PetscReal t,Vec X,PetscBool forwardsolve,void* ctx)
 {
   Userctx *user=(Userctx*)ctx;
@@ -302,8 +298,6 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],Pe
 }
 
 /* Converts from machine frame (dq) to network (phase a real,imag) reference frame */
-#undef __FUNCT__
-#define __FUNCT__ "dq2ri"
 PetscErrorCode dq2ri(PetscScalar Fd,PetscScalar Fq,PetscScalar delta,PetscScalar *Fr, PetscScalar *Fi)
 {
   PetscFunctionBegin;
@@ -313,8 +307,6 @@ PetscErrorCode dq2ri(PetscScalar Fd,PetscScalar Fq,PetscScalar delta,PetscScalar
 }
 
 /* Converts from network frame ([phase a real,imag) to machine (dq) reference frame */
-#undef __FUNCT__
-#define __FUNCT__ "ri2dq"
 PetscErrorCode ri2dq(PetscScalar Fr,PetscScalar Fi,PetscScalar delta,PetscScalar *Fd, PetscScalar *Fq)
 {
   PetscFunctionBegin;
@@ -324,8 +316,6 @@ PetscErrorCode ri2dq(PetscScalar Fr,PetscScalar Fi,PetscScalar delta,PetscScalar
 }
 
 /* Saves the solution at each time to a matrix */
-#undef __FUNCT__
-#define __FUNCT__ "SaveSolution"
 PetscErrorCode SaveSolution(TS ts)
 {
   PetscErrorCode ierr;
@@ -350,8 +340,6 @@ PetscErrorCode SaveSolution(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetInitialGuess"
 PetscErrorCode SetInitialGuess(Vec X,Userctx *user)
 {
   PetscErrorCode ierr;
@@ -439,8 +427,6 @@ PetscErrorCode SetInitialGuess(Vec X,Userctx *user)
 }
 
 /* Computes F = [f(x,y);g(x,y)] */
-#undef __FUNCT__
-#define __FUNCT__ "ResidualFunction"
 PetscErrorCode ResidualFunction(Vec X, Vec F, Userctx *user)
 {
   PetscErrorCode ierr;
@@ -565,8 +551,6 @@ PetscErrorCode ResidualFunction(Vec X, Vec F, Userctx *user)
 /*   f(x,y)
      g(x,y)
  */
-#undef __FUNCT__
-#define __FUNCT__ "RHSFunction"
 PetscErrorCode RHSFunction(TS ts,PetscReal t, Vec X, Vec F, void *ctx)
 {
   PetscErrorCode ierr;
@@ -581,8 +565,6 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t, Vec X, Vec F, void *ctx)
 /* f(x,y) - \dot{x}
      g(x,y) = 0
  */
-#undef __FUNCT__
-#define __FUNCT__ "IFunction"
 PetscErrorCode IFunction(TS ts,PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
 {
   PetscErrorCode ierr;
@@ -613,8 +595,6 @@ PetscErrorCode IFunction(TS ts,PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
    differential equations
  F = [0;g(y)];
 */
-#undef __FUNCT__
-#define __FUNCT__ "AlgFunction"
 PetscErrorCode AlgFunction(SNES snes, Vec X, Vec F, void *ctx)
 {
   PetscErrorCode ierr;
@@ -638,8 +618,6 @@ PetscErrorCode AlgFunction(SNES snes, Vec X, Vec F, void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PostStage"
 PetscErrorCode PostStage(TS ts, PetscReal t, PetscInt i, Vec *X)
 {
   PetscErrorCode ierr;
@@ -651,8 +629,6 @@ PetscErrorCode PostStage(TS ts, PetscReal t, PetscInt i, Vec *X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PostEvaluate"
 PetscErrorCode PostEvaluate(TS ts)
 {
   PetscErrorCode ierr;
@@ -667,8 +643,6 @@ PetscErrorCode PostEvaluate(TS ts)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PreallocateJacobian"
 PetscErrorCode PreallocateJacobian(Mat J, Userctx *user)
 {
   PetscErrorCode ierr;
@@ -718,8 +692,6 @@ PetscErrorCode PreallocateJacobian(Mat J, Userctx *user)
    J = [df_dx, df_dy
         dg_dx, dg_dy]
 */
-#undef __FUNCT__
-#define __FUNCT__ "ResidualJacobian"
 PetscErrorCode ResidualJacobian(Vec X,Mat J,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
@@ -964,8 +936,6 @@ PetscErrorCode ResidualJacobian(Vec X,Mat J,Mat B,void *ctx)
    J = [I, 0
         dg_dx, dg_dy]
 */
-#undef __FUNCT__
-#define __FUNCT__ "AlgJacobian"
 PetscErrorCode AlgJacobian(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
@@ -983,8 +953,6 @@ PetscErrorCode AlgJacobian(SNES snes,Vec X,Mat A,Mat B,void *ctx)
         dg_dx, dg_dy]
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "RHSJacobian"
 PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec X,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
@@ -1003,8 +971,6 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec X,Mat A,Mat B,void *ctx)
         dg_dx, dg_dy]
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "IJacobian"
 PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat B,Userctx *user)
 {
   PetscErrorCode ierr;
@@ -1037,8 +1003,6 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   TS             ts;

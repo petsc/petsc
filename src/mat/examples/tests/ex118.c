@@ -5,8 +5,6 @@ static char help[] = "Test LAPACK routine DSTEBZ() and DTEIN().  \n\n";
 
 extern PetscErrorCode CkEigenSolutions(PetscInt,Mat,PetscInt,PetscInt,PetscScalar*,Vec*,PetscReal*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   PetscErrorCode ierr;
@@ -124,8 +122,6 @@ int main(int argc,char **args)
      tols[1]    - reporting tol_orth: evec[i]^T*evec[j] - delta_ij
 */
 #undef DEBUG_CkEigenSolutions
-#undef __FUNCT__
-#define __FUNCT__ "CkEigenSolutions"
 PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,PetscScalar *eval,Vec *evec,PetscReal *tols)
 {
   PetscInt    ierr,i,j,nev;

@@ -1,8 +1,6 @@
 
 #include <petsc/private/kspimpl.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_TFQMR"
 static PetscErrorCode KSPSetUp_TFQMR(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -13,8 +11,6 @@ static PetscErrorCode KSPSetUp_TFQMR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_TFQMR"
 static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -143,8 +139,6 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
 
 .seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPTCQMR
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_TFQMR"
 PETSC_EXTERN PetscErrorCode KSPCreate_TFQMR(KSP ksp)
 {
   PetscErrorCode ierr;

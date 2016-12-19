@@ -30,8 +30,6 @@
 /*    PROGRAM SUBROUTINES -*/
 /*       QMDMRG.*/
 /******************************************************************/
-#undef __FUNCT__
-#define __FUNCT__ "SPARSEPACKqmdupd"
 PetscErrorCode SPARSEPACKqmdupd(const PetscInt *xadj,const PetscInt *adjncy,const PetscInt *nlist,const PetscInt *list, PetscInt *deg,
                                 PetscInt *qsize, PetscInt *qlink, PetscInt *marker, PetscInt *rchset, PetscInt *nbrhd)
 {

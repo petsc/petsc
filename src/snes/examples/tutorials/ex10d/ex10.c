@@ -79,8 +79,6 @@ PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,void*);
 PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 PetscErrorCode FormInitialGuess(AppCtx*,Vec);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   SNES                   snes;                 /* SNES context */
@@ -505,8 +503,6 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
-#undef __FUNCT__
-#define __FUNCT__ "FormInitialGuess"
 /* --------------------  Form initial approximation ----------------- */
 
 /*
@@ -558,8 +554,6 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   return 0;
 }
-#undef __FUNCT__
-#define __FUNCT__ "FormFunction"
 /* --------------------  Evaluate Function F(x) --------------------- */
 /*
    FormFunction - Evaluates nonlinear function, F(x).
@@ -637,8 +631,6 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobian"
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
 /*
    FormJacobian - Evaluates Jacobian matrix.

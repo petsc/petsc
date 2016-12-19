@@ -4,8 +4,6 @@
 PetscFunctionList AOList              = NULL;
 PetscBool         AORegisterAllCalled = PETSC_FALSE;
 
-#undef __FUNCT__
-#define __FUNCT__ "AOSetType"
 /*@C
   AOSetType - Builds an application ordering for a particular implementation.
 
@@ -49,8 +47,6 @@ PetscErrorCode  AOSetType(AO ao, AOType method)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AOGetType"
 /*@C
   AOGetType - Gets the AO type name (as a string) from the AO.
 
@@ -82,8 +78,6 @@ PetscErrorCode  AOGetType(AO ao, AOType *type)
 
 /*--------------------------------------------------------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "AORegister"
 /*@C
   AORegister - 
 

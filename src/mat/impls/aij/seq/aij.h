@@ -150,8 +150,6 @@ typedef struct {
 /*
   Frees the a, i, and j arrays from the XAIJ (AIJ, BAIJ, and SBAIJ) matrix types
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatSeqXAIJFreeAIJ"
 PETSC_STATIC_INLINE PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscInt **j,PetscInt **i)
 {
   PetscErrorCode ierr;

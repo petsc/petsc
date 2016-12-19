@@ -5,8 +5,6 @@ typedef struct {
   PetscReal haptol;
 } KSP_MINRES;
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_MINRES"
 static PetscErrorCode KSPSetUp_MINRES(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -19,8 +17,6 @@ static PetscErrorCode KSPSetUp_MINRES(KSP ksp)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_MINRES"
 static PetscErrorCode  KSPSolve_MINRES(KSP ksp)
 {
   PetscErrorCode    ierr;
@@ -202,8 +198,6 @@ static PetscErrorCode  KSPSolve_MINRES(KSP ksp)
 
 .seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPCG, KSPCR
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_MINRES"
 PETSC_EXTERN PetscErrorCode KSPCreate_MINRES(KSP ksp)
 {
   KSP_MINRES     *minres;

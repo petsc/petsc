@@ -9,8 +9,6 @@ typedef struct {
   Vec       *vwork_n;   /* work vectors of length n */
 } KSP_CGLS;
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_CGLS"
 static PetscErrorCode KSPSetUp_CGLS(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -30,8 +28,6 @@ static PetscErrorCode KSPSetUp_CGLS(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_CGLS"
 static PetscErrorCode KSPSolve_CGLS(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -91,8 +87,6 @@ static PetscErrorCode KSPSolve_CGLS(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPDestroy_CGLS"
 static PetscErrorCode KSPDestroy_CGLS(KSP ksp)
 {
   KSP_CGLS       *cgls = (KSP_CGLS*)ksp->data;
@@ -121,8 +115,6 @@ static PetscErrorCode KSPDestroy_CGLS(KSP ksp)
            KSPCGSetType(), KSPCGUseSingleReduction(), KSPPIPECG, KSPGROPPCG
 
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_CGLS"
 PETSC_EXTERN PetscErrorCode KSPCreate_CGLS(KSP ksp)
 {
   PetscErrorCode ierr;

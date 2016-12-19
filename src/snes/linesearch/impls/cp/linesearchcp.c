@@ -1,8 +1,6 @@
 #include <petsc/private/linesearchimpl.h>
 #include <petscsnes.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchApply_CP"
 static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
 {
   PetscBool      changed_y, changed_w;
@@ -133,8 +131,6 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchCreate_CP"
 /*MC
    SNESLINESEARCHCP - Critical point line search. This line search assumes that there exists some
    artificial G(x) for which the SNESFunction F(x) = grad G(x).  Therefore, this line search seeks

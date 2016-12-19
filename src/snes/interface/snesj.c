@@ -1,8 +1,6 @@
 
 #include <petsc/private/snesimpl.h>    /*I  "petscsnes.h"  I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESComputeJacobianDefault"
 /*@C
    SNESComputeJacobianDefault - Computes the Jacobian using finite differences.
 

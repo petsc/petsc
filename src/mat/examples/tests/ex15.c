@@ -3,8 +3,6 @@ static char help[] = "Tests MatNorm(), MatLUFactor(), MatSolve() and MatSolveAdd
 
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            C;

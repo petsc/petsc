@@ -4,8 +4,6 @@ Example: mpiexec -n <np> ./ex168 -f <matrix binary file> \n\n";
 
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            A,F;

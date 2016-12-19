@@ -25,8 +25,6 @@ typedef struct {
   PetscBool        check;
 } KSP_FETIDP;
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPFETIDPSetPressureOperators_FETIDP"
 static PetscErrorCode KSPFETIDPSetPressureOperators_FETIDP(KSP ksp, Mat A, Mat P)
 {
   KSP_FETIDP     *fetidp = (KSP_FETIDP*)ksp->data;
@@ -39,8 +37,6 @@ static PetscErrorCode KSPFETIDPSetPressureOperators_FETIDP(KSP ksp, Mat A, Mat P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPFETIDPSetPressureOperators"
 /*@
  KSPFETIDPSetPressureOperators - Sets the operators used to setup the pressure preconditioner for saddle point FETI-DP.
 
@@ -73,8 +69,6 @@ PetscErrorCode KSPFETIDPSetPressureOperators(KSP ksp, Mat A, Mat P)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPFETIDPGetInnerKSP_FETIDP"
 static PetscErrorCode KSPFETIDPGetInnerKSP_FETIDP(KSP ksp, KSP* innerksp)
 {
   KSP_FETIDP     *fetidp = (KSP_FETIDP*)ksp->data;
@@ -84,8 +78,6 @@ static PetscErrorCode KSPFETIDPGetInnerKSP_FETIDP(KSP ksp, KSP* innerksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPFETIDPGetInnerKSP"
 /*@
  KSPFETIDPGetInnerKSP - Gets the KSP object for the Lagrange multipliers
 
@@ -110,8 +102,6 @@ PetscErrorCode KSPFETIDPGetInnerKSP(KSP ksp, KSP* innerksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPFETIDPGetInnerBDDC_FETIDP"
 static PetscErrorCode KSPFETIDPGetInnerBDDC_FETIDP(KSP ksp, PC* pc)
 {
   KSP_FETIDP     *fetidp = (KSP_FETIDP*)ksp->data;
@@ -121,8 +111,6 @@ static PetscErrorCode KSPFETIDPGetInnerBDDC_FETIDP(KSP ksp, PC* pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPFETIDPGetInnerBDDC"
 /*@
  KSPFETIDPGetInnerBDDC - Gets the BDDC preconditioner used to setup the FETI-DP matrix for the Lagrange multipliers
 
@@ -147,8 +135,6 @@ PetscErrorCode KSPFETIDPGetInnerBDDC(KSP ksp, PC* pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPFETIDPSetInnerBDDC_FETIDP"
 static PetscErrorCode KSPFETIDPSetInnerBDDC_FETIDP(KSP ksp, PC pc)
 {
   KSP_FETIDP     *fetidp = (KSP_FETIDP*)ksp->data;
@@ -162,8 +148,6 @@ static PetscErrorCode KSPFETIDPSetInnerBDDC_FETIDP(KSP ksp, PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPFETIDPSetInnerBDDC"
 /*@
  KSPFETIDPSetInnerBDDC - Sets the BDDC preconditioner used to setup the FETI-DP matrix for the Lagrange multipliers
 
@@ -193,8 +177,6 @@ PetscErrorCode KSPFETIDPSetInnerBDDC(KSP ksp, PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPBuildSolution_FETIDP"
 static PetscErrorCode KSPBuildSolution_FETIDP(KSP ksp,Vec v,Vec *V)
 {
   KSP_FETIDP     *fetidp = (KSP_FETIDP*)ksp->data;
@@ -214,8 +196,6 @@ static PetscErrorCode KSPBuildSolution_FETIDP(KSP ksp,Vec v,Vec *V)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPMonitor_FETIDP"
 static PetscErrorCode KSPMonitor_FETIDP(KSP ksp,PetscInt it,PetscReal rnorm,void* ctx)
 {
   KSP_FETIDPMon  *monctx = (KSP_FETIDPMon*)ctx;
@@ -226,8 +206,6 @@ static PetscErrorCode KSPMonitor_FETIDP(KSP ksp,PetscInt it,PetscReal rnorm,void
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPComputeEigenvalues_FETIDP"
 static PetscErrorCode KSPComputeEigenvalues_FETIDP(KSP ksp,PetscInt nmax,PetscReal *r,PetscReal *c,PetscInt *neig)
 {
   KSP_FETIDP     *fetidp = (KSP_FETIDP*)ksp->data;
@@ -238,8 +216,6 @@ static PetscErrorCode KSPComputeEigenvalues_FETIDP(KSP ksp,PetscInt nmax,PetscRe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPComputeExtremeSingularValues_FETIDP"
 static PetscErrorCode KSPComputeExtremeSingularValues_FETIDP(KSP ksp,PetscReal *emax,PetscReal *emin)
 {
   KSP_FETIDP     *fetidp = (KSP_FETIDP*)ksp->data;
@@ -250,8 +226,6 @@ static PetscErrorCode KSPComputeExtremeSingularValues_FETIDP(KSP ksp,PetscReal *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPFETIDPCheckOperators"
 static PetscErrorCode KSPFETIDPCheckOperators(KSP ksp, PetscViewer viewer)
 {
   KSP_FETIDP     *fetidp = (KSP_FETIDP*)ksp->data;
@@ -503,8 +477,6 @@ static PetscErrorCode KSPFETIDPCheckOperators(KSP ksp, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPFETIDPSetUpOperators"
 static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
 {
   KSP_FETIDP       *fetidp = (KSP_FETIDP*)ksp->data;
@@ -932,8 +904,6 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_FETIDP"
 static PetscErrorCode KSPSetUp_FETIDP(KSP ksp)
 {
   KSP_FETIDP     *fetidp = (KSP_FETIDP*)ksp->data;
@@ -996,8 +966,6 @@ static PetscErrorCode KSPSetUp_FETIDP(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_FETIDP"
 static PetscErrorCode KSPSolve_FETIDP(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -1037,8 +1005,6 @@ static PetscErrorCode KSPSolve_FETIDP(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPReset_FETIDP"
 static PetscErrorCode KSPReset_FETIDP(KSP ksp)
 {
   KSP_FETIDP     *fetidp = (KSP_FETIDP*)ksp->data;
@@ -1056,8 +1022,6 @@ static PetscErrorCode KSPReset_FETIDP(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPDestroy_FETIDP"
 static PetscErrorCode KSPDestroy_FETIDP(KSP ksp)
 {
   KSP_FETIDP     *fetidp = (KSP_FETIDP*)ksp->data;
@@ -1076,8 +1040,6 @@ static PetscErrorCode KSPDestroy_FETIDP(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPView_FETIDP"
 static PetscErrorCode KSPView_FETIDP(KSP ksp,PetscViewer viewer)
 {
   KSP_FETIDP     *fetidp = (KSP_FETIDP*)ksp->data;
@@ -1105,8 +1067,6 @@ static PetscErrorCode KSPView_FETIDP(KSP ksp,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetFromOptions_FETIDP"
 static PetscErrorCode KSPSetFromOptions_FETIDP(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   KSP_FETIDP     *fetidp = (KSP_FETIDP*)ksp->data;
@@ -1157,8 +1117,6 @@ static PetscErrorCode KSPSetFromOptions_FETIDP(PetscOptionItems *PetscOptionsObj
 
 .seealso: MATIS, PCBDDC, KSPFETIDPSetInnerBDDC, KSPFETIDPGetInnerBDDC, KSPFETIDPGetInnerKSP
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_FETIDP"
 PETSC_EXTERN PetscErrorCode KSPCreate_FETIDP(KSP ksp)
 {
   PetscErrorCode ierr;

@@ -14,8 +14,6 @@ PetscErrorCode PetscBinaryWrite(int,void *p,int,PetscDataType,PetscBool);
 /*-----------------------------------------------------------------*/
 /*                                                                 */
 /*-----------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "mexFunction"
 PETSC_EXTERN void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
 {
   int            i,fd,cnt,dt;

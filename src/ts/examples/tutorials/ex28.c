@@ -13,8 +13,6 @@ static char help[] ="Loads a previously saved TS.";
 #include <petscts.h>
 
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   TS             ts;                 /* timestepping context */

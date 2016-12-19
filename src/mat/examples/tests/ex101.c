@@ -2,8 +2,6 @@ static char help[] = "Testing PtAP for SeqMAIJ matrix, P, with SeqAIJ matrix, A.
 
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   Mat            pA,P,aijP;

@@ -7,8 +7,6 @@ static char help[] = "Tests binary I/O of matrices and illustrates user-defined 
   the same program.  This example is intended only to demonstrate
   both input and output. */
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            C;

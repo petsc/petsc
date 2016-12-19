@@ -4,8 +4,6 @@
 
 static PetscBool TaoPackageInitialized = PETSC_FALSE;
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoFinalizePackage"
 /*@C
   TaoFinalizePackage - This function destroys everything in the PETSc/TAO
   interface to the Tao package. It is called from PetscFinalize().
@@ -22,8 +20,6 @@ PetscErrorCode TaoFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoInitializePackage"
 /*@C
   TaoInitializePackage - This function sets up PETSc to use the Tao
   package.  When using static libraries, this function is called from the
@@ -61,8 +57,6 @@ PetscErrorCode TaoInitializePackage(void)
 }
 
 #ifdef PETSC_USE_DYNAMIC_LIBRARIES
-#undef __FUNCT__
-#define __FUNCT__ "PetscDLLibraryRegister_tao"
 /*
   PetscDLLibraryRegister - this function is called when the dynamic library it
   is in is opened.

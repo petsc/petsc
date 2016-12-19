@@ -2,8 +2,6 @@
 #include <petscdmplex.h>
 #include <petscsf.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "DMNetworkSetSizes"
 /*@
   DMNetworkSetSizes - Sets the local and global vertices and edges.
 
@@ -51,8 +49,6 @@ PetscErrorCode DMNetworkSetSizes(DM dm, PetscInt nV, PetscInt nE, PetscInt NV, P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMNetworkSetEdgeList"
 /*@
   DMNetworkSetEdgeList - Sets the list of local edges (vertex connectivity) for the network
 
@@ -78,8 +74,6 @@ PetscErrorCode DMNetworkSetEdgeList(DM dm, int edgelist[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMNetworkLayoutSetUp"
 /*@
   DMNetworkLayoutSetUp - Sets up the bare layout (graph) for the network
 
@@ -140,8 +134,6 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMNetworkRegisterComponent"
 /*@
   DMNetworkRegisterComponent - Registers the network component
 
@@ -187,8 +179,6 @@ PetscErrorCode DMNetworkRegisterComponent(DM dm,const char *name,PetscInt size,P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMNetworkGetVertexRange"
 /*@
   DMNetworkGetVertexRange - Get the bounds [start, end) for the vertices.
 
@@ -215,8 +205,6 @@ PetscErrorCode DMNetworkGetVertexRange(DM dm,PetscInt *vStart,PetscInt *vEnd)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMNetworkGetEdgeRange"
 /*@
   DMNetworkGetEdgeRange - Get the bounds [start, end) for the edges.
 
@@ -243,8 +231,6 @@ PetscErrorCode DMNetworkGetEdgeRange(DM dm,PetscInt *eStart,PetscInt *eEnd)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMNetworkAddComponent"
 /*@
   DMNetworkAddComponent - Adds a network component at the given point (vertex/edge)
 
@@ -281,8 +267,6 @@ PetscErrorCode DMNetworkAddComponent(DM dm, PetscInt p,PetscInt componentkey,voi
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMNetworkGetNumComponents"
 /*@
   DMNetworkGetNumComponents - Get the number of components at a vertex/edge
 
@@ -311,8 +295,6 @@ PetscErrorCode DMNetworkGetNumComponents(DM dm,PetscInt p,PetscInt *numcomponent
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMNetworkGetComponentTypeOffset"
 /*@
   DMNetworkGetComponentTypeOffset - Gets the type along with the offset for indexing the 
                                     component value from the component data array
@@ -358,8 +340,6 @@ PetscErrorCode DMNetworkGetComponentTypeOffset(DM dm,PetscInt p, PetscInt compnu
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMNetworkGetVariableOffset"
 /*@
   DMNetworkGetVariableOffset - Get the offset for accessing the variable associated with the given vertex/edge from the local vector.
 
@@ -386,8 +366,6 @@ PetscErrorCode DMNetworkGetVariableOffset(DM dm,PetscInt p,PetscInt *offset)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMNetworkGetVariableGlobalOffset"
 /*@
   DMNetworkGetVariableGlobalOffset - Get the global offset for the variable associated with the given vertex/edge from the global vector.
 
@@ -415,8 +393,6 @@ PetscErrorCode DMNetworkGetVariableGlobalOffset(DM dm,PetscInt p,PetscInt *offse
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMNetworkGetEdgeOffset"
 /*@
   DMNetworkGetEdgeOffset - Get the offset for accessing the variable associated with the given edge from the local subvector.
 
@@ -444,8 +420,6 @@ PetscErrorCode DMNetworkGetEdgeOffset(DM dm,PetscInt p,PetscInt *offset)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMNetworkGetVertexOffset"
 /*@
   DMNetworkGetVertexOffset - Get the offset for accessing the variable associated with the given vertex from the local subvector.
 
@@ -474,8 +448,6 @@ PetscErrorCode DMNetworkGetVertexOffset(DM dm,PetscInt p,PetscInt *offset)
   ierr = PetscSectionGetOffset(network->vertex.DofSection,p,offset);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "DMNetworkAddNumVariables"
 /*@ 
   DMNetworkAddNumVariables - Add number of variables associated with a given point.
 
@@ -500,8 +472,6 @@ PetscErrorCode DMNetworkAddNumVariables(DM dm,PetscInt p,PetscInt nvar)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMNetworkGetNumVariables"
 /*@ 
   DMNetworkGetNumVariables - Gets number of variables for a vertex/edge point.
 
@@ -528,8 +498,6 @@ PetscErrorCode DMNetworkGetNumVariables(DM dm,PetscInt p,PetscInt *nvar)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMNetworkSetNumVariables"
 /*@ 
   DMNetworkSetNumVariables - Sets number of variables for a vertex/edge point.
 
@@ -556,8 +524,6 @@ PetscErrorCode DMNetworkSetNumVariables(DM dm,PetscInt p,PetscInt nvar)
 
 /* Sets up the array that holds the data for all components and its associated section. This
    function is called during DMSetUp() */
-#undef __FUNCT__
-#define __FUNCT__ "DMNetworkComponentSetUp"
 PetscErrorCode DMNetworkComponentSetUp(DM dm)
 {
   PetscErrorCode              ierr;
@@ -591,8 +557,6 @@ PetscErrorCode DMNetworkComponentSetUp(DM dm)
 }
 
 /* Sets up the section for dofs. This routine is called during DMSetUp() */
-#undef __FUNCT__
-#define __FUNCT__ "DMNetworkVariablesSetUp"
 PetscErrorCode DMNetworkVariablesSetUp(DM dm)
 {
   PetscErrorCode ierr;
@@ -603,8 +567,6 @@ PetscErrorCode DMNetworkVariablesSetUp(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMNetworkGetComponentDataArray"
 /*@C
   DMNetworkGetComponentDataArray - Returns the component data array
 
@@ -629,8 +591,6 @@ PetscErrorCode DMNetworkGetComponentDataArray(DM dm,DMNetworkComponentGenericDat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMNetworkGetSubSection_private"
 /* Get a subsection from a range of points */
 PetscErrorCode DMNetworkGetSubSection_private(PetscSection master, PetscInt pstart, PetscInt pend,PetscSection *subsection)
 {
@@ -649,8 +609,6 @@ PetscErrorCode DMNetworkGetSubSection_private(PetscSection master, PetscInt psta
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMNetworkSetSubMap_private"
 /* Create a submap of points with a GlobalToLocal structure */
 PetscErrorCode DMNetworkSetSubMap_private(PetscInt pstart, PetscInt pend, ISLocalToGlobalMapping *map)
 {
@@ -668,8 +626,6 @@ PetscErrorCode DMNetworkSetSubMap_private(PetscInt pstart, PetscInt pend, ISLoca
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMNetworkAssembleGraphStructures"
 /*@ 
   DMNetworkAssembleGraphStructures - Assembles vertex and edge data structures. Must be called after DMNetworkDistribute.
 
@@ -730,8 +686,6 @@ PetscErrorCode DMNetworkAssembleGraphStructures(DM dm)
 
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "DMNetworkDistribute"
 /*@
   DMNetworkDistribute - Distributes the network and moves associated component data.
 
@@ -794,8 +748,6 @@ PetscErrorCode DMNetworkDistribute(DM oldDM, PetscInt overlap,DM *distDM)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__ 
-#define __FUNCT__ "PetscSFGetSubSF"
 /*@C
   PetscSFGetSubSF - Returns an SF for a specific subset of points. Leaves are re-numbered to reflect the new ordering.
 
@@ -858,8 +810,6 @@ PetscErrorCode PetscSFGetSubSF(PetscSF mastersf, ISLocalToGlobalMapping map, Pet
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMNetworkGetSupportingEdges"
 /*@C
   DMNetworkGetSupportingEdges - Return the supporting edges for this vertex point
 
@@ -892,8 +842,6 @@ PetscErrorCode DMNetworkGetSupportingEdges(DM dm,PetscInt vertex,PetscInt *nedge
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMNetworkGetConnectedNodes"
 /*@C
   DMNetworkGetConnectedNodes - Return the connected vertices for this edge point
 
@@ -924,8 +872,6 @@ PetscErrorCode DMNetworkGetConnectedNodes(DM dm,PetscInt edge,const PetscInt *ve
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMNetworkIsGhostVertex"
 /*@
   DMNetworkIsGhostVertex - Returns TRUE if the vertex is a ghost vertex
 
@@ -957,8 +903,6 @@ PetscErrorCode DMNetworkIsGhostVertex(DM dm,PetscInt p,PetscBool *isghost)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetUp_Network"
 PetscErrorCode DMSetUp_Network(DM dm)
 {
   PetscErrorCode ierr;
@@ -973,8 +917,6 @@ PetscErrorCode DMSetUp_Network(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMNetworkHasJacobian"
 /*@
     DMNetworkHasJacobian - Sets global flag for using user's sub Jacobian matrices
                             -- replaced by DMNetworkSetOption(network,userjacobian,PETSC_TURE)?
@@ -999,8 +941,6 @@ PetscErrorCode DMNetworkHasJacobian(DM dm,PetscBool eflg,PetscBool vflg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMNetworkEdgeSetMatrix"
 /*@
     DMNetworkEdgeSetMatrix - Sets user-provided Jacobian matrices for this edge to the network
 
@@ -1033,8 +973,6 @@ PetscErrorCode DMNetworkEdgeSetMatrix(DM dm,PetscInt p,Mat J[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMNetworkVertexSetMatrix"
 /*@
     DMNetworkVertexSetMatrix - Sets user-provided Jacobian matrix for this vertex to the network
 
@@ -1091,8 +1029,6 @@ PetscErrorCode DMNetworkVertexSetMatrix(DM dm,PetscInt p,Mat J[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetPreallocationDenseblock_private"
 PETSC_STATIC_INLINE PetscErrorCode MatSetPreallocationDenseblock_private(PetscInt nrows,PetscInt *rows,PetscInt ncols,PetscBool ghost,Vec vdnz,Vec vonz)
 {
   PetscErrorCode ierr;
@@ -1112,8 +1048,6 @@ PETSC_STATIC_INLINE PetscErrorCode MatSetPreallocationDenseblock_private(PetscIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetPreallocationUserblock_private"
 PETSC_STATIC_INLINE PetscErrorCode MatSetPreallocationUserblock_private(Mat Ju,PetscInt nrows,PetscInt *rows,PetscInt ncols,PetscBool ghost,Vec vdnz,Vec vonz)
 {
   PetscErrorCode ierr;
@@ -1139,8 +1073,6 @@ PETSC_STATIC_INLINE PetscErrorCode MatSetPreallocationUserblock_private(Mat Ju,P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetPreallocationblock_private"
 PETSC_STATIC_INLINE PetscErrorCode MatSetPreallocationblock_private(Mat Ju,PetscInt nrows,PetscInt *rows,PetscInt ncols,PetscBool ghost,Vec vdnz,Vec vonz)
 {
   PetscErrorCode ierr;
@@ -1154,8 +1086,6 @@ PETSC_STATIC_INLINE PetscErrorCode MatSetPreallocationblock_private(Mat Ju,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetDenseblock_private"
 PETSC_STATIC_INLINE PetscErrorCode MatSetDenseblock_private(PetscInt nrows,PetscInt *rows,PetscInt ncols,PetscInt cstart,Mat *J)
 {
   PetscErrorCode ierr;
@@ -1170,8 +1100,6 @@ PETSC_STATIC_INLINE PetscErrorCode MatSetDenseblock_private(PetscInt nrows,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetUserblock_private"
 PETSC_STATIC_INLINE PetscErrorCode MatSetUserblock_private(Mat Ju,PetscInt nrows,PetscInt *rows,PetscInt ncols,PetscInt cstart,Mat *J)
 {
   PetscErrorCode ierr;
@@ -1194,8 +1122,6 @@ PETSC_STATIC_INLINE PetscErrorCode MatSetUserblock_private(Mat Ju,PetscInt nrows
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetblock_private"
 PETSC_STATIC_INLINE PetscErrorCode MatSetblock_private(Mat Ju,PetscInt nrows,PetscInt *rows,PetscInt ncols,PetscInt cstart,Mat *J)
 {
   PetscErrorCode ierr;
@@ -1210,8 +1136,6 @@ PETSC_STATIC_INLINE PetscErrorCode MatSetblock_private(Mat Ju,PetscInt nrows,Pet
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateSubGlobalToLocalMapping_private"
 /* Creates a GlobalToLocal mapping with a Local and Global section. This is akin to the routine DMGetLocalToGlobalMapping but without the need of providing a dm.
 */
 PetscErrorCode CreateSubGlobalToLocalMapping_private(PetscSection globalsec, PetscSection localsec, ISLocalToGlobalMapping *ltog)
@@ -1237,8 +1161,6 @@ PetscErrorCode CreateSubGlobalToLocalMapping_private(PetscSection globalsec, Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateMatrix_Network"
 PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
 {
   PetscErrorCode ierr;
@@ -1555,8 +1477,6 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDestroy_Network"
 PetscErrorCode DMDestroy_Network(DM dm)
 {
   PetscErrorCode ierr;
@@ -1597,8 +1517,6 @@ PetscErrorCode DMDestroy_Network(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMView_Network"
 PetscErrorCode DMView_Network(DM dm, PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -1609,8 +1527,6 @@ PetscErrorCode DMView_Network(DM dm, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGlobalToLocalBegin_Network"
 PetscErrorCode DMGlobalToLocalBegin_Network(DM dm, Vec g, InsertMode mode, Vec l)
 {
   PetscErrorCode ierr;
@@ -1621,8 +1537,6 @@ PetscErrorCode DMGlobalToLocalBegin_Network(DM dm, Vec g, InsertMode mode, Vec l
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGlobalToLocalEnd_Network"
 PetscErrorCode DMGlobalToLocalEnd_Network(DM dm, Vec g, InsertMode mode, Vec l)
 {
   PetscErrorCode ierr;
@@ -1633,8 +1547,6 @@ PetscErrorCode DMGlobalToLocalEnd_Network(DM dm, Vec g, InsertMode mode, Vec l)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLocalToGlobalBegin_Network"
 PetscErrorCode DMLocalToGlobalBegin_Network(DM dm, Vec l, InsertMode mode, Vec g)
 {
   PetscErrorCode ierr;
@@ -1645,8 +1557,6 @@ PetscErrorCode DMLocalToGlobalBegin_Network(DM dm, Vec l, InsertMode mode, Vec g
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLocalToGlobalEnd_Network"
 PetscErrorCode DMLocalToGlobalEnd_Network(DM dm, Vec l, InsertMode mode, Vec g)
 {
   PetscErrorCode ierr;

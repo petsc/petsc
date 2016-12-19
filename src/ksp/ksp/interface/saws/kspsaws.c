@@ -8,8 +8,6 @@ typedef struct {
   PetscReal      *eigr;
 } KSPMonitor_SAWs;
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPMonitorSAWsCreate"
 /*@C
    KSPMonitorSAWsCreate - create an SAWs monitor context
 
@@ -38,8 +36,6 @@ PetscErrorCode KSPMonitorSAWsCreate(KSP ksp,void **ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPMonitorSAWsDestroy"
 /*@C
    KSPMonitorSAWsDestroy - destroy a monitor context created with KSPMonitorSAWsCreate()
 
@@ -63,8 +59,6 @@ PetscErrorCode KSPMonitorSAWsDestroy(void **ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPMonitorSAWs"
 /*@C
    KSPMonitorSAWs - monitor solution using SAWs
 

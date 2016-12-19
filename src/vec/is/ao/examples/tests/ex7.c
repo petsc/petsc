@@ -4,8 +4,6 @@ static char help[] = "Demonstrates constructing an application ordering.\n\n";
 #include <petscao.h>
 #include <petscviewer.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscInt       n = 5;

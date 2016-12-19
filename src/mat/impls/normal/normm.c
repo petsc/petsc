@@ -7,8 +7,6 @@ typedef struct {
   PetscScalar scale;
 } Mat_Normal;
 
-#undef __FUNCT__
-#define __FUNCT__ "MatScale_Normal"
 PetscErrorCode MatScale_Normal(Mat inA,PetscScalar scale)
 {
   Mat_Normal *a = (Mat_Normal*)inA->data;
@@ -18,8 +16,6 @@ PetscErrorCode MatScale_Normal(Mat inA,PetscScalar scale)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDiagonalScale_Normal"
 PetscErrorCode MatDiagonalScale_Normal(Mat inA,Vec left,Vec right)
 {
   Mat_Normal     *a = (Mat_Normal*)inA->data;
@@ -45,8 +41,6 @@ PetscErrorCode MatDiagonalScale_Normal(Mat inA,Vec left,Vec right)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_Normal"
 PetscErrorCode MatMult_Normal(Mat N,Vec x,Vec y)
 {
   Mat_Normal     *Na = (Mat_Normal*)N->data;
@@ -71,8 +65,6 @@ PetscErrorCode MatMult_Normal(Mat N,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultAdd_Normal"
 PetscErrorCode MatMultAdd_Normal(Mat N,Vec v1,Vec v2,Vec v3)
 {
   Mat_Normal     *Na = (Mat_Normal*)N->data;
@@ -100,8 +92,6 @@ PetscErrorCode MatMultAdd_Normal(Mat N,Vec v1,Vec v2,Vec v3)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultTranspose_Normal"
 PetscErrorCode MatMultTranspose_Normal(Mat N,Vec x,Vec y)
 {
   Mat_Normal     *Na = (Mat_Normal*)N->data;
@@ -126,8 +116,6 @@ PetscErrorCode MatMultTranspose_Normal(Mat N,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultTransposeAdd_Normal"
 PetscErrorCode MatMultTransposeAdd_Normal(Mat N,Vec v1,Vec v2,Vec v3)
 {
   Mat_Normal     *Na = (Mat_Normal*)N->data;
@@ -155,8 +143,6 @@ PetscErrorCode MatMultTransposeAdd_Normal(Mat N,Vec v1,Vec v2,Vec v3)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_Normal"
 PetscErrorCode MatDestroy_Normal(Mat N)
 {
   Mat_Normal     *Na = (Mat_Normal*)N->data;
@@ -176,8 +162,6 @@ PetscErrorCode MatDestroy_Normal(Mat N)
 /*
       Slow, nonscalable version
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatGetDiagonal_Normal"
 PetscErrorCode MatGetDiagonal_Normal(Mat N,Vec v)
 {
   Mat_Normal        *Na = (Mat_Normal*)N->data;
@@ -210,8 +194,6 @@ PetscErrorCode MatGetDiagonal_Normal(Mat N,Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateNormal"
 /*@
       MatCreateNormal - Creates a new matrix object that behaves like A'*A.
 

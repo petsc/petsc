@@ -4,8 +4,6 @@ static char help[] = "Tests converting a parallel AIJ formatted matrix to the pa
 
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat               C,A;

@@ -9,8 +9,6 @@ static char help[] = "Tests mirror boundary conditions in 3-d.\n\n";
               We need someone with incredible attention to detail to implement it.
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;

@@ -6,8 +6,6 @@
 
 enum storage_flags {VAR,VAL,SEQ};     /* "Store as" switch */
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscParseLayerYAML"
 static PetscErrorCode PetscParseLayerYAML(yaml_parser_t *parser,int *lvl)
 {
   yaml_event_t    event;
@@ -63,8 +61,6 @@ static PetscErrorCode PetscParseLayerYAML(yaml_parser_t *parser,int *lvl)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsInsertFileYAML"
 /*C
 
   PetscOptionsInsertFileYAML - Insert a YAML-formatted file in the option database

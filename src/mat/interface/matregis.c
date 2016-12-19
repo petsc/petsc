@@ -64,8 +64,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat);
 */
 extern PetscBool MatRegisterAllCalled;
 
-#undef __FUNCT__
-#define __FUNCT__ "MatRegisterAll"
 /*@C
   MatRegisterAll - Registers all of the matrix types in PETSc
 

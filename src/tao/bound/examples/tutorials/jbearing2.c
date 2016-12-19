@@ -60,8 +60,6 @@ static PetscErrorCode ComputeB(AppCtx*);
 static PetscErrorCode Monitor(Tao, void*);
 static PetscErrorCode ConvergenceTest(Tao, void*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main( int argc, char **argv )
 {
   PetscErrorCode     ierr;               /* used to check for functions returning nonzeros */
@@ -188,8 +186,6 @@ static PetscReal p(PetscReal xi, PetscReal ecc)
   return (t*t*t);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeB"
 PetscErrorCode ComputeB(AppCtx* user)
 {
   PetscErrorCode ierr;
@@ -228,8 +224,6 @@ PetscErrorCode ComputeB(AppCtx* user)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionGradient"
 PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn,Vec G,void *ptr)
 {
   AppCtx*        user=(AppCtx*)ptr;
@@ -334,8 +328,6 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn,Vec G,void *p
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "FormHessian"
 /*
    FormHessian computes the quadratic term in the quadratic objective function
    Notice that the objective function in this problem is quadratic (therefore a constant
@@ -434,8 +426,6 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat hes, Mat Hpre, void *ptr)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Monitor"
 PetscErrorCode Monitor(Tao tao, void *ctx)
 {
   PetscErrorCode     ierr;
@@ -451,8 +441,6 @@ PetscErrorCode Monitor(Tao tao, void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ConvergenceTest"
 PetscErrorCode ConvergenceTest(Tao tao, void *ctx)
 {
   PetscErrorCode     ierr;

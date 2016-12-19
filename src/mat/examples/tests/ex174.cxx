@@ -8,8 +8,6 @@ static char help[] = "Tests MatConvert(), MatLoad() for MATELEMENTAL interface.\
 #include <petscmat.h>
 #include <petscmatelemental.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            A,Ae,B,Be;

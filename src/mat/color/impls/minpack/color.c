@@ -11,8 +11,6 @@
     MatFDColoringDegreeSequence_Minpack - Calls the MINPACK routine seqr() that
       computes the degree sequence required by MINPACK coloring routines.
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatFDColoringDegreeSequence_Minpack"
 PETSC_INTERN PetscErrorCode MatFDColoringDegreeSequence_Minpack(PetscInt m,const PetscInt *cja,const PetscInt *cia,const PetscInt *rja,const PetscInt *ria,PetscInt **seq)
 {
   PetscInt       *work;
@@ -33,8 +31,6 @@ PETSC_INTERN PetscErrorCode MatFDColoringDegreeSequence_Minpack(PetscInt m,const
         matrix computes the minimum number of colors needed.
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatFDColoringMinimumNumberofColors_Private"
 PetscErrorCode MatFDColoringMinimumNumberofColors_Private(PetscInt m,PetscInt *ia,PetscInt *minc)
 {
   PetscInt i,c = 0;
@@ -45,8 +41,6 @@ PetscErrorCode MatFDColoringMinimumNumberofColors_Private(PetscInt m,PetscInt *i
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringApply_SL"
 static PetscErrorCode MatColoringApply_SL(MatColoring mc,ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
@@ -129,8 +123,6 @@ static PetscErrorCode MatColoringApply_SL(MatColoring mc,ISColoring *iscoloring)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringCreate_SL"
 PETSC_EXTERN PetscErrorCode MatColoringCreate_SL(MatColoring mc)
 {
     PetscFunctionBegin;
@@ -143,8 +135,6 @@ PETSC_EXTERN PetscErrorCode MatColoringCreate_SL(MatColoring mc)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringApply_LF"
 static PetscErrorCode MatColoringApply_LF(MatColoring mc,ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
@@ -226,8 +216,6 @@ static PetscErrorCode MatColoringApply_LF(MatColoring mc,ISColoring *iscoloring)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringCreate_LF"
 PETSC_EXTERN PetscErrorCode MatColoringCreate_LF(MatColoring mc)
 {
     PetscFunctionBegin;
@@ -240,8 +228,6 @@ PETSC_EXTERN PetscErrorCode MatColoringCreate_LF(MatColoring mc)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringApply_ID"
 static PetscErrorCode MatColoringApply_ID(MatColoring mc,ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
@@ -326,8 +312,6 @@ static PetscErrorCode MatColoringApply_ID(MatColoring mc,ISColoring *iscoloring)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringCreate_ID"
 PETSC_EXTERN PetscErrorCode MatColoringCreate_ID(MatColoring mc)
 {
     PetscFunctionBegin;

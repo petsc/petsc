@@ -9,8 +9,6 @@
 /*
  User loads desired location (MPI rank) into field DMSwarm_rank
 */
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmMigrate_Push_Basic"
 PetscErrorCode DMSwarmMigrate_Push_Basic(DM dm,PetscBool remove_sent_points)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
@@ -99,8 +97,6 @@ PetscErrorCode DMSwarmMigrate_Push_Basic(DM dm,PetscBool remove_sent_points)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmMigrate_DMNeighborScatter"
 PetscErrorCode DMSwarmMigrate_DMNeighborScatter(DM dm,DM dmcell,PetscBool remove_sent_points,PetscInt *npoints_prior_migration)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
@@ -187,8 +183,6 @@ PetscErrorCode DMSwarmMigrate_DMNeighborScatter(DM dm,DM dmcell,PetscBool remove
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmMigrate_CellDMScatter"
 PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
@@ -316,8 +310,6 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmMigrate_CellDMExact"
 PetscErrorCode DMSwarmMigrate_CellDMExact(DM dm,PetscBool remove_sent_points)
 {
   PetscFunctionBegin;
@@ -327,8 +319,6 @@ PetscErrorCode DMSwarmMigrate_CellDMExact(DM dm,PetscBool remove_sent_points)
 /*
  Redundant as this assumes points can only be sent to a single rank
 */
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmMigrate_GlobalToLocal_Basic"
 PetscErrorCode DMSwarmMigrate_GlobalToLocal_Basic(DM dm,PetscInt *globalsize)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
@@ -400,8 +390,6 @@ typedef struct {
   PetscReal min[3],max[3];
 } CollectBBox;
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmCollect_DMDABoundingBox"
 PETSC_EXTERN PetscErrorCode DMSwarmCollect_DMDABoundingBox(DM dm,PetscInt *globalsize)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
@@ -560,8 +548,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_DMDABoundingBox(DM dm,PetscInt *globa
    collect(swarm,context,n,list)
  }
 */
-#undef __FUNCT__
-#define __FUNCT__ "DMSwarmCollect_General"
 PETSC_EXTERN PetscErrorCode DMSwarmCollect_General(DM dm,PetscErrorCode (*collect)(DM,void*,PetscInt*,PetscInt**),size_t ctx_size,void *ctx,PetscInt *globalsize)
 {
   DM_Swarm       *swarm = (DM_Swarm*)dm->data;

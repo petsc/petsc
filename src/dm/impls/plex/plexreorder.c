@@ -1,8 +1,6 @@
 #include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 #include <petsc/private/matorderimpl.h> /*I      "petscmat.h"      I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateOrderingClosure_Static"
 PetscErrorCode DMPlexCreateOrderingClosure_Static(DM dm, PetscInt numPoints, const PetscInt pperm[], PetscInt **clperm, PetscInt **invclperm)
 {
   PetscInt      *perm, *iperm;
@@ -47,8 +45,6 @@ PetscErrorCode DMPlexCreateOrderingClosure_Static(DM dm, PetscInt numPoints, con
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetOrdering"
 /*@
   DMPlexGetOrdering - Calculate a reordering of the mesh
 
@@ -143,8 +139,6 @@ PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexPermute"
 /*@
   DMPlexPermute - Reorder the mesh according to the input permutation
 

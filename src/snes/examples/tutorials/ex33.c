@@ -21,8 +21,6 @@ typedef struct {
   PetscScalar p; /* The pressure on each cell */
 } Field;
 
-#undef __FUNCT__
-#define __FUNCT__ "FormPermeability"
 /*
    FormPermeability - Forms permeability field.
 
@@ -61,8 +59,6 @@ PetscErrorCode FormPermeability(DM da, Vec Kappa, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionLocal"
 /*
    FormFunctionLocal - Evaluates nonlinear residual, F(x) on local process patch
 */
@@ -115,8 +111,6 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field *u, Field *f, AppCtx
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   SNES           snes;   /* nonlinear solver */

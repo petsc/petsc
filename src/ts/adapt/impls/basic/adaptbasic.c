@@ -8,8 +8,6 @@ typedef struct {
   Vec       Y;
 } TSAdapt_Basic;
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptChoose_Basic"
 static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,PetscReal *next_h,PetscBool *accept,PetscReal *wlte,PetscReal *wltea,PetscReal *wlter)
 {
   TSAdapt_Basic  *basic = (TSAdapt_Basic*)adapt->data;
@@ -75,8 +73,6 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptReset_Basic"
 static PetscErrorCode TSAdaptReset_Basic(TSAdapt adapt)
 {
   TSAdapt_Basic  *basic = (TSAdapt_Basic*)adapt->data;
@@ -87,8 +83,6 @@ static PetscErrorCode TSAdaptReset_Basic(TSAdapt adapt)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptDestroy_Basic"
 static PetscErrorCode TSAdaptDestroy_Basic(TSAdapt adapt)
 {
   PetscErrorCode ierr;
@@ -99,8 +93,6 @@ static PetscErrorCode TSAdaptDestroy_Basic(TSAdapt adapt)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptSetFromOptions_Basic"
 static PetscErrorCode TSAdaptSetFromOptions_Basic(PetscOptionItems *PetscOptionsObject,TSAdapt adapt)
 {
   TSAdapt_Basic  *basic = (TSAdapt_Basic*)adapt->data;
@@ -121,8 +113,6 @@ static PetscErrorCode TSAdaptSetFromOptions_Basic(PetscOptionItems *PetscOptions
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptView_Basic"
 static PetscErrorCode TSAdaptView_Basic(TSAdapt adapt,PetscViewer viewer)
 {
   TSAdapt_Basic  *basic = (TSAdapt_Basic*)adapt->data;
@@ -139,8 +129,6 @@ static PetscErrorCode TSAdaptView_Basic(TSAdapt adapt,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptCreate_Basic"
 /*MC
    TSADAPTBASIC - Basic adaptive controller for time stepping
 
@@ -169,8 +157,6 @@ PETSC_EXTERN PetscErrorCode TSAdaptCreate_Basic(TSAdapt adapt)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptBasicSetClip"
 /*@
    TSAdaptBasicSetClip - Sets the admissible decrease/increase factor in step size
 
@@ -204,8 +190,6 @@ PetscErrorCode TSAdaptBasicSetClip(TSAdapt adapt,PetscReal low,PetscReal high)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptBasicGetClip"
 /*@
    TSAdaptBasicGetClip - Gets the admissible decrease/increase factor in step size
 

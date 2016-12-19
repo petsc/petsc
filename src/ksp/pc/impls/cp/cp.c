@@ -14,8 +14,6 @@ typedef struct {
 } PC_CP;
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_CP"
 static PetscErrorCode PCSetUp_CP(PC pc)
 {
   PC_CP          *cp = (PC_CP*)pc->data;
@@ -65,8 +63,6 @@ static PetscErrorCode PCSetUp_CP(PC pc)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_CP"
 static PetscErrorCode PCApply_CP(PC pc,Vec bb,Vec xx)
 {
   PC_CP          *cp = (PC_CP*)pc->data;
@@ -99,8 +95,6 @@ static PetscErrorCode PCApply_CP(PC pc,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "PCReset_CP"
 static PetscErrorCode PCReset_CP(PC pc)
 {
   PC_CP          *cp = (PC_CP*)pc->data;
@@ -113,8 +107,6 @@ static PetscErrorCode PCReset_CP(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_CP"
 static PetscErrorCode PCDestroy_CP(PC pc)
 {
   PC_CP          *cp = (PC_CP*)pc->data;
@@ -128,8 +120,6 @@ static PetscErrorCode PCDestroy_CP(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_CP"
 static PetscErrorCode PCSetFromOptions_CP(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscFunctionBegin;
@@ -175,8 +165,6 @@ $    This algorithm can be thought of as Gauss-Seidel on the normal equations
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_CP"
 PETSC_EXTERN PetscErrorCode PCCreate_CP(PC pc)
 {
   PC_CP          *cp;

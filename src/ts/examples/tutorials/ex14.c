@@ -269,8 +269,6 @@ static void PrmHexGetZ(const PrmNode pn[],PetscInt k,PetscInt zm,PetscReal zn[])
   for (i=0; i<8; i++) zn[i] = PetscRealPart(znl[i]);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "QuadComputeGrad4"
 /* Compute a gradient of all the 2D fields at four quadrature points.  Output for [quadrature_point][direction].field_name */
 static PetscErrorCode QuadComputeGrad4(const PetscReal dphi[][4][2],PetscReal hx,PetscReal hy,const PrmNode pn[4],PrmNode dp[4][2])
 {
@@ -457,8 +455,6 @@ static void PRangeClear(PRange *p)
   p->cmax = p->max = -1e100;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PRangeMinMax"
 static PetscErrorCode PRangeMinMax(PRange *p,PetscReal min,PetscReal max)
 {
 
@@ -470,8 +466,6 @@ static PetscErrorCode PRangeMinMax(PRange *p,PetscReal min,PetscReal max)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "THIDestroy"
 static PetscErrorCode THIDestroy(THI *thi)
 {
   PetscErrorCode ierr;
@@ -485,8 +479,6 @@ static PetscErrorCode THIDestroy(THI *thi)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "THICreate"
 static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
 {
   static PetscBool registered = PETSC_FALSE;
@@ -646,8 +638,6 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "THIFixGhosts"
 /* Our problem is periodic, but the domain has a mean slope of alpha so the bed does not line up between the upstream
  * and downstream ends of the domain.  This function fixes the ghost values so that the domain appears truly periodic in
  * the horizontal. */
@@ -673,8 +663,6 @@ static PetscErrorCode THIFixGhosts(THI thi,DM da3,DM da2,Vec X3,Vec X2)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "THIInitializePrm"
 static PetscErrorCode THIInitializePrm(THI thi,DM da2prm,PrmNode **p)
 {
   PetscInt       i,j,xs,xm,ys,ym,mx,my;
@@ -692,8 +680,6 @@ static PetscErrorCode THIInitializePrm(THI thi,DM da2prm,PrmNode **p)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "THIInitial"
 static PetscErrorCode THIInitial(THI thi,DM pack,Vec X)
 {
   DM             da3,da2;
@@ -762,8 +748,6 @@ static void PointwiseNonlinearity(THI thi,const Node n[restrict 8],const PetscRe
   THIViscosity(thi,PetscRealPart(gam),eta,deta);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "THIFunctionLocal_3D"
 static PetscErrorCode THIFunctionLocal_3D(DMDALocalInfo *info,const Node ***x,const PrmNode **prm,const Node ***xdot,Node ***f,THI thi)
 {
   PetscInt       xs,ys,xm,ym,zm,i,j,k,q,l;
@@ -872,8 +856,6 @@ static PetscErrorCode THIFunctionLocal_3D(DMDALocalInfo *info,const Node ***x,co
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "THIFunctionLocal_2D"
 static PetscErrorCode THIFunctionLocal_2D(DMDALocalInfo *info,const Node ***x,const PrmNode **prm,const PrmNode **prmdot,PrmNode **f,THI thi)
 {
   PetscInt xs,ys,xm,ym,zm,i,j,k;
@@ -921,8 +903,6 @@ static PetscErrorCode THIFunctionLocal_2D(DMDALocalInfo *info,const Node ***x,co
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "THIFunction"
 static PetscErrorCode THIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
@@ -996,8 +976,6 @@ static PetscErrorCode THIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *c
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "THIMatrixStatistics"
 static PetscErrorCode THIMatrixStatistics(THI thi,Mat B,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -1018,8 +996,6 @@ static PetscErrorCode THIMatrixStatistics(THI thi,Mat B,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "THISurfaceStatistics"
 static PetscErrorCode THISurfaceStatistics(DM pack,Vec X,PetscReal *min,PetscReal *max,PetscReal *mean)
 {
   PetscErrorCode ierr;
@@ -1055,8 +1031,6 @@ static PetscErrorCode THISurfaceStatistics(DM pack,Vec X,PetscReal *min,PetscRea
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "THISolveStatistics"
 static PetscErrorCode THISolveStatistics(THI thi,TS ts,PetscInt coarsened,const char name[])
 {
   MPI_Comm       comm;
@@ -1128,8 +1102,6 @@ static inline PetscInt DMDALocalIndex3D(DMDALocalInfo *info,PetscInt i,PetscInt 
 static inline PetscInt DMDALocalIndex2D(DMDALocalInfo *info,PetscInt i,PetscInt j)
 {return (i-info->gzs)*info->gym + (j-info->gys);}
 
-#undef __FUNCT__
-#define __FUNCT__ "THIJacobianLocal_Momentum"
 static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info,const Node ***x,const PrmNode **prm,Mat B,Mat Bcpl,THI thi)
 {
   PetscInt       xs,ys,xm,ym,zm,i,j,k,q,l,ll;
@@ -1274,8 +1246,6 @@ static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info,const Node *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "THIJacobianLocal_2D"
 static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo *info,const Node ***x3,const PrmNode **x2,const PrmNode **xdot2,PetscReal a,Mat B22,Mat B21,THI thi)
 {
   PetscErrorCode ierr;
@@ -1341,8 +1311,6 @@ static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo *info,const Node ***x3,c
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "THIJacobian"
 static PetscErrorCode THIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
@@ -1410,8 +1378,6 @@ static PetscErrorCode THIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,M
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "THIDAVecView_VTK_XML"
 /* VTK's XML formats are so brain-dead that they can't handle multiple grids in the same file.  Since the communication
  * can be shared between the two grids, we write two files at once, one for velocity (living on a 3D grid defined by
  * h=thickness and b=bed) and another for all properties living on the 2D grid.
@@ -1555,8 +1521,6 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM pack,Vec X,const char file
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "THITSMonitor"
 static PetscErrorCode THITSMonitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
 {
   PetscErrorCode ierr;
@@ -1576,8 +1540,6 @@ static PetscErrorCode THITSMonitor(TS ts,PetscInt step,PetscReal t,Vec X,void *c
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "THICreateDM3d"
 static PetscErrorCode THICreateDM3d(THI thi,DM *dm3d)
 {
   MPI_Comm       comm;
@@ -1604,8 +1566,6 @@ static PetscErrorCode THICreateDM3d(THI thi,DM *dm3d)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char *argv[])
 {
   MPI_Comm       comm;

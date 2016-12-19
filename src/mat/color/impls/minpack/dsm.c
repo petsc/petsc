@@ -4,8 +4,6 @@
 
 static PetscInt c_n1 = -1;
 
-#undef __FUNCT__
-#define __FUNCT__ "MINPACKdsm"
 PetscErrorCode MINPACKdsm(PetscInt *m,PetscInt *n,PetscInt *npairs,PetscInt *indrow,PetscInt *indcol,PetscInt *ngrp,PetscInt *maxgrp,
                           PetscInt *mingrp,PetscInt *info,PetscInt *ipntr,PetscInt *jpntr,PetscInt *iwa,PetscInt *liwa)
 {

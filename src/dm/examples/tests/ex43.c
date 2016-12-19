@@ -13,8 +13,6 @@ Use the options
 #include <petscdm.h>
 #include <petscdmda.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PrintVecWithGhosts"
 PetscErrorCode PrintVecWithGhosts(DM da, Vec v)
 {
   PetscScalar    **p;
@@ -42,8 +40,6 @@ PetscErrorCode PrintVecWithGhosts(DM da, Vec v)
 }
 
 /* Set a Vec v to value, but do not touch ghosts. */
-#undef __FUNCT__
-#define __FUNCT__ "VecSetOwned"
 PetscErrorCode VecSetOwned(DM da, Vec v, PetscScalar value)
 {
   PetscScalar    **p;
@@ -61,8 +57,6 @@ PetscErrorCode VecSetOwned(DM da, Vec v, PetscScalar value)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   PetscInt         M = 4, N = 3;

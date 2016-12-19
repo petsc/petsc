@@ -12,8 +12,6 @@ using the aijcusparse class. Input parameters are:\n\
 
 #include <petscksp.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   KSP                ksp;

@@ -6,8 +6,6 @@ static char help[] = "Test sequential FFTW convolution\n\n";
 */
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 PetscInt main(PetscInt argc,char **args)
 {
   typedef enum {RANDOM, CONSTANT, TANH, NUM_FUNCS} FuncType;

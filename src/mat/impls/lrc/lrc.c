@@ -11,8 +11,6 @@ typedef struct {
 } Mat_LRC;
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_LRC"
 PetscErrorCode MatMult_LRC(Mat N,Vec x,Vec y)
 {
   Mat_LRC           *Na = (Mat_LRC*)N->data;
@@ -60,8 +58,6 @@ PetscErrorCode MatMult_LRC(Mat N,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_LRC"
 PetscErrorCode MatDestroy_LRC(Mat N)
 {
   Mat_LRC        *Na = (Mat_LRC*)N->data;
@@ -81,8 +77,6 @@ PetscErrorCode MatDestroy_LRC(Mat N)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLRCGetMats_LRC"
 PetscErrorCode MatLRCGetMats_LRC(Mat N,Mat *A,Mat *U,Vec *c,Mat *V)
 {
   Mat_LRC *Na = (Mat_LRC*)N->data;
@@ -95,8 +89,6 @@ PetscErrorCode MatLRCGetMats_LRC(Mat N,Mat *A,Mat *U,Vec *c,Mat *V)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLRCGetMats"
 /*@
    MatLRCGetMats - Returns the constituents of an LRC matrix
 
@@ -126,8 +118,6 @@ PetscErrorCode  MatLRCGetMats(Mat N,Mat *A,Mat *U,Vec *c,Mat *V)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateLRC"
 /*@
    MatCreateLRC - Creates a new matrix object that behaves like A + U*C*V'
 

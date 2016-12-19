@@ -24,8 +24,6 @@ static const char citation[] =
 #define KSPPIPEFCG_DEFAULT_VECB 5
 #define KSPPIPEFCG_DEFAULT_TRUNCSTRAT KSP_FCD_TRUNC_TYPE_NOTAY
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPAllocateVectors_PIPEFCG"
 static PetscErrorCode KSPAllocateVectors_PIPEFCG(KSP ksp, PetscInt nvecsneeded, PetscInt chunksize)
 {
   PetscErrorCode  ierr;
@@ -61,8 +59,6 @@ static PetscErrorCode KSPAllocateVectors_PIPEFCG(KSP ksp, PetscInt nvecsneeded, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_PIPEFCG"
 static PetscErrorCode    KSPSetUp_PIPEFCG(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -97,8 +93,6 @@ static PetscErrorCode    KSPSetUp_PIPEFCG(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_PIPEFCG_cycle"
 static PetscErrorCode KSPSolve_PIPEFCG_cycle(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -281,8 +275,6 @@ static PetscErrorCode KSPSolve_PIPEFCG_cycle(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_PIPEFCG"
 static PetscErrorCode KSPSolve_PIPEFCG(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -359,8 +351,6 @@ static PetscErrorCode KSPSolve_PIPEFCG(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPDestroy_PIPEFCG"
 static PetscErrorCode KSPDestroy_PIPEFCG(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -391,8 +381,6 @@ static PetscErrorCode KSPDestroy_PIPEFCG(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPView_PIPEFCG"
 static PetscErrorCode KSPView_PIPEFCG(KSP ksp,PetscViewer viewer)
 {
   KSP_PIPEFCG    *pipefcg = (KSP_PIPEFCG*)ksp->data;
@@ -425,8 +413,6 @@ static PetscErrorCode KSPView_PIPEFCG(KSP ksp,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEFCGSetMmax"
 /*@
   KSPPIPEFCGSetMmax - set the maximum number of previous directions PIPEFCG will store for orthogonalization
 
@@ -458,8 +444,6 @@ PetscErrorCode KSPPIPEFCGSetMmax(KSP ksp,PetscInt mmax)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEFCGGetMmax"
 /*@
   KSPPIPEFCGGetMmax - get the maximum number of previous directions PIPEFCG will store
 
@@ -492,8 +476,6 @@ PetscErrorCode KSPPIPEFCGGetMmax(KSP ksp,PetscInt *mmax)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEFCGSetNprealloc"
 /*@
   KSPPIPEFCGSetNprealloc - set the number of directions to preallocate with PIPEFCG
 
@@ -521,8 +503,6 @@ PetscErrorCode KSPPIPEFCGSetNprealloc(KSP ksp,PetscInt nprealloc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEFCGGetNprealloc"
 /*@
   KSPPIPEFCGGetNprealloc - get the number of directions to preallocate by PIPEFCG
 
@@ -553,8 +533,6 @@ PetscErrorCode KSPPIPEFCGGetNprealloc(KSP ksp,PetscInt *nprealloc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEFCGSetTruncationType"
 /*@
   KSPPIPEFCGSetTruncationType - specify how many of its stored previous directions PIPEFCG uses during orthoganalization
 
@@ -585,8 +563,6 @@ PetscErrorCode KSPPIPEFCGSetTruncationType(KSP ksp,KSPFCDTruncationType truncstr
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEFCGGetTruncationType"
 /*@
   KSPPIPEFCGGetTruncationType - get the truncation strategy employed by PIPEFCG
 
@@ -617,8 +593,6 @@ PetscErrorCode KSPPIPEFCGGetTruncationType(KSP ksp,KSPFCDTruncationType *truncst
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetFromOptions_PIPEFCG"
 static PetscErrorCode KSPSetFromOptions_PIPEFCG(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
@@ -665,8 +639,6 @@ static PetscErrorCode KSPSetFromOptions_PIPEFCG(PetscOptionItems *PetscOptionsOb
 .seealso: KSPFCG, KSPPIPECG, KSPPIPECR, KSPGCR, KSPPIPEGCR, KSPFGMRES, KSPCG, KSPPIPEFCGSetMmax(), KSPPIPEFCGGetMmax(), KSPPIPEFCGSetNprealloc(), KSPPIPEFCGGetNprealloc(), KSPPIPEFCGSetTruncationType(), KSPPIPEFCGGetTruncationType()
 
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_PIPEFCG"
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFCG(KSP ksp)
 {
   PetscErrorCode ierr;

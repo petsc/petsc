@@ -30,8 +30,6 @@ static PetscErrorCode IPMGatherRHS(Tao tao,Vec,Vec,Vec,Vec,Vec);
 static PetscErrorCode IPMScatterStep(Tao tao,Vec,Vec,Vec,Vec,Vec);
 static PetscErrorCode IPMInitializeBounds(Tao tao);
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSolve_IPM"
 static PetscErrorCode TaoSolve_IPM(Tao tao)
 {
   PetscErrorCode     ierr;
@@ -195,8 +193,6 @@ static PetscErrorCode TaoSolve_IPM(Tao tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetup_IPM"
 static PetscErrorCode TaoSetup_IPM(Tao tao)
 {
   TAO_IPM        *ipmP = (TAO_IPM*)tao->data;
@@ -229,8 +225,6 @@ static PetscErrorCode TaoSetup_IPM(Tao tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "IPMInitializeBounds"
 static PetscErrorCode IPMInitializeBounds(Tao tao)
 {
   TAO_IPM        *ipmP = (TAO_IPM*)tao->data;
@@ -469,8 +463,6 @@ static PetscErrorCode IPMInitializeBounds(Tao tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoDestroy_IPM"
 static PetscErrorCode TaoDestroy_IPM(Tao tao)
 {
   TAO_IPM        *ipmP = (TAO_IPM*)tao->data;
@@ -528,8 +520,6 @@ static PetscErrorCode TaoDestroy_IPM(Tao tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetFromOptions_IPM"
 static PetscErrorCode TaoSetFromOptions_IPM(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   TAO_IPM        *ipmP = (TAO_IPM*)tao->data;
@@ -545,8 +535,6 @@ static PetscErrorCode TaoSetFromOptions_IPM(PetscOptionItems *PetscOptionsObject
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoView_IPM"
 static PetscErrorCode TaoView_IPM(Tao tao, PetscViewer viewer)
 {
   return 0;
@@ -563,8 +551,6 @@ static PetscErrorCode TaoView_IPM(Tao tao, PetscViewer viewer)
    phi = ||rd|| + ||rpe|| + ||rpi|| + ||com||
 */
 /*
-#undef __FUNCT__
-#define __FUNCT__ "IPMObjective"
 static PetscErrorCode IPMObjective(TaoLineSearch ls, Vec X, PetscReal *f, void *tptr)
 {
   Tao tao = (Tao)tptr;
@@ -591,8 +577,6 @@ static PetscErrorCode IPMObjective(TaoLineSearch ls, Vec X, PetscReal *f, void *
 
    phi = ||rd|| + ||rpe|| + ||rpi|| + ||com||
 */
-#undef __FUNCT__
-#define __FUNCT__ "IPMComputeKKT"
 static PetscErrorCode IPMComputeKKT(Tao tao)
 {
   TAO_IPM        *ipmP = (TAO_IPM *)tao->data;
@@ -645,8 +629,6 @@ static PetscErrorCode IPMComputeKKT(Tao tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "IPMEvaluate"
 /* evaluate user info at current point */
 PetscErrorCode IPMEvaluate(Tao tao)
 {
@@ -671,8 +653,6 @@ PetscErrorCode IPMEvaluate(Tao tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "IPMPushInitialPoint"
 /* Push initial point away from bounds */
 PetscErrorCode IPMPushInitialPoint(Tao tao)
 {
@@ -698,8 +678,6 @@ PetscErrorCode IPMPushInitialPoint(Tao tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "IPMUpdateAi"
 PetscErrorCode IPMUpdateAi(Tao tao)
 {
   /* Ai =     Ji
@@ -831,8 +809,6 @@ PetscErrorCode IPMUpdateAi(Tao tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "IPMUpdateK"
 /* create K = [ Hlag , 0 , Ae', -Ai'];
               [Ae , 0,   0  , 0];
               [Ai ,-I,   0 ,  0];
@@ -1019,8 +995,6 @@ PetscErrorCode IPMUpdateK(Tao tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "IPMGatherRHS"
 PetscErrorCode IPMGatherRHS(Tao tao,Vec RHS,Vec X1,Vec X2,Vec X3,Vec X4)
 {
   TAO_IPM        *ipmP = (TAO_IPM *)tao->data;
@@ -1052,8 +1026,6 @@ PetscErrorCode IPMGatherRHS(Tao tao,Vec RHS,Vec X1,Vec X2,Vec X3,Vec X4)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "IPMScatterStep"
 PetscErrorCode IPMScatterStep(Tao tao, Vec STEP, Vec X1, Vec X2, Vec X3, Vec X4)
 {
   TAO_IPM        *ipmP = (TAO_IPM *)tao->data;
@@ -1097,8 +1069,6 @@ PetscErrorCode IPMScatterStep(Tao tao, Vec STEP, Vec X1, Vec X2, Vec X3, Vec X4)
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoCreate_IPM"
 PETSC_EXTERN PetscErrorCode TaoCreate_IPM(Tao tao)
 {
   TAO_IPM        *ipmP;

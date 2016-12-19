@@ -24,8 +24,6 @@
 M*/
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetValuesLocal_HYPREStruct_3d"
 PetscErrorCode  MatSetValuesLocal_HYPREStruct_3d(Mat mat,PetscInt nrow,const PetscInt irow[],PetscInt ncol,const PetscInt icol[],const PetscScalar y[],InsertMode addv)
 {
   PetscErrorCode    ierr;
@@ -68,8 +66,6 @@ PetscErrorCode  MatSetValuesLocal_HYPREStruct_3d(Mat mat,PetscInt nrow,const Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatZeroRowsLocal_HYPREStruct_3d"
 PetscErrorCode  MatZeroRowsLocal_HYPREStruct_3d(Mat mat,PetscInt nrow,const PetscInt irow[],PetscScalar d,Vec x,Vec b)
 {
   PetscErrorCode  ierr;
@@ -92,8 +88,6 @@ PetscErrorCode  MatZeroRowsLocal_HYPREStruct_3d(Mat mat,PetscInt nrow,const Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatZeroEntries_HYPREStruct_3d"
 PetscErrorCode MatZeroEntries_HYPREStruct_3d(Mat mat)
 {
   PetscErrorCode  ierr;
@@ -107,8 +101,6 @@ PetscErrorCode MatZeroEntries_HYPREStruct_3d(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetupDM_HYPREStruct"
 static PetscErrorCode  MatSetupDM_HYPREStruct(Mat mat,DM da)
 {
   PetscErrorCode         ierr;
@@ -217,8 +209,6 @@ static PetscErrorCode  MatSetupDM_HYPREStruct(Mat mat,DM da)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_HYPREStruct"
 PetscErrorCode MatMult_HYPREStruct(Mat A,Vec x,Vec y)
 {
   PetscErrorCode  ierr;
@@ -248,8 +238,6 @@ PetscErrorCode MatMult_HYPREStruct(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd_HYPREStruct"
 PetscErrorCode MatAssemblyEnd_HYPREStruct(Mat mat,MatAssemblyType mode)
 {
   Mat_HYPREStruct *ex = (Mat_HYPREStruct*) mat->data;
@@ -261,8 +249,6 @@ PetscErrorCode MatAssemblyEnd_HYPREStruct(Mat mat,MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatZeroEntries_HYPREStruct"
 PetscErrorCode MatZeroEntries_HYPREStruct(Mat mat)
 {
   PetscFunctionBegin;
@@ -271,8 +257,6 @@ PetscErrorCode MatZeroEntries_HYPREStruct(Mat mat)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_HYPREStruct"
 PetscErrorCode MatDestroy_HYPREStruct(Mat mat)
 {
   Mat_HYPREStruct *ex = (Mat_HYPREStruct*) mat->data;
@@ -286,8 +270,6 @@ PetscErrorCode MatDestroy_HYPREStruct(Mat mat)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_HYPREStruct"
 PETSC_EXTERN PetscErrorCode MatCreate_HYPREStruct(Mat B)
 {
   Mat_HYPREStruct *ex;
@@ -331,8 +313,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPREStruct(Mat B)
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetValuesLocal_HYPRESStruct_3d"
 PetscErrorCode  MatSetValuesLocal_HYPRESStruct_3d(Mat mat,PetscInt nrow,const PetscInt irow[],PetscInt ncol,const PetscInt icol[],const PetscScalar y[],InsertMode addv)
 {
   PetscErrorCode    ierr;
@@ -444,8 +424,6 @@ PetscErrorCode  MatSetValuesLocal_HYPRESStruct_3d(Mat mat,PetscInt nrow,const Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatZeroRowsLocal_HYPRESStruct_3d"
 PetscErrorCode  MatZeroRowsLocal_HYPRESStruct_3d(Mat mat,PetscInt nrow,const PetscInt irow[],PetscScalar d,Vec x,Vec b)
 {
   PetscErrorCode   ierr;
@@ -507,8 +485,6 @@ PetscErrorCode  MatZeroRowsLocal_HYPRESStruct_3d(Mat mat,PetscInt nrow,const Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatZeroEntries_HYPRESStruct_3d"
 PetscErrorCode MatZeroEntries_HYPRESStruct_3d(Mat mat)
 {
   PetscErrorCode   ierr;
@@ -543,8 +519,6 @@ PetscErrorCode MatZeroEntries_HYPRESStruct_3d(Mat mat)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetupDM_HYPRESStruct"
 static PetscErrorCode  MatSetupDM_HYPRESStruct(Mat mat,DM da)
 {
   PetscErrorCode         ierr;
@@ -701,8 +675,6 @@ static PetscErrorCode  MatSetupDM_HYPRESStruct(Mat mat,DM da)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_HYPRESStruct"
 PetscErrorCode MatMult_HYPRESStruct(Mat A,Vec x,Vec y)
 {
   PetscErrorCode   ierr;
@@ -777,8 +749,6 @@ PetscErrorCode MatMult_HYPRESStruct(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd_HYPRESStruct"
 PetscErrorCode MatAssemblyEnd_HYPRESStruct(Mat mat,MatAssemblyType mode)
 {
   Mat_HYPRESStruct *ex = (Mat_HYPRESStruct*) mat->data;
@@ -789,8 +759,6 @@ PetscErrorCode MatAssemblyEnd_HYPRESStruct(Mat mat,MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatZeroEntries_HYPRESStruct"
 PetscErrorCode MatZeroEntries_HYPRESStruct(Mat mat)
 {
   PetscFunctionBegin;
@@ -799,8 +767,6 @@ PetscErrorCode MatZeroEntries_HYPRESStruct(Mat mat)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_HYPRESStruct"
 PetscErrorCode MatDestroy_HYPRESStruct(Mat mat)
 {
   Mat_HYPRESStruct *ex = (Mat_HYPRESStruct*) mat->data;
@@ -814,8 +780,6 @@ PetscErrorCode MatDestroy_HYPRESStruct(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_HYPRESStruct"
 PETSC_EXTERN PetscErrorCode MatCreate_HYPRESStruct(Mat B)
 {
   Mat_HYPRESStruct *ex;

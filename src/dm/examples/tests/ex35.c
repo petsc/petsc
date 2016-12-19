@@ -8,8 +8,6 @@ static char help[] = "MatLoad test for loading matrices that are created by DMCr
 #include <petscdm.h>
 #include <petscdmda.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscInt       X = 10,Y = 8,Z=8;

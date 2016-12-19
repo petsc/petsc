@@ -123,8 +123,6 @@ extern PetscErrorCode InteractiveHandler(int, void*);
 extern PetscBool  OptionsHasName(const char pre[],const char name[]);
 
 /*-----------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 /*-----------------------------------------------------------------------*/
 {
@@ -215,8 +213,6 @@ int main(int argc,char **argv)
   =====================================================================*/
 
 /*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "UpdateSolution"
 /*  manages solve: adaptive continuation method  */
 PetscErrorCode UpdateSolution(SNES snes, AppCtx *user, PetscInt *nits)
 {
@@ -298,8 +294,6 @@ done:
 
 
 /*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "UInterp"
 PETSC_STATIC_INLINE PetscScalar UInterp(Field **x, PetscInt i, PetscInt j)
 /*---------------------------------------------------------------------*/
 {
@@ -307,8 +301,6 @@ PETSC_STATIC_INLINE PetscScalar UInterp(Field **x, PetscInt i, PetscInt j)
 }
 
 /*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "WInterp"
 PETSC_STATIC_INLINE PetscScalar WInterp(Field **x, PetscInt i, PetscInt j)
 /*---------------------------------------------------------------------*/
 {
@@ -316,8 +308,6 @@ PETSC_STATIC_INLINE PetscScalar WInterp(Field **x, PetscInt i, PetscInt j)
 }
 
 /*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "PInterp"
 PETSC_STATIC_INLINE PetscScalar PInterp(Field **x, PetscInt i, PetscInt j)
 /*---------------------------------------------------------------------*/
 {
@@ -325,8 +315,6 @@ PETSC_STATIC_INLINE PetscScalar PInterp(Field **x, PetscInt i, PetscInt j)
 }
 
 /*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TInterp"
 PETSC_STATIC_INLINE PetscScalar TInterp(Field **x, PetscInt i, PetscInt j)
 /*---------------------------------------------------------------------*/
 {
@@ -334,8 +322,6 @@ PETSC_STATIC_INLINE PetscScalar TInterp(Field **x, PetscInt i, PetscInt j)
 }
 
 /*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "HorizVelocity"
 /*  isoviscous analytic solution for IC */
 PETSC_STATIC_INLINE PetscScalar HorizVelocity(PetscInt i, PetscInt j, AppCtx *user)
 /*---------------------------------------------------------------------*/
@@ -354,8 +340,6 @@ PETSC_STATIC_INLINE PetscScalar HorizVelocity(PetscInt i, PetscInt j, AppCtx *us
 }
 
 /*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "VertVelocity"
 /*  isoviscous analytic solution for IC */
 PETSC_STATIC_INLINE PetscScalar VertVelocity(PetscInt i, PetscInt j, AppCtx *user)
 /*---------------------------------------------------------------------*/
@@ -371,8 +355,6 @@ PETSC_STATIC_INLINE PetscScalar VertVelocity(PetscInt i, PetscInt j, AppCtx *use
 }
 
 /*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "Pressure"
 /*  isoviscous analytic solution for IC */
 PETSC_STATIC_INLINE PetscScalar Pressure(PetscInt i, PetscInt j, AppCtx *user)
 /*---------------------------------------------------------------------*/
@@ -386,8 +368,6 @@ PETSC_STATIC_INLINE PetscScalar Pressure(PetscInt i, PetscInt j, AppCtx *user)
   return (-2.0*(c*ct-d*st)/r);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CalcSecInv"
 /*  computes the second invariant of the strain rate tensor */
 PETSC_STATIC_INLINE PetscScalar CalcSecInv(Field **x, PetscInt i, PetscInt j, PetscInt ipos, AppCtx *user)
 /*---------------------------------------------------------------------*/
@@ -447,8 +427,6 @@ PETSC_STATIC_INLINE PetscScalar CalcSecInv(Field **x, PetscInt i, PetscInt j, Pe
 }
 
 /*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "Viscosity"
 /*  computes the shear viscosity */
 PETSC_STATIC_INLINE PetscScalar Viscosity(PetscScalar T, PetscScalar eps, PetscScalar z, Parameter *param)
 /*---------------------------------------------------------------------*/
@@ -493,8 +471,6 @@ PETSC_STATIC_INLINE PetscScalar Viscosity(PetscScalar T, PetscScalar eps, PetscS
 }
 
 /*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "XMomentumResidual"
 /*  computes the residual of the x-component of eqn (1) above */
 PETSC_STATIC_INLINE PetscScalar XMomentumResidual(Field **x, PetscInt i, PetscInt j, AppCtx *user)
 /*---------------------------------------------------------------------*/
@@ -549,8 +525,6 @@ PETSC_STATIC_INLINE PetscScalar XMomentumResidual(Field **x, PetscInt i, PetscIn
 }
 
 /*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "ZMomentumResidual"
 /*  computes the residual of the z-component of eqn (1) above */
 PETSC_STATIC_INLINE PetscScalar ZMomentumResidual(Field **x, PetscInt i, PetscInt j, AppCtx *user)
 /*---------------------------------------------------------------------*/
@@ -608,8 +582,6 @@ PETSC_STATIC_INLINE PetscScalar ZMomentumResidual(Field **x, PetscInt i, PetscIn
 }
 
 /*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "ContinuityResidual"
 /*  computes the residual of eqn (2) above */
 PETSC_STATIC_INLINE PetscScalar ContinuityResidual(Field **x, PetscInt i, PetscInt j, AppCtx *user)
 /*---------------------------------------------------------------------*/
@@ -624,8 +596,6 @@ PETSC_STATIC_INLINE PetscScalar ContinuityResidual(Field **x, PetscInt i, PetscI
 }
 
 /*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "EnergyResidual"
 /*  computes the residual of eqn (3) above */
 PETSC_STATIC_INLINE PetscScalar EnergyResidual(Field **x, PetscInt i, PetscInt j, AppCtx *user)
 /*---------------------------------------------------------------------*/
@@ -686,8 +656,6 @@ PETSC_STATIC_INLINE PetscScalar EnergyResidual(Field **x, PetscInt i, PetscInt j
 }
 
 /*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "ShearStress"
 /*  computes the shear stress---used on the boundaries */
 PETSC_STATIC_INLINE PetscScalar ShearStress(Field **x, PetscInt i, PetscInt j, PetscInt ipos, AppCtx *user)
 /*---------------------------------------------------------------------*/
@@ -723,8 +691,6 @@ PETSC_STATIC_INLINE PetscScalar ShearStress(Field **x, PetscInt i, PetscInt j, P
 }
 
 /*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "XNormalStress"
 /*  computes the normal stress---used on the boundaries */
 PETSC_STATIC_INLINE PetscScalar XNormalStress(Field **x, PetscInt i, PetscInt j, PetscInt ipos, AppCtx *user)
 /*---------------------------------------------------------------------*/
@@ -763,8 +729,6 @@ PETSC_STATIC_INLINE PetscScalar XNormalStress(Field **x, PetscInt i, PetscInt j,
 }
 
 /*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "ZNormalStress"
 /*  computes the normal stress---used on the boundaries */
 PETSC_STATIC_INLINE PetscScalar ZNormalStress(Field **x, PetscInt i, PetscInt j, PetscInt ipos, AppCtx *user)
 /*---------------------------------------------------------------------*/
@@ -807,8 +771,6 @@ PETSC_STATIC_INLINE PetscScalar ZNormalStress(Field **x, PetscInt i, PetscInt j,
   =====================================================================*/
 
 /*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "SetParams"
 /* initializes the problem parameters and checks for
    command line changes */
 PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
@@ -947,8 +909,6 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
 }
 
 /*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "ReportParams"
 /*  prints a report of the problem parameters to stdout */
 PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
 /*---------------------------------------------------------------------*/
@@ -1021,8 +981,6 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "Initialize"
 /*  generates an inital guess using the analytic solution for isoviscous
     corner flow */
 PetscErrorCode Initialize(DM da)
@@ -1069,8 +1027,6 @@ PetscErrorCode Initialize(DM da)
 }
 
 /*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "DoOutput"
 /*  controls output to a file */
 PetscErrorCode DoOutput(SNES snes, PetscInt its)
 /*---------------------------------------------------------------------*/
@@ -1160,8 +1116,6 @@ PetscErrorCode DoOutput(SNES snes, PetscInt its)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "ViscosityField"
 /* Compute both the second invariant of the strain rate tensor and the viscosity, at both cell centers and cell corners */
 PetscErrorCode ViscosityField(DM da, Vec X, Vec V)
 /* ------------------------------------------------------------------- */
@@ -1221,8 +1175,6 @@ PetscErrorCode ViscosityField(DM da, Vec X, Vec V)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "StressField"
 /* post-processing: compute stress everywhere */
 PetscErrorCode StressField(DM da)
 /* ------------------------------------------------------------------- */
@@ -1266,8 +1218,6 @@ PetscErrorCode StressField(DM da)
   =====================================================================*/
 
 /*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "SlabVel"
 /* returns the velocity of the subducting slab and handles fault nodes
    for BC */
 PETSC_STATIC_INLINE PetscScalar SlabVel(char c, PetscInt i, PetscInt j, AppCtx *user)
@@ -1289,8 +1239,6 @@ PETSC_STATIC_INLINE PetscScalar SlabVel(char c, PetscInt i, PetscInt j, AppCtx *
 }
 
 /*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "PlateModel"
 /*  solution to diffusive half-space cooling model for BC */
 PETSC_STATIC_INLINE PetscScalar PlateModel(PetscInt j, PetscInt plate, AppCtx *user)
 /*---------------------------------------------------------------------*/
@@ -1308,8 +1256,6 @@ PETSC_STATIC_INLINE PetscScalar PlateModel(PetscInt j, PetscInt plate, AppCtx *u
 
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "OptionsHasName"
 /*  utility function */
 PetscBool  OptionsHasName(const char pre[],const char name[])
 /* ------------------------------------------------------------------- */
@@ -1325,8 +1271,6 @@ PetscBool  OptionsHasName(const char pre[],const char name[])
   =====================================================================*/
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "SNESConverged_Interactive"
 PetscErrorCode SNESConverged_Interactive(SNES snes, PetscInt it,PetscReal xnorm, PetscReal snorm, PetscReal fnorm, SNESConvergedReason *reason, void *ctx)
 /* ------------------------------------------------------------------- */
 {
@@ -1365,8 +1309,6 @@ PetscErrorCode SNESConverged_Interactive(SNES snes, PetscInt it,PetscReal xnorm,
 
 /* ------------------------------------------------------------------- */
 #include <signal.h>
-#undef __FUNCT__
-#define __FUNCT__ "InteractiveHandler"
 PetscErrorCode InteractiveHandler(int signum, void *ctx)
 /* ------------------------------------------------------------------- */
 {
@@ -1388,8 +1330,6 @@ PetscErrorCode InteractiveHandler(int signum, void *ctx)
 }
 
 /*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionLocal"
 /*  main call-back function that computes the processor-local piece
     of the residual */
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *ptr)

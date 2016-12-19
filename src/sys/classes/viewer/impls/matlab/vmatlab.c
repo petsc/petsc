@@ -9,8 +9,6 @@ typedef struct {
   PetscFileMode btype;
 } PetscViewer_Matlab;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerMatlabPutArray"
 /*@C
     PetscViewerMatlabPutArray - Puts an array into the MATLAB viewer.
 
@@ -49,8 +47,6 @@ PetscErrorCode  PetscViewerMatlabPutArray(PetscViewer mfile,int m,int n,const Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerMatlabPutVariable"
 PetscErrorCode  PetscViewerMatlabPutVariable(PetscViewer viewer,const char *name,void *mat)
 {
   PetscViewer_Matlab *ml = (PetscViewer_Matlab*)viewer->data;
@@ -60,8 +56,6 @@ PetscErrorCode  PetscViewerMatlabPutVariable(PetscViewer viewer,const char *name
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerMatlabGetArray"
 /*@C
     PetscViewerMatlabGetArray - Gets a variable from a MATLAB viewer into an array
 
@@ -95,8 +89,6 @@ PetscErrorCode  PetscViewerMatlabGetArray(PetscViewer mfile,int m,int n,PetscSca
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFileSetMode_Matlab"
 PetscErrorCode  PetscViewerFileSetMode_Matlab(PetscViewer viewer,PetscFileMode type)
 {
   PetscViewer_Matlab *vmatlab = (PetscViewer_Matlab*)viewer->data;
@@ -109,8 +101,6 @@ PetscErrorCode  PetscViewerFileSetMode_Matlab(PetscViewer viewer,PetscFileMode t
 /*
         Actually opens the file
 */
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFileSetName_Matlab"
 PetscErrorCode  PetscViewerFileSetName_Matlab(PetscViewer viewer,const char name[])
 {
   PetscViewer_Matlab *vmatlab = (PetscViewer_Matlab*)viewer->data;
@@ -129,8 +119,6 @@ PetscErrorCode  PetscViewerFileSetName_Matlab(PetscViewer viewer,const char name
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerDestroy_Matlab"
 PetscErrorCode PetscViewerDestroy_Matlab(PetscViewer v)
 {
   PetscErrorCode     ierr;
@@ -176,8 +164,6 @@ $                xnew(:) = x;    % reshape one dimensional vector back to two di
            PETSC_VIEWER_STDOUT_(), PetscViewerFileSetName(), PetscViewerFileSetMode(), PetscViewerFormat
 
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerCreate_Matlab"
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_Matlab(PetscViewer viewer)
 {
   PetscErrorCode     ierr;
@@ -196,8 +182,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Matlab(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerMatlabOpen"
 /*@C
    PetscViewerMatlabOpen - Opens a Matlab .mat file for output
 
@@ -243,8 +227,6 @@ PetscErrorCode  PetscViewerMatlabOpen(MPI_Comm comm,const char name[],PetscFileM
 
 static PetscMPIInt Petsc_Viewer_Matlab_keyval = MPI_KEYVAL_INVALID;
 
-#undef __FUNCT__
-#define __FUNCT__ "PETSC_VIEWER_MATLAB_"
 /*@C
      PETSC_VIEWER_MATLAB_ - Creates a Matlab PetscViewer shared by all processors
                      in a communicator.

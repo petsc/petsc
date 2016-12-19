@@ -6,8 +6,6 @@ Input arguments are:\n\
 #include <petscksp.h>
 #include <petsclog.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
 #if !defined(PETSC_USE_COMPLEX)

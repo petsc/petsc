@@ -42,8 +42,6 @@ typedef struct {
   PetscRandom random;
 } PCNoise_Ctx;
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_Noise"
 PetscErrorCode PCApply_Noise(PC pc,Vec xin,Vec xout)
 {
   PetscErrorCode ierr;
@@ -62,8 +60,6 @@ PetscErrorCode PCApply_Noise(PC pc,Vec xin,Vec xout)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetup_Noise"
 PetscErrorCode PCSetup_Noise(PC pc)
 {
   PetscErrorCode ierr;
@@ -76,8 +72,6 @@ PetscErrorCode PCSetup_Noise(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_Noise"
 PetscErrorCode PCDestroy_Noise(PC pc)
 {
   PetscErrorCode ierr;
@@ -89,24 +83,18 @@ PetscErrorCode PCDestroy_Noise(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "diagFunc1"
 PetscScalar diagFunc1(PetscInt i, PetscInt n)
 {
   const PetscScalar kappa = 5.0;
   return 1.0 + (kappa*(PetscScalar)i)/(PetscScalar)(n-1);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "diagFunc2"
 PetscScalar diagFunc2(PetscInt i, PetscInt n)
 {
   const PetscScalar kappa = 50.0;
   return 1.0 + (kappa*(PetscScalar)i)/(PetscScalar)(n-1);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "diagFunc3"
 PetscScalar diagFunc3(PetscInt i, PetscInt n)
 {
   const PetscScalar kappa = 10.0;
@@ -117,8 +105,6 @@ PetscScalar diagFunc3(PetscInt i, PetscInt n)
   }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AssembleDiagonalMatrix"
 static PetscErrorCode AssembleDiagonalMatrix(Mat A, PetscScalar (*diagfunc)(PetscInt,PetscInt))
 {
   PetscErrorCode ierr;
@@ -137,8 +123,6 @@ static PetscErrorCode AssembleDiagonalMatrix(Mat A, PetscScalar (*diagfunc)(Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   PetscErrorCode ierr;

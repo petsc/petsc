@@ -7,8 +7,6 @@
 #include <../src/mat/impls/aij/seq/aij.h> /*I "petscmat.h" I*/
 #include <../src/mat/impls/dense/seq/dense.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_SeqDense_MatTransMatMult"
 PetscErrorCode MatDestroy_SeqDense_MatTransMatMult(Mat A)
 {
   PetscErrorCode      ierr;
@@ -24,8 +22,6 @@ PetscErrorCode MatDestroy_SeqDense_MatTransMatMult(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatTransposeMatMult_SeqAIJ_SeqDense"
 PetscErrorCode MatTransposeMatMult_SeqAIJ_SeqDense(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
@@ -42,8 +38,6 @@ PetscErrorCode MatTransposeMatMult_SeqAIJ_SeqDense(Mat A,Mat B,MatReuse scall,Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatTransposeMatMultSymbolic_SeqAIJ_SeqDense"
 PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqDense(Mat A,Mat B,PetscReal fill,Mat *C)
 {
   PetscErrorCode      ierr;
@@ -80,8 +74,6 @@ PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqDense(Mat A,Mat B,PetscReal
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatTransposeMatMultNumeric_SeqAIJ_SeqDense"
 PetscErrorCode MatTransposeMatMultNumeric_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
 {
   PetscErrorCode      ierr;

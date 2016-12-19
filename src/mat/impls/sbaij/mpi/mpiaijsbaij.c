@@ -4,8 +4,6 @@
 #include <petsc/private/matimpl.h>
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatConvert_MPIAIJ_MPISBAIJ"
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode    ierr;
@@ -60,8 +58,6 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newtype,Ma
   PetscFunctionReturn(0);
 }
 /* contributed by Dahai Guo <dhguo@ncsa.uiuc.edu> April 2011 */
-#undef __FUNCT__
-#define __FUNCT__ "MatConvert_MPIBAIJ_MPISBAIJ"
 PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode    ierr;

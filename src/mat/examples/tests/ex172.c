@@ -5,8 +5,6 @@ static char help[] = "Test MatAXPY and SUBSET_NONZERO_PATTERN [-different] [-ski
 
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   PetscErrorCode ierr;

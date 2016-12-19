@@ -1,8 +1,6 @@
 
 #include <../src/ksp/ksp/impls/rich/richardsonimpl.h>     /*I "petscksp.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPRichardsonSetScale"
 /*@
     KSPRichardsonSetScale - Set the damping factor; if this routine is not called, the factor
     defaults to 1.0.
@@ -28,8 +26,6 @@ PetscErrorCode  KSPRichardsonSetScale(KSP ksp,PetscReal scale)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPRichardsonSetSelfScale"
 /*@
     KSPRichardsonSetSelfScale - Sets Richardson to automatically determine optimal scaling at each iteration to minimize the 2-norm of the
        preconditioned residual

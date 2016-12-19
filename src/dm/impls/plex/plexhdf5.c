@@ -6,8 +6,6 @@
 PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
 
 #if defined(PETSC_HAVE_HDF5)
-#undef __FUNCT__
-#define __FUNCT__ "DMSequenceView_HDF5"
 static PetscErrorCode DMSequenceView_HDF5(DM dm, const char *seqname, PetscInt seqnum, PetscScalar value, PetscViewer viewer)
 {
   Vec            stamp;
@@ -38,8 +36,6 @@ static PetscErrorCode DMSequenceView_HDF5(DM dm, const char *seqname, PetscInt s
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSequenceLoad_HDF5"
 PetscErrorCode DMSequenceLoad_HDF5(DM dm, const char *seqname, PetscInt seqnum, PetscScalar *value, PetscViewer viewer)
 {
   Vec            stamp;
@@ -71,8 +67,6 @@ PetscErrorCode DMSequenceLoad_HDF5(DM dm, const char *seqname, PetscInt seqnum, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecView_Plex_Local_HDF5"
 PetscErrorCode VecView_Plex_Local_HDF5(Vec v, PetscViewer viewer)
 {
   DM                      dm;
@@ -148,8 +142,6 @@ PetscErrorCode VecView_Plex_Local_HDF5(Vec v, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecView_Plex_HDF5"
 PetscErrorCode VecView_Plex_HDF5(Vec v, PetscViewer viewer)
 {
   DM             dm;
@@ -173,8 +165,6 @@ PetscErrorCode VecView_Plex_HDF5(Vec v, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecView_Plex_HDF5_Native"
 PetscErrorCode VecView_Plex_HDF5_Native(Vec v, PetscViewer viewer)
 {
   PetscBool      isseq;
@@ -189,8 +179,6 @@ PetscErrorCode VecView_Plex_HDF5_Native(Vec v, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecLoad_Plex_HDF5"
 PetscErrorCode VecLoad_Plex_HDF5(Vec v, PetscViewer viewer)
 {
   DM             dm;
@@ -215,8 +203,6 @@ PetscErrorCode VecLoad_Plex_HDF5(Vec v, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecLoad_Plex_HDF5_Native"
 PetscErrorCode VecLoad_Plex_HDF5_Native(Vec v, PetscViewer viewer)
 {
   DM             dm;
@@ -233,8 +219,6 @@ PetscErrorCode VecLoad_Plex_HDF5_Native(Vec v, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexWriteTopology_HDF5_Static"
 static PetscErrorCode DMPlexWriteTopology_HDF5_Static(DM dm, IS globalPointNumbers, PetscViewer viewer)
 {
   IS              orderIS, conesIS, cellsIS, orntsIS;
@@ -299,8 +283,6 @@ static PetscErrorCode DMPlexWriteTopology_HDF5_Static(DM dm, IS globalPointNumbe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexWriteTopology_Vertices_HDF5_Static"
 static PetscErrorCode DMPlexWriteTopology_Vertices_HDF5_Static(DM dm, DMLabel label, PetscInt labelId, PetscViewer viewer)
 {
   IS              cellIS, globalVertexNumbers;
@@ -392,8 +374,6 @@ static PetscErrorCode DMPlexWriteTopology_Vertices_HDF5_Static(DM dm, DMLabel la
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexWriteCoordinates_HDF5_Static"
 static PetscErrorCode DMPlexWriteCoordinates_HDF5_Static(DM dm, PetscViewer viewer)
 {
   DM             cdm;
@@ -426,8 +406,6 @@ static PetscErrorCode DMPlexWriteCoordinates_HDF5_Static(DM dm, PetscViewer view
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexWriteCoordinates_Vertices_HDF5_Static"
 static PetscErrorCode DMPlexWriteCoordinates_Vertices_HDF5_Static(DM dm, PetscViewer viewer)
 {
   Vec              coordinates, newcoords;
@@ -501,8 +479,6 @@ static PetscErrorCode DMPlexWriteCoordinates_Vertices_HDF5_Static(DM dm, PetscVi
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexView_HDF5"
 /* We only write cells and vertices. Does this screw up parallel reading? */
 PetscErrorCode DMPlexView_HDF5(DM dm, PetscViewer viewer)
 {
@@ -646,8 +622,6 @@ static herr_t ReadLabelHDF5_Static(hid_t g_id, const char *name, const H5L_info_
   return err;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexLoad_HDF5"
 /* The first version will read everything onto proc 0, letting the user distribute
    The next will create a naive partition, and then rebalance after reading
 */

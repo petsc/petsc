@@ -8,8 +8,6 @@ typedef struct {
   PetscInt  n;               /* The number of faces per dimension for mesh */
 } AppCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "ProcessOptions"
 static PetscErrorCode ProcessOptions(AppCtx *options)
 {
   PetscErrorCode ierr;
@@ -27,8 +25,6 @@ static PetscErrorCode ProcessOptions(AppCtx *options)
   PetscFunctionReturn(0);
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateMesh"
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscInt       dim         = user->dim;
@@ -62,8 +58,6 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestInterpolate"
 static PetscErrorCode TestInterpolate(DM dm, AppCtx *user)
 {
   DM             idm = NULL;
@@ -80,8 +74,6 @@ static PetscErrorCode TestInterpolate(DM dm, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   DM             dm;

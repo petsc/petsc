@@ -38,8 +38,6 @@ extern PetscErrorCode VecDestroy_MPIFFTW(Vec);
    Output parameter:
      y - vector that stores result of FDFT
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_SeqFFTW"
 PetscErrorCode MatMult_SeqFFTW(Mat A,Vec x,Vec y)
 {
   PetscErrorCode ierr;
@@ -143,8 +141,6 @@ PetscErrorCode MatMult_SeqFFTW(Mat A,Vec x,Vec y)
      y - vector that stores result of BDFT
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultTranspose_SeqFFTW"
 PetscErrorCode MatMultTranspose_SeqFFTW(Mat A,Vec x,Vec y)
 {
   PetscErrorCode ierr;
@@ -226,8 +222,6 @@ PetscErrorCode MatMultTranspose_SeqFFTW(Mat A,Vec x,Vec y)
    Output parameter:
    y   - vector that stores result of FDFT
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_MPIFFTW"
 PetscErrorCode MatMult_MPIFFTW(Mat A,Vec x,Vec y)
 {
   PetscErrorCode ierr;
@@ -298,8 +292,6 @@ PetscErrorCode MatMult_MPIFFTW(Mat A,Vec x,Vec y)
    Output parameter:
      y - vector that stores result of BDFT
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatMultTranspose_MPIFFTW"
 PetscErrorCode MatMultTranspose_MPIFFTW(Mat A,Vec x,Vec y)
 {
   PetscErrorCode ierr;
@@ -360,8 +352,6 @@ PetscErrorCode MatMultTranspose_MPIFFTW(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_FFTW"
 PetscErrorCode MatDestroy_FFTW(Mat A)
 {
   Mat_FFT        *fft  = (Mat_FFT*)A->data;
@@ -381,8 +371,6 @@ PetscErrorCode MatDestroy_FFTW(Mat A)
 }
 
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>   /*I  "petscvec.h"   I*/
-#undef __FUNCT__
-#define __FUNCT__ "VecDestroy_MPIFFTW"
 PetscErrorCode VecDestroy_MPIFFTW(Vec v)
 {
   PetscErrorCode ierr;
@@ -396,8 +384,6 @@ PetscErrorCode VecDestroy_MPIFFTW(Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateVecsFFTW"
 /*@
    MatCreateVecsFFTW - Get vector(s) compatible with the matrix, i.e. with the
      parallel layout determined by FFTW
@@ -438,8 +424,6 @@ PetscErrorCode MatCreateVecsFFTW(Mat A,Vec *x,Vec *y,Vec *z)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateVecsFFTW_FFTW"
 PetscErrorCode  MatCreateVecsFFTW_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
 {
   PetscErrorCode ierr;
@@ -654,8 +638,6 @@ PetscErrorCode  MatCreateVecsFFTW_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecScatterPetscToFFTW"
 /*@
    VecScatterPetscToFFTW - Copies the PETSc vector to the vector that goes into FFTW block.
 
@@ -688,8 +670,6 @@ PetscErrorCode VecScatterPetscToFFTW(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecScatterPetscToFFTW_FFTW"
 PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
 {
   PetscErrorCode ierr;
@@ -895,8 +875,6 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecScatterFFTWToPetsc"
 /*@
    VecScatterFFTWToPetsc - Converts FFTW output to the PETSc vector.
 
@@ -925,8 +903,6 @@ PetscErrorCode VecScatterFFTWToPetsc(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecScatterFFTWToPetsc_FFTW"
 PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A,Vec x,Vec y)
 {
   PetscErrorCode ierr;
@@ -1124,8 +1100,6 @@ PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_FFTW"
 /*
     MatCreate_FFTW - Creates a matrix object that provides FFT via the external package FFTW
 

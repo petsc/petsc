@@ -1,7 +1,5 @@
 #include <petsc/private/matimpl.h>       /*I  "petscmat.h"  I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatComputeBandwidth"
 /*@
   MatComputeBandwidth - Calculate the full bandwidth of the matrix, meaning the width 2k+1 where k diagonals on either side are sufficient to contain all the matrix nonzeros.
 

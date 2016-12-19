@@ -17,8 +17,6 @@
 
 extern PetscErrorCode MatDestroy_MPIAIJ(Mat);
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_MPIAIJCRL"
 PetscErrorCode MatDestroy_MPIAIJCRL(Mat A)
 {
   PetscErrorCode ierr;
@@ -38,8 +36,6 @@ PetscErrorCode MatDestroy_MPIAIJCRL(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMPIAIJCRL_create_aijcrl"
 PetscErrorCode MatMPIAIJCRL_create_aijcrl(Mat A)
 {
   Mat_MPIAIJ     *a      = (Mat_MPIAIJ*)(A)->data;
@@ -96,8 +92,6 @@ PetscErrorCode MatMPIAIJCRL_create_aijcrl(Mat A)
 
 extern PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat,MatAssemblyType);
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd_MPIAIJCRL"
 PetscErrorCode MatAssemblyEnd_MPIAIJCRL(Mat A, MatAssemblyType mode)
 {
   PetscErrorCode ierr;
@@ -124,8 +118,6 @@ extern PetscErrorCode MatDuplicate_AIJCRL(Mat,MatDuplicateOption,Mat*);
  * routine, but can also be used to convert an assembled MPIAIJ matrix
  * into a MPIAIJCRL one. */
 
-#undef __FUNCT__
-#define __FUNCT__ "MatConvert_MPIAIJ_MPIAIJCRL"
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCRL(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
@@ -155,8 +147,6 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCRL(Mat A,MatType type,MatRe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateMPIAIJCRL"
 /*@C
    MatCreateMPIAIJCRL - Creates a sparse matrix of type MPIAIJCRL.
    This type inherits from AIJ, but stores some additional
@@ -202,8 +192,6 @@ PetscErrorCode  MatCreateMPIAIJCRL(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_MPIAIJCRL"
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCRL(Mat A)
 {
   PetscErrorCode ierr;

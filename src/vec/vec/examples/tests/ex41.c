@@ -9,8 +9,6 @@ T*/
 
 #include <petscvec.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "test_vec_ops"
 PetscErrorCode test_vec_ops(void)
 {
   Vec            X,Y,a,b;

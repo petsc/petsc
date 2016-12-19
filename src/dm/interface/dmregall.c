@@ -24,8 +24,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_p4est(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_p8est(DM);
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRegisterAll"
 /*@C
   DMRegisterAll - Registers all of the DM components in the DM package.
 
@@ -73,8 +71,6 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Shell(PetscPartitioner);
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Simple(PetscPartitioner);
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Gather(PetscPartitioner);
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscPartitionerRegisterAll"
 /*@C
   PetscPartitionerRegisterAll - Registers all of the PetscPartitioner components in the DM package.
 
@@ -108,8 +104,6 @@ PetscErrorCode PetscPartitionerRegisterAll()
 PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Polynomial(PetscSpace);
 PETSC_EXTERN PetscErrorCode PetscSpaceCreate_DG(PetscSpace);
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSpaceRegisterAll"
 /*@C
   PetscSpaceRegisterAll - Registers all of the PetscSpace components in the PetscFE package.
 
@@ -139,8 +133,6 @@ PetscErrorCode PetscSpaceRegisterAll()
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Lagrange(PetscDualSpace);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Simple(PetscDualSpace);
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDualSpaceRegisterAll"
 /*@C
   PetscDualSpaceRegisterAll - Registers all of the PetscDualSpace components in the PetscFE package.
 
@@ -174,8 +166,6 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_Composite(PetscFE);
 PETSC_EXTERN PetscErrorCode PetscFECreate_OpenCL(PetscFE);
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFERegisterAll"
 /*@C
   PetscFERegisterAll - Registers all of the PetscFE components in the PetscFE package.
 
@@ -216,8 +206,6 @@ PETSC_EXTERN PetscErrorCode PetscLimiterCreate_VanAlbada(PetscLimiter);
 PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Superbee(PetscLimiter);
 PETSC_EXTERN PetscErrorCode PetscLimiterCreate_MC(PetscLimiter);
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLimiterRegisterAll"
 /*@C
   PetscLimiterRegisterAll - Registers all of the PetscLimiter components in the PetscFV package.
 
@@ -253,8 +241,6 @@ PetscErrorCode PetscLimiterRegisterAll()
 PETSC_EXTERN PetscErrorCode PetscFVCreate_Upwind(PetscFV);
 PETSC_EXTERN PetscErrorCode PetscFVCreate_LeastSquares(PetscFV);
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVRegisterAll"
 /*@C
   PetscFVRegisterAll - Registers all of the PetscFV components in the PetscFV package.
 
@@ -284,8 +270,6 @@ PetscErrorCode PetscFVRegisterAll()
 
 PETSC_EXTERN PetscErrorCode PetscDSCreate_Basic(PetscDS);
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSRegisterAll"
 /*@C
   PetscDSRegisterAll - Registers all of the PetscDS components in the PetscDS package.
 

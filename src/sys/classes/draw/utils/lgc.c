@@ -3,8 +3,6 @@
 #include <../src/sys/classes/draw/utils/lgimpl.h>  /*I   "petscdraw.h"  I*/
 PetscClassId PETSC_DRAWLG_CLASSID = 0;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawLGGetAxis"
 /*@
    PetscDrawLGGetAxis - Gets the axis context associated with a line graph.
    This is useful if one wants to change some axis property, such as
@@ -33,8 +31,6 @@ PetscErrorCode  PetscDrawLGGetAxis(PetscDrawLG lg,PetscDrawAxis *axis)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawLGGetDraw"
 /*@
    PetscDrawLGGetDraw - Gets the draw context associated with a line graph.
 
@@ -60,8 +56,6 @@ PetscErrorCode  PetscDrawLGGetDraw(PetscDrawLG lg,PetscDraw *draw)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawLGSPDraw"
 /*@
    PetscDrawLGSPDraw - Redraws a line graph.
 
@@ -131,8 +125,6 @@ PetscErrorCode  PetscDrawLGSPDraw(PetscDrawLG lg,PetscDrawSP spin)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawLGCreate"
 /*@
     PetscDrawLGCreate - Creates a line graph data structure.
 
@@ -196,8 +188,6 @@ PetscErrorCode  PetscDrawLGCreate(PetscDraw draw,PetscInt dim,PetscDrawLG *outlg
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawLGSetColors"
 /*@
    PetscDrawLGSetColors - Sets the color of each line graph drawn
 
@@ -228,9 +218,6 @@ PetscErrorCode  PetscDrawLGSetColors(PetscDrawLG lg,const int colors[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawLGSetLegend"
 /*@C
    PetscDrawLGSetLegend - sets the names of each curve plotted
 
@@ -273,8 +260,6 @@ PetscErrorCode  PetscDrawLGSetLegend(PetscDrawLG lg,const char *const *names)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawLGGetDimension"
 /*@
    PetscDrawLGGetDimension - Change the number of lines that are to be drawn.
 
@@ -302,8 +287,6 @@ PetscErrorCode  PetscDrawLGGetDimension(PetscDrawLG lg,PetscInt *dim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawLGSetDimension"
 /*@
    PetscDrawLGSetDimension - Change the number of lines that are to be drawn.
 
@@ -345,8 +328,6 @@ PetscErrorCode  PetscDrawLGSetDimension(PetscDrawLG lg,PetscInt dim)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawLGSetLimits"
 /*@
    PetscDrawLGSetLimits - Sets the axis limits for a line graph. If more
    points are added after this call, the limits will be adjusted to
@@ -377,8 +358,6 @@ PetscErrorCode  PetscDrawLGSetLimits(PetscDrawLG lg,PetscReal x_min,PetscReal x_
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawLGReset"
 /*@
    PetscDrawLGReset - Clears line graph to allow for reuse with new data.
 
@@ -407,8 +386,6 @@ PetscErrorCode  PetscDrawLGReset(PetscDrawLG lg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawLGDestroy"
 /*@
    PetscDrawLGDestroy - Frees all space taken up by line graph data structure.
 
@@ -444,8 +421,6 @@ PetscErrorCode  PetscDrawLGDestroy(PetscDrawLG *lg)
   ierr = PetscHeaderDestroy(lg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawLGSetUseMarkers"
 /*@
    PetscDrawLGSetUseMarkers - Causes LG to draw a marker for each data-point.
 
@@ -474,8 +449,6 @@ PetscErrorCode  PetscDrawLGSetUseMarkers(PetscDrawLG lg,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawLGDraw"
 /*@
    PetscDrawLGDraw - Redraws a line graph.
 
@@ -551,8 +524,6 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawLGSave"
 /*@
   PetscDrawLGSave - Saves a drawn image
 
@@ -577,8 +548,6 @@ PetscErrorCode  PetscDrawLGSave(PetscDrawLG lg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawLGView"
 /*@
   PetscDrawLGView - Prints a line graph.
 
@@ -618,8 +587,6 @@ PetscErrorCode  PetscDrawLGView(PetscDrawLG lg,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawLGSetOptionsPrefix"
 /*@C
    PetscDrawLGSetOptionsPrefix - Sets the prefix used for searching for all
    PetscDrawLG options in the database.
@@ -646,8 +613,6 @@ PetscErrorCode  PetscDrawLGSetOptionsPrefix(PetscDrawLG lg,const char prefix[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawLGSetFromOptions"
 /*@
     PetscDrawLGSetFromOptions - Sets options related to the PetscDrawLG
 

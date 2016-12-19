@@ -17,8 +17,6 @@ typedef struct {
   InsertMode rhsfunctionlocalimode;
 } DMTS_DA;
 
-#undef __FUNCT__
-#define __FUNCT__ "DMTSDestroy_DMDA"
 static PetscErrorCode DMTSDestroy_DMDA(DMTS sdm)
 {
   PetscErrorCode ierr;
@@ -28,8 +26,6 @@ static PetscErrorCode DMTSDestroy_DMDA(DMTS sdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMTSDuplicate_DMDA"
 static PetscErrorCode DMTSDuplicate_DMDA(DMTS oldsdm,DMTS sdm)
 {
   PetscErrorCode ierr;
@@ -40,8 +36,6 @@ static PetscErrorCode DMTSDuplicate_DMDA(DMTS oldsdm,DMTS sdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDATSGetContext"
 static PetscErrorCode DMDATSGetContext(DM dm,DMTS sdm,DMTS_DA **dmdats)
 {
   PetscErrorCode ierr;
@@ -57,8 +51,6 @@ static PetscErrorCode DMDATSGetContext(DM dm,DMTS sdm,DMTS_DA **dmdats)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSComputeIFunction_DMDA"
 static PetscErrorCode TSComputeIFunction_DMDA(TS ts,PetscReal ptime,Vec X,Vec Xdot,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
@@ -110,8 +102,6 @@ static PetscErrorCode TSComputeIFunction_DMDA(TS ts,PetscReal ptime,Vec X,Vec Xd
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSComputeIJacobian_DMDA"
 static PetscErrorCode TSComputeIJacobian_DMDA(TS ts,PetscReal ptime,Vec X,Vec Xdot,PetscReal shift,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
@@ -147,8 +137,6 @@ static PetscErrorCode TSComputeIJacobian_DMDA(TS ts,PetscReal ptime,Vec X,Vec Xd
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSComputeRHSFunction_DMDA"
 static PetscErrorCode TSComputeRHSFunction_DMDA(TS ts,PetscReal ptime,Vec X,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
@@ -198,8 +186,6 @@ static PetscErrorCode TSComputeRHSFunction_DMDA(TS ts,PetscReal ptime,Vec X,Vec 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSComputeRHSJacobian_DMDA"
 static PetscErrorCode TSComputeRHSJacobian_DMDA(TS ts,PetscReal ptime,Vec X,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
@@ -234,8 +220,6 @@ static PetscErrorCode TSComputeRHSJacobian_DMDA(TS ts,PetscReal ptime,Vec X,Mat 
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDATSSetRHSFunctionLocal"
 /*@C
    DMDATSSetRHSFunctionLocal - set a local residual evaluation function
 
@@ -278,8 +262,6 @@ PetscErrorCode DMDATSSetRHSFunctionLocal(DM dm,InsertMode imode,DMDATSRHSFunctio
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDATSSetRHSJacobianLocal"
 /*@C
    DMDATSSetRHSJacobianLocal - set a local residual evaluation function
 
@@ -322,8 +304,6 @@ PetscErrorCode DMDATSSetRHSJacobianLocal(DM dm,DMDATSRHSJacobianLocal func,void 
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDATSSetIFunctionLocal"
 /*@C
    DMDATSSetIFunctionLocal - set a local residual evaluation function
 
@@ -363,8 +343,6 @@ PetscErrorCode DMDATSSetIFunctionLocal(DM dm,InsertMode imode,DMDATSIFunctionLoc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDATSSetIJacobianLocal"
 /*@C
    DMDATSSetIJacobianLocal - set a local residual evaluation function
 
@@ -408,8 +386,6 @@ PetscErrorCode DMDATSSetIJacobianLocal(DM dm,DMDATSIJacobianLocal func,void *ctx
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSMonitorDMDARayDestroy"
 PetscErrorCode TSMonitorDMDARayDestroy(void **mctx)
 {
   TSMonitorDMDARayCtx *rayctx = (TSMonitorDMDARayCtx *) *mctx;
@@ -424,8 +400,6 @@ PetscErrorCode TSMonitorDMDARayDestroy(void **mctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSMonitorDMDARay"
 PetscErrorCode TSMonitorDMDARay(TS ts,PetscInt steps,PetscReal time,Vec u,void *mctx)
 {
   TSMonitorDMDARayCtx *rayctx = (TSMonitorDMDARayCtx*)mctx;
@@ -442,8 +416,6 @@ PetscErrorCode TSMonitorDMDARay(TS ts,PetscInt steps,PetscReal time,Vec u,void *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSMonitorLGDMDARay"
 PetscErrorCode  TSMonitorLGDMDARay(TS ts, PetscInt step, PetscReal ptime, Vec u, void *ctx)
 {
   TSMonitorDMDARayCtx *rayctx = (TSMonitorDMDARayCtx *) ctx;

@@ -12,8 +12,6 @@ static PetscErrorCode MaybeLogStagePush(PetscLogStage stage) { return log_stages
 static PetscErrorCode MaybeLogStagePop() { return log_stages ? PetscLogStagePop() : 0; }
 PetscErrorCode elem_3d_elast_v_25(PetscScalar *);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            Amat;
@@ -355,7 +353,7 @@ int main(int argc,char **args)
     ierr = VecAXPY(bb, -1.0, res);CHKERRQ(ierr);
     ierr = VecDestroy(&res);CHKERRQ(ierr);
     ierr = VecNorm(bb, NORM_2, &norm);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"[%d]%s |b-Ax|/|b|=%e, |b|=%e, emax=%e\n",0,__FUNCT__,(double)(norm/norm2),(double)norm2,(double)emax);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d]%s |b-Ax|/|b|=%e, |b|=%e, emax=%e\n",0,PETSC_FUNCTION_NAME,(double)(norm/norm2),(double)norm2,(double)emax);CHKERRQ(ierr);
   }
 
   /* Free work space */
@@ -370,8 +368,6 @@ int main(int argc,char **args)
 }
 
 /* Data was previously provided in the file data/elem_3d_elast_v_25.tx */
-#undef __FUNCT__
-#define __FUNCT__ "elem_3d_elast_v_25"
 PetscErrorCode elem_3d_elast_v_25(PetscScalar *dd)
 {
   PetscErrorCode ierr;

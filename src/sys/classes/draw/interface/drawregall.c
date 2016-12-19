@@ -22,8 +22,6 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Win32(PetscDraw);
 
 PetscBool PetscDrawRegisterAllCalled = PETSC_FALSE;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawRegisterAll"
 /*@C
   PetscDrawRegisterAll - Registers all of the graphics methods in the PetscDraw package.
 

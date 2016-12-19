@@ -7,8 +7,6 @@ extern PetscErrorCode SNESView_NGMRES(SNES,PetscViewer);
 
 PETSC_EXTERN const char *const SNESNGMRESRestartTypes[];
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetFromOptions_Anderson"
 static PetscErrorCode SNESSetFromOptions_Anderson(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   SNES_NGMRES    *ngmres = (SNES_NGMRES*) snes->data;
@@ -36,8 +34,6 @@ static PetscErrorCode SNESSetFromOptions_Anderson(PetscOptionItems *PetscOptions
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSolve_Anderson"
 static PetscErrorCode SNESSolve_Anderson(SNES snes)
 {
   SNES_NGMRES         *ngmres = (SNES_NGMRES*) snes->data;
@@ -218,8 +214,6 @@ static PetscErrorCode SNESSolve_Anderson(SNES snes)
 .seealso: SNESNGMRES, SNESCreate(), SNES, SNESSetType(), SNESType (for list of available types)
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESCreate_Anderson"
 PETSC_EXTERN PetscErrorCode SNESCreate_Anderson(SNES snes)
 {
   SNES_NGMRES    *ngmres;

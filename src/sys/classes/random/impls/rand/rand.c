@@ -1,8 +1,6 @@
 
 #include <../src/sys/classes/random/randomimpl.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscRandomSeed_Rand"
 PetscErrorCode  PetscRandomSeed_Rand(PetscRandom r)
 {
   PetscFunctionBegin;
@@ -11,8 +9,6 @@ PetscErrorCode  PetscRandomSeed_Rand(PetscRandom r)
 }
 
 #define RAND_WRAP ((PetscReal)((rand()/(double)((unsigned int)RAND_MAX+1))))
-#undef __FUNCT__
-#define __FUNCT__ "PetscRandomGetValue_Rand"
 PetscErrorCode  PetscRandomGetValue_Rand(PetscRandom r,PetscScalar *val)
 {
   PetscFunctionBegin;
@@ -26,8 +22,6 @@ PetscErrorCode  PetscRandomGetValue_Rand(PetscRandom r,PetscScalar *val)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscRandomGetValueReal_Rand"
 PetscErrorCode  PetscRandomGetValueReal_Rand(PetscRandom r,PetscReal *val)
 {
   PetscFunctionBegin;
@@ -62,8 +56,6 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
 .seealso: RandomCreate(), RandomSetType(), PETSCRAND48, PETSCSPRNG
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscRandomCreate_Rand"
 PETSC_EXTERN PetscErrorCode PetscRandomCreate_Rand(PetscRandom r)
 {
   PetscErrorCode ierr;

@@ -806,12 +806,9 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
     self.popLanguage()
 
   def configureFunctionName(self):
-    '''Sees if the compiler supports __func__ or a variant.  Falls back
-    on __FUNCT__ which PETSc source defines, but most users do not, thus
-    stack traces through user code are better when the compiler's
-    variant is used.'''
+    '''Sees if the compiler supports __func__ or a variant.'''
     def getFunctionName(lang):
-      name = '__FUNCT__'
+      name = '"unknown"'
       self.pushLanguage(lang)
       if self.checkLink('', "if (__func__[0] != 'm') return 1;"):
         name = '__func__'
@@ -822,10 +819,7 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
     langs = []
 
     self.addDefine('FUNCTION_NAME_C', getFunctionName('C'))
-    if hasattr(self.compilers, 'CXX'):
-      self.addDefine('FUNCTION_NAME_CXX', getFunctionName('Cxx'))
-    else:
-      self.addDefine('FUNCTION_NAME_CXX', '__FUNCT__')
+    self.addDefine('FUNCTION_NAME_CXX', getFunctionName('Cxx'))
 
   def configureIntptrt(self):
     '''Determine what to use for uintptr_t'''

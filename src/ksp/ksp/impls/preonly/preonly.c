@@ -1,16 +1,12 @@
 
 #include <petsc/private/kspimpl.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_PREONLY"
 static PetscErrorCode KSPSetUp_PREONLY(KSP ksp)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_PREONLY"
 static PetscErrorCode  KSPSolve_PREONLY(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -49,8 +45,6 @@ static PetscErrorCode  KSPSolve_PREONLY(KSP ksp)
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_PREONLY"
 PETSC_EXTERN PetscErrorCode KSPCreate_PREONLY(KSP ksp)
 {
   PetscErrorCode ierr;

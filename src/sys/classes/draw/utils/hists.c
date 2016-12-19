@@ -29,8 +29,6 @@ struct _p_PetscDrawHG {
 
 #define CHUNKSIZE 100
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawHGCreate"
 /*@C
    PetscDrawHGCreate - Creates a histogram data structure.
 
@@ -102,8 +100,6 @@ PetscErrorCode  PetscDrawHGCreate(PetscDraw draw,int bins,PetscDrawHG *hist)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawHGSetNumberBins"
 /*@
    PetscDrawHGSetNumberBins - Change the number of bins that are to be drawn.
 
@@ -138,8 +134,6 @@ PetscErrorCode  PetscDrawHGSetNumberBins(PetscDrawHG hist, int bins)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawHGReset"
 /*@
   PetscDrawHGReset - Clears histogram to allow for reuse with new data.
 
@@ -168,8 +162,6 @@ PetscErrorCode  PetscDrawHGReset(PetscDrawHG hist)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawHGDestroy"
 /*@C
   PetscDrawHGDestroy - Frees all space taken up by histogram data structure.
 
@@ -199,8 +191,6 @@ PetscErrorCode  PetscDrawHGDestroy(PetscDrawHG *hist)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawHGAddValue"
 /*@
   PetscDrawHGAddValue - Adds another value to the histogram.
 
@@ -263,8 +253,6 @@ PetscErrorCode  PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawHGDraw"
 /*@
   PetscDrawHGDraw - Redraws a histogram.
 
@@ -412,8 +400,6 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawHGSave"
 /*@
   PetscDrawHGSave - Saves a drawn image
 
@@ -438,8 +424,6 @@ PetscErrorCode  PetscDrawHGSave(PetscDrawHG hg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawHGView"
 /*@
   PetscDrawHGView - Prints the histogram information.
 
@@ -535,8 +519,6 @@ PetscErrorCode  PetscDrawHGView(PetscDrawHG hist,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawHGSetColor"
 /*@
   PetscDrawHGSetColor - Sets the color the bars will be drawn with.
 
@@ -561,8 +543,6 @@ PetscErrorCode  PetscDrawHGSetColor(PetscDrawHG hist,int color)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawHGSetLimits"
 /*@
   PetscDrawHGSetLimits - Sets the axis limits for a histogram. If more
   points are added after this call, the limits will be adjusted to
@@ -593,8 +573,6 @@ PetscErrorCode  PetscDrawHGSetLimits(PetscDrawHG hist, PetscReal x_min, PetscRea
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawHGCalcStats"
 /*@
   PetscDrawHGCalcStats - Turns on calculation of descriptive statistics
 
@@ -620,8 +598,6 @@ PetscErrorCode  PetscDrawHGCalcStats(PetscDrawHG hist, PetscBool calc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawHGIntegerBins"
 /*@
   PetscDrawHGIntegerBins - Turns on integer width bins
 
@@ -647,8 +623,6 @@ PetscErrorCode  PetscDrawHGIntegerBins(PetscDrawHG hist, PetscBool ints)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawHGGetAxis"
 /*@C
   PetscDrawHGGetAxis - Gets the axis context associated with a histogram.
   This is useful if one wants to change some axis property, such as
@@ -677,8 +651,6 @@ PetscErrorCode  PetscDrawHGGetAxis(PetscDrawHG hist,PetscDrawAxis *axis)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawHGGetDraw"
 /*@C
   PetscDrawHGGetDraw - Gets the draw context associated with a histogram.
 

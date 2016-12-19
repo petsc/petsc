@@ -99,8 +99,6 @@ PetscBool PetscCUDASynchronize = PETSC_FALSE;
 */
 FILE *petsc_history = NULL;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscOpenHistoryFile"
 PetscErrorCode  PetscOpenHistoryFile(const char filename[],FILE **fd)
 {
   PetscErrorCode ierr;
@@ -141,8 +139,6 @@ PetscErrorCode  PetscOpenHistoryFile(const char filename[],FILE **fd)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscCloseHistoryFile"
 PetscErrorCode  PetscCloseHistoryFile(FILE **fd)
 {
   PetscErrorCode ierr;
@@ -176,8 +172,6 @@ PetscErrorCode  PetscCloseHistoryFile(FILE **fd)
   in the debugger hence we call abort() instead of MPI_Abort().
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "Petsc_MPI_AbortOnError"
 void Petsc_MPI_AbortOnError(MPI_Comm *comm,PetscMPIInt *flag)
 {
   PetscFunctionBegin;
@@ -185,8 +179,6 @@ void Petsc_MPI_AbortOnError(MPI_Comm *comm,PetscMPIInt *flag)
   abort();
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Petsc_MPI_DebuggerOnError"
 void Petsc_MPI_DebuggerOnError(MPI_Comm *comm,PetscMPIInt *flag)
 {
   PetscErrorCode ierr;
@@ -197,8 +189,6 @@ void Petsc_MPI_DebuggerOnError(MPI_Comm *comm,PetscMPIInt *flag)
   if (ierr) MPI_Abort(*comm,*flag); /* hopeless so get out */
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscEnd"
 /*@C
    PetscEnd - Calls PetscFinalize() and then ends the program. This is useful if one
      wishes a clean exit somewhere deep in the program.
@@ -230,8 +220,6 @@ static char           emacsmachinename[256];
 PetscErrorCode (*PetscExternalVersionFunction)(MPI_Comm) = 0;
 PetscErrorCode (*PetscExternalHelpFunction)(MPI_Comm)    = 0;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSetHelpVersionFunctions"
 /*@C
    PetscSetHelpVersionFunctions - Sets functions that print help and version information
    before the PETSc help and version information is printed. Must call BEFORE PetscInitialize().
@@ -258,8 +246,6 @@ PetscErrorCode  PetscSetHelpVersionFunctions(PetscErrorCode (*help)(MPI_Comm),Pe
 extern PetscBool   PetscObjectsLog;
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsCheckInitial_Private"
 PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 {
   char              string[64],mname[PETSC_MAX_PATH_LEN],*f;

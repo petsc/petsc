@@ -8,8 +8,6 @@ PetscStack *petscstack = 0;
 
 static PetscBool amsmemstack = PETSC_FALSE;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscStackSAWsGrantAccess"
 /*@C
    PetscStackSAWsGrantAccess - Grants access of the PETSc stack frames to the SAWs publisher
 
@@ -32,8 +30,6 @@ void  PetscStackSAWsGrantAccess(void)
   }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscStackSAWsTakeAccess"
 /*@C
    PetscStackSAWsTakeAccess - Takes access of the PETSc stack frames to the SAWs publisher
 
@@ -69,8 +65,6 @@ PetscErrorCode PetscStackViewSAWs(void)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscStackSAWsViewOff"
 PetscErrorCode PetscStackSAWsViewOff(void)
 {
   PetscFunctionBegin;
@@ -110,8 +104,6 @@ PetscErrorCode PetscStackCreate(void)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscStackView"
 PetscErrorCode  PetscStackView(FILE *file)
 {
   int        i;
@@ -141,8 +133,6 @@ PetscErrorCode PetscStackDestroy(void)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscStackCopy"
 /*  PetscFunctionBegin;  so that make rule checkbadPetscFunctionBegin works */
 PetscErrorCode  PetscStackCopy(PetscStack *sint,PetscStack *sout)
 {
@@ -161,8 +151,6 @@ PetscErrorCode  PetscStackCopy(PetscStack *sint,PetscStack *sout)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscStackPrint"
 /*  PetscFunctionBegin;  so that make rule checkbadPetscFunctionBegin works */
 PetscErrorCode  PetscStackPrint(PetscStack *sint,FILE *fp)
 {

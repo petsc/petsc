@@ -35,8 +35,6 @@ const char *const MPChacoEigenTypes[] = {"LANCZOS","RQI","MPChacoEigenType","MP_
 extern PetscErrorCode  MatMFFDInitializePackage(void);
 extern PetscErrorCode  MatSolverPackageDestroy(void);
 static PetscBool MatPackageInitialized = PETSC_FALSE;
-#undef __FUNCT__
-#define __FUNCT__ "MatFinalizePackage"
 /*@C
   MatFinalizePackage - This function destroys everything in the Petsc interface to the Mat package. It is
   called from PetscFinalize().
@@ -131,8 +129,6 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_petsc(Mat,MatFactorType,Mat*);
 PETSC_INTERN PetscErrorCode MatGetFactor_seqdense_petsc(Mat,MatFactorType,Mat*);
 PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_bas(Mat,MatFactorType,Mat*);
 
-#undef __FUNCT__
-#define __FUNCT__ "MatInitializePackage"
 /*@C
   MatInitializePackage - This function initializes everything in the Mat package. It is called
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to MatCreate()
@@ -386,8 +382,6 @@ PetscErrorCode  MatInitializePackage(void)
 }
 
 #if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
-#undef __FUNCT__
-#define __FUNCT__ "PetscDLLibraryRegister_petscmat"
 /*
   PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.
 

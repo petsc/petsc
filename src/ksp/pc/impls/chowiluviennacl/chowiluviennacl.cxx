@@ -35,8 +35,6 @@ typedef struct {
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_CHOWILUVIENNACL"
 static PetscErrorCode PCSetUp_CHOWILUVIENNACL(PC pc)
 {
   PC_CHOWILUVIENNACL *ilu = (PC_CHOWILUVIENNACL*)pc->data;
@@ -85,8 +83,6 @@ static PetscErrorCode PCSetUp_CHOWILUVIENNACL(PC pc)
 
    Application Interface Routine: PCApply()
  */
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_CHOWILUVIENNACL"
 static PetscErrorCode PCApply_CHOWILUVIENNACL(PC pc,Vec x,Vec y)
 {
   PC_CHOWILUVIENNACL            *ilu = (PC_CHOWILUVIENNACL*)pc->data;
@@ -131,8 +127,6 @@ static PetscErrorCode PCApply_CHOWILUVIENNACL(PC pc,Vec x,Vec y)
 
    Application Interface Routine: PCDestroy()
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_CHOWILUVIENNACL"
 static PetscErrorCode PCDestroy_CHOWILUVIENNACL(PC pc)
 {
   PC_CHOWILUVIENNACL  *ilu = (PC_CHOWILUVIENNACL*)pc->data;
@@ -154,8 +148,6 @@ static PetscErrorCode PCDestroy_CHOWILUVIENNACL(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_CHOWILUVIENNACL"
 static PetscErrorCode PCSetFromOptions_CHOWILUVIENNACL(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
@@ -178,8 +170,6 @@ static PetscErrorCode PCSetFromOptions_CHOWILUVIENNACL(PetscOptionItems *PetscOp
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_CHOWILUVIENNACL"
 PETSC_EXTERN PetscErrorCode PCCreate_CHOWILUVIENNACL(PC pc)
 {
   PC_CHOWILUVIENNACL  *ilu;

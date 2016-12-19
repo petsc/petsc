@@ -11,8 +11,6 @@ static char help[] = "Reads in a PETSc binary matrix and saves in Harwell-Boeing
 */
 #include <../src/mat/impls/aij/seq/aij.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   PetscErrorCode ierr;

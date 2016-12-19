@@ -4,8 +4,6 @@ static char help[] = "Tests LU, Cholesky factorization and MatMatSolve() for a s
 
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   Mat            mat,F,RHS,SOLU;

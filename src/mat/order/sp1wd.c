@@ -5,8 +5,6 @@
 /*
     MatGetOrdering_1WD - Find the 1-way dissection ordering of a given matrix.
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatGetOrdering_1WD"
 PETSC_INTERN PetscErrorCode MatGetOrdering_1WD(Mat mat,MatOrderingType type,IS *row,IS *col)
 {
   PetscErrorCode ierr;

@@ -1,8 +1,6 @@
 
 #include <petsc/private/tsimpl.h>        /*I "petscts.h"  I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "OutputBIN"
 static PetscErrorCode OutputBIN(const char *filename,PetscViewer *viewer)
 {
   PetscErrorCode ierr;
@@ -15,8 +13,6 @@ static PetscErrorCode OutputBIN(const char *filename,PetscViewer *viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSTrajectorySet_Visualization"
 static PetscErrorCode TSTrajectorySet_Visualization(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal time,Vec X)
 {
   PetscViewer    viewer;
@@ -60,8 +56,6 @@ static PetscErrorCode TSTrajectorySet_Visualization(TSTrajectory tj,TS ts,PetscI
 .seealso:  TSTrajectoryCreate(), TS, TSTrajectorySetType()
 
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "TSTrajectoryCreate_Visualization"
 PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Visualization(TSTrajectory tj,TS ts)
 {
   PetscFunctionBegin;

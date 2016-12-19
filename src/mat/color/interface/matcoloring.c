@@ -6,8 +6,6 @@ const char *const MatColoringWeightTypes[] = {"RANDOM","LEXICAL","LF","SL","MatC
 
 PETSC_EXTERN PetscErrorCode MatColoringTestValid(MatColoring,ISColoring);
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringRegister"
 /*@C
    MatColoringRegister - Adds a new sparse matrix coloring to the  matrix package.
 
@@ -42,8 +40,6 @@ PetscErrorCode  MatColoringRegister(const char sname[],PetscErrorCode (*function
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringCreate"
 /*@
    MatColoringCreate - Creates a matrix coloring context.
 
@@ -95,8 +91,6 @@ PetscErrorCode MatColoringCreate(Mat m,MatColoring *mcptr)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringDestroy"
 /*@
    MatColoringDestroy - Destroys the matrix coloring context
 
@@ -125,8 +119,6 @@ PetscErrorCode MatColoringDestroy(MatColoring *mc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringSetType"
 /*@C
    MatColoringSetType - Sets the type of coloring algorithm used
 
@@ -172,8 +164,6 @@ PetscErrorCode MatColoringSetType(MatColoring mc,MatColoringType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringSetFromOptions"
 /*@
    MatColoringSetFromOptions - Sets MatColoring options from user parameters
 
@@ -231,8 +221,6 @@ PetscErrorCode MatColoringSetFromOptions(MatColoring mc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringSetDistance"
 /*@
    MatColoringSetDistance - Sets the distance of the coloring
 
@@ -262,8 +250,6 @@ PetscErrorCode MatColoringSetDistance(MatColoring mc,PetscInt dist)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringGetDistance"
 /*@
    MatColoringGetDistance - Gets the distance of the coloring
 
@@ -289,8 +275,6 @@ PetscErrorCode MatColoringGetDistance(MatColoring mc,PetscInt *dist)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringSetMaxColors"
 /*@
    MatColoringSetMaxColors - Sets the maximum number of colors
 
@@ -320,8 +304,6 @@ PetscErrorCode MatColoringSetMaxColors(MatColoring mc,PetscInt maxcolors)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringGetMaxColors"
 /*@
    MatColoringGetMaxColors - Gets the maximum number of colors
 
@@ -347,8 +329,6 @@ PetscErrorCode MatColoringGetMaxColors(MatColoring mc,PetscInt *maxcolors)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringApply"
 /*@
    MatColoringApply - Apply the coloring to the matrix, producing index
    sets corresponding to a number of independent sets in the induced
@@ -401,8 +381,6 @@ PetscErrorCode MatColoringApply(MatColoring mc,ISColoring *coloring)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringView"
 /*@
    MatColoringView - Output details about the MatColoring.
 
@@ -459,8 +437,6 @@ PetscErrorCode MatColoringView(MatColoring mc,PetscViewer viewer)
 
 .seealso: MatColoring, MatColoringWeightType
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringSetWeightType"
 PetscErrorCode MatColoringSetWeightType(MatColoring mc,MatColoringWeightType wt)
 {
   PetscFunctionBegin;

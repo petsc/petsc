@@ -9,8 +9,6 @@ static char help[] = "Tests DMSwarm with DMShell\n\n";
 #include <petsc/private/dmimpl.h>
 
 
-#undef __FUNCT__
-#define __FUNCT__ "_DMLocatePoints_DMDARegular_IS"
 PetscErrorCode _DMLocatePoints_DMDARegular_IS(DM dm,Vec pos,IS *iscell)
 {
   PetscInt p,n,bs,npoints,si,sj,milocal,mjlocal,mx,my;
@@ -66,8 +64,6 @@ PetscErrorCode _DMLocatePoints_DMDARegular_IS(DM dm,Vec pos,IS *iscell)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLocatePoints_DMDARegular"
 PetscErrorCode DMLocatePoints_DMDARegular(DM dm,Vec pos,DMPointLocationType ltype, PetscSF cellSF)
 {
   IS iscell;
@@ -99,8 +95,6 @@ PetscErrorCode DMLocatePoints_DMDARegular(DM dm,Vec pos,DMPointLocationType ltyp
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetNeighbors_DMDARegular"
 PetscErrorCode DMGetNeighbors_DMDARegular(DM dm,PetscInt *nneighbors,const PetscMPIInt **neighbors)
 {
   DM dmregular;
@@ -111,8 +105,6 @@ PetscErrorCode DMGetNeighbors_DMDARegular(DM dm,PetscInt *nneighbors,const Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SwarmViewGP"
 PetscErrorCode SwarmViewGP(DM dms,const char prefix[])
 {
   PetscReal *array;
@@ -143,8 +135,6 @@ PetscErrorCode SwarmViewGP(DM dms,const char prefix[])
  Create a DMShell and attach a regularly spaced DMDA for point location
  Override methods for point location
 */
-#undef __FUNCT__
-#define __FUNCT__ "ex3_1"
 PetscErrorCode ex3_1(void)
 {
   DM dms,dmcell,dmregular;
@@ -300,8 +290,6 @@ PetscErrorCode ex3_1(void)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;

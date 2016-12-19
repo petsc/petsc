@@ -5,8 +5,6 @@
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>   /*I  "petscvec.h"   I*/
 #include <petscviewerhdf5.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "VecDestroy_MPI"
 PetscErrorCode VecDestroy_MPI(Vec v)
 {
   Vec_MPI        *x = (Vec_MPI*)v->data;
@@ -33,8 +31,6 @@ PetscErrorCode VecDestroy_MPI(Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecView_MPI_ASCII"
 PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
@@ -340,8 +336,6 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecView_MPI_Binary"
 PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
@@ -446,8 +440,6 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
 }
 
 #include <petscdraw.h>
-#undef __FUNCT__
-#define __FUNCT__ "VecView_MPI_Draw_LG"
 PetscErrorCode VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
 {
   PetscDraw         draw;
@@ -502,8 +494,6 @@ PetscErrorCode VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecView_MPI_Draw"
 PetscErrorCode  VecView_MPI_Draw(Vec xin,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
@@ -564,8 +554,6 @@ PetscErrorCode  VecView_MPI_Draw(Vec xin,PetscViewer viewer)
 }
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-#undef __FUNCT__
-#define __FUNCT__ "VecView_MPI_Matlab"
 PetscErrorCode VecView_MPI_Matlab(Vec xin,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
@@ -599,8 +587,6 @@ PetscErrorCode VecView_MPI_Matlab(Vec xin,PetscViewer viewer)
 #endif
 
 #if defined(PETSC_HAVE_HDF5)
-#undef __FUNCT__
-#define __FUNCT__ "VecView_MPI_HDF5"
 PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
 {
   /* TODO: It looks like we can remove the H5Sclose(filespace) and H5Dget_space(dset_id). Why do we do this? */
@@ -770,8 +756,6 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "VecView_MPI"
 PETSC_EXTERN PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -827,8 +811,6 @@ PETSC_EXTERN PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecGetSize_MPI"
 PetscErrorCode VecGetSize_MPI(Vec xin,PetscInt *N)
 {
   PetscFunctionBegin;
@@ -836,8 +818,6 @@ PetscErrorCode VecGetSize_MPI(Vec xin,PetscInt *N)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecGetValues_MPI"
 PetscErrorCode VecGetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],PetscScalar y[])
 {
   const PetscScalar *xx;
@@ -858,8 +838,6 @@ PetscErrorCode VecGetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],PetscSca
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecSetValues_MPI"
 PetscErrorCode VecSetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],const PetscScalar y[],InsertMode addv)
 {
   PetscErrorCode ierr;
@@ -911,8 +889,6 @@ PetscErrorCode VecSetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecSetValuesBlocked_MPI"
 PetscErrorCode VecSetValuesBlocked_MPI(Vec xin,PetscInt ni,const PetscInt ix[],const PetscScalar yin[],InsertMode addv)
 {
   PetscMPIInt    rank    = xin->stash.rank;
@@ -964,8 +940,6 @@ PetscErrorCode VecSetValuesBlocked_MPI(Vec xin,PetscInt ni,const PetscInt ix[],c
    Since nsends or nreceives may be zero we add 1 in certain mallocs
 to make sure we never malloc an empty one.
 */
-#undef __FUNCT__
-#define __FUNCT__ "VecAssemblyBegin_MPI"
 PetscErrorCode VecAssemblyBegin_MPI(Vec xin)
 {
   PetscErrorCode ierr;
@@ -1000,8 +974,6 @@ PetscErrorCode VecAssemblyBegin_MPI(Vec xin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecAssemblyEnd_MPI"
 PetscErrorCode VecAssemblyEnd_MPI(Vec vec)
 {
   PetscErrorCode ierr;

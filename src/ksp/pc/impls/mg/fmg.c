@@ -5,8 +5,6 @@
 
 extern PetscErrorCode PCMGMCycle_Private(PC,PC_MG_Levels**,PCRichardsonConvergedReason*);
 
-#undef __FUNCT__
-#define __FUNCT__ "PCMGFCycle_Private"
 PetscErrorCode PCMGFCycle_Private(PC pc,PC_MG_Levels **mglevels)
 {
   PetscErrorCode ierr;
@@ -32,8 +30,6 @@ PetscErrorCode PCMGFCycle_Private(PC pc,PC_MG_Levels **mglevels)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCMGKCycle_Private"
 PetscErrorCode PCMGKCycle_Private(PC pc,PC_MG_Levels **mglevels)
 {
   PetscErrorCode ierr;

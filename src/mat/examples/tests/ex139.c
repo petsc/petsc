@@ -3,8 +3,6 @@ const char help[] = "Test MatCreateLocalRef()\n\n";
 
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "GetLocalRef"
 static PetscErrorCode GetLocalRef(Mat A,IS isrow,IS iscol,Mat *B)
 {
   PetscErrorCode ierr;
@@ -24,8 +22,6 @@ static PetscErrorCode GetLocalRef(Mat A,IS isrow,IS iscol,Mat *B)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char *argv[])
 {
   PetscErrorCode         ierr;

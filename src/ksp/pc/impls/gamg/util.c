@@ -4,8 +4,6 @@
 #include <petsc/private/matimpl.h>
 #include <../src/ksp/pc/impls/gamg/gamg.h>           /*I "petscpc.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCollapseRow"
 /*
    Produces a set of block column indices of the matrix row, one for each block represented in the original row
 
@@ -32,8 +30,6 @@ PETSC_STATIC_INLINE PetscErrorCode MatCollapseRow(Mat Amat,PetscInt row,PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCollapseRows"
 /*
     Produces a set of block column indices of the matrix block row, one for each block represented in the original set of rows
 
@@ -67,8 +63,6 @@ PETSC_STATIC_INLINE PetscErrorCode MatCollapseRows(Mat Amat,PetscInt start,Petsc
  Output Parameter:
  . a_Gmaat - eoutput scalar graph (symmetric?)
  */
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGCreateGraph"
 PetscErrorCode PCGAMGCreateGraph(Mat Amat, Mat *a_Gmat)
 {
   PetscErrorCode ierr;
@@ -197,8 +191,6 @@ PetscErrorCode PCGAMGCreateGraph(Mat Amat, Mat *a_Gmat)
  In/Output Parameter:
  . a_Gmat - original graph
  */
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGFilterGraph"
 PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
 {
   PetscErrorCode    ierr;
@@ -342,8 +334,6 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
    . a_stride - numbrt of rows of output
    . a_data_out[stride*data_sz] - output data with ghosts
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGGetDataWithGhosts"
 PetscErrorCode PCGAMGGetDataWithGhosts(Mat Gmat,PetscInt data_sz,PetscReal data_in[],PetscInt *a_stride,PetscReal **a_data_out)
 {
   PetscErrorCode ierr;
@@ -395,8 +385,6 @@ PetscErrorCode PCGAMGGetDataWithGhosts(Mat Gmat,PetscInt data_sz,PetscReal data_
  *  PCGAMGHashTableCreate
  */
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGHashTableCreate"
 PetscErrorCode PCGAMGHashTableCreate(PetscInt a_size, PCGAMGHashTable *a_tab)
 {
   PetscErrorCode ierr;
@@ -410,8 +398,6 @@ PetscErrorCode PCGAMGHashTableCreate(PetscInt a_size, PCGAMGHashTable *a_tab)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGHashTableDestroy"
 PetscErrorCode PCGAMGHashTableDestroy(PCGAMGHashTable *a_tab)
 {
   PetscErrorCode ierr;
@@ -422,8 +408,6 @@ PetscErrorCode PCGAMGHashTableDestroy(PCGAMGHashTable *a_tab)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGHashTableAdd"
 PetscErrorCode PCGAMGHashTableAdd(PCGAMGHashTable *a_tab, PetscInt a_key, PetscInt a_data)
 {
   PetscInt kk,idx;

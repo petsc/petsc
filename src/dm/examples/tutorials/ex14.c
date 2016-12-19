@@ -12,8 +12,6 @@ Use the options
 #include <petscdm.h>
 #include <petscdmda.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "FillLocalSubdomain"
 PetscErrorCode FillLocalSubdomain(DM da, Vec gvec)
 {
   DMDALocalInfo  info;
@@ -58,8 +56,6 @@ PetscErrorCode FillLocalSubdomain(DM da, Vec gvec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;

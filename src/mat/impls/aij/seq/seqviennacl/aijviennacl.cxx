@@ -24,8 +24,6 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJViennaCL(Mat A, MatType type
 PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_petsc(Mat,MatFactorType,Mat*);
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatViennaCLCopyToGPU"
 PetscErrorCode MatViennaCLCopyToGPU(Mat A)
 {
 
@@ -100,8 +98,6 @@ PetscErrorCode MatViennaCLCopyToGPU(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatViennaCLCopyFromGPU"
 PetscErrorCode MatViennaCLCopyFromGPU(Mat A, const ViennaCLAIJMatrix *Agpu)
 {
   Mat_SeqAIJ         *a              = (Mat_SeqAIJ*)A->data;
@@ -172,8 +168,6 @@ PetscErrorCode MatViennaCLCopyFromGPU(Mat A, const ViennaCLAIJMatrix *Agpu)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateVecs_SeqAIJViennaCL"
 PetscErrorCode MatCreateVecs_SeqAIJViennaCL(Mat mat, Vec *right, Vec *left)
 {
   PetscErrorCode ierr;
@@ -198,8 +192,6 @@ PetscErrorCode MatCreateVecs_SeqAIJViennaCL(Mat mat, Vec *right, Vec *left)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_SeqAIJViennaCL"
 PetscErrorCode MatMult_SeqAIJViennaCL(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ           *a = (Mat_SeqAIJ*)A->data;
@@ -227,8 +219,6 @@ PetscErrorCode MatMult_SeqAIJViennaCL(Mat A,Vec xx,Vec yy)
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultAdd_SeqAIJViennaCL"
 PetscErrorCode MatMultAdd_SeqAIJViennaCL(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqAIJ           *a = (Mat_SeqAIJ*)A->data;
@@ -273,8 +263,6 @@ PetscErrorCode MatMultAdd_SeqAIJViennaCL(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd_SeqAIJViennaCL"
 PetscErrorCode MatAssemblyEnd_SeqAIJViennaCL(Mat A,MatAssemblyType mode)
 {
   PetscErrorCode ierr;
@@ -286,8 +274,6 @@ PetscErrorCode MatAssemblyEnd_SeqAIJViennaCL(Mat A,MatAssemblyType mode)
 }
 
 /* --------------------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateSeqAIJViennaCL"
 /*@
    MatCreateSeqAIJViennaCL - Creates a sparse matrix in AIJ (compressed row) format
    (the default parallel PETSc format).  This matrix will ultimately be pushed down
@@ -345,8 +331,6 @@ PetscErrorCode  MatCreateSeqAIJViennaCL(MPI_Comm comm,PetscInt m,PetscInt n,Pets
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_SeqAIJViennaCL"
 PetscErrorCode MatDestroy_SeqAIJViennaCL(Mat A)
 {
   PetscErrorCode ierr;
@@ -374,8 +358,6 @@ PetscErrorCode MatDestroy_SeqAIJViennaCL(Mat A)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_SeqAIJViennaCL"
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJViennaCL(Mat B)
 {
   PetscErrorCode ierr;
@@ -386,8 +368,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJViennaCL(Mat B)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatConvert_SeqAIJ_SeqAIJViennaCL"
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJViennaCL(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
@@ -451,8 +431,6 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJViennaCL(Mat A,MatType type,
 M*/
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolverPackageRegister_ViennaCL"
 PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_ViennaCL(void)
 {
   PetscErrorCode ierr;

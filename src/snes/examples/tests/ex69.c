@@ -36,8 +36,6 @@ extern PetscErrorCode MatAssemblyEnd_MyShell(Mat,MatAssemblyType);
 extern PetscErrorCode PCApply_MyShell(PC,Vec,Vec);
 PETSC_EXTERN PetscErrorCode SNESComputeJacobian_MyShell(SNES,Vec,Mat,Mat,void*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   AppCtx         user;                /* user-defined work context */
@@ -155,8 +153,6 @@ int main(int argc,char **argv)
 /* ------------------------------------------------------------------- */
 
 
-#undef __FUNCT__
-#define __FUNCT__ "FormInitialGuess"
 /*
    FormInitialGuess - Forms initial approximation.
 
@@ -216,8 +212,6 @@ PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionLocal"
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *ptr)
 {
   AppCtx          *user = (AppCtx*)ptr;
@@ -354,8 +348,6 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_MyShell"
 PetscErrorCode MatMult_MyShell(Mat A,Vec x,Vec y)
 {
   PetscErrorCode  ierr;
@@ -373,8 +365,6 @@ PetscErrorCode MatMult_MyShell(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd_MyShell"
 PetscErrorCode MatAssemblyEnd_MyShell(Mat A,MatAssemblyType tp)
 {
   PetscErrorCode ierr;
@@ -386,8 +376,6 @@ PetscErrorCode MatAssemblyEnd_MyShell(Mat A,MatAssemblyType tp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_MyShell"
 PetscErrorCode PCApply_MyShell(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
@@ -405,8 +393,6 @@ PetscErrorCode PCApply_MyShell(PC pc,Vec x,Vec y)
 
 PETSC_EXTERN PetscErrorCode SNESComputeJacobian_DMDA(SNES,Vec,Mat,Mat,void*);
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESComputeJacobian_MyShell"
 PetscErrorCode SNESComputeJacobian_MyShell(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
   static PetscInt fail = 0;

@@ -1,8 +1,6 @@
 
 #include <../src/mat/impls/baij/seq/baij.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatConvert_SeqBAIJ_SeqAIJ"
 PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat            B;
@@ -60,8 +58,6 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat A, MatType newtype,Mat
 
 #include <../src/mat/impls/aij/seq/aij.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatConvert_SeqAIJ_SeqBAIJ"
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqBAIJ(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat            B;

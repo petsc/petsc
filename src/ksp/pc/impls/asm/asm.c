@@ -37,8 +37,6 @@ typedef struct {
   IS         lis;                 /* index set that defines each overlapping multiplicative (process) subdomain */
 } PC_ASM;
 
-#undef __FUNCT__
-#define __FUNCT__ "PCView_ASM"
 static PetscErrorCode PCView_ASM(PC pc,PetscViewer viewer)
 {
   PC_ASM         *osm = (PC_ASM*)pc->data;
@@ -99,8 +97,6 @@ static PetscErrorCode PCView_ASM(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMPrintSubdomains"
 static PetscErrorCode PCASMPrintSubdomains(PC pc)
 {
   PC_ASM         *osm = (PC_ASM*)pc->data;
@@ -176,8 +172,6 @@ static PetscErrorCode PCASMPrintSubdomains(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_ASM"
 static PetscErrorCode PCSetUp_ASM(PC pc)
 {
   PC_ASM         *osm = (PC_ASM*)pc->data;
@@ -439,8 +433,6 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUpOnBlocks_ASM"
 static PetscErrorCode PCSetUpOnBlocks_ASM(PC pc)
 {
   PC_ASM             *osm = (PC_ASM*)pc->data;
@@ -459,8 +451,6 @@ static PetscErrorCode PCSetUpOnBlocks_ASM(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_ASM"
 static PetscErrorCode PCApply_ASM(PC pc,Vec x,Vec y)
 {
   PC_ASM         *osm = (PC_ASM*)pc->data;
@@ -551,8 +541,6 @@ static PetscErrorCode PCApply_ASM(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApplyTranspose_ASM"
 static PetscErrorCode PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
 {
   PC_ASM         *osm = (PC_ASM*)pc->data;
@@ -602,8 +590,6 @@ static PetscErrorCode PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCReset_ASM"
 static PetscErrorCode PCReset_ASM(PC pc)
 {
   PC_ASM         *osm = (PC_ASM*)pc->data;
@@ -652,8 +638,6 @@ static PetscErrorCode PCReset_ASM(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_ASM"
 static PetscErrorCode PCDestroy_ASM(PC pc)
 {
   PC_ASM         *osm = (PC_ASM*)pc->data;
@@ -672,8 +656,6 @@ static PetscErrorCode PCDestroy_ASM(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_ASM"
 static PetscErrorCode PCSetFromOptions_ASM(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_ASM         *osm = (PC_ASM*)pc->data;
@@ -718,8 +700,6 @@ static PetscErrorCode PCSetFromOptions_ASM(PetscOptionItems *PetscOptionsObject,
 
 /*------------------------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMSetLocalSubdomains_ASM"
 static PetscErrorCode  PCASMSetLocalSubdomains_ASM(PC pc,PetscInt n,IS is[],IS is_local[])
 {
   PC_ASM         *osm = (PC_ASM*)pc->data;
@@ -768,8 +748,6 @@ static PetscErrorCode  PCASMSetLocalSubdomains_ASM(PC pc,PetscInt n,IS is[],IS i
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMSetTotalSubdomains_ASM"
 static PetscErrorCode  PCASMSetTotalSubdomains_ASM(PC pc,PetscInt N,IS *is,IS *is_local)
 {
   PC_ASM         *osm = (PC_ASM*)pc->data;
@@ -799,8 +777,6 @@ static PetscErrorCode  PCASMSetTotalSubdomains_ASM(PC pc,PetscInt N,IS *is,IS *i
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMSetOverlap_ASM"
 static PetscErrorCode  PCASMSetOverlap_ASM(PC pc,PetscInt ovl)
 {
   PC_ASM *osm = (PC_ASM*)pc->data;
@@ -812,8 +788,6 @@ static PetscErrorCode  PCASMSetOverlap_ASM(PC pc,PetscInt ovl)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMSetType_ASM"
 static PetscErrorCode  PCASMSetType_ASM(PC pc,PCASMType type)
 {
   PC_ASM *osm = (PC_ASM*)pc->data;
@@ -824,8 +798,6 @@ static PetscErrorCode  PCASMSetType_ASM(PC pc,PCASMType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMGetType_ASM"
 static PetscErrorCode  PCASMGetType_ASM(PC pc,PCASMType *type)
 {
   PC_ASM *osm = (PC_ASM*)pc->data;
@@ -835,8 +807,6 @@ static PetscErrorCode  PCASMGetType_ASM(PC pc,PCASMType *type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMSetLocalType_ASM"
 static PetscErrorCode  PCASMSetLocalType_ASM(PC pc, PCCompositeType type)
 {
   PC_ASM *osm = (PC_ASM *) pc->data;
@@ -846,8 +816,6 @@ static PetscErrorCode  PCASMSetLocalType_ASM(PC pc, PCCompositeType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMGetLocalType_ASM"
 static PetscErrorCode  PCASMGetLocalType_ASM(PC pc, PCCompositeType *type)
 {
   PC_ASM *osm = (PC_ASM *) pc->data;
@@ -857,8 +825,6 @@ static PetscErrorCode  PCASMGetLocalType_ASM(PC pc, PCCompositeType *type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMSetSortIndices_ASM"
 static PetscErrorCode  PCASMSetSortIndices_ASM(PC pc,PetscBool  doSort)
 {
   PC_ASM *osm = (PC_ASM*)pc->data;
@@ -868,8 +834,6 @@ static PetscErrorCode  PCASMSetSortIndices_ASM(PC pc,PetscBool  doSort)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMGetSubKSP_ASM"
 static PetscErrorCode  PCASMGetSubKSP_ASM(PC pc,PetscInt *n_local,PetscInt *first_local,KSP **ksp)
 {
   PC_ASM         *osm = (PC_ASM*)pc->data;
@@ -892,8 +856,6 @@ static PetscErrorCode  PCASMGetSubKSP_ASM(PC pc,PetscInt *n_local,PetscInt *firs
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMGetSubMatType_ASM"
 static PetscErrorCode  PCASMGetSubMatType_ASM(PC pc,MatType *sub_mat_type)
 {
   PC_ASM         *osm = (PC_ASM*)pc->data;
@@ -905,8 +867,6 @@ static PetscErrorCode  PCASMGetSubMatType_ASM(PC pc,MatType *sub_mat_type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMSetSubMatType_ASM"
 static PetscErrorCode PCASMSetSubMatType_ASM(PC pc,MatType sub_mat_type)
 {
   PetscErrorCode    ierr;
@@ -919,8 +879,6 @@ static PetscErrorCode PCASMSetSubMatType_ASM(PC pc,MatType sub_mat_type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMSetLocalSubdomains"
 /*@C
     PCASMSetLocalSubdomains - Sets the local subdomains (for this processor only) for the additive Schwarz preconditioner.
 
@@ -958,8 +916,6 @@ PetscErrorCode  PCASMSetLocalSubdomains(PC pc,PetscInt n,IS is[],IS is_local[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMSetTotalSubdomains"
 /*@C
     PCASMSetTotalSubdomains - Sets the subdomains for all processors for the
     additive Schwarz preconditioner.  Either all or no processors in the
@@ -1009,8 +965,6 @@ PetscErrorCode  PCASMSetTotalSubdomains(PC pc,PetscInt N,IS is[],IS is_local[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMSetOverlap"
 /*@
     PCASMSetOverlap - Sets the overlap between a pair of subdomains for the
     additive Schwarz preconditioner.  Either all or no processors in the
@@ -1062,8 +1016,6 @@ PetscErrorCode  PCASMSetOverlap(PC pc,PetscInt ovl)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMSetType"
 /*@
     PCASMSetType - Sets the type of restriction and interpolation used
     for local problems in the additive Schwarz method.
@@ -1101,8 +1053,6 @@ PetscErrorCode  PCASMSetType(PC pc,PCASMType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMGetType"
 /*@
     PCASMGetType - Gets the type of restriction and interpolation used
     for local problems in the additive Schwarz method.
@@ -1142,8 +1092,6 @@ PetscErrorCode  PCASMGetType(PC pc,PCASMType *type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMSetLocalType"
 /*@
   PCASMSetLocalType - Sets the type of composition used for local problems in the additive Schwarz method.
 
@@ -1175,8 +1123,6 @@ PetscErrorCode PCASMSetLocalType(PC pc, PCCompositeType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMGetLocalType"
 /*@
   PCASMGetLocalType - Gets the type of composition used for local problems in the additive Schwarz method.
 
@@ -1210,8 +1156,6 @@ PetscErrorCode PCASMGetLocalType(PC pc, PCCompositeType *type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMSetSortIndices"
 /*@
     PCASMSetSortIndices - Determines whether subdomain indices are sorted.
 
@@ -1239,8 +1183,6 @@ PetscErrorCode  PCASMSetSortIndices(PC pc,PetscBool doSort)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMGetSubKSP"
 /*@C
    PCASMGetSubKSP - Gets the local KSP contexts for all blocks on
    this processor.
@@ -1325,8 +1267,6 @@ PetscErrorCode  PCASMGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KSP
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_ASM"
 PETSC_EXTERN PetscErrorCode PCCreate_ASM(PC pc)
 {
   PetscErrorCode ierr;
@@ -1382,8 +1322,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_ASM(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMCreateSubdomains"
 /*@C
    PCASMCreateSubdomains - Creates the index sets for the overlapping Schwarz
    preconditioner for a any problem on a general grid.
@@ -1563,8 +1501,6 @@ PetscErrorCode  PCASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMDestroySubdomains"
 /*@C
    PCASMDestroySubdomains - Destroys the index sets created with
    PCASMCreateSubdomains(). Should be called after setting subdomains
@@ -1603,8 +1539,6 @@ PetscErrorCode  PCASMDestroySubdomains(PetscInt n, IS is[], IS is_local[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMCreateSubdomains2D"
 /*@
    PCASMCreateSubdomains2D - Creates the index sets for the overlapping Schwarz
    preconditioner for a two-dimensional problem on a regular grid.
@@ -1689,8 +1623,6 @@ PetscErrorCode  PCASMCreateSubdomains2D(PetscInt m,PetscInt n,PetscInt M,PetscIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMGetLocalSubdomains"
 /*@C
     PCASMGetLocalSubdomains - Gets the local subdomains (for this processor
     only) for the additive Schwarz preconditioner.
@@ -1734,8 +1666,6 @@ PetscErrorCode  PCASMGetLocalSubdomains(PC pc,PetscInt *n,IS *is[],IS *is_local[
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMGetLocalSubmatrices"
 /*@C
     PCASMGetLocalSubmatrices - Gets the local submatrices (for this processor
     only) for the additive Schwarz preconditioner.
@@ -1784,8 +1714,6 @@ PetscErrorCode  PCASMGetLocalSubmatrices(PC pc,PetscInt *n,Mat *mat[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMSetDMSubdomains"
 /*@
     PCASMSetDMSubdomains - Indicates whether to use DMCreateDomainDecomposition() to define the subdomains, whenever possible.
     Logically Collective
@@ -1825,8 +1753,6 @@ PetscErrorCode  PCASMSetDMSubdomains(PC pc,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMGetDMSubdomains"
 /*@
     PCASMGetDMSubdomains - Returns flag indicating whether to use DMCreateDomainDecomposition() to define the subdomains, whenever possible.
     Not Collective
@@ -1861,8 +1787,6 @@ PetscErrorCode  PCASMGetDMSubdomains(PC pc,PetscBool* flg)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMGetSubMatType"
 /*@
 PCASMGetSubMatType - Gets the matrix type used for ASM subsolves, as a string.
 
@@ -1887,8 +1811,6 @@ PetscErrorCode  PCASMGetSubMatType(PC pc,MatType *sub_mat_type){
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCASMSetSubMatType"
 /*@
  PCASMSetSubMatType - Set the type of matrix used for ASM subsolves
 

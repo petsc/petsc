@@ -1,8 +1,6 @@
 
 #include <petsc/private/viewerimpl.h>  /*I "petscviewer.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerGetSubViewer"
 /*@
    PetscViewerGetSubViewer - Creates a new PetscViewer (same type as the old)
     that lives on a subcommunicator
@@ -46,8 +44,6 @@ PetscErrorCode  PetscViewerGetSubViewer(PetscViewer viewer,MPI_Comm comm,PetscVi
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerRestoreSubViewer"
 /*@
    PetscViewerRestoreSubViewer - Restores a new PetscViewer obtained with PetscViewerGetSubViewer().
 

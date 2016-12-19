@@ -6,8 +6,6 @@
 
 static PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscBool);
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateMatrix_Moab"
 PetscErrorCode DMCreateMatrix_Moab(DM dm,Mat *J)
 {
   PetscErrorCode  ierr;
@@ -61,8 +59,6 @@ PetscErrorCode DMCreateMatrix_Moab(DM dm,Mat *J)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoab_Compute_NNZ_From_Connectivity"
 PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm,PetscInt* innz,PetscInt* nnz,PetscInt* ionz,PetscInt* onz,PetscBool isbaij)
 {
   PetscInt        i,f,nloc,vpere,bs,ivtx,n_nnz,n_onz;
@@ -187,8 +183,6 @@ PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm,PetscInt* innz,PetscIn
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabSetBlockFills_Private"
 static PetscErrorCode DMMoabSetBlockFills_Private(PetscInt w,const PetscInt *fill,PetscInt **rfill)
 {
   PetscErrorCode ierr;
@@ -207,8 +201,6 @@ static PetscErrorCode DMMoabSetBlockFills_Private(PetscInt w,const PetscInt *fil
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabSetBlockFills"
 /*@
     DMMoabSetBlockFills - Sets the fill pattern in each block for a multi-component problem
     of the matrix returned by DMCreateMatrix().

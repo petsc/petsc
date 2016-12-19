@@ -11,8 +11,6 @@ static char help[] = "Writes an array to a file, then reads an array from a file
 */
 #include <petscvec.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   PetscErrorCode ierr;

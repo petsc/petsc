@@ -53,8 +53,6 @@ PetscScalar CCmplxIm(CCmplx a)
   return (PetscScalar)a.imag;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DAApplyConformalMapping"
 PetscErrorCode DAApplyConformalMapping(DM da,PetscInt idx)
 {
   PetscErrorCode ierr;
@@ -198,8 +196,6 @@ PetscErrorCode DAApplyConformalMapping(DM da,PetscInt idx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DAApplyTrilinearMapping"
 PetscErrorCode DAApplyTrilinearMapping(DM da)
 {
   PetscErrorCode ierr;
@@ -256,8 +252,6 @@ PetscErrorCode DAApplyTrilinearMapping(DM da)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DADefineXLinearField2D"
 PetscErrorCode DADefineXLinearField2D(DM da,Vec field)
 {
   PetscErrorCode ierr;
@@ -288,8 +282,6 @@ PetscErrorCode DADefineXLinearField2D(DM da,Vec field)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DADefineXLinearField3D"
 PetscErrorCode DADefineXLinearField3D(DM da,Vec field)
 {
   PetscErrorCode ierr;
@@ -329,8 +321,6 @@ PetscErrorCode DADefineXLinearField3D(DM da,Vec field)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "da_test_RefineCoords1D"
 PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
 {
   PetscErrorCode ierr;
@@ -418,8 +408,6 @@ PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "da_test_RefineCoords2D"
 PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
 {
   PetscErrorCode ierr;
@@ -515,8 +503,6 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "da_test_RefineCoords3D"
 PetscErrorCode da_test_RefineCoords3D(PetscInt mx,PetscInt my,PetscInt mz)
 {
   PetscErrorCode ierr;
@@ -617,8 +603,6 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx,PetscInt my,PetscInt mz)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;

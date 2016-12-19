@@ -3,8 +3,6 @@ static char help[] = "Creates a matrix, inserts some values, and tests MatGetSub
 
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   Mat            mat,submat,*submatrices;

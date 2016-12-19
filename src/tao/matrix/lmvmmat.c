@@ -21,8 +21,6 @@ static const char *Rescale_Table[64] = {"none","scalar","gl"};
 
 static const char *Limit_Table[64] = {"none","average","relative","absolute"};
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateLMVM"
 /*@C
   MatCreateLMVM - Creates a limited memory matrix for lmvm algorithms.
 
@@ -125,8 +123,6 @@ extern PetscErrorCode MatCreateLMVM(MPI_Comm comm, PetscInt n, PetscInt N, Mat *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLMVMSolve"
 extern PetscErrorCode MatLMVMSolve(Mat A, Vec b, Vec x)
 {
   PetscReal      sq, yq, dd;
@@ -195,8 +191,6 @@ extern PetscErrorCode MatLMVMSolve(Mat A, Vec b, Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatView_LMVM"
 extern PetscErrorCode MatView_LMVM(Mat A, PetscViewer pv)
 {
   PetscBool      isascii;
@@ -218,8 +212,6 @@ extern PetscErrorCode MatView_LMVM(Mat A, PetscViewer pv)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_LMVM"
 extern PetscErrorCode MatDestroy_LMVM(Mat M)
 {
   MatLMVMCtx     *ctx;
@@ -264,8 +256,6 @@ extern PetscErrorCode MatDestroy_LMVM(Mat M)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLMVMReset"
 extern PetscErrorCode MatLMVMReset(Mat M)
 {
   PetscErrorCode ierr;
@@ -308,8 +298,6 @@ extern PetscErrorCode MatLMVMReset(Mat M)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLMVMUpdate"
 extern PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
 {
   MatLMVMCtx     *ctx;
@@ -712,8 +700,6 @@ extern PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLMVMSetDelta"
 extern PetscErrorCode MatLMVMSetDelta(Mat m, PetscReal d)
 {
   MatLMVMCtx     *ctx;
@@ -731,8 +717,6 @@ extern PetscErrorCode MatLMVMSetDelta(Mat m, PetscReal d)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLMVMSetScale"
 extern PetscErrorCode MatLMVMSetScale(Mat m, Vec s)
 {
   MatLMVMCtx     *ctx;
@@ -752,8 +736,6 @@ extern PetscErrorCode MatLMVMSetScale(Mat m, Vec s)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLMVMGetRejects"
 extern PetscErrorCode MatLMVMGetRejects(Mat m, PetscInt *nrejects)
 {
   MatLMVMCtx     *ctx;
@@ -769,8 +751,6 @@ extern PetscErrorCode MatLMVMGetRejects(Mat m, PetscInt *nrejects)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLMVMSetH0"
 extern PetscErrorCode MatLMVMSetH0(Mat m, Mat H0)
 {
   MatLMVMCtx     *ctx;
@@ -794,8 +774,6 @@ extern PetscErrorCode MatLMVMSetH0(Mat m, Mat H0)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLMVMGetH0"
 extern PetscErrorCode MatLMVMGetH0(Mat m, Mat *H0)
 {
   MatLMVMCtx     *ctx;
@@ -812,8 +790,6 @@ extern PetscErrorCode MatLMVMGetH0(Mat m, Mat *H0)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLMVMGetH0KSP"
 extern PetscErrorCode MatLMVMGetH0KSP(Mat m, KSP *H0ksp)
 {
   MatLMVMCtx     *ctx;
@@ -830,16 +806,12 @@ extern PetscErrorCode MatLMVMGetH0KSP(Mat m, KSP *H0ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLMVMGetX0"
 extern PetscErrorCode MatLMVMGetX0(Mat m, Vec x)
 {
     PetscFunctionBegin;
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLMVMSetPrev"
 extern PetscErrorCode MatLMVMSetPrev(Mat M, Vec x, Vec g)
 {
   MatLMVMCtx     *ctx;
@@ -862,8 +834,6 @@ extern PetscErrorCode MatLMVMSetPrev(Mat M, Vec x, Vec g)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLMVMRefine"
 extern PetscErrorCode MatLMVMRefine(Mat coarse, Mat op, Vec fineX, Vec fineG)
 {
   PetscErrorCode ierr;
@@ -881,8 +851,6 @@ extern PetscErrorCode MatLMVMRefine(Mat coarse, Mat op, Vec fineX, Vec fineG)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLMVMAllocateVectors"
 extern PetscErrorCode MatLMVMAllocateVectors(Mat m, Vec v)
 {
   PetscErrorCode ierr;

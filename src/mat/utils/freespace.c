@@ -1,8 +1,6 @@
 
 #include <../src/mat/utils/freespace.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFreeSpaceGet"
 PetscErrorCode PetscFreeSpaceGet(PetscInt n,PetscFreeSpaceList *list)
 {
   PetscFreeSpaceList a;
@@ -28,8 +26,6 @@ PetscErrorCode PetscFreeSpaceGet(PetscInt n,PetscFreeSpaceList *list)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFreeSpaceContiguous"
 PetscErrorCode PetscFreeSpaceContiguous(PetscFreeSpaceList *head,PetscInt *space)
 {
   PetscFreeSpaceList a;
@@ -64,8 +60,6 @@ PetscErrorCode PetscFreeSpaceContiguous(PetscFreeSpaceList *head,PetscInt *space
 
    See MatILUFactorSymbolic_SeqAIJ_ilu0() for detailed data structure of L and U
 */
-#undef __FUNCT__
-#define __FUNCT__ "PetscFreeSpaceContiguous_LU"
 PetscErrorCode PetscFreeSpaceContiguous_LU(PetscFreeSpaceList *head,PetscInt *space,PetscInt n,PetscInt *bi,PetscInt *bdiag)
 {
   PetscFreeSpaceList a;
@@ -143,8 +137,6 @@ PetscErrorCode PetscFreeSpaceContiguous_LU(PetscFreeSpaceList *head,PetscInt *sp
    See MatICCFactorSymbolic_SeqAIJ_newdatastruct() for detailed description.
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFreeSpaceContiguous_Cholesky"
 PetscErrorCode PetscFreeSpaceContiguous_Cholesky(PetscFreeSpaceList *head,PetscInt *space,PetscInt n,PetscInt *ui,PetscInt *udiag)
 {
   PetscFreeSpaceList a;
@@ -177,8 +169,6 @@ PetscErrorCode PetscFreeSpaceContiguous_Cholesky(PetscFreeSpaceList *head,PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFreeSpaceDestroy"
 PetscErrorCode PetscFreeSpaceDestroy(PetscFreeSpaceList head)
 {
   PetscFreeSpaceList a;

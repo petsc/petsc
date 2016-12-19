@@ -13,8 +13,6 @@ typedef struct {
   PetscInt  *idx;
 } IS_Block;
 
-#undef __FUNCT__
-#define __FUNCT__ "ISDestroy_Block"
 static PetscErrorCode ISDestroy_Block(IS is)
 {
   IS_Block       *is_block = (IS_Block*)is->data;
@@ -33,8 +31,6 @@ static PetscErrorCode ISDestroy_Block(IS is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISLocate_Block"
 static PetscErrorCode ISLocate_Block(IS is,PetscInt key,PetscInt *location)
 {
   IS_Block       *sub = (IS_Block*)is->data;
@@ -70,8 +66,6 @@ static PetscErrorCode ISLocate_Block(IS is,PetscInt key,PetscInt *location)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISGetIndices_Block"
 static PetscErrorCode ISGetIndices_Block(IS in,const PetscInt *idx[])
 {
   IS_Block       *sub = (IS_Block*)in->data;
@@ -95,8 +89,6 @@ static PetscErrorCode ISGetIndices_Block(IS in,const PetscInt *idx[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISRestoreIndices_Block"
 static PetscErrorCode ISRestoreIndices_Block(IS is,const PetscInt *idx[])
 {
   IS_Block       *sub = (IS_Block*)is->data;
@@ -113,8 +105,6 @@ static PetscErrorCode ISRestoreIndices_Block(IS is,const PetscInt *idx[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISGetSize_Block"
 static PetscErrorCode ISGetSize_Block(IS is,PetscInt *size)
 {
   PetscErrorCode ierr;
@@ -124,8 +114,6 @@ static PetscErrorCode ISGetSize_Block(IS is,PetscInt *size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISGetLocalSize_Block"
 static PetscErrorCode ISGetLocalSize_Block(IS is,PetscInt *size)
 {
   PetscErrorCode ierr;
@@ -135,8 +123,6 @@ static PetscErrorCode ISGetLocalSize_Block(IS is,PetscInt *size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISInvertPermutation_Block"
 static PetscErrorCode ISInvertPermutation_Block(IS is,PetscInt nlocal,IS *isout)
 {
   IS_Block       *sub = (IS_Block*)is->data;
@@ -158,8 +144,6 @@ static PetscErrorCode ISInvertPermutation_Block(IS is,PetscInt nlocal,IS *isout)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISView_Block"
 static PetscErrorCode ISView_Block(IS is, PetscViewer viewer)
 {
   IS_Block       *sub = (IS_Block*)is->data;
@@ -189,8 +173,6 @@ static PetscErrorCode ISView_Block(IS is, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISSort_Block"
 static PetscErrorCode ISSort_Block(IS is)
 {
   IS_Block       *sub = (IS_Block*)is->data;
@@ -206,8 +188,6 @@ static PetscErrorCode ISSort_Block(IS is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISSortRemoveDups_Block"
 static PetscErrorCode ISSortRemoveDups_Block(IS is)
 {
   IS_Block       *sub = (IS_Block*)is->data;
@@ -225,8 +205,6 @@ static PetscErrorCode ISSortRemoveDups_Block(IS is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISSorted_Block"
 static PetscErrorCode ISSorted_Block(IS is,PetscBool  *flg)
 {
   IS_Block *sub = (IS_Block*)is->data;
@@ -236,8 +214,6 @@ static PetscErrorCode ISSorted_Block(IS is,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISDuplicate_Block"
 static PetscErrorCode ISDuplicate_Block(IS is,IS *newIS)
 {
   PetscErrorCode ierr;
@@ -252,8 +228,6 @@ static PetscErrorCode ISDuplicate_Block(IS is,IS *newIS)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISIdentity_Block"
 static PetscErrorCode ISIdentity_Block(IS is,PetscBool  *ident)
 {
   IS_Block      *is_block = (IS_Block*)is->data;
@@ -276,8 +250,6 @@ static PetscErrorCode ISIdentity_Block(IS is,PetscBool  *ident)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISCopy_Block"
 static PetscErrorCode ISCopy_Block(IS is,IS isy)
 {
   IS_Block       *is_block = (IS_Block*)is->data,*isy_block = (IS_Block*)isy->data;
@@ -297,8 +269,6 @@ static PetscErrorCode ISCopy_Block(IS is,IS isy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISOnComm_Block"
 static PetscErrorCode ISOnComm_Block(IS is,MPI_Comm comm,PetscCopyMode mode,IS *newis)
 {
   PetscErrorCode ierr;
@@ -313,8 +283,6 @@ static PetscErrorCode ISOnComm_Block(IS is,MPI_Comm comm,PetscCopyMode mode,IS *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISSetBlockSize_Block"
 static PetscErrorCode ISSetBlockSize_Block(IS is,PetscInt bs)
 {
   PetscErrorCode ierr;
@@ -324,8 +292,6 @@ static PetscErrorCode ISSetBlockSize_Block(IS is,PetscInt bs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISToGeneral_Block"
 static PetscErrorCode ISToGeneral_Block(IS inis)
 {
   IS_Block       *sub   = (IS_Block*)inis->data;
@@ -370,8 +336,6 @@ static struct _ISOps myops = { ISGetSize_Block,
                                0,
                                ISLocate_Block};
 
-#undef __FUNCT__
-#define __FUNCT__ "ISBlockSetIndices"
 /*@
    ISBlockSetIndices - The indices are relative to entries, not blocks.
 
@@ -412,8 +376,6 @@ PetscErrorCode  ISBlockSetIndices(IS is,PetscInt bs,PetscInt n,const PetscInt id
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISBlockSetIndices_Block"
 static PetscErrorCode  ISBlockSetIndices_Block(IS is,PetscInt bs,PetscInt n,const PetscInt idx[],PetscCopyMode mode)
 {
   PetscErrorCode ierr;
@@ -464,8 +426,6 @@ static PetscErrorCode  ISBlockSetIndices_Block(IS is,PetscInt bs,PetscInt n,cons
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISCreateBlock"
 /*@
    ISCreateBlock - Creates a data structure for an index set containing
    a list of integers. The indices are relative to entries, not blocks.
@@ -515,8 +475,6 @@ PetscErrorCode  ISCreateBlock(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISBlockGetIndices_Block"
 static PetscErrorCode  ISBlockGetIndices_Block(IS is,const PetscInt *idx[])
 {
   IS_Block *sub = (IS_Block*)is->data;
@@ -526,16 +484,12 @@ static PetscErrorCode  ISBlockGetIndices_Block(IS is,const PetscInt *idx[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISBlockRestoreIndices_Block"
 static PetscErrorCode  ISBlockRestoreIndices_Block(IS is,const PetscInt *idx[])
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISBlockGetIndices"
 /*@C
    ISBlockGetIndices - Gets the indices associated with each block.
 
@@ -564,8 +518,6 @@ PetscErrorCode  ISBlockGetIndices(IS is,const PetscInt *idx[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISBlockRestoreIndices"
 /*@C
    ISBlockRestoreIndices - Restores the indices associated with each block.
 
@@ -594,8 +546,6 @@ PetscErrorCode  ISBlockRestoreIndices(IS is,const PetscInt *idx[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISBlockGetLocalSize"
 /*@
    ISBlockGetLocalSize - Returns the local number of blocks in the index set.
 
@@ -623,8 +573,6 @@ PetscErrorCode  ISBlockGetLocalSize(IS is,PetscInt *size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISBlockGetLocalSize_Block"
 static PetscErrorCode  ISBlockGetLocalSize_Block(IS is,PetscInt *size)
 {
   PetscInt       bs, n;
@@ -637,8 +585,6 @@ static PetscErrorCode  ISBlockGetLocalSize_Block(IS is,PetscInt *size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISBlockGetSize"
 /*@
    ISBlockGetSize - Returns the global number of blocks in the index set.
 
@@ -666,8 +612,6 @@ PetscErrorCode  ISBlockGetSize(IS is,PetscInt *size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISBlockGetSize_Block"
 static PetscErrorCode  ISBlockGetSize_Block(IS is,PetscInt *size)
 {
   PetscInt       bs, N;
@@ -680,8 +624,6 @@ static PetscErrorCode  ISBlockGetSize_Block(IS is,PetscInt *size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISCreate_Block"
 PETSC_EXTERN PetscErrorCode ISCreate_Block(IS is)
 {
   PetscErrorCode ierr;

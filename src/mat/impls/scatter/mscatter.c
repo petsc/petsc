@@ -10,8 +10,6 @@ typedef struct {
   VecScatter scatter;
 } Mat_Scatter;
 
-#undef __FUNCT__
-#define __FUNCT__ "MatScatterGetVecScatter"
 /*@
     MatScatterGetVecScatter - Returns the user-provided scatter set with MatScatterSetVecScatter()
 
@@ -41,8 +39,6 @@ PetscErrorCode  MatScatterGetVecScatter(Mat mat,VecScatter *scatter)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_Scatter"
 PetscErrorCode MatDestroy_Scatter(Mat mat)
 {
   PetscErrorCode ierr;
@@ -54,8 +50,6 @@ PetscErrorCode MatDestroy_Scatter(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_Scatter"
 PetscErrorCode MatMult_Scatter(Mat A,Vec x,Vec y)
 {
   Mat_Scatter    *scatter = (Mat_Scatter*)A->data;
@@ -69,8 +63,6 @@ PetscErrorCode MatMult_Scatter(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultAdd_Scatter"
 PetscErrorCode MatMultAdd_Scatter(Mat A,Vec x,Vec y,Vec z)
 {
   Mat_Scatter    *scatter = (Mat_Scatter*)A->data;
@@ -84,8 +76,6 @@ PetscErrorCode MatMultAdd_Scatter(Mat A,Vec x,Vec y,Vec z)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultTranspose_Scatter"
 PetscErrorCode MatMultTranspose_Scatter(Mat A,Vec x,Vec y)
 {
   Mat_Scatter    *scatter = (Mat_Scatter*)A->data;
@@ -99,8 +89,6 @@ PetscErrorCode MatMultTranspose_Scatter(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultTransposeAdd_Scatter"
 PetscErrorCode MatMultTransposeAdd_Scatter(Mat A,Vec x,Vec y,Vec z)
 {
   Mat_Scatter    *scatter = (Mat_Scatter*)A->data;
@@ -267,8 +255,6 @@ static struct _MatOps MatOps_Values = {0,
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_Scatter"
 PETSC_EXTERN PetscErrorCode MatCreate_Scatter(Mat A)
 {
   Mat_Scatter    *b;
@@ -290,8 +276,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_Scatter(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateScatter"
 /*@C
    MatCreateScatter - Creates a new matrix based on a VecScatter
 
@@ -332,8 +316,6 @@ PetscErrorCode  MatCreateScatter(MPI_Comm comm,VecScatter scatter,Mat *A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatScatterSetVecScatter"
 /*@
     MatScatterSetVecScatter - sets that scatter that the matrix is to apply as its linear operator
 

@@ -60,8 +60,6 @@ PETSC_STATIC_INLINE PetscInt MinChild(PetscHeap h,PetscInt loc)
   return chld;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscHeapCreate"
 PetscErrorCode PetscHeapCreate(PetscInt maxsize,PetscHeap *heap)
 {
   PetscErrorCode ierr;
@@ -81,8 +79,6 @@ PetscErrorCode PetscHeapCreate(PetscInt maxsize,PetscHeap *heap)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscHeapAdd"
 PetscErrorCode PetscHeapAdd(PetscHeap h,PetscInt id,PetscInt val)
 {
   PetscInt loc,par;
@@ -102,8 +98,6 @@ PetscErrorCode PetscHeapAdd(PetscHeap h,PetscInt id,PetscInt val)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscHeapPop"
 PetscErrorCode PetscHeapPop(PetscHeap h,PetscInt *id,PetscInt *val)
 {
   PetscInt loc,chld;
@@ -133,8 +127,6 @@ PetscErrorCode PetscHeapPop(PetscHeap h,PetscInt *id,PetscInt *val)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscHeapPeek"
 PetscErrorCode PetscHeapPeek(PetscHeap h,PetscInt *id,PetscInt *val)
 {
   PetscFunctionBegin;
@@ -149,8 +141,6 @@ PetscErrorCode PetscHeapPeek(PetscHeap h,PetscInt *id,PetscInt *val)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscHeapStash"
 PetscErrorCode PetscHeapStash(PetscHeap h,PetscInt id,PetscInt val)
 {
   PetscInt loc;
@@ -162,8 +152,6 @@ PetscErrorCode PetscHeapStash(PetscHeap h,PetscInt id,PetscInt val)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscHeapUnstash"
 PetscErrorCode PetscHeapUnstash(PetscHeap h)
 {
   PetscErrorCode ierr;
@@ -177,8 +165,6 @@ PetscErrorCode PetscHeapUnstash(PetscHeap h)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscHeapDestroy"
 PetscErrorCode PetscHeapDestroy(PetscHeap *heap)
 {
   PetscErrorCode ierr;
@@ -189,8 +175,6 @@ PetscErrorCode PetscHeapDestroy(PetscHeap *heap)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscHeapView"
 PetscErrorCode PetscHeapView(PetscHeap h,PetscViewer viewer)
 {
   PetscErrorCode ierr;

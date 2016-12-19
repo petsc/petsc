@@ -3,8 +3,6 @@ static char help[] = "Tests the various sequential routines in MatSBAIJ format.\
 
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   PetscMPIInt    size;

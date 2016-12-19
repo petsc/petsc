@@ -35,8 +35,6 @@ extern PetscErrorCode KSPReset_PIPEFGMRES(KSP);
     but can be called directly by KSPSetUp().
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_PIPEFGMRES"
 static PetscErrorCode KSPSetUp_PIPEFGMRES(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -92,8 +90,6 @@ static PetscErrorCode KSPSetUp_PIPEFGMRES(KSP ksp)
 
  */
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEFGMRESCycle"
 static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount,KSP ksp)
 {
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES*)(ksp->data);
@@ -361,8 +357,6 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount,KSP ksp)
 .     outits - number of iterations used
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_PIPEFGMRES"
 static PetscErrorCode KSPSolve_PIPEFGMRES(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -401,8 +395,6 @@ static PetscErrorCode KSPSolve_PIPEFGMRES(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPDestroy_PIPEFGMRES"
 static PetscErrorCode KSPDestroy_PIPEFGMRES(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -426,8 +418,6 @@ static PetscErrorCode KSPDestroy_PIPEFGMRES(KSP ksp)
 
      This is an internal routine that knows about the PIPEFGMRES internals.
  */
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEFGMRESBuildSoln"
 static PetscErrorCode KSPPIPEFGMRESBuildSoln(PetscScalar *nrs,Vec vguess,Vec vdest,KSP ksp,PetscInt it)
 {
   PetscScalar    tt;
@@ -483,8 +473,6 @@ static PetscErrorCode KSPPIPEFGMRESBuildSoln(PetscScalar *nrs,Vec vguess,Vec vde
 .        res - the new residual
 
  */
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEFGMRESUpdateHessenberg"
 /*
 .  it - column of the Hessenberg that is complete, PIPEFGMRES is actually computing two columns ahead of this
  */
@@ -575,8 +563,6 @@ static PetscErrorCode KSPPIPEFGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBoo
    calls directly.
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "KSPBuildSolution_PIPEFGMRES"
 PetscErrorCode KSPBuildSolution_PIPEFGMRES(KSP ksp,Vec ptr,Vec *result)
 {
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES*)ksp->data;
@@ -601,8 +587,6 @@ PetscErrorCode KSPBuildSolution_PIPEFGMRES(KSP ksp,Vec ptr,Vec *result)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetFromOptions_PIPEFGMRES"
 PetscErrorCode KSPSetFromOptions_PIPEFGMRES(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
@@ -619,8 +603,6 @@ PetscErrorCode KSPSetFromOptions_PIPEFGMRES(PetscOptionItems *PetscOptionsObject
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPView_PIPEFGMRES"
 PetscErrorCode KSPView_PIPEFGMRES(KSP ksp,PetscViewer viewer)
 {
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES*)ksp->data;
@@ -650,8 +632,6 @@ PetscErrorCode KSPView_PIPEFGMRES(KSP ksp,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPReset_PIPEFGMRES"
 PetscErrorCode KSPReset_PIPEFGMRES(KSP ksp)
 {
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES*)ksp->data;
@@ -710,8 +690,6 @@ PetscErrorCode KSPReset_PIPEFGMRES(KSP ksp)
            KSPGMRESSetRestart(), KSPGMRESSetHapTol(), KSPGMRESSetPreAllocateVectors(), KSPGMRESMonitorKrylov(), KSPPIPEFGMRESSetShift()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_PIPEFGMRES"
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFGMRES(KSP ksp)
 {
   KSP_PIPEFGMRES *pipefgmres;
@@ -752,8 +730,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFGMRES(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEFGMRESGetNewVectors"
 static PetscErrorCode KSPPIPEFGMRESGetNewVectors(KSP ksp,PetscInt it)
 {
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES*)ksp->data;
@@ -801,8 +777,6 @@ static PetscErrorCode KSPPIPEFGMRESGetNewVectors(KSP ksp,PetscInt it)
   pipefgmres->nwork_alloc++;
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEFGMRESSetShift"
 /*@
   KSPPIPEFGMRESSetShift - Set the shift parameter for the flexible, pipelined GMRES solver.
 

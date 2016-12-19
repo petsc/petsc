@@ -9,8 +9,6 @@ PETSC_EXTERN PetscErrorCode CharacteristicCreate_DA(Characteristic);
 */
 extern PetscBool CharacteristicRegisterAllCalled;
 
-#undef __FUNCT__
-#define __FUNCT__ "CharacteristicRegisterAll"
 /*@C
   CharacteristicRegisterAll - Registers all of the Krylov subspace methods in the Characteristic package.
 

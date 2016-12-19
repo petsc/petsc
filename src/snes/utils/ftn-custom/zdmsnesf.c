@@ -13,8 +13,6 @@ static struct {
   PetscFortranCallbackId snesjacobian;
 } _cb;
 
-#undef __FUNCT__
-#define __FUNCT__ "ourj"
 static PetscErrorCode ourj(SNES snes, Vec X, Mat J, Mat P, void *ptr)
 {
   PetscErrorCode ierr;
@@ -39,8 +37,6 @@ PETSC_EXTERN void PETSC_STDCALL dmsnessetjacobian_(DM *dm, void (PETSC_STDCALL *
   *ierr = DMSNESSetJacobian(*dm, ourj, NULL);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ourf"
 static PetscErrorCode ourf(SNES snes, Vec X, Vec F, void *ptr)
 {
   PetscErrorCode ierr;

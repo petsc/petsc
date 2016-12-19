@@ -7,8 +7,6 @@ PETSC_EXTERN PetscErrorCode PetscSFCreate_Basic(PetscSF);
 
 PetscFunctionList PetscSFList;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFRegisterAll"
 /*@C
    PetscSFRegisterAll - Registers all the PetscSF communication implementations
 
@@ -34,8 +32,6 @@ PetscErrorCode  PetscSFRegisterAll(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFRegister"
 /*@C
   PetscSFRegister  - Adds an implementation of the PetscSF communication protocol.
 

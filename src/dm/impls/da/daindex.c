@@ -5,8 +5,6 @@
 
 #include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetNatural_Private"
 /*
    Gets the natural number for each global number on the process.
 
@@ -51,8 +49,6 @@ PetscErrorCode DMDAGetNatural_Private(DM da,PetscInt *outNlocal,IS *isnatural)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetAOType"
 /*@C
    DMDASetAOType - Sets the type of application ordering for a distributed array.
 
@@ -98,8 +94,6 @@ PetscErrorCode  DMDASetAOType(DM da,AOType aotype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetAO"
 /*@
    DMDAGetAO - Gets the application ordering context for a distributed array.
 

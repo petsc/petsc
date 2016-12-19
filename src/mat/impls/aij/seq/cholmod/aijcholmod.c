@@ -2,8 +2,6 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/sbaij/seq/cholmod/cholmodimpl.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatWrapCholmod_seqaij"
 static PetscErrorCode MatWrapCholmod_seqaij(Mat A,PetscBool values,cholmod_sparse *C,PetscBool  *aijalloc)
 {
   Mat_SeqAIJ      *aij = (Mat_SeqAIJ*)A->data;
@@ -45,8 +43,6 @@ static PetscErrorCode MatWrapCholmod_seqaij(Mat A,PetscBool values,cholmod_spars
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFactorGetSolverPackage_seqaij_cholmod"
 static PetscErrorCode MatFactorGetSolverPackage_seqaij_cholmod(Mat A,const MatSolverPackage *type)
 {
   PetscFunctionBegin;
@@ -54,8 +50,6 @@ static PetscErrorCode MatFactorGetSolverPackage_seqaij_cholmod(Mat A,const MatSo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetFactor_seqaij_cholmod"
 /* Almost a copy of MatGetFactor_seqsbaij_cholmod, yuck */
 PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_cholmod(Mat A,MatFactorType ftype,Mat *F)
 {

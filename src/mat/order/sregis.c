@@ -14,8 +14,6 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_Spectral(Mat,MatOrderingType,IS*,IS*)
 PETSC_INTERN PetscErrorCode MatGetOrdering_AMD(Mat,MatOrderingType,IS*,IS*);
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "MatOrderingRegisterAll"
 /*@C
   MatOrderingRegisterAll - Registers all of the matrix
   reordering routines in PETSc.

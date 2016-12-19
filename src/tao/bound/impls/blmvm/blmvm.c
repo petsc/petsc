@@ -4,8 +4,6 @@
 #include <../src/tao/bound/impls/blmvm/blmvm.h>
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoSolve_BLMVM"
 static PetscErrorCode TaoSolve_BLMVM(Tao tao)
 {
   PetscErrorCode               ierr;
@@ -123,8 +121,6 @@ static PetscErrorCode TaoSolve_BLMVM(Tao tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetup_BLMVM"
 static PetscErrorCode TaoSetup_BLMVM(Tao tao)
 {
   TAO_BLMVM      *blmP = (TAO_BLMVM *)tao->data;
@@ -180,8 +176,6 @@ static PetscErrorCode TaoSetup_BLMVM(Tao tao)
 }
 
 /* ---------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "TaoDestroy_BLMVM"
 static PetscErrorCode TaoDestroy_BLMVM(Tao tao)
 {
   TAO_BLMVM      *blmP = (TAO_BLMVM *)tao->data;
@@ -204,8 +198,6 @@ static PetscErrorCode TaoDestroy_BLMVM(Tao tao)
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetFromOptions_BLMVM"
 static PetscErrorCode TaoSetFromOptions_BLMVM(PetscOptionItems* PetscOptionsObject,Tao tao)
 {
   PetscErrorCode ierr;
@@ -219,8 +211,6 @@ static PetscErrorCode TaoSetFromOptions_BLMVM(PetscOptionItems* PetscOptionsObje
 
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoView_BLMVM"
 static int TaoView_BLMVM(Tao tao, PetscViewer viewer)
 {
   TAO_BLMVM      *lmP = (TAO_BLMVM *)tao->data;
@@ -237,8 +227,6 @@ static int TaoView_BLMVM(Tao tao, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoComputeDual_BLMVM"
 static PetscErrorCode TaoComputeDual_BLMVM(Tao tao, Vec DXL, Vec DXU)
 {
   TAO_BLMVM      *blm = (TAO_BLMVM *) tao->data;
@@ -286,8 +274,6 @@ static PetscErrorCode TaoComputeDual_BLMVM(Tao tao, Vec DXL, Vec DXU)
 
   Level: beginner
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoCreate_BLMVM"
 PETSC_EXTERN PetscErrorCode TaoCreate_BLMVM(Tao tao)
 {
   TAO_BLMVM      *blmP;
@@ -317,8 +303,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BLMVM(Tao tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLMVMSetH0"
 PETSC_EXTERN PetscErrorCode TaoLMVMSetH0(Tao tao, Mat H0)
 {
   TAO_LMVM       *lmP;
@@ -345,8 +329,6 @@ PETSC_EXTERN PetscErrorCode TaoLMVMSetH0(Tao tao, Mat H0)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLMVMGetH0"
 PETSC_EXTERN PetscErrorCode TaoLMVMGetH0(Tao tao, Mat *H0)
 {
   TAO_LMVM       *lmP;
@@ -373,8 +355,6 @@ PETSC_EXTERN PetscErrorCode TaoLMVMGetH0(Tao tao, Mat *H0)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLMVMGetH0KSP"
 PETSC_EXTERN PetscErrorCode TaoLMVMGetH0KSP(Tao tao, KSP *ksp)
 {
   TAO_LMVM       *lmP;

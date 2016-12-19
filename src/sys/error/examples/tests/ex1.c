@@ -9,8 +9,6 @@ typedef struct _handlerCtx {
   int signum;
 } HandlerCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "handleSignal"
 int handleSignal(int signum, void *ctx)
 {
   HandlerCtx *user = (HandlerCtx*) ctx;
@@ -20,8 +18,6 @@ int handleSignal(int signum, void *ctx)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char *args[])
 {
   HandlerCtx     user;

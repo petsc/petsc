@@ -3,8 +3,6 @@ static char help[] = "Tests the vatious routines in MatSeqBAIJ format.\n";
 
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            A,B,Fact;

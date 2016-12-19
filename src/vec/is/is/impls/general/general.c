@@ -7,8 +7,6 @@
 #include <petscviewer.h>
 #include <petscviewerhdf5.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "ISDuplicate_General"
 static PetscErrorCode ISDuplicate_General(IS is,IS *newIS)
 {
   PetscErrorCode ierr;
@@ -21,8 +19,6 @@ static PetscErrorCode ISDuplicate_General(IS is,IS *newIS)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISDestroy_General"
 static PetscErrorCode ISDestroy_General(IS is)
 {
   IS_General     *is_general = (IS_General*)is->data;
@@ -35,8 +31,6 @@ static PetscErrorCode ISDestroy_General(IS is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISIdentity_General"
 static PetscErrorCode ISIdentity_General(IS is, PetscBool *ident)
 {
   IS_General *is_general = (IS_General*)is->data;
@@ -57,8 +51,6 @@ static PetscErrorCode ISIdentity_General(IS is, PetscBool *ident)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISCopy_General"
 static PetscErrorCode ISCopy_General(IS is,IS isy)
 {
   IS_General     *is_general = (IS_General*)is->data,*isy_general = (IS_General*)isy->data;
@@ -76,8 +68,6 @@ static PetscErrorCode ISCopy_General(IS is,IS isy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISOnComm_General"
 static PetscErrorCode ISOnComm_General(IS is,MPI_Comm comm,PetscCopyMode mode,IS *newis)
 {
   PetscErrorCode ierr;
@@ -91,8 +81,6 @@ static PetscErrorCode ISOnComm_General(IS is,MPI_Comm comm,PetscCopyMode mode,IS
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISSetBlockSize_General"
 static PetscErrorCode ISSetBlockSize_General(IS is,PetscInt bs)
 {
 #if defined(PETSC_USE_DEBUG)
@@ -117,8 +105,6 @@ static PetscErrorCode ISSetBlockSize_General(IS is,PetscInt bs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISContiguousLocal_General"
 static PetscErrorCode ISContiguousLocal_General(IS is,PetscInt gstart,PetscInt gend,PetscInt *start,PetscBool *contig)
 {
   IS_General *sub = (IS_General*)is->data;
@@ -144,8 +130,6 @@ nomatch:
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISLocate_General"
 static PetscErrorCode ISLocate_General(IS is,PetscInt key,PetscInt *location)
 {
   IS_General     *sub = (IS_General*)is->data;
@@ -169,8 +153,6 @@ static PetscErrorCode ISLocate_General(IS is,PetscInt key,PetscInt *location)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISGetIndices_General"
 static PetscErrorCode ISGetIndices_General(IS in,const PetscInt *idx[])
 {
   IS_General *sub = (IS_General*)in->data;
@@ -180,8 +162,6 @@ static PetscErrorCode ISGetIndices_General(IS in,const PetscInt *idx[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISRestoreIndices_General"
 static PetscErrorCode ISRestoreIndices_General(IS in,const PetscInt *idx[])
 {
   IS_General *sub = (IS_General*)in->data;
@@ -191,8 +171,6 @@ static PetscErrorCode ISRestoreIndices_General(IS in,const PetscInt *idx[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISGetSize_General"
 static PetscErrorCode ISGetSize_General(IS is,PetscInt *size)
 {
   PetscErrorCode ierr;
@@ -202,8 +180,6 @@ static PetscErrorCode ISGetSize_General(IS is,PetscInt *size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISGetLocalSize_General"
 static PetscErrorCode ISGetLocalSize_General(IS is,PetscInt *size)
 {
   PetscErrorCode ierr;
@@ -213,8 +189,6 @@ static PetscErrorCode ISGetLocalSize_General(IS is,PetscInt *size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISInvertPermutation_General"
 static PetscErrorCode ISInvertPermutation_General(IS is,PetscInt nlocal,IS *isout)
 {
   IS_General     *sub = (IS_General*)is->data;
@@ -262,8 +236,6 @@ static PetscErrorCode ISInvertPermutation_General(IS is,PetscInt nlocal,IS *isou
 }
 
 #if defined(PETSC_HAVE_HDF5)
-#undef __FUNCT__
-#define __FUNCT__ "ISView_General_HDF5"
 static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
 {
   hid_t           filespace;  /* file dataspace identifier */
@@ -405,8 +377,6 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "ISView_General_Binary"
 static PetscErrorCode ISView_General_Binary(IS is,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -455,8 +425,6 @@ static PetscErrorCode ISView_General_Binary(IS is,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISView_General"
 static PetscErrorCode ISView_General(IS is,PetscViewer viewer)
 {
   IS_General     *sub = (IS_General*)is->data;
@@ -507,8 +475,6 @@ static PetscErrorCode ISView_General(IS is,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISSort_General"
 static PetscErrorCode ISSort_General(IS is)
 {
   IS_General     *sub = (IS_General*)is->data;
@@ -523,8 +489,6 @@ static PetscErrorCode ISSort_General(IS is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISSortRemoveDups_General"
 static PetscErrorCode ISSortRemoveDups_General(IS is)
 {
   IS_General     *sub = (IS_General*)is->data;
@@ -540,8 +504,6 @@ static PetscErrorCode ISSortRemoveDups_General(IS is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISSorted_General"
 static PetscErrorCode ISSorted_General(IS is,PetscBool  *flg)
 {
   IS_General *sub = (IS_General*)is->data;
@@ -551,8 +513,6 @@ static PetscErrorCode ISSorted_General(IS is,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISToGeneral_General"
 PetscErrorCode  ISToGeneral_General(IS is)
 {
   PetscFunctionBegin;
@@ -579,8 +539,6 @@ static struct _ISOps myops = { ISGetSize_General,
                                ISContiguousLocal_General,
                                ISLocate_General};
 
-#undef __FUNCT__
-#define __FUNCT__ "ISCreateGeneral_Private"
 static PetscErrorCode ISCreateGeneral_Private(IS is)
 {
   PetscErrorCode ierr;
@@ -614,8 +572,6 @@ static PetscErrorCode ISCreateGeneral_Private(IS is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISCreateGeneral"
 /*@
    ISCreateGeneral - Creates a data structure for an index set
    containing a list of integers.
@@ -656,8 +612,6 @@ PetscErrorCode  ISCreateGeneral(MPI_Comm comm,PetscInt n,const PetscInt idx[],Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISGeneralSetIndices"
 /*@
    ISGeneralSetIndices - Sets the indices for an ISGENERAL index set
 
@@ -685,8 +639,6 @@ PetscErrorCode  ISGeneralSetIndices(IS is,PetscInt n,const PetscInt idx[],PetscC
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISGeneralSetIndices_General"
 PetscErrorCode  ISGeneralSetIndices_General(IS is,PetscInt n,const PetscInt idx[],PetscCopyMode mode)
 {
   PetscErrorCode ierr;
@@ -714,8 +666,6 @@ PetscErrorCode  ISGeneralSetIndices_General(IS is,PetscInt n,const PetscInt idx[
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISCreate_General"
 PETSC_EXTERN PetscErrorCode ISCreate_General(IS is)
 {
   PetscErrorCode ierr;
