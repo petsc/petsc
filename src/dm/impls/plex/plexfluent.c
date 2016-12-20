@@ -239,8 +239,7 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
   PetscMPIInt    rank;
   unsigned int   f;
   PetscInt       c, v, dim = PETSC_DETERMINE, numCells = 0, numVertices = 0, numCellVertices = PETSC_DETERMINE;
-  unsigned int   numFaces = PETSC_DETERMINE;
-  PetscInt       numFaceEntries = PETSC_DETERMINE, numFaceVertices = PETSC_DETERMINE;
+  PetscInt       numFaces = PETSC_DETERMINE, numFaceEntries = PETSC_DETERMINE, numFaceVertices = PETSC_DETERMINE;
   PetscInt      *faces = NULL, *cellVertices = NULL, *faceZoneIDs = NULL;
   PetscInt       d, coordSize;
   PetscScalar   *coords, *coordsIn = NULL;
@@ -282,7 +281,7 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
 
       } else if (s.index == 13 || s.index == 2013) { /* Facets */
         if (s.zoneID == 0) {  /* Header section */
-          numFaces = s.last - s.first + 1;
+          numFaces = (PetscInt) (s.last - s.first + 1);
           if (s.nd == 0 || s.nd == 5) numFaceVertices = PETSC_DETERMINE;
           else numFaceVertices = s.nd;
         } else {              /* Data section */
