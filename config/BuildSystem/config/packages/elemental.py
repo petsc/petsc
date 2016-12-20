@@ -5,8 +5,6 @@ class Configure(config.package.CMakePackage):
     config.package.CMakePackage.__init__(self, framework)
     self.gitcommit        = 'v0.87.4'
     self.download         = ['git://https://github.com/elemental/Elemental']
-    self.gitcommit        = 'e81005dc3af9b331d43e16e4d221e889378e2c49'
-    self.download          = ['git://https://github.com/elemental/Elemental']
     self.liblist          = [['libEl.a','libElSuiteSparse.a','libpmrrr.a']]
     self.includes         = ['El.hpp']
     self.precisions       = ['single','double']
