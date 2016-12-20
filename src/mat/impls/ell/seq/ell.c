@@ -184,7 +184,7 @@ PetscErrorCode MatMult_SeqELL(Mat A,Vec xx,Vec yy)
 #endif
 
 #if defined(PETSC_HAVE_PRAGMA_DISJOINT)
-#pragma disjoint(*x,*y,*aa)
+#pragma disjoint(*x,*y,*aval)
 #endif
 
   PetscFunctionBegin;
@@ -321,7 +321,7 @@ PetscErrorCode MatMultAdd_SeqELL(Mat A,Vec xx,Vec yy,Vec zz)
 #endif
 
 #if defined(PETSC_HAVE_PRAGMA_DISJOINT)
-#pragma disjoint(*x,*y,*aa)
+#pragma disjoint(*x,*y,*aval)
 #endif
 
   PetscFunctionBegin;
@@ -378,6 +378,52 @@ PetscErrorCode MatMultAdd_SeqELL(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMultTransposeAdd_SeqELL"
+PetscErrorCode MatMultTransposeAdd_SeqELL(Mat A,Vec xx,Vec zz,Vec yy)
+{
+  Mat_SeqELL        *a=(Mat_SeqELL*)A->data;
+  PetscScalar       *y;
+  const PetscScalar *x;
+  const MatScalar   *aval=a->val;
+  PetscInt          m=A->rmap->n; /* number of rows */
+  const PetscInt    *acolidx=a->colidx;
+  PetscInt          i,j,row;
+  char              bflag;
+  PetscErrorCode    ierr;
+
+#if defined(PETSC_HAVE_PRAGMA_DISJOINT)
+#pragma disjoint(*x,*y,*aval)
+#endif
+
+  PetscFunctionBegin;
+  if (zz != yy) { ierr = VecCopy(zz,yy);CHKERRQ(ierr); }
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
+  for (i=0; i<m/8; i++) { /* loop over slices */
+    for (j=a->sliidx[i],row=0; j<a->sliidx[i+1]; j++,row=((row+1)&0x07)) {
+      bflag = a->bt[j>>3] & (char)(1<<row);
+      if (bflag) y[acolidx[j]] += aval[j]*x[8*i+row];
+    }
+  }
+  ierr = PetscLogFlops(2.0*a->sliidx[m/8]);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMultTranspose_SeqELL"
+PetscErrorCode MatMultTranspose_SeqELL(Mat A,Vec xx,Vec yy)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecSet(yy,0.0);CHKERRQ(ierr);
+  ierr = MatMultTransposeAdd_SeqELL(A,xx,yy,yy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1186,8 +1232,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqELL,
                                        0,
                                        MatMult_SeqELL,
                                /* 4*/  MatMultAdd_SeqELL,
-                                       0,
-                                       0,
+                                       MatMultTranspose_SeqELL,
+                                       MatMultTransposeAdd_SeqELL,
                                        0,
                                        0,
                                        0,

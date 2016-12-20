@@ -115,6 +115,8 @@ if (WIDTH>=Ain->rlenmax) Ain->rlenmax++; \
 PETSC_INTERN PetscErrorCode MatSeqELLSetPreallocation_SeqELL(Mat,PetscInt,const PetscInt[]);
 PETSC_INTERN PetscErrorCode MatMult_SeqELL(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMultAdd_SeqELL(Mat,Vec,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatMultTranspose_SeqELL(Mat,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatMultTransposeAdd_SeqELL(Mat,Vec,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMissingDiagonal_SeqELL(Mat,PetscBool*,PetscInt*);
 PETSC_INTERN PetscErrorCode MatMarkDiagonal_SeqELL(Mat);
 PETSC_INTERN PetscErrorCode MatZeroEntries_SeqELL(Mat);
