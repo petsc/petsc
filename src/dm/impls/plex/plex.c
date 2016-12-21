@@ -48,57 +48,8 @@ PetscErrorCode DMPlexGetFieldType_Internal(DM dm, PetscSection section, PetscInt
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "VecView_Plex_Local"
-PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
-{
-  DM             dm;
-  PetscBool      isvtk, ishdf5, isseq;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
-  if (!dm) SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
-  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK,  &isvtk);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject) v, VECSEQ, &isseq);CHKERRQ(ierr);
-  if (isvtk || ishdf5) {
-    PetscInt  numFields;
-    PetscBool fem = PETSC_FALSE;
-
-    ierr = DMGetNumFields(dm, &numFields);CHKERRQ(ierr);
-    if (numFields) {
-      PetscObject fe;
-
-      ierr = DMGetField(dm, 0, &fe);CHKERRQ(ierr);
-      if (fe->classid == PETSCFE_CLASSID) fem = PETSC_TRUE;
-    }
-    if (fem) {ierr = DMPlexInsertBoundaryValues(dm, PETSC_TRUE, v, 0.0, NULL, NULL, NULL);CHKERRQ(ierr);}
-  }
-  if (isvtk) {
-    PetscSection            section;
-    PetscViewerVTKFieldType ft;
-    PetscInt                pStart, pEnd;
-
-    ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
-    ierr = DMPlexGetFieldType_Internal(dm, section, PETSC_DETERMINE, &pStart, &pEnd, &ft);CHKERRQ(ierr);
-    ierr = PetscObjectReference((PetscObject) v);CHKERRQ(ierr);  /* viewer drops reference */
-    ierr = PetscViewerVTKAddField(viewer, (PetscObject) dm, DMPlexVTKWriteAll, ft, (PetscObject) v);CHKERRQ(ierr);
-  } else if (ishdf5) {
-#if defined(PETSC_HAVE_HDF5)
-    ierr = VecView_Plex_Local_HDF5(v, viewer);CHKERRQ(ierr);
-#else
-    SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
-#endif
-  } else {
-    if (isseq) {ierr = VecView_Seq(v, viewer);CHKERRQ(ierr);}
-    else       {ierr = VecView_MPI(v, viewer);CHKERRQ(ierr);}
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecView_Plex_Draw"
-PetscErrorCode VecView_Plex_Draw(Vec v, PetscViewer viewer)
+#define __FUNCT__ "VecView_Plex_Local_Draw"
+PetscErrorCode VecView_Plex_Local_Draw(Vec v, PetscViewer viewer)
 {
   DM                 dm;
   PetscDraw          draw, popup;
@@ -173,10 +124,63 @@ PetscErrorCode VecView_Plex_Draw(Vec v, PetscViewer viewer)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "VecView_Plex_Local"
+PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
+{
+  DM             dm;
+  PetscBool      isvtk, ishdf5, isdraw, isseq;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
+  if (!dm) SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK,  &isvtk);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERDRAW, &isdraw);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) v, VECSEQ, &isseq);CHKERRQ(ierr);
+  if (isvtk || ishdf5) {
+    PetscInt  numFields;
+    PetscBool fem = PETSC_FALSE;
+
+    ierr = DMGetNumFields(dm, &numFields);CHKERRQ(ierr);
+    if (numFields) {
+      PetscObject fe;
+
+      ierr = DMGetField(dm, 0, &fe);CHKERRQ(ierr);
+      if (fe->classid == PETSCFE_CLASSID) fem = PETSC_TRUE;
+    }
+    if (fem) {ierr = DMPlexInsertBoundaryValues(dm, PETSC_TRUE, v, 0.0, NULL, NULL, NULL);CHKERRQ(ierr);}
+  }
+  if (isvtk) {
+    PetscSection            section;
+    PetscViewerVTKFieldType ft;
+    PetscInt                pStart, pEnd;
+
+    ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+    ierr = DMPlexGetFieldType_Internal(dm, section, PETSC_DETERMINE, &pStart, &pEnd, &ft);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject) v);CHKERRQ(ierr);  /* viewer drops reference */
+    ierr = PetscViewerVTKAddField(viewer, (PetscObject) dm, DMPlexVTKWriteAll, ft, (PetscObject) v);CHKERRQ(ierr);
+  } else if (ishdf5) {
+#if defined(PETSC_HAVE_HDF5)
+    ierr = VecView_Plex_Local_HDF5(v, viewer);CHKERRQ(ierr);
+#else
+    SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
+#endif
+  } else if (isdraw) {
+    ierr = VecView_Plex_Local_Draw(v, viewer);CHKERRQ(ierr);
+  } else {
+    if (isseq) {ierr = VecView_Seq(v, viewer);CHKERRQ(ierr);}
+    else       {ierr = VecView_MPI(v, viewer);CHKERRQ(ierr);}
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "VecView_Plex"
 PetscErrorCode VecView_Plex(Vec v, PetscViewer viewer)
 {
   DM             dm;
+  PetscReal      time = 0.0;
   PetscBool      isvtk, ishdf5, isdraw, isseq;
   PetscErrorCode ierr;
 
@@ -205,7 +209,18 @@ PetscErrorCode VecView_Plex(Vec v, PetscViewer viewer)
     SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
 #endif
   } else if (isdraw) {
-    ierr = VecView_Plex_Draw(v, viewer);CHKERRQ(ierr);
+    Vec         locv;
+    const char *name;
+
+    ierr = DMGetLocalVector(dm, &locv);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject) v, &name);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) locv, name);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(dm, v, INSERT_VALUES, locv);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(dm, v, INSERT_VALUES, locv);CHKERRQ(ierr);
+    ierr = DMGetOutputSequenceNumber(dm, NULL, &time);CHKERRQ(ierr);
+    ierr = DMPlexInsertBoundaryValues(dm, PETSC_TRUE, locv, time, NULL, NULL, NULL);CHKERRQ(ierr);
+    ierr = VecView_Plex_Local(locv, viewer);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(dm, &locv);CHKERRQ(ierr);
   } else {
     if (isseq) {ierr = VecView_Seq(v, viewer);CHKERRQ(ierr);}
     else       {ierr = VecView_MPI(v, viewer);CHKERRQ(ierr);}
