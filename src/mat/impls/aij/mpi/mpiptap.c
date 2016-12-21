@@ -112,6 +112,10 @@ PETSC_INTERN PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,Pet
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_HYPRE)
+PETSC_INTERN PetscErrorCode MatPtAPSymbolic_AIJ_AIJ_wHYPRE(Mat,Mat,PetscReal,Mat*);
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAPSymbolic_MPIAIJ_MPIAIJ"
 PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
@@ -139,8 +143,14 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   Mat_SeqAIJ          *p_loc,*p_oth,*ad=(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data,*c_loc,*c_oth;
   PetscScalar         *apv;
   PetscTable          ta;
+#if defined(PETSC_HAVE_HYPRE)
+  const char          *algTypes[3] = {"scalable","nonscalable","hypre"};
+  PetscInt            nalg = 3;
+#else
   const char          *algTypes[2] = {"scalable","nonscalable"};
-  PetscInt            alg=1; /* set default algorithm */
+  PetscInt            nalg = 2;
+#endif
+  PetscInt            alg = 1; /* set default algorithm */
 #if defined(PETSC_USE_INFO)
   PetscReal           apfill; 
 #endif
@@ -152,6 +162,32 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+
+  /* create symbolic parallel matrix Cmpi */
+  ierr = MatCreate(comm,&Cmpi);CHKERRQ(ierr);
+  ierr = MatSetType(Cmpi,MATMPIAIJ);CHKERRQ(ierr);
+
+  ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-matptap_via","Algorithmic approach","MatPtAP",algTypes,nalg,algTypes[1],&alg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
+  if (alg == 1) {
+    /* Do dense axpy in MatPtAPNumeric_MPIAIJ_MPIAIJ() */
+    Cmpi->ops->ptapnumeric = MatPtAPNumeric_MPIAIJ_MPIAIJ;
+  } else if (alg == 0) {
+    Cmpi->ops->ptapnumeric = 0; /* not done yet */
+    SETERRQ(comm,PETSC_ERR_ARG_SIZ,"Not done yet");
+#if defined(PETSC_HAVE_HYPRE)
+  } else if (alg == 2) {
+    /* Use boomerAMGBuildCoarseOperator */
+    ierr = MatDestroy(&Cmpi);CHKERRQ(ierr);
+    ierr = MatPtAPSymbolic_AIJ_AIJ_wHYPRE(A,P,fill,C);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+#endif
+  } else {
+    SETERRQ1(comm,PETSC_ERR_PLIB,"Unknown algorithm number %D\n",alg);
+  }
+
 #if defined(PTAP_PROFILE)
   ierr = PetscTime(&t0);CHKERRQ(ierr);
 #endif
@@ -426,12 +462,9 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = PetscTime(&t3);CHKERRQ(ierr);
 #endif
 
-  /* (6) create symbolic parallel matrix Cmpi */
-  /*------------------------------------------*/
-  ierr = MatCreate(comm,&Cmpi);CHKERRQ(ierr);
+  /* local sizes and preallocation */
   ierr = MatSetSizes(Cmpi,pn,pn,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetBlockSizes(Cmpi,PetscAbs(P->cmap->bs),PetscAbs(P->cmap->bs));CHKERRQ(ierr);
-  ierr = MatSetType(Cmpi,MATMPIAIJ);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(Cmpi,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
 
@@ -450,19 +483,9 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ptap->duplicate = Cmpi->ops->duplicate;
   ptap->destroy   = Cmpi->ops->destroy;
 
-  ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-matptap_via","Algorithmic approach","MatPtAP",algTypes,2,algTypes[1],&alg,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-
   if (alg == 1) {
-    /* Do dense axpy in MatPtAPNumeric_MPIAIJ_MPIAIJ() */
     ierr = PetscCalloc1(pN,&ptap->apa);CHKERRQ(ierr);
-    Cmpi->ops->ptapnumeric = MatPtAPNumeric_MPIAIJ_MPIAIJ;
-  } else {
-    Cmpi->ops->ptapnumeric = 0; /* not done yet */
-    SETERRQ(comm,PETSC_ERR_ARG_SIZ,"Not done yet");
   }
-
 
   /* Cmpi is not ready for use - assembly will be done by MatPtAPNumeric() */
   Cmpi->assembled        = PETSC_FALSE;

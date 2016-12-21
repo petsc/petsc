@@ -10,13 +10,23 @@
 #include <../src/mat/impls/dense/mpi/mpidense.h>
 #include <petsc/private/vecimpl.h>
 
+#if defined(PETSC_HAVE_HYPRE)
+PETSC_INTERN PetscErrorCode MatMatMultSymbolic_AIJ_AIJ_wHYPRE(Mat,Mat,PetscReal,Mat*);
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMult_MPIAIJ_MPIAIJ"
 PETSC_INTERN PetscErrorCode MatMatMult_MPIAIJ_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill, Mat *C)
 {
   PetscErrorCode ierr;
+#if defined(PETSC_HAVE_HYPRE)
+  const char     *algTypes[3] = {"scalable","nonscalable","hypre"};
+  PetscInt       nalg = 3;
+#else
   const char     *algTypes[2] = {"scalable","nonscalable"};
-  PetscInt       alg=1; /* set default algorithm */
+  PetscInt       nalg = 2;
+#endif
+  PetscInt       alg = 1; /* set default algorithm */
   MPI_Comm       comm;
 
   PetscFunctionBegin;
@@ -25,7 +35,7 @@ PETSC_INTERN PetscErrorCode MatMatMult_MPIAIJ_MPIAIJ(Mat A,Mat B,MatReuse scall,
     if (A->cmap->rstart != B->rmap->rstart || A->cmap->rend != B->rmap->rend) SETERRQ4(comm,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%D, %D) != (%D,%D)",A->cmap->rstart,A->cmap->rend,B->rmap->rstart,B->rmap->rend);
 
     ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
-    ierr = PetscOptionsEList("-matmatmult_via","Algorithmic approach","MatMatMult",algTypes,2,algTypes[1],&alg,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-matmatmult_via","Algorithmic approach","MatMatMult",algTypes,nalg,algTypes[1],&alg,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
     ierr = PetscLogEventBegin(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
@@ -33,6 +43,11 @@ PETSC_INTERN PetscErrorCode MatMatMult_MPIAIJ_MPIAIJ(Mat A,Mat B,MatReuse scall,
     case 1:
       ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(A,B,fill,C);CHKERRQ(ierr);
       break;
+#if defined(PETSC_HAVE_HYPRE)
+    case 2:
+      ierr = MatMatMultSymbolic_AIJ_AIJ_wHYPRE(A,B,fill,C);CHKERRQ(ierr);
+      break;
+#endif
     default:
       ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ(A,B,fill,C);CHKERRQ(ierr);
       break;

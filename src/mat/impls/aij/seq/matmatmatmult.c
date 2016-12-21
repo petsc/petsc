@@ -32,7 +32,7 @@ PETSC_INTERN PetscErrorCode MatMatMatMult_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C
     ierr = PetscLogEventEnd(MAT_MatMatMultSymbolic,A,B,C,0);CHKERRQ(ierr);
   }
   ierr = PetscLogEventBegin(MAT_MatMatMultNumeric,A,B,C,0);CHKERRQ(ierr);
-  ierr = MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqAIJ(A,B,C,*D);CHKERRQ(ierr);
+  ierr = ((*D)->ops->matmatmultnumeric)(A,B,C,*D);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_MatMatMultNumeric,A,B,C,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
