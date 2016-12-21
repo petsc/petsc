@@ -833,7 +833,7 @@ PetscErrorCode MatNestSetSubMat_Nest(Mat A,PetscInt idxm,PetscInt jdxm,Mat mat)
 
  Level: developer
 
-.seealso: MatNestSetSubMats(), MatNestGetSubMat()
+.seealso: MatNestSetSubMats(), MatNestGetSubMats()
 @*/
 PetscErrorCode  MatNestSetSubMat(Mat A,PetscInt idxm,PetscInt jdxm,Mat sub)
 {
