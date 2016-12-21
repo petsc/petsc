@@ -9,7 +9,6 @@ class CompilerOptions(config.base.Configure):
     if compiler.find('mpicc') >=0:
       try:
         output   = self.executeShellCommand(compiler + ' -show', log = self.log)[0]
-        compiler = output.split(' ')[0]
         self.framework.addMakeMacro('MPICC_SHOW',output.strip().replace('\n','\\\\n'))
       except:
         pass
@@ -91,7 +90,6 @@ class CompilerOptions(config.base.Configure):
     if compiler.find('mpiCC') >=0  or compiler.find('mpicxx') >=0 :
       try:
         output   = self.executeShellCommand(compiler+' -show', log = self.log)[0]
-        compiler = output.split(' ')[0]
         self.framework.addMakeMacro('MPICXX_SHOW',output.strip().replace('\n','\\\\n'))
       except:
         pass
@@ -176,7 +174,6 @@ class CompilerOptions(config.base.Configure):
     if compiler.endswith('mpif77') or compiler.endswith('mpif90'):
       try:
         output   = self.executeShellCommand(compiler+' -show', log = self.log)[0]
-        compiler = output.split(' ')[0]
         self.framework.addMakeMacro('MPIFC_SHOW',output.strip().replace('\n','\\\\n'))
       except:
         pass
@@ -201,7 +198,7 @@ class CompilerOptions(config.base.Configure):
         flags.extend(['-O'])
     else:
       # Portland Group Fortran 90
-      if compiler == 'pgf90':
+      if config.setCompilers.Configure.isPGI(compiler, self.log):
         if bopt == '':
           flags.append('-Mfree')
         elif bopt == 'O':
