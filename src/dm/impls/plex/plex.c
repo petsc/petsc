@@ -3862,13 +3862,14 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexVecGetClosure_Fields_Static(DM dm, Pets
 @*/
 PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt point, PetscInt *csize, PetscScalar *values[])
 {
-  PetscSection    clSection;
-  IS              clPoints;
-  PetscScalar    *array, *vArray;
-  PetscInt       *points = NULL;
-  const PetscInt *clp, *perm;
-  PetscInt        depth, numFields, numPoints, size;
-  PetscErrorCode  ierr;
+  PetscSection       clSection;
+  IS                 clPoints;
+  PetscScalar       *array;
+  const PetscScalar *vArray;
+  PetscInt          *points = NULL;
+  const PetscInt    *clp, *perm;
+  PetscInt           depth, numFields, numPoints, size;
+  PetscErrorCode     ierr;
 
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -3901,14 +3902,14 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
   } else {
     array = *values;
   }
-  ierr = VecGetArray(v, &vArray);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(v, &vArray);CHKERRQ(ierr);
   /* Get values */
   if (numFields > 0) {ierr = DMPlexVecGetClosure_Fields_Static(dm, section, numPoints, points, numFields, perm, vArray, &size, array);CHKERRQ(ierr);}
   else               {ierr = DMPlexVecGetClosure_Static(dm, section, numPoints, points, perm, vArray, &size, array);CHKERRQ(ierr);}
   /* Cleanup points */
   ierr = DMPlexRestoreCompressedClosure(dm,section,point,&numPoints,&points,&clSection,&clPoints,&clp);CHKERRQ(ierr);
   /* Cleanup array */
-  ierr = VecRestoreArray(v, &vArray);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(v, &vArray);CHKERRQ(ierr);
   if (!*values) {
     if (csize) *csize = size;
     *values = array;
