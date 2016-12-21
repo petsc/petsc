@@ -1,4 +1,4 @@
-static char help[] = "Demonstrates using PetscViewerPushFormat(viewer,PETSC_FORMAT_BINARY_MATLAB)\n\n";
+static char help[] = "Demonstrates using PetscViewerPushFormat(viewer,PETSC_VIEWER_BINARY_MATLAB)\n\n";
 
 /*T
    Concepts: viewers
