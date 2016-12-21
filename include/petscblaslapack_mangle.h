@@ -45,8 +45,10 @@
 #   define PETSC_BLASLAPACK_PREFIX_ s
 #  elif defined(PETSC_USE_REAL_DOUBLE)
 #   define PETSC_BLASLAPACK_PREFIX_ d
-#  else
+#  elif defined(PETSC_USE_REAL___FLOAT128)
 #   define PETSC_BLASLAPACK_PREFIX_ q
+#  else
+#   define PETSC_BLASLAPACK_PREFIX_ h
 #  endif
 # endif
 # define PETSC_BLASLAPACK_RPREFIX_ PETSC_BLASLAPACK_PREFIX_
@@ -58,9 +60,12 @@
 #  elif defined(PETSC_USE_REAL_DOUBLE)
 #   define PETSC_BLASLAPACK_PREFIX_ Z
 #   define PETSC_BLASLAPACK_RPREFIX_ DZ
-#  else
+#  elif defined(PETSC_USE_REAL___FLOAT128)
 #   define PETSC_BLASLAPACK_PREFIX_ W
 #   define PETSC_BLASLAPACK_RPREFIX_ QW
+#  else
+#   define PETSC_BLASLAPACK_PREFIX_ HK
+#   define PETSC_BLASLAPACK_RPREFIX_ K
 #  endif
 # else
 #  if defined(PETSC_USE_REAL_SINGLE)
@@ -69,9 +74,12 @@
 #  elif defined(PETSC_USE_REAL_DOUBLE)
 #   define PETSC_BLASLAPACK_PREFIX_ z
 #   define PETSC_BLASLAPACK_RPREFIX_ dz
-#  else
+#  elif defined(PETSC_USE_REAL___FLOAT128)
 #   define PETSC_BLASLAPACK_PREFIX_ w
 #   define PETSC_BLASLAPACK_RPREFIX_ qw
+#  else
+#   define PETSC_BLASLAPACK_PREFIX_ hk
+#   define PETSC_BLASLAPACK_RPREFIX_ k
 #  endif
 # endif
 #endif

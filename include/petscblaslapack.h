@@ -16,7 +16,7 @@
   PETSC_BLASLAPACK_SINGLEISDOUBLE - for Cray systems where the BLAS/LAPACK single precision (i.e. Fortran single precision is actually 64 bits)
                                     old Cray vector machines used to be this way, it is is not clear if any exist now.
 
-  PetscBLASInt is almost always 32 bit integers but can be 64 bit integers for certain usages of MKL BLAS/LAPACK libraries
+  PetscBLASInt is almost always 32 bit integers but can be 64 bit integers for certain usages of MKL and OpenBLAS BLAS/LAPACK libraries
 
 */
 #if !defined(_BLASLAPACK_H)

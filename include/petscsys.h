@@ -1450,7 +1450,7 @@ PETSC_EXTERN PetscErrorCode PetscMallocGetDumpLog(PetscBool*);
 
 E*/
 typedef enum {PETSC_INT = 0,PETSC_DOUBLE = 1,PETSC_COMPLEX = 2, PETSC_LONG = 3 ,PETSC_SHORT = 4,PETSC_FLOAT = 5,
-              PETSC_CHAR = 6,PETSC_BIT_LOGICAL = 7,PETSC_ENUM = 8,PETSC_BOOL=9, PETSC___FLOAT128 = 10,PETSC_OBJECT = 11, PETSC_FUNCTION = 12, PETSC_STRING = 12, PETSC_STRUCT, PETSC_DATATYPE_UNKNOWN} PetscDataType;
+              PETSC_CHAR = 6,PETSC_BIT_LOGICAL = 7,PETSC_ENUM = 8,PETSC_BOOL=9, PETSC___FLOAT128 = 10,PETSC_OBJECT = 11, PETSC_FUNCTION = 12, PETSC_STRING = 13, PETSC___FP16 = 14,PETSC_STRUCT, PETSC_DATATYPE_UNKNOWN} PetscDataType;
 PETSC_EXTERN const char *const PetscDataTypes[];
 
 #if defined(PETSC_USE_COMPLEX)
@@ -1460,6 +1460,8 @@ PETSC_EXTERN const char *const PetscDataTypes[];
 #define  PETSC_SCALAR  PETSC_FLOAT
 #elif defined(PETSC_USE_REAL___FLOAT128)
 #define  PETSC_SCALAR  PETSC___FLOAT128
+#elif defined(PETSC_USE_REAL___FP16)
+#define  PETSC_SCALAR  PETSC___FP16
 #else
 #define  PETSC_SCALAR  PETSC_DOUBLE
 #endif
@@ -1468,6 +1470,8 @@ PETSC_EXTERN const char *const PetscDataTypes[];
 #define  PETSC_REAL  PETSC_FLOAT
 #elif defined(PETSC_USE_REAL___FLOAT128)
 #define  PETSC_REAL  PETSC___FLOAT128
+#elif defined(PETSC_USE_REAL___FP16)
+#define  PETSC_REAL  PETSC___FP16
 #else
 #define  PETSC_REAL  PETSC_DOUBLE
 #endif
@@ -1535,12 +1539,12 @@ PETSC_EXTERN PetscErrorCode PetscEnumFind(const char *const*,const char*,PetscEn
    These are MPI operations for MPI_Allreduce() etc
 */
 PETSC_EXTERN MPI_Op MPIU_MAXSUM_OP;
-#if (defined(PETSC_HAVE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128)
+#if (defined(PETSC_HAVE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128) || defined(PETSC_USE_REAL___FP16)
 PETSC_EXTERN MPI_Op MPIU_SUM;
 #else
 #define MPIU_SUM MPI_SUM
 #endif
-#if defined(PETSC_USE_REAL___FLOAT128)
+#if defined(PETSC_USE_REAL___FLOAT128) || defined(PETSC_USE_REAL___FP16)
 PETSC_EXTERN MPI_Op MPIU_MAX;
 PETSC_EXTERN MPI_Op MPIU_MIN;
 #else

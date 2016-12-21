@@ -224,7 +224,10 @@ typedef int    MPI_Offset;
 #define MPI_SHORT_INT        (13 << 16 | (sizeof(short) + sizeof(int)))
 #define MPI_2INT             (14 << 16 | (2* sizeof(int)))
 
-#if defined(PETSC_USE_REAL___FLOAT128)
+#if defined(PETSC_USE_REAL___FP16)
+extern MPI_Datatype MPIU___FP16;
+#define MPI_sizeof(datatype) ((datatype == MPIU___FP16) ? 2*sizeof(char) : (datatype) & 0xff)
+#elif defined(PETSC_USE_REAL___FLOAT128)
 extern MPI_Datatype MPIU___FLOAT128;
 #define MPI_sizeof(datatype) ((datatype == MPIU___FLOAT128) ? 2*sizeof(double) : (datatype) & 0xff)
 #else

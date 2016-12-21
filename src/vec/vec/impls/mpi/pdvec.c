@@ -672,6 +672,8 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   filescalartype = H5T_NATIVE_FLOAT;
 #elif defined(PETSC_USE_REAL___FLOAT128)
 #error "HDF5 output with 128 bit floats not supported."
+#elif defined(PETSC_USE_REAL___FP16)
+#error "HDF5 output with 16 bit floats not supported."
 #else
   memscalartype = H5T_NATIVE_DOUBLE;
   if (spoutput == PETSC_TRUE) filescalartype = H5T_NATIVE_FLOAT;
@@ -782,7 +784,7 @@ PETSC_EXTERN PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_HDF5)
   PetscBool      ishdf5;
 #endif
-#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE) && !defined(PETSC_USE_REAL___FLOAT128)
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
   PetscBool      ismatlab;
 #endif
 
@@ -796,7 +798,7 @@ PETSC_EXTERN PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_HDF5)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE) && !defined(PETSC_USE_REAL___FLOAT128)
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERMATLAB,&ismatlab);CHKERRQ(ierr);
 #endif
   if (iascii) {
@@ -819,7 +821,7 @@ PETSC_EXTERN PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
   } else if (ishdf5) {
     ierr = VecView_MPI_HDF5(xin,viewer);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE) && !defined(PETSC_USE_REAL___FLOAT128)
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
   } else if (ismatlab) {
     ierr = VecView_MPI_Matlab(xin,viewer);CHKERRQ(ierr);
 #endif

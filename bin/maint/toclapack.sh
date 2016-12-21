@@ -175,6 +175,11 @@ quad:
 	-@cd lapack; $(MAKE) quad $(MAKE_OPTIONS_LAPACK)
 	-@$(RANLIB) $(BLAS_LIB_NAME) $(LAPACK_LIB_NAME)
 
+half:
+	-@cd blas;   $(MAKE) half $(MAKE_OPTIONS_BLAS)
+	-@cd lapack; $(MAKE) half $(MAKE_OPTIONS_LAPACK)
+	-@$(RANLIB) $(BLAS_LIB_NAME) $(LAPACK_LIB_NAME)
+
 cleanblaslapck:
 	$(RM) */*.o
 
@@ -239,7 +244,18 @@ echo "
 	s/([^a-zA-Z_1-9]+)dlamc1_([^a-zA-Z_1-9]+)/\\1qlamc1_\\2/g;
 	s/([^a-zA-Z_1-9]+)dlamc2_([^a-zA-Z_1-9]+)/\\1qlamc2_\\2/g;
 	s/([^a-zA-Z_1-9]+)dlamc3_([^a-zA-Z_1-9]+)/\\1qlamc3_\\2/g;" > $QL
-for p in blas qblas lapack qlapack; do
+
+HL=${TMP}/hl.sed
+echo "
+	s/doublereal/halfreal/g;
+	s/doublecomplex/halfcomplex/g;
+	s/([^a-zA-Z_]+)real/\\1doublereal/g;
+	s/([^a-zA-Z_1-9]+)dlamch_([^a-zA-Z_1-9]+)/\\1hlamch_\\2/g;
+	s/([^a-zA-Z_1-9]+)dlamc1_([^a-zA-Z_1-9]+)/\\1hlamc1_\\2/g;
+	s/([^a-zA-Z_1-9]+)dlamc2_([^a-zA-Z_1-9]+)/\\1hlamc2_\\2/g;
+	s/([^a-zA-Z_1-9]+)dlamc3_([^a-zA-Z_1-9]+)/\\1hlamc3_\\2/g;" > $HL
+
+for p in blas qblas hblas lapack qlapack hlapack; do
 	case $p in
 	blas) 
 		SRC="$BLASSRC"
@@ -259,6 +275,13 @@ for p in blas qblas lapack qlapack; do
 		echo $'pow_qi\nqmaxloc\nqf__cabs' > ${TMP}/QUAD.list
 		files="`cat ${TMP}/ql.list`"
 		;;
+	hblas) 
+		SRC="$TMP"
+		DES="$BLASDIR"
+		NOOP=""
+		echo $'pow_hi\nhmaxloc\nhf__cabs' > ${TMP}/HALF.list
+		files="`cat ${TMP}/hl.list`"
+		;;
 
 	lapack)
 		SRC="$LAPACKSRC"
@@ -272,6 +295,9 @@ for p in blas qblas lapack qlapack; do
 			echo 'dsecnd' >> ${TMP}/DOUBLE.list
 		fi
 		rm ${TMP}/QUAD.list
+		rm ${TMP}/HALF.list
+		rm ${TMP}/ql.list
+		rm ${TMP}/hl.list
 		cd $SRC
 		files="`ls *.f`"
 		cd -
@@ -282,6 +308,14 @@ for p in blas qblas lapack qlapack; do
 		SRC="$TMP"
 		DES="$LAPACKDIR"
 		files="`cat ${TMP}/ql.list`"
+		;;
+
+        hlapack)
+		NOOP="hlaruv hlamch"
+		echo $'hlamch' > ${TMP}/HALF.list
+		SRC="$TMP"
+		DES="$LAPACKDIR"
+		files="`cat ${TMP}/hl.list`"
 	esac
 
 	# Transform sources
@@ -290,25 +324,30 @@ for p in blas qblas lapack qlapack; do
 	NPROC="0"
 	for file in $files; do
 		base=`echo $file | $SED -e 's/\.f//g'`
-		[[ ${p} = lapack || $p = qlapack ]] && grep -q ${base}.o ${TMP}/black.list && continue
+		[[ ${p} = lapack || ${p} = qlapack || ${p} = hlapack ]] && grep -q ${base}.o ${TMP}/black.list && continue
 
 		# Get the precision of the BLAS and LAPACK routines
 		case $base in
 		chla_transtype)	PR="AUX";;
 		sdsdot)		PR="DOUBLE";;
 		dqddot)		PR="QUAD";;
+		dhddot)		PR="HALF";;
 		i[sc]amax)	PR="SINGLE";;
 		i[dz]amax)	PR="DOUBLE";;
 		i[qw]amax)	PR="QUAD";;
+		i[hk]amax)	PR="HALF";;
 		[sc]*)		PR="SINGLE";;
 		[dz]*)		PR="DOUBLE";;
 		[qw]*)		PR="QUAD";;
+		[hk]*)		PR="HALF";;
 		icmax1)		PR="SINGLE";;
 		izmax1)		PR="DOUBLE";;
 		iwmax1)		PR="QUAD";;
+		ikmax1)		PR="HALF";;
 		ila[sc]l[rc])	PR="SINGLE";;
 		ila[dz]l[rc])	PR="DOUBLE";;
 		ila[qw]l[rc])	PR="QUAD";;
+		ila[hk]l[rc])	PR="HALF";;
 		*)		PR="AUX";;
 		esac
 
@@ -350,6 +389,8 @@ for p in blas qblas lapack qlapack; do
 			s/#include \"f2c.h\"/#define __LAPACK_PRECISION_$PR\\n&/g" |
 		if [[ $p = qblas || $p = qlapack ]]; then
 			$SED -r -f $QL
+		elif [[ $p = hblas || $p = hlapack ]]; then
+			$SED -r -f $HL
 		else
 			cat
 		fi > ${DES}/${base}.c &
@@ -372,6 +413,22 @@ for p in blas qblas lapack qlapack; do
 			echo "s/([^a-zA-Z_1-9]+)${base}_([^a-zA-Z_1-9]+)/\\1${qbase}_\\2/g;" >> $QL
 			cp $base.f ${TMP}/${qbase}.f
 			echo ${qbase}.f >> ${TMP}/ql.list
+		fi
+
+		# Create the routines with half precision from the double ones  h - half-real k half-complex
+		if [[ $PR = DOUBLE ]]; then
+			hbase="$( echo $base | $SED -r -e '
+				s/^dcabs1/hcabs1/
+				s/^dsdot/hddot/
+				s/^dz/hw/
+				/^i?d[^z]/ { s/d/h/ }
+				s/^zd/wh/
+				/^i?z[^d]/ { s/z/k/ }
+				s/^sdsdot/dhddot/
+				/^ila[dz]l[rc]/ { y/dz/hk/; }' )";
+			echo "s/([^a-zA-Z_1-9]+)${base}_([^a-zA-Z_1-9]+)/\\1${hbase}_\\2/g;" >> $HL
+			cp $base.f ${TMP}/${hbase}.f
+			echo ${hbase}.f >> ${TMP}/hl.list
 		fi
 
 		# Separate the files by precision
@@ -411,6 +468,23 @@ quad: \$(QUADO) \$(AUXO)
 
 qlib: \$(SINGLEO) \$(DOUBLEO) \$(QUADO) \$(AUXO)
 	\$(AR) \$(AR_FLAGS) ../\$(LIBNAME) \$(SINGLEO) \$(DOUBLEO) \$(QUADO) \$(AUXO)
+
+
+EOF
+		;;
+	hblas|hlapack)
+		cat >> ${DES}/makefile << EOF
+HALFO = `cat ${TMP}/HALF.list | $AWK '{printf("%s.o ", $1)}'`
+
+half: \$(HALFO) \$(AUXO)
+	\$(AR) \$(AR_FLAGS) ../\$(LIBNAME) \$(HALFO) \$(AUXO)
+
+hlib: \$(SINGLEO) \$(DOUBLEO) \$(HALFO) \$(AUXO)
+	\$(AR) \$(AR_FLAGS) ../\$(LIBNAME) \$(SINGLEO) \$(DOUBLEO) \$(HALFO) \$(AUXO)
+
+qhlib: \$(SINGLEO) \$(DOUBLEO) \$(QUADO) \$(HALFO) \$(AUXO)
+	\$(AR) \$(AR_FLAGS) ../\$(LIBNAME) \$(SINGLEO) \$(DOUBLEO) \$(QUADO) \$(HALFO \$(AUXO)
+
 EOF
 		;;
 	esac
@@ -3436,7 +3510,1001 @@ L10:
 
 } /* qlamc5_ */
 EOF
+	cat << EOF > ${LAPACKDIR}/hlamch.c
+/*  -- translated by f2c (version 20090411).
+   You must link the resulting object file with libf2c:
+	on Microsoft Windows system, link with libf2c.lib;
+	on Linux or Unix systems, link with .../path/to/libf2c.a -lm
+	or, if you install libf2c.a in a standard place, with -lf2c -lm
+	-- in that order, at the end of the command line, as in
+		cc *.o -lf2c -lm
+	Source for libf2c is in /netlib/f2c/libf2c.zip, e.g.,
 
+		http://www.netlib.org/f2c/libf2c.zip
+*/
+
+#define __LAPACK_PRECISION_HALF
+#include "f2c.h"
+
+/* Table of constant values */
+
+static integer c__1 = 1;
+static halfreal c_b32 = 0.;
+
+halfreal hlamch_(char *cmach)
+{
+    /* Initialized data */
+
+    static logical first = TRUE_;
+
+    /* System generated locals */
+    integer i__1;
+    halfreal ret_val;
+
+    /* Local variables */
+    static halfreal t;
+    static integer it;
+    static halfreal rnd, eps, base;
+    static integer beta;
+    static halfreal emin, prec, emax;
+    static integer imin, imax;
+    static logical lrnd;
+    static halfreal rmin, rmax, rmach;
+    extern logical lsame_(char *, char *);
+    static halfreal small, sfmin;
+    extern /* Subroutine */ int hlamc2_(integer *, integer *, logical *, 
+	    halfreal *, integer *, halfreal *, integer *, halfreal *);
+
+
+/*  -- LAPACK auxiliary routine (version 3.3.0) -- */
+/*     Univ. of Tennessee, Univ. of California Berkeley and NAG Ltd.. */
+/*     November 2010 */
+
+/*     .. Scalar Arguments .. */
+/*     .. */
+
+/*  Purpose */
+/*  ======= */
+
+/*  DLAMCH determines __float128 precision machine parameters. */
+
+/*  Arguments */
+/*  ========= */
+
+/*  CMACH   (input) CHARACTER*1 */
+/*          Specifies the value to be returned by DLAMCH: */
+/*          = 'E' or 'e',   DLAMCH := eps */
+/*          = 'S' or 's ,   DLAMCH := sfmin */
+/*          = 'B' or 'b',   DLAMCH := base */
+/*          = 'P' or 'p',   DLAMCH := eps*base */
+/*          = 'N' or 'n',   DLAMCH := t */
+/*          = 'R' or 'r',   DLAMCH := rnd */
+/*          = 'M' or 'm',   DLAMCH := emin */
+/*          = 'U' or 'u',   DLAMCH := rmin */
+/*          = 'L' or 'l',   DLAMCH := emax */
+/*          = 'O' or 'o',   DLAMCH := rmax */
+
+/*          where */
+
+/*          eps   = relative machine precision */
+/*          sfmin = safe minimum, such that 1/sfmin does not overflow */
+/*          base  = base of the machine */
+/*          prec  = eps*base */
+/*          t     = number of (base) digits in the mantissa */
+/*          rnd   = 1.0 when rounding occurs in addition, 0.0 otherwise */
+/*          emin  = minimum exponent before (gradual) underflow */
+/*          rmin  = underflow threshold - base**(emin-1) */
+/*          emax  = largest exponent before overflow */
+/*          rmax  = overflow threshold  - (base**emax)*(1-eps) */
+
+/* ===================================================================== */
+
+/*     .. Parameters .. */
+/*     .. */
+/*     .. Local Scalars .. */
+/*     .. */
+/*     .. External Functions .. */
+/*     .. */
+/*     .. External Subroutines .. */
+/*     .. */
+/*     .. Save statement .. */
+/*     .. */
+/*     .. Data statements .. */
+/*     .. */
+/*     .. Executable Statements .. */
+
+    if (first) {
+	hlamc2_(&beta, &it, &lrnd, &eps, &imin, &rmin, &imax, &rmax);
+	base = (halfreal) beta;
+	t = (halfreal) it;
+	if (lrnd) {
+	    rnd = 1.;
+	    i__1 = 1 - it;
+	    eps = pow_di(&base, &i__1) / 2;
+	} else {
+	    rnd = 0.;
+	    i__1 = 1 - it;
+	    eps = pow_di(&base, &i__1);
+	}
+	prec = eps * base;
+	emin = (halfreal) imin;
+	emax = (halfreal) imax;
+	sfmin = rmin;
+	small = 1. / rmax;
+	if (small >= sfmin) {
+
+/*           Use SMALL plus a bit, to avoid the possibility of rounding */
+/*           causing overflow when computing  1/sfmin. */
+
+	    sfmin = small * (eps + 1.);
+	}
+    }
+
+    if (lsame_(cmach, "E")) {
+	rmach = eps;
+    } else if (lsame_(cmach, "S")) {
+	rmach = sfmin;
+    } else if (lsame_(cmach, "B")) {
+	rmach = base;
+    } else if (lsame_(cmach, "P")) {
+	rmach = prec;
+    } else if (lsame_(cmach, "N")) {
+	rmach = t;
+    } else if (lsame_(cmach, "R")) {
+	rmach = rnd;
+    } else if (lsame_(cmach, "M")) {
+	rmach = emin;
+    } else if (lsame_(cmach, "U")) {
+	rmach = rmin;
+    } else if (lsame_(cmach, "L")) {
+	rmach = emax;
+    } else if (lsame_(cmach, "O")) {
+	rmach = rmax;
+    }
+
+    ret_val = rmach;
+    first = FALSE_;
+    return ret_val;
+
+/*     End of DLAMCH */
+
+} /* hlamch_ */
+
+
+/* *********************************************************************** */
+
+/* Subroutine */ int hlamc1_(integer *beta, integer *t, logical *rnd, logical 
+	*ieee1)
+{
+    /* Initialized data */
+
+    static logical first = TRUE_;
+
+    /* System generated locals */
+    halfreal d__1, d__2;
+
+    /* Local variables */
+    static halfreal a, b, c__, f, t1, t2;
+    static integer lt;
+    static halfreal one, qtr;
+    static logical lrnd;
+    static integer lbeta;
+    static halfreal savec;
+    extern halfreal hlamc3_(halfreal *, halfreal *);
+    static logical lieee1;
+
+
+/*  -- LAPACK auxiliary routine (version 3.3.0) -- */
+/*     Univ. of Tennessee, Univ. of California Berkeley and NAG Ltd.. */
+/*     November 2010 */
+
+/*     .. Scalar Arguments .. */
+/*     .. */
+
+/*  Purpose */
+/*  ======= */
+
+/*  DLAMC1 determines the machine parameters given by BETA, T, RND, and */
+/*  IEEE1. */
+
+/*  Arguments */
+/*  ========= */
+
+/*  BETA    (output) INTEGER */
+/*          The base of the machine. */
+
+/*  T       (output) INTEGER */
+/*          The number of ( BETA ) digits in the mantissa. */
+
+/*  RND     (output) LOGICAL */
+/*          Specifies whether proper rounding  ( RND = .TRUE. )  or */
+/*          chopping  ( RND = .FALSE. )  occurs in addition. This may not */
+/*          be a reliable guide to the way in which the machine performs */
+/*          its arithmetic. */
+
+/*  IEEE1   (output) LOGICAL */
+/*          Specifies whether rounding appears to be done in the IEEE */
+/*          'round to nearest' style. */
+
+/*  Further Details */
+/*  =============== */
+
+/*  The routine is based on the routine  ENVRON  by Malcolm and */
+/*  incorporates suggestions by Gentleman and Marovich. See */
+
+/*     Malcolm M. A. (1972) Algorithms to reveal properties of */
+/*        floating-point arithmetic. Comms. of the ACM, 15, 949-951. */
+
+/*     Gentleman W. M. and Marovich S. B. (1974) More on algorithms */
+/*        that reveal properties of floating point arithmetic units. */
+/*        Comms. of the ACM, 17, 276-277. */
+
+/* ===================================================================== */
+
+/*     .. Local Scalars .. */
+/*     .. */
+/*     .. External Functions .. */
+/*     .. */
+/*     .. Save statement .. */
+/*     .. */
+/*     .. Data statements .. */
+/*     .. */
+/*     .. Executable Statements .. */
+
+    if (first) {
+	one = 1.;
+
+/*        LBETA,  LIEEE1,  LT and  LRND  are the  local values  of  BETA, */
+/*        IEEE1, T and RND. */
+
+/*        Throughout this routine  we use the function  DLAMC3  to ensure */
+/*        that relevant values are  stored and not held in registers,  or */
+/*        are not affected by optimizers. */
+
+/*        Compute  a = 2.0**m  with the  smallest positive integer m such */
+/*        that */
+
+/*           fl( a + 1.0 ) = a. */
+
+	a = 1.;
+	c__ = 1.;
+
+/* +       WHILE( C.EQ.ONE )LOOP */
+L10:
+	if (c__ == one) {
+	    a *= 2;
+	    c__ = hlamc3_(&a, &one);
+	    d__1 = -a;
+	    c__ = hlamc3_(&c__, &d__1);
+	    goto L10;
+	}
+/* +       END WHILE */
+
+/*        Now compute  b = 2.0**m  with the smallest positive integer m */
+/*        such that */
+
+/*           fl( a + b ) .gt. a. */
+
+	b = 1.;
+	c__ = hlamc3_(&a, &b);
+
+/* +       WHILE( C.EQ.A )LOOP */
+L20:
+	if (c__ == a) {
+	    b *= 2;
+	    c__ = hlamc3_(&a, &b);
+	    goto L20;
+	}
+/* +       END WHILE */
+
+/*        Now compute the base.  a and c  are neighbouring floating point */
+/*        numbers  in the  interval  ( beta**t, beta**( t + 1 ) )  and so */
+/*        their difference is beta. Adding 0.25 to c is to ensure that it */
+/*        is truncated to beta and not ( beta - 1 ). */
+
+	qtr = one / 4;
+	savec = c__;
+	d__1 = -a;
+	c__ = hlamc3_(&c__, &d__1);
+	lbeta = (integer) (c__ + qtr);
+
+/*        Now determine whether rounding or chopping occurs,  by adding a */
+/*        bit  less  than  beta/2  and a  bit  more  than  beta/2  to  a. */
+
+	b = (halfreal) lbeta;
+	d__1 = b / 2;
+	d__2 = -b / 100;
+	f = hlamc3_(&d__1, &d__2);
+	c__ = hlamc3_(&f, &a);
+	if (c__ == a) {
+	    lrnd = TRUE_;
+	} else {
+	    lrnd = FALSE_;
+	}
+	d__1 = b / 2;
+	d__2 = b / 100;
+	f = hlamc3_(&d__1, &d__2);
+	c__ = hlamc3_(&f, &a);
+	if (lrnd && c__ == a) {
+	    lrnd = FALSE_;
+	}
+
+/*        Try and decide whether rounding is done in the  IEEE  'round to */
+/*        nearest' style. B/2 is half a unit in the last place of the two */
+/*        numbers A and SAVEC. Furthermore, A is even, i.e. has last  bit */
+/*        zero, and SAVEC is odd. Thus adding B/2 to A should not  change */
+/*        A, but adding B/2 to SAVEC should change SAVEC. */
+
+	d__1 = b / 2;
+	t1 = hlamc3_(&d__1, &a);
+	d__1 = b / 2;
+	t2 = hlamc3_(&d__1, &savec);
+	lieee1 = t1 == a && t2 > savec && lrnd;
+
+/*        Now find  the  mantissa, t.  It should  be the  integer part of */
+/*        logq to the base beta of a,  however it is safer to determine  t */
+/*        by powering.  So we find t as the smallest positive integer for */
+/*        which */
+
+/*           fl( beta**t + 1.0 ) = 1.0. */
+
+	lt = 0;
+	a = 1.;
+	c__ = 1.;
+
+/* +       WHILE( C.EQ.ONE )LOOP */
+L30:
+	if (c__ == one) {
+	    ++lt;
+	    a *= lbeta;
+	    c__ = hlamc3_(&a, &one);
+	    d__1 = -a;
+	    c__ = hlamc3_(&c__, &d__1);
+	    goto L30;
+	}
+/* +       END WHILE */
+
+    }
+
+    *beta = lbeta;
+    *t = lt;
+    *rnd = lrnd;
+    *ieee1 = lieee1;
+    first = FALSE_;
+    return 0;
+
+/*     End of DLAMC1 */
+
+} /* hlamc1_ */
+
+
+/* *********************************************************************** */
+
+/* Subroutine */ int hlamc2_(integer *beta, integer *t, logical *rnd, 
+	halfreal *eps, integer *emin, halfreal *rmin, integer *emax, 
+	halfreal *rmax)
+{
+    /* Initialized data */
+
+    static logical first = TRUE_;
+    static logical iwarn = FALSE_;
+
+    /* Format strings */
+    static char fmt_9999[] = "(//\002 WARNING. The value EMIN may be incorre"
+	    "ct:-\002,\002  EMIN = \002,i8,/\002 If, after inspection, the va"
+	    "lue EMIN looks\002,\002 acceptable please comment out \002,/\002"
+	    " the IF block as marked within the code of routine\002,\002 DLAM"
+	    "C2,\002,/\002 otherwise supply EMIN explicitly.\002,/)";
+
+    /* System generated locals */
+    integer i__1;
+    halfreal d__1, d__2, d__3, d__4, d__5;
+
+    /* Local variables */
+    static halfreal a, b, c__;
+    static integer i__, lt;
+    static halfreal one, two;
+    static logical ieee;
+    static halfreal half;
+    static logical lrnd;
+    static halfreal leps, zero;
+    static integer lbeta;
+    static halfreal rbase;
+    static integer lemin, lemax, gnmin;
+    static halfreal small;
+    static integer gpmin;
+    static halfreal third, lrmin, lrmax, sixth;
+    extern /* Subroutine */ int hlamc1_(integer *, integer *, logical *, 
+	    logical *);
+    extern halfreal hlamc3_(halfreal *, halfreal *);
+    static logical lieee1;
+    extern /* Subroutine */ int hlamc4_(integer *, halfreal *, integer *), 
+	    hlamc5_(integer *, integer *, integer *, logical *, integer *, 
+	    halfreal *);
+    static integer ngnmin, ngpmin;
+
+    /* Fortran I/O blocks */
+    static cilist io___58 = { 0, 6, 0, fmt_9999, 0 };
+
+
+
+/*  -- LAPACK auxiliary routine (version 3.3.0) -- */
+/*     Univ. of Tennessee, Univ. of California Berkeley and NAG Ltd.. */
+/*     November 2010 */
+
+/*     .. Scalar Arguments .. */
+/*     .. */
+
+/*  Purpose */
+/*  ======= */
+
+/*  DLAMC2 determines the machine parameters specified in its argument */
+/*  list. */
+
+/*  Arguments */
+/*  ========= */
+
+/*  BETA    (output) INTEGER */
+/*          The base of the machine. */
+
+/*  T       (output) INTEGER */
+/*          The number of ( BETA ) digits in the mantissa. */
+
+/*  RND     (output) LOGICAL */
+/*          Specifies whether proper rounding  ( RND = .TRUE. )  or */
+/*          chopping  ( RND = .FALSE. )  occurs in addition. This may not */
+/*          be a reliable guide to the way in which the machine performs */
+/*          its arithmetic. */
+
+/*  EPS     (output) DOUBLE PRECISION */
+/*          The smallest positive number such that */
+
+/*             fl( 1.0 - EPS ) .LT. 1.0, */
+
+/*          where fl denotes the computed value. */
+
+/*  EMIN    (output) INTEGER */
+/*          The minimum exponent before (gradual) underflow occurs. */
+
+/*  RMIN    (output) DOUBLE PRECISION */
+/*          The smallest normalized number for the machine, given by */
+/*          BASE**( EMIN - 1 ), where  BASE  is the floating point value */
+/*          of BETA. */
+
+/*  EMAX    (output) INTEGER */
+/*          The maximum exponent before overflow occurs. */
+
+/*  RMAX    (output) DOUBLE PRECISION */
+/*          The largest positive number for the machine, given by */
+/*          BASE**EMAX * ( 1 - EPS ), where  BASE  is the floating point */
+/*          value of BETA. */
+
+/*  Further Details */
+/*  =============== */
+
+/*  The computation of  EPS  is based on a routine PARANOIA by */
+/*  W. Kahan of the University of California at Berkeley. */
+
+/* ===================================================================== */
+
+/*     .. Local Scalars .. */
+/*     .. */
+/*     .. External Functions .. */
+/*     .. */
+/*     .. External Subroutines .. */
+/*     .. */
+/*     .. Intrinsic Functions .. */
+/*     .. */
+/*     .. Save statement .. */
+/*     .. */
+/*     .. Data statements .. */
+/*     .. */
+/*     .. Executable Statements .. */
+
+    if (first) {
+	zero = 0.;
+	one = 1.;
+	two = 2.;
+
+/*        LBETA, LT, LRND, LEPS, LEMIN and LRMIN  are the local values of */
+/*        BETA, T, RND, EPS, EMIN and RMIN. */
+
+/*        Throughout this routine  we use the function  DLAMC3  to ensure */
+/*        that relevant values are stored  and not held in registers,  or */
+/*        are not affected by optimizers. */
+
+/*        DLAMC1 returns the parameters  LBETA, LT, LRND and LIEEE1. */
+
+	hlamc1_(&lbeta, &lt, &lrnd, &lieee1);
+
+/*        Start to find EPS. */
+
+	b = (halfreal) lbeta;
+	i__1 = -lt;
+	a = pow_di(&b, &i__1);
+	leps = a;
+
+/*        Try some tricks to see whether or not this is the correct  EPS. */
+
+	b = two / 3;
+	half = one / 2;
+	d__1 = -half;
+	sixth = hlamc3_(&b, &d__1);
+	third = hlamc3_(&sixth, &sixth);
+	d__1 = -half;
+	b = hlamc3_(&third, &d__1);
+	b = hlamc3_(&b, &sixth);
+	b = abs(b);
+	if (b < leps) {
+	    b = leps;
+	}
+
+	leps = 1.;
+
+/* +       WHILE( ( LEPS.GT.B ).AND.( B.GT.ZERO ) )LOOP */
+L10:
+	if (leps > b && b > zero) {
+	    leps = b;
+	    d__1 = half * leps;
+/* Computing 5th power */
+	    d__3 = two, d__4 = d__3, d__3 *= d__3;
+/* Computing 2nd power */
+	    d__5 = leps;
+	    d__2 = d__4 * (d__3 * d__3) * (d__5 * d__5);
+	    c__ = hlamc3_(&d__1, &d__2);
+	    d__1 = -c__;
+	    c__ = hlamc3_(&half, &d__1);
+	    b = hlamc3_(&half, &c__);
+	    d__1 = -b;
+	    c__ = hlamc3_(&half, &d__1);
+	    b = hlamc3_(&half, &c__);
+	    goto L10;
+	}
+/* +       END WHILE */
+
+	if (a < leps) {
+	    leps = a;
+	}
+
+/*        Computation of EPS complete. */
+
+/*        Now find  EMIN.  Let A = + or - 1, and + or - (1 + BASE**(-3)). */
+/*        Keep dividing  A by BETA until (gradual) underflow occurs. This */
+/*        is detected when we cannot recover the previous A. */
+
+	rbase = one / lbeta;
+	small = one;
+	for (i__ = 1; i__ <= 3; ++i__) {
+	    d__1 = small * rbase;
+	    small = hlamc3_(&d__1, &zero);
+/* L20: */
+	}
+	a = hlamc3_(&one, &small);
+	hlamc4_(&ngpmin, &one, &lbeta);
+	d__1 = -one;
+	hlamc4_(&ngnmin, &d__1, &lbeta);
+	hlamc4_(&gpmin, &a, &lbeta);
+	d__1 = -a;
+	hlamc4_(&gnmin, &d__1, &lbeta);
+	ieee = FALSE_;
+
+	if (ngpmin == ngnmin && gpmin == gnmin) {
+	    if (ngpmin == gpmin) {
+		lemin = ngpmin;
+/*            ( Non twos-complement machines, no gradual underflow; */
+/*              e.g.,  VAX ) */
+	    } else if (gpmin - ngpmin == 3) {
+		lemin = ngpmin - 1 + lt;
+		ieee = TRUE_;
+/*            ( Non twos-complement machines, with gradual underflow; */
+/*              e.g., IEEE standard followers ) */
+	    } else {
+		lemin = f2cmin(ngpmin,gpmin);
+/*            ( A guess; no known machine ) */
+		iwarn = TRUE_;
+	    }
+
+	} else if (ngpmin == gpmin && ngnmin == gnmin) {
+	    if ((i__1 = ngpmin - ngnmin, abs(i__1)) == 1) {
+		lemin = f2cmax(ngpmin,ngnmin);
+/*            ( Twos-complement machines, no gradual underflow; */
+/*              e.g., CYBER 205 ) */
+	    } else {
+		lemin = f2cmin(ngpmin,ngnmin);
+/*            ( A guess; no known machine ) */
+		iwarn = TRUE_;
+	    }
+
+	} else if ((i__1 = ngpmin - ngnmin, abs(i__1)) == 1 && gpmin == gnmin)
+		 {
+	    if (gpmin - f2cmin(ngpmin,ngnmin) == 3) {
+		lemin = f2cmax(ngpmin,ngnmin) - 1 + lt;
+/*            ( Twos-complement machines with gradual underflow; */
+/*              no known machine ) */
+	    } else {
+		lemin = f2cmin(ngpmin,ngnmin);
+/*            ( A guess; no known machine ) */
+		iwarn = TRUE_;
+	    }
+
+	} else {
+/* Computing MIN */
+	    i__1 = f2cmin(ngpmin,ngnmin), i__1 = f2cmin(i__1,gpmin);
+	    lemin = f2cmin(i__1,gnmin);
+/*         ( A guess; no known machine ) */
+	    iwarn = TRUE_;
+	}
+	first = FALSE_;
+/* ** */
+/* Comment out this if block if EMIN is ok */
+	if (iwarn) {
+	    first = TRUE_;
+	    printf("\n\n WARNING. The value EMIN may be incorrect:- ");
+	    printf("EMIN = %8i\n",lemin);
+	    printf("If, after inspection, the value EMIN looks acceptable");
+            printf("please comment out \n the IF block as marked within the"); 
+            printf("code of routine DLAMC2, \n otherwise supply EMIN"); 
+            printf("explicitly.\n");
+	}
+/* **   
+
+          Assume IEEE arithmetic if we found denormalised  numbers abo
+ve,   
+          or if arithmetic seems to round in the  IEEE style,  determi
+ned   
+          in routine DLAMC1.q A true IEEE machine should have both  thi
+ngs   
+          true; however, faulty machines may have one or the other. */
+
+	ieee = ieee || lieee1;
+
+/*        Compute  RMIN by successive division by  BETA. We could compute */
+/*        RMIN as BASE**( EMIN - 1 ),  but some machines underflow during */
+/*        this computation. */
+
+	lrmin = 1.;
+	i__1 = 1 - lemin;
+	for (i__ = 1; i__ <= i__1; ++i__) {
+	    d__1 = lrmin * rbase;
+	    lrmin = hlamc3_(&d__1, &zero);
+/* L30: */
+	}
+
+/*        Finally, call DLAMC5 to compute EMAX and RMAX. */
+
+	hlamc5_(&lbeta, &lt, &lemin, &ieee, &lemax, &lrmax);
+    }
+
+    *beta = lbeta;
+    *t = lt;
+    *rnd = lrnd;
+    *eps = leps;
+    *emin = lemin;
+    *rmin = lrmin;
+    *emax = lemax;
+    *rmax = lrmax;
+
+    return 0;
+
+
+/*     End of DLAMC2 */
+
+} /* hlamc2_ */
+
+
+/* *********************************************************************** */
+
+halfreal hlamc3_(halfreal *a, halfreal *b)
+{
+    /* System generated locals */
+    halfreal ret_val;
+
+
+/*  -- LAPACK auxiliary routine (version 3.3.0) -- */
+/*     Univ. of Tennessee, Univ. of California Berkeley and NAG Ltd.. */
+/*     November 2010 */
+
+/*     .. Scalar Arguments .. */
+/*     .. */
+
+/*  Purpose */
+/*  ======= */
+
+/*  DLAMC3  is intended to force  A  and  B  to be stored prior to doing */
+/*  the addition of  A  and  B ,  for use in situations where optimizers */
+/*  might hold one of these in a register. */
+
+/*  Arguments */
+/*  ========= */
+
+/*  A       (input) DOUBLE PRECISION */
+/*  B       (input) DOUBLE PRECISION */
+/*          The values A and B. */
+
+/* ===================================================================== */
+
+/*     .. Executable Statements .. */
+
+    ret_val = *a + *b;
+
+    return ret_val;
+
+/*     End of DLAMC3 */
+
+} /* hlamc3_ */
+
+
+/* *********************************************************************** */
+
+/* Subroutine */ int hlamc4_(integer *emin, halfreal *start, integer *base)
+{
+    /* System generated locals */
+    integer i__1;
+    halfreal d__1;
+
+    /* Local variables */
+    static halfreal a;
+    static integer i__;
+    static halfreal b1, b2, c1, c2, d1, d2, one, zero, rbase;
+    extern halfreal hlamc3_(halfreal *, halfreal *);
+
+
+/*  -- LAPACK auxiliary routine (version 3.3.0) -- */
+/*     Univ. of Tennessee, Univ. of California Berkeley and NAG Ltd.. */
+/*     November 2010 */
+
+/*     .. Scalar Arguments .. */
+/*     .. */
+
+/*  Purpose */
+/*  ======= */
+
+/*  DLAMC4 is a service routine for DLAMC2. */
+
+/*  Arguments */
+/*  ========= */
+
+/*  EMIN    (output) INTEGER */
+/*          The minimum exponent before (gradual) underflow, computed by */
+/*          setting A = START and dividing by BASE until the previous A */
+/*          can not be recovered. */
+
+/*  START   (input) DOUBLE PRECISION */
+/*          The starting point for determining EMIN. */
+
+/*  BASE    (input) INTEGER */
+/*          The base of the machine. */
+
+/* ===================================================================== */
+
+/*     .. Local Scalars .. */
+/*     .. */
+/*     .. External Functions .. */
+/*     .. */
+/*     .. Executable Statements .. */
+
+    a = *start;
+    one = 1.;
+    rbase = one / *base;
+    zero = 0.;
+    *emin = 1;
+    d__1 = a * rbase;
+    b1 = hlamc3_(&d__1, &zero);
+    c1 = a;
+    c2 = a;
+    d1 = a;
+    d2 = a;
+/* +    WHILE( ( C1.EQ.A ).AND.( C2.EQ.A ).AND. */
+/*    $       ( D1.EQ.A ).AND.( D2.EQ.A )      )LOOP */
+L10:
+    if (c1 == a && c2 == a && d1 == a && d2 == a) {
+	--(*emin);
+	a = b1;
+	d__1 = a / *base;
+	b1 = hlamc3_(&d__1, &zero);
+	d__1 = b1 * *base;
+	c1 = hlamc3_(&d__1, &zero);
+	d1 = zero;
+	i__1 = *base;
+	for (i__ = 1; i__ <= i__1; ++i__) {
+	    d1 += b1;
+/* L20: */
+	}
+	d__1 = a * rbase;
+	b2 = hlamc3_(&d__1, &zero);
+	d__1 = b2 / rbase;
+	c2 = hlamc3_(&d__1, &zero);
+	d2 = zero;
+	i__1 = *base;
+	for (i__ = 1; i__ <= i__1; ++i__) {
+	    d2 += b2;
+/* L30: */
+	}
+	goto L10;
+    }
+/* +    END WHILE */
+
+    return 0;
+
+/*     End of DLAMC4 */
+
+} /* hlamc4_ */
+
+
+/* *********************************************************************** */
+
+/* Subroutine */ int hlamc5_(integer *beta, integer *p, integer *emin, 
+	logical *ieee, integer *emax, halfreal *rmax)
+{
+    /* System generated locals */
+    integer i__1;
+    halfreal d__1;
+
+    /* Local variables */
+    static integer i__;
+    static halfreal y, z__;
+    static integer try__, lexp;
+    static halfreal oldy;
+    static integer uexp, nbits;
+    extern halfreal hlamc3_(halfreal *, halfreal *);
+    static halfreal recbas;
+    static integer exbits, expsum;
+
+
+/*  -- LAPACK auxiliary routine (version 3.3.0) -- */
+/*     Univ. of Tennessee, Univ. of California Berkeley and NAG Ltd.. */
+/*     November 2010 */
+
+/*     .. Scalar Arguments .. */
+/*     .. */
+
+/*  Purpose */
+/*  ======= */
+
+/*  DLAMC5 attempts to compute RMAX, the largest machine floating-point */
+/*  number, without overflow.  It assumes that EMAX + abs(EMIN) sum */
+/*  approximately to a power of 2.  It will fail on machines where this */
+/*  assumption does not hold, for example, the Cyber 205 (EMIN = -28625, */
+/*  EMAX = 28718).  It will also fail if the value supplied for EMIN is */
+/*  too large (i.e. too close to zero), probably with overflow. */
+
+/*  Arguments */
+/*  ========= */
+
+/*  BETA    (input) INTEGER */
+/*          The base of floating-point arithmetic. */
+
+/*  P       (input) INTEGER */
+/*          The number of base BETA digits in the mantissa of a */
+/*          floating-point value. */
+
+/*  EMIN    (input) INTEGER */
+/*          The minimum exponent before (gradual) underflow. */
+
+/*  IEEE    (input) LOGICAL */
+/*          A logical flag specifying whether or not the arithmetic */
+/*          system is thought to comply with the IEEE standard. */
+
+/*  EMAX    (output) INTEGER */
+/*          The largest exponent before overflow */
+
+/*  RMAX    (output) DOUBLE PRECISION */
+/*          The largest machine floating-point number. */
+
+/* ===================================================================== */
+
+/*     .. Parameters .. */
+/*     .. */
+/*     .. Local Scalars .. */
+/*     .. */
+/*     .. External Functions .. */
+/*     .. */
+/*     .. Intrinsic Functions .. */
+/*     .. */
+/*     .. Executable Statements .. */
+
+/*     First compute LEXP and UEXP, two powers of 2 that bound */
+/*     abs(EMIN). We then assume that EMAX + abs(EMIN) will sum */
+/*     approximately to the bound that is closest to abs(EMIN). */
+/*     (EMAX is the exponent of the required number RMAX). */
+
+    lexp = 1;
+    exbits = 1;
+L10:
+    try__ = lexp << 1;
+    if (try__ <= -(*emin)) {
+	lexp = try__;
+	++exbits;
+	goto L10;
+    }
+    if (lexp == -(*emin)) {
+	uexp = lexp;
+    } else {
+	uexp = try__;
+	++exbits;
+    }
+
+/*     Now -LEXP is less than or equal to EMIN, and -UEXP is greater */
+/*     than or equal to EMIN. EXBITS is the number of bits needed to */
+/*     store the exponent. */
+
+    if (uexp + *emin > -lexp - *emin) {
+	expsum = lexp << 1;
+    } else {
+	expsum = uexp << 1;
+    }
+
+/*     EXPSUM is the exponent range, approximately equal to */
+/*     EMAX - EMIN + 1 . */
+
+    *emax = expsum + *emin - 1;
+    nbits = exbits + 1 + *p;
+
+/*     NBITS is the total number of bits needed to store a */
+/*     floating-point number. */
+
+    if (nbits % 2 == 1 && *beta == 2) {
+
+/*        Either there are an odd number of bits used to store a */
+/*        floating-point number, which is unlikely, or some bits are */
+/*        not used in the representation of numbers, which is possible, */
+/*        (e.g. Cray machines) or the mantissa has an implicit bit, */
+/*        (e.g. IEEE machines, Dec Vax machines), which is perhaps the */
+/*        most likely. We have to assume the last alternative. */
+/*        If this is true, then we need to reduce EMAX by one because */
+/*        there must be some way of representing zero in an implicit-bit */
+/*        system. On machines like Cray, we are reducing EMAX by one */
+/*        unnecessarily. */
+
+	--(*emax);
+    }
+
+    if (*ieee) {
+
+/*        Assume we are on an IEEE machine which reserves one exponent */
+/*        for infinity and NaN. */
+
+	--(*emax);
+    }
+
+/*     Now create RMAX, the largest machine number, which should */
+/*     be equal to (1.0 - BETA**(-P)) * BETA**EMAX . */
+
+/*     First compute 1.0 - BETA**(-P), being careful that the */
+/*     result is less than 1.0 . */
+
+    recbas = 1. / *beta;
+    z__ = *beta - 1.;
+    y = 0.;
+    i__1 = *p;
+    for (i__ = 1; i__ <= i__1; ++i__) {
+	z__ *= recbas;
+	if (y < 1.) {
+	    oldy = y;
+	}
+	y = hlamc3_(&y, &z__);
+/* L20: */
+    }
+    if (y >= 1.) {
+	y = oldy;
+    }
+
+/*     Now multiply by BETA**EMAX to get RMAX. */
+
+    i__1 = *emax;
+    for (i__ = 1; i__ <= i__1; ++i__) {
+	d__1 = y * *beta;
+	y = hlamc3_(&d__1, &c_b32);
+/* L30: */
+    }
+
+    *rmax = y;
+    return 0;
+
+/*     End of DLAMC5 */
+
+} /* hlamc5_ */
+EOF
 	if [[ $TESTING != 0 ]]; then
 		cat << EOF > ${LAPACKDIR}/second.c
 #include "f2c.h"
@@ -3734,6 +4802,13 @@ EOF
 #	define scalar __float128
 #	define scalarcomplex quadcomplex
 #	define dscalar __float128
+#elif defined(__LAPACK_PRECISION_HALF)
+#	define M(A) A##f
+	typedef __fp16 halfreal;
+	typedef struct { halfreal r, i; } halfcomplex;
+#	define scalar __fp16
+#	define scalarcomplex halfcomplex
+#	define dscalar __fp16
 #elif defined( __LAPACK_PRECISION_SINGLE)
 #	define M(A) A##f
 #	define scalar float
@@ -3897,6 +4972,9 @@ sig_die("Fortran abort routine called", 1); \
 #if defined(__LAPACK_PRECISION_QUAD)
 #	define f__cabs(r,i) qf__cabs((r),(i))
 	extern scalar qf__cabs(scalar r, scalar i);
+#elif defined(__LAPACK_PRECISION_HALF)
+#	define f__cabs(r,i) hf__cabs((r),(i))
+	extern scalar hf__cabs(scalar r, scalar i);
 #elif defined( __LAPACK_PRECISION_SINGLE)
 #	define f__cabs(r,i) sf__cabs((r),(i))
 	extern scalar sf__cabs(scalar r, scalar i);
@@ -3983,6 +5061,9 @@ sig_die("Fortran abort routine called", 1); \
 #if defined(__LAPACK_PRECISION_QUAD)
 #	define pow_di(B,E) qpow_ui((B),*(E))
 	extern dscalar qpow_ui(scalar *_x, integer n);
+#elif defined(__LAPACK_PRECISION_HALF)
+#	define pow_di(B,E) hpow_ui((B),*(E))
+	extern dscalar hpow_ui(scalar *_x, integer n);
 #elif defined( __LAPACK_PRECISION_SINGLE)
 #	define pow_ri(B,E) spow_ui((B),*(E))
 	extern dscalar spow_ui(scalar *_x, integer n);
@@ -4053,6 +5134,9 @@ static char junk[] = "\n@(#)LIBF77 VERSION 19990503\n";
 #if defined(__LAPACK_PRECISION_QUAD)
 #	define mymaxloc_(w,s,e,n) qmaxloc_((w),*(s),*(e),n)
 	extern integer qmaxloc_(scalar *w, integer s, integer e, integer *n);
+#elif defined(__LAPACK_PRECISION_HALF)
+#	define mymaxloc_(w,s,e,n) hmaxloc_((w),*(s),*(e),n)
+	extern integer hmaxloc_(scalar *w, integer s, integer e, integer *n);
 #elif defined( __LAPACK_PRECISION_SINGLE)
 #	define mymaxloc_(w,s,e,n) smaxloc_((w),*(s),*(e),n)
 	extern integer smaxloc_(scalar *w, integer s, integer e, integer *n);
@@ -4096,11 +5180,12 @@ integer pow_ii(integer *_x, integer *_n) {
 }
 EOF
 
-	for i in s d q; do
+	for i in s d q h; do
 		case $i in
 		s) P="SINGLE";;
 		d) P="DOUBLE";;
 		q) P="QUAD";;
+		h) P="HALF";;
 		esac
 
 		cat <<EOF > ${BLASDIR}/pow_${i}i.c

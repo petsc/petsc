@@ -68,6 +68,8 @@ MPI_Datatype MPIU___FLOAT128 = 0;
 #if defined(PETSC_HAVE_COMPLEX)
 MPI_Datatype MPIU___COMPLEX128 = 0;
 #endif
+#elif defined(PETSC_USE_REAL___FP16)
+MPI_Datatype MPIU___FP16 = 0;
 #endif
 MPI_Datatype MPIU_2SCALAR = 0;
 #if defined(PETSC_USE_64BIT_INDICES) || !defined(MPI_2INT)
