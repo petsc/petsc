@@ -6,7 +6,7 @@ class Configure(config.package.CMakePackage):
     config.package.CMakePackage.__init__(self, framework)
     self.gitcommit        = 'master'
     self.download         = ['git://https://github.com/MeshToolkit/MSTK','http://software.lanl.gov/ascem/tpls/mstk-2.23.tgz']
-    self.downloaddirname  = 'mstk'
+    self.downloaddirnames = ['mstk']
     self.includes         = ['MSTK.h']
     self.liblist          = [['libmstk.a']]
     self.functions        = []

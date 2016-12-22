@@ -8,7 +8,7 @@ class Configure(config.package.Package):
     self.functions         = []
     self.includes          = []
     self.skippackagewithoptions = 1
-    self.downloaddirname   = 'petsc-petsc4py'
+    self.downloaddirnames  = ['petsc-petsc4py','petsc4py']
     return
 
   def setupDependencies(self, framework):

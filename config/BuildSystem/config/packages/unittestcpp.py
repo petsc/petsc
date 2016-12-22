@@ -9,5 +9,5 @@ class Configure(config.package.CMakePackage):
     self.includes         = ['UnitTest++.h']
     self.liblist          = [['libUnitTest++.a']]
     self.cxx              = 1    
-    self.downloaddirname  = 'unittest-cpp'
+    self.downloaddirnames = ['unittest-cpp']
     self.includedir       = os.path.join('include','UnitTest++')
