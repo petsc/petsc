@@ -819,7 +819,10 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
     langs = []
 
     self.addDefine('FUNCTION_NAME_C', getFunctionName('C'))
-    self.addDefine('FUNCTION_NAME_CXX', getFunctionName('Cxx'))
+    if hasattr(self.compilers, 'CXX'):
+      self.addDefine('FUNCTION_NAME_CXX', getFunctionName('Cxx'))
+    else:
+      self.addDefine('FUNCTION_NAME_CXX','unknown')
 
   def configureIntptrt(self):
     '''Determine what to use for uintptr_t'''

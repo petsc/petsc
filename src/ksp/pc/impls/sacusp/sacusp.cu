@@ -29,6 +29,7 @@ typedef struct {
   /*int cycles; */
 } PC_SACUSP;
 
+/*
 static PetscErrorCode PCSACUSPSetCycles(PC pc, int n)
 {
   PC_SACUSP      *sac = (PC_SACUSP*)pc->data;
