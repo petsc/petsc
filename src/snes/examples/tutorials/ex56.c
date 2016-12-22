@@ -414,7 +414,7 @@ int main(int argc,char **args)
     ierr = DMCreateMatrix(dm, &Amat);CHKERRQ(ierr);
     ierr = VecGetSize(bb,&N);CHKERRQ(ierr);
     local_sizes[iter] = N;
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d]%s %d global equations, %d vertices\n",rank,PETSC_FUNCTION_NAME,N/dim);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d]%s %d global equations, %d vertices\n",rank,PETSC_FUNCTION_NAME,N,N/dim);CHKERRQ(ierr);
     if (use_nearnullspace && N/dim > 1) {
       /* Set up the near null space (a.k.a. rigid body modes) that will be used by the multigrid preconditioner */
       DM           subdm;
