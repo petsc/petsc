@@ -171,6 +171,9 @@ test_build:
           cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR}  DIFF=${PETSC_DIR}/bin/petscdiff runex19_ml; \
          fi;
 	@cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} ex19.rm
+	@if [ "${PETSC4PY}" = "yes" ]; then \
+          cd tutorials/python >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR}  DIFF=${PETSC_DIR}/bin/petscdiff testexamples_C_Python; \
+         fi;
 	@if [ "${FC}" != "" ]; then \
           egrep "^#define PETSC_USE_FORTRAN_DATATYPES 1" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h | tee .ftn-dtype.log > /dev/null; \
           if test -s .ftn-dtype.log; then F90TEST="testex5f90t"; else F90TEST="testex5f"; fi; ${RM} .ftn-dtype.log; \

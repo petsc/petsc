@@ -49,6 +49,7 @@ class Configure(config.package.Package):
     else:
        newuser = ''
 
+    self.addMakeMacro('PETSC4PY','yes')
     self.addMakeRule('petsc4pybuild','', \
                        ['@echo "*** Building petsc4py ***"',\
                           '@${RM} -f ${PETSC_ARCH}/lib/petsc/conf/petsc4py.errorflg',\
