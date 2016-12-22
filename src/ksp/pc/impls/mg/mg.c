@@ -163,7 +163,7 @@ PetscErrorCode PCReset_MG(PC pc)
 +  pc - the preconditioner context
 .  levels - the number of levels
 -  comms - optional communicators for each level; this is to allow solving the coarser problems
-           on smaller sets of processors. Use NULL_OBJECT for default in Fortran
+           on smaller sets of processors.
 
    Level: intermediate
 
