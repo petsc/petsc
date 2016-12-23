@@ -26,6 +26,7 @@
       PetscErrorCode ierr
       Vec     x,y
       Mat     m
+      PetscInt tw
       external  mymatgetvecs
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
@@ -34,7 +35,8 @@
         stop
       endif
 
-      call MatCreateShell(PETSC_COMM_SELF,12,12,12,12,0,m,ierr)
+      tw = 12
+      call MatCreateShell(PETSC_COMM_SELF,tw,tw,tw,tw,0,m,ierr)
       call MatAssemblyBegin(m,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(m,MAT_FINAL_ASSEMBLY,ierr)
       call MatShellSetOperation(m,MATOP_GET_VECS,mymatgetvecs,ierr)
