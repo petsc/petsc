@@ -1,4 +1,8 @@
 static char help[] = "Example for PetscOptionsInsertFileYAML\n";
+/*T
+   requires: yaml
+T*/
+
 #include <petscsys.h>
 #include <petscviewer.h>
 
@@ -20,3 +24,19 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+
+
+/*TEST
+   
+   test:
+      suffix: 1
+      args: -f petsc.yml
+      localrunfiles: petsc.yml
+   
+   test:
+      suffix: 2
+      requires: yaml
+      args: -options_file_yaml petsc.yml
+      localrunfiles: petsc.yml
+
+TEST*/

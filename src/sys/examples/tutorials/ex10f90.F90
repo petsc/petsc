@@ -1,4 +1,8 @@
       program ex10f90
+!/*T
+!   requires: yaml
+!T*/
+
 #include "petsc/finclude/petsc.h"
       use petsc
       implicit none
@@ -21,3 +25,19 @@
       end program ex10f90
 
 
+
+!
+!/*TEST
+!   
+!   test:
+!      suffix: 1
+!      args: -f petsc.yml
+!      localrunfiles: petsc.yml
+!     
+!   test:
+!      suffix: 2
+!      requires: yaml
+!      args: -options_file_yaml petsc.yml
+!      localrunfiles: petsc.yml
+!
+!TEST*/

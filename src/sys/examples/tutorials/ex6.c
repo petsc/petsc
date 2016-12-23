@@ -27,3 +27,11 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+
+
+/*TEST
+   
+   test:
+      output_file: output/ex6_1.out
+
+TEST*/

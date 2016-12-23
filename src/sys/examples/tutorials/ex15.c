@@ -70,3 +70,13 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+   
+   test:
+      nsize: 4
+      args: -viewer
+      output_file: output/ex15_1.out
+
+TEST*/

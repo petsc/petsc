@@ -6,7 +6,10 @@ static char help[] = "Demonstrates call PETSc first and then Trilinos in the sam
    Processors: n
 
    Example obtained from: http://trilinos.org/docs/dev/packages/tpetra/doc/html/Tpetra_Lesson01.html
+   requires: trilinos
 T*/
+
+
 
 #include <petscsys.h>
 #include <Teuchos_DefaultMpiComm.hpp> // wrapper for MPI_Comm
@@ -66,3 +69,13 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+   
+   test:
+      nsize: 3
+      filter: grep -v "Tpetra in Trilinos"
+      output_file: output/ex13_1.out
+
+TEST*/

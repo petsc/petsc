@@ -6,7 +6,10 @@ static char help[] = "Demonstrates calling Trilinos and then PETSc in the same p
    Processors: n
 
    Example obtained from: http://trilinos.org/docs/dev/packages/tpetra/doc/html/Tpetra_Lesson01.html
+   requires: trilinos
 T*/
+
+
 
 #include <petscsys.h>
 #include <Tpetra_DefaultPlatform.hpp>
@@ -81,3 +84,13 @@ int main(int argc,char **argv)
 }
 
 
+
+
+/*TEST
+   
+   test:
+      nsize: 3
+      filter: grep -v "Tpetra in Trilinos"
+      output_file: output/ex14_1.out
+
+TEST*/

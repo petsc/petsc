@@ -36,3 +36,14 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+   
+   test:
+      nsize: 2
+      args: -options_view -get_total_flops
+      filter: grep -v malloc | grep -v display | grep -v nox | grep -v "Total flops"
+      output_file: output/ex16_1.out
+
+TEST*/

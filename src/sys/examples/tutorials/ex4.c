@@ -63,3 +63,13 @@ int main(int argc, char *argv[])
   ierr = MPI_Finalize();
   return ierr;
 }
+
+
+/*TEST
+   
+   test:
+      nsize: 5
+      redirect_file: ex4_1.tmp
+      TODO: sort -b |  Need to check for filter and/or filter_output
+
+TEST*/

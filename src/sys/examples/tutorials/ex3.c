@@ -12,7 +12,10 @@ codes.\n\n";
    Concepts: PetscLog^activating/deactivating events for profiling
    Concepts: profiling^activating/deactivating events
    Processors: n
+   requires: x
 T*/
+
+
 
 /*
   Include "petscsys.h" so that we can use PETSc profiling routines.
@@ -74,3 +77,11 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+
+
+/*TEST
+   
+   test:
+      output_file: output/ex3_1.out
+
+TEST*/

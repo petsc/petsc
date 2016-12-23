@@ -8,7 +8,10 @@ static char help[] = "Synchronized printing.\n\n";
    Concepts: printf^synchronized
    Concepts: printf^in parallel
    Processors: n
+   requires: x
 T*/
+
+
 
 #include <petscsys.h>
 int main(int argc,char **argv)
@@ -76,3 +79,12 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+   
+   test:
+      output_file: output/ex2_1.out
+      redirect_file: ex2_1.tmp
+
+TEST*/

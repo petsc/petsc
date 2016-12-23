@@ -5,7 +5,10 @@ static char help[] = "Introductory example that illustrates printing.\n\n";
    Concepts: introduction to PETSc;
    Concepts: printing^in parallel
    Processors: n
+   requires: x
 T*/
+
+
 
 #include <petscsys.h>
 int main(int argc,char **argv)
@@ -63,3 +66,12 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+   
+   test:
+      output_file: output/ex1_1.out
+      redirect_file: ex1_1.tmp
+
+TEST*/
