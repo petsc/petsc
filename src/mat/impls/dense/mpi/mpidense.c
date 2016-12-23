@@ -956,8 +956,8 @@ PetscErrorCode MatTranspose_MPIDense(Mat A,MatReuse reuse,Mat *matout)
   PetscScalar    *v;
 
   PetscFunctionBegin;
-  if (reuse == MAT_REUSE_MATRIX && A == *matout && M != N) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Supports square matrix only in-place");
-  if (reuse == MAT_INITIAL_MATRIX || A == *matout) {
+  if (reuse == MAT_INPLACE_MATRIX  && M != N) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Supports square matrix only in-place");
+  if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_INPLACE_MATRIX) {
     ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
     ierr = MatSetSizes(B,A->cmap->n,A->rmap->n,N,M);CHKERRQ(ierr);
     ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
@@ -976,7 +976,7 @@ PetscErrorCode MatTranspose_MPIDense(Mat A,MatReuse reuse,Mat *matout)
   ierr = PetscFree(rwork);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (reuse == MAT_INITIAL_MATRIX || *matout != A) {
+  if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_REUSE_MATRIX) {
     *matout = B;
   } else {
     ierr = MatHeaderMerge(A,&B);CHKERRQ(ierr);

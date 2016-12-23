@@ -137,7 +137,7 @@ PetscErrorCode MatTranspose_SeqAIJ_FAST(Mat A,MatReuse reuse,Mat *B)
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(MAT_Transpose_SeqAIJ,A,0,0,0);CHKERRQ(ierr);
 
-  if (reuse == MAT_INITIAL_MATRIX || *B == A) {
+  if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_INPLACE_MATRIX) {
     /* Allocate space for symbolic transpose info and work array */
     ierr = PetscCalloc1(an+1,&ati);CHKERRQ(ierr);
     ierr = PetscMalloc1(ai[am],&atj);CHKERRQ(ierr);
@@ -184,7 +184,7 @@ PetscErrorCode MatTranspose_SeqAIJ_FAST(Mat A,MatReuse reuse,Mat *B)
     at->nonew   = 0;
   }
 
-  if (reuse == MAT_INITIAL_MATRIX || *B != A) {
+  if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_REUSE_MATRIX) {
     *B = At;
   } else {
     ierr = MatHeaderMerge(A,&At);CHKERRQ(ierr);

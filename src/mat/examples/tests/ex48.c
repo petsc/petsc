@@ -93,8 +93,8 @@ int main(int argc,char **args)
   ierr = MatShift(B,rval);CHKERRQ(ierr);
 
   /* Test MatTranspose() */
-  ierr = MatTranspose(A,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
-  ierr = MatTranspose(B,MAT_REUSE_MATRIX,&B);CHKERRQ(ierr);
+  ierr = MatTranspose(A,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
+  ierr = MatTranspose(B,MAT_INPLACE_MATRIX,&B);CHKERRQ(ierr);
 
   /* Now do MatGetValues()  */
   for (i=0; i<30; i++) {

@@ -611,31 +611,19 @@ static PetscErrorCode MatGetInfo_IS(Mat A,MatInfoType flag,MatInfo *ginfo)
 PetscErrorCode MatTranspose_IS(Mat A,MatReuse reuse,Mat *B)
 {
   Mat                    C,lC,lA;
-  ISLocalToGlobalMapping rl2g,cl2g;
-  PetscBool              notset = PETSC_FALSE,cong = PETSC_TRUE;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
-  if (reuse == MAT_REUSE_MATRIX) {
-    PetscBool rcong,ccong;
-
-    ierr = PetscLayoutCompare((*B)->cmap,A->rmap,&rcong);CHKERRQ(ierr);
-    ierr = PetscLayoutCompare((*B)->rmap,A->cmap,&ccong);CHKERRQ(ierr);
-    cong = (PetscBool)(rcong || ccong);
-  }
-  if (reuse == MAT_INITIAL_MATRIX || *B == A || !cong) {
+  if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_INPLACE_MATRIX) {
+    ISLocalToGlobalMapping rl2g,cl2g;
     ierr = MatCreate(PetscObjectComm((PetscObject)A),&C);CHKERRQ(ierr);
-  } else {
-    ierr = PetscObjectTypeCompare((PetscObject)*B,MATIS,&notset);CHKERRQ(ierr);
-    C = *B;
-  }
-
-  if (!notset) {
     ierr = MatSetSizes(C,A->cmap->n,A->rmap->n,A->cmap->N,A->rmap->N);CHKERRQ(ierr);
     ierr = MatSetBlockSizes(C,PetscAbs(A->cmap->bs),PetscAbs(A->rmap->bs));CHKERRQ(ierr);
     ierr = MatSetType(C,MATIS);CHKERRQ(ierr);
     ierr = MatGetLocalToGlobalMapping(A,&rl2g,&cl2g);CHKERRQ(ierr);
     ierr = MatSetLocalToGlobalMapping(C,cl2g,rl2g);CHKERRQ(ierr);
+  } else {
+    C = *B;
   }
 
   /* perform local transposition */
@@ -644,13 +632,7 @@ PetscErrorCode MatTranspose_IS(Mat A,MatReuse reuse,Mat *B)
   ierr = MatISSetLocalMat(C,lC);CHKERRQ(ierr);
   ierr = MatDestroy(&lC);CHKERRQ(ierr);
 
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
-  if (reuse == MAT_INITIAL_MATRIX || *B != A) {
-    if (!cong) {
-      ierr = MatDestroy(B);CHKERRQ(ierr);
-    }
+  if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_REUSE_MATRIX) {
     *B = C;
   } else {
     ierr = MatHeaderMerge(A,&C);CHKERRQ(ierr);

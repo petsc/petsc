@@ -156,16 +156,16 @@ static PetscErrorCode MatTranspose_Nest(Mat A,MatReuse reuse,Mat *B)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (reuse == MAT_REUSE_MATRIX && A == *B && nr != nc) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Square nested matrix only for in-place");
+  if (reuse == MAT_INPLACE_MATRIX && nr != nc) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Square nested matrix only for in-place");
 
-  if (reuse == MAT_INITIAL_MATRIX || A == *B) {
+  if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_INPLACE_MATRIX) {
     Mat *subs;
     IS  *is_row,*is_col;
 
     ierr = PetscCalloc1(nr * nc,&subs);CHKERRQ(ierr);
     ierr = PetscMalloc2(nr,&is_row,nc,&is_col);CHKERRQ(ierr);
     ierr = MatNestGetISs(A,is_row,is_col);CHKERRQ(ierr);
-    if (reuse == MAT_REUSE_MATRIX) {
+    if (reuse == MAT_INPLACE_MATRIX) {
       for (i=0; i<nr; i++) {
         for (j=0; j<nc; j++) {
           subs[i + nr * j] = bA->m[i][j];
@@ -191,7 +191,7 @@ static PetscErrorCode MatTranspose_Nest(Mat A,MatReuse reuse,Mat *B)
     }
   }
 
-  if (reuse == MAT_INITIAL_MATRIX || A != *B) {
+  if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_REUSE_MATRIX) {
     *B = C;
   } else {
     ierr = MatHeaderMerge(A, &C);CHKERRQ(ierr);
