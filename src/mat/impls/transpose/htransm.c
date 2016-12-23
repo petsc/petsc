@@ -78,7 +78,7 @@ PetscErrorCode MatDuplicate_HT(Mat N, MatDuplicateOption op, Mat* m)
     ierr = MatHermitianTranspose(Na->A,MAT_INITIAL_MATRIX,m);CHKERRQ(ierr);
   } else if (op == MAT_DO_NOT_COPY_VALUES) {
     ierr = MatDuplicate(Na->A,MAT_DO_NOT_COPY_VALUES,m);CHKERRQ(ierr);
-    ierr = MatHermitianTranspose(*m,MAT_REUSE_MATRIX,m);CHKERRQ(ierr);
+    ierr = MatHermitianTranspose(*m,MAT_INPLACE_MATRIX,m);CHKERRQ(ierr);
   } else SETERRQ(PetscObjectComm((PetscObject)N),PETSC_ERR_SUP,"MAT_SHARE_NONZERO_PATTERN not supported for this matrix type");
   PetscFunctionReturn(0);
 }
