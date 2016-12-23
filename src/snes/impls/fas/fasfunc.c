@@ -74,8 +74,7 @@ PetscErrorCode  SNESFASGetType(SNES snes,SNESFASType *fastype)
 +  snes   - the snes context
 .  levels - the number of levels
 -  comms  - optional communicators for each level; this is to allow solving the coarser
-            problems on smaller sets of processors. Use NULL_OBJECT for default in
-            Fortran.
+            problems on smaller sets of processors. 
 
    Level: intermediate
 

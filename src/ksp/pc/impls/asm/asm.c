@@ -1265,7 +1265,7 @@ PetscErrorCode  PCASMSetSortIndices(PC pc,PetscBool doSort)
    You must call KSPSetUp() before calling PCASMGetSubKSP().
 
    Fortran note:
-   The output argument 'ksp' must be an array of sufficient length or NULL_OBJECT. The latter can be used to learn the necessary length.
+   The output argument 'ksp' must be an array of sufficient length or PETSC_NULL_KSP. The latter can be used to learn the necessary length.
 
    Level: advanced
 

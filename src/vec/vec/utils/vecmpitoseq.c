@@ -3,7 +3,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "VecScatterCreateToAll"
-/*@
+/*@C
       VecScatterCreateToAll - Creates a vector and a scatter context that copies all
           vector values to each processor
 
@@ -18,7 +18,7 @@
 
   Level: intermediate
 
-   Note: vout may be NULL [NULL_OBJECT from fortran] if you do not
+   Note: vout may be NULL [PETSC_NULL_VEC from fortran] if you do not
    need to have it created
 
    Usage:
@@ -74,7 +74,7 @@ PetscErrorCode  VecScatterCreateToAll(Vec vin,VecScatter *ctx,Vec *vout)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecScatterCreateToZero"
-/*@
+/*@C
       VecScatterCreateToZero - Creates an output vector and a scatter context used to
               copy all vector values into the output vector on the zeroth processor
 
@@ -90,7 +90,7 @@ PetscErrorCode  VecScatterCreateToAll(Vec vin,VecScatter *ctx,Vec *vout)
 
   Level: intermediate
 
-   Note: vout may be NULL [NULL_OBJECT from fortran] if you do not
+   Note: vout may be NULL [PETSC_NULL_VEC from fortran] if you do not
    need to have it created
 
    Usage:

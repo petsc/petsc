@@ -1,3 +1,22 @@
+      Interface
+      subroutine VecScatterCreateToAll(a,b,c,z)
+      use petscvecdef
+       Vec a
+       VecScatter b
+       Vec c
+       integer z
+       end subroutine
+      end Interface
+
+      Interface
+      subroutine VecScatterCreateToZero(a,b,c,z)
+      use petscvecdef
+       Vec a
+       VecScatter b
+       Vec c
+       integer z
+       end subroutine
+      end Interface
 
       Interface VecSetValuesLocal
         subroutine VecSetValuesLocal0(a,b,c,d,e,z)
