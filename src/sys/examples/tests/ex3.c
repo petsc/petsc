@@ -28,3 +28,11 @@ int main(int argc,char **argv)
   return 0;
 }
 
+
+
+/*TEST
+   
+   test:
+      args: -fp_trap
+      TODO: Needs further development from conversion
+TEST*/

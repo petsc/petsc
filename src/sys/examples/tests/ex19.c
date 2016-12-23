@@ -21,3 +21,12 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+   
+   test:
+      output_file: output/ex19_1.out
+      redirect_file: ex19_1.tmp
+
+TEST*/

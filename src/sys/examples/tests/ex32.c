@@ -17,3 +17,11 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
+
+
+/*TEST
+   
+   test:
+      args: -skip_petscrc -options_left 0
+
+TEST*/

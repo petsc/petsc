@@ -156,114 +156,36 @@ runex6f:
 	   else printf "${PWD}\nPossible problem with ex6f_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex6f.tmp
 
-runex7:
-	-@${MPIEXEC} -n 1 ./ex7 > ex7.tmp 2>&1;\
-	   if (${DIFF} output/ex7.out ex7.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex7_1, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex7.tmp ex7.tmp
-
-runex8:
-	-@${MPIEXEC} -n 4 ./ex8 -verbose -build_twosided allreduce > ex8.tmp 2>&1;\
-	   ${DIFF} output/ex8_1.out ex8.tmp || printf "${PWD}\nPossible problem with with ex8, diffs above\n=========================================\n"; \
-	   ${RM} -f ex8.tmp
-
-runex8_redscatter:
-	-@${MPIEXEC} -n 4 ./ex8 -verbose -build_twosided redscatter > ex8.tmp 2>&1;\
-	   ${DIFF} output/ex8_1.out ex8.tmp || printf "${PWD}\nPossible problem with with ex8_redscatter, diffs above\n=========================================\n"; \
-	   ${RM} -f ex8.tmp
-
-runex8_ibarrier:
-	-@${MPIEXEC} -n 4 ./ex8 -verbose -build_twosided ibarrier > ex8.tmp 2>&1;\
-	   ${DIFF} output/ex8_1.out ex8.tmp || printf "${PWD}\nPossible problem with with ex8_redscatter, diffs above\n=========================================\n"; \
-	   ${RM} -f ex8.tmp
-
-runex8_f:
-	-@${MPIEXEC} -n 4 ./ex8 -verbose -build_twosided_f -build_twosided allreduce > ex8.tmp 2>&1;\
-	   ${DIFF} output/ex8_1.out ex8.tmp || printf "${PWD}\nPossible problem with with ex8_f, diffs above\n=========================================\n"; \
-	   ${RM} -f ex8.tmp
-
-runex8_f_ibarrier:
-	-@${MPIEXEC} -n 4 ./ex8 -verbose -build_twosided_f -build_twosided ibarrier > ex8.tmp 2>&1;\
-	   ${DIFF} output/ex8_1.out ex8.tmp || printf "${PWD}\nPossible problem with with ex8_f, diffs above\n=========================================\n"; \
-	   ${RM} -f ex8.tmp
-
-runex10:
-	-@${MPIEXEC} -n 1 ./ex10 > ex10_1.tmp 2>&1;\
-	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
-	   else  printf "${PWD}\nPossible problem with ex10\n=========================================\n"; fi; \
-	   ${RM} -f ex10_1.tmp ex10_1.tmp
-
 runex14:
 	-@${MPIEXEC} -n 1 ./ex14 -array 1.0,-2-3i,4.5+6.2i,4.5,6.8+4i,i,-i,-1.2i -rarray 1,2,3 -a 1.5+2.1i > ex14.tmp 2>&1;\
 	   ${DIFF} output/ex14.out ex14.tmp || printf "${PWD}\nPossible problem with ex14, diffs above\n=========================================\n"; \
 	   ${RM} ex14.tmp
 
-runex17f:
-	-@${MPIEXEC} -n 3 ./ex17f > ex17f.tmp 2>&1;\
-	   if (${DIFF} output/ex17f_1.out ex17f.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex17f_1, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex17f.tmp
-
-runex19:
-	-@${MPIEXEC} -n 1 ./ex19 > ex19_1.tmp 2>&1;   \
-	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex19_1, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex19_1.tmp
-runex20:
-	-@${MPIEXEC} -n 1 ./ex20 > ex20_1.tmp 2>&1;   \
-	   ${DIFF} output/ex20_1.out ex20_1.tmp || printf "${PWD}\nPossible problem with ex20_1, diffs above\n=========================================\n"; \
-	   ${RM} -f ex20_1.tmp
-runex20_2:
-	-@${MPIEXEC} -n 1 ./ex20 -cl -prefix_push cl_ -zero 10 -prefix_push a_ -one 11 -prefix_push bb_ -two 12 -prefix_pop -three 13 -prefix_push cc_ -prefix_push ddd_ -four 14 -prefix_pop -prefix_pop -prefix_pop -five 15 -prefix_pop > ex20_2.tmp 2>&1;   \
-	   ${DIFF} output/ex20_2.out ex20_2.tmp || printf "${PWD}\nPossible problem with ex20_2, diffs above\n=========================================\n"; \
-	   ${RM} -f ex20_2.tmp
-runex20_3:
-	-@${MPIEXEC} -n 1 ./ex20 -str > ex20_3.tmp 2>&1;   \
-	   ${DIFF} output/ex20_3.out ex20_3.tmp || printf "${PWD}\nPossible problem with ex20_3, diffs above\n=========================================\n"; \
-	   ${RM} -f ex20_3.tmp
-runex22:
-	-@${MPIEXEC} -n 1 ./ex22 > ex22.tmp 2>&1;   \
-	   ${DIFF} output/ex22.out ex22.tmp || printf "${PWD}\nPossible problem with ex22, diffs above\n=========================================\n"; \
-	   ${RM} -f ex22.tmp
 runex23:
 	-@${MPIEXEC} -n 1 ./ex23 -options_file_yaml ex23options > ex23.tmp 2>&1;   \
 	   ${DIFF} output/ex23.out ex23.tmp || printf "${PWD}\nPossible problem with ex23, diffs above\n=========================================\n"; \
 	   ${RM} -f ex23.tmp
-runex25:
-	-@${MPIEXEC} -n 1 ./ex25 > ex25.tmp 2>&1;   \
-	   ${DIFF} output/ex25.out ex25.tmp || echo  ${PWD} "\nPossible problem with ex25, diffs above \n========================================="; \
-	   ${RM} -f ex25.tmp
-runex28:
-	-@${MPIEXEC} -n 1 ./ex28 > ex28.tmp 2>&1;   \
-	   ${DIFF} output/ex28.out ex28.tmp || echo  ${PWD} "\nPossible problem with ex28, diffs above \n========================================="; \
-	   ${RM} -f ex28.tmp
+
 runex31:
 	-@${MPIEXEC} -n 1 ./ex31 > ex31.tmp 2>&1;   \
            echo ~/somefile > ex31-sh.tmp  2>&1;   \
            echo ${PWD}/someotherfile >> ex31-sh.tmp  2>&1;   \
 	   ${DIFF} ex31-sh.tmp ex31.tmp || echo  ${PWD} "\nPossible problem with ex31, diffs above \n========================================="; \
 	   ${RM} -f ex31.tmp ex31-sh.tmp
-runex32:
-	-@${MPIEXEC} -n 1 ./ex32 -skip_petscrc -options_left 0 > ex32.tmp 2>&1;   \
-	   ${DIFF} output/ex32.out ex32.tmp || echo  ${PWD} "\nPossible problem with ex32, diffs above \n========================================="; \
-	   ${RM} -f ex32.tmp
 
 TESTEXAMPLES_C		       = ex4.PETSc ex4.rm \
-                                 ex8.PETSc runex8 runex8_f ex8.rm ex19.PETSc runex19 ex19.rm \
-                                 ex20.PETSc runex20 runex20_2 runex20_3 ex20.rm  ex21.PETSc ex21.rm \
-                                 ex22.PETSc runex22 ex22.rm ex24.PETSc ex24.rm \
-                                 ex25.PETSc runex25 ex25.rm ex28.PETSc ex28.rm \
-                                 ex32.PETSc runex32 ex32.rm
+                                 ex21.PETSc ex21.rm \
+                                 ex24.PETSc ex24.rm 
 
 TESTEXAMPLES_C_COMPLEX         = ex14.PETSc runex14 ex14.rm
 
 TESTEXAMPLES_C_X	       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc ex3.rm
-TESTEXAMPLES_FORTRAN	       = ex5f.PETSc ex5f.rm ex6f.PETSc ex6f.rm ex17f.PETSc runex17f ex17f.rm
+TESTEXAMPLES_FORTRAN	       = ex5f.PETSc ex5f.rm ex6f.PETSc ex6f.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex1f.PETSc ex1f.rm
 TESTEXAMPLES_FORTRAN_COMPLEX   = ex1f.PETSc ex1f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex5f.PETSc ex5f.rm ex6f.PETSc ex6f.rm
 TESTEXAMPLES_C_X_MPIUNI      = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm
-TESTEXAMPLES_13		       = ex9.PETSc ex9.rm ex10.PETSc ex10.rm ex11.PETSc ex11.rm ex12.PETSc ex12.rm \
+TESTEXAMPLES_13		       = ex11.PETSc ex11.rm ex12.PETSc ex12.rm \
                                  ex14.PETSc ex14.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test

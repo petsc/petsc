@@ -1,6 +1,10 @@
 
 static char help[] = "Demonstrates PETSc error handlers.\n";
 
+/*T
+   requires: x
+T*/
+
 #include <petscsys.h>
 
 #undef __FUNCT__
@@ -27,3 +31,13 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+
+
+/*TEST
+   
+   test:
+      output_file: output/ex1_1.out
+      redirect_file: ex1.tmp1
+      TODO: Needs further development from conversion
+
+TEST*/

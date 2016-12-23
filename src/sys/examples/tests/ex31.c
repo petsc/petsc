@@ -1,6 +1,7 @@
 
 static char help[] = "Tests PetscGetFullPath().\n\n";
 
+
 #include <petscsys.h>
 
 #undef __FUNCT__
@@ -19,3 +20,12 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+
+
+/*TEST
+
+   test:
+      output_file: ex31-sh.tmp
+      TODO: Needs further development from conversion
+
+TEST*/

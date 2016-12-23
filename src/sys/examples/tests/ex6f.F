@@ -2,6 +2,7 @@
 !  Progran to test random number generation routines from fortran.
 !
        program main
+
 #include <petsc/finclude/petscsys.h>
        use petscsys
        implicit none
@@ -23,3 +24,11 @@
       call PetscRandomDestroy(r,ierr)
       call PetscFinalize(ierr)
       end
+
+!
+!/*TEST
+!   
+!   test:
+!      output_file: output/ex6f_1.out
+!
+!TEST*/

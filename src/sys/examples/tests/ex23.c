@@ -21,3 +21,13 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+   
+   test:
+      requires: yaml
+      args: -options_file_yaml ex23options
+      localrunfiles: ex23options
+
+TEST*/
