@@ -9,8 +9,6 @@ typedef struct {
   PetscInt *k;   /* Spectral order per field */
 } AppCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "ProcessOptions"
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscInt       len;
@@ -40,8 +38,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "LoadData2D"
 static PetscErrorCode LoadData2D(DM dm, PetscInt Ni, PetscInt Nj, PetscInt clSize, Vec u, AppCtx *user)
 {
   PetscInt       i, j, f, c;
@@ -70,8 +66,6 @@ static PetscErrorCode LoadData2D(DM dm, PetscInt Ni, PetscInt Nj, PetscInt clSiz
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "LoadData3D"
 static PetscErrorCode LoadData3D(DM dm, PetscInt Ni, PetscInt Nj, PetscInt Nk, PetscInt clSize, Vec u, AppCtx *user)
 {
   PetscInt       i, j, k, f, c;
@@ -104,8 +98,6 @@ static PetscErrorCode LoadData3D(DM dm, PetscInt Ni, PetscInt Nj, PetscInt Nk, P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CheckPoint"
 static PetscErrorCode CheckPoint(DM dm, Vec u, PetscInt point, AppCtx *user)
 {
   PetscSection       s;
@@ -128,8 +120,6 @@ static PetscErrorCode CheckPoint(DM dm, Vec u, PetscInt point, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ReadData2D"
 static PetscErrorCode ReadData2D(DM dm, Vec u, AppCtx *user)
 {
   PetscInt       cStart, cEnd, cell;
@@ -164,8 +154,6 @@ static PetscErrorCode ReadData2D(DM dm, Vec u, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ReadData3D"
 static PetscErrorCode ReadData3D(DM dm, Vec u, AppCtx *user)
 {
   PetscInt       cStart, cEnd, cell;
@@ -203,8 +191,6 @@ static PetscErrorCode ReadData3D(DM dm, Vec u, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetSymmetries"
 static PetscErrorCode SetSymmetries(DM dm, PetscSection s, AppCtx *user)
 {
   PetscInt       f, o, i, j, k, c, d;
@@ -338,8 +324,6 @@ static PetscErrorCode SetSymmetries(DM dm, PetscSection s, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   DM             dm;

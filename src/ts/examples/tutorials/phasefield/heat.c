@@ -36,8 +36,6 @@ to generate binaryoutput then do mv binaryoutput InitialSolution.heat to obtain 
 extern PetscErrorCode FormFunction(TS,PetscReal,Vec,Vec,void*),FormInitialSolution(DM,Vec),MyMonitor(TS,PetscInt,PetscReal,Vec,void*),MyDestroy(void**);
 typedef struct {PetscReal kappa;PetscBool allencahn;PetscDrawViewPorts *ports;} UserCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   TS             ts;                           /* time integrator */
@@ -141,8 +139,6 @@ int main(int argc,char **argv)
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormFunction"
 /*
    FormFunction - Evaluates nonlinear function, F(x).
 
@@ -210,8 +206,6 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormInitialSolution"
 PetscErrorCode FormInitialSolution(DM da,Vec U)
 {
   PetscErrorCode    ierr;
@@ -291,8 +285,6 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MyMonitor"
 /*
     This routine is not parallel
 */
@@ -424,8 +416,6 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MyDestroy"
 PetscErrorCode  MyDestroy(void **ptr)
 {
   UserCtx        *ctx = *(UserCtx**)ptr;

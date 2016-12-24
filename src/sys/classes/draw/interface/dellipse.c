@@ -4,8 +4,6 @@
 */
 #include <petsc/private/drawimpl.h>  /*I "petscdraw.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawEllipse"
 /*@
   PetscDrawEllipse - Draws an ellipse onto a drawable.
 

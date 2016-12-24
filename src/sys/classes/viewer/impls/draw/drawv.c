@@ -2,8 +2,6 @@
 #include <../src/sys/classes/viewer/impls/draw/vdraw.h> /*I "petscdraw.h" I*/
 #include <petscviewer.h>                                /*I "petscviewer.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerDestroy_Draw"
 static PetscErrorCode PetscViewerDestroy_Draw(PetscViewer v)
 {
   PetscErrorCode   ierr;
@@ -26,8 +24,6 @@ static PetscErrorCode PetscViewerDestroy_Draw(PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFlush_Draw"
 static PetscErrorCode PetscViewerFlush_Draw(PetscViewer v)
 {
   PetscErrorCode   ierr;
@@ -41,8 +37,6 @@ static PetscErrorCode PetscViewerFlush_Draw(PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerDrawGetDraw"
 /*@C
     PetscViewerDrawGetDraw - Returns PetscDraw object from PetscViewer object.
     This PetscDraw object may then be used to perform graphics using
@@ -118,8 +112,6 @@ PetscErrorCode  PetscViewerDrawGetDraw(PetscViewer viewer,PetscInt windownumber,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerDrawBaseAdd"
 /*@C
     PetscViewerDrawBaseAdd - add to the base integer that is added to the windownumber passed to PetscViewerDrawGetDraw()
 
@@ -154,8 +146,6 @@ PetscErrorCode  PetscViewerDrawBaseAdd(PetscViewer viewer,PetscInt windownumber)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerDrawBaseSet"
 /*@C
     PetscViewerDrawBaseSet - sets the base integer that is added to the windownumber passed to PetscViewerDrawGetDraw()
 
@@ -190,8 +180,6 @@ PetscErrorCode  PetscViewerDrawBaseSet(PetscViewer viewer,PetscInt windownumber)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerDrawGetDrawLG"
 /*@C
     PetscViewerDrawGetDrawLG - Returns PetscDrawLG object from PetscViewer object.
     This PetscDrawLG object may then be used to perform graphics using
@@ -239,8 +227,6 @@ PetscErrorCode  PetscViewerDrawGetDrawLG(PetscViewer viewer,PetscInt windownumbe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerDrawGetDrawAxis"
 /*@C
     PetscViewerDrawGetDrawAxis - Returns PetscDrawAxis object from PetscViewer object.
     This PetscDrawAxis object may then be used to perform graphics using
@@ -287,8 +273,6 @@ PetscErrorCode  PetscViewerDrawGetDrawAxis(PetscViewer viewer,PetscInt windownum
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerDrawResize"
 PetscErrorCode  PetscViewerDrawResize(PetscViewer v,int w,int h)
 {
   PetscErrorCode   ierr;
@@ -306,8 +290,6 @@ PetscErrorCode  PetscViewerDrawResize(PetscViewer v,int w,int h)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerDrawSetInfo"
 PetscErrorCode  PetscViewerDrawSetInfo(PetscViewer v,const char display[],const char title[],int x,int y,int w,int h)
 {
   PetscErrorCode   ierr;
@@ -327,8 +309,6 @@ PetscErrorCode  PetscViewerDrawSetInfo(PetscViewer v,const char display[],const 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerDrawSetDrawType"
 PetscErrorCode  PetscViewerDrawSetDrawType(PetscViewer v,PetscDrawType drawtype)
 {
   PetscErrorCode   ierr;
@@ -346,8 +326,6 @@ PetscErrorCode  PetscViewerDrawSetDrawType(PetscViewer v,PetscDrawType drawtype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerDrawOpen"
 /*@C
    PetscViewerDrawOpen - Opens a window for use as a PetscViewer. If you want to
    do graphics in this window, you must call PetscViewerDrawGetDraw() and
@@ -407,8 +385,6 @@ PetscErrorCode  PetscViewerDrawOpen(MPI_Comm comm,const char display[],const cha
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerGetSubViewer_Draw"
 PetscErrorCode PetscViewerGetSubViewer_Draw(PetscViewer viewer,MPI_Comm comm,PetscViewer *sviewer)
 {
   PetscErrorCode   ierr;
@@ -434,8 +410,6 @@ PetscErrorCode PetscViewerGetSubViewer_Draw(PetscViewer viewer,MPI_Comm comm,Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerRestoreSubViewer_Draw"
 PetscErrorCode PetscViewerRestoreSubViewer_Draw(PetscViewer viewer,MPI_Comm comm,PetscViewer *sviewer)
 {
   PetscErrorCode   ierr;
@@ -461,8 +435,6 @@ PetscErrorCode PetscViewerRestoreSubViewer_Draw(PetscViewer viewer,MPI_Comm comm
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerSetFromOptions_Draw"
 PetscErrorCode PetscViewerSetFromOptions_Draw(PetscOptionItems *PetscOptionsObject,PetscViewer v)
 {
   PetscErrorCode ierr;
@@ -480,8 +452,6 @@ PetscErrorCode PetscViewerSetFromOptions_Draw(PetscOptionItems *PetscOptionsObje
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerView_Draw"
 PetscErrorCode PetscViewerView_Draw(PetscViewer viewer,PetscViewer v)
 {
   PetscErrorCode   ierr;
@@ -513,8 +483,6 @@ PetscErrorCode PetscViewerView_Draw(PetscViewer viewer,PetscViewer v)
   Level: beginner
 
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerCreate_Draw"
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_Draw(PetscViewer viewer)
 {
   PetscErrorCode   ierr;
@@ -542,8 +510,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Draw(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerDrawClear"
 /*@
     PetscViewerDrawClear - Clears a PetscDraw graphic associated with a PetscViewer.
 
@@ -576,8 +542,6 @@ PetscErrorCode  PetscViewerDrawClear(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerDrawGetPause"
 /*@
     PetscViewerDrawGetPause - Gets a pause for the first present draw
 
@@ -620,8 +584,6 @@ PetscErrorCode  PetscViewerDrawGetPause(PetscViewer viewer,PetscReal *pause)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerDrawSetPause"
 /*@
     PetscViewerDrawSetPause - Sets a pause for each PetscDraw in the viewer
 
@@ -657,8 +619,6 @@ PetscErrorCode  PetscViewerDrawSetPause(PetscViewer viewer,PetscReal pause)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerDrawSetHold"
 /*@
     PetscViewerDrawSetHold - Holds previous image when drawing new image
 
@@ -689,8 +649,6 @@ PetscErrorCode  PetscViewerDrawSetHold(PetscViewer viewer,PetscBool hold)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerDrawGetHold"
 /*@
     PetscViewerDrawGetHold - Checks if holds previous image when drawing new image
 
@@ -730,8 +688,6 @@ PetscErrorCode  PetscViewerDrawGetHold(PetscViewer viewer,PetscBool *hold)
 */
 static PetscMPIInt Petsc_Viewer_Draw_keyval = MPI_KEYVAL_INVALID;
 
-#undef __FUNCT__
-#define __FUNCT__ "PETSC_VIEWER_DRAW_"
 /*@C
     PETSC_VIEWER_DRAW_ - Creates a window PetscViewer shared by all processors
                      in a communicator.
@@ -778,8 +734,6 @@ PetscViewer  PETSC_VIEWER_DRAW_(MPI_Comm comm)
   PetscFunctionReturn(viewer);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerDrawSetBounds"
 /*@
     PetscViewerDrawSetBounds - sets the upper and lower bounds to be used in plotting
 
@@ -825,8 +779,6 @@ PetscErrorCode  PetscViewerDrawSetBounds(PetscViewer viewer,PetscInt nbounds,con
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerDrawGetBounds"
 /*@C
     PetscViewerDrawGetBounds - gets the upper and lower bounds to be used in plotting set with PetscViewerDrawSetBounds()
 

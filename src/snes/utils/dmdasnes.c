@@ -18,8 +18,6 @@ typedef struct {
   void *picardlocalctx;
 } DMSNES_DA;
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSNESDestroy_DMDA"
 static PetscErrorCode DMSNESDestroy_DMDA(DMSNES sdm)
 {
   PetscErrorCode ierr;
@@ -29,8 +27,6 @@ static PetscErrorCode DMSNESDestroy_DMDA(DMSNES sdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSNESDuplicate_DMDA"
 static PetscErrorCode DMSNESDuplicate_DMDA(DMSNES oldsdm,DMSNES sdm)
 {
   PetscErrorCode ierr;
@@ -44,8 +40,6 @@ static PetscErrorCode DMSNESDuplicate_DMDA(DMSNES oldsdm,DMSNES sdm)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASNESGetContext"
 static PetscErrorCode DMDASNESGetContext(DM dm,DMSNES sdm,DMSNES_DA  **dmdasnes)
 {
   PetscErrorCode ierr;
@@ -61,8 +55,6 @@ static PetscErrorCode DMDASNESGetContext(DM dm,DMSNES sdm,DMSNES_DA  **dmdasnes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESComputeFunction_DMDA"
 static PetscErrorCode SNESComputeFunction_DMDA(SNES snes,Vec X,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
@@ -119,8 +111,6 @@ static PetscErrorCode SNESComputeFunction_DMDA(SNES snes,Vec X,Vec F,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESComputeObjective_DMDA"
 static PetscErrorCode SNESComputeObjective_DMDA(SNES snes,Vec X,PetscReal *ob,void *ctx)
 {
   PetscErrorCode ierr;
@@ -150,8 +140,6 @@ static PetscErrorCode SNESComputeObjective_DMDA(SNES snes,Vec X,PetscReal *ob,vo
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESComputeJacobian_DMDA"
 /* Routine is called by example, hence must be labeled PETSC_EXTERN */
 PETSC_EXTERN PetscErrorCode SNESComputeJacobian_DMDA(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
@@ -216,8 +204,6 @@ PETSC_EXTERN PetscErrorCode SNESComputeJacobian_DMDA(SNES snes,Vec X,Mat A,Mat B
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASNESSetFunctionLocal"
 /*@C
    DMDASNESSetFunctionLocal - set a local residual evaluation function
 
@@ -262,8 +248,6 @@ PetscErrorCode DMDASNESSetFunctionLocal(DM dm,InsertMode imode,PetscErrorCode (*
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASNESSetJacobianLocal"
 /*@C
    DMDASNESSetJacobianLocal - set a local Jacobian evaluation function
 
@@ -305,8 +289,6 @@ PetscErrorCode DMDASNESSetJacobianLocal(DM dm,PetscErrorCode (*func)(DMDALocalIn
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASNESSetObjectiveLocal"
 /*@C
    DMDASNESSetObjectiveLocal - set a local residual evaluation function
 
@@ -345,8 +327,6 @@ PetscErrorCode DMDASNESSetObjectiveLocal(DM dm,DMDASNESObjective func,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESComputePicard_DMDA"
 static PetscErrorCode SNESComputePicard_DMDA(SNES snes,Vec X,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
@@ -396,8 +376,6 @@ static PetscErrorCode SNESComputePicard_DMDA(SNES snes,Vec X,Vec F,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESComputePicardJacobian_DMDA"
 static PetscErrorCode SNESComputePicardJacobian_DMDA(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
@@ -428,8 +406,6 @@ static PetscErrorCode SNESComputePicardJacobian_DMDA(SNES snes,Vec X,Mat A,Mat B
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASNESSetPicardLocal"
 /*@C
    DMDASNESSetPicardLocal - set a local right hand side and matrix evaluation function for Picard iteration
 

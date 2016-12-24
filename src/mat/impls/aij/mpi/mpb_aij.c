@@ -1,7 +1,5 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetMultiProcBlock_MPIAIJ"
 PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse scall,Mat *subMat)
 {
   PetscErrorCode ierr;

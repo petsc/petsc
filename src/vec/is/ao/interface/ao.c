@@ -8,8 +8,6 @@
 PetscClassId  AO_CLASSID;
 PetscLogEvent AO_PetscToApplication, AO_ApplicationToPetsc;
 
-#undef __FUNCT__
-#define __FUNCT__ "AOView"
 /*@C
    AOView - Displays an application ordering.
 
@@ -55,8 +53,6 @@ PetscErrorCode  AOView(AO ao,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AODestroy"
 /*@
    AODestroy - Destroys an application ordering.
 
@@ -94,8 +90,6 @@ PetscErrorCode  AODestroy(AO *ao)
 
 #include <../src/vec/is/is/impls/general/general.h>
 /* ---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "AOPetscToApplicationIS"
 /*@
    AOPetscToApplicationIS - Maps an index set in the PETSc ordering to
    the application-defined ordering.
@@ -142,8 +136,6 @@ PetscErrorCode  AOPetscToApplicationIS(AO ao,IS is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AOApplicationToPetscIS"
 /*@
    AOApplicationToPetscIS - Maps an index set in the application-defined
    ordering to the PETSc ordering.
@@ -188,8 +180,6 @@ PetscErrorCode  AOApplicationToPetscIS(AO ao,IS is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AOPetscToApplication"
 /*@
    AOPetscToApplication - Maps a set of integers in the PETSc ordering to
    the application-defined ordering.
@@ -229,8 +219,6 @@ PetscErrorCode  AOPetscToApplication(AO ao,PetscInt n,PetscInt ia[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AOApplicationToPetsc"
 /*@
    AOApplicationToPetsc - Maps a set of integers in the application-defined
    ordering to the PETSc ordering.
@@ -270,8 +258,6 @@ PetscErrorCode  AOApplicationToPetsc(AO ao,PetscInt n,PetscInt ia[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AOPetscToApplicationPermuteInt"
 /*@
   AOPetscToApplicationPermuteInt - Permutes an array of blocks of integers
   in the PETSc ordering to the application-defined ordering.
@@ -309,8 +295,6 @@ PetscErrorCode  AOPetscToApplicationPermuteInt(AO ao, PetscInt block, PetscInt a
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AOApplicationToPetscPermuteInt"
 /*@
   AOApplicationToPetscPermuteInt - Permutes an array of blocks of integers
   in the application-defined ordering to the PETSc ordering.
@@ -349,8 +333,6 @@ PetscErrorCode  AOApplicationToPetscPermuteInt(AO ao, PetscInt block, PetscInt a
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AOPetscToApplicationPermuteReal"
 /*@
   AOPetscToApplicationPermuteReal - Permutes an array of blocks of reals
   in the PETSc ordering to the application-defined ordering.
@@ -389,8 +371,6 @@ PetscErrorCode  AOPetscToApplicationPermuteReal(AO ao, PetscInt block, PetscReal
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AOApplicationToPetscPermuteReal"
 /*@
   AOApplicationToPetscPermuteReal - Permutes an array of blocks of reals
   in the application-defined ordering to the PETSc ordering.
@@ -429,8 +409,6 @@ PetscErrorCode  AOApplicationToPetscPermuteReal(AO ao, PetscInt block, PetscReal
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AOSetFromOptions"
 /*@
     AOSetFromOptions - Sets AO options from the options database.
 
@@ -466,8 +444,6 @@ PetscErrorCode AOSetFromOptions(AO ao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AOSetIS"
 /*@
    AOSetIS - Sets the IS associated with the application ordering.
 
@@ -510,8 +486,6 @@ PetscErrorCode AOSetIS(AO ao,IS isapp,IS ispetsc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AOCreate"
 /*@
    AOCreate - Creates an application ordering.
 

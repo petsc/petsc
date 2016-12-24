@@ -8,8 +8,6 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NLEQERR(SNESLineSearch);
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_Shell(SNESLineSearch);
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchRegisterAll"
 /*@C
    SNESLineSearchRegisterAll - Registers all of the nonlinear solver methods in the SNESLineSearch package.
 

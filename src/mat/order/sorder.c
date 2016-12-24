@@ -11,8 +11,6 @@ PetscBool         MatOrderingRegisterAllCalled = PETSC_FALSE;
 
 extern PetscErrorCode MatGetOrdering_Flow_SeqAIJ(Mat,MatOrderingType,IS*,IS*);
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetOrdering_Flow"
 PetscErrorCode MatGetOrdering_Flow(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 {
   PetscFunctionBegin;
@@ -22,8 +20,6 @@ PetscErrorCode MatGetOrdering_Flow(Mat mat,MatOrderingType type,IS *irow,IS *ico
 #endif
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetOrdering_Natural"
 PETSC_INTERN PetscErrorCode MatGetOrdering_Natural(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 {
   PetscErrorCode ierr;
@@ -63,8 +59,6 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_Natural(Mat mat,MatOrderingType type,
    This produces a symmetric Ordering but does not require a
    matrix with symmetric non-zero structure.
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatGetOrdering_RowLength"
 PETSC_INTERN PetscErrorCode MatGetOrdering_RowLength(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 {
   PetscErrorCode ierr;
@@ -91,8 +85,6 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_RowLength(Mat mat,MatOrderingType typ
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatOrderingRegister"
 /*@C
    MatOrderingRegister - Adds a new sparse matrix ordering to the matrix package.
 
@@ -128,8 +120,6 @@ PetscErrorCode  MatOrderingRegister(const char sname[],PetscErrorCode (*function
 }
 
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
-#undef __FUNCT__
-#define __FUNCT__ "MatGetOrdering"
 /*@C
    MatGetOrdering - Gets a reordering for a matrix to reduce fill or to
    improve numerical stability of LU factorization.
@@ -276,8 +266,6 @@ PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetOrderingList"
 PetscErrorCode MatGetOrderingList(PetscFunctionList *list)
 {
   PetscFunctionBegin;

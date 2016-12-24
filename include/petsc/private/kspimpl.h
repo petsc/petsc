@@ -141,8 +141,6 @@ typedef struct {
   Vec        work;
 } KSPConvergedDefaultCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPLogResidualHistory"
 PETSC_STATIC_INLINE PetscErrorCode KSPLogResidualHistory(KSP ksp,PetscReal norm)
 {
   PetscErrorCode ierr;
@@ -195,8 +193,6 @@ PETSC_EXTERN PetscErrorCode DMCopyDMKSP(DM,DM);
 /*
        These allow the various Krylov methods to apply to either the linear system or its transpose.
 */
-#undef __FUNCT__
-#define __FUNCT__ "KSP_RemoveNullSpace"
 PETSC_STATIC_INLINE PetscErrorCode KSP_RemoveNullSpace(KSP ksp,Vec y)
 {
   PetscErrorCode ierr;
@@ -213,8 +209,6 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_RemoveNullSpace(KSP ksp,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSP_RemoveNullSpaceTranspose"
 PETSC_STATIC_INLINE PetscErrorCode KSP_RemoveNullSpaceTranspose(KSP ksp,Vec y)
 {
   PetscErrorCode ierr;
@@ -231,8 +225,6 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_RemoveNullSpaceTranspose(KSP ksp,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSP_MatMult"
 PETSC_STATIC_INLINE PetscErrorCode KSP_MatMult(KSP ksp,Mat A,Vec x,Vec y)
 {
   PetscErrorCode ierr;
@@ -242,8 +234,6 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_MatMult(KSP ksp,Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSP_MatMultTranspose"
 PETSC_STATIC_INLINE PetscErrorCode KSP_MatMultTranspose(KSP ksp,Mat A,Vec x,Vec y)
 {
   PetscErrorCode ierr;
@@ -253,8 +243,6 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_MatMultTranspose(KSP ksp,Mat A,Vec x,Vec 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSP_PCApply"
 PETSC_STATIC_INLINE PetscErrorCode KSP_PCApply(KSP ksp,Vec x,Vec y)
 {
   PetscErrorCode ierr;
@@ -269,8 +257,6 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_PCApply(KSP ksp,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSP_PCApplyTranspose"
 PETSC_STATIC_INLINE PetscErrorCode KSP_PCApplyTranspose(KSP ksp,Vec x,Vec y)
 {
   PetscErrorCode ierr;
@@ -285,8 +271,6 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_PCApplyTranspose(KSP ksp,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSP_PCApplyBAorAB"
 PETSC_STATIC_INLINE PetscErrorCode KSP_PCApplyBAorAB(KSP ksp,Vec x,Vec y,Vec w)
 {
   PetscErrorCode ierr;
@@ -301,8 +285,6 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_PCApplyBAorAB(KSP ksp,Vec x,Vec y,Vec w)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSP_PCApplyBAorABTranspose"
 PETSC_STATIC_INLINE PetscErrorCode KSP_PCApplyBAorABTranspose(KSP ksp,Vec x,Vec y,Vec w)
 {
   PetscErrorCode ierr;

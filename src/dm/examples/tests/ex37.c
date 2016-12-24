@@ -13,8 +13,6 @@ PetscErrorCode apply(void *ctx,PetscInt n,const PetscScalar *x,PetscScalar *y)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;

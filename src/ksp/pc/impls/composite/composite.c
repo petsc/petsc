@@ -20,8 +20,6 @@ typedef struct {
   PetscScalar      alpha;
 } PC_Composite;
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_Composite_Multiplicative"
 static PetscErrorCode PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
 {
   PetscErrorCode   ierr;
@@ -66,8 +64,6 @@ static PetscErrorCode PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApplyTranspose_Composite_Multiplicative"
 static PetscErrorCode PCApplyTranspose_Composite_Multiplicative(PC pc,Vec x,Vec y)
 {
   PetscErrorCode   ierr;
@@ -113,8 +109,6 @@ static PetscErrorCode PCApplyTranspose_Composite_Multiplicative(PC pc,Vec x,Vec 
 where first preconditioner is built from alpha I + S and second from
 alpha I + R
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_Composite_Special"
 static PetscErrorCode PCApply_Composite_Special(PC pc,Vec x,Vec y)
 {
   PetscErrorCode   ierr;
@@ -134,8 +128,6 @@ static PetscErrorCode PCApply_Composite_Special(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_Composite_Additive"
 static PetscErrorCode PCApply_Composite_Additive(PC pc,Vec x,Vec y)
 {
   PetscErrorCode   ierr;
@@ -162,8 +154,6 @@ static PetscErrorCode PCApply_Composite_Additive(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApplyTranspose_Composite_Additive"
 static PetscErrorCode PCApplyTranspose_Composite_Additive(PC pc,Vec x,Vec y)
 {
   PetscErrorCode   ierr;
@@ -182,8 +172,6 @@ static PetscErrorCode PCApplyTranspose_Composite_Additive(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_Composite"
 static PetscErrorCode PCSetUp_Composite(PC pc)
 {
   PetscErrorCode   ierr;
@@ -204,8 +192,6 @@ static PetscErrorCode PCSetUp_Composite(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCReset_Composite"
 static PetscErrorCode PCReset_Composite(PC pc)
 {
   PC_Composite     *jac = (PC_Composite*)pc->data;
@@ -222,8 +208,6 @@ static PetscErrorCode PCReset_Composite(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_Composite"
 static PetscErrorCode PCDestroy_Composite(PC pc)
 {
   PC_Composite     *jac = (PC_Composite*)pc->data;
@@ -242,8 +226,6 @@ static PetscErrorCode PCDestroy_Composite(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_Composite"
 static PetscErrorCode PCSetFromOptions_Composite(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_Composite     *jac = (PC_Composite*)pc->data;
@@ -276,8 +258,6 @@ static PetscErrorCode PCSetFromOptions_Composite(PetscOptionItems *PetscOptionsO
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCView_Composite"
 static PetscErrorCode PCView_Composite(PC pc,PetscViewer viewer)
 {
   PC_Composite     *jac = (PC_Composite*)pc->data;
@@ -308,8 +288,6 @@ static PetscErrorCode PCView_Composite(PC pc,PetscViewer viewer)
 
 /* ------------------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCompositeSpecialSetAlpha_Composite"
 static PetscErrorCode  PCCompositeSpecialSetAlpha_Composite(PC pc,PetscScalar alpha)
 {
   PC_Composite *jac = (PC_Composite*)pc->data;
@@ -319,8 +297,6 @@ static PetscErrorCode  PCCompositeSpecialSetAlpha_Composite(PC pc,PetscScalar al
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCompositeSetType_Composite"
 static PetscErrorCode  PCCompositeSetType_Composite(PC pc,PCCompositeType type)
 {
   PC_Composite *jac = (PC_Composite*)pc->data;
@@ -340,8 +316,6 @@ static PetscErrorCode  PCCompositeSetType_Composite(PC pc,PCCompositeType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCompositeGetType_Composite"
 static PetscErrorCode  PCCompositeGetType_Composite(PC pc,PCCompositeType *type)
 {
   PC_Composite *jac = (PC_Composite*)pc->data;
@@ -351,8 +325,6 @@ static PetscErrorCode  PCCompositeGetType_Composite(PC pc,PCCompositeType *type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCompositeAddPC_Composite"
 static PetscErrorCode  PCCompositeAddPC_Composite(PC pc,PCType type)
 {
   PC_Composite     *jac;
@@ -391,8 +363,6 @@ static PetscErrorCode  PCCompositeAddPC_Composite(PC pc,PCType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCompositeGetNumberPC_Composite"
 static PetscErrorCode  PCCompositeGetNumberPC_Composite(PC pc,PetscInt *n)
 {
   PC_Composite     *jac;
@@ -409,8 +379,6 @@ static PetscErrorCode  PCCompositeGetNumberPC_Composite(PC pc,PetscInt *n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCompositeGetPC_Composite"
 static PetscErrorCode  PCCompositeGetPC_Composite(PC pc,PetscInt n,PC *subpc)
 {
   PC_Composite     *jac;
@@ -429,8 +397,6 @@ static PetscErrorCode  PCCompositeGetPC_Composite(PC pc,PetscInt n,PC *subpc)
 }
 
 /* -------------------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "PCCompositeSetType"
 /*@
    PCCompositeSetType - Sets the type of composite preconditioner.
 
@@ -458,8 +424,6 @@ PetscErrorCode  PCCompositeSetType(PC pc,PCCompositeType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCompositeGetType"
 /*@
    PCCompositeGetType - Gets the type of composite preconditioner.
 
@@ -488,8 +452,6 @@ PetscErrorCode  PCCompositeGetType(PC pc,PCCompositeType *type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCompositeSpecialSetAlpha"
 /*@
    PCCompositeSpecialSetAlpha - Sets alpha for the special composite preconditioner
      for alphaI + R + S
@@ -515,8 +477,6 @@ PetscErrorCode  PCCompositeSpecialSetAlpha(PC pc,PetscScalar alpha)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCompositeAddPC"
 /*@C
    PCCompositeAddPC - Adds another PC to the composite PC.
 
@@ -540,8 +500,6 @@ PetscErrorCode  PCCompositeAddPC(PC pc,PCType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCompositeGetNumberPC"
 /*@
    PCCompositeGetNumberPC - Gets the number of PC objects in the composite PC.
 
@@ -570,8 +528,6 @@ PetscErrorCode  PCCompositeGetNumberPC(PC pc,PetscInt *num)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCompositeGetPC"
 /*@
    PCCompositeGetPC - Gets one of the PC objects in the composite PC.
 
@@ -627,8 +583,6 @@ PetscErrorCode  PCCompositeGetPC(PC pc,PetscInt n,PC *subpc)
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_Composite"
 PETSC_EXTERN PetscErrorCode PCCreate_Composite(PC pc)
 {
   PetscErrorCode ierr;

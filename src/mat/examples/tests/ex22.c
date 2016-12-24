@@ -4,8 +4,6 @@ static char help[] = "Tests matrix ordering routines.\n\n";
 #include <petscmat.h>
 extern PetscErrorCode MatGetOrdering_myordering(Mat,MatOrderingType,IS*,IS*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat               C,Cperm;
@@ -88,8 +86,6 @@ int main(int argc,char **args)
 
 #include <petsc/private/matimpl.h>
 /* This is modified from MatGetOrdering_Natural() */
-#undef __FUNCT__
-#define __FUNCT__ "MatGetOrdering_myordering"
 PetscErrorCode MatGetOrdering_myordering(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 {
   PetscErrorCode ierr;

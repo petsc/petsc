@@ -9,8 +9,6 @@
 */
 static PetscMPIInt Petsc_Viewer_SAWs_keyval = MPI_KEYVAL_INVALID;
 
-#undef __FUNCT__
-#define __FUNCT__ "PETSC_VIEWER_SAWS_"
 /*@C
      PETSC_VIEWER_SAWS_ - Creates an SAWs PetscViewer shared by all processors in a communicator.
 
@@ -59,8 +57,6 @@ PetscViewer PETSC_VIEWER_SAWS_(MPI_Comm comm)
 /*
        If there is a PetscViewer associated with this communicator, it is destroyed.
 */
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewer_SAWS_Destroy"
 PetscErrorCode PetscViewer_SAWS_Destroy(MPI_Comm comm)
 {
   PetscErrorCode ierr;
@@ -78,8 +74,6 @@ PetscErrorCode PetscViewer_SAWS_Destroy(MPI_Comm comm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerDestroy_SAWs"
 static PetscErrorCode PetscViewerDestroy_SAWs(PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -94,8 +88,6 @@ static PetscErrorCode PetscViewerDestroy_SAWs(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerCreate_SAWs"
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_SAWs(PetscViewer v)
 {
   PetscFunctionBegin;

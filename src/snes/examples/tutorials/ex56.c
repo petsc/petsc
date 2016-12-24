@@ -11,8 +11,6 @@ static PetscReal s_soft_alpha=1.e-3;
 static PetscReal s_mu=0.4;
 static PetscReal s_lambda=0.4;
 
-#undef __FUNCT__
-#define __FUNCT__ "f0_bd_u_3d"
 void f0_bd_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                 const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                 const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -23,8 +21,6 @@ void f0_bd_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   f0[2] =  x[1];
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "f1_bd_u"
 void f1_bd_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -39,8 +35,6 @@ void f1_bd_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "f1_u_3d_alpha"
 /* gradU[comp*dim+d] = {u_x, u_y} or {u_x, u_y, u_z} */
 void f1_u_3d_alpha(PetscInt dim, PetscInt Nf, PetscInt NfAux,
           const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
@@ -69,8 +63,6 @@ void f1_u_3d_alpha(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "f1_u_3d"
 /* gradU[comp*dim+d] = {u_x, u_y} or {u_x, u_y, u_z} */
 void f1_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
           const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
@@ -93,8 +85,6 @@ void f1_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 /* 3D elasticity */
 #define IDX(ii,jj,kk,ll) (27*ii+9*jj+3*kk+ll)
 
-#undef __FUNCT__
-#define __FUNCT__ "g3_uu_3d_private"
 void g3_uu_3d_private( PetscScalar g3[], const PetscReal mu, const PetscReal lambda)
 {
   if (1) {
@@ -146,8 +136,6 @@ void g3_uu_3d_private( PetscScalar g3[], const PetscReal mu, const PetscReal lam
   }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "g3_uu_3d_alpha"
 void g3_uu_3d_alpha(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -167,8 +155,6 @@ void g3_uu_3d_alpha(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   g3_uu_3d_private(g3,mu,lambda);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "g3_uu_3d"
 void g3_uu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
               const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -214,8 +200,6 @@ PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt 
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            Amat;
@@ -430,7 +414,7 @@ int main(int argc,char **args)
     ierr = DMCreateMatrix(dm, &Amat);CHKERRQ(ierr);
     ierr = VecGetSize(bb,&N);CHKERRQ(ierr);
     local_sizes[iter] = N;
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d]%s %d global equations, %d vertices\n",rank,__FUNCT__,N,N/dim);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d]%s %d global equations, %d vertices\n",rank,PETSC_FUNCTION_NAME,N,N/dim);CHKERRQ(ierr);
     if (use_nearnullspace && N/dim > 1) {
       /* Set up the near null space (a.k.a. rigid body modes) that will be used by the multigrid preconditioner */
       DM           subdm;
@@ -463,7 +447,7 @@ int main(int argc,char **args)
     ierr = VecZeroEntries(bb);CHKERRQ(ierr);
     ierr = VecGetSize(bb,&i);CHKERRQ(ierr);
     local_sizes[iter] = i;
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d]%s %d equations in vector, %d vertices\n",rank,__FUNCT__,i,i/dim);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d]%s %d equations in vector, %d vertices\n",rank,PETSC_FUNCTION_NAME,i,i/dim);CHKERRQ(ierr);
     /* setup solver, dummy solve to really setup */
     if (0) {
       ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1);CHKERRQ(ierr);
@@ -509,7 +493,7 @@ int main(int argc,char **args)
       err[iter] = 171.038 - mdisp[iter];
     }
     PetscPrintf(PETSC_COMM_WORLD,"[%d]%s %D) N=%12D, max displ=%9.7e, disp diff=%9.2e, error=%4.3e, rate=%3.2g\n",
-                rank,__FUNCT__,iter,local_sizes[iter],mdisp[iter],
+                rank,PETSC_FUNCTION_NAME,iter,local_sizes[iter],mdisp[iter],
                 mdisp[iter]-mdisp[iter-1],err[iter],log(err[iter-1]/err[iter])/log(2.));
   }
 

@@ -1,8 +1,6 @@
 
 #include <petsc/private/matimpl.h>  /*I   "petscmat.h"  I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCheckCompressedRow"
 /*@C
    MatCheckCompressedRow - Determines whether the compressed row matrix format should be used.
       If the format is to be used, this routine creates Mat_CompressedRow struct.

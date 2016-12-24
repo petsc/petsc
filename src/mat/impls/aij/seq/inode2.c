@@ -5,8 +5,6 @@ extern PetscErrorCode MatSeqAIJCheckInode(Mat);
 extern PetscErrorCode MatInodeAdjustForInodes_SeqAIJ_Inode(Mat,IS*,IS*);
 extern PetscErrorCode MatInodeGetInodeSizes_SeqAIJ_Inode(Mat,PetscInt*,PetscInt*[],PetscInt*);
 
-#undef __FUNCT__
-#define __FUNCT__ "MatView_SeqAIJ_Inode"
 PetscErrorCode MatView_SeqAIJ_Inode(Mat A,PetscViewer viewer)
 {
   Mat_SeqAIJ        *a=(Mat_SeqAIJ*)A->data;
@@ -29,8 +27,6 @@ PetscErrorCode MatView_SeqAIJ_Inode(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd_SeqAIJ_Inode"
 PetscErrorCode MatAssemblyEnd_SeqAIJ_Inode(Mat A, MatAssemblyType mode)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -42,8 +38,6 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ_Inode(Mat A, MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_SeqAIJ_Inode"
 PetscErrorCode MatDestroy_SeqAIJ_Inode(Mat A)
 {
   PetscErrorCode ierr;
@@ -62,8 +56,6 @@ PetscErrorCode MatDestroy_SeqAIJ_Inode(Mat A)
 /* It is intended as a helper for the MATSEQAIJ class, so classes which desire Inodes should  */
 /*    inherit off of MATSEQAIJ instead by calling MatSetType(MATSEQAIJ) in their constructor. */
 /* Maybe this is a bad idea. (?) */
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_SeqAIJ_Inode"
 PetscErrorCode MatCreate_SeqAIJ_Inode(Mat B)
 {
   Mat_SeqAIJ     *b=(Mat_SeqAIJ*)B->data;
@@ -101,8 +93,6 @@ PetscErrorCode MatCreate_SeqAIJ_Inode(Mat B)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetOption_SeqAIJ_Inode"
 PetscErrorCode MatSetOption_SeqAIJ_Inode(Mat A,MatOption op,PetscBool flg)
 {
   Mat_SeqAIJ *a=(Mat_SeqAIJ*)A->data;

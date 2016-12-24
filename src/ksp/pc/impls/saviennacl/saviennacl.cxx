@@ -35,8 +35,6 @@ typedef struct {
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_SAVIENNACL"
 static PetscErrorCode PCSetUp_SAVIENNACL(PC pc)
 {
   PC_SAVIENNACL      *sa = (PC_SAVIENNACL*)pc->data;
@@ -88,8 +86,6 @@ static PetscErrorCode PCSetUp_SAVIENNACL(PC pc)
 
    Application Interface Routine: PCApply()
  */
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_SAVIENNACL"
 static PetscErrorCode PCApply_SAVIENNACL(PC pc,Vec x,Vec y)
 {
   PC_SAVIENNACL                 *sac = (PC_SAVIENNACL*)pc->data;
@@ -134,8 +130,6 @@ static PetscErrorCode PCApply_SAVIENNACL(PC pc,Vec x,Vec y)
 
    Application Interface Routine: PCDestroy()
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_SAVIENNACL"
 static PetscErrorCode PCDestroy_SAVIENNACL(PC pc)
 {
   PC_SAVIENNACL  *sac = (PC_SAVIENNACL*)pc->data;
@@ -157,8 +151,6 @@ static PetscErrorCode PCDestroy_SAVIENNACL(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_SAVIENNACL"
 static PetscErrorCode PCSetFromOptions_SAVIENNACL(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
@@ -181,8 +173,6 @@ static PetscErrorCode PCSetFromOptions_SAVIENNACL(PetscOptionItems *PetscOptions
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_SAVIENNACL"
 PETSC_EXTERN PetscErrorCode PCCreate_SAVIENNACL(PC pc)
 {
   PC_SAVIENNACL  *sac;

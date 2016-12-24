@@ -26,8 +26,6 @@ typedef struct {
   PetscRandom rand;
 } AppCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "IFunction"
 /*
      Defines the ODE passed to the ODE solver
 */
@@ -56,8 +54,6 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *c
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "IJacobian"
 /*
      Defines the Jacobian of the ODE passed to the ODE solver. See TSSetIJacobian() for the meaning of a and the Jacobian.
 */
@@ -86,8 +82,6 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   TS             ts;            /* ODE integrator */

@@ -528,8 +528,6 @@ DEF_Block(int,6)
 DEF_Block(int,7)
 DEF_Block(int,8)
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFSetUp_Basic"
 static PetscErrorCode PetscSFSetUp_Basic(PetscSF sf)
 {
   PetscSF_Basic *bas = (PetscSF_Basic*)sf->data;
@@ -573,8 +571,6 @@ static PetscErrorCode PetscSFSetUp_Basic(PetscSF sf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFBasicPackTypeSetup"
 static PetscErrorCode PetscSFBasicPackTypeSetup(PetscSFBasicPack link,MPI_Datatype unit)
 {
   PetscErrorCode ierr;
@@ -656,8 +652,6 @@ static PetscErrorCode PetscSFBasicPackTypeSetup(PetscSFBasicPack link,MPI_Dataty
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFBasicPackGetUnpackOp"
 static PetscErrorCode PetscSFBasicPackGetUnpackOp(PetscSF sf,PetscSFBasicPack link,MPI_Op op,void (**UnpackOp)(PetscInt,PetscInt,const PetscInt*,void*,const void*))
 {
   PetscFunctionBegin;
@@ -678,8 +672,6 @@ static PetscErrorCode PetscSFBasicPackGetUnpackOp(PetscSF sf,PetscSFBasicPack li
   else *UnpackOp = NULL;
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFBasicPackGetFetchAndOp"
 static PetscErrorCode PetscSFBasicPackGetFetchAndOp(PetscSF sf,PetscSFBasicPack link,MPI_Op op,void (**FetchAndOp)(PetscInt,PetscInt,const PetscInt*,void*,void*))
 {
   PetscFunctionBegin;
@@ -701,8 +693,6 @@ static PetscErrorCode PetscSFBasicPackGetFetchAndOp(PetscSF sf,PetscSFBasicPack 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFBasicPackGetReqs"
 static PetscErrorCode PetscSFBasicPackGetReqs(PetscSF sf,PetscSFBasicPack link,MPI_Request **rootreqs,MPI_Request **leafreqs)
 {
   PetscSF_Basic *bas = (PetscSF_Basic*)sf->data;
@@ -713,8 +703,6 @@ static PetscErrorCode PetscSFBasicPackGetReqs(PetscSF sf,PetscSFBasicPack link,M
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFBasicPackWaitall"
 static PetscErrorCode PetscSFBasicPackWaitall(PetscSF sf,PetscSFBasicPack link)
 {
   PetscSF_Basic  *bas = (PetscSF_Basic*)sf->data;
@@ -725,8 +713,6 @@ static PetscErrorCode PetscSFBasicPackWaitall(PetscSF sf,PetscSFBasicPack link)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFBasicGetRootInfo"
 static PetscErrorCode PetscSFBasicGetRootInfo(PetscSF sf,PetscInt *nrootranks,const PetscMPIInt **rootranks,const PetscInt **rootoffset,const PetscInt **rootloc)
 {
   PetscSF_Basic *bas = (PetscSF_Basic*)sf->data;
@@ -739,8 +725,6 @@ static PetscErrorCode PetscSFBasicGetRootInfo(PetscSF sf,PetscInt *nrootranks,co
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFBasicGetLeafInfo"
 static PetscErrorCode PetscSFBasicGetLeafInfo(PetscSF sf,PetscInt *nleafranks,const PetscMPIInt **leafranks,const PetscInt **leafoffset,const PetscInt **leafloc)
 {
   PetscFunctionBegin;
@@ -751,8 +735,6 @@ static PetscErrorCode PetscSFBasicGetLeafInfo(PetscSF sf,PetscInt *nleafranks,co
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFBasicGetPack"
 static PetscErrorCode PetscSFBasicGetPack(PetscSF sf,MPI_Datatype unit,const void *key,PetscSFBasicPack *mylink)
 {
   PetscSF_Basic    *bas = (PetscSF_Basic*)sf->data;
@@ -789,8 +771,6 @@ found:
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFBasicGetPackInUse"
 static PetscErrorCode PetscSFBasicGetPackInUse(PetscSF sf,MPI_Datatype unit,const void *key,PetscCopyMode cmode,PetscSFBasicPack *mylink)
 {
   PetscSF_Basic    *bas = (PetscSF_Basic*)sf->data;
@@ -816,8 +796,6 @@ static PetscErrorCode PetscSFBasicGetPackInUse(PetscSF sf,MPI_Datatype unit,cons
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFBasicReclaimPack"
 static PetscErrorCode PetscSFBasicReclaimPack(PetscSF sf,PetscSFBasicPack *link)
 {
   PetscSF_Basic *bas = (PetscSF_Basic*)sf->data;
@@ -830,8 +808,6 @@ static PetscErrorCode PetscSFBasicReclaimPack(PetscSF sf,PetscSFBasicPack *link)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFSetFromOptions_Basic"
 static PetscErrorCode PetscSFSetFromOptions_Basic(PetscOptionItems *PetscOptionsObject,PetscSF sf)
 {
   PetscErrorCode ierr;
@@ -842,8 +818,6 @@ static PetscErrorCode PetscSFSetFromOptions_Basic(PetscOptionItems *PetscOptions
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFReset_Basic"
 static PetscErrorCode PetscSFReset_Basic(PetscSF sf)
 {
   PetscSF_Basic    *bas = (PetscSF_Basic*)sf->data;
@@ -867,8 +841,6 @@ static PetscErrorCode PetscSFReset_Basic(PetscSF sf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFDestroy_Basic"
 static PetscErrorCode PetscSFDestroy_Basic(PetscSF sf)
 {
   PetscErrorCode ierr;
@@ -879,8 +851,6 @@ static PetscErrorCode PetscSFDestroy_Basic(PetscSF sf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFView_Basic"
 static PetscErrorCode PetscSFView_Basic(PetscSF sf,PetscViewer viewer)
 {
   /* PetscSF_Basic *bas = (PetscSF_Basic*)sf->data; */
@@ -895,8 +865,6 @@ static PetscErrorCode PetscSFView_Basic(PetscSF sf,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFBcastBegin_Basic"
 /* Send from roots to leaves */
 static PetscErrorCode PetscSFBcastBegin_Basic(PetscSF sf,MPI_Datatype unit,const void *rootdata,void *leafdata)
 {
@@ -932,8 +900,6 @@ static PetscErrorCode PetscSFBcastBegin_Basic(PetscSF sf,MPI_Datatype unit,const
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFBcastEnd_Basic"
 PetscErrorCode PetscSFBcastEnd_Basic(PetscSF sf,MPI_Datatype unit,const void *rootdata,void *leafdata)
 {
   PetscErrorCode   ierr;
@@ -954,8 +920,6 @@ PetscErrorCode PetscSFBcastEnd_Basic(PetscSF sf,MPI_Datatype unit,const void *ro
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFReduceBegin_Basic"
 /* leaf -> root with reduction */
 PetscErrorCode PetscSFReduceBegin_Basic(PetscSF sf,MPI_Datatype unit,const void *leafdata,void *rootdata,MPI_Op op)
 {
@@ -991,8 +955,6 @@ PetscErrorCode PetscSFReduceBegin_Basic(PetscSF sf,MPI_Datatype unit,const void 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFReduceEnd_Basic"
 static PetscErrorCode PetscSFReduceEnd_Basic(PetscSF sf,MPI_Datatype unit,const void *leafdata,void *rootdata,MPI_Op op)
 {
   void             (*UnpackOp)(PetscInt,PetscInt,const PetscInt*,void*,const void*);
@@ -1039,8 +1001,6 @@ static PetscErrorCode PetscSFReduceEnd_Basic(PetscSF sf,MPI_Datatype unit,const 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFFetchAndOpBegin_Basic"
 static PetscErrorCode PetscSFFetchAndOpBegin_Basic(PetscSF sf,MPI_Datatype unit,void *rootdata,const void *leafdata,void *leafupdate,MPI_Op op)
 {
   PetscErrorCode ierr;
@@ -1050,8 +1010,6 @@ static PetscErrorCode PetscSFFetchAndOpBegin_Basic(PetscSF sf,MPI_Datatype unit,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFFetchAndOpEnd_Basic"
 static PetscErrorCode PetscSFFetchAndOpEnd_Basic(PetscSF sf,MPI_Datatype unit,void *rootdata,const void *leafdata,void *leafupdate,MPI_Op op)
 {
   PetscSF_Basic     *bas = (PetscSF_Basic*)sf->data;
@@ -1096,8 +1054,6 @@ static PetscErrorCode PetscSFFetchAndOpEnd_Basic(PetscSF sf,MPI_Datatype unit,vo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFCreate_Basic"
 PETSC_EXTERN PetscErrorCode PetscSFCreate_Basic(PetscSF sf)
 {
   PetscSF_Basic  *bas = (PetscSF_Basic*)sf->data;

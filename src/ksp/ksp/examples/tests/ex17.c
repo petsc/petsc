@@ -7,8 +7,6 @@ intended to test the complex numbers version of various solvers.\n\n";
 typedef enum {TEST_1,TEST_2,TEST_3,HELMHOLTZ_1,HELMHOLTZ_2} TestType;
 extern PetscErrorCode FormTestMatrix(Mat,PetscInt,TestType);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Vec            x,b,u;      /* approx solution, RHS, exact solution */
@@ -94,8 +92,6 @@ int main(int argc,char **args)
   return ierr;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormTestMatrix"
 PetscErrorCode FormTestMatrix(Mat A,PetscInt n,TestType type)
 {
 #if !defined(PETSC_USE_COMPLEX)

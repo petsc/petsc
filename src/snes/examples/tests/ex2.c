@@ -28,8 +28,6 @@ static PetscErrorCode quadratic(PetscInt dim, PetscReal time, const PetscReal x[
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   PetscErrorCode   (**funcs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);

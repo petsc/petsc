@@ -8,8 +8,6 @@ struct _n_User {
   Mat B;
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetDiagonal_User"
 static PetscErrorCode MatGetDiagonal_User(Mat A,Vec X)
 {
   User           user;
@@ -21,8 +19,6 @@ static PetscErrorCode MatGetDiagonal_User(Mat A,Vec X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDiagonalSet_User"
 static PetscErrorCode MatDiagonalSet_User(Mat A,Vec D,InsertMode is)
 {
   User           user;
@@ -34,8 +30,6 @@ static PetscErrorCode MatDiagonalSet_User(Mat A,Vec D,InsertMode is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ErrorHandler"
 PetscErrorCode ErrorHandler(MPI_Comm comm,int line,const char *func,const char *file,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
 {
   PetscFunctionBegin;
@@ -43,8 +37,6 @@ PetscErrorCode ErrorHandler(MPI_Comm comm,int line,const char *func,const char *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   const PetscScalar xvals[] = {11,13};

@@ -7,8 +7,6 @@
 #include <petsc/private/dmdaimpl.h>     /*I  "petscdmda.h"   I*/
 
 #include <petscdraw.h>
-#undef __FUNCT__
-#define __FUNCT__ "DMView_DA_1d"
 static PetscErrorCode DMView_DA_1d(DM da,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -102,8 +100,6 @@ static PetscErrorCode DMView_DA_1d(DM da,PetscViewer viewer)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetUp_DA_1D"
 PetscErrorCode  DMSetUp_DA_1D(DM da)
 {
   DM_DA            *dd   = (DM_DA*)da->data;
@@ -291,8 +287,6 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDACreate1d"
 /*@C
    DMDACreate1d - Creates an object that will manage the communication of  one-dimensional
    regular array data that is distributed across some processors.

@@ -15,8 +15,6 @@
 #include <sys/systeminfo.h>
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscGetRelativePath"
 /*@C
    PetscGetRelativePath - Given a filename, returns the relative path (removes
    all directory specifiers).

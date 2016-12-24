@@ -766,29 +766,10 @@ cleangcov:
 	@-${RM}  *.bb *.bbg *.da *.gcov *.lines *.gcno *.gcda
 #
 #----------------------------------------------------------------------------------
-# Rules for finding errors in the source and errors in the coding style
-countfunctions:
-	-@if [ ! -f ${INSTALL_LIB_DIR}/countfunctions ]; then \
-	  touch ${INSTALL_LIB_DIR}/countfunctions ; fi
-	@-if [ "${SOURCED}" != "" ]; then \
-          for i in ${SOURCED} foo; do if [ -f $$i ]; then \
-           grep "define __FUNCT__" $$i | cut -f2 -d\" >> ${INSTALL_LIB_DIR}/countfunctions ; \
-          fi; done ; \
-        fi
-
 checkbadPetscFunctionBegin:
 	-@if [ "${SOURCED}" != "" ] ; then \
 	${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  \
 	checkbadPetscFunctionBegin_private ; fi
-
-checkbadPetscFunctionBegin_private:
-	-@for filename in ${SOURCED} ; do \
-	a=`grep '#define __FUNCT__' $$filename | wc -l`; \
-	b=`grep 'PetscFunctionBegin' $$filename | wc -l`; \
-	if [ $$a -ne $$b ] ; then \
-	echo "$$filename: __FUNCT__ = $$a; PetscFunctionBegin = $$b" ; \
-	fi; \
-	done
 
 checkbadFileHeader:
 	-@for filename in ${SOURCEALL} makefile ${EXAMPLESC} ${EXAMPLESF}; do \

@@ -38,8 +38,6 @@ typedef struct {
   PetscReal   tf,tcl;
 } AppCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "RHSFunction"
 /*
      Defines the ODE passed to the ODE solver
 */
@@ -64,8 +62,6 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec U,Vec F,AppCtx *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "RHSJacobian"
 /*
      Defines the Jacobian of the ODE passed to the ODE solver. See TSSetIJacobian() for the meaning of a and the Jacobian.
 */
@@ -96,8 +92,6 @@ static PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B,AppCtx *ct
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   TS             ts;            /* ODE integrator */

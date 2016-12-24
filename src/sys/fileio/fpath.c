@@ -4,8 +4,6 @@
 #include <pwd.h>
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscGetFullPath"
 /*@C
    PetscGetFullPath - Given a filename, returns the fully qualified file name.
 

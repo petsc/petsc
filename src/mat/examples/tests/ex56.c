@@ -3,8 +3,6 @@ static char help[] = "Test the use of MatSetValuesBlocked(), MatZeroRows() for r
 
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            A;

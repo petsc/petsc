@@ -19,8 +19,6 @@ PETSC_EXTERN PetscErrorCode VecCreate_MPICUDA(Vec);
 PETSC_EXTERN PetscErrorCode VecCreate_CUDA(Vec);
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "VecRegisterAll"
 /*@C
   VecRegisterAll - Registers all of the vector components in the Vec package.
 

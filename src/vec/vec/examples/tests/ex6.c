@@ -3,8 +3,6 @@ static char help[] = "Demonstrates a scatter with a stride and general index set
 
 #include <petscvec.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;

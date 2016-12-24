@@ -1,8 +1,6 @@
 #include <petsc/private/dmpatchimpl.h>   /*I      "petscdmpatch.h"   I*/
 #include <petscdmda.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetFromOptions_Patch"
 PetscErrorCode DMSetFromOptions_Patch(PetscOptionItems *PetscOptionsObject,DM dm)
 {
   /* DM_Patch      *mesh = (DM_Patch*) dm->data; */
@@ -25,8 +23,6 @@ extern PetscErrorCode DMCreateLocalVector_Patch(DM dm, Vec *l);
 extern PetscErrorCode DMDestroy_Patch(DM dm);
 extern PetscErrorCode DMCreateSubDM_Patch(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm);
 
-#undef __FUNCT__
-#define __FUNCT__ "DMInitialize_Patch"
 PetscErrorCode DMInitialize_Patch(DM dm)
 {
   PetscFunctionBegin;
@@ -55,8 +51,6 @@ PetscErrorCode DMInitialize_Patch(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreate_Patch"
 PETSC_EXTERN PetscErrorCode DMCreate_Patch(DM dm)
 {
   DM_Patch       *mesh;
@@ -78,8 +72,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Patch(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPatchCreate"
 /*@
   DMPatchCreate - Creates a DMPatch object, which is a collections of DMs called patches.
 
@@ -106,8 +98,6 @@ PetscErrorCode DMPatchCreate(MPI_Comm comm, DM *mesh)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPatchCreateGrid"
 PetscErrorCode DMPatchCreateGrid(MPI_Comm comm, PetscInt dim, MatStencil patchSize, MatStencil commSize, MatStencil gridSize, DM *dm)
 {
   DM_Patch       *mesh;

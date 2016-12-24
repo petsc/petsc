@@ -17,8 +17,6 @@
 /*
   SYByteSwapInt - Swap bytes in an integer
 */
-#undef __FUNCT__
-#define __FUNCT__ "SYByteSwapInt"
 void SYByteSwapInt(int *buff,int n)
 {
   int  i,j,tmp;
@@ -32,8 +30,6 @@ void SYByteSwapInt(int *buff,int n)
 /*
   SYByteSwapShort - Swap bytes in a short
 */
-#undef __FUNCT__
-#define __FUNCT__ "SYByteSwapShort"
 void SYByteSwapShort(short *buff,int n)
 {
   int   i,j;
@@ -49,8 +45,6 @@ void SYByteSwapShort(short *buff,int n)
   SYByteSwapScalar - Swap bytes in a double
   Complex is dealt with as if array of double twice as long.
 */
-#undef __FUNCT__
-#define __FUNCT__ "SYByteSwapScalar"
 void SYByteSwapScalar(PetscScalar *buff,int n)
 {
   int    i,j;
@@ -69,8 +63,6 @@ void SYByteSwapScalar(PetscScalar *buff,int n)
 
 #define PETSC_MEX_ERROR(a) {fprintf(stdout,"sread: %s \n",a); return PETSC_ERR_SYS;}
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscBinaryRead"
 /*
     PetscBinaryRead - Reads from a socket, called from MATLAB
 
@@ -122,8 +114,6 @@ PetscErrorCode PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscBinaryWrite"
 /*
     PetscBinaryWrite - Writes to a socket, called from MATLAB
 

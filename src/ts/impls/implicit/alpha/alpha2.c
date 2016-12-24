@@ -42,8 +42,6 @@ typedef struct {
   TSStepStatus status;
 } TS_Alpha;
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAlpha_StageTime"
 static PetscErrorCode TSAlpha_StageTime(TS ts)
 {
   TS_Alpha  *th = (TS_Alpha*)ts->data;
@@ -62,8 +60,6 @@ static PetscErrorCode TSAlpha_StageTime(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAlpha_StageVecs"
 static PetscErrorCode TSAlpha_StageVecs(TS ts,Vec X)
 {
   TS_Alpha       *th = (TS_Alpha*)ts->data;
@@ -97,8 +93,6 @@ static PetscErrorCode TSAlpha_StageVecs(TS ts,Vec X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TS_SNESSolve"
 static PetscErrorCode TS_SNESSolve(TS ts,Vec b,Vec x)
 {
   PetscInt       nits,lits;
@@ -118,8 +112,6 @@ static PetscErrorCode TS_SNESSolve(TS ts,Vec b,Vec x)
   - Compute the initial second time derivative using backward differences.
   - If using adaptivity, estimate the LTE of the initial step.
 */
-#undef __FUNCT__
-#define __FUNCT__ "TSAlpha_Restart"
 static PetscErrorCode TSAlpha_Restart(TS ts,PetscBool *initok)
 {
   TS_Alpha       *th = (TS_Alpha*)ts->data;
@@ -200,8 +192,6 @@ static PetscErrorCode TSAlpha_Restart(TS ts,PetscBool *initok)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSStep_Alpha"
 static PetscErrorCode TSStep_Alpha(TS ts)
 {
   TS_Alpha       *th = (TS_Alpha*)ts->data;
@@ -264,8 +254,6 @@ static PetscErrorCode TSStep_Alpha(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSEvaluateWLTE_Alpha"
 static PetscErrorCode TSEvaluateWLTE_Alpha(TS ts,NormType wnormtype,PetscInt *order,PetscReal *wlte)
 {
   TS_Alpha       *th = (TS_Alpha*)ts->data;
@@ -305,8 +293,6 @@ static PetscErrorCode TSEvaluateWLTE_Alpha(TS ts,NormType wnormtype,PetscInt *or
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSRollBack_Alpha"
 static PetscErrorCode TSRollBack_Alpha(TS ts)
 {
   TS_Alpha       *th = (TS_Alpha*)ts->data;
@@ -319,8 +305,6 @@ static PetscErrorCode TSRollBack_Alpha(TS ts)
 }
 
 /*
-#undef __FUNCT__
-#define __FUNCT__ "TSInterpolate_Alpha"
 static PetscErrorCode TSInterpolate_Alpha(TS ts,PetscReal t,Vec X,Vec V)
 {
   TS_Alpha       *th = (TS_Alpha*)ts->data;
@@ -339,8 +323,6 @@ static PetscErrorCode TSInterpolate_Alpha(TS ts,PetscReal t,Vec X,Vec V)
 }
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESTSFormFunction_Alpha"
 static PetscErrorCode SNESTSFormFunction_Alpha(PETSC_UNUSED SNES snes,Vec X,Vec F,TS ts)
 {
   TS_Alpha       *th = (TS_Alpha*)ts->data;
@@ -356,8 +338,6 @@ static PetscErrorCode SNESTSFormFunction_Alpha(PETSC_UNUSED SNES snes,Vec X,Vec 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESTSFormJacobian_Alpha"
 static PetscErrorCode SNESTSFormJacobian_Alpha(PETSC_UNUSED SNES snes,PETSC_UNUSED Vec X,Mat J,Mat P,TS ts)
 {
   TS_Alpha       *th = (TS_Alpha*)ts->data;
@@ -372,8 +352,6 @@ static PetscErrorCode SNESTSFormJacobian_Alpha(PETSC_UNUSED SNES snes,PETSC_UNUS
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSReset_Alpha"
 static PetscErrorCode TSReset_Alpha(TS ts)
 {
   TS_Alpha       *th = (TS_Alpha*)ts->data;
@@ -396,8 +374,6 @@ static PetscErrorCode TSReset_Alpha(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSDestroy_Alpha"
 static PetscErrorCode TSDestroy_Alpha(TS ts)
 {
   PetscErrorCode ierr;
@@ -413,8 +389,6 @@ static PetscErrorCode TSDestroy_Alpha(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSSetUp_Alpha"
 static PetscErrorCode TSSetUp_Alpha(TS ts)
 {
   TS_Alpha       *th = (TS_Alpha*)ts->data;
@@ -448,8 +422,6 @@ static PetscErrorCode TSSetUp_Alpha(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSSetFromOptions_Alpha"
 static PetscErrorCode TSSetFromOptions_Alpha(PetscOptionItems *PetscOptionsObject,TS ts)
 {
   TS_Alpha       *th = (TS_Alpha*)ts->data;
@@ -475,8 +447,6 @@ static PetscErrorCode TSSetFromOptions_Alpha(PetscOptionItems *PetscOptionsObjec
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSView_Alpha"
 static PetscErrorCode TSView_Alpha(TS ts,PetscViewer viewer)
 {
   TS_Alpha       *th = (TS_Alpha*)ts->data;
@@ -493,8 +463,6 @@ static PetscErrorCode TSView_Alpha(TS ts,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAlpha2UseAdapt_Alpha"
 static PetscErrorCode TSAlpha2UseAdapt_Alpha(TS ts,PetscBool use)
 {
   TS_Alpha *th = (TS_Alpha*)ts->data;
@@ -506,8 +474,6 @@ static PetscErrorCode TSAlpha2UseAdapt_Alpha(TS ts,PetscBool use)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAlpha2SetRadius_Alpha"
 static PetscErrorCode TSAlpha2SetRadius_Alpha(TS ts,PetscReal radius)
 {
   PetscReal      alpha_m,alpha_f,gamma,beta;
@@ -523,8 +489,6 @@ static PetscErrorCode TSAlpha2SetRadius_Alpha(TS ts,PetscReal radius)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAlpha2SetParams_Alpha"
 static PetscErrorCode TSAlpha2SetParams_Alpha(TS ts,PetscReal alpha_m,PetscReal alpha_f,PetscReal gamma,PetscReal beta)
 {
   TS_Alpha  *th = (TS_Alpha*)ts->data;
@@ -540,8 +504,6 @@ static PetscErrorCode TSAlpha2SetParams_Alpha(TS ts,PetscReal alpha_m,PetscReal 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAlpha2GetParams_Alpha"
 static PetscErrorCode TSAlpha2GetParams_Alpha(TS ts,PetscReal *alpha_m,PetscReal *alpha_f,PetscReal *gamma,PetscReal *beta)
 {
   TS_Alpha *th = (TS_Alpha*)ts->data;
@@ -567,8 +529,6 @@ static PetscErrorCode TSAlpha2GetParams_Alpha(TS ts,PetscReal *alpha_m,PetscReal
 
 .seealso:  TS, TSCreate(), TSSetType(), TSAlpha2SetRadius(), TSAlpha2SetParams()
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "TSCreate_Alpha2"
 PETSC_EXTERN PetscErrorCode TSCreate_Alpha2(TS ts)
 {
   TS_Alpha       *th;
@@ -605,8 +565,6 @@ PETSC_EXTERN PetscErrorCode TSCreate_Alpha2(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAlpha2UseAdapt"
 /*@
   TSAlpha2UseAdapt - Use time-step adaptivity with the Alpha method
 
@@ -634,8 +592,6 @@ PetscErrorCode TSAlpha2UseAdapt(TS ts,PetscBool use)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAlpha2SetRadius"
 /*@
   TSAlpha2SetRadius - sets the desired spectral radius of the method
                       (i.e. high-frequency numerical damping)
@@ -672,8 +628,6 @@ PetscErrorCode TSAlpha2SetRadius(TS ts,PetscReal radius)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAlpha2SetParams"
 /*@
   TSAlpha2SetParams - sets the algorithmic parameters for TSALPHA2
 
@@ -725,8 +679,6 @@ PetscErrorCode TSAlpha2SetParams(TS ts,PetscReal alpha_m,PetscReal alpha_f,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAlpha2GetParams"
 /*@
   TSAlpha2GetParams - gets the algorithmic parameters for TSALPHA2
 

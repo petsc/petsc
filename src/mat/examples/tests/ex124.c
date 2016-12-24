@@ -6,8 +6,6 @@ Input parameters include\n\
 #include <petscmat.h>
 
 #undef WRITEFILE
-#undef __FUNCT__
-#define __FUNCT__ "main"
 PetscInt main(PetscInt argc,char **args)
 {
   Mat            A,B;

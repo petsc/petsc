@@ -57,8 +57,6 @@ PETSC_EXTERN int connect(int,struct sockaddr*,int);
 #endif
 
 /*--------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerDestroy_Socket"
 static PetscErrorCode PetscViewerDestroy_Socket(PetscViewer viewer)
 {
   PetscViewer_Socket *vmatlab = (PetscViewer_Socket*)viewer->data;
@@ -78,8 +76,6 @@ static PetscErrorCode PetscViewerDestroy_Socket(PetscViewer viewer)
 }
 
 /*--------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "PetscOpenSocket"
 /*@C
     PetscSocketOpen - handles connected to an open port where someone is waiting.
 
@@ -163,8 +159,6 @@ PetscErrorCode  PetscOpenSocket(const char hostname[],int portnum,int *t)
 }
 
 #define MAXHOSTNAME 100
-#undef __FUNCT__
-#define __FUNCT__ "PetscSocketEstablish"
 /*@C
    PetscSocketEstablish - starts a listener on a socket
 
@@ -222,8 +216,6 @@ PETSC_INTERN PetscErrorCode PetscSocketEstablish(int portnum,int *ss)
   return(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSocketListen"
 /*@C
    PetscSocketListen - Listens at a socket created with PetscSocketEstablish()
 
@@ -253,8 +245,6 @@ PETSC_INTERN PetscErrorCode PetscSocketListen(int listenport,int *t)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerSocketOpen"
 /*@C
    PetscViewerSocketOpen - Opens a connection to a MATLAB or other socket based server.
 
@@ -323,8 +313,6 @@ PetscErrorCode  PetscViewerSocketOpen(MPI_Comm comm,const char machine[],int por
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerSetFromOptions_Socket"
 static PetscErrorCode PetscViewerSetFromOptions_Socket(PetscOptionItems *PetscOptionsObject,PetscViewer v)
 {
   PetscErrorCode ierr;
@@ -353,8 +341,6 @@ static PetscErrorCode PetscViewerSetFromOptions_Socket(PetscOptionItems *PetscOp
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerBinaryGetSkipHeader_Socket"
 static PetscErrorCode PetscViewerBinaryGetSkipHeader_Socket(PetscViewer viewer,PetscBool  *skip)
 {
   PetscViewer_Socket *vsocket = (PetscViewer_Socket*)viewer->data;
@@ -364,8 +350,6 @@ static PetscErrorCode PetscViewerBinaryGetSkipHeader_Socket(PetscViewer viewer,P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerBinarySetSkipHeader_Socket"
 static PetscErrorCode PetscViewerBinarySetSkipHeader_Socket(PetscViewer viewer,PetscBool skip)
 {
   PetscViewer_Socket *vsocket = (PetscViewer_Socket*)viewer->data;
@@ -375,8 +359,6 @@ static PetscErrorCode PetscViewerBinarySetSkipHeader_Socket(PetscViewer viewer,P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerBinaryGetFlowControl_Socket"
 static PetscErrorCode  PetscViewerBinaryGetFlowControl_Socket(PetscViewer viewer,PetscInt *fc)
 {
   PetscFunctionBegin;
@@ -396,8 +378,6 @@ static PetscErrorCode  PetscViewerBinaryGetFlowControl_Socket(PetscViewer viewer
   Level: beginner
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerCreate_Socket"
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_Socket(PetscViewer v)
 {
   PetscViewer_Socket *vmatlab;
@@ -420,8 +400,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Socket(PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerSocketSetConnection"
 /*@C
       PetscViewerSocketSetConnection - Sets the machine and port that a PETSc socket
              viewer is to use
@@ -491,8 +469,6 @@ PetscErrorCode  PetscViewerSocketSetConnection(PetscViewer v,const char machine[
 static PetscMPIInt Petsc_Viewer_Socket_keyval = MPI_KEYVAL_INVALID;
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PETSC_VIEWER_SOCKET_"
 /*@C
      PETSC_VIEWER_SOCKET_ - Creates a socket viewer shared by all processors in a communicator.
 

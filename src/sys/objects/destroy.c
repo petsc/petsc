@@ -5,8 +5,6 @@
 #include <petsc/private/petscimpl.h>  /*I   "petscsys.h"    I*/
 #include <petscviewer.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscComposedQuantitiesDestroy"
 PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj)
 {
   PetscErrorCode ierr;
@@ -43,8 +41,6 @@ PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectDestroy"
 /*@
    PetscObjectDestroy - Destroys any PetscObject, regardless of the type.
 
@@ -75,8 +71,6 @@ PetscErrorCode  PetscObjectDestroy(PetscObject *obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectView"
 /*@C
    PetscObjectView - Views any PetscObject, regardless of the type.
 
@@ -108,8 +102,6 @@ PetscErrorCode  PetscObjectView(PetscObject obj,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectTypeCompare"
 /*@C
    PetscObjectTypeCompare - Determines whether a PETSc object is of a particular type.
 
@@ -150,8 +142,6 @@ PetscErrorCode  PetscObjectTypeCompare(PetscObject obj,const char type_name[],Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectTypeCompareAny"
 /*@C
    PetscObjectTypeCompareAny - Determines whether a PETSc object is of any of a list of types.
 
@@ -199,8 +189,6 @@ PetscErrorCode PetscObjectTypeCompareAny(PetscObject obj,PetscBool *match,const 
 static int         PetscObjectRegisterDestroy_Count = 0;
 static PetscObject PetscObjectRegisterDestroy_Objects[MAXREGDESOBJS];
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectRegisterDestroy"
 /*@C
    PetscObjectRegisterDestroy - Registers a PETSc object to be destroyed when
      PetscFinalize() is called.
@@ -229,8 +217,6 @@ PetscErrorCode  PetscObjectRegisterDestroy(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectRegisterDestroyAll"
 /*@C
    PetscObjectRegisterDestroyAll - Frees all the PETSc objects that have been registered
      with PetscObjectRegisterDestroy(). Called by PetscFinalize()
@@ -259,8 +245,6 @@ PetscErrorCode  PetscObjectRegisterDestroyAll(void)
 static int PetscRegisterFinalize_Count = 0;
 static PetscErrorCode ((*PetscRegisterFinalize_Functions[MAXREGFIN])(void));
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscRegisterFinalize"
 /*@C
    PetscRegisterFinalize - Registers a function that is to be called in PetscFinalize()
 
@@ -289,8 +273,6 @@ PetscErrorCode  PetscRegisterFinalize(PetscErrorCode (*f)(void))
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscRegisterFinalizeAll"
 /*@C
    PetscRegisterFinalizeAll - Runs all the finalize functions set with PetscRegisterFinalize()
 

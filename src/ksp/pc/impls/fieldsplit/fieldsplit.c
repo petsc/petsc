@@ -75,8 +75,6 @@ static Mat FieldSplitSchurPre(PC_FieldSplit *jac)
 
 
 #include <petscdraw.h>
-#undef __FUNCT__
-#define __FUNCT__ "PCView_FieldSplit"
 static PetscErrorCode PCView_FieldSplit(PC pc,PetscViewer viewer)
 {
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
@@ -146,8 +144,6 @@ static PetscErrorCode PCView_FieldSplit(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCView_FieldSplit_Schur"
 static PetscErrorCode PCView_FieldSplit_Schur(PC pc,PetscViewer viewer)
 {
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
@@ -269,8 +265,6 @@ static PetscErrorCode PCView_FieldSplit_Schur(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFieldSplitSetRuntimeSplits_Private"
 /* Precondition: jac->bs is set to a meaningful value */
 static PetscErrorCode PCFieldSplitSetRuntimeSplits_Private(PC pc)
 {
@@ -312,8 +306,6 @@ static PetscErrorCode PCFieldSplitSetRuntimeSplits_Private(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFieldSplitSetDefaults"
 static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
 {
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
@@ -460,8 +452,6 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
 
 PETSC_EXTERN PetscErrorCode PetscOptionsFindPairPrefix_Private(PetscOptions,const char pre[], const char name[], char *value[], PetscBool *flg);
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_FieldSplit"
 static PetscErrorCode PCSetUp_FieldSplit(PC pc)
 {
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
@@ -842,8 +832,6 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
    VecScatterBegin(ilink->sctx,ilink->y,yy,ADD_VALUES,SCATTER_REVERSE) ||  \
    VecScatterEnd(ilink->sctx,ilink->y,yy,ADD_VALUES,SCATTER_REVERSE))
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_FieldSplit_Schur"
 static PetscErrorCode PCApply_FieldSplit_Schur(PC pc,Vec x,Vec y)
 {
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
@@ -948,8 +936,6 @@ static PetscErrorCode PCApply_FieldSplit_Schur(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_FieldSplit"
 static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
 {
   PC_FieldSplit      *jac = (PC_FieldSplit*)pc->data;
@@ -1082,8 +1068,6 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
    VecScatterBegin(ilink->sctx,ilink->x,yy,ADD_VALUES,SCATTER_REVERSE) || \
    VecScatterEnd(ilink->sctx,ilink->x,yy,ADD_VALUES,SCATTER_REVERSE))
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApplyTranspose_FieldSplit"
 static PetscErrorCode PCApplyTranspose_FieldSplit(PC pc,Vec x,Vec y)
 {
   PC_FieldSplit      *jac = (PC_FieldSplit*)pc->data;
@@ -1166,8 +1150,6 @@ static PetscErrorCode PCApplyTranspose_FieldSplit(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCReset_FieldSplit"
 static PetscErrorCode PCReset_FieldSplit(PC pc)
 {
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
@@ -1213,8 +1195,6 @@ static PetscErrorCode PCReset_FieldSplit(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_FieldSplit"
 static PetscErrorCode PCDestroy_FieldSplit(PC pc)
 {
   PetscErrorCode    ierr;
@@ -1234,8 +1214,6 @@ static PetscErrorCode PCDestroy_FieldSplit(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_FieldSplit"
 static PetscErrorCode PCSetFromOptions_FieldSplit(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode  ierr;
@@ -1285,8 +1263,6 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PetscOptionItems *PetscOptions
 
 /*------------------------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFieldSplitSetFields_FieldSplit"
 static PetscErrorCode  PCFieldSplitSetFields_FieldSplit(PC pc,const char splitname[],PetscInt n,const PetscInt *fields,const PetscInt *fields_col)
 {
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
@@ -1342,8 +1318,6 @@ static PetscErrorCode  PCFieldSplitSetFields_FieldSplit(PC pc,const char splitna
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFieldSplitGetSubKSP_FieldSplit_Schur"
 static PetscErrorCode  PCFieldSplitGetSubKSP_FieldSplit_Schur(PC pc,PetscInt *n,KSP **subksp)
 {
   PC_FieldSplit  *jac = (PC_FieldSplit*)pc->data;
@@ -1359,8 +1333,6 @@ static PetscErrorCode  PCFieldSplitGetSubKSP_FieldSplit_Schur(PC pc,PetscInt *n,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFieldSplitGetSubKSP_FieldSplit"
 static PetscErrorCode  PCFieldSplitGetSubKSP_FieldSplit(PC pc,PetscInt *n,KSP **subksp)
 {
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
@@ -1379,8 +1351,6 @@ static PetscErrorCode  PCFieldSplitGetSubKSP_FieldSplit(PC pc,PetscInt *n,KSP **
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFieldSplitRestrictIS"
 /*@C
     PCFieldSplitRestrictIS - Restricts the fieldsplit ISs to be within a given IS.
 
@@ -1403,8 +1373,6 @@ PetscErrorCode  PCFieldSplitRestrictIS(PC pc,IS isy)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFieldSplitRestrictIS_FieldSplit"
 static PetscErrorCode  PCFieldSplitRestrictIS_FieldSplit(PC pc, IS isy)
 {
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
@@ -1466,8 +1434,6 @@ static PetscErrorCode  PCFieldSplitRestrictIS_FieldSplit(PC pc, IS isy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFieldSplitSetIS_FieldSplit"
 static PetscErrorCode  PCFieldSplitSetIS_FieldSplit(PC pc,const char splitname[],IS is)
 {
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
@@ -1518,8 +1484,6 @@ static PetscErrorCode  PCFieldSplitSetIS_FieldSplit(PC pc,const char splitname[]
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFieldSplitSetFields"
 /*@
     PCFieldSplitSetFields - Sets the fields for one particular split in the field split preconditioner
 
@@ -1563,8 +1527,6 @@ PetscErrorCode  PCFieldSplitSetFields(PC pc,const char splitname[],PetscInt n,co
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFieldSplitSetDiagUseAmat"
 /*@
     PCFieldSplitSetDiagUseAmat - set flag indicating whether to extract diagonal blocks from Amat (rather than Pmat)
 
@@ -1596,8 +1558,6 @@ PetscErrorCode  PCFieldSplitSetDiagUseAmat(PC pc,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFieldSplitGetDiagUseAmat"
 /*@
     PCFieldSplitGetDiagUseAmat - get the flag indicating whether to extract diagonal blocks from Amat (rather than Pmat)
 
@@ -1630,8 +1590,6 @@ PetscErrorCode  PCFieldSplitGetDiagUseAmat(PC pc,PetscBool *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFieldSplitSetOffDiagUseAmat"
 /*@
     PCFieldSplitSetOffDiagUseAmat - set flag indicating whether to extract off-diagonal blocks from Amat (rather than Pmat)
 
@@ -1663,8 +1621,6 @@ PetscErrorCode  PCFieldSplitSetOffDiagUseAmat(PC pc,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFieldSplitGetOffDiagUseAmat"
 /*@
     PCFieldSplitGetOffDiagUseAmat - get the flag indicating whether to extract off-diagonal blocks from Amat (rather than Pmat)
 
@@ -1699,8 +1655,6 @@ PetscErrorCode  PCFieldSplitGetOffDiagUseAmat(PC pc,PetscBool *flg)
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFieldSplitSetIS"
 /*@C
     PCFieldSplitSetIS - Sets the exact elements for field
 
@@ -1735,8 +1689,6 @@ PetscErrorCode  PCFieldSplitSetIS(PC pc,const char splitname[],IS is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFieldSplitGetIS"
 /*@
     PCFieldSplitGetIS - Retrieves the elements for a field as an IS
 
@@ -1780,8 +1732,6 @@ PetscErrorCode PCFieldSplitGetIS(PC pc,const char splitname[],IS *is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFieldSplitSetBlockSize"
 /*@
     PCFieldSplitSetBlockSize - Sets the block size for defining where fields start in the
       fieldsplit preconditioner. If not set the matrix block size is used.
@@ -1808,8 +1758,6 @@ PetscErrorCode  PCFieldSplitSetBlockSize(PC pc,PetscInt bs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFieldSplitGetSubKSP"
 /*@C
    PCFieldSplitGetSubKSP - Gets the KSP contexts for all splits
 
@@ -1848,8 +1796,6 @@ PetscErrorCode  PCFieldSplitGetSubKSP(PC pc,PetscInt *n,KSP *subksp[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFieldSplitSetSchurPre"
 /*@
     PCFieldSplitSetSchurPre -  Indicates what operator is used to construct the preconditioner for the Schur complement.
       A11 matrix. Otherwise no preconditioner is used.
@@ -1901,8 +1847,6 @@ PetscErrorCode PCFieldSplitSetSchurPre(PC pc,PCFieldSplitSchurPreType ptype,Mat 
 }
 PetscErrorCode PCFieldSplitSchurPrecondition(PC pc,PCFieldSplitSchurPreType ptype,Mat pre) {return PCFieldSplitSetSchurPre(pc,ptype,pre);} /* Deprecated name */
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFieldSplitGetSchurPre"
 /*@
     PCFieldSplitGetSchurPre - For Schur complement fieldsplit, determine how the Schur complement will be
     preconditioned.  See PCFieldSplitSetSchurPre() for details.
@@ -1931,8 +1875,6 @@ PetscErrorCode PCFieldSplitGetSchurPre(PC pc,PCFieldSplitSchurPreType *ptype,Mat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFieldSplitSchurGetS"
 /*@
     PCFieldSplitSchurGetS -  extract the MatSchurComplement object used by this PC in case it needs to be configured separately
 
@@ -1970,8 +1912,6 @@ PetscErrorCode  PCFieldSplitSchurGetS(PC pc,Mat *S)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFieldSplitSchurRestoreS"
 /*@
     PCFieldSplitSchurRestoreS -  restores the MatSchurComplement object used by this PC
 
@@ -2005,8 +1945,6 @@ PetscErrorCode  PCFieldSplitSchurRestoreS(PC pc,Mat *S)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFieldSplitSetSchurPre_FieldSplit"
 static PetscErrorCode  PCFieldSplitSetSchurPre_FieldSplit(PC pc,PCFieldSplitSchurPreType ptype,Mat pre)
 {
   PC_FieldSplit  *jac = (PC_FieldSplit*)pc->data;
@@ -2022,8 +1960,6 @@ static PetscErrorCode  PCFieldSplitSetSchurPre_FieldSplit(PC pc,PCFieldSplitSchu
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFieldSplitGetSchurPre_FieldSplit"
 static PetscErrorCode  PCFieldSplitGetSchurPre_FieldSplit(PC pc,PCFieldSplitSchurPreType *ptype,Mat *pre)
 {
   PC_FieldSplit  *jac = (PC_FieldSplit*)pc->data;
@@ -2034,8 +1970,6 @@ static PetscErrorCode  PCFieldSplitGetSchurPre_FieldSplit(PC pc,PCFieldSplitSchu
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFieldSplitSetSchurFactType"
 /*@
     PCFieldSplitSetSchurFactType -  sets which blocks of the approximate block factorization to retain
 
@@ -2084,8 +2018,6 @@ PetscErrorCode  PCFieldSplitSetSchurFactType(PC pc,PCFieldSplitSchurFactType fty
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFieldSplitSetSchurFactType_FieldSplit"
 static PetscErrorCode PCFieldSplitSetSchurFactType_FieldSplit(PC pc,PCFieldSplitSchurFactType ftype)
 {
   PC_FieldSplit *jac = (PC_FieldSplit*)pc->data;
@@ -2095,8 +2027,6 @@ static PetscErrorCode PCFieldSplitSetSchurFactType_FieldSplit(PC pc,PCFieldSplit
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFieldSplitGetSchurBlocks"
 /*@C
    PCFieldSplitGetSchurBlocks - Gets all matrix blocks for the Schur complement
 
@@ -2129,8 +2059,6 @@ PetscErrorCode  PCFieldSplitGetSchurBlocks(PC pc,Mat *A00,Mat *A01,Mat *A10, Mat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFieldSplitSetType_FieldSplit"
 static PetscErrorCode  PCFieldSplitSetType_FieldSplit(PC pc,PCCompositeType type)
 {
   PC_FieldSplit  *jac = (PC_FieldSplit*)pc->data;
@@ -2159,8 +2087,6 @@ static PetscErrorCode  PCFieldSplitSetType_FieldSplit(PC pc,PCCompositeType type
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFieldSplitSetBlockSize_FieldSplit"
 static PetscErrorCode  PCFieldSplitSetBlockSize_FieldSplit(PC pc,PetscInt bs)
 {
   PC_FieldSplit *jac = (PC_FieldSplit*)pc->data;
@@ -2172,8 +2098,6 @@ static PetscErrorCode  PCFieldSplitSetBlockSize_FieldSplit(PC pc,PetscInt bs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFieldSplitSetType"
 /*@
    PCFieldSplitSetType - Sets the type of fieldsplit preconditioner.
 
@@ -2203,8 +2127,6 @@ PetscErrorCode  PCFieldSplitSetType(PC pc,PCCompositeType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFieldSplitGetType"
 /*@
   PCFieldSplitGetType - Gets the type of fieldsplit preconditioner.
 
@@ -2232,8 +2154,6 @@ PetscErrorCode PCFieldSplitGetType(PC pc, PCCompositeType *type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFieldSplitSetDMSplits"
 /*@
    PCFieldSplitSetDMSplits - Flags whether DMCreateFieldDecomposition() should be used to define the splits, whenever possible.
 
@@ -2270,8 +2190,6 @@ PetscErrorCode  PCFieldSplitSetDMSplits(PC pc,PetscBool flg)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFieldSplitGetDMSplits"
 /*@
    PCFieldSplitGetDMSplits - Returns flag indicating whether DMCreateFieldDecomposition() should be used to define the splits, whenever possible.
 
@@ -2391,8 +2309,6 @@ $              (  0   S  )
 	   MatSchurComplementSetAinvType()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_FieldSplit"
 PETSC_EXTERN PetscErrorCode PCCreate_FieldSplit(PC pc)
 {
   PetscErrorCode ierr;

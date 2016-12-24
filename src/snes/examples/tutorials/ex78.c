@@ -31,8 +31,6 @@ T*/
 PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,void*);
 PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   SNES           snes;                 /* SNES context */
@@ -101,8 +99,6 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunction"
 /*
    FormFunction - Evaluates nonlinear function, F(x).
 
@@ -172,8 +168,6 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobian"
 /*
    FormJacobian - Evaluates Jacobian matrix.
 

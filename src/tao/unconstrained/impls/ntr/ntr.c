@@ -31,8 +31,6 @@ static const char *NTR_INIT[64] = {"constant","direction","interpolation"};
 static const char *NTR_UPDATE[64] = {"reduction","interpolation"};
 
 /*  Routine for BFGS preconditioner */
-#undef __FUNCT__
-#define __FUNCT__ "MatLMVMSolveShell"
 static PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x)
 {
     PetscErrorCode ierr;
@@ -71,8 +69,6 @@ static PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x)
           or KSPCGGLTR.  Thus, we set KSPCGNASH, KSPCGSTCG, or KSPCGGLTR in this
           routine regardless of what the user may have previously specified.
 */
-#undef __FUNCT__
-#define __FUNCT__ "TaoSolve_NTR"
 static PetscErrorCode TaoSolve_NTR(Tao tao)
 {
   TAO_NTR            *tr = (TAO_NTR *)tao->data;
@@ -563,8 +559,6 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetUp_NTR"
 static PetscErrorCode TaoSetUp_NTR(Tao tao)
 {
   TAO_NTR *tr = (TAO_NTR *)tao->data;
@@ -581,8 +575,6 @@ static PetscErrorCode TaoSetUp_NTR(Tao tao)
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoDestroy_NTR"
 static PetscErrorCode TaoDestroy_NTR(Tao tao)
 {
   TAO_NTR        *tr = (TAO_NTR *)tao->data;
@@ -599,8 +591,6 @@ static PetscErrorCode TaoDestroy_NTR(Tao tao)
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetFromOptions_NTR"
 static PetscErrorCode TaoSetFromOptions_NTR(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   TAO_NTR        *tr = (TAO_NTR *)tao->data;
@@ -644,8 +634,6 @@ static PetscErrorCode TaoSetFromOptions_NTR(PetscOptionItems *PetscOptionsObject
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoView_NTR"
 static PetscErrorCode TaoView_NTR(Tao tao, PetscViewer viewer)
 {
   TAO_NTR        *tr = (TAO_NTR *)tao->data;
@@ -708,8 +696,6 @@ static PetscErrorCode TaoView_NTR(Tao tao, PetscViewer viewer)
   Level: beginner
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoCreate_NTR"
 PETSC_EXTERN PetscErrorCode TaoCreate_NTR(Tao tao)
 {
   TAO_NTR *tr;

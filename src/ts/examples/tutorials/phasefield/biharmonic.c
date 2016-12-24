@@ -56,8 +56,6 @@ Evolve the Cahn-Hillard equations: logarithmic +  double obstacle (never shrinks
 extern PetscErrorCode FormFunction(TS,PetscReal,Vec,Vec,void*),FormInitialSolution(DM,Vec),MyMonitor(TS,PetscInt,PetscReal,Vec,void*),MyDestroy(void**),FormJacobian(TS,PetscReal,Vec,Mat,Mat,void*);
 typedef struct {PetscBool cahnhillard;PetscBool degenerate;PetscReal kappa;PetscInt energy;PetscReal tol;PetscReal theta,theta_c;PetscInt truncation;PetscBool netforce; PetscDrawViewPorts *ports;} UserCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   TS             ts;                 /* nonlinear solver */
@@ -218,8 +216,6 @@ int main(int argc,char **argv)
   return ierr;
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormFunction"
 /*
    FormFunction - Evaluates nonlinear function, F(x).
 
@@ -334,8 +330,6 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobian"
 /*
    FormJacobian - Evaluates nonlinear function's Jacobian
 
@@ -427,8 +421,6 @@ PetscErrorCode FormJacobian(TS ts,PetscReal ftime,Vec X,Mat A,Mat B,void *ptr)
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormInitialSolution"
 PetscErrorCode FormInitialSolution(DM da,Vec U)
 {
   PetscErrorCode    ierr;
@@ -490,8 +482,6 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MyMonitor"
 /*
     This routine is not parallel
 */
@@ -769,8 +759,6 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MyDestroy"
 PetscErrorCode  MyDestroy(void **ptr)
 {
   UserCtx        *ctx = *(UserCtx**)ptr;

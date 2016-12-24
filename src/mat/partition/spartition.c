@@ -17,8 +17,6 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Party(MatPartitioning);
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_PTScotch(MatPartitioning);
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningRegisterAll"
 /*@C
   MatPartitioningRegisterAll - Registers all of the matrix Partitioning routines in PETSc.
 

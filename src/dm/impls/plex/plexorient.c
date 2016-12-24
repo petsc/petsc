@@ -1,8 +1,6 @@
 #include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 #include <petscsf.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexReverseCell"
 /*@
   DMPlexReverseCell - Give a mesh cell the opposite orientation
 
@@ -64,8 +62,6 @@ PetscErrorCode DMPlexReverseCell(DM dm, PetscInt cell)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCheckFace_Internal"
 /*
   - Checks face match
     - Flips non-matching
@@ -134,8 +130,6 @@ static PetscErrorCode DMPlexCheckFace_Internal(DM dm, PetscInt *faceFIFO, PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexOrient"
 /*@
   DMPlexOrient - Give a consistent orientation to the input mesh
 

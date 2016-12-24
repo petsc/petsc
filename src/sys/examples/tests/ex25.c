@@ -1,8 +1,6 @@
 static char help[] = "Tests wrapping of math.h functions for real, complex, and scalar types \n";
 #include <petscsys.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;

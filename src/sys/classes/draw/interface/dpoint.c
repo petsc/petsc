@@ -4,8 +4,6 @@
 */
 #include <petsc/private/drawimpl.h>  /*I "petscdraw.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawPoint"
 /*@
    PetscDrawPoint - PetscDraws a point onto a drawable.
 
@@ -36,8 +34,6 @@ PetscErrorCode  PetscDrawPoint(PetscDraw draw,PetscReal xl,PetscReal yl,int cl)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawPointPixel"
 /*@
    PetscDrawPointPixel - PetscDraws a point onto a drawable, in pixel coordinates
 
@@ -67,8 +63,6 @@ PetscErrorCode  PetscDrawPointPixel(PetscDraw draw,int x,int y,int c)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawPointSetSize"
 /*@
    PetscDrawPointSetSize - Sets the point size for future draws.  The size is
    relative to the user coordinates of the window; 0.0 denotes the natural

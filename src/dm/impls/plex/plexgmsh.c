@@ -1,8 +1,6 @@
 #define PETSCDM_DLL
 #include <petsc/private/dmpleximpl.h>    /*I   "petscdmplex.h"   I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateGmshFromFile"
 /*@C
   DMPlexCreateGmshFromFile - Create a DMPlex mesh from a Gmsh file
 
@@ -63,8 +61,6 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateGmsh"
 /*@
   DMPlexCreateGmsh - Create a DMPlex mesh from a Gmsh file viewer
 
@@ -331,8 +327,6 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateGmsh_ReadElement"
 PetscErrorCode DMPlexCreateGmsh_ReadElement(PetscViewer viewer, PetscInt numCells, PetscBool binary, PetscBool byteSwap, GmshElement **gmsh_elems)
 {
   PetscInt       c, p;

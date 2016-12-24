@@ -73,8 +73,6 @@ static struct {
 #endif
 } _cb;
 
-#undef __FUNCT__
-#define __FUNCT__ "oursnesfunction"
 static PetscErrorCode oursnesfunction(SNES snes,Vec x,Vec f,void *ctx)
 {
 #if defined(PETSC_HAVE_F90_2PTR_ARG)
@@ -84,47 +82,33 @@ static PetscErrorCode oursnesfunction(SNES snes,Vec x,Vec f,void *ctx)
   PetscObjectUseFortranCallback(snes,_cb.function,(SNES*,Vec*,Vec*,void*,PetscErrorCode* PETSC_F90_2PTR_PROTO_NOVAR),(&snes,&x,&f,_ctx,&ierr PETSC_F90_2PTR_PARAM(ptr)));
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "oursnestest"
 static PetscErrorCode oursnestest(SNES snes,PetscInt it,PetscReal a,PetscReal d,PetscReal c,SNESConvergedReason *reason,void *ctx)
 {
   PetscObjectUseFortranCallback(snes,_cb.test,(SNES*,PetscInt*,PetscReal*,PetscReal*,PetscReal*,SNESConvergedReason*,void*,PetscErrorCode*),(&snes,&it,&a,&d,&c,reason,_ctx,&ierr));
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ourdestroy"
 static PetscErrorCode ourdestroy(void *ctx)
 {
   PetscObjectUseFortranCallback(ctx,_cb.destroy,(void*,PetscErrorCode*),(_ctx,&ierr));
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "oursnesjacobian"
 static PetscErrorCode oursnesjacobian(SNES snes,Vec x,Mat m,Mat p,void *ctx)
 {
   PetscObjectUseFortranCallback(snes,_cb.jacobian,(SNES*,Vec*,Mat*,Mat*,void*,PetscErrorCode*),(&snes,&x,&m,&p,_ctx,&ierr));
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "oursnesupdate"
 static PetscErrorCode oursnesupdate(SNES snes,PetscInt i)
 {
   PetscObjectUseFortranCallback(snes,_cb.update,(SNES*,PetscInt *,PetscErrorCode*),(&snes,&i,&ierr));
 }
-#undef __FUNCT__
-#define __FUNCT__ "oursnesngs"
 static PetscErrorCode oursnesngs(SNES snes,Vec x,Vec b,void *ctx)
 {
   PetscObjectUseFortranCallback(snes,_cb.ngs,(SNES*,Vec*,Vec*,void*,PetscErrorCode*),(&snes,&x,&b,_ctx,&ierr));
 }
-#undef __FUNCT__
-#define __FUNCT__ "oursnesmonitor"
 static PetscErrorCode oursnesmonitor(SNES snes,PetscInt i,PetscReal d,void *ctx)
 {
   PetscObjectUseFortranCallback(snes,_cb.monitor,(SNES*,PetscInt*,PetscReal*,void*,PetscErrorCode*),(&snes,&i,&d,_ctx,&ierr));
 }
-#undef __FUNCT__
-#define __FUNCT__ "ourmondestroy"
 static PetscErrorCode ourmondestroy(void **ctx)
 {
   SNES snes = (SNES)*ctx;

@@ -9,8 +9,6 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC,Mat,Mat);
 static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC,Mat,Mat);
 static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC);
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_BJacobi"
 static PetscErrorCode PCSetUp_BJacobi(PC pc)
 {
   PC_BJacobi     *jac = (PC_BJacobi*)pc->data;
@@ -143,8 +141,6 @@ end_1:
 }
 
 /* Default destroy, if it has never been setup */
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_BJacobi"
 static PetscErrorCode PCDestroy_BJacobi(PC pc)
 {
   PC_BJacobi     *jac = (PC_BJacobi*)pc->data;
@@ -157,8 +153,6 @@ static PetscErrorCode PCDestroy_BJacobi(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_BJacobi"
 
 static PetscErrorCode PCSetFromOptions_BJacobi(PetscOptionItems *PetscOptionsObject,PC pc)
 {
@@ -185,8 +179,6 @@ static PetscErrorCode PCSetFromOptions_BJacobi(PetscOptionItems *PetscOptionsObj
 }
 
 #include <petscdraw.h>
-#undef __FUNCT__
-#define __FUNCT__ "PCView_BJacobi"
 static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
 {
   PC_BJacobi           *jac   = (PC_BJacobi*)pc->data;
@@ -270,8 +262,6 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
 
 /* -------------------------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBJacobiGetSubKSP_BJacobi"
 static PetscErrorCode  PCBJacobiGetSubKSP_BJacobi(PC pc,PetscInt *n_local,PetscInt *first_local,KSP **ksp)
 {
   PC_BJacobi *jac = (PC_BJacobi*)pc->data;;
@@ -288,8 +278,6 @@ static PetscErrorCode  PCBJacobiGetSubKSP_BJacobi(PC pc,PetscInt *n_local,PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBJacobiSetTotalBlocks_BJacobi"
 static PetscErrorCode  PCBJacobiSetTotalBlocks_BJacobi(PC pc,PetscInt blocks,PetscInt *lens)
 {
   PC_BJacobi     *jac = (PC_BJacobi*)pc->data;
@@ -307,8 +295,6 @@ static PetscErrorCode  PCBJacobiSetTotalBlocks_BJacobi(PC pc,PetscInt blocks,Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBJacobiGetTotalBlocks_BJacobi"
 static PetscErrorCode  PCBJacobiGetTotalBlocks_BJacobi(PC pc, PetscInt *blocks, const PetscInt *lens[])
 {
   PC_BJacobi *jac = (PC_BJacobi*) pc->data;
@@ -319,8 +305,6 @@ static PetscErrorCode  PCBJacobiGetTotalBlocks_BJacobi(PC pc, PetscInt *blocks, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBJacobiSetLocalBlocks_BJacobi"
 static PetscErrorCode  PCBJacobiSetLocalBlocks_BJacobi(PC pc,PetscInt blocks,const PetscInt lens[])
 {
   PC_BJacobi     *jac;
@@ -339,8 +323,6 @@ static PetscErrorCode  PCBJacobiSetLocalBlocks_BJacobi(PC pc,PetscInt blocks,con
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBJacobiGetLocalBlocks_BJacobi"
 static PetscErrorCode  PCBJacobiGetLocalBlocks_BJacobi(PC pc, PetscInt *blocks, const PetscInt *lens[])
 {
   PC_BJacobi *jac = (PC_BJacobi*) pc->data;
@@ -353,8 +335,6 @@ static PetscErrorCode  PCBJacobiGetLocalBlocks_BJacobi(PC pc, PetscInt *blocks, 
 
 /* -------------------------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBJacobiGetSubKSP"
 /*@C
    PCBJacobiGetSubKSP - Gets the local KSP contexts for all blocks on
    this processor.
@@ -397,8 +377,6 @@ PetscErrorCode  PCBJacobiGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBJacobiSetTotalBlocks"
 /*@
    PCBJacobiSetTotalBlocks - Sets the global number of blocks for the block
    Jacobi preconditioner.
@@ -434,8 +412,6 @@ PetscErrorCode  PCBJacobiSetTotalBlocks(PC pc,PetscInt blocks,const PetscInt len
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBJacobiGetTotalBlocks"
 /*@C
    PCBJacobiGetTotalBlocks - Gets the global number of blocks for the block
    Jacobi preconditioner.
@@ -466,8 +442,6 @@ PetscErrorCode  PCBJacobiGetTotalBlocks(PC pc, PetscInt *blocks, const PetscInt 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBJacobiSetLocalBlocks"
 /*@
    PCBJacobiSetLocalBlocks - Sets the local number of blocks for the block
    Jacobi preconditioner.
@@ -499,8 +473,6 @@ PetscErrorCode  PCBJacobiSetLocalBlocks(PC pc,PetscInt blocks,const PetscInt len
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBJacobiGetLocalBlocks"
 /*@C
    PCBJacobiGetLocalBlocks - Gets the local number of blocks for the block
    Jacobi preconditioner.
@@ -565,8 +537,6 @@ PetscErrorCode  PCBJacobiGetLocalBlocks(PC pc, PetscInt *blocks, const PetscInt 
            PCBJacobiSetLocalBlocks(), PCSetModifySubmatrices()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_BJacobi"
 PETSC_EXTERN PetscErrorCode PCCreate_BJacobi(PC pc)
 {
   PetscErrorCode ierr;
@@ -607,8 +577,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_BJacobi(PC pc)
 /*
         These are for a single block per processor; works for AIJ, BAIJ; Seq and MPI
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCReset_BJacobi_Singleblock"
 static PetscErrorCode PCReset_BJacobi_Singleblock(PC pc)
 {
   PC_BJacobi             *jac  = (PC_BJacobi*)pc->data;
@@ -622,8 +590,6 @@ static PetscErrorCode PCReset_BJacobi_Singleblock(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_BJacobi_Singleblock"
 static PetscErrorCode PCDestroy_BJacobi_Singleblock(PC pc)
 {
   PC_BJacobi             *jac  = (PC_BJacobi*)pc->data;
@@ -641,8 +607,6 @@ static PetscErrorCode PCDestroy_BJacobi_Singleblock(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUpOnBlocks_BJacobi_Singleblock"
 static PetscErrorCode PCSetUpOnBlocks_BJacobi_Singleblock(PC pc)
 {
   PetscErrorCode     ierr;
@@ -659,8 +623,6 @@ static PetscErrorCode PCSetUpOnBlocks_BJacobi_Singleblock(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_BJacobi_Singleblock"
 static PetscErrorCode PCApply_BJacobi_Singleblock(PC pc,Vec x,Vec y)
 {
   PetscErrorCode         ierr;
@@ -680,8 +642,6 @@ static PetscErrorCode PCApply_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApplySymmetricLeft_BJacobi_Singleblock"
 static PetscErrorCode PCApplySymmetricLeft_BJacobi_Singleblock(PC pc,Vec x,Vec y)
 {
   PetscErrorCode         ierr;
@@ -713,8 +673,6 @@ static PetscErrorCode PCApplySymmetricLeft_BJacobi_Singleblock(PC pc,Vec x,Vec y
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApplySymmetricRight_BJacobi_Singleblock"
 static PetscErrorCode PCApplySymmetricRight_BJacobi_Singleblock(PC pc,Vec x,Vec y)
 {
   PetscErrorCode         ierr;
@@ -747,8 +705,6 @@ static PetscErrorCode PCApplySymmetricRight_BJacobi_Singleblock(PC pc,Vec x,Vec 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApplyTranspose_BJacobi_Singleblock"
 static PetscErrorCode PCApplyTranspose_BJacobi_Singleblock(PC pc,Vec x,Vec y)
 {
   PetscErrorCode         ierr;
@@ -776,8 +732,6 @@ static PetscErrorCode PCApplyTranspose_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_BJacobi_Singleblock"
 static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
 {
   PC_BJacobi             *jac = (PC_BJacobi*)pc->data;
@@ -860,8 +814,6 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
 }
 
 /* ---------------------------------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "PCReset_BJacobi_Multiblock"
 static PetscErrorCode PCReset_BJacobi_Multiblock(PC pc)
 {
   PC_BJacobi            *jac  = (PC_BJacobi*)pc->data;
@@ -890,8 +842,6 @@ static PetscErrorCode PCReset_BJacobi_Multiblock(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_BJacobi_Multiblock"
 static PetscErrorCode PCDestroy_BJacobi_Multiblock(PC pc)
 {
   PC_BJacobi            *jac  = (PC_BJacobi*)pc->data;
@@ -915,8 +865,6 @@ static PetscErrorCode PCDestroy_BJacobi_Multiblock(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUpOnBlocks_BJacobi_Multiblock"
 static PetscErrorCode PCSetUpOnBlocks_BJacobi_Multiblock(PC pc)
 {
   PC_BJacobi         *jac = (PC_BJacobi*)pc->data;
@@ -938,8 +886,6 @@ static PetscErrorCode PCSetUpOnBlocks_BJacobi_Multiblock(PC pc)
 /*
       Preconditioner for block Jacobi
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_BJacobi_Multiblock"
 static PetscErrorCode PCApply_BJacobi_Multiblock(PC pc,Vec x,Vec y)
 {
   PC_BJacobi            *jac = (PC_BJacobi*)pc->data;
@@ -976,8 +922,6 @@ static PetscErrorCode PCApply_BJacobi_Multiblock(PC pc,Vec x,Vec y)
 /*
       Preconditioner for block Jacobi
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCApplyTranspose_BJacobi_Multiblock"
 static PetscErrorCode PCApplyTranspose_BJacobi_Multiblock(PC pc,Vec x,Vec y)
 {
   PC_BJacobi            *jac = (PC_BJacobi*)pc->data;
@@ -1011,8 +955,6 @@ static PetscErrorCode PCApplyTranspose_BJacobi_Multiblock(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_BJacobi_Multiblock"
 static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
 {
   PC_BJacobi            *jac = (PC_BJacobi*)pc->data;
@@ -1156,8 +1098,6 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
 /*
       These are for a single block with multiple processes;
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCReset_BJacobi_Multiproc"
 static PetscErrorCode PCReset_BJacobi_Multiproc(PC pc)
 {
   PC_BJacobi           *jac   = (PC_BJacobi*)pc->data;
@@ -1172,8 +1112,6 @@ static PetscErrorCode PCReset_BJacobi_Multiproc(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_BJacobi_Multiproc"
 static PetscErrorCode PCDestroy_BJacobi_Multiproc(PC pc)
 {
   PC_BJacobi           *jac   = (PC_BJacobi*)pc->data;
@@ -1191,8 +1129,6 @@ static PetscErrorCode PCDestroy_BJacobi_Multiproc(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_BJacobi_Multiproc"
 static PetscErrorCode PCApply_BJacobi_Multiproc(PC pc,Vec x,Vec y)
 {
   PC_BJacobi           *jac   = (PC_BJacobi*)pc->data;
@@ -1225,8 +1161,6 @@ static PetscErrorCode PCApply_BJacobi_Multiproc(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_BJacobi_Multiproc"
 static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
 {
   PC_BJacobi           *jac   = (PC_BJacobi*)pc->data;

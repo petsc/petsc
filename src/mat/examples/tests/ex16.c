@@ -4,8 +4,6 @@ static char help[] = "Tests MatDenseGetArray() and MatView_SeqDense_Binary(), Ma
 #include <petscmat.h>
 #include <petscviewer.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            A;

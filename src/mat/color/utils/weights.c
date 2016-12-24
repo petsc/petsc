@@ -1,8 +1,6 @@
 #include <petsc/private/matimpl.h>      /*I "petscmat.h"  I*/
 #include <../src/mat/impls/aij/seq/aij.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringCreateLexicalWeights"
 PetscErrorCode MatColoringCreateLexicalWeights(MatColoring mc,PetscReal *weights)
 {
   PetscErrorCode ierr;
@@ -17,8 +15,6 @@ PetscErrorCode MatColoringCreateLexicalWeights(MatColoring mc,PetscReal *weights
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringCreateRandomWeights"
 PetscErrorCode MatColoringCreateRandomWeights(MatColoring mc,PetscReal *weights)
 {
   PetscErrorCode ierr;
@@ -40,8 +36,6 @@ PetscErrorCode MatColoringCreateRandomWeights(MatColoring mc,PetscReal *weights)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringGetDegrees"
 PetscErrorCode MatColoringGetDegrees(Mat G,PetscInt distance,PetscInt *degrees)
 {
   PetscInt       j,i,s,e,n,ln,lm,degree,bidx,idx,dist;
@@ -118,8 +112,6 @@ PetscErrorCode MatColoringGetDegrees(Mat G,PetscInt distance,PetscInt *degrees)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringCreateLargestFirstWeights"
 PetscErrorCode MatColoringCreateLargestFirstWeights(MatColoring mc,PetscReal *weights)
 {
   PetscErrorCode ierr;
@@ -148,8 +140,6 @@ PetscErrorCode MatColoringCreateLargestFirstWeights(MatColoring mc,PetscReal *we
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringCreateSmallestLastWeights"
 PetscErrorCode MatColoringCreateSmallestLastWeights(MatColoring mc,PetscReal *weights)
 {
   PetscInt       *degrees,*degb,*llprev,*llnext;
@@ -335,8 +325,6 @@ PetscErrorCode MatColoringCreateSmallestLastWeights(MatColoring mc,PetscReal *we
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringCreateWeights"
 PetscErrorCode MatColoringCreateWeights(MatColoring mc,PetscReal **weights,PetscInt **lperm)
 {
   PetscErrorCode ierr;
@@ -379,8 +367,6 @@ PetscErrorCode MatColoringCreateWeights(MatColoring mc,PetscReal **weights,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringSetWeights"
 PetscErrorCode MatColoringSetWeights(MatColoring mc,PetscReal *weights,PetscInt *lperm)
 {
   PetscErrorCode ierr;

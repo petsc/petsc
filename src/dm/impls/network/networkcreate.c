@@ -2,8 +2,6 @@
 #include <petsc/private/dmnetworkimpl.h>    /*I   "petscdmnetwork.h"   I*/
 #include <petscdmda.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetFromOptions_Network"
 PetscErrorCode  DMSetFromOptions_Network(PetscOptionItems *PetscOptionsObject,DM dm)
 {
   PetscErrorCode ierr;
@@ -27,8 +25,6 @@ extern PetscErrorCode DMSetUp_Network(DM);
 extern PetscErrorCode DMClone_Network(DM, DM*);
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateGlobalVector_Network"
 static PetscErrorCode DMCreateGlobalVector_Network(DM dm,Vec *vec)
 {
   PetscErrorCode ierr;
@@ -40,8 +36,6 @@ static PetscErrorCode DMCreateGlobalVector_Network(DM dm,Vec *vec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateLocalVector_Network"
 static PetscErrorCode DMCreateLocalVector_Network(DM dm,Vec *vec)
 {
   PetscErrorCode ierr;
@@ -53,8 +47,6 @@ static PetscErrorCode DMCreateLocalVector_Network(DM dm,Vec *vec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMInitialize_Network"
 PetscErrorCode DMInitialize_Network(DM dm)
 {
 
@@ -88,8 +80,6 @@ PetscErrorCode DMInitialize_Network(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMClone_Network"
 PetscErrorCode DMClone_Network(DM dm, DM *newdm)
 {
   DM_Network     *network = (DM_Network *) dm->data;
@@ -115,8 +105,6 @@ PetscErrorCode DMClone_Network(DM dm, DM *newdm)
 .seealso: DMType, DMNetworkCreate(), DMCreate(), DMSetType()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreate_Network"
 PETSC_EXTERN PetscErrorCode DMCreate_Network(DM dm)
 {
   DM_Network     *network;
@@ -138,8 +126,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Network(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMNetworkCreate"
 /*@
   DMNetworkCreate - Creates a DMNetwork object, which encapsulates an unstructured network.
 

@@ -9,8 +9,6 @@ typedef struct {
   PetscBool fem; /* Flag for FEM tests */
 } AppCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscErrorCode ierr;
@@ -24,8 +22,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SolKxSolution"
 /*
   SolKxSolution - Exact Stokes solutions for exponentially varying viscosity
 
@@ -494,8 +490,6 @@ PetscErrorCode SolKxSolution(PetscReal x, PetscReal z, PetscReal kn, PetscReal k
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SolKxWrapperV"
 PetscErrorCode SolKxWrapperV(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar v[], void *ctx)
 {
   PetscReal   B  = 100.0;
@@ -508,8 +502,6 @@ PetscErrorCode SolKxWrapperV(PetscInt dim, const PetscReal x[], PetscInt Nf, Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SolKxWrapperP"
 PetscErrorCode SolKxWrapperP(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar v[], void *ctx)
 {
   PetscReal   B  = 100.0;
@@ -522,8 +514,6 @@ PetscErrorCode SolKxWrapperP(PetscInt dim, const PetscReal x[], PetscInt Nf, Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MapleTest"
 /*
   Compare the C implementation with generated data from Maple
 */
@@ -557,8 +547,6 @@ PetscErrorCode MapleTest(MPI_Comm comm, AppCtx *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FEMTest"
 PetscErrorCode FEMTest(MPI_Comm comm, AppCtx *ctx)
 {
   DM               dm;
@@ -583,8 +571,6 @@ PetscErrorCode FEMTest(MPI_Comm comm, AppCtx *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   AppCtx         user;                 /* user-defined work context */

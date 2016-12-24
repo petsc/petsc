@@ -1,8 +1,6 @@
 #define PETSC_DESIRE_FEATURE_TEST_MACROS /* for drand48 with c89 */
 #include <../src/sys/classes/random/randomimpl.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscRandomSeed_Rand48"
 PetscErrorCode  PetscRandomSeed_Rand48(PetscRandom r)
 {
   PetscFunctionBegin;
@@ -10,8 +8,6 @@ PetscErrorCode  PetscRandomSeed_Rand48(PetscRandom r)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscRandomGetValue_Rand48"
 PetscErrorCode  PetscRandomGetValue_Rand48(PetscRandom r,PetscScalar *val)
 {
   PetscFunctionBegin;
@@ -28,8 +24,6 @@ PetscErrorCode  PetscRandomGetValue_Rand48(PetscRandom r,PetscScalar *val)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscRandomGetValueReal_Rand48"
 PetscErrorCode  PetscRandomGetValueReal_Rand48(PetscRandom r,PetscReal *val)
 {
   PetscFunctionBegin;
@@ -64,8 +58,6 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
 .seealso: RandomCreate(), RandomSetType(), PETSCRAND, PETSCSPRNG
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscRandomCreate_Rand48"
 PETSC_EXTERN PetscErrorCode PetscRandomCreate_Rand48(PetscRandom r)
 {
   PetscErrorCode ierr;

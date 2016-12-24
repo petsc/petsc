@@ -81,8 +81,6 @@ void g3_uu(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x
   for (d = 0; d < spatialDim; ++d) g3[d*spatialDim+d] = 1.0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   const char    *bcTypes[2]  = {"neumann", "dirichlet"};
@@ -103,8 +101,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateMesh"
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscInt       dim      = user->dim;
@@ -127,8 +123,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetupProblem"
 PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
 {
   PetscDS        prob;
@@ -150,8 +144,6 @@ PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetupDiscretization"
 PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 {
   DM             cdm   = dm;
@@ -202,8 +194,6 @@ static int refine_fn(p4est_t *p4est, p4est_topidx_t which_tree, p4est_quadrant_t
           1);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   SNES                 snes; /* nonlinear solver */

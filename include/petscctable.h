@@ -14,16 +14,12 @@ struct _n_PetscTable {
 typedef struct _n_PetscTable* PetscTable;
 typedef PetscInt* PetscTablePosition;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscHash"
 PETSC_STATIC_INLINE unsigned long PetscHash(PetscTable ta,unsigned long x)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(x%(unsigned long)ta->tablesize);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscHashStep"
 PETSC_STATIC_INLINE unsigned long PetscHashStep(PetscTable ta,unsigned long x)
 {
   PetscFunctionBegin;
@@ -41,8 +37,6 @@ PETSC_EXTERN PetscErrorCode PetscTableGetHeadPosition(PetscTable,PetscTablePosit
 PETSC_EXTERN PetscErrorCode PetscTableGetNext(PetscTable,PetscTablePosition*,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscTableRemoveAll(PetscTable);
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscTableAdd"
 PETSC_STATIC_INLINE PetscErrorCode PetscTableAdd(PetscTable ta,PetscInt key,PetscInt data,InsertMode imode)
 {
   PetscErrorCode ierr;
@@ -90,8 +84,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscTableAdd(PetscTable ta,PetscInt key,Pets
   /* PetscFunctionReturn(0); */
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscTableAddCount"
 PETSC_STATIC_INLINE PetscErrorCode  PetscTableAddCount(PetscTable ta,PetscInt key)
 {
   PetscErrorCode ierr;
@@ -121,9 +113,6 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscTableAddCount(PetscTable ta,PetscInt ke
   /* PetscFunctionReturn(0); */
 }
 
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscTableFind"
 /*
     PetscTableFind - checks if a key is in the table
 
@@ -151,9 +140,5 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscTableFind(PetscTable ta,PetscInt key,Pe
   }
   PetscFunctionReturn(0);
 }
-
-/* Reset __FUNCT__ in case the user does not define it themselves */
-#undef __FUNCT__
-#define __FUNCT__ "User provided function"
 
 #endif

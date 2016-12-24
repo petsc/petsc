@@ -20,8 +20,6 @@ typedef struct {
   PetscReal maxVecClosureTime; /* Max time per run for DMPlexVecGetClosure() */
 } AppCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "ProcessOptions"
 static PetscErrorCode ProcessOptions(AppCtx *options)
 {
   PetscInt       len;
@@ -81,8 +79,6 @@ static PetscErrorCode ProcessOptions(AppCtx *options)
   PetscFunctionReturn(0);
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateSimplex_2D"
 static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM *newdm)
 {
   DM             dm;
@@ -108,8 +104,6 @@ static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM *newdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateSimplex_3D"
 static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, DM *newdm)
 {
   DM             dm;
@@ -135,8 +129,6 @@ static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, DM *newdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateQuad_2D"
 static PetscErrorCode CreateQuad_2D(MPI_Comm comm, DM *newdm)
 {
   DM             dm;
@@ -162,8 +154,6 @@ static PetscErrorCode CreateQuad_2D(MPI_Comm comm, DM *newdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateHex_3D"
 static PetscErrorCode CreateHex_3D(MPI_Comm comm, DM *newdm)
 {
   DM             dm;
@@ -191,8 +181,6 @@ static PetscErrorCode CreateHex_3D(MPI_Comm comm, DM *newdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateMesh"
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *newdm)
 {
   PetscInt       dim         = user->dim;
@@ -245,8 +233,6 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *newdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestCone"
 static PetscErrorCode TestCone(DM dm, AppCtx *user)
 {
   PetscInt           numRuns, cStart, cEnd, c, i;
@@ -283,8 +269,6 @@ static PetscErrorCode TestCone(DM dm, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestTransitiveClosure"
 static PetscErrorCode TestTransitiveClosure(DM dm, AppCtx *user)
 {
   PetscInt           numRuns, cStart, cEnd, c, i;
@@ -323,8 +307,6 @@ static PetscErrorCode TestTransitiveClosure(DM dm, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestVecClosure"
 static PetscErrorCode TestVecClosure(DM dm, PetscBool useIndex, PetscBool useSpectral, AppCtx *user)
 {
   PetscSection       s;
@@ -394,8 +376,6 @@ static PetscErrorCode TestVecClosure(DM dm, PetscBool useIndex, PetscBool useSpe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CleanupContext"
 static PetscErrorCode CleanupContext(AppCtx *user)
 {
   PetscErrorCode ierr;
@@ -406,8 +386,6 @@ static PetscErrorCode CleanupContext(AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   DM             dm;

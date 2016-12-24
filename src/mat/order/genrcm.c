@@ -34,8 +34,6 @@
 /*    PROGRAM SUBROUTINES -*/
 /*       FNROOT, RCM.*/
 /*****************************************************************/
-#undef __FUNCT__
-#define __FUNCT__ "SPARSEPACKgenrcm"
 PetscErrorCode SPARSEPACKgenrcm(const PetscInt *neqns,const PetscInt *xadj,const PetscInt *adjncy,PetscInt *perm,PetscInt *mask,PetscInt *xls)
 {
   /* System generated locals */

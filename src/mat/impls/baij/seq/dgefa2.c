@@ -12,8 +12,6 @@
 */
 #include <petscsys.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscKernel_A_gets_inverse_A_2"
 PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_2(MatScalar *a,PetscReal shift,PetscBool allowzeropivot,PetscBool *zeropivotdetected)
 {
   PetscInt  i__2,i__3,kp1,j,k,l,ll,i,ipvt[2],k3;
@@ -143,8 +141,6 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_2(MatScalar *a,PetscRea
 }
 
 /* gaussian elimination with partial pivoting */
-#undef __FUNCT__
-#define __FUNCT__ "PetscKernel_A_gets_inverse_A_9"
 PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_9(MatScalar *a,PetscReal shift,PetscBool allowzeropivot,PetscBool *zeropivotdetected)
 {
   PetscInt  i__2,i__3,kp1,j,k,l,ll,i,ipvt[9],kb,k3;
@@ -299,8 +295,6 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_9(MatScalar *a,PetscRea
 
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscKernel_A_gets_inverse_A_15"
 PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar *a,PetscInt *ipvt,MatScalar *work,PetscReal shift,PetscBool allowzeropivot,PetscBool *zeropivotdetected)
 {
   PetscInt  i__2,i__3,kp1,j,k,l,ll,i,kb,k3;

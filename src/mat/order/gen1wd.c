@@ -28,8 +28,6 @@
 /*    PROGRAM SUBROUTINES -*/
 /*       FN1WD, REVRSE, ROOTLS.*/
 /****************************************************************/
-#undef __FUNCT__
-#define __FUNCT__ "SPARSEPACKgen1wd"
 PetscErrorCode SPARSEPACKgen1wd(const PetscInt *neqns,const PetscInt *xadj,const PetscInt *adjncy,PetscInt *mask, PetscInt *nblks, PetscInt *xblk, PetscInt *perm, PetscInt *xls, PetscInt *ls)
 {
   /* System generated locals */

@@ -13,8 +13,6 @@
 /* #define PTAP_PROFILE */
 
 extern PetscErrorCode MatDestroy_MPIAIJ(Mat);
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_MPIAIJ_PtAP"
 PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat A)
 {
   PetscErrorCode ierr;
@@ -67,8 +65,6 @@ PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDuplicate_MPIAIJ_MatPtAP"
 PetscErrorCode MatDuplicate_MPIAIJ_MatPtAP(Mat A, MatDuplicateOption op, Mat *M)
 {
   PetscErrorCode ierr;
@@ -82,8 +78,6 @@ PetscErrorCode MatDuplicate_MPIAIJ_MatPtAP(Mat A, MatDuplicateOption op, Mat *M)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPtAP_MPIAIJ_MPIAIJ"
 PETSC_INTERN PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
@@ -502,8 +496,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPtAPNumeric_MPIAIJ_MPIAIJ"
 PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
 {
   PetscErrorCode    ierr;
@@ -627,8 +619,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPtAPSymbolic_MPIAIJ_MPIAIJ_ptap"
 PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_ptap(Mat A,Mat P,PetscReal fill,Mat *C)
 {
   PetscErrorCode      ierr;
@@ -1010,8 +1000,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_ptap(Mat A,Mat P,PetscReal fill,Mat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPtAPNumeric_MPIAIJ_MPIAIJ_ptap"
 PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_ptap(Mat A,Mat P,Mat C)
 {
   PetscErrorCode      ierr;

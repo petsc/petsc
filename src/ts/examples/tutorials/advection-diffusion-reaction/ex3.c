@@ -46,8 +46,6 @@ extern PetscErrorCode InitialConditions(TS,Vec,AppCtx*);
 extern PetscErrorCode RHSMatrixHeat(TS,PetscReal,Vec,Mat,Mat,void*);
 extern PetscErrorCode Solution(TS,PetscReal,Vec,AppCtx*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   AppCtx         appctx;                 /* user-defined application context */
@@ -145,8 +143,6 @@ int main(int argc,char **argv)
   return ierr;
 }
 /* --------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "InitialConditions"
 /*
    InitialConditions - Computes the solution at the initial time.
 
@@ -194,8 +190,6 @@ PetscErrorCode InitialConditions(TS ts,Vec U,AppCtx *appctx)
   return 0;
 }
 /* --------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "Solution"
 /*
    Solution - Computes the exact solution at a given time.
 
@@ -241,8 +235,6 @@ PetscErrorCode Solution(TS ts,PetscReal t,Vec U,AppCtx *appctx)
 }
 
 /* --------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "RHSMatrixHeat"
 /*
    RHSMatrixHeat - User-provided routine to compute the right-hand-side
    matrix for the heat equation.

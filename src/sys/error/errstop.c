@@ -1,8 +1,6 @@
 
 #include <petscsys.h>           /*I "petscsys.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMPIAbortErrorHandler"
 /*@C
    PetscMPIAbortErrorHandler - Calls MPI_abort() and exits.
 
@@ -11,7 +9,6 @@
    Input Parameters:
 +  comm - communicator over which error occurred
 .  line - the line number of the error (indicated by __LINE__)
-.  fun - the function where the error occurred (indicated by __FUNCT__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  mess - an error text string, usually just printed to the screen
 .  n - the generic error number

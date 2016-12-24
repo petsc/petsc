@@ -47,8 +47,6 @@ PetscErrorCode MatDestroy_MPIAIJ_MatMatMatMult(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMatMatMult_MPIAIJ_MPIAIJ_MPIAIJ"
 PETSC_INTERN PetscErrorCode MatMatMatMult_MPIAIJ_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Mat *D)
 {
   PetscErrorCode ierr;
@@ -65,8 +63,6 @@ PETSC_INTERN PetscErrorCode MatMatMatMult_MPIAIJ_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ"
 PetscErrorCode MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C,PetscReal fill,Mat *D)
 {
   PetscErrorCode    ierr;
@@ -100,8 +96,6 @@ PetscErrorCode MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C,Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMatMatMultNumeric_MPIAIJ_MPIAIJ_MPIAIJ"
 PetscErrorCode MatMatMatMultNumeric_MPIAIJ_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C,Mat D)
 {
   PetscErrorCode    ierr;

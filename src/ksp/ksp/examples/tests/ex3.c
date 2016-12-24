@@ -8,8 +8,6 @@ differently from the way it is assembled.  Input arguments are:\n\
 
 #include <petscksp.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "FormElementStiffness"
 int FormElementStiffness(PetscReal H,PetscScalar *Ke)
 {
   PetscFunctionBeginUser;
@@ -19,8 +17,6 @@ int FormElementStiffness(PetscReal H,PetscScalar *Ke)
   Ke[12] = -.125*H;  Ke[13] = H/12.0;  Ke[14] = -.125*H;  Ke[15] = H/6.0;
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "FormElementRhs"
 int FormElementRhs(PetscReal x,PetscReal y,PetscReal H,PetscScalar *r)
 {
   PetscFunctionBeginUser;
@@ -28,8 +24,6 @@ int FormElementRhs(PetscReal x,PetscReal y,PetscReal H,PetscScalar *r)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            C;

@@ -2,8 +2,6 @@
 #include <petsc/private/pcmgimpl.h>       /*I "petscksp.h" I*/
 
 /* ---------------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "PCMGResidualDefault"
 /*@C
    PCMGResidualDefault - Default routine to calculate the residual.
 
@@ -32,8 +30,6 @@ PetscErrorCode  PCMGResidualDefault(Mat mat,Vec b,Vec x,Vec r)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCMGGetCoarseSolve"
 /*@
    PCMGGetCoarseSolve - Gets the solver context to be used on the coarse grid.
 
@@ -60,8 +56,6 @@ PetscErrorCode  PCMGGetCoarseSolve(PC pc,KSP *ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCMGSetResidual"
 /*@C
    PCMGSetResidual - Sets the function to be used to calculate the residual
    on the lth level.
@@ -98,8 +92,6 @@ PetscErrorCode  PCMGSetResidual(PC pc,PetscInt l,PetscErrorCode (*residual)(Mat,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCMGSetInterpolation"
 /*@
    PCMGSetInterpolation - Sets the function to be used to calculate the
    interpolation from l-1 to the lth level
@@ -141,8 +133,6 @@ PetscErrorCode  PCMGSetInterpolation(PC pc,PetscInt l,Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCMGGetInterpolation"
 /*@
    PCMGGetInterpolation - Gets the function to be used to calculate the
    interpolation from l-1 to the lth level
@@ -181,8 +171,6 @@ PetscErrorCode  PCMGGetInterpolation(PC pc,PetscInt l,Mat *mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCMGSetRestriction"
 /*@
    PCMGSetRestriction - Sets the function to be used to restrict vector
    from level l to l-1.
@@ -228,8 +216,6 @@ PetscErrorCode  PCMGSetRestriction(PC pc,PetscInt l,Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCMGGetRestriction"
 /*@
    PCMGGetRestriction - Gets the function to be used to restrict vector
    from level l to l-1.
@@ -268,8 +254,6 @@ PetscErrorCode  PCMGGetRestriction(PC pc,PetscInt l,Mat *mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCMGSetRScale"
 /*@
    PCMGSetRScale - Sets the pointwise scaling for the restriction operator from level l to l-1.
 
@@ -306,8 +290,6 @@ PetscErrorCode  PCMGSetRScale(PC pc,PetscInt l,Vec rscale)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCMGGetRScale"
 /*@
    PCMGGetRScale - Gets the pointwise scaling for the restriction operator from level l to l-1.
 
@@ -360,8 +342,6 @@ PetscErrorCode PCMGGetRScale(PC pc,PetscInt l,Vec *rscale)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCMGGetSmoother"
 /*@
    PCMGGetSmoother - Gets the KSP context to be used as smoother for
    both pre- and post-smoothing.  Call both PCMGGetSmootherUp() and
@@ -399,8 +379,6 @@ PetscErrorCode  PCMGGetSmoother(PC pc,PetscInt l,KSP *ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCMGGetSmootherUp"
 /*@
    PCMGGetSmootherUp - Gets the KSP context to be used as smoother after
    coarse grid correction (post-smoother).
@@ -471,8 +449,6 @@ PetscErrorCode  PCMGGetSmootherUp(PC pc,PetscInt l,KSP *ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCMGGetSmootherDown"
 /*@
    PCMGGetSmootherDown - Gets the KSP context to be used as smoother before
    coarse grid correction (pre-smoother).
@@ -511,8 +487,6 @@ PetscErrorCode  PCMGGetSmootherDown(PC pc,PetscInt l,KSP *ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCMGSetCyclesOnLevel"
 /*@
    PCMGSetCyclesOnLevel - Sets the number of cycles to run on this level.
 
@@ -543,8 +517,6 @@ PetscErrorCode  PCMGSetCyclesOnLevel(PC pc,PetscInt l,PetscInt c)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCMGSetRhs"
 /*@
    PCMGSetRhs - Sets the vector space to be used to store the right-hand side
    on a particular level.
@@ -584,8 +556,6 @@ PetscErrorCode  PCMGSetRhs(PC pc,PetscInt l,Vec c)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCMGSetX"
 /*@
    PCMGSetX - Sets the vector space to be used to store the solution on a
    particular level.
@@ -625,8 +595,6 @@ PetscErrorCode  PCMGSetX(PC pc,PetscInt l,Vec c)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCMGSetR"
 /*@
    PCMGSetR - Sets the vector space to be used to store the residual on a
    particular level.

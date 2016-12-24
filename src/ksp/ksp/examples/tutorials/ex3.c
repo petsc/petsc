@@ -24,8 +24,6 @@ T*/
 extern PetscErrorCode FormElementStiffness(PetscReal,PetscScalar*);
 extern PetscErrorCode FormElementRhs(PetscReal,PetscReal,PetscReal,PetscScalar*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Vec            u,b,ustar; /* approx solution, RHS, exact solution */
@@ -189,8 +187,6 @@ int main(int argc,char **args)
 }
 
 /* --------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormElementStiffness"
 /* element stiffness for Laplacian */
 PetscErrorCode FormElementStiffness(PetscReal H,PetscScalar *Ke)
 {
@@ -202,8 +198,6 @@ PetscErrorCode FormElementStiffness(PetscReal H,PetscScalar *Ke)
   PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormElementRhs"
 PetscErrorCode FormElementRhs(PetscReal x,PetscReal y,PetscReal H,PetscScalar *r)
 {
   PetscFunctionBeginUser;

@@ -3,8 +3,6 @@ static char help[] = "KSP linear solver on an operator with a null space.\n\n";
 
 #include <petscksp.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Vec            x,b,u;      /* approx solution, RHS, exact solution */

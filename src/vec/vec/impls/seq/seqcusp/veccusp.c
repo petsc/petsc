@@ -15,8 +15,6 @@
 #include <../src/vec/vec/impls/seq/seqcusp/cuspvecimpl.h>
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCUSPAllocateCheckHost"
 /*
     Allocates space for the vector array on the Host if it does not exist.
     Does NOT change the PetscCUSPFlag for the vector
@@ -46,8 +44,6 @@ PetscErrorCode VecCUSPAllocateCheckHost(Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCopy_SeqCUSP_Private"
 PetscErrorCode VecCopy_SeqCUSP_Private(Vec xin,Vec yin)
 {
   PetscScalar       *ya;
@@ -67,8 +63,6 @@ PetscErrorCode VecCopy_SeqCUSP_Private(Vec xin,Vec yin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecSetRandom_SeqCUSP_Private"
 PetscErrorCode VecSetRandom_SeqCUSP_Private(Vec xin,PetscRandom r)
 {
   PetscErrorCode ierr;
@@ -82,8 +76,6 @@ PetscErrorCode VecSetRandom_SeqCUSP_Private(Vec xin,PetscRandom r)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecDestroy_SeqCUSP_Private"
 PetscErrorCode VecDestroy_SeqCUSP_Private(Vec v)
 {
   Vec_Seq        *vs = (Vec_Seq*)v->data;
@@ -101,8 +93,6 @@ PetscErrorCode VecDestroy_SeqCUSP_Private(Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecResetArray_SeqCUSP_Private"
 PetscErrorCode VecResetArray_SeqCUSP_Private(Vec vin)
 {
   Vec_Seq *v = (Vec_Seq*)vin->data;
@@ -113,8 +103,6 @@ PetscErrorCode VecResetArray_SeqCUSP_Private(Vec vin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCUSPAllocateCheck_Public"
 PetscErrorCode VecCUSPAllocateCheck_Public(Vec v)
 {
   PetscErrorCode ierr;
@@ -124,8 +112,6 @@ PetscErrorCode VecCUSPAllocateCheck_Public(Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCUSPCopyToGPU_Public"
 PetscErrorCode VecCUSPCopyToGPU_Public(Vec v)
 {
   PetscErrorCode ierr;
@@ -135,8 +121,6 @@ PetscErrorCode VecCUSPCopyToGPU_Public(Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCUSPCopyToGPUSome_Public"
 /*
     VecCUSPCopyToGPUSome_Public - Copies certain entries down to the GPU from the CPU of a vector
 
@@ -154,8 +138,6 @@ PetscErrorCode VecCUSPCopyToGPUSome_Public(Vec v,PetscCUSPIndices ci)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCUSPCopyFromGPUSome_Public"
 /*
   VecCUSPCopyFromGPUSome_Public - Copies certain entries up to the CPU from the GPU of a vector
 
@@ -172,8 +154,6 @@ PetscErrorCode VecCUSPCopyFromGPUSome_Public(Vec v,PetscCUSPIndices ci)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecSetRandom_SeqCUSP"
 PetscErrorCode VecSetRandom_SeqCUSP(Vec xin,PetscRandom r)
 {
   PetscErrorCode ierr;
@@ -184,8 +164,6 @@ PetscErrorCode VecSetRandom_SeqCUSP(Vec xin,PetscRandom r)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecResetArray_SeqCUSP"
 PetscErrorCode VecResetArray_SeqCUSP(Vec vin)
 {
   PetscErrorCode ierr;
@@ -197,8 +175,6 @@ PetscErrorCode VecResetArray_SeqCUSP(Vec vin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecPlaceArray_SeqCUSP"
 PetscErrorCode VecPlaceArray_SeqCUSP(Vec vin,const PetscScalar *a)
 {
   PetscErrorCode ierr;
@@ -210,8 +186,6 @@ PetscErrorCode VecPlaceArray_SeqCUSP(Vec vin,const PetscScalar *a)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecReplaceArray_SeqCUSP"
 PetscErrorCode VecReplaceArray_SeqCUSP(Vec vin,const PetscScalar *a)
 {
   PetscErrorCode ierr;
@@ -223,8 +197,6 @@ PetscErrorCode VecReplaceArray_SeqCUSP(Vec vin,const PetscScalar *a)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCreateSeqCUSP"
 /*@
  VecCreateSeqCUSP - Creates a standard, sequential array-style vector.
 
@@ -258,8 +230,6 @@ PetscErrorCode VecCreateSeqCUSP(MPI_Comm comm,PetscInt n,Vec *v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecDuplicate_SeqCUSP"
 PetscErrorCode VecDuplicate_SeqCUSP(Vec win,Vec *V)
 {
   PetscErrorCode ierr;
@@ -273,8 +243,6 @@ PetscErrorCode VecDuplicate_SeqCUSP(Vec win,Vec *V)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCreate_SeqCUSP"
 PETSC_EXTERN PetscErrorCode VecCreate_SeqCUSP(Vec V)
 {
   PetscErrorCode ierr;

@@ -1,7 +1,5 @@
 #include <petsc/private/pcimpl.h>          /*I "petscpc.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCPythonSetType"
 /*@C
    PCPythonSetType - Initalize a PC object implemented in Python.
 

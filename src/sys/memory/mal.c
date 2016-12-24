@@ -17,8 +17,6 @@
 */
 #define SHIFT_CLASSID 456123
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMallocAlign"
 PetscErrorCode  PetscMallocAlign(size_t mem,int line,const char func[],const char file[],void **result)
 {
   if (!mem) { *result = NULL; return 0; }
@@ -47,8 +45,6 @@ PetscErrorCode  PetscMallocAlign(size_t mem,int line,const char func[],const cha
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFreeAlign"
 PetscErrorCode  PetscFreeAlign(void *ptr,int line,const char func[],const char file[])
 {
   if (!ptr) return 0;
@@ -74,8 +70,6 @@ PetscErrorCode  PetscFreeAlign(void *ptr,int line,const char func[],const char f
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscReallocAlign"
 PetscErrorCode PetscReallocAlign(size_t mem, int line, const char func[], const char file[], void **result)
 {
   PetscErrorCode ierr;
@@ -149,8 +143,6 @@ PetscErrorCode (*PetscTrRealloc)(size_t,int,const char[],const char[],void**) = 
 
 PetscBool petscsetmallocvisited = PETSC_FALSE;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMallocSet"
 /*@C
    PetscMallocSet - Sets the routines used to do mallocs and frees.
    This routine MUST be called before PetscInitialize() and may be
@@ -179,8 +171,6 @@ PetscErrorCode  PetscMallocSet(PetscErrorCode (*imalloc)(size_t,int,const char[]
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMallocClear"
 /*@C
    PetscMallocClear - Resets the routines used to do mallocs and frees to the
         defaults.
@@ -204,8 +194,6 @@ PetscErrorCode  PetscMallocClear(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMemoryTrace"
 PetscErrorCode PetscMemoryTrace(const char label[])
 {
   PetscErrorCode        ierr;

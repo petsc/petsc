@@ -48,8 +48,6 @@ extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 extern PetscErrorCode Monitor(SNES,PetscInt,PetscReal,void*);
 
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
@@ -105,8 +103,6 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunction"
 /*
       Evaluates FU = Gradiant(L(w,u,lambda))
 
@@ -169,8 +165,6 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void *dummy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Monitor"
 PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal rnorm,void *dummy)
 {
   UserCtx        *user = (UserCtx*)dummy;

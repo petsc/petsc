@@ -1,8 +1,6 @@
 
 #include <petscsys.h>              /*I  "petscsys.h"  I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscPopUpSelect"
 /*@C
      PetscPopUpSelect - Pops up a windows with a list of choices; allows one to be chosen
 

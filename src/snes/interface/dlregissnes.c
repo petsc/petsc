@@ -4,8 +4,6 @@
 
 static PetscBool SNESPackageInitialized = PETSC_FALSE;
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFinalizePackage"
 /*@C
   SNESFinalizePackage - This function destroys everything in the Petsc interface to the SNES package. It is
   called from PetscFinalize().
@@ -28,8 +26,6 @@ PetscErrorCode  SNESFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESInitializePackage"
 /*@C
   SNESInitializePackage - This function initializes everything in the SNES package. It is called
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to SNESCreate()
@@ -89,8 +85,6 @@ PetscErrorCode  SNESInitializePackage(void)
 }
 
 #if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
-#undef __FUNCT__
-#define __FUNCT__ "PetscDLLibraryRegister_petscsnes"
 /*
   PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.
 

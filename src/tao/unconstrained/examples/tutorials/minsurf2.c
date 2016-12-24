@@ -54,8 +54,6 @@ PetscErrorCode FormGradient(Tao,Vec,Vec,void*);
 PetscErrorCode FormHessian(Tao,Vec,Mat,Mat,void*);
 PetscErrorCode My_Monitor(Tao, void *);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main( int argc, char **argv )
 {
   PetscErrorCode     ierr;                /* used to check for functions returning nonzeros */
@@ -175,8 +173,6 @@ int main( int argc, char **argv )
   return ierr;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormGradient"
 PetscErrorCode FormGradient(Tao tao, Vec X, Vec G,void *userCtx)
 {
   PetscErrorCode ierr;
@@ -188,8 +184,6 @@ PetscErrorCode FormGradient(Tao tao, Vec X, Vec G,void *userCtx)
 }
 
 /* -------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionGradient"
 /*  FormFunctionGradient - Evaluates the function and corresponding gradient.
 
     Input Parameters:
@@ -374,8 +368,6 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn,Vec G,void *u
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormHessian"
 /*
    FormHessian - Evaluates Hessian matrix.
 
@@ -402,8 +394,6 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "QuadraticH"
 /*
    QuadraticH - Evaluates Hessian matrix.
 
@@ -593,8 +583,6 @@ PetscErrorCode QuadraticH(AppCtx *user, Vec X, Mat Hessian)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "MSA_BoundaryConditions"
 /*
    MSA_BoundaryConditions -  Calculates the boundary conditions for
    the region.
@@ -715,8 +703,6 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "MSA_InitialPoint"
 /*
    MSA_InitialPoint - Calculates the initial guess in one of three ways.
 
@@ -774,8 +760,6 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
 }
 
 /*-----------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "My_Monitor"
 PetscErrorCode My_Monitor(Tao tao, void *ctx)
 {
   PetscErrorCode ierr;

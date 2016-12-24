@@ -13,8 +13,6 @@ typedef struct {
   char      filename[PETSC_MAX_PATH_LEN]; /* Mesh filename */
 } AppCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "ProcessOptions"
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscErrorCode ierr;
@@ -30,8 +28,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateMesh"
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscErrorCode ierr;
@@ -44,8 +40,6 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CheckMeshTopology"
 static PetscErrorCode CheckMeshTopology(DM dm)
 {
   PetscInt       dim, coneSize, cStart;
@@ -63,8 +57,6 @@ static PetscErrorCode CheckMeshTopology(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CheckMeshGeometry"
 static PetscErrorCode CheckMeshGeometry(DM dm)
 {
   PetscInt       dim, coneSize, cStart, cEnd, c;
@@ -84,8 +76,6 @@ static PetscErrorCode CheckMeshGeometry(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   DM             dm;

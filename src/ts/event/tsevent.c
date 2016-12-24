@@ -1,7 +1,5 @@
 #include <petsc/private/tsimpl.h> /*I  "petscts.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "TSEventInitialize"
 /*
   TSEventInitialize - Initializes TSEvent for TSSolve
 */
@@ -20,8 +18,6 @@ PetscErrorCode TSEventInitialize(TSEvent event,TS ts,PetscReal t,Vec U)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSEventDestroy"
 PetscErrorCode TSEventDestroy(TSEvent *event)
 {
   PetscErrorCode ierr;
@@ -55,8 +51,6 @@ PetscErrorCode TSEventDestroy(TSEvent *event)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSSetEventTolerances"
 /*@
    TSSetEventTolerances - Set tolerances for event zero crossings when using event handler
 
@@ -100,8 +94,6 @@ PetscErrorCode TSSetEventTolerances(TS ts,PetscReal tol,PetscReal vtol[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSSetEventHandler"
 /*@C
    TSSetEventHandler - Sets a monitoring function used for detecting events
 
@@ -218,8 +210,6 @@ PetscErrorCode TSSetEventHandler(TS ts,PetscInt nevents,PetscInt direction[],Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSEventRecorderResize"
 /*
   TSEventRecorderResize - Resizes (2X) the event recorder arrays whenever the recording limit (event->recsize)
                           is reached.
@@ -276,8 +266,6 @@ static PetscErrorCode TSEventRecorderResize(TSEvent event)
 /*
    Helper rutine to handle user postenvents and recording
 */
-#undef __FUNCT__
-#define __FUNCT__ "TSPostEvent"
 static PetscErrorCode TSPostEvent(TS ts,PetscReal t,Vec U)
 {
   PetscErrorCode ierr;
@@ -346,8 +334,6 @@ PETSC_STATIC_INLINE PetscReal TSEventComputeStepSize(PetscReal tleft,PetscReal t
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TSEventHandler"
 PetscErrorCode TSEventHandler(TS ts)
 {
   PetscErrorCode ierr;
@@ -504,8 +490,6 @@ PetscErrorCode TSEventHandler(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdjointEventHandler"
 PetscErrorCode TSAdjointEventHandler(TS ts)
 {
   PetscErrorCode ierr;

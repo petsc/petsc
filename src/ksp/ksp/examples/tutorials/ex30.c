@@ -2,8 +2,6 @@ static char help[] = " * Example code testing SeqDense matrices with an LDA (lea
 
 #include <petscksp.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   KSP            solver;

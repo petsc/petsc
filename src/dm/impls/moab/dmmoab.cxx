@@ -22,8 +22,6 @@
 M*/
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabCreate"
 /*@
   DMMoabCreate - Creates a DMMoab object, which encapsulates a moab instance
 
@@ -50,8 +48,6 @@ PetscErrorCode DMMoabCreate(MPI_Comm comm, DM *dmb)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabCreateMoab"
 /*@
   DMMoabCreate - Creates a DMMoab object, optionally from an instance and other data
 
@@ -143,8 +139,6 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabSetParallelComm"
 /*@
   DMMoabSetParallelComm - Set the ParallelComm used with this DMMoab
 
@@ -172,8 +166,6 @@ PetscErrorCode DMMoabSetParallelComm(DM dm,moab::ParallelComm *pcomm)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabGetParallelComm"
 /*@
   DMMoabGetParallelComm - Get the ParallelComm used with this DMMoab
 
@@ -198,8 +190,6 @@ PetscErrorCode DMMoabGetParallelComm(DM dm,moab::ParallelComm **pcomm)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabSetInterface"
 /*@
   DMMoabSetInterface - Set the MOAB instance used with this DMMoab
 
@@ -227,8 +217,6 @@ PetscErrorCode DMMoabSetInterface(DM dm,moab::Interface *mbiface)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabGetInterface"
 /*@
   DMMoabGetInterface - Get the MOAB instance used with this DMMoab
 
@@ -257,8 +245,6 @@ PetscErrorCode DMMoabGetInterface(DM dm,moab::Interface **mbiface)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabSetLocalVertices"
 /*@
   DMMoabSetLocalVertices - Set the entities having DOFs on this DMMoab
 
@@ -303,8 +289,6 @@ PetscErrorCode DMMoabSetLocalVertices(DM dm,moab::Range *range)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabGetAllVertices"
 /*@
   DMMoabGetAllVertices - Get the entities having DOFs on this DMMoab
 
@@ -330,8 +314,6 @@ PetscErrorCode DMMoabGetAllVertices(DM dm,moab::Range *local)
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabGetLocalVertices"
 /*@
   DMMoabGetLocalVertices - Get the entities having DOFs on this DMMoab
 
@@ -357,8 +339,6 @@ PetscErrorCode DMMoabGetLocalVertices(DM dm,const moab::Range **owned,const moab
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabGetLocalElements"
 /*@
   DMMoabGetLocalElements - Get the higher-dimensional entities that are locally owned
 
@@ -383,8 +363,6 @@ PetscErrorCode DMMoabGetLocalElements(DM dm,const moab::Range **range)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabSetLocalElements"
 /*@
   DMMoabSetLocalElements - Set the entities having DOFs on this DMMoab
 
@@ -419,8 +397,6 @@ PetscErrorCode DMMoabSetLocalElements(DM dm,moab::Range *range)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabSetLocalToGlobalTag"
 /*@
   DMMoabSetLocalToGlobalTag - Set the tag used for local to global numbering
 
@@ -443,8 +419,6 @@ PetscErrorCode DMMoabSetLocalToGlobalTag(DM dm,moab::Tag ltogtag)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabGetLocalToGlobalTag"
 /*@
   DMMoabGetLocalToGlobalTag - Get the tag used for local to global numbering
 
@@ -469,8 +443,6 @@ PetscErrorCode DMMoabGetLocalToGlobalTag(DM dm,moab::Tag *ltog_tag)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabSetBlockSize"
 /*@
   DMMoabSetBlockSize - Set the block size used with this DMMoab
 
@@ -493,8 +465,6 @@ PetscErrorCode DMMoabSetBlockSize(DM dm,PetscInt bs)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabGetBlockSize"
 /*@
   DMMoabGetBlockSize - Get the block size used with this DMMoab
 
@@ -519,8 +489,6 @@ PetscErrorCode DMMoabGetBlockSize(DM dm,PetscInt *bs)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabGetSize"
 /*@
   DMMoabGetSize - Get the global vertex size used with this DMMoab
 
@@ -547,8 +515,6 @@ PetscErrorCode DMMoabGetSize(DM dm,PetscInt *neg,PetscInt *nvg)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabGetLocalSize"
 /*@
   DMMoabGetLocalSize - Get the local and ghosted vertex size used with this DMMoab
 
@@ -579,8 +545,6 @@ PetscErrorCode DMMoabGetLocalSize(DM dm,PetscInt *nel,PetscInt *neg,PetscInt *nv
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabGetOffset"
 /*@
   DMMoabGetOffset - Get the local offset for the global vector
 
@@ -605,8 +569,6 @@ PetscErrorCode DMMoabGetOffset(DM dm,PetscInt *offset)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabGetDimension"
 /*@
   DMMoabGetDimension - Get the dimension of the DM Mesh
 
@@ -631,8 +593,6 @@ PetscErrorCode DMMoabGetDimension(DM dm,PetscInt *dim)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabGetMaterialBlock"
 /*@
   DMMoabGetMaterialBlock - Get the material ID corresponding to the current entity of the DM Mesh
 
@@ -664,8 +624,6 @@ PetscErrorCode DMMoabGetMaterialBlock(DM dm,const moab::EntityHandle ehandle, Pe
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabGetVertexCoordinates"
 /*@
   DMMoabGetVertexCoordinates - Get the coordinates corresponding to the requested vertex entities
 
@@ -704,8 +662,6 @@ PetscErrorCode DMMoabGetVertexCoordinates(DM dm,PetscInt nconn,const moab::Entit
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabGetVertexConnectivity"
 /*@
   DMMoabGetVertexConnectivity - Get the vertex adjacency for the given entity
 
@@ -748,8 +704,6 @@ PetscErrorCode DMMoabGetVertexConnectivity(DM dm,moab::EntityHandle vhandle,Pets
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabRestoreVertexConnectivity"
 /*@
   DMMoabRestoreVertexConnectivity - Restore the vertex connectivity for the given entity
 
@@ -781,8 +735,6 @@ PetscErrorCode DMMoabRestoreVertexConnectivity(DM dm,moab::EntityHandle ehandle,
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabGetElementConnectivity"
 /*@
   DMMoabGetElementConnectivity - Get the vertex adjacency for the given entity
 
@@ -820,8 +772,6 @@ PetscErrorCode DMMoabGetElementConnectivity(DM dm,moab::EntityHandle ehandle,Pet
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabIsEntityOnBoundary"
 /*@
   DMMoabIsEntityOnBoundary - Check whether a given entity is on the boundary (vertex, edge, face, element)
 
@@ -872,8 +822,6 @@ PetscErrorCode DMMoabIsEntityOnBoundary(DM dm,const moab::EntityHandle ent,Petsc
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabCheckBoundaryVertices"
 /*@
   DMMoabIsEntityOnBoundary - Check whether a given entity is on the boundary (vertex, edge, face, element)
 
@@ -907,8 +855,6 @@ PetscErrorCode DMMoabCheckBoundaryVertices(DM dm,PetscInt nconn,const moab::Enti
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabGetBoundaryMarkers"
 /*@
   DMMoabGetBoundaryMarkers - Return references to the vertices, faces, elements on the boundary
 
@@ -939,8 +885,6 @@ PetscErrorCode DMMoabGetBoundaryMarkers(DM dm,const moab::Range **bdvtx,const mo
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDestroy_Moab"
 PETSC_EXTERN PetscErrorCode DMDestroy_Moab(DM dm)
 {
   PetscErrorCode ierr;
@@ -981,8 +925,6 @@ PETSC_EXTERN PetscErrorCode DMDestroy_Moab(DM dm)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetFromOptions_Moab"
 PETSC_EXTERN PetscErrorCode DMSetFromOptions_Moab(PetscOptionItems *PetscOptionsObject,DM dm)
 {
   PetscErrorCode ierr;
@@ -1002,8 +944,6 @@ PETSC_EXTERN PetscErrorCode DMSetFromOptions_Moab(PetscOptionItems *PetscOptions
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetUp_Moab"
 PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
 {
   PetscErrorCode          ierr;
@@ -1212,8 +1152,6 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreate_Moab"
 PETSC_EXTERN PetscErrorCode DMCreate_Moab(DM dm)
 {
   PetscErrorCode ierr;

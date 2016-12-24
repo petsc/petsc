@@ -7,8 +7,6 @@ PetscClassId MAT_COARSEN_CLASSID;
 PetscFunctionList MatCoarsenList              = 0;
 PetscBool         MatCoarsenRegisterAllCalled = PETSC_FALSE;
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCoarsenRegister"
 /*@C
    MatCoarsenRegister - Adds a new sparse matrix coarser to the  matrix package.
 
@@ -43,8 +41,6 @@ PetscErrorCode  MatCoarsenRegister(const char sname[],PetscErrorCode (*function)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCoarsenGetType"
 /*@C
    MatCoarsenGetType - Gets the Coarsen method type and name (as a string)
         from the coarsen context.
@@ -74,8 +70,6 @@ PetscErrorCode  MatCoarsenGetType(MatCoarsen coarsen,MatCoarsenType *type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCoarsenApply"
 /*@
    MatCoarsenApply - Gets a coarsen for a matrix.
 
@@ -119,8 +113,6 @@ PetscErrorCode  MatCoarsenApply(MatCoarsen coarser)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCoarsenSetAdjacency"
 /*@
    MatCoarsenSetAdjacency - Sets the adjacency graph (matrix) of the thing to be coarsened.
 
@@ -145,8 +137,6 @@ PetscErrorCode  MatCoarsenSetAdjacency(MatCoarsen agg, Mat adj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCoarsenSetStrictAggs"
 /*@
    MatCoarsenSetStrictAggs - WHAT IS THIS?
 
@@ -170,8 +160,6 @@ PetscErrorCode MatCoarsenSetStrictAggs(MatCoarsen agg, PetscBool str)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCoarsenDestroy"
 /*@
    MatCoarsenDestroy - Destroys the coarsen context.
 
@@ -207,8 +195,6 @@ PetscErrorCode  MatCoarsenDestroy(MatCoarsen *agg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCoarsenCreate"
 /*@
    MatCoarsenCreate - Creates a coarsen context.
 
@@ -243,8 +229,6 @@ PetscErrorCode  MatCoarsenCreate(MPI_Comm comm, MatCoarsen *newcrs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCoarsenView"
 /*@C
    MatCoarsenView - Prints the coarsen data structure.
 
@@ -294,8 +278,6 @@ PetscErrorCode  MatCoarsenView(MatCoarsen agg,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCoarsenSetType"
 /*@C
    MatCoarsenSetType - Sets the type of aggregator to use
 
@@ -351,8 +333,6 @@ PetscErrorCode  MatCoarsenSetType(MatCoarsen coarser, MatCoarsenType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCoarsenSetGreedyOrdering"
 /*@C
    MatCoarsenSetGreedyOrdering - Sets the ordering of the vertices to use with a greedy coarsening method
 
@@ -379,8 +359,6 @@ PetscErrorCode MatCoarsenSetGreedyOrdering(MatCoarsen coarser, const IS perm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCoarsenGetData"
 /*@C
    MatCoarsenGetData - Gets the weights for vertices for a coarsen.
 
@@ -408,8 +386,6 @@ PetscErrorCode MatCoarsenGetData(MatCoarsen coarser, PetscCoarsenData **llist)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCoarsenSetFromOptions"
 /*@
    MatCoarsenSetFromOptions - Sets various coarsen options from the
         options database.

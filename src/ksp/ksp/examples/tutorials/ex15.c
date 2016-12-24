@@ -1,14 +1,12 @@
 
 static char help[] = "Solves a linear system in parallel with KSP.  Also\n\
 illustrates setting a user-defined shell preconditioner and using the\n\
-macro __FUNCT__ to define routine names for use in error handling.\n\
 Input parameters include:\n\
   -user_defined_pc : Activate a user-defined preconditioner\n\n";
 
 /*T
    Concepts: KSP^basic parallel example
    Concepts: PC^setting a user-defined shell preconditioner
-   Concepts: error handling^Using the macro __FUNCT__ to define routine names;
    Processors: n
 T*/
 
@@ -35,17 +33,13 @@ extern PetscErrorCode SampleShellPCDestroy(PC);
 
 /*
    User-defined routines.  Note that immediately before each routine below,
-   we define the macro __FUNCT__ to be a string containing the routine name.
    If defined, this macro is used in the PETSc error handlers to provide a
    complete traceback of routine names.  All PETSc library routines use this
    macro, and users can optionally employ it as well in their application
    codes.  Note that users can get a traceback of PETSc errors regardless of
-   whether they define __FUNCT__ in application codes; this macro merely
    provides the added traceback detail of the application routine names.
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Vec            x,b,u;   /* approx solution, RHS, exact solution */
@@ -228,8 +222,6 @@ int main(int argc,char **args)
 /*          Routines for a user-defined shell preconditioner           */
 /***********************************************************************/
 
-#undef __FUNCT__
-#define __FUNCT__ "SampleShellPCCreate"
 /*
    SampleShellPCCreate - This routine creates a user-defined
    preconditioner context.
@@ -248,8 +240,6 @@ PetscErrorCode SampleShellPCCreate(SampleShellPC **shell)
   return 0;
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "SampleShellPCSetUp"
 /*
    SampleShellPCSetUp - This routine sets up a user-defined
    preconditioner context.
@@ -283,8 +273,6 @@ PetscErrorCode SampleShellPCSetUp(PC pc,Mat pmat,Vec x)
   return 0;
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "SampleShellPCApply"
 /*
    SampleShellPCApply - This routine demonstrates the use of a
    user-provided preconditioner.
@@ -312,8 +300,6 @@ PetscErrorCode SampleShellPCApply(PC pc,Vec x,Vec y)
   return 0;
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "SampleShellPCDestroy"
 /*
    SampleShellPCDestroy - This routine destroys a user-defined
    preconditioner context.

@@ -4,8 +4,6 @@
 */
 #include <petsc/private/pcmgimpl.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PCMGACycle_Private"
 PetscErrorCode PCMGACycle_Private(PC pc,PC_MG_Levels **mglevels)
 {
   PetscErrorCode ierr;

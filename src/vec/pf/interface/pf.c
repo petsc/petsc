@@ -7,8 +7,6 @@ PetscClassId      PF_CLASSID          = 0;
 PetscFunctionList PFList              = NULL;   /* list of all registered PD functions */
 PetscBool         PFRegisterAllCalled = PETSC_FALSE;
 
-#undef __FUNCT__
-#define __FUNCT__ "PFSet"
 /*@C
    PFSet - Sets the C/C++/Fortran functions to be used by the PF function
 
@@ -40,8 +38,6 @@ PetscErrorCode  PFSet(PF pf,PetscErrorCode (*apply)(void*,PetscInt,const PetscSc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PFDestroy"
 /*@C
    PFDestroy - Destroys PF context that was created with PFCreate().
 
@@ -74,8 +70,6 @@ PetscErrorCode  PFDestroy(PF *pf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PFCreate"
 /*@C
    PFCreate - Creates a mathematical function context.
 
@@ -121,8 +115,6 @@ PetscErrorCode  PFCreate(MPI_Comm comm,PetscInt dimin,PetscInt dimout,PF *pf)
 
 /* -------------------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PFApplyVec"
 /*@
    PFApplyVec - Applies the mathematical function to a vector
 
@@ -193,8 +185,6 @@ PetscErrorCode  PFApplyVec(PF pf,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PFApply"
 /*@
    PFApply - Applies the mathematical function to an array of values.
 
@@ -233,8 +223,6 @@ PetscErrorCode  PFApply(PF pf,PetscInt n,const PetscScalar *x,PetscScalar *y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PFView"
 /*@
    PFView - Prints information about a mathematical function
 
@@ -289,8 +277,6 @@ PetscErrorCode  PFView(PF pf,PetscViewer viewer)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PFRegister"
 /*@C
    PFRegister - Adds a method to the mathematical function package.
 
@@ -328,8 +314,6 @@ PetscErrorCode  PFRegister(const char sname[],PetscErrorCode (*function)(PF,void
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PFGetType"
 /*@C
    PFGetType - Gets the PF method type and name (as a string) from the PF
    context.
@@ -359,8 +343,6 @@ PetscErrorCode  PFGetType(PF pf,PFType *type)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PFSetType"
 /*@C
    PFSetType - Builds PF for a particular function
 
@@ -416,8 +398,6 @@ PetscErrorCode  PFSetType(PF pf,PFType type,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PFSetFromOptions"
 /*@
    PFSetFromOptions - Sets PF options from the options database.
 
@@ -463,8 +443,6 @@ PetscErrorCode  PFSetFromOptions(PF pf)
 }
 
 static PetscBool PFPackageInitialized = PETSC_FALSE;
-#undef __FUNCT__
-#define __FUNCT__ "PFFinalizePackage"
 /*@C
   PFFinalizePackage - This function destroys everything in the Petsc interface to Mathematica. It is
   called from PetscFinalize().
@@ -485,8 +463,6 @@ PetscErrorCode  PFFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PFInitializePackage"
 /*@C
   PFInitializePackage - This function initializes everything in the PF package. It is called
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to PFCreate()

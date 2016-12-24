@@ -5,8 +5,6 @@
 #include <../src/mat/impls/dense/mpi/mpidense.h>
 #include <petscblaslapack.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetUpMultiply_MPIDense"
 PetscErrorCode MatSetUpMultiply_MPIDense(Mat mat)
 {
   Mat_MPIDense   *mdn = (Mat_MPIDense*)mat->data;
@@ -42,8 +40,6 @@ PetscErrorCode MatSetUpMultiply_MPIDense(Mat mat)
 }
 
 extern PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat*);
-#undef __FUNCT__
-#define __FUNCT__ "MatGetSubMatrices_MPIDense"
 PetscErrorCode MatGetSubMatrices_MPIDense(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[])
 {
   PetscErrorCode ierr;
@@ -73,8 +69,6 @@ PetscErrorCode MatGetSubMatrices_MPIDense(Mat C,PetscInt ismax,const IS isrow[],
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "MatGetSubMatrices_MPIDense_Local"
 PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submats)
 {
   Mat_MPIDense   *c = (Mat_MPIDense*)C->data;
@@ -420,8 +414,6 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatScale_MPIDense"
 PetscErrorCode MatScale_MPIDense(Mat inA,PetscScalar alpha)
 {
   Mat_MPIDense   *A     = (Mat_MPIDense*)inA->data;

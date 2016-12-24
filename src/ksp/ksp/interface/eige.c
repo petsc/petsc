@@ -2,8 +2,6 @@
 #include <petsc/private/kspimpl.h>   /*I "petscksp.h" I*/
 #include <petscblaslapack.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPComputeExplicitOperator"
 /*@
     KSPComputeExplicitOperator - Computes the explicit preconditioned operator, including diagonal scaling and null
     space removal if applicable.
@@ -91,8 +89,6 @@ PetscErrorCode  KSPComputeExplicitOperator(KSP ksp,Mat *mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPComputeEigenvaluesExplicitly"
 /*@
    KSPComputeEigenvaluesExplicitly - Computes all of the eigenvalues of the
    preconditioned operator using LAPACK.
@@ -314,8 +310,6 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PolyEval"
 static PetscErrorCode PolyEval(PetscInt nroots,const PetscReal *r,const PetscReal *c,PetscReal x,PetscReal y,PetscReal *px,PetscReal *py)
 {
   PetscInt  i;
@@ -334,8 +328,6 @@ static PetscErrorCode PolyEval(PetscInt nroots,const PetscReal *r,const PetscRea
 }
 
 #include <petscdraw.h>
-#undef __FUNCT__
-#define __FUNCT__ "KSPPlotEigenContours_Private"
 /* collective on KSP */
 PetscErrorCode KSPPlotEigenContours_Private(KSP ksp,PetscInt neig,const PetscReal *r,const PetscReal *c)
 {

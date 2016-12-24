@@ -1,8 +1,6 @@
 
 #include <../src/ksp/ksp/impls/cheby/chebyshevimpl.h>    /*I "petscksp.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPReset_Chebyshev"
 static PetscErrorCode KSPReset_Chebyshev(KSP ksp)
 {
   KSP_Chebyshev  *cheb = (KSP_Chebyshev*)ksp->data;
@@ -13,8 +11,6 @@ static PetscErrorCode KSPReset_Chebyshev(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_Chebyshev"
 static PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
 {
   KSP_Chebyshev  *cheb = (KSP_Chebyshev*)ksp->data;
@@ -28,8 +24,6 @@ static PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPChebyshevSetEigenvalues_Chebyshev"
 static PetscErrorCode KSPChebyshevSetEigenvalues_Chebyshev(KSP ksp,PetscReal emax,PetscReal emin)
 {
   KSP_Chebyshev  *chebyshevP = (KSP_Chebyshev*)ksp->data;
@@ -45,8 +39,6 @@ static PetscErrorCode KSPChebyshevSetEigenvalues_Chebyshev(KSP ksp,PetscReal ema
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPChebyshevEstEigSet_Chebyshev"
 static PetscErrorCode KSPChebyshevEstEigSet_Chebyshev(KSP ksp,PetscReal a,PetscReal b,PetscReal c,PetscReal d)
 {
   KSP_Chebyshev  *cheb = (KSP_Chebyshev*)ksp->data;
@@ -82,8 +74,6 @@ static PetscErrorCode KSPChebyshevEstEigSet_Chebyshev(KSP ksp,PetscReal a,PetscR
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPChebyshevEstEigSetUseNoisy_Chebyshev"
 static PetscErrorCode KSPChebyshevEstEigSetUseNoisy_Chebyshev(KSP ksp,PetscBool use)
 {
   KSP_Chebyshev  *cheb = (KSP_Chebyshev*)ksp->data;
@@ -93,8 +83,6 @@ static PetscErrorCode KSPChebyshevEstEigSetUseNoisy_Chebyshev(KSP ksp,PetscBool 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPChebyshevSetEigenvalues"
 /*@
    KSPChebyshevSetEigenvalues - Sets estimates for the extreme eigenvalues
    of the preconditioned problem.
@@ -127,8 +115,6 @@ PetscErrorCode  KSPChebyshevSetEigenvalues(KSP ksp,PetscReal emax,PetscReal emin
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPChebyshevEstEigSet"
 /*@
    KSPChebyshevEstEigSet - Automatically estimate the eigenvalues to use for Chebyshev
 
@@ -177,8 +163,6 @@ PetscErrorCode KSPChebyshevEstEigSet(KSP ksp,PetscReal a,PetscReal b,PetscReal c
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPChebyshevEstEigSetUseNoisy"
 /*@
    KSPChebyshevEstEigSetUseNoisy - use a noisy right hand side in order to do the estimate instead of the given right hand side
 
@@ -207,8 +191,6 @@ PetscErrorCode KSPChebyshevEstEigSetUseNoisy(KSP ksp,PetscBool use)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPChebyshevEstEigGetKSP"
 /*@
   KSPChebyshevEstEigGetKSP - Get the Krylov method context used to estimate eigenvalues for the Chebyshev method.  If
   a Krylov method is not being used for this purpose, NULL is returned.  The reference count of the returned KSP is
@@ -235,8 +217,6 @@ PetscErrorCode KSPChebyshevEstEigGetKSP(KSP ksp, KSP *kspest)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPChebyshevEstEigGetKSP_Chebyshev"
 static PetscErrorCode KSPChebyshevEstEigGetKSP_Chebyshev(KSP ksp, KSP *kspest)
 {
   KSP_Chebyshev *cheb = (KSP_Chebyshev*)ksp->data;
@@ -246,8 +226,6 @@ static PetscErrorCode KSPChebyshevEstEigGetKSP_Chebyshev(KSP ksp, KSP *kspest)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetFromOptions_Chebyshev"
 static PetscErrorCode KSPSetFromOptions_Chebyshev(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   KSP_Chebyshev  *cheb = (KSP_Chebyshev*)ksp->data;
@@ -294,8 +272,6 @@ static PetscErrorCode KSPSetFromOptions_Chebyshev(PetscOptionItems *PetscOptions
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPChebyshevComputeExtremeEigenvalues_Private"
 /*
  * Must be passed a KSP solver that has "converged", with KSPSetComputeEigenvalues() called before the solve
  */
@@ -330,8 +306,6 @@ PETSC_STATIC_INLINE PetscScalar chebyhash(PetscInt xx)
   return (PetscScalar)((PetscInt64)x-2147483648)*5.e-10; /* center around zero, scaled about -1. to 1.*/
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_Chebyshev"
 static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
 {
   KSP_Chebyshev  *cheb = (KSP_Chebyshev*)ksp->data;
@@ -529,8 +503,6 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPView_Chebyshev"
 static  PetscErrorCode KSPView_Chebyshev(KSP ksp,PetscViewer viewer)
 {
   KSP_Chebyshev  *cheb = (KSP_Chebyshev*)ksp->data;
@@ -554,8 +526,6 @@ static  PetscErrorCode KSPView_Chebyshev(KSP ksp,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPDestroy_Chebyshev"
 static PetscErrorCode KSPDestroy_Chebyshev(KSP ksp)
 {
   KSP_Chebyshev  *cheb = (KSP_Chebyshev*)ksp->data;
@@ -597,8 +567,6 @@ static PetscErrorCode KSPDestroy_Chebyshev(KSP ksp)
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_Chebyshev"
 PETSC_EXTERN PetscErrorCode KSPCreate_Chebyshev(KSP ksp)
 {
   PetscErrorCode ierr;

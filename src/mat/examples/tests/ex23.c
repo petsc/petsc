@@ -10,8 +10,6 @@ conversion routines.\n";
 PetscErrorCode TestMatZeroRows(Mat,Mat,IS,PetscScalar);
 PetscErrorCode CheckMat(Mat,Mat,PetscBool,const char*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat                    A,B,A2,B2,T;
@@ -332,8 +330,6 @@ int main(int argc,char **args)
   return ierr;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CheckMat"
 PetscErrorCode CheckMat(Mat A, Mat B, PetscBool usemult, const char* func)
 {
   Mat            Bcheck;
@@ -378,8 +374,6 @@ PetscErrorCode CheckMat(Mat A, Mat B, PetscBool usemult, const char* func)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestMatZeroRows"
 PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, IS is, PetscScalar diag)
 {
   Mat                    B,Bcheck,B2 = NULL;

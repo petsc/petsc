@@ -6,8 +6,6 @@
 #define OWLQN_SCALED_GRADIENT     1
 #define OWLQN_GRADIENT            2
 
-#undef __FUNCT__
-#define __FUNCT__ "ProjDirect_OWLQN"
 static PetscErrorCode ProjDirect_OWLQN(Vec d, Vec g)
 {
   PetscErrorCode  ierr;
@@ -31,8 +29,6 @@ static PetscErrorCode ProjDirect_OWLQN(Vec d, Vec g)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputePseudoGrad_OWLQN"
 static PetscErrorCode ComputePseudoGrad_OWLQN(Vec x, Vec gv, PetscReal lambda)
 {
   PetscErrorCode  ierr;
@@ -58,8 +54,6 @@ static PetscErrorCode ComputePseudoGrad_OWLQN(Vec x, Vec gv, PetscReal lambda)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSolve_OWLQN"
 static PetscErrorCode TaoSolve_OWLQN(Tao tao)
 {
   TAO_OWLQN                    *lmP = (TAO_OWLQN *)tao->data;
@@ -244,8 +238,6 @@ static PetscErrorCode TaoSolve_OWLQN(Tao tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetUp_OWLQN"
 static PetscErrorCode TaoSetUp_OWLQN(Tao tao)
 {
   TAO_OWLQN      *lmP = (TAO_OWLQN *)tao->data;
@@ -270,8 +262,6 @@ static PetscErrorCode TaoSetUp_OWLQN(Tao tao)
 }
 
 /* ---------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "TaoDestroy_OWLQN"
 static PetscErrorCode TaoDestroy_OWLQN(Tao tao)
 {
   TAO_OWLQN      *lmP = (TAO_OWLQN *)tao->data;
@@ -290,8 +280,6 @@ static PetscErrorCode TaoDestroy_OWLQN(Tao tao)
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetFromOptions_OWLQN"
 static PetscErrorCode TaoSetFromOptions_OWLQN(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   TAO_OWLQN      *lmP = (TAO_OWLQN *)tao->data;
@@ -306,8 +294,6 @@ static PetscErrorCode TaoSetFromOptions_OWLQN(PetscOptionItems *PetscOptionsObje
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoView_OWLQN"
 static PetscErrorCode TaoView_OWLQN(Tao tao, PetscViewer viewer)
 {
   TAO_OWLQN      *lm = (TAO_OWLQN *)tao->data;
@@ -336,8 +322,6 @@ static PetscErrorCode TaoView_OWLQN(Tao tao, PetscViewer viewer)
 M*/
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoCreate_OWLQN"
 PETSC_EXTERN PetscErrorCode TaoCreate_OWLQN(Tao tao)
 {
   TAO_OWLQN      *lmP;

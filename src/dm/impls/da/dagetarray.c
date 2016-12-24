@@ -1,8 +1,6 @@
 
 #include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecGetArray"
 /*@C
    DMDAVecGetArray - Returns a multiple dimension array that shares data with
       the underlying vector and is indexed using the global dimensions.
@@ -79,8 +77,6 @@ PetscErrorCode  DMDAVecGetArray(DM da,Vec vec,void *array)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecRestoreArray"
 /*@
    DMDAVecRestoreArray - Restores a multiple dimension array obtained with DMDAVecGetArray()
 
@@ -138,8 +134,6 @@ PetscErrorCode  DMDAVecRestoreArray(DM da,Vec vec,void *array)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecGetArrayDOF"
 /*@C
    DMDAVecGetArrayDOF - Returns a multiple dimension array that shares data with
       the underlying vector and is indexed using the global dimensions.
@@ -199,8 +193,6 @@ PetscErrorCode  DMDAVecGetArrayDOF(DM da,Vec vec,void *array)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecRestoreArrayDOF"
 /*@
    DMDAVecRestoreArrayDOF - Restores a multiple dimension array obtained with DMDAVecGetArrayDOF()
 
@@ -249,8 +241,6 @@ PetscErrorCode  DMDAVecRestoreArrayDOF(DM da,Vec vec,void *array)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecGetArrayRead"
 /*@C
    DMDAVecGetArrayRead - Returns a multiple dimension array that shares data with
       the underlying vector and is indexed using the global dimensions.
@@ -327,8 +317,6 @@ PetscErrorCode  DMDAVecGetArrayRead(DM da,Vec vec,void *array)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecRestoreArrayRead"
 /*@
    DMDAVecRestoreArrayRead - Restores a multiple dimension array obtained with DMDAVecGetArrayRead()
 
@@ -386,8 +374,6 @@ PetscErrorCode  DMDAVecRestoreArrayRead(DM da,Vec vec,void *array)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecGetArrayDOFRead"
 /*@C
    DMDAVecGetArrayDOFRead - Returns a multiple dimension array that shares data with
       the underlying vector and is indexed using the global dimensions.
@@ -447,8 +433,6 @@ PetscErrorCode  DMDAVecGetArrayDOFRead(DM da,Vec vec,void *array)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecRestoreArrayDOFRead"
 /*@
    DMDAVecRestoreArrayDOFRead - Restores a multiple dimension array obtained with DMDAVecGetArrayDOFRead()
 

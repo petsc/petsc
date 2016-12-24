@@ -51,8 +51,6 @@ typedef struct {
 } Mat_SuperLU_DIST;
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSuperluDistGetDiagU_SuperLU_DIST"
 PetscErrorCode MatSuperluDistGetDiagU_SuperLU_DIST(Mat F,PetscScalar *diagU)
 {
   Mat_SuperLU_DIST  *lu= (Mat_SuperLU_DIST*)F->data;
@@ -66,8 +64,6 @@ PetscErrorCode MatSuperluDistGetDiagU_SuperLU_DIST(Mat F,PetscScalar *diagU)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSuperluDistGetDiagU"
 PetscErrorCode MatSuperluDistGetDiagU(Mat F,PetscScalar *diagU)
 {
   PetscErrorCode    ierr;
@@ -78,8 +74,6 @@ PetscErrorCode MatSuperluDistGetDiagU(Mat F,PetscScalar *diagU)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_SuperLU_DIST"
 static PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
 {
   PetscErrorCode   ierr;
@@ -116,8 +110,6 @@ static PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolve_SuperLU_DIST"
 static PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
 {
   Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)A->data;
@@ -198,8 +190,6 @@ static PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMatSolve_SuperLU_DIST"
 static PetscErrorCode MatMatSolve_SuperLU_DIST(Mat A,Mat B_mpi,Mat X)
 {
   Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)A->data;
@@ -264,8 +254,6 @@ static PetscErrorCode MatMatSolve_SuperLU_DIST(Mat A,Mat B_mpi,Mat X)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLUFactorNumeric_SuperLU_DIST"
 static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *info)
 {
   Mat              *tseq,A_seq = NULL;
@@ -467,8 +455,6 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFacto
 }
 
 /* Note the Petsc r and c permutations are ignored */
-#undef __FUNCT__
-#define __FUNCT__ "MatLUFactorSymbolic_SuperLU_DIST"
 static PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)F->data;
@@ -488,8 +474,6 @@ static PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat F,Mat A,IS r,IS c,con
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFactorGetSolverPackage_aij_superlu_dist"
 static PetscErrorCode MatFactorGetSolverPackage_aij_superlu_dist(Mat A,const MatSolverPackage *type)
 {
   PetscFunctionBegin;
@@ -497,8 +481,6 @@ static PetscErrorCode MatFactorGetSolverPackage_aij_superlu_dist(Mat A,const Mat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFactorInfo_SuperLU_DIST"
 static PetscErrorCode MatFactorInfo_SuperLU_DIST(Mat A,PetscViewer viewer)
 {
   Mat_SuperLU_DIST       *lu=(Mat_SuperLU_DIST*)A->data;
@@ -549,8 +531,6 @@ static PetscErrorCode MatFactorInfo_SuperLU_DIST(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatView_SuperLU_DIST"
 static PetscErrorCode MatView_SuperLU_DIST(Mat A,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
@@ -568,8 +548,6 @@ static PetscErrorCode MatView_SuperLU_DIST(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetFactor_aij_superlu_dist"
 static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat                    B;
@@ -736,8 +714,6 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolverPackageRegister_SuperLU_DIST"
 PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_SuperLU_DIST(void)
 {
   PetscErrorCode ierr;

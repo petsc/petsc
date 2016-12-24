@@ -3,8 +3,6 @@ static char help[] = "Tests PetscGetFullPath().\n\n";
 
 #include <petscsys.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   char           fpath[PETSC_MAX_PATH_LEN];

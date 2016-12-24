@@ -19,8 +19,6 @@ and from Fortran to C\n\n";
 
 PETSC_EXTERN void PETSC_STDCALL ex7f_(Vec*,int*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   PetscErrorCode ierr;
@@ -53,8 +51,6 @@ int main(int argc,char **args)
   return ierr;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ex7c_"
 PETSC_EXTERN void PETSC_STDCALL ex7c_(Vec *fvec,int *fcomm,PetscErrorCode *ierr)
 {
   MPI_Comm comm;

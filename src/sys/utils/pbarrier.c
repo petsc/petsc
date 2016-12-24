@@ -31,8 +31,6 @@ PetscErrorCode PetscAllreduceBarrierCheck(MPI_Comm comm,PetscMPIInt ctn,int line
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscBarrier"
 /*@C
     PetscBarrier - Blocks until this routine is executed by all
                    processors owning the object A.

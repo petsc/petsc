@@ -1,8 +1,6 @@
 
 #include <petsc/private/dmdaimpl.h>     /*I  "petscdmda.h"   I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetElements_1D"
 static PetscErrorCode DMDAGetElements_1D(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 {
   PetscErrorCode ierr;
@@ -29,8 +27,6 @@ static PetscErrorCode DMDAGetElements_1D(DM dm,PetscInt *nel,PetscInt *nen,const
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetElements_2D"
 static PetscErrorCode DMDAGetElements_2D(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 {
   PetscErrorCode ierr;
@@ -73,8 +69,6 @@ static PetscErrorCode DMDAGetElements_2D(DM dm,PetscInt *nel,PetscInt *nen,const
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetElements_3D"
 static PetscErrorCode DMDAGetElements_3D(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 {
   PetscErrorCode ierr;
@@ -144,8 +138,6 @@ static PetscErrorCode DMDAGetElements_3D(DM dm,PetscInt *nel,PetscInt *nen,const
 
 .seealso: DMDAElementType, DMDAGetElementType(), DMDAGetElements(), DMDARestoreElements()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetElementType"
 PetscErrorCode  DMDASetElementType(DM da, DMDAElementType etype)
 {
   DM_DA          *dd = (DM_DA*)da->data;
@@ -179,8 +171,6 @@ PetscErrorCode  DMDASetElementType(DM da, DMDAElementType etype)
 
 .seealso: DMDAElementType, DMDASetElementType(), DMDAGetElements(), DMDARestoreElements()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetElementType"
 PetscErrorCode  DMDAGetElementType(DM da, DMDAElementType *etype)
 {
   DM_DA *dd = (DM_DA*)da->data;
@@ -217,8 +207,6 @@ PetscErrorCode  DMDAGetElementType(DM da, DMDAElementType *etype)
 
 .seealso: DMDAElementType, DMDASetElementType(), VecSetValuesLocal(), MatSetValuesLocal(), DMGlobalToLocalBegin(), DMLocalToGlobalBegin()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetElements"
 PetscErrorCode  DMDAGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 {
   PetscInt       dim;
@@ -240,8 +228,6 @@ PetscErrorCode  DMDAGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDARestoreElements"
 /*@C
       DMDARestoreElements - Restores the array obtained with DMDAGetElements()
 

@@ -5,8 +5,6 @@ typedef struct {
   Mat A;
 } Mat_Transpose;
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_Transpose"
 PetscErrorCode MatMult_Transpose(Mat N,Vec x,Vec y)
 {
   Mat_Transpose  *Na = (Mat_Transpose*)N->data;
@@ -17,8 +15,6 @@ PetscErrorCode MatMult_Transpose(Mat N,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultAdd_Transpose"
 PetscErrorCode MatMultAdd_Transpose(Mat N,Vec v1,Vec v2,Vec v3)
 {
   Mat_Transpose  *Na = (Mat_Transpose*)N->data;
@@ -29,8 +25,6 @@ PetscErrorCode MatMultAdd_Transpose(Mat N,Vec v1,Vec v2,Vec v3)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultTranspose_Transpose"
 PetscErrorCode MatMultTranspose_Transpose(Mat N,Vec x,Vec y)
 {
   Mat_Transpose  *Na = (Mat_Transpose*)N->data;
@@ -41,8 +35,6 @@ PetscErrorCode MatMultTranspose_Transpose(Mat N,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultTransposeAdd_Transpose"
 PetscErrorCode MatMultTransposeAdd_Transpose(Mat N,Vec v1,Vec v2,Vec v3)
 {
   Mat_Transpose  *Na = (Mat_Transpose*)N->data;
@@ -53,8 +45,6 @@ PetscErrorCode MatMultTransposeAdd_Transpose(Mat N,Vec v1,Vec v2,Vec v3)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_Transpose"
 PetscErrorCode MatDestroy_Transpose(Mat N)
 {
   Mat_Transpose  *Na = (Mat_Transpose*)N->data;
@@ -67,8 +57,6 @@ PetscErrorCode MatDestroy_Transpose(Mat N)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDuplicate_Transpose"
 PetscErrorCode MatDuplicate_Transpose(Mat N, MatDuplicateOption op, Mat* m)
 {
   Mat_Transpose  *Na = (Mat_Transpose*)N->data;
@@ -84,8 +72,6 @@ PetscErrorCode MatDuplicate_Transpose(Mat N, MatDuplicateOption op, Mat* m)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatTransposeGetMat_Transpose"
 PetscErrorCode MatTransposeGetMat_Transpose(Mat A,Mat *M)
 {
   Mat_Transpose  *Aa = (Mat_Transpose*)A->data;
@@ -95,8 +81,6 @@ PetscErrorCode MatTransposeGetMat_Transpose(Mat A,Mat *M)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatTransposeGetMat"
 /*@
       MatTransposeGetMat - Gets the Mat object stored inside a MATTRANSPOSEMAT'
 
@@ -125,8 +109,6 @@ PetscErrorCode MatTransposeGetMat(Mat A,Mat *M)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateTranspose"
 /*@
       MatCreateTranspose - Creates a new matrix object that behaves like A'
 

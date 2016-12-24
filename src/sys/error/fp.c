@@ -26,8 +26,6 @@ struct PetscFPTrapLink {
 static PetscFPTrap            _trapmode = PETSC_FP_TRAP_OFF; /* Current trapping mode */
 static struct PetscFPTrapLink *_trapstack;                   /* Any pushed states of _trapmode */
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFPTrapPush"
 /*@
    PetscFPTrapPush - push a floating point trapping mode, to be restored using PetscFPTrapPop()
 
@@ -54,8 +52,6 @@ PetscErrorCode PetscFPTrapPush(PetscFPTrap trap)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFPTrapPop"
 /*@
    PetscFPTrapPop - push a floating point trapping mode, to be restored using PetscFPTrapPop()
 
@@ -96,8 +92,6 @@ static struct { int code_no; char *name; } error_codes[] = {
 };
 #define SIGPC(scp) (scp->sc_pc)
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDefaultFPTrap"
 sigfpe_handler_type PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp,char *addr)
 {
   PetscErrorCode ierr;
@@ -116,8 +110,6 @@ sigfpe_handler_type PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp,c
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSetFPTrap"
 /*@
    PetscSetFPTrap - Enables traps/exceptions on common floating point errors.
                     This option may not work on certain machines.
@@ -192,8 +184,6 @@ static struct { int code_no; char *name; } error_codes[] = {
 };
 #define SIGPC(scp) (scp->si_addr)
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDefaultFPTrap"
 void PetscDefaultFPTrap(int sig,siginfo_t *scp,ucontext_t *uap)
 {
   int            err_ind,j,code = scp->si_code;
@@ -212,8 +202,6 @@ void PetscDefaultFPTrap(int sig,siginfo_t *scp,ucontext_t *uap)
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSetFPTrap"
 PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
 {
   char *out;
@@ -239,8 +227,6 @@ static struct { int code_no; char *name; } error_codes[] = {
   { _DIVZERO   ,"floating point divide" },
   { 0          ,"unknown error" }
 } ;
-#undef __FUNCT__
-#define __FUNCT__ "PetscDefaultFPTrap"
 void PetscDefaultFPTrap(unsigned exception[],int val[])
 {
   int err_ind,j,code;
@@ -258,8 +244,6 @@ void PetscDefaultFPTrap(unsigned exception[],int val[])
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSetFPTrap"
 PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
 {
   PetscFunctionBegin;
@@ -297,8 +281,6 @@ static struct { int code_no; char *name; } error_codes[] = {
    some strange interaction with the "POSIX_SOURCE" that we require.
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDefaultFPTrap"
 void PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp)
 {
   PetscErrorCode ierr;
@@ -320,8 +302,6 @@ void PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp)
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSetFPTrap"
 PetscErrorCode PetscSetFPTrap(PetscFPTrap on)
 {
   PetscFunctionBegin;
@@ -368,8 +348,6 @@ static const FPNode error_codes[] = {
   {0           ,"unknown error"}
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDefaultFPTrap"
 void PetscDefaultFPTrap(int sig)
 {
   const FPNode *node;
@@ -415,8 +393,6 @@ void PetscDefaultFPTrap(int sig)
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSetFPTrap"
 PetscErrorCode  PetscSetFPTrap(PetscFPTrap on)
 {
   PetscFunctionBegin;
@@ -443,8 +419,6 @@ PetscErrorCode  PetscSetFPTrap(PetscFPTrap on)
 /* -------------------------Default -----------------------------------*/
 #else
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDefaultFPTrap"
 void PetscDefaultFPTrap(int sig)
 {
   PetscFunctionBegin;
@@ -453,8 +427,6 @@ void PetscDefaultFPTrap(int sig)
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSetFPTrap"
 PetscErrorCode  PetscSetFPTrap(PetscFPTrap on)
 {
   PetscFunctionBegin;

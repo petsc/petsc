@@ -250,8 +250,6 @@ void g2_up_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   Cof3D(g2, u_x);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   const char    *runTypes[2] = {"full", "test"};
@@ -294,8 +292,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMVecViewLocal"
 PetscErrorCode DMVecViewLocal(DM dm, Vec v, PetscViewer viewer)
 {
   Vec            lv;
@@ -318,8 +314,6 @@ PetscErrorCode DMVecViewLocal(DM dm, Vec v, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateMesh"
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscInt       dim             = user->dim;
@@ -446,8 +440,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetupProblem"
 PetscErrorCode SetupProblem(PetscDS prob, PetscInt dim, AppCtx *user)
 {
   PetscErrorCode ierr;
@@ -467,8 +459,6 @@ PetscErrorCode SetupProblem(PetscDS prob, PetscInt dim, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetupMaterial"
 PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
 {
   PetscErrorCode (*matFuncs[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx) = {elasticityMaterial, wallPressure};
@@ -484,8 +474,6 @@ PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetupNearNullSpace"
 PetscErrorCode SetupNearNullSpace(DM dm, AppCtx *user)
 {
   /* Set up the near null space (a.k.a. rigid body modes) that will be used by the multigrid preconditioner */
@@ -505,8 +493,6 @@ PetscErrorCode SetupNearNullSpace(DM dm, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetupDiscretization"
 PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 {
   DM              cdm   = dm, dmAux;
@@ -566,8 +552,6 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   SNES           snes;                 /* nonlinear solver */

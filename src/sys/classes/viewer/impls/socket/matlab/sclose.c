@@ -44,8 +44,6 @@ typedef struct { int onoff; int time; } Linger;
 /*-----------------------------------------------------------------*/
 /*                                                                 */
 /*-----------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "mexFunction"
 PETSC_EXTERN void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
 {
   int    t = 0;

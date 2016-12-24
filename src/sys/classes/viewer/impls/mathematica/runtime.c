@@ -4,8 +4,6 @@ static const char help[] = "Tests PETSc -- Mathematica connection\n";
 
 typedef enum {MATHEMATICA_LINK_CREATE, MATHEMATICA_LINK_CONNECT, MATHEMATICA_LINK_LAUNCH} LinkMode;
 
-#undef __FUNCT__
-#define __FUNCT__ "setupConnection"
 static int setupConnection(MLENV *env, MLINK *link, const char *linkhost, LinkMode linkmode)
 {
   int  argc = 5;
@@ -46,8 +44,6 @@ static int setupConnection(MLENV *env, MLINK *link, const char *linkhost, LinkMo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "printIndent"
 static int printIndent(int indent)
 {
   int i;
@@ -57,8 +53,6 @@ static int printIndent(int indent)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "processPacket"
 static int processPacket(MLINK link, int indent)
 {
   static int isHead    = 0;
@@ -135,8 +129,6 @@ static int processPacket(MLINK link, int indent)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "processPackets"
 static int processPackets(MLINK link)
 {
   int packetType;
@@ -230,8 +222,6 @@ static int processPackets(MLINK link)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "cleanupConnection"
 static int cleanupConnection(MLENV env, MLINK link)
 {
   PetscFunctionBegin;
@@ -240,8 +230,6 @@ static int cleanupConnection(MLENV env, MLINK link)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char *argv[])
 {
   MLENV env;

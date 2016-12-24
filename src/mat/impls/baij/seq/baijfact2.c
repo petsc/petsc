@@ -11,8 +11,6 @@
 /* ----------------------------------------------------------------*/
 extern PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat,Mat,MatDuplicateOption,PetscBool);
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_15_NaturalOrdering"
 /*
    This is not much faster than MatLUFactorNumeric_SeqBAIJ_N() but the solve is faster at least sometimes
 */
@@ -126,8 +124,6 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_15_NaturalOrdering(Mat B,Mat A,const M
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_N"
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat B,Mat A,const MatFactorInfo *info)
 {
   Mat            C     =B;
@@ -258,8 +254,6 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat B,Mat A,const MatFactorInfo *inf
    because this code is almost identical to MatILUFactorSymbolic_SeqAIJ_ilu0_inplace().
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "MatILUFactorSymbolic_SeqBAIJ_ilu0"
 PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_ilu0(Mat fact,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
 {
 
@@ -323,8 +317,6 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_ilu0(Mat fact,Mat A,IS isrow,IS isco
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatILUFactorSymbolic_SeqBAIJ"
 PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
 {
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data,*b;
@@ -538,8 +530,6 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS isrow,IS iscol,con
    except that the data structure of Mat_SeqAIJ is slightly different.
    Not a good example of code reuse.
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatILUFactorSymbolic_SeqBAIJ_inplace"
 PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b;
@@ -758,8 +748,6 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact,Mat A,IS isrow,IS i
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE"
 PetscErrorCode MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE(Mat A)
 {
   /* Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data; */
@@ -775,8 +763,6 @@ PetscErrorCode MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE_usj"
 PetscErrorCode MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat A)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;

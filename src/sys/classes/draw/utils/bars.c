@@ -26,8 +26,6 @@ struct _p_PetscDrawBar {
 
 #define CHUNKSIZE 100
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawBarCreate"
 /*@C
    PetscDrawBarCreate - Creates a bar graph data structure.
 
@@ -83,8 +81,6 @@ PetscErrorCode  PetscDrawBarCreate(PetscDraw draw,PetscDrawBar *bar)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawBarSetData"
 /*@C
    PetscDrawBarSetData
 
@@ -123,8 +119,6 @@ PetscErrorCode  PetscDrawBarSetData(PetscDrawBar bar,PetscInt bins,const PetscRe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawBarDestroy"
 /*@C
   PetscDrawBarDestroy - Frees all space taken up by bar graph data structure.
 
@@ -154,8 +148,6 @@ PetscErrorCode  PetscDrawBarDestroy(PetscDrawBar *bar)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawBarDraw"
 /*@
   PetscDrawBarDraw - Redraws a bar graph.
 
@@ -258,8 +250,6 @@ PetscErrorCode  PetscDrawBarDraw(PetscDrawBar bar)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawBarSave"
 /*@
   PetscDrawBarSave - Saves a drawn image
 
@@ -284,8 +274,6 @@ PetscErrorCode  PetscDrawBarSave(PetscDrawBar bar)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawBarSetColor"
 /*@
   PetscDrawBarSetColor - Sets the color the bars will be drawn with.
 
@@ -309,8 +297,6 @@ PetscErrorCode  PetscDrawBarSetColor(PetscDrawBar bar, int color)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawBarSort"
 /*@
   PetscDrawBarSort - Sorts the values before drawing the bar chart
 
@@ -336,8 +322,6 @@ PetscErrorCode  PetscDrawBarSort(PetscDrawBar bar, PetscBool sort, PetscReal tol
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawBarSetLimits"
 /*@
   PetscDrawBarSetLimits - Sets the axis limits for a bar graph. If more
   points are added after this call, the limits will be adjusted to
@@ -364,8 +348,6 @@ PetscErrorCode  PetscDrawBarSetLimits(PetscDrawBar bar, PetscReal y_min, PetscRe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawBarGetAxis"
 /*@C
   PetscDrawBarGetAxis - Gets the axis context associated with a bar graph.
   This is useful if one wants to change some axis property, such as
@@ -393,8 +375,6 @@ PetscErrorCode  PetscDrawBarGetAxis(PetscDrawBar bar,PetscDrawAxis *axis)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawBarGetDraw"
 /*@C
   PetscDrawBarGetDraw - Gets the draw context associated with a bar graph.
 
@@ -419,8 +399,6 @@ PetscErrorCode  PetscDrawBarGetDraw(PetscDrawBar bar,PetscDraw *draw)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawBarSetFromOptions"
 /*@
     PetscDrawBarSetFromOptions - Sets options related to the PetscDrawBar
 

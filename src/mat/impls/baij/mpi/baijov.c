@@ -11,8 +11,6 @@ static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Receive(Mat,PetscInt,PetscInt**
 extern PetscErrorCode MatGetRow_MPIBAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
 extern PetscErrorCode MatRestoreRow_MPIBAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
 
-#undef __FUNCT__
-#define __FUNCT__ "MatIncreaseOverlap_MPIBAIJ"
 PetscErrorCode MatIncreaseOverlap_MPIBAIJ(Mat C,PetscInt imax,IS is[],PetscInt ov)
 {
   PetscErrorCode ierr;
@@ -57,8 +55,6 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ(Mat C,PetscInt imax,IS is[],PetscInt o
   nrqs - no of requests sent (or to be sent out)
   nrqr - no of requests recieved (which have to be or which have been processed
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatIncreaseOverlap_MPIBAIJ_Once"
 PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[])
 {
   Mat_MPIBAIJ    *c = (Mat_MPIBAIJ*)C->data;
@@ -327,8 +323,6 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatIncreaseOverlap_MPIBAIJ_Local"
 /*
    MatIncreaseOverlap_MPIBAIJ_Local - Called by MatincreaseOverlap, to do
        the work on the local processor.
@@ -385,8 +379,6 @@ static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Local(Mat C,PetscInt imax,Petsc
   }
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "MatIncreaseOverlap_MPIBAIJ_Receive"
 /*
       MatIncreaseOverlap_MPIBAIJ_Receive - Process the recieved messages,
          and return the output
@@ -523,8 +515,6 @@ static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Receive(Mat C,PetscInt nrqr,Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetSubMatrices_MPIBAIJ"
 PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[])
 {
   IS             *isrow_new,*iscol_new;
@@ -583,8 +573,6 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[],c
 }
 
 #if defined(PETSC_USE_CTABLE)
-#undef __FUNCT__
-#define __FUNCT__ "PetscGetProc"
 PetscErrorCode PetscGetProc(const PetscInt row, const PetscMPIInt size, const PetscInt proc_gnode[], PetscMPIInt *rank)
 {
   PetscInt       nGlobalNd = proc_gnode[size];
@@ -605,8 +593,6 @@ PetscErrorCode PetscGetProc(const PetscInt row, const PetscMPIInt size, const Pe
 
 /* -------------------------------------------------------------------------*/
 /* This code is used for BAIJ and SBAIJ matrices (unfortunate dependency) */
-#undef __FUNCT__
-#define __FUNCT__ "MatGetSubMatrices_MPIBAIJ_local"
 PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,PetscBool *allrows,PetscBool *allcolumns,Mat *submats)
 {
   Mat_MPIBAIJ    *c = (Mat_MPIBAIJ*)C->data;

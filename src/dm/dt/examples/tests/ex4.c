@@ -3,8 +3,6 @@ static char help[] = "Tests dual space symmetry.\n\n";
 #include <petscfe.h>
 #include <petscdmplex.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "CheckSymmetry"
 static PetscErrorCode CheckSymmetry(PetscInt dim, PetscInt order, PetscBool tensor)
 {
   DM                dm;
@@ -114,8 +112,6 @@ static PetscErrorCode CheckSymmetry(PetscInt dim, PetscInt order, PetscBool tens
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   PetscInt       dim, order, tensor;

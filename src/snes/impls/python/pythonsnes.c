@@ -1,7 +1,5 @@
 #include <petsc/private/snesimpl.h>          /*I "petscsnes.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESPythonSetType"
 /*@C
    SNESPythonSetType - Initalize a SNES object implemented in Python.
 

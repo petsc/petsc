@@ -13,8 +13,6 @@ static PetscErrorCode    KSPDGMRESGetNewVectors(KSP,PetscInt);
 static PetscErrorCode    KSPDGMRESUpdateHessenberg(KSP,PetscInt,PetscBool,PetscReal*);
 static PetscErrorCode    KSPDGMRESBuildSoln(PetscScalar*,Vec,Vec,KSP,PetscInt);
 
-#undef __FUNCT__
-#define __FUNCT__  "KSPDGMRESSetEigen"
 PetscErrorCode  KSPDGMRESSetEigen(KSP ksp,PetscInt nb_eig)
 {
   PetscErrorCode ierr;
@@ -23,8 +21,6 @@ PetscErrorCode  KSPDGMRESSetEigen(KSP ksp,PetscInt nb_eig)
   ierr = PetscTryMethod((ksp),"KSPDGMRESSetEigen_C",(KSP,PetscInt),(ksp,nb_eig));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__  "KSPDGMRESSetMaxEigen"
 PetscErrorCode  KSPDGMRESSetMaxEigen(KSP ksp,PetscInt max_neig)
 {
   PetscErrorCode ierr;
@@ -33,8 +29,6 @@ PetscErrorCode  KSPDGMRESSetMaxEigen(KSP ksp,PetscInt max_neig)
   ierr = PetscTryMethod((ksp),"KSPDGMRESSetMaxEigen_C",(KSP,PetscInt),(ksp,max_neig));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__  "KSPDGMRESForce"
 PetscErrorCode  KSPDGMRESForce(KSP ksp,PetscBool force)
 {
   PetscErrorCode ierr;
@@ -43,8 +37,6 @@ PetscErrorCode  KSPDGMRESForce(KSP ksp,PetscBool force)
   ierr = PetscTryMethod((ksp),"KSPDGMRESForce_C",(KSP,PetscBool),(ksp,force));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__  "KSPDGMRESSetMaxEigen"
 PetscErrorCode  KSPDGMRESSetRatio(KSP ksp,PetscReal ratio)
 {
   PetscErrorCode ierr;
@@ -53,8 +45,6 @@ PetscErrorCode  KSPDGMRESSetRatio(KSP ksp,PetscReal ratio)
   ierr = PetscTryMethod((ksp),"KSPDGMRESSetRatio_C",(KSP,PetscReal),(ksp,ratio));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__  "KSPDGMRESComputeSchurForm"
 PetscErrorCode  KSPDGMRESComputeSchurForm(KSP ksp,PetscInt *neig)
 {
   PetscErrorCode ierr;
@@ -63,8 +53,6 @@ PetscErrorCode  KSPDGMRESComputeSchurForm(KSP ksp,PetscInt *neig)
   ierr = PetscUseMethod((ksp),"KSPDGMRESComputeSchurForm_C",(KSP, PetscInt*),(ksp, neig));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__  "KSPDGMRESComputeDeflationData"
 PetscErrorCode  KSPDGMRESComputeDeflationData(KSP ksp,PetscInt *curneigh)
 {
   PetscErrorCode ierr;
@@ -73,8 +61,6 @@ PetscErrorCode  KSPDGMRESComputeDeflationData(KSP ksp,PetscInt *curneigh)
   ierr = PetscUseMethod((ksp),"KSPDGMRESComputeDeflationData_C",(KSP,PetscInt*),(ksp,curneigh));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__  "KSPDGMRESApplyDeflation"
 PetscErrorCode  KSPDGMRESApplyDeflation(KSP ksp, Vec x, Vec y)
 {
   PetscErrorCode ierr;
@@ -84,8 +70,6 @@ PetscErrorCode  KSPDGMRESApplyDeflation(KSP ksp, Vec x, Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPDGMRESImproveEig"
 PetscErrorCode  KSPDGMRESImproveEig(KSP ksp, PetscInt neig)
 {
   PetscErrorCode ierr;
@@ -95,8 +79,6 @@ PetscErrorCode  KSPDGMRESImproveEig(KSP ksp, PetscInt neig)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_DGMRES"
 PetscErrorCode  KSPSetUp_DGMRES(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -151,8 +133,6 @@ PetscErrorCode  KSPSetUp_DGMRES(KSP ksp)
  On entry, the value in vector VEC_VV(0) should be the initial residual
  (this allows shortcuts where the initial preconditioned residual is 0).
  */
-#undef __FUNCT__
-#define __FUNCT__ "KSPDGMRESCycle"
 PetscErrorCode KSPDGMRESCycle(PetscInt *itcount,KSP ksp)
 {
   KSP_DGMRES     *dgmres = (KSP_DGMRES*)(ksp->data);
@@ -274,8 +254,6 @@ PetscErrorCode KSPDGMRESCycle(PetscInt *itcount,KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_DGMRES"
 PetscErrorCode KSPSolve_DGMRES(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -319,8 +297,6 @@ PetscErrorCode KSPSolve_DGMRES(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPDestroy_DGMRES"
 PetscErrorCode KSPDestroy_DGMRES(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -373,8 +349,6 @@ PetscErrorCode KSPDestroy_DGMRES(KSP ksp)
 
  This is an internal routine that knows about the GMRES internals.
  */
-#undef __FUNCT__
-#define __FUNCT__ "KSPDGMRESBuildSoln"
 static PetscErrorCode KSPDGMRESBuildSoln(PetscScalar *nrs,Vec vs,Vec vdest,KSP ksp,PetscInt it)
 {
   PetscScalar    tt;
@@ -423,8 +397,6 @@ static PetscErrorCode KSPDGMRESBuildSoln(PetscScalar *nrs,Vec vs,Vec vdest,KSP k
 /*
  Do the scalar work for the orthogonalization.  Return new residual norm.
  */
-#undef __FUNCT__
-#define __FUNCT__ "KSPDGMRESUpdateHessenberg"
 static PetscErrorCode KSPDGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool hapend,PetscReal *res)
 {
   PetscScalar *hh,*cc,*ss,tt;
@@ -478,8 +450,6 @@ static PetscErrorCode KSPDGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool ha
 /*
  This routine allocates more work vectors, starting from VEC_VV(it).
  */
-#undef __FUNCT__
-#define __FUNCT__ "KSPDGMRESGetNewVectors"
 static PetscErrorCode KSPDGMRESGetNewVectors(KSP ksp,PetscInt it)
 {
   KSP_DGMRES     *dgmres = (KSP_DGMRES*) ksp->data;
@@ -508,8 +478,6 @@ static PetscErrorCode KSPDGMRESGetNewVectors(KSP ksp,PetscInt it)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPBuildSolution_DGMRES"
 PetscErrorCode KSPBuildSolution_DGMRES(KSP ksp,Vec ptr,Vec *result)
 {
   KSP_DGMRES     *dgmres = (KSP_DGMRES*) ksp->data;
@@ -534,8 +502,6 @@ PetscErrorCode KSPBuildSolution_DGMRES(KSP ksp,Vec ptr,Vec *result)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPView_DGMRES"
 PetscErrorCode KSPView_DGMRES(KSP ksp,PetscViewer viewer)
 {
   KSP_DGMRES     *dgmres = (KSP_DGMRES*) ksp->data;
@@ -564,8 +530,6 @@ PetscErrorCode KSPView_DGMRES(KSP ksp,PetscViewer viewer)
 
 /* New DGMRES functions */
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPDGMRESSetEigen_DGMRES"
 PetscErrorCode  KSPDGMRESSetEigen_DGMRES(KSP ksp,PetscInt neig)
 {
   KSP_DGMRES *dgmres = (KSP_DGMRES*) ksp->data;
@@ -576,8 +540,6 @@ PetscErrorCode  KSPDGMRESSetEigen_DGMRES(KSP ksp,PetscInt neig)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPDGMRESSetMaxEigen_DGMRES"
 static PetscErrorCode  KSPDGMRESSetMaxEigen_DGMRES(KSP ksp,PetscInt max_neig)
 {
   KSP_DGMRES *dgmres = (KSP_DGMRES*) ksp->data;
@@ -588,8 +550,6 @@ static PetscErrorCode  KSPDGMRESSetMaxEigen_DGMRES(KSP ksp,PetscInt max_neig)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPDGMRESSetRatio_DGMRES"
 static PetscErrorCode  KSPDGMRESSetRatio_DGMRES(KSP ksp,PetscReal ratio)
 {
   KSP_DGMRES *dgmres = (KSP_DGMRES*) ksp->data;
@@ -600,8 +560,6 @@ static PetscErrorCode  KSPDGMRESSetRatio_DGMRES(KSP ksp,PetscReal ratio)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPDGMRESForce_DGMRES"
 static PetscErrorCode  KSPDGMRESForce_DGMRES(KSP ksp,PetscBool force)
 {
   KSP_DGMRES *dgmres = (KSP_DGMRES*) ksp->data;
@@ -613,8 +571,6 @@ static PetscErrorCode  KSPDGMRESForce_DGMRES(KSP ksp,PetscBool force)
 
 extern PetscErrorCode KSPSetFromOptions_GMRES(PetscOptionItems *PetscOptionsObject,KSP);
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetFromOptions_DGMRES"
 PetscErrorCode KSPSetFromOptions_DGMRES(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
@@ -641,8 +597,6 @@ PetscErrorCode KSPSetFromOptions_DGMRES(PetscOptionItems *PetscOptionsObject,KSP
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPDGMRESComputeDeflationData_DGMRES"
 PetscErrorCode  KSPDGMRESComputeDeflationData_DGMRES(KSP ksp, PetscInt *ExtrNeig)
 {
   KSP_DGMRES     *dgmres = (KSP_DGMRES*) ksp->data;
@@ -786,8 +740,6 @@ PetscErrorCode  KSPDGMRESComputeDeflationData_DGMRES(KSP ksp, PetscInt *ExtrNeig
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPDGMRESComputeSchurForm_DGMRES"
 PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
 {
   KSP_DGMRES     *dgmres = (KSP_DGMRES*) ksp->data;
@@ -936,8 +888,6 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPDGMRESApplyDeflation_DGMRES"
 PetscErrorCode  KSPDGMRESApplyDeflation_DGMRES(KSP ksp, Vec x, Vec y)
 {
   KSP_DGMRES     *dgmres = (KSP_DGMRES*) ksp->data;
@@ -1003,8 +953,6 @@ PetscErrorCode  KSPDGMRESApplyDeflation_DGMRES(KSP ksp, Vec x, Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPDGMRESImproveEig_DGMRES"
 static PetscErrorCode  KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
 {
   KSP_DGMRES   *dgmres = (KSP_DGMRES*) ksp->data;
@@ -1241,8 +1189,6 @@ static PetscErrorCode  KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
 
  M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_DGMRES"
 PETSC_EXTERN PetscErrorCode KSPCreate_DGMRES(KSP ksp)
 {
   KSP_DGMRES     *dgmres;

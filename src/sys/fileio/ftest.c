@@ -21,8 +21,6 @@
 
 #if defined(PETSC_HAVE__ACCESS) || defined(PETSC_HAVE_ACCESS)
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscTestOwnership"
 static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t fgid, int fmode, PetscBool  *flg)
 {
   int            m = R_OK;
@@ -50,8 +48,6 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
 
 #else  /* PETSC_HAVE_ACCESS or PETSC_HAVE__ACCESS */
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscTestOwnership"
 static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t fgid, int fmode, PetscBool  *flg)
 {
   uid_t          uid;
@@ -111,8 +107,6 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
 
 #endif /* PETSC_HAVE_ACCESS */
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscGetFileStat"
 static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t *fileGid, int *fileMode,PetscBool  *exists)
 {
   struct stat    statbuf;
@@ -142,8 +136,6 @@ static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscTestFile"
 /*@C
    PetscTestFile - checks for the existence of a file
 
@@ -181,8 +173,6 @@ PetscErrorCode  PetscTestFile(const char fname[], char mode, PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscTestDirectory"
 /*@C
    PetscTestDirectory - checks for the existence of a directory
 
@@ -221,8 +211,6 @@ PetscErrorCode  PetscTestDirectory(const char dirname[],char mode,PetscBool  *fl
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLs"
 /*@C
    PetscLs - produce a listing of the files in a directory
 

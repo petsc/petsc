@@ -148,8 +148,6 @@ typedef ValueArray::iterator ValueArrayIterator;
 
 // Ne: Number of elements
 // Nl: Number of dof per element
-#undef __FUNCT__
-#define __FUNCT__ "MatSetValuesBatch_SeqAIJCUSP"
 PetscErrorCode MatSetValuesBatch_SeqAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, PetscInt *elemRows, const PetscScalar *elemMats)
 {
   size_t         N  = Ne * Nl;

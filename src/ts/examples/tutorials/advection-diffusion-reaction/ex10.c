@@ -71,8 +71,6 @@ extern PetscErrorCode MyMonitorSetUp(TS);
 extern PetscErrorCode GetDfill(PetscInt*,void*);
 extern PetscErrorCode MyLoadData(MPI_Comm,const char*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   TS             ts;                  /* nonlinear solver */
@@ -180,8 +178,6 @@ int main(int argc,char **argv)
    cHeV[i] points to the beginning of each row of HeV[] with V indexing starting a 1.
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "cHeVCreate"
 PetscErrorCode cHeVCreate(PetscReal ***cHeV)
 {
   PetscErrorCode ierr;
@@ -192,8 +188,6 @@ PetscErrorCode cHeVCreate(PetscReal ***cHeV)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "cHeVInitialize"
 PetscErrorCode cHeVInitialize(const PetscScalar *start,PetscReal **cHeV)
 {
   PetscInt       i;
@@ -206,8 +200,6 @@ PetscErrorCode cHeVInitialize(const PetscScalar *start,PetscReal **cHeV)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "cHeVDestroy"
 PetscErrorCode cHeVDestroy(PetscReal **cHeV)
 {
   PetscErrorCode ierr;
@@ -219,8 +211,6 @@ PetscErrorCode cHeVDestroy(PetscReal **cHeV)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "InitialConditions"
 PetscErrorCode InitialConditions(DM da,Vec C)
 {
   PetscErrorCode ierr;
@@ -290,8 +280,6 @@ PetscErrorCode InitialConditions(DM da,Vec C)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "RHSFunction"
 /*
    RHSFunction - Evaluates nonlinear function that defines the ODE
 
@@ -539,8 +527,6 @@ PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec C,Vec F,void *ptr)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "RHSJacobian"
 /*
     Compute the Jacobian entries based on IFuction() and insert them into the matrix
 */
@@ -929,8 +915,6 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat A,Mat J,void *ptr)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GetDfill"
 /*
     Determines the nonzero structure within the diagonal blocks of the Jacobian that represent coupling resulting from reactions and
     dissasociations of the clusters
@@ -1194,8 +1178,6 @@ typedef struct {
   PetscViewer Heviewer,Vviewer,HeVviewer;
 } MyMonitorCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "MyMonitorMonitor"
 /*
    Display He as a function of space and cluster size for each time step
 */
@@ -1219,8 +1201,6 @@ PetscErrorCode MyMonitorMonitor(TS ts,PetscInt timestep,PetscReal time,Vec solut
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MyMonitorDestroy"
 /*
    Frees all data structures associated with the monitor
 */
@@ -1248,8 +1228,6 @@ PetscErrorCode MyMonitorDestroy(void **ictx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MyMonitorSetUp"
 /*
    Sets up a monitor that will display He as a function of space and cluster size for each time step
 */
@@ -1362,8 +1340,6 @@ PetscErrorCode MyMonitorSetUp(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MyLoadData"
 PetscErrorCode MyLoadData(MPI_Comm comm,const char *filename)
 {
   PetscErrorCode ierr;

@@ -35,8 +35,6 @@ Evolve the Cahn-Hillard equations:
 extern PetscErrorCode FormFunction(TS,PetscReal,Vec,Vec,Vec,void*),FormInitialSolution(DM,Vec,PetscReal);
 typedef struct {PetscBool cahnhillard;PetscReal kappa;PetscInt energy;PetscReal tol;PetscReal theta;PetscReal theta_c;} UserCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   TS             ts;                           /* nonlinear solver */
@@ -184,8 +182,6 @@ int main(int argc,char **argv)
 
 typedef struct {PetscScalar w,u;} Field;
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormFunction"
 /*
    FormFunction - Evaluates nonlinear function, F(x).
 
@@ -285,8 +281,6 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec Xdot,Vec F,void *ptr
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormInitialSolution"
 PetscErrorCode FormInitialSolution(DM da,Vec X,PetscReal kappa)
 {
   PetscErrorCode ierr;

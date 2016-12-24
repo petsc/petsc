@@ -4,8 +4,6 @@
 */
 #include <petscsys.h>  /*I   "petscsys.h"    I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDataTypeToMPIDataType"
 /*@C
      PetscDataTypeToMPIDataType - Converts the PETSc name of a datatype to its MPI name.
 
@@ -51,8 +49,6 @@ PetscErrorCode  PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype *mty
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMPIDataTypeToPetscDataType"
 /*@C
      PetscMPIDataTypeToPetscDataType Finds the PETSc name of a datatype from its MPI name
 
@@ -113,8 +109,6 @@ typedef enum {PETSC_INT_SIZE         = sizeof(PetscInt),
 #endif
              } PetscDataTypeSize;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDataTypeGetSize"
 /*@C
      PetscDataTypeGetSize - Gets the size (in bytes) of a PETSc datatype
 
@@ -159,8 +153,6 @@ PetscErrorCode  PetscDataTypeGetSize(PetscDataType ptype,size_t *size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDataTypeFromString"
 /*@
      PetscDataTypeFromString - Gets the enum value of a PETSc datatype represented as a string
 

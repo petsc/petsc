@@ -1,7 +1,5 @@
 #include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetSizes"
 /*@
   DMDASetSizes - Sets the global sizes
 
@@ -34,8 +32,6 @@ PetscErrorCode  DMDASetSizes(DM da, PetscInt M, PetscInt N, PetscInt P)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetNumProcs"
 /*@
   DMDASetNumProcs - Sets the number of processes in each dimension
 
@@ -80,8 +76,6 @@ PetscErrorCode  DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetBoundaryType"
 /*@
   DMDASetBoundaryType - Sets the type of ghost nodes on domain boundaries.
 
@@ -112,8 +106,6 @@ PetscErrorCode  DMDASetBoundaryType(DM da,DMBoundaryType bx,DMBoundaryType by,DM
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetDof"
 /*@
   DMDASetDof - Sets the number of degrees of freedom per vertex
 
@@ -141,8 +133,6 @@ PetscErrorCode  DMDASetDof(DM da, PetscInt dof)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetDof"
 /*@
   DMDAGetDof - Gets the number of degrees of freedom per vertex
 
@@ -170,8 +160,6 @@ PetscErrorCode DMDAGetDof(DM da, PetscInt *dof)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetOverlap"
 /*@
   DMDAGetOverlap - Gets the size of the per-processor overlap.
 
@@ -202,8 +190,6 @@ PetscErrorCode  DMDAGetOverlap(DM da,PetscInt *x,PetscInt *y,PetscInt *z)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetOverlap"
 /*@
   DMDASetOverlap - Sets the size of the per-processor overlap.
 
@@ -236,8 +222,6 @@ PetscErrorCode  DMDASetOverlap(DM da,PetscInt x,PetscInt y,PetscInt z)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetNumLocalSubDomains"
 /*@
   DMDAGetNumLocalSubDomains - Gets the number of local subdomains created upon decomposition.
 
@@ -264,8 +248,6 @@ PetscErrorCode  DMDAGetNumLocalSubDomains(DM da,PetscInt *Nsub)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetNumLocalSubDomains"
 /*@
   DMDASetNumLocalSubDomains - Sets the number of local subdomains created upon decomposition.
 
@@ -291,8 +273,6 @@ PetscErrorCode  DMDASetNumLocalSubDomains(DM da,PetscInt Nsub)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetOffset"
 /*@
   DMDASetOffset - Sets the index offset of the DA.
 
@@ -338,8 +318,6 @@ PetscErrorCode  DMDASetOffset(DM da, PetscInt xo, PetscInt yo, PetscInt zo, Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetOffset"
 /*@
   DMDAGetOffset - Gets the index offset of the DA.
 
@@ -376,8 +354,6 @@ PetscErrorCode  DMDAGetOffset(DM da,PetscInt *xo,PetscInt *yo,PetscInt *zo,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetNonOverlappingRegion"
 /*@
   DMDAGetNonOverlappingRegion - Gets the indices of the nonoverlapping region of a subdomain DM.
 
@@ -415,8 +391,6 @@ PetscErrorCode  DMDAGetNonOverlappingRegion(DM da, PetscInt *xs, PetscInt *ys, P
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetNonOverlappingRegion"
 /*@
   DMDASetNonOverlappingRegion - Sets the indices of the nonoverlapping region of a subdomain DM.
 
@@ -458,8 +432,6 @@ PetscErrorCode  DMDASetNonOverlappingRegion(DM da, PetscInt xs, PetscInt ys, Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetStencilType"
 /*@
   DMDASetStencilType - Sets the type of the communication stencil
 
@@ -486,8 +458,6 @@ PetscErrorCode  DMDASetStencilType(DM da, DMDAStencilType stype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetStencilType"
 /*@
   DMDAGetStencilType - Gets the type of the communication stencil
 
@@ -515,8 +485,6 @@ PetscErrorCode DMDAGetStencilType(DM da, DMDAStencilType *stype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetStencilWidth"
 /*@
   DMDASetStencilWidth - Sets the width of the communication stencil
 
@@ -543,8 +511,6 @@ PetscErrorCode  DMDASetStencilWidth(DM da, PetscInt width)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetStencilWidth"
 /*@
   DMDAGetStencilWidth - Gets the width of the communication stencil
 
@@ -572,8 +538,6 @@ PetscErrorCode DMDAGetStencilWidth(DM da, PetscInt *width)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDACheckOwnershipRanges_Private"
 static PetscErrorCode DMDACheckOwnershipRanges_Private(DM da,PetscInt M,PetscInt m,const PetscInt lx[])
 {
   PetscInt i,sum;
@@ -585,8 +549,6 @@ static PetscErrorCode DMDACheckOwnershipRanges_Private(DM da,PetscInt M,PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetOwnershipRanges"
 /*@
   DMDASetOwnershipRanges - Sets the number of nodes in each direction on each process
 
@@ -640,8 +602,6 @@ PetscErrorCode  DMDASetOwnershipRanges(DM da, const PetscInt lx[], const PetscIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetInterpolationType"
 /*@
        DMDASetInterpolationType - Sets the type of interpolation that will be
           returned by DMCreateInterpolation()
@@ -671,8 +631,6 @@ PetscErrorCode  DMDASetInterpolationType(DM da,DMDAInterpolationType ctype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetInterpolationType"
 /*@
        DMDAGetInterpolationType - Gets the type of interpolation that will be
           used by DMCreateInterpolation()
@@ -702,8 +660,6 @@ PetscErrorCode  DMDAGetInterpolationType(DM da,DMDAInterpolationType *ctype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetNeighbors"
 /*@C
       DMDAGetNeighbors - Gets an array containing the MPI rank of all the current
         processes neighbors.
@@ -736,8 +692,6 @@ PetscErrorCode  DMDAGetNeighbors(DM da,const PetscMPIInt *ranks[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetOwnershipRanges"
 /*@C
       DMDAGetOwnershipRanges - Gets the ranges of indices in the x, y and z direction that are owned by each process
 
@@ -777,8 +731,6 @@ PetscErrorCode  DMDAGetOwnershipRanges(DM da,const PetscInt *lx[],const PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetRefinementFactor"
 /*@
      DMDASetRefinementFactor - Set the ratios that the DMDA grid is refined
 
@@ -817,8 +769,6 @@ PetscErrorCode  DMDASetRefinementFactor(DM da, PetscInt refine_x, PetscInt refin
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetRefinementFactor"
 /*@C
      DMDAGetRefinementFactor - Gets the ratios that the DMDA grid is refined
 
@@ -850,8 +800,6 @@ PetscErrorCode  DMDAGetRefinementFactor(DM da, PetscInt *refine_x, PetscInt *ref
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetGetMatrix"
 /*@C
      DMDASetGetMatrix - Sets the routine used by the DMDA to allocate a matrix.
 
@@ -876,8 +824,6 @@ PetscErrorCode  DMDASetGetMatrix(DM da,PetscErrorCode (*f)(DM, Mat*))
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDARefineOwnershipRanges"
 /*
   Creates "balanced" ownership ranges after refinement, constrained by the need for the
   fine grid boundaries to fall within one stencil width of the coarse partition.
@@ -920,8 +866,6 @@ static PetscErrorCode DMDARefineOwnershipRanges(DM da,PetscBool periodic,PetscIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDACoarsenOwnershipRanges"
 /*
   Creates "balanced" ownership ranges after coarsening, constrained by the need for the
   fine grid boundaries to fall within one stencil width of the coarse partition.
@@ -963,8 +907,6 @@ static PetscErrorCode DMDACoarsenOwnershipRanges(DM da,PetscBool periodic,PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRefine_DA"
 PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
 {
   PetscErrorCode ierr;
@@ -1127,8 +1069,6 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCoarsen_DA"
 PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
 {
   PetscErrorCode ierr;
@@ -1293,8 +1233,6 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRefineHierarchy_DA"
 PetscErrorCode  DMRefineHierarchy_DA(DM da,PetscInt nlevels,DM daf[])
 {
   PetscErrorCode ierr;
@@ -1328,8 +1266,6 @@ PetscErrorCode  DMRefineHierarchy_DA(DM da,PetscInt nlevels,DM daf[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCoarsenHierarchy_DA"
 PetscErrorCode  DMCoarsenHierarchy_DA(DM da,PetscInt nlevels,DM dac[])
 {
   PetscErrorCode ierr;

@@ -4,8 +4,6 @@ static char help[] = "Test MatMatMult() and MatPtAP() for AIJ matrices.\n\n";
 
 extern PetscErrorCode testPTAPRectangular(void);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   Mat            A,B,C,D;
@@ -121,8 +119,6 @@ int main(int argc,char **argv)
 
 /* a test contributed by Tobias Neckel <neckel@in.tum.de>, 02 Jul 2008 */
 #define PETSc_CHKERRQ CHKERRQ
-#undef __FUNCT__
-#define __FUNCT__ "testPTAPRectangular"
 PetscErrorCode testPTAPRectangular(void)
 {
 

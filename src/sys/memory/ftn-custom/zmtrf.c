@@ -16,8 +16,6 @@
 #define petscmemorysetgetmaximumusage_ petscmemorysetgetmaximumusage
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFixSlashN"
 static PetscErrorCode PetscFixSlashN(const char *in, char **out)
 {
   PetscErrorCode ierr;

@@ -120,15 +120,11 @@ static struct {
   PetscFortranCallbackId testdestroy;
 } _cb;
 
-#undef __FUNCT__
-#define __FUNCT__ "ourmonitor"
 static PetscErrorCode ourmonitor(KSP ksp,PetscInt i,PetscReal d,void *ctx)
 {
   PetscObjectUseFortranCallback(ksp,_cb.monitor,(KSP*,PetscInt*,PetscReal*,void*,PetscErrorCode*),(&ksp,&i,&d,_ctx,&ierr));
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ourdestroy"
 static PetscErrorCode ourdestroy(void **ctx)
 {
   KSP ksp = (KSP)*ctx;
@@ -136,15 +132,11 @@ static PetscErrorCode ourdestroy(void **ctx)
 }
 
 /* These are not extern C because they are passed into non-extern C user level functions */
-#undef __FUNCT__
-#define __FUNCT__ "ourtest"
 static PetscErrorCode ourtest(KSP ksp,PetscInt i,PetscReal d,KSPConvergedReason *reason,void *ctx)
 {
   PetscObjectUseFortranCallback(ksp,_cb.test,(KSP*,PetscInt*,PetscReal*,KSPConvergedReason*,void*,PetscErrorCode*),(&ksp,&i,&d,reason,_ctx,&ierr));
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ourtestdestroy"
 static PetscErrorCode ourtestdestroy(void *ctx)
 {
   KSP ksp = (KSP)ctx;

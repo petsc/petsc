@@ -5,15 +5,6 @@
 #define __PETSCERROR_H
 
 /*
-   Defines the function where the compiled source is located; used
-   in printing error messages. This is defined here in case the user
-   does not declare it.
-*/
-#if !defined(__FUNCT__)
-#define __FUNCT__ "User provided function"
-#endif
-
-/*
      These are the generic error codes. These error codes are used
      many different places in the PETSc source code. The string versions are
      at src/sys/error/err.c any changes here must also be made there
@@ -703,7 +694,6 @@ PETSC_STATIC_INLINE PetscBool PetscStackActive(void)
 M*/
 #define PetscFunctionBegin do {                                        \
     PetscStackPushNoCheck(PETSC_FUNCTION_NAME,PETSC_TRUE,PETSC_FALSE); \
-    PetscCheck__FUNCT__();                                             \
     PetscRegister__FUNCT__();                                          \
   } while (0)
 
@@ -735,7 +725,6 @@ M*/
 M*/
 #define PetscFunctionBeginHot do {                                     \
     PetscStackPushNoCheck(PETSC_FUNCTION_NAME,PETSC_TRUE,PETSC_TRUE);  \
-    PetscCheck__FUNCT__();                                             \
     PetscRegister__FUNCT__();                                          \
   } while (0)
 
@@ -772,7 +761,6 @@ M*/
 #define PetscFunctionBeginUser                                          \
   do {                                                                  \
     PetscStackPushNoCheck(PETSC_FUNCTION_NAME,PETSC_FALSE,PETSC_FALSE); \
-    PetscCheck__FUNCT__();                                              \
     PetscRegister__FUNCT__();                                           \
   } while (0)
 
@@ -787,20 +775,12 @@ M*/
 #define PetscRegister__FUNCT__() do { \
   static PetscBool __chked = PETSC_FALSE; \
   if (!__chked) {\
-  void *ptr; PetscDLSym(NULL,__FUNCT__,&ptr);\
+  void *ptr; PetscDLSym(NULL,PETSC_FUNCTION_NAME,&ptr);\
   __chked = PETSC_TRUE;\
   }} while (0)
 #else
 #define PetscRegister__FUNCT__()
 #endif
-
-#define PetscCheck__FUNCT__() do { PetscBool _sc1,_sc2;                  \
-    PetscStrcmpNoError(PETSC_FUNCTION_NAME,__FUNCT__,&_sc1);\
-    PetscStrcmpNoError(__FUNCT__,"User provided function",&_sc2);\
-    if (!_sc1 && !_sc2) { \
-      printf("%s:%d: __FUNCT__=\"%s\" does not agree with %s=\"%s\"\n",__FILE__,__LINE__,__FUNCT__,PetscStringize(PETSC_FUNCTION_NAME),PETSC_FUNCTION_NAME); \
-    }                                                                   \
-  } while (0)
 
 #define PetscStackPush(n) \
   do {                                                                  \

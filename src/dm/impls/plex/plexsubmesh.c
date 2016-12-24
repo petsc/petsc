@@ -2,8 +2,6 @@
 #include <petsc/private/dmlabelimpl.h>   /*I      "petscdmlabel.h"   I*/
 #include <petscsf.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexMarkBoundaryFaces_Internal"
 PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt cellHeight, DMLabel label)
 {
   PetscInt       fStart, fEnd, f;
@@ -21,8 +19,6 @@ PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt cellHeight, DMLa
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexMarkBoundaryFaces"
 /*@
   DMPlexMarkBoundaryFaces - Mark all faces on the boundary
 
@@ -47,8 +43,6 @@ PetscErrorCode DMPlexMarkBoundaryFaces(DM dm, DMLabel label)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexLabelComplete_Internal"
 PetscErrorCode DMPlexLabelComplete_Internal(DM dm, DMLabel label, PetscBool completeCells)
 {
   IS              valueIS;
@@ -91,8 +85,6 @@ PetscErrorCode DMPlexLabelComplete_Internal(DM dm, DMLabel label, PetscBool comp
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexLabelComplete"
 /*@
   DMPlexLabelComplete - Starting with a label marking points on a surface, we add the transitive closure to the surface
 
@@ -116,8 +108,6 @@ PetscErrorCode DMPlexLabelComplete(DM dm, DMLabel label)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexLabelAddCells"
 /*@
   DMPlexLabelAddCells - Starting with a label marking faces on a surface, we add a cell for each face
 
@@ -175,8 +165,6 @@ PetscErrorCode DMPlexLabelAddCells(DM dm, DMLabel label)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexLabelClearCells"
 /*@
   DMPlexLabelClearCells - Remove cells from a label
 
@@ -230,8 +218,6 @@ PetscErrorCode DMPlexLabelClearCells(DM dm, DMLabel label)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexShiftPointSetUp_Internal"
 /* take (oldEnd, added) pairs, ordered by height and convert them to (oldstart, newstart) pairs, ordered by ascending
  * index (skipping first, which is (0,0)) */
 PETSC_STATIC_INLINE PetscErrorCode DMPlexShiftPointSetUp_Internal(PetscInt depth, PetscInt depthShift[])
@@ -271,8 +257,6 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexShiftPointSetUp_Internal(PetscInt depth
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexShiftPoint_Internal"
 /* depthShift is a list of (old, new) pairs */
 PETSC_STATIC_INLINE PetscInt DMPlexShiftPoint_Internal(PetscInt p, PetscInt depth, PetscInt depthShift[])
 {
@@ -286,8 +270,6 @@ PETSC_STATIC_INLINE PetscInt DMPlexShiftPoint_Internal(PetscInt p, PetscInt dept
   return p + newOff;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexShiftPointInverse_Internal"
 /* depthShift is a list of (old, new) pairs */
 PETSC_STATIC_INLINE PetscInt DMPlexShiftPointInverse_Internal(PetscInt p, PetscInt depth, PetscInt depthShift[])
 {
@@ -301,8 +283,6 @@ PETSC_STATIC_INLINE PetscInt DMPlexShiftPointInverse_Internal(PetscInt p, PetscI
   return p + newOff;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexShiftSizes_Internal"
 static PetscErrorCode DMPlexShiftSizes_Internal(DM dm, PetscInt depthShift[], DM dmNew)
 {
   PetscInt       depth = 0, d, pStart, pEnd, p;
@@ -331,8 +311,6 @@ static PetscErrorCode DMPlexShiftSizes_Internal(DM dm, PetscInt depthShift[], DM
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexShiftPoints_Internal"
 static PetscErrorCode DMPlexShiftPoints_Internal(DM dm, PetscInt depthShift[], DM dmNew)
 {
   PetscInt      *newpoints;
@@ -372,8 +350,6 @@ static PetscErrorCode DMPlexShiftPoints_Internal(DM dm, PetscInt depthShift[], D
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexShiftCoordinates_Internal"
 static PetscErrorCode DMPlexShiftCoordinates_Internal(DM dm, PetscInt depthShift[], DM dmNew)
 {
   PetscSection   coordSection, newCoordSection;
@@ -449,8 +425,6 @@ static PetscErrorCode DMPlexShiftCoordinates_Internal(DM dm, PetscInt depthShift
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexShiftSF_Internal"
 static PetscErrorCode DMPlexShiftSF_Internal(DM dm, PetscInt depthShift[], DM dmNew)
 {
   PetscInt           depth = 0;
@@ -488,8 +462,6 @@ static PetscErrorCode DMPlexShiftSF_Internal(DM dm, PetscInt depthShift[], DM dm
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexShiftLabels_Internal"
 static PetscErrorCode DMPlexShiftLabels_Internal(DM dm, PetscInt depthShift[], DM dmNew)
 {
   PetscSF            sfPoint;
@@ -591,8 +563,6 @@ static PetscErrorCode DMPlexShiftLabels_Internal(DM dm, PetscInt depthShift[], D
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexShiftTree_Internal"
 static PetscErrorCode DMPlexShiftTree_Internal(DM dm, PetscInt depthShift[], DM dmNew)
 {
   DM             refTree;
@@ -649,8 +619,6 @@ static PetscErrorCode DMPlexShiftTree_Internal(DM dm, PetscInt depthShift[], DM 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexConstructGhostCells_Internal"
 static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, PetscInt *numGhostCells, DM gdm)
 {
   PetscSF         sf;
@@ -777,8 +745,6 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexConstructGhostCells"
 /*@C
   DMPlexConstructGhostCells - Construct ghost cells which connect to every boundary face
 
@@ -832,8 +798,6 @@ PetscErrorCode DMPlexConstructGhostCells(DM dm, const char labelName[], PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexConstructCohesiveCells_Internal"
 /*
   We are adding three kinds of points here:
     Replicated:     Copies of points which exist in the mesh, such as vertices identified across a fault
@@ -1473,8 +1437,6 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexConstructCohesiveCells"
 /*@C
   DMPlexConstructCohesiveCells - Construct cohesive cells which split the face along an internal interface
 
@@ -1516,8 +1478,6 @@ PetscErrorCode DMPlexConstructCohesiveCells(DM dm, DMLabel label, DM *dmSplit)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GetSurfaceSide_Static"
 /* Returns the side of the surface for a given cell with a face on the surface */
 static PetscErrorCode GetSurfaceSide_Static(DM dm, DM subdm, PetscInt numSubpoints, const PetscInt *subpoints, PetscInt cell, PetscInt face, PetscBool *pos)
 {
@@ -1561,8 +1521,6 @@ static PetscErrorCode GetSurfaceSide_Static(DM dm, DM subdm, PetscInt numSubpoin
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexLabelCohesiveComplete"
 /*@
   DMPlexLabelCohesiveComplete - Starting with a label marking points on an internal surface, we add all other mesh pieces
   to complete the surface
@@ -1883,8 +1841,6 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateHybridMesh"
 /*@C
   DMPlexCreateHybridMesh - Create a mesh with hybrid cells along an internal interface
 
@@ -1927,8 +1883,6 @@ PetscErrorCode DMPlexCreateHybridMesh(DM dm, DMLabel label, DMLabel *hybridLabel
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexMarkSubmesh_Uninterpolated"
 /* Here we need the explicit assumption that:
 
      For any marked cell, the marked vertices constitute a single face
@@ -2017,8 +1971,6 @@ static PetscErrorCode DMPlexMarkSubmesh_Uninterpolated(DM dm, DMLabel vertexLabe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexMarkSubmesh_Interpolated"
 static PetscErrorCode DMPlexMarkSubmesh_Interpolated(DM dm, DMLabel vertexLabel, PetscInt value, DMLabel subpointMap, DM subdm)
 {
   IS               subvertexIS = NULL;
@@ -2102,8 +2054,6 @@ static PetscErrorCode DMPlexMarkSubmesh_Interpolated(DM dm, DMLabel vertexLabel,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexMarkCohesiveSubmesh_Uninterpolated"
 static PetscErrorCode DMPlexMarkCohesiveSubmesh_Uninterpolated(DM dm, PetscBool hasLagrange, const char labelname[], PetscInt value, DMLabel subpointMap, PetscInt *numFaces, PetscInt *nFV, PetscInt *subCells[], DM subdm)
 {
   DMLabel         label = NULL;
@@ -2165,8 +2115,6 @@ static PetscErrorCode DMPlexMarkCohesiveSubmesh_Uninterpolated(DM dm, PetscBool 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexMarkCohesiveSubmesh_Interpolated"
 static PetscErrorCode DMPlexMarkCohesiveSubmesh_Interpolated(DM dm, DMLabel label, PetscInt value, DMLabel subpointMap, DM subdm)
 {
   PetscInt      *pStart, *pEnd;
@@ -2223,8 +2171,6 @@ static PetscErrorCode DMPlexMarkCohesiveSubmesh_Interpolated(DM dm, DMLabel labe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetFaceOrientation"
 PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt numCorners, PetscInt indices[], PetscInt oppositeVertex, PetscInt origVertices[], PetscInt faceVertices[], PetscBool *posOriented)
 {
   MPI_Comm       comm;
@@ -2520,8 +2466,6 @@ PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt numCorner
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetOrientedFace"
 /*
     Given a cell and a face, as a set of vertices,
       return the oriented face, as a set of vertices, in faceVertices
@@ -2557,8 +2501,6 @@ PetscErrorCode DMPlexGetOrientedFace(DM dm, PetscInt cell, PetscInt faceSize, co
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexInsertFace_Internal"
 /*
   DMPlexInsertFace_Internal - Puts a face into the mesh
 
@@ -2660,8 +2602,6 @@ static PetscErrorCode DMPlexInsertFace_Internal(DM dm, DM subdm, PetscInt numFac
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateSubmesh_Uninterpolated"
 static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, DMLabel vertexLabel, PetscInt value, DM subdm)
 {
   MPI_Comm        comm;
@@ -2794,8 +2734,6 @@ static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, DMLabel vertexLa
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexFilterPoint_Internal"
 PETSC_STATIC_INLINE PetscInt DMPlexFilterPoint_Internal(PetscInt point, PetscInt firstSubPoint, PetscInt numSubPoints, const PetscInt subPoints[])
 {
   PetscInt       subPoint;
@@ -2805,8 +2743,6 @@ PETSC_STATIC_INLINE PetscInt DMPlexFilterPoint_Internal(PetscInt point, PetscInt
   return subPoint < 0 ? subPoint : firstSubPoint+subPoint;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateSubmeshGeneric_Interpolated"
 static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel label, PetscInt value, PetscBool isCohesive, PetscInt cellHeight, DM subdm)
 {
   MPI_Comm         comm;
@@ -3055,8 +2991,6 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateSubmesh_Interpolated"
 static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, DMLabel vertexLabel, PetscInt value, DM subdm)
 {
   PetscErrorCode ierr;
@@ -3066,8 +3000,6 @@ static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, DMLabel vertexLabe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateSubmesh"
 /*@
   DMPlexCreateSubmesh - Extract a hypersurface from the mesh using vertices defined by a label
 
@@ -3106,8 +3038,6 @@ PetscErrorCode DMPlexCreateSubmesh(DM dm, DMLabel vertexLabel, PetscInt value, D
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateCohesiveSubmesh_Uninterpolated"
 static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBool hasLagrange, const char label[], PetscInt value, DM subdm)
 {
   MPI_Comm        comm;
@@ -3311,8 +3241,6 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateCohesiveSubmesh_Interpolated"
 static PetscErrorCode DMPlexCreateCohesiveSubmesh_Interpolated(DM dm, const char labelname[], PetscInt value, DM subdm)
 {
   DMLabel        label = NULL;
@@ -3324,8 +3252,6 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Interpolated(DM dm, const char
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateCohesiveSubmesh"
 /*
   DMPlexCreateCohesiveSubmesh - Extract from a mesh with cohesive cells the hypersurface defined by one face of the cells. Optionally, a Label an be given to restrict the cells.
 
@@ -3365,8 +3291,6 @@ PetscErrorCode DMPlexCreateCohesiveSubmesh(DM dm, PetscBool hasLagrange, const c
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexFilter"
 /*@
   DMPlexFilter - Extract a subset of mesh cells defined by a label as a separate mesh
 
@@ -3401,8 +3325,6 @@ PetscErrorCode DMPlexFilter(DM dm, DMLabel cellLabel, PetscInt value, DM *subdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetSubpointMap"
 /*@
   DMPlexGetSubpointMap - Returns a DMLabel with point dimension as values
 
@@ -3425,8 +3347,6 @@ PetscErrorCode DMPlexGetSubpointMap(DM dm, DMLabel *subpointMap)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexSetSubpointMap"
 /* Note: Should normally not be called by the user, since it is set in DMPlexCreateSubmesh() */
 PetscErrorCode DMPlexSetSubpointMap(DM dm, DMLabel subpointMap)
 {
@@ -3443,8 +3363,6 @@ PetscErrorCode DMPlexSetSubpointMap(DM dm, DMLabel subpointMap)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateSubpointIS"
 /*@
   DMPlexCreateSubpointIS - Creates an IS covering the entire subdm chart with the original points as data
 

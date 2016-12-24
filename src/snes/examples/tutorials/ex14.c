@@ -63,8 +63,6 @@ extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 extern PetscErrorCode FormInitialGuess(AppCtx*,Vec);
 extern PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,void*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   SNES           snes;                         /* nonlinear solver */
@@ -202,8 +200,6 @@ int main(int argc,char **argv)
   return ierr;
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormInitialGuess"
 /*
    FormInitialGuess - Forms initial approximation.
 
@@ -272,8 +268,6 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionLocal"
 /*
    FormFunctionLocal - Evaluates nonlinear function, F(x) on a ghosted patch
 
@@ -352,8 +346,6 @@ PetscErrorCode FormFunctionLocal(SNES snes,Vec localX,Vec F,void *ptr)
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormFunction"
 /*
    FormFunction - Evaluates nonlinear function, F(x) on the entire domain
 
@@ -389,8 +381,6 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobian"
 /*
    FormJacobian - Evaluates Jacobian matrix.
 

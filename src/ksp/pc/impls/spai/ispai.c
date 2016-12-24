@@ -58,8 +58,6 @@ typedef struct {
 
 /**********************************************************************/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_SPAI"
 static PetscErrorCode PCSetUp_SPAI(PC pc)
 {
   PC_SPAI        *ispai = (PC_SPAI*)pc->data;
@@ -114,8 +112,6 @@ static PetscErrorCode PCSetUp_SPAI(PC pc)
 
 /**********************************************************************/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_SPAI"
 static PetscErrorCode PCApply_SPAI(PC pc,Vec xx,Vec y)
 {
   PC_SPAI        *ispai = (PC_SPAI*)pc->data;
@@ -129,8 +125,6 @@ static PetscErrorCode PCApply_SPAI(PC pc,Vec xx,Vec y)
 
 /**********************************************************************/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_SPAI"
 static PetscErrorCode PCDestroy_SPAI(PC pc)
 {
   PetscErrorCode ierr;
@@ -145,8 +139,6 @@ static PetscErrorCode PCDestroy_SPAI(PC pc)
 
 /**********************************************************************/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCView_SPAI"
 static PetscErrorCode PCView_SPAI(PC pc,PetscViewer viewer)
 {
   PC_SPAI        *ispai = (PC_SPAI*)pc->data;
@@ -169,8 +161,6 @@ static PetscErrorCode PCView_SPAI(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSPAISetEpsilon_SPAI"
 static PetscErrorCode  PCSPAISetEpsilon_SPAI(PC pc,double epsilon1)
 {
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
@@ -182,8 +172,6 @@ static PetscErrorCode  PCSPAISetEpsilon_SPAI(PC pc,double epsilon1)
 
 /**********************************************************************/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSPAISetNBSteps_SPAI"
 static PetscErrorCode  PCSPAISetNBSteps_SPAI(PC pc,int nbsteps1)
 {
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
@@ -196,8 +184,6 @@ static PetscErrorCode  PCSPAISetNBSteps_SPAI(PC pc,int nbsteps1)
 /**********************************************************************/
 
 /* added 1/7/99 g.h. */
-#undef __FUNCT__
-#define __FUNCT__ "PCSPAISetMax_SPAI"
 static PetscErrorCode  PCSPAISetMax_SPAI(PC pc,int max1)
 {
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
@@ -209,8 +195,6 @@ static PetscErrorCode  PCSPAISetMax_SPAI(PC pc,int max1)
 
 /**********************************************************************/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSPAISetMaxNew_SPAI"
 static PetscErrorCode  PCSPAISetMaxNew_SPAI(PC pc,int maxnew1)
 {
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
@@ -222,8 +206,6 @@ static PetscErrorCode  PCSPAISetMaxNew_SPAI(PC pc,int maxnew1)
 
 /**********************************************************************/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSPAISetBlockSize_SPAI"
 static PetscErrorCode  PCSPAISetBlockSize_SPAI(PC pc,int block_size1)
 {
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
@@ -235,8 +217,6 @@ static PetscErrorCode  PCSPAISetBlockSize_SPAI(PC pc,int block_size1)
 
 /**********************************************************************/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSPAISetCacheSize_SPAI"
 static PetscErrorCode  PCSPAISetCacheSize_SPAI(PC pc,int cache_size)
 {
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
@@ -248,8 +228,6 @@ static PetscErrorCode  PCSPAISetCacheSize_SPAI(PC pc,int cache_size)
 
 /**********************************************************************/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSPAISetVerbose_SPAI"
 static PetscErrorCode  PCSPAISetVerbose_SPAI(PC pc,int verbose)
 {
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
@@ -261,8 +239,6 @@ static PetscErrorCode  PCSPAISetVerbose_SPAI(PC pc,int verbose)
 
 /**********************************************************************/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSPAISetSp_SPAI"
 static PetscErrorCode  PCSPAISetSp_SPAI(PC pc,int sp)
 {
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
@@ -274,8 +250,6 @@ static PetscErrorCode  PCSPAISetSp_SPAI(PC pc,int sp)
 
 /* -------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSPAISetEpsilon"
 /*@
   PCSPAISetEpsilon -- Set the tolerance for the SPAI preconditioner
 
@@ -306,8 +280,6 @@ PetscErrorCode  PCSPAISetEpsilon(PC pc,double epsilon1)
 
 /**********************************************************************/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSPAISetNBSteps"
 /*@
   PCSPAISetNBSteps - set maximum number of improvement steps per row in
         the SPAI preconditioner
@@ -339,8 +311,6 @@ PetscErrorCode  PCSPAISetNBSteps(PC pc,int nbsteps1)
 /**********************************************************************/
 
 /* added 1/7/99 g.h. */
-#undef __FUNCT__
-#define __FUNCT__ "PCSPAISetMax"
 /*@
   PCSPAISetMax - set the size of various working buffers in
         the SPAI preconditioner
@@ -364,8 +334,6 @@ PetscErrorCode  PCSPAISetMax(PC pc,int max1)
 
 /**********************************************************************/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSPAISetMaxNew"
 /*@
   PCSPAISetMaxNew - set maximum number of new nonzero candidates per step
    in SPAI preconditioner
@@ -389,8 +357,6 @@ PetscErrorCode  PCSPAISetMaxNew(PC pc,int maxnew1)
 
 /**********************************************************************/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSPAISetBlockSize"
 /*@
   PCSPAISetBlockSize - set the block size for the SPAI preconditioner
 
@@ -431,8 +397,6 @@ PetscErrorCode  PCSPAISetBlockSize(PC pc,int block_size1)
 
 /**********************************************************************/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSPAISetCacheSize"
 /*@
   PCSPAISetCacheSize - specify cache size in the SPAI preconditioner
 
@@ -460,8 +424,6 @@ PetscErrorCode  PCSPAISetCacheSize(PC pc,int cache_size)
 
 /**********************************************************************/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSPAISetVerbose"
 /*@
   PCSPAISetVerbose - verbosity level for the SPAI preconditioner
 
@@ -486,8 +448,6 @@ PetscErrorCode  PCSPAISetVerbose(PC pc,int verbose)
 
 /**********************************************************************/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSPAISetSp"
 /*@
   PCSPAISetSp - specify a symmetric matrix sparsity pattern in the SPAI preconditioner
 
@@ -520,8 +480,6 @@ PetscErrorCode  PCSPAISetSp(PC pc,int sp)
 
 /**********************************************************************/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_SPAI"
 static PetscErrorCode PCSetFromOptions_SPAI(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_SPAI        *ispai = (PC_SPAI*)pc->data;
@@ -596,8 +554,6 @@ static PetscErrorCode PCSetFromOptions_SPAI(PetscOptionItems *PetscOptionsObject
     PCSPAISetVerbose(), PCSPAISetSp()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_SPAI"
 PETSC_EXTERN PetscErrorCode PCCreate_SPAI(PC pc)
 {
   PC_SPAI        *ispai;
@@ -641,8 +597,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_SPAI(PC pc)
 /*
    Converts from a PETSc matrix to an SPAI matrix
 */
-#undef __FUNCT__
-#define __FUNCT__ "ConvertMatToMatrix"
 PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
 {
   matrix                  *M;
@@ -776,8 +730,6 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
    This assumes that the SPAI matrix B is stored in
    COMPRESSED-ROW format.
 */
-#undef __FUNCT__
-#define __FUNCT__ "ConvertMatrixToMat"
 PetscErrorCode ConvertMatrixToMat(MPI_Comm comm,matrix *B,Mat *PB)
 {
   PetscMPIInt    size,rank;
@@ -840,8 +792,6 @@ PetscErrorCode ConvertMatrixToMat(MPI_Comm comm,matrix *B,Mat *PB)
 /*
    Converts from an SPAI vector v  to a PETSc vec Pv.
 */
-#undef __FUNCT__
-#define __FUNCT__ "ConvertVectorToVec"
 PetscErrorCode ConvertVectorToVec(MPI_Comm comm,vector *v,Vec *Pv)
 {
   PetscErrorCode ierr;

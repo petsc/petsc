@@ -16,8 +16,6 @@ typedef struct {
 static FortranCallbackBase *_classbase;
 static PetscClassId        _maxclassid = PETSC_SMALLEST_CLASSID;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFortranCallbackFinalize"
 static PetscErrorCode PetscFortranCallbackFinalize(void)
 {
   PetscErrorCode ierr;
@@ -39,8 +37,6 @@ static PetscErrorCode PetscFortranCallbackFinalize(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFortranCallbackRegister"
 /*@C
    PetscFortranCallbackRegister - register a type+subtype callback
 
@@ -105,8 +101,6 @@ found:
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFortranCallbackGetSizes"
 /*@C
    PetscFortranCallbackGetSizes - get sizes of class and subtype pointer arrays
 

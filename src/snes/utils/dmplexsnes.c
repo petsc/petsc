@@ -7,8 +7,6 @@
 
 /************************** Interpolation *******************************/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSNESConvertPlex"
 static PetscErrorCode DMSNESConvertPlex(DM dm, DM *plex, PetscBool copy)
 {
   PetscBool      isPlex;
@@ -42,8 +40,6 @@ static PetscErrorCode DMSNESConvertPlex(DM dm, DM *plex, PetscBool copy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMInterpolationCreate"
 PetscErrorCode DMInterpolationCreate(MPI_Comm comm, DMInterpolationInfo *ctx)
 {
   PetscErrorCode ierr;
@@ -62,8 +58,6 @@ PetscErrorCode DMInterpolationCreate(MPI_Comm comm, DMInterpolationInfo *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMInterpolationSetDim"
 PetscErrorCode DMInterpolationSetDim(DMInterpolationInfo ctx, PetscInt dim)
 {
   PetscFunctionBegin;
@@ -72,8 +66,6 @@ PetscErrorCode DMInterpolationSetDim(DMInterpolationInfo ctx, PetscInt dim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMInterpolationGetDim"
 PetscErrorCode DMInterpolationGetDim(DMInterpolationInfo ctx, PetscInt *dim)
 {
   PetscFunctionBegin;
@@ -82,8 +74,6 @@ PetscErrorCode DMInterpolationGetDim(DMInterpolationInfo ctx, PetscInt *dim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMInterpolationSetDof"
 PetscErrorCode DMInterpolationSetDof(DMInterpolationInfo ctx, PetscInt dof)
 {
   PetscFunctionBegin;
@@ -92,8 +82,6 @@ PetscErrorCode DMInterpolationSetDof(DMInterpolationInfo ctx, PetscInt dof)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMInterpolationGetDof"
 PetscErrorCode DMInterpolationGetDof(DMInterpolationInfo ctx, PetscInt *dof)
 {
   PetscFunctionBegin;
@@ -102,8 +90,6 @@ PetscErrorCode DMInterpolationGetDof(DMInterpolationInfo ctx, PetscInt *dof)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMInterpolationAddPoints"
 PetscErrorCode DMInterpolationAddPoints(DMInterpolationInfo ctx, PetscInt n, PetscReal points[])
 {
   PetscErrorCode ierr;
@@ -118,8 +104,6 @@ PetscErrorCode DMInterpolationAddPoints(DMInterpolationInfo ctx, PetscInt n, Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMInterpolationSetUp"
 PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool redundantPoints)
 {
   MPI_Comm          comm = ctx->comm;
@@ -222,8 +206,6 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMInterpolationGetCoordinates"
 PetscErrorCode DMInterpolationGetCoordinates(DMInterpolationInfo ctx, Vec *coordinates)
 {
   PetscFunctionBegin;
@@ -233,8 +215,6 @@ PetscErrorCode DMInterpolationGetCoordinates(DMInterpolationInfo ctx, Vec *coord
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMInterpolationGetVector"
 PetscErrorCode DMInterpolationGetVector(DMInterpolationInfo ctx, Vec *v)
 {
   PetscErrorCode ierr;
@@ -249,8 +229,6 @@ PetscErrorCode DMInterpolationGetVector(DMInterpolationInfo ctx, Vec *v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMInterpolationRestoreVector"
 PetscErrorCode DMInterpolationRestoreVector(DMInterpolationInfo ctx, Vec *v)
 {
   PetscErrorCode ierr;
@@ -262,8 +240,6 @@ PetscErrorCode DMInterpolationRestoreVector(DMInterpolationInfo ctx, Vec *v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMInterpolate_Triangle_Private"
 PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Triangle_Private(DMInterpolationInfo ctx, DM dm, Vec xLocal, Vec v)
 {
   PetscReal      *v0, *J, *invJ, detJ;
@@ -300,8 +276,6 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Triangle_Private(DMInterpolatio
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMInterpolate_Tetrahedron_Private"
 PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Tetrahedron_Private(DMInterpolationInfo ctx, DM dm, Vec xLocal, Vec v)
 {
   PetscReal      *v0, *J, *invJ, detJ;
@@ -339,8 +313,6 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Tetrahedron_Private(DMInterpola
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "QuadMap_Private"
 PETSC_STATIC_INLINE PetscErrorCode QuadMap_Private(SNES snes, Vec Xref, Vec Xreal, void *ctx)
 {
   const PetscScalar *vertices = (const PetscScalar*) ctx;
@@ -379,8 +351,6 @@ PETSC_STATIC_INLINE PetscErrorCode QuadMap_Private(SNES snes, Vec Xref, Vec Xrea
 }
 
 #include <petsc/private/dmimpl.h>
-#undef __FUNCT__
-#define __FUNCT__ "QuadJacobian_Private"
 PETSC_STATIC_INLINE PetscErrorCode QuadJacobian_Private(SNES snes, Vec Xref, Mat J, Mat M, void *ctx)
 {
   const PetscScalar *vertices = (const PetscScalar*) ctx;
@@ -416,8 +386,6 @@ PETSC_STATIC_INLINE PetscErrorCode QuadJacobian_Private(SNES snes, Vec Xref, Mat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMInterpolate_Quad_Private"
 PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInfo ctx, DM dm, Vec xLocal, Vec v)
 {
   DM             dmCoord;
@@ -510,8 +478,6 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInf
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "HexMap_Private"
 PETSC_STATIC_INLINE PetscErrorCode HexMap_Private(SNES snes, Vec Xref, Vec Xreal, void *ctx)
 {
   const PetscScalar *vertices = (const PetscScalar*) ctx;
@@ -582,8 +548,6 @@ PETSC_STATIC_INLINE PetscErrorCode HexMap_Private(SNES snes, Vec Xref, Vec Xreal
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "HexJacobian_Private"
 PETSC_STATIC_INLINE PetscErrorCode HexJacobian_Private(SNES snes, Vec Xref, Mat J, Mat M, void *ctx)
 {
   const PetscScalar *vertices = (const PetscScalar*) ctx;
@@ -654,8 +618,6 @@ PETSC_STATIC_INLINE PetscErrorCode HexJacobian_Private(SNES snes, Vec Xref, Mat 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMInterpolate_Hex_Private"
 PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo ctx, DM dm, Vec xLocal, Vec v)
 {
   DM             dmCoord;
@@ -741,8 +703,6 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMInterpolationEvaluate"
 /*
   Input Parameters:
 + ctx - The DMInterpolationInfo context
@@ -783,8 +743,6 @@ PetscErrorCode DMInterpolationEvaluate(DMInterpolationInfo ctx, DM dm, Vec x, Ve
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMInterpolationDestroy"
 PetscErrorCode DMInterpolationDestroy(DMInterpolationInfo *ctx)
 {
   PetscErrorCode ierr;
@@ -799,8 +757,6 @@ PetscErrorCode DMInterpolationDestroy(DMInterpolationInfo *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMonitorFields"
 /*@C
   SNESMonitorFields - Monitors the residual for each field separately
 
@@ -867,8 +823,6 @@ PetscErrorCode SNESMonitorFields(SNES snes, PetscInt its, PetscReal fgnorm, Pets
 
 /********************* Residual Computation **************************/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexSNESGetGeometryFEM"
 /*@
   DMPlexSNESGetGeometryFEM - Return precomputed geometric data
 
@@ -903,8 +857,6 @@ PetscErrorCode DMPlexSNESGetGeometryFEM(DM dm, Vec *cellgeom)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexSNESGetGeometryFVM"
 /*@
   DMPlexSNESGetGeometryFVM - Return precomputed geometric data
 
@@ -934,8 +886,6 @@ PetscErrorCode DMPlexSNESGetGeometryFVM(DM dm, Vec *facegeom, Vec *cellgeom, Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexSNESGetGradientDM"
 /*@
   DMPlexSNESGetGradientDM - Return gradient data layout
 
@@ -968,8 +918,6 @@ PetscErrorCode DMPlexSNESGetGradientDM(DM dm, PetscFV fv, DM *dmGrad)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetCellFields"
 /*@C
   DMPlexGetCellFields - Retrieve the field values values for a chunk of cells
 
@@ -1045,8 +993,6 @@ PetscErrorCode DMPlexGetCellFields(DM dm, PetscInt cStart, PetscInt cEnd, Vec lo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexRestoreCellFields"
 /*@C
   DMPlexRestoreCellFields - Restore the field values values for a chunk of cells
 
@@ -1078,8 +1024,6 @@ PetscErrorCode DMPlexRestoreCellFields(DM dm, PetscInt cStart, PetscInt cEnd, Ve
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetFaceFields"
 /*@C
   DMPlexGetFaceFields - Retrieve the field values values for a chunk of faces
 
@@ -1240,8 +1184,6 @@ PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec lo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexRestoreFaceFields"
 /*@C
   DMPlexRestoreFaceFields - Restore the field values values for a chunk of faces
 
@@ -1274,8 +1216,6 @@ PetscErrorCode DMPlexRestoreFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Ve
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetFaceGeometry"
 /*@C
   DMPlexGetFaceGeometry - Retrieve the geometric values for a chunk of faces
 
@@ -1347,8 +1287,6 @@ PetscErrorCode DMPlexGetFaceGeometry(DM dm, PetscInt fStart, PetscInt fEnd, Vec 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexRestoreFaceGeometry"
 /*@C
   DMPlexRestoreFaceGeometry - Restore the field values values for a chunk of faces
 
@@ -1378,8 +1316,6 @@ PetscErrorCode DMPlexRestoreFaceGeometry(DM dm, PetscInt fStart, PetscInt fEnd, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexComputeBdResidual_Internal"
 PetscErrorCode DMPlexComputeBdResidual_Internal(DM dm, Vec locX, Vec locX_t, PetscReal t, Vec locF, void *user)
 {
   DM_Plex         *mesh = (DM_Plex *) dm->data;
@@ -1513,8 +1449,6 @@ PetscErrorCode DMPlexComputeBdResidual_Internal(DM dm, Vec locX, Vec locX_t, Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexComputeResidual_Internal"
 PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscInt cStart, PetscInt cEnd, PetscReal time, Vec locX, Vec locX_t, PetscReal t, Vec locF, void *user)
 {
   DM_Plex          *mesh       = (DM_Plex *) dm->data;
@@ -1842,8 +1776,6 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscInt cStart, PetscInt c
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexComputeResidualFEM_Check_Internal"
 static PetscErrorCode DMPlexComputeResidualFEM_Check_Internal(DM dm, Vec X, Vec X_t, PetscReal t, Vec F, void *user)
 {
   DM                dmCh, dmAux;
@@ -1971,8 +1903,6 @@ static PetscErrorCode DMPlexComputeResidualFEM_Check_Internal(DM dm, Vec X, Vec 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexSNESComputeResidualFEM"
 /*@
   DMPlexSNESComputeResidualFEM - Form the local residual F from the local input X using pointwise functions specified by the user
 
@@ -2008,8 +1938,6 @@ PetscErrorCode DMPlexSNESComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexSNESComputeBoundaryFEM"
 /*@
   DMPlexSNESComputeBoundaryFEM - Form the boundary values for the local input X
 
@@ -2036,8 +1964,6 @@ PetscErrorCode DMPlexSNESComputeBoundaryFEM(DM dm, Vec X, void *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexComputeBdJacobian_Internal"
 PetscErrorCode DMPlexComputeBdJacobian_Internal(DM dm, Vec locX, Vec locX_t, PetscReal t, PetscReal X_tShift, Mat Jac, Mat JacP, void *user)
 {
   DM_Plex         *mesh = (DM_Plex *) dm->data;
@@ -2187,8 +2113,6 @@ PetscErrorCode DMPlexComputeBdJacobian_Internal(DM dm, Vec locX, Vec locX_t, Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexComputeJacobian_Internal"
 PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscInt cStart, PetscInt cEnd, PetscReal t, PetscReal X_tShift, Vec X, Vec X_t, Mat Jac, Mat JacP,void *user)
 {
   DM_Plex          *mesh  = (DM_Plex *) dm->data;
@@ -2417,8 +2341,6 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscInt cStart, PetscInt c
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexComputeJacobianAction_Internal"
 PetscErrorCode DMPlexComputeJacobianAction_Internal(DM dm, PetscInt cStart, PetscInt cEnd, PetscReal t, PetscReal X_tShift, Vec X, Vec X_t, Vec Y, Vec Z, void *user)
 {
   DM_Plex          *mesh  = (DM_Plex *) dm->data;
@@ -2558,8 +2480,6 @@ PetscErrorCode DMPlexComputeJacobianAction_Internal(DM dm, PetscInt cStart, Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexSNESComputeJacobianFEM"
 /*@
   DMPlexSNESComputeJacobianFEM - Form the local portion of the Jacobian matrix J at the local solution X using pointwise functions specified by the user.
 
@@ -2595,8 +2515,6 @@ PetscErrorCode DMPlexSNESComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP,void
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexSNESComputeJacobianActionFEM"
 /*@
   DMPlexSNESComputeJacobianActionFEM - Form the local portion of the Jacobian action Z = J(X) Y at the local solution X using pointwise functions specified by the user.
 
@@ -2633,8 +2551,6 @@ PetscErrorCode DMPlexSNESComputeJacobianActionFEM(DM dm, Vec X, Vec Y, Vec Z, vo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexSetSNESLocalFEM"
 /*@
   DMPlexSetSNESLocalFEM - Use DMPlex's internal FEM routines to compute SNES boundary values, residual, and Jacobian.
 
@@ -2657,8 +2573,6 @@ PetscErrorCode DMPlexSetSNESLocalFEM(DM dm, void *boundaryctx, void *residualctx
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSNESCheckFromOptions_Internal"
 PetscErrorCode DMSNESCheckFromOptions_Internal(SNES snes, DM dm, Vec u, Vec sol, PetscErrorCode (**exactFuncs)(PetscInt, PetscReal, const PetscReal x[], PetscInt, PetscScalar *u, void *ctx), void **ctxs)
 {
   Mat            J, M;
@@ -2727,8 +2641,6 @@ PetscErrorCode DMSNESCheckFromOptions_Internal(SNES snes, DM dm, Vec u, Vec sol,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSNESCheckFromOptions"
 PetscErrorCode DMSNESCheckFromOptions(SNES snes, Vec u, PetscErrorCode (**exactFuncs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx), void **ctxs)
 {
   DM             dm;

@@ -49,8 +49,6 @@ PETSC_STATIC_INLINE void LagrangeBasisDers(PetscInt n,PetscReal t,const PetscRea
       }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSBDF_Advance"
 static PetscErrorCode TSBDF_Advance(TS ts,PetscReal t,Vec X)
 {
   TS_BDF         *bdf = (TS_BDF*)ts->data;
@@ -70,8 +68,6 @@ static PetscErrorCode TSBDF_Advance(TS ts,PetscReal t,Vec X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSBDF_VecDot"
 static PetscErrorCode TSBDF_VecDot(TS ts,PetscInt order,PetscReal t,Vec X,Vec Xdot,PetscReal *shift)
 {
   TS_BDF         *bdf = (TS_BDF*)ts->data;
@@ -92,8 +88,6 @@ static PetscErrorCode TSBDF_VecDot(TS ts,PetscInt order,PetscReal t,Vec X,Vec Xd
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSBDF_VecLTE"
 static PetscErrorCode TSBDF_VecLTE(TS ts,PetscInt order,Vec lte)
 {
   TS_BDF         *bdf = (TS_BDF*)ts->data;
@@ -112,8 +106,6 @@ static PetscErrorCode TSBDF_VecLTE(TS ts,PetscInt order,Vec lte)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSBDF_Extrapolate"
 static PetscErrorCode TSBDF_Extrapolate(TS ts,PetscInt order,PetscReal t,Vec X)
 {
   TS_BDF         *bdf = (TS_BDF*)ts->data;
@@ -131,8 +123,6 @@ static PetscErrorCode TSBDF_Extrapolate(TS ts,PetscInt order,PetscReal t,Vec X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSBDF_Interpolate"
 static PetscErrorCode TSBDF_Interpolate(TS ts,PetscInt order,PetscReal t,Vec X)
 {
   TS_BDF         *bdf = (TS_BDF*)ts->data;
@@ -149,8 +139,6 @@ static PetscErrorCode TSBDF_Interpolate(TS ts,PetscInt order,PetscReal t,Vec X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TS_SNESSolve"
 static PetscErrorCode TS_SNESSolve(TS ts,Vec b,Vec x)
 {
   PetscInt       nits,lits;
@@ -164,8 +152,6 @@ static PetscErrorCode TS_SNESSolve(TS ts,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSBDF_Restart"
 static PetscErrorCode TSBDF_Restart(TS ts,PetscBool *accept)
 {
   TS_BDF         *bdf = (TS_BDF*)ts->data;
@@ -191,8 +177,6 @@ static PetscErrorCode TSBDF_Restart(TS ts,PetscBool *accept)
 
 static const char *const BDF_SchemeName[] = {"", "1", "2", "3", "4", "5", "6"};
 
-#undef __FUNCT__
-#define __FUNCT__ "TSStep_BDF"
 static PetscErrorCode TSStep_BDF(TS ts)
 {
   TS_BDF         *bdf = (TS_BDF*)ts->data;
@@ -247,8 +231,6 @@ static PetscErrorCode TSStep_BDF(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSInterpolate_BDF"
 static PetscErrorCode TSInterpolate_BDF(TS ts,PetscReal t,Vec X)
 {
   TS_BDF         *bdf = (TS_BDF*)ts->data;
@@ -259,8 +241,6 @@ static PetscErrorCode TSInterpolate_BDF(TS ts,PetscReal t,Vec X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSEvaluateWLTE_BDF"
 static PetscErrorCode TSEvaluateWLTE_BDF(TS ts,NormType wnormtype,PetscInt *order,PetscReal *wlte)
 {
   TS_BDF         *bdf = (TS_BDF*)ts->data;
@@ -278,8 +258,6 @@ static PetscErrorCode TSEvaluateWLTE_BDF(TS ts,NormType wnormtype,PetscInt *orde
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSRollBack_BDF"
 static PetscErrorCode TSRollBack_BDF(TS ts)
 {
   TS_BDF         *bdf = (TS_BDF*)ts->data;
@@ -290,8 +268,6 @@ static PetscErrorCode TSRollBack_BDF(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESTSFormFunction_BDF"
 static PetscErrorCode SNESTSFormFunction_BDF(PETSC_UNUSED SNES snes,Vec X,Vec F,TS ts)
 {
   TS_BDF         *bdf = (TS_BDF*)ts->data;
@@ -307,8 +283,6 @@ static PetscErrorCode SNESTSFormFunction_BDF(PETSC_UNUSED SNES snes,Vec X,Vec F,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESTSFormJacobian_BDF"
 static PetscErrorCode SNESTSFormJacobian_BDF(PETSC_UNUSED SNES snes,
                                              PETSC_UNUSED Vec X,
                                              Mat J,Mat P,
@@ -326,8 +300,6 @@ static PetscErrorCode SNESTSFormJacobian_BDF(PETSC_UNUSED SNES snes,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSReset_BDF"
 static PetscErrorCode TSReset_BDF(TS ts)
 {
   TS_BDF         *bdf = (TS_BDF*)ts->data;
@@ -341,8 +313,6 @@ static PetscErrorCode TSReset_BDF(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSDestroy_BDF"
 static PetscErrorCode TSDestroy_BDF(TS ts)
 {
   PetscErrorCode ierr;
@@ -356,8 +326,6 @@ static PetscErrorCode TSDestroy_BDF(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSSetUp_BDF"
 static PetscErrorCode TSSetUp_BDF(TS ts)
 {
   TS_BDF         *bdf = (TS_BDF*)ts->data;
@@ -387,8 +355,6 @@ static PetscErrorCode TSSetUp_BDF(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSSetFromOptions_BDF"
 static PetscErrorCode TSSetFromOptions_BDF(PetscOptionItems *PetscOptionsObject,TS ts)
 {
   TS_BDF         *bdf = (TS_BDF*)ts->data;
@@ -409,8 +375,6 @@ static PetscErrorCode TSSetFromOptions_BDF(PetscOptionItems *PetscOptionsObject,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSView_BDF"
 static PetscErrorCode TSView_BDF(TS ts,PetscViewer viewer)
 {
   TS_BDF         *bdf = (TS_BDF*)ts->data;
@@ -429,8 +393,6 @@ static PetscErrorCode TSView_BDF(TS ts,PetscViewer viewer)
 
 /* ------------------------------------------------------------ */
 
-#undef __FUNCT__
-#define __FUNCT__ "TSBDFSetOrder_BDF"
 static PetscErrorCode TSBDFSetOrder_BDF(TS ts,PetscInt order)
 {
   TS_BDF *bdf = (TS_BDF*)ts->data;
@@ -442,8 +404,6 @@ static PetscErrorCode TSBDFSetOrder_BDF(TS ts,PetscInt order)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSBDFGetOrder_BDF"
 static PetscErrorCode TSBDFGetOrder_BDF(TS ts,PetscInt *order)
 {
   TS_BDF *bdf = (TS_BDF*)ts->data;
@@ -453,8 +413,6 @@ static PetscErrorCode TSBDFGetOrder_BDF(TS ts,PetscInt *order)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSBDFUseAdapt_BDF"
 static PetscErrorCode TSBDFUseAdapt_BDF(TS ts,PetscBool use)
 {
   TS_BDF *bdf = (TS_BDF*)ts->data;
@@ -475,8 +433,6 @@ static PetscErrorCode TSBDFUseAdapt_BDF(TS ts,PetscBool use)
 
 .seealso:  TS, TSCreate(), TSSetType()
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "TSCreate_BDF"
 PETSC_EXTERN PetscErrorCode TSCreate_BDF(TS ts)
 {
   TS_BDF         *bdf;
@@ -510,8 +466,6 @@ PETSC_EXTERN PetscErrorCode TSCreate_BDF(TS ts)
 
 /* ------------------------------------------------------------ */
 
-#undef __FUNCT__
-#define __FUNCT__ "TSBDFSetOrder"
 /*@
   TSBDFSetOrder - Set the order of the BDF method
 
@@ -538,8 +492,6 @@ PetscErrorCode TSBDFSetOrder(TS ts,PetscInt order)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSBDFGetOrder"
 /*@
   TSBDFGetOrder - Get the order of the BDF method
 
@@ -565,8 +517,6 @@ PetscErrorCode TSBDFGetOrder(TS ts,PetscInt *order)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSBDFUseAdapt"
 /*@
   TSBDFUseAdapt - Use time-step adaptivity with the BDF method
 

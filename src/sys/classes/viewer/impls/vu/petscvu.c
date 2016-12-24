@@ -18,8 +18,6 @@ typedef struct {
   int           queueLength;
 } PetscViewer_VU;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFileClose_VU"
 static PetscErrorCode PetscViewerFileClose_VU(PetscViewer viewer)
 {
   PetscViewer_VU *vu = (PetscViewer_VU*) viewer->data;
@@ -36,8 +34,6 @@ static PetscErrorCode PetscViewerFileClose_VU(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerDestroy_VU"
 PetscErrorCode PetscViewerDestroy_VU(PetscViewer viewer)
 {
   PetscViewer_VU *vu = (PetscViewer_VU*) viewer->data;
@@ -49,8 +45,6 @@ PetscErrorCode PetscViewerDestroy_VU(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFlush_VU"
 PetscErrorCode PetscViewerFlush_VU(PetscViewer viewer)
 {
   PetscViewer_VU *vu = (PetscViewer_VU*) viewer->data;
@@ -67,8 +61,6 @@ PetscErrorCode PetscViewerFlush_VU(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFileGetName_VU"
 PetscErrorCode  PetscViewerFileGetName_VU(PetscViewer viewer, const char **name)
 {
   PetscViewer_VU *vu = (PetscViewer_VU*) viewer->data;
@@ -78,8 +70,6 @@ PetscErrorCode  PetscViewerFileGetName_VU(PetscViewer viewer, const char **name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFileSetName_VU"
 PetscErrorCode  PetscViewerFileSetName_VU(PetscViewer viewer, const char name[])
 {
   PetscViewer_VU *vu = (PetscViewer_VU*) viewer->data;
@@ -129,8 +119,6 @@ PetscErrorCode  PetscViewerFileSetName_VU(PetscViewer viewer, const char name[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerCreate_VU"
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_VU(PetscViewer viewer)
 {
   PetscViewer_VU *vu;
@@ -158,8 +146,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_VU(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerVUGetPointer"
 /*@C
   PetscViewerVUGetPointer - Extracts the file pointer from a VU PetscViewer.
 
@@ -189,8 +175,6 @@ PetscErrorCode  PetscViewerVUGetPointer(PetscViewer viewer, FILE **fd)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerVUSetMode"
 /*@C
   PetscViewerVUSetMode - Sets the mode in which to open the file.
 
@@ -214,8 +198,6 @@ PetscErrorCode  PetscViewerVUSetMode(PetscViewer viewer, PetscFileMode mode)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerVUSetVecSeen"
 /*@C
   PetscViewerVUSetVecSeen - Sets the flag which indicates whether we have viewed
   a vector. This is usually called internally rather than by a user.
@@ -240,8 +222,6 @@ PetscErrorCode  PetscViewerVUSetVecSeen(PetscViewer viewer, PetscBool vecSeen)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerVUGetVecSeen"
 /*@C
   PetscViewerVUGetVecSeen - Gets the flag which indicates whether we have viewed
   a vector. This is usually called internally rather than by a user.
@@ -270,8 +250,6 @@ PetscErrorCode  PetscViewerVUGetVecSeen(PetscViewer viewer, PetscBool  *vecSeen)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerVUPrintDeferred"
 /*@C
   PetscViewerVUPrintDeferred - Prints to the deferred write cache instead of the file.
 
@@ -312,8 +290,6 @@ PetscErrorCode  PetscViewerVUPrintDeferred(PetscViewer viewer, const char format
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerVUFlushDeferred"
 /*@C
   PetscViewerVUFlushDeferred - Flushes the deferred write cache to the file.
 

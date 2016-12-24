@@ -7853,15 +7853,13 @@ and codes, any error will by default generate a clean traceback of
 the location \findex{SETERRQ()} \findex{CHKERRQ()}
 of the error.
 
-Note that the macro \lstinline{__FUNCT__} is used to keep track of
+Note that the macro \lstinline{PETSC_FUNCTION_NAME} is used to keep track of
 routine names during error tracebacks.  Users need not worry about this
 macro in their application codes; however, users can take advantage of this feature
 if desired by setting this macro before each user-defined routine
 that may call \lstinline{SETERRQ()}, \lstinline{CHKERRQ()}.
 A simple example of usage is given below.
 \begin{lstlisting}
-#undef __FUNCT__  
-#define __FUNCT__ "MyRoutine1"
 PetscErrorCode MyRoutine1() { 
     /* Declarations Here */
     PetscFunctionBeginUser;

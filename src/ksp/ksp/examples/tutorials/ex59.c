@@ -64,8 +64,6 @@ typedef struct {
 } GLLData;
 
 
-#undef __FUNCT__
-#define __FUNCT__ "BuildCSRGraph"
 static PetscErrorCode BuildCSRGraph(DomainData dd, PetscInt **xadj, PetscInt **adjncy)
 {
   PetscErrorCode ierr;
@@ -179,8 +177,6 @@ static PetscErrorCode BuildCSRGraph(DomainData dd, PetscInt **xadj, PetscInt **a
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeSpecialBoundaryIndices"
 static PetscErrorCode ComputeSpecialBoundaryIndices(DomainData dd,IS *dirichlet,IS *neumann)
 {
   PetscErrorCode ierr;
@@ -292,8 +288,6 @@ static PetscErrorCode ComputeSpecialBoundaryIndices(DomainData dd,IS *dirichlet,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeMapping"
 static PetscErrorCode ComputeMapping(DomainData dd,ISLocalToGlobalMapping *isg2lmap)
 {
   PetscErrorCode         ierr;
@@ -339,8 +333,6 @@ static PetscErrorCode ComputeMapping(DomainData dd,ISLocalToGlobalMapping *isg2l
   *isg2lmap = temp_isg2lmap;
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "ComputeSubdomainMatrix"
 static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat *local_mat)
 {
   PetscErrorCode ierr;
@@ -468,8 +460,6 @@ static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GLLStuffs"
 static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
 {
   PetscErrorCode ierr;
@@ -652,8 +642,6 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DomainDecomposition"
 static PetscErrorCode DomainDecomposition(DomainData *dd)
 {
   PetscMPIInt rank;
@@ -724,8 +712,6 @@ static PetscErrorCode DomainDecomposition(DomainData *dd)
   }
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "ComputeMatrix"
 static PetscErrorCode ComputeMatrix(DomainData dd, Mat *A)
 {
   PetscErrorCode         ierr;
@@ -796,8 +782,6 @@ static PetscErrorCode ComputeMatrix(DomainData dd, Mat *A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeKSPFETIDP"
 static PetscErrorCode ComputeKSPFETIDP(DomainData dd, KSP ksp_bddc, KSP *ksp_fetidp)
 {
   PetscErrorCode ierr;
@@ -839,8 +823,6 @@ static PetscErrorCode ComputeKSPFETIDP(DomainData dd, KSP ksp_bddc, KSP *ksp_fet
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeKSPBDDC"
 static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP *ksp)
 {
   PetscErrorCode ierr;
@@ -959,8 +941,6 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP *ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "InitializeDomainData"
 static PetscErrorCode InitializeDomainData(DomainData *dd)
 {
   PetscErrorCode ierr;
@@ -1028,8 +1008,6 @@ static PetscErrorCode InitializeDomainData(DomainData *dd)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   PetscErrorCode     ierr;

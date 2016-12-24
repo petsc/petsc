@@ -10,8 +10,6 @@ typedef struct {
   SCOTCH_Num strategy;
 } MatPartitioning_PTScotch;
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningPTScotchSetImbalance"
 /*@
    MatPartitioningPTScotchSetImbalance - Sets the value of the load imbalance
    ratio to be used during strategy selection.
@@ -43,8 +41,6 @@ PetscErrorCode MatPartitioningPTScotchSetImbalance(MatPartitioning part,PetscRea
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningPTScotchSetImbalance_PTScotch"
 PetscErrorCode MatPartitioningPTScotchSetImbalance_PTScotch(MatPartitioning part,PetscReal imb)
 {
   MatPartitioning_PTScotch *scotch = (MatPartitioning_PTScotch*)part->data;
@@ -58,8 +54,6 @@ PetscErrorCode MatPartitioningPTScotchSetImbalance_PTScotch(MatPartitioning part
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningPTScotchGetImbalance"
 /*@
    MatPartitioningPTScotchGetImbalance - Gets the value of the load imbalance
    ratio used during strategy selection.
@@ -87,8 +81,6 @@ PetscErrorCode MatPartitioningPTScotchGetImbalance(MatPartitioning part,PetscRea
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningPTScotchGetImbalance_PTScotch"
 PetscErrorCode MatPartitioningPTScotchGetImbalance_PTScotch(MatPartitioning part,PetscReal *imb)
 {
   MatPartitioning_PTScotch *scotch = (MatPartitioning_PTScotch*)part->data;
@@ -98,8 +90,6 @@ PetscErrorCode MatPartitioningPTScotchGetImbalance_PTScotch(MatPartitioning part
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningPTScotchSetStrategy"
 /*@
    MatPartitioningPTScotchSetStrategy - Sets the strategy to be used in PTScotch.
 
@@ -137,8 +127,6 @@ PetscErrorCode MatPartitioningPTScotchSetStrategy(MatPartitioning part,MPPTScotc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningPTScotchSetStrategy_PTScotch"
 PetscErrorCode MatPartitioningPTScotchSetStrategy_PTScotch(MatPartitioning part,MPPTScotchStrategyType strategy)
 {
   MatPartitioning_PTScotch *scotch = (MatPartitioning_PTScotch*)part->data;
@@ -154,8 +142,6 @@ PetscErrorCode MatPartitioningPTScotchSetStrategy_PTScotch(MatPartitioning part,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningPTScotchGetStrategy"
 /*@
    MatPartitioningPTScotchGetStrategy - Gets the strategy used in PTScotch.
 
@@ -182,8 +168,6 @@ PetscErrorCode MatPartitioningPTScotchGetStrategy(MatPartitioning part,MPPTScotc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningPTScotchGetStrategy_PTScotch"
 PetscErrorCode MatPartitioningPTScotchGetStrategy_PTScotch(MatPartitioning part,MPPTScotchStrategyType *strategy)
 {
   MatPartitioning_PTScotch *scotch = (MatPartitioning_PTScotch*)part->data;
@@ -199,8 +183,6 @@ PetscErrorCode MatPartitioningPTScotchGetStrategy_PTScotch(MatPartitioning part,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningView_PTScotch"
 PetscErrorCode MatPartitioningView_PTScotch(MatPartitioning part, PetscViewer viewer)
 {
   MatPartitioning_PTScotch *scotch = (MatPartitioning_PTScotch*)part->data;
@@ -224,8 +206,6 @@ PetscErrorCode MatPartitioningView_PTScotch(MatPartitioning part, PetscViewer vi
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningSetFromOptions_PTScotch"
 PetscErrorCode MatPartitioningSetFromOptions_PTScotch(PetscOptionItems *PetscOptionsObject,MatPartitioning part)
 {
   PetscErrorCode           ierr;
@@ -245,8 +225,6 @@ PetscErrorCode MatPartitioningSetFromOptions_PTScotch(PetscOptionItems *PetscOpt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningApply_PTScotch"
 PetscErrorCode MatPartitioningApply_PTScotch(MatPartitioning part,IS *partitioning)
 {
   MatPartitioning_PTScotch *scotch = (MatPartitioning_PTScotch*)part->data;
@@ -339,8 +317,6 @@ PetscErrorCode MatPartitioningApply_PTScotch(MatPartitioning part,IS *partitioni
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningDestroy_PTScotch"
 PetscErrorCode MatPartitioningDestroy_PTScotch(MatPartitioning part)
 {
   MatPartitioning_PTScotch *scotch = (MatPartitioning_PTScotch*)part->data;
@@ -368,8 +344,6 @@ PetscErrorCode MatPartitioningDestroy_PTScotch(MatPartitioning part)
 .seealso: MatPartitioningSetType(), MatPartitioningType
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningCreate_PTScotch"
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_PTScotch(MatPartitioning part)
 {
   PetscErrorCode           ierr;

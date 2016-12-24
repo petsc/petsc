@@ -63,8 +63,6 @@ typedef struct {
   PetscReal         *coords; /* ML has a grid object for each level: the finest grid will point into coords */
 } PC_ML;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscML_getrow"
 static int PetscML_getrow(ML_Operator *ML_data, int N_requested_rows, int requested_rows[],int allocated_space, int columns[], double values[], int row_lengths[])
 {
   PetscErrorCode ierr;
@@ -90,8 +88,6 @@ static int PetscML_getrow(ML_Operator *ML_data, int N_requested_rows, int reques
   return(1);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscML_comm"
 static PetscErrorCode PetscML_comm(double p[],void *ML_data)
 {
   PetscErrorCode    ierr;
@@ -116,8 +112,6 @@ static PetscErrorCode PetscML_comm(double p[],void *ML_data)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscML_matvec"
 static int PetscML_matvec(ML_Operator *ML_data,int in_length,double p[],int out_length,double ap[])
 {
   PetscErrorCode ierr;
@@ -143,8 +137,6 @@ static int PetscML_matvec(ML_Operator *ML_data,int in_length,double p[],int out_
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_ML"
 static PetscErrorCode MatMult_ML(Mat A,Vec x,Vec y)
 {
   PetscErrorCode    ierr;
@@ -165,8 +157,6 @@ static PetscErrorCode MatMult_ML(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultAdd_ML"
 /* Computes y = w + A * x
    It is possible that w == y, but not x == y
 */
@@ -206,8 +196,6 @@ static PetscErrorCode MatMultAdd_ML(Mat A,Vec x,Vec w,Vec y)
 }
 
 /* newtype is ignored since only handles one case */
-#undef __FUNCT__
-#define __FUNCT__ "MatConvert_MPIAIJ_ML"
 static PetscErrorCode MatConvert_MPIAIJ_ML(Mat A,MatType newtype,MatReuse scall,Mat *Aloc)
 {
   PetscErrorCode ierr;
@@ -271,8 +259,6 @@ static PetscErrorCode MatConvert_MPIAIJ_ML(Mat A,MatType newtype,MatReuse scall,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_ML"
 static PetscErrorCode MatDestroy_ML(Mat A)
 {
   PetscErrorCode ierr;
@@ -286,8 +272,6 @@ static PetscErrorCode MatDestroy_ML(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatWrapML_SeqAIJ"
 static PetscErrorCode MatWrapML_SeqAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *newmat)
 {
   struct ML_CSR_MSRdata *matdata = (struct ML_CSR_MSRdata*)mlmat->data;
@@ -348,8 +332,6 @@ static PetscErrorCode MatWrapML_SeqAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *ne
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatWrapML_SHELL"
 static PetscErrorCode MatWrapML_SHELL(ML_Operator *mlmat,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
@@ -385,8 +367,6 @@ static PetscErrorCode MatWrapML_SHELL(ML_Operator *mlmat,MatReuse reuse,Mat *new
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatWrapML_MPIAIJ"
 static PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *newmat)
 {
   PetscInt       *aj;
@@ -456,8 +436,6 @@ static PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *ne
    Input Parameter:
    .  pc - the preconditioner context
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCSetCoordinates_ML"
 static PetscErrorCode PCSetCoordinates_ML(PC pc, PetscInt ndm, PetscInt a_nloc, PetscReal *coords)
 {
   PC_MG          *mg    = (PC_MG*)pc->data;
@@ -499,8 +477,6 @@ static PetscErrorCode PCSetCoordinates_ML(PC pc, PetscInt ndm, PetscInt a_nloc, 
 
 /* -----------------------------------------------------------------------------*/
 extern PetscErrorCode PCReset_MG(PC);
-#undef __FUNCT__
-#define __FUNCT__ "PCReset_ML"
 PetscErrorCode PCReset_ML(PC pc)
 {
   PetscErrorCode ierr;
@@ -568,8 +544,6 @@ PetscErrorCode PCReset_ML(PC pc)
 extern PetscErrorCode PCSetFromOptions_MG(PetscOptionItems *PetscOptionsObject,PC);
 extern PetscErrorCode PCReset_MG(PC);
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_ML"
 PetscErrorCode PCSetUp_ML(PC pc)
 {
   PetscErrorCode   ierr;
@@ -1015,8 +989,6 @@ PetscErrorCode PCSetUp_ML(PC pc)
 
    Application Interface Routine: PCDestroy()
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_ML"
 PetscErrorCode PCDestroy_ML(PC pc)
 {
   PetscErrorCode ierr;
@@ -1031,8 +1003,6 @@ PetscErrorCode PCDestroy_ML(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_ML"
 PetscErrorCode PCSetFromOptions_ML(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
@@ -1185,8 +1155,6 @@ PetscErrorCode PCSetFromOptions_ML(PetscOptionItems *PetscOptionsObject,PC pc)
            PCMGSetCycleTypeOnLevel(), PCMGSetRhs(), PCMGSetX(), PCMGSetR()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_ML"
 PETSC_EXTERN PetscErrorCode PCCreate_ML(PC pc)
 {
   PetscErrorCode ierr;

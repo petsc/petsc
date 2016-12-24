@@ -6,8 +6,6 @@
 
 static char help[] = "Test PetscComplex binary operators.\n";
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscInitialize(&argc,&argv,NULL,help);

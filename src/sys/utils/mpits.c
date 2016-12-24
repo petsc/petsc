@@ -13,8 +13,6 @@ const char *const PetscBuildTwoSidedTypes[] = {
 
 static PetscBuildTwoSidedType _twosided_type = PETSC_BUILDTWOSIDED_NOTSET;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscCommBuildTwoSidedSetType"
 /*@
    PetscCommBuildTwoSidedSetType - set algorithm to use when building two-sided communication
 
@@ -48,8 +46,6 @@ PetscErrorCode PetscCommBuildTwoSidedSetType(MPI_Comm comm,PetscBuildTwoSidedTyp
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscCommBuildTwoSidedGetType"
 /*@
    PetscCommBuildTwoSidedGetType - set algorithm to use when building two-sided communication
 
@@ -88,8 +84,6 @@ PetscErrorCode PetscCommBuildTwoSidedGetType(MPI_Comm comm,PetscBuildTwoSidedTyp
 
 #if defined(PETSC_HAVE_MPI_IBARRIER) || defined(PETSC_HAVE_MPIX_IBARRIER)
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscCommBuildTwoSided_Ibarrier"
 static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm,PetscMPIInt count,MPI_Datatype dtype,PetscMPIInt nto,const PetscMPIInt *toranks,const void *todata,PetscMPIInt *nfrom,PetscMPIInt **fromranks,void *fromdata)
 {
   PetscErrorCode ierr;
@@ -157,8 +151,6 @@ static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm,PetscMPIInt 
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscCommBuildTwoSided_Allreduce"
 static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm,PetscMPIInt count,MPI_Datatype dtype,PetscMPIInt nto,const PetscMPIInt *toranks,const void *todata,PetscMPIInt *nfrom,PetscMPIInt **fromranks,void *fromdata)
 {
   PetscErrorCode ierr;
@@ -201,8 +193,6 @@ static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm,PetscMPIInt
 }
 
 #if defined(PETSC_HAVE_MPI_REDUCE_SCATTER_BLOCK)
-#undef __FUNCT__
-#define __FUNCT__ "PetscCommBuildTwoSided_RedScatter"
 static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm,PetscMPIInt count,MPI_Datatype dtype,PetscMPIInt nto,const PetscMPIInt *toranks,const void *todata,PetscMPIInt *nfrom,PetscMPIInt **fromranks,void *fromdata)
 {
   PetscErrorCode ierr;
@@ -246,8 +236,6 @@ static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm,PetscMPIIn
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscCommBuildTwoSided"
 /*@C
    PetscCommBuildTwoSided - discovers communicating ranks given one-sided information, moving constant-sized data in the process (often message lengths)
 
@@ -316,8 +304,6 @@ PetscErrorCode PetscCommBuildTwoSided(MPI_Comm comm,PetscMPIInt count,MPI_Dataty
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscCommBuildTwoSidedFReq_Reference"
 static PetscErrorCode PetscCommBuildTwoSidedFReq_Reference(MPI_Comm comm,PetscMPIInt count,MPI_Datatype dtype,PetscMPIInt nto,const PetscMPIInt *toranks,const void *todata,
                                                            PetscMPIInt *nfrom,PetscMPIInt **fromranks,void *fromdata,PetscMPIInt ntags,MPI_Request **toreqs,MPI_Request **fromreqs,
                                                            PetscErrorCode (*send)(MPI_Comm,const PetscMPIInt[],PetscMPIInt,PetscMPIInt,void*,MPI_Request[],void*),
@@ -365,8 +351,6 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Reference(MPI_Comm comm,PetscMP
 
 #if defined(PETSC_HAVE_MPI_IBARRIER) || defined(PETSC_HAVE_MPIX_IBARRIER)
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscCommBuildTwoSidedFReq_Ibarrier"
 static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm,PetscMPIInt count,MPI_Datatype dtype,PetscMPIInt nto,const PetscMPIInt *toranks,const void *todata,
                                                           PetscMPIInt *nfrom,PetscMPIInt **fromranks,void *fromdata,PetscMPIInt ntags,MPI_Request **toreqs,MPI_Request **fromreqs,
                                                           PetscErrorCode (*send)(MPI_Comm,const PetscMPIInt[],PetscMPIInt,PetscMPIInt,void*,MPI_Request[],void*),
@@ -459,8 +443,6 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm,PetscMPI
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscCommBuildTwoSidedF"
 /*@C
    PetscCommBuildTwoSidedF - discovers communicating ranks given one-sided information, calling user-defined functions during rendezvous
 
@@ -513,8 +495,6 @@ PetscErrorCode PetscCommBuildTwoSidedF(MPI_Comm comm,PetscMPIInt count,MPI_Datat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscCommBuildTwoSidedFReq"
 /*@C
    PetscCommBuildTwoSidedFReq - discovers communicating ranks given one-sided information, calling user-defined functions during rendezvous, returns requests
 

@@ -10,8 +10,6 @@
 #include <petsc/private/vecimpl.h>
 #include <petscviewerhdf5.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerBinaryReadVecHeader_Private"
 static PetscErrorCode PetscViewerBinaryReadVecHeader_Private(PetscViewer viewer,PetscInt *rows)
 {
   PetscErrorCode ierr;
@@ -32,8 +30,6 @@ static PetscErrorCode PetscViewerBinaryReadVecHeader_Private(PetscViewer viewer,
 }
 
 #if defined(PETSC_HAVE_MPIIO)
-#undef __FUNCT__
-#define __FUNCT__ "VecLoad_Binary_MPIIO"
 static PetscErrorCode VecLoad_Binary_MPIIO(Vec vec, PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -60,8 +56,6 @@ static PetscErrorCode VecLoad_Binary_MPIIO(Vec vec, PetscViewer viewer)
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "VecLoad_Binary"
 PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
 {
   PetscMPIInt    size,rank,tag;
@@ -150,8 +144,6 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
 }
 
 #if defined(PETSC_HAVE_HDF5)
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerHDF5OpenGroup"
 PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, hid_t *fileId, hid_t *groupId)
 {
   hid_t          file_id, group;
@@ -188,8 +180,6 @@ PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, hid_t *fileId, hid_t
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerHDF5ReadSizes"
 PetscErrorCode PetscViewerHDF5ReadSizes(PetscViewer viewer, const char name[], PetscInt *bs, PetscInt *N)
 {
   hid_t          file_id, group, dset_id, filespace;
@@ -231,8 +221,6 @@ PetscErrorCode PetscViewerHDF5ReadSizes(PetscViewer viewer, const char name[], P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecLoad_HDF5"
 /*
      This should handle properly the cases where PetscInt is 32 or 64 and hsize_t is 32 or 64. These means properly casting with
    checks back and forth between the two types of variables.
@@ -385,8 +373,6 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "VecLoad_Default"
 
 PetscErrorCode  VecLoad_Default(Vec newvec, PetscViewer viewer)
 {
@@ -417,8 +403,6 @@ PetscErrorCode  VecLoad_Default(Vec newvec, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecChop"
 /*@
   VecChop - Set all values in the vector with an absolute value less than the tolerance to zero
 

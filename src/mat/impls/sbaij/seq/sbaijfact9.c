@@ -3,8 +3,6 @@
 #include <petsc/private/kernels/blockinvert.h>
 
 /* Version for when blocks are 6 by 6 */
-#undef __FUNCT__
-#define __FUNCT__ "MatCholeskyFactorNumeric_SeqSBAIJ_6"
 PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_6(Mat C,Mat A,const MatFactorInfo *info)
 {
   Mat_SeqSBAIJ   *a   = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ*)C->data;

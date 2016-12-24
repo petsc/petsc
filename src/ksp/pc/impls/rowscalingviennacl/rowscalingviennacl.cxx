@@ -35,8 +35,6 @@ typedef struct {
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_ROWSCALINGVIENNACL"
 static PetscErrorCode PCSetUp_ROWSCALINGVIENNACL(PC pc)
 {
   PC_ROWSCALINGVIENNACL  *rowscaling = (PC_ROWSCALINGVIENNACL*)pc->data;
@@ -85,8 +83,6 @@ static PetscErrorCode PCSetUp_ROWSCALINGVIENNACL(PC pc)
 
    Application Interface Routine: PCApply()
  */
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_ROWSCALINGVIENNACL"
 static PetscErrorCode PCApply_ROWSCALINGVIENNACL(PC pc,Vec x,Vec y)
 {
   PC_ROWSCALINGVIENNACL         *ilu = (PC_ROWSCALINGVIENNACL*)pc->data;
@@ -131,8 +127,6 @@ static PetscErrorCode PCApply_ROWSCALINGVIENNACL(PC pc,Vec x,Vec y)
 
    Application Interface Routine: PCDestroy()
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_ROWSCALINGVIENNACL"
 static PetscErrorCode PCDestroy_ROWSCALINGVIENNACL(PC pc)
 {
   PC_ROWSCALINGVIENNACL  *rowscaling = (PC_ROWSCALINGVIENNACL*)pc->data;
@@ -154,8 +148,6 @@ static PetscErrorCode PCDestroy_ROWSCALINGVIENNACL(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_ROWSCALINGVIENNACL"
 static PetscErrorCode PCSetFromOptions_ROWSCALINGVIENNACL(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
@@ -178,8 +170,6 @@ static PetscErrorCode PCSetFromOptions_ROWSCALINGVIENNACL(PetscOptionItems *Pets
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_ROWSCALINGVIENNACL"
 PETSC_EXTERN PetscErrorCode PCCreate_ROWSCALINGVIENNACL(PC pc)
 {
   PC_ROWSCALINGVIENNACL  *rowscaling;

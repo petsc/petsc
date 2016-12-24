@@ -5,8 +5,6 @@ typedef struct {
   PetscViewer    viewer;
 } SNESMonitor_SAWs;
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMonitorSAWsCreate"
 /*@C
    SNESMonitorSAWsCreate - create an SAWs monitor context
 
@@ -35,8 +33,6 @@ PetscErrorCode SNESMonitorSAWsCreate(SNES snes,void **ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMonitorSAWsDestroy"
 /*@C
    SNESMonitorSAWsDestroy - destroy a monitor context created with SNESMonitorSAWsCreate()
 
@@ -58,8 +54,6 @@ PetscErrorCode SNESMonitorSAWsDestroy(void **ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMonitorSAWs"
 /*@C
    SNESMonitorSAWs - monitor solution using SAWs
 

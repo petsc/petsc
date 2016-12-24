@@ -15,8 +15,6 @@
   The merit function for the mixed complementarity problem is defined as
      merit = 0.5*phi^T*phi
 */
-#undef __FUNCT__
-#define __FUNCT__ "SNESVIComputeMeritFunction"
 static PetscErrorCode SNESVIComputeMeritFunction(Vec phi, PetscReal *merit,PetscReal *phinorm)
 {
   PetscErrorCode ierr;
@@ -52,8 +50,6 @@ PETSC_STATIC_INLINE PetscScalar DPhi(PetscScalar a,PetscScalar b)
 .  phi - Semismooth function
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "SNESVIComputeFunction"
 static PetscErrorCode SNESVIComputeFunction(SNES snes,Vec X,Vec phi,void *functx)
 {
   PetscErrorCode    ierr;
@@ -98,8 +94,6 @@ static PetscErrorCode SNESVIComputeFunction(SNES snes,Vec X,Vec phi,void *functx
    SNESVIComputeBsubdifferentialVectors - Computes the diagonal shift (Da) and row scaling (Db) vectors needed for the
                                           the semismooth jacobian.
 */
-#undef __FUNCT__
-#define __FUNCT__ "SNESVIComputeBsubdifferentialVectors"
 PetscErrorCode SNESVIComputeBsubdifferentialVectors(SNES snes,Vec X,Vec F,Mat jac,Vec Da,Vec Db)
 {
   PetscErrorCode ierr;
@@ -165,8 +159,6 @@ PetscErrorCode SNESVIComputeBsubdifferentialVectors(SNES snes,Vec X,Vec F,Mat ja
          Da is the diagonal perturbation matrix stored as a vector
    and   jacfun is the jacobian of the original nonlinear function.
 */
-#undef __FUNCT__
-#define __FUNCT__ "SNESVIComputeJacobian"
 PetscErrorCode SNESVIComputeJacobian(Mat jac, Mat jac_pre,Vec Da, Vec Db)
 {
   PetscErrorCode ierr;
@@ -195,8 +187,6 @@ PetscErrorCode SNESVIComputeJacobian(Mat jac, Mat jac_pre,Vec Da, Vec Db)
   The merit function gradient is computed as follows
         dpsi = H^T*phi
 */
-#undef __FUNCT__
-#define __FUNCT__ "SNESVIComputeMeritFunctionGradient"
 PetscErrorCode SNESVIComputeMeritFunctionGradient(Mat H, Vec phi, Vec dpsi)
 {
   PetscErrorCode ierr;
@@ -225,8 +215,6 @@ PetscErrorCode SNESVIComputeMeritFunctionGradient(Mat H, Vec phi, Vec dpsi)
    Developer Note: the code in this file should be slightly modified so that this routine need not exist and the SNESSolve_NEWTONLS() routine is called directly with the appropriate wrapped function and Jacobian evaluations
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "SNESSolve_VINEWTONSSLS"
 PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
 {
   SNES_VINEWTONSSLS    *vi = (SNES_VINEWTONSSLS*)snes->data;
@@ -394,8 +382,6 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
    SNESSetUp(), since these actions will automatically occur during
    the call to SNESSolve().
  */
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetUp_VINEWTONSSLS"
 PetscErrorCode SNESSetUp_VINEWTONSSLS(SNES snes)
 {
   PetscErrorCode    ierr;
@@ -412,8 +398,6 @@ PetscErrorCode SNESSetUp_VINEWTONSSLS(SNES snes)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "SNESReset_VINEWTONSSLS"
 PetscErrorCode SNESReset_VINEWTONSSLS(SNES snes)
 {
   SNES_VINEWTONSSLS *vi = (SNES_VINEWTONSSLS*) snes->data;
@@ -439,8 +423,6 @@ PetscErrorCode SNESReset_VINEWTONSSLS(SNES snes)
 
    Application Interface Routine: SNESSetFromOptions()
 */
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetFromOptions_VINEWTONSSLS"
 static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   PetscErrorCode ierr;
@@ -479,8 +461,6 @@ static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(PetscOptionItems *PetscOpt
 .seealso:  SNESVISetVariableBounds(), SNESVISetComputeVariableBounds(), SNESCreate(), SNES, SNESSetType(), SNESVINEWTONRSLS, SNESNEWTONTR, SNESLineSearchSetType(),SNESLineSearchSetPostCheck(), SNESLineSearchSetPreCheck()
 
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "SNESCreate_VINEWTONSSLS"
 PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONSSLS(SNES snes)
 {
   PetscErrorCode    ierr;

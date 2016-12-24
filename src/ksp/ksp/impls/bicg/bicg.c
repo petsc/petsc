@@ -1,8 +1,6 @@
 
 #include <petsc/private/kspimpl.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_BiCG"
 static PetscErrorCode KSPSetUp_BiCG(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -15,8 +13,6 @@ static PetscErrorCode KSPSetUp_BiCG(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_BiCG"
 static PetscErrorCode  KSPSolve_BiCG(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -147,8 +143,6 @@ static PetscErrorCode  KSPSolve_BiCG(KSP ksp)
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBCGS, KSPCGNE
 
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_BiCG"
 PETSC_EXTERN PetscErrorCode KSPCreate_BiCG(KSP ksp)
 {
   PetscErrorCode ierr;

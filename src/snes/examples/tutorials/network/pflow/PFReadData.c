@@ -3,8 +3,6 @@
 #include <string.h>
 #include <ctype.h>
   
-#undef __FUNCT__
-#define __FUNCT__ "PFReadMatPowerData"
 PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
 {
   FILE           *fp;

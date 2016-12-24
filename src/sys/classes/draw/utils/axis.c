@@ -1,8 +1,6 @@
 
 #include <../src/sys/classes/draw/utils/axisimpl.h>  /*I   "petscdraw.h"  I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscADefLabel"
 /*
    val is the label value.  sep is the separation to the next (or previous)
    label; this is useful in determining how many significant figures to
@@ -29,8 +27,6 @@ PetscErrorCode PetscADefLabel(PetscReal val,PetscReal sep,char **p)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscADefTicks"
 /* Finds "nice" locations for the ticks */
 PetscErrorCode PetscADefTicks(PetscReal low,PetscReal high,int num,int *ntick,PetscReal *tickloc,int maxtick)
 {
@@ -61,8 +57,6 @@ PetscErrorCode PetscADefTicks(PetscReal low,PetscReal high,int num,int *ntick,Pe
 
 #define EPS 1.e-6
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscExp10"
 PetscErrorCode PetscExp10(PetscReal d,PetscReal *result)
 {
   PetscFunctionBegin;
@@ -70,8 +64,6 @@ PetscErrorCode PetscExp10(PetscReal d,PetscReal *result)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMod"
 PetscErrorCode PetscMod(PetscReal x,PetscReal y,PetscReal *result)
 {
   int i;
@@ -88,8 +80,6 @@ PetscErrorCode PetscMod(PetscReal x,PetscReal y,PetscReal *result)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscCopysign"
 PetscErrorCode PetscCopysign(PetscReal a,PetscReal b,PetscReal *result)
 {
   PetscFunctionBegin;
@@ -98,8 +88,6 @@ PetscErrorCode PetscCopysign(PetscReal a,PetscReal b,PetscReal *result)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscAGetNice"
 /*
     Given a value "in" and a "base", return a nice value.
     based on "sign", extend up (+1) or down (-1)
@@ -121,8 +109,6 @@ PetscErrorCode PetscAGetNice(PetscReal in,PetscReal base,int sign,PetscReal *res
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscAGetBase"
 PetscErrorCode PetscAGetBase(PetscReal vmin,PetscReal vmax,int num,PetscReal *Base,int *power)
 {
   PetscReal        base,ftemp,e10;

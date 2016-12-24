@@ -8,8 +8,6 @@
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>   /*I  "petscvec.h"   I*/
 #include <../src/vec/vec/impls/seq/seqcuda/cudavecimpl.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "VecDestroy_MPICUDA"
 PetscErrorCode VecDestroy_MPICUDA(Vec v)
 {
   PetscErrorCode ierr;
@@ -28,8 +26,6 @@ PetscErrorCode VecDestroy_MPICUDA(Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecNorm_MPICUDA"
 PetscErrorCode VecNorm_MPICUDA(Vec xin,NormType type,PetscReal *z)
 {
   PetscReal      sum,work = 0.0;
@@ -62,8 +58,6 @@ PetscErrorCode VecNorm_MPICUDA(Vec xin,NormType type,PetscReal *z)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecDot_MPICUDA"
 PetscErrorCode VecDot_MPICUDA(Vec xin,Vec yin,PetscScalar *z)
 {
   PetscScalar    sum,work;
@@ -76,8 +70,6 @@ PetscErrorCode VecDot_MPICUDA(Vec xin,Vec yin,PetscScalar *z)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecTDot_MPICUDA"
 PetscErrorCode VecTDot_MPICUDA(Vec xin,Vec yin,PetscScalar *z)
 {
   PetscScalar    sum,work;
@@ -90,8 +82,6 @@ PetscErrorCode VecTDot_MPICUDA(Vec xin,Vec yin,PetscScalar *z)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecMDot_MPICUDA"
 PetscErrorCode VecMDot_MPICUDA(Vec xin,PetscInt nv,const Vec y[],PetscScalar *z)
 {
   PetscScalar    awork[128],*work = awork;
@@ -121,8 +111,6 @@ PetscErrorCode VecMDot_MPICUDA(Vec xin,PetscInt nv,const Vec y[],PetscScalar *z)
 M*/
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecDuplicate_MPICUDA"
 PetscErrorCode VecDuplicate_MPICUDA(Vec win,Vec *v)
 {
   PetscErrorCode ierr;
@@ -165,8 +153,6 @@ PetscErrorCode VecDuplicate_MPICUDA(Vec win,Vec *v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecDotNorm2_MPICUDA"
 PetscErrorCode VecDotNorm2_MPICUDA(Vec s,Vec t,PetscScalar *dp,PetscScalar *nm)
 {
   PetscErrorCode ierr;
@@ -180,8 +166,6 @@ PetscErrorCode VecDotNorm2_MPICUDA(Vec s,Vec t,PetscScalar *dp,PetscScalar *nm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCreate_MPICUDA"
 PetscErrorCode VecCreate_MPICUDA(Vec vv)
 {
   PetscErrorCode ierr;
@@ -195,8 +179,6 @@ PetscErrorCode VecCreate_MPICUDA(Vec vv)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCreate_CUDA"
 PetscErrorCode VecCreate_CUDA(Vec v)
 {
   PetscErrorCode ierr;
@@ -212,8 +194,6 @@ PetscErrorCode VecCreate_CUDA(Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCreateMPICUDAWithArray"
 /*@C
    VecCreateMPICUDAWithArray - Creates a parallel, array-style vector,
    where the user provides the GPU array space to store the vector values.
@@ -263,8 +243,6 @@ PetscErrorCode  VecCreateMPICUDAWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCreate_MPICUDA_Private"
 PetscErrorCode VecCreate_MPICUDA_Private(Vec vv,PetscBool alloc,PetscInt nghost,const PetscScalar array[])
 {
   PetscErrorCode ierr;

@@ -19,8 +19,6 @@ struct _p_TSDAESimple {
   void           *data;
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "TSDAESimpleCreate"
 PetscErrorCode TSDAESimpleCreate(MPI_Comm comm,TSDAESimple *tsdae)
 {
   PetscErrorCode ierr;
@@ -31,8 +29,6 @@ PetscErrorCode TSDAESimpleCreate(MPI_Comm comm,TSDAESimple *tsdae)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSDAESimpleSetRHSFunction"
 PetscErrorCode TSDAESimpleSetRHSFunction(TSDAESimple tsdae,Vec U,PetscErrorCode (*f)(PetscReal,Vec,Vec,Vec,void*),void *ctx)
 {
   PetscErrorCode ierr;
@@ -45,8 +41,6 @@ PetscErrorCode TSDAESimpleSetRHSFunction(TSDAESimple tsdae,Vec U,PetscErrorCode 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSDAESimpleSetIFunction"
 PetscErrorCode TSDAESimpleSetIFunction(TSDAESimple tsdae,Vec V,PetscErrorCode (*F)(PetscReal,Vec,Vec,Vec,void*),void *ctx)
 {
   PetscErrorCode ierr;
@@ -59,8 +53,6 @@ PetscErrorCode TSDAESimpleSetIFunction(TSDAESimple tsdae,Vec V,PetscErrorCode (*
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSDAESimpleDestroy"
 PetscErrorCode TSDAESimpleDestroy(TSDAESimple *tsdae)
 {
   PetscErrorCode ierr;
@@ -73,8 +65,6 @@ PetscErrorCode TSDAESimpleDestroy(TSDAESimple *tsdae)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSDAESimpleSolve"
 PetscErrorCode TSDAESimpleSolve(TSDAESimple tsdae,Vec Usolution)
 {
   PetscErrorCode ierr;
@@ -84,8 +74,6 @@ PetscErrorCode TSDAESimpleSolve(TSDAESimple tsdae,Vec Usolution)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSDAESimpleSetFromOptions"
 PetscErrorCode TSDAESimpleSetFromOptions(TSDAESimple tsdae)
 {
   PetscErrorCode ierr;
@@ -108,8 +96,6 @@ typedef struct {
   Vec       U;
 } TSDAESimple_Reduced;
 
-#undef __FUNCT__
-#define __FUNCT__ "TSDAESimple_Reduced_TSFunction"
 /*
    Defines the RHS function that is passed to the time-integrator.
 
@@ -130,8 +116,6 @@ PetscErrorCode TSDAESimple_Reduced_TSFunction(TS ts,PetscReal t,Vec U,Vec F,void
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSDAESimple_Reduced_SNESFunction"
 /*
    Defines the nonlinear function that is passed to the nonlinear solver
 
@@ -148,8 +132,6 @@ PetscErrorCode TSDAESimple_Reduced_SNESFunction(SNES snes,Vec V,Vec F,void *actx
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TSDAESimpleSolve_Reduced"
 PetscErrorCode TSDAESimpleSolve_Reduced(TSDAESimple tsdae,Vec U)
 {
   PetscErrorCode      ierr;
@@ -160,8 +142,6 @@ PetscErrorCode TSDAESimpleSolve_Reduced(TSDAESimple tsdae,Vec U)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSDAESimpleSetFromOptions_Reduced"
 PetscErrorCode TSDAESimpleSetFromOptions_Reduced(PetscOptionItems *PetscOptionsObject,TSDAESimple tsdae)
 {
   PetscErrorCode      ierr;
@@ -173,8 +153,6 @@ PetscErrorCode TSDAESimpleSetFromOptions_Reduced(PetscOptionItems *PetscOptionsO
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSDAESimpleDestroy_Reduced"
 PetscErrorCode TSDAESimpleDestroy_Reduced(TSDAESimple tsdae)
 {
   PetscErrorCode      ierr;
@@ -187,8 +165,6 @@ PetscErrorCode TSDAESimpleDestroy_Reduced(TSDAESimple tsdae)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSDAESimpleSetUp_Reduced"
 PetscErrorCode TSDAESimpleSetUp_Reduced(TSDAESimple tsdae)
 {
   PetscErrorCode      ierr;
@@ -231,8 +207,6 @@ typedef struct {
   VecScatter scatterU,scatterV;
 } TSDAESimple_Full;
 
-#undef __FUNCT__
-#define __FUNCT__ "TSDAESimple_Full_TSRHSFunction"
 /*
    Defines the RHS function that is passed to the time-integrator.
 
@@ -258,8 +232,6 @@ PetscErrorCode TSDAESimple_Full_TSRHSFunction(TS ts,PetscReal t,Vec UV,Vec F,voi
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSDAESimple_Full_TSIFunction"
 /*
    Defines the nonlinear function that is passed to the nonlinear solver
 
@@ -286,8 +258,6 @@ PetscErrorCode TSDAESimple_Full_TSIFunction(TS ts,PetscReal t,Vec UV,Vec UVdot,V
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TSDAESimpleSolve_Full"
 PetscErrorCode TSDAESimpleSolve_Full(TSDAESimple tsdae,Vec U)
 {
   PetscErrorCode   ierr;
@@ -303,8 +273,6 @@ PetscErrorCode TSDAESimpleSolve_Full(TSDAESimple tsdae,Vec U)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSDAESimpleSetFromOptions_Full"
 PetscErrorCode TSDAESimpleSetFromOptions_Full(PetscOptionItems *PetscOptionsObject,TSDAESimple tsdae)
 {
   PetscErrorCode   ierr;
@@ -315,8 +283,6 @@ PetscErrorCode TSDAESimpleSetFromOptions_Full(PetscOptionItems *PetscOptionsObje
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSDAESimpleDestroy_Full"
 PetscErrorCode TSDAESimpleDestroy_Full(TSDAESimple tsdae)
 {
   PetscErrorCode   ierr;
@@ -333,8 +299,6 @@ PetscErrorCode TSDAESimpleDestroy_Full(TSDAESimple tsdae)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSDAESimpleSetUp_Full"
 PetscErrorCode TSDAESimpleSetUp_Full(TSDAESimple tsdae)
 {
   PetscErrorCode   ierr;
@@ -381,8 +345,6 @@ PetscErrorCode TSDAESimpleSetUp_Full(TSDAESimple tsdae)
 /* ----------------------------------------------------------------------------*/
 
 
-#undef __FUNCT__
-#define __FUNCT__ "f"
 /*
    Simple example:   f(U,V) = U + V
 
@@ -396,8 +358,6 @@ PetscErrorCode f(PetscReal t,Vec U,Vec V,Vec F,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "F"
 /*
    Simple example: F(U,V) = U - V
 
@@ -411,8 +371,6 @@ PetscErrorCode F(PetscReal t,Vec U,Vec V,Vec F,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;

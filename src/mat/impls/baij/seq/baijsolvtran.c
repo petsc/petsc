@@ -1,8 +1,6 @@
 #include <../src/mat/impls/baij/seq/baij.h>
 #include <petsc/private/kernels/blockinvert.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolveTranspose_SeqBAIJ_1"
 PetscErrorCode MatSolveTranspose_SeqBAIJ_1(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ       *a    = (Mat_SeqBAIJ*)A->data;
@@ -58,8 +56,6 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_1(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolveTranspose_SeqBAIJ_1_inplace"
 PetscErrorCode MatSolveTranspose_SeqBAIJ_1_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ       *a   =(Mat_SeqBAIJ*)A->data;
@@ -118,8 +114,6 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_1_inplace(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolveTranspose_SeqBAIJ_2_inplace"
 PetscErrorCode MatSolveTranspose_SeqBAIJ_2_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ       *a   =(Mat_SeqBAIJ*)A->data;
@@ -203,8 +197,6 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_2_inplace(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolveTranspose_SeqBAIJ_2"
 PetscErrorCode MatSolveTranspose_SeqBAIJ_2(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ       *a=(Mat_SeqBAIJ*)A->data;
@@ -282,8 +274,6 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_2(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolveTranspose_SeqBAIJ_3_inplace"
 PetscErrorCode MatSolveTranspose_SeqBAIJ_3_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ       *a   =(Mat_SeqBAIJ*)A->data;
@@ -372,8 +362,6 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_3_inplace(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolveTranspose_SeqBAIJ_3"
 PetscErrorCode MatSolveTranspose_SeqBAIJ_3(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ       *a=(Mat_SeqBAIJ*)A->data;
@@ -454,8 +442,6 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_3(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolveTranspose_SeqBAIJ_4_inplace"
 PetscErrorCode MatSolveTranspose_SeqBAIJ_4_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ       *a   =(Mat_SeqBAIJ*)A->data;
@@ -549,8 +535,6 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_4_inplace(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolveTranspose_SeqBAIJ_4"
 PetscErrorCode MatSolveTranspose_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ       *a=(Mat_SeqBAIJ*)A->data;
@@ -634,8 +618,6 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolveTranspose_SeqBAIJ_5_inplace"
 PetscErrorCode MatSolveTranspose_SeqBAIJ_5_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ       *a   =(Mat_SeqBAIJ*)A->data;
@@ -734,8 +716,6 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_5_inplace(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolveTranspose_SeqBAIJ_5"
 PetscErrorCode MatSolveTranspose_SeqBAIJ_5(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ       *a=(Mat_SeqBAIJ*)A->data;
@@ -824,8 +804,6 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_5(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolveTranspose_SeqBAIJ_6_inplace"
 PetscErrorCode MatSolveTranspose_SeqBAIJ_6_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ       *a   =(Mat_SeqBAIJ*)A->data;
@@ -932,8 +910,6 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_6_inplace(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolveTranspose_SeqBAIJ_6"
 PetscErrorCode MatSolveTranspose_SeqBAIJ_6(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ       *a=(Mat_SeqBAIJ*)A->data;
@@ -1028,8 +1004,6 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_6(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolveTranspose_SeqBAIJ_7_inplace"
 PetscErrorCode MatSolveTranspose_SeqBAIJ_7_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ       *a   =(Mat_SeqBAIJ*)A->data;
@@ -1140,8 +1114,6 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_7_inplace(Mat A,Vec bb,Vec xx)
   ierr = PetscLogFlops(2.0*49*(a->nz) - 7.0*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "MatSolveTranspose_SeqBAIJ_7"
 PetscErrorCode MatSolveTranspose_SeqBAIJ_7(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ       *a=(Mat_SeqBAIJ*)A->data;
@@ -1240,8 +1212,6 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_7(Mat A,Vec bb,Vec xx)
 }
 
 /* ----------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "MatSolveTranspose_SeqBAIJ_N_inplace"
 PetscErrorCode MatSolveTranspose_SeqBAIJ_N_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ       *a   =(Mat_SeqBAIJ*)A->data;
@@ -1310,8 +1280,6 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_N_inplace(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolveTranspose_SeqBAIJ_N"
 PetscErrorCode MatSolveTranspose_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ       *a   =(Mat_SeqBAIJ*)A->data;

@@ -11,8 +11,6 @@ PetscLogEvent DMPLEX_Interpolate, PETSCPARTITIONER_Partition, DMPLEX_Distribute,
 PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecLoad_Default(Vec, PetscViewer);
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetFieldType_Internal"
 PetscErrorCode DMPlexGetFieldType_Internal(DM dm, PetscSection section, PetscInt field, PetscInt *sStart, PetscInt *sEnd, PetscViewerVTKFieldType *ft)
 {
   PetscInt       dim, pStart, pEnd, vStart, vEnd, cStart, cEnd, cEndInterior, vdof = 0, cdof = 0;
@@ -47,8 +45,6 @@ PetscErrorCode DMPlexGetFieldType_Internal(DM dm, PetscSection section, PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecView_Plex_Local"
 PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
 {
   DM             dm;
@@ -96,8 +92,6 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecView_Plex_Draw"
 PetscErrorCode VecView_Plex_Draw(Vec v, PetscViewer viewer)
 {
   DM                 dm;
@@ -172,8 +166,6 @@ PetscErrorCode VecView_Plex_Draw(Vec v, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecView_Plex"
 PetscErrorCode VecView_Plex(Vec v, PetscViewer viewer)
 {
   DM             dm;
@@ -213,8 +205,6 @@ PetscErrorCode VecView_Plex(Vec v, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecView_Plex_Native"
 PetscErrorCode VecView_Plex_Native(Vec originalv, PetscViewer viewer)
 {
   DM                dm;
@@ -269,8 +259,6 @@ PetscErrorCode VecView_Plex_Native(Vec originalv, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecLoad_Plex_Local"
 PetscErrorCode VecLoad_Plex_Local(Vec v, PetscViewer viewer)
 {
   DM             dm;
@@ -300,8 +288,6 @@ PetscErrorCode VecLoad_Plex_Local(Vec v, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecLoad_Plex"
 PetscErrorCode VecLoad_Plex(Vec v, PetscViewer viewer)
 {
   DM             dm;
@@ -324,8 +310,6 @@ PetscErrorCode VecLoad_Plex(Vec v, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecLoad_Plex_Native"
 PetscErrorCode VecLoad_Plex_Native(Vec originalv, PetscViewer viewer)
 {
   DM                dm;
@@ -361,8 +345,6 @@ PetscErrorCode VecLoad_Plex_Native(Vec originalv, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexView_Ascii_Geometry"
 PetscErrorCode DMPlexView_Ascii_Geometry(DM dm, PetscViewer viewer)
 {
   PetscSection       coordSection;
@@ -418,8 +400,6 @@ PetscErrorCode DMPlexView_Ascii_Geometry(DM dm, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexView_Ascii"
 PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
 {
   DM_Plex          *mesh = (DM_Plex*) dm->data;
@@ -746,8 +726,6 @@ PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexView_Draw"
 PetscErrorCode DMPlexView_Draw(DM dm, PetscViewer viewer)
 {
   PetscDraw          draw;
@@ -811,8 +789,6 @@ PetscErrorCode DMPlexView_Draw(DM dm, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMView_Plex"
 PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
 {
   PetscBool      iascii, ishdf5, isvtk, isdraw;
@@ -843,8 +819,6 @@ PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLoad_Plex"
 PetscErrorCode DMLoad_Plex(DM dm, PetscViewer viewer)
 {
   PetscBool      isbinary, ishdf5;
@@ -867,8 +841,6 @@ PetscErrorCode DMLoad_Plex(DM dm, PetscViewer viewer)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDestroy_Plex"
 PetscErrorCode DMDestroy_Plex(DM dm)
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
@@ -904,8 +876,6 @@ PetscErrorCode DMDestroy_Plex(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateMatrix_Plex"
 PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
 {
   PetscSection           sectionGlobal;
@@ -999,8 +969,6 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetSubdomainSection"
 /*
   DMPlexGetSubdomainGlobalSection - Returns the section associated with the subdomain
 
@@ -1036,8 +1004,6 @@ PetscErrorCode DMPlexGetSubdomainSection(DM dm, PetscSection *subsection)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetChart"
 /*@
   DMPlexGetChart - Return the interval for all mesh points [pStart, pEnd)
 
@@ -1065,8 +1031,6 @@ PetscErrorCode DMPlexGetChart(DM dm, PetscInt *pStart, PetscInt *pEnd)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexSetChart"
 /*@
   DMPlexSetChart - Set the interval for all mesh points [pStart, pEnd)
 
@@ -1095,8 +1059,6 @@ PetscErrorCode DMPlexSetChart(DM dm, PetscInt pStart, PetscInt pEnd)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetConeSize"
 /*@
   DMPlexGetConeSize - Return the number of in-edges for this point in the Sieve DAG
 
@@ -1125,8 +1087,6 @@ PetscErrorCode DMPlexGetConeSize(DM dm, PetscInt p, PetscInt *size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexSetConeSize"
 /*@
   DMPlexSetConeSize - Set the number of in-edges for this point in the Sieve DAG
 
@@ -1159,8 +1119,6 @@ PetscErrorCode DMPlexSetConeSize(DM dm, PetscInt p, PetscInt size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexAddConeSize"
 /*@
   DMPlexAddConeSize - Add the given number of in-edges to this point in the Sieve DAG
 
@@ -1195,8 +1153,6 @@ PetscErrorCode DMPlexAddConeSize(DM dm, PetscInt p, PetscInt size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetCone"
 /*@C
   DMPlexGetCone - Return the points on the in-edges for this point in the Sieve DAG
 
@@ -1233,8 +1189,6 @@ PetscErrorCode DMPlexGetCone(DM dm, PetscInt p, const PetscInt *cone[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexSetCone"
 /*@
   DMPlexSetCone - Set the points on the in-edges for this point in the Sieve DAG
 
@@ -1275,8 +1229,6 @@ PetscErrorCode DMPlexSetCone(DM dm, PetscInt p, const PetscInt cone[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetConeOrientation"
 /*@C
   DMPlexGetConeOrientation - Return the orientations on the in-edges for this point in the Sieve DAG
 
@@ -1323,8 +1275,6 @@ PetscErrorCode DMPlexGetConeOrientation(DM dm, PetscInt p, const PetscInt *coneO
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexSetConeOrientation"
 /*@
   DMPlexSetConeOrientation - Set the orientations on the in-edges for this point in the Sieve DAG
 
@@ -1371,8 +1321,6 @@ PetscErrorCode DMPlexSetConeOrientation(DM dm, PetscInt p, const PetscInt coneOr
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexInsertCone"
 PetscErrorCode DMPlexInsertCone(DM dm, PetscInt p, PetscInt conePos, PetscInt conePoint)
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
@@ -1392,8 +1340,6 @@ PetscErrorCode DMPlexInsertCone(DM dm, PetscInt p, PetscInt conePos, PetscInt co
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexInsertConeOrientation"
 PetscErrorCode DMPlexInsertConeOrientation(DM dm, PetscInt p, PetscInt conePos, PetscInt coneOrientation)
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
@@ -1412,8 +1358,6 @@ PetscErrorCode DMPlexInsertConeOrientation(DM dm, PetscInt p, PetscInt conePos, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetSupportSize"
 /*@
   DMPlexGetSupportSize - Return the number of out-edges for this point in the Sieve DAG
 
@@ -1442,8 +1386,6 @@ PetscErrorCode DMPlexGetSupportSize(DM dm, PetscInt p, PetscInt *size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexSetSupportSize"
 /*@
   DMPlexSetSupportSize - Set the number of out-edges for this point in the Sieve DAG
 
@@ -1476,8 +1418,6 @@ PetscErrorCode DMPlexSetSupportSize(DM dm, PetscInt p, PetscInt size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetSupport"
 /*@C
   DMPlexGetSupport - Return the points on the out-edges for this point in the Sieve DAG
 
@@ -1514,8 +1454,6 @@ PetscErrorCode DMPlexGetSupport(DM dm, PetscInt p, const PetscInt *support[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexSetSupport"
 /*@
   DMPlexSetSupport - Set the points on the out-edges for this point in the Sieve DAG
 
@@ -1556,8 +1494,6 @@ PetscErrorCode DMPlexSetSupport(DM dm, PetscInt p, const PetscInt support[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexInsertSupport"
 PetscErrorCode DMPlexInsertSupport(DM dm, PetscInt p, PetscInt supportPos, PetscInt supportPoint)
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
@@ -1577,8 +1513,6 @@ PetscErrorCode DMPlexInsertSupport(DM dm, PetscInt p, PetscInt supportPos, Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetTransitiveClosure"
 /*@C
   DMPlexGetTransitiveClosure - Return the points on the transitive closure of the in-edges or out-edges for this point in the Sieve DAG
 
@@ -1722,8 +1656,6 @@ PetscErrorCode DMPlexGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCone, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetTransitiveClosure_Internal"
 /*@C
   DMPlexGetTransitiveClosure_Internal - Return the points on the transitive closure of the in-edges or out-edges for this point in the Sieve DAG with a specified initial orientation
 
@@ -1876,8 +1808,6 @@ PetscErrorCode DMPlexGetTransitiveClosure_Internal(DM dm, PetscInt p, PetscInt o
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexRestoreTransitiveClosure"
 /*@C
   DMPlexRestoreTransitiveClosure - Restore the array of points on the transitive closure of the in-edges or out-edges for this point in the Sieve DAG
 
@@ -1916,8 +1846,6 @@ PetscErrorCode DMPlexRestoreTransitiveClosure(DM dm, PetscInt p, PetscBool useCo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetMaxSizes"
 /*@
   DMPlexGetMaxSizes - Return the maximum number of in-edges (cone) and out-edges (support) for any point in the Sieve DAG
 
@@ -1945,8 +1873,6 @@ PetscErrorCode DMPlexGetMaxSizes(DM dm, PetscInt *maxConeSize, PetscInt *maxSupp
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetUp_Plex"
 PetscErrorCode DMSetUp_Plex(DM dm)
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
@@ -1967,8 +1893,6 @@ PetscErrorCode DMSetUp_Plex(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateSubDM_Plex"
 PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm)
 {
   PetscErrorCode ierr;
@@ -1979,8 +1903,6 @@ PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, PetscInt fields[], 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexSymmetrize"
 /*@
   DMPlexSymmetrize - Creates support (out-edge) information from cone (in-edge) inoformation
 
@@ -2051,8 +1973,6 @@ PetscErrorCode DMPlexSymmetrize(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexStratify"
 /*@
   DMPlexStratify - The Sieve DAG for most topologies is a graded poset (http://en.wikipedia.org/wiki/Graded_poset), and
   can be illustrated by Hasse Diagram (a http://en.wikipedia.org/wiki/Hasse_diagram). The strata group all points of the
@@ -2185,8 +2105,6 @@ PetscErrorCode DMPlexStratify(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetJoin"
 /*@C
   DMPlexGetJoin - Get an array for the join of the set of points
 
@@ -2260,8 +2178,6 @@ PetscErrorCode DMPlexGetJoin(DM dm, PetscInt numPoints, const PetscInt points[],
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexRestoreJoin"
 /*@C
   DMPlexRestoreJoin - Restore an array for the join of the set of points
 
@@ -2301,8 +2217,6 @@ PetscErrorCode DMPlexRestoreJoin(DM dm, PetscInt numPoints, const PetscInt point
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetFullJoin"
 /*@C
   DMPlexGetFullJoin - Get an array for the join of the set of points
 
@@ -2410,8 +2324,6 @@ PetscErrorCode DMPlexGetFullJoin(DM dm, PetscInt numPoints, const PetscInt point
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetMeet"
 /*@C
   DMPlexGetMeet - Get an array for the meet of the set of points
 
@@ -2485,8 +2397,6 @@ PetscErrorCode DMPlexGetMeet(DM dm, PetscInt numPoints, const PetscInt points[],
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexRestoreMeet"
 /*@C
   DMPlexRestoreMeet - Restore an array for the meet of the set of points
 
@@ -2526,8 +2436,6 @@ PetscErrorCode DMPlexRestoreMeet(DM dm, PetscInt numPoints, const PetscInt point
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetFullMeet"
 /*@C
   DMPlexGetFullMeet - Get an array for the meet of the set of points
 
@@ -2635,8 +2543,6 @@ PetscErrorCode DMPlexGetFullMeet(DM dm, PetscInt numPoints, const PetscInt point
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexEqual"
 /*@C
   DMPlexEqual - Determine if two DMs have the same topology
 
@@ -2702,8 +2608,6 @@ PetscErrorCode DMPlexEqual(DM dmA, DM dmB, PetscBool *equal)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetNumFaceVertices"
 PetscErrorCode DMPlexGetNumFaceVertices(DM dm, PetscInt cellDim, PetscInt numCorners, PetscInt *numFaceVertices)
 {
   MPI_Comm       comm;
@@ -2773,8 +2677,6 @@ PetscErrorCode DMPlexGetNumFaceVertices(DM dm, PetscInt cellDim, PetscInt numCor
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetDepthLabel"
 /*@
   DMPlexGetDepthLabel - Get the DMLabel recording the depth of each point
 
@@ -2803,8 +2705,6 @@ PetscErrorCode DMPlexGetDepthLabel(DM dm, DMLabel *depthLabel)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetDepth"
 /*@
   DMPlexGetDepth - Get the depth of the DAG representing this mesh
 
@@ -2836,8 +2736,6 @@ PetscErrorCode DMPlexGetDepth(DM dm, PetscInt *depth)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetDepthStratum"
 /*@
   DMPlexGetDepthStratum - Get the bounds [start, end) for all points at a certain depth.
 
@@ -2879,8 +2777,6 @@ PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *sta
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetHeightStratum"
 /*@
   DMPlexGetHeightStratum - Get the bounds [start, end) for all points at a certain height.
 
@@ -2923,8 +2819,6 @@ PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *st
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateSectionInitial"
 /* Set the number of dof on each point and separate by fields */
 PetscErrorCode DMPlexCreateSectionInitial(DM dm, PetscInt dim, PetscInt numFields,const PetscInt numComp[],const PetscInt numDof[], PetscSection *section)
 {
@@ -3055,8 +2949,6 @@ PetscErrorCode DMPlexCreateSectionInitial(DM dm, PetscInt dim, PetscInt numField
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateSectionBCDof"
 /* Set the number of dof on each point and separate by fields
    If bcComps is NULL or the IS is NULL, constrain every dof on the point
 */
@@ -3120,8 +3012,6 @@ PetscErrorCode DMPlexCreateSectionBCDof(DM dm, PetscInt numBC, const PetscInt bc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateSectionBCIndicesField"
 /* Set the constrained field indices on each point
    If bcComps is NULL or the IS is NULL, constrain every dof on the point
 */
@@ -3195,8 +3085,6 @@ PetscErrorCode DMPlexCreateSectionBCIndicesField(DM dm, PetscInt numBC,const Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateSectionBCIndices"
 /* Set the constrained indices on each point */
 PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section)
 {
@@ -3241,8 +3129,6 @@ PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateSection"
 /*@C
   DMPlexCreateSection - Create a PetscSection based upon the dof layout specification provided.
 
@@ -3295,8 +3181,6 @@ PetscErrorCode DMPlexCreateSection(DM dm, PetscInt dim, PetscInt numFields,const
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateCoordinateDM_Plex"
 PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm)
 {
   PetscSection   section, s;
@@ -3319,8 +3203,6 @@ PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetConeSection"
 PetscErrorCode DMPlexGetConeSection(DM dm, PetscSection *section)
 {
   DM_Plex *mesh = (DM_Plex*) dm->data;
@@ -3331,8 +3213,6 @@ PetscErrorCode DMPlexGetConeSection(DM dm, PetscSection *section)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetSupportSection"
 PetscErrorCode DMPlexGetSupportSection(DM dm, PetscSection *section)
 {
   DM_Plex *mesh = (DM_Plex*) dm->data;
@@ -3343,8 +3223,6 @@ PetscErrorCode DMPlexGetSupportSection(DM dm, PetscSection *section)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetCones"
 PetscErrorCode DMPlexGetCones(DM dm, PetscInt *cones[])
 {
   DM_Plex *mesh = (DM_Plex*) dm->data;
@@ -3355,8 +3233,6 @@ PetscErrorCode DMPlexGetCones(DM dm, PetscInt *cones[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetConeOrientations"
 PetscErrorCode DMPlexGetConeOrientations(DM dm, PetscInt *coneOrientations[])
 {
   DM_Plex *mesh = (DM_Plex*) dm->data;
@@ -3369,8 +3245,6 @@ PetscErrorCode DMPlexGetConeOrientations(DM dm, PetscInt *coneOrientations[])
 
 /******************************** FEM Support **********************************/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateSpectralClosurePermutation"
 PetscErrorCode DMPlexCreateSpectralClosurePermutation(DM dm, PetscSection section)
 {
   PetscInt      *perm;
@@ -3563,8 +3437,6 @@ PetscErrorCode DMPlexCreateSpectralClosurePermutation(DM dm, PetscSection sectio
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetPointDualSpaceFEM"
 PetscErrorCode DMPlexGetPointDualSpaceFEM(DM dm, PetscInt point, PetscInt field, PetscDualSpace *dspace)
 {
   PetscDS        prob;
@@ -3598,8 +3470,6 @@ PetscErrorCode DMPlexGetPointDualSpaceFEM(DM dm, PetscInt point, PetscInt field,
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexVecGetClosure_Depth1_Static"
 PETSC_STATIC_INLINE PetscErrorCode DMPlexVecGetClosure_Depth1_Static(DM dm, PetscSection section, Vec v, PetscInt point, PetscInt *csize, PetscScalar *values[])
 {
   PetscScalar    *array, *vArray;
@@ -3681,8 +3551,6 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexVecGetClosure_Depth1_Static(DM dm, Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetCompressedClosure"
 static PetscErrorCode DMPlexGetCompressedClosure(DM dm, PetscSection section, PetscInt point, PetscInt *numPoints, PetscInt **points, PetscSection *clSec, IS *clPoints, const PetscInt **clp)
 {
   const PetscInt *cla;
@@ -3723,8 +3591,6 @@ static PetscErrorCode DMPlexGetCompressedClosure(DM dm, PetscSection section, Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexRestoreCompressedClosure"
 static PetscErrorCode DMPlexRestoreCompressedClosure(DM dm, PetscSection section, PetscInt point, PetscInt *numPoints, PetscInt **points, PetscSection *clSec, IS *clPoints, const PetscInt **clp)
 {
   PetscErrorCode ierr;
@@ -3743,8 +3609,6 @@ static PetscErrorCode DMPlexRestoreCompressedClosure(DM dm, PetscSection section
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexVecGetClosure_Static"
 PETSC_STATIC_INLINE PetscErrorCode DMPlexVecGetClosure_Static(DM dm, PetscSection section, PetscInt numPoints, const PetscInt points[], const PetscInt clperm[], const PetscScalar vArray[], PetscInt *size, PetscScalar array[])
 {
   PetscInt          offset = 0, p;
@@ -3791,8 +3655,6 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexVecGetClosure_Static(DM dm, PetscSectio
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexVecGetClosure_Fields_Static"
 PETSC_STATIC_INLINE PetscErrorCode DMPlexVecGetClosure_Fields_Static(DM dm, PetscSection section, PetscInt numPoints, const PetscInt points[], PetscInt numFields, const PetscInt clperm[], const PetscScalar vArray[], PetscInt *size, PetscScalar array[])
 {
   PetscInt          offset = 0, f;
@@ -3833,8 +3695,6 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexVecGetClosure_Fields_Static(DM dm, Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexVecGetClosure"
 /*@C
   DMPlexVecGetClosure - Get an array of the values on the closure of 'point'
 
@@ -3919,8 +3779,6 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexVecRestoreClosure"
 /*@C
   DMPlexVecRestoreClosure - Restore the array of the values on the closure of 'point'
 
@@ -3958,8 +3816,6 @@ PetscErrorCode DMPlexVecRestoreClosure(DM dm, PetscSection section, Vec v, Petsc
 PETSC_STATIC_INLINE void add   (PetscScalar *x, PetscScalar y) {*x += y;}
 PETSC_STATIC_INLINE void insert(PetscScalar *x, PetscScalar y) {*x  = y;}
 
-#undef __FUNCT__
-#define __FUNCT__ "updatePoint_private"
 PETSC_STATIC_INLINE PetscErrorCode updatePoint_private(PetscSection section, PetscInt point, PetscInt dof, void (*fuse)(PetscScalar*, PetscScalar), PetscBool setBC, const PetscInt perm[], const PetscScalar flip[], const PetscInt clperm[], const PetscScalar values[], PetscInt offset, PetscScalar array[])
 {
   PetscInt        cdof;   /* The number of constraints on this point */
@@ -4010,8 +3866,6 @@ PETSC_STATIC_INLINE PetscErrorCode updatePoint_private(PetscSection section, Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "updatePointBC_private"
 PETSC_STATIC_INLINE PetscErrorCode updatePointBC_private(PetscSection section, PetscInt point, PetscInt dof, void (*fuse)(PetscScalar*, PetscScalar), const PetscInt perm[], const PetscScalar flip[], const PetscInt clperm[], const PetscScalar values[], PetscInt offset, PetscScalar array[])
 {
   PetscInt        cdof;   /* The number of constraints on this point */
@@ -4063,8 +3917,6 @@ PETSC_STATIC_INLINE PetscErrorCode updatePointBC_private(PetscSection section, P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "updatePointFields_private"
 PETSC_STATIC_INLINE PetscErrorCode updatePointFields_private(PetscSection section, PetscInt point, const PetscInt *perm, const PetscScalar *flip, PetscInt f, void (*fuse)(PetscScalar*, PetscScalar), PetscBool setBC, const PetscInt clperm[], const PetscScalar values[], PetscInt *offset, PetscScalar array[])
 {
   PetscScalar    *a;
@@ -4118,8 +3970,6 @@ PETSC_STATIC_INLINE PetscErrorCode updatePointFields_private(PetscSection sectio
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "updatePointFieldsBC_private"
 PETSC_STATIC_INLINE PetscErrorCode updatePointFieldsBC_private(PetscSection section, PetscInt point, const PetscInt perm[], const PetscScalar flip[], PetscInt f, void (*fuse)(PetscScalar*, PetscScalar), const PetscInt clperm[], const PetscScalar values[], PetscInt *offset, PetscScalar array[])
 {
   PetscScalar    *a;
@@ -4173,8 +4023,6 @@ PETSC_STATIC_INLINE PetscErrorCode updatePointFieldsBC_private(PetscSection sect
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexVecSetClosure_Depth1_Static"
 PETSC_STATIC_INLINE PetscErrorCode DMPlexVecSetClosure_Depth1_Static(DM dm, PetscSection section, Vec v, PetscInt point, const PetscScalar values[], InsertMode mode)
 {
   PetscScalar    *array;
@@ -4233,8 +4081,6 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexVecSetClosure_Depth1_Static(DM dm, Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexVecSetClosure"
 /*@C
   DMPlexVecSetClosure - Set an array of the values on the closure of 'point'
 
@@ -4404,8 +4250,6 @@ PetscErrorCode DMPlexVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexVecSetFieldClosure_Internal"
 PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM dm, PetscSection section, Vec v, PetscBool fieldActive[], PetscInt point, const PetscScalar values[], InsertMode mode)
 {
   PetscSection      clSection;
@@ -4490,8 +4334,6 @@ PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM dm, PetscSection section, Ve
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexPrintMatSetValues"
 PetscErrorCode DMPlexPrintMatSetValues(PetscViewer viewer, Mat A, PetscInt point, PetscInt numRIndices, const PetscInt rindices[], PetscInt numCIndices, const PetscInt cindices[], const PetscScalar values[])
 {
   PetscMPIInt    rank;
@@ -4518,8 +4360,6 @@ PetscErrorCode DMPlexPrintMatSetValues(PetscViewer viewer, Mat A, PetscInt point
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetIndicesPoint_Internal"
 /* . off - The global offset of this point */
 PetscErrorCode DMPlexGetIndicesPoint_Internal(PetscSection section, PetscInt point, PetscInt off, PetscInt *loff, PetscBool setBC, const PetscInt perm[], PetscInt indices[])
 {
@@ -4566,8 +4406,6 @@ PetscErrorCode DMPlexGetIndicesPoint_Internal(PetscSection section, PetscInt poi
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetIndicesPointFields_Internal"
 /* . off - The global offset of this point */
 PetscErrorCode DMPlexGetIndicesPointFields_Internal(PetscSection section, PetscInt point, PetscInt off, PetscInt foffs[], PetscBool setBC, const PetscInt ***perms, PetscInt permsoff, PetscInt indices[])
 {
@@ -4615,8 +4453,6 @@ PetscErrorCode DMPlexGetIndicesPointFields_Internal(PetscSection section, PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexAnchorsModifyMat"
 PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscInt numPoints, PetscInt numIndices, const PetscInt points[], const PetscInt ***perms, const PetscScalar values[], PetscInt *outNumPoints, PetscInt *outNumIndices, PetscInt *outPoints[], PetscScalar *outValues[], PetscInt offsets[], PetscBool multiplyLeft)
 {
   Mat             cMat;
@@ -5141,8 +4977,6 @@ PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscInt numP
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetClosureIndices"
 PetscErrorCode DMPlexGetClosureIndices(DM dm, PetscSection section, PetscSection globalSection, PetscInt point, PetscInt *numIndices, PetscInt **indices, PetscInt *outOffsets)
 {
   PetscSection    clSection;
@@ -5239,8 +5073,6 @@ PetscErrorCode DMPlexGetClosureIndices(DM dm, PetscSection section, PetscSection
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexRestoreClosureIndices"
 PetscErrorCode DMPlexRestoreClosureIndices(DM dm, PetscSection section, PetscSection globalSection, PetscInt point, PetscInt *numIndices, PetscInt **indices,PetscInt *outOffsets)
 {
   PetscErrorCode ierr;
@@ -5252,8 +5084,6 @@ PetscErrorCode DMPlexRestoreClosureIndices(DM dm, PetscSection section, PetscSec
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexMatSetClosure"
 /*@C
   DMPlexMatSetClosure - Set an array of the values on the closure of 'point'
 
@@ -5420,8 +5250,6 @@ PetscErrorCode DMPlexMatSetClosure(DM dm, PetscSection section, PetscSection glo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexMatSetClosureRefined"
 PetscErrorCode DMPlexMatSetClosureRefined(DM dmf, PetscSection fsection, PetscSection globalFSection, DM dmc, PetscSection csection, PetscSection globalCSection, Mat A, PetscInt point, const PetscScalar values[], InsertMode mode)
 {
   DM_Plex        *mesh   = (DM_Plex*) dmf->data;
@@ -5577,8 +5405,6 @@ PetscErrorCode DMPlexMatSetClosureRefined(DM dmf, PetscSection fsection, PetscSe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexMatGetClosureIndicesRefined"
 PetscErrorCode DMPlexMatGetClosureIndicesRefined(DM dmf, PetscSection fsection, PetscSection globalFSection, DM dmc, PetscSection csection, PetscSection globalCSection, PetscInt point, PetscInt cindices[], PetscInt findices[])
 {
   PetscInt      *fpoints = NULL, *ftotpoints = NULL;
@@ -5713,8 +5539,6 @@ PetscErrorCode DMPlexMatGetClosureIndicesRefined(DM dmf, PetscSection fsection, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetHybridBounds"
 /*@
   DMPlexGetHybridBounds - Get the first mesh point of each dimension which is a hybrid
 
@@ -5747,8 +5571,6 @@ PetscErrorCode DMPlexGetHybridBounds(DM dm, PetscInt *cMax, PetscInt *fMax, Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexSetHybridBounds"
 /*@
   DMPlexSetHybridBounds - Set the first mesh point of each dimension which is a hybrid
 
@@ -5779,8 +5601,6 @@ PetscErrorCode DMPlexSetHybridBounds(DM dm, PetscInt cMax, PetscInt fMax, PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetVTKCellHeight"
 PetscErrorCode DMPlexGetVTKCellHeight(DM dm, PetscInt *cellHeight)
 {
   DM_Plex *mesh = (DM_Plex*) dm->data;
@@ -5792,8 +5612,6 @@ PetscErrorCode DMPlexGetVTKCellHeight(DM dm, PetscInt *cellHeight)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexSetVTKCellHeight"
 PetscErrorCode DMPlexSetVTKCellHeight(DM dm, PetscInt cellHeight)
 {
   DM_Plex *mesh = (DM_Plex*) dm->data;
@@ -5804,8 +5622,6 @@ PetscErrorCode DMPlexSetVTKCellHeight(DM dm, PetscInt cellHeight)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateNumbering_Private"
 /* We can easily have a form that takes an IS instead */
 static PetscErrorCode DMPlexCreateNumbering_Private(DM dm, PetscInt pStart, PetscInt pEnd, PetscInt shift, PetscInt *globalSize, PetscSF sf, IS *numbering)
 {
@@ -5839,8 +5655,6 @@ static PetscErrorCode DMPlexCreateNumbering_Private(DM dm, PetscInt pStart, Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateCellNumbering_Internal"
 PetscErrorCode DMPlexCreateCellNumbering_Internal(DM dm, PetscBool includeHybrid, IS *globalCellNumbers)
 {
   PetscInt       cellHeight, cStart, cEnd, cMax;
@@ -5855,8 +5669,6 @@ PetscErrorCode DMPlexCreateCellNumbering_Internal(DM dm, PetscBool includeHybrid
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetCellNumbering"
 PetscErrorCode DMPlexGetCellNumbering(DM dm, IS *globalCellNumbers)
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
@@ -5869,8 +5681,6 @@ PetscErrorCode DMPlexGetCellNumbering(DM dm, IS *globalCellNumbers)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateVertexNumbering_Internal"
 PetscErrorCode DMPlexCreateVertexNumbering_Internal(DM dm, PetscBool includeHybrid, IS *globalVertexNumbers)
 {
   PetscInt       vStart, vEnd, vMax;
@@ -5885,8 +5695,6 @@ PetscErrorCode DMPlexCreateVertexNumbering_Internal(DM dm, PetscBool includeHybr
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetVertexNumbering"
 PetscErrorCode DMPlexGetVertexNumbering(DM dm, IS *globalVertexNumbers)
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
@@ -5899,8 +5707,6 @@ PetscErrorCode DMPlexGetVertexNumbering(DM dm, IS *globalVertexNumbers)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreatePointNumbering"
 PetscErrorCode DMPlexCreatePointNumbering(DM dm, IS *globalPointNumbers)
 {
   IS             nums[4];
@@ -5927,8 +5733,6 @@ PetscErrorCode DMPlexCreatePointNumbering(DM dm, IS *globalPointNumbers)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCheckSymmetry"
 /*@
   DMPlexCheckSymmetry - Check that the adjacency information in the mesh is symmetric.
 
@@ -6013,8 +5817,6 @@ PetscErrorCode DMPlexCheckSymmetry(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCheckSkeleton"
 /*@
   DMPlexCheckSkeleton - Check that each cell has the correct number of vertices
 
@@ -6073,8 +5875,6 @@ PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscBool isSimplex, PetscInt cellHeig
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCheckFaces"
 /*@
   DMPlexCheckFaces - Check that the faces of each cell give a vertex order this is consistent with what we expect from the cell type
 
@@ -6139,8 +5939,6 @@ PetscErrorCode DMPlexCheckFaces(DM dm, PetscBool isSimplex, PetscInt cellHeight)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateInterpolation_Plex"
 /* Pointwise interpolation
      Just code FEM for now
      u^f = I u^c
@@ -6178,8 +5976,6 @@ PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, Mat *interpola
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateInjection_Plex"
 PetscErrorCode DMCreateInjection_Plex(DM dmCoarse, DM dmFine, Mat *mat)
 {
   PetscErrorCode ierr;
@@ -6192,8 +5988,6 @@ PetscErrorCode DMCreateInjection_Plex(DM dmCoarse, DM dmFine, Mat *mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateDefaultSection_Plex"
 PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
 {
   PetscSection   section;
@@ -6361,8 +6155,6 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetRegularRefinement"
 /*@
   DMPlexGetRegularRefinement - Get the flag indicating that this mesh was obtained by regular refinement from its coarse mesh
 
@@ -6385,8 +6177,6 @@ PetscErrorCode DMPlexGetRegularRefinement(DM dm, PetscBool *regular)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexSetRegularRefinement"
 /*@
   DMPlexSetRegularRefinement - Set the flag indicating that this mesh was obtained by regular refinement from its coarse mesh
 
@@ -6407,8 +6197,6 @@ PetscErrorCode DMPlexSetRegularRefinement(DM dm, PetscBool regular)
 }
 
 /* anchors */
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetAnchors"
 /*@
   DMPlexGetAnchors - Get the layout of the anchor (point-to-point) constraints.  Typically, the user will not have to
   call DMPlexGetAnchors() directly: if there are anchors, then DMPlexGetAnchors() is called during DMGetConstraints().
@@ -6440,8 +6228,6 @@ PetscErrorCode DMPlexGetAnchors(DM dm, PetscSection *anchorSection, IS *anchorIS
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexSetAnchors"
 /*@
   DMPlexSetAnchors - Set the layout of the local anchor (point-to-point) constraints.  Unlike boundary conditions,
   when a point's degrees of freedom in a section are constrained to an outside value, the anchor constraints set a
@@ -6522,8 +6308,6 @@ PetscErrorCode DMPlexSetAnchors(DM dm, PetscSection anchorSection, IS anchorIS)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateConstraintSection_Anchors"
 static PetscErrorCode DMPlexCreateConstraintSection_Anchors(DM dm, PetscSection section, PetscSection *cSec)
 {
   PetscSection anchorSection;
@@ -6567,8 +6351,6 @@ static PetscErrorCode DMPlexCreateConstraintSection_Anchors(DM dm, PetscSection 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateConstraintMatrix_Anchors"
 static PetscErrorCode DMPlexCreateConstraintMatrix_Anchors(DM dm, PetscSection section, PetscSection cSec, Mat *cMat)
 {
   PetscSection aSec;
@@ -6677,8 +6459,6 @@ static PetscErrorCode DMPlexCreateConstraintMatrix_Anchors(DM dm, PetscSection s
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateDefaultConstraints_Plex"
 PetscErrorCode DMCreateDefaultConstraints_Plex(DM dm)
 {
   DM_Plex        *plex = (DM_Plex *)dm->data;

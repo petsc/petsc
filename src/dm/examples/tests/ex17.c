@@ -4,8 +4,6 @@ static char help[] = "Tests DMDA interpolation for coarse DM on a subset of proc
 #include <petscdm.h>
 #include <petscdmda.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscInt       M = 14,dof = 1,s = 1,ratio = 2,dim = 2;

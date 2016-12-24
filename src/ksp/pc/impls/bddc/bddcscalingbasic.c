@@ -10,8 +10,6 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC);
 static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Private(PC);
 static PetscErrorCode PCBDDCScalingReset_Deluxe_Solvers(PCBDDCDeluxeScaling);
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCMatTransposeMatSolve_SeqDense"
 static PetscErrorCode PCBDDCMatTransposeMatSolve_SeqDense(Mat A,Mat B,Mat X)
 {
   Mat_SeqDense   *mat = (Mat_SeqDense*)A->data;
@@ -58,8 +56,6 @@ static PetscErrorCode PCBDDCMatTransposeMatSolve_SeqDense(Mat A,Mat B,Mat X)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCScalingExtension_Basic"
 static PetscErrorCode PCBDDCScalingExtension_Basic(PC pc, Vec local_interface_vector, Vec global_vector)
 {
   PC_IS*         pcis = (PC_IS*)pc->data;
@@ -75,8 +71,6 @@ static PetscErrorCode PCBDDCScalingExtension_Basic(PC pc, Vec local_interface_ve
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCScalingExtension_Deluxe"
 static PetscErrorCode PCBDDCScalingExtension_Deluxe(PC pc, Vec x, Vec y)
 {
   PC_IS*              pcis=(PC_IS*)pc->data;
@@ -149,8 +143,6 @@ static PetscErrorCode PCBDDCScalingExtension_Deluxe(PC pc, Vec x, Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCScalingExtension"
 PetscErrorCode PCBDDCScalingExtension(PC pc, Vec local_interface_vector, Vec global_vector)
 {
   PC_BDDC        *pcbddc=(PC_BDDC*)pc->data;
@@ -165,8 +157,6 @@ PetscErrorCode PCBDDCScalingExtension(PC pc, Vec local_interface_vector, Vec glo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCScalingRestriction_Basic"
 static PetscErrorCode PCBDDCScalingRestriction_Basic(PC pc, Vec global_vector, Vec local_interface_vector)
 {
   PetscErrorCode ierr;
@@ -180,8 +170,6 @@ static PetscErrorCode PCBDDCScalingRestriction_Basic(PC pc, Vec global_vector, V
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCScalingRestriction_Deluxe"
 static PetscErrorCode PCBDDCScalingRestriction_Deluxe(PC pc, Vec x, Vec y)
 {
   PC_IS*              pcis=(PC_IS*)pc->data;
@@ -250,8 +238,6 @@ static PetscErrorCode PCBDDCScalingRestriction_Deluxe(PC pc, Vec x, Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCScalingRestriction"
 PetscErrorCode PCBDDCScalingRestriction(PC pc, Vec global_vector, Vec local_interface_vector)
 {
   PC_BDDC        *pcbddc=(PC_BDDC*)pc->data;
@@ -266,8 +252,6 @@ PetscErrorCode PCBDDCScalingRestriction(PC pc, Vec global_vector, Vec local_inte
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCScalingSetUp"
 PetscErrorCode PCBDDCScalingSetUp(PC pc)
 {
   PC_IS*         pcis=(PC_IS*)pc->data;
@@ -368,8 +352,6 @@ PetscErrorCode PCBDDCScalingSetUp(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCScalingDestroy"
 PetscErrorCode PCBDDCScalingDestroy(PC pc)
 {
   PC_BDDC*       pcbddc=(PC_BDDC*)pc->data;
@@ -385,8 +367,6 @@ PetscErrorCode PCBDDCScalingDestroy(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCScalingCreate_Deluxe"
 static PetscErrorCode PCBDDCScalingCreate_Deluxe(PC pc)
 {
   PC_BDDC*            pcbddc=(PC_BDDC*)pc->data;
@@ -399,8 +379,6 @@ static PetscErrorCode PCBDDCScalingCreate_Deluxe(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCScalingDestroy_Deluxe"
 static PetscErrorCode PCBDDCScalingDestroy_Deluxe(PC pc)
 {
   PC_BDDC*            pcbddc=(PC_BDDC*)pc->data;
@@ -412,8 +390,6 @@ static PetscErrorCode PCBDDCScalingDestroy_Deluxe(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCScalingReset_Deluxe_Solvers"
 static PetscErrorCode PCBDDCScalingReset_Deluxe_Solvers(PCBDDCDeluxeScaling deluxe_ctx)
 {
   PetscInt       i;
@@ -435,8 +411,6 @@ static PetscErrorCode PCBDDCScalingReset_Deluxe_Solvers(PCBDDCDeluxeScaling delu
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCScalingSetUp_Deluxe"
 static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
 {
   PC_IS               *pcis=(PC_IS*)pc->data;
@@ -497,8 +471,6 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCScalingSetUp_Deluxe_Private"
 static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Private(PC pc)
 {
   PC_BDDC                *pcbddc=(PC_BDDC*)pc->data;

@@ -7,8 +7,6 @@ EXTERN_C_BEGIN
 #include <sprng.h>
 EXTERN_C_END
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscRandomSeed_Sprng"
 PetscErrorCode  PetscRandomSeed_Sprng(PetscRandom r)
 {
   PetscFunctionBegin;
@@ -16,8 +14,6 @@ PetscErrorCode  PetscRandomSeed_Sprng(PetscRandom r)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscRandomGetValue_Sprng"
 PetscErrorCode  PetscRandomGetValue_Sprng(PetscRandom r,PetscScalar *val)
 {
   PetscFunctionBegin;
@@ -34,8 +30,6 @@ PetscErrorCode  PetscRandomGetValue_Sprng(PetscRandom r,PetscScalar *val)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscRandomGetValue_Sprng"
 PetscErrorCode  PetscRandomGetValueReal_Sprng(PetscRandom r,PetscScalar *val)
 {
   PetscFunctionBegin;
@@ -76,8 +70,6 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
 .seealso: RandomCreate(), RandomSetType(), PETSCRAND, PETSCRAND48
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscRandomCreate_Sprng"
 PETSC_EXTERN PetscErrorCode PetscRandomCreate_Sprng(PetscRandom r)
 {
   PetscErrorCode ierr;

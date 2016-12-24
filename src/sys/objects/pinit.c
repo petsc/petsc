@@ -63,8 +63,6 @@ PetscSpinlock PetscCommSpinLock;
        Checks the options database for initializations related to the
     PETSc components
 */
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsCheckInitial_Components"
 PetscErrorCode  PetscOptionsCheckInitial_Components(void)
 {
   PetscBool      flg1;
@@ -84,8 +82,6 @@ PetscErrorCode  PetscOptionsCheckInitial_Components(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscInitializeNoPointers"
 /*
       PetscInitializeNoPointers - Calls PetscInitialize() from C/C++ without the pointers to argc and args
 
@@ -114,8 +110,6 @@ PetscErrorCode  PetscInitializeNoPointers(int argc,char **args,const char *filen
   PetscFunctionReturn(ierr);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscGetPETSC_COMM_SELF"
 /*
       Used by MATLAB and Julia interface to get communicator
 */
@@ -126,8 +120,6 @@ PetscErrorCode  PetscGetPETSC_COMM_SELF(MPI_Comm *comm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscInitializeNoArguments"
 /*@C
       PetscInitializeNoArguments - Calls PetscInitialize() from C/C++ without
         the command line arguments.
@@ -149,8 +141,6 @@ PetscErrorCode  PetscInitializeNoArguments(void)
   PetscFunctionReturn(ierr);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscInitialized"
 /*@
       PetscInitialized - Determine whether PETSc is initialized.
 
@@ -164,8 +154,6 @@ PetscErrorCode PetscInitialized(PetscBool  *isInitialized)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFinalized"
 /*@
       PetscFinalized - Determine whether PetscFinalize() has been called yet
 
@@ -187,8 +175,6 @@ extern PetscErrorCode PetscOptionsCheckInitial_Private(void);
 */
 MPI_Op MPIU_MAXSUM_OP = 0;
 
-#undef __FUNCT__
-#define __FUNCT__ "MPIU_MaxSum_Local"
 PETSC_INTERN void MPIAPI MPIU_MaxSum_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
 {
   PetscInt *xin = (PetscInt*)in,*xout = (PetscInt*)out,i,count = *cnt;
@@ -214,8 +200,6 @@ sum of the second entry.
 is so that the MPIU_MAXSUM_OP() can set TWO values, if we passed in only sizes[i] with lengths
 there would be no place to store the both needed results.
 */
-#undef __FUNCT__
-#define __FUNCT__ "PetscMaxSum"
 PetscErrorCode  PetscMaxSum(MPI_Comm comm,const PetscInt sizes[],PetscInt *max,PetscInt *sum)
 {
   PetscErrorCode ierr;
@@ -249,8 +233,6 @@ PetscErrorCode  PetscMaxSum(MPI_Comm comm,const PetscInt sizes[],PetscInt *max,P
 #if (defined(PETSC_HAVE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128) || defined(PETSC_USE_REAL___FP16)
 MPI_Op MPIU_SUM = 0;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSum_Local"
 PETSC_EXTERN void PetscSum_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscInt i,count = *cnt;
@@ -278,8 +260,6 @@ PETSC_EXTERN void PetscSum_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatyp
 MPI_Op MPIU_MAX = 0;
 MPI_Op MPIU_MIN = 0;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMax_Local"
 PETSC_EXTERN void PetscMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscInt i,count = *cnt;
@@ -304,8 +284,6 @@ PETSC_EXTERN void PetscMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatyp
   PetscFunctionReturnVoid();
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMin_Local"
 PETSC_EXTERN void PetscMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscInt    i,count = *cnt;
@@ -331,8 +309,6 @@ PETSC_EXTERN void PetscMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatyp
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "Petsc_DelCounter"
 /*
    Private routine to delete internal tag/name counter storage when a communicator is freed.
 
@@ -351,8 +327,6 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelCounter(MPI_Comm comm,PetscMPIInt keyva
   PetscFunctionReturn(MPI_SUCCESS);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Petsc_DelComm_Outer"
 /*
   This is invoked on the outer comm as a result of either PetscCommDestroy() (via MPI_Attr_delete) or when the user
   calls MPI_Comm_free().
@@ -382,8 +356,6 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm_Outer(MPI_Comm comm,PetscMPIInt ke
   PetscFunctionReturn(MPI_SUCCESS);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Petsc_DelComm_Inner"
 /*
  * This is invoked on the inner comm when Petsc_DelComm_Outer calls MPI_Attr_delete.  It should not be reached any other way.
  */
@@ -408,8 +380,6 @@ int  PetscGlobalArgc   = 0;
 char **PetscGlobalArgs = 0;
 PetscSegBuffer PetscCitationsList;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscCitationsInitialize"
 PetscErrorCode PetscCitationsInitialize()
 {
   PetscErrorCode ierr;
@@ -421,8 +391,6 @@ PetscErrorCode PetscCitationsInitialize()
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscGetArgs"
 /*@C
    PetscGetArgs - Allows you to access the raw command line arguments anywhere
      after PetscInitialize() is called but before PetscFinalize().
@@ -455,8 +423,6 @@ PetscErrorCode  PetscGetArgs(int *argc,char ***args)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscGetArguments"
 /*@C
    PetscGetArguments - Allows you to access the  command line arguments anywhere
      after PetscInitialize() is called but before PetscFinalize().
@@ -492,8 +458,6 @@ PetscErrorCode  PetscGetArguments(char ***args)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFreeArguments"
 /*@C
    PetscFreeArguments - Frees the memory obtained with PetscGetArguments()
 
@@ -527,8 +491,6 @@ PetscErrorCode  PetscFreeArguments(char **args)
 #if defined(PETSC_HAVE_SAWS)
 #include <petscconfiginfo.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscInitializeSAWs"
 PetscErrorCode  PetscInitializeSAWs(const char help[])
 {
   if (!PetscGlobalRank) {
@@ -627,8 +589,6 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscInitialize"
 /*@C
    PetscInitialize - Initializes the PETSc database and MPI.
    PetscInitialize() calls MPI_Init() if that has yet to be called,
@@ -967,8 +927,6 @@ extern PetscInt    PetscObjectsCounts, PetscObjectsMaxCounts;
 extern PetscBool   PetscObjectsLog;
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFinalize"
 /*@C
    PetscFinalize - Checks for options to be called at the conclusion
    of the program. MPI_Finalize() is called only if the user had not

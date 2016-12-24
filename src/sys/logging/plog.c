@@ -95,8 +95,6 @@ PetscLogDouble   petsc_tracetime             = 0.0;
 static PetscBool PetscLogInitializeCalled = PETSC_FALSE;
 
 /*---------------------------------------------- General Functions --------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogDestroy"
 /*@C
   PetscLogDestroy - Destroys the object and event logging data and resets the global counters.
 
@@ -168,8 +166,6 @@ PetscErrorCode  PetscLogDestroy(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogSet"
 /*@C
   PetscLogSet - Sets the logging functions called at the beginning and ending of every event.
 
@@ -193,8 +189,6 @@ PetscErrorCode  PetscLogSet(PetscErrorCode (*b)(PetscLogEvent, int, PetscObject,
 }
 
 /*------------------------------------------- Initialization Functions ----------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogInitialize"
 /*
     The data structures for logging are always created even if no logging is turned on. This is so events etc can
   be registered in the code before the actually logging is turned on.
@@ -232,8 +226,6 @@ PetscErrorCode  PetscLogInitialize(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogDefaultBegin"
 /*@C
   PetscLogDefaultBegin - Turns on logging of objects and events. This logs flop
   rates and object creation and should not slow programs down too much.
@@ -272,8 +264,6 @@ PetscErrorCode  PetscLogDefaultBegin(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogAllBegin"
 /*@C
   PetscLogAllBegin - Turns on extensive logging of objects and events. Logs
   all events. This creates large log files and slows the program down.
@@ -311,8 +301,6 @@ PetscErrorCode  PetscLogAllBegin(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogTraceBegin"
 /*@
   PetscLogTraceBegin - Activates trace logging.  Every time a PETSc event
   begins or ends, the event name is printed.
@@ -348,8 +336,6 @@ PetscErrorCode  PetscLogTraceBegin(FILE *file)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogActions"
 /*@
   PetscLogActions - Determines whether actions are logged for the graphical viewer.
 
@@ -376,8 +362,6 @@ PetscErrorCode  PetscLogActions(PetscBool flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogObjects"
 /*@
   PetscLogObjects - Determines whether objects are logged for the graphical viewer.
 
@@ -405,8 +389,6 @@ PetscErrorCode  PetscLogObjects(PetscBool flag)
 }
 
 /*------------------------------------------------ Stage Functions --------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogStageRegister"
 /*@C
   PetscLogStageRegister - Attaches a charactor string name to a logging stage.
 
@@ -441,8 +423,6 @@ PetscErrorCode  PetscLogStageRegister(const char sname[],PetscLogStage *stage)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogStagePush"
 /*@C
   PetscLogStagePush - This function pushes a stage on the stack.
 
@@ -485,8 +465,6 @@ PetscErrorCode  PetscLogStagePush(PetscLogStage stage)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogStagePop"
 /*@C
   PetscLogStagePop - This function pops a stage from the stack.
 
@@ -526,8 +504,6 @@ PetscErrorCode  PetscLogStagePop(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogStageSetActive"
 /*@
   PetscLogStageSetActive - Determines stage activity for PetscLogEventBegin() and PetscLogEventEnd().
 
@@ -552,8 +528,6 @@ PetscErrorCode  PetscLogStageSetActive(PetscLogStage stage, PetscBool isActive)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogStageGetActive"
 /*@
   PetscLogStageGetActive - Returns stage activity for PetscLogEventBegin() and PetscLogEventEnd().
 
@@ -580,8 +554,6 @@ PetscErrorCode  PetscLogStageGetActive(PetscLogStage stage, PetscBool  *isActive
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogStageSetVisible"
 /*@
   PetscLogStageSetVisible - Determines stage visibility in PetscLogView()
 
@@ -606,8 +578,6 @@ PetscErrorCode  PetscLogStageSetVisible(PetscLogStage stage, PetscBool isVisible
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogStageGetVisible"
 /*@
   PetscLogStageGetVisible - Returns stage visibility in PetscLogView()
 
@@ -634,8 +604,6 @@ PetscErrorCode  PetscLogStageGetVisible(PetscLogStage stage, PetscBool  *isVisib
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogStageGetId"
 /*@C
   PetscLogStageGetId - Returns the stage id when given the stage name.
 
@@ -663,8 +631,6 @@ PetscErrorCode  PetscLogStageGetId(const char name[], PetscLogStage *stage)
 }
 
 /*------------------------------------------------ Event Functions --------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogEventRegister"
 /*@C
   PetscLogEventRegister - Registers an event name for logging operations in an application code.
 
@@ -740,8 +706,6 @@ PetscErrorCode  PetscLogEventRegister(const char name[],PetscClassId classid,Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogEventActivate"
 /*@
   PetscLogEventActivate - Indicates that a particular event should be logged.
 
@@ -780,8 +744,6 @@ PetscErrorCode  PetscLogEventActivate(PetscLogEvent event)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogEventDeactivate"
 /*@
   PetscLogEventDeactivate - Indicates that a particular event should not be logged.
 
@@ -820,8 +782,6 @@ PetscErrorCode  PetscLogEventDeactivate(PetscLogEvent event)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogEventSetActiveAll"
 /*@
   PetscLogEventSetActiveAll - Sets the event activity in every stage.
 
@@ -854,8 +814,6 @@ PetscErrorCode  PetscLogEventSetActiveAll(PetscLogEvent event, PetscBool isActiv
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogEventActivateClass"
 /*@
   PetscLogEventActivateClass - Activates event logging for a PETSc object class.
 
@@ -882,8 +840,6 @@ PetscErrorCode  PetscLogEventActivateClass(PetscClassId classid)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogEventDeactivateClass"
 /*@
   PetscLogEventDeactivateClass - Deactivates event logging for a PETSc object class.
 
@@ -1064,8 +1020,6 @@ M*/
 .keywords: log, event, begin, barrier
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogEventGetId"
 /*@C
   PetscLogEventGetId - Returns the event id when given the event name.
 
@@ -1094,8 +1048,6 @@ PetscErrorCode  PetscLogEventGetId(const char name[], PetscLogEvent *event)
 
 
 /*------------------------------------------------ Output Functions -------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogDump"
 /*@C
   PetscLogDump - Dumps logs of objects to a file. This file is intended to
   be read by bin/petscview. This program no longer exists.
@@ -1192,8 +1144,6 @@ PetscErrorCode  PetscLogDump(const char sname[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogView_Detailed"
 /*
   PetscLogView_Detailed - Each process prints the times for its own events
 
@@ -1262,8 +1212,6 @@ PetscErrorCode  PetscLogView_Detailed(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogViewWarnDebugging"
 static PetscErrorCode PetscLogViewWarnDebugging(MPI_Comm comm,FILE *fd)
 {
 #if defined(PETSC_USE_DEBUG)
@@ -1287,8 +1235,6 @@ static PetscErrorCode PetscLogViewWarnDebugging(MPI_Comm comm,FILE *fd)
 #endif
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogView_Default"
 PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
 {
   FILE               *fd;
@@ -1723,8 +1669,6 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
 
 PetscErrorCode  PetscLogView_Nested(PetscViewer);
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogView"
 /*@C
   PetscLogView - Prints a summary of the logging.
 
@@ -1789,8 +1733,6 @@ PetscErrorCode  PetscLogView(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogViewFromOptions"
 /*@C
   PetscLogViewFromOptions - Processes command line options to determine if/how a PetscLog is to be viewed. 
 
@@ -1822,8 +1764,6 @@ PetscErrorCode PetscLogViewFromOptions(void)
 
 
 /*----------------------------------------------- Counter Functions -------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "PetscGetFlops"
 /*@C
    PetscGetFlops - Returns the number of flops used on this processor
    since the program began.
@@ -1851,8 +1791,6 @@ PetscErrorCode  PetscGetFlops(PetscLogDouble *flops)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogObjectState"
 PetscErrorCode  PetscLogObjectState(PetscObject obj, const char format[], ...)
 {
   PetscErrorCode ierr;
@@ -2006,8 +1944,6 @@ M*/
 
 #else /* end of -DPETSC_USE_LOG section */
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogObjectState"
 PetscErrorCode  PetscLogObjectState(PetscObject obj, const char format[], ...)
 {
   PetscFunctionBegin;
@@ -2020,8 +1956,6 @@ PetscErrorCode  PetscLogObjectState(PetscObject obj, const char format[], ...)
 PetscClassId PETSC_LARGEST_CLASSID = PETSC_SMALLEST_CLASSID;
 PetscClassId PETSC_OBJECT_CLASSID  = 0;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscClassIdRegister"
 /*@C
   PetscClassIdRegister - Registers a new class name for objects and logging operations in an application code.
 
@@ -2066,8 +2000,6 @@ PetscBool PetscBeganMPE = PETSC_FALSE;
 PETSC_INTERN PetscErrorCode PetscLogEventBeginMPE(PetscLogEvent,int,PetscObject,PetscObject,PetscObject,PetscObject);
 PETSC_INTERN PetscErrorCode PetscLogEventEndMPE(PetscLogEvent,int,PetscObject,PetscObject,PetscObject,PetscObject);
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogMPEBegin"
 /*@C
    PetscLogMPEBegin - Turns on MPE logging of events. This creates large log files
    and slows the program down.
@@ -2108,8 +2040,6 @@ PetscErrorCode  PetscLogMPEBegin(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogMPEDump"
 /*@C
    PetscLogMPEDump - Dumps the MPE logging info to file for later use with Jumpshot.
 
@@ -2182,8 +2112,6 @@ static const char *PetscLogMPERGBColors[PETSC_RGB_COLORS_MAX] = {
   "OliveDrab:      "
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogMPEGetRGBColor"
 /*@C
   PetscLogMPEGetRGBColor - This routine returns a rgb color useable with PetscLogEventRegister()
 

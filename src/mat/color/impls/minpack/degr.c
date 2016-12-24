@@ -3,8 +3,6 @@
 
 #include <../src/mat/color/impls/minpack/color.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MINPACKdegr"
 PetscErrorCode MINPACKdegr(PetscInt *n,const PetscInt * indrow,const PetscInt * jpntr,const PetscInt * indcol,const PetscInt * ipntr,PetscInt * ndeg,PetscInt * iwa)
 {
   /* System generated locals */

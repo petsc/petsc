@@ -5,8 +5,6 @@
 #include <petsc/private/pcmgimpl.h>                    /*I "petscksp.h" I*/
 #include <petscdm.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PCMGMCycle_Private"
 PetscErrorCode PCMGMCycle_Private(PC pc,PC_MG_Levels **mglevelsin,PCRichardsonConvergedReason *reason)
 {
   PC_MG          *mg = (PC_MG*)pc->data;
@@ -64,8 +62,6 @@ PetscErrorCode PCMGMCycle_Private(PC pc,PC_MG_Levels **mglevelsin,PCRichardsonCo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApplyRichardson_MG"
 static PetscErrorCode PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscBool zeroguess,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
   PC_MG          *mg        = (PC_MG*)pc->data;
@@ -119,8 +115,6 @@ static PetscErrorCode PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rto
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCReset_MG"
 PetscErrorCode PCReset_MG(PC pc)
 {
   PC_MG          *mg        = (PC_MG*)pc->data;
@@ -151,8 +145,6 @@ PetscErrorCode PCReset_MG(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCMGSetLevels"
 /*@C
    PCMGSetLevels - Sets the number of levels to use with MG.
    Must be called before any other MG routine.
@@ -277,8 +269,6 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_MG"
 PetscErrorCode PCDestroy_MG(PC pc)
 {
   PetscErrorCode ierr;
@@ -316,8 +306,6 @@ extern PetscErrorCode PCMGKCycle_Private(PC,PC_MG_Levels**);
   Note:
   A simple wrapper which calls PCMGMCycle(),PCMGACycle(), or PCMGFCycle().
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_MG"
 static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
 {
   PC_MG          *mg        = (PC_MG*)pc->data;
@@ -354,8 +342,6 @@ static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_MG"
 PetscErrorCode PCSetFromOptions_MG(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode   ierr;
@@ -458,8 +444,6 @@ const char *const PCMGCycleTypes[] = {"invalid","v","w","PCMGCycleType","PC_MG_C
 const char *const PCMGGalerkinTypes[] = {"both","pmat","mat","none","external","PCMGGalerkinType","PC_MG_GALERKIN",0};
 
 #include <petscdraw.h>
-#undef __FUNCT__
-#define __FUNCT__ "PCView_MG"
 PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
 {
   PC_MG          *mg        = (PC_MG*)pc->data;
@@ -551,8 +535,6 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
 /*
     Calls setup for the KSP on each level
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_MG"
 PetscErrorCode PCSetUp_MG(PC pc)
 {
   PC_MG          *mg        = (PC_MG*)pc->data;
@@ -870,8 +852,6 @@ PetscErrorCode PCSetUp_MG(PC pc)
 
 /* -------------------------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCMGGetLevels"
 /*@
    PCMGGetLevels - Gets the number of levels to use with MG.
 
@@ -900,8 +880,6 @@ PetscErrorCode  PCMGGetLevels(PC pc,PetscInt *levels)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCMGSetType"
 /*@
    PCMGSetType - Determines the form of multigrid to use:
    multiplicative, additive, full, or the Kaskade algorithm.
@@ -936,8 +914,6 @@ PetscErrorCode  PCMGSetType(PC pc,PCMGType form)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCMGGetType"
 /*@
    PCMGGetType - Determines the form of multigrid to use:
    multiplicative, additive, full, or the Kaskade algorithm.
@@ -967,8 +943,6 @@ PetscErrorCode  PCMGGetType(PC pc,PCMGType *type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCMGSetCycleType"
 /*@
    PCMGSetCycleType - Sets the type cycles to use.  Use PCMGSetCycleTypeOnLevel() for more
    complicated cycling.
@@ -1004,8 +978,6 @@ PetscErrorCode  PCMGSetCycleType(PC pc,PCMGCycleType n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCMGMultiplicativeSetCycles"
 /*@
    PCMGMultiplicativeSetCycles - Sets the number of cycles to use for each preconditioner step
          of multigrid when PCMGType of PC_MG_MULTIPLICATIVE is used
@@ -1038,8 +1010,6 @@ PetscErrorCode  PCMGMultiplicativeSetCycles(PC pc,PetscInt n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCMGSetGalerkin_MG"
 PetscErrorCode PCMGSetGalerkin_MG(PC pc,PCMGGalerkinType use)
 {
   PC_MG *mg = (PC_MG*)pc->data;
@@ -1049,8 +1019,6 @@ PetscErrorCode PCMGSetGalerkin_MG(PC pc,PCMGGalerkinType use)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCMGSetGalerkin"
 /*@
    PCMGSetGalerkin - Causes the coarser grid matrices to be computed from the
       finest grid via the Galerkin process: A_i-1 = r_i * A_i * p_i
@@ -1084,8 +1052,6 @@ PetscErrorCode PCMGSetGalerkin(PC pc,PCMGGalerkinType use)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCMGGetGalerkin"
 /*@
    PCMGGetGalerkin - Checks if Galerkin multigrid is being used, i.e.
       A_i-1 = r_i * A_i * p_i
@@ -1115,8 +1081,6 @@ PetscErrorCode  PCMGGetGalerkin(PC pc,PCMGGalerkinType  *galerkin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCMGSetNumberSmoothDown"
 /*@
    PCMGSetNumberSmoothDown - Sets the number of pre-smoothing steps to
    use on all levels. Use PCMGGetSmootherDown() to set different
@@ -1167,8 +1131,6 @@ PetscErrorCode  PCMGSetNumberSmoothDown(PC pc,PetscInt n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCMGSetNumberSmoothUp"
 /*@
    PCMGSetNumberSmoothUp - Sets the number of post-smoothing steps to use
    on all levels. Use PCMGGetSmootherUp() to set different numbers of
@@ -1226,8 +1188,6 @@ PetscErrorCode  PCMGSetNumberSmoothUp(PC pc,PetscInt n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCMGSetNumberSmooth"
 /*@
    PCMGSetNumberSmooth - Sets the number of pre and post-smoothing steps to use
    on all levels. Use PCMGSetSmoothUp() and PCMGSetSmoothDown() set different numbers of
@@ -1310,8 +1270,6 @@ PetscErrorCode  PCMGSetNumberSmooth(PC pc,PetscInt n)
            PCMGSetCycleTypeOnLevel(), PCMGSetRhs(), PCMGSetX(), PCMGSetR()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_MG"
 PETSC_EXTERN PetscErrorCode PCCreate_MG(PC pc)
 {
   PC_MG          *mg;

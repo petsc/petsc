@@ -297,8 +297,6 @@ static void quadratic_u_field_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   uexact[0] = a[0];
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ProcessOptions"
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   const char    *bcTypes[3]  = {"neumann", "dirichlet", "none"};
@@ -364,8 +362,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateBCLabel"
 static PetscErrorCode CreateBCLabel(DM dm, const char name[])
 {
   DMLabel        label;
@@ -379,8 +375,6 @@ static PetscErrorCode CreateBCLabel(DM dm, const char name[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateMesh"
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscInt       dim             = user->dim;
@@ -503,8 +497,6 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetupProblem"
 static PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
 {
   const PetscInt id = 1;
@@ -550,8 +542,6 @@ static PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetupMaterial"
 static PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
 {
   PetscErrorCode (*matFuncs[1])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx) = {nu_2d};
@@ -566,8 +556,6 @@ static PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetupBC"
 static PetscErrorCode SetupBC(DM dm, DM dmAux, AppCtx *user)
 {
   PetscErrorCode (*bcFuncs[1])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx);
@@ -586,8 +574,6 @@ static PetscErrorCode SetupBC(DM dm, DM dmAux, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetupDiscretization"
 static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 {
   DM             cdm   = dm;
@@ -672,8 +658,6 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 
 #include "petsc/private/petscimpl.h"
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPMonitorError"
 /*@C
   KSPMonitorError - Outputs the error at each iteration of an iterative solver.
 
@@ -751,8 +735,6 @@ static PetscErrorCode KSPMonitorError(KSP ksp, PetscInt its, PetscReal rnorm, vo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMonitorError"
 /*@C
   SNESMonitorError - Outputs the error at each iteration of an iterative solver.
 
@@ -799,8 +781,6 @@ static PetscErrorCode SNESMonitorError(SNES snes, PetscInt its, PetscReal rnorm,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   DM             dm;          /* Problem specification */

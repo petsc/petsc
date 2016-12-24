@@ -11,8 +11,6 @@ static char help[] = "This example demonstrates the use of DMNetwork interface f
 
 #include "pf.h"
 
-#undef __FUNCT__
-#define __FUNCT__ "GetListofEdges"
 PetscErrorCode GetListofEdges(PetscInt nbranches, EDGEDATA branch,int edges[])
 {
   PetscInt       i, fbus,tbus;
@@ -32,8 +30,6 @@ typedef struct{
   PetscBool    jac_error; /* introduce error in the jacobian */
 }UserCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunction"
 PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
 {
   PetscErrorCode ierr;
@@ -172,8 +168,6 @@ PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobian"
 PetscErrorCode FormJacobian(SNES snes,Vec X, Mat J,Mat Jpre,void *appctx)
 {
   PetscErrorCode ierr;
@@ -356,8 +350,6 @@ PetscErrorCode FormJacobian(SNES snes,Vec X, Mat J,Mat Jpre,void *appctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetInitialValues"
 PetscErrorCode SetInitialValues(DM networkdm,Vec X,void* appctx)
 {
   PetscErrorCode ierr;
@@ -409,8 +401,6 @@ PetscErrorCode SetInitialValues(DM networkdm,Vec X,void* appctx)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char ** argv)
 {
   PetscErrorCode ierr;

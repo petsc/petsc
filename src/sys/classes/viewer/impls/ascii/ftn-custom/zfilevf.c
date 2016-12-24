@@ -36,8 +36,6 @@ PETSC_EXTERN void PETSC_STDCALL petscviewerfilegetname_(PetscViewer *viewer, CHA
    FIXRETURNCHAR(PETSC_TRUE, name, len);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFixSlashN"
 static PetscErrorCode PetscFixSlashN(const char *in, char **out)
 {
   PetscErrorCode ierr;

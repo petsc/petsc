@@ -2,8 +2,6 @@
 #include <petsc/private/isimpl.h>                    /*I "petscis.h"  I*/
 #include <petscbt.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "ISDifference"
 /*@
    ISDifference - Computes the difference between two index sets.
 
@@ -91,8 +89,6 @@ PetscErrorCode  ISDifference(IS is1,IS is2,IS *isout)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISSum"
 /*@
    ISSum - Computes the sum (union) of two index sets.
 
@@ -217,8 +213,6 @@ PetscErrorCode  ISSum(IS is1,IS is2,IS *is3)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISExpand"
 /*@
    ISExpand - Computes the union of two index sets, by concatenating 2 lists and
    removing duplicates.
@@ -305,8 +299,6 @@ PetscErrorCode ISExpand(IS is1,IS is2,IS *isout)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISConcatenate"
 /*@
    ISConcatenate - Forms a new IS by locally concatenating the indices from an IS list without reordering.
 
@@ -403,8 +395,6 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
 
 .seealso ISPairToList()
 @*/
-#undef  __FUNCT__
-#define __FUNCT__ "ISListToPair"
 PetscErrorCode ISListToPair(MPI_Comm comm, PetscInt listlen, IS islist[], IS *xis, IS *yis)
 {
   PetscErrorCode ierr;
@@ -464,8 +454,6 @@ PetscErrorCode ISListToPair(MPI_Comm comm, PetscInt listlen, IS islist[], IS *xi
 
 .seealso ISListToPair()
  @*/
-#undef  __FUNCT__
-#define __FUNCT__ "ISPairToList"
 PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
 {
   PetscErrorCode ierr;
@@ -594,8 +582,6 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
 
 .seealso ISLocalToGlobalMapping
  @*/
-#undef  __FUNCT__
-#define __FUNCT__ "ISEmbed"
 PetscErrorCode ISEmbed(IS a, IS b, PetscBool drop, IS *c)
 {
   PetscErrorCode             ierr;
@@ -648,8 +634,6 @@ PetscErrorCode ISEmbed(IS a, IS b, PetscBool drop, IS *c)
 
 .seealso ISLocalToGlobalMapping, ISSort(), PetscIntSortWithPermutation()
  @*/
-#undef  __FUNCT__
-#define __FUNCT__ "ISSortPermutation"
 PetscErrorCode ISSortPermutation(IS f,PetscBool always,IS *h)
 {
   PetscErrorCode  ierr;

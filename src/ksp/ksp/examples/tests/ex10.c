@@ -18,8 +18,6 @@ extern PetscErrorCode AddElement(Mat,PetscInt,PetscInt,PetscReal**,PetscInt,Pets
 extern PetscErrorCode paulsetup20(void);
 extern PetscErrorCode paulintegrate20(PetscReal K[60][60]);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            mat;
@@ -80,8 +78,6 @@ int main(int argc,char **args)
   return ierr;
 }
 /* -------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "GetElasticityMatrix"
 /*
   GetElasticityMatrix - Forms 3D linear elasticity matrix.
  */
@@ -173,8 +169,6 @@ PetscErrorCode GetElasticityMatrix(PetscInt m,Mat *newmat)
   return 0;
 }
 /* -------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "AddElment"
 PetscErrorCode AddElement(Mat mat,PetscInt r1,PetscInt r2,PetscReal **K,PetscInt h1,PetscInt h2)
 {
   PetscScalar    val;
@@ -217,8 +211,6 @@ PetscReal t2[20] = {-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,
                     1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0};
 PetscInt  rmap[20] = {0,1,2,3,5,6,7,8,9,11,15,17,18,19,20,21,23,24,25,26};
 /* -------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "Elastic20Stiff"
 /*
   Elastic20Stiff - Forms 20 node elastic stiffness for element.
  */
@@ -281,8 +273,6 @@ PetscErrorCode Elastic20Stiff(PetscReal **Ke)
   return 0;
 }
 /* -------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "paulsetup20"
 /*
   paulsetup20 - Sets up data structure for forming local elastic stiffness.
  */
@@ -393,8 +383,6 @@ PetscErrorCode paulsetup20(void)
   return 0;
 }
 /* -------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "paulintegrate20"
 /*
    paulintegrate20 - Does actual numerical integration on 20 node element.
  */

@@ -12,8 +12,6 @@ typedef struct {
   void *rhsfunctionlocalctx;
 } DMTS_Local;
 
-#undef __FUNCT__
-#define __FUNCT__ "DMTSDestroy_DMLocal"
 static PetscErrorCode DMTSDestroy_DMLocal(DMTS tdm)
 {
   PetscErrorCode ierr;
@@ -23,8 +21,6 @@ static PetscErrorCode DMTSDestroy_DMLocal(DMTS tdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMTSDuplicate_DMLocal"
 static PetscErrorCode DMTSDuplicate_DMLocal(DMTS oldtdm, DMTS tdm)
 {
   PetscErrorCode ierr;
@@ -35,8 +31,6 @@ static PetscErrorCode DMTSDuplicate_DMLocal(DMTS oldtdm, DMTS tdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLocalTSGetContext"
 static PetscErrorCode DMLocalTSGetContext(DM dm, DMTS tdm, DMTS_Local **dmlocalts)
 {
   PetscErrorCode ierr;
@@ -53,8 +47,6 @@ static PetscErrorCode DMLocalTSGetContext(DM dm, DMTS tdm, DMTS_Local **dmlocalt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSComputeIFunction_DMLocal"
 static PetscErrorCode TSComputeIFunction_DMLocal(TS ts, PetscReal time, Vec X, Vec X_t, Vec F, void *ctx)
 {
   DM             dm;
@@ -91,8 +83,6 @@ static PetscErrorCode TSComputeIFunction_DMLocal(TS ts, PetscReal time, Vec X, V
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSComputeRHSFunction_DMLocal"
 static PetscErrorCode TSComputeRHSFunction_DMLocal(TS ts, PetscReal time, Vec X, Vec F, void *ctx)
 {
   DM             dm;
@@ -118,8 +108,6 @@ static PetscErrorCode TSComputeRHSFunction_DMLocal(TS ts, PetscReal time, Vec X,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSComputeIJacobian_DMLocal"
 static PetscErrorCode TSComputeIJacobian_DMLocal(TS ts, PetscReal time, Vec X, Vec X_t, PetscReal a, Mat A, Mat B, void *ctx)
 {
   DM             dm;
@@ -183,8 +171,6 @@ static PetscErrorCode TSComputeIJacobian_DMLocal(TS ts, PetscReal time, Vec X, V
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMTSSetBoundaryLocal"
 /*@C
   DMTSSetBoundaryLocal - set the function for essential boundary data for a local implicit function evaluation.
     It should set the essential boundary data for the local portion of the solution X, as well its time derivative X_t (if it is not NULL).
@@ -222,8 +208,6 @@ PetscErrorCode DMTSSetBoundaryLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMTSSetIFunctionLocal"
 /*@C
   DMTSSetIFunctionLocal - set a local implicit function evaluation function. This function is called with local vector
       containing the local vector information PLUS ghost point information. It should compute a result for all local
@@ -261,8 +245,6 @@ PetscErrorCode DMTSSetIFunctionLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMTSSetIJacobianLocal"
 /*@C
   DMTSSetIJacobianLocal - set a local Jacobian evaluation function
 
@@ -295,8 +277,6 @@ PetscErrorCode DMTSSetIJacobianLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMTSSetRHSFunctionLocal"
 /*@C
   DMTSSetRHSFunctionLocal - set a local rhs function evaluation function. This function is called with local vector
       containing the local vector information PLUS ghost point information. It should compute a result for all local

@@ -45,8 +45,6 @@ extern PetscErrorCode FormPsiAndExactSoln(DM);
 extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,ObsCtx*);
 extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,Mat,ObsCtx*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode      ierr;
@@ -118,8 +116,6 @@ int main(int argc,char **argv)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "FormPsiAndExactSoln"
 PetscErrorCode FormPsiAndExactSoln(DM da) {
   ObsCtx         *user;
   PetscErrorCode ierr;
@@ -157,8 +153,6 @@ PetscErrorCode FormPsiAndExactSoln(DM da) {
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionLocal"
 /* FormFunctionLocal - Evaluates nonlinear function, F(x) on local process patch */
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar **f,ObsCtx *user) {
   PetscErrorCode ierr;
@@ -189,8 +183,6 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobianLocal"
 /* FormJacobianLocal - Evaluates Jacobian matrix on local process patch */
 PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat A,Mat jac, ObsCtx *user)
 {

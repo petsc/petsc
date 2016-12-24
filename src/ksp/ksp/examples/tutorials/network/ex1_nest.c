@@ -56,8 +56,6 @@ typedef struct {
   This can be substituted by an external parser.
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "read_data"
 PetscErrorCode read_data(PetscInt *pnnode,PetscInt *pnbranch,Node **pnode,Branch **pbranch,int **pedgelist)
 {
   PetscErrorCode    ierr;
@@ -143,8 +141,6 @@ PetscErrorCode read_data(PetscInt *pnnode,PetscInt *pnbranch,Node **pnode,Branch
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormOperator"
 PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
 {
   PetscErrorCode    ierr;
@@ -260,8 +256,6 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char ** argv)
 {
   PetscErrorCode    ierr;

@@ -15,8 +15,6 @@ struct _DMForestTypeLink
 
 DMForestTypeLink DMForestTypeList;
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestPackageFinalize"
 static PetscErrorCode DMForestPackageFinalize(void)
 {
   DMForestTypeLink oldLink, link = DMForestTypeList;
@@ -32,8 +30,6 @@ static PetscErrorCode DMForestPackageFinalize(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestPackageInitialize"
 static PetscErrorCode DMForestPackageInitialize(void)
 {
   PetscErrorCode ierr;
@@ -47,8 +43,6 @@ static PetscErrorCode DMForestPackageInitialize(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestRegisterType"
 /*@C
   DMForestRegisterType - Registers a DMType as a subtype of DMFOREST (so that DMIsForest() will be correct)
 
@@ -75,8 +69,6 @@ PetscErrorCode DMForestRegisterType(DMType name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMIsForest"
 /*@
   DMIsForest - Check whether a DM uses the DMFOREST interface for hierarchically-refined meshes
 
@@ -111,8 +103,6 @@ PetscErrorCode DMIsForest(DM dm, PetscBool *isForest)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestTemplate"
 /*@
   DMForestTemplate - Create a new DM that will be adapted from a source DM.  The new DM reproduces the configuration
   of the source, but is not yet setup, so that the user can then define only the ways that the new DM should differ
@@ -190,8 +180,6 @@ PetscErrorCode DMForestTemplate(DM dm, MPI_Comm comm, DM *tdm)
 
 static PetscErrorCode DMInitialize_Forest(DM dm);
 
-#undef __FUNCT__
-#define __FUNCT__ "DMClone_Forest"
 PETSC_EXTERN PetscErrorCode DMClone_Forest(DM dm, DM *newdm)
 {
   DM_Forest      *forest = (DM_Forest*) dm->data;
@@ -207,8 +195,6 @@ PETSC_EXTERN PetscErrorCode DMClone_Forest(DM dm, DM *newdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDestroy_Forest"
 static PetscErrorCode DMDestroy_Forest(DM dm)
 {
   DM_Forest      *forest = (DM_Forest*) dm->data;
@@ -230,8 +216,6 @@ static PetscErrorCode DMDestroy_Forest(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestSetTopology"
 /*@C
   DMForestSetTopology - Set the topology of a DMForest during the pre-setup phase.  The topology is a string (e.g.
   "cube", "shell") and can be interpreted by subtypes of DMFOREST) to construct the base DM of a forest durint
@@ -260,8 +244,6 @@ PetscErrorCode DMForestSetTopology(DM dm, DMForestTopology topology)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestGetTopology"
 /*@C
   DMForestGetTopology - Get a string describing the topology of a DMForest.
 
@@ -288,8 +270,6 @@ PetscErrorCode DMForestGetTopology(DM dm, DMForestTopology *topology)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestSetBaseDM"
 /*@
   DMForestSetBaseDM - During the pre-setup phase, set the DM that defines the base mesh of a DMForest forest.  The
   forest will be hierarchically refined from the base, and all refinements/coarsenings of the forest will share its
@@ -327,8 +307,6 @@ PetscErrorCode DMForestSetBaseDM(DM dm, DM base)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestGetBaseDM"
 /*@
   DMForestGetBaseDM - Get the base DM of a DMForest forest.  The forest will be hierarchically refined from the base,
   and all refinements/coarsenings of the forest will share its base.  In general, two forest must share a bse to be
@@ -357,8 +335,6 @@ PetscErrorCode DMForestGetBaseDM(DM dm, DM *base)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestSetBaseCoordinateMapping"
 PetscErrorCode DMForestSetBaseCoordinateMapping(DM dm, PetscErrorCode (*func)(DM,PetscInt,PetscInt,const PetscReal [],PetscReal [],void*),void *ctx)
 {
   DM_Forest *forest = (DM_Forest*) dm->data;
@@ -370,8 +346,6 @@ PetscErrorCode DMForestSetBaseCoordinateMapping(DM dm, PetscErrorCode (*func)(DM
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestGetBaseCoordinateMapping"
 PetscErrorCode DMForestGetBaseCoordinateMapping(DM dm, PetscErrorCode (**func) (DM,PetscInt,PetscInt,const PetscReal [],PetscReal [],void*),void *ctx)
 {
   DM_Forest *forest = (DM_Forest*) dm->data;
@@ -383,8 +357,6 @@ PetscErrorCode DMForestGetBaseCoordinateMapping(DM dm, PetscErrorCode (**func) (
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestSetAdaptivityForest"
 /*@
   DMForestSetAdaptivityForest - During the pre-setup phase, set the forest from which the current forest will be
   adapted (e.g., the current forest will be refined/coarsened/repartitioned from it) im DMSetUp().  Usually not needed
@@ -441,8 +413,6 @@ PetscErrorCode DMForestSetAdaptivityForest(DM dm,DM adapt)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestGetAdaptivityForest"
 /*@
   DMForestGetAdaptivityForest - Get the forest from which the current forest is adapted.
 
@@ -482,8 +452,6 @@ PetscErrorCode DMForestGetAdaptivityForest(DM dm, DM *adapt)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestSetAdaptivityPurpose"
 /*@
   DMForestSetAdaptivityPurpose - During the pre-setup phase, set whether the current DM is being adapted from its
   source (set with DMForestSetAdaptivityForest()) for the purpose of refinement (DM_ADAPT_REFINE), coarsening
@@ -526,8 +494,6 @@ PetscErrorCode DMForestSetAdaptivityPurpose(DM dm, DMAdaptFlag purpose)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestGetAdaptivityPurpose"
 /*@
   DMForestGetAdaptivityPurpose - Get whether the current DM is being adapted from its source (set with
   DMForestSetAdaptivityForest()) for the purpose of refinement (DM_ADAPT_REFINE), coarsening (DM_ADAPT_COARSEN), or
@@ -559,8 +525,6 @@ PetscErrorCode DMForestGetAdaptivityPurpose(DM dm, DMAdaptFlag *purpose)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestSetAdjacencyDimension"
 /*@
   DMForestSetAdjacencyDimension - During the pre-setup phase, set the dimension of interface points that determine
   cell adjacency (for the purposes of partitioning and overlap).
@@ -591,8 +555,6 @@ PetscErrorCode DMForestSetAdjacencyDimension(DM dm, PetscInt adjDim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestSetAdjacencyCodimension"
 /*@
   DMForestSetAdjacencyCodimension - Like DMForestSetAdjacencyDimension(), but specified as a co-dimension (so that,
   e.g., adjacency based on facets can be specified by codimension 1 in all cases)
@@ -619,8 +581,6 @@ PetscErrorCode DMForestSetAdjacencyCodimension(DM dm, PetscInt adjCodim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestGetAdjacencyDimension"
 /*@
   DMForestGetAdjacencyDimension - Get the dimension of interface points that determine cell adjacency (for the
   purposes of partitioning and overlap).
@@ -648,8 +608,6 @@ PetscErrorCode DMForestGetAdjacencyDimension(DM dm, PetscInt *adjDim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestGetAdjacencyCodimension"
 /*@
   DMForestGetAdjacencyCodimension - Like DMForestGetAdjacencyDimension(), but specified as a co-dimension (so that,
   e.g., adjacency based on facets can be specified by codimension 1 in all cases)
@@ -680,8 +638,6 @@ PetscErrorCode DMForestGetAdjacencyCodimension(DM dm, PetscInt *adjCodim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestSetPartitionOverlap"
 /*@
   DMForestSetPartitionOverlap - During the pre-setup phase, set the amount of cell-overlap present in parallel
   partitions of a forest, with values > 0 indicating subdomains that are expanded by that many iterations of adding
@@ -709,8 +665,6 @@ PetscErrorCode DMForestSetPartitionOverlap(DM dm, PetscInt overlap)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestGetPartitionOverlap"
 /*@
   DMForestGetPartitionOverlap - Get the amount of cell-overlap present in parallel partitions of a forest, with values
   > 0 indicating subdomains that are expanded by that many iterations of adding adjacent cells
@@ -738,8 +692,6 @@ PetscErrorCode DMForestGetPartitionOverlap(DM dm, PetscInt *overlap)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestSetMinimumRefinement"
 /*@
   DMForestSetMinimumRefinement - During the pre-setup phase, set the minimum level of refinement (relative to the base
   DM, see DMForestGetBaseDM()) allowed in the forest.  If the forest is being created by coarsening a previous forest
@@ -766,8 +718,6 @@ PetscErrorCode DMForestSetMinimumRefinement(DM dm, PetscInt minRefinement)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestGetMinimumRefinement"
 /*@
   DMForestGetMinimumRefinement - Get the minimum level of refinement (relative to the base DM, see
   DMForestGetBaseDM()) allowed in the forest.  If the forest is being created by coarsening a previous forest (see
@@ -796,8 +746,6 @@ PetscErrorCode DMForestGetMinimumRefinement(DM dm, PetscInt *minRefinement)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestSetInitialRefinement"
 /*@
   DMForestSetInitialRefinement - During the pre-setup phase, set the initial level of refinement (relative to the base
   DM, see DMForestGetBaseDM()) allowed in the forest.
@@ -823,8 +771,6 @@ PetscErrorCode DMForestSetInitialRefinement(DM dm, PetscInt initRefinement)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestGetInitialRefinement"
 /*@
   DMForestGetInitialRefinement - Get the initial level of refinement (relative to the base DM, see
   DMForestGetBaseDM()) allowed in the forest.
@@ -852,8 +798,6 @@ PetscErrorCode DMForestGetInitialRefinement(DM dm, PetscInt *initRefinement)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestSetMaximumRefinement"
 /*@
   DMForestSetMaximumRefinement - During the pre-setup phase, set the maximum level of refinement (relative to the base
   DM, see DMForestGetBaseDM()) allowed in the forest.  If the forest is being created by refining a previous forest
@@ -880,8 +824,6 @@ PetscErrorCode DMForestSetMaximumRefinement(DM dm, PetscInt maxRefinement)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestGetMaximumRefinement"
 /*@
   DMForestGetMaximumRefinement - Get the maximum level of refinement (relative to the base DM, see
   DMForestGetBaseDM()) allowed in the forest.  If the forest is being created by refining a previous forest (see
@@ -910,8 +852,6 @@ PetscErrorCode DMForestGetMaximumRefinement(DM dm, PetscInt *maxRefinement)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestSetAdaptivityStrategy"
 /*@C
   DMForestSetAdaptivityStrategy - During the pre-setup phase, set the strategy for combining adaptivity labels from multiple processes.
   Subtypes of DMForest may define their own strategies.  Two default strategies are DMFORESTADAPTALL, which indicates that all processes must agree
@@ -940,8 +880,6 @@ PetscErrorCode DMForestSetAdaptivityStrategy(DM dm, DMForestAdaptivityStrategy a
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestGetAdaptivityStrategy"
 /*@C
   DMForestSetAdaptivityStrategy - Get the strategy for combining adaptivity labels from multiple processes.  Subtypes
   of DMForest may define their own strategies.  Two default strategies are DMFORESTADAPTALL, which indicates that all
@@ -971,8 +909,6 @@ PetscErrorCode DMForestGetAdaptivityStrategy(DM dm, DMForestAdaptivityStrategy *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestGetAdaptivitySuccess"
 /*@
   DMForestGetAdaptivitySuccess - Return whether the requested adaptation (refinement, coarsening, repartitioning,
   etc.) was successful.  PETSC_FALSE indicates that the post-adaptation forest is the same as the pre-adpatation
@@ -1006,8 +942,6 @@ PetscErrorCode DMForestGetAdaptivitySuccess(DM dm, PetscBool *success)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestSetComputeAdaptivitySF"
 /*@
   DMForestSetComputeAdaptivitySF - During the pre-setup phase, set whether transfer PetscSFs should be computed
   relating the cells of the pre-adaptation forest to the post-adaptiation forest.  After DMSetUp() is called, these transfer PetscSFs can be accessed with DMForestGetAdaptivitySF().
@@ -1034,8 +968,6 @@ PetscErrorCode DMForestSetComputeAdaptivitySF(DM dm, PetscBool computeSF)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestTransferVec"
 PetscErrorCode DMForestTransferVec(DM dmIn, Vec vecIn, DM dmOut, Vec vecOut, PetscBool useBCs, PetscReal time)
 {
   DM_Forest      *forest;
@@ -1052,8 +984,6 @@ PetscErrorCode DMForestTransferVec(DM dmIn, Vec vecIn, DM dmOut, Vec vecOut, Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestGetComputeAdaptivitySF"
 /*@
   DMForestGetComputeAdaptivitySF - Get whether transfer PetscSFs should be computed relating the cells of the
   pre-adaptation forest to the post-adaptiation forest.  After DMSetUp() is called, these transfer PetscSFs can be
@@ -1082,8 +1012,6 @@ PetscErrorCode DMForestGetComputeAdaptivitySF(DM dm, PetscBool *computeSF)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestGetAdaptivitySF"
 /*@
   DMForestGetAdaptivitySF - Get PetscSFs that relate the pre-adaptation forest to the post-adaptation forest.
   Adaptation can be any combination of refinement, coarsening, repartition, and change of overlap, so there may be
@@ -1118,8 +1046,6 @@ PetscErrorCode DMForestGetAdaptivitySF(DM dm, PetscSF *preCoarseToFine, PetscSF 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestSetGradeFactor"
 /*@
   DMForestSetGradeFactor - During the pre-setup phase, set the desired amount of grading in the mesh, e.g. give 2 to
   indicate that the diameter of neighboring cells should differ by at most a factor of 2.  Subtypes of DMForest may
@@ -1146,8 +1072,6 @@ PetscErrorCode DMForestSetGradeFactor(DM dm, PetscInt grade)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestGetGradeFactor"
 /*@
   DMForestGetGradeFactor - Get the desired amount of grading in the mesh, e.g. give 2 to indicate that the diameter of
   neighboring cells should differ by at most a factor of 2.  Subtypes of DMForest may only support one particular
@@ -1176,8 +1100,6 @@ PetscErrorCode DMForestGetGradeFactor(DM dm, PetscInt *grade)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestSetCellWeightFactor"
 /*@
   DMForestSetCellWeightFactor - During the pre-setup phase, set the factor by which the level of refinement changes
   the cell weight (see DMForestSetCellWeights()) when calculating partitions.  The final weight of a cell will be
@@ -1206,8 +1128,6 @@ PetscErrorCode DMForestSetCellWeightFactor(DM dm, PetscReal weightsFactor)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestGetCellWeightFactor"
 /*@
   DMForestGetCellWeightFactor - Get the factor by which the level of refinement changes the cell weight (see
   DMForestSetCellWeights()) when calculating partitions.  The final weight of a cell will be (cellWeight) *
@@ -1238,8 +1158,6 @@ PetscErrorCode DMForestGetCellWeightFactor(DM dm, PetscReal *weightsFactor)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestGetCellChart"
 /*@
   DMForestGetCellChart - After the setup phase, get the local half-open interval of the chart of cells on this process
 
@@ -1273,8 +1191,6 @@ PetscErrorCode DMForestGetCellChart(DM dm, PetscInt *cStart, PetscInt *cEnd)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestGetCellSF"
 /*@
   DMForestGetCellSF - After the setup phase, get the PetscSF for overlapping cells between processes
 
@@ -1305,8 +1221,6 @@ PetscErrorCode DMForestGetCellSF(DM dm, PetscSF *cellSF)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestSetAdaptivityLabel"
 /*@C
   DMForestSetAdaptivityLabel - During the pre-setup phase, set the label of the pre-adaptation forest (see
   DMForestGetAdaptivityForest()) that holds the adaptation flags (refinement, coarsening, or some combination).  The
@@ -1336,8 +1250,6 @@ PetscErrorCode DMForestSetAdaptivityLabel(DM dm, DMLabel adaptLabel)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestGetAdaptivityLabel"
 /*@C
   DMForestGetAdaptivityLabel - Get the label of the pre-adaptation forest (see DMForestGetAdaptivityForest()) that
   holds the adaptation flags (refinement, coarsening, or some combination).  The interpretation of the label values is
@@ -1366,8 +1278,6 @@ PetscErrorCode DMForestGetAdaptivityLabel(DM dm, DMLabel *adaptLabel)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestSetCellWeights"
 /*@
   DMForestSetCellWeights - Set the weights assigned to each of the cells (see DMForestGetCellChart()) of the current
   process: weights are used to determine parallel partitioning.  Partitions will be created so that each process's
@@ -1411,8 +1321,6 @@ PetscErrorCode DMForestSetCellWeights(DM dm, PetscReal weights[], PetscCopyMode 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestGetCellWeights"
 /*@
   DMForestGetCellWeights - Get the weights assigned to each of the cells (see DMForestGetCellChart()) of the current
   process: weights are used to determine parallel partitioning.  Partitions will be created so that each process's
@@ -1442,8 +1350,6 @@ PetscErrorCode DMForestGetCellWeights(DM dm, PetscReal **weights)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestSetWeightCapacity"
 /*@
   DMForestSetWeightCapacity - During the pre-setup phase, set the capacity of the current process when repartitioning
   a pre-adaptation forest (see DMForestGetAdaptivityForest()).  After partitioning, the ratio of the weight of each
@@ -1472,8 +1378,6 @@ PetscErrorCode DMForestSetWeightCapacity(DM dm, PetscReal capacity)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMForestGetWeightCapacity"
 /*@
   DMForestGetWeightCapacity - Set the capacity of the current process when repartitioning a pre-adaptation forest (see
   DMForestGetAdaptivityForest()).  After partitioning, the ratio of the weight of each process's cells to the
@@ -1503,8 +1407,6 @@ PetscErrorCode DMForestGetWeightCapacity(DM dm, PetscReal *capacity)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetFromOptions_Forest"
 PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(PetscOptionItems *PetscOptionsObject,DM dm)
 {
   DM_Forest                  *forest = (DM_Forest*) dm->data;
@@ -1631,8 +1533,6 @@ PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(PetscOptionItems *PetscOptio
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateSubDM_Forest"
 PetscErrorCode DMCreateSubDM_Forest(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm)
 {
   PetscErrorCode ierr;
@@ -1643,8 +1543,6 @@ PetscErrorCode DMCreateSubDM_Forest(DM dm, PetscInt numFields, PetscInt fields[]
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRefine_Forest"
 PetscErrorCode DMRefine_Forest(DM dm, MPI_Comm comm, DM *dmRefined)
 {
   DMLabel        refine;
@@ -1672,8 +1570,6 @@ PetscErrorCode DMRefine_Forest(DM dm, MPI_Comm comm, DM *dmRefined)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCoarsen_Forest"
 PetscErrorCode DMCoarsen_Forest(DM dm, MPI_Comm comm, DM *dmCoarsened)
 {
   DMLabel        coarsen;
@@ -1708,8 +1604,6 @@ PetscErrorCode DMCoarsen_Forest(DM dm, MPI_Comm comm, DM *dmCoarsened)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMAdaptLabel_Forest"
 static PetscErrorCode DMAdaptLabel_Forest(DM dm, DMLabel label, DM *adaptedDM)
 {
   PetscBool      success;
@@ -1727,8 +1621,6 @@ static PetscErrorCode DMAdaptLabel_Forest(DM dm, DMLabel label, DM *adaptedDM)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMInitialize_Forest"
 static PetscErrorCode DMInitialize_Forest(DM dm)
 {
   PetscErrorCode ierr;
@@ -1756,8 +1648,6 @@ static PetscErrorCode DMInitialize_Forest(DM dm)
 .seealso: DMType, DMCreate(), DMSetType(), DMForestGetBaseDM(), DMForestSetBaseDM(), DMForestTemplate(), DMForestSetAdaptivityLabel()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreate_Forest"
 PETSC_EXTERN PetscErrorCode DMCreate_Forest(DM dm)
 {
   DM_Forest      *forest;

@@ -43,8 +43,6 @@ PetscBool symmetric = PETSC_TRUE;
 PetscErrorCode FormMatrix(Mat,void*);
 PetscErrorCode FormRightHandSide(Vec,void*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   KSP            ksp;
@@ -136,8 +134,6 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormRightHandSide"
 /*
 
      This intentionally includes something in the right hand side that is not in the range of the matrix A.
@@ -176,8 +172,6 @@ PetscErrorCode FormRightHandSide(Vec f,void *ctx)
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormMatrix"
 PetscErrorCode FormMatrix(Mat jac,void *ctx)
 {
   PetscScalar    A[3];

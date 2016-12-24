@@ -17,8 +17,6 @@
   Output Parameters:
   stash    - the newly created stash
 */
-#undef __FUNCT__
-#define __FUNCT__ "VecStashCreate_Private"
 PetscErrorCode VecStashCreate_Private(MPI_Comm comm,PetscInt bs,VecStash *stash)
 {
   PetscErrorCode ierr;
@@ -75,8 +73,6 @@ PetscErrorCode VecStashCreate_Private(MPI_Comm comm,PetscInt bs,VecStash *stash)
 /*
    VecStashDestroy_Private - Destroy the stash
 */
-#undef __FUNCT__
-#define __FUNCT__ "VecStashDestroy_Private"
 PetscErrorCode VecStashDestroy_Private(VecStash *stash)
 {
   PetscErrorCode ierr;
@@ -95,8 +91,6 @@ PetscErrorCode VecStashDestroy_Private(VecStash *stash)
    for the stash. It also keeps track of the current memory usage
    so that the same value can be used the next time through.
 */
-#undef __FUNCT__
-#define __FUNCT__ "VecStashScatterEnd_Private"
 PetscErrorCode VecStashScatterEnd_Private(VecStash *stash)
 {
   PetscErrorCode ierr;
@@ -145,8 +139,6 @@ PetscErrorCode VecStashScatterEnd_Private(VecStash *stash)
    reallocs - the number of additional mallocs incurred.
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "VecStashGetInfo_Private"
 PetscErrorCode VecStashGetInfo_Private(VecStash *stash,PetscInt *nstash,PetscInt *reallocs)
 {
   PetscFunctionBegin;
@@ -168,8 +160,6 @@ PetscErrorCode VecStashGetInfo_Private(VecStash *stash,PetscInt *nstash,PetscInt
             this value is used while allocating memory. It specifies
             the number of vals stored, even with the block-stash
 */
-#undef __FUNCT__
-#define __FUNCT__ "VecStashSetInitialSize_Private"
 PetscErrorCode VecStashSetInitialSize_Private(VecStash *stash,PetscInt max)
 {
   PetscFunctionBegin;
@@ -188,8 +178,6 @@ PetscErrorCode VecStashSetInitialSize_Private(VecStash *stash,PetscInt max)
    Notes:
    This routine doubles the currently used memory.
 */
-#undef __FUNCT__
-#define __FUNCT__ "VecStashExpand_Private"
 PetscErrorCode VecStashExpand_Private(VecStash *stash,PetscInt incr)
 {
   PetscErrorCode ierr;
@@ -234,8 +222,6 @@ PetscErrorCode VecStashExpand_Private(VecStash *stash,PetscInt incr)
   ranges specified blocked global indices, and for the regular stash in
   the proper global indices.
 */
-#undef __FUNCT__
-#define __FUNCT__ "VecStashScatterBegin_Private"
 PetscErrorCode VecStashScatterBegin_Private(VecStash *stash,PetscInt *owners)
 {
   PetscErrorCode ierr;
@@ -346,8 +332,6 @@ PetscErrorCode VecStashScatterBegin_Private(VecStash *stash,PetscInt *owners)
            1 indicates that the current call successfully received a message, and the
              other output parameters nvals,rows,cols,vals are set appropriately.
 */
-#undef __FUNCT__
-#define __FUNCT__ "VecStashScatterGetMesg_Private"
 PetscErrorCode VecStashScatterGetMesg_Private(VecStash *stash,PetscMPIInt *nvals,PetscInt **rows,PetscScalar **vals,PetscInt *flg)
 {
   PetscErrorCode ierr;
@@ -391,8 +375,6 @@ PetscErrorCode VecStashScatterGetMesg_Private(VecStash *stash,PetscMPIInt *nvals
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecStashSortCompress_Private"
 /*
  * Sort the stash, removing duplicates (combining as appropriate).
  */
@@ -457,8 +439,6 @@ PetscErrorCode VecStashSortCompress_Private(VecStash *stash)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecStashGetOwnerList_Private"
 PetscErrorCode VecStashGetOwnerList_Private(VecStash *stash,PetscLayout map,PetscMPIInt *nowners,PetscMPIInt **owners)
 {
   PetscErrorCode ierr;

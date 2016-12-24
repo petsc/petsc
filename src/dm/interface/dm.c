@@ -10,8 +10,6 @@ PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocalToLocal, D
 
 const char *const DMBoundaryTypes[] = {"NONE","GHOSTED","MIRROR","PERIODIC","TWIST","DM_BOUNDARY_",0};
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreate"
 /*@
   DMCreate - Creates an empty DM object. The type can then be set with DMSetType().
 
@@ -79,8 +77,6 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMClone"
 /*@
   DMClone - Creates a DM object with the same topology as the original.
 
@@ -153,8 +149,6 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetVecType"
 /*@C
        DMSetVecType - Sets the type of vector created with DMCreateLocalVector() and DMCreateGlobalVector()
 
@@ -182,8 +176,6 @@ PetscErrorCode  DMSetVecType(DM da,VecType ctype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetVecType"
 /*@C
        DMGetVecType - Gets the type of vector created with DMCreateLocalVector() and DMCreateGlobalVector()
 
@@ -207,8 +199,6 @@ PetscErrorCode  DMGetVecType(DM da,VecType *ctype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecGetDM"
 /*@
   VecGetDM - Gets the DM defining the data layout of the vector
 
@@ -235,8 +225,6 @@ PetscErrorCode VecGetDM(Vec v, DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecSetDM"
 /*@
   VecSetDM - Sets the DM defining the data layout of the vector.
 
@@ -263,8 +251,6 @@ PetscErrorCode VecSetDM(Vec v, DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetMatType"
 /*@C
        DMSetMatType - Sets the type of matrix created with DMCreateMatrix()
 
@@ -292,8 +278,6 @@ PetscErrorCode  DMSetMatType(DM dm,MatType ctype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetMatType"
 /*@C
        DMGetMatType - Gets the type of matrix created with DMCreateMatrix()
 
@@ -320,8 +304,6 @@ PetscErrorCode  DMGetMatType(DM dm,MatType *ctype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetDM"
 /*@
   MatGetDM - Gets the DM defining the data layout of the matrix
 
@@ -348,8 +330,6 @@ PetscErrorCode MatGetDM(Mat A, DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetDM"
 /*@
   MatSetDM - Sets the DM defining the data layout of the matrix
 
@@ -374,8 +354,6 @@ PetscErrorCode MatSetDM(Mat A, DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetOptionsPrefix"
 /*@C
    DMSetOptionsPrefix - Sets the prefix used for searching for all
    DM options in the database.
@@ -412,8 +390,6 @@ PetscErrorCode  DMSetOptionsPrefix(DM dm,const char prefix[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMAppendOptionsPrefix"
 /*@C
    DMAppendOptionsPrefix - Appends to the prefix used for searching for all
    DM options in the database.
@@ -444,8 +420,6 @@ PetscErrorCode  DMAppendOptionsPrefix(DM dm,const char prefix[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetOptionsPrefix"
 /*@C
    DMGetOptionsPrefix - Gets the prefix used for searching for all
    DM options in the database.
@@ -477,8 +451,6 @@ PetscErrorCode  DMGetOptionsPrefix(DM dm,const char *prefix[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCountNonCyclicReferences"
 static PetscErrorCode DMCountNonCyclicReferences(DM dm, PetscBool recurseCoarse, PetscBool recurseFine, PetscInt *ncrefct)
 {
   PetscInt i, refct = ((PetscObject) dm)->refct;
@@ -520,8 +492,6 @@ static PetscErrorCode DMCountNonCyclicReferences(DM dm, PetscBool recurseCoarse,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDestroyLabelLinkList"
 PetscErrorCode DMDestroyLabelLinkList(DM dm)
 {
   PetscErrorCode ierr;
@@ -543,8 +513,6 @@ PetscErrorCode DMDestroyLabelLinkList(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDestroy"
 /*@
     DMDestroy - Destroys a vector packer or DM.
 
@@ -724,8 +692,6 @@ PetscErrorCode  DMDestroy(DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetUp"
 /*@
     DMSetUp - sets up the data structures inside a DM object
 
@@ -753,8 +719,6 @@ PetscErrorCode  DMSetUp(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetFromOptions"
 /*@
     DMSetFromOptions - sets parameters in a DM from the options database
 
@@ -811,8 +775,6 @@ PetscErrorCode  DMSetFromOptions(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMView"
 /*@C
     DMView - Views a DM
 
@@ -853,8 +815,6 @@ PetscErrorCode  DMView(DM dm,PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateGlobalVector"
 /*@
     DMCreateGlobalVector - Creates a global vector from a DM object
 
@@ -881,8 +841,6 @@ PetscErrorCode  DMCreateGlobalVector(DM dm,Vec *vec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateLocalVector"
 /*@
     DMCreateLocalVector - Creates a local vector from a DM object
 
@@ -909,8 +867,6 @@ PetscErrorCode  DMCreateLocalVector(DM dm,Vec *vec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetLocalToGlobalMapping"
 /*@
    DMGetLocalToGlobalMapping - Accesses the local-to-global mapping in a DM.
 
@@ -991,8 +947,6 @@ PetscErrorCode DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetBlockSize"
 /*@
    DMGetBlockSize - Gets the inherent block size associated with a DM
 
@@ -1018,8 +972,6 @@ PetscErrorCode  DMGetBlockSize(DM dm,PetscInt *bs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateInterpolation"
 /*@
     DMCreateInterpolation - Gets interpolation matrix between two DM objects
 
@@ -1058,8 +1010,6 @@ PetscErrorCode  DMCreateInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateRestriction"
 /*@
     DMCreateRestriction - Gets restriction matrix between two DM objects
 
@@ -1096,8 +1046,6 @@ PetscErrorCode  DMCreateRestriction(DM dm1,DM dm2,Mat *mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateInjection"
 /*@
     DMCreateInjection - Gets injection matrix between two DM objects
 
@@ -1130,8 +1078,6 @@ PetscErrorCode  DMCreateInjection(DM dm1,DM dm2,Mat *mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateColoring"
 /*@
     DMCreateColoring - Gets coloring for a DM
 
@@ -1160,8 +1106,6 @@ PetscErrorCode  DMCreateColoring(DM dm,ISColoringType ctype,ISColoring *coloring
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateMatrix"
 /*@
     DMCreateMatrix - Gets empty Jacobian for a DM
 
@@ -1203,8 +1147,6 @@ PetscErrorCode  DMCreateMatrix(DM dm,Mat *mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetMatrixPreallocateOnly"
 /*@
   DMSetMatrixPreallocateOnly - When DMCreateMatrix() is called the matrix will be properly
     preallocated but the nonzero structure and zero values will not be set.
@@ -1226,8 +1168,6 @@ PetscErrorCode DMSetMatrixPreallocateOnly(DM dm, PetscBool only)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetWorkArray"
 /*@C
   DMGetWorkArray - Gets a work array guaranteed to be at least the input size, restore with DMRestoreWorkArray()
 
@@ -1272,8 +1212,6 @@ PetscErrorCode DMGetWorkArray(DM dm,PetscInt count,PetscDataType dtype,void *mem
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRestoreWorkArray"
 /*@C
   DMRestoreWorkArray - Restores a work array guaranteed to be at least the input size, restore with DMRestoreWorkArray()
 
@@ -1310,8 +1248,6 @@ PetscErrorCode DMRestoreWorkArray(DM dm,PetscInt count,PetscDataType dtype,void 
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Array was not checked out");
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetNullSpaceConstructor"
 PetscErrorCode DMSetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (*nullsp)(DM dm, PetscInt field, MatNullSpace *nullSpace))
 {
   PetscFunctionBegin;
@@ -1321,8 +1257,6 @@ PetscErrorCode DMSetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateFieldIS"
 /*@C
   DMCreateFieldIS - Creates a set of IS objects with the global indices of dofs for each field
 
@@ -1435,8 +1369,6 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateFieldDecomposition"
 /*@C
   DMCreateFieldDecomposition - Returns a list of IS objects defining a decomposition of a problem into subproblems
                           corresponding to different fields: each IS contains the global indices of the dofs of the
@@ -1522,8 +1454,6 @@ PetscErrorCode DMCreateFieldDecomposition(DM dm, PetscInt *len, char ***namelist
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateSubDM"
 /*@
   DMCreateSubDM - Returns an IS and DM encapsulating a subproblem defined by the fields passed in.
                   The fields are defined by DMCreateFieldIS().
@@ -1559,8 +1489,6 @@ PetscErrorCode DMCreateSubDM(DM dm, PetscInt numFields, PetscInt fields[], IS *i
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateDomainDecomposition"
 /*@C
   DMCreateDomainDecomposition - Returns lists of IS objects defining a decomposition of a problem into subproblems
                           corresponding to restrictions to pairs nested subdomains: each IS contains the global
@@ -1625,8 +1553,6 @@ PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *len, char ***namelis
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateDomainDecompositionScatters"
 /*@C
   DMCreateDomainDecompositionScatters - Returns scatters to the subdomain vectors from the global vector
 
@@ -1665,8 +1591,6 @@ PetscErrorCode DMCreateDomainDecompositionScatters(DM dm,PetscInt n,DM *subdms,V
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRefine"
 /*@
   DMRefine - Refines a DM object
 
@@ -1715,8 +1639,6 @@ PetscErrorCode  DMRefine(DM dm,MPI_Comm comm,DM *dmf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRefineHookAdd"
 /*@C
    DMRefineHookAdd - adds a callback to be run when interpolating a nonlinear problem to a finer grid
 
@@ -1771,8 +1693,6 @@ PetscErrorCode DMRefineHookAdd(DM coarse,PetscErrorCode (*refinehook)(DM,DM,void
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMInterpolate"
 /*@
    DMInterpolate - interpolates user-defined problem data to a finer DM by running hooks registered by DMRefineHookAdd()
 
@@ -1801,8 +1721,6 @@ PetscErrorCode DMInterpolate(DM coarse,Mat interp,DM fine)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetRefineLevel"
 /*@
     DMGetRefineLevel - Get's the number of refinements that have generated this DM.
 
@@ -1827,8 +1745,6 @@ PetscErrorCode  DMGetRefineLevel(DM dm,PetscInt *level)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetRefineLevel"
 /*@
     DMSetRefineLevel - Set's the number of refinements that have generated this DM.
 
@@ -1853,8 +1769,6 @@ PetscErrorCode  DMSetRefineLevel(DM dm,PetscInt level)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGlobalToLocalHookAdd"
 /*@C
    DMGlobalToLocalHookAdd - adds a callback to be run when global to local is called
 
@@ -1903,8 +1817,6 @@ PetscErrorCode DMGlobalToLocalHookAdd(DM dm,PetscErrorCode (*beginhook)(DM,Vec,I
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGlobalToLocalHook_Constraints"
 static PetscErrorCode DMGlobalToLocalHook_Constraints(DM dm, Vec g, InsertMode mode, Vec l, void *ctx)
 {
   Mat cMat;
@@ -1938,8 +1850,6 @@ static PetscErrorCode DMGlobalToLocalHook_Constraints(DM dm, Vec g, InsertMode m
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGlobalToLocalBegin"
 /*@
     DMGlobalToLocalBegin - Begins updating local vectors from global vector
 
@@ -1987,8 +1897,6 @@ PetscErrorCode  DMGlobalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGlobalToLocalEnd"
 /*@
     DMGlobalToLocalEnd - Ends updating local vectors from global vector
 
@@ -2035,8 +1943,6 @@ PetscErrorCode  DMGlobalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLocalToGlobalHookAdd"
 /*@C
    DMLocalToGlobalHookAdd - adds a callback to be run when a local to global is called
 
@@ -2088,8 +1994,6 @@ PetscErrorCode DMLocalToGlobalHookAdd(DM dm,PetscErrorCode (*beginhook)(DM,Vec,I
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLocalToGlobalHook_Constraints"
 static PetscErrorCode DMLocalToGlobalHook_Constraints(DM dm, Vec l, InsertMode mode, Vec g, void *ctx)
 {
   Mat cMat;
@@ -2129,8 +2033,6 @@ static PetscErrorCode DMLocalToGlobalHook_Constraints(DM dm, Vec l, InsertMode m
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLocalToGlobalBegin"
 /*@
     DMLocalToGlobalBegin - updates global vectors from local vectors
 
@@ -2231,8 +2133,6 @@ PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLocalToGlobalEnd"
 /*@
     DMLocalToGlobalEnd - updates global vectors from local vectors
 
@@ -2291,8 +2191,6 @@ PetscErrorCode  DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLocalToLocalBegin"
 /*@
    DMLocalToLocalBegin - Maps from a local vector (including ghost points
    that contain irrelevant values) to another local vector where the ghost
@@ -2330,8 +2228,6 @@ PetscErrorCode  DMLocalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLocalToLocalEnd"
 /*@
    DMLocalToLocalEnd - Maps from a local vector (including ghost points
    that contain irrelevant values) to another local vector where the ghost
@@ -2370,8 +2266,6 @@ PetscErrorCode  DMLocalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCoarsen"
 /*@
     DMCoarsen - Coarsens a DM object
 
@@ -2414,8 +2308,6 @@ PetscErrorCode DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCoarsenHookAdd"
 /*@C
    DMCoarsenHookAdd - adds a callback to be run when restricting a nonlinear problem to the coarse grid
 
@@ -2475,8 +2367,6 @@ PetscErrorCode DMCoarsenHookAdd(DM fine,PetscErrorCode (*coarsenhook)(DM,DM,void
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRestrict"
 /*@
    DMRestrict - restricts user-defined problem data to a coarser DM by running hooks registered by DMCoarsenHookAdd()
 
@@ -2506,8 +2396,6 @@ PetscErrorCode DMRestrict(DM fine,Mat restrct,Vec rscale,Mat inject,DM coarse)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSubDomainHookAdd"
 /*@C
    DMSubDomainHookAdd - adds a callback to be run when restricting a problem to the coarse grid
 
@@ -2567,8 +2455,6 @@ PetscErrorCode DMSubDomainHookAdd(DM global,PetscErrorCode (*ddhook)(DM,DM,void*
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSubDomainRestrict"
 /*@
    DMSubDomainRestrict - restricts user-defined problem data to a block DM by running hooks registered by DMSubDomainHookAdd()
 
@@ -2598,8 +2484,6 @@ PetscErrorCode DMSubDomainRestrict(DM global,VecScatter oscatter,VecScatter gsca
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetCoarsenLevel"
 /*@
     DMGetCoarsenLevel - Get's the number of coarsenings that have generated this DM.
 
@@ -2626,8 +2510,6 @@ PetscErrorCode  DMGetCoarsenLevel(DM dm,PetscInt *level)
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRefineHierarchy"
 /*@C
     DMRefineHierarchy - Refines a DM object, all levels at once
 
@@ -2666,8 +2548,6 @@ PetscErrorCode  DMRefineHierarchy(DM dm,PetscInt nlevels,DM dmf[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCoarsenHierarchy"
 /*@C
     DMCoarsenHierarchy - Coarsens a DM object, all levels at once
 
@@ -2707,8 +2587,6 @@ PetscErrorCode  DMCoarsenHierarchy(DM dm, PetscInt nlevels, DM dmc[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateAggregates"
 /*@
    DMCreateAggregates - Gets the aggregates that map between
    grids associated with two DMs.
@@ -2739,8 +2617,6 @@ PetscErrorCode  DMCreateAggregates(DM dmc, DM dmf, Mat *rest)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetApplicationContextDestroy"
 /*@C
     DMSetApplicationContextDestroy - Sets a user function that will be called to destroy the application context when the DM is destroyed
 
@@ -2763,8 +2639,6 @@ PetscErrorCode  DMSetApplicationContextDestroy(DM dm,PetscErrorCode (*destroy)(v
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetApplicationContext"
 /*@
     DMSetApplicationContext - Set a user context into a DM object
 
@@ -2787,8 +2661,6 @@ PetscErrorCode  DMSetApplicationContext(DM dm,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetApplicationContext"
 /*@
     DMGetApplicationContext - Gets a user context from a DM object
 
@@ -2813,8 +2685,6 @@ PetscErrorCode  DMGetApplicationContext(DM dm,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetVariableBounds"
 /*@C
     DMSetVariableBounds - sets a function to compute the lower and upper bound vectors for SNESVI.
 
@@ -2837,8 +2707,6 @@ PetscErrorCode  DMSetVariableBounds(DM dm,PetscErrorCode (*f)(DM,Vec,Vec))
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMHasVariableBounds"
 /*@
     DMHasVariableBounds - does the DM object have a variable bounds function?
 
@@ -2862,8 +2730,6 @@ PetscErrorCode  DMHasVariableBounds(DM dm,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMComputeVariableBounds"
 /*@C
     DMComputeVariableBounds - compute variable bounds used by SNESVI.
 
@@ -2896,8 +2762,6 @@ PetscErrorCode  DMComputeVariableBounds(DM dm, Vec xl, Vec xu)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMHasColoring"
 /*@
     DMHasColoring - does the DM object have a method of providing a coloring?
 
@@ -2921,8 +2785,6 @@ PetscErrorCode  DMHasColoring(DM dm,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMHasCreateRestriction"
 /*@
     DMHasCreateRestriction - does the DM object have a method of providing a restriction?
 
@@ -2946,8 +2808,6 @@ PetscErrorCode  DMHasCreateRestriction(DM dm,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-#undef  __FUNCT__
-#define __FUNCT__ "DMSetVec"
 /*@C
     DMSetVec - set the vector at which to compute residual, Jacobian and VI bounds, if the problem is nonlinear.
 
@@ -2981,8 +2841,6 @@ PetscErrorCode  DMSetVec(DM dm,Vec x)
 PetscFunctionList DMList              = NULL;
 PetscBool         DMRegisterAllCalled = PETSC_FALSE;
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetType"
 /*@C
   DMSetType - Builds a DM, for a particular DM implementation.
 
@@ -3027,8 +2885,6 @@ PetscErrorCode  DMSetType(DM dm, DMType method)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetType"
 /*@C
   DMGetType - Gets the DM type name (as a string) from the DM.
 
@@ -3057,8 +2913,6 @@ PetscErrorCode  DMGetType(DM dm, DMType *type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMConvert"
 /*@C
   DMConvert - Converts a DM to another DM, either of the same or different type.
 
@@ -3166,8 +3020,6 @@ foundconv:
 
 /*--------------------------------------------------------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRegister"
 /*@C
   DMRegister -  Adds a new DM component implementation
 
@@ -3211,8 +3063,6 @@ PetscErrorCode  DMRegister(const char sname[],PetscErrorCode (*function)(DM))
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLoad"
 /*@C
   DMLoad - Loads a DM that has been stored in binary  with DMView().
 
@@ -3267,8 +3117,6 @@ PetscErrorCode  DMLoad(DM newdm, PetscViewer viewer)
 
 /******************************** FEM Support **********************************/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPrintCellVector"
 PetscErrorCode DMPrintCellVector(PetscInt c, const char name[], PetscInt len, const PetscScalar x[])
 {
   PetscInt       f;
@@ -3282,8 +3130,6 @@ PetscErrorCode DMPrintCellVector(PetscInt c, const char name[], PetscInt len, co
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPrintCellMatrix"
 PetscErrorCode DMPrintCellMatrix(PetscInt c, const char name[], PetscInt rows, PetscInt cols, const PetscScalar A[])
 {
   PetscInt       f, g;
@@ -3301,8 +3147,6 @@ PetscErrorCode DMPrintCellMatrix(PetscInt c, const char name[], PetscInt rows, P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPrintLocalVec"
 PetscErrorCode DMPrintLocalVec(DM dm, const char name[], PetscReal tol, Vec X)
 {
   PetscMPIInt    rank, numProcs;
@@ -3329,8 +3173,6 @@ PetscErrorCode DMPrintLocalVec(DM dm, const char name[], PetscReal tol, Vec X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetDefaultSection"
 /*@
   DMGetDefaultSection - Get the PetscSection encoding the local data layout for the DM.
 
@@ -3361,8 +3203,6 @@ PetscErrorCode DMGetDefaultSection(DM dm, PetscSection *section)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetDefaultSection"
 /*@
   DMSetDefaultSection - Set the PetscSection encoding the local data layout for the DM.
 
@@ -3407,8 +3247,6 @@ PetscErrorCode DMSetDefaultSection(DM dm, PetscSection section)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetDefaultConstraints"
 /*@
   DMGetDefaultConstraints - Get the PetscSection and Mat the specify the local constraint interpolation. See DMSetDefaultConstraints() for a description of the purpose of constraint interpolation.
 
@@ -3439,8 +3277,6 @@ PetscErrorCode DMGetDefaultConstraints(DM dm, PetscSection *section, Mat *mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetDefaultConstraints"
 /*@
   DMSetDefaultConstraints - Set the PetscSection and Mat the specify the local constraint interpolation.
 
@@ -3488,8 +3324,6 @@ PetscErrorCode DMSetDefaultConstraints(DM dm, PetscSection section, Mat mat)
 }
 
 #ifdef PETSC_USE_DEBUG
-#undef __FUNCT__
-#define __FUNCT__ "DMDefaultSectionCheckConsistency_Internal"
 /*
   DMDefaultSectionCheckConsistency - Check the consistentcy of the global and local sections.
 
@@ -3558,8 +3392,6 @@ static PetscErrorCode DMDefaultSectionCheckConsistency_Internal(DM dm, PetscSect
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetDefaultGlobalSection"
 /*@
   DMGetDefaultGlobalSection - Get the PetscSection encoding the global data layout for the DM.
 
@@ -3599,8 +3431,6 @@ PetscErrorCode DMGetDefaultGlobalSection(DM dm, PetscSection *section)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetDefaultGlobalSection"
 /*@
   DMSetDefaultGlobalSection - Set the PetscSection encoding the global data layout for the DM.
 
@@ -3630,8 +3460,6 @@ PetscErrorCode DMSetDefaultGlobalSection(DM dm, PetscSection section)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetDefaultSF"
 /*@
   DMGetDefaultSF - Get the PetscSF encoding the parallel dof overlap for the DM. If it has not been set,
   it is created from the default PetscSection layouts in the DM.
@@ -3673,8 +3501,6 @@ PetscErrorCode DMGetDefaultSF(DM dm, PetscSF *sf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetDefaultSF"
 /*@
   DMSetDefaultSF - Set the PetscSF encoding the parallel dof overlap for the DM
 
@@ -3700,8 +3526,6 @@ PetscErrorCode DMSetDefaultSF(DM dm, PetscSF sf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateDefaultSF"
 /*@C
   DMCreateDefaultSF - Create the PetscSF encoding the parallel dof overlap for the DM based upon the PetscSections
   describing the data layout.
@@ -3792,8 +3616,6 @@ PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection localSection, PetscSection 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetPointSF"
 /*@
   DMGetPointSF - Get the PetscSF encoding the parallel section point overlap for the DM.
 
@@ -3818,8 +3640,6 @@ PetscErrorCode DMGetPointSF(DM dm, PetscSF *sf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetPointSF"
 /*@
   DMSetPointSF - Set the PetscSF encoding the parallel section point overlap for the DM.
 
@@ -3844,8 +3664,6 @@ PetscErrorCode DMSetPointSF(DM dm, PetscSF sf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetDS"
 /*@
   DMGetDS - Get the PetscDS
 
@@ -3868,8 +3686,6 @@ PetscErrorCode DMGetDS(DM dm, PetscDS *prob)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetDS"
 /*@
   DMSetDS - Set the PetscDS
 
@@ -3894,8 +3710,6 @@ PetscErrorCode DMSetDS(DM dm, PetscDS prob)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetNumFields"
 PetscErrorCode DMGetNumFields(DM dm, PetscInt *numFields)
 {
   PetscErrorCode ierr;
@@ -3906,8 +3720,6 @@ PetscErrorCode DMGetNumFields(DM dm, PetscInt *numFields)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetNumFields"
 PetscErrorCode DMSetNumFields(DM dm, PetscInt numFields)
 {
   PetscInt       Nf, f;
@@ -3926,8 +3738,6 @@ PetscErrorCode DMSetNumFields(DM dm, PetscInt numFields)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetField"
 /*@
   DMGetField - Return the discretization object for a given DM field
 
@@ -3954,8 +3764,6 @@ PetscErrorCode DMGetField(DM dm, PetscInt f, PetscObject *field)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetField"
 /*@
   DMSetField - Set the discretization object for a given DM field
 
@@ -3980,8 +3788,6 @@ PetscErrorCode DMSetField(DM dm, PetscInt f, PetscObject field)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRestrictHook_Coordinates"
 PetscErrorCode DMRestrictHook_Coordinates(DM dm,DM dmc,void *ctx)
 {
   DM dm_coord,dmc_coord;
@@ -4005,8 +3811,6 @@ PetscErrorCode DMRestrictHook_Coordinates(DM dm,DM dmc,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSubDomainHook_Coordinates"
 static PetscErrorCode DMSubDomainHook_Coordinates(DM dm,DM subdm,void *ctx)
 {
   DM dm_coord,subdm_coord;
@@ -4040,8 +3844,6 @@ static PetscErrorCode DMSubDomainHook_Coordinates(DM dm,DM subdm,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetDimension"
 /*@
   DMGetDimension - Return the topological dimension of the DM
 
@@ -4066,8 +3868,6 @@ PetscErrorCode DMGetDimension(DM dm, PetscInt *dim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetDimension"
 /*@
   DMSetDimension - Set the topological dimension of the DM
 
@@ -4090,8 +3890,6 @@ PetscErrorCode DMSetDimension(DM dm, PetscInt dim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetDimPoints"
 /*@
   DMGetDimPoints - Get the half-open interval for all points of a given dimension
 
@@ -4128,8 +3926,6 @@ PetscErrorCode DMGetDimPoints(DM dm, PetscInt dim, PetscInt *pStart, PetscInt *p
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetCoordinates"
 /*@
   DMSetCoordinates - Sets into the DM a global vector that holds the coordinates
 
@@ -4163,8 +3959,6 @@ PetscErrorCode DMSetCoordinates(DM dm, Vec c)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetCoordinatesLocal"
 /*@
   DMSetCoordinatesLocal - Sets into the DM a local vector that holds the coordinates
 
@@ -4200,8 +3994,6 @@ PetscErrorCode DMSetCoordinatesLocal(DM dm, Vec c)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetCoordinates"
 /*@
   DMGetCoordinates - Gets a global vector with the coordinates associated with the DM.
 
@@ -4246,8 +4038,6 @@ PetscErrorCode DMGetCoordinates(DM dm, Vec *c)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetCoordinatesLocal"
 /*@
   DMGetCoordinatesLocal - Gets a local vector with the coordinates associated with the DM.
 
@@ -4292,8 +4082,6 @@ PetscErrorCode DMGetCoordinatesLocal(DM dm, Vec *c)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetCoordinateDM"
 /*@
   DMGetCoordinateDM - Gets the DM that prescribes coordinate layout and scatters between global and local coordinates
 
@@ -4325,8 +4113,6 @@ PetscErrorCode DMGetCoordinateDM(DM dm, DM *cdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetCoordinateDM"
 /*@
   DMSetCoordinateDM - Sets the DM that prescribes coordinate layout and scatters between global and local coordinates
 
@@ -4354,8 +4140,6 @@ PetscErrorCode DMSetCoordinateDM(DM dm, DM cdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetCoordinateDim"
 /*@
   DMGetCoordinateDim - Retrieve the dimension of embedding space for coordinate values.
 
@@ -4384,8 +4168,6 @@ PetscErrorCode DMGetCoordinateDim(DM dm, PetscInt *dim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetCoordinateDim"
 /*@
   DMSetCoordinateDim - Set the dimension of the embedding space for coordinate values.
 
@@ -4408,8 +4190,6 @@ PetscErrorCode DMSetCoordinateDim(DM dm, PetscInt dim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetCoordinateSection"
 /*@
   DMGetCoordinateSection - Retrieve the layout of coordinate values over the mesh.
 
@@ -4439,8 +4219,6 @@ PetscErrorCode DMGetCoordinateSection(DM dm, PetscSection *section)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetCoordinateSection"
 /*@
   DMSetCoordinateSection - Set the layout of coordinate values over the mesh.
 
@@ -4484,8 +4262,6 @@ PetscErrorCode DMSetCoordinateSection(DM dm, PetscInt dim, PetscSection section)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetPeriodicity"
 /*@C
   DMSetPeriodicity - Set the description of mesh periodicity
 
@@ -4509,8 +4285,6 @@ PetscErrorCode DMGetPeriodicity(DM dm, const PetscReal **maxCell, const PetscRea
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetPeriodicity"
 /*@C
   DMSetPeriodicity - Set the description of mesh periodicity
 
@@ -4539,8 +4313,6 @@ PetscErrorCode DMSetPeriodicity(DM dm, const PetscReal maxCell[], const PetscRea
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLocalizeCoordinate"
 /*@
   DMLocalizeCoordinate - If a mesh is periodic (a torus with lengths L_i, some of which can be infinite), project the coordinate onto [0, L_i) in each dimension.
 
@@ -4572,8 +4344,6 @@ PetscErrorCode DMLocalizeCoordinate(DM dm, const PetscScalar in[], PetscScalar o
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLocalizeCoordinate_Internal"
 /*
   DMLocalizeCoordinate_Internal - If a mesh is periodic, and the input point is far from the anchor, pick the coordinate sheet of the torus which moves it closer.
 
@@ -4610,8 +4380,6 @@ PetscErrorCode DMLocalizeCoordinate_Internal(DM dm, PetscInt dim, const PetscSca
   }
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "DMLocalizeCoordinateReal_Internal"
 PetscErrorCode DMLocalizeCoordinateReal_Internal(DM dm, PetscInt dim, const PetscReal anchor[], const PetscReal in[], PetscReal out[])
 {
   PetscInt d;
@@ -4631,8 +4399,6 @@ PetscErrorCode DMLocalizeCoordinateReal_Internal(DM dm, PetscInt dim, const Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLocalizeAddCoordinate_Internal"
 /*
   DMLocalizeAddCoordinate_Internal - If a mesh is periodic, and the input point is far from the anchor, pick the coordinate sheet of the torus which moves it closer.
 
@@ -4676,8 +4442,6 @@ PETSC_EXTERN PetscErrorCode DMPlexGetHeightStratum(DM, PetscInt, PetscInt *, Pet
 PETSC_EXTERN PetscErrorCode DMPlexVecGetClosure(DM, PetscSection, Vec, PetscInt, PetscInt *, PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode DMPlexVecRestoreClosure(DM, PetscSection, Vec, PetscInt, PetscInt *, PetscScalar *[]);
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetCoordinatesLocalized"
 /*@
   DMGetCoordinatesLocalized - Check if the DM coordinates have been localized for cells
 
@@ -4735,8 +4499,6 @@ PetscErrorCode DMGetCoordinatesLocalized(DM dm,PetscBool *areLocalized)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLocalizeCoordinates"
 /*@
   DMLocalizeCoordinates - If a mesh is periodic, create local coordinates for each cell
 
@@ -4880,8 +4642,6 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLocatePoints"
 /*@
   DMLocatePoints - Locate the points in v in the mesh and return a PetscSF of the containing cells
 
@@ -4946,8 +4706,6 @@ PetscErrorCode DMLocatePoints(DM dm, Vec v, DMPointLocationType ltype, PetscSF *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetOutputDM"
 /*@
   DMGetOutputDM - Retrieve the DM associated with the layout for output
 
@@ -4997,8 +4755,6 @@ PetscErrorCode DMGetOutputDM(DM dm, DM *odm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetOutputSequenceNumber"
 /*@
   DMGetOutputSequenceNumber - Retrieve the sequence number/value for output
 
@@ -5025,8 +4781,6 @@ PetscErrorCode DMGetOutputSequenceNumber(DM dm, PetscInt *num, PetscReal *val)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetOutputSequenceNumber"
 /*@
   DMSetOutputSequenceNumber - Set the sequence number/value for output
 
@@ -5051,8 +4805,6 @@ PetscErrorCode DMSetOutputSequenceNumber(DM dm, PetscInt num, PetscReal val)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMOutputSequenceLoad"
 /*@C
   DMOutputSequenceLoad - Retrieve the sequence value from a Viewer
 
@@ -5092,8 +4844,6 @@ PetscErrorCode DMOutputSequenceLoad(DM dm, PetscViewer viewer, const char *name,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetUseNatural"
 /*@
   DMGetUseNatural - Get the flag for creating a mapping to the natural order on distribution
 
@@ -5118,8 +4868,6 @@ PetscErrorCode DMGetUseNatural(DM dm, PetscBool *useNatural)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetUseNatural"
 /*@
   DMSetUseNatural - Set the flag for creating a mapping to the natural order on distribution
 
@@ -5142,11 +4890,7 @@ PetscErrorCode DMSetUseNatural(DM dm, PetscBool useNatural)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateLabel"
 /*@C
   DMCreateLabel - Create a label of the given name if it does not already exist
 
@@ -5187,8 +4931,6 @@ PetscErrorCode DMCreateLabel(DM dm, const char name[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetLabelValue"
 /*@C
   DMGetLabelValue - Get the value in a Sieve Label for the given point, with 0 as the default
 
@@ -5221,8 +4963,6 @@ PetscErrorCode DMGetLabelValue(DM dm, const char name[], PetscInt point, PetscIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetLabelValue"
 /*@C
   DMSetLabelValue - Add a point to a Sieve Label with given value
 
@@ -5258,8 +4998,6 @@ PetscErrorCode DMSetLabelValue(DM dm, const char name[], PetscInt point, PetscIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMClearLabelValue"
 /*@C
   DMClearLabelValue - Remove a point from a Sieve Label with given value
 
@@ -5292,8 +5030,6 @@ PetscErrorCode DMClearLabelValue(DM dm, const char name[], PetscInt point, Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetLabelSize"
 /*@C
   DMGetLabelSize - Get the number of different integer ids in a Label
 
@@ -5327,8 +5063,6 @@ PetscErrorCode DMGetLabelSize(DM dm, const char name[], PetscInt *size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetLabelIdIS"
 /*@C
   DMGetLabelIdIS - Get the integer ids in a label
 
@@ -5362,8 +5096,6 @@ PetscErrorCode DMGetLabelIdIS(DM dm, const char name[], IS *ids)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetStratumSize"
 /*@C
   DMGetStratumSize - Get the number of points in a label stratum
 
@@ -5398,8 +5130,6 @@ PetscErrorCode DMGetStratumSize(DM dm, const char name[], PetscInt value, PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetStratumIS"
 /*@C
   DMGetStratumIS - Get the points in a label stratum
 
@@ -5434,8 +5164,6 @@ PetscErrorCode DMGetStratumIS(DM dm, const char name[], PetscInt value, IS *poin
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetStratumIS"
 /*@C
   DMGetStratumIS - Set the points in a label stratum
 
@@ -5467,8 +5195,6 @@ PetscErrorCode DMSetStratumIS(DM dm, const char name[], PetscInt value, IS point
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMClearLabelStratum"
 /*@C
   DMClearLabelStratum - Remove all points from a stratum from a Sieve Label
 
@@ -5500,8 +5226,6 @@ PetscErrorCode DMClearLabelStratum(DM dm, const char name[], PetscInt value)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetNumLabels"
 /*@
   DMGetNumLabels - Return the number of labels defined by the mesh
 
@@ -5531,8 +5255,6 @@ PetscErrorCode DMGetNumLabels(DM dm, PetscInt *numLabels)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetLabelName"
 /*@C
   DMGetLabelName - Return the name of nth label
 
@@ -5569,8 +5291,6 @@ PetscErrorCode DMGetLabelName(DM dm, PetscInt n, const char **name)
   SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label %D does not exist in this DM", n);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMHasLabel"
 /*@C
   DMHasLabel - Determine whether the mesh has a label of a given name
 
@@ -5606,8 +5326,6 @@ PetscErrorCode DMHasLabel(DM dm, const char name[], PetscBool *hasLabel)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetLabel"
 /*@C
   DMGetLabel - Return the label of a given name, or NULL
 
@@ -5647,8 +5365,6 @@ PetscErrorCode DMGetLabel(DM dm, const char name[], DMLabel *label)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetLabelByNum"
 /*@C
   DMGetLabelByNum - Return the nth label
 
@@ -5685,8 +5401,6 @@ PetscErrorCode DMGetLabelByNum(DM dm, PetscInt n, DMLabel *label)
   SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label %D does not exist in this DM", n);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMAddLabel"
 /*@C
   DMAddLabel - Add the label to this mesh
 
@@ -5719,8 +5433,6 @@ PetscErrorCode DMAddLabel(DM dm, DMLabel label)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRemoveLabel"
 /*@C
   DMRemoveLabel - Remove the label from this mesh
 
@@ -5770,8 +5482,6 @@ PetscErrorCode DMRemoveLabel(DM dm, const char name[], DMLabel *label)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetLabelOutput"
 /*@C
   DMGetLabelOutput - Get the output flag for a given label
 
@@ -5808,8 +5518,6 @@ PetscErrorCode DMGetLabelOutput(DM dm, const char name[], PetscBool *output)
   SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No label named %s was present in this dm", name);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetLabelOutput"
 /*@C
   DMSetLabelOutput - Set the output flag for a given label
 
@@ -5844,8 +5552,6 @@ PetscErrorCode DMSetLabelOutput(DM dm, const char name[], PetscBool output)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCopyLabels"
 /*@
   DMCopyLabels - Copy labels from one mesh to another with a superset of the points
 
@@ -5887,8 +5593,6 @@ PetscErrorCode DMCopyLabels(DM dmA, DM dmB)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetCoarseDM"
 /*@
   DMGetCoarseDM - Get the coarse mesh from which this was obtained by refinement
 
@@ -5911,8 +5615,6 @@ PetscErrorCode DMGetCoarseDM(DM dm, DM *cdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetCoarseDM"
 /*@
   DMSetCoarseDM - Set the coarse mesh from which this was obtained by refinement
 
@@ -5937,8 +5639,6 @@ PetscErrorCode DMSetCoarseDM(DM dm, DM cdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetFineDM"
 /*@
   DMGetFineDM - Get the fine mesh from which this was obtained by refinement
 
@@ -5961,8 +5661,6 @@ PetscErrorCode DMGetFineDM(DM dm, DM *fdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetFineDM"
 /*@
   DMSetFineDM - Set the fine mesh from which this was obtained by refinement
 
@@ -5989,8 +5687,6 @@ PetscErrorCode DMSetFineDM(DM dm, DM fdm)
 
 /*=== DMBoundary code ===*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCopyBoundary"
 PetscErrorCode DMCopyBoundary(DM dm, DM dmNew)
 {
   PetscErrorCode ierr;
@@ -6000,8 +5696,6 @@ PetscErrorCode DMCopyBoundary(DM dm, DM dmNew)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMAddBoundary"
 /*@C
   DMAddBoundary - Add a boundary condition to the model
 
@@ -6036,8 +5730,6 @@ PetscErrorCode DMAddBoundary(DM dm, DMBoundaryConditionType type, const char nam
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetNumBoundary"
 /*@
   DMGetNumBoundary - Get the number of registered BC
 
@@ -6061,8 +5753,6 @@ PetscErrorCode DMGetNumBoundary(DM dm, PetscInt *numBd)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetBoundary"
 /*@C
   DMGetBoundary - Add a boundary condition to the model
 
@@ -6100,8 +5790,6 @@ PetscErrorCode DMGetBoundary(DM dm, PetscInt bd, DMBoundaryConditionType *type, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPopulateBoundary"
 static PetscErrorCode DMPopulateBoundary(DM dm)
 {
   DMBoundary *lastnext;
@@ -6141,8 +5829,6 @@ static PetscErrorCode DMPopulateBoundary(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMIsBoundaryPoint"
 PetscErrorCode DMIsBoundaryPoint(DM dm, PetscInt point, PetscBool *isBd)
 {
   DMBoundary     b;
@@ -6170,8 +5856,6 @@ PetscErrorCode DMIsBoundaryPoint(DM dm, PetscInt point, PetscBool *isBd)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMProjectFunction"
 /*@C
   DMProjectFunction - This projects the given function into the function space provided.
 
@@ -6213,8 +5897,6 @@ PetscErrorCode DMProjectFunction(DM dm, PetscReal time, PetscErrorCode (**funcs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMProjectFunctionLocal"
 PetscErrorCode DMProjectFunctionLocal(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
 {
   PetscErrorCode ierr;
@@ -6227,8 +5909,6 @@ PetscErrorCode DMProjectFunctionLocal(DM dm, PetscReal time, PetscErrorCode (**f
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMProjectFunctionLabelLocal"
 PetscErrorCode DMProjectFunctionLabelLocal(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
 {
   PetscErrorCode ierr;
@@ -6241,8 +5921,6 @@ PetscErrorCode DMProjectFunctionLabelLocal(DM dm, PetscReal time, DMLabel label,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMProjectFieldLocal"
 PetscErrorCode DMProjectFieldLocal(DM dm, PetscReal time, Vec localU,
                                    void (**funcs)(PetscInt, PetscInt, PetscInt,
                                                   const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -6261,8 +5939,6 @@ PetscErrorCode DMProjectFieldLocal(DM dm, PetscReal time, Vec localU,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMProjectFieldLabelLocal"
 PetscErrorCode DMProjectFieldLabelLocal(DM dm, PetscReal time, DMLabel label, PetscInt numIds, const PetscInt ids[], Vec localU,
                                         void (**funcs)(PetscInt, PetscInt, PetscInt,
                                                        const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -6281,8 +5957,6 @@ PetscErrorCode DMProjectFieldLabelLocal(DM dm, PetscReal time, DMLabel label, Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMComputeL2Diff"
 /*@C
   DMComputeL2Diff - This function computes the L_2 difference between a function u and an FEM interpolant solution u_h.
 
@@ -6312,8 +5986,6 @@ PetscErrorCode DMComputeL2Diff(DM dm, PetscReal time, PetscErrorCode (**funcs)(P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMComputeL2GradientDiff"
 /*@C
   DMComputeL2GradientDiff - This function computes the L_2 difference between the gradient of a function u and an FEM interpolant solution grad u_h.
 
@@ -6344,8 +6016,6 @@ PetscErrorCode DMComputeL2GradientDiff(DM dm, PetscReal time, PetscErrorCode (**
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMComputeL2FieldDiff"
 /*@C
   DMComputeL2FieldDiff - This function computes the L_2 difference between a function u and an FEM interpolant solution u_h, separated into field components.
 
@@ -6375,8 +6045,6 @@ PetscErrorCode DMComputeL2FieldDiff(DM dm, PetscReal time, PetscErrorCode (**fun
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMAdaptLabel"
 /*@C
   DMAdaptLabel - Adapt a dm based on a label with values interpreted as coarsening and refining flags.  Specific implementations of DM maybe have
                  specialized flags, but all implementations should accept flag values DM_ADAPT_DETERMINE, DM_ADAPT_KEEP, DM_ADAPT_REFINE, and DM_ADAPT_COARSEN.
@@ -6405,8 +6073,6 @@ PetscErrorCode DMAdaptLabel(DM dm, DMLabel label, DM *adaptedDM)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetNeighbors"
 /*@C
  DMGetNeighbors - Gets an array containing the MPI rank of all the processes neighbors
 
@@ -6439,8 +6105,6 @@ PetscErrorCode DMGetNeighbors(DM dm,PetscInt *nranks,const PetscMPIInt *ranks[])
 
 #include <petsc/private/matimpl.h> /* Needed because of coloring->ctype below */
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFDColoringApply_AIJDM"
 /*
     Converts the input vector to a ghosted vector and then calls the standard coloring code.
     This has be a different function because it requires DM which is not defined in the Mat library
@@ -6469,8 +6133,6 @@ PetscErrorCode  MatFDColoringApply_AIJDM(Mat J,MatFDColoring coloring,Vec x1,voi
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFDColoringUseDM"
 /*@
     MatFDColoringUseDM - allows a MatFDColoring object to use the DM associated with the matrix to use a IS_COLORING_LOCAL coloring
 

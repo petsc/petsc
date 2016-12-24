@@ -11,8 +11,6 @@ typedef struct {
   PetscScalar scale;
 } Mat_SubMatrix;
 
-#undef __FUNCT__
-#define __FUNCT__ "PreScaleLeft"
 static PetscErrorCode PreScaleLeft(Mat N,Vec x,Vec *xx)
 {
   Mat_SubMatrix  *Na = (Mat_SubMatrix*)N->data;
@@ -31,8 +29,6 @@ static PetscErrorCode PreScaleLeft(Mat N,Vec x,Vec *xx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PreScaleRight"
 static PetscErrorCode PreScaleRight(Mat N,Vec x,Vec *xx)
 {
   Mat_SubMatrix  *Na = (Mat_SubMatrix*)N->data;
@@ -51,8 +47,6 @@ static PetscErrorCode PreScaleRight(Mat N,Vec x,Vec *xx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PostScaleLeft"
 static PetscErrorCode PostScaleLeft(Mat N,Vec x)
 {
   Mat_SubMatrix  *Na = (Mat_SubMatrix*)N->data;
@@ -65,8 +59,6 @@ static PetscErrorCode PostScaleLeft(Mat N,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PostScaleRight"
 static PetscErrorCode PostScaleRight(Mat N,Vec x)
 {
   Mat_SubMatrix  *Na = (Mat_SubMatrix*)N->data;
@@ -79,8 +71,6 @@ static PetscErrorCode PostScaleRight(Mat N,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatScale_SubMatrix"
 static PetscErrorCode MatScale_SubMatrix(Mat N,PetscScalar scale)
 {
   Mat_SubMatrix *Na = (Mat_SubMatrix*)N->data;
@@ -90,8 +80,6 @@ static PetscErrorCode MatScale_SubMatrix(Mat N,PetscScalar scale)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDiagonalScale_SubMatrix"
 static PetscErrorCode MatDiagonalScale_SubMatrix(Mat N,Vec left,Vec right)
 {
   Mat_SubMatrix  *Na = (Mat_SubMatrix*)N->data;
@@ -117,8 +105,6 @@ static PetscErrorCode MatDiagonalScale_SubMatrix(Mat N,Vec left,Vec right)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_SubMatrix"
 static PetscErrorCode MatMult_SubMatrix(Mat N,Vec x,Vec y)
 {
   Mat_SubMatrix  *Na = (Mat_SubMatrix*)N->data;
@@ -138,8 +124,6 @@ static PetscErrorCode MatMult_SubMatrix(Mat N,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultAdd_SubMatrix"
 static PetscErrorCode MatMultAdd_SubMatrix(Mat N,Vec v1,Vec v2,Vec v3)
 {
   Mat_SubMatrix  *Na = (Mat_SubMatrix*)N->data;
@@ -172,8 +156,6 @@ static PetscErrorCode MatMultAdd_SubMatrix(Mat N,Vec v1,Vec v2,Vec v3)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultTranspose_SubMatrix"
 static PetscErrorCode MatMultTranspose_SubMatrix(Mat N,Vec x,Vec y)
 {
   Mat_SubMatrix  *Na = (Mat_SubMatrix*)N->data;
@@ -193,8 +175,6 @@ static PetscErrorCode MatMultTranspose_SubMatrix(Mat N,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultTransposeAdd_SubMatrix"
 static PetscErrorCode MatMultTransposeAdd_SubMatrix(Mat N,Vec v1,Vec v2,Vec v3)
 {
   Mat_SubMatrix  *Na = (Mat_SubMatrix*)N->data;
@@ -227,8 +207,6 @@ static PetscErrorCode MatMultTransposeAdd_SubMatrix(Mat N,Vec v1,Vec v2,Vec v3)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_SubMatrix"
 static PetscErrorCode MatDestroy_SubMatrix(Mat N)
 {
   Mat_SubMatrix  *Na = (Mat_SubMatrix*)N->data;
@@ -250,8 +228,6 @@ static PetscErrorCode MatDestroy_SubMatrix(Mat N)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateSubMatrix"
 /*@
    MatCreateSubMatrix - Creates a composite matrix that acts as a submatrix
 
@@ -336,8 +312,6 @@ PetscErrorCode  MatCreateSubMatrix(Mat A,IS isrow,IS iscol,Mat *newmat)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSubMatrixUpdate"
 /*@
    MatSubMatrixUpdate - Updates a submatrix
 

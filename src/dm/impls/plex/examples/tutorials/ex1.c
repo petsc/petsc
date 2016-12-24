@@ -2,8 +2,6 @@ static char help[] = "Define a simple field over the mesh\n\n";
 
 #include <petscdmplex.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   DM             dm, dmDist = NULL;

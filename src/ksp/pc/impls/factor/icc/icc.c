@@ -1,8 +1,6 @@
 
 #include <../src/ksp/pc/impls/factor/icc/icc.h>   /*I "petscpc.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_ICC"
 static PetscErrorCode PCSetUp_ICC(PC pc)
 {
   PC_ICC                 *icc = (PC_ICC*)pc->data;
@@ -54,8 +52,6 @@ static PetscErrorCode PCSetUp_ICC(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCReset_ICC"
 static PetscErrorCode PCReset_ICC(PC pc)
 {
   PC_ICC         *icc = (PC_ICC*)pc->data;
@@ -66,8 +62,6 @@ static PetscErrorCode PCReset_ICC(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_ICC"
 static PetscErrorCode PCDestroy_ICC(PC pc)
 {
   PC_ICC         *icc = (PC_ICC*)pc->data;
@@ -81,8 +75,6 @@ static PetscErrorCode PCDestroy_ICC(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_ICC"
 static PetscErrorCode PCApply_ICC(PC pc,Vec x,Vec y)
 {
   PC_ICC         *icc = (PC_ICC*)pc->data;
@@ -93,8 +85,6 @@ static PetscErrorCode PCApply_ICC(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApplySymmetricLeft_ICC"
 static PetscErrorCode PCApplySymmetricLeft_ICC(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
@@ -105,8 +95,6 @@ static PetscErrorCode PCApplySymmetricLeft_ICC(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApplySymmetricRight_ICC"
 static PetscErrorCode PCApplySymmetricRight_ICC(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
@@ -117,8 +105,6 @@ static PetscErrorCode PCApplySymmetricRight_ICC(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_ICC"
 static PetscErrorCode PCSetFromOptions_ICC(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_ICC         *icc = (PC_ICC*)pc->data;
@@ -144,8 +130,6 @@ static PetscErrorCode PCSetFromOptions_ICC(PetscOptionItems *PetscOptionsObject,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCView_ICC"
 static PetscErrorCode PCView_ICC(PC pc,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -193,8 +177,6 @@ extern PetscErrorCode  PCFactorSetDropTolerance_ILU(PC,PetscReal,PetscReal,Petsc
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_ICC"
 PETSC_EXTERN PetscErrorCode PCCreate_ICC(PC pc)
 {
   PetscErrorCode ierr;

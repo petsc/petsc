@@ -38,8 +38,6 @@ typedef struct {
 PetscErrorCode FormFunctionGradient(Tao,Vec,PetscReal*,Vec,void*);
 PetscErrorCode FormHessian(Tao,Vec,Mat,Mat,void*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode     ierr;                  /* used to check for functions returning nonzeros */
@@ -97,8 +95,6 @@ int main(int argc,char **argv)
 }
 
 /* -------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionGradient"
 /*
     FormFunctionGradient - Evaluates the function, f(X), and gradient, G(X).
 
@@ -156,8 +152,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *f, Vec G,void *ptr)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormHessian"
 /*
    FormHessian - Evaluates Hessian matrix.
 

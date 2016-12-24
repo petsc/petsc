@@ -3,8 +3,6 @@ static char help[] = "Tests DMDACreate3d() memory usage\n\n";
 #include <petscdmda.h>
 
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   DM             dm;

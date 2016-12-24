@@ -1,8 +1,6 @@
 
 #include <petsc/private/kspimpl.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_CR"
 static PetscErrorCode KSPSetUp_CR(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -14,8 +12,6 @@ static PetscErrorCode KSPSetUp_CR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_CR"
 static PetscErrorCode  KSPSolve_CR(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -157,8 +153,6 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
 
 .seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPCG
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_CR"
 PETSC_EXTERN PetscErrorCode KSPCreate_CR(KSP ksp)
 {
   PetscErrorCode ierr;

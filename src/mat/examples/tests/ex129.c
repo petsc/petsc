@@ -19,8 +19,6 @@ extern PetscErrorCode ComputeMatrix(DM,Mat);
 extern PetscErrorCode ComputeRHS(DM,Vec);
 extern PetscErrorCode ComputeRHSMatrix(PetscInt,PetscInt,Mat*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   PetscErrorCode ierr;
@@ -148,8 +146,6 @@ int main(int argc,char **args)
   return ierr;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeRHS"
 PetscErrorCode ComputeRHS(DM da,Vec b)
 {
   PetscErrorCode ierr;
@@ -163,8 +159,6 @@ PetscErrorCode ComputeRHS(DM da,Vec b)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeRHSMatrix"
 PetscErrorCode ComputeRHSMatrix(PetscInt m,PetscInt nrhs,Mat *C)
 {
   PetscErrorCode ierr;
@@ -202,8 +196,6 @@ PetscErrorCode ComputeRHSMatrix(PetscInt m,PetscInt nrhs,Mat *C)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeMatrix"
 PetscErrorCode ComputeMatrix(DM da,Mat B)
 {
   PetscErrorCode ierr;

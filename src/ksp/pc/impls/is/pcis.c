@@ -1,8 +1,6 @@
 
 #include <../src/ksp/pc/impls/is/pcis.h> /*I "petscpc.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCISSetUseStiffnessScaling_IS"
 static PetscErrorCode PCISSetUseStiffnessScaling_IS(PC pc, PetscBool use)
 {
   PC_IS *pcis = (PC_IS*)pc->data;
@@ -12,8 +10,6 @@ static PetscErrorCode PCISSetUseStiffnessScaling_IS(PC pc, PetscBool use)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCISSetUseStiffnessScaling"
 /*@
  PCISSetUseStiffnessScaling - Tells PCIS to construct partition of unity using
                               local matrices' diagonal.
@@ -40,8 +36,6 @@ PetscErrorCode PCISSetUseStiffnessScaling(PC pc, PetscBool use)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCISSetSubdomainDiagonalScaling_IS"
 static PetscErrorCode PCISSetSubdomainDiagonalScaling_IS(PC pc, Vec scaling_factors)
 {
   PetscErrorCode ierr;
@@ -54,8 +48,6 @@ static PetscErrorCode PCISSetSubdomainDiagonalScaling_IS(PC pc, Vec scaling_fact
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCISSetSubdomainDiagonalScaling"
 /*@
  PCISSetSubdomainDiagonalScaling - Set diagonal scaling for PCIS.
 
@@ -82,8 +74,6 @@ PetscErrorCode PCISSetSubdomainDiagonalScaling(PC pc, Vec scaling_factors)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCISSetSubdomainScalingFactor_IS"
 static PetscErrorCode PCISSetSubdomainScalingFactor_IS(PC pc, PetscScalar scal)
 {
   PC_IS *pcis = (PC_IS*)pc->data;
@@ -93,8 +83,6 @@ static PetscErrorCode PCISSetSubdomainScalingFactor_IS(PC pc, PetscScalar scal)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCISSetSubdomainScalingFactor"
 /*@
  PCISSetSubdomainScalingFactor - Set scaling factor for PCIS.
 
@@ -126,8 +114,6 @@ PetscErrorCode PCISSetSubdomainScalingFactor(PC pc, PetscScalar scal)
 /*
    PCISSetUp -
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCISSetUp"
 PetscErrorCode  PCISSetUp(PC pc, PetscBool computesolvers)
 {
   PC_IS          *pcis  = (PC_IS*)(pc->data);
@@ -361,8 +347,6 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computesolvers)
 /*
    PCISDestroy -
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCISDestroy"
 PetscErrorCode  PCISDestroy(PC pc)
 {
   PC_IS          *pcis = (PC_IS*)(pc->data);
@@ -410,8 +394,6 @@ PetscErrorCode  PCISDestroy(PC pc)
 /*
    PCISCreate -
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCISCreate"
 PetscErrorCode  PCISCreate(PC pc)
 {
   PC_IS          *pcis = (PC_IS*)(pc->data);
@@ -470,8 +452,6 @@ PetscErrorCode  PCISCreate(PC pc)
 .  vec2_D - garbage (used as work space)
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCISApplySchur"
 PetscErrorCode  PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
 {
   PetscErrorCode ierr;
@@ -506,8 +486,6 @@ PetscErrorCode  PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D,
    Notes:
    The entries in the array that do not correspond to interface nodes remain unaltered.
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCISScatterArrayNToVecB"
 PetscErrorCode  PCISScatterArrayNToVecB(PetscScalar *array_N, Vec v_B, InsertMode imode, ScatterMode smode, PC pc)
 {
   PetscInt       i;
@@ -557,8 +535,6 @@ PetscErrorCode  PCISScatterArrayNToVecB(PetscScalar *array_N, Vec v_B, InsertMod
 .  vec2_N - vector of local nodes (interior and interface, including ghosts); returns garbage (used as work space)
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCISApplyInvSchur"
 PetscErrorCode  PCISApplyInvSchur(PC pc, Vec b, Vec x, Vec vec1_N, Vec vec2_N)
 {
   PetscErrorCode ierr;

@@ -28,8 +28,6 @@ static PetscErrorCode MatHYPRE_IJMatrixFastCopy_SeqAIJ(Mat,HYPRE_IJMatrix);
 static PetscErrorCode MatHYPRE_MultKernel_Private(Mat,Vec,Vec,PetscBool);
 static PetscErrorCode hypre_array_destroy(void*);
 
-#undef __FUNCT__
-#define __FUNCT__ "MatHYPRE_IJMatrixPreallocate"
 static PetscErrorCode MatHYPRE_IJMatrixPreallocate(Mat A_d, Mat A_o, HYPRE_IJMatrix ij)
 {
   PetscErrorCode ierr;
@@ -73,8 +71,6 @@ static PetscErrorCode MatHYPRE_IJMatrixPreallocate(Mat A_d, Mat A_o, HYPRE_IJMat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatHYPRE_CreateFromMat"
 static PetscErrorCode MatHYPRE_CreateFromMat(Mat A, Mat_HYPRE *hA)
 {
   PetscErrorCode ierr;
@@ -119,8 +115,6 @@ static PetscErrorCode MatHYPRE_CreateFromMat(Mat A, Mat_HYPRE *hA)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatHYPRE_IJMatrixCopy"
 static PetscErrorCode MatHYPRE_IJMatrixCopy(Mat A, HYPRE_IJMatrix ij)
 {
   PetscErrorCode    ierr;
@@ -154,8 +148,6 @@ static PetscErrorCode MatHYPRE_IJMatrixCopy(Mat A, HYPRE_IJMatrix ij)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatHYPRE_IJMatrixFastCopy_SeqAIJ"
 static PetscErrorCode MatHYPRE_IJMatrixFastCopy_SeqAIJ(Mat A, HYPRE_IJMatrix ij)
 {
   PetscErrorCode        ierr;
@@ -183,8 +175,6 @@ static PetscErrorCode MatHYPRE_IJMatrixFastCopy_SeqAIJ(Mat A, HYPRE_IJMatrix ij)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatHYPRE_IJMatrixFastCopy_MPIAIJ"
 static PetscErrorCode MatHYPRE_IJMatrixFastCopy_MPIAIJ(Mat A, HYPRE_IJMatrix ij)
 {
   PetscErrorCode        ierr;
@@ -231,8 +221,6 @@ static PetscErrorCode MatHYPRE_IJMatrixFastCopy_MPIAIJ(Mat A, HYPRE_IJMatrix ij)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatConvert_HYPRE_IS"
 static PetscErrorCode MatConvert_HYPRE_IS(Mat A, MatType mtype, MatReuse reuse, Mat* B)
 {
   Mat_HYPRE*             mhA = (Mat_HYPRE*)(A->data);
@@ -339,8 +327,6 @@ static PetscErrorCode MatConvert_HYPRE_IS(Mat A, MatType mtype, MatReuse reuse, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatConvert_AIJ_HYPRE"
 PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat A, MatType type, MatReuse reuse, Mat *B)
 {
   Mat_HYPRE      *hB;
@@ -371,8 +357,6 @@ PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat A, MatType type, MatReuse r
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatConvert_HYPRE_AIJ"
 static PetscErrorCode MatConvert_HYPRE_AIJ(Mat A, MatType mtype, MatReuse reuse, Mat *B)
 {
   Mat_HYPRE          *hA = (Mat_HYPRE*)A->data;
@@ -952,8 +936,6 @@ static PetscErrorCode MatMultTranspose_HYPRE(Mat A, Vec x, Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_HYPRE"
 static PetscErrorCode MatMult_HYPRE(Mat A, Vec x, Vec y)
 {
   PetscErrorCode ierr;
@@ -963,8 +945,6 @@ static PetscErrorCode MatMult_HYPRE(Mat A, Vec x, Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatHYPRE_MultKernel_Private"
 static PetscErrorCode MatHYPRE_MultKernel_Private(Mat A, Vec x, Vec y, PetscBool trans)
 {
   Mat_HYPRE          *hA = (Mat_HYPRE*)A->data;
@@ -997,8 +977,6 @@ static PetscErrorCode MatHYPRE_MultKernel_Private(Mat A, Vec x, Vec y, PetscBool
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_HYPRE"
 static PetscErrorCode MatDestroy_HYPRE(Mat A)
 {
   Mat_HYPRE      *hA = (Mat_HYPRE*)A->data;
@@ -1022,8 +1000,6 @@ static PetscErrorCode MatDestroy_HYPRE(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetUp_HYPRE"
 static PetscErrorCode MatSetUp_HYPRE(Mat A)
 {
   PetscErrorCode ierr;
@@ -1033,8 +1009,6 @@ static PetscErrorCode MatSetUp_HYPRE(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd_HYPRE"
 static PetscErrorCode MatAssemblyEnd_HYPRE(Mat A, MatAssemblyType mode)
 {
   Mat_HYPRE          *hA = (Mat_HYPRE*)A->data;
@@ -1058,8 +1032,6 @@ static PetscErrorCode MatAssemblyEnd_HYPRE(Mat A, MatAssemblyType mode)
 
 #define MATHYPRE_SCRATCH 2048
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetValues_HYPRE"
 PetscErrorCode MatSetValues_HYPRE(Mat A, PetscInt nr, const PetscInt rows[], PetscInt nc, const PetscInt cols[], const PetscScalar v[], InsertMode ins)
 {
   Mat_HYPRE          *hA = (Mat_HYPRE*)A->data;
@@ -1107,8 +1079,6 @@ PetscErrorCode MatSetValues_HYPRE(Mat A, PetscInt nr, const PetscInt rows[], Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatHYPRESetPreallocation_HYPRE"
 static PetscErrorCode MatHYPRESetPreallocation_HYPRE(Mat A, PetscInt dnz, const PetscInt dnnz[], PetscInt onz, const PetscInt onnz[])
 {
   Mat_HYPRE          *hA = (Mat_HYPRE*)A->data;
@@ -1206,8 +1176,6 @@ static PetscErrorCode MatHYPRESetPreallocation_HYPRE(Mat A, PetscInt dnz, const 
 
 .seealso: MatCreate(), MatMPIAIJSetPreallocation, MATHYPRE
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "MatHYPRESetPreallocation"
 PetscErrorCode MatHYPRESetPreallocation(Mat A, PetscInt dnz, const PetscInt dnnz[], PetscInt onz, const PetscInt onnz[])
 {
   PetscErrorCode ierr;
@@ -1236,8 +1204,6 @@ PetscErrorCode MatHYPRESetPreallocation(Mat A, PetscInt dnz, const PetscInt dnnz
 
 .seealso: MatHYPRE, PetscCopyMode
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateFromParCSR"
 PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(hypre_ParCSRMatrix *vparcsr, MatType mtype, PetscCopyMode copymode, Mat* A)
 {
   Mat                   T;
@@ -1333,8 +1299,6 @@ PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(hypre_ParCSRMatrix *vparcsr, Mat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatHYPREGetParCSR_HYPRE"
 PetscErrorCode MatHYPREGetParCSR_HYPRE(Mat A, hypre_ParCSRMatrix **parcsr)
 {
   Mat_HYPRE*            hA = (Mat_HYPRE*)A->data;
@@ -1364,8 +1328,6 @@ PetscErrorCode MatHYPREGetParCSR_HYPRE(Mat A, hypre_ParCSRMatrix **parcsr)
 
 .seealso: MatHYPRE, PetscCopyMode
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatHYPREGetParCSR"
 PetscErrorCode MatHYPREGetParCSR(Mat A, hypre_ParCSRMatrix **parcsr)
 {
   PetscErrorCode ierr;
@@ -1377,8 +1339,6 @@ PetscErrorCode MatHYPREGetParCSR(Mat A, hypre_ParCSRMatrix **parcsr)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_HYPRE"
 PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
 {
   Mat_HYPRE      *hB;
@@ -1412,8 +1372,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "hypre_array_destroy"
 static PetscErrorCode hypre_array_destroy(void *ptr)
 {
    PetscFunctionBegin;
@@ -1431,8 +1389,6 @@ static PetscErrorCode hypre_array_destroy(void *ptr)
 #include <_hypre_IJ_mv.h>
 #include <HYPRE_IJ_mv.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatHYPRE_IJMatrixLink"
 PetscErrorCode MatHYPRE_IJMatrixLink(Mat A, HYPRE_IJMatrix *ij)
 {
   PetscErrorCode        ierr;

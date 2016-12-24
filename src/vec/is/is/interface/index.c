@@ -9,8 +9,6 @@
 /* Logging support */
 PetscClassId IS_CLASSID;
 
-#undef __FUNCT__
-#define __FUNCT__ "ISRenumber"
 /*@
    ISRenumber - Renumbers an index set (with multiplicities) in a contiguous way.
 
@@ -160,8 +158,6 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISIdentity"
 /*@
    ISIdentity - Determines whether index set is the identity mapping.
 
@@ -195,8 +191,6 @@ PetscErrorCode  ISIdentity(IS is,PetscBool  *ident)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISSetIdentity"
 /*@
    ISSetIdentity - Informs the index set that it is an identity.
 
@@ -223,8 +217,6 @@ PetscErrorCode  ISSetIdentity(IS is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISContiguousLocal"
 /*@
    ISContiguousLocal - Locates an index set with contiguous range within a global range, if possible
 
@@ -262,8 +254,6 @@ PetscErrorCode  ISContiguousLocal(IS is,PetscInt gstart,PetscInt gend,PetscInt *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISPermutation"
 /*@
    ISPermutation - PETSC_TRUE or PETSC_FALSE depending on whether the
    index set has been declared to be a permutation.
@@ -292,8 +282,6 @@ PetscErrorCode  ISPermutation(IS is,PetscBool  *perm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISSetPermutation"
 /*@
    ISSetPermutation - Informs the index set that it is a permutation.
 
@@ -343,8 +331,6 @@ PetscErrorCode  ISSetPermutation(IS is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISDestroy"
 /*@
    ISDestroy - Destroys an index set.
 
@@ -382,8 +368,6 @@ PetscErrorCode  ISDestroy(IS *is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISInvertPermutation"
 /*@
    ISInvertPermutation - Creates a new permutation that is the inverse of
                          a given permutation.
@@ -424,8 +408,6 @@ PetscErrorCode  ISInvertPermutation(IS is,PetscInt nlocal,IS *isout)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISGetSize"
 /*@
    ISGetSize - Returns the global length of an index set.
 
@@ -454,8 +436,6 @@ PetscErrorCode  ISGetSize(IS is,PetscInt *size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISGetLocalSize"
 /*@
    ISGetLocalSize - Returns the local (processor) length of an index set.
 
@@ -485,8 +465,6 @@ PetscErrorCode  ISGetLocalSize(IS is,PetscInt *size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISGetIndices"
 /*@C
    ISGetIndices - Returns a pointer to the indices.  The user should call
    ISRestoreIndices() after having looked at the indices.  The user should
@@ -535,8 +513,6 @@ PetscErrorCode  ISGetIndices(IS is,const PetscInt *ptr[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISGetMinMax"
 /*@C
    ISGetMinMax - Gets the minimum and maximum values in an IS
 
@@ -565,8 +541,6 @@ PetscErrorCode  ISGetMinMax(IS is,PetscInt *min,PetscInt *max)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISLocate"
 /*@
   ISLocate - determine the location of an index within the local component of an index set
 
@@ -614,8 +588,6 @@ PetscErrorCode ISLocate(IS is, PetscInt key, PetscInt *location)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISRestoreIndices"
 /*@C
    ISRestoreIndices - Restores an index set to a usable state after a call
                       to ISGetIndices().
@@ -663,8 +635,6 @@ PetscErrorCode  ISRestoreIndices(IS is,const PetscInt *ptr[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISGatherTotal_Private"
 static PetscErrorCode ISGatherTotal_Private(IS is)
 {
   PetscErrorCode ierr;
@@ -697,8 +667,6 @@ static PetscErrorCode ISGatherTotal_Private(IS is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISGetTotalIndices"
 /*@C
    ISGetTotalIndices - Retrieve an array containing all indices across the communicator.
 
@@ -743,8 +711,6 @@ PetscErrorCode ISGetTotalIndices(IS is, const PetscInt *indices[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISRestoreTotalIndices"
 /*@C
    ISRestoreTotalIndices - Restore the index array obtained with ISGetTotalIndices().
 
@@ -776,8 +742,6 @@ PetscErrorCode  ISRestoreTotalIndices(IS is, const PetscInt *indices[])
   }
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "ISGetNonlocalIndices"
 /*@C
    ISGetNonlocalIndices - Retrieve an array of indices from remote processors
                        in this communicator.
@@ -827,8 +791,6 @@ PetscErrorCode  ISGetNonlocalIndices(IS is, const PetscInt *indices[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISRestoreNonlocalIndices"
 /*@C
    ISRestoreTotalIndices - Restore the index array obtained with ISGetNonlocalIndices().
 
@@ -853,8 +815,6 @@ PetscErrorCode  ISRestoreNonlocalIndices(IS is, const PetscInt *indices[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISGetNonlocalIS"
 /*@
    ISGetNonlocalIS - Gather all nonlocal indices for this IS and present
                      them as another sequential index set.
@@ -903,8 +863,6 @@ PetscErrorCode  ISGetNonlocalIS(IS is, IS *complement)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ISRestoreNonlocalIS"
 /*@
    ISRestoreNonlocalIS - Restore the IS obtained with ISGetNonlocalIS().
 
@@ -936,8 +894,6 @@ PetscErrorCode  ISRestoreNonlocalIS(IS is, IS *complement)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISView"
 /*@C
    ISView - Displays an index set.
 
@@ -968,8 +924,6 @@ PetscErrorCode  ISView(IS is,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISLoad"
 /*@
   ISLoad - Loads a vector that has been stored in binary or HDF5 format with ISView().
 
@@ -1006,8 +960,6 @@ PetscErrorCode ISLoad(IS is, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISSort"
 /*@
    ISSort - Sorts the indices of an index set.
 
@@ -1033,8 +985,6 @@ PetscErrorCode  ISSort(IS is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISSortRemoveDups"
 /*@
   ISSortRemoveDups - Sorts the indices of an index set, removing duplicates.
 
@@ -1060,8 +1010,6 @@ PetscErrorCode ISSortRemoveDups(IS is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISToGeneral"
 /*@
    ISToGeneral - Converts an IS object of any type to ISGENERAL type
 
@@ -1089,8 +1037,6 @@ PetscErrorCode  ISToGeneral(IS is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISSorted"
 /*@
    ISSorted - Checks the indices to determine whether they have been sorted.
 
@@ -1122,8 +1068,6 @@ PetscErrorCode  ISSorted(IS is,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISDuplicate"
 /*@
    ISDuplicate - Creates a duplicate copy of an index set.
 
@@ -1154,8 +1098,6 @@ PetscErrorCode  ISDuplicate(IS is,IS *newIS)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISCopy"
 /*@
    ISCopy - Copies an index set.
 
@@ -1190,8 +1132,6 @@ PetscErrorCode  ISCopy(IS is,IS isy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISOnComm"
 /*@
    ISOnComm - Split a parallel IS on subcomms (usually self) or concatenate index sets on subcomms into a parallel index set
 
@@ -1235,8 +1175,6 @@ PetscErrorCode  ISOnComm(IS is,MPI_Comm comm,PetscCopyMode mode,IS *newis)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISSetBlockSize"
 /*@
    ISSetBlockSize - informs an index set that it has a given block size
 
@@ -1262,8 +1200,6 @@ PetscErrorCode  ISSetBlockSize(IS is,PetscInt bs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISGetBlockSize"
 /*@
    ISGetBlockSize - Returns the number of elements in a block.
 
@@ -1291,8 +1227,6 @@ PetscErrorCode  ISGetBlockSize(IS is,PetscInt *size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISGetIndicesCopy"
 PetscErrorCode ISGetIndicesCopy(IS is, PetscInt idx[])
 {
   PetscErrorCode ierr;

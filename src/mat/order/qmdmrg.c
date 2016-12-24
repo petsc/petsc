@@ -32,8 +32,6 @@
 /*              REACHABLE SETS.                                  */
 /*                                                               */
 /*****************************************************************/
-#undef __FUNCT__
-#define __FUNCT__ "SPARSEPACKqmdmrg"
 PetscErrorCode SPARSEPACKqmdmrg(const PetscInt *xadj,const PetscInt *adjncy, PetscInt *deg,
                                 PetscInt *qsize, PetscInt *qlink, PetscInt *marker, PetscInt *deg0,
                                 PetscInt *nhdsze, PetscInt *nbrhd, PetscInt *rchset, PetscInt *ovrlp)

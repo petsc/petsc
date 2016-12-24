@@ -25,8 +25,6 @@ static PetscErrorCode FormNodalSoln(PetscInt,PetscReal,PetscReal,PetscReal,Petsc
 static void leggaulob(PetscReal, PetscReal, PetscReal [], PetscReal [], int);
 static void qAndLEvaluation(int, PetscReal, PetscReal*, PetscReal*, PetscReal*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   PetscInt       p = 2, m = 5;
@@ -227,8 +225,6 @@ int main(int argc,char **args)
 
 /* --------------------------------------------------------------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "Form1DElementMass"
 /* 1d element stiffness mass matrix  */
 static PetscErrorCode Form1DElementMass(PetscReal H,PetscInt P,PetscReal *gqn,PetscReal *gqw,PetscScalar *Me1D)
 {
@@ -250,8 +246,6 @@ static PetscErrorCode Form1DElementMass(PetscReal H,PetscInt P,PetscReal *gqn,Pe
 
 /* --------------------------------------------------------------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "Form1DElementStiffness"
 /* 1d element stiffness matrix for derivative */
 static PetscErrorCode Form1DElementStiffness(PetscReal H,PetscInt P,PetscReal *gqn,PetscReal *gqw,PetscScalar *Ke1D)
 {
@@ -273,8 +267,6 @@ static PetscErrorCode Form1DElementStiffness(PetscReal H,PetscInt P,PetscReal *g
 
 /* --------------------------------------------------------------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "Form2DElementMass"
    /* element mass matrix */
 static PetscErrorCode Form2DElementMass(PetscInt P,PetscScalar *Me1D,PetscScalar *Me2D)
 {
@@ -299,8 +291,6 @@ static PetscErrorCode Form2DElementMass(PetscInt P,PetscScalar *Me1D,PetscScalar
 
 /* --------------------------------------------------------------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "Form2DElementStiffness"
 /* element stiffness for Laplacian */
 static PetscErrorCode Form2DElementStiffness(PetscInt P,PetscScalar *Ke1D,PetscScalar *Me1D,PetscScalar *Ke2D)
 {
@@ -325,8 +315,6 @@ static PetscErrorCode Form2DElementStiffness(PetscInt P,PetscScalar *Ke1D,PetscS
 
 /* --------------------------------------------------------------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "FormNodalRhs"
 static PetscErrorCode FormNodalRhs(PetscInt P,PetscReal x,PetscReal y,PetscReal H,PetscReal* nds,PetscScalar *r)
 {
   PetscInt i,j,indx;
@@ -344,8 +332,6 @@ static PetscErrorCode FormNodalRhs(PetscInt P,PetscReal x,PetscReal y,PetscReal 
 
 /* --------------------------------------------------------------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "FormNodalSoln"
 static PetscErrorCode FormNodalSoln(PetscInt P,PetscReal x,PetscReal y,PetscReal H,PetscReal* nds,PetscScalar *u)
 {
   PetscInt i,j,indx;
@@ -363,8 +349,6 @@ static PetscErrorCode FormNodalSoln(PetscInt P,PetscReal x,PetscReal y,PetscReal
 
 /* --------------------------------------------------------------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "polyBasisFunc"
 static PetscReal polyBasisFunc(PetscInt order, PetscInt basis, PetscReal *xLocVal, PetscReal xval)
 {
   PetscReal denominator = 1.;
@@ -382,8 +366,6 @@ static PetscReal polyBasisFunc(PetscInt order, PetscInt basis, PetscReal *xLocVa
 
 /* --------------------------------------------------------------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "derivPolyBasisFunc"
 static PetscReal derivPolyBasisFunc(PetscInt order, PetscInt basis, PetscReal *xLocVal, PetscReal xval)
 {
   PetscReal denominator;

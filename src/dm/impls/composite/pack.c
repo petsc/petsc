@@ -3,8 +3,6 @@
 #include <petsc/private/isimpl.h>
 #include <petscds.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCompositeSetCoupling"
 /*@C
     DMCompositeSetCoupling - Sets user provided routines that compute the coupling between the
       separate components (DMs) in a DMto build the correct matrix nonzero structure.
@@ -31,8 +29,6 @@ PetscErrorCode  DMCompositeSetCoupling(DM dm,PetscErrorCode (*FormCoupleLocation
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDestroy_Composite"
 PetscErrorCode  DMDestroy_Composite(DM dm)
 {
   PetscErrorCode         ierr;
@@ -53,8 +49,6 @@ PetscErrorCode  DMDestroy_Composite(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMView_Composite"
 PetscErrorCode  DMView_Composite(DM dm,PetscViewer v)
 {
   PetscErrorCode ierr;
@@ -82,8 +76,6 @@ PetscErrorCode  DMView_Composite(DM dm,PetscViewer v)
 }
 
 /* --------------------------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "DMSetUp_Composite"
 PetscErrorCode  DMSetUp_Composite(DM dm)
 {
   PetscErrorCode         ierr;
@@ -121,8 +113,6 @@ PetscErrorCode  DMSetUp_Composite(DM dm)
 
 /* ----------------------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCompositeGetNumberDM"
 /*@
     DMCompositeGetNumberDM - Get's the number of DM objects in the DMComposite
        representation.
@@ -149,8 +139,6 @@ PetscErrorCode  DMCompositeGetNumberDM(DM dm,PetscInt *nDM)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCompositeGetAccess"
 /*@C
     DMCompositeGetAccess - Allows one to access the individual packed vectors in their global
        representation.
@@ -218,8 +206,6 @@ PetscErrorCode  DMCompositeGetAccess(DM dm,Vec gvec,...)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCompositeGetAccessArray"
 /*@C
     DMCompositeGetAccessArray - Allows one to access the individual packed vectors in their global
        representation.
@@ -279,8 +265,6 @@ PetscErrorCode  DMCompositeGetAccessArray(DM dm,Vec pvec,PetscInt nwanted,const 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCompositeGetLocalAccessArray"
 /*@C
     DMCompositeGetLocalAccessArray - Allows one to access the individual
     packed vectors in their local representation.
@@ -346,8 +330,6 @@ PetscErrorCode  DMCompositeGetLocalAccessArray(DM dm,Vec pvec,PetscInt nwanted,c
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCompositeRestoreAccess"
 /*@C
     DMCompositeRestoreAccess - Returns the vectors obtained with DMCompositeGetAccess()
        representation.
@@ -401,8 +383,6 @@ PetscErrorCode  DMCompositeRestoreAccess(DM dm,Vec gvec,...)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCompositeRestoreAccessArray"
 /*@C
     DMCompositeRestoreAccessArray - Returns the vectors obtained with DMCompositeGetAccessArray()
 
@@ -448,8 +428,6 @@ PetscErrorCode  DMCompositeRestoreAccessArray(DM dm,Vec pvec,PetscInt nwanted,co
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCompositeRestoreLocalAccessArray"
 /*@C
     DMCompositeRestoreLocalAccessArray - Returns the vectors obtained with DMCompositeGetLocalAccessArray().
 
@@ -501,8 +479,6 @@ PetscErrorCode  DMCompositeRestoreLocalAccessArray(DM dm,Vec pvec,PetscInt nwant
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCompositeScatter"
 /*@C
     DMCompositeScatter - Scatters from a global packed vector into its individual local vectors
 
@@ -563,8 +539,6 @@ PetscErrorCode  DMCompositeScatter(DM dm,Vec gvec,...)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCompositeScatterArray"
 /*@
     DMCompositeScatterArray - Scatters from a global packed vector into its individual local vectors
 
@@ -618,8 +592,6 @@ PetscErrorCode  DMCompositeScatterArray(DM dm,Vec gvec,Vec *lvecs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCompositeGather"
 /*@C
     DMCompositeGather - Gathers into a global packed vector from its individual local vectors
 
@@ -676,8 +648,6 @@ PetscErrorCode  DMCompositeGather(DM dm,InsertMode imode,Vec gvec,...)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCompositeGatherArray"
 /*@
     DMCompositeGatherArray - Gathers into a global packed vector from its individual local vectors
 
@@ -731,8 +701,6 @@ PetscErrorCode  DMCompositeGatherArray(DM dm,InsertMode imode,Vec gvec,Vec *lvec
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCompositeAddDM"
 /*@C
     DMCompositeAddDM - adds a DM  vector to a DMComposite
 
@@ -793,8 +761,6 @@ PetscErrorCode  DMCompositeAddDM(DM dmc,DM dm)
 
 #include <petscdraw.h>
 PETSC_EXTERN PetscErrorCode  VecView_MPI(Vec,PetscViewer);
-#undef __FUNCT__
-#define __FUNCT__ "VecView_DMComposite"
 PetscErrorCode  VecView_DMComposite(Vec gvec,PetscViewer viewer)
 {
   DM                     dm;
@@ -840,8 +806,6 @@ PetscErrorCode  VecView_DMComposite(Vec gvec,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateGlobalVector_Composite"
 PetscErrorCode  DMCreateGlobalVector_Composite(DM dm,Vec *gvec)
 {
   PetscErrorCode ierr;
@@ -856,8 +820,6 @@ PetscErrorCode  DMCreateGlobalVector_Composite(DM dm,Vec *gvec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateLocalVector_Composite"
 PetscErrorCode  DMCreateLocalVector_Composite(DM dm,Vec *lvec)
 {
   PetscErrorCode ierr;
@@ -873,8 +835,6 @@ PetscErrorCode  DMCreateLocalVector_Composite(DM dm,Vec *lvec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCompositeGetISLocalToGlobalMappings"
 /*@C
     DMCompositeGetISLocalToGlobalMappings - gets an ISLocalToGlobalMapping for each DM in the DMComposite, maps to the composite global space
 
@@ -951,8 +911,6 @@ PetscErrorCode  DMCompositeGetISLocalToGlobalMappings(DM dm,ISLocalToGlobalMappi
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCompositeGetLocalISs"
 /*@C
    DMCompositeGetLocalISs - Gets index sets for each component of a composite local vector
 
@@ -999,8 +957,6 @@ PetscErrorCode  DMCompositeGetLocalISs(DM dm,IS **is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCompositeGetGlobalISs"
 /*@C
     DMCompositeGetGlobalISs - Gets the index sets for each composed object
 
@@ -1072,8 +1028,6 @@ PetscErrorCode  DMCompositeGetGlobalISs(DM dm,IS *is[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateFieldIS_Composite"
 PetscErrorCode DMCreateFieldIS_Composite(DM dm, PetscInt *numFields,char ***fieldNames, IS **fields)
 {
   PetscInt       nDM;
@@ -1122,8 +1076,6 @@ PetscErrorCode DMCreateFieldIS_Composite(DM dm, PetscInt *numFields,char ***fiel
  making DMCreateFieldIS() a special case -- calling with dmlist == NULL;
  At this point it's probably best to be less intrusive, however.
  */
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateFieldDecomposition_Composite"
 PetscErrorCode DMCreateFieldDecomposition_Composite(DM dm, PetscInt *len,char ***namelist, IS **islist, DM **dmlist)
 {
   PetscInt       nDM;
@@ -1146,8 +1098,6 @@ PetscErrorCode DMCreateFieldDecomposition_Composite(DM dm, PetscInt *len,char **
 
 
 /* -------------------------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "DMCompositeGetLocalVectors"
 /*@C
     DMCompositeGetLocalVectors - Gets local vectors for each part of a DMComposite.
        Use DMCompositeRestoreLocalVectors() to return them.
@@ -1189,8 +1139,6 @@ PetscErrorCode  DMCompositeGetLocalVectors(DM dm,...)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCompositeRestoreLocalVectors"
 /*@C
     DMCompositeRestoreLocalVectors - Restores local vectors for each part of a DMComposite.
 
@@ -1232,8 +1180,6 @@ PetscErrorCode  DMCompositeRestoreLocalVectors(DM dm,...)
 }
 
 /* -------------------------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "DMCompositeGetEntries"
 /*@C
     DMCompositeGetEntries - Gets the DM for each entry in a DMComposite.
 
@@ -1274,8 +1220,6 @@ PetscErrorCode  DMCompositeGetEntries(DM dm,...)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCompositeGetEntriesArray"
 /*@C
     DMCompositeGetEntriesArray - Gets the DM for each entry in a DMComposite.
 
@@ -1308,8 +1252,6 @@ PetscErrorCode DMCompositeGetEntriesArray(DM dm,DM dms[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRefine_Composite"
 PetscErrorCode  DMRefine_Composite(DM dmi,MPI_Comm comm,DM *fine)
 {
   PetscErrorCode         ierr;
@@ -1336,8 +1278,6 @@ PetscErrorCode  DMRefine_Composite(DM dmi,MPI_Comm comm,DM *fine)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCoarsen_Composite"
 PetscErrorCode  DMCoarsen_Composite(DM dmi,MPI_Comm comm,DM *fine)
 {
   PetscErrorCode         ierr;
@@ -1364,8 +1304,6 @@ PetscErrorCode  DMCoarsen_Composite(DM dmi,MPI_Comm comm,DM *fine)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateInterpolation_Composite"
 PetscErrorCode  DMCreateInterpolation_Composite(DM coarse,DM fine,Mat *A,Vec *v)
 {
   PetscErrorCode         ierr;
@@ -1420,8 +1358,6 @@ PetscErrorCode  DMCreateInterpolation_Composite(DM coarse,DM fine,Mat *A,Vec *v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetLocalToGlobalMapping_Composite"
 static PetscErrorCode DMGetLocalToGlobalMapping_Composite(DM dm)
 {
   DM_Composite           *com = (DM_Composite*)dm->data;
@@ -1439,8 +1375,6 @@ static PetscErrorCode DMGetLocalToGlobalMapping_Composite(DM dm)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateColoring_Composite"
 PetscErrorCode  DMCreateColoring_Composite(DM dm,ISColoringType ctype,ISColoring *coloring)
 {
   PetscErrorCode  ierr;
@@ -1486,8 +1420,6 @@ PetscErrorCode  DMCreateColoring_Composite(DM dm,ISColoringType ctype,ISColoring
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGlobalToLocalBegin_Composite"
 PetscErrorCode  DMGlobalToLocalBegin_Composite(DM dm,Vec gvec,InsertMode mode,Vec lvec)
 {
   PetscErrorCode         ierr;
@@ -1534,8 +1466,6 @@ PetscErrorCode  DMGlobalToLocalBegin_Composite(DM dm,Vec gvec,InsertMode mode,Ve
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGlobalToLocalEnd_Composite"
 PetscErrorCode  DMGlobalToLocalEnd_Composite(DM dm,Vec gvec,InsertMode mode,Vec lvec)
 {
   PetscFunctionBegin;
@@ -1545,8 +1475,6 @@ PetscErrorCode  DMGlobalToLocalEnd_Composite(DM dm,Vec gvec,InsertMode mode,Vec 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLocalToGlobalBegin_Composite"
 PetscErrorCode  DMLocalToGlobalBegin_Composite(DM dm,Vec lvec,InsertMode mode,Vec gvec)
 {
   PetscErrorCode         ierr;
@@ -1593,8 +1521,6 @@ PetscErrorCode  DMLocalToGlobalBegin_Composite(DM dm,Vec lvec,InsertMode mode,Ve
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLocalToGlobalEnd_Composite"
 PetscErrorCode  DMLocalToGlobalEnd_Composite(DM dm,Vec lvec,InsertMode mode,Vec gvec)
 {
   PetscFunctionBegin;
@@ -1604,8 +1530,6 @@ PetscErrorCode  DMLocalToGlobalEnd_Composite(DM dm,Vec lvec,InsertMode mode,Vec 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLocalToLocalBegin_Composite"
 PetscErrorCode  DMLocalToLocalBegin_Composite(DM dm,Vec vec1,InsertMode mode,Vec vec2)
 {
   PetscErrorCode         ierr;
@@ -1652,8 +1576,6 @@ PetscErrorCode  DMLocalToLocalBegin_Composite(DM dm,Vec vec1,InsertMode mode,Vec
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLocalToLocalEnd_Composite"
 PetscErrorCode  DMLocalToLocalEnd_Composite(DM dm,Vec lvec,InsertMode mode,Vec gvec)
 {
   PetscFunctionBegin;
@@ -1672,8 +1594,6 @@ PetscErrorCode  DMLocalToLocalEnd_Composite(DM dm,Vec lvec,InsertMode mode,Vec g
 M*/
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreate_Composite"
 PETSC_EXTERN PetscErrorCode DMCreate_Composite(DM p)
 {
   PetscErrorCode ierr;
@@ -1710,8 +1630,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Composite(DM p)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCompositeCreate"
 /*@C
     DMCompositeCreate - Creates a vector packer, used to generate "composite"
       vectors made up of several subvectors.

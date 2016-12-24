@@ -32,8 +32,6 @@ static double _dorander48(PetscRandom_Rander48 *r48)
   return ldexp((double) r48->seed[0], -48) + ldexp((double) r48->seed[1], -32) + ldexp((double) r48->seed[2], -16);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscRandomSeed_Rander48"
 static PetscErrorCode  PetscRandomSeed_Rander48(PetscRandom r)
 {
   PetscRandom_Rander48 *r48 = (PetscRandom_Rander48*)r->data;
@@ -49,8 +47,6 @@ static PetscErrorCode  PetscRandomSeed_Rander48(PetscRandom r)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscRandomGetValue_Rander48"
 static PetscErrorCode  PetscRandomGetValue_Rander48(PetscRandom r, PetscScalar *val)
 {
   PetscRandom_Rander48 *r48 = (PetscRandom_Rander48*)r->data;
@@ -75,8 +71,6 @@ static PetscErrorCode  PetscRandomGetValue_Rander48(PetscRandom r, PetscScalar *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscRandomGetValueReal_Rander48"
 static PetscErrorCode  PetscRandomGetValueReal_Rander48(PetscRandom r, PetscReal *val)
 {
   PetscRandom_Rander48 *r48 = (PetscRandom_Rander48*)r->data;
@@ -92,8 +86,6 @@ static PetscErrorCode  PetscRandomGetValueReal_Rander48(PetscRandom r, PetscReal
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscRandomDestroy_Rander48"
 static PetscErrorCode  PetscRandomDestroy_Rander48(PetscRandom r)
 {
   PetscErrorCode ierr;
@@ -132,8 +124,6 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
 .seealso: RandomCreate(), RandomSetType(), PETSCRAND, PETSCRAND48, PETSCRANDER48, PETSCSPRNG, PetscRandomSetSeed(), PetscRandomSeed()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscRandomCreate_Rander48"
 PETSC_EXTERN PetscErrorCode PetscRandomCreate_Rander48(PetscRandom r)
 {
   PetscErrorCode       ierr;

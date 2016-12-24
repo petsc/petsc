@@ -13,8 +13,6 @@ typedef struct {
   PetscBool loadBalance;                  /* Load balance via a second distribute step */
 } AppCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscErrorCode ierr;
@@ -40,8 +38,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateMesh"
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   DM             distMesh        = NULL;
@@ -145,8 +141,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   DM             dm;

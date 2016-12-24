@@ -1,8 +1,6 @@
 #include <petscdmnetwork.h> /*I  "petscdmnetwork.h"  I*/
 #include <petscdraw.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "DMNetworkMonitorCreate"
 /*@
   DMNetworkMonitorCreate - Creates a network monitor context
 
@@ -39,8 +37,6 @@ PetscErrorCode DMNetworkMonitorCreate(DM network,DMNetworkMonitor *monitorptr)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMNetworkMonitorDestroy"
 /*@
   DMNetworkMonitorDestroy - Destroys a network monitor and all associated viewers
 
@@ -66,8 +62,6 @@ PetscErrorCode DMNetworkMonitorDestroy(DMNetworkMonitor *monitor)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMNetworkMonitorPop"
 /*@
   DMNetworkMonitorPop - Removes the most recently added viewer
 
@@ -99,8 +93,6 @@ PetscErrorCode DMNetworkMonitorPop(DMNetworkMonitor monitor)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMNetworkMonitorAdd"
 /*@
   DMNetworkMonitorAdd - Adds a new viewer to monitor
 
@@ -178,8 +170,6 @@ PetscErrorCode DMNetworkMonitorAdd(DMNetworkMonitor monitor,const char *name,Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMNetworkMonitorView"
 /*@
   DMNetworkMonitorView - Monitor function for TSMonitorSet.
 

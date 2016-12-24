@@ -22,8 +22,6 @@ static char help[] = "Extract submatrices using unsorted indices. For SEQSBAIJ e
 #include <petscmat.h>
 #include <petscis.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            A, *S;

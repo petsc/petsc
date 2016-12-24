@@ -30,8 +30,6 @@ typedef struct {
   PetscErrorCode (**exactFuncs)(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
 } AppCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "ProcessOptions"
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   const char    *runTypes[2] = {"full", "test"};
@@ -51,8 +49,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateMesh"
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   DM             distributedMesh = NULL;
@@ -201,8 +197,6 @@ PetscErrorCode zero(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar 
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetupProblem"
 PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
 {
   const PetscInt id = 1;
@@ -229,8 +223,6 @@ PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetupDiscretization"
 PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 {
   DM              cdm = dm;
@@ -264,8 +256,6 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   DM             dm;

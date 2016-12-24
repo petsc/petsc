@@ -2,8 +2,6 @@
 #include <../src/ksp/pc/impls/bddc/bddcprivate.h>
 #include <../src/ksp/pc/impls/bddc/bddcstructs.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCGraphGetDirichletDofsB"
 PetscErrorCode PCBDDCGraphGetDirichletDofsB(PCBDDCGraph graph, IS* dirdofs)
 {
   PetscErrorCode ierr;
@@ -32,8 +30,6 @@ PetscErrorCode PCBDDCGraphGetDirichletDofsB(PCBDDCGraph graph, IS* dirdofs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCGraphGetDirichletDofs"
 PetscErrorCode PCBDDCGraphGetDirichletDofs(PCBDDCGraph graph, IS* dirdofs)
 {
   PetscErrorCode ierr;
@@ -62,8 +58,6 @@ PetscErrorCode PCBDDCGraphGetDirichletDofs(PCBDDCGraph graph, IS* dirdofs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCGraphASCIIView"
 PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level, PetscViewer viewer)
 {
   PetscInt       i,j,tabs;
@@ -165,8 +159,6 @@ PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCGraphRestoreCandidatesIS"
 PetscErrorCode PCBDDCGraphRestoreCandidatesIS(PCBDDCGraph graph, PetscInt *n_faces, IS *FacesIS[], PetscInt *n_edges, IS *EdgesIS[], IS *VerticesIS)
 {
   PetscInt       i;
@@ -197,8 +189,6 @@ PetscErrorCode PCBDDCGraphRestoreCandidatesIS(PCBDDCGraph graph, PetscInt *n_fac
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCGraphGetCandidatesIS"
 PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscInt *n_faces, IS *FacesIS[], PetscInt *n_edges, IS *EdgesIS[], IS *VerticesIS)
 {
   IS             *ISForFaces,*ISForEdges,ISForVertices;
@@ -293,8 +283,6 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscInt *n_faces, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCGraphComputeConnectedComponents"
 PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
 {
   PetscBool      adapt_interface_reduced;
@@ -544,8 +532,6 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCGraphComputeCC_Private"
 PETSC_STATIC_INLINE PetscErrorCode PCBDDCGraphComputeCC_Private(PCBDDCGraph graph,PetscInt pid,PetscInt* queue_tip,PetscInt n_prev,PetscInt* n_added)
 {
   PetscInt       i,j,n;
@@ -621,8 +607,6 @@ PETSC_STATIC_INLINE PetscErrorCode PCBDDCGraphComputeCC_Private(PCBDDCGraph grap
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCGraphComputeConnectedComponentsLocal"
 PetscErrorCode PCBDDCGraphComputeConnectedComponentsLocal(PCBDDCGraph graph)
 {
   PetscInt       ncc,cum_queue,n;
@@ -686,8 +670,6 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponentsLocal(PCBDDCGraph graph)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCGraphSetUp"
 PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size, IS neumann_is, IS dirichlet_is, PetscInt n_ISForDofs, IS ISForDofs[], IS custom_primal_vertices)
 {
   IS             subset,subset_n;
@@ -1040,8 +1022,6 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCGraphResetCSR"
 PetscErrorCode PCBDDCGraphResetCSR(PCBDDCGraph graph)
 {
   PetscErrorCode ierr;
@@ -1060,8 +1040,6 @@ PetscErrorCode PCBDDCGraphResetCSR(PCBDDCGraph graph)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCGraphReset"
 PetscErrorCode PCBDDCGraphReset(PCBDDCGraph graph)
 {
   PetscErrorCode ierr;
@@ -1107,8 +1085,6 @@ PetscErrorCode PCBDDCGraphReset(PCBDDCGraph graph)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCGraphInit"
 PetscErrorCode PCBDDCGraphInit(PCBDDCGraph graph, ISLocalToGlobalMapping l2gmap, PetscInt N, PetscInt maxcount)
 {
   PetscInt       n;
@@ -1152,8 +1128,6 @@ PetscErrorCode PCBDDCGraphInit(PCBDDCGraph graph, ISLocalToGlobalMapping l2gmap,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCGraphDestroy"
 PetscErrorCode PCBDDCGraphDestroy(PCBDDCGraph* graph)
 {
   PetscErrorCode ierr;
@@ -1165,8 +1139,6 @@ PetscErrorCode PCBDDCGraphDestroy(PCBDDCGraph* graph)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCGraphCreate"
 PetscErrorCode PCBDDCGraphCreate(PCBDDCGraph *graph)
 {
   PCBDDCGraph    new_graph;

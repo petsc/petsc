@@ -1,8 +1,6 @@
 
 #include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetFromOptions_DA"
 PetscErrorCode  DMSetFromOptions_DA(PetscOptionItems *PetscOptionsObject,DM da)
 {
   PetscErrorCode ierr;
@@ -135,8 +133,6 @@ extern PetscErrorCode  DMDestroy_DA(DM);
 extern PetscErrorCode  DMCreateDomainDecomposition_DA(DM,PetscInt*,char***,IS**,IS**,DM**);
 extern PetscErrorCode  DMCreateDomainDecompositionScatters_DA(DM,PetscInt,DM*,VecScatter**,VecScatter**,VecScatter**);
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLoad_DA"
 PetscErrorCode DMLoad_DA(DM da,PetscViewer viewer)
 {
   PetscErrorCode   ierr;
@@ -177,8 +173,6 @@ PetscErrorCode DMLoad_DA(DM da,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateSubDM_DA"
 PetscErrorCode DMCreateSubDM_DA(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm)
 {
   DM_DA         *da = (DM_DA*) dm->data;
@@ -235,8 +229,6 @@ PetscErrorCode DMCreateSubDM_DA(DM dm, PetscInt numFields, PetscInt fields[], IS
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateFieldDecomposition_DA"
 PetscErrorCode DMCreateFieldDecomposition_DA(DM dm, PetscInt *len,char ***namelist, IS **islist, DM **dmlist)
 {
   PetscInt       i;
@@ -286,8 +278,6 @@ PetscErrorCode DMCreateFieldDecomposition_DA(DM dm, PetscInt *len,char ***nameli
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMClone_DA"
 PetscErrorCode DMClone_DA(DM dm, DM *newdm)
 {
   DM_DA         *da = (DM_DA *) dm->data;
@@ -307,8 +297,6 @@ PetscErrorCode DMClone_DA(DM dm, DM *newdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetDimPoints_DA"
 static PetscErrorCode DMGetDimPoints_DA(DM dm, PetscInt dim, PetscInt *pStart, PetscInt *pEnd)
 {
   PetscErrorCode ierr;
@@ -318,8 +306,6 @@ static PetscErrorCode DMGetDimPoints_DA(DM dm, PetscInt dim, PetscInt *pStart, P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetNeighbors_DA"
 static PetscErrorCode DMGetNeighbors_DA(DM dm, PetscInt *nranks, const PetscMPIInt *ranks[])
 {
   PetscErrorCode ierr;
@@ -367,8 +353,6 @@ extern PetscErrorCode DMComputeL2Diff_DA(DM, PetscReal, PetscErrorCode (**)(Pets
 extern PetscErrorCode DMComputeL2GradientDiff_DA(DM, PetscReal, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal [], const PetscReal [],PetscInt, PetscScalar *, void *), void **, Vec,const PetscReal [], PetscReal *);
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreate_DA"
 PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
 {
   PetscErrorCode ierr;
@@ -465,8 +449,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDACreate"
 /*@
   DMDACreate - Creates a DMDA object.
 

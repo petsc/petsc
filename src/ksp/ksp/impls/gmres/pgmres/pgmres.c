@@ -18,8 +18,6 @@ static PetscErrorCode KSPPGMRESBuildSoln(PetscScalar*,Vec,Vec,KSP,PetscInt);
     but can be called directly by KSPSetUp().
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_PGMRES"
 static PetscErrorCode KSPSetUp_PGMRES(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -47,8 +45,6 @@ static PetscErrorCode KSPSetUp_PGMRES(KSP ksp)
 
 
  */
-#undef __FUNCT__
-#define __FUNCT__ "KSPPGMRESCycle"
 static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
 {
   KSP_PGMRES     *pgmres = (KSP_PGMRES*)(ksp->data);
@@ -206,8 +202,6 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
 .     outits - number of iterations used
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_PGMRES"
 static PetscErrorCode KSPSolve_PGMRES(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -237,8 +231,6 @@ static PetscErrorCode KSPSolve_PGMRES(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPDestroy_PGMRES"
 static PetscErrorCode KSPDestroy_PGMRES(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -261,8 +253,6 @@ static PetscErrorCode KSPDestroy_PGMRES(KSP ksp)
 
      This is an internal routine that knows about the PGMRES internals.
  */
-#undef __FUNCT__
-#define __FUNCT__ "KSPPGMRESBuildSoln"
 static PetscErrorCode KSPPGMRESBuildSoln(PetscScalar *nrs,Vec vguess,Vec vdest,KSP ksp,PetscInt it)
 {
   PetscScalar    tt;
@@ -318,8 +308,6 @@ static PetscErrorCode KSPPGMRESBuildSoln(PetscScalar *nrs,Vec vguess,Vec vdest,K
 .        res - the new residual
 
  */
-#undef __FUNCT__
-#define __FUNCT__ "KSPPGMRESUpdateHessenberg"
 /*
 .  it - column of the Hessenberg that is complete, PGMRES is actually computing two columns ahead of this
  */
@@ -410,8 +398,6 @@ static PetscErrorCode KSPPGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool *h
    calls directly.
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "KSPBuildSolution_PGMRES"
 PetscErrorCode KSPBuildSolution_PGMRES(KSP ksp,Vec ptr,Vec *result)
 {
   KSP_PGMRES     *pgmres = (KSP_PGMRES*)ksp->data;
@@ -436,8 +422,6 @@ PetscErrorCode KSPBuildSolution_PGMRES(KSP ksp,Vec ptr,Vec *result)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetFromOptions_PGMRES"
 PetscErrorCode KSPSetFromOptions_PGMRES(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
@@ -449,8 +433,6 @@ PetscErrorCode KSPSetFromOptions_PGMRES(PetscOptionItems *PetscOptionsObject,KSP
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPReset_PGMRES"
 PetscErrorCode KSPReset_PGMRES(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -491,8 +473,6 @@ PetscErrorCode KSPReset_PGMRES(KSP ksp)
            KSPGMRESCGSRefinementType, KSPGMRESSetCGSRefinementType(),  KSPGMRESGetCGSRefinementType(), KSPGMRESMonitorKrylov()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_PGMRES"
 PETSC_EXTERN PetscErrorCode KSPCreate_PGMRES(KSP ksp)
 {
   KSP_PGMRES     *pgmres;

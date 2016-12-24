@@ -37,8 +37,6 @@ typedef struct {
 /*
       Mm_ratio - ration of grid lines between fine and coarse grids.
 */
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;

@@ -6,8 +6,6 @@
 PetscClassId IS_LTOGM_CLASSID;
 static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGlobalMapping,PetscInt*,PetscInt**,PetscInt**,PetscInt***);
 
-#undef __FUNCT__
-#define __FUNCT__ "ISLocalToGlobalMappingDuplicate"
 /*@
     ISLocalToGlobalMappingDuplicate - Duplicates the local to global mapping object
 
@@ -35,8 +33,6 @@ PetscErrorCode  ISLocalToGlobalMappingDuplicate(ISLocalToGlobalMapping ltog,ISLo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISLocalToGlobalMappingGetSize"
 /*@
     ISLocalToGlobalMappingGetSize - Gets the local size of a local to global mapping
 
@@ -63,8 +59,6 @@ PetscErrorCode  ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping mapping,Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISLocalToGlobalMappingView"
 /*@C
     ISLocalToGlobalMappingView - View a local to global mapping
 
@@ -108,8 +102,6 @@ PetscErrorCode  ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping,PetscV
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISLocalToGlobalMappingCreateIS"
 /*@
     ISLocalToGlobalMappingCreateIS - Creates a mapping between a local (0 to n)
     ordering and a global parallel ordering.
@@ -157,8 +149,6 @@ PetscErrorCode  ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *map
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISLocalToGlobalMappingCreateSF"
 /*@C
     ISLocalToGlobalMappingCreateSF - Creates a mapping between a local (0 to n)
     ordering and a global parallel ordering.
@@ -206,8 +196,6 @@ PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF sf,PetscInt start,ISLocalT
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISLocalToGlobalMappingSetBlockSize"
 /*@
     ISLocalToGlobalMappingSetBlockSize - Sets the blocksize of the mapping
 
@@ -268,8 +256,6 @@ PetscErrorCode  ISLocalToGlobalMappingSetBlockSize(ISLocalToGlobalMapping mappin
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISLocalToGlobalMappingGetBlockSize"
 /*@
     ISLocalToGlobalMappingGetBlockSize - Gets the blocksize of the mapping
     ordering and a global parallel ordering.
@@ -296,8 +282,6 @@ PetscErrorCode  ISLocalToGlobalMappingGetBlockSize(ISLocalToGlobalMapping mappin
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISLocalToGlobalMappingCreate"
 /*@
     ISLocalToGlobalMappingCreate - Creates a mapping between a local (0 to n)
     ordering and a global parallel ordering.
@@ -361,8 +345,6 @@ PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm comm,PetscInt bs,PetscInt 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISLocalToGlobalMappingDestroy"
 /*@
    ISLocalToGlobalMappingDestroy - Destroys a mapping between a local (0 to n)
    ordering and a global parallel ordering.
@@ -402,8 +384,6 @@ PetscErrorCode  ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping *mapping)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISLocalToGlobalMappingApplyIS"
 /*@
     ISLocalToGlobalMappingApplyIS - Creates from an IS in the local numbering
     a new index set using the global numbering defined in an ISLocalToGlobalMapping
@@ -445,8 +425,6 @@ PetscErrorCode  ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping,IS 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISLocalToGlobalMappingApply"
 /*@
    ISLocalToGlobalMappingApply - Takes a list of integers in a local numbering
    and converts them to the global numbering.
@@ -504,8 +482,6 @@ PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISLocalToGlobalMappingApplyBlock"
 /*@
    ISLocalToGlobalMappingApplyBlock - Takes a list of integers in a local block numbering and converts them to the global block numbering
 
@@ -557,8 +533,6 @@ PetscErrorCode ISLocalToGlobalMappingApplyBlock(ISLocalToGlobalMapping mapping,P
 
 /* -----------------------------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "ISGlobalToLocalMappingSetUp_Private"
 /*
     Creates the global fields in the ISLocalToGlobalMapping structure
 */
@@ -592,8 +566,6 @@ static PetscErrorCode ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISGlobalToLocalMappingApply"
 /*@
     ISGlobalToLocalMappingApply - Provides the local numbering for a list of integers
     specified with a global numbering.
@@ -682,8 +654,6 @@ PetscErrorCode  ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISGlobalToLocalMappingApplyIS"
 /*@
     ISGlobalToLocalMappingApplyIS - Creates from an IS in the global numbering
     a new index set using the local numbering defined in an ISLocalToGlobalMapping
@@ -730,8 +700,6 @@ PetscErrorCode  ISGlobalToLocalMappingApplyIS(ISLocalToGlobalMapping mapping,ISG
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISGlobalToLocalMappingApplyBlock"
 /*@
     ISGlobalToLocalMappingApplyBlock - Provides the local block numbering for a list of integers
     specified with a block global numbering.
@@ -819,8 +787,6 @@ PetscErrorCode  ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping mapping,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISLocalToGlobalMappingGetBlockInfo"
 /*@C
     ISLocalToGlobalMappingGetBlockInfo - Gets the neighbor information for each processor and
      each index shared by more than one processor
@@ -868,8 +834,6 @@ PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo(ISLocalToGlobalMapping mappin
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISLocalToGlobalMappingGetBlockInfo_Private"
 static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGlobalMapping mapping,PetscInt *nproc,PetscInt *procs[],PetscInt *numprocs[],PetscInt **indices[])
 {
   PetscErrorCode ierr;
@@ -1280,8 +1244,6 @@ static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGloba
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISLocalToGlobalMappingRestoreBlockInfo"
 /*@C
     ISLocalToGlobalMappingRestoreBlockInfo - Frees the memory allocated by ISLocalToGlobalMappingGetBlockInfo()
 
@@ -1326,8 +1288,6 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreBlockInfo(ISLocalToGlobalMapping ma
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISLocalToGlobalMappingGetInfo"
 /*@C
     ISLocalToGlobalMappingGetInfo - Gets the neighbor information for each processor and
      each index shared by more than one processor
@@ -1386,8 +1346,6 @@ PetscErrorCode  ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISLocalToGlobalMappingRestoreInfo"
 /*@C
     ISLocalToGlobalMappingRestoreInfo - Frees the memory allocated by ISLocalToGlobalMappingGetInfo()
 
@@ -1416,8 +1374,6 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping mapping
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISLocalToGlobalMappingGetIndices"
 /*@C
    ISLocalToGlobalMappingGetIndices - Get global indices for every local point that is mapped
 
@@ -1458,8 +1414,6 @@ PetscErrorCode  ISLocalToGlobalMappingGetIndices(ISLocalToGlobalMapping ltog,con
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISLocalToGlobalMappingRestoreIndices"
 /*@C
    ISLocalToGlobalMappingRestoreIndices - Restore indices obtained with ISLocalToGlobalMappingGetIndices()
 
@@ -1487,8 +1441,6 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMapping ltog
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISLocalToGlobalMappingGetBlockIndices"
 /*@C
    ISLocalToGlobalMappingGetBlockIndices - Get global indices for every local block
 
@@ -1513,8 +1465,6 @@ PetscErrorCode  ISLocalToGlobalMappingGetBlockIndices(ISLocalToGlobalMapping lto
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISLocalToGlobalMappingRestoreBlockIndices"
 /*@C
    ISLocalToGlobalMappingRestoreBlockIndices - Restore indices obtained with ISLocalToGlobalMappingGetBlockIndices()
 
@@ -1538,8 +1488,6 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreBlockIndices(ISLocalToGlobalMapping
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ISLocalToGlobalMappingConcatenate"
 /*@C
    ISLocalToGlobalMappingConcatenate - Create a new mapping that concatenates a list of mappings
 

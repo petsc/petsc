@@ -5,8 +5,6 @@ static char help[] = "Tests PetscViewerHDF5 VecView()/VecLoad() function.\n\n";
 #include <petscviewerhdf5.h>
 #include <petscvec.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   PetscErrorCode ierr;

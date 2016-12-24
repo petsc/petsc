@@ -45,8 +45,6 @@ TO ADD:
   6) Try out CUSP PCs
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "IntegrateCells"
 PetscErrorCode IntegrateCells(DM dm, PetscInt *Ne, PetscInt *Nl, PetscInt **elemRows, PetscScalar **elemMats)
 {
   DMDALocalInfo  info;
@@ -104,8 +102,6 @@ PetscErrorCode IntegrateCells(DM dm, PetscInt *Ne, PetscInt *Nl, PetscInt **elem
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   KSP            ksp;

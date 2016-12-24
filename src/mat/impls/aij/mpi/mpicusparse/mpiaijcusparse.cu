@@ -4,9 +4,6 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h>   /*I "petscmat.h" I*/
 #include <../src/mat/impls/aij/mpi/mpicusparse/mpicusparsematimpl.h>
 
-
-#undef __FUNCT__
-#define __FUNCT__ "MatMPIAIJSetPreallocation_MPIAIJCUSPARSE"
 PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSPARSE(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
   Mat_MPIAIJ         *b               = (Mat_MPIAIJ*)B->data;
@@ -51,8 +48,6 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSPARSE(Mat B,PetscInt d_nz,con
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateVecs_MPIAIJCUSPARSE"
 PetscErrorCode  MatCreateVecs_MPIAIJCUSPARSE(Mat mat,Vec *right,Vec *left)
 {
   PetscErrorCode ierr;
@@ -79,8 +74,6 @@ PetscErrorCode  MatCreateVecs_MPIAIJCUSPARSE(Mat mat,Vec *right,Vec *left)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_MPIAIJCUSPARSE"
 PetscErrorCode MatMult_MPIAIJCUSPARSE(Mat A,Vec xx,Vec yy)
 {
   /* This multiplication sequence is different sequence
@@ -110,8 +103,6 @@ PetscErrorCode MatMult_MPIAIJCUSPARSE(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultTranspose_MPIAIJCUSPARSE"
 PetscErrorCode MatMultTranspose_MPIAIJCUSPARSE(Mat A,Vec xx,Vec yy)
 {
   /* This multiplication sequence is different sequence
@@ -141,8 +132,6 @@ PetscErrorCode MatMultTranspose_MPIAIJCUSPARSE(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCUSPARSESetFormat_MPIAIJCUSPARSE"
 PetscErrorCode MatCUSPARSESetFormat_MPIAIJCUSPARSE(Mat A,MatCUSPARSEFormatOperation op,MatCUSPARSEStorageFormat format)
 {
   Mat_MPIAIJ         *a               = (Mat_MPIAIJ*)A->data;
@@ -166,8 +155,6 @@ PetscErrorCode MatCUSPARSESetFormat_MPIAIJCUSPARSE(Mat A,MatCUSPARSEFormatOperat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetFromOptions_MPIAIJCUSPARSE"
 PetscErrorCode MatSetFromOptions_MPIAIJCUSPARSE(PetscOptionItems *PetscOptionsObject,Mat A)
 {
   MatCUSPARSEStorageFormat format;
@@ -202,8 +189,6 @@ PetscErrorCode MatSetFromOptions_MPIAIJCUSPARSE(PetscOptionItems *PetscOptionsOb
 
 PETSC_EXTERN PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat,MatAssemblyType);
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd_MPIAIJCUSPARSE"
 PetscErrorCode MatAssemblyEnd_MPIAIJCUSPARSE(Mat A,MatAssemblyType mode)
 {
   PetscErrorCode ierr;
@@ -218,8 +203,6 @@ PetscErrorCode MatAssemblyEnd_MPIAIJCUSPARSE(Mat A,MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_MPIAIJCUSPARSE"
 PetscErrorCode MatDestroy_MPIAIJCUSPARSE(Mat A)
 {
   PetscErrorCode     ierr;
@@ -244,8 +227,6 @@ PetscErrorCode MatDestroy_MPIAIJCUSPARSE(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_MPIAIJCUSPARSE"
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat A)
 {
   PetscErrorCode     ierr;
@@ -325,8 +306,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat A)
 
 .seealso: MatCreate(), MatCreateAIJ(), MatSetValues(), MatSeqAIJSetColumnIndices(), MatCreateSeqAIJWithArrays(), MatCreateAIJ(), MATMPIAIJCUSPARSE, MATAIJCUSPARSE
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateAIJCUSPARSE"
 PetscErrorCode  MatCreateAIJCUSPARSE(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[],Mat *A)
 {
   PetscErrorCode ierr;

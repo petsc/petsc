@@ -1,8 +1,6 @@
 
 #include <petsc/private/matimpl.h>  /*I   "petscmat.h"  I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetColumnVector"
 /*@
    MatGetColumnVector - Gets the values from a given column of a matrix.
 
@@ -77,8 +75,6 @@ PetscErrorCode  MatGetColumnVector(Mat A,Vec yy,PetscInt col)
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetColumnNorms"
 /*@
     MatGetColumnNorms - Gets the norms of each column of a sparse or dense matrix.
 

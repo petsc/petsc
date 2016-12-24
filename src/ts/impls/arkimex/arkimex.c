@@ -202,8 +202,6 @@ M*/
 .seealso: TSARKIMEX
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "TSARKIMEXRegisterAll"
 /*@C
   TSARKIMEXRegisterAll - Registers all of the additive Runge-Kutta implicit-explicit methods in TSARKIMEX
 
@@ -428,8 +426,6 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSARKIMEXRegisterDestroy"
 /*@C
    TSARKIMEXRegisterDestroy - Frees the list of schemes that were registered by TSARKIMEXRegister().
 
@@ -459,8 +455,6 @@ PetscErrorCode TSARKIMEXRegisterDestroy(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSARKIMEXInitializePackage"
 /*@C
   TSARKIMEXInitializePackage - This function initializes everything in the TSARKIMEX package. It is called
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to TSCreate_ARKIMEX()
@@ -483,8 +477,6 @@ PetscErrorCode TSARKIMEXInitializePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSARKIMEXFinalizePackage"
 /*@C
   TSARKIMEXFinalizePackage - This function destroys everything in the TSARKIMEX package. It is
   called from PetscFinalize().
@@ -504,8 +496,6 @@ PetscErrorCode TSARKIMEXFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSARKIMEXRegister"
 /*@C
    TSARKIMEXRegister - register an ARK IMEX scheme by providing the entries in the Butcher tableau and optionally embedded approximations and interpolation
 
@@ -585,8 +575,6 @@ PetscErrorCode TSARKIMEXRegister(TSARKIMEXType name,PetscInt order,PetscInt s,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSEvaluateStep_ARKIMEX"
 /*
  The step completion formula is
 
@@ -660,8 +648,6 @@ unavailable:
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSRollBack_ARKIMEX"
 static PetscErrorCode TSRollBack_ARKIMEX(TS ts)
 {
   TS_ARKIMEX      *ark = (TS_ARKIMEX*)ts->data;
@@ -690,8 +676,6 @@ static PetscErrorCode TSRollBack_ARKIMEX(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSStep_ARKIMEX"
 static PetscErrorCode TSStep_ARKIMEX(TS ts)
 {
   TS_ARKIMEX      *ark = (TS_ARKIMEX*)ts->data;
@@ -857,8 +841,6 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSInterpolate_ARKIMEX"
 static PetscErrorCode TSInterpolate_ARKIMEX(TS ts,PetscReal itime,Vec X)
 {
   TS_ARKIMEX      *ark = (TS_ARKIMEX*)ts->data;
@@ -898,8 +880,6 @@ static PetscErrorCode TSInterpolate_ARKIMEX(TS ts,PetscReal itime,Vec X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSExtrapolate_ARKIMEX"
 static PetscErrorCode TSExtrapolate_ARKIMEX(TS ts,PetscReal c,Vec X)
 {
   TS_ARKIMEX      *ark = (TS_ARKIMEX*)ts->data;
@@ -931,8 +911,6 @@ static PetscErrorCode TSExtrapolate_ARKIMEX(TS ts,PetscReal c,Vec X)
 
 /*------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "TSARKIMEXTableauReset"
 static PetscErrorCode TSARKIMEXTableauReset(TS ts)
 {
   TS_ARKIMEX     *ark = (TS_ARKIMEX*)ts->data;
@@ -951,8 +929,6 @@ static PetscErrorCode TSARKIMEXTableauReset(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSReset_ARKIMEX"
 static PetscErrorCode TSReset_ARKIMEX(TS ts)
 {
   TS_ARKIMEX     *ark = (TS_ARKIMEX*)ts->data;
@@ -966,8 +942,6 @@ static PetscErrorCode TSReset_ARKIMEX(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSDestroy_ARKIMEX"
 static PetscErrorCode TSDestroy_ARKIMEX(TS ts)
 {
   PetscErrorCode ierr;
@@ -982,8 +956,6 @@ static PetscErrorCode TSDestroy_ARKIMEX(TS ts)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TSARKIMEXGetVecs"
 static PetscErrorCode TSARKIMEXGetVecs(TS ts,DM dm,Vec *Z,Vec *Ydot)
 {
   TS_ARKIMEX     *ax = (TS_ARKIMEX*)ts->data;
@@ -1004,8 +976,6 @@ static PetscErrorCode TSARKIMEXGetVecs(TS ts,DM dm,Vec *Z,Vec *Ydot)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TSARKIMEXRestoreVecs"
 static PetscErrorCode TSARKIMEXRestoreVecs(TS ts,DM dm,Vec *Z,Vec *Ydot)
 {
   PetscErrorCode ierr;
@@ -1028,8 +998,6 @@ static PetscErrorCode TSARKIMEXRestoreVecs(TS ts,DM dm,Vec *Z,Vec *Ydot)
   This defines the nonlinear equation that is to be solved with SNES
   G(U) = F[t0+Theta*dt, U, (U-U0)*shift] = 0
 */
-#undef __FUNCT__
-#define __FUNCT__ "SNESTSFormFunction_ARKIMEX"
 static PetscErrorCode SNESTSFormFunction_ARKIMEX(SNES snes,Vec X,Vec F,TS ts)
 {
   TS_ARKIMEX     *ark = (TS_ARKIMEX*)ts->data;
@@ -1052,8 +1020,6 @@ static PetscErrorCode SNESTSFormFunction_ARKIMEX(SNES snes,Vec X,Vec F,TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESTSFormJacobian_ARKIMEX"
 static PetscErrorCode SNESTSFormJacobian_ARKIMEX(SNES snes,Vec X,Mat A,Mat B,TS ts)
 {
   TS_ARKIMEX     *ark = (TS_ARKIMEX*)ts->data;
@@ -1076,16 +1042,12 @@ static PetscErrorCode SNESTSFormJacobian_ARKIMEX(SNES snes,Vec X,Mat A,Mat B,TS 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCoarsenHook_TSARKIMEX"
 static PetscErrorCode DMCoarsenHook_TSARKIMEX(DM fine,DM coarse,void *ctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRestrictHook_TSARKIMEX"
 static PetscErrorCode DMRestrictHook_TSARKIMEX(DM fine,Mat restrct,Vec rscale,Mat inject,DM coarse,void *ctx)
 {
   TS             ts = (TS)ctx;
@@ -1103,16 +1065,12 @@ static PetscErrorCode DMRestrictHook_TSARKIMEX(DM fine,Mat restrct,Vec rscale,Ma
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSubDomainHook_TSARKIMEX"
 static PetscErrorCode DMSubDomainHook_TSARKIMEX(DM dm,DM subdm,void *ctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSubDomainRestrictHook_TSARKIMEX"
 static PetscErrorCode DMSubDomainRestrictHook_TSARKIMEX(DM dm,VecScatter gscat,VecScatter lscat,DM subdm,void *ctx)
 {
   TS             ts = (TS)ctx;
@@ -1131,8 +1089,6 @@ static PetscErrorCode DMSubDomainRestrictHook_TSARKIMEX(DM dm,VecScatter gscat,V
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSARKIMEXTableauSetUp"
 static PetscErrorCode TSARKIMEXTableauSetUp(TS ts)
 {
   TS_ARKIMEX     *ark = (TS_ARKIMEX*)ts->data;
@@ -1152,8 +1108,6 @@ static PetscErrorCode TSARKIMEXTableauSetUp(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSSetUp_ARKIMEX"
 static PetscErrorCode TSSetUp_ARKIMEX(TS ts)
 {
   TS_ARKIMEX     *ark = (TS_ARKIMEX*)ts->data;
@@ -1176,8 +1130,6 @@ static PetscErrorCode TSSetUp_ARKIMEX(TS ts)
 }
 /*------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "TSSetFromOptions_ARKIMEX"
 static PetscErrorCode TSSetFromOptions_ARKIMEX(PetscOptionItems *PetscOptionsObject,TS ts)
 {
   TS_ARKIMEX     *ark = (TS_ARKIMEX*)ts->data;
@@ -1206,8 +1158,6 @@ static PetscErrorCode TSSetFromOptions_ARKIMEX(PetscOptionItems *PetscOptionsObj
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFormatRealArray"
 static PetscErrorCode PetscFormatRealArray(char buf[],size_t len,const char *fmt,PetscInt n,const PetscReal x[])
 {
   PetscErrorCode ierr;
@@ -1227,8 +1177,6 @@ static PetscErrorCode PetscFormatRealArray(char buf[],size_t len,const char *fmt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSView_ARKIMEX"
 static PetscErrorCode TSView_ARKIMEX(TS ts,PetscViewer viewer)
 {
   TS_ARKIMEX     *ark = (TS_ARKIMEX*)ts->data;
@@ -1256,8 +1204,6 @@ static PetscErrorCode TSView_ARKIMEX(TS ts,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSLoad_ARKIMEX"
 static PetscErrorCode TSLoad_ARKIMEX(TS ts,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -1275,8 +1221,6 @@ static PetscErrorCode TSLoad_ARKIMEX(TS ts,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSARKIMEXSetType"
 /*@C
   TSARKIMEXSetType - Set the type of ARK IMEX scheme
 
@@ -1300,8 +1244,6 @@ PetscErrorCode TSARKIMEXSetType(TS ts,TSARKIMEXType arktype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSARKIMEXGetType"
 /*@C
   TSARKIMEXGetType - Get the type of ARK IMEX scheme
 
@@ -1327,8 +1269,6 @@ PetscErrorCode TSARKIMEXGetType(TS ts,TSARKIMEXType *arktype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSARKIMEXSetFullyImplicit"
 /*@
   TSARKIMEXSetFullyImplicit - Solve both parts of the equation implicitly
 
@@ -1352,8 +1292,6 @@ PetscErrorCode TSARKIMEXSetFullyImplicit(TS ts,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSARKIMEXGetType_ARKIMEX"
 static PetscErrorCode  TSARKIMEXGetType_ARKIMEX(TS ts,TSARKIMEXType *arktype)
 {
   TS_ARKIMEX     *ark = (TS_ARKIMEX*)ts->data;
@@ -1362,8 +1300,6 @@ static PetscErrorCode  TSARKIMEXGetType_ARKIMEX(TS ts,TSARKIMEXType *arktype)
   *arktype = ark->tableau->name;
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "TSARKIMEXSetType_ARKIMEX"
 static PetscErrorCode  TSARKIMEXSetType_ARKIMEX(TS ts,TSARKIMEXType arktype)
 {
   TS_ARKIMEX     *ark = (TS_ARKIMEX*)ts->data;
@@ -1389,8 +1325,6 @@ static PetscErrorCode  TSARKIMEXSetType_ARKIMEX(TS ts,TSARKIMEXType arktype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSARKIMEXSetFullyImplicit_ARKIMEX"
 static PetscErrorCode  TSARKIMEXSetFullyImplicit_ARKIMEX(TS ts,PetscBool flg)
 {
   TS_ARKIMEX *ark = (TS_ARKIMEX*)ts->data;
@@ -1424,8 +1358,6 @@ static PetscErrorCode  TSARKIMEXSetFullyImplicit_ARKIMEX(TS ts,PetscBool flg)
            TSARKIMEX4, TSARKIMEX5, TSARKIMEXPRSSP2, TSARKIMEXARS443, TSARKIMEXBPR3, TSARKIMEXType, TSARKIMEXRegister()
 
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "TSCreate_ARKIMEX"
 PETSC_EXTERN PetscErrorCode TSCreate_ARKIMEX(TS ts)
 {
   TS_ARKIMEX     *th;

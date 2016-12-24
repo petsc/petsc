@@ -49,8 +49,6 @@ typedef struct {
 
 extern PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat,MatAssemblyType);
 
-#undef __FUNCT__
-#define __FUNCT__ "MatConvert_SeqAIJPERM_SeqAIJ"
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJPERM_SeqAIJ(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
   /* This routine is only called to convert a MATAIJPERM to its base PETSc type, */
@@ -85,8 +83,6 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJPERM_SeqAIJ(Mat A,MatType type,MatR
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_SeqAIJPERM"
 PetscErrorCode MatDestroy_SeqAIJPERM(Mat A)
 {
   PetscErrorCode ierr;
@@ -137,8 +133,6 @@ PetscErrorCode MatDuplicate_SeqAIJPERM(Mat A, MatDuplicateOption op, Mat *M)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSeqAIJPERM_create_perm"
 PetscErrorCode MatSeqAIJPERM_create_perm(Mat A)
 {
   PetscInt   m;       /* Number of rows in the matrix. */
@@ -246,8 +240,6 @@ PetscErrorCode MatSeqAIJPERM_create_perm(Mat A)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd_SeqAIJPERM"
 PetscErrorCode MatAssemblyEnd_SeqAIJPERM(Mat A, MatAssemblyType mode)
 {
   PetscErrorCode ierr;
@@ -272,8 +264,6 @@ PetscErrorCode MatAssemblyEnd_SeqAIJPERM(Mat A, MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_SeqAIJPERM"
 PetscErrorCode MatMult_SeqAIJPERM(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -421,8 +411,6 @@ PetscErrorCode MatMult_SeqAIJPERM(Mat A,Vec xx,Vec yy)
 /*
     I hate having virtually identical code for the mult and the multadd!!!
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatMultAdd_SeqAIJPERM"
 PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A,Vec xx,Vec ww,Vec yy)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -577,8 +565,6 @@ PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A,Vec xx,Vec ww,Vec yy)
  * SeqAIJPERM matrix.  This routine is called by the MatCreate_SeqAIJPERM()
  * routine, but can also be used to convert an assembled SeqAIJ matrix
  * into a SeqAIJPERM one. */
-#undef __FUNCT__
-#define __FUNCT__ "MatConvert_SeqAIJ_SeqAIJPERM"
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJPERM(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
@@ -612,8 +598,6 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJPERM(Mat A,MatType type,MatR
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateSeqAIJPERM"
 /*@C
    MatCreateSeqAIJPERM - Creates a sparse matrix of type SEQAIJPERM.
    This type inherits from AIJ, but calculates some additional permutation
@@ -659,8 +643,6 @@ PetscErrorCode  MatCreateSeqAIJPERM(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_SeqAIJPERM"
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJPERM(Mat A)
 {
   PetscErrorCode ierr;

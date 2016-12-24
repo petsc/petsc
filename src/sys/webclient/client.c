@@ -20,8 +20,6 @@ static void sigpipe_handle(int x)
 {
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSSLInitializeContext"
 /*@C
     PetscSSLInitializeContext - Set up an SSL context suitable for initiating HTTPS requests.
 
@@ -90,8 +88,6 @@ PetscErrorCode PetscSSLInitializeContext(SSL_CTX **octx)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSSLDestroyContext"
 /*@C
      PetscSSLDestroyContext - frees a SSL_CTX obtained with PetscSSLInitializeContext() 
 
@@ -109,8 +105,6 @@ PetscErrorCode PetscSSLDestroyContext(SSL_CTX *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscHTTPBuildRequest"
 static PetscErrorCode PetscHTTPBuildRequest(const char type[],const char url[],const char header[],const char ctype[],const char body[],char **outrequest)
 {
   char           *request=0;
@@ -168,8 +162,6 @@ static PetscErrorCode PetscHTTPBuildRequest(const char type[],const char url[],c
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscHTTPSRequest"
 /*@C
      PetscHTTPSRequest - Send a request to an HTTPS server
 
@@ -260,8 +252,6 @@ PetscErrorCode PetscHTTPSRequest(const char type[],const char url[],const char h
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscHTTPRequest"
 /*@C
      PetscHTTPRequest - Send a request to an HTTP server
 
@@ -299,8 +289,6 @@ PetscErrorCode PetscHTTPRequest(const char type[],const char url[],const char he
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscHTTPSConnect"
 /*@C
       PetscHTTPSConnect - connect to a HTTPS server
 
@@ -334,8 +322,6 @@ PetscErrorCode PetscHTTPSConnect(const char host[],int port,SSL_CTX *ctx,int *so
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscPullJSONValue"
 /*@C
      PetscPullJSONValue - Given a JSON response containing the substring with "key" : "value"  where there may or not be spaces around the : returns the value.
 
@@ -393,8 +379,6 @@ PetscErrorCode PetscPullJSONValue(const char buff[],const char key[],char value[
 
 #include <ctype.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscPushJSONValue"
 /*@C
     PetscPushJSONValue -  Puts a "key" : "value" pair onto a string
 

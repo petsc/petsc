@@ -2,8 +2,6 @@
 #include <petsc/private/matimpl.h>
 
 /* Get new PetscMatStashSpace into the existing space */
-#undef __FUNCT__
-#define __FUNCT__ "PetscMatStashSpaceGet"
 PetscErrorCode PetscMatStashSpaceGet(PetscInt bs2,PetscInt n,PetscMatStashSpace *space)
 {
   PetscMatStashSpace a;
@@ -31,8 +29,6 @@ PetscErrorCode PetscMatStashSpaceGet(PetscInt bs2,PetscInt n,PetscMatStashSpace 
 }
 
 /* Copy the values in space into arrays val, idx and idy. Then destroy space */
-#undef __FUNCT__
-#define __FUNCT__ "PetscMatStashSpaceContiguous"
 PetscErrorCode PetscMatStashSpaceContiguous(PetscInt bs2,PetscMatStashSpace *space,PetscScalar *val,PetscInt *idx,PetscInt *idy)
 {
   PetscMatStashSpace a;
@@ -55,8 +51,6 @@ PetscErrorCode PetscMatStashSpaceContiguous(PetscInt bs2,PetscMatStashSpace *spa
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMatStashSpaceDestroy"
 PetscErrorCode PetscMatStashSpaceDestroy(PetscMatStashSpace *space)
 {
   PetscMatStashSpace a;

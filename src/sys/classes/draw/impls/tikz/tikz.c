@@ -39,8 +39,6 @@ typedef struct {
 
 #define TikZ_END_DOCUMENT  "\\end{document}\n"
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawDestroy_TikZ"
 static PetscErrorCode  PetscDrawDestroy_TikZ(PetscDraw draw)
 {
   PetscDraw_TikZ *win = (PetscDraw_TikZ*)draw->data;
@@ -68,8 +66,6 @@ PETSC_STATIC_INLINE const char *TikZColorMap(int cl)
 #define XTRANS(draw,x)  (double)(((draw)->port_xl + (((x - (draw)->coor_xl)*((draw)->port_xr - (draw)->port_xl))/((draw)->coor_xr - (draw)->coor_xl))))
 #define YTRANS(draw,y)  (double)(((draw)->port_yl + (((y - (draw)->coor_yl)*((draw)->port_yr - (draw)->port_yl))/((draw)->coor_yr - (draw)->coor_yl))))
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawClear_TikZ"
 static PetscErrorCode PetscDrawClear_TikZ(PetscDraw draw)
 {
   PetscDraw_TikZ *win = (PetscDraw_TikZ*)draw->data;
@@ -86,8 +82,6 @@ static PetscErrorCode PetscDrawClear_TikZ(PetscDraw draw)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawLine_TikZ"
 static PetscErrorCode PetscDrawLine_TikZ(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int cl)
 {
   PetscDraw_TikZ *win = (PetscDraw_TikZ*)draw->data;
@@ -99,8 +93,6 @@ static PetscErrorCode PetscDrawLine_TikZ(PetscDraw draw,PetscReal xl,PetscReal y
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawString_TikZ"
 static PetscErrorCode PetscDrawString_TikZ(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,const char text[])
 {
   PetscDraw_TikZ *win = (PetscDraw_TikZ*)draw->data;
@@ -112,8 +104,6 @@ static PetscErrorCode PetscDrawString_TikZ(PetscDraw draw,PetscReal xl,PetscReal
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawStringVertical_TikZ"
 static PetscErrorCode PetscDrawStringVertical_TikZ(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,const char text[])
 {
   PetscDraw_TikZ *win = (PetscDraw_TikZ*)draw->data;
@@ -130,8 +120,6 @@ static PetscErrorCode PetscDrawStringVertical_TikZ(PetscDraw draw,PetscReal xl,P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawStringBoxed_TikZ"
 /*
     Does not handle multiline strings correctly
 */
@@ -152,8 +140,6 @@ static PetscErrorCode PetscDrawStringBoxed_TikZ(PetscDraw draw,PetscReal xl,Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawStringGetSize_TikZ"
 static PetscErrorCode PetscDrawStringGetSize_TikZ(PetscDraw draw,PetscReal *x,PetscReal  *y)
 {
   PetscFunctionBegin;
@@ -199,8 +185,6 @@ static struct _PetscDrawOps DvOps = { 0,
                                       0,
                                       PetscDrawStringBoxed_TikZ};
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawCreate_TikZ"
 PETSC_EXTERN PetscErrorCode PetscDrawCreate_TikZ(PetscDraw draw)
 {
   PetscDraw_TikZ *win;

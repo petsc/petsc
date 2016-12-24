@@ -11,8 +11,6 @@ typedef struct {
   PetscInt  version;
 } TS_Mimex;
 
-#undef __FUNCT__
-#define __FUNCT__ "TSMimexGetX0AndXdot"
 static PetscErrorCode TSMimexGetX0AndXdot(TS ts, DM dm, Vec *X0, Vec *Xdot)
 {
   TS_Mimex      *mimex = (TS_Mimex *) ts->data;
@@ -30,8 +28,6 @@ static PetscErrorCode TSMimexGetX0AndXdot(TS ts, DM dm, Vec *X0, Vec *Xdot)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSMimexRestoreX0AndXdot"
 static PetscErrorCode TSMimexRestoreX0AndXdot(TS ts, DM dm, Vec *X0, Vec *Xdot)
 {
   PetscErrorCode ierr;
@@ -42,8 +38,6 @@ static PetscErrorCode TSMimexRestoreX0AndXdot(TS ts, DM dm, Vec *X0, Vec *Xdot)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSMimexGetXstarAndG"
 static PetscErrorCode TSMimexGetXstarAndG(TS ts, DM dm, Vec *Xstar, Vec *G)
 {
   PetscErrorCode ierr;
@@ -54,8 +48,6 @@ static PetscErrorCode TSMimexGetXstarAndG(TS ts, DM dm, Vec *Xstar, Vec *G)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSMimexRestoreXstarAndG"
 static PetscErrorCode TSMimexRestoreXstarAndG(TS ts, DM dm, Vec *Xstar, Vec *G)
 {
   PetscErrorCode ierr;
@@ -70,8 +62,6 @@ static PetscErrorCode TSMimexRestoreXstarAndG(TS ts, DM dm, Vec *Xstar, Vec *G)
   This defines the nonlinear equation that is to be solved with SNES
   G(U) = F[t0+dt, U, (U-U0)*shift] = 0
 */
-#undef __FUNCT__
-#define __FUNCT__ "SNESTSFormFunction_Mimex"
 static PetscErrorCode SNESTSFormFunction_Mimex(SNES snes, Vec x, Vec y, TS ts)
 {
   TS_Mimex      *mimex = (TS_Mimex *) ts->data;
@@ -134,8 +124,6 @@ static PetscErrorCode SNESTSFormFunction_Mimex(SNES snes, Vec x, Vec y, TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESTSFormJacobian_Mimex"
 static PetscErrorCode SNESTSFormJacobian_Mimex(SNES snes, Vec x, Mat A, Mat B, TS ts)
 {
   TS_Mimex      *mimex = (TS_Mimex *) ts->data;
@@ -158,8 +146,6 @@ static PetscErrorCode SNESTSFormJacobian_Mimex(SNES snes, Vec x, Mat A, Mat B, T
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSStep_Mimex_Split"
 static PetscErrorCode TSStep_Mimex_Split(TS ts)
 {
   TS_Mimex          *mimex = (TS_Mimex *) ts->data;
@@ -231,8 +217,6 @@ static PetscErrorCode TSStep_Mimex_Split(TS ts)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TSStep_Mimex_Implicit"
 /* Evalute F at U and G at U0 for explicit fields and U for implicit fields */
 static PetscErrorCode TSStep_Mimex_Implicit(TS ts)
 {
@@ -253,8 +237,6 @@ static PetscErrorCode TSStep_Mimex_Implicit(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSStep_Mimex"
 static PetscErrorCode TSStep_Mimex(TS ts)
 {
   TS_Mimex       *mimex = (TS_Mimex*)ts->data;
@@ -274,8 +256,6 @@ static PetscErrorCode TSStep_Mimex(TS ts)
 
 /*------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "TSSetUp_Mimex"
 static PetscErrorCode TSSetUp_Mimex(TS ts)
 {
   TS_Mimex       *mimex = (TS_Mimex*)ts->data;
@@ -287,8 +267,6 @@ static PetscErrorCode TSSetUp_Mimex(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSReset_Mimex"
 static PetscErrorCode TSReset_Mimex(TS ts)
 {
   TS_Mimex       *mimex = (TS_Mimex*)ts->data;
@@ -300,8 +278,6 @@ static PetscErrorCode TSReset_Mimex(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSDestroy_Mimex"
 static PetscErrorCode TSDestroy_Mimex(TS ts)
 {
   PetscErrorCode ierr;
@@ -313,8 +289,6 @@ static PetscErrorCode TSDestroy_Mimex(TS ts)
 }
 /*------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "TSSetFromOptions_Mimex"
 static PetscErrorCode TSSetFromOptions_Mimex(PetscOptionItems *PetscOptionsObject, TS ts)
 {
   TS_Mimex      *mimex = (TS_Mimex *) ts->data;
@@ -329,8 +303,6 @@ static PetscErrorCode TSSetFromOptions_Mimex(PetscOptionItems *PetscOptionsObjec
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSView_Mimex"
 static PetscErrorCode TSView_Mimex(TS ts,PetscViewer viewer)
 {
   TS_Mimex      *mimex = (TS_Mimex *) ts->data;
@@ -346,8 +318,6 @@ static PetscErrorCode TSView_Mimex(TS ts,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSInterpolate_Mimex"
 static PetscErrorCode TSInterpolate_Mimex(TS ts,PetscReal t,Vec X)
 {
   PetscReal      alpha = (ts->ptime - t)/ts->time_step;
@@ -358,8 +328,6 @@ static PetscErrorCode TSInterpolate_Mimex(TS ts,PetscReal t,Vec X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSComputeLinearStability_Mimex"
 static PetscErrorCode TSComputeLinearStability_Mimex(TS ts,PetscReal xr,PetscReal xi,PetscReal *yr,PetscReal *yi)
 {
   PetscFunctionBegin;
@@ -377,8 +345,6 @@ static PetscErrorCode TSComputeLinearStability_Mimex(TS ts,PetscReal xr,PetscRea
 .seealso:  TSCreate(), TS, TSSetType(), TSBEULER
 
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "TSCreate_Mimex"
 PETSC_EXTERN PetscErrorCode TSCreate_Mimex(TS ts)
 {
   TS_Mimex       *mimex;

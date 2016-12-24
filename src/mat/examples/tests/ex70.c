@@ -4,8 +4,6 @@ static char help[] = "Tests Vec/MatSetValues() with negative row and column indi
 #include <petscmat.h>
 #include <petscpc.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            C;

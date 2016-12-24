@@ -11,8 +11,6 @@
 */
 #include <petscsys.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscKernel_A_gets_inverse_A_7"
 PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_7(MatScalar *a,PetscReal shift,PetscBool allowzeropivot,PetscBool *zeropivotdetected)
 {
   PetscInt  i__2,i__3,kp1,j,k,l,ll,i,ipvt[7],kb,k3;

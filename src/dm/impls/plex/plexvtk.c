@@ -2,8 +2,6 @@
 #include <petsc/private/dmpleximpl.h>    /*I   "petscdmplex.h"   I*/
 #include <../src/sys/classes/viewer/impls/vtk/vtkvimpl.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexVTKGetCellType"
 PetscErrorCode DMPlexVTKGetCellType(DM dm, PetscInt dim, PetscInt corners, PetscInt *cellType)
 {
   PetscFunctionBegin;
@@ -69,8 +67,6 @@ PetscErrorCode DMPlexVTKGetCellType(DM dm, PetscInt dim, PetscInt corners, Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexVTKWriteCells_ASCII"
 PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
 {
   MPI_Comm       comm;
@@ -233,8 +229,6 @@ PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexVTKWritePartition_ASCII"
 PetscErrorCode DMPlexVTKWritePartition_ASCII(DM dm, FILE *fp)
 {
   MPI_Comm       comm;
@@ -278,8 +272,6 @@ PetscErrorCode DMPlexVTKWritePartition_ASCII(DM dm, FILE *fp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexVTKWriteSection_ASCII"
 PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, PetscSection globalSection, Vec v, FILE *fp, PetscInt enforceDof, PetscInt precision, PetscReal scale)
 {
   MPI_Comm           comm;
@@ -424,8 +416,6 @@ PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, PetscSec
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexVTKWriteField_ASCII"
 PetscErrorCode DMPlexVTKWriteField_ASCII(DM dm, PetscSection section, PetscSection globalSection, Vec field, const char name[], FILE *fp, PetscInt enforceDof, PetscInt precision, PetscReal scale)
 {
   MPI_Comm       comm;
@@ -453,8 +443,6 @@ PetscErrorCode DMPlexVTKWriteField_ASCII(DM dm, PetscSection section, PetscSecti
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexVTKWriteAll_ASCII"
 static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
 {
   MPI_Comm                 comm;
@@ -621,8 +609,6 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexVTKWriteAll"
 /*@C
   DMPlexVTKWriteAll - Write a file containing all the fields that have been provided to the viewer
 

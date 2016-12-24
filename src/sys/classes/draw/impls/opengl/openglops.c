@@ -41,8 +41,6 @@
 #define YPTRANS(draw,win,y) (int)(((win)->h)*(1.0-(draw)->port_yl - (((y - (draw)->coor_yl)*((draw)->port_yr - (draw)->port_yl))/((draw)->coor_yr - (draw)->coor_yl))))
 
 static unsigned char rcolor[256],gcolor[256],bcolor[256];
-#undef __FUNCT__
-#define __FUNCT__ "InitializeColors"
 static PetscErrorCode InitializeColors(void)
 {
   PetscErrorCode ierr;
@@ -153,8 +151,6 @@ static PetscErrorCode InitializeColors(void)
 }
 
 static GLuint vertexshader,fragmentshader,shaderprogram;
-#undef __FUNCT__
-#define __FUNCT__ "InitializeShader"
 static PetscErrorCode InitializeShader(void)
 {
   const char *vertexsource = "attribute vec2 position;\
@@ -273,8 +269,6 @@ static PetscErrorCode InitializeShader(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FinalizeShader"
 /*
     This is currently all wrong, there is actually a separate shader for each window
    so they cannot be stored as global
@@ -324,8 +318,6 @@ PETSC_STATIC_INLINE PetscErrorCode OpenGLString(float x,float y, const char *str
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawClear_OpenGL"
 PetscErrorCode PetscDrawClear_OpenGL(PetscDraw draw)
 {
   PetscErrorCode ierr;
@@ -335,8 +327,6 @@ PetscErrorCode PetscDrawClear_OpenGL(PetscDraw draw)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawGetPopup_OpenGL"
 static PetscErrorCode PetscDrawGetPopup_OpenGL(PetscDraw draw,PetscDraw *popup)
 {
   PetscErrorCode ierr;
@@ -349,8 +339,6 @@ static PetscErrorCode PetscDrawGetPopup_OpenGL(PetscDraw draw,PetscDraw *popup)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawStringVertical_OpenGL"
 static PetscErrorCode PetscDrawStringVertical_OpenGL(PetscDraw draw,PetscReal x,PetscReal y,int c,const char chrs[])
 {
   PetscErrorCode   ierr;
@@ -371,8 +359,6 @@ static PetscErrorCode PetscDrawStringVertical_OpenGL(PetscDraw draw,PetscReal x,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawString_OpenGL"
 static PetscErrorCode PetscDrawString_OpenGL(PetscDraw draw,PetscReal x,PetscReal y,int c,const char chrs[])
 {
   PetscErrorCode   ierr;
@@ -402,8 +388,6 @@ static PetscErrorCode PetscDrawString_OpenGL(PetscDraw draw,PetscReal x,PetscRea
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSetTitle_OpenGL"
 static PetscErrorCode PetscDrawSetTitle_OpenGL(PetscDraw draw,const char title[])
 {
   PetscDraw_OpenGL *win = (PetscDraw_OpenGL*)draw->data;
@@ -415,8 +399,6 @@ static PetscErrorCode PetscDrawSetTitle_OpenGL(PetscDraw draw,const char title[]
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawDestroy_OpenGL"
 static PetscErrorCode PetscDrawDestroy_OpenGL(PetscDraw draw)
 {
   PetscDraw_OpenGL *win = (PetscDraw_OpenGL*)draw->data;
@@ -430,8 +412,6 @@ static PetscErrorCode PetscDrawDestroy_OpenGL(PetscDraw draw)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawFlush_OpenGL"
 static PetscErrorCode PetscDrawFlush_OpenGL(PetscDraw draw)
 {
   PetscDraw_OpenGL *win = (PetscDraw_OpenGL*)draw->data;
@@ -444,8 +424,6 @@ static PetscErrorCode PetscDrawFlush_OpenGL(PetscDraw draw)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawStringGetSize_OpenGL"
 static PetscErrorCode PetscDrawStringGetSize_OpenGL(PetscDraw draw,PetscReal *x,PetscReal  *y)
 {
   PetscDraw_OpenGL *win = (PetscDraw_OpenGL*)draw->data;
@@ -460,8 +438,6 @@ static PetscErrorCode PetscDrawStringGetSize_OpenGL(PetscDraw draw,PetscReal *x,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawResizeWindow_OpenGL"
 static PetscErrorCode PetscDrawResizeWindow_OpenGL(PetscDraw draw,int w,int h)
 {
   PetscDraw_OpenGL *win = (PetscDraw_OpenGL*)draw->data;
@@ -477,8 +453,6 @@ static PetscErrorCode PetscDrawResizeWindow_OpenGL(PetscDraw draw,int w,int h)
 
 static PetscBool resized = PETSC_FALSE;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawCheckResizedWindow_OpenGL"
 static PetscErrorCode PetscDrawCheckResizedWindow_OpenGL(PetscDraw draw)
 {
   PetscErrorCode ierr;
@@ -496,8 +470,6 @@ typedef struct {
 } OpenGLButton;
 static OpenGLButton Mouse;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawGetMouseButton_OpenGL"
 static PetscErrorCode PetscDrawGetMouseButton_OpenGL(PetscDraw draw,PetscDrawButton *button,PetscReal *x_user,PetscReal *y_user,PetscReal *x_phys,PetscReal *y_phys)
 {
   PetscDraw_OpenGL *win = (PetscDraw_OpenGL*)draw->data;
@@ -532,8 +504,6 @@ PETSC_STATIC_INLINE PetscErrorCode OpenGLWindow(PetscDraw_OpenGL *win)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawClear_OpenGL"
 static PetscErrorCode PetscDrawClear_OpenGL(PetscDraw draw)
 {
   PetscErrorCode   ierr;
@@ -546,8 +516,6 @@ static PetscErrorCode PetscDrawClear_OpenGL(PetscDraw draw)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawGetPopup_OpenGL"
 static PetscErrorCode PetscDrawGetPopup_OpenGL(PetscDraw draw,PetscDraw *popup)
 {
   PetscErrorCode ierr;
@@ -557,8 +525,6 @@ static PetscErrorCode PetscDrawGetPopup_OpenGL(PetscDraw draw,PetscDraw *popup)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawString_OpenGL"
 static PetscErrorCode PetscDrawString_OpenGL(PetscDraw draw,PetscReal x,PetscReal y,int c,const char chrs[])
 {
   PetscErrorCode   ierr;
@@ -588,8 +554,6 @@ static PetscErrorCode PetscDrawString_OpenGL(PetscDraw draw,PetscReal x,PetscRea
 
    This makes src/sys/draw/examples/tests/ex3.c look good but may be terrible for other locations
 */
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawStringVertical_OpenGL"
 static PetscErrorCode PetscDrawStringVertical_OpenGL(PetscDraw draw,PetscReal x,PetscReal y,int c,const char chrs[])
 {
   PetscErrorCode   ierr;
@@ -613,14 +577,10 @@ static PetscErrorCode PetscDrawStringVertical_OpenGL(PetscDraw draw,PetscReal x,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSetTitle_OpenGL"
 static PetscErrorCode PetscDrawSetTitle_OpenGL(PetscDraw draw,const char title[])
 {
   return 0;
 }
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawDestroy_OpenGL"
 static PetscErrorCode PetscDrawDestroy_OpenGL(PetscDraw draw)
 {
   PetscDraw_OpenGL *win = (PetscDraw_OpenGL*)draw->data;
@@ -633,8 +593,6 @@ static PetscErrorCode PetscDrawDestroy_OpenGL(PetscDraw draw)
   PetscFunctionReturn(0);
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawFlush_OpenGL"
 static PetscErrorCode PetscDrawFlush_OpenGL(PetscDraw draw)
 {
   PetscDraw_OpenGL *win = (PetscDraw_OpenGL*)draw->data;
@@ -650,8 +608,6 @@ static PetscErrorCode PetscDrawFlush_OpenGL(PetscDraw draw)
   NSLog(@"Completed display in PetscDrawFlush()");
   return 0;
 }
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawStringGetSize_OpenGL"
 static PetscErrorCode PetscDrawStringGetSize_OpenGL(PetscDraw draw,PetscReal *x,PetscReal  *y)
 {
   float w = .02;
@@ -659,20 +615,14 @@ static PetscErrorCode PetscDrawStringGetSize_OpenGL(PetscDraw draw,PetscReal *x,
   if (y) *y = (13./8.0)*w*(draw->coor_yr - draw->coor_yl)/(draw->port_yr - draw->port_yl);
   return 0;
 }
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawResizeWindow_OpenGL"
 static PetscErrorCode PetscDrawResizeWindow_OpenGL(PetscDraw draw,int w,int h)
 {
   return 0;
 }
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawCheckResizedWindow_OpenGL"
 static PetscErrorCode PetscDrawCheckResizedWindow_OpenGL(PetscDraw draw)
 {
   return 0;
 }
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawGetMouseButton_OpenGL"
 static PetscErrorCode PetscDrawGetMouseButton_OpenGL(PetscDraw draw,PetscDrawButton *button,PetscReal *x_user,PetscReal *y_user,PetscReal *x_phys,PetscReal *y_phys)
 {
   return 0;
@@ -681,8 +631,6 @@ static PetscErrorCode PetscDrawGetMouseButton_OpenGL(PetscDraw draw,PetscDrawBut
 
 /* -----------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawClear_OpenGL_Base"
 PetscErrorCode PetscDrawClear_OpenGL_Base(PetscDraw draw)
 {
   PetscDraw_OpenGL *win = (PetscDraw_OpenGL*)draw->data;
@@ -754,8 +702,6 @@ PetscErrorCode PetscDrawClear_OpenGL_Base(PetscDraw draw)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawPoint_OpenGL"
 static PetscErrorCode PetscDrawPoint_OpenGL(PetscDraw draw,PetscReal xl,PetscReal yl,int cl)
 {
   PetscDraw_OpenGL *win = (PetscDraw_OpenGL*)draw->data;
@@ -801,8 +747,6 @@ static PetscErrorCode PetscDrawPoint_OpenGL(PetscDraw draw,PetscReal xl,PetscRea
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawLine_OpenGL"
 static PetscErrorCode PetscDrawLine_OpenGL(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int cl)
 {
   PetscDraw_OpenGL *win = (PetscDraw_OpenGL*)draw->data;
@@ -854,8 +798,6 @@ static PetscErrorCode PetscDrawLine_OpenGL(PetscDraw draw,PetscReal xl,PetscReal
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawTriangle_OpenGL"
 static PetscErrorCode PetscDrawTriangle_OpenGL(PetscDraw draw,PetscReal X1,PetscReal Y_1,PetscReal X2,PetscReal Y2,PetscReal X3,PetscReal Y3,int c1,int c2,int c3)
 {
   PetscDraw_OpenGL *win = (PetscDraw_OpenGL*)draw->data;
@@ -907,8 +849,6 @@ static PetscErrorCode PetscDrawTriangle_OpenGL(PetscDraw draw,PetscReal X1,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawRectangle_OpenGL"
 static PetscErrorCode PetscDrawRectangle_OpenGL(PetscDraw draw,PetscReal Xl,PetscReal Yl,PetscReal Xr,PetscReal Yr,int c1,int c2,int c3,int c4)
 {
   PetscDraw_OpenGL *win = (PetscDraw_OpenGL*)draw->data;
@@ -972,8 +912,6 @@ static PetscErrorCode PetscDrawRectangle_OpenGL(PetscDraw draw,PetscReal Xl,Pets
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawPause_OpenGL"
 static PetscErrorCode PetscDrawPause_OpenGL(PetscDraw draw)
 {
   PetscErrorCode ierr;
@@ -1039,8 +977,6 @@ static void mouse(int button, int state,int x, int y)
   }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawCreate_GLUT"
 PETSC_EXTERN PetscErrorCode PetscDrawCreate_GLUT(PetscDraw draw)
 {
   PetscDraw_OpenGL *win;
@@ -1166,8 +1102,6 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_GLUT(PetscDraw draw)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawOpenGLUT"
 /*@C
    PetscDrawOpenGLUT - Opens an OpenGL window based on GLUT for use with the PetscDraw routines.
 
@@ -1223,8 +1157,6 @@ PetscErrorCode  PetscDrawOpenGLUT(MPI_Comm comm,const char display[],const char 
 
 #elif defined(PETSC_HAVE_OPENGLES)
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawOpenGLESRegisterGLKView"
 PetscErrorCode  PetscDrawOpenGLESRegisterGLKView(GLKView *view)
 {
   PetscInt i;
@@ -1241,8 +1173,6 @@ PetscErrorCode  PetscDrawOpenGLESRegisterGLKView(GLKView *view)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawCreate_OpenGLES"
 PETSC_EXTERN PetscErrorCode PetscDrawCreate_OpenGLES(PetscDraw draw)
 {
   PetscDraw_OpenGL *win;

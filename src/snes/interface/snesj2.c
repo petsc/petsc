@@ -11,8 +11,6 @@ static PetscErrorCode SNESComputeFunctionCtx(SNES snes,Vec x,Vec f,void *ctx)
   return SNESComputeFunction(snes,x,f);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESComputeJacobianDefaultColor"
 /*@C
     SNESComputeJacobianDefaultColor - Computes the Jacobian using
     finite differences and coloring to exploit matrix sparsity.

@@ -54,8 +54,6 @@ typedef struct {
   PetscInt n;
 } UnitedStates;
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;

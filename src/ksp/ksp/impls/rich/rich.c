@@ -4,8 +4,6 @@
 */
 #include <../src/ksp/ksp/impls/rich/richardsonimpl.h>     /*I "petscksp.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_Richardson"
 PetscErrorCode KSPSetUp_Richardson(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -20,8 +18,6 @@ PetscErrorCode KSPSetUp_Richardson(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_Richardson"
 PetscErrorCode  KSPSolve_Richardson(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -165,8 +161,6 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPView_Richardson"
 PetscErrorCode KSPView_Richardson(KSP ksp,PetscViewer viewer)
 {
   KSP_Richardson *richardsonP = (KSP_Richardson*)ksp->data;
@@ -185,8 +179,6 @@ PetscErrorCode KSPView_Richardson(KSP ksp,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetFromOptions_Richardson"
 PetscErrorCode KSPSetFromOptions_Richardson(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   KSP_Richardson *rich = (KSP_Richardson*)ksp->data;
@@ -204,8 +196,6 @@ PetscErrorCode KSPSetFromOptions_Richardson(PetscOptionItems *PetscOptionsObject
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPDestroy_Richardson"
 PetscErrorCode KSPDestroy_Richardson(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -216,8 +206,6 @@ PetscErrorCode KSPDestroy_Richardson(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPRichardsonSetScale_Richardson"
 static PetscErrorCode  KSPRichardsonSetScale_Richardson(KSP ksp,PetscReal scale)
 {
   KSP_Richardson *richardsonP;
@@ -228,8 +216,6 @@ static PetscErrorCode  KSPRichardsonSetScale_Richardson(KSP ksp,PetscReal scale)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPRichardsonSetSelfScale_Richardson"
 static PetscErrorCode  KSPRichardsonSetSelfScale_Richardson(KSP ksp,PetscBool selfscale)
 {
   KSP_Richardson *richardsonP;
@@ -276,8 +262,6 @@ static PetscErrorCode  KSPRichardsonSetSelfScale_Richardson(KSP ksp,PetscBool se
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_Richardson"
 PETSC_EXTERN PetscErrorCode KSPCreate_Richardson(KSP ksp)
 {
   PetscErrorCode ierr;

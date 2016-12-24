@@ -8,8 +8,6 @@ Reads a PETSc matrix and vector from a file and solves a linear system.\n\n";
 
 #include <petscksp.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   KSP            subksp;

@@ -1,7 +1,5 @@
 #include <petsc/private/matimpl.h>          /*I "petscmat.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPythonSetType"
 /*@C
    MatPythonSetType - Initalize a Mat object implemented in Python.
 
@@ -55,8 +53,6 @@ PetscErrorCode  MatPythonSetType(Mat mat,const char pyname[])
 .seealso: MATPYTHON, MatPythonSetType(), PetscPythonInitialize()
 
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "MatPythonCreate"
 PetscErrorCode  MatPythonCreate(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,const char pyname[],Mat *A)
 {
   PetscErrorCode ierr;

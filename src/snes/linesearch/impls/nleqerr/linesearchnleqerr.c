@@ -19,8 +19,6 @@ static const char NLEQERR_citation[] = "@book{deuflhard2011,\n"
                                "  publisher = {Springer-Verlag},\n"
                                "  address = {Berlin, Heidelberg}\n}\n";
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchReset_NLEQERR"
 static PetscErrorCode SNESLineSearchReset_NLEQERR(SNESLineSearch linesearch)
 {
   SNESLineSearch_NLEQERR *nleqerr = (SNESLineSearch_NLEQERR*)linesearch->data;
@@ -32,8 +30,6 @@ static PetscErrorCode SNESLineSearchReset_NLEQERR(SNESLineSearch linesearch)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchApply_NLEQERR"
 static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
 {
   PetscBool              changed_y,changed_w;
@@ -266,8 +262,6 @@ static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchView_NLEQERR"
 PetscErrorCode SNESLineSearchView_NLEQERR(SNESLineSearch linesearch, PetscViewer viewer)
 {
   PetscErrorCode          ierr;
@@ -284,8 +278,6 @@ PetscErrorCode SNESLineSearchView_NLEQERR(SNESLineSearch linesearch, PetscViewer
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchDestroy_NLEQERR"
 static PetscErrorCode SNESLineSearchDestroy_NLEQERR(SNESLineSearch linesearch)
 {
   PetscErrorCode ierr;
@@ -295,8 +287,6 @@ static PetscErrorCode SNESLineSearchDestroy_NLEQERR(SNESLineSearch linesearch)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchCreate_NLEQERR"
 /*MC
    SNESLINESEARCHNLEQERR - Error-oriented affine-covariant globalised Newton algorithm of Deuflhard (2011).
 

@@ -36,8 +36,6 @@ static PetscErrorCode ProjWork_OWLQN(Vec w,Vec x,Vec gv,PetscReal *gdx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchDestroy_OWArmijo"
 static PetscErrorCode TaoLineSearchDestroy_OWArmijo(TaoLineSearch ls)
 {
   TaoLineSearch_OWARMIJO *armP = (TaoLineSearch_OWARMIJO *)ls->data;
@@ -53,8 +51,6 @@ static PetscErrorCode TaoLineSearchDestroy_OWArmijo(TaoLineSearch ls)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchSetFromOptions_OWArmijo"
 static PetscErrorCode TaoLineSearchSetFromOptions_OWArmijo(PetscOptionItems *PetscOptionsObject,TaoLineSearch ls)
 {
   TaoLineSearch_OWARMIJO *armP = (TaoLineSearch_OWARMIJO *)ls->data;
@@ -74,8 +70,6 @@ static PetscErrorCode TaoLineSearchSetFromOptions_OWArmijo(PetscOptionItems *Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchView_OWArmijo"
 static PetscErrorCode TaoLineSearchView_OWArmijo(TaoLineSearch ls, PetscViewer pv)
 {
   TaoLineSearch_OWARMIJO *armP = (TaoLineSearch_OWARMIJO *)ls->data;
@@ -96,8 +90,6 @@ static PetscErrorCode TaoLineSearchView_OWArmijo(TaoLineSearch ls, PetscViewer p
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchApply_OWArmijo"
 /* @ TaoApply_OWArmijo - This routine performs a linesearch. It
    backtracks until the (nonmonotone) OWArmijo conditions are satisfied.
 
@@ -306,8 +298,6 @@ static PetscErrorCode TaoLineSearchApply_OWArmijo(TaoLineSearch ls, Vec x, Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchCreate_OWArmijo"
 PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_OWArmijo(TaoLineSearch ls)
 {
   TaoLineSearch_OWARMIJO *armP;

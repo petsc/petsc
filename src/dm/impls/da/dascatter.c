@@ -6,8 +6,6 @@
 #include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 extern PetscErrorCode DMLocalToLocalCreate_DA(DM);
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetScatter"
 /*@C
    DMDAGetScatter - Gets the global-to-local, and
    local-to-local vector scatter contexts for a distributed array.

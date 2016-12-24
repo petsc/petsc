@@ -18,8 +18,6 @@ PETSC_INTERN PetscErrorCode PetscDrawSetColormap_X(PetscDraw_X*,Colormap);
 /*
   PetscDrawXiOpenDisplay - Open and setup a display
 */
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawXiOpenDisplay"
 static PetscErrorCode PetscDrawXiOpenDisplay(PetscDraw_X *XiWin,const char display[])
 {
   PetscFunctionBegin;
@@ -39,8 +37,6 @@ static PetscErrorCode PetscDrawXiOpenDisplay(PetscDraw_X *XiWin,const char displ
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawXiClose"
 PetscErrorCode PetscDrawXiClose(PetscDraw_X *XiWin)
 {
   PetscErrorCode ierr;
@@ -72,8 +68,6 @@ PetscErrorCode PetscDrawXiClose(PetscDraw_X *XiWin)
 /*
    PetscDrawXiCreateGC - setup the GC structure
 */
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawXiCreateGC"
 static PetscErrorCode PetscDrawXiCreateGC(PetscDraw_X *XiWin,PetscDrawXiPixVal fg)
 {
   XGCValues gcvalues;             /* window graphics context values */
@@ -93,8 +87,6 @@ static PetscErrorCode PetscDrawXiCreateGC(PetscDraw_X *XiWin,PetscDrawXiPixVal f
 /*
    PetscDrawXiInit - basic setup the draw (display, graphics context, font)
 */
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawXiInit"
 PetscErrorCode PetscDrawXiInit(PetscDraw_X *XiWin,const char display[])
 {
   PetscErrorCode ierr;
@@ -109,8 +101,6 @@ PetscErrorCode PetscDrawXiInit(PetscDraw_X *XiWin,const char display[])
     This routine waits until the window is actually created or destroyed
     Returns 0 if window is mapped; 1 if window is destroyed.
  */
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawXiWaitMap"
 static PetscErrorCode PetscDrawXiWaitMap(PetscDraw_X *XiWin)
 {
   XEvent event;
@@ -140,8 +130,6 @@ static PetscErrorCode PetscDrawXiWaitMap(PetscDraw_X *XiWin)
 /*
     Actually display a window at [x,y] with sizes (w,h)
 */
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawXiDisplayWindow"
 static PetscErrorCode PetscDrawXiDisplayWindow(PetscDraw_X *XiWin,char *label,int x,int y,int w,int h)
 {
   unsigned int         wavail,havail;
@@ -237,8 +225,6 @@ static PetscErrorCode PetscDrawXiDisplayWindow(PetscDraw_X *XiWin,char *label,in
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawXiQuickWindow"
 PetscErrorCode PetscDrawXiQuickWindow(PetscDraw_X *XiWin,char *name,int x,int y,int nx,int ny)
 {
   PetscErrorCode ierr;
@@ -254,8 +240,6 @@ PetscErrorCode PetscDrawXiQuickWindow(PetscDraw_X *XiWin,char *name,int x,int y,
 /*
    A version from an already defined window
 */
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawXiQuickWindowFromWindow"
 PetscErrorCode PetscDrawXiQuickWindowFromWindow(PetscDraw_X *XiWin,Window win)
 {
   XWindowAttributes attributes;
@@ -268,8 +252,6 @@ PetscErrorCode PetscDrawXiQuickWindowFromWindow(PetscDraw_X *XiWin,Window win)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawXiQuickPixmap"
 PetscErrorCode PetscDrawXiQuickPixmap(PetscDraw_X* XiWin)
 {
   PetscFunctionBegin;
@@ -281,8 +263,6 @@ PetscErrorCode PetscDrawXiQuickPixmap(PetscDraw_X* XiWin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawXiResizeWindow"
 PetscErrorCode PetscDrawXiResizeWindow(PetscDraw_X* XiWin,int w,int h)
 {
   XEvent event;
@@ -294,8 +274,6 @@ PetscErrorCode PetscDrawXiResizeWindow(PetscDraw_X* XiWin,int w,int h)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawXiGetGeometry"
 PetscErrorCode PetscDrawXiGetGeometry(PetscDraw_X *XiWin,int *x,int *y,int *w,int *h)
 {
   XWindowAttributes attributes;

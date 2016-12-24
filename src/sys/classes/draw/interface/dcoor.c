@@ -4,8 +4,6 @@
 */
 #include <petsc/private/drawimpl.h>  /*I "petscdraw.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSetCoordinates"
 /*@
    PetscDrawSetCoordinates - Sets the application coordinates of the corners of
    the window (or page).
@@ -39,8 +37,6 @@ PetscErrorCode  PetscDrawSetCoordinates(PetscDraw draw,PetscReal xl,PetscReal yl
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawGetCoordinates"
 /*@
    PetscDrawGetCoordinates - Gets the application coordinates of the corners of
    the window (or page).

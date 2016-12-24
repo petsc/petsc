@@ -14,8 +14,6 @@ struct _EH {
 
 static EH eh = 0;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscEmacsClientErrorHandler"
 /*@C
    PetscEmacsClientErrorHandler - Error handler that uses the emacsclient program to
     load the file where the error occured. Then calls the "previous" error handler.
@@ -25,7 +23,6 @@ static EH eh = 0;
    Input Parameters:
 +  comm - communicator over which error occured
 .  line - the line number of the error (indicated by __LINE__)
-.  func - the function where error is detected (indicated by __FUNCT__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  mess - an error text string, usually just printed to the screen
 .  n - the generic error number
@@ -82,8 +79,6 @@ PetscErrorCode  PetscEmacsClientErrorHandler(MPI_Comm comm,int line,const char *
   PetscFunctionReturn(ierr);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscPushErrorHandler"
 /*@C
    PetscPushErrorHandler - Sets a routine to be called on detection of errors.
 
@@ -99,7 +94,6 @@ $    int handler(MPI_Comm comm,int line,char *func,char *file,PetscErrorCode n,i
 
 +  comm - communicator over which error occured
 .  line - the line number of the error (indicated by __LINE__)
-.  func - the function where the error occured (indicated by __FUNCT__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  n - the generic error number (see list defined in include/petscerror.h)
 .  p - PETSC_ERROR_INITIAL if error just detected, otherwise PETSC_ERROR_REPEAT
@@ -136,8 +130,6 @@ PetscErrorCode  PetscPushErrorHandler(PetscErrorCode (*handler)(MPI_Comm comm,in
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscPopErrorHandler"
 /*@
    PetscPopErrorHandler - Removes the latest error handler that was
    pushed with PetscPushErrorHandler().
@@ -163,8 +155,6 @@ PetscErrorCode  PetscPopErrorHandler(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscReturnErrorHandler"
 /*@C
   PetscReturnErrorHandler - Error handler that causes a return to the current
   level.
@@ -174,7 +164,6 @@ PetscErrorCode  PetscPopErrorHandler(void)
    Input Parameters:
 +  comm - communicator over which error occurred
 .  line - the line number of the error (indicated by __LINE__)
-.  func - the function where error is detected (indicated by __FUNCT__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  mess - an error text string, usually just printed to the screen
 .  n - the generic error number
@@ -259,8 +248,6 @@ static const char *PetscErrorStrings[] = {
   /*96 */ "  ",
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscErrorMessage"
 /*@C
    PetscErrorMessage - returns the text string associated with a PETSc error code.
 
@@ -317,8 +304,6 @@ static void PetscCxxErrorThrow() {
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscError"
 /*@C
    PetscError - Routine that is called when an error has been detected,
    usually called through the macro SETERRQ(PETSC_COMM_SELF,).
@@ -328,7 +313,6 @@ static void PetscCxxErrorThrow() {
    Input Parameters:
 +  comm - communicator over which error occurred.  ALL ranks of this communicator MUST call this routine
 .  line - the line number of the error (indicated by __LINE__)
-.  func - the function where the error occured (indicated by __FUNCT__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  mess - an error text string, usually just printed to the screen
 .  n - the generic error number
@@ -358,7 +342,7 @@ PetscErrorCode  PetscError(MPI_Comm comm,int line,const char *func,const char *f
   va_list        Argp;
   size_t         fullLength;
   char           buf[2048],*lbuf = 0;
-  PetscBool      ismain,isunknown;
+  PetscBool      ismain;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -386,8 +370,7 @@ PetscErrorCode  PetscError(MPI_Comm comm,int line,const char *func,const char *f
     PetscStrncmp() does its own error checking which is problamatic
   */
   PetscStrncmp(func,"main",4,&ismain);
-  PetscStrncmp(func,"unknown",7,&isunknown);
-  if (ismain || isunknown) MPI_Abort(PETSC_COMM_WORLD,(int)ierr);
+  if (ismain) MPI_Abort(PETSC_COMM_WORLD,(int)ierr);
 
 #if defined(PETSC_CLANGUAGE_CXX)
   if (p == PETSC_ERROR_IN_CXX) {
@@ -399,8 +382,6 @@ PetscErrorCode  PetscError(MPI_Comm comm,int line,const char *func,const char *f
 
 /* -------------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscIntView"
 /*@C
     PetscIntView - Prints an array of integers; useful for debugging.
 
@@ -488,8 +469,6 @@ PetscErrorCode  PetscIntView(PetscInt N,const PetscInt idx[],PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscRealView"
 /*@C
     PetscRealView - Prints an array of doubles; useful for debugging.
 
@@ -577,8 +556,6 @@ PetscErrorCode  PetscRealView(PetscInt N,const PetscReal idx[],PetscViewer viewe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscScalarView"
 /*@C
     PetscScalarView - Prints an array of scalars; useful for debugging.
 

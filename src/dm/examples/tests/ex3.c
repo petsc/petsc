@@ -5,8 +5,6 @@ static char help[] = "Solves the 1-dimensional wave equation.\n\n";
 #include <petscdmda.h>
 #include <petscdraw.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscMPIInt    rank,size;

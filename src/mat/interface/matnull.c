@@ -7,8 +7,6 @@
 
 PetscClassId MAT_NULLSPACE_CLASSID;
 
-#undef __FUNCT__
-#define __FUNCT__ "MatNullSpaceSetFunction"
 /*@C
    MatNullSpaceSetFunction - set a function that removes a null space from a vector
    out of null spaces.
@@ -35,8 +33,6 @@ PetscErrorCode  MatNullSpaceSetFunction(MatNullSpace sp, PetscErrorCode (*rem)(M
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatNullSpaceGetVecs"
 /*@C
    MatNullSpaceGetVecs - get vectors defining the null space
 
@@ -68,8 +64,6 @@ PetscErrorCode MatNullSpaceGetVecs(MatNullSpace sp,PetscBool *has_const,PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatNullSpaceCreateRigidBody"
 /*@
    MatNullSpaceCreateRigidBody - create rigid body modes from coordinates
 
@@ -161,8 +155,6 @@ PetscErrorCode MatNullSpaceCreateRigidBody(Vec coords,MatNullSpace *sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatNullSpaceView"
 /*@C
    MatNullSpaceView - Visualizes a null space object.
 
@@ -211,8 +203,6 @@ PetscErrorCode MatNullSpaceView(MatNullSpace sp,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatNullSpaceCreate"
 /*@
    MatNullSpaceCreate - Creates a data structure used to project vectors
    out of null spaces.
@@ -315,8 +305,6 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatNullSpaceDestroy"
 /*@
    MatNullSpaceDestroy - Destroys a data structure used to project vectors
    out of null spaces.
@@ -352,8 +340,6 @@ PetscErrorCode  MatNullSpaceDestroy(MatNullSpace *sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatNullSpaceRemove"
 /*@C
    MatNullSpaceRemove - Removes all the components of a null space from a vector.
 
@@ -400,8 +386,6 @@ PetscErrorCode  MatNullSpaceRemove(MatNullSpace sp,Vec vec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatNullSpaceTest"
 /*@
    MatNullSpaceTest  - Tests if the claimed null space is really a
      null space of a matrix

@@ -8,8 +8,6 @@ PETSC_EXTERN PetscErrorCode PetscDrawMovieCheckFormat(const char *[]);
 /*
    Code to write images in PPM format
 */
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawImageSavePPM"
 PETSC_EXTERN PetscErrorCode PetscDrawImageSavePPM(const char filename[],unsigned char palette[][3],unsigned int w,unsigned int h,const unsigned char pixels[])
 {
   int            fd;
@@ -65,8 +63,6 @@ static PetscErrorCode PetscDrawImageSave_PPM(const char filename[],unsigned char
 # endif
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawImageSavePNG"
 PETSC_EXTERN PetscErrorCode PetscDrawImageSavePNG(const char filename[],unsigned char palette[][3],unsigned int w,unsigned int h,const unsigned char pixels[])
 {
   FILE           *fp;
@@ -142,8 +138,6 @@ static PetscErrorCode PetscDrawImageSave_PNG(const char filename[],unsigned char
 #define DGifCloseFile(f,err)      DGifCloseFile(f)
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawImageSaveGIF"
 PETSC_EXTERN PetscErrorCode PetscDrawImageSaveGIF(const char filename[],unsigned char palette[][3],unsigned int w,unsigned int h,const unsigned char pixels[])
 {
   int            Row, Error;
@@ -179,8 +173,6 @@ PETSC_EXTERN PetscErrorCode PetscDrawImageSaveGIF(const char filename[],unsigned
 static PetscErrorCode PetscDrawImageSave_GIF(const char filename[],unsigned char palette[][3],unsigned int w,unsigned int h,const unsigned char pixels[])
 { return PetscDrawImageSaveGIF(filename,palette,w,h,pixels); }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawMovieSaveGIF"
 PETSC_EXTERN PetscErrorCode PetscDrawMovieSaveGIF(const char pattern[],PetscInt count,const char movie[])
 {
   int            i,j,Row;
@@ -256,8 +248,6 @@ static jmp_buf petsc_jpeg_jumpbuf;
 static void petsc_jpeg_error_longjmp (j_common_ptr cinfo) { (void)cinfo; longjmp(petsc_jpeg_jumpbuf,1); }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawImageSaveJPG"
 PETSC_EXTERN PetscErrorCode PetscDrawImageSaveJPG(const char filename[],unsigned char palette[][3],unsigned int w,unsigned int h,const unsigned char pixels[])
 {
   unsigned char               *rgbpixels;
@@ -338,8 +328,6 @@ static struct {
   {".ppm", PetscDrawImageSave_PPM}
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawImageCheckFormat"
 PetscErrorCode PetscDrawImageCheckFormat(const char *ext[])
 {
   size_t         k;
@@ -363,8 +351,6 @@ PetscErrorCode PetscDrawImageCheckFormat(const char *ext[])
   PetscFunctionReturn(PETSC_ERR_SUP);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawImageSave"
 PetscErrorCode PetscDrawImageSave(const char basename[],const char ext[],unsigned char palette[][3],unsigned int w,unsigned int h,const unsigned char pixels[])
 {
   size_t         k;
@@ -391,8 +377,6 @@ PetscErrorCode PetscDrawImageSave(const char basename[],const char ext[],unsigne
   PetscFunctionReturn(PETSC_ERR_SUP);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawMovieCheckFormat"
 PetscErrorCode PetscDrawMovieCheckFormat(const char *ext[])
 {
   PetscFunctionBegin;
@@ -401,8 +385,6 @@ PetscErrorCode PetscDrawMovieCheckFormat(const char *ext[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawMovieSave"
 PetscErrorCode PetscDrawMovieSave(const char basename[],PetscInt count,const char imext[],PetscInt fps,const char mvext[])
 {
   char           input[PETSC_MAX_PATH_LEN];

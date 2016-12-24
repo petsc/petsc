@@ -2,8 +2,6 @@ static char help[] = "Tests MatLoad() with blocksize set in in program\n\n";
 
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 PetscInt main(PetscInt argc,char **args)
 {
   Mat            A;

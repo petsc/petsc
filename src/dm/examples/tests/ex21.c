@@ -5,8 +5,6 @@ static const char help[] = "Test DMCreateInjection() for mapping coordinates in 
 #include <petscdm.h>
 #include <petscdmda.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "test1_DAInjection3d"
 PetscErrorCode test1_DAInjection3d(PetscInt mx, PetscInt my, PetscInt mz)
 {
   PetscErrorCode   ierr;
@@ -101,8 +99,6 @@ PetscErrorCode test1_DAInjection3d(PetscInt mx, PetscInt my, PetscInt mz)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;

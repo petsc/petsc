@@ -1932,8 +1932,6 @@ PETSC_EXTERN PetscErrorCode PetscScalarView(PetscInt,const PetscScalar[],PetscVi
 #include <xmmintrin.h>
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMemcpy"
 /*@C
    PetscMemcpy - Copies n bytes, beginning at location b, to the space
    beginning at location a. The two memory regions CANNOT overlap, use
@@ -2258,8 +2256,6 @@ PETSC_EXTERN PetscErrorCode MPIU_File_read_all(MPI_File,void*,PetscMPIInt,MPI_Da
 #define PETSC_BLAS_INT_MAX  2147483647
 #define PETSC_BLAS_INT_MIN -2147483647
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscBLASIntCast"
 /*@C
     PetscBLASIntCast - casts a PetscInt (which may be 64 bits in size) to a PetscBLASInt (which may be 32 bits in size), generates an
          error if the PetscBLASInt is not large enough to hold the number.
@@ -2286,8 +2282,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscBLASIntCast(PetscInt a,PetscBLASInt *b)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMPIIntCast"
 /*@C
     PetscMPIIntCast - casts a PetscInt (which may be 64 bits in size) to a PetscMPIInt (which may be 32 bits in size), generates an
          error if the PetscMPIInt is not large enough to hold the number.
@@ -2316,8 +2310,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPIIntCast(PetscInt a,PetscMPIInt *b)
 
 #define PetscInt64Mult(a,b)   ((PetscInt64)(a))*((PetscInt64)(b))
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscRealIntMultTruncate"
 /*@C
 
    PetscRealIntMultTruncate - Computes the product of a positive PetscReal and a positive PetscInt and truncates the value to slightly less than the maximal possible value
@@ -2352,8 +2344,6 @@ PETSC_STATIC_INLINE PetscInt PetscRealIntMultTruncate(PetscReal a,PetscInt b)
   return (PetscInt) r;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscIntMultTruncate"
 /*@C
 
    PetscIntMultTruncate - Computes the product of two positive PetscInt and truncates the value to slightly less than the maximal possible value
@@ -2388,8 +2378,6 @@ PETSC_STATIC_INLINE PetscInt PetscIntMultTruncate(PetscInt a,PetscInt b)
   return (PetscInt) r;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscIntSumTruncate"
 /*@C
 
    PetscIntSumTruncate - Computes the sum of two positive PetscInt and truncates the value to slightly less than the maximal possible value
@@ -2422,8 +2410,6 @@ PETSC_STATIC_INLINE PetscInt PetscIntSumTruncate(PetscInt a,PetscInt b)
   return (PetscInt) r;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscIntMultError"
 /*@C
 
    PetscIntMultError - Computes the product of two positive PetscInt and generates an error with overflow.
@@ -2459,11 +2445,9 @@ PETSC_STATIC_INLINE PetscErrorCode PetscIntMultError(PetscInt a,PetscInt b,Petsc
   PetscFunctionReturn(0);
 }
 
- #undef __FUNCT__
-#define __FUNCT__ "PetscIntSumError"
 /*@C
 
-   PetscIntSumError - Computes the product of two positive PetscInt and generates an error with overflow.
+   PetscIntSumError - Computes the sum of two positive PetscInt and generates an error with overflow.
 
    Not Collective
 
@@ -2871,8 +2855,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsHelpPrintedCreate(PetscOptionsHelpPrinte
 PETSC_EXTERN PetscErrorCode PetscOptionsHelpPrintedCheck(PetscOptionsHelpPrinted,const char*,const char*,PetscBool*);
 
 PETSC_EXTERN PetscSegBuffer PetscCitationsList;
-#undef __FUNCT__
-#define __FUNCT__ "PetscCitationsRegister"
+
 /*@C
       PetscCitationsRegister - Register a bibtex item to obtain credit for an implemented algorithm used in the code.
 
@@ -2950,13 +2933,9 @@ PETSC_EXTERN PetscErrorCode PetscAllreduceBarrierCheck(MPI_Comm,PetscMPIInt,int,
 
 .seealso: MPI_Allreduce()
 M*/
-#define MPIU_Allreduce(a,b,c,d,e,fcomm) (PetscAllreduceBarrierCheck(fcomm,c,__LINE__,__FUNCT__,__FILE__) || MPI_Allreduce(a,b,c,d,e,fcomm))
+#define MPIU_Allreduce(a,b,c,d,e,fcomm) (PetscAllreduceBarrierCheck(fcomm,c,__LINE__,PETSC_FUNCTION_NAME,__FILE__) || MPI_Allreduce(a,b,c,d,e,fcomm))
 #else
 #define MPIU_Allreduce(a,b,c,d,e,fcomm) MPI_Allreduce(a,b,c,d,e,fcomm)
 #endif
-
-/* Reset __FUNCT__ in case the user does not define it themselves */
-#undef __FUNCT__
-#define __FUNCT__ "User provided function"
 
 #endif

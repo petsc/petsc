@@ -3,8 +3,6 @@ static char help[] = "Tests the use of MatZeroRows() for uniprocessor matrices.\
 
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            C;

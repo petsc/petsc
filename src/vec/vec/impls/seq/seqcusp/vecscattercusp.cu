@@ -12,8 +12,6 @@
 
 #include <cuda_runtime.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "VecScatterCUSPIndicesCreate_StoS"
 PetscErrorCode VecScatterCUSPIndicesCreate_StoS(PetscInt n,PetscInt toFirst,PetscInt fromFirst,PetscInt toStep, PetscInt fromStep,PetscInt *tslots, PetscInt *fslots,PetscCUSPIndices *ci) {
 
   PetscCUSPIndices           cci;
@@ -92,8 +90,6 @@ PetscErrorCode VecScatterCUSPIndicesCreate_StoS(PetscInt n,PetscInt toFirst,Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecScatterCUSPIndicesCreate_PtoP"
 PetscErrorCode VecScatterCUSPIndicesCreate_PtoP(PetscInt ns,PetscInt *sendIndices,PetscInt nr,PetscInt *recvIndices,PetscCUSPIndices *ci)
 {
   PetscCUSPIndices           cci;
@@ -117,8 +113,6 @@ PetscErrorCode VecScatterCUSPIndicesCreate_PtoP(PetscInt ns,PetscInt *sendIndice
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecScatterCUSPIndicesDestroy"
 PetscErrorCode VecScatterCUSPIndicesDestroy(PetscCUSPIndices *ci)
 {
   PetscFunctionBegin;
@@ -261,8 +255,6 @@ void VecScatterCUSP_StoS_Dispatcher(CUSPARRAY *xarray,CUSPARRAY *yarray,PetscCUS
   }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecScatterCUSP_StoS"
 PetscErrorCode VecScatterCUSP_StoS(Vec x,Vec y,PetscCUSPIndices ci,InsertMode addv,ScatterMode mode)
 {
   PetscErrorCode             ierr;

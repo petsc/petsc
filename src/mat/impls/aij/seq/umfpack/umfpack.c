@@ -90,8 +90,6 @@ typedef struct {
   PetscBool CleanUpUMFPACK;
 } Mat_UMFPACK;
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_UMFPACK"
 static PetscErrorCode MatDestroy_UMFPACK(Mat A)
 {
   PetscErrorCode ierr;
@@ -110,8 +108,6 @@ static PetscErrorCode MatDestroy_UMFPACK(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolve_UMFPACK_Private"
 static PetscErrorCode MatSolve_UMFPACK_Private(Mat A,Vec b,Vec x,int uflag)
 {
   Mat_UMFPACK       *lu = (Mat_UMFPACK*)A->data;
@@ -150,8 +146,6 @@ static PetscErrorCode MatSolve_UMFPACK_Private(Mat A,Vec b,Vec x,int uflag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolve_UMFPACK"
 static PetscErrorCode MatSolve_UMFPACK(Mat A,Vec b,Vec x)
 {
   PetscErrorCode ierr;
@@ -162,8 +156,6 @@ static PetscErrorCode MatSolve_UMFPACK(Mat A,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolveTranspose_UMFPACK"
 static PetscErrorCode MatSolveTranspose_UMFPACK(Mat A,Vec b,Vec x)
 {
   PetscErrorCode ierr;
@@ -174,8 +166,6 @@ static PetscErrorCode MatSolveTranspose_UMFPACK(Mat A,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLUFactorNumeric_UMFPACK"
 static PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat F,Mat A,const MatFactorInfo *info)
 {
   Mat_UMFPACK    *lu = (Mat_UMFPACK*)(F)->data;
@@ -217,8 +207,6 @@ static PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat F,Mat A,const MatFactorInfo
 /*
    Note the r permutation is ignored
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatLUFactorSymbolic_UMFPACK"
 static PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   Mat_SeqAIJ     *a  = (Mat_SeqAIJ*)A->data;
@@ -272,8 +260,6 @@ static PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F,Mat A,IS r,IS c,const Ma
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFactorInfo_UMFPACK"
 static PetscErrorCode MatFactorInfo_UMFPACK(Mat A,PetscViewer viewer)
 {
   Mat_UMFPACK    *lu= (Mat_UMFPACK*)A->data;
@@ -313,8 +299,6 @@ static PetscErrorCode MatFactorInfo_UMFPACK(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatView_UMFPACK"
 static PetscErrorCode MatView_UMFPACK(Mat A,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
@@ -332,8 +316,6 @@ static PetscErrorCode MatView_UMFPACK(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFactorGetSolverPackage_seqaij_umfpack"
 PetscErrorCode MatFactorGetSolverPackage_seqaij_umfpack(Mat A,const MatSolverPackage *type)
 {
   PetscFunctionBegin;
@@ -378,8 +360,6 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_umfpack(Mat A,const MatSolverPac
 .seealso: PCLU, MATSOLVERSUPERLU, MATSOLVERMUMPS, PCFactorSetMatSolverPackage(), MatSolverPackage
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetFactor_seqaij_umfpack"
 PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
@@ -474,8 +454,6 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_cholmod(Mat,MatFactorType,Mat*);
 PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat,MatFactorType,Mat*);
 PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat,MatFactorType,Mat*);
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolverPackageRegister_SuiteSparse"
 PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_SuiteSparse(void)
 {
   PetscErrorCode ierr;

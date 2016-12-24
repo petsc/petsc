@@ -5,8 +5,6 @@
 
 #include <petscvec.h>   /*I  "petscvec.h"   I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCreateMPI"
 /*@
    VecCreateMPI - Creates a parallel vector.
 

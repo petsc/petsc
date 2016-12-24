@@ -24,8 +24,6 @@
 /*       LS - A TEMPORARY VECTOR USED TO STORE THE NODES OF THE*/
 /*              COMPONENT LEVEL BY LEVEL.*/
 /*****************************************************************/
-#undef __FUNCT__
-#define __FUNCT__ "SPARSEPACKdegree"
 PetscErrorCode SPARSEPACKdegree(const PetscInt *root,const PetscInt *inxadj,const PetscInt *adjncy,PetscInt *mask,PetscInt *deg,PetscInt *ccsize,PetscInt *ls)
 {
   PetscInt *xadj = (PetscInt*)inxadj; /* Used as temporary and reset within this function */

@@ -4,8 +4,6 @@
 #include <petsc/private/petscfeimpl.h>
 #include <petsc/private/petscfvimpl.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetScale"
 PetscErrorCode DMPlexGetScale(DM dm, PetscUnit unit, PetscReal *scale)
 {
   DM_Plex *mesh = (DM_Plex*) dm->data;
@@ -17,8 +15,6 @@ PetscErrorCode DMPlexGetScale(DM dm, PetscUnit unit, PetscReal *scale)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexSetScale"
 PetscErrorCode DMPlexSetScale(DM dm, PetscUnit unit, PetscReal scale)
 {
   DM_Plex *mesh = (DM_Plex*) dm->data;
@@ -84,8 +80,6 @@ PETSC_STATIC_INLINE PetscInt epsilon(PetscInt i, PetscInt j, PetscInt k)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexProjectRigidBody_Private"
 static PetscErrorCode DMPlexProjectRigidBody_Private(PetscInt dim, PetscReal t, const PetscReal X[], PetscInt Nf, PetscScalar *mode, void *ctx)
 {
   PetscInt *ctxInt  = (PetscInt *) ctx;
@@ -108,8 +102,6 @@ static PetscErrorCode DMPlexProjectRigidBody_Private(PetscInt dim, PetscReal t, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateRigidBody"
 /*@C
   DMPlexCreateRigidBody - for the default global section, create rigid body modes from coordinates
 
@@ -175,8 +167,6 @@ PetscErrorCode DMPlexCreateRigidBody(DM dm, MatNullSpace *sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexSetMaxProjectionHeight"
 /*@
   DMPlexSetMaxProjectionHeight - In DMPlexProjectXXXLocal() functions, the projected values of a basis function's dofs
   are computed by associating the basis function with one of the mesh points in its transitively-closed support, and
@@ -204,8 +194,6 @@ PetscErrorCode DMPlexSetMaxProjectionHeight(DM dm, PetscInt height)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetMaxProjectionHeight"
 /*@
   DMPlexGetMaxProjectionHeight - Get the maximum height (w.r.t. DAG) of mesh points used to evaluate dual bases in
   DMPlexProjectXXXLocal() functions.
@@ -230,8 +218,6 @@ PetscErrorCode DMPlexGetMaxProjectionHeight(DM dm, PetscInt *height)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexInsertBoundaryValues_FEM_Internal"
 static PetscErrorCode DMPlexInsertBoundaryValues_FEM_Internal(DM dm, PetscReal time, PetscInt field, DMLabel label, PetscInt numids, const PetscInt ids[], PetscErrorCode (*func)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void *ctx, Vec locX)
 {
   PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal x[], PetscInt, PetscScalar *u, void *ctx);
@@ -249,8 +235,6 @@ static PetscErrorCode DMPlexInsertBoundaryValues_FEM_Internal(DM dm, PetscReal t
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexInsertBoundaryValues_FEM_AuxField_Internal"
 static PetscErrorCode DMPlexInsertBoundaryValues_FEM_AuxField_Internal(DM dm, PetscReal time, Vec locU, PetscInt field, DMLabel label, PetscInt numids, const PetscInt ids[],
                                                                        void (*func)(PetscInt, PetscInt, PetscInt,
                                                                                     const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -275,8 +259,6 @@ static PetscErrorCode DMPlexInsertBoundaryValues_FEM_AuxField_Internal(DM dm, Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexInsertBoundaryValues_FVM_Internal"
 /* This ignores numcomps/comps */
 static PetscErrorCode DMPlexInsertBoundaryValues_FVM_Internal(DM dm, PetscReal time, Vec faceGeometry, Vec cellGeometry, Vec Grad,
                                                               PetscInt field, DMLabel label, PetscInt numids, const PetscInt ids[], PetscErrorCode (*func)(PetscReal,const PetscReal*,const PetscReal*,const PetscScalar*,PetscScalar*,void*), void *ctx, Vec locX)
@@ -379,8 +361,6 @@ static PetscErrorCode DMPlexInsertBoundaryValues_FVM_Internal(DM dm, PetscReal t
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexInsertBoundaryValues"
 /*@
   DMPlexInsertBoundaryValues - Puts coefficients which represent boundary values into the local solution vector
 
@@ -455,8 +435,6 @@ PetscErrorCode DMPlexInsertBoundaryValues(DM dm, PetscBool insertEssential, Vec 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMComputeL2Diff_Plex"
 PetscErrorCode DMComputeL2Diff_Plex(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, PetscReal *diff)
 {
   const PetscInt   debug = 0;
@@ -558,8 +536,6 @@ PetscErrorCode DMComputeL2Diff_Plex(DM dm, PetscReal time, PetscErrorCode (**fun
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMComputeL2GradientDiff_Plex"
 PetscErrorCode DMComputeL2GradientDiff_Plex(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, const PetscReal n[], PetscReal *diff)
 {
   const PetscInt  debug = 0;
@@ -667,8 +643,6 @@ PetscErrorCode DMComputeL2GradientDiff_Plex(DM dm, PetscReal time, PetscErrorCod
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMComputeL2FieldDiff_Plex"
 PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, PetscReal *diff)
 {
   const PetscInt   debug = 0;
@@ -770,8 +744,6 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexComputeL2DiffVec"
 /*@C
   DMPlexComputeL2DiffVec - This function computes the cellwise L_2 difference between a function u and an FEM interpolant solution u_h, and stores it in a Vec.
 
@@ -883,8 +855,6 @@ PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscReal time, PetscErrorCode (**f
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexComputeIntegralFEM"
 /*@
   DMPlexComputeIntegralFEM - Form the local integral F from the local input X using pointwise functions specified by the user
 
@@ -1064,8 +1034,6 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscReal *integral, void 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexComputeInterpolatorNested"
 /*@
   DMPlexComputeInterpolatorNested - Form the local portion of the interpolation matrix I from the coarse DM to the uniformly refined DM.
 
@@ -1260,8 +1228,6 @@ PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, Mat In, void *use
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexComputeInterpolatorGeneral"
 /*@
   DMPlexComputeInterpolatorGeneral - Form the local portion of the interpolation matrix I from the coarse DM to a non-nested fine DM.
 
@@ -1510,8 +1476,6 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexComputeInjectorFEM"
 PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *user)
 {
   PetscDS        prob;

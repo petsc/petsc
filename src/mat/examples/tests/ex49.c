@@ -3,8 +3,6 @@ static char help[] = "Tests MatTranspose(), MatNorm(), and MatAXPY().\n\n";
 
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   Mat            mat,tmat = 0;

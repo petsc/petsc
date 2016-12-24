@@ -7,8 +7,6 @@
 
 static const char *DType_Table[64] = {"preconditioned", "unpreconditioned"};
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPCGSolve_STCG"
 static PetscErrorCode KSPCGSolve_STCG(KSP ksp)
 {
 #if defined(PETSC_USE_COMPLEX)
@@ -522,8 +520,6 @@ static PetscErrorCode KSPCGSolve_STCG(KSP ksp)
 #endif
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPCGSetUp_STCG"
 static PetscErrorCode KSPCGSetUp_STCG(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -537,8 +533,6 @@ static PetscErrorCode KSPCGSetUp_STCG(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPCGDestroy_STCG"
 static PetscErrorCode KSPCGDestroy_STCG(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -560,8 +554,6 @@ static PetscErrorCode KSPCGDestroy_STCG(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPCGSetRadius_STCG"
 static PetscErrorCode  KSPCGSetRadius_STCG(KSP ksp, PetscReal radius)
 {
   KSPCG_STCG *cg = (KSPCG_STCG*)ksp->data;
@@ -571,8 +563,6 @@ static PetscErrorCode  KSPCGSetRadius_STCG(KSP ksp, PetscReal radius)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPCGGetNormD_STCG"
 static PetscErrorCode  KSPCGGetNormD_STCG(KSP ksp, PetscReal *norm_d)
 {
   KSPCG_STCG *cg = (KSPCG_STCG*)ksp->data;
@@ -582,8 +572,6 @@ static PetscErrorCode  KSPCGGetNormD_STCG(KSP ksp, PetscReal *norm_d)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPCGGetObjFcn_STCG"
 static PetscErrorCode  KSPCGGetObjFcn_STCG(KSP ksp, PetscReal *o_fcn)
 {
   KSPCG_STCG *cg = (KSPCG_STCG*)ksp->data;
@@ -593,8 +581,6 @@ static PetscErrorCode  KSPCGGetObjFcn_STCG(KSP ksp, PetscReal *o_fcn)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPCGSetFromOptions_STCG"
 static PetscErrorCode KSPCGSetFromOptions_STCG(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
@@ -647,8 +633,6 @@ $  other KSP converged/diverged reasons
 .seealso:  KSPCreate(), KSPCGSetType(), KSPType (for list of available types), KSP, KSPCGSetRadius(), KSPCGGetNormD(), KSPCGGetObjFcn()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_CGSTCG"
 PETSC_EXTERN PetscErrorCode KSPCreate_CGSTCG(KSP ksp)
 {
   PetscErrorCode ierr;

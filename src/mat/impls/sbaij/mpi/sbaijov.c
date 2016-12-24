@@ -9,8 +9,6 @@
 static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat,PetscInt,IS*);
 static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Local(Mat,PetscInt*,PetscInt,PetscInt*,PetscBT*);
 
-#undef __FUNCT__
-#define __FUNCT__ "MatIncreaseOverlap_MPISBAIJ"
 PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C,PetscInt is_max,IS is[],PetscInt ov)
 {
   PetscErrorCode ierr;
@@ -162,8 +160,6 @@ typedef enum {MINE,OTHER} WhoseOwner;
        data[is_max + 1 + Mbs*i) = data(is[i])
         ...
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatIncreaseOverlap_MPISBAIJ_Once"
 static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS is[])
 {
   Mat_MPISBAIJ   *c = (Mat_MPISBAIJ*)C->data;
@@ -460,8 +456,6 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatIncreaseOverlap_MPISBAIJ_Local"
 /*
    MatIncreaseOverlap_MPISBAIJ_Local - Called by MatIncreaseOverlap, to do
        the work on the local processor.

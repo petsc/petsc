@@ -9,8 +9,6 @@ T*/
 
 #include <petscvec.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "GetISs"
 static PetscErrorCode GetISs(Vec vecs[],IS is[])
 {
   PetscErrorCode ierr;
@@ -25,8 +23,6 @@ static PetscErrorCode GetISs(Vec vecs[],IS is[])
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "test_view"
 PetscErrorCode test_view(void)
 {
   Vec            X, a,b;
@@ -101,8 +97,6 @@ PetscErrorCode test_view(void)
 }
 
 #if 0
-#undef __FUNCT__
-#define __FUNCT__ "test_vec_ops"
 PetscErrorCode test_vec_ops(void)
 {
   Vec            X, a,b;
@@ -161,8 +155,6 @@ PetscErrorCode test_vec_ops(void)
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "gen_test_vector"
 PetscErrorCode gen_test_vector(MPI_Comm comm, PetscInt length, PetscInt start_value, PetscInt stride, Vec *_v)
 {
   int            size;
@@ -198,8 +190,6 @@ Y = aX + y = ([4,8,12,16], (15,18,21,24,27])
 Y = aX + y = ([4,9,14,19], (25,30,35,40,45])
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "test_axpy_dot_max"
 PetscErrorCode test_axpy_dot_max(void)
 {
   Vec            x1,y1, x2,y2;

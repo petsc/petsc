@@ -1,7 +1,5 @@
 #include <../src/tao/complementarity/impls/ssls/ssls.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetUp_SSILS"
 PetscErrorCode TaoSetUp_SSILS(Tao tao)
 {
   TAO_SSLS       *ssls = (TAO_SSLS *)tao->data;
@@ -19,8 +17,6 @@ PetscErrorCode TaoSetUp_SSILS(Tao tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoDestroy_SSILS"
 PetscErrorCode TaoDestroy_SSILS(Tao tao)
 {
   TAO_SSLS       *ssls = (TAO_SSLS *)tao->data;
@@ -37,8 +33,6 @@ PetscErrorCode TaoDestroy_SSILS(Tao tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSolve_SSILS"
 static PetscErrorCode TaoSolve_SSILS(Tao tao)
 {
   TAO_SSLS                     *ssls = (TAO_SSLS *)tao->data;
@@ -108,8 +102,6 @@ static PetscErrorCode TaoSolve_SSILS(Tao tao)
 
    Level: beginner
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoCreate_SSILS"
 PETSC_EXTERN PetscErrorCode TaoCreate_SSILS(Tao tao)
 {
   TAO_SSLS       *ssls;

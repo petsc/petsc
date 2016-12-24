@@ -24,8 +24,6 @@ typedef struct {
 
 #define SIZE_LOG 10000          /* size of buffer for mesg_log */
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningApply_Party"
 static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part,IS *partitioning)
 {
   PetscErrorCode        ierr;
@@ -140,8 +138,6 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part,IS *partit
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningView_Party"
 PetscErrorCode MatPartitioningView_Party(MatPartitioning part,PetscViewer viewer)
 {
   MatPartitioning_Party *party = (MatPartitioning_Party*)part->data;
@@ -167,8 +163,6 @@ PetscErrorCode MatPartitioningView_Party(MatPartitioning part,PetscViewer viewer
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningPartySetGlobal"
 /*@C
    MatPartitioningPartySetGlobal - Set global method for Party partitioner.
 
@@ -201,8 +195,6 @@ PetscErrorCode MatPartitioningPartySetGlobal(MatPartitioning part,const char *gl
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningPartySetGlobal_Party"
 PetscErrorCode MatPartitioningPartySetGlobal_Party(MatPartitioning part,const char *global)
 {
   MatPartitioning_Party *party = (MatPartitioning_Party*)part->data;
@@ -213,8 +205,6 @@ PetscErrorCode MatPartitioningPartySetGlobal_Party(MatPartitioning part,const ch
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningPartySetLocal"
 /*@C
    MatPartitioningPartySetLocal - Set local method for Party partitioner.
 
@@ -245,8 +235,6 @@ PetscErrorCode MatPartitioningPartySetLocal(MatPartitioning part,const char *loc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningPartySetLocal_Party"
 PetscErrorCode MatPartitioningPartySetLocal_Party(MatPartitioning part,const char *local)
 
 {
@@ -258,8 +246,6 @@ PetscErrorCode MatPartitioningPartySetLocal_Party(MatPartitioning part,const cha
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningPartySetCoarseLevel"
 /*@
    MatPartitioningPartySetCoarseLevel - Set the coarse level parameter for the
    Party partitioner.
@@ -286,8 +272,6 @@ PetscErrorCode MatPartitioningPartySetCoarseLevel(MatPartitioning part,PetscReal
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningPartySetCoarseLevel_Party"
 PetscErrorCode MatPartitioningPartySetCoarseLevel_Party(MatPartitioning part,PetscReal level)
 {
   MatPartitioning_Party *party = (MatPartitioning_Party*)part->data;
@@ -299,8 +283,6 @@ PetscErrorCode MatPartitioningPartySetCoarseLevel_Party(MatPartitioning part,Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningPartySetMatchOptimization"
 /*@
    MatPartitioningPartySetMatchOptimization - Activate matching optimization for
    graph reduction.
@@ -327,8 +309,6 @@ PetscErrorCode MatPartitioningPartySetMatchOptimization(MatPartitioning part,Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningPartySetMatchOptimization_Party"
 PetscErrorCode MatPartitioningPartySetMatchOptimization_Party(MatPartitioning part,PetscBool opt)
 {
   MatPartitioning_Party *party = (MatPartitioning_Party*)part->data;
@@ -338,8 +318,6 @@ PetscErrorCode MatPartitioningPartySetMatchOptimization_Party(MatPartitioning pa
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningPartySetBipart"
 /*@
    MatPartitioningPartySetBipart - Activate or deactivate recursive bisection.
 
@@ -365,8 +343,6 @@ PetscErrorCode MatPartitioningPartySetBipart(MatPartitioning part,PetscBool bp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningPartySetBipart_Party"
 PetscErrorCode MatPartitioningPartySetBipart_Party(MatPartitioning part,PetscBool bp)
 {
   MatPartitioning_Party *party = (MatPartitioning_Party*)part->data;
@@ -376,8 +352,6 @@ PetscErrorCode MatPartitioningPartySetBipart_Party(MatPartitioning part,PetscBoo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningSetFromOptions_Party"
 PetscErrorCode MatPartitioningSetFromOptions_Party(PetscOptionItems *PetscOptionsObject,MatPartitioning part)
 {
   PetscErrorCode        ierr;
@@ -401,8 +375,6 @@ PetscErrorCode MatPartitioningSetFromOptions_Party(PetscOptionItems *PetscOption
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningDestroy_Party"
 PetscErrorCode MatPartitioningDestroy_Party(MatPartitioning part)
 {
   MatPartitioning_Party *party = (MatPartitioning_Party*)part->data;
@@ -432,8 +404,6 @@ PetscErrorCode MatPartitioningDestroy_Party(MatPartitioning part)
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningCreate_Party"
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Party(MatPartitioning part)
 {
   PetscErrorCode        ierr;

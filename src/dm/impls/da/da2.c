@@ -2,8 +2,6 @@
 #include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 #include <petscdraw.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "DMView_DA_2d"
 static PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -124,8 +122,6 @@ static PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
       m is number of processors
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "DMDASplitComm2d"
 PetscErrorCode  DMDASplitComm2d(MPI_Comm comm,PetscInt M,PetscInt N,PetscInt sw,MPI_Comm *outcomm)
 {
   PetscErrorCode ierr;
@@ -175,8 +171,6 @@ PetscErrorCode  DMDASplitComm2d(MPI_Comm comm,PetscInt M,PetscInt N,PetscInt sw,
 }
 
 #if defined(new)
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetDiagonal_MFFD"
 /*
   DMDAGetDiagonal_MFFD - Gets the diagonal for a matrix free matrix where local
     function lives on a DMDA
@@ -221,8 +215,6 @@ PetscErrorCode DMDAGetDiagonal_MFFD(DM da,Vec U,Vec a)
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetUp_DA_2D"
 PetscErrorCode  DMSetUp_DA_2D(DM da)
 {
   DM_DA            *dd = (DM_DA*)da->data;
@@ -786,8 +778,6 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDACreate2d"
 /*@C
    DMDACreate2d -  Creates an object that will manage the communication of  two-dimensional
    regular array data that is distributed across some processors.

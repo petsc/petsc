@@ -1,7 +1,5 @@
 #include <petsc/private/dmimpl.h> /*I "petscdm.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetLocalVector"
 /*@
    DMGetLocalVector - Gets a Seq PETSc vector that
    may be used with the DMXXX routines. This vector has spaces for the ghost values.
@@ -62,8 +60,6 @@ alldone:
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRestoreLocalVector"
 /*@
    DMRestoreLocalVector - Returns a Seq PETSc vector that
      obtained from DMGetLocalVector(). Do not use with vector obtained via
@@ -108,8 +104,6 @@ alldone:
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetGlobalVector"
 /*@
    DMGetGlobalVector - Gets a MPI PETSc vector that
    may be used with the DMXXX routines.
@@ -172,8 +166,6 @@ alldone:
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMClearGlobalVectors"
 /*@
    DMClearGlobalVectors - Destroys all the global vectors that have been stashed in this DM
 
@@ -209,8 +201,6 @@ PetscErrorCode  DMClearGlobalVectors(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMClearLocalVectors"
 /*@
    DMClearLocalVectors - Destroys all the local vectors that have been stashed in this DM
 
@@ -246,8 +236,6 @@ PetscErrorCode  DMClearLocalVectors(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRestoreGlobalVector"
 /*@
    DMRestoreGlobalVector - Returns a Seq PETSc vector that
      obtained from DMGetGlobalVector(). Do not use with vector obtained via
@@ -292,8 +280,6 @@ alldone:
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMHasNamedGlobalVector"
 /*@C
    DMHasNamedGlobalVector - check for a named, persistent global vector
 
@@ -333,8 +319,6 @@ PetscErrorCode DMHasNamedGlobalVector(DM dm,const char *name,PetscBool *exists)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetNamedGlobalVector"
 /*@C
    DMGetNamedGlobalVector - get access to a named, persistent global vector
 
@@ -384,8 +368,6 @@ found:
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRestoreNamedGlobalVector"
 /*@C
    DMRestoreNamedGlobalVector - restore access to a named, persistent global vector
 
@@ -427,8 +409,6 @@ PetscErrorCode DMRestoreNamedGlobalVector(DM dm,const char *name,Vec *X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMHasNamedLocalVector"
 /*@C
    DMHasNamedLocalVector - check for a named, persistent local vector
 
@@ -468,8 +448,6 @@ PetscErrorCode DMHasNamedLocalVector(DM dm,const char *name,PetscBool *exists)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetNamedLocalVector"
 /*@C
    DMGetNamedLocalVector - get access to a named, persistent local vector
 
@@ -519,8 +497,6 @@ found:
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRestoreNamedLocalVector"
 /*@C
    DMRestoreNamedLocalVector - restore access to a named, persistent local vector
 

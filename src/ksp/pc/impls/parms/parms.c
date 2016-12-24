@@ -37,8 +37,6 @@ typedef struct {
 } PC_PARMS;
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_PARMS"
 static PetscErrorCode PCSetUp_PARMS(PC pc)
 {
   Mat               pmat;
@@ -183,8 +181,6 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCView_PARMS"
 static PetscErrorCode PCView_PARMS(PC pc,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -245,8 +241,6 @@ static PetscErrorCode PCView_PARMS(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_PARMS"
 static PetscErrorCode PCDestroy_PARMS(PC pc)
 {
   PC_PARMS       *parms = (PC_PARMS*)pc->data;
@@ -274,8 +268,6 @@ static PetscErrorCode PCDestroy_PARMS(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_PARMS"
 static PetscErrorCode PCSetFromOptions_PARMS(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_PARMS          *parms = (PC_PARMS*)pc->data;
@@ -319,8 +311,6 @@ static PetscErrorCode PCSetFromOptions_PARMS(PetscOptionItems *PetscOptionsObjec
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_PARMS"
 static PetscErrorCode PCApply_PARMS(PC pc,Vec b,Vec x)
 {
   PetscErrorCode    ierr;
@@ -339,8 +329,6 @@ static PetscErrorCode PCApply_PARMS(PC pc,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCPARMSSetGlobal_PARMS"
 static PetscErrorCode PCPARMSSetGlobal_PARMS(PC pc,PCPARMSGlobalType type)
 {
   PC_PARMS *parms = (PC_PARMS*)pc->data;
@@ -353,8 +341,6 @@ static PetscErrorCode PCPARMSSetGlobal_PARMS(PC pc,PCPARMSGlobalType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCPARMSSetGlobal"
 /*@
    PCPARMSSetGlobal - Sets the global preconditioner to be used in PARMS.
 
@@ -390,8 +376,6 @@ PetscErrorCode PCPARMSSetGlobal(PC pc,PCPARMSGlobalType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCPARMSSetLocal_PARMS"
 static PetscErrorCode PCPARMSSetLocal_PARMS(PC pc,PCPARMSLocalType type)
 {
   PC_PARMS *parms = (PC_PARMS*)pc->data;
@@ -404,8 +388,6 @@ static PetscErrorCode PCPARMSSetLocal_PARMS(PC pc,PCPARMSLocalType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCPARMSSetLocal"
 /*@
    PCPARMSSetLocal - Sets the local preconditioner to be used in PARMS.
 
@@ -446,8 +428,6 @@ PetscErrorCode PCPARMSSetLocal(PC pc,PCPARMSLocalType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCPARMSSetSolveTolerances_PARMS"
 static PetscErrorCode PCPARMSSetSolveTolerances_PARMS(PC pc,PetscReal tol,PetscInt maxits)
 {
   PC_PARMS *parms = (PC_PARMS*)pc->data;
@@ -464,8 +444,6 @@ static PetscErrorCode PCPARMSSetSolveTolerances_PARMS(PC pc,PetscReal tol,PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCPARMSSetSolveTolerances"
 /*@
    PCPARMSSetSolveTolerances - Sets the convergence tolerance and the maximum iterations for the
    inner GMRES solver, when the Schur global preconditioner is used.
@@ -498,8 +476,6 @@ PetscErrorCode PCPARMSSetSolveTolerances(PC pc,PetscReal tol,PetscInt maxits)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCPARMSSetSolveRestart_PARMS"
 static PetscErrorCode PCPARMSSetSolveRestart_PARMS(PC pc,PetscInt restart)
 {
   PC_PARMS *parms = (PC_PARMS*)pc->data;
@@ -512,8 +488,6 @@ static PetscErrorCode PCPARMSSetSolveRestart_PARMS(PC pc,PetscInt restart)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCPARMSSetSolveRestart"
 /*@
    PCPARMSSetSolveRestart - Sets the number of iterations at which the
    inner GMRES solver restarts.
@@ -544,8 +518,6 @@ PetscErrorCode PCPARMSSetSolveRestart(PC pc,PetscInt restart)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCPARMSSetNonsymPerm_PARMS"
 static PetscErrorCode PCPARMSSetNonsymPerm_PARMS(PC pc,PetscBool nonsym)
 {
   PC_PARMS *parms = (PC_PARMS*)pc->data;
@@ -558,8 +530,6 @@ static PetscErrorCode PCPARMSSetNonsymPerm_PARMS(PC pc,PetscBool nonsym)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCPARMSSetNonsymPerm"
 /*@
    PCPARMSSetNonsymPerm - Sets the type of permutation for the ARMS preconditioner: the standard
    symmetric ARMS or the non-symmetric ARMS (ARMS-ddPQ).
@@ -591,8 +561,6 @@ PetscErrorCode PCPARMSSetNonsymPerm(PC pc,PetscBool nonsym)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCPARMSSetFill_PARMS"
 static PetscErrorCode PCPARMSSetFill_PARMS(PC pc,PetscInt lfil0,PetscInt lfil1,PetscInt lfil2)
 {
   PC_PARMS *parms = (PC_PARMS*)pc->data;
@@ -613,8 +581,6 @@ static PetscErrorCode PCPARMSSetFill_PARMS(PC pc,PetscInt lfil0,PetscInt lfil1,P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCPARMSSetFill"
 /*@
    PCPARMSSetFill - Sets the fill-in parameters for ILUT, ILUK and ARMS preconditioners.
    Consider the original matrix A = [B F; E C] and the approximate version
@@ -689,8 +655,6 @@ PetscErrorCode PCPARMSSetFill(PC pc,PetscInt lfil0,PetscInt lfil1,PetscInt lfil2
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_PARMS"
 PETSC_EXTERN PetscErrorCode PCCreate_PARMS(PC pc)
 {
   PC_PARMS       *parms;

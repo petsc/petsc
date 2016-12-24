@@ -1,7 +1,5 @@
 #include <../src/snes/impls/fas/fasimpls.h> /*I  "petscsnes.h"  I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASGetGalerkin"
 /*@
    SNESFASGetGalerkin - Gets if the coarse problems are formed by projection to the fine problem
 
@@ -26,8 +24,6 @@ PetscErrorCode SNESFASGetGalerkin(SNES snes, PetscBool *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASSetGalerkin"
 /*@
    SNESFASSetGalerkin - Sets coarse problems as formed by projection to the fine problem
 
@@ -52,8 +48,6 @@ PetscErrorCode SNESFASSetGalerkin(SNES snes, PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASGalerkinDefaultFunction"
 /*
 SNESFASGalerkinDefaultFunction
 

@@ -23,8 +23,6 @@ typedef struct {  /* default context for matrix-free SNES */
   void         *data;            /* implementation-specific data */
 } MFCtx_Private;
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMatrixFreeDestroy2_Private"
 PetscErrorCode SNESMatrixFreeDestroy2_Private(Mat mat)
 {
   PetscErrorCode ierr;
@@ -39,8 +37,6 @@ PetscErrorCode SNESMatrixFreeDestroy2_Private(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMatrixFreeView2_Private"
 /*
    SNESMatrixFreeView2_Private - Views matrix-free parameters.
  */
@@ -67,8 +63,6 @@ PetscErrorCode SNESMatrixFreeView2_Private(Mat J,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMatrixFreeMult2_Private"
 /*
   SNESMatrixFreeMult2_Private - Default matrix-free form for Jacobian-vector
   product, y = F'(u)*a:
@@ -160,8 +154,6 @@ PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESDefaultMatrixFreeCreate2"
 /*@C
    SNESMatrixFreeCreate2 - Creates a matrix-free matrix
    context for use with a SNES solver.  This matrix can be used as
@@ -277,8 +269,6 @@ PetscErrorCode  SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESDefaultMatrixFreeSetParameters2"
 /*@C
    SNESDefaultMatrixFreeSetParameters2 - Sets the parameters for the approximation of
    matrix-vector products using finite differences.

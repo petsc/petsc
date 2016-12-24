@@ -10,8 +10,6 @@ PETSC_EXTERN PetscErrorCode PFCreate_Identity(PF,void*);
 PETSC_EXTERN PetscErrorCode PFCreate_Matlab(PF,void*);
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PFRegisterAll"
 /*@C
    PFRegisterAll - Registers all of the preconditioners in the PF package.
 

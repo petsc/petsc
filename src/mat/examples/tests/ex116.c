@@ -12,8 +12,6 @@ e.g. ./ex116 -f /home/petsc/datafiles/matrices/small  \n\n";
 
 extern PetscErrorCode CkEigenSolutions(PetscInt,Mat,PetscInt,PetscInt,PetscReal*,Vec*,PetscReal*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 PetscInt main(PetscInt argc,char **args)
 {
   Mat            A,A_dense;
@@ -195,8 +193,6 @@ PetscInt main(PetscInt argc,char **args)
      tols[1]    - reporting tol_orth: evec[i]^T*evec[j] - delta_ij
 */
 #undef DEBUG_CkEigenSolutions
-#undef __FUNCT__
-#define __FUNCT__ "CkEigenSolutions"
 PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,PetscReal *eval,Vec *evec,PetscReal *tols)
 {
   PetscInt  ierr,i,j,nev;

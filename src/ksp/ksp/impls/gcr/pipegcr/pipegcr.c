@@ -28,8 +28,6 @@ static const char citation[] =
 
 #include <petscksp.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPAllocateVectors_PIPEGCR"
 static PetscErrorCode KSPAllocateVectors_PIPEGCR(KSP ksp, PetscInt nvecsneeded, PetscInt chunksize)
 {
   PetscErrorCode  ierr;
@@ -69,8 +67,6 @@ static PetscErrorCode KSPAllocateVectors_PIPEGCR(KSP ksp, PetscInt nvecsneeded, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_PIPEGCR_cycle"
 static PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp)
 {
   KSP_PIPEGCR    *pipegcr = (KSP_PIPEGCR*)ksp->data;
@@ -276,8 +272,6 @@ static PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_PIPEGCR"
 static PetscErrorCode KSPSolve_PIPEGCR(KSP ksp)
 {
   KSP_PIPEGCR    *pipegcr = (KSP_PIPEGCR*)ksp->data;
@@ -356,8 +350,6 @@ static PetscErrorCode KSPSolve_PIPEGCR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPView_PIPEGCR"
 static PetscErrorCode KSPView_PIPEGCR(KSP ksp, PetscViewer viewer)
 {
   KSP_PIPEGCR    *pipegcr = (KSP_PIPEGCR*)ksp->data;
@@ -389,8 +381,6 @@ static PetscErrorCode KSPView_PIPEGCR(KSP ksp, PetscViewer viewer)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_PIPEGCR"
 static PetscErrorCode KSPSetUp_PIPEGCR(KSP ksp)
 {
   KSP_PIPEGCR   *pipegcr = (KSP_PIPEGCR*)ksp->data;
@@ -437,8 +427,6 @@ static PetscErrorCode KSPSetUp_PIPEGCR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPReset_PIPEGCR"
 static PetscErrorCode KSPReset_PIPEGCR(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -451,8 +439,6 @@ static PetscErrorCode KSPReset_PIPEGCR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPDestroy_PIPEGCR"
 static PetscErrorCode KSPDestroy_PIPEGCR(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -486,8 +472,6 @@ static PetscErrorCode KSPDestroy_PIPEGCR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEGCRSetUnrollW"
 /*@
   KSPPIPEGCRSetUnrollW - Set to PETSC_TRUE to use PIPEGCR with unrolling of the w vector
 
@@ -515,8 +499,6 @@ PetscErrorCode KSPPIPEGCRSetUnrollW(KSP ksp,PetscBool unroll_w)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEGCRGetUnrollW"
 /*@
   KSPPIPEGCRGetUnrollW - Get information on PIPEGCR unrolling the w vector
 
@@ -545,8 +527,6 @@ PetscErrorCode KSPPIPEGCRGetUnrollW(KSP ksp,PetscBool *unroll_w)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEGCRSetMmax"
 /*@
   KSPPIPEGCRSetMmax - set the maximum number of previous directions PIPEGCR will store for orthogonalization
 
@@ -578,8 +558,6 @@ PetscErrorCode KSPPIPEGCRSetMmax(KSP ksp,PetscInt mmax)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEGCRGetMmax"
 /*@
   KSPPIPEGCRGetMmax - get the maximum number of previous directions PIPEGCR will store
 
@@ -613,8 +591,6 @@ PetscErrorCode KSPPIPEGCRGetMmax(KSP ksp,PetscInt *mmax)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEGCRSetNprealloc"
 /*@
   KSPPIPEGCRSetNprealloc - set the number of directions to preallocate with PIPEGCR
 
@@ -642,8 +618,6 @@ PetscErrorCode KSPPIPEGCRSetNprealloc(KSP ksp,PetscInt nprealloc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEGCRGetNprealloc"
 /*@
   KSPPIPEGCRGetNprealloc - get the number of directions preallocate by PIPEGCR
 
@@ -674,8 +648,6 @@ PetscErrorCode KSPPIPEGCRGetNprealloc(KSP ksp,PetscInt *nprealloc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEGCRSetTruncationType"
 /*@
   KSPPIPEGCRSetTruncationType - specify how many of its stored previous directions PIPEGCR uses during orthoganalization
 
@@ -706,8 +678,6 @@ PetscErrorCode KSPPIPEGCRSetTruncationType(KSP ksp,KSPFCDTruncationType truncstr
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEGCRGetTruncationType"
 /*@
   KSPPIPEGCRGetTruncationType - get the truncation strategy employed by PIPEGCR
 
@@ -741,8 +711,6 @@ PetscErrorCode KSPPIPEGCRGetTruncationType(KSP ksp,KSPFCDTruncationType *truncst
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetFromOptions_PIPEGCR"
 static PetscErrorCode KSPSetFromOptions_PIPEGCR(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
@@ -766,8 +734,6 @@ static PetscErrorCode KSPSetFromOptions_PIPEGCR(PetscOptionItems *PetscOptionsOb
 typedef PetscErrorCode (*KSPPIPEGCRModifyPCFunction)(KSP,PetscInt,PetscReal,void*);
 typedef PetscErrorCode (*KSPPIPEGCRDestroyFunction)(void*);
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEGCRSetModifyPC_PIPEGCR"
 static PetscErrorCode  KSPPIPEGCRSetModifyPC_PIPEGCR(KSP ksp,KSPPIPEGCRModifyPCFunction function,void *data,KSPPIPEGCRDestroyFunction destroy)
 {
   KSP_PIPEGCR *pipegcr = (KSP_PIPEGCR*)ksp->data;
@@ -780,8 +746,6 @@ static PetscErrorCode  KSPPIPEGCRSetModifyPC_PIPEGCR(KSP ksp,KSPPIPEGCRModifyPCF
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPIPEGCRSetModifyPC"
 /*@C
  KSPPIPEGCRSetModifyPC - Sets the routine used by PIPEGCR to modify the preconditioner.
 
@@ -854,8 +818,6 @@ PetscErrorCode  KSPPIPEGCRSetModifyPC(KSP ksp,PetscErrorCode (*function)(KSP,Pet
 
 
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_PIPEGCR"
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPEGCR(KSP ksp)
 {
   PetscErrorCode ierr;

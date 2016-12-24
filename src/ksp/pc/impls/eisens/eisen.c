@@ -15,8 +15,6 @@ typedef struct {
 } PC_Eisenstat;
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PCMult_Eisenstat"
 static PetscErrorCode PCMult_Eisenstat(Mat mat,Vec b,Vec x)
 {
   PetscErrorCode ierr;
@@ -30,8 +28,6 @@ static PetscErrorCode PCMult_Eisenstat(Mat mat,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_Eisenstat"
 static PetscErrorCode PCApply_Eisenstat(PC pc,Vec x,Vec y)
 {
   PC_Eisenstat   *eis = (PC_Eisenstat*)pc->data;
@@ -50,8 +46,6 @@ static PetscErrorCode PCApply_Eisenstat(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCPreSolve_Eisenstat"
 static PetscErrorCode PCPreSolve_Eisenstat(PC pc,KSP ksp,Vec b,Vec x)
 {
   PC_Eisenstat   *eis = (PC_Eisenstat*)pc->data;
@@ -86,8 +80,6 @@ static PetscErrorCode PCPreSolve_Eisenstat(PC pc,KSP ksp,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCPostSolve_Eisenstat"
 static PetscErrorCode PCPostSolve_Eisenstat(PC pc,KSP ksp,Vec b,Vec x)
 {
   PC_Eisenstat   *eis = (PC_Eisenstat*)pc->data;
@@ -104,8 +96,6 @@ static PetscErrorCode PCPostSolve_Eisenstat(PC pc,KSP ksp,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCReset_Eisenstat"
 static PetscErrorCode PCReset_Eisenstat(PC pc)
 {
   PC_Eisenstat   *eis = (PC_Eisenstat*)pc->data;
@@ -119,8 +109,6 @@ static PetscErrorCode PCReset_Eisenstat(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_Eisenstat"
 static PetscErrorCode PCDestroy_Eisenstat(PC pc)
 {
   PetscErrorCode ierr;
@@ -131,8 +119,6 @@ static PetscErrorCode PCDestroy_Eisenstat(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_Eisenstat"
 static PetscErrorCode PCSetFromOptions_Eisenstat(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_Eisenstat   *eis = (PC_Eisenstat*)pc->data;
@@ -150,8 +136,6 @@ static PetscErrorCode PCSetFromOptions_Eisenstat(PetscOptionItems *PetscOptionsO
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCView_Eisenstat"
 static PetscErrorCode PCView_Eisenstat(PC pc,PetscViewer viewer)
 {
   PC_Eisenstat   *eis = (PC_Eisenstat*)pc->data;
@@ -171,8 +155,6 @@ static PetscErrorCode PCView_Eisenstat(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_Eisenstat"
 static PetscErrorCode PCSetUp_Eisenstat(PC pc)
 {
   PetscErrorCode ierr;
@@ -202,8 +184,6 @@ static PetscErrorCode PCSetUp_Eisenstat(PC pc)
 
 /* --------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCEisenstatSetOmega_Eisenstat"
 static PetscErrorCode  PCEisenstatSetOmega_Eisenstat(PC pc,PetscReal omega)
 {
   PC_Eisenstat *eis = (PC_Eisenstat*)pc->data;
@@ -214,8 +194,6 @@ static PetscErrorCode  PCEisenstatSetOmega_Eisenstat(PC pc,PetscReal omega)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCEisenstatSetNoDiagonalScaling_Eisenstat"
 static PetscErrorCode  PCEisenstatSetNoDiagonalScaling_Eisenstat(PC pc,PetscBool flg)
 {
   PC_Eisenstat *eis = (PC_Eisenstat*)pc->data;
@@ -225,8 +203,6 @@ static PetscErrorCode  PCEisenstatSetNoDiagonalScaling_Eisenstat(PC pc,PetscBool
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCEisenstatGetOmega_Eisenstat"
 static PetscErrorCode  PCEisenstatGetOmega_Eisenstat(PC pc,PetscReal *omega)
 {
   PC_Eisenstat *eis = (PC_Eisenstat*)pc->data;
@@ -236,8 +212,6 @@ static PetscErrorCode  PCEisenstatGetOmega_Eisenstat(PC pc,PetscReal *omega)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCEisenstatGetNoDiagonalScaling_Eisenstat"
 static PetscErrorCode  PCEisenstatGetNoDiagonalScaling_Eisenstat(PC pc,PetscBool *flg)
 {
   PC_Eisenstat *eis = (PC_Eisenstat*)pc->data;
@@ -247,8 +221,6 @@ static PetscErrorCode  PCEisenstatGetNoDiagonalScaling_Eisenstat(PC pc,PetscBool
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCEisenstatSetOmega"
 /*@
    PCEisenstatSetOmega - Sets the SSOR relaxation coefficient, omega,
    to use with Eisenstat's trick (where omega = 1.0 by default).
@@ -289,8 +261,6 @@ PetscErrorCode  PCEisenstatSetOmega(PC pc,PetscReal omega)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCEisenstatSetNoDiagonalScaling"
 /*@
    PCEisenstatSetNoDiagonalScaling - Causes the Eisenstat preconditioner
    not to do additional diagonal preconditioning. For matrices with a constant
@@ -325,8 +295,6 @@ PetscErrorCode  PCEisenstatSetNoDiagonalScaling(PC pc,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCEisenstatGetOmega"
 /*@
    PCEisenstatGetOmega - Gets the SSOR relaxation coefficient, omega,
    to use with Eisenstat's trick (where omega = 1.0 by default).
@@ -368,8 +336,6 @@ PetscErrorCode  PCEisenstatGetOmega(PC pc,PetscReal *omega)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCEisenstatGetNoDiagonalScaling"
 /*@
    PCEisenstatGetNoDiagonalScaling - Tells if the Eisenstat preconditioner
    not to do additional diagonal preconditioning. For matrices with a constant
@@ -428,8 +394,6 @@ PetscErrorCode  PCEisenstatGetNoDiagonalScaling(PC pc,PetscBool *flg)
            PCEisenstatSetNoDiagonalScaling(), PCEisenstatSetOmega(), PCSOR
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_Eisenstat"
 PETSC_EXTERN PetscErrorCode PCCreate_Eisenstat(PC pc)
 {
   PetscErrorCode ierr;

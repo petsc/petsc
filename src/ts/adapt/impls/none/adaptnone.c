@@ -1,7 +1,5 @@
 #include <petsc/private/tsimpl.h> /*I "petscts.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptChoose_None"
 static PetscErrorCode TSAdaptChoose_None(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,PetscReal *next_h,PetscBool *accept,PetscReal *wlte,PetscReal *wltea,PetscReal *wlter)
 {
 
@@ -15,8 +13,6 @@ static PetscErrorCode TSAdaptChoose_None(TSAdapt adapt,TS ts,PetscReal h,PetscIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptCreate_None"
 /*MC
    TSADAPTNONE - Time stepping controller that always accepts the current step and does not change it
 

@@ -29,8 +29,6 @@ typedef struct Edge {
   struct Edge   *next;
 } Edge;
 
-#undef __FUNCT__
-#define __FUNCT__ "distance"
 PetscReal distance(PetscReal x1, PetscReal x2, PetscReal y1, PetscReal y2)
 {
   return PetscSqrtReal(PetscPowReal(x2-x1,2.0) + PetscPowReal(y2-y1,2.0));
@@ -41,8 +39,6 @@ PetscReal distance(PetscReal x1, PetscReal x2, PetscReal y1, PetscReal y2)
   Routing of Multipoint Connections, Bernard M. Waxman. 1988
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "random_network"
 PetscErrorCode random_network(PetscInt nvertex,PetscInt *pnbranch,Node **pnode,Branch **pbranch,int **pedgelist,PetscInt seed)
 {
   PetscErrorCode ierr;
@@ -174,8 +170,6 @@ PetscErrorCode random_network(PetscInt nvertex,PetscInt *pnbranch,Node **pnode,B
   PetscFunctionReturn(ierr);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormOperator"
 PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
 {
   PetscErrorCode    ierr;
@@ -281,8 +275,6 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char ** argv)
 {
   PetscErrorCode    ierr;

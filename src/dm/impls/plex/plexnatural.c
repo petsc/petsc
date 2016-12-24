@@ -1,7 +1,5 @@
 #include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateGlobalToNaturalSF"
 /*@
   DMPlexCreateGlobalToNaturalSF - Creates the SF for mapping Global Vec to the Natural Vec
 
@@ -89,8 +87,6 @@ PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscS
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGlobalToNaturalBegin"
 /*@
   DMPlexGlobalToNaturalBegin - Rearranges a global Vector in the natural order.
 
@@ -128,8 +124,6 @@ PetscErrorCode DMPlexGlobalToNaturalBegin(DM dm, Vec gv, Vec nv)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGlobalToNaturalEnd"
 /*@
   DMPlexGlobalToNaturalEnd - Rearranges a global Vector in the natural order.
 
@@ -167,8 +161,6 @@ PetscErrorCode DMPlexGlobalToNaturalEnd(DM dm, Vec gv, Vec nv)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexNaturalToGlobalBegin"
 /*@
   DMPlexNaturalToGlobalBegin - Rearranges a Vector in the natural order to the Global order.
 
@@ -206,8 +198,6 @@ PetscErrorCode DMPlexNaturalToGlobalBegin(DM dm, Vec nv, Vec gv)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexNaturalToGlobalEnd"
 /*@
   DMPlexNaturalToGlobalEnd - Rearranges a Vector in the natural order to the Global order.
 

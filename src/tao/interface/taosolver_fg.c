@@ -1,7 +1,5 @@
 #include <petsc/private/taoimpl.h> /*I "petsctao.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetInitialVector"
 /*@
   TaoSetInitialVector - Sets the initial guess for the solve
 
@@ -30,8 +28,6 @@ PetscErrorCode TaoSetInitialVector(Tao tao, Vec x0)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoComputeGradient"
 /*@
   TaoComputeGradient - Computes the gradient of the objective function
 
@@ -80,8 +76,6 @@ PetscErrorCode TaoComputeGradient(Tao tao, Vec X, Vec G)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoComputeObjective"
 /*@
   TaoComputeObjective - Computes the objective function value at a given point
 
@@ -132,8 +126,6 @@ PetscErrorCode TaoComputeObjective(Tao tao, Vec X, PetscReal *f)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoComputeObjectiveAndGradient"
 /*@
   TaoComputeObjectiveAndGradient - Computes the objective function value at a given point
 
@@ -193,8 +185,6 @@ PetscErrorCode TaoComputeObjectiveAndGradient(Tao tao, Vec X, PetscReal *f, Vec 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetObjectiveRoutine"
 /*@C
   TaoSetObjectiveRoutine - Sets the function evaluation routine for minimization
 
@@ -226,8 +216,6 @@ PetscErrorCode TaoSetObjectiveRoutine(Tao tao, PetscErrorCode (*func)(Tao, Vec, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetSeparableObjectiveRoutine"
 /*@C
   TaoSetSeparableObjectiveRoutine - Sets the function evaluation routine for least-square applications
 
@@ -261,8 +249,6 @@ PetscErrorCode TaoSetSeparableObjectiveRoutine(Tao tao, Vec sepobj, PetscErrorCo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetSeparableObjectiveWeights"
 /*@
   TaoSetSeparableObjectiveWeights - Give weights for the separable objective values. A vector can be used if only diagonal terms are used, otherwise a matrix can be give. If this function is not used, or if sigma_v and sigma_w are both NULL, then the default identity matrix will be used for weights.
 
@@ -317,8 +303,6 @@ PetscErrorCode TaoSetSeparableObjectiveWeights(Tao tao, Vec sigma_v, PetscInt n,
   }
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "TaoComputeSeparableObjective"
 /*@
   TaoComputeSeparableObjective - Computes a separable objective function vector at a given point (for least-square applications)
 
@@ -360,8 +344,6 @@ PetscErrorCode TaoComputeSeparableObjective(Tao tao, Vec X, Vec F)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetGradientRoutine"
 /*@C
   TaoSetGradientRoutine - Sets the gradient evaluation routine for minimization
 
@@ -394,8 +376,6 @@ PetscErrorCode TaoSetGradientRoutine(Tao tao,  PetscErrorCode (*func)(Tao, Vec, 
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetObjectiveAndGradientRoutine"
 /*@C
   TaoSetObjectiveAndGradientRoutine - Sets a combined objective function and gradient evaluation routine for minimization
 
@@ -428,8 +408,6 @@ PetscErrorCode TaoSetObjectiveAndGradientRoutine(Tao tao, PetscErrorCode (*func)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoIsObjectiveDefined"
 /*@
   TaoIsObjectiveDefined -- Checks to see if the user has
   declared an objective-only routine.  Useful for determining when
@@ -455,8 +433,6 @@ PetscErrorCode TaoIsObjectiveDefined(Tao tao, PetscBool *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoIsGradientDefined"
 /*@
   TaoIsGradientDefined -- Checks to see if the user has
   declared an objective-only routine.  Useful for determining when
@@ -482,8 +458,6 @@ PetscErrorCode TaoIsGradientDefined(Tao tao, PetscBool *flg)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoIsObjectiveAndGradientDefined"
 /*@
   TaoIsObjectiveAndGradientDefined -- Checks to see if the user has
   declared a joint objective/gradient routine.  Useful for determining when

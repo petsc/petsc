@@ -3,8 +3,6 @@
 #include <../src/mat/impls/baij/mpi/mpibaij.h>
 #include <petsc/private/isimpl.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFDColoringApply_BAIJ"
 PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,void *sctx)
 {
   PetscErrorCode    (*f)(void*,Vec,Vec,void*) = (PetscErrorCode (*)(void*,Vec,Vec,void*))coloring->f;
@@ -158,8 +156,6 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,void
 }
 
 /* this is declared PETSC_EXTERN because it is used by MatFDColoringUseDM() which is in the DM library */
-#undef __FUNCT__
-#define __FUNCT__ "MatFDColoringApply_AIJ"
 PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,void *sctx)
 {
   PetscErrorCode    (*f)(void*,Vec,Vec,void*) = (PetscErrorCode (*)(void*,Vec,Vec,void*))coloring->f;
@@ -362,8 +358,6 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,void 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFDColoringSetUp_MPIXAIJ"
 PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
   PetscErrorCode         ierr;
@@ -595,8 +589,6 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFDColoringCreate_MPIXAIJ"
 PetscErrorCode MatFDColoringCreate_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
   PetscErrorCode ierr;

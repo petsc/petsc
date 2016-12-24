@@ -41,8 +41,6 @@ T*/
 
 PetscErrorCode AssembleMatrix(Mat,PetscInt m,PetscInt n);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Vec            x,b,u;                  /* approx solution, RHS, exact solution */
@@ -294,8 +292,6 @@ int main(int argc,char **args)
   return ierr;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AssembleMatrix"
 PetscErrorCode AssembleMatrix(Mat A,PetscInt m,PetscInt n)
 {
   PetscErrorCode ierr;

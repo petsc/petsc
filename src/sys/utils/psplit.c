@@ -1,8 +1,6 @@
 
 #include <petscsys.h>           /*I    "petscsys.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSplitOwnershipBlock"
 /*@
     PetscSplitOwnershipBlock - Given a global (or local) length determines a local
         (or global) length via a simple formula. Splits so each processors local size
@@ -48,8 +46,6 @@ PetscErrorCode  PetscSplitOwnershipBlock(MPI_Comm comm,PetscInt bs,PetscInt *n,P
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSplitOwnership"
 /*@
     PetscSplitOwnership - Given a global (or local) length determines a local
         (or global) length via a simple formula

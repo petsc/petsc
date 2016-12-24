@@ -8,8 +8,6 @@
 /*
       Version for when blocks are 3 by 3
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_3_inplace"
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_inplace(Mat C,Mat A,const MatFactorInfo *info)
 {
   Mat_SeqBAIJ    *a    = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ*)C->data;
@@ -129,8 +127,6 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_inplace(Mat C,Mat A,const MatFactorI
        PetscKernel_A_gets_A_minus_B_times_C()
        PetscKernel_A_gets_inverse_A()
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_3"
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3(Mat B,Mat A,const MatFactorInfo *info)
 {
   Mat            C     =B;
@@ -247,8 +243,6 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3(Mat B,Mat A,const MatFactorInfo *inf
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering_inplace"
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering_inplace(Mat C,Mat A,const MatFactorInfo *info)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ*)C->data;
@@ -360,8 +354,6 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering_inplace(Mat C,Mat A,
   MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering -
     copied from MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering_inplace()
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering"
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering(Mat B,Mat A,const MatFactorInfo *info)
 {
   Mat            C =B;

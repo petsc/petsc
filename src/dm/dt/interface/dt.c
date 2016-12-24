@@ -26,8 +26,6 @@ const char       GaussCitation[] = "@article{GolubWelsch1969,\n"
                                    "  pages   = {221--230},\n"
                                    "  year    = {1969}\n}\n";
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscQuadratureCreate"
 /*@
   PetscQuadratureCreate - Create a PetscQuadrature object
 
@@ -60,8 +58,6 @@ PetscErrorCode PetscQuadratureCreate(MPI_Comm comm, PetscQuadrature *q)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscQuadratureDuplicate"
 /*@
   PetscQuadratureDuplicate - Create a deep copy of the PetscQuadrature object
 
@@ -99,8 +95,6 @@ PetscErrorCode PetscQuadratureDuplicate(PetscQuadrature q, PetscQuadrature *r)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscQuadratureDestroy"
 /*@
   PetscQuadratureDestroy - Destroys a PetscQuadrature object
 
@@ -131,8 +125,6 @@ PetscErrorCode PetscQuadratureDestroy(PetscQuadrature *q)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscQuadratureGetOrder"
 /*@
   PetscQuadratureGetOrder - Return the quadrature information
 
@@ -159,8 +151,6 @@ PetscErrorCode PetscQuadratureGetOrder(PetscQuadrature q, PetscInt *order)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscQuadratureSetOrder"
 /*@
   PetscQuadratureSetOrder - Return the quadrature information
 
@@ -182,8 +172,6 @@ PetscErrorCode PetscQuadratureSetOrder(PetscQuadrature q, PetscInt order)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscQuadratureGetData"
 /*@C
   PetscQuadratureGetData - Returns the data defining the quadrature
 
@@ -226,8 +214,6 @@ PetscErrorCode PetscQuadratureGetData(PetscQuadrature q, PetscInt *dim, PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscQuadratureSetData"
 /*@C
   PetscQuadratureSetData - Sets the data defining the quadrature
 
@@ -262,8 +248,6 @@ PetscErrorCode PetscQuadratureSetData(PetscQuadrature q, PetscInt dim, PetscInt 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscQuadratureView"
 /*@C
   PetscQuadratureView - Views a PetscQuadrature object
 
@@ -296,8 +280,6 @@ PetscErrorCode PetscQuadratureView(PetscQuadrature quad, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscQuadratureExpandComposite"
 /*@C
   PetscQuadratureExpandComposite - Return a quadrature over the composite element, which has the original quadrature in each subelement
 
@@ -353,8 +335,6 @@ PetscErrorCode PetscQuadratureExpandComposite(PetscQuadrature q, PetscInt numSub
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDTLegendreEval"
 /*@
    PetscDTLegendreEval - evaluate Legendre polynomial at points
 
@@ -420,8 +400,6 @@ PetscErrorCode PetscDTLegendreEval(PetscInt npoints,const PetscReal *points,Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDTGaussQuadrature"
 /*@
    PetscDTGaussQuadrature - create Gauss quadrature
 
@@ -478,8 +456,6 @@ PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints,PetscReal a,PetscReal b,P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDTGaussTensorQuadrature"
 /*@
   PetscDTGaussTensorQuadrature - creates a tensor-product Gauss quadrature
 
@@ -556,8 +532,6 @@ PetscErrorCode PetscDTGaussTensorQuadrature(PetscInt dim, PetscInt npoints, Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDTFactorial_Internal"
 /* Evaluates the nth jacobi polynomial with weight parameters a,b at a point x.
    Recurrence relations implemented from the pseudocode given in Karniadakis and Sherwin, Appendix B */
 PETSC_STATIC_INLINE PetscErrorCode PetscDTFactorial_Internal(PetscInt n, PetscReal *factorial)
@@ -571,8 +545,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTFactorial_Internal(PetscInt n, PetscRe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDTComputeJacobi"
 /* Evaluates the nth jacobi polynomial with weight parameters a,b at a point x.
    Recurrence relations implemented from the pseudocode given in Karniadakis and Sherwin, Appendix B */
 PETSC_STATIC_INLINE PetscErrorCode PetscDTComputeJacobi(PetscReal a, PetscReal b, PetscInt n, PetscReal x, PetscReal *P)
@@ -603,8 +575,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTComputeJacobi(PetscReal a, PetscReal b
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDTComputeJacobiDerivative"
 /* Evaluates the first derivative of P_{n}^{a,b} at a point x. */
 PETSC_STATIC_INLINE PetscErrorCode PetscDTComputeJacobiDerivative(PetscReal a, PetscReal b, PetscInt n, PetscReal x, PetscReal *P)
 {
@@ -618,8 +588,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTComputeJacobiDerivative(PetscReal a, P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDTMapSquareToTriangle_Internal"
 /* Maps from [-1,1]^2 to the (-1,1) reference triangle */
 PETSC_STATIC_INLINE PetscErrorCode PetscDTMapSquareToTriangle_Internal(PetscReal x, PetscReal y, PetscReal *xi, PetscReal *eta)
 {
@@ -629,8 +597,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTMapSquareToTriangle_Internal(PetscReal
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDTMapCubeToTetrahedron_Internal"
 /* Maps from [-1,1]^2 to the (-1,1) reference triangle */
 PETSC_STATIC_INLINE PetscErrorCode PetscDTMapCubeToTetrahedron_Internal(PetscReal x, PetscReal y, PetscReal z, PetscReal *xi, PetscReal *eta, PetscReal *zeta)
 {
@@ -641,8 +607,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscDTMapCubeToTetrahedron_Internal(PetscRea
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDTGaussJacobiQuadrature1D_Internal"
 static PetscErrorCode PetscDTGaussJacobiQuadrature1D_Internal(PetscInt npoints, PetscReal a, PetscReal b, PetscReal *x, PetscReal *w)
 {
   PetscInt       maxIter = 100;
@@ -701,8 +665,6 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature1D_Internal(PetscInt npoints, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDTGaussJacobiQuadrature"
 /*@C
   PetscDTGaussJacobiQuadrature - create Gauss-Jacobi quadrature for a simplex
 
@@ -783,8 +745,6 @@ PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt dim, PetscInt order, PetscR
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDTTanhSinhTensorQuadrature"
 /*@C
   PetscDTTanhSinhTensorQuadrature - create tanh-sinh quadrature for a tensor product cell
 
@@ -842,8 +802,6 @@ PetscErrorCode PetscDTTanhSinhTensorQuadrature(PetscInt dim, PetscInt level, Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDTTanhSinhIntegrate"
 PetscErrorCode PetscDTTanhSinhIntegrate(void (*func)(PetscReal, PetscReal *), PetscReal a, PetscReal b, PetscInt digits, PetscReal *sol)
 {
   const PetscInt  p     = 16;        /* Digits of precision in the evaluation */
@@ -908,8 +866,6 @@ PetscErrorCode PetscDTTanhSinhIntegrate(void (*func)(PetscReal, PetscReal *), Pe
 }
 
 #ifdef PETSC_HAVE_MPFR
-#undef __FUNCT__
-#define __FUNCT__ "PetscDTTanhSinhIntegrateMPFR"
 PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(PetscReal, PetscReal *), PetscReal a, PetscReal b, PetscInt digits, PetscReal *sol)
 {
   const PetscInt  safetyFactor = 2;  /* Calculate abcissa until 2*p digits */
@@ -1024,16 +980,13 @@ PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(PetscReal, PetscReal *)
   PetscFunctionReturn(0);
 }
 #else
-#undef __FUNCT__
-#define __FUNCT__ "PetscDTTanhSinhIntegrateMPFR"
+
 PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(PetscReal, PetscReal *), PetscReal a, PetscReal b, PetscInt digits, PetscReal *sol)
 {
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "This method will not work without MPFR. Reconfigure using --download-mpfr --download-gmp");
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDTPseudoInverseQR"
 /* Overwrites A. Can only handle full-rank problems with m>=n
  * A in column-major format
  * Ainv in row-major format
@@ -1094,8 +1047,6 @@ static PetscErrorCode PetscDTPseudoInverseQR(PetscInt m,PetscInt mstride,PetscIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDTLegendreIntegrate"
 /* Computes integral of L_p' over intervals {(x0,x1),(x1,x2),...} */
 static PetscErrorCode PetscDTLegendreIntegrate(PetscInt ninterval,const PetscReal *x,PetscInt ndegree,const PetscInt *degrees,PetscBool Transpose,PetscReal *B)
 {
@@ -1118,8 +1069,6 @@ static PetscErrorCode PetscDTLegendreIntegrate(PetscInt ninterval,const PetscRea
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDTReconstructPoly"
 /*@
    PetscDTReconstructPoly - create matrix representing polynomial reconstruction using cell intervals and evaluation at target intervals
 

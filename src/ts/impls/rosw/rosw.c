@@ -290,8 +290,6 @@ M*/
 .seealso: TSROSW, TSROSWGRK4T, TSROSWSHAMP4, TSROSW4L
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "TSRosWRegisterAll"
 /*@C
   TSRosWRegisterAll - Registers all of the Rosenbrock-W methods in TSRosW
 
@@ -598,8 +596,6 @@ PetscErrorCode TSRosWRegisterAll(void)
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TSRosWRegisterDestroy"
 /*@C
    TSRosWRegisterDestroy - Frees the list of schemes that were registered by TSRosWRegister().
 
@@ -630,8 +626,6 @@ PetscErrorCode TSRosWRegisterDestroy(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSRosWInitializePackage"
 /*@C
   TSRosWInitializePackage - This function initializes everything in the TSRosW package. It is called
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to TSCreate_RosW()
@@ -654,8 +648,6 @@ PetscErrorCode TSRosWInitializePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSRosWFinalizePackage"
 /*@C
   TSRosWFinalizePackage - This function destroys everything in the TSRosW package. It is
   called from PetscFinalize().
@@ -675,8 +667,6 @@ PetscErrorCode TSRosWFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSRosWRegister"
 /*@C
    TSRosWRegister - register a Rosenbrock W scheme by providing the entries in the Butcher tableau and optionally embedded approximations and interpolation
 
@@ -806,8 +796,6 @@ PetscErrorCode TSRosWRegister(TSRosWType name,PetscInt order,PetscInt s,const Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSRosWRegisterRos4"
 /*@C
    TSRosWRegisterRos4 - register a fourth order Rosenbrock scheme by providing paramter choices
 
@@ -911,8 +899,6 @@ PetscErrorCode TSRosWRegisterRos4(TSRosWType name,PetscReal gamma,PetscReal a2,P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSEvaluateStep_RosW"
 /*
  The step completion formula is
 
@@ -964,8 +950,6 @@ static PetscErrorCode TSEvaluateStep_RosW(TS ts,PetscInt order,Vec U,PetscBool *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSRollBack_RosW"
 static PetscErrorCode TSRollBack_RosW(TS ts)
 {
   TS_RosW        *ros = (TS_RosW*)ts->data;
@@ -976,8 +960,6 @@ static PetscErrorCode TSRollBack_RosW(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSStep_RosW"
 static PetscErrorCode TSStep_RosW(TS ts)
 {
   TS_RosW         *ros = (TS_RosW*)ts->data;
@@ -1089,8 +1071,6 @@ static PetscErrorCode TSStep_RosW(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSInterpolate_RosW"
 static PetscErrorCode TSInterpolate_RosW(TS ts,PetscReal itime,Vec U)
 {
   TS_RosW         *ros = (TS_RosW*)ts->data;
@@ -1147,8 +1127,6 @@ static PetscErrorCode TSInterpolate_RosW(TS ts,PetscReal itime,Vec U)
 
 /*------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "TSRosWTableauReset"
 static PetscErrorCode TSRosWTableauReset(TS ts)
 {
   TS_RosW        *ros = (TS_RosW*)ts->data;
@@ -1162,8 +1140,6 @@ static PetscErrorCode TSRosWTableauReset(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSReset_RosW"
 static PetscErrorCode TSReset_RosW(TS ts)
 {
   TS_RosW        *ros = (TS_RosW*)ts->data;
@@ -1179,8 +1155,6 @@ static PetscErrorCode TSReset_RosW(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSDestroy_RosW"
 static PetscErrorCode TSDestroy_RosW(TS ts)
 {
   PetscErrorCode ierr;
@@ -1195,8 +1169,6 @@ static PetscErrorCode TSDestroy_RosW(TS ts)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TSRosWGetVecs"
 static PetscErrorCode TSRosWGetVecs(TS ts,DM dm,Vec *Ydot,Vec *Zdot,Vec *Ystage,Vec *Zstage)
 {
   TS_RosW        *rw = (TS_RosW*)ts->data;
@@ -1227,8 +1199,6 @@ static PetscErrorCode TSRosWGetVecs(TS ts,DM dm,Vec *Ydot,Vec *Zdot,Vec *Ystage,
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TSRosWRestoreVecs"
 static PetscErrorCode TSRosWRestoreVecs(TS ts,DM dm,Vec *Ydot,Vec *Zdot, Vec *Ystage, Vec *Zstage)
 {
   PetscErrorCode ierr;
@@ -1257,16 +1227,12 @@ static PetscErrorCode TSRosWRestoreVecs(TS ts,DM dm,Vec *Ydot,Vec *Zdot, Vec *Ys
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCoarsenHook_TSRosW"
 static PetscErrorCode DMCoarsenHook_TSRosW(DM fine,DM coarse,void *ctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRestrictHook_TSRosW"
 static PetscErrorCode DMRestrictHook_TSRosW(DM fine,Mat restrct,Vec rscale,Mat inject,DM coarse,void *ctx)
 {
   TS             ts = (TS)ctx;
@@ -1291,16 +1257,12 @@ static PetscErrorCode DMRestrictHook_TSRosW(DM fine,Mat restrct,Vec rscale,Mat i
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSubDomainHook_TSRosW"
 static PetscErrorCode DMSubDomainHook_TSRosW(DM fine,DM coarse,void *ctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSubDomainRestrictHook_TSRosW"
 static PetscErrorCode DMSubDomainRestrictHook_TSRosW(DM dm,VecScatter gscat,VecScatter lscat,DM subdm,void *ctx)
 {
   TS             ts = (TS)ctx;
@@ -1333,8 +1295,6 @@ static PetscErrorCode DMSubDomainRestrictHook_TSRosW(DM dm,VecScatter gscat,VecS
   This defines the nonlinear equation that is to be solved with SNES
   G(U) = F[t0+Theta*dt, U, (U-U0)*shift] = 0
 */
-#undef __FUNCT__
-#define __FUNCT__ "SNESTSFormFunction_RosW"
 static PetscErrorCode SNESTSFormFunction_RosW(SNES snes,Vec U,Vec F,TS ts)
 {
   TS_RosW        *ros = (TS_RosW*)ts->data;
@@ -1356,8 +1316,6 @@ static PetscErrorCode SNESTSFormFunction_RosW(SNES snes,Vec U,Vec F,TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESTSFormJacobian_RosW"
 static PetscErrorCode SNESTSFormJacobian_RosW(SNES snes,Vec U,Mat A,Mat B,TS ts)
 {
   TS_RosW        *ros = (TS_RosW*)ts->data;
@@ -1378,8 +1336,6 @@ static PetscErrorCode SNESTSFormJacobian_RosW(SNES snes,Vec U,Mat A,Mat B,TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSRosWTableauSetUp"
 static PetscErrorCode TSRosWTableauSetUp(TS ts)
 {
   TS_RosW        *ros = (TS_RosW*)ts->data;
@@ -1392,8 +1348,6 @@ static PetscErrorCode TSRosWTableauSetUp(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSSetUp_RosW"
 static PetscErrorCode TSSetUp_RosW(TS ts)
 {
   TS_RosW        *ros = (TS_RosW*)ts->data;
@@ -1422,8 +1376,6 @@ static PetscErrorCode TSSetUp_RosW(TS ts)
 }
 /*------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "TSSetFromOptions_RosW"
 static PetscErrorCode TSSetFromOptions_RosW(PetscOptionItems *PetscOptionsObject,TS ts)
 {
   TS_RosW        *ros = (TS_RosW*)ts->data;
@@ -1456,8 +1408,6 @@ static PetscErrorCode TSSetFromOptions_RosW(PetscOptionItems *PetscOptionsObject
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFormatRealArray"
 static PetscErrorCode PetscFormatRealArray(char buf[],size_t len,const char *fmt,PetscInt n,const PetscReal x[])
 {
   PetscErrorCode ierr;
@@ -1477,8 +1427,6 @@ static PetscErrorCode PetscFormatRealArray(char buf[],size_t len,const char *fmt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSView_RosW"
 static PetscErrorCode TSView_RosW(TS ts,PetscViewer viewer)
 {
   TS_RosW        *ros = (TS_RosW*)ts->data;
@@ -1506,8 +1454,6 @@ static PetscErrorCode TSView_RosW(TS ts,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSLoad_RosW"
 static PetscErrorCode TSLoad_RosW(TS ts,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -1525,8 +1471,6 @@ static PetscErrorCode TSLoad_RosW(TS ts,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSRosWSetType"
 /*@C
   TSRosWSetType - Set the type of Rosenbrock-W scheme
 
@@ -1550,8 +1494,6 @@ PetscErrorCode TSRosWSetType(TS ts,TSRosWType rostype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSRosWGetType"
 /*@C
   TSRosWGetType - Get the type of Rosenbrock-W scheme
 
@@ -1577,8 +1519,6 @@ PetscErrorCode TSRosWGetType(TS ts,TSRosWType *rostype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSRosWSetRecomputeJacobian"
 /*@C
   TSRosWSetRecomputeJacobian - Set whether to recompute the Jacobian at each stage. The default is to update the Jacobian once per step.
 
@@ -1602,8 +1542,6 @@ PetscErrorCode TSRosWSetRecomputeJacobian(TS ts,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSRosWGetType_RosW"
 static PetscErrorCode  TSRosWGetType_RosW(TS ts,TSRosWType *rostype)
 {
   TS_RosW        *ros = (TS_RosW*)ts->data;
@@ -1613,8 +1551,6 @@ static PetscErrorCode  TSRosWGetType_RosW(TS ts,TSRosWType *rostype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSRosWSetType_RosW"
 static PetscErrorCode  TSRosWSetType_RosW(TS ts,TSRosWType rostype)
 {
   TS_RosW         *ros = (TS_RosW*)ts->data;
@@ -1640,8 +1576,6 @@ static PetscErrorCode  TSRosWSetType_RosW(TS ts,TSRosWType rostype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSRosWSetRecomputeJacobian_RosW"
 static PetscErrorCode  TSRosWSetRecomputeJacobian_RosW(TS ts,PetscBool flg)
 {
   TS_RosW *ros = (TS_RosW*)ts->data;
@@ -1714,8 +1648,6 @@ $  g(u_0 + sum_j a_ij y_j + y_i, ydot_i) = 0
 .seealso:  TSCreate(), TS, TSSetType(), TSRosWSetType(), TSRosWRegister(), TSROSWTHETA1, TSROSWTHETA2, TSROSW2M, TSROSW2P, TSROSWRA3PW, TSROSWRA34PW2, TSROSWRODAS3,
            TSROSWSANDU3, TSROSWASSP3P3S1C, TSROSWLASSP3P4S2C, TSROSWLLSSP3P4S2C, TSROSWGRK4T, TSROSWSHAMP4, TSROSWVELDD4, TSROSW4L
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "TSCreate_RosW"
 PETSC_EXTERN PetscErrorCode TSCreate_RosW(TS ts)
 {
   TS_RosW        *ros;

@@ -4,8 +4,6 @@
 PetscClassId PETSC_VIEWER_CLASSID;
 
 static PetscBool PetscViewerPackageInitialized = PETSC_FALSE;
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFinalizePackage"
 /*@C
   PetscViewerFinalizePackage - This function destroys everything in the Petsc interface to Mathematica. It is
   called from PetscFinalize().
@@ -26,8 +24,6 @@ PetscErrorCode  PetscViewerFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerInitializePackage"
 /*@C
   PetscViewerInitializePackage - This function initializes everything in the main PetscViewer package.
 
@@ -75,8 +71,6 @@ PetscErrorCode  PetscViewerInitializePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerDestroy"
 /*@
    PetscViewerDestroy - Destroys a PetscViewer.
 
@@ -109,8 +103,6 @@ PetscErrorCode  PetscViewerDestroy(PetscViewer *viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerAndFormatCreate"
 /*@C
    PetscViewerAndFormatCreate - Creates a PetscViewerAndFormat struct.
 
@@ -144,8 +136,6 @@ PetscErrorCode  PetscViewerAndFormatCreate(PetscViewer viewer, PetscViewerFormat
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerAndFormatDestroy"
 /*@C
    PetscViewerAndFormatDestroy - Destroys a PetscViewerAndFormat struct.
 
@@ -169,8 +159,6 @@ PetscErrorCode  PetscViewerAndFormatDestroy(PetscViewerAndFormat **vf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerGetType"
 /*@C
    PetscViewerGetType - Returns the type of a PetscViewer.
 
@@ -208,8 +196,6 @@ PetscErrorCode  PetscViewerGetType(PetscViewer viewer,PetscViewerType *type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerSetOptionsPrefix"
 /*@C
    PetscViewerSetOptionsPrefix - Sets the prefix used for searching for all
    PetscViewer options in the database.
@@ -240,8 +226,6 @@ PetscErrorCode  PetscViewerSetOptionsPrefix(PetscViewer viewer,const char prefix
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerAppendOptionsPrefix"
 /*@C
    PetscViewerAppendOptionsPrefix - Appends to the prefix used for searching for all
    PetscViewer options in the database.
@@ -272,8 +256,6 @@ PetscErrorCode  PetscViewerAppendOptionsPrefix(PetscViewer viewer,const char pre
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerGetOptionsPrefix"
 /*@C
    PetscViewerGetOptionsPrefix - Sets the prefix used for searching for all
    PetscViewer options in the database.
@@ -305,8 +287,6 @@ PetscErrorCode  PetscViewerGetOptionsPrefix(PetscViewer viewer,const char *prefi
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerSetUp"
 /*@
    PetscViewerSetUp - Sets up the internal viewer data structures for the later use.
 
@@ -339,8 +319,6 @@ PetscErrorCode  PetscViewerSetUp(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerView"
 /*@C
    PetscViewerView - Visualizes a viewer object.
 
@@ -412,8 +390,6 @@ PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerRead"
 /*@C
    PetscViewerRead - Reads data from a PetscViewer
 

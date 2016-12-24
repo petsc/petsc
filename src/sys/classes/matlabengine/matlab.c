@@ -12,8 +12,6 @@ struct  _p_PetscMatlabEngine {
 
 PetscClassId MATLABENGINE_CLASSID = -1;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMatlabEngineCreate"
 /*@C
     PetscMatlabEngineCreate - Creates a MATLAB engine object
 
@@ -72,8 +70,6 @@ PetscErrorCode  PetscMatlabEngineCreate(MPI_Comm comm,const char machine[],Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMatlabEngineDestroy"
 /*@
    PetscMatlabEngineDestroy - Destroys a vector.
 
@@ -100,8 +96,6 @@ PetscErrorCode  PetscMatlabEngineDestroy(PetscMatlabEngine *v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMatlabEngineEvaluate"
 /*@C
     PetscMatlabEngineEvaluate - Evaluates a string in MATLAB
 
@@ -141,8 +135,6 @@ PetscErrorCode  PetscMatlabEngineEvaluate(PetscMatlabEngine mengine,const char s
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMatlabEngineGetOutput"
 /*@C
     PetscMatlabEngineGetOutput - Gets a string buffer where the MATLAB output is
           printed
@@ -168,8 +160,6 @@ PetscErrorCode  PetscMatlabEngineGetOutput(PetscMatlabEngine mengine,char **stri
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMatlabEnginePrintOutput"
 /*@C
     PetscMatlabEnginePrintOutput - prints the output from MATLAB
 
@@ -196,8 +186,6 @@ PetscErrorCode  PetscMatlabEnginePrintOutput(PetscMatlabEngine mengine,FILE *fd)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMatlabEnginePut"
 /*@
     PetscMatlabEnginePut - Puts a Petsc object into the MATLAB space. For parallel objects,
       each processors part is put in a separate  MATLAB process.
@@ -227,8 +215,6 @@ PetscErrorCode  PetscMatlabEnginePut(PetscMatlabEngine mengine,PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMatlabEngineGet"
 /*@
     PetscMatlabEngineGet - Gets a variable from MATLAB into a PETSc object.
 
@@ -265,8 +251,6 @@ PetscErrorCode  PetscMatlabEngineGet(PetscMatlabEngine mengine,PetscObject obj)
 static PetscMPIInt Petsc_Matlab_Engine_keyval = MPI_KEYVAL_INVALID;
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PETSC_MATLAB_ENGINE_"
 /*@C
    PETSC_MATLAB_ENGINE_ - Creates a matlab engine shared by all processors
                     in a communicator.
@@ -318,8 +302,6 @@ PetscMatlabEngine  PETSC_MATLAB_ENGINE_(MPI_Comm comm)
   PetscFunctionReturn(mengine);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMatlabEnginePutArray"
 /*@C
     PetscMatlabEnginePutArray - Puts an array into the MATLAB space, treating it as a Fortran style (column major ordering) array. For parallel objects,
       each processors part is put in a separate  MATLAB process.
@@ -357,8 +339,6 @@ PetscErrorCode  PetscMatlabEnginePutArray(PetscMatlabEngine mengine,int m,int n,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMatlabEngineGetArray"
 /*@C
     PetscMatlabEngineGetArray - Gets a variable from Matlab into an array
 

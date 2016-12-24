@@ -5,8 +5,6 @@ static char help[] = "Tests DMDAGetElements() and VecView() contour plotting for
 #include <petscdmda.h>
 #include <petscdraw.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscInt         M = 10,N = 8,ne,nc,i;

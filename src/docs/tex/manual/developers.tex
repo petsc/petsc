@@ -262,13 +262,6 @@ Instead, use \lstinline{if (!rank)} or \lstinline{if (!v)} or \lstinline{if (flg
 \item Public PETSc includes, \trl{petsc*.h}, should not include private PETSc \trl{petsc/private/*impl.h} includes.
 \item Public and private PETSc includes cannot include include files in the PETSc source tree.
 \item The first line of the executable statements in a function must be \lstinline{PetscFunctionBegin;}
-\item The following text should precede each function:
-\begin{lstlisting}
-#undef __FUNCT__
-#define __FUNCT__ "FunctionName"
-\end{lstlisting}
-This is used by various macros (such as the error handlers) to always know
-which function the process is in.
 \item Use \lstinline{PetscFunctionReturn(returnvalue);} not \lstinline{return(returnvalue);}
 \item {\em Never} put a function call in a \lstinline{return} statement; do not do
 \begin{lstlisting}
@@ -442,7 +435,7 @@ The simplified C/C++ macro-based interface consists of the following two calls:
 
 The macro \lstinline{SETERRQ()} is given by
 \begin{lstlisting}
-  return PetscError(comm,__LINE__,__FUNCT__,__FILE__,error code,error type,"Error message");
+  return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,error code,error type,"Error message");
 \end{lstlisting}
 It calls the error handler with the current function name and location: line number,
 file and directory, plus an error code and an error message. 

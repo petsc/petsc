@@ -1,8 +1,6 @@
 
 #include <../src/dm/impls/composite/packimpl.h>       /*I  "petscdmcomposite.h"  I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateMatrix_Composite_Nest"
 static PetscErrorCode DMCreateMatrix_Composite_Nest(DM dm,Mat *J)
 {
   const DM_Composite           *com = (DM_Composite*)dm->data;
@@ -44,8 +42,6 @@ static PetscErrorCode DMCreateMatrix_Composite_Nest(DM dm,Mat *J)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateMatrix_Composite_AIJ"
 static PetscErrorCode DMCreateMatrix_Composite_AIJ(DM dm,Mat *J)
 {
   PetscErrorCode         ierr;
@@ -177,8 +173,6 @@ static PetscErrorCode DMCreateMatrix_Composite_AIJ(DM dm,Mat *J)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateMatrix_Composite"
 PetscErrorCode DMCreateMatrix_Composite(DM dm,Mat *J)
 {
   PetscErrorCode         ierr;

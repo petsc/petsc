@@ -2,8 +2,6 @@
 #include <../src/ksp/pc/impls/bddc/bddcprivate.h>
 #include <petscblaslapack.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_BDdelta_deluxe_nonred"
 static PetscErrorCode MatMult_BDdelta_deluxe_nonred(Mat A, Vec x, Vec y)
 {
   BDdelta_DN     ctx;
@@ -16,8 +14,6 @@ static PetscErrorCode MatMult_BDdelta_deluxe_nonred(Mat A, Vec x, Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultTranspose_BDdelta_deluxe_nonred"
 static PetscErrorCode MatMultTranspose_BDdelta_deluxe_nonred(Mat A, Vec x, Vec y)
 {
   BDdelta_DN     ctx;
@@ -30,8 +26,6 @@ static PetscErrorCode MatMultTranspose_BDdelta_deluxe_nonred(Mat A, Vec x, Vec y
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_BDdelta_deluxe_nonred"
 static PetscErrorCode MatDestroy_BDdelta_deluxe_nonred(Mat A)
 {
   BDdelta_DN     ctx;
@@ -47,8 +41,6 @@ static PetscErrorCode MatDestroy_BDdelta_deluxe_nonred(Mat A)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCCreateFETIDPMatContext"
 PetscErrorCode PCBDDCCreateFETIDPMatContext(PC pc, FETIDPMat_ctx *fetidpmat_ctx)
 {
   FETIDPMat_ctx  newctx;
@@ -63,8 +55,6 @@ PetscErrorCode PCBDDCCreateFETIDPMatContext(PC pc, FETIDPMat_ctx *fetidpmat_ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCCreateFETIDPPCContext"
 PetscErrorCode PCBDDCCreateFETIDPPCContext(PC pc, FETIDPPC_ctx *fetidppc_ctx)
 {
   FETIDPPC_ctx   newctx;
@@ -79,8 +69,6 @@ PetscErrorCode PCBDDCCreateFETIDPPCContext(PC pc, FETIDPPC_ctx *fetidppc_ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCDestroyFETIDPMat"
 PetscErrorCode PCBDDCDestroyFETIDPMat(Mat A)
 {
   FETIDPMat_ctx  mat_ctx;
@@ -110,8 +98,6 @@ PetscErrorCode PCBDDCDestroyFETIDPMat(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCDestroyFETIDPPC"
 PetscErrorCode PCBDDCDestroyFETIDPPC(PC pc)
 {
   FETIDPPC_ctx   pc_ctx;
@@ -131,8 +117,6 @@ PetscErrorCode PCBDDCDestroyFETIDPPC(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCSetupFETIDPMatContext"
 PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
 {
   PetscErrorCode ierr;
@@ -698,8 +682,6 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCSetupFETIDPPCContext"
 PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat fetimat, FETIDPPC_ctx fetidppc_ctx)
 {
   FETIDPMat_ctx  mat_ctx;
@@ -827,8 +809,6 @@ PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat fetimat, FETIDPPC_ctx fetidppc_ctx
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FETIDPMatMult"
 PetscErrorCode FETIDPMatMult(Mat fetimat, Vec x, Vec y)
 {
   FETIDPMat_ctx  mat_ctx;
@@ -896,8 +876,6 @@ PetscErrorCode FETIDPMatMult(Mat fetimat, Vec x, Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FETIDPMatMultTranspose"
 PetscErrorCode FETIDPMatMultTranspose(Mat fetimat, Vec x, Vec y)
 {
   FETIDPMat_ctx  mat_ctx;
@@ -922,8 +900,6 @@ PetscErrorCode FETIDPMatMultTranspose(Mat fetimat, Vec x, Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FETIDPPCApply"
 PetscErrorCode FETIDPPCApply(PC fetipc, Vec x, Vec y)
 {
   FETIDPPC_ctx   pc_ctx;
@@ -964,8 +940,6 @@ PetscErrorCode FETIDPPCApply(PC fetipc, Vec x, Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FETIDPPCApplyTranspose"
 PetscErrorCode FETIDPPCApplyTranspose(PC fetipc, Vec x, Vec y)
 {
   FETIDPPC_ctx   pc_ctx;
@@ -990,8 +964,6 @@ PetscErrorCode FETIDPPCApplyTranspose(PC fetipc, Vec x, Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FETIDPPCView"
 PetscErrorCode FETIDPPCView(PC pc, PetscViewer viewer)
 {
   FETIDPPC_ctx      pc_ctx;

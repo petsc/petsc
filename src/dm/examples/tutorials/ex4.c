@@ -15,8 +15,6 @@ T*/
 #include <petscdm.h>
 #include <petscdmda.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "myfunction"
 PetscErrorCode myfunction(void *ctx,PetscInt n,const PetscScalar *xy,PetscScalar *u)
 {
   PetscInt i;
@@ -29,8 +27,6 @@ PetscErrorCode myfunction(void *ctx,PetscInt n,const PetscScalar *xy,PetscScalar
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   Vec            u,xy;

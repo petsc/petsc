@@ -11,8 +11,6 @@ typedef struct _projectConstraintsCtx
 }
 projectConstraintsCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_GlobalToLocalNormal"
 PetscErrorCode MatMult_GlobalToLocalNormal(Mat CtC, Vec x, Vec y)
 {
   DM                    dm;
@@ -35,8 +33,6 @@ PetscErrorCode MatMult_GlobalToLocalNormal(Mat CtC, Vec x, Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGlobalToLocalSolve_project1"
 static PetscErrorCode DMGlobalToLocalSolve_project1 (PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx)
 {
   PetscInt f;
@@ -48,8 +44,6 @@ static PetscErrorCode DMGlobalToLocalSolve_project1 (PetscInt dim, PetscReal tim
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGlobalToLocalSolve"
 /*@
   DMGlobalToLocalSolve - Solve for the global vector that is mapped to a given local vector by DMGlobalToLocalBegin()/DMGlobalToLocalEnd() with mode
   = INSERT_VALUES.  It is assumed that the sum of all the local vector sizes is greater than or equal to the global vector size, so the solution is
@@ -168,8 +162,6 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMProjectField"
 /*@C
   DMProjectField - This projects the given function of the fields into the function space provided.
 

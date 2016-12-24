@@ -8,8 +8,6 @@ them using the PETSc sparse format. Input parameters are:\n\
   -fout <filename> : output file\n\n";
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
 #if !defined(PETSC_USE_64BIT_INDICES)

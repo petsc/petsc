@@ -1,8 +1,6 @@
 #include <petscmat.h> /*I <petscmat.h> I*/
 #include <petscblaslapack.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateLaplacian"
 /*@
   MatCreateLaplacian - Create the matrix Laplacian, with all values in the matrix less than the tolerance set to zero
 
@@ -100,8 +98,6 @@ PetscErrorCode MatCreateLaplacian(Mat A, PetscReal tol, PetscBool weighted, Mat 
 /*
   MatGetOrdering_Spectral - Find the symmetric reordering of the graph by .
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatGetOrdering_Spectral"
 PETSC_INTERN PetscErrorCode MatGetOrdering_Spectral(Mat A, MatOrderingType type, IS *row, IS *col)
 {
   Mat             L;

@@ -5,8 +5,6 @@
 
 #include <../src/mat/impls/fft/fft.h>   /*I "petscmat.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_FFT"
 PetscErrorCode MatDestroy_FFT(Mat A)
 {
   PetscErrorCode ierr;
@@ -22,8 +20,6 @@ PetscErrorCode MatDestroy_FFT(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateFFT"
 /*@C
       MatCreateFFT - Creates a matrix object that provides FFT via an external package
 

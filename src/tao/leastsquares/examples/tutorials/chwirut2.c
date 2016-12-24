@@ -61,8 +61,6 @@ PetscErrorCode StopWorkers(AppCtx *user);
 PetscErrorCode RunSimulation(PetscReal *x, PetscInt i, PetscReal*f, AppCtx *user);
 
 /*--------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;           /* used to check for functions returning nonzeros */
@@ -114,8 +112,6 @@ int main(int argc,char **argv)
 }
 
 /*--------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "EvaluateFunction"
 PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
 {
   AppCtx         *user = (AppCtx *)ptr;
@@ -170,8 +166,6 @@ PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
 }
 
 /* ------------------------------------------------------------ */
-#undef __FUNCT__
-#define __FUNCT__ "FormStartingPoint"
 PetscErrorCode FormStartingPoint(Vec X)
 {
   PetscReal      *x;
@@ -187,8 +181,6 @@ PetscErrorCode FormStartingPoint(Vec X)
 }
 
 /* ---------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "InitializeData"
 PetscErrorCode InitializeData(AppCtx *user)
 {
   PetscReal *t=user->t,*y=user->y;
@@ -412,8 +404,6 @@ PetscErrorCode InitializeData(AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaskWorker"
 PetscErrorCode TaskWorker(AppCtx *user)
 {
   PetscReal      x[NPARAMETERS],f = 0.0;
@@ -440,8 +430,6 @@ PetscErrorCode TaskWorker(AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "RunSimulation"
 PetscErrorCode RunSimulation(PetscReal *x, PetscInt i, PetscReal*f, AppCtx *user)
 {
   PetscReal *t = user->t;
@@ -450,8 +438,6 @@ PetscErrorCode RunSimulation(PetscReal *x, PetscInt i, PetscReal*f, AppCtx *user
   return(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "StopWorkers"
 PetscErrorCode StopWorkers(AppCtx *user)
 {
   PetscInt       checkedin;

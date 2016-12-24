@@ -10,8 +10,6 @@ PetscFunctionList SNESList              = NULL;
 PetscClassId  SNES_CLASSID, DMSNES_CLASSID;
 PetscLogEvent SNES_Solve, SNES_FunctionEval, SNES_JacobianEval, SNES_NGSEval, SNES_NGSFuncEval, SNES_NPCSolve, SNES_ObjectiveEval;
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetErrorIfNotConverged"
 /*@
    SNESSetErrorIfNotConverged - Causes SNESSolve() to generate an error if the solver has not converged.
 
@@ -43,8 +41,6 @@ PetscErrorCode  SNESSetErrorIfNotConverged(SNES snes,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetErrorIfNotConverged"
 /*@
    SNESGetErrorIfNotConverged - Will SNESSolve() generate an error if the solver does not converge?
 
@@ -71,8 +67,6 @@ PetscErrorCode  SNESGetErrorIfNotConverged(SNES snes,PetscBool  *flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetAlwaysComputesFinalResidual"
 /*@
     SNESSetAlwaysComputesFinalResidual - does the SNES always compute the residual at the final solution?
 
@@ -94,8 +88,6 @@ PetscErrorCode  SNESSetAlwaysComputesFinalResidual(SNES snes, PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetAlwaysComputesFinalResidual"
 /*@
     SNESGetAlwaysComputesFinalResidual - does the SNES always compute the residual at the final solution?
 
@@ -119,8 +111,6 @@ PetscErrorCode  SNESGetAlwaysComputesFinalResidual(SNES snes, PetscBool *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetFunctionDomainError"
 /*@
    SNESSetFunctionDomainError - tells SNES that the input vector to your SNESFunction is not
      in the functions domain. For example, negative pressure.
@@ -145,8 +135,6 @@ PetscErrorCode  SNESSetFunctionDomainError(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetFunctionDomainError"
 /*@
    SNESGetFunctionDomainError - Gets the status of the domain error after a call to SNESComputeFunction;
 
@@ -173,8 +161,6 @@ PetscErrorCode  SNESGetFunctionDomainError(SNES snes, PetscBool *domainerror)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLoad"
 /*@C
   SNESLoad - Loads a SNES that has been stored in binary  with SNESView().
 
@@ -236,8 +222,6 @@ PetscErrorCode  SNESLoad(SNES snes, PetscViewer viewer)
 #if defined(PETSC_HAVE_SAWS)
 #include <petscviewersaws.h>
 #endif
-#undef __FUNCT__
-#define __FUNCT__ "SNESView"
 /*@C
    SNESView - Prints the SNES data structure.
 
@@ -426,8 +410,6 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
 static PetscInt numberofsetfromoptions;
 static PetscErrorCode (*othersetfromoptions[MAXSETFROMOPTIONS])(SNES);
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESAddOptionsChecker"
 /*@C
   SNESAddOptionsChecker - Adds an additional function to check for SNES options.
 
@@ -450,8 +432,6 @@ PetscErrorCode  SNESAddOptionsChecker(PetscErrorCode (*snescheck)(SNES))
 
 extern PetscErrorCode  SNESDefaultMatrixFreeCreate2(SNES,Vec,Mat*);
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetUpMatrixFree_Private"
 static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscBool hasOperator, PetscInt version)
 {
   Mat            J;
@@ -517,8 +497,6 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscBool hasOperat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRestrictHook_SNESVecSol"
 static PetscErrorCode DMRestrictHook_SNESVecSol(DM dmfine,Mat Restrict,Vec Rscale,Mat Inject,DM dmcoarse,void *ctx)
 {
   SNES           snes = (SNES)ctx;
@@ -551,8 +529,6 @@ static PetscErrorCode DMRestrictHook_SNESVecSol(DM dmfine,Mat Restrict,Vec Rscal
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCoarsenHook_SNESVecSol"
 static PetscErrorCode DMCoarsenHook_SNESVecSol(DM dm,DM dmc,void *ctx)
 {
   PetscErrorCode ierr;
@@ -562,8 +538,6 @@ static PetscErrorCode DMCoarsenHook_SNESVecSol(DM dm,DM dmc,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPComputeOperators_SNES"
 /* This may be called to rediscretize the operator on levels of linear multigrid. The DM shuffle is so the user can
  * safely call SNESGetDM() in their residual evaluation routine. */
 static PetscErrorCode KSPComputeOperators_SNES(KSP ksp,Mat A,Mat B,void *ctx)
@@ -604,8 +578,6 @@ static PetscErrorCode KSPComputeOperators_SNES(KSP ksp,Mat A,Mat B,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetUpMatrices"
 /*@
    SNESSetUpMatrices - ensures that matrices are available for SNES, to be called by SNESSetUp_XXX()
 
@@ -663,8 +635,6 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMonitorSetFromOptions"
 /*@C
    SNESMonitorSetFromOptions - Sets a monitor function and viewer appropriate for the type indicated by the user
 
@@ -709,8 +679,6 @@ PetscErrorCode  SNESMonitorSetFromOptions(SNES snes,const char name[],const char
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetFromOptions"
 /*@
    SNESSetFromOptions - Sets various SNES and KSP parameters from user options.
 
@@ -991,8 +959,6 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetComputeApplicationContext"
 /*@C
    SNESSetComputeApplicationContext - Sets an optional function to compute a user-defined context for
    the nonlinear solvers.
@@ -1022,8 +988,6 @@ PetscErrorCode  SNESSetComputeApplicationContext(SNES snes,PetscErrorCode (*comp
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetApplicationContext"
 /*@
    SNESSetApplicationContext - Sets the optional user-defined context for
    the nonlinear solvers.
@@ -1056,8 +1020,6 @@ PetscErrorCode  SNESSetApplicationContext(SNES snes,void *usrP)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetApplicationContext"
 /*@
    SNESGetApplicationContext - Gets the user-defined context for the
    nonlinear solvers.
@@ -1087,8 +1049,6 @@ PetscErrorCode  SNESGetApplicationContext(SNES snes,void *usrP)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetIterationNumber"
 /*@
    SNESGetIterationNumber - Gets the number of nonlinear iterations completed
    at this time.
@@ -1130,8 +1090,6 @@ PetscErrorCode  SNESGetIterationNumber(SNES snes,PetscInt *iter)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetIterationNumber"
 /*@
    SNESSetIterationNumber - Sets the current iteration number.
 
@@ -1159,8 +1117,6 @@ PetscErrorCode  SNESSetIterationNumber(SNES snes,PetscInt iter)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetNonlinearStepFailures"
 /*@
    SNESGetNonlinearStepFailures - Gets the number of unsuccessful steps
    attempted by the nonlinear solver.
@@ -1192,8 +1148,6 @@ PetscErrorCode  SNESGetNonlinearStepFailures(SNES snes,PetscInt *nfails)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetMaxNonlinearStepFailures"
 /*@
    SNESSetMaxNonlinearStepFailures - Sets the maximum number of unsuccessful steps
    attempted by the nonlinear solver before it gives up.
@@ -1219,8 +1173,6 @@ PetscErrorCode  SNESSetMaxNonlinearStepFailures(SNES snes, PetscInt maxFails)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetMaxNonlinearStepFailures"
 /*@
    SNESGetMaxNonlinearStepFailures - Gets the maximum number of unsuccessful steps
    attempted by the nonlinear solver before it gives up.
@@ -1250,8 +1202,6 @@ PetscErrorCode  SNESGetMaxNonlinearStepFailures(SNES snes, PetscInt *maxFails)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetNumberFunctionEvals"
 /*@
    SNESGetNumberFunctionEvals - Gets the number of user provided function evaluations
      done by SNES.
@@ -1281,8 +1231,6 @@ PetscErrorCode  SNESGetNumberFunctionEvals(SNES snes, PetscInt *nfuncs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetLinearSolveFailures"
 /*@
    SNESGetLinearSolveFailures - Gets the number of failed (non-converged)
    linear solvers.
@@ -1316,8 +1264,6 @@ PetscErrorCode  SNESGetLinearSolveFailures(SNES snes,PetscInt *nfails)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetMaxLinearSolveFailures"
 /*@
    SNESSetMaxLinearSolveFailures - the number of failed linear solve attempts
    allowed before SNES returns with a diverged reason of SNES_DIVERGED_LINEAR_SOLVE
@@ -1348,8 +1294,6 @@ PetscErrorCode  SNESSetMaxLinearSolveFailures(SNES snes, PetscInt maxFails)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetMaxLinearSolveFailures"
 /*@
    SNESGetMaxLinearSolveFailures - gets the maximum number of linear solve failures that
      are allowed before SNES terminates
@@ -1379,8 +1323,6 @@ PetscErrorCode  SNESGetMaxLinearSolveFailures(SNES snes, PetscInt *maxFails)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetLinearSolveIterations"
 /*@
    SNESGetLinearSolveIterations - Gets the total number of linear iterations
    used by the nonlinear solver.
@@ -1414,8 +1356,6 @@ PetscErrorCode  SNESGetLinearSolveIterations(SNES snes,PetscInt *lits)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetCountersReset"
 /*@
    SNESSetCountersReset - Sets whether or not the counters for linear iterations and function evaluations
    are reset every time SNESSolve() is called.
@@ -1445,8 +1385,6 @@ PetscErrorCode  SNESSetCountersReset(SNES snes,PetscBool reset)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetKSP"
 /*@
    SNESSetKSP - Sets a KSP context for the SNES object to use
 
@@ -1484,8 +1422,6 @@ PetscErrorCode  SNESSetKSP(SNES snes,KSP ksp)
 }
 
 /* -----------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "SNESCreate"
 /*@
    SNESCreate - Creates a nonlinear solver context.
 
@@ -1636,8 +1572,6 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
 .seealso:   SNESSetFunction(), SNESGetFunction()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetFunction"
 /*@C
    SNESSetFunction - Sets the function evaluation routine and function
    vector for use by the SNES routines in solving systems of nonlinear
@@ -1684,8 +1618,6 @@ PetscErrorCode  SNESSetFunction(SNES snes,Vec r,PetscErrorCode (*f)(SNES,Vec,Vec
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetInitialFunction"
 /*@C
    SNESSetInitialFunction - Sets the function vector to be used as the
    function norm at the initialization of the method.  In some
@@ -1730,8 +1662,6 @@ PetscErrorCode  SNESSetInitialFunction(SNES snes, Vec f)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetNormSchedule"
 /*@
    SNESSetNormSchedule - Sets the SNESNormSchedule used in covergence and monitoring
    of the SNES method.
@@ -1769,8 +1699,6 @@ PetscErrorCode  SNESSetNormSchedule(SNES snes, SNESNormSchedule normschedule)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetNormSchedule"
 /*@
    SNESGetNormSchedule - Gets the SNESNormSchedule used in covergence and monitoring
    of the SNES method.
@@ -1796,8 +1724,6 @@ PetscErrorCode  SNESGetNormSchedule(SNES snes, SNESNormSchedule *normschedule)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetFunctionNorm"
 /*@
   SNESSetFunctionNorm - Sets the last computed residual norm.
 
@@ -1821,8 +1747,6 @@ PetscErrorCode SNESSetFunctionNorm(SNES snes, PetscReal norm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetFunctionNorm"
 /*@
   SNESGetFunctionNorm - Gets the last computed norm of the residual
 
@@ -1848,8 +1772,6 @@ PetscErrorCode SNESGetFunctionNorm(SNES snes, PetscReal *norm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetFunctionType"
 /*@C
    SNESSetFunctionType - Sets the SNESNormSchedule used in covergence and monitoring
    of the SNES method.
@@ -1884,8 +1806,6 @@ PetscErrorCode  SNESSetFunctionType(SNES snes, SNESFunctionType type)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetFunctionType"
 /*@C
    SNESGetFunctionType - Gets the SNESNormSchedule used in covergence and monitoring
    of the SNES method.
@@ -1926,8 +1846,6 @@ $    SNESNGSFunction(SNES snes,Vec x,Vec b,void *ctx);
 .seealso:   SNESSetNGS(), SNESGetNGS()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetNGS"
 /*@C
    SNESSetNGS - Sets the user nonlinear Gauss-Seidel routine for
    use with composed nonlinear solvers.
@@ -1960,8 +1878,6 @@ PetscErrorCode SNESSetNGS(SNES snes,PetscErrorCode (*f)(SNES,Vec,Vec,void*),void
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESPicardComputeFunction"
 PETSC_EXTERN PetscErrorCode SNESPicardComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
 {
   PetscErrorCode ierr;
@@ -1984,8 +1900,6 @@ PETSC_EXTERN PetscErrorCode SNESPicardComputeFunction(SNES snes,Vec x,Vec f,void
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESPicardComputeJacobian"
 PETSC_EXTERN PetscErrorCode SNESPicardComputeJacobian(SNES snes,Vec x1,Mat J,Mat B,void *ctx)
 {
   PetscFunctionBegin;
@@ -1993,8 +1907,6 @@ PETSC_EXTERN PetscErrorCode SNESPicardComputeJacobian(SNES snes,Vec x1,Mat J,Mat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetPicard"
 /*@C
    SNESSetPicard - Use SNES to solve the semilinear-system A(x) x = b(x) via a Picard type iteration (Picard linearization)
 
@@ -2048,8 +1960,6 @@ PetscErrorCode  SNESSetPicard(SNES snes,Vec r,PetscErrorCode (*b)(SNES,Vec,Vec,v
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetPicard"
 /*@C
    SNESGetPicard - Returns the context for the Picard iteration
 
@@ -2086,8 +1996,6 @@ PetscErrorCode  SNESGetPicard(SNES snes,Vec *r,PetscErrorCode (**f)(SNES,Vec,Vec
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetComputeInitialGuess"
 /*@C
    SNESSetComputeInitialGuess - Sets a routine used to compute an initial guess for the problem
 
@@ -2121,8 +2029,6 @@ PetscErrorCode  SNESSetComputeInitialGuess(SNES snes,PetscErrorCode (*func)(SNES
 }
 
 /* --------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetRhs"
 /*@C
    SNESGetRhs - Gets the vector for solving F(x) = rhs. If rhs is not set
    it assumes a zero right hand side.
@@ -2150,8 +2056,6 @@ PetscErrorCode  SNESGetRhs(SNES snes,Vec *rhs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESComputeFunction"
 /*@
    SNESComputeFunction - Calls the function that has been set with SNESSetFunction().
 
@@ -2220,8 +2124,6 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESComputeNGS"
 /*@
    SNESComputeNGS - Calls the Gauss-Seidel function that has been set with  SNESSetNGS().
 
@@ -2273,8 +2175,6 @@ PetscErrorCode  SNESComputeNGS(SNES snes,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESComputeJacobian"
 /*@
    SNESComputeJacobian - Computes the Jacobian matrix that has been set with SNESSetJacobian().
 
@@ -2571,8 +2471,6 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat A,Mat B)
 .seealso:   SNESSetFunction(), SNESGetFunction(), SNESSetJacobian(), SNESGetJacobian()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetJacobian"
 /*@C
    SNESSetJacobian - Sets the function to compute Jacobian as well as the
    location to store the matrix.
@@ -2635,8 +2533,6 @@ PetscErrorCode  SNESSetJacobian(SNES snes,Mat Amat,Mat Pmat,PetscErrorCode (*J)(
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetJacobian"
 /*@C
    SNESGetJacobian - Returns the Jacobian matrix and optionally the user
    provided context for evaluating the Jacobian.
@@ -2673,8 +2569,6 @@ PetscErrorCode SNESGetJacobian(SNES snes,Mat *Amat,Mat *Pmat,PetscErrorCode (**J
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetUp"
 /*@
    SNESSetUp - Sets up the internal data structures for the later use
    of a nonlinear solver.
@@ -2807,8 +2701,6 @@ PetscErrorCode  SNESSetUp(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESReset"
 /*@
    SNESReset - Resets a SNES context to the snessetupcalled = 0 state and removes any allocated Vecs and Mats
 
@@ -2866,8 +2758,6 @@ PetscErrorCode  SNESReset(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESDestroy"
 /*@
    SNESDestroy - Destroys the nonlinear solver context that was created
    with SNESCreate().
@@ -2918,8 +2808,6 @@ PetscErrorCode  SNESDestroy(SNES *snes)
 
 /* ----------- Routines to set solver parameters ---------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetLagPreconditioner"
 /*@
    SNESSetLagPreconditioner - Determines when the preconditioner is rebuilt in the nonlinear solve.
 
@@ -2956,8 +2844,6 @@ PetscErrorCode  SNESSetLagPreconditioner(SNES snes,PetscInt lag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetGridSequence"
 /*@
    SNESSetGridSequence - sets the number of steps of grid sequencing that SNES does
 
@@ -2989,8 +2875,6 @@ PetscErrorCode  SNESSetGridSequence(SNES snes,PetscInt steps)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetGridSequence"
 /*@
    SNESGetGridSequence - gets the number of steps of grid sequencing that SNES does
 
@@ -3023,8 +2907,6 @@ PetscErrorCode  SNESGetGridSequence(SNES snes,PetscInt *steps)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetLagPreconditioner"
 /*@
    SNESGetLagPreconditioner - Indicates how often the preconditioner is rebuilt
 
@@ -3059,8 +2941,6 @@ PetscErrorCode  SNESGetLagPreconditioner(SNES snes,PetscInt *lag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetLagJacobian"
 /*@
    SNESSetLagJacobian - Determines when the Jacobian is rebuilt in the nonlinear solve. See SNESSetLagPreconditioner() for determining how
      often the preconditioner is rebuilt.
@@ -3099,8 +2979,6 @@ PetscErrorCode  SNESSetLagJacobian(SNES snes,PetscInt lag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetLagJacobian"
 /*@
    SNESGetLagJacobian - Indicates how often the Jacobian is rebuilt. See SNESGetLagPreconditioner() to determine when the preconditioner is rebuilt
 
@@ -3135,8 +3013,6 @@ PetscErrorCode  SNESGetLagJacobian(SNES snes,PetscInt *lag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetLagJacobianPersists"
 /*@
    SNESSetLagJacobianPersists - Set whether or not the Jacobian lagging persists through multiple solves
 
@@ -3169,8 +3045,6 @@ PetscErrorCode  SNESSetLagJacobianPersists(SNES snes,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetLagPreconditionerPersists"
 /*@
    SNESSetLagPreconditionerPersists - Set whether or not the preconditioner lagging persists through multiple solves
 
@@ -3203,8 +3077,6 @@ PetscErrorCode  SNESSetLagPreconditionerPersists(SNES snes,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetTolerances"
 /*@
    SNESSetTolerances - Sets various parameters used in convergence tests.
 
@@ -3269,8 +3141,6 @@ PetscErrorCode  SNESSetTolerances(SNES snes,PetscReal abstol,PetscReal rtol,Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetDivergenceTolerance"
 /*@
    SNESSetDivergenceTolerance - Sets the divergence tolerance used for the SNES divergence test.
 
@@ -3307,8 +3177,6 @@ PetscErrorCode  SNESSetDivergenceTolerance(SNES snes,PetscReal divtol)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetTolerances"
 /*@
    SNESGetTolerances - Gets various parameters used in convergence tests.
 
@@ -3344,8 +3212,6 @@ PetscErrorCode  SNESGetTolerances(SNES snes,PetscReal *atol,PetscReal *rtol,Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetDivergenceTolerance"
 /*@
    SNESGetDivergenceTolerance - Gets divergence tolerance used in divergence test.
 
@@ -3369,8 +3235,6 @@ PetscErrorCode  SNESGetDivergenceTolerance(SNES snes,PetscReal *divtol)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetTrustRegionTolerance"
 /*@
    SNESSetTrustRegionTolerance - Sets the trust region parameter tolerance.
 
@@ -3403,8 +3267,6 @@ PetscErrorCode  SNESSetTrustRegionTolerance(SNES snes,PetscReal tol)
    dynamic libraries things don't work under Sun4 if we just use
    macros instead of functions
 */
-#undef __FUNCT__
-#define __FUNCT__ "SNESMonitorLGResidualNorm"
 PetscErrorCode  SNESMonitorLGResidualNorm(SNES snes,PetscInt it,PetscReal norm,void *ctx)
 {
   PetscErrorCode ierr;
@@ -3415,8 +3277,6 @@ PetscErrorCode  SNESMonitorLGResidualNorm(SNES snes,PetscInt it,PetscReal norm,v
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMonitorLGCreate"
 PetscErrorCode  SNESMonitorLGCreate(MPI_Comm comm,const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *lgctx)
 {
   PetscErrorCode ierr;
@@ -3428,8 +3288,6 @@ PetscErrorCode  SNESMonitorLGCreate(MPI_Comm comm,const char host[],const char l
 
 PETSC_INTERN PetscErrorCode  SNESMonitorRange_Private(SNES,PetscInt,PetscReal*);
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMonitorLGRange"
 PetscErrorCode  SNESMonitorLGRange(SNES snes,PetscInt n,PetscReal rnorm,void *monctx)
 {
   PetscDrawLG      lg;
@@ -3496,8 +3354,6 @@ PetscErrorCode  SNESMonitorLGRange(SNES snes,PetscInt n,PetscReal rnorm,void *mo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMonitor"
 /*@
    SNESMonitor - runs the user provided monitor routines, if they exist
 
@@ -3549,8 +3405,6 @@ $    PetscErrorCode SNESMonitorFunction(SNES snes,PetscInt its, PetscReal norm,v
 .seealso:   SNESMonitorSet(), SNESMonitorGet()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMonitorSet"
 /*@C
    SNESMonitorSet - Sets an ADDITIONAL function that is to be used at every
    iteration of the nonlinear solver to display the iteration's
@@ -3608,8 +3462,6 @@ PetscErrorCode  SNESMonitorSet(SNES snes,PetscErrorCode (*f)(SNES,PetscInt,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMonitorCancel"
 /*@
    SNESMonitorCancel - Clears all the monitor functions for a SNES object.
 
@@ -3668,8 +3520,6 @@ $     PetscErrorCode SNESConvergenceTest(SNES snes,PetscInt it,PetscReal xnorm,P
 .seealso:   SNESSetConvergenceTest(), SNESGetConvergenceTest()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetConvergenceTest"
 /*@C
    SNESSetConvergenceTest - Sets the function that is to be used
    to test for convergence of the nonlinear iterative solution.
@@ -3704,8 +3554,6 @@ PetscErrorCode  SNESSetConvergenceTest(SNES snes,PetscErrorCode (*SNESConvergenc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetConvergedReason"
 /*@
    SNESGetConvergedReason - Gets the reason the SNES iteration was stopped.
 
@@ -3738,8 +3586,6 @@ PetscErrorCode SNESGetConvergedReason(SNES snes,SNESConvergedReason *reason)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetConvergedReason"
 /*@
    SNESSetConvergedReason - Sets the reason the SNES iteration was stopped.
 
@@ -3763,8 +3609,6 @@ PetscErrorCode SNESSetConvergedReason(SNES snes,SNESConvergedReason reason)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetConvergenceHistory"
 /*@
    SNESSetConvergenceHistory - Sets the array used to hold the convergence history.
 
@@ -3820,8 +3664,6 @@ PetscErrorCode  SNESSetConvergenceHistory(SNES snes,PetscReal a[],PetscInt its[]
 #include <engine.h>   /* MATLAB include file */
 #include <mex.h>      /* MATLAB include file */
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetConvergenceHistoryMatlab"
 PETSC_EXTERN mxArray *SNESGetConvergenceHistoryMatlab(SNES snes)
 {
   mxArray   *mat;
@@ -3836,8 +3678,6 @@ PETSC_EXTERN mxArray *SNESGetConvergenceHistoryMatlab(SNES snes)
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetConvergenceHistory"
 /*@C
    SNESGetConvergenceHistory - Gets the array used to hold the convergence history.
 
@@ -3877,8 +3717,6 @@ PetscErrorCode  SNESGetConvergenceHistory(SNES snes,PetscReal *a[],PetscInt *its
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetUpdate"
 /*@C
   SNESSetUpdate - Sets the general-purpose update function called
   at the beginning of every iteration of the nonlinear solve. Specifically
@@ -3912,8 +3750,6 @@ PetscErrorCode  SNESSetUpdate(SNES snes, PetscErrorCode (*func)(SNES, PetscInt))
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESScaleStep_Private"
 /*
    SNESScaleStep_Private - Scales a step so that its length is less than the
    positive parameter delta.
@@ -3961,8 +3797,6 @@ PetscErrorCode SNESScaleStep_Private(SNES snes,Vec y,PetscReal *fnorm,PetscReal 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESReasonView"
 /*@
    SNESReasonView - Displays the reason a SNES solve converged or diverged to a viewer
 
@@ -4010,8 +3844,6 @@ PetscErrorCode  SNESReasonView(SNES snes,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESReasonViewFromOptions"
 /*@C
   SNESReasonViewFromOptions - Processes command line options to determine if/how a SNESReason is to be viewed. 
 
@@ -4045,8 +3877,6 @@ PetscErrorCode SNESReasonViewFromOptions(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSolve"
 /*@C
    SNESSolve - Solves a nonlinear system F(x) = b.
    Call SNESSolve() after calling SNESCreate() and optional routines of the form SNESSetXXX().
@@ -4169,8 +3999,6 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
 
 /* --------- Internal routines for SNES Package --------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetType"
 /*@C
    SNESSetType - Sets the method for the nonlinear solver.
 
@@ -4245,8 +4073,6 @@ PetscErrorCode  SNESSetType(SNES snes,SNESType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetType"
 /*@C
    SNESGetType - Gets the SNES method type and name (as a string).
 
@@ -4271,8 +4097,6 @@ PetscErrorCode  SNESGetType(SNES snes,SNESType *type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetSolution"
 /*@
   SNESSetSolution - Sets the solution vector for use by the SNES routines.
 
@@ -4304,8 +4128,6 @@ PetscErrorCode SNESSetSolution(SNES snes, Vec u)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetSolution"
 /*@
    SNESGetSolution - Returns the vector where the approximate solution is
    stored. This is the fine grid solution when using SNESSetGridSequence().
@@ -4333,8 +4155,6 @@ PetscErrorCode  SNESGetSolution(SNES snes,Vec *x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetSolutionUpdate"
 /*@
    SNESGetSolutionUpdate - Returns the vector where the solution update is
    stored.
@@ -4362,8 +4182,6 @@ PetscErrorCode  SNESGetSolutionUpdate(SNES snes,Vec *x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetFunction"
 /*@C
    SNESGetFunction - Returns the vector where the function is stored.
 
@@ -4424,8 +4242,6 @@ PetscErrorCode  SNESGetFunction(SNES snes,Vec *r,PetscErrorCode (**f)(SNES,Vec,V
 .seealso: SNESSetNGS(), SNESGetFunction()
 @*/
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetNGS"
 PetscErrorCode SNESGetNGS (SNES snes, PetscErrorCode (**f)(SNES, Vec, Vec, void*), void ** ctx)
 {
   PetscErrorCode ierr;
@@ -4438,8 +4254,6 @@ PetscErrorCode SNESGetNGS (SNES snes, PetscErrorCode (**f)(SNES, Vec, Vec, void*
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetOptionsPrefix"
 /*@C
    SNESSetOptionsPrefix - Sets the prefix used for searching for all
    SNES options in the database.
@@ -4476,8 +4290,6 @@ PetscErrorCode  SNESSetOptionsPrefix(SNES snes,const char prefix[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESAppendOptionsPrefix"
 /*@C
    SNESAppendOptionsPrefix - Appends to the prefix used for searching for all
    SNES options in the database.
@@ -4514,8 +4326,6 @@ PetscErrorCode  SNESAppendOptionsPrefix(SNES snes,const char prefix[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetOptionsPrefix"
 /*@C
    SNESGetOptionsPrefix - Sets the prefix used for searching for all
    SNES options in the database.
@@ -4548,8 +4358,6 @@ PetscErrorCode  SNESGetOptionsPrefix(SNES snes,const char *prefix[])
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESRegister"
 /*@C
   SNESRegister - Adds a method to the nonlinear solver package.
 
@@ -4591,8 +4399,6 @@ PetscErrorCode  SNESRegister(const char sname[],PetscErrorCode (*function)(SNES)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESTestLocalMin"
 PetscErrorCode  SNESTestLocalMin(SNES snes)
 {
   PetscErrorCode ierr;
@@ -4627,8 +4433,6 @@ PetscErrorCode  SNESTestLocalMin(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESKSPSetUseEW"
 /*@
    SNESKSPSetUseEW - Sets SNES use Eisenstat-Walker method for
    computing relative tolerance for linear solvers within an inexact
@@ -4676,8 +4480,6 @@ PetscErrorCode  SNESKSPSetUseEW(SNES snes,PetscBool flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESKSPGetUseEW"
 /*@
    SNESKSPGetUseEW - Gets if SNES is using Eisenstat-Walker method
    for computing relative tolerance for linear solvers within an
@@ -4717,8 +4519,6 @@ PetscErrorCode  SNESKSPGetUseEW(SNES snes, PetscBool  *flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESKSPSetParametersEW"
 /*@
    SNESKSPSetParametersEW - Sets parameters for Eisenstat-Walker
    convergence criteria for the linear solvers within an inexact
@@ -4786,8 +4586,6 @@ PetscErrorCode  SNESKSPSetParametersEW(SNES snes,PetscInt version,PetscReal rtol
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESKSPGetParametersEW"
 /*@
    SNESKSPGetParametersEW - Gets parameters for Eisenstat-Walker
    convergence criteria for the linear solvers within an inexact
@@ -4831,8 +4629,6 @@ PetscErrorCode  SNESKSPGetParametersEW(SNES snes,PetscInt *version,PetscReal *rt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPreSolve_SNESEW"
  PetscErrorCode KSPPreSolve_SNESEW(KSP ksp, Vec b, Vec x, SNES snes)
 {
   PetscErrorCode ierr;
@@ -4874,8 +4670,6 @@ PetscErrorCode  SNESKSPGetParametersEW(SNES snes,PetscInt *version,PetscReal *rt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPPostSolve_SNESEW"
 PetscErrorCode KSPPostSolve_SNESEW(KSP ksp, Vec b, Vec x, SNES snes)
 {
   PetscErrorCode ierr;
@@ -4910,8 +4704,6 @@ PetscErrorCode KSPPostSolve_SNESEW(KSP ksp, Vec b, Vec x, SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetKSP"
 /*@
    SNESGetKSP - Returns the KSP context for a SNES solver.
 
@@ -4971,8 +4763,6 @@ PetscErrorCode  SNESGetKSP(SNES snes,KSP *ksp)
 
 
 #include <petsc/private/dmimpl.h>
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetDM"
 /*@
    SNESSetDM - Sets the DM that may be used by some nonlinear solvers or their underlying preconditioners
 
@@ -5017,8 +4807,6 @@ PetscErrorCode  SNESSetDM(SNES snes,DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetDM"
 /*@
    SNESGetDM - Gets the DM that may be used by some preconditioners
 
@@ -5048,8 +4836,6 @@ PetscErrorCode  SNESGetDM(SNES snes,DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetNPC"
 /*@
   SNESSetNPC - Sets the nonlinear preconditioner to be used.
 
@@ -5083,8 +4869,6 @@ PetscErrorCode SNESSetNPC(SNES snes, SNES pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetNPC"
 /*@
   SNESGetNPC - Creates a nonlinear preconditioning solver (SNES) to be used to precondition the nonlinear solver.
 
@@ -5124,8 +4908,6 @@ PetscErrorCode SNESGetNPC(SNES snes, SNES *pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESHasNPC"
 /*@
   SNESHasNPC - Returns whether a nonlinear preconditioner exists
 
@@ -5150,8 +4932,6 @@ PetscErrorCode SNESHasNPC(SNES snes, PetscBool *has_npc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetNPCSide"
 /*@
     SNESSetNPCSide - Sets the preconditioning side.
 
@@ -5187,8 +4967,6 @@ PetscErrorCode  SNESSetNPCSide(SNES snes,PCSide side)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetNPCSide"
 /*@
     SNESGetNPCSide - Gets the preconditioning side.
 
@@ -5219,8 +4997,6 @@ PetscErrorCode  SNESGetNPCSide(SNES snes,PCSide *side)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetLineSearch"
 /*@
   SNESSetLineSearch - Sets the linesearch on the SNES instance.
 
@@ -5256,8 +5032,6 @@ PetscErrorCode SNESSetLineSearch(SNES snes, SNESLineSearch linesearch)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetLineSearch"
 /*@
   SNESGetLineSearch - Returns a pointer to the line search context set with SNESSetLineSearch()
   or creates a default line search instance associated with the SNES and returns it.
@@ -5300,8 +5074,6 @@ PetscErrorCode SNESGetLineSearch(SNES snes, SNESLineSearch *linesearch)
 
 typedef struct {char *funcname; mxArray *ctx;} SNESMatlabContext;
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESComputeFunction_Matlab"
 /*
    SNESComputeFunction_Matlab - Calls the function that has been set with SNESSetFunctionMatlab().
 
@@ -5360,8 +5132,6 @@ PetscErrorCode  SNESComputeFunction_Matlab(SNES snes,Vec x,Vec y, void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetFunctionMatlab"
 /*
    SNESSetFunctionMatlab - Sets the function evaluation routine and function
    vector for use by the SNES routines in solving systems of nonlinear
@@ -5406,8 +5176,6 @@ PetscErrorCode  SNESSetFunctionMatlab(SNES snes,Vec r,const char *f,mxArray *ctx
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESComputeJacobian_Matlab"
 /*
    SNESComputeJacobian_Matlab - Calls the function that has been set with SNESSetJacobianMatlab().
 
@@ -5461,8 +5229,6 @@ PetscErrorCode  SNESComputeJacobian_Matlab(SNES snes,Vec x,Mat A,Mat B,void *ctx
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetJacobianMatlab"
 /*
    SNESSetJacobianMatlab - Sets the Jacobian function evaluation routine and two empty Jacobian matrices
    vector for use by the SNES routines in solving systems of nonlinear
@@ -5503,8 +5269,6 @@ PetscErrorCode  SNESSetJacobianMatlab(SNES snes,Mat A,Mat B,const char *J,mxArra
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMonitor_Matlab"
 /*
    SNESMonitor_Matlab - Calls the function that has been set with SNESMonitorSetMatlab().
 
@@ -5543,8 +5307,6 @@ PetscErrorCode  SNESMonitor_Matlab(SNES snes,PetscInt it, PetscReal fnorm, void 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMonitorSetMatlab"
 /*
    SNESMonitorSetMatlab - Sets the monitor function from MATLAB
 

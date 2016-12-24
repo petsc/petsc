@@ -15,8 +15,6 @@
 #include <petscblaslapack.h>
 
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_BCGSL"
 static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
 {
   KSP_BCGSL      *bcgsl = (KSP_BCGSL*) ksp->data;
@@ -312,8 +310,6 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPBCGSLSetXRes"
 /*@
    KSPBCGSLSetXRes - Sets the parameter governing when
    exact residuals will be used instead of computed residuals.
@@ -353,8 +349,6 @@ PetscErrorCode  KSPBCGSLSetXRes(KSP ksp, PetscReal delta)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPBCGSLSetUsePseudoinverse"
 /*@
    KSPBCGSLSetUsePseudoinverse - Use pseudoinverse (via SVD) to solve polynomial part of update
 
@@ -383,8 +377,6 @@ PetscErrorCode KSPBCGSLSetUsePseudoinverse(KSP ksp,PetscBool use_pinv)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPBCGSLSetPol"
 /*@
    KSPBCGSLSetPol - Sets the type of polynomial part will
    be used in the BiCGSTab(L) solver.
@@ -429,8 +421,6 @@ PetscErrorCode  KSPBCGSLSetPol(KSP ksp, PetscBool uMROR)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPBCGSLSetEll"
 /*@
    KSPBCGSLSetEll - Sets the number of search directions in BiCGStab(L).
 
@@ -477,8 +467,6 @@ PetscErrorCode  KSPBCGSLSetEll(KSP ksp, PetscInt ell)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPView_BCGSL"
 PetscErrorCode KSPView_BCGSL(KSP ksp, PetscViewer viewer)
 {
   KSP_BCGSL      *bcgsl = (KSP_BCGSL*)ksp->data;
@@ -495,8 +483,6 @@ PetscErrorCode KSPView_BCGSL(KSP ksp, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetFromOptions_BCGSL"
 PetscErrorCode KSPSetFromOptions_BCGSL(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   KSP_BCGSL      *bcgsl = (KSP_BCGSL*)ksp->data;
@@ -541,8 +527,6 @@ PetscErrorCode KSPSetFromOptions_BCGSL(PetscOptionItems *PetscOptionsObject,KSP 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_BCGSL"
 PetscErrorCode KSPSetUp_BCGSL(KSP ksp)
 {
   KSP_BCGSL      *bcgsl = (KSP_BCGSL*)ksp->data;
@@ -557,8 +541,6 @@ PetscErrorCode KSPSetUp_BCGSL(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPReset_BCGSL"
 PetscErrorCode KSPReset_BCGSL(KSP ksp)
 {
   KSP_BCGSL      *bcgsl = (KSP_BCGSL*)ksp->data;
@@ -571,8 +553,6 @@ PetscErrorCode KSPReset_BCGSL(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPDestroy_BCGSL"
 PetscErrorCode KSPDestroy_BCGSL(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -616,8 +596,6 @@ PetscErrorCode KSPDestroy_BCGSL(KSP ksp)
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPFGMRES, KSPBCGS, KSPSetPCSide(), KSPBCGSLSetEll(), KSPBCGSLSetXRes()
 
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_BCGSL"
 PETSC_EXTERN PetscErrorCode KSPCreate_BCGSL(KSP ksp)
 {
   PetscErrorCode ierr;

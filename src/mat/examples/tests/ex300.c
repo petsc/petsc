@@ -5,8 +5,6 @@ static char help[] = "Show MatShift BUG happening after copying a matrix with no
 */
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 
 /* DEFINE this to turn on/off the bug: */
 #define SET_2nd_PROC_TO_HAVE_NO_LOCAL_LINES

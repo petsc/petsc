@@ -18,8 +18,6 @@
 void Store2DArray(int,int,double*,const char*,int*);
 void Store1DArray(int,double*,const char*,int*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   double a[100],v[10];
@@ -37,8 +35,6 @@ int main(int argc,char **args)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Store2DArray"
 void Store2DArray(int m,int n,double *a,const char *filename,int *fdd)
 {
   int     fd = *fdd;
@@ -77,8 +73,6 @@ void Store2DArray(int m,int n,double *a,const char *filename,int *fdd)
 
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Store1DArray"
 void Store1DArray(int m,double *a,const char *filename,int *fdd)
 {
   int     fd = *fdd;

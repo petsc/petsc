@@ -19,8 +19,6 @@
 */
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsBegin_Private"
 /*
     Handles setting up the data structure in a call to PetscOptionsBegin()
 */
@@ -51,8 +49,6 @@ PetscErrorCode PetscOptionsBegin_Private(PetscOptionItems *PetscOptionsObject,MP
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectOptionsBegin_Private"
 /*
     Handles setting up the data structure in a call to PetscObjectOptionsBegin()
 */
@@ -80,8 +76,6 @@ PetscErrorCode PetscObjectOptionsBegin_Private(PetscOptionItems *PetscOptionsObj
 /*
      Handles adding another option to the list of options within this particular PetscOptionsBegin() PetscOptionsEnd()
 */
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionItemCreate_Private"
 static int PetscOptionItemCreate_Private(PetscOptionItems *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscOptionType t,PetscOptionItem *amsopt)
 {
   int             ierr;
@@ -111,8 +105,6 @@ static int PetscOptionItemCreate_Private(PetscOptionItems *PetscOptionsObject,co
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscScanString"
 /*
     PetscScanString -  Gets user input via stdin from process and broadcasts to all processes
 
@@ -150,8 +142,6 @@ static PetscErrorCode PetscScanString(MPI_Comm comm,size_t n,char str[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscStrdup"
 /*
     This is needed because certain strings may be freed by SAWs, hence we cannot use PetscStrallocpy()
 */
@@ -173,8 +163,6 @@ static PetscErrorCode  PetscStrdup(const char s[],char *t[])
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsGetFromTextInput"
 /*
     PetscOptionsGetFromTextInput - Presents all the PETSc Options processed by the program so the user may change them at runtime
 
@@ -374,8 +362,6 @@ PetscErrorCode PetscOptionsGetFromTextInput(PetscOptionItems *PetscOptionsObject
 
 static int count = 0;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsSAWsDestroy"
 PetscErrorCode PetscOptionsSAWsDestroy(void)
 {
   PetscFunctionBegin;
@@ -396,8 +382,6 @@ static const char *OptionsHeader = "<head>\n"
 /*  Determines the size and style of the scroll region where PETSc options selectable from users are displayed */
 static const char *OptionsBodyBottom = "<div id=\"variablesInfo\" style=\"background-color:lightblue;height:auto;max-height:500px;overflow:scroll;\"></div>\n<br>\n</body>";
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsSAWsInput"
 /*
     PetscOptionsSAWsInput - Presents all the PETSc Options processed by the program so the user may change them at runtime using the SAWs
 
@@ -528,8 +512,6 @@ PetscErrorCode PetscOptionsSAWsInput(PetscOptionItems *PetscOptionsObject)
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsEnd_Private"
 PetscErrorCode PetscOptionsEnd_Private(PetscOptionItems *PetscOptionsObject)
 {
   PetscErrorCode  ierr;
@@ -654,8 +636,6 @@ PetscErrorCode PetscOptionsEnd_Private(PetscOptionItems *PetscOptionsObject)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsEnum_Private"
 /*@C
    PetscOptionsEnum - Gets the enum value for a particular option in the database.
 
@@ -712,8 +692,6 @@ PetscErrorCode  PetscOptionsEnum_Private(PetscOptionItems *PetscOptionsObject,co
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsEnumArray_Private"
 /*@C
    PetscOptionsEnumArray - Gets an array of enum values for a particular
    option in the database.
@@ -781,8 +759,6 @@ PetscErrorCode  PetscOptionsEnumArray_Private(PetscOptionItems *PetscOptionsObje
 }
 
 /* -------------------------------------------------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsInt_Private"
 /*@C
    PetscOptionsInt - Gets the integer value for a particular option in the database.
 
@@ -840,8 +816,6 @@ PetscErrorCode  PetscOptionsInt_Private(PetscOptionItems *PetscOptionsObject,con
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsString_Private"
 /*@C
    PetscOptionsString - Gets the string value for a particular option in the database.
 
@@ -892,8 +866,6 @@ PetscErrorCode  PetscOptionsString_Private(PetscOptionItems *PetscOptionsObject,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsReal_Private"
 /*@C
    PetscOptionsReal - Gets the PetscReal value for a particular option in the database.
 
@@ -946,8 +918,6 @@ PetscErrorCode  PetscOptionsReal_Private(PetscOptionItems *PetscOptionsObject,co
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsScalar_Private"
 /*@C
    PetscOptionsScalar - Gets the scalar value for a particular option in the database.
 
@@ -995,8 +965,6 @@ PetscErrorCode  PetscOptionsScalar_Private(PetscOptionItems *PetscOptionsObject,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsName_Private"
 /*@C
    PetscOptionsName - Determines if a particular option has been set in the database. This returns true whether the option is a number, string or boolean, even
                       its value is set to false.
@@ -1044,8 +1012,6 @@ PetscErrorCode  PetscOptionsName_Private(PetscOptionItems *PetscOptionsObject,co
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsFList_Private"
 /*@C
      PetscOptionsFList - Puts a list of option values that a single one may be selected from
 
@@ -1104,8 +1070,6 @@ PetscErrorCode  PetscOptionsFList_Private(PetscOptionItems *PetscOptionsObject,c
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsEList_Private"
 /*@C
      PetscOptionsEList - Puts a list of option values that a single one may be selected from
 
@@ -1166,8 +1130,6 @@ PetscErrorCode  PetscOptionsEList_Private(PetscOptionItems *PetscOptionsObject,c
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsBoolGroupBegin_Private"
 /*@C
      PetscOptionsBoolGroupBegin - First in a series of logical queries on the options database for
        which at most a single value can be true.
@@ -1218,8 +1180,6 @@ PetscErrorCode  PetscOptionsBoolGroupBegin_Private(PetscOptionItems *PetscOption
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsBoolGroup_Private"
 /*@C
      PetscOptionsBoolGroup - One in a series of logical queries on the options database for
        which at most a single value can be true.
@@ -1269,8 +1229,6 @@ PetscErrorCode  PetscOptionsBoolGroup_Private(PetscOptionItems *PetscOptionsObje
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsBoolGroupEnd_Private"
 /*@C
      PetscOptionsBoolGroupEnd - Last in a series of logical queries on the options database for
        which at most a single value can be true.
@@ -1320,8 +1278,6 @@ PetscErrorCode  PetscOptionsBoolGroupEnd_Private(PetscOptionItems *PetscOptionsO
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsBool_Private"
 /*@C
    PetscOptionsBool - Determines if a particular option is in the database with a true or false
 
@@ -1373,8 +1329,6 @@ PetscErrorCode  PetscOptionsBool_Private(PetscOptionItems *PetscOptionsObject,co
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsRealArray_Private"
 /*@C
    PetscOptionsRealArray - Gets an array of double values for a particular
    option in the database. The values must be separated with commas with
@@ -1436,8 +1390,6 @@ PetscErrorCode PetscOptionsRealArray_Private(PetscOptionItems *PetscOptionsObjec
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsScalarArray_Private"
 /*@C
    PetscOptionsScalarArray - Gets an array of Scalar values for a particular
    option in the database. The values must be separated with commas with
@@ -1499,8 +1451,6 @@ PetscErrorCode PetscOptionsScalarArray_Private(PetscOptionItems *PetscOptionsObj
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsIntArray_Private"
 /*@C
    PetscOptionsIntArray - Gets an array of integers for a particular
    option in the database.
@@ -1567,8 +1517,6 @@ PetscErrorCode  PetscOptionsIntArray_Private(PetscOptionItems *PetscOptionsObjec
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsStringArray_Private"
 /*@C
    PetscOptionsStringArray - Gets an array of string values for a particular
    option in the database. The values must be separated with commas with
@@ -1626,8 +1574,6 @@ PetscErrorCode  PetscOptionsStringArray_Private(PetscOptionItems *PetscOptionsOb
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsBoolArray_Private"
 /*@C
    PetscOptionsBoolArray - Gets an array of logical values (true or false) for a particular
    option in the database. The values must be separated with commas with
@@ -1689,8 +1635,6 @@ PetscErrorCode  PetscOptionsBoolArray_Private(PetscOptionItems *PetscOptionsObje
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsViewer_Private"
 /*@C
    PetscOptionsViewer - Gets a viewer appropriate for the type indicated by the user
 
@@ -1740,8 +1684,6 @@ PetscErrorCode  PetscOptionsViewer_Private(PetscOptionItems *PetscOptionsObject,
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsHead"
 /*@C
      PetscOptionsHead - Puts a heading before listing any more published options. Used, for example,
             in KSPSetFromOptions_GMRES().

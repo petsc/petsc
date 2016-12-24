@@ -5,8 +5,6 @@
 
 #include <../src/sys/classes/draw/impls/x/ximpl.h>         /*I  "petscsys.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawOpenX"
 /*@C
    PetscDrawOpenX - Opens an X-window for use with the PetscDraw routines.
 

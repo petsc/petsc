@@ -23,8 +23,6 @@ struct _p_PetscDrawSP {
 
 #define CHUNCKSIZE 100
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSPCreate"
 /*@C
     PetscDrawSPCreate - Creates a scatter plot data structure.
 
@@ -89,8 +87,6 @@ PetscErrorCode  PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSPSetDimension"
 /*@
    PetscDrawSPSetDimension - Change the number of sets of points  that are to be drawn.
 
@@ -124,8 +120,6 @@ PetscErrorCode  PetscDrawSPSetDimension(PetscDrawSP sp,int dim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSPReset"
 /*@
    PetscDrawSPReset - Clears line graph to allow for reuse with new data.
 
@@ -153,8 +147,6 @@ PetscErrorCode  PetscDrawSPReset(PetscDrawSP sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSPDestroy"
 /*@C
    PetscDrawSPDestroy - Frees all space taken up by scatter plot data structure.
 
@@ -184,8 +176,6 @@ PetscErrorCode  PetscDrawSPDestroy(PetscDrawSP *sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSPAddPoint"
 /*@
    PetscDrawSPAddPoint - Adds another point to each of the scatter plots.
 
@@ -238,8 +228,6 @@ PetscErrorCode  PetscDrawSPAddPoint(PetscDrawSP sp,PetscReal *x,PetscReal *y)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSPAddPoints"
 /*@C
    PetscDrawSPAddPoints - Adds several points to each of the scatter plots.
 
@@ -301,8 +289,6 @@ PetscErrorCode  PetscDrawSPAddPoints(PetscDrawSP sp,int n,PetscReal **xx,PetscRe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSPDraw"
 /*@
    PetscDrawSPDraw - Redraws a scatter plot.
 
@@ -360,8 +346,6 @@ PetscErrorCode  PetscDrawSPDraw(PetscDrawSP sp, PetscBool clear)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSPSave"
 /*@
    PetscDrawSPSave - Saves a drawn image
 
@@ -386,8 +370,6 @@ PetscErrorCode  PetscDrawSPSave(PetscDrawSP sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSPSetLimits"
 /*@
    PetscDrawSPSetLimits - Sets the axis limits for a scatter plot If more
    points are added after this call, the limits will be adjusted to
@@ -416,8 +398,6 @@ PetscErrorCode  PetscDrawSPSetLimits(PetscDrawSP sp,PetscReal x_min,PetscReal x_
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSPGetAxis"
 /*@C
    PetscDrawSPGetAxis - Gets the axis context associated with a line graph.
    This is useful if one wants to change some axis property, such as
@@ -446,8 +426,6 @@ PetscErrorCode  PetscDrawSPGetAxis(PetscDrawSP sp,PetscDrawAxis *axis)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSPGetDraw"
 /*@C
    PetscDrawSPGetDraw - Gets the draw context associated with a line graph.
 
