@@ -2,9 +2,6 @@
 !  Simple PETSc Program to test setting error handlers from Fortran
 !
       subroutine GenerateErr(line,ierr)
-!/*T
-!   requires: !complex complex!
-!T*/
 
 #include <petsc/finclude/petscsys.h>
       use petscsysdef
@@ -63,5 +60,6 @@
 !   test:
 !      output_file: output/ex1f_1.out
 !      redirect_file: ex1f.tmp1
+!      TODO: Needs further development from conversion
 !
 !TEST*/

@@ -1,7 +1,10 @@
 !
 !  Progran to test random number generation routines from fortran.
 !
-       program main
+!/*T
+!   requires: !complex complex!
+!T*/
+      program main
 
 #include <petsc/finclude/petscsys.h>
        use petscsys
