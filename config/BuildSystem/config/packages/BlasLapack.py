@@ -218,7 +218,7 @@ class Configure(config.package.Package):
         mkl_blacs_32=[]
       if useCPardiso or usePardiso:
         self.logPrintBox('BLASLAPACK: Looking for Multithreaded MKL for C/Pardiso')
-        for libdir in [os.path.join('lib','64'),os.path.join('lib','ia64'),os.path.join('lib','em64t'),os.path.join('lib','intel64'),'64','ia64','em64t','intel64',
+        for libdir in [os.path.join('lib','64'),os.path.join('lib','ia64'),os.path.join('lib','em64t'),os.path.join('lib','intel64'),'lib','64','ia64','em64t','intel64',
                        os.path.join('lib','32'),os.path.join('lib','ia32'),'32','ia32','']:
           if not os.path.exists(os.path.join(dir,libdir)):
             self.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
@@ -243,7 +243,7 @@ class Configure(config.package.Package):
           self.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
         else:
           yield ('User specified MKL11/12 Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_sequential','mkl_core','pthread','-lm'],1)
-      for libdir in [os.path.join('lib','64'),os.path.join('lib','ia64'),os.path.join('lib','em64t'),os.path.join('lib','intel64'),'64','ia64','em64t','intel64','']:
+      for libdir in [os.path.join('lib','64'),os.path.join('lib','ia64'),os.path.join('lib','em64t'),os.path.join('lib','intel64'),'lib','64','ia64','em64t','intel64','']:
         if not os.path.exists(os.path.join(dir,libdir)):
           self.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
         else:
