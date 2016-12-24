@@ -8,6 +8,7 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c  ex7.c ex8.c ex9.c ex10.c ex12.c
 EXAMPLESF       = ex11f90.F90 ex13f90aux.F90 ex13f90.F90
 MANSEC          = DM
 SUBMANSEC       = DMDA
+CLEANFILES      = output_file output_file.info
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
@@ -125,6 +126,11 @@ runex5_2:
 	   if (${DIFF} output/ex5_2.out ex5_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex5_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5_2.tmp
+runex7:
+	-@${MPIEXEC} -n 1 ./ex7  > ex7.tmp 2>&1;   \
+	   if (${DIFF} output/ex7.out ex7.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex7, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex7.tmp
 runex9:
 	-@${MPIEXEC} -n 4 ./ex9
 	-@${MPIEXEC} -n 4 ./ex9 -ndof 2
@@ -160,7 +166,7 @@ runex15_3:
 	   ${RM} -f ex15.tmp
 
 
-TESTEXAMPLES_C		  = ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex4.PETSc ex4.rm ex12.PETSc ex12.rm ex51.PETSc ex51.rm \
+TESTEXAMPLES_C		  = ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex4.PETSc ex4.rm ex7.PETSc runex7 ex7.rm ex12.PETSc ex12.rm ex51.PETSc ex51.rm \
                             ex15.PETSc runex15 runex15_2 runex15_3 ex15.rm
 TESTEXAMPLES_C_X	  = ex1.PETSc runex1 ex1.rm ex5.PETSc runex5 runex5_2 ex5.rm
 TESTEXAMPLES_FORTRAN	  =

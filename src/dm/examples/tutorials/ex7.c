@@ -1,4 +1,4 @@
-static char help[] = "Demonstrates using PetscViewerPushFormat(viewer,PETSC_FORMAT_BINARY_MATLAB)\n\n";
+static char help[] = "Demonstrates using PetscViewerPushFormat(viewer,PETSC_VIEWER_BINARY_MATLAB)\n\n";
 
 /*T
    Concepts: viewers
@@ -76,7 +76,7 @@ int main(int argc,char **argv)
   ierr = DMDASetFieldName(da,1,"field2");CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)global,"da1");CHKERRQ(ierr);
   ierr = VecView(global,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerPopFormat(vv);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
   /* clean up and exit */
