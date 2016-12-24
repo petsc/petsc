@@ -16,12 +16,12 @@ int main(int argc,char **argv)
   printf("1st test\n");
   for (i=0; i<5; i++) index[i] = i;
   ierr = PetscSortIntWithPermutation(5, x, index);
-  for (i=0; i<5; i++) printf(" %d     %d     %d\n",x[i], index[i],x[index[i]]);
+  for (i=0; i<5; i++) printf(" %D     %D     %D\n",x[i], index[i],x[index[i]]);
 
   printf("\n2nd test\n");
   for (i=0; i<8; i++) index2[i] = i;
   ierr = PetscSortIntWithPermutation(8, x2, index2);
-  for (i=0; i<8; i++) printf(" %d     %d     %d\n",x2[i], index2[i],x2[index2[i]]);
+  for (i=0; i<8; i++) printf(" %D     %D     %D\n",x2[i], index2[i],x2[index2[i]]);
   ierr = PetscFinalize();
   return ierr;
 }
