@@ -4068,6 +4068,7 @@ PetscErrorCode MatConvert(Mat mat, MatType newtype,MatReuse reuse,Mat *M)
   ierr = PetscObjectTypeCompare((PetscObject)mat,newtype,&sametype);CHKERRQ(ierr);
   ierr = PetscStrcmp(newtype,"same",&issame);CHKERRQ(ierr);
   if ((reuse == MAT_INPLACE_MATRIX) && (mat != *M)) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"MAT_INPLACE_MATRIX requires same input and output matrix");
+  if ((reuse == MAT_REUSE_MATRIX) && (mat == *M)) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"MAT_REUSE_MATRIX means reuse matrix in final argument, perhaps you mean MAT_INPLACE_MATRIX");
 
   if ((reuse == MAT_INPLACE_MATRIX) && (issame || sametype)) PetscFunctionReturn(0);
 
@@ -4792,13 +4793,15 @@ PetscErrorCode MatGetRowSum(Mat mat, Vec v)
 
    Input Parameter:
 +  mat - the matrix to transpose
--  reuse - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+-  reuse - either MAT_INITIAL_MATRIX, MAT_REUSE_MATRIX, or MAT_INPLACE_MATRIX
 
    Output Parameters:
 .  B - the transpose
 
    Notes:
-     If you  pass in &mat for B the transpose will be done in place, for example MatTranspose(mat,MAT_REUSE_MATRIX,&mat);
+     If you use MAT_INPLACE_MATRIX then you must pass in &mat for B
+
+     MAT_REUSE_MATRIX causes the B matrix from a previous call to this function with MAT_INITIAL_MATRIX to be used
 
      Consider using MatCreateTranspose() instead if you only need a matrix that behaves like the transpose, but don't need the storage to be changed.
 
@@ -4818,6 +4821,8 @@ PetscErrorCode MatTranspose(Mat mat,MatReuse reuse,Mat *B)
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   if (!mat->ops->transpose) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
+  if (reuse == MAT_INPLACE_MATRIX && mat != *B) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"MAT_INPLACE_MATRIX requires last matrix to match first");
+  if (reuse == MAT_REUSE_MATRIX && mat == *B) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Perhaps you mean MAT_INPLACE_MATRIX");
   MatCheckPreallocated(mat,1);
 
   ierr = PetscLogEventBegin(MAT_Transpose,mat,0,0,0);CHKERRQ(ierr);
@@ -4889,13 +4894,10 @@ PetscErrorCode MatIsTranspose(Mat A,Mat B,PetscReal tol,PetscBool  *flg)
 
    Input Parameter:
 +  mat - the matrix to transpose and complex conjugate
--  reuse - store the transpose matrix in the provided B
+-  reuse - MAT_INITIAL_MATRIX to create a new matrix, MAT_INPLACE_MATRIX to reuse the first argument to store the transpose
 
    Output Parameters:
 .  B - the Hermitian
-
-   Notes:
-     If you  pass in &mat for B the Hermitian will be done in place
 
    Level: intermediate
 
@@ -9284,6 +9286,7 @@ PetscErrorCode MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
   MatCheckPreallocated(A,1);
+  if (scall == MAT_INPLACE_MATRIX) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Inplace product not supported");
   if (!A->assembled) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (A->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   PetscValidHeaderSpecific(P,MAT_CLASSID,2);
@@ -9506,6 +9509,7 @@ PetscErrorCode MatRARt(Mat A,Mat R,MatReuse scall,PetscReal fill,Mat *C)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
+  if (scall == MAT_INPLACE_MATRIX) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Inplace product not supported");
   if (!A->assembled) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (A->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   PetscValidHeaderSpecific(R,MAT_CLASSID,2);
@@ -9694,6 +9698,7 @@ PetscErrorCode MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
   if (!B->assembled) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (B->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   PetscValidPointer(C,3);
+  if (scall == MAT_INPLACE_MATRIX) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Inplace product not supported");
   if (B->rmap->N!=A->cmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",B->rmap->N,A->cmap->N);
   if (scall == MAT_REUSE_MATRIX) {
     PetscValidPointer(*C,5);
@@ -9886,6 +9891,7 @@ PetscErrorCode MatMatTransposeMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
+  if (scall == MAT_INPLACE_MATRIX) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Inplace product not supported");
   if (!A->assembled) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (A->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   PetscValidHeaderSpecific(B,MAT_CLASSID,2);
@@ -9959,6 +9965,7 @@ PetscErrorCode MatTransposeMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
+  if (scall == MAT_INPLACE_MATRIX) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Inplace product not supported");
   if (!A->assembled) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (A->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   PetscValidHeaderSpecific(B,MAT_CLASSID,2);
@@ -10039,6 +10046,7 @@ PetscErrorCode MatMatMatMult(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Mat
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
   MatCheckPreallocated(A,1);
+  if (scall == MAT_INPLACE_MATRIX) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Inplace product not supported");
   if (!A->assembled) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (A->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   PetscValidHeaderSpecific(B,MAT_CLASSID,2);
@@ -10133,21 +10141,23 @@ PetscErrorCode MatCreateRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subco
   PetscBool      newsubcomm=PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRQ(ierr);
-  if (size == 1 || nsubcomm == 1) {
-    if (reuse == MAT_INITIAL_MATRIX) {
-      ierr = MatDuplicate(mat,MAT_COPY_VALUES,matredundant);CHKERRQ(ierr);
-    } else {
-      ierr = MatCopy(mat,*matredundant,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-    }
-    PetscFunctionReturn(0);
-  }
-
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   if (nsubcomm && reuse == MAT_REUSE_MATRIX) {
     PetscValidPointer(*matredundant,5);
     PetscValidHeaderSpecific(*matredundant,MAT_CLASSID,5);
   }
+
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRQ(ierr);
+  if (size == 1 || nsubcomm == 1) {
+    if (reuse == MAT_INITIAL_MATRIX) {
+      ierr = MatDuplicate(mat,MAT_COPY_VALUES,matredundant);CHKERRQ(ierr);
+    } else {
+      if (*matredundant == mat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"MAT_REUSE_MATRIX means reuse the matrix passed in as the final argument, not the original matrix");
+      ierr = MatCopy(mat,*matredundant,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    }
+    PetscFunctionReturn(0);
+  }
+
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   MatCheckPreallocated(mat,1);
@@ -10181,6 +10191,7 @@ PetscErrorCode MatCreateRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subco
     ierr = ISCreateStride(PETSC_COMM_SELF,mloc_sub,rstart,1,&isrow);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&iscol);CHKERRQ(ierr);
   } else { /* reuse == MAT_REUSE_MATRIX */
+    if (*matredundant == mat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"MAT_REUSE_MATRIX means reuse the matrix passed in as the final argument, not the original matrix");
     /* retrieve subcomm */
     ierr = PetscObjectGetComm((PetscObject)(*matredundant),&subcomm);CHKERRQ(ierr);
     redund = (*matredundant)->redundant;
@@ -10257,6 +10268,7 @@ PetscErrorCode   MatGetMultiProcBlock(Mat mat, MPI_Comm subComm, MatReuse scall,
   ierr = MPI_Comm_size(subComm,&subCommSize);CHKERRQ(ierr);
   if (subCommSize > commsize) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"CommSize %D < SubCommZize %D",commsize,subCommSize);
 
+  if (scall == MAT_REUSE_MATRIX && *subMat == mat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"MAT_REUSE_MATRIX means reuse the matrix passed in as the final argument, not the original matrix");
   ierr = PetscLogEventBegin(MAT_GetMultiProcBlock,mat,0,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->getmultiprocblock)(mat,subComm,scall,subMat);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_GetMultiProcBlock,mat,0,0,0);CHKERRQ(ierr);
@@ -10688,6 +10700,7 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm comm,Mat seqmat,PetscIn
     if (reuse == MAT_INITIAL_MATRIX) {
       ierr = MatDuplicate(seqmat,MAT_COPY_VALUES,mpimat);CHKERRQ(ierr);
     } else {
+      if (*mpimat == seqmat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"MAT_REUSE_MATRIX means reuse the matrix passed in as the final argument, not the original matrix");
       ierr = MatCopy(seqmat,*mpimat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     }
     PetscFunctionReturn(0);
@@ -10778,9 +10791,11 @@ PetscErrorCode MatSubdomainsCreateCoalesce(Mat A,PetscInt N,PetscInt *n,IS *iss[
 PetscErrorCode  MatGalerkin(Mat restrct, Mat dA, Mat interpolate, MatReuse reuse, PetscReal fill, Mat *A)
 {
   PetscErrorCode ierr;
-  IS zerorows;
-  Vec diag;
+  IS             zerorows;
+  Vec            diag;
 
+  PetscFunctionBegin;
+  if (reuse == MAT_INPLACE_MATRIX) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Inplace product not supported");
   /* Construct the coarse grid matrix */
   if (interpolate == restrct) {
     ierr = MatPtAP(dA,interpolate,reuse,fill,A);CHKERRQ(ierr);
@@ -10803,6 +10818,5 @@ PetscErrorCode  MatGalerkin(Mat restrct, Mat dA, Mat interpolate, MatReuse reuse
     ierr = VecDestroy(&diag);CHKERRQ(ierr);
     ierr = ISDestroy(&zerorows);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }

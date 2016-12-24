@@ -105,7 +105,7 @@ PetscErrorCode TestReuseMatrix(void)
       ierr = MatView(block[i][j], PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
   }
-  ierr = MatTranspose(A,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
+  ierr = MatTranspose(A,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
   ierr = MatView(A, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatNestGetSubMats(A, NULL, NULL, &block);CHKERRQ(ierr);
   for (i=0; i<n; i++) {

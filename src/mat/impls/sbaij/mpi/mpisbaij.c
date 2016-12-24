@@ -1735,8 +1735,10 @@ PetscErrorCode MatTranspose_MPISBAIJ(Mat A,MatReuse reuse,Mat *B)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (MAT_INITIAL_MATRIX || *B != A) {
+  if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,B);CHKERRQ(ierr);
+  }  else if (reuse == MAT_REUSE_MATRIX) {
+    ierr = MatCopy(A,*B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

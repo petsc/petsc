@@ -142,9 +142,13 @@ PETSC_EXTERN PetscClassId MAT_NULLSPACE_CLASSID;
 PETSC_EXTERN PetscClassId MATMFFD_CLASSID;
 
 /*E
-    MatReuse - Indicates if matrices obtained from a previous call to MatGetSubMatrices()
-     or MatGetSubMatrix() are to be reused to store the new matrix values. For MatConvert() is used to indicate
-     that the input matrix is to be replaced with the converted matrix.
+    MatReuse - Indicates if matrices obtained from a previous call to MatGetSubMatrices(), MatGetSubMatrix(), MatConvert() or several other functions
+     are to be reused to store the new matrix values.
+
+$  MAT_INITIAL_MATRIX - create a new matrix
+$  MAT_REUSE_MATRIX - reuse the matrix created with a previous call that used MAT_INITIAL_MATRIX
+$  MAT_INPLACE_MATRIX - replace the first input matrix with the new matrix (not applicable to all functions)
+$  MAT_IGNORE_MATRIX - do not create a new matrix or reuse a give matrix, just ignore that matrix argument (not applicable to all functions)
 
     Level: beginner
 
