@@ -86,7 +86,7 @@
          if (rank .eq. 0) then
             write(6,*) 'This is a uniprocessor example only!'
          endif
-         SETERRQ(PETSC_COMM_WORLD,1,' ',ierr)
+         SETERRQ(PETSC_COMM_WORLD,1,' ')
       endif
 
 !  The next two lines are for testing only; these allow the user to
