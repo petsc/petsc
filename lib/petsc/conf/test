@@ -355,7 +355,7 @@ alltests:
           fi;
 
 allgtest:
-	-@cd ${PETSC_DIR}; make -f gmakefile test V=${V}
+	-@cd ${PETSC_DIR}; ${OMAKE} -f gmakefile test V=${V}
 
 alltest:
 	-@date
@@ -383,6 +383,6 @@ palltests:
 
 
 tests_DATAFILESPATH:
-	make ACTION=testexamples_DATAFILESPATH tree DATAFILESPATH=${DATAFILESPATH}
+	${OMAKE} ACTION=testexamples_DATAFILESPATH tree DATAFILESPATH=${DATAFILESPATH}
 
 
