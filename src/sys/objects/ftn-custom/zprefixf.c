@@ -6,7 +6,7 @@
 #define petscobjectsetoptionsprefix_    petscobjectsetoptionsprefix
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petscobjectsetoptionsprefix_(PetscObject *obj,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL petscobjectsetoptionsprefix_(PetscObject *obj,char* prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 
@@ -15,7 +15,7 @@ PETSC_EXTERN void PETSC_STDCALL petscobjectsetoptionsprefix_(PetscObject *obj,CH
   FREECHAR(prefix,t);
 }
 
-PETSC_EXTERN void PETSC_STDCALL  petscoptionsprefixpush_(PetscOptions options,CHAR prefix PETSC_MIXED_LEN(len), int *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL  petscoptionsprefixpush_(PetscOptions options,char* prefix PETSC_MIXED_LEN(len), int *ierr PETSC_END_LEN(len))
 {
   CHKFORTRANNULLOBJECTDEREFERENCE(options);
   *ierr = PetscOptionsPrefixPush(options,prefix);

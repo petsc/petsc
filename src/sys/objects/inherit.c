@@ -46,7 +46,6 @@ PetscErrorCode  PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,con
   h->parentid              = 0;
   h->qlist                 = 0;
   h->olist                 = 0;
-  h->precision             = (PetscPrecision) sizeof(PetscReal);
   h->bops->destroy         = destroy;
   h->bops->view            = view;
   h->bops->getcomm         = PetscObjectGetComm_Petsc;
@@ -678,28 +677,6 @@ PetscErrorCode  PetscObjectCompose(PetscObject obj,const char name[],PetscObject
   PetscValidCharPointer(name,2);
   if (ptr) PetscValidHeader(ptr,3);
   ierr = (*obj->bops->compose)(obj,name,ptr);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   PetscObjectSetPrecision - sets the precision used within a given object.
-
-   Collective on the PetscObject
-
-   Input Parameters:
-+  obj - the PETSc object; this must be cast with (PetscObject), for example,
-         PetscObjectCompose((PetscObject)mat,...);
--  precision - the precision
-
-   Level: advanced
-
-.seealso: PetscObjectQuery(), PetscContainerCreate()
-@*/
-PetscErrorCode  PetscObjectSetPrecision(PetscObject obj,PetscPrecision precision)
-{
-  PetscFunctionBegin;
-  PetscValidHeader(obj,1);
-  obj->precision = precision;
   PetscFunctionReturn(0);
 }
 

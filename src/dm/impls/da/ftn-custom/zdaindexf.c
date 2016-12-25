@@ -7,7 +7,7 @@
 #define dmdagetglobalindices_          dmdagetglobalindices
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL  dmdasetaotype_(DM *da,CHAR type PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len) )
+PETSC_EXTERN void PETSC_STDCALL  dmdasetaotype_(DM *da,char* type PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len) )
 {
   char *t;
   FIXCHAR(type,len,t);

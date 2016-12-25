@@ -1,0 +1,15 @@
+ LAPACKsyevx: compute 1 to 7-th eigensolutions...
+    max|(x_j^T*x_i) - delta_ji|: 5.89658e-16
+    max_resi:                    6.22141e-10
+ 1st 10 of 36 singular values: 
+0  7.60388
+1  7.04892
+2  7.04892
+3  6.49396
+4  6.24698
+5  6.24698
+6  5.69202
+7  5.69202
+8  5.3569
+9  5.3569
+ || U*Sigma*VT - A || = 6.18162e-14

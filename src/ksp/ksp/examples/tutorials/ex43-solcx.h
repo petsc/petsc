@@ -4,7 +4,7 @@ static void evaluate_solCx(PetscReal pos[],PetscReal _eta_A,PetscReal _eta_B,   
                            PetscReal vel[], PetscReal *presssure,PetscReal total_stress[], PetscReal strain_rate[])
 {
   PetscReal Z,u1,u2,u3,u4,u5,u6,ZA,ZB;
-  PetscReal sum1,sum2,sum3,sum4,sum5,sum6,mag,x,z,xc;
+  PetscReal sum1,sum2,sum3,sum4,sum5,sum6,x,z,xc;
   PetscReal _PC1A,_PC2A,_PC3A,_PC4A,_PC1B,_PC2B,_PC3B,_PC4B,_PC1,_PC2,_PC3,_PC4;
   int    n,nx;
 
@@ -2242,12 +2242,6 @@ static void evaluate_solCx(PetscReal pos[],PetscReal _eta_A,PetscReal _eta_B,   
   sum3 += u3;
   u4   *= 2*n*PETSC_PI*PetscSinReal(n*PETSC_PI *z); /* zx stress */
   sum4 += u4;
-
-
-  if (0) {
-    mag=PetscSqrtReal(sum1*sum1+sum2*sum2);
-    printf("%0.7f %0.7f %0.7f %0.7f %0.7f %0.7f %0.7f %0.7f %0.7f\n",(double)x,(double)z,(double)sum1,(double)sum2,(double)sum3,(double)sum4,(double)sum5,(double)sum6,(double)mag);
-  }
 
   /* Output */
   if (vel) {

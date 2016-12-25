@@ -73,7 +73,7 @@ PetscErrorCode PipeSetUp(Pipe pipe)
   MPI_Comm       comm = pipe->comm;
     
   PetscFunctionBegin;
-  ierr = DMDACreate1d(comm, DM_BOUNDARY_GHOSTED, pipe->nnodes, 2, 1, PETSC_NULL, &pipe->da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(comm, DM_BOUNDARY_GHOSTED, pipe->nnodes, 2, 1, NULL, &pipe->da);CHKERRQ(ierr);
   ierr = DMSetFromOptions(pipe->da);CHKERRQ(ierr);
   ierr = DMSetUp(pipe->da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(pipe->da, 0, "Q");CHKERRQ(ierr);

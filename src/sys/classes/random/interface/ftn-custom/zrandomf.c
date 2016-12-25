@@ -22,7 +22,7 @@ PETSC_EXTERN void PETSC_STDCALL  petscrandomsetseed_(PetscRandom *r,unsigned lon
   *ierr = PetscRandomSetSeed(*r,*seed);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscrandomsettype_(PetscRandom *rnd,CHAR type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL petscrandomsettype_(PetscRandom *rnd,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 
@@ -31,7 +31,7 @@ PETSC_EXTERN void PETSC_STDCALL petscrandomsettype_(PetscRandom *rnd,CHAR type P
   FREECHAR(type,t);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscrandomgettype_(PetscRandom *petscrandom,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL petscrandomgettype_(PetscRandom *petscrandom,char* name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   const char *tname;
 

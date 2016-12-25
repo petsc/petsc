@@ -33,7 +33,7 @@ static PetscErrorCode oursneslinesearchpostcheck(SNESLineSearch linesearch, Vec 
   return 0;
 }
 
-PETSC_EXTERN void PETSC_STDCALL sneslinesearchsettype_(SNESLineSearch *linesearch,CHAR type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL sneslinesearchsettype_(SNESLineSearch *linesearch,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 

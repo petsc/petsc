@@ -354,7 +354,7 @@ PetscErrorCode  ISBuildTwoSided(IS ito,IS toindx, IS *rows)
    ierr = ISGetLocalSize(ito,&ito_ln);CHKERRQ(ierr);
    /* why we do not have ISGetLayout? */
    isrmap = ito->map;
-   ierr = PetscLayoutGetRange(isrmap,&rstart,PETSC_NULL);CHKERRQ(ierr);
+   ierr = PetscLayoutGetRange(isrmap,&rstart,NULL);CHKERRQ(ierr);
    ierr = ISGetIndices(ito,&ito_indices);CHKERRQ(ierr);
    ierr = PetscCalloc2(size,&tosizes_tmp,size+1,&tooffsets_tmp);CHKERRQ(ierr);
    for(i=0; i<ito_ln; i++){
@@ -416,7 +416,7 @@ PetscErrorCode  ISBuildTwoSided(IS ito,IS toindx, IS *rows)
      }
    }
    ierr = PetscSFCreate(comm,&sf);CHKERRQ(ierr);
-   ierr = PetscSFSetGraph(sf,nsends,nrecvs,PETSC_NULL,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
+   ierr = PetscSFSetGraph(sf,nsends,nrecvs,NULL,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
    ierr = PetscSFSetType(sf,PETSCSFBASIC);CHKERRQ(ierr);
    /* how to put a prefix ? */
    ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);

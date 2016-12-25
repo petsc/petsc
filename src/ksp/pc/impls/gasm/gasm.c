@@ -935,7 +935,7 @@ static PetscErrorCode  PCGASMSetSubdomains_GASM(PC pc,PetscInt n,IS iis[],IS ois
       osm->iis[i] = iis[i];
     }
     if (!ois) {
-      osm->ois = PETSC_NULL;
+      osm->ois = NULL;
       /* if user does not provide outer indices, we will create the corresponding outer indices using  osm->overlap =1 in PCSetUp_GASM */
     }
   }

@@ -254,6 +254,10 @@ typedef float PetscFloat;
       represent size of arrays and indexing into arrays. Its size can be configured with the option
       --with-64-bit-indices - to be either 32bit or 64bit [default 32 bit ints]
 
+
+   Notes: For MPI calls that require datatypes, use MPIU_INT as the datatype for PetscInt. It will automatically work correctly regardless of 
+          the size of PetscInt
+
    Level: intermediate
 
 .seealso: PetscScalar, PetscBLASInt, PetscMPIInt
@@ -300,7 +304,11 @@ typedef int PetscInt;
      --with-blas-lapack-lib=[/Applications/MATLAB_R2010b.app/bin/maci64/libmwblas.dylib,/Applications/MATLAB_R2010b.app/bin/maci64/libmwlapack.dylib]
      but you need to also use --known-64-bit-blas-indices.
 
-        MKL also ships with 64 bit integer versions of the BLAS and LAPACK, if you select those you must also ./configure with --known-64-bit-blas-indices
+        MKL also ships with 64 bit integer versions of the BLAS and LAPACK, if you select those you must also ./configure with
+        --known-64-bit-blas-indices
+
+        OpenBLAS can also be built to use 64 bit integers. The ./configure options --download-openblas -download-openblas-64-bit-blas-indices 
+        will build a 64 bit integer version
 
      Developer Notes: Eventually ./configure should automatically determine the size of the integers used by BLAS/LAPACK.
 
@@ -315,17 +323,6 @@ typedef PetscInt64 PetscBLASInt;
 #else
 typedef int PetscBLASInt;
 #endif
-
-/*EC
-
-    PetscPrecision - indicates what precision the object is using. This is currently not used.
-
-    Level: advanced
-
-.seealso: PetscObjectSetPrecision()
-E*/
-typedef enum { PETSC_PRECISION_SINGLE=4,PETSC_PRECISION_DOUBLE=8 } PetscPrecision;
-PETSC_EXTERN const char *PetscPrecisions[];
 
 /*
     For the rare cases when one needs to send a size_t object with MPI
@@ -423,7 +420,7 @@ PETSC_EXTERN const char *const PetscBools[];
 PETSC_EXTERN MPI_Datatype MPIU_BOOL PetscAttrMPITypeTag(PetscBool);
 
 /*
-    Defines some elementary mathematics functions and constants.
+    Defines elementary mathematics functions and constants.
 */
 #include <petscmath.h>
 
@@ -461,22 +458,6 @@ M*/
 
 .seealso: PetscBool, PETSC_FALSE
 M*/
-
-/*MC
-    PETSC_NULL - standard way of passing in a null or array or pointer. This is deprecated in C/C++ simply use NULL
-
-   Level: beginner
-
-   Notes: accepted by many PETSc functions to not set a parameter and instead use
-          some default
-
-          This macro does not exist in Fortran; you must use PETSC_NULL_INTEGER,
-          PETSC_NULL_DOUBLE_PRECISION, PETSC_NULL_FUNCTION, PETSC_NULL_VEC etc
-
-.seealso: PETSC_DECIDE, PETSC_DEFAULT, PETSC_IGNORE, PETSC_DETERMINE
-
-M*/
-#define PETSC_NULL           NULL
 
 /*MC
     PETSC_IGNORE - same as NULL, means PETSc will ignore this argument
@@ -661,12 +642,22 @@ M*/
    Not Collective
 
    Input Parameter:
-.  m1 - number of elements to allocate in 1st chunk  (may be zero)
+.  m1 - number of elements to allocate  (may be zero)
 
    Output Parameter:
 .  r1 - memory allocated in first chunk
 
-   Level: developer
+   Note: This uses the sizeof() of the memory type requested to determine the total memory to be allocated, therefore you should not
+         multiply the number of elements requested by the sizeof() the type. For example use
+$  PetscInt *id;
+$  PetscMalloc1(10,&id);
+        not
+$  PetscInt *id;
+$  PetscMalloc1(10*sizeof(PetscInt),&id);
+
+        Does not zero the memory allocatd, used PetscCalloc1() to obtain memory that has been zeroed.
+
+   Level: beginner
 
 .seealso: PetscFree(), PetscNew(), PetscMalloc(), PetscCalloc1(), PetscMalloc2()
 
@@ -690,7 +681,9 @@ M*/
    Output Parameter:
 .  r1 - memory allocated in first chunk
 
-   Level: developer
+   Notes: see PetsMalloc1() for more details on usage.
+
+   Level: beginner
 
 .seealso: PetscFree(), PetscNew(), PetscMalloc(), PetscMalloc1(), PetscCalloc2()
 
@@ -1136,7 +1129,7 @@ M*/
 
    Level: beginner
 
-.seealso: PetscFree(), PetscMalloc(), PetscNewLog()
+.seealso: PetscFree(), PetscMalloc(), PetscNewLog(), PetscCalloc1(), PetscMalloc1()
 
   Concepts: memory allocation
 
@@ -1161,7 +1154,7 @@ M*/
 
    Level: developer
 
-.seealso: PetscFree(), PetscMalloc(), PetscNew(), PetscLogObjectMemory()
+.seealso: PetscFree(), PetscMalloc(), PetscNew(), PetscLogObjectMemory(), PetscCalloc1(), PetscMalloc1()
 
   Concepts: memory allocation
 
@@ -1178,44 +1171,21 @@ M*/
    Not Collective
 
    Input Parameter:
-.   memory - memory to free (the pointer is ALWAYS set to 0 upon sucess)
+.   memory - memory to free (the pointer is ALWAYS set to NULL upon sucess)
 
    Level: beginner
 
    Notes:
-   Memory must have been obtained with PetscNew() or PetscMalloc().
+   Do not free memory obtained with PetscMalloc2(), PetscCalloc2() etc, they must be freed with PetscFree2() etc.
+
    It is safe to call PetscFree() on a NULL pointer.
 
-.seealso: PetscNew(), PetscMalloc(), PetscFreeVoid()
+.seealso: PetscNew(), PetscMalloc(), PetscNewLog(), PetscMalloc1(), PetscCalloc1()
 
   Concepts: memory allocation
 
 M*/
 #define PetscFree(a)   ((*PetscTrFree)((void*)(a),__LINE__,PETSC_FUNCTION_NAME,__FILE__) || ((a) = 0,0))
-
-/*MC
-   PetscFreeVoid - Frees memory
-
-   Synopsis:
-    #include <petscsys.h>
-   void PetscFreeVoid(void *memory)
-
-   Not Collective
-
-   Input Parameter:
-.   memory - memory to free
-
-   Level: beginner
-
-   Notes: This is different from PetscFree() in that no error code is returned
-
-.seealso: PetscFree(), PetscNew(), PetscMalloc()
-
-  Concepts: memory allocation
-
-M*/
-#define PetscFreeVoid(a) ((*PetscTrFree)((a),__LINE__,PETSC_FUNCTION_NAME,__FILE__),(a) = 0)
-
 
 /*MC
    PetscFree2 - Frees 2 chunks of memory obtained with PetscMalloc2()
@@ -1684,7 +1654,6 @@ PETSC_EXTERN PetscErrorCode PetscObjectGetComm(PetscObject,MPI_Comm *);
 PETSC_EXTERN PetscErrorCode PetscObjectGetClassId(PetscObject,PetscClassId *);
 PETSC_EXTERN PetscErrorCode PetscObjectGetClassName(PetscObject,const char *[]);
 PETSC_EXTERN PetscErrorCode PetscObjectSetType(PetscObject,const char []);
-PETSC_EXTERN PetscErrorCode PetscObjectSetPrecision(PetscObject,PetscPrecision);
 PETSC_EXTERN PetscErrorCode PetscObjectGetType(PetscObject,const char *[]);
 PETSC_EXTERN PetscErrorCode PetscObjectSetName(PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode PetscObjectGetName(PetscObject,const char*[]);
@@ -2195,12 +2164,15 @@ M*/
 
 /*MC
     PetscScalar - PETSc type that represents either a double precision real number, a double precision
-       complex number, a single precision real number, a long double or an int - if the code is configured
-       with --with-scalar-type=real,complex --with-precision=single,double,__float128
+       complex number, a single precision real number, a __float128 real or complex or a __fp16 real - if the code is configured
+       with --with-scalar-type=real,complex --with-precision=single,double,__float128,__fp16
+
+   Notes: For MPI calls that require datatypes, use MPIU_SCALAR as the datatype for PetscScalar and MPIU_SUM, MPIU_MAX etc for operations.
+          They will automatically work correctly regardless of the size of PetscScalar
 
    Level: beginner
 
-.seealso: PetscReal, MPIU_SCALAR, PetscInt, MPIU_REAL
+.seealso: PetscReal, MPIU_SCALAR, PetscInt, MPIU_REAL, PetscComplex, MPIU_INT
 M*/
 
 /*MC
@@ -2212,8 +2184,12 @@ M*/
 
    Level: beginner
 
-   Note:
-   Complex numbers are automatically available if PETSc was able to find a working complex implementation
+   Notes: For MPI calls that require datatypes, use MPIU_COMPLEX as the datatype for PetscComplex and MPIU_SUM etc for operations.
+          They will automatically work correctly regardless of the size of PetscComplex
+
+          See PetscScalar for details on how to ./configure the size of PetscReal
+
+          Complex numbers are automatically available if PETSc was able to find a working complex implementation
 
 .seealso: PetscReal, PetscComplex, MPIU_COMPLEX, PetscInt, PETSC_i
 M*/
@@ -2223,7 +2199,12 @@ M*/
 
    Level: beginner
 
-.seealso: PetscScalar
+   Notes: For MPI calls that require datatypes, use MPIU_REAL as the datatype for PetscScalar and MPIU_SUM, MPIU_MAX etc for operations.
+          They will automatically work correctly regardless of the size of PetscReal
+
+          See PetscScalar for details on how to ./configure the size of PetscReal
+
+.seealso: PetscScalar, PetscComplex, MPIU_REAL, MPIU_SCALAR
 M*/
 
 /*MC
@@ -2234,7 +2215,7 @@ M*/
     Note: In MPI calls that require an MPI datatype that matches a PetscScalar or array of PetscScalars
           pass this value
 
-.seealso: PetscReal, PetscScalar, MPIU_INT
+.seealso: PetscReal, PetscScalar, MPIU_INT, MPIU_REAL, MPIU_COMPLEX
 M*/
 
 #if defined(PETSC_HAVE_MPIIO)
@@ -2320,8 +2301,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPIIntCast(PetscInt a,PetscMPIInt *b)
 +     a - the PetscReal value
 -     b - the second value
 
-   Output Parameter:
-.     c - the result as a PetscInt value
+   Returns:
+      the result as a PetscInt value
 
    Use PetscInt64Mult() to compute the product of two PetscInt as a PetscInt64
    Use PetscIntMultTruncate() to compute the product of two positive PetscInt and truncate to fit a PetscInt
@@ -2333,7 +2314,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPIIntCast(PetscInt a,PetscMPIInt *b)
 
    Level: advanced
 
-.seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast(), PetscIntMult64()
+.seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast(), PetscInt64Mult()
 @*/
 PETSC_STATIC_INLINE PetscInt PetscRealIntMultTruncate(PetscReal a,PetscInt b)
 {
@@ -2354,8 +2335,8 @@ PETSC_STATIC_INLINE PetscInt PetscRealIntMultTruncate(PetscReal a,PetscInt b)
 +     a - the PetscInt value
 -     b - the second value
 
-   Output Parameter:
-.     c - the result as a PetscInt value
+   Returns:
+      the result as a PetscInt value
 
    Use PetscInt64Mult() to compute the product of two PetscInt as a PetscInt64
    Use PetscRealIntMultTruncate() to compute the product of a PetscReal and a PetscInt and truncate to fit a PetscInt
@@ -2367,7 +2348,7 @@ PETSC_STATIC_INLINE PetscInt PetscRealIntMultTruncate(PetscReal a,PetscInt b)
 
    Level: advanced
 
-.seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast(), PetscIntMult64()
+.seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast(), PetscInt64Mult()
 @*/
 PETSC_STATIC_INLINE PetscInt PetscIntMultTruncate(PetscInt a,PetscInt b)
 {
@@ -2388,8 +2369,8 @@ PETSC_STATIC_INLINE PetscInt PetscIntMultTruncate(PetscInt a,PetscInt b)
 +     a - the PetscInt value
 -     b - the second value
 
-   Output Parameter:
-.     c - the result as a PetscInt value
+   Returns:
+     the result as a PetscInt value
 
    Use PetscInt64Mult() to compute the product of two PetscInt as a PetscInt64
    Use PetscRealIntMultTruncate() to compute the product of a PetscReal and a PetscInt and truncate to fit a PetscInt
@@ -2399,7 +2380,7 @@ PETSC_STATIC_INLINE PetscInt PetscIntMultTruncate(PetscInt a,PetscInt b)
 
    Level: advanced
 
-.seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast(), PetscIntMult64()
+.seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast(), PetscInt64Mult()
 @*/
 PETSC_STATIC_INLINE PetscInt PetscIntSumTruncate(PetscInt a,PetscInt b)
 {
@@ -2421,7 +2402,7 @@ PETSC_STATIC_INLINE PetscInt PetscIntSumTruncate(PetscInt a,PetscInt b)
 -     b - the second value
 
    Output Parameter:ma
-.     c - the result as a PetscInt value, or NULL if you do not want the result, you just want to check if it overflows
+.     result - the result as a PetscInt value, or NULL if you do not want the result, you just want to check if it overflows
 
    Use PetscInt64Mult() to compute the product of two 32 bit PetscInt and store in a PetscInt64
    Use PetscIntMultTruncate() to compute the product of two PetscInt and truncate it to fit in a PetscInt
@@ -2456,14 +2437,14 @@ PETSC_STATIC_INLINE PetscErrorCode PetscIntMultError(PetscInt a,PetscInt b,Petsc
 -     b - the second value
 
    Output Parameter:ma
-.     c - the result as a PetscInt value
+.     c - the result as a PetscInt value,  or NULL if you do not want the result, you just want to check if it overflows
 
    Use PetscInt64Mult() to compute the product of two 32 bit PetscInt and store in a PetscInt64
    Use PetscIntMultTruncate() to compute the product of two PetscInt and truncate it to fit in a PetscInt
 
    Level: advanced
 
-.seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast(), PetscIntMult64()
+.seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast(), PetscInt64Mult()
 @*/
 PETSC_STATIC_INLINE PetscErrorCode PetscIntSumError(PetscInt a,PetscInt b,PetscInt *result)
 {

@@ -264,7 +264,7 @@ extern PetscErrorCode  PetscInitializeSAWs(const char[]);
       Since this is called from Fortran it does not return error codes
 
 */
-static void petscinitialize_internal(CHAR filename, PetscInt len, PetscBool readarguments, PetscErrorCode *ierr)
+static void petscinitialize_internal(char* filename, PetscInt len, PetscBool readarguments, PetscErrorCode *ierr)
 {
   int            j,i;
 #if defined (PETSC_USE_NARGS)
@@ -503,7 +503,7 @@ static void petscinitialize_internal(CHAR filename, PetscInt len, PetscBool read
 #endif
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL petscinitialize_(char* filename PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   petscinitialize_internal(filename, len, PETSC_TRUE, ierr);
 }

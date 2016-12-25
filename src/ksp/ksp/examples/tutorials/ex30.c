@@ -73,7 +73,7 @@ int main(int argc,char **argv)
   ierr = KSPSolve(solver,X,Z);CHKERRQ(ierr);
   ierr = VecAXPY(Z,-1.0,Y);CHKERRQ(ierr);
   ierr = VecNorm(Z,NORM_2,&nrm);
-  printf("Test1; error norm=%e\n",nrm);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Test1; error norm=%e\n",nrm);CHKERRQ(ierr);
 
   /* Free spaces */
   ierr = PetscFree(b);CHKERRQ(ierr);

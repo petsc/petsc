@@ -8,7 +8,7 @@
 #endif
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-PETSC_EXTERN void PETSC_STDCALL petscviewermatlabopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len),PetscFileMode *type,
+PETSC_EXTERN void PETSC_STDCALL petscviewermatlabopen_(MPI_Comm *comm,char* name PETSC_MIXED_LEN(len),PetscFileMode *type,
                            PetscViewer *binv,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *c1;

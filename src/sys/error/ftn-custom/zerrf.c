@@ -24,7 +24,7 @@
 #define petscintview_              petscintview
 #endif
 
-static void (PETSC_STDCALL *f2)(MPI_Comm *comm,int*,const CHAR PETSC_MIXED_LEN(len1),const CHAR PETSC_MIXED_LEN(len2),PetscErrorCode*,PetscErrorType*,const CHAR PETSC_MIXED_LEN(len3),void*,PetscErrorCode* PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len3));
+static void (PETSC_STDCALL *f2)(MPI_Comm *comm,int*,const char* PETSC_MIXED_LEN(len1),const char* PETSC_MIXED_LEN(len2),PetscErrorCode*,PetscErrorType*,const char* PETSC_MIXED_LEN(len3),void*,PetscErrorCode* PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len3));
 
 /* These are not extern C because they are passed into non-extern C user level functions */
 static PetscErrorCode ourerrorhandler(MPI_Comm comm,int line,const char *fun,const char *file,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
@@ -76,7 +76,7 @@ PETSC_EXTERN void petscignoreerrorhandler_(MPI_Comm *comm,int *line,const char *
   *ierr = PetscIgnoreErrorHandler(*comm,*line,fun,file,*n,*p,mess,ctx);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscpusherrorhandler_(void (PETSC_STDCALL *handler)(MPI_Comm *comm,int*,const CHAR PETSC_MIXED_LEN(len1),const CHAR PETSC_MIXED_LEN(len2),PetscErrorCode*,PetscErrorType*,const CHAR PETSC_MIXED_LEN(len3),void*,PetscErrorCode* PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len3)),void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL petscpusherrorhandler_(void (PETSC_STDCALL *handler)(MPI_Comm *comm,int*,const char* PETSC_MIXED_LEN(len1),const char* PETSC_MIXED_LEN(len2),PetscErrorCode*,PetscErrorType*,const char* PETSC_MIXED_LEN(len3),void*,PetscErrorCode* PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len3)),void *ctx,PetscErrorCode *ierr)
 {
   if ((void(*)(void))handler == (void(*)(void))petsctracebackerrorhandler_) *ierr = PetscPushErrorHandler(PetscTraceBackErrorHandler,0);
   else {
@@ -85,7 +85,7 @@ PETSC_EXTERN void PETSC_STDCALL petscpusherrorhandler_(void (PETSC_STDCALL *hand
   }
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscerror_(MPI_Fint *comm,PetscErrorCode *number,int *line,PetscErrorType *p,CHAR message PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL petscerror_(MPI_Fint *comm,PetscErrorCode *number,int *line,PetscErrorType *p,char* message PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t1;
   FIXCHAR(message,len,t1);

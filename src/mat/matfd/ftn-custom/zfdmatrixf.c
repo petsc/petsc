@@ -66,7 +66,7 @@ PETSC_EXTERN void PETSC_STDCALL matfdcoloringview_(MatFDColoring *c,PetscViewer 
   *ierr = MatFDColoringView(*c,v);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matfdcoloringsettype_(MatFDColoring *matfdcoloring,CHAR type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL matfdcoloringsettype_(MatFDColoring *matfdcoloring,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 

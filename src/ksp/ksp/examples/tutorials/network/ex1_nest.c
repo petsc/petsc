@@ -331,12 +331,12 @@ int main(int argc,char ** argv)
   for (i = eStart; i < eEnd; i++) {
     ierr = DMNetworkGetVariableOffset(networkdm,i,&offset);CHKERRQ(ierr);
     ierr = DMNetworkGetVariableGlobalOffset(networkdm,i,&goffset);CHKERRQ(ierr);
-    printf("rank[%d] edge %d - loff: %d, goff: %d .\n",rank,i,offset,goffset);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"rank[%d] edge %d - loff: %d, goff: %d .\n",rank,i,offset,goffset);CHKERRQ(ierr);
   }
   for (i = vStart; i < vEnd; i++) {
     ierr = DMNetworkGetVariableOffset(networkdm,i,&offset);CHKERRQ(ierr);
     ierr = DMNetworkGetVariableGlobalOffset(networkdm,i,&goffset);CHKERRQ(ierr);
-    printf("rank[%d] vertex %d - loff: %d, goff: %d .\n",rank,i,offset,goffset);
+    ierr = PetscPrintf("rank[%d] vertex %d - loff: %d, goff: %d .\n",rank,i,offset,goffset);CHKERRQ(ierr);
   }
 #endif
 

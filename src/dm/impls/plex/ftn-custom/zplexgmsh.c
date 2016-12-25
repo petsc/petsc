@@ -9,7 +9,7 @@
 
 /* Definitions of Fortran Wrapper routines */
 
-PETSC_EXTERN void PETSC_STDCALL dmplexcreategmshfromfile_(MPI_Fint *comm, CHAR name PETSC_MIXED_LEN(lenN), PetscBool *interpolate, DM *dm, int *ierr PETSC_END_LEN(lenN))
+PETSC_EXTERN void PETSC_STDCALL dmplexcreategmshfromfile_(MPI_Fint *comm, char* name PETSC_MIXED_LEN(lenN), PetscBool *interpolate, DM *dm, int *ierr PETSC_END_LEN(lenN))
 {
   char *filename;
 

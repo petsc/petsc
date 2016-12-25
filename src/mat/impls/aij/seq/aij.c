@@ -2313,7 +2313,7 @@ PetscErrorCode MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,PetscInt csize,Mat
       mat_j = c->j + mat_i;
       mat_a = c->a + mat_i;
       ilen  = c->ilen[i];
-      ierr  = PetscSortIntWithMatScalarArray(ilen,mat_j,mat_a);CHKERRQ(ierr);
+      ierr  = PetscSortIntWithScalarArray(ilen,mat_j,mat_a);CHKERRQ(ierr);
     }
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

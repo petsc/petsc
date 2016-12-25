@@ -1196,10 +1196,6 @@ PetscErrorCode DMCreateMatrix_Network(DM dm,Mat *J)
     ierr = PetscSectionGetConstrainedStorageSize(network->edge.GlobalDofSection,&eDof);CHKERRQ(ierr);
     ierr = PetscSectionGetConstrainedStorageSize(network->vertex.GlobalDofSection,&vDof);CHKERRQ(ierr);
 
-#if 0
-    printf("rank[%d] vdof = %d. edof = %d\n", rank, vDof, eDof);
-#endif
-
     ierr = MatCreate(PETSC_COMM_WORLD, &j11);CHKERRQ(ierr);
     ierr = MatSetSizes(j11, eDof, eDof, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = MatSetType(j11, MATMPIAIJ);CHKERRQ(ierr);

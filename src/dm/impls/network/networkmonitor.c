@@ -31,7 +31,7 @@ PetscErrorCode DMNetworkMonitorCreate(DM network,DMNetworkMonitor *monitorptr)
   ierr = PetscMalloc1(1,&monitor);CHKERRQ(ierr);
   monitor->comm      = comm;
   monitor->network   = network;
-  monitor->firstnode = PETSC_NULL;
+  monitor->firstnode = NULL;
 
   *monitorptr = monitor;
   PetscFunctionReturn(0);
@@ -150,7 +150,7 @@ PetscErrorCode DMNetworkMonitorAdd(DMNetworkMonitor monitor,const char *name,Pet
   ierr = PetscMalloc1(1, &node);CHKERRQ(ierr);
 
   /* Setup viewer. */
-  ierr = PetscViewerDrawOpen(monitor->comm, PETSC_NULL, titleBuffer, PETSC_DECIDE, PETSC_DECIDE, PETSC_DRAW_QUARTER_SIZE, PETSC_DRAW_QUARTER_SIZE, &(node->viewer));CHKERRQ(ierr);
+  ierr = PetscViewerDrawOpen(monitor->comm, NULL, titleBuffer, PETSC_DECIDE, PETSC_DECIDE, PETSC_DRAW_QUARTER_SIZE, PETSC_DRAW_QUARTER_SIZE, &(node->viewer));CHKERRQ(ierr);
   ierr = PetscViewerPushFormat(node->viewer, PETSC_VIEWER_DRAW_LG);CHKERRQ(ierr);
   ierr = PetscViewerDrawGetDrawLG(node->viewer, 0, &drawlg);CHKERRQ(ierr);
   ierr = PetscDrawLGGetAxis(drawlg, &axis);CHKERRQ(ierr);
