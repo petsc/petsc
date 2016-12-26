@@ -198,7 +198,7 @@ PETSC_EXTERN void PETSC_STDCALL snessetfunction_(SNES *snes,Vec *r,void (PETSC_S
 {
   *ierr = PetscObjectSetFortranCallback((PetscObject)*snes,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.function,(PetscVoidFunction)func,ctx);
 #if defined(PETSC_HAVE_F90_2PTR_ARG)
-  *ierr = PetscObjectSetFortranCallback((PetscObject)*snes,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.function_pgiptr,PETSC_NULL,ptr);
+  *ierr = PetscObjectSetFortranCallback((PetscObject)*snes,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.function_pgiptr,NULL,ptr);
 #endif
   if (!*ierr) *ierr = SNESSetFunction(*snes,*r,oursnesfunction,NULL);
 }
