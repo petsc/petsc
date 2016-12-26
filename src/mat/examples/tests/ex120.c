@@ -6,7 +6,7 @@ ZHEEV computes all eigenvalues and, optionally, eigenvectors of a complex Hermit
 
 extern PetscErrorCode CkEigenSolutions(PetscInt,Mat,PetscInt,PetscInt,PetscReal*,Vec*,PetscReal*);
 
-PetscInt main(PetscInt argc,char **args)
+int main(int argc,char **args)
 {
   Mat            A,A_dense,B;
   Vec            *evecs;
@@ -16,14 +16,14 @@ PetscInt main(PetscInt argc,char **args)
   PetscScalar    *arrayA,*arrayB,*evecs_array=NULL,*work;
   PetscReal      *evals,*rwork;
   PetscMPIInt    size;
-  PetscInt       m,i,j,nevs,il,iu,cklvl=2;
+  PetscInt       m,i,j,cklvl=2;
   PetscReal      vl,vu,abstol=1.e-8;
-  PetscBLASInt   *iwork,*ifail,lwork,lierr,bn;
+  PetscBLASInt   nn,nevs,il,iu,*iwork,*ifail,lwork,lierr,bn,one=1;
   PetscReal      tols[2];
   PetscScalar    v,sigma2;
   PetscRandom    rctx;
   PetscReal      h2,sigma1 = 100.0;
-  PetscInt       dim,Ii,J,n = 6,use_random,one=1;
+  PetscInt       dim,Ii,J,n = 6,use_random;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -152,7 +152,8 @@ PetscInt main(PetscInt argc,char **args)
 
     /* in the case "I", vl and vu are not referenced */
     vl = 0.0; vu = 8.0;
-    LAPACKsyevx_("V","I","U",&bn,arrayA,&bn,&vl,&vu,&il,&iu,&abstol,&nevs,evals,evecs_array,&n,work,&lwork,rwork,iwork,ifail,&lierr);
+    ierr = PetscBLASIntCast(n,&nn);CHKERRQ(ierr);
+    LAPACKsyevx_("V","I","U",&bn,arrayA,&bn,&vl,&vu,&il,&iu,&abstol,&nevs,evals,evecs_array,&nn,work,&lwork,rwork,iwork,ifail,&lierr);
     ierr = PetscFree(iwork);CHKERRQ(ierr);
     ierr = PetscFree(ifail);CHKERRQ(ierr);
     ierr = PetscFree(rwork);CHKERRQ(ierr);
@@ -178,7 +179,8 @@ PetscInt main(PetscInt argc,char **args)
     ierr  = PetscMalloc1(7*n+1,&rwork);CHKERRQ(ierr);
     ierr  = MatDenseGetArray(B,&arrayB);CHKERRQ(ierr);
     vl    = 0.0; vu = 8.0;
-    LAPACKsygvx_(&one,"V","I","U",&bn,arrayA,&bn,arrayB,&bn,&vl,&vu,&il,&iu,&abstol,&nevs,evals,evecs_array,&n,work,&lwork,rwork,iwork,ifail,&lierr);
+    ierr = PetscBLASIntCast(n,&nn);CHKERRQ(ierr);
+    LAPACKsygvx_(&one,"V","I","U",&bn,arrayA,&bn,arrayB,&bn,&vl,&vu,&il,&iu,&abstol,&nevs,evals,evecs_array,&nn,work,&lwork,rwork,iwork,ifail,&lierr);
     ierr = MatDenseRestoreArray(B,&arrayB);CHKERRQ(ierr);
     ierr = PetscFree(iwork);CHKERRQ(ierr);
     ierr = PetscFree(rwork);CHKERRQ(ierr);
