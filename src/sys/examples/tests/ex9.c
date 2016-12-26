@@ -20,6 +20,6 @@ int main(int argc,char **args)
 /*TEST
 
    test:
-      TODO: Need to implement test
+      nsize: 2
 
 TEST*/

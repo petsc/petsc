@@ -2,7 +2,7 @@
 !  Progran to test random number generation routines from fortran.
 !
 !/*T
-!   requires: !complex complex!
+!   requires: !complex
 !T*/
       program main
 

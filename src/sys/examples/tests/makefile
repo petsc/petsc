@@ -173,8 +173,7 @@ runex31:
 	   ${DIFF} ex31-sh.tmp ex31.tmp || echo  ${PWD} "\nPossible problem with ex31, diffs above \n========================================="; \
 	   ${RM} -f ex31.tmp ex31-sh.tmp
 
-TESTEXAMPLES_C		       = ex4.PETSc ex4.rm \
-                                 ex21.PETSc ex21.rm \
+TESTEXAMPLES_C		       = ex21.PETSc ex21.rm \
                                  ex24.PETSc ex24.rm 
 
 TESTEXAMPLES_C_COMPLEX         = ex14.PETSc runex14 ex14.rm

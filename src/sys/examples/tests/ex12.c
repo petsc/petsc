@@ -56,6 +56,6 @@ int main(int argc,char **argv)
 /*TEST
 
    test:
-      TODO: Need to implement test
+      args: -values_view
 
 TEST*/

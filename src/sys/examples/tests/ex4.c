@@ -3,7 +3,7 @@
 #endif
 
 /*T
-   requires: x
+   requires: complex
 T*/
 
 #include <petscsys.h>
@@ -14,8 +14,9 @@ static char help[] = "Test PetscComplex binary operators.\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscInitialize(&argc,&argv,NULL,help);
-#if defined(PETSC_HAVE_COMPLEX)
+  PetscErrorCode ierr;
+
+  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   {
     int          i = 2;
     float        f = 2;
@@ -36,15 +37,14 @@ int main(int argc,char **argv)
     TestOps(*,*=);
     TestOps(/,/=);
   }
-#endif
-  PetscFinalize();
-  return 0;
+  ierr = PetscFinalize();
+  return ierr;
 }
 
 
 /*TEST
 
    test:
-      TODO: Need to implement test
+ 
 
 TEST*/

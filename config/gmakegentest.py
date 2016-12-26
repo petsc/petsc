@@ -468,8 +468,9 @@ class generateExamples(Petsc):
         # Scalar requirement
         if requirement=="complex":
           if self.conf['PETSC_SCALAR']=='complex':
-            testDict['SKIP']="Non-complex build required"
-            if isNull: return False
+            if isNull:
+              testDict['SKIP']="Non-complex build required"
+              return False
           else:
             testDict['SKIP']="Complex build required"
             return False
@@ -525,7 +526,8 @@ class generateExamples(Petsc):
             return False
 
         # Rest should be packages that we can just get from conf
-        petscconfvar="PETSC_HAVE_"+requirement.upper()
+        if requirement.upper() == 'COMPLEX':  petscconfvar="PETSC_USE_"+requirement.upper()
+        else:   petscconfvar="PETSC_HAVE_"+requirement.upper()
         if self.conf.get(petscconfvar):
           if isNull: 
             testDict['SKIP']="Not "+petscconfvar+" requirement not met"
