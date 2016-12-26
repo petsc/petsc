@@ -1,5 +1,5 @@
 
-header="""#!/bin/sh
+header="""#!/bin/bash
 # This script was created by gmakegentest.py
 
 mpiexec='@MPIEXEC@'
