@@ -10,7 +10,7 @@ int main(int argc,char **argv)
   PetscInt       i,n = 1000,*values;
   int            event;
   PetscRandom    rand;
-  PetscScalar    value;
+  PetscReal      value;
   PetscErrorCode ierr;
   PetscBool      values_view=PETSC_FALSE;
   PetscMPIInt    rank;
@@ -25,8 +25,8 @@ int main(int argc,char **argv)
 
   ierr = PetscMalloc1(n,&values);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    ierr      = PetscRandomGetValue(rand,&value);CHKERRQ(ierr);
-    values[i] = (PetscInt)(n*PetscRealPart(value) + 2.0);
+    ierr      = PetscRandomGetValueReal(rand,&value);CHKERRQ(ierr);
+    values[i] = (PetscInt)(n*value + 2.0);
   }
   ierr = PetscSortInt(n,values);CHKERRQ(ierr);
 
@@ -34,8 +34,8 @@ int main(int argc,char **argv)
   ierr = PetscLogEventBegin(event,0,0,0,0);CHKERRQ(ierr);
 
   for (i=0; i<n; i++) {
-    ierr      = PetscRandomGetValue(rand,&value);CHKERRQ(ierr);
-    values[i] = (PetscInt)(n*PetscRealPart(value) + 2.0);
+    ierr      = PetscRandomGetValueReal(rand,&value);CHKERRQ(ierr);
+    values[i] = (PetscInt)(n*value + 2.0);
   }
   ierr = PetscSortInt(n,values);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(event,0,0,0,0);CHKERRQ(ierr);
