@@ -13,10 +13,6 @@ int main(int argc,char **args)
   PetscScalar    v;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-#if !defined(PETSC_USE_COMPLEX)
-  SETERRQ(PETSC_COMM_WORLD,1,"This example requires complex numbers");
-#endif
-
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,2,2);CHKERRQ(ierr);
   ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);

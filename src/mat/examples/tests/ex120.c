@@ -30,9 +30,6 @@ PetscInt main(PetscInt argc,char **args)
   PetscInt       dim,Ii,J,Istart,Iend,n = 6,its,use_random,one=1;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-#if !defined(PETSC_USE_COMPLEX)
-  SETERRQ(PETSC_COMM_WORLD,1,"This example requires complex numbers");
-#endif
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 

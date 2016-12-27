@@ -49,10 +49,6 @@ int main(int argc,char **args)
   PetscBool      flg = PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-#if !defined(PETSC_USE_COMPLEX)
-  SETERRQ(PETSC_COMM_WORLD,1,"This example requires complex numbers");
-#endif
-
   ierr = PetscOptionsGetReal(NULL,NULL,"-sigma1",&sigma1,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
   dim  = n*n;
