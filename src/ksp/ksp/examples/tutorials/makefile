@@ -532,7 +532,7 @@ runex5_superlu_dist_2:
 	   else printf "${PWD}\nPossible problem with ex5_superlu_dist_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5.tmp
 runex5_superlu_dist_3:
-	-@${MPIEXEC} -n 15 ./ex5 -pc_type lu -pc_factor_mat_solver_package superlu_dist -mat_superlu_dist_equil false -m 5000 -mat_superlu_dist_r 3 -mat_superlu_dist_c 5 -test_scaledMat -mat_superlu_dist_fact DOFACT > ex5.tmp 2>&1;   \
+	-@${MPIEXEC} -n 15 ./ex5 -pc_type lu -pc_factor_mat_solver_package superlu_dist -mat_superlu_dist_equil false -m 500 -mat_superlu_dist_r 3 -mat_superlu_dist_c 5 -test_scaledMat -mat_superlu_dist_fact DOFACT > ex5.tmp 2>&1;   \
 	   if (${DIFF} output/ex5_superlu_dist.out ex5.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex5_superlu_dist_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5.tmp
