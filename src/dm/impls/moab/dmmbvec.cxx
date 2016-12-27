@@ -452,7 +452,7 @@ PetscErrorCode DMCreateVector_Moab_Private(DM dm,moab::Tag tag,const moab::Range
     merr = mbiface->tag_get_name(tag, ttname);
     if (!ttname.length() && merr !=moab::MB_SUCCESS) {
       /* get the new name for the anonymous MOABVec -> the tag_name will be destroyed along with Tag */
-      char *tag_name = PETSC_NULL;
+      char *tag_name = NULL;
       ierr = DMVecCreateTagName_Moab_Private(pcomm,&tag_name);CHKERRQ(ierr);
       is_newtag = PETSC_TRUE;
 
@@ -597,7 +597,7 @@ PetscErrorCode DMCreateGlobalVector_Moab(DM dm,Vec *gvec)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(gvec,2);
-  ierr = DMCreateVector_Moab_Private(dm,PETSC_NULL,dmmoab->vowned,PETSC_TRUE,PETSC_TRUE,gvec);CHKERRQ(ierr);
+  ierr = DMCreateVector_Moab_Private(dm,NULL,dmmoab->vowned,PETSC_TRUE,PETSC_TRUE,gvec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -610,7 +610,7 @@ PetscErrorCode DMCreateLocalVector_Moab(DM dm,Vec *lvec)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(lvec,2);
-  ierr = DMCreateVector_Moab_Private(dm,PETSC_NULL,dmmoab->vlocal,PETSC_FALSE,PETSC_TRUE,lvec);CHKERRQ(ierr);
+  ierr = DMCreateVector_Moab_Private(dm,NULL,dmmoab->vlocal,PETSC_FALSE,PETSC_TRUE,lvec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -633,7 +633,7 @@ PetscErrorCode DMVecDuplicate_Moab(Vec x,Vec *y)
   ierr = VecGetDM(x, &dm);CHKERRQ(ierr);
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
 
-  ierr = DMCreateVector_Moab_Private(dm,PETSC_NULL,vmoab->tag_range,vmoab->is_global_vec,PETSC_TRUE,y);CHKERRQ(ierr);
+  ierr = DMCreateVector_Moab_Private(dm,NULL,vmoab->tag_range,vmoab->is_global_vec,PETSC_TRUE,y);CHKERRQ(ierr);
   ierr = VecSetDM(*y, dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -651,9 +651,9 @@ PetscErrorCode DMVecUserDestroy_Moab(void *user)
     merr = vmoab->mbiface->tag_delete(vmoab->tag);MBERRNM(merr);
   }
   delete vmoab->tag_range;
-  vmoab->tag = PETSC_NULL;
-  vmoab->mbiface = PETSC_NULL;
-  vmoab->pcomm = PETSC_NULL;
+  vmoab->tag = NULL;
+  vmoab->mbiface = NULL;
+  vmoab->pcomm = NULL;
   ierr = PetscFree(vmoab);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

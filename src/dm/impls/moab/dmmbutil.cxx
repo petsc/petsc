@@ -187,7 +187,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
   moab::ParallelComm *pcomm;
   moab::ReadUtilIface* readMeshIface;
 
-  moab::Tag  id_tag=PETSC_NULL;
+  moab::Tag  id_tag=NULL;
   moab::Range         ownedvtx,ownedelms;
   moab::EntityHandle  vfirst,efirst,regionset,faceset,edgeset,vtxset;
   std::vector<double*> vcoords;
@@ -219,7 +219,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
   if(nghost < 0) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Number of ghost layers cannot be negative.\n");
 
   /* Create the basic DMMoab object and keep the default parameters created by DM impls */
-  ierr = DMMoabCreateMoab(comm, PETSC_NULL, PETSC_NULL, PETSC_NULL, PETSC_NULL, dm);CHKERRQ(ierr);
+  ierr = DMMoabCreateMoab(comm, NULL, NULL, NULL, NULL, dm);CHKERRQ(ierr);
 
   /* get all the necessary handles from the private DM object */
   dmmoab = (DM_Moab*)(*dm)->data;
@@ -547,7 +547,7 @@ PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm,PetscInt dim,const char* filenam
   PetscValidPointer(dm,5);
 
   /* Create the basic DMMoab object and keep the default parameters created by DM impls */
-  ierr = DMMoabCreateMoab(comm, PETSC_NULL, PETSC_NULL, PETSC_NULL, PETSC_NULL, dm);CHKERRQ(ierr);
+  ierr = DMMoabCreateMoab(comm, NULL, NULL, NULL, NULL, dm);CHKERRQ(ierr);
 
   /* get all the necessary handles from the private DM object */
   dmmoab = (DM_Moab*)(*dm)->data;

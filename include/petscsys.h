@@ -475,6 +475,9 @@ M*/
 M*/
 #define PETSC_IGNORE         NULL
 
+/* This is deprecated */
+#define PETSC_NULL NULL
+
 /*MC
     PETSC_DECIDE - standard way of passing in integer or floating point parameter
        where you wish PETSc to use the default.
