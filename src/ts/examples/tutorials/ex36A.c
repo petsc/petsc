@@ -128,7 +128,7 @@ int main(int argc,char **argv)
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
-  ierr = MatCreateVecs(A,&Y,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&Y,NULL);CHKERRQ(ierr);
 
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
   y[0] = 0.0;
@@ -148,8 +148,8 @@ int main(int argc,char **argv)
   ierr = TSSetEquationType(ts,TS_EQ_DAE_IMPLICIT_INDEX1);CHKERRQ(ierr);
   ierr = TSARKIMEXSetFullyImplicit(ts,PETSC_TRUE);CHKERRQ(ierr);
   /*ierr = TSSetType(ts,TSROSW);CHKERRQ(ierr);*/
-  ierr = TSSetIFunction(ts,PETSC_NULL,IFunctionImplicit,PETSC_NULL);CHKERRQ(ierr);
-  ierr = TSSetIJacobian(ts,A,A,IJacobianImplicit,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,NULL,IFunctionImplicit,NULL);CHKERRQ(ierr);
+  ierr = TSSetIJacobian(ts,A,A,IJacobianImplicit,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions

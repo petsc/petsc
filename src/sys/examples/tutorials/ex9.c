@@ -13,7 +13,7 @@ int main(int argc,char **argv)
   if (flg) {
     ierr = PetscOptionsInsertFileYAML(PETSC_COMM_WORLD,filename,PETSC_TRUE);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsView(PETSC_NULL,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscOptionsView(NULL,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }

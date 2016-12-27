@@ -101,7 +101,7 @@ int main(int argc,char **args)
 #endif
   /*increase overlap */
   ierr = MatIncreaseOverlapSplit(B,1,&isrows_sc,1);CHKERRQ(ierr);
-  ierr = ISView(isrows_sc,PETSC_NULL);CHKERRQ(ierr);
+  ierr = ISView(isrows_sc,NULL);CHKERRQ(ierr);
   ierr = ISDestroy(&isrows_sc);CHKERRQ(ierr);
   /*
     Free work space.  All PETSc objects should be destroyed when they
