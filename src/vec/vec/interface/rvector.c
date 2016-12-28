@@ -905,7 +905,7 @@ PetscErrorCode  VecGetValues(Vec x,PetscInt ni,const PetscInt ix[],PetscScalar y
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    VecSetValuesBlocked - Inserts or adds blocks of values into certain locations of a vector.
 
    Not Collective

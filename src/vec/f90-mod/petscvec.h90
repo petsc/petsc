@@ -69,6 +69,36 @@
         end subroutine
       End Interface VecSetValues
 
+      Interface VecSetValuesBlocked
+        subroutine VecSetValuesBlocked0(a,b,c,d,e,z)
+          use petscvecdef
+          Vec a ! Vec
+          PetscInt b ! PetscInt
+          PetscInt c (*) ! PetscInt
+          PetscScalar d (*) ! PetscScalar
+          InsertMode e ! InsertMode
+          integer z
+        end subroutine
+        subroutine VecSetValuesBlocked1(a,b,c,d,e,z)
+          use petscvecdef
+          Vec a ! Vec
+          PetscInt b ! PetscInt
+          PetscInt c ! PetscInt
+          PetscScalar d (*) ! PetscScalar
+          InsertMode e ! InsertMode
+          integer z
+        end subroutine
+        subroutine VecSetValuesBlocked11(a,b,c,d,e,z)
+          use petscvecdef
+          Vec a ! Vec
+          PetscInt b ! PetscInt
+          PetscInt c ! PetscInt
+          PetscScalar d ! PetscScalar
+          InsertMode e ! InsertMode
+          integer z
+        end subroutine
+      End Interface VecSetValuesBlocked
+
       Interface
         Subroutine VecGetArrayF90(v,array,ierr)
           use petscvecdef
