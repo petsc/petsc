@@ -183,7 +183,7 @@ TESTEXAMPLES_FORTRAN	       = ex5f.PETSc ex5f.rm ex6f.PETSc ex6f.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex1f.PETSc ex1f.rm
 TESTEXAMPLES_FORTRAN_COMPLEX   = ex1f.PETSc ex1f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex5f.PETSc ex5f.rm ex6f.PETSc ex6f.rm
-TESTEXAMPLES_C_X_MPIUNI      = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm
+TESTEXAMPLES_C_X_MPIUNI      = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm
 TESTEXAMPLES_13		       = ex11.PETSc ex11.rm ex12.PETSc ex12.rm \
                                  ex14.PETSc ex14.rm
 
