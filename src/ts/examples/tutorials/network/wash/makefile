@@ -3,7 +3,7 @@ CFLAGS	         =
 FFLAGS	         = 
 CPPFLAGS         = 
 FPPFLAGS         =
-EXAMPLESC        = pipes1.c
+EXAMPLESC        = pipes1.c pipeInterface.c pipeImpls.c
 LOCDIR           = src/ts/examples/tutorials/network/wash/
 
 OBJECTS_PIPE = pipeInterface.o pipeImpls.o

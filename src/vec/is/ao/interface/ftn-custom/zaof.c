@@ -18,7 +18,7 @@ PETSC_EXTERN void PETSC_STDCALL aoview_(AO *ao,PetscViewer *viewer, PetscErrorCo
   *ierr = AOView(*ao,v);
 }
 
-PETSC_EXTERN void PETSC_STDCALL aosettype_(AO *ao,CHAR type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL aosettype_(AO *ao,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 

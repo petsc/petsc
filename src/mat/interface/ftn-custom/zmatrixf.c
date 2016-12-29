@@ -492,7 +492,7 @@ PETSC_EXTERN void PETSC_STDCALL matdenserestorearray_(Mat *mat,PetscScalar *fa,s
   *ierr = MatDenseRestoreArray(*mat,&lx);if (*ierr) return;
 }
 
-PETSC_EXTERN void PETSC_STDCALL matfactorgetsolverpackage_(Mat *mat,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL matfactorgetsolverpackage_(Mat *mat,char* name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   const char *tname;
 
@@ -503,7 +503,7 @@ PETSC_EXTERN void PETSC_STDCALL matfactorgetsolverpackage_(Mat *mat,CHAR name PE
   FIXRETURNCHAR(PETSC_TRUE,name,len);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matgetfactor_(Mat *mat,CHAR outtype PETSC_MIXED_LEN(len),MatFactorType *ftype,Mat *M,PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL matgetfactor_(Mat *mat,char* outtype PETSC_MIXED_LEN(len),MatFactorType *ftype,Mat *M,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
   FIXCHAR(outtype,len,t);
@@ -511,7 +511,7 @@ PETSC_EXTERN void PETSC_STDCALL matgetfactor_(Mat *mat,CHAR outtype PETSC_MIXED_
   FREECHAR(outtype,t);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matconvert_(Mat *mat,CHAR outtype PETSC_MIXED_LEN(len),MatReuse *reuse,Mat *M,PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL matconvert_(Mat *mat,char* outtype PETSC_MIXED_LEN(len),MatReuse *reuse,Mat *M,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
   FIXCHAR(outtype,len,t);
@@ -624,7 +624,7 @@ PETSC_EXTERN void PETSC_STDCALL matzerorowscolumnslocalis_(Mat *mat,IS *is,Petsc
   *ierr = MatZeroRowsColumnsLocalIS(*mat,*is,*diag,*x,*b);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matsetoptionsprefix_(Mat *mat,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL matsetoptionsprefix_(Mat *mat,char* prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 

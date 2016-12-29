@@ -124,7 +124,6 @@ typedef struct _p_PetscObject {
   PetscErrorCode       (*optionhandler[PETSC_MAX_OPTIONS_HANDLER])(PetscOptionItems*,PetscObject,void*);
   PetscErrorCode       (*optiondestroy[PETSC_MAX_OPTIONS_HANDLER])(PetscObject,void*);
   void                 *optionctx[PETSC_MAX_OPTIONS_HANDLER];
-  PetscPrecision       precision;
   PetscBool            optionsprinted;
 #if defined(PETSC_HAVE_SAWS)
   PetscBool            amsmem;          /* if PETSC_TRUE then this object is registered with SAWs and visible to clients */

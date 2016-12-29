@@ -59,7 +59,7 @@ int main(int argc,char **args)
   ierr = MatAXPY(RAP,-1.0,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
  
   ierr = MatNorm(RAP,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
-  if (norm > 1.e-14) printf("norm(PtAP - RAP)= %g\n",norm);
+  if (norm > 1.e-14) {ierr = PetscPrintf(PETSC_COMM_SELF,"norm(PtAP - RAP)= %g\n",norm);CHKERRQ(ierr);}
  
   ierr = MatDestroy(&R);CHKERRQ(ierr);
   ierr = MatDestroy(&RAP);CHKERRQ(ierr);

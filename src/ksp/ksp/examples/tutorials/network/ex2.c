@@ -297,7 +297,7 @@ int main(int argc,char ** argv)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,PETSC_NULL,"-seed",&seed,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-seed",&seed,NULL);CHKERRQ(ierr);
 
   ierr = PetscLogStageRegister("Network Creation", &stage[0]);CHKERRQ(ierr);
   ierr = PetscLogStageRegister("DMNetwork data structures", &stage[1]);CHKERRQ(ierr);
@@ -307,7 +307,7 @@ int main(int argc,char ** argv)
   /* "read" data only for processor 0 */
   if (!rank) {
     nnode = 100;
-    ierr = PetscOptionsGetInt(PETSC_NULL,PETSC_NULL,"-n",&nnode,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-n",&nnode,NULL);CHKERRQ(ierr);
     ierr = random_network(nnode, &nbranch, &node, &branch, &edgelist, seed);CHKERRQ(ierr);
   }
   ierr = PetscLogStagePop();CHKERRQ(ierr);

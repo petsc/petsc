@@ -744,7 +744,6 @@ PetscErrorCode VecDuplicate_Seq(Vec win,Vec *V)
 
   PetscFunctionBegin;
   ierr = VecCreate(PetscObjectComm((PetscObject)win),V);CHKERRQ(ierr);
-  ierr = PetscObjectSetPrecision((PetscObject)*V,((PetscObject)win)->precision);CHKERRQ(ierr);
   ierr = VecSetSizes(*V,win->map->n,win->map->n);CHKERRQ(ierr);
   ierr = VecSetType(*V,((PetscObject)win)->type_name);CHKERRQ(ierr);
   ierr = PetscLayoutReference(win->map,&(*V)->map);CHKERRQ(ierr);
@@ -850,9 +849,6 @@ PetscErrorCode VecCreate_Seq_Private(Vec v,const PetscScalar array[])
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscMatlabEnginePut_C",VecMatlabEnginePut_Default);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscMatlabEngineGet_C",VecMatlabEngineGet_Default);CHKERRQ(ierr);
-#endif
-#if defined(PETSC_USE_MIXED_PRECISION)
-  ((PetscObject)v)->precision = (PetscPrecision)sizeof(PetscReal);
 #endif
   PetscFunctionReturn(0);
 }

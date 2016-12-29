@@ -326,7 +326,8 @@ PetscErrorCode  PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void
 @*/
 PetscErrorCode  PetscPopSignalHandler(void)
 {
-  struct SH *tmp;
+  struct SH      *tmp;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!sh) PetscFunctionReturn(0);
@@ -334,7 +335,7 @@ PetscErrorCode  PetscPopSignalHandler(void)
 
   tmp = sh;
   sh  = sh->previous;
-  PetscFreeVoid(tmp);
+  ierr = PetscFree(tmp);CHKERRQ(ierr);
   if (!sh || !sh->handler) {
 #if !defined(PETSC_MISSING_SIGALRM)
     /* signal(SIGALRM, 0); */

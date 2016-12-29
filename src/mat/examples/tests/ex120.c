@@ -6,31 +6,26 @@ ZHEEV computes all eigenvalues and, optionally, eigenvectors of a complex Hermit
 
 extern PetscErrorCode CkEigenSolutions(PetscInt,Mat,PetscInt,PetscInt,PetscReal*,Vec*,PetscReal*);
 
-PetscInt main(PetscInt argc,char **args)
+int main(int argc,char **args)
 {
   Mat            A,A_dense,B;
   Vec            *evecs;
   PetscBool      flg,TestZHEEV=PETSC_TRUE,TestZHEEVX=PETSC_FALSE,TestZHEGV=PETSC_FALSE,TestZHEGVX=PETSC_FALSE;
   PetscErrorCode ierr;
   PetscBool      isSymmetric;
-  PetscScalar    sigma,*arrayA,*arrayB,*evecs_array=NULL,*work;
+  PetscScalar    *arrayA,*arrayB,*evecs_array=NULL,*work;
   PetscReal      *evals,*rwork;
   PetscMPIInt    size;
-  PetscInt       m,i,j,nevs,il,iu,cklvl=2;
+  PetscInt       m,i,j,cklvl=2;
   PetscReal      vl,vu,abstol=1.e-8;
-  PetscBLASInt   *iwork,*ifail,lwork,lierr,bn;
+  PetscBLASInt   nn,nevs,il,iu,*iwork,*ifail,lwork,lierr,bn,one=1;
   PetscReal      tols[2];
-  PetscInt       nzeros[2],nz;
-  PetscReal      ratio;
-  PetscScalar    v,none = -1.0,sigma2,pfive = 0.5,*xa;
+  PetscScalar    v,sigma2;
   PetscRandom    rctx;
   PetscReal      h2,sigma1 = 100.0;
-  PetscInt       dim,Ii,J,Istart,Iend,n = 6,its,use_random,one=1;
+  PetscInt       dim,Ii,J,n = 6,use_random;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-#if !defined(PETSC_USE_COMPLEX)
-  SETERRQ(PETSC_COMM_WORLD,1,"This example requires complex numbers");
-#endif
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
@@ -58,6 +53,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,dim,dim);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQDENSE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  ierr = MatSetUp(A);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(NULL,NULL,"-norandom",&flg);CHKERRQ(ierr);
   if (flg) use_random = 0;
@@ -121,6 +117,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,dim,dim);CHKERRQ(ierr);
   ierr = MatSetType(B,MATSEQDENSE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(B);CHKERRQ(ierr);
+  ierr = MatSetUp(B);CHKERRQ(ierr);
   v    = 1.0;
   for (Ii=0; Ii<dim; Ii++) {
     ierr = MatSetValues(B,1,&Ii,1,&Ii,&v,ADD_VALUES);CHKERRQ(ierr);
@@ -135,7 +132,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = MatDenseGetArray(A_dense,&arrayA);CHKERRQ(ierr);
 
   if (TestZHEEV) { /* test zheev() */
-    printf(" LAPACKsyev: compute all %d eigensolutions...\n",m);
+    ierr = PetscPrintf(PETSC_COMM_WORLD," LAPACKsyev: compute all %D eigensolutions...\n",m);CHKERRQ(ierr);
     ierr = PetscMalloc1(3*n-2,&rwork);CHKERRQ(ierr);
     LAPACKsyev_("V","U",&bn,arrayA,&bn,evals,work,&lwork,rwork,&lierr);
     ierr = PetscFree(rwork);CHKERRQ(ierr);
@@ -147,7 +144,7 @@ PetscInt main(PetscInt argc,char **args)
   if (TestZHEEVX) {
     il   = 1;
     ierr = PetscBLASIntCast((0.2*m),&iu);CHKERRQ(ierr);
-    printf(" LAPACKsyevx: compute %d to %d-th eigensolutions...\n",il,iu);
+    ierr = PetscPrintf(PETSC_COMM_WORLD," LAPACKsyevx: compute %d to %d-th eigensolutions...\n",il,iu);CHKERRQ(ierr);
     ierr = PetscMalloc1(m*n+1,&evecs_array);CHKERRQ(ierr);
     ierr = PetscMalloc1(7*n+1,&rwork);CHKERRQ(ierr);
     ierr = PetscMalloc1(5*n+1,&iwork);CHKERRQ(ierr);
@@ -155,13 +152,14 @@ PetscInt main(PetscInt argc,char **args)
 
     /* in the case "I", vl and vu are not referenced */
     vl = 0.0; vu = 8.0;
-    LAPACKsyevx_("V","I","U",&bn,arrayA,&bn,&vl,&vu,&il,&iu,&abstol,&nevs,evals,evecs_array,&n,work,&lwork,rwork,iwork,ifail,&lierr);
+    ierr = PetscBLASIntCast(n,&nn);CHKERRQ(ierr);
+    LAPACKsyevx_("V","I","U",&bn,arrayA,&bn,&vl,&vu,&il,&iu,&abstol,&nevs,evals,evecs_array,&nn,work,&lwork,rwork,iwork,ifail,&lierr);
     ierr = PetscFree(iwork);CHKERRQ(ierr);
     ierr = PetscFree(ifail);CHKERRQ(ierr);
     ierr = PetscFree(rwork);CHKERRQ(ierr);
   }
   if (TestZHEGV) {
-    printf(" LAPACKsygv: compute all %d eigensolutions...\n",m);
+    ierr = PetscPrintf(PETSC_COMM_WORLD," LAPACKsygv: compute all %D eigensolutions...\n",m);CHKERRQ(ierr);
     ierr = PetscMalloc1(3*n+1,&rwork);CHKERRQ(ierr);
     ierr = MatDenseGetArray(B,&arrayB);CHKERRQ(ierr);
     LAPACKsygv_(&one,"V","U",&bn,arrayA,&bn,arrayB,&bn,evals,work,&lwork,rwork,&lierr);
@@ -174,14 +172,15 @@ PetscInt main(PetscInt argc,char **args)
   if (TestZHEGVX) {
     il   = 1;
     ierr = PetscBLASIntCast((0.2*m),&iu);CHKERRQ(ierr);
-    printf(" LAPACKsygv: compute %d to %d-th eigensolutions...\n",il,iu);
+    ierr = PetscPrintf(PETSC_COMM_WORLD," LAPACKsygv: compute %d to %d-th eigensolutions...\n",il,iu);CHKERRQ(ierr);
     ierr  = PetscMalloc1(m*n+1,&evecs_array);CHKERRQ(ierr);
     ierr  = PetscMalloc1(6*n+1,&iwork);CHKERRQ(ierr);
     ifail = iwork + 5*n;
     ierr  = PetscMalloc1(7*n+1,&rwork);CHKERRQ(ierr);
     ierr  = MatDenseGetArray(B,&arrayB);CHKERRQ(ierr);
     vl    = 0.0; vu = 8.0;
-    LAPACKsygvx_(&one,"V","I","U",&bn,arrayA,&bn,arrayB,&bn,&vl,&vu,&il,&iu,&abstol,&nevs,evals,evecs_array,&n,work,&lwork,rwork,iwork,ifail,&lierr);
+    ierr = PetscBLASIntCast(n,&nn);CHKERRQ(ierr);
+    LAPACKsygvx_(&one,"V","I","U",&bn,arrayA,&bn,arrayB,&bn,&vl,&vu,&il,&iu,&abstol,&nevs,evals,evecs_array,&nn,work,&lwork,rwork,iwork,ifail,&lierr);
     ierr = MatDenseRestoreArray(B,&arrayB);CHKERRQ(ierr);
     ierr = PetscFree(iwork);CHKERRQ(ierr);
     ierr = PetscFree(rwork);CHKERRQ(ierr);
@@ -192,8 +191,8 @@ PetscInt main(PetscInt argc,char **args)
   /* View evals */
   ierr = PetscOptionsHasName(NULL,NULL, "-eig_view", &flg);CHKERRQ(ierr);
   if (flg) {
-    printf(" %d evals: \n",nevs);
-    for (i=0; i<nevs; i++) printf("%d  %g\n",i+il,(double)evals[i]);
+    ierr = PetscPrintf(PETSC_COMM_WORLD," %d evals: \n",nevs);CHKERRQ(ierr);
+    for (i=0; i<nevs; i++) {ierr = PetscPrintf(PETSC_COMM_WORLD,"%D  %g\n",i+il,(double)evals[i]);CHKERRQ(ierr);}
   }
 
   /* Check residuals and orthogonality */
@@ -205,7 +204,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = VecPlaceArray(evecs[i],evecs_array+i*n);CHKERRQ(ierr);
   }
 
-  tols[0] = 1.e-8;  tols[1] = 1.e-8;
+  tols[0] = PETSC_SQRT_MACHINE_EPSILON;  tols[1] = PETSC_SQRT_MACHINE_EPSILON;
   ierr    = CkEigenSolutions(cklvl,A,il-1,iu-1,evals,evecs,tols);CHKERRQ(ierr);
   for (i=0; i<nevs; i++) { ierr = VecDestroy(&evecs[i]);CHKERRQ(ierr);}
   ierr = PetscFree(evecs);CHKERRQ(ierr);
@@ -236,7 +235,6 @@ PetscInt main(PetscInt argc,char **args)
      tols[0]    - reporting tol_res: || A * evec[i] - eval[i]*evec[i] ||
      tols[1]    - reporting tol_orth: evec[i]^T*evec[j] - delta_ij
 */
-#undef DEBUG_CkEigenSolutions
 PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,PetscReal *eval,Vec *evec,PetscReal *tols)
 {
   PetscInt    ierr,i,j,nev;
@@ -248,30 +246,26 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
   nev = iu - il;
   if (nev <= 0) PetscFunctionReturn(0);
 
-  /*ierr = VecView(evec[0],PETSC_VIEWER_STDOUT_SELF); */
-  ierr = VecDuplicate(evec[0],&vt1);
-  ierr = VecDuplicate(evec[0],&vt2);
+  ierr = VecDuplicate(evec[0],&vt1);CHKERRQ(ierr);
+  ierr = VecDuplicate(evec[0],&vt2);CHKERRQ(ierr);
 
   switch (cklvl) {
   case 2:
     dot_max = 0.0;
     for (i = il; i<iu; i++) {
-      /*printf("ck %d-th\n",i); */
-      ierr = VecCopy(evec[i], vt1);
+      ierr = VecCopy(evec[i], vt1);CHKERRQ(ierr);
       for (j=il; j<iu; j++) {
-        ierr = VecDot(evec[j],vt1,&dot);
+        ierr = VecDot(evec[j],vt1,&dot);CHKERRQ(ierr);
         if (j == i) {
-          rdot = PetscAbsScalar(dot - 1.0);
+          rdot = PetscAbsScalar(dot - (PetscScalar)1.0);
         } else {
           rdot = PetscAbsScalar(dot);
         }
         if (rdot > dot_max) dot_max = rdot;
-#if defined(DEBUG_CkEigenSolutions)
         if (rdot > tols[1]) {
           ierr = VecNorm(evec[i],NORM_INFINITY,&norm);
-          ierr = PetscPrintf(PETSC_COMM_SELF,"|delta(%d,%d)|: %g, norm: %d\n",i,j,(double)dot,(double)norm);
+          ierr = PetscPrintf(PETSC_COMM_SELF,"|delta(%d,%d)|: %g, norm: %d\n",i,j,(double)rdot,(double)norm);
         }
-#endif
       }
     }
     ierr = PetscPrintf(PETSC_COMM_SELF,"    max|(x_j^T*x_i) - delta_ji|: %g\n",(double)dot_max);
@@ -280,25 +274,23 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
     norm_max = 0.0;
     for (i = il; i< iu; i++) {
       ierr = MatMult(A, evec[i], vt1);
-      ierr = VecCopy(evec[i], vt2);
+      ierr = VecCopy(evec[i], vt2);CHKERRQ(ierr);
       tmp  = -eval[i];
       ierr = VecAXPY(vt1,tmp,vt2);
-      ierr = VecNorm(vt1, NORM_INFINITY, &norm);
-      norm = PetscAbsScalar(norm);
+      ierr = VecNorm(vt1, NORM_INFINITY, &norm);CHKERRQ(ierr);
+      norm = PetscAbs(norm);
       if (norm > norm_max) norm_max = norm;
-#if defined(DEBUG_CkEigenSolutions)
       /* sniff, and bark if necessary */
       if (norm > tols[0]) {
-        printf("  residual violation: %d, resi: %g\n",i, norm);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"  residual violation: %d, resi: %g\n",i, norm);CHKERRQ(ierr);
       }
-#endif
     }
-    ierr = PetscPrintf(PETSC_COMM_SELF,"    max_resi:                    %g\n", (double)norm_max);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"    max_resi:                    %g\n", (double)norm_max);CHKERRQ(ierr);
     break;
   default:
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: cklvl=%d is not supported \n",cklvl);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: cklvl=%d is not supported \n",cklvl);CHKERRQ(ierr);
   }
-  ierr = VecDestroy(&vt2);
-  ierr = VecDestroy(&vt1);
+  ierr = VecDestroy(&vt2);CHKERRQ(ierr);
+  ierr = VecDestroy(&vt1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

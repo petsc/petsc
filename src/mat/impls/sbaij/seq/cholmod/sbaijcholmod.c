@@ -174,7 +174,7 @@ static PetscErrorCode VecUnWrapCholmodRead(Vec X,cholmod_dense *Y)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecRestoreArrayRead(X,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

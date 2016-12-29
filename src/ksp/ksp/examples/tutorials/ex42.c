@@ -1298,11 +1298,6 @@ static PetscErrorCode DMDAIntegrateErrors3D(DM stokes_da,Vec X,Vec X_analytic)
             u_error = stokes_e[i].u_dof-stokes_analytic_e[i].u_dof;
             v_error = stokes_e[i].v_dof-stokes_analytic_e[i].v_dof;
             w_error = stokes_e[i].w_dof-stokes_analytic_e[i].w_dof;
-            /*
-             if (p==0) {
-             printf("p=0: %d %d %d %1.4e,%1.4e,%1.4e \n", ei,ej,ek,u_error,v_error,w_error);
-             }
-             */
             u_e_L2 += fac*Ni_p[i]*(u_error*u_error+v_error*v_error+w_error*w_error);
 
             u_e_H1 = u_e_H1+fac*(GNx_p[0][i]*u_error*GNx_p[0][i]*u_error              /* du/dx */

@@ -20,7 +20,7 @@ PETSC_EXTERN void PETSC_STDCALL petscsectionview_(PetscSection *s, PetscViewer *
   *ierr = PetscSectionView(*s, v);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscsectiongetfieldname_(PetscSection *s, PetscInt *field, CHAR name PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL petscsectiongetfieldname_(PetscSection *s, PetscInt *field, char* name PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   const char *fname;
 
@@ -29,7 +29,7 @@ PETSC_EXTERN void PETSC_STDCALL petscsectiongetfieldname_(PetscSection *s, Petsc
   FIXRETURNCHAR(PETSC_TRUE,name,len);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscsectionsetfieldname_(PetscSection *s, PetscInt *field, CHAR name PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL petscsectionsetfieldname_(PetscSection *s, PetscInt *field, char* name PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *f;
 

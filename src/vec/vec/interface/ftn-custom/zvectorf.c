@@ -287,7 +287,7 @@ PETSC_EXTERN void PETSC_STDCALL vecgetownershipranges_(Vec *x,PetscInt *range,Pe
   *ierr = PetscMemcpy(range,r,(size+1)*sizeof(PetscInt));
 }
 
-PETSC_EXTERN void PETSC_STDCALL vecsetoptionsprefix_(Vec *v,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL vecsetoptionsprefix_(Vec *v,char* prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 

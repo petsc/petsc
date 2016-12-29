@@ -7,7 +7,7 @@
 #define matcreatefft_ matcreatefft
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL matcreatefft_(MPI_Comm *comm,PetscInt *ndim,PetscInt *dim,CHAR type_name PETSC_MIXED_LEN(len),Mat *A,PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL matcreatefft_(MPI_Comm *comm,PetscInt *ndim,PetscInt *dim,char* type_name PETSC_MIXED_LEN(len),Mat *A,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *mattype;
 

@@ -1545,19 +1545,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedDestroy_fast(PetscInt *lnk)
   return PetscFree(lnk);
 }
 
-/* alias PetscSortIntWithScalarArray while MatScalar == PetscScalar */
-PETSC_STATIC_INLINE PetscErrorCode PetscSortIntWithMatScalarArray(PetscInt n,PetscInt *idx,PetscScalar *val)
-{
-#if !defined(PETSC_USE_REAL_MAT_SINGLE)
-  return PetscSortIntWithScalarArray(n,idx,val);
-#else
-  {
-    MatScalar mtmp;
-    return PetscSortIntWithDataArray(n,idx,val,sizeof(MatScalar),&mtmp);
-  }
-#endif
-}
-
 /* this is extern because it is used in MatFDColoringUseDM() which is in the DM library */
 PETSC_EXTERN PetscErrorCode MatFDColoringApply_AIJ(Mat,MatFDColoring,Vec,void*);
 

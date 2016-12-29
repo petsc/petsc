@@ -368,7 +368,7 @@ PETSC_EXTERN void PETSC_STDCALL taosetconstraintsroutine_(Tao *tao, Vec *C, void
 }
 
 
-PETSC_EXTERN void PETSC_STDCALL taosettype_(Tao *tao, CHAR type_name PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL taosettype_(Tao *tao, char* type_name PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
 
 {
     char *t;
@@ -391,7 +391,7 @@ PETSC_EXTERN void PETSC_STDCALL taogetconvergencehistory_(Tao *tao, PetscInt *nh
   *ierr = TaoGetConvergenceHistory(*tao,NULL,NULL,NULL,NULL,nhist);
 }
 
-PETSC_EXTERN void PETSC_STDCALL taogetoptionsprefix_(Tao *tao, CHAR prefix PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL taogetoptionsprefix_(Tao *tao, char* prefix PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   const char *name;
   *ierr = TaoGetOptionsPrefix(*tao,&name);
@@ -400,7 +400,7 @@ PETSC_EXTERN void PETSC_STDCALL taogetoptionsprefix_(Tao *tao, CHAR prefix PETSC
 
 }
 
-PETSC_EXTERN void PETSC_STDCALL taoappendoptionsprefix_(Tao *tao, CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL taoappendoptionsprefix_(Tao *tao, char* prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *name;
   FIXCHAR(prefix,len,name);
@@ -408,7 +408,7 @@ PETSC_EXTERN void PETSC_STDCALL taoappendoptionsprefix_(Tao *tao, CHAR prefix PE
   FREECHAR(prefix,name);
 }
 
-PETSC_EXTERN void PETSC_STDCALL taosetoptionsprefix_(Tao *tao, CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL taosetoptionsprefix_(Tao *tao, char* prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
   FIXCHAR(prefix,len,t);
@@ -416,7 +416,7 @@ PETSC_EXTERN void PETSC_STDCALL taosetoptionsprefix_(Tao *tao, CHAR prefix PETSC
   FREECHAR(prefix,t);
 }
 
-PETSC_EXTERN void PETSC_STDCALL taogettype_(Tao *tao, CHAR name PETSC_MIXED_LEN(len), PetscErrorCode *ierr  PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL taogettype_(Tao *tao, char* name PETSC_MIXED_LEN(len), PetscErrorCode *ierr  PETSC_END_LEN(len))
 {
   const char *tname;
   *ierr = TaoGetType(*tao,&tname);

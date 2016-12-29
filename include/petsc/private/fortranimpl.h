@@ -51,7 +51,10 @@ PETSC_EXTERN void (*PETSC_NULL_FUNCTION_Fortran)(void);
 #endif
 
 /* --------------------------------------------------------------------*/
-#define CHAR char*
+/*
+    Since Fortran does not null terminate strings we need to insure the string is null terminated before passing it
+    to C. This may require a memory allocation which is then freed with FREECHAR().
+*/
 #define FIXCHAR(a,n,b) \
 {\
   if (a == PETSC_NULL_CHARACTER_Fortran) { \
@@ -64,9 +67,11 @@ PETSC_EXTERN void (*PETSC_NULL_FUNCTION_Fortran)(void);
     if (*ierr) return; \
   } \
 }
+#define FREECHAR(a,b) if (a != b) *ierr = PetscFree(b);
 
-#define FREECHAR(a,b) if (a != b) PetscFreeVoid(b);
-
+/*
+    Fortran expects any unneeded characters at the end of its strings to be filled with the blank character.
+*/
 #define FIXRETURNCHAR(flg,a,n)               \
 if (flg) {                                   \
   int __i;                                   \

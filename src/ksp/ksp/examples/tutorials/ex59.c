@@ -450,7 +450,6 @@ static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat
     ierr = VecSet(lvec,1.0);CHKERRQ(ierr);
     ierr = MatMult(temp_local_mat,lvec,rvec);CHKERRQ(ierr);
     ierr = VecNorm(rvec,NORM_INFINITY,&norm);CHKERRQ(ierr);
-    printf("Test null space of local mat % 1.14e\n",norm);
     ierr = VecDestroy(&lvec);CHKERRQ(ierr);
     ierr = VecDestroy(&rvec);CHKERRQ(ierr);
   }
@@ -634,7 +633,6 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
     ierr = VecSet(lvec,1.0);CHKERRQ(ierr);
     ierr = MatMult(glldata->elem_mat,lvec,rvec);CHKERRQ(ierr);
     ierr = VecNorm(rvec,NORM_INFINITY,&norm);CHKERRQ(ierr);
-    printf("Test null space of elem mat % 1.14e\n",norm);
     ierr = VecDestroy(&lvec);CHKERRQ(ierr);
     ierr = VecDestroy(&rvec);CHKERRQ(ierr);
   }
@@ -764,7 +762,6 @@ static PetscErrorCode ComputeMatrix(DomainData dd, Mat *A)
     ierr = VecSet(lvec,1.0);CHKERRQ(ierr);
     ierr = MatMult(temp_A,lvec,rvec);CHKERRQ(ierr);
     ierr = VecNorm(rvec,NORM_INFINITY,&norm);CHKERRQ(ierr);
-    printf("Test null space of global mat % 1.14e\n",norm);
     ierr = VecDestroy(&lvec);CHKERRQ(ierr);
     ierr = VecDestroy(&rvec);CHKERRQ(ierr);
   }

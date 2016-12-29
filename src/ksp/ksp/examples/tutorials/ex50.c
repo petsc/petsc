@@ -83,7 +83,6 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
   Hy   = 1.0/(PetscReal)(N);
 
   ierr = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr); /* Fine grid */
-  /* printf(" M N: %d %d; xm ym: %d %d; xs ys: %d %d\n",M,N,xm,ym,xs,ys); */
   ierr = DMDAVecGetArray(da, b, &array);CHKERRQ(ierr);
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {

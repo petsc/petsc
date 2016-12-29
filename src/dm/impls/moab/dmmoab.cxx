@@ -958,7 +958,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   /* Get the local and shared vertices and cache it */
-  if (dmmoab->mbiface == PETSC_NULL || dmmoab->pcomm == PETSC_NULL) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ORDER, "Set the MOAB Interface and ParallelComm objects before calling SetUp.");
+  if (dmmoab->mbiface == NULL || dmmoab->pcomm == NULL) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ORDER, "Set the MOAB Interface and ParallelComm objects before calling SetUp.");
 
   /* Get the entities recursively in the current part of the mesh, if user did not set the local vertices explicitly */
   if (dmmoab->vlocal->empty())
@@ -1168,8 +1168,8 @@ PETSC_EXTERN PetscErrorCode DMCreate_Moab(DM dm)
   ((DM_Moab*)dm->data)->nele = 0;
   ((DM_Moab*)dm->data)->neleloc = 0;
   ((DM_Moab*)dm->data)->neleghost = 0;
-  ((DM_Moab*)dm->data)->ltog_map = PETSC_NULL;
-  ((DM_Moab*)dm->data)->ltog_sendrecv = PETSC_NULL;
+  ((DM_Moab*)dm->data)->ltog_map = NULL;
+  ((DM_Moab*)dm->data)->ltog_sendrecv = NULL;
 
   ((DM_Moab*)dm->data)->vlocal = new moab::Range();
   ((DM_Moab*)dm->data)->vowned = new moab::Range();

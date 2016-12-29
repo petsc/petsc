@@ -13,7 +13,7 @@
 
 
 PETSC_EXTERN void PETSC_STDCALL petscbagregisterenumprivate_(PetscBag *bag,void *addr,const char *const*list,
-            PetscEnum *def,CHAR name PETSC_MIXED_LEN(len1),CHAR help PETSC_MIXED_LEN(len2),PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
+            PetscEnum *def,char* name PETSC_MIXED_LEN(len1),char* help PETSC_MIXED_LEN(len2),PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
 

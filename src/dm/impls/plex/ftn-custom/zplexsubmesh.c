@@ -8,7 +8,7 @@
 #endif
 
 /* Definitions of Fortran Wrapper routines */
-PETSC_EXTERN void PETSC_STDCALL dmplexconstructghostcells_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *numGhostCells, DM *dmGhosted, int *ierr PETSC_END_LEN(lenN))
+PETSC_EXTERN void PETSC_STDCALL dmplexconstructghostcells_(DM *dm, char* name PETSC_MIXED_LEN(lenN), PetscInt *numGhostCells, DM *dmGhosted, int *ierr PETSC_END_LEN(lenN))
 {
   char *labelname;
 

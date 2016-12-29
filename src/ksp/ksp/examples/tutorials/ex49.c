@@ -1245,7 +1245,7 @@ static PetscErrorCode Orthogonalize(PetscInt n,Vec *vecs)
 
   PetscFunctionBegin;
   for (i=0; i<n; i++) {
-  ierr = VecNormalize(vecs[i],PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecNormalize(vecs[i],NULL);CHKERRQ(ierr);
      for (j=i+1; j<n; j++) {
        ierr = VecDot(vecs[i],vecs[j],&dot);CHKERRQ(ierr);
        ierr = VecAXPY(vecs[j],-dot,vecs[i]);CHKERRQ(ierr);

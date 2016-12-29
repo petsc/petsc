@@ -17,7 +17,7 @@
 #define petscviewerasciipopsynchronized_       petscviewerasciipopsynchronized
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL petscviewerfilesetname_(PetscViewer *viewer,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL petscviewerfilesetname_(PetscViewer *viewer,char* name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char        *c1;
   PetscViewer v;
@@ -27,7 +27,7 @@ PETSC_EXTERN void PETSC_STDCALL petscviewerfilesetname_(PetscViewer *viewer,CHAR
   FREECHAR(name,c1);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscviewerfilegetname_(PetscViewer *viewer, CHAR name PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL petscviewerfilegetname_(PetscViewer *viewer, char* name PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
 {
    const char *c1;
 
@@ -51,7 +51,7 @@ static PetscErrorCode PetscFixSlashN(const char *in, char **out)
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscviewerasciiprintf_(PetscViewer *viewer,CHAR str PETSC_MIXED_LEN(len1),PetscErrorCode *ierr PETSC_END_LEN(len1))
+PETSC_EXTERN void PETSC_STDCALL petscviewerasciiprintf_(PetscViewer *viewer,char* str PETSC_MIXED_LEN(len1),PetscErrorCode *ierr PETSC_END_LEN(len1))
 {
   char        *c1, *tmp;
   PetscViewer v;
@@ -64,7 +64,7 @@ PETSC_EXTERN void PETSC_STDCALL petscviewerasciiprintf_(PetscViewer *viewer,CHAR
   *ierr = PetscFree(tmp);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscviewerasciisynchronizedprintf_(PetscViewer *viewer,CHAR str PETSC_MIXED_LEN(len1),PetscErrorCode *ierr PETSC_END_LEN(len1))
+PETSC_EXTERN void PETSC_STDCALL petscviewerasciisynchronizedprintf_(PetscViewer *viewer,char* str PETSC_MIXED_LEN(len1),PetscErrorCode *ierr PETSC_END_LEN(len1))
 {
   char        *c1, *tmp;
   PetscViewer v;

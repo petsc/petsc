@@ -13,7 +13,7 @@
 #endif
 
 
-PETSC_EXTERN void PETSC_STDCALL dmdasetfieldname_(DM *da,PetscInt *nf,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL dmdasetfieldname_(DM *da,PetscInt *nf,char* name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
   FIXCHAR(name,len,t);
@@ -21,7 +21,7 @@ PETSC_EXTERN void PETSC_STDCALL dmdasetfieldname_(DM *da,PetscInt *nf,CHAR name 
   FREECHAR(name,t);
 }
 
-PETSC_EXTERN void PETSC_STDCALL dmdagetfieldname_(DM *da,PetscInt *nf,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL dmdagetfieldname_(DM *da,PetscInt *nf,char* name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   const char *tname;
 

@@ -18,7 +18,7 @@ class Configure(config.package.Package):
     config.package.Package.setupHelp(self,help)
     import nargs
     help.addArgument('OpenBLAS', '-download-openblas-64-bit-blas-indices', nargs.ArgBool(None, 0, 'Use 64 bit integers for OpenBLAS'))
-    help.addArgument('OpenBLAS', '-download-openblas-make-options=<options>', nargs.Arg(None, None, 'additional options for sowing make'))
+    help.addArgument('OpenBLAS', '-download-openblas-make-options=<options>', nargs.Arg(None, None, 'additional options for building OpenBLAS'))
     return
 
   def Install(self):

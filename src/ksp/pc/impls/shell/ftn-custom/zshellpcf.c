@@ -238,7 +238,7 @@ PETSC_EXTERN void PETSC_STDCALL pcshellsetview_(PC *pc,void (PETSC_STDCALL *view
   *ierr = PCShellSetView(*pc,ourshellview);
 }
 
-PETSC_EXTERN void PETSC_STDCALL pcshellsetname_(PC *pc,CHAR name PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL pcshellsetname_(PC *pc,char* name PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *c;
   FIXCHAR(name,len,c);
@@ -246,7 +246,7 @@ PETSC_EXTERN void PETSC_STDCALL pcshellsetname_(PC *pc,CHAR name PETSC_MIXED_LEN
   FREECHAR(name,c);
 }
 
-PETSC_EXTERN void PETSC_STDCALL pcshellgetname_(PC *pc,CHAR name PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL pcshellgetname_(PC *pc,char* name PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   const char *c;
 

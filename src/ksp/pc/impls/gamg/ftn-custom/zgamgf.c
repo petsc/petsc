@@ -9,7 +9,7 @@
 #define pcgamgsettype_                pcgamgsettype
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL pcgamggettype_(PC *pc,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL pcgamggettype_(PC *pc,char* name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   const char *tname;
 
@@ -19,7 +19,7 @@ PETSC_EXTERN void PETSC_STDCALL pcgamggettype_(PC *pc,CHAR name PETSC_MIXED_LEN(
 
 }
 
-PETSC_EXTERN void PETSC_STDCALL pcgamgsettype_(PC *pc,CHAR type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL pcgamgsettype_(PC *pc,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 

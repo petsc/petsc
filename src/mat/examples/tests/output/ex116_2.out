@@ -1,0 +1,15 @@
+ LAPACKsyev: compute all 36 eigensolutions...
+    max|(x_j^T*x_i) - delta_ji|: 3.10862e-15
+    max_resi:                    2.76147e-15
+ 1st 10 of 36 singular values: 
+0  7.60388
+1  7.04892
+2  7.04892
+3  6.49396
+4  6.24698
+5  6.24698
+6  5.69202
+7  5.69202
+8  5.3569
+9  5.3569
+ || U*Sigma*VT - A || = 6.18162e-14
