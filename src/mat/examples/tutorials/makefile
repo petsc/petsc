@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/mat/examples/tutorials/
-EXAMPLESC       = ex1.c ex2.c ex4.c ex5.c ex8.c ex9.c ex10.c ex11.c ex12.c ex15.c ex16.c ex17.c
+EXAMPLESC       = ex1.c ex2.c ex5.c ex8.c ex9.c ex10.c ex11.c ex12.c ex15.c ex16.c ex17.c
 EXAMPLESF       =
 MANSEC          = Mat
 
@@ -22,10 +22,6 @@ ex2: ex2.o  chkopts
 ex2_kds: ex2_kds.o  chkopts
 	-${CLINKER}  -o ex2_kds ex2_kds.o ${PETSC_MAT_LIB}
 	${RM} ex2_kds.o
-
-ex4: ex4.o  chkopts
-	-${CLINKER}  -o ex4 ex4.o ${PETSC_MAT_LIB}
-	${RM} ex4.o
 
 ex5: ex5.o  chkopts
 	-${CLINKER}  -o ex5 ex5.o ${PETSC_MAT_LIB}
@@ -131,7 +127,7 @@ runex17:
 	   ${RM} -f ex17_1.tmp
 
 #-------------------------------------------------------------
-TESTEXAMPLES_C		    = ex4.PETSc ex4.rm ex5.PETSc ex5.rm ex10.PETSc ex10.rm ex12.PETSc ex12.rm
+TESTEXAMPLES_C		    = ex5.PETSc ex5.rm ex10.PETSc ex10.rm ex12.PETSc ex12.rm
 TESTEXAMPLES_C_X	    = ex2.PETSc ex2.rm
 TESTEXAMPLES_DOUBLEINT32    = ex12.PETSc runex12 ex12.rm
 TESTEXAMPLES_FORTRAN	    =
