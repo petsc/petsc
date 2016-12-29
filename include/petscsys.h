@@ -2827,6 +2827,26 @@ PETSC_EXTERN PetscErrorCode PetscSubcommSetFromOptions(PetscSubcomm);
 PETSC_EXTERN PetscErrorCode PetscSubcommSetOptionsPrefix(PetscSubcomm,const char[]);
 
 /*S
+     PetscHeap - A simple class for managing heaps
+
+   Level: intermediate
+
+  Concepts: random numbers
+
+.seealso:  PetscHeapCreate(), PetscHeapAdd(), PetscHeapPop(), PetscHeapPeek(), PetscHeapStash(), PetscHeapUnstash(), PetscHeapView(), PetscHeapDestroy()
+S*/
+typedef struct _PetscHeap *PetscHeap;
+
+PETSC_EXTERN PetscErrorCode PetscHeapCreate(PetscInt,PetscHeap*);
+PETSC_EXTERN PetscErrorCode PetscHeapAdd(PetscHeap,PetscInt,PetscInt);
+PETSC_EXTERN PetscErrorCode PetscHeapPop(PetscHeap,PetscInt*,PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscHeapPeek(PetscHeap,PetscInt*,PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscHeapStash(PetscHeap,PetscInt,PetscInt);
+PETSC_EXTERN PetscErrorCode PetscHeapUnstash(PetscHeap);
+PETSC_EXTERN PetscErrorCode PetscHeapDestroy(PetscHeap*);
+PETSC_EXTERN PetscErrorCode PetscHeapView(PetscHeap,PetscViewer);
+
+/*S
    PetscSegBuffer - a segmented extendable buffer
 
    Level: developer
