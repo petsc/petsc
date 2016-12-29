@@ -374,7 +374,7 @@ class generateExamples(Petsc):
       if doForP: fh.write(dlinesP+"\n")
 
     fh.write(footer+"\n")
-    os.chmod(os.path.join(runscript_dir,testname+".sh"),0777)
+    os.chmod(os.path.join(runscript_dir,testname+".sh"),0755)
     return
 
   def  genScriptsAndInfo(self,exfile,root,srcDict):

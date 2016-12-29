@@ -78,10 +78,10 @@ else				# Show the full command line
   quiet = $($1)
 endif
 
-$(generated) : $(petscconf) $(petscvariables)
+$(generated) : $(petscconf) $(petscvariables) config/gmakegen.py
 	$(PYTHON) ./config/gmakegen.py --petsc-arch=$(PETSC_ARCH)
 
-$(generatedtest) : $(petscconf) $(petscvariables)
+$(generatedtest) : $(petscconf) $(petscvariables) config/gmakegentest.py | $$(@D)/.DIR
 	$(PYTHON) ./config/gmakegentest.py --petsc-arch=$(PETSC_ARCH)
 
 $(generatedtestargs) : $(generatedtest) 
@@ -266,10 +266,13 @@ $(testsrcs.o) : $(petscvariables)
 .SUFFIXES: # Clear .SUFFIXES because we don't use implicit rules
 .DELETE_ON_ERROR:               # Delete likely-corrupt target file if rule fails
 
-.PHONY: clean all print
+.PHONY: clean cleantest all print
 
-clean:
-	${RM} -rf $(OBJDIR) $(TESTDIR) $(LIBDIR)/libpetsc* $(MODDIR)/petsc*.mod $(MPIUNI_MOD) $(generated)
+cleantest:
+	${RM} -rf $(TESTDIR) $(generatedtest) $(generatedtestargs)
+
+clean: cleantest
+	${RM} -rf $(OBJDIR) $(LIBDIR)/libpetsc* $(MODDIR)/petsc*.mod $(MPIUNI_MOD) $(generated)
 
 # make print VAR=the-variable
 print:
@@ -300,18 +303,15 @@ filtertest = $(foreach v,$(TESTTARGETS),$(if $(findstring $(searchin),$(v)),$(v)
 filterargs = $(foreach v,$(TESTTARGETS),$(if $(findstring $(argsearch),$(v)),$(v)))
 ifdef search
   NEW_TESTTARGETS = $(filter $(search),$(TESTTARGETS))
-  ACTUAL_RUN=$(NEW_TESTTARGETS)
 else ifdef searchin
   NEW_TESTTARGETS = $(call filtertest)
-  ACTUAL_RUN=$(NEW_TESTTARGETS)
 else ifdef argsearch
-    NEW_TESTTARGETS=$(call filterargs)
-    ACTUAL_RUN=$(NEW_TESTTARGETS)
+  NEW_TESTTARGETS=$(call filterargs)
 else
-    ACTUAL_RUN=testpkgs
+  NEW_TESTTARGETS=testpkgs
 endif
 
-ACTUAL_RUN += report_tests
+ACTUAL_RUN=$(NEW_TESTTARGETS) report_tests
 
 testsearch: $(ACTUAL_RUN)
 
@@ -323,5 +323,5 @@ echo_test:
 echo_testsearch:
 	-@echo $(ACTUAL_RUN)
 
-report_tests: $(ACTUAL_RUN)
+report_tests: $(NEW_TESTTARGETS)
 	-@cd $(TESTDIR); ./report_tests.sh
