@@ -69,6 +69,18 @@ runex1:
 runex5:
 	-@${MPIEXEC} -n 2 ./ex5 -f ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info
 
+runex8:
+	-@${MPIEXEC} -n 1 ./ex8 > ex8_1.tmp 2>&1;   \
+	   if (${DIFF} output/ex8_1.out ex8_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex8, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex8_1.tmp
+
+runex8_2:
+	-@${MPIEXEC} -n 2 ./ex8 > ex8_2.tmp 2>&1;   \
+	   if (${DIFF} output/ex8_2.out ex8_2.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex8_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex8_2.tmp
+
 runex9:
 	-@${MPIEXEC} -n 2 ./ex9 -f ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info
 
@@ -127,7 +139,7 @@ runex17:
 	   ${RM} -f ex17_1.tmp
 
 #-------------------------------------------------------------
-TESTEXAMPLES_C		    = ex5.PETSc ex5.rm ex10.PETSc ex10.rm ex12.PETSc ex12.rm
+TESTEXAMPLES_C		    = ex5.PETSc ex5.rm ex10.PETSc ex8.PETSc runex8 runex8_2 ex8.rm  ex10.rm ex12.PETSc ex12.rm
 TESTEXAMPLES_C_X	    = ex2.PETSc ex2.rm
 TESTEXAMPLES_DOUBLEINT32    = ex12.PETSc runex12 ex12.rm
 TESTEXAMPLES_FORTRAN	    =
