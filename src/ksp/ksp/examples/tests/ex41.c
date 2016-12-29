@@ -49,6 +49,7 @@ int main(int argc,char **argv)
   PetscScalar    *array;
   PetscRandom    rdm;
   PetscBool      Test_3D=PETSC_FALSE,flg;
+  const PetscInt *ia,*ja;
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -96,7 +97,6 @@ int main(int argc,char **argv)
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rdm);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
   if (size == 1) {
-    const PetscInt *ia,*ja;
     ierr = MatGetRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = MatSeqAIJGetArray(A,&array);CHKERRQ(ierr);
@@ -105,13 +105,22 @@ int main(int argc,char **argv)
     }
     ierr = MatRestoreRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg);CHKERRQ(ierr);
   } else {
-    Mat_MPIAIJ *aij = (Mat_MPIAIJ*)A->data;
-    Mat_SeqAIJ *a   = (Mat_SeqAIJ*)(aij->A)->data, *b=(Mat_SeqAIJ*)(aij->B)->data;
-    /* A_part */
-    for (i=0; i<a->i[m]; i++) a->a[i] = one;
-    /* B_part */
-    for (i=0; i<b->i[m]; i++) b->a[i] = one;
-
+    Mat AA,AB;
+    ierr = MatMPIAIJGetSeqAIJ(A,&AA,&AB,NULL);CHKERRQ(ierr);
+    ierr = MatGetRowIJ(AA,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = MatSeqAIJGetArray(AA,&array);CHKERRQ(ierr);
+      for (i=0; i<ia[nrows]; i++) array[i] = one;
+      ierr = MatSeqAIJRestoreArray(AA,&array);CHKERRQ(ierr);
+    }
+    ierr = MatRestoreRowIJ(AA,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg);CHKERRQ(ierr);
+    ierr = MatGetRowIJ(AB,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = MatSeqAIJGetArray(AB,&array);CHKERRQ(ierr);
+      for (i=0; i<ia[nrows]; i++) array[i] = one;
+      ierr = MatSeqAIJRestoreArray(AB,&array);CHKERRQ(ierr);
+    }
+    ierr = MatRestoreRowIJ(AB,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg);CHKERRQ(ierr);
   }
   /* Set up distributed array for coarse grid */
   if (!Test_3D) {
