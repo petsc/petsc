@@ -521,6 +521,22 @@ runex5_redundant_4:
 	   if (${DIFF} output/ex5_redundant_4.out ex5.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex5_redundant_4, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5.tmp
+runex5_superlu_dist:
+	-@${MPIEXEC} -n 15 ./ex5 -pc_type lu -pc_factor_mat_solver_package superlu_dist -mat_superlu_dist_equil false -m 5000 -mat_superlu_dist_r 3 -mat_superlu_dist_c 5 -test_scaledMat > ex5.tmp 2>&1;   \
+	   if (${DIFF} output/ex5_superlu_dist.out ex5.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex5_superlu_dist, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex5.tmp
+runex5_superlu_dist_2:
+	-@${MPIEXEC} -n 15 ./ex5 -pc_type lu -pc_factor_mat_solver_package superlu_dist -mat_superlu_dist_equil false -m 5000 -mat_superlu_dist_r 3 -mat_superlu_dist_c 5 -test_scaledMat -mat_superlu_dist_fact SamePattern_SameRowPerm > ex5.tmp 2>&1;   \
+	   if (${DIFF} output/ex5_superlu_dist.out ex5.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex5_superlu_dist_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex5.tmp
+runex5_superlu_dist_3:
+	-@${MPIEXEC} -n 15 ./ex5 -pc_type lu -pc_factor_mat_solver_package superlu_dist -mat_superlu_dist_equil false -m 500 -mat_superlu_dist_r 3 -mat_superlu_dist_c 5 -test_scaledMat -mat_superlu_dist_fact DOFACT > ex5.tmp 2>&1;   \
+	   if (${DIFF} output/ex5_superlu_dist.out ex5.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex5_superlu_dist_3, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex5.tmp
+
 runex6:
 	-@${MPIEXEC} -n 1 ./ex6 -ksp_view  > ex6_0.tmp 2>&1; \
 	   if (${DIFF} output/ex6_0.out ex6_0.tmp) then true; \
@@ -1745,7 +1761,8 @@ TESTEXAMPLES_PASTIX_DATAFILESPATH       = ex10.PETSc runex10_pastix_lu_1 runex10
                                           ex10.rm
 TESTEXAMPLES_SUPERLU                    = ex52.PETSc runex52_superlu_ilu runex52_superlu ex52.rm
 TESTEXAMPLES_SUPERLU_DATAFILESPATH      = ex10.PETSc runex10_superlu_lu_1 ex10.rm
-TESTEXAMPLES_SUPERLU_DIST               = ex52.PETSc runex52_superlu_dist ex52.rm ex64.PETSc runex64 ex64.rm \
+TESTEXAMPLES_SUPERLU_DIST               = ex5.PETSc runex5_superlu_dist runex5_superlu_dist_2 runex5_superlu_dist_3 ex5.rm \
+                                          ex52.PETSc runex52_superlu_dist ex52.rm ex64.PETSc runex64 ex64.rm \
 	 			          ex62.PETSc runex62_superlu_dist_1 runex62_superlu_dist_2 runex62_superlu_dist_3 runex62_superlu_dist_4 ex62.rm
 TESTEXAMPLES_SUPERLU_DIST_DATAFILESPATH = ex10.PETSc runex10_superlu_dist_lu_1 runex10_superlu_dist_lu_2 runex10_superlu_dist_redundant ex10.rm
 TESTEXAMPLES_STRUMPACK                  = ex52.PETSc runex52_strumpack_ilu runex52_strumpack runex52_strumpack_ilu_2 runex52_strumpack_2 ex52.rm
