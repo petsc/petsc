@@ -106,6 +106,12 @@ runex11:
 	   else printf "${PWD}\nPossible problem with ex11, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex11_1.tmp
 
+runex12:
+	-@${MPIEXEC} -n 1 ./ex12 -f0 ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 > ex12_1.tmp 2>&1;   \
+	   if (${DIFF} output/ex12.out ex12_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex12, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex12_1.tmp
+
 runex15:
 	-@x="bad"; ${MPIEXEC} -n 3 ./ex15 -mat_partitioning_type parmetis > ex15_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex15_1.out ex15_1.tmp > /dev/null 2>&1) then x='good'; fi; \
@@ -127,8 +133,9 @@ runex17:
 #-------------------------------------------------------------
 TESTEXAMPLES_C		    = ex4.PETSc ex4.rm ex5.PETSc ex5.rm ex10.PETSc ex10.rm ex12.PETSc ex12.rm
 TESTEXAMPLES_C_X	    = ex2.PETSc ex2.rm
+TESTEXAMPLES_DOUBLEINT32    = ex12.PETSc runex12 ex12.rm
 TESTEXAMPLES_FORTRAN	    =
-TESTEXAMPLES_C_X_MPIUNI   =
+TESTEXAMPLES_C_X_MPIUNI     =
 TESTEXAMPLES_DATAFILESPATH  = ex1.PETSc runex1 ex1.rm ex5.PETSc runex5 ex5.rm ex9.PETSc runex9 ex9.rm ex10.PETSc runex10_seqaij runex10_seqdense runex10_mpiaij runex10_mpidense ex10.rm
 TESTEXAMPLES_FORTRAN_MPIUNI =
 TESTEXAMPLES_13		    = ex1.PETSc ex1.rm
