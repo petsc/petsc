@@ -13,8 +13,6 @@ static char help[] ="Tests sequential and parallel MatMatMatMult() and MatPtAP()
 
 #include <petscdm.h>
 #include <petscdmda.h>
-#include <../src/mat/impls/aij/seq/aij.h>
-#include <../src/mat/impls/aij/mpi/mpiaij.h>
 
 /* User-defined application contexts */
 typedef struct {

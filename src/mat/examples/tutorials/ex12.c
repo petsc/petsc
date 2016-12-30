@@ -97,6 +97,8 @@ int main(int argc,char **args)
   ierr = MatView(B,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = VecDestroy(&v);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return ierr;

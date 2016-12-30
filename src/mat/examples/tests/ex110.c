@@ -1,7 +1,6 @@
 static char help[] = "Testing MatCreateMPIAIJWithSplitArrays().\n\n";
 
 #include <petscmat.h>
-#include <../src/mat/impls/aij/mpi/mpiaij.h>
 
 int main(int argc,char **argv)
 {
@@ -65,6 +64,7 @@ int main(int argc,char **argv)
   if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Likely a bug in MatCreateMPIAIJWithSplitArrays()");
 
   /* Free spaces */
+  ierr = PetscFree(ooj);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
