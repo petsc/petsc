@@ -1,6 +1,6 @@
 
 #include <petscis.h>
-#include <../src/sys/f90-src/f90impl.h>
+#include <petsc/private/f90impl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define islocaltoglobalmappinggetindicesf90_           ISLOCALTOGLOBALMAPPINGGETINDICESF90

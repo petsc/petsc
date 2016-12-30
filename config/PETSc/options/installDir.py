@@ -38,6 +38,7 @@ class Configure(config.base.Configure):
     self.installSudoMessage = ''
     if self.framework.argDB['prefix']:
       self.dir = os.path.abspath(os.path.expanduser(self.framework.argDB['prefix']))
+      self.addMakeMacro('PREFIXDIR',self.dir)
       try:
         os.makedirs(os.path.join(self.dir,'PETScTestDirectory'))
         os.rmdir(os.path.join(self.dir,'PETScTestDirectory'))

@@ -41,10 +41,6 @@ PETSC_EXTERN PetscErrorCode F90Array4dAccess(F90Array4d*,PetscDataType,void** PE
 PETSC_EXTERN PetscErrorCode F90Array4dDestroy(F90Array4d*,PetscDataType PETSC_F90_2PTR_PROTO_NOVAR);
 PETSC_EXTERN PetscErrorCode F90Array4dGetNextRecord(F90Array4d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
 
-/*
-PETSC_EXTERN PetscErrorCode  F90Array1dGetInfo(F90Array1d*,PetscDataType*,int*,int*);
-PETSC_EXTERN PetscErrorCode  F90Array2dGetInfo(F90Array2d*,PetscDataType*,int*,int*,int*,int*);
-*/
 
 /*
   F90Array1dCreate - Given a C pointer to a one dimensional

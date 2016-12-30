@@ -7193,10 +7193,10 @@ PetscErrorCode MatGetRowIJ(Mat mat,PetscInt shift,PetscBool symmetric,PetscBool 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
-  PetscValidIntPointer(n,4);
-  if (ia) PetscValidIntPointer(ia,5);
-  if (ja) PetscValidIntPointer(ja,6);
-  PetscValidIntPointer(done,7);
+  PetscValidIntPointer(n,5);
+  if (ia) PetscValidIntPointer(ia,6);
+  if (ja) PetscValidIntPointer(ja,7);
+  PetscValidIntPointer(done,8);
   MatCheckPreallocated(mat,1);
   if (!mat->ops->getrowij) *done = PETSC_FALSE;
   else {
@@ -7294,9 +7294,9 @@ PetscErrorCode MatRestoreRowIJ(Mat mat,PetscInt shift,PetscBool symmetric,PetscB
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
-  if (ia) PetscValidIntPointer(ia,5);
-  if (ja) PetscValidIntPointer(ja,6);
-  PetscValidIntPointer(done,7);
+  if (ia) PetscValidIntPointer(ia,6);
+  if (ja) PetscValidIntPointer(ja,7);
+  PetscValidIntPointer(done,8);
   MatCheckPreallocated(mat,1);
 
   if (!mat->ops->restorerowij) *done = PETSC_FALSE;

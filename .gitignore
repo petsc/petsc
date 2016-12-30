@@ -19,6 +19,7 @@ asterix*/*
 linux*/*
 darwin*/*
 arch-*/*
+petsc-install/*
 batch-test
 c_test
 RDict.db
