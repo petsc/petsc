@@ -115,7 +115,7 @@ runex11:
 	   ${RM} -f ex11_1.tmp
 
 runex12:
-	-@${MPIEXEC} -n 1 ./ex12 -f0 ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 > ex12_1.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex12 -f0 ${wPETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 > ex12_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex12.out ex12_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex12, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex12_1.tmp
