@@ -23,7 +23,8 @@ PetscInt main(PetscInt argc,char **args)
   PetscBool      isSymmetric;
   PetscScalar    *arrayA,*evecs_array,*work,*evals;
   PetscMPIInt    size;
-  PetscInt       m,n,i,nevs,il,iu,cklvl=2;
+  PetscInt       m,n,i,cklvl=2;
+  PetscBLASInt   nevs,il,iu,in;
   PetscReal      vl,vu,abstol=1.e-8;
   PetscBLASInt   *iwork,*ifail,lwork,lierr,bn;
   PetscReal      tols[2];
@@ -79,6 +80,7 @@ PetscInt main(PetscInt argc,char **args)
   } else { /* test syevx()  */
     il   = 1;
     ierr = PetscBLASIntCast(0.2*m,&iu);CHKERRQ(ierr);
+    ierr = PetscBLASIntCast(n,&in);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_SELF," LAPACKsyevx: compute %d to %d-th eigensolutions...\n",il,iu);CHKERRQ(ierr);
     ierr  = PetscMalloc1(m*n+1,&evecs_array);CHKERRQ(ierr);
     ierr  = PetscMalloc1(6*n+1,&iwork);CHKERRQ(ierr);
@@ -86,7 +88,7 @@ PetscInt main(PetscInt argc,char **args)
 
     /* in the case "I", vl and vu are not referenced */
     vl = 0.0; vu = 8.0;
-    LAPACKsyevx_("V","I","U",&bn,arrayA,&bn,&vl,&vu,&il,&iu,&abstol,&nevs,evals,evecs_array,&n,work,&lwork,iwork,ifail,&lierr);
+    LAPACKsyevx_("V","I","U",&bn,arrayA,&bn,&vl,&vu,&il,&iu,&abstol,&nevs,evals,evecs_array,&in,work,&lwork,iwork,ifail,&lierr);
     ierr = PetscFree(iwork);CHKERRQ(ierr);
   }
   ierr = MatDenseRestoreArray(A_dense,&arrayA);CHKERRQ(ierr);
@@ -125,7 +127,7 @@ PetscInt main(PetscInt argc,char **args)
     /* Convert aij matrix to MatSeqDense for LAPACK */
     PetscScalar  *arrayU,*arrayVT,*arrayErr,alpha=1.0,beta=-1.0;
     Mat          Err;
-    PetscBLASInt minMN,maxMN;
+    PetscBLASInt minMN,maxMN,im,in;
     PetscInt     j;
     PetscReal    norm;
 
@@ -146,8 +148,10 @@ PetscInt main(PetscInt argc,char **args)
     ierr = MatDenseGetArray(A_dense,&arrayA);CHKERRQ(ierr);
     ierr = PetscMemcpy(arrayErr,arrayA,sizeof(PetscScalar)*m*minMN);CHKERRQ(ierr);
 
+    ierr = PetscBLASIntCast(m,&im);CHKERRQ(ierr);
+    ierr = PetscBLASIntCast(n,&in);CHKERRQ(ierr);
     /* Compute A = U*SIGMA*VT */
-    LAPACKgesvd_("S","S",&m,&n,arrayA,&m,evals,arrayU,&minMN,arrayVT,&minMN,work,&lwork,&lierr);
+    LAPACKgesvd_("S","S",&im,&in,arrayA,&im,evals,arrayU,&minMN,arrayVT,&minMN,work,&lwork,&lierr);
     ierr = MatDenseRestoreArray(A_dense,&arrayA);CHKERRQ(ierr);
     if (!lierr) {
       ierr = PetscPrintf(PETSC_COMM_SELF," 1st 10 of %d singular values: \n",minMN);CHKERRQ(ierr);
@@ -162,7 +166,7 @@ PetscInt main(PetscInt argc,char **args)
       for (i=0; i<m; i++) arrayU[j*m+i] *= evals[j];
     }
     /* Err = U*VT - A = alpha*U*VT + beta*Err */
-    BLASgemm_("N","N",&m,&minMN,&minMN,&alpha,arrayU,&m,arrayVT,&minMN,&beta,arrayErr,&m);
+    BLASgemm_("N","N",&im,&minMN,&minMN,&alpha,arrayU,&im,arrayVT,&minMN,&beta,arrayErr,&im);
     ierr = MatNorm(Err,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_SELF," || U*Sigma*VT - A || = %g\n",(double)norm);CHKERRQ(ierr);
 
