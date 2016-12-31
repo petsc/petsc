@@ -2576,17 +2576,18 @@ PetscErrorCode DMPlexSetSNESLocalFEM(DM dm, void *boundaryctx, void *residualctx
 
 PetscErrorCode DMSNESCheckFromOptions_Internal(SNES snes, DM dm, Vec u, Vec sol, PetscErrorCode (**exactFuncs)(PetscInt, PetscReal, const PetscReal x[], PetscInt, PetscScalar *u, void *ctx), void **ctxs)
 {
+  PetscDS        prob;
   Mat            J, M;
   Vec            r, b;
   MatNullSpace   nullSpace;
   PetscReal     *error, res = 0.0;
   PetscInt       numFields;
+  PetscBool      hasJac, hasPrec;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecDuplicate(u, &r);CHKERRQ(ierr);
   ierr = DMCreateMatrix(dm, &J);CHKERRQ(ierr);
-  M    = J;
   /* TODO Null space for J */
   /* Check discretization error */
   ierr = DMGetNumFields(dm, &numFields);CHKERRQ(ierr);
@@ -2617,7 +2618,20 @@ PetscErrorCode DMSNESCheckFromOptions_Internal(SNES snes, DM dm, Vec u, Vec sol,
   ierr = PetscObjectSetOptionsPrefix((PetscObject)r,"res_");CHKERRQ(ierr);
   ierr = VecViewFromOptions(r, NULL, "-vec_view");CHKERRQ(ierr);
   /* Check Jacobian */
-  ierr = SNESComputeJacobian(snes, u, M, M);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSHasJacobian(prob, &hasJac);CHKERRQ(ierr);
+  ierr = PetscDSHasJacobianPreconditioner(prob, &hasPrec);CHKERRQ(ierr);
+  if (hasJac && hasPrec) {
+    ierr = DMCreateMatrix(dm, &M);CHKERRQ(ierr);
+    ierr = SNESComputeJacobian(snes, u, J, M);CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) M, "jacpre_");CHKERRQ(ierr);
+    ierr = MatViewFromOptions(M, NULL, "-mat_view");CHKERRQ(ierr);
+    ierr = MatDestroy(&M);CHKERRQ(ierr);
+  } else {
+    ierr = SNESComputeJacobian(snes, u, J, J);CHKERRQ(ierr);
+  }
+  ierr = PetscObjectSetOptionsPrefix((PetscObject) J, "jac_");CHKERRQ(ierr);
+  ierr = MatViewFromOptions(J, NULL, "-mat_view");CHKERRQ(ierr);
   ierr = MatGetNullSpace(J, &nullSpace);CHKERRQ(ierr);
   if (nullSpace) {
     PetscBool isNull;
@@ -2627,7 +2641,7 @@ PetscErrorCode DMSNESCheckFromOptions_Internal(SNES snes, DM dm, Vec u, Vec sol,
   ierr = VecDuplicate(u, &b);CHKERRQ(ierr);
   ierr = VecSet(r, 0.0);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes, r, b);CHKERRQ(ierr);
-  ierr = MatMult(M, u, r);CHKERRQ(ierr);
+  ierr = MatMult(J, u, r);CHKERRQ(ierr);
   ierr = VecAXPY(r, 1.0, b);CHKERRQ(ierr);
   ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = VecNorm(r, NORM_2, &res);CHKERRQ(ierr);
