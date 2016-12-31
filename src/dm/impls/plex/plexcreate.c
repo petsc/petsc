@@ -1488,6 +1488,7 @@ static PetscErrorCode DMPlexBuildFromCellList_Parallel_Private(DM dm, PetscInt n
   ierr = PetscMalloc1(numVerticesAdj, &verticesAdj);CHKERRQ(ierr);
   off = 0; ierr = PetscHashIGetKeys(vhash, &off, verticesAdj);CHKERRQ(ierr);
   if (off != numVerticesAdj) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid number of local vertices %D should be %D", off, numVerticesAdj);
+  ierr = PetscSortInt(numVerticesAdj, verticesAdj);CHKERRQ(ierr);
   ierr = PetscMalloc1(numVerticesAdj, &remoteVerticesAdj);CHKERRQ(ierr);
   for (v = 0; v < numVerticesAdj; ++v) {
     const PetscInt gv = verticesAdj[v];
@@ -1614,7 +1615,8 @@ static PetscErrorCode DMPlexBuildCoordinates_Parallel_Private(DM dm, PetscInt sp
 - vertexCoords - An array of numVertices*spaceDim numbers, the coordinates of each vertex
 
   Output Parameter:
-. dm - The DM
++ dm - The DM
+- vertexSF - Optional, SF describing complete vertex ownership
 
   Note: Two triangles sharing a face
 $
@@ -1647,7 +1649,7 @@ $        3
 
 .seealso: DMPlexCreateFromCellList(), DMPlexCreateFromDAG(), DMPlexCreate()
 @*/
-PetscErrorCode DMPlexCreateFromCellListParallel(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, PetscBool interpolate, const int cells[], PetscInt spaceDim, const double vertexCoords[], DM *dm)
+PetscErrorCode DMPlexCreateFromCellListParallel(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, PetscBool interpolate, const int cells[], PetscInt spaceDim, const double vertexCoords[], PetscSF *vertexSF, DM *dm)
 {
   PetscSF        sfVert;
   PetscErrorCode ierr;
@@ -1667,7 +1669,8 @@ PetscErrorCode DMPlexCreateFromCellListParallel(MPI_Comm comm, PetscInt dim, Pet
     *dm  = idm;
   }
   ierr = DMPlexBuildCoordinates_Parallel_Private(*dm, spaceDim, numCells, sfVert, vertexCoords);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&sfVert);CHKERRQ(ierr);
+  if (vertexSF) *vertexSF = sfVert;
+  else ierr = PetscSFDestroy(&sfVert);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1924,8 +1927,9 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
   const char    *extExodus = ".exo";
   const char    *extFluent = ".cas";
   const char    *extHDF5   = ".h5";
+  const char    *extMed    = ".med";
   size_t         len;
-  PetscBool      isGmsh, isCGNS, isExodus, isFluent, isHDF5;
+  PetscBool      isGmsh, isCGNS, isExodus, isFluent, isHDF5, isMed;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
@@ -1940,6 +1944,7 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
   ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extExodus, 4, &isExodus);CHKERRQ(ierr);
   ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extFluent, 4, &isFluent);CHKERRQ(ierr);
   ierr = PetscStrncmp(&filename[PetscMax(0,len-3)], extHDF5,   3, &isHDF5);CHKERRQ(ierr);
+  ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extMed,    4, &isMed);CHKERRQ(ierr);
   if (isGmsh) {
     ierr = DMPlexCreateGmshFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
   } else if (isCGNS) {
@@ -1959,6 +1964,8 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscB
     ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
     ierr = DMLoad(*dm, viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  } else if (isMed) {
+    ierr = DMPlexCreateMedFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
   } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot load file %s: unrecognized extension", filename);
   PetscFunctionReturn(0);
 }

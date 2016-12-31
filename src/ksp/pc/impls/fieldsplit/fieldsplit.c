@@ -2300,9 +2300,8 @@ $              (  0   S  )
        Howard Elman, V.E. Howle, John Shadid, Robert Shuttleworth, Ray Tuminaro, Journal of Computational Physics 227 (2008) 1790--1808
        http://chess.cs.umd.edu/~elman/papers/tax.pdf
 
-   The Constrained Pressure Preconditioner (CPR) does not appear to be currently implementable directly with PCFIELDSPLIT. CPR solves first the Schur complemented pressure equation, updates the
-   residual on all variables and then applies a simple ILU like preconditioner on all the variables. So it is very much like the full Schur complement with selfp representing the Schur complement but instead
-   of backsolving for the saturations in the last step it solves a full coupled (ILU) system for updates to all the variables.
+   The Constrained Pressure Preconditioner (CPR) can be implemented using PCFIELDSPLIT with PCCOMPOSITE. CPR solves first the Schur complemented pressure equation, updates the
+   residual on all variables and then applies a simple ILU like preconditioner on all the variables.
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, Block_Preconditioners, PCLSC,
            PCFieldSplitGetSubKSP(), PCFieldSplitSetFields(), PCFieldSplitSetType(), PCFieldSplitSetIS(), PCFieldSplitSetSchurPre(),
