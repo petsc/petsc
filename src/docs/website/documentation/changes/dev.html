@@ -160,6 +160,48 @@
         <li>Simplified Fortran usage. Now you only include petsc/finclude/petscXXX and use petscXXX</li>
     </div>
 
+    <PRE>
+A)  for each Fortran function (and main) use the following
+
+     subroutine mysubroutine(.....)
+#include &lt;petsc/finclude/petscxxx.h&gt;
+     use petscxxx
+     implicit none
+
+   For example if you are using SNES in your code you would have 
+
+#include &lt;petsc/finclude/petscsnes.h&gt;
+     use petscsnes
+     implicit none
+
+B) Instead of PETSC_NULL_OBJECT you must pass PETSC_NULL_XXX (for example PETSC_NULL_VEC) using the specific object type XXX that the function call is expecting.
+
+C) Objects can be declared either as XXX  a  or  type(tXXX) a, for example Mat a or type(tMat) a.  (Note that previously for those who used types it was type(Mat) but that can no longer be used.
+
+Notes:
+
+1)   There are no longer any .h90 files that may or need to be included
+
+2)    Like C the include files are now nested so you no longer need to include for example
+
+#include &lt;petsc/finclude/petscsys.h&gt;
+#include &lt;petsc/finclude/petscvec.h&gt;
+#include &lt;petsc/finclude/petscmat.h&gt;
+#include &lt;petsc/finclude/petscpc.h&gt;
+#include &lt;petsc/finclude/petscksp.h&gt;
+
+you can just include 
+
+#include &lt;petsc/finclude/petscksp.h&gt;
+
+3) there is now type checking of most function calls. This will help eliminate bugs due to incorrect calling sequences. Note that Fortran distinguishes between a argument that is a scalar (zero dimensional array), a one dimensional array and a two dimensional array (etc). So you may get compile warnings because you are passing in an array when PETSc expects a scalar or vis-versa. If you get these simply fix your declaration of the variable to match what is expected. In some routines like MatSetValues() and friends you can pass either scalars, one dimensional arrays or two dimensional arrays, if you get errors here please send mail to petsc-maint@mcs.anl.gov and include enough of your code so we can see the dimensions of all your variables so we can fix the problems.
+
+4) You can continue to use either fixed (.F extension) or free format (.F90 extension) for your source
+
+5) All the examples in PETSc have been updated so consult them for clarifications.
+
+    </PRE>
+
     <!--end-->
 
     <hr>
