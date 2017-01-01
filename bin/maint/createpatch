@@ -59,9 +59,9 @@ new_version_subminor=`expr $version_subminor + 1`
 oldver=${version_major}.${version_minor}.${version_subminor}
 newver=${version_major}.${version_minor}.${new_version_subminor}
 
-echo #########################################################
-echo ## updating patchlevel from $version_subminor to $new_version_subminor  ##
-echo #########################################################
+echo "#########################################################"
+echo "## updating patchlevel from $version_subminor to $new_version_subminor  ##"
+echo "#########################################################"
 
 
 # Update patchlevel in petscversion.h
@@ -78,7 +78,11 @@ cat src/docs/website/download/index.html.bak | \
 
 # now create a changeset
 git commit -m"Increase patchlevel to ${newver}" include/petscversion.h src/docs/website/download/index.html
-echo #########################################################
-echo # Created patch for the following change                #
-echo #########################################################
+echo "#########################################################"
+echo "# Created patch for the following change                #"
+echo "#########################################################"
 git show HEAD
+echo "#########################################################"
+echo "# Now creating a signed tag for v${newver}              #"
+echo "#########################################################"
+git tag -s -m "PETSc ${newver}" v${newver}
