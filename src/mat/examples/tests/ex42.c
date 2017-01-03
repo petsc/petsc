@@ -108,6 +108,7 @@ int main(int argc,char **args)
     ierr = MatEqual(submatA[i],submatB[i],&flg);CHKERRQ(ierr);
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"proc:[%d], i=%D, flg =%d\n",rank,i,(int)flg);CHKERRQ(ierr);
     ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout);CHKERRQ(ierr);
+    if (!flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"%D-th paralle submatA != seq submatB",i);
   }
 
   /* Free Allocated Memory */
