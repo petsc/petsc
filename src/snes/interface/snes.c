@@ -2,6 +2,7 @@
 #include <petsc/private/snesimpl.h>      /*I "petscsnes.h"  I*/
 #include <petscdmshell.h>
 #include <petscdraw.h>
+#include <petscds.h>
 
 PetscBool         SNESRegisterAllCalled = PETSC_FALSE;
 PetscFunctionList SNESList              = NULL;
@@ -620,10 +621,18 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
     ierr = MatDestroy(&J);CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   } else if (!snes->jacobian_pre) {
-    Mat J,B;
+    PetscDS   prob;
+    Mat       J, B;
+    PetscBool hasPrec = PETSC_FALSE;
+
     J    = snes->jacobian;
-    ierr = DMCreateMatrix(snes->dm,&B);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,J ? J : B,B,NULL,NULL);CHKERRQ(ierr);
+    ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+    if (prob) {ierr = PetscDSHasJacobianPreconditioner(prob, &hasPrec);CHKERRQ(ierr);}
+    if (J)            {ierr = PetscObjectReference((PetscObject) J);CHKERRQ(ierr);}
+    else if (hasPrec) {ierr = DMCreateMatrix(snes->dm, &J);CHKERRQ(ierr);}
+    ierr = DMCreateMatrix(snes->dm, &B);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes, J ? J : B, B, NULL, NULL);CHKERRQ(ierr);
+    ierr = MatDestroy(&J);CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
   {

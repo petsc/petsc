@@ -174,6 +174,15 @@ static void stokes_momentum_vel_J_cx(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   }
 }
 
+/* < q, I q >, Jp_{pp} */
+static void stokes_identity_J(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                              PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g0[])
+{
+  g0[0] = 1.0;
+}
+
 /*
   SolKxSolution - Exact Stokes solutions for exponentially varying viscosity
 
@@ -3162,6 +3171,10 @@ static PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
     ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL,  NULL,  stokes_momentum_vel_J_kx);CHKERRQ(ierr);
     ierr = PetscDSSetJacobian(prob, 0, 1, NULL, NULL,  stokes_momentum_pres_J, NULL);CHKERRQ(ierr);
     ierr = PetscDSSetJacobian(prob, 1, 0, NULL, stokes_mass_J, NULL,  NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobianPreconditioner(prob, 0, 0, NULL, NULL, NULL, stokes_momentum_vel_J_kx);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobianPreconditioner(prob, 0, 1, NULL, NULL, stokes_momentum_pres_J, NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobianPreconditioner(prob, 1, 0, NULL, stokes_mass_J, NULL, NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobianPreconditioner(prob, 1, 1, stokes_identity_J, NULL, NULL, NULL);CHKERRQ(ierr);
     break;
   case SOLCX:
     ierr = PetscDSSetResidual(prob, 0, f0_u, stokes_momentum_cx);CHKERRQ(ierr);
@@ -3332,7 +3345,7 @@ int main(int argc, char **argv)
   SNES            snes;                 /* nonlinear solver */
   DM              dm;                   /* problem definition */
   Vec             u,r;                  /* solution, residual vectors */
-  Mat             J;                    /* Jacobian matrix */
+  Mat             J, M;                 /* Jacobian matrix */
 #if 1
   MatNullSpace    nullSpace;            /* May be necessary for pressure */
   Vec             nullVec;
@@ -3372,7 +3385,7 @@ int main(int argc, char **argv)
 
   /* There should be a way to express this using the DM */
   ierr = SNESSetUp(snes);CHKERRQ(ierr);
-  ierr = SNESGetJacobian(snes, NULL, &J, NULL, NULL);CHKERRQ(ierr);
+  ierr = SNESGetJacobian(snes, &J, &M, NULL, NULL);CHKERRQ(ierr);
   ierr = MatSetNullSpace(J, nullSpace);CHKERRQ(ierr);
 
   ierr = DMProjectFunction(dm, 0.0, user.exactFuncs, ctxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
