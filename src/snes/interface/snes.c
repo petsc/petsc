@@ -628,7 +628,8 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
     J    = snes->jacobian;
     ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
     if (prob) {ierr = PetscDSHasJacobianPreconditioner(prob, &hasPrec);CHKERRQ(ierr);}
-    if (hasPrec && !J) {ierr = DMCreateMatrix(snes->dm, &J);CHKERRQ(ierr);}
+    if (J)            {ierr = PetscObjectReference((PetscObject) J);CHKERRQ(ierr);}
+    else if (hasPrec) {ierr = DMCreateMatrix(snes->dm, &J);CHKERRQ(ierr);}
     ierr = DMCreateMatrix(snes->dm, &B);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes, J ? J : B, B, NULL, NULL);CHKERRQ(ierr);
     ierr = MatDestroy(&J);CHKERRQ(ierr);
