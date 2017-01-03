@@ -182,7 +182,6 @@ SNES Object: 1 MPI processes
       rows=151, cols=151
       total: nonzeros=3437, allocated nonzeros=3437
       total number of mallocs used during MatSetValues calls =0
-        has attached null space
         using I-node routines: found 80 nodes, limit used is 5
 Number of SNES iterations = 1
 L_2 Error: 0.00627 [7.89e-05, 0.00627]
