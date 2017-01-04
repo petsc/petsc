@@ -19,7 +19,7 @@ if __name__ == '__main__':
   configure_options = [
     '--download-mpich=1', # /usr/bin/mpicc does not resolve '__gcov_merge_add'? and gcc-4.4 gives gcov errors
     '--with-display=140.221.10.20:0.0', # for matlab example with graphics
-    '--with-blas-lapack-dir=/soft/com/packages/MATLAB/R2016a',
+    '--with-blaslapack-dir=/soft/com/packages/MATLAB/R2016a',
     '--with-matlab=1',
     '--with-matlab-engine=1',
     '--with-matlabengine-lib=-Wl,-rpath,/soft/com/packages/MATLAB/R2016a/sys/os/glnxa64:/soft/com/packages/MATLAB/R2016a/bin/glnxa64:/soft/com/packages/MATLAB/R2016a/extern/lib/glnxa64 -L/soft/com/packages/MATLAB/R2016a/bin/glnxa64 -L/soft/com/packages/MATLAB/R2016a/extern/lib/glnxa64 -leng -lmex -lmx -lmat -lut -lmwm_dispatcher -lmwopcmodel -lmwservices -lmwservices -lmwopcmodel -lmwopcmodel -lmwm_dispatcher -lmwmpath -lmwopcmodel -lmwservices -lmwopcmodel -lmwservices -lxerces-c',

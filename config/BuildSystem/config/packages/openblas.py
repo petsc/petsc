@@ -13,6 +13,7 @@ class Configure(config.package.Package):
     self.download         = ['git://https://github.com/xianyi/OpenBLAS.git','https://github.com/xianyi/OpenBLAS/archive/'+self.gitcommit+'.tar.gz']
     self.precisions       = ['single','double']
     self.fc               = 1
+    self.installwithbatch = 1
 
   def setupHelp(self, help):
     config.package.Package.setupHelp(self,help)
