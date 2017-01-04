@@ -1000,7 +1000,7 @@ static PetscErrorCode PCGAMGSetNlevels_GAMG(PC pc, PetscInt n)
 
    Concepts: Unstructured multigrid preconditioner
 
-.seealso: ()
+.seealso: PCGAMGFilterGraph()
 @*/
 PetscErrorCode PCGAMGSetThreshold(PC pc, PetscReal v[], PetscInt n)
 {
