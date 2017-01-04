@@ -645,7 +645,7 @@ class Package(config.base.Configure):
         retriever.saveLog()
         pkgdir = self.getDir()
         if not pkgdir:
-          raise RuntimeError('Failed to download '+self.PACKAGE)
+          raise RuntimeError('Could not located downloaded package ' +self.PACKAGE +' in '+self.externalPackagesDir)
         self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.PACKAGE+' into '+pkgdir)
         retriever.restoreLog()
         return pkgdir
@@ -653,7 +653,7 @@ class Package(config.base.Configure):
         self.logPrint('ERROR: '+str(e))
         err += str(e)
     self.logWrite(retriever.restoreLog())
-    raise RuntimeError('Unable to download '+self.PACKAGE+'\n'+err)
+    raise RuntimeError('Error during download/extract/detection of '+self.PACKAGE+':\n'+err)
 
   def Install(self):
     raise RuntimeError('No custom installation implemented for package '+self.package+'\n')
