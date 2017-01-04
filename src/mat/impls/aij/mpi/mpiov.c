@@ -2377,55 +2377,6 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
   ierr = PetscMalloc1(nrqs+1,&r_status3);CHKERRQ(ierr);
   ierr = PetscMalloc1(nrqr+1,&s_status3);CHKERRQ(ierr);
 
-  /* Allocate buffers for a->a, and send them off */
-  ierr = PetscMalloc1(nrqr+1,&sbuf_aa);CHKERRQ(ierr);
-  for (i=0,j=0; i<nrqr; i++) j += req_size[i];
-  ierr = PetscMalloc1(j+1,&sbuf_aa[0]);CHKERRQ(ierr);
-  for (i=1; i<nrqr; i++) sbuf_aa[i] = sbuf_aa[i-1] + req_size[i-1];
-
-  ierr = PetscMalloc1(nrqr+1,&s_waits4);CHKERRQ(ierr);
-  {
-    PetscInt    nzA,nzB,*a_i = a->i,*b_i = b->i, *cworkB,lwrite;
-    PetscInt    cstart = C->cmap->rstart,rstart = C->rmap->rstart,*bmap = c->garray;
-    PetscInt    cend   = C->cmap->rend;
-    PetscInt    *b_j   = b->j;
-    PetscScalar *vworkA,*vworkB,*a_a = a->a,*b_a = b->a;
-
-    for (i=0; i<nrqr; i++) {
-      rbuf1_i   = rbuf1[i];
-      sbuf_aa_i = sbuf_aa[i];
-      ct1       = 2*rbuf1_i[0]+1;
-      ct2       = 0;
-      for (j=1,max1=rbuf1_i[0]; j<=max1; j++) {
-        kmax = rbuf1_i[2*j];
-        for (k=0; k<kmax; k++,ct1++) {
-          row    = rbuf1_i[ct1] - rstart;
-          nzA    = a_i[row+1] - a_i[row];     nzB = b_i[row+1] - b_i[row];
-          ncols  = nzA + nzB;
-          cworkB = b_j + b_i[row];
-          vworkA = a_a + a_i[row];
-          vworkB = b_a + b_i[row];
-
-          /* load the column values for this row into vals*/
-          vals = sbuf_aa_i+ct2;
-
-          lwrite = 0;
-          for (l=0; l<nzB; l++) {
-            if ((bmap[cworkB[l]]) < cstart) vals[lwrite++] = vworkB[l];
-          }
-          for (l=0; l<nzA; l++) vals[lwrite++] = vworkA[l];
-          for (l=0; l<nzB; l++) {
-            if ((bmap[cworkB[l]]) >= cend) vals[lwrite++] = vworkB[l];
-          }
-
-          ct2 += ncols;
-        }
-      }
-      ierr = MPI_Isend(sbuf_aa_i,req_size[i],MPIU_SCALAR,req_source[i],tag3,comm,s_waits4+i);CHKERRQ(ierr);
-    }
-  }
-  ierr = PetscFree(rbuf1[0]);CHKERRQ(ierr);
-  ierr = PetscFree(rbuf1);CHKERRQ(ierr);
   ierr = PetscMalloc1(nrqs+1,&r_status4);CHKERRQ(ierr);
   ierr = PetscMalloc1(nrqr+1,&s_status4);CHKERRQ(ierr);
 
@@ -2653,6 +2604,57 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
 
     }
   }
+
+    /* Allocate buffers for a->a, and send them off */
+  ierr = PetscMalloc1(nrqr+1,&sbuf_aa);CHKERRQ(ierr);
+  for (i=0,j=0; i<nrqr; i++) j += req_size[i];
+  ierr = PetscMalloc1(j+1,&sbuf_aa[0]);CHKERRQ(ierr);
+  for (i=1; i<nrqr; i++) sbuf_aa[i] = sbuf_aa[i-1] + req_size[i-1];
+
+  ierr = PetscMalloc1(nrqr+1,&s_waits4);CHKERRQ(ierr);
+  {
+    PetscInt    nzA,nzB,*a_i = a->i,*b_i = b->i, *cworkB,lwrite;
+    PetscInt    cstart = C->cmap->rstart,rstart = C->rmap->rstart,*bmap = c->garray;
+    PetscInt    cend   = C->cmap->rend;
+    PetscInt    *b_j   = b->j;
+    PetscScalar *vworkA,*vworkB,*a_a = a->a,*b_a = b->a;
+
+    for (i=0; i<nrqr; i++) {
+      rbuf1_i   = rbuf1[i];
+      sbuf_aa_i = sbuf_aa[i];
+      ct1       = 2*rbuf1_i[0]+1;
+      ct2       = 0;
+      for (j=1,max1=rbuf1_i[0]; j<=max1; j++) {
+        kmax = rbuf1_i[2*j];
+        for (k=0; k<kmax; k++,ct1++) {
+          row    = rbuf1_i[ct1] - rstart;
+          nzA    = a_i[row+1] - a_i[row];     nzB = b_i[row+1] - b_i[row];
+          ncols  = nzA + nzB;
+          cworkB = b_j + b_i[row];
+          vworkA = a_a + a_i[row];
+          vworkB = b_a + b_i[row];
+
+          /* load the column values for this row into vals*/
+          vals = sbuf_aa_i+ct2;
+
+          lwrite = 0;
+          for (l=0; l<nzB; l++) {
+            if ((bmap[cworkB[l]]) < cstart) vals[lwrite++] = vworkB[l];
+          }
+          for (l=0; l<nzA; l++) vals[lwrite++] = vworkA[l];
+          for (l=0; l<nzB; l++) {
+            if ((bmap[cworkB[l]]) >= cend) vals[lwrite++] = vworkB[l];
+          }
+
+          ct2 += ncols;
+        }
+      }
+      ierr = MPI_Isend(sbuf_aa_i,req_size[i],MPIU_SCALAR,req_source[i],tag3,comm,s_waits4+i);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscFree(rbuf1[0]);CHKERRQ(ierr);
+  ierr = PetscFree(rbuf1);CHKERRQ(ierr);
+
 
   /* Assemble the matrices */
   /* First assemble the local rows */
