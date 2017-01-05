@@ -1990,7 +1990,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_SingleIS(Mat C,PetscInt ismax,const IS i
 
   PetscFunctionBegin;
   /* Allocate memory to hold all the submatrices */
-  if (scall != MAT_REUSE_MATRIX) {
+  if (scall == MAT_INITIAL_MATRIX) {
     ierr = PetscMalloc1(1,submat);CHKERRQ(ierr);
   }
 
@@ -2036,8 +2036,9 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[],co
   }
 
   /* Allocate memory to hold all the submatrices */
-  if (scall != MAT_REUSE_MATRIX) {
+  if (scall == MAT_INITIAL_MATRIX) {
     ierr = PetscMalloc1(ismax+1,submat);CHKERRQ(ierr);
+    if (!ismax) PetscFunctionReturn(0);
   }
 
   /* Check for special case: each processor gets entire matrix columns */
@@ -3124,7 +3125,7 @@ PetscErrorCode MatGetSubMatricesMPI_MPIXAIJ(Mat C,PetscInt ismax,const IS isrow[
 {
   PetscErrorCode ierr;
   PetscMPIInt    isize,flag;
-  PetscInt       i,ii,cismax,ispar,ciscol_localsize;
+  PetscInt       i,ii,cismax,ispar;
   Mat            *A,*B;
   IS             *isrow_p,*iscol_p,*cisrow,*ciscol,*ciscol_p;
 
@@ -3138,6 +3139,7 @@ PetscErrorCode MatGetSubMatricesMPI_MPIXAIJ(Mat C,PetscInt ismax,const IS isrow[
     ierr = MPI_Comm_size(((PetscObject)isrow[i])->comm, &isize);CHKERRQ(ierr);
     if (isize > 1) ++cismax;
   }
+
   /*
      If cismax is zero on all C's ranks, then and only then can we use purely sequential matrix extraction.
      ispar counts the number of parallel ISs across C's comm.
@@ -3242,55 +3244,13 @@ PetscErrorCode MatGetSubMatricesMPI_MPIXAIJ(Mat C,PetscInt ismax,const IS isrow[
   /* Parallel matrix array is allocated here only if no reuse is taking place. If reused, it is passed in by the caller. */
   if (scall == MAT_INITIAL_MATRIX) {
     ierr = PetscMalloc1(ismax,submat);CHKERRQ(ierr);
-    /* If not reusing, sequential matrix arrays are allocated by getsubmats_seq(). */
-  } else {
-    ierr = PetscMalloc1(ismax,&A);CHKERRQ(ierr);
-    ierr = PetscMalloc1(cismax,&B);CHKERRQ(ierr);
-    /* If parallel matrices are being reused, then simply reuse the underlying seq matrices as well, unless permutations are not NULL. */
-    for (i = 0, ii = 0; i < ismax; ++i) {
-      ierr = MPI_Comm_size(((PetscObject)isrow[i])->comm,&isize);CHKERRQ(ierr);
-      if (isize > 1) {
-	Mat AA,BB;
-	ierr = (*getlocalmats)((*submat)[i],&AA,&BB);CHKERRQ(ierr);
-	if (!isrow_p[i] && !iscol_p[i]) {
-	  A[i] = AA;
-	} else {
-	  /* TODO: extract A[i] composed on AA. */
-	  ierr = MatDuplicate(AA,MAT_SHARE_NONZERO_PATTERN,A+i);CHKERRQ(ierr);
-	}
-	if (!isrow_p[i] && !ciscol_p[ii]) {
-	  B[ii] = BB;
-	} else {
-	  /* TODO: extract B[ii] composed on BB. */
-	  ierr = MatDuplicate(BB,MAT_SHARE_NONZERO_PATTERN,B+ii);CHKERRQ(ierr);
-	}
-	++ii;
-      } else {
-	if (!isrow_p[i] && !iscol_p[i]) {
-	  A[i] = (*submat)[i];
-	} else {
-	  /* TODO: extract A[i] composed on (*submat)[i]. */
-	  ierr = MatDuplicate((*submat)[i],MAT_SHARE_NONZERO_PATTERN,A+i);CHKERRQ(ierr);
-	}
-      }
-    }
   }
+
   /* Now obtain the sequential A and B submatrices separately. */
-  ierr = (*getsubmats_seq)(C,ismax,isrow,iscol,scall,&A);CHKERRQ(ierr);
-  /* I did not figure out a good way to fix it right now.
-   * Local column size of B[i] is different from the size of ciscol[i].
-   * B[i]'s size is finally determined by MatAssembly, while
-   * ciscol[i] is computed as the complement of iscol[i].
-   * It is better to keep only nonzero indices when computing
-   * the complement ciscol[i].
-   * */
-  if(scall==MAT_REUSE_MATRIX){
-	for(i=0; i<cismax; i++){
-	  ierr = ISGetLocalSize(ciscol[i],&ciscol_localsize);CHKERRQ(ierr);
-	  B[i]->cmap->n = ciscol_localsize;
-	}
-  }
-  ierr = (*getsubmats_seq)(C,cismax,cisrow,ciscol,scall,&B);CHKERRQ(ierr);
+  /* scall=MAT_REUSE_MATRIX is not handled yet, because getsubmats_seq() requires reuse of A and B */
+  ierr = (*getsubmats_seq)(C,ismax,isrow,iscol,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
+  ierr = (*getsubmats_seq)(C,cismax,cisrow,ciscol,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+
   /*
     If scall == MAT_REUSE_MATRIX AND the permutations are NULL, we are done, since the sequential
     matrices A & B have been extracted directly into the parallel matrices containing them, or
@@ -3310,11 +3270,8 @@ PetscErrorCode MatGetSubMatricesMPI_MPIXAIJ(Mat C,PetscInt ismax,const IS isrow[
 	  be destroyed upon destruction of C (use PetscContainerUserDestroy() to clear out the contents).
     */
     MatStructure pattern;
-    if (scall == MAT_INITIAL_MATRIX) {
-      pattern = DIFFERENT_NONZERO_PATTERN;
-    } else {
-      pattern = SAME_NONZERO_PATTERN;
-    }
+    pattern = DIFFERENT_NONZERO_PATTERN;
+
     ierr = MPI_Comm_size(((PetscObject)isrow[i])->comm,&isize);CHKERRQ(ierr);
     /* Construct submat[i] from the Seq pieces A (and B, if necessary). */
     if (isize > 1) {
@@ -3330,39 +3287,31 @@ PetscErrorCode MatGetSubMatricesMPI_MPIXAIJ(Mat C,PetscInt ismax,const IS isrow[
       */
       {
 	Mat AA,BB;
-	AA = NULL;
-	if (isrow_p[i] || iscol_p[i] || scall == MAT_INITIAL_MATRIX) AA = A[i];
-	BB = NULL;
-	if (isrow_p[i] || ciscol_p[ii] || scall == MAT_INITIAL_MATRIX) BB = B[ii];
+        AA = A[i];
+        BB = B[ii];
 	if (AA || BB) {
 	  ierr = setseqmats((*submat)[i],isrow_p[i],iscol_p[i],ciscol_p[ii],pattern,AA,BB);CHKERRQ(ierr);
 	  ierr = MatAssemblyBegin((*submat)[i],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	  ierr = MatAssemblyEnd((*submat)[i],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	}
-	if (isrow_p[i] || iscol_p[i] || scall == MAT_INITIAL_MATRIX) {
-	  /* TODO: Compose AA for future use, if (isrow_p[i] || iscol_p[i]) && MAT_INITIAL_MATRIX. */
-	  ierr = MatDestroy(&AA);CHKERRQ(ierr);
-	}
-	if (isrow_p[i] || ciscol_p[ii] || scall == MAT_INITIAL_MATRIX) {
-	  /* TODO: Compose BB for future use, if (isrow_p[i] || ciscol_p[i]) && MAT_INITIAL_MATRIX */
-	  ierr = MatDestroy(&BB);CHKERRQ(ierr);
-	}
+
+        ierr = MatDestroy(&AA);CHKERRQ(ierr);
+        ierr = MatDestroy(&BB);CHKERRQ(ierr);
       }
       ierr = ISDestroy(ciscol+ii);CHKERRQ(ierr);
       ierr = ISDestroy(ciscol_p+ii);CHKERRQ(ierr);
       ++ii;
     } else { /* if (isize == 1) */
-      if (scall == MAT_INITIAL_MATRIX) {
-	if (isrow_p[i] || iscol_p[i]) {
-	  ierr = MatDuplicate(A[i],MAT_DO_NOT_COPY_VALUES,(*submat)+i);CHKERRQ(ierr);
-	} else (*submat)[i] = A[i];
+      if (scall == MAT_REUSE_MATRIX) {
+        ierr = MatDestroy(&(*submat)[i]);CHKERRQ(ierr);
       }
       if (isrow_p[i] || iscol_p[i]) {
-	ierr = setseqmat((*submat)[i],isrow_p[i],iscol_p[i],pattern,A[i]);CHKERRQ(ierr);
+        ierr = MatDuplicate(A[i],MAT_DO_NOT_COPY_VALUES,(*submat)+i);CHKERRQ(ierr);
+        ierr = setseqmat((*submat)[i],isrow_p[i],iscol_p[i],pattern,A[i]);CHKERRQ(ierr);
 	/* Otherwise A is extracted straight into (*submats)[i]. */
 	/* TODO: Compose A[i] on (*submat([i] for future use, if ((isrow_p[i] || iscol_p[i]) && MAT_INITIAL_MATRIX). */
 	ierr = MatDestroy(A+i);CHKERRQ(ierr);
-      }
+      } else (*submat)[i] = A[i];
     }
     ierr = ISDestroy(&isrow_p[i]);CHKERRQ(ierr);
     ierr = ISDestroy(&iscol_p[i]);CHKERRQ(ierr);
@@ -3374,8 +3323,6 @@ PetscErrorCode MatGetSubMatricesMPI_MPIXAIJ(Mat C,PetscInt ismax,const IS isrow[
   ierr = PetscFree(B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
 
 PetscErrorCode MatGetSubMatricesMPI_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[])
 {
