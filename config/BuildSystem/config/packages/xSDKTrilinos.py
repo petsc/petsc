@@ -29,12 +29,12 @@ class Configure(config.package.CMakePackage):
     # also requires the ./configure option --with-cxx-dialect=C++11
     return
 
-  # the install is delayed until postProcess() since xSDKTrilinos requires PETSc
+  # the install is delayed until postProcess() since xSDKTrilinos install requires PETSc to be installed before xSDKTrilinos can be built
   def Install(self):
     return self.installDir
 
   def configureLibrary(self):
-    ''' Just assume the downloaded library will work'''
+    ''' Since xSDKTrilinos cannot be built until after PETSc is compiled we need to just assume the downloaded library will work'''
     if self.framework.clArgDB.has_key('with-xsdktrilinos'):
       raise RuntimeError('Xsdktrilinos does not support --with-xsdktrilinos; only --download-xsdktrilinos')
     if self.framework.clArgDB.has_key('with-xsdktrilinos-dir'):
