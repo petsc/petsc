@@ -5,7 +5,7 @@ configure_options = [
   '--with-cxx=mpixlcxx_r',
   '--with-fc=mpixlf77_r -qnosave',
 
-  '--with-blas-lapack-lib=-L/soft/apps/LAPACK -llapack_bgp -L/soft/apps/LIBGOTO -lgoto',
+  '--with-blaslapack-lib=-L/soft/apps/LAPACK -llapack_bgp -L/soft/apps/LIBGOTO -lgoto',
   '--with-x=0',
 
   '--with-is-color-value-type=short',

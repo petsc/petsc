@@ -24,7 +24,7 @@ if __name__ == '__main__':
     '--CXXOPTFLAGS=-fast -mp',
     '--FOPTFLAGS=-fast -mp',
 
-    '--with-blas-lapack-lib=-L/opt/acml/4.4.0/pgi64/lib -lacml -lacml_mv',
+    '--with-blaslapack-lib=-L/opt/acml/4.4.0/pgi64/lib -lacml -lacml_mv',
     #'--with-mpiexec=/bin/false',
     '--with-shared-libraries=0',
     '--with-x=0',
