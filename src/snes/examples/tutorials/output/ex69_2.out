@@ -17,16 +17,15 @@ L_2 Residual: 0.00859623
 Linear L_2 Residual: 0.00859623
   0 SNES Function norm 0.0669208 
     0 KSP Residual norm 0.634265 
-    1 KSP Residual norm 3.261e-10 
-    2 KSP Residual norm < 1.e-11
-  Linear solve converged due to CONVERGED_RTOL iterations 2
+    1 KSP Residual norm 4.712e-10 
+  Linear solve converged due to CONVERGED_RTOL iterations 1
   1 SNES Function norm < 1.e-11
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=2
+  total number of linear solver iterations=1
   total number of function evaluations=2
   norm schedule ALWAYS
   SNESLineSearch Object: 1 MPI processes
@@ -41,7 +40,7 @@ SNES Object: 1 MPI processes
       GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       GMRES: happy breakdown tolerance 1e-30
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-10, absolute=1e-50, divergence=10000.
+    tolerances:  relative=1e-09, absolute=1e-50, divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
   PC Object: 1 MPI processes
@@ -98,7 +97,19 @@ SNES Object: 1 MPI processes
           left preconditioning
           using PRECONDITIONED norm type for convergence test
         PC Object: (fieldsplit_pressure_) 1 MPI processes
-          type: jacobi
+          type: lu
+            out-of-place factorization
+            tolerance for zero pivot 2.22045e-14
+            matrix ordering: nd
+            factor fill ratio given 5., needed 1.75912
+              Factored matrix follows:
+                Mat Object: 1 MPI processes
+                  type: seqaij
+                  rows=25, cols=25
+                  package used to perform factorization: petsc
+                  total: nonzeros=241, allocated nonzeros=241
+                  total number of mallocs used during MatSetValues calls =0
+                    using I-node routines: found 19 nodes, limit used is 5
           linear system matrix followed by preconditioner matrix:
           Mat Object: (fieldsplit_pressure_) 1 MPI processes
             type: schurcomplement
@@ -272,7 +283,7 @@ Vec Object: Solution 1 MPI processes
 -0.00228315
 -0.00232911
 -0.00554699
-6.33918e-07
+6.33919e-07
 -0.00599244
 1.45631e-05
 -0.00449301
