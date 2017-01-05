@@ -2038,7 +2038,6 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[],co
   /* Allocate memory to hold all the submatrices */
   if (scall == MAT_INITIAL_MATRIX) {
     ierr = PetscMalloc1(ismax+1,submat);CHKERRQ(ierr);
-    if (!ismax) PetscFunctionReturn(0);
   }
 
   /* Check for special case: each processor gets entire matrix columns */
