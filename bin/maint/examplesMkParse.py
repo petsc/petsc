@@ -324,8 +324,6 @@ class makeParse(object):
       if subDict["filter"].strip(): order.append("filter")
     if subDict.has_key("output_file"):
       if subDict["output_file"].strip(): order.append("output_file")
-    if subDict.has_key("redirect_file"):
-      if subDict["redirect_file"].strip(): order.append("redirect_file")
     if subDict.has_key("localrunfiles"):
       if subDict["localrunfiles"].strip(): order.append("localrunfiles")
      
@@ -543,13 +541,8 @@ class makeParse(object):
       if 'options_file_yaml' in subDict['args']:
         subDict['localrunfiles']=subDict['args'].split('options_file_yaml')[1].split()[0]
 
-    # Pull out the redirect file
-    if "> " in scriptStr:
-      redfile=scriptStr.split('> ')[1].split('2>')[0].strip()
-      defaultRed=runexName[3:]+".tmp"
-      if redfile != defaultRed: subDict['redirect_file']=redfile
-    else:
-      # Without redirect, cannot do diffs so it needs work
+    # Without redirect, cannot do diffs so it needs work
+    if not "> " in scriptStr:
       subDict['TODO']="Need to develop comparison test"
 
     # Do filters
@@ -626,13 +619,8 @@ class makeParse(object):
       if 'options_file_yaml' in subDict['args']:
         subDict['localrunfiles']=subDict['args'].split('options_file_yaml')[1].strip().split()[0]
 
-    # Pull out the redirect file
-    if "> " in mpiLine:
-      redfile=mpiLine.split('> ')[1].split('2>')[0].strip()
-      defaultRed=runexName[3:]+".tmp"
-      if redfile != defaultRed: subDict['redirect_file']=redfile
-    else:
-      # Without redirect, cannot do diffs so it needs work
+    # Without redirect, cannot do diffs so it needs work
+    if not "> " in mpiLine:
       subDict['TODO']="Need to develop comparison test"
 
     # Do filters
