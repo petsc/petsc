@@ -541,8 +541,11 @@ class makeParse(object):
       if 'options_file_yaml' in subDict['args']:
         subDict['localrunfiles']=subDict['args'].split('options_file_yaml')[1].split()[0]
 
-    # Without redirect, cannot do diffs so it needs work
-    if not "> " in scriptStr:
+    # Pull out the redirect file
+    if "> " in scriptStr:
+      redfile=scriptStr.split('> ')[1].split('2>')[0].strip()
+    else:
+      # Without redirect, cannot do diffs so it needs work
       subDict['TODO']="Need to develop comparison test"
 
     # Do filters
@@ -619,8 +622,11 @@ class makeParse(object):
       if 'options_file_yaml' in subDict['args']:
         subDict['localrunfiles']=subDict['args'].split('options_file_yaml')[1].strip().split()[0]
 
-    # Without redirect, cannot do diffs so it needs work
-    if not "> " in mpiLine:
+    # Pull out the redirect file
+    if "> " in mpiLine:
+      redfile=mpiLine.split('> ')[1].split('2>')[0].strip()
+    else:
+      # Without redirect, cannot do diffs so it needs work
       subDict['TODO']="Need to develop comparison test"
 
     # Do filters
