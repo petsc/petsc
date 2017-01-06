@@ -372,7 +372,9 @@ class makeParse(object):
     if not testStr.strip(): 
       testStr=testStr+"\n"+indent+"test:"+"\n"+indent*2+"TODO: Need to implement test\n"
     testStr="\n\n/*TEST\n"+testStr+'\nTEST*/\n'
-    if isFortran: testStr=testStr.replace("\n","\n!").rstrip("!")
+    if isFortran: 
+      testStr=testStr.replace("\n","\n!").rstrip("!")
+      testStr=re.sub("!\s+\n","!\n",testStr)
     return testStr
 
   def _isFortran(self,filename):

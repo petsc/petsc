@@ -323,5 +323,5 @@ echo_test:
 echo_testsearch:
 	-@echo $(ACTUAL_RUN)
 
-report_tests: $(NEW_TESTTARGETS)
-	-@cd $(TESTDIR); ./report_tests.sh
+report_tests:
+	-@cd $(TESTDIR); ./report_tests.py

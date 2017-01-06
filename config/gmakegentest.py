@@ -55,7 +55,7 @@ class generateExamples(Petsc):
 
     # Copy petsc tests harness script
     harness_file=os.path.join(self.petsc_dir,"config","petsc_harness.sh")
-    reports_file=os.path.join(self.petsc_dir,"config","report_tests.sh")
+    reports_file=os.path.join(self.petsc_dir,"config","report_tests.py")
     self.testroot_dir=os.path.join(self.arch_dir,"tests")
     if not os.path.isdir(self.testroot_dir): os.makedirs(self.testroot_dir)
     shutil.copy(harness_file,self.testroot_dir)

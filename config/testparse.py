@@ -58,9 +58,10 @@ def _stripIndent(block,srcfile):
   """
   # The first entry should be test: but it might be indented. 
   ext=os.path.splitext(srcfile)[1]
-  for line in block.split("\n"):
+  for lline in block.split("\n"):
+    line=lline[1:] if lline.startswith("!") else lline
     if not line.strip(): continue
-    stripstr=" " if not ext.startswith(".F") else "! "
+    stripstr=" "
     nspace=len(line)-len(line.lstrip(stripstr))
     newline=line[nspace:]
     break
@@ -68,7 +69,8 @@ def _stripIndent(block,srcfile):
   # Strip off any indentation for the whole string and any trailing
   # whitespace for convenience
   newTestStr="\n"
-  for line in block.split("\n"):
+  for lline in block.split("\n"):
+    line=lline[1:] if lline.startswith("!") else lline
     if not line.strip(): continue
     newline=line[nspace:]
     newTestStr=newTestStr+newline.rstrip()+"\n"
