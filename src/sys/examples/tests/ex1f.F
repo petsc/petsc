@@ -56,10 +56,9 @@
 
 !
 !/*TEST
-!   
-!   test:
+!
+!     test:
 !      output_file: output/ex1f_1.out
-!      redirect_file: ex1f.tmp1
 !      TODO: Needs further development from conversion
 !
 !TEST*/

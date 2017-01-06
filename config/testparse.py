@@ -22,12 +22,11 @@ T*/
 
 
 /*TEST
-   
+
    test:
       args: -pc_type mg -ksp_type fgmres -da_refine 2 -ksp_monitor_short -mg_levels_ksp_monitor_short -mg_levels_ksp_norm_type unpreconditioned -ksp_view -pc_mg_type full
       output_file: output/ex25_1.out
-      redirect_file: ex25_1.tmp
-   
+
    test:
       suffix: 2
       nsize: 2

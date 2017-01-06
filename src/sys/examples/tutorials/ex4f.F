@@ -66,10 +66,9 @@
 
 !
 !/*TEST
-!   
+!
 !   test:
 !      nsize: 5
-!      redirect_file: ex4f_1.tmp
 !      TODO: sort -b |  Need to check for filter and/or filter_output
 !
 !TEST*/

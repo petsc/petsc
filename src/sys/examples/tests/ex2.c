@@ -35,10 +35,9 @@ int main(int argc,char **argv)
 
 
 /*TEST
-   
+
    test:
       output_file: output/ex2_1.out
-      redirect_file: ex2.tmp1
       TODO: Needs further development from conversion
 
 TEST*/

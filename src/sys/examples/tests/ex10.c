@@ -53,9 +53,8 @@ int main(int argc,char **argv)
 
 
 /*TEST
-   
+
    test:
       output_file: output/ex10_1.out
-      redirect_file: ex10_1.tmp
 
 TEST*/

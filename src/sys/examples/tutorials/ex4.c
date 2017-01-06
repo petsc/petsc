@@ -66,10 +66,9 @@ int main(int argc, char *argv[])
 
 
 /*TEST
-   
+
    test:
       nsize: 5
-      redirect_file: ex4_1.tmp
       TODO: sort -b |  Need to check for filter and/or filter_output
 
 TEST*/

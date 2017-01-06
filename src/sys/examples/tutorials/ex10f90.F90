@@ -28,12 +28,12 @@
 
 !
 !/*TEST
-!   
+!
 !   test:
 !      suffix: 1
 !      args: -f petsc.yml
 !      localrunfiles: petsc.yml
-!     
+!
 !   test:
 !      suffix: 2
 !      requires: yaml

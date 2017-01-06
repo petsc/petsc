@@ -40,10 +40,9 @@
 
 !
 !/*TEST
-!   
+!
 !   test:
 !      args: -joe_jeff b456
 !      output_file: output/ex8f90_1.out
-!      redirect_file: ex8f90_1.tmp
 !
 !TEST*/

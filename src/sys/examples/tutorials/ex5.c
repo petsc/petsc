@@ -133,12 +133,11 @@ int main(int argc,char **argv)
 
 
 /*TEST
-   
+
    test:
       args: -pbag_rho 44 -pbag_do_output true
       output_file: output/ex5_1.out
-      redirect_file: ex5_1.tmp
-   
+
    test:
       suffix: yaml
       requires: yaml

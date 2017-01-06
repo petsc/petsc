@@ -64,9 +64,8 @@
 
 !
 !/*TEST
-!   
+!
 !   test:
 !      output_file: output/ex4f90_1.out
-!      redirect_file: ex4f90_1.tmp
 !
 !TEST*/
