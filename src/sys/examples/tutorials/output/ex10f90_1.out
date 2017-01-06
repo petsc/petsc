@@ -21,7 +21,6 @@ Option left: name:-cs0001_force value: 0.
 Option left: name:-cs0010_force value: 0.
 Option left: name:-cs0010_hookeslaw value: 1,2,3,4,5,6
 Option left: name:-cs0020_force value: 0.
-Option left: name:-malloc_test (no value)
 Option left: name:-temp_KSP_monitor_true_residual (no value)
 Option left: name:-temp_KSP_type value: cg
 Option left: name:-temp_snes_type value: ksponly
