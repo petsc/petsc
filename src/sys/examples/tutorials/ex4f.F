@@ -69,6 +69,6 @@
 !
 !   test:
 !      nsize: 5
-!      TODO: sort -b |  Need to check for filter and/or filter_output
+!      filter: sort -b
 !
 !TEST*/
