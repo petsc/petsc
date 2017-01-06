@@ -70,5 +70,6 @@ int main(int argc, char *argv[])
    test:
       nsize: 5
       filter: sort -b
+      filter_output: sort -b
 
 TEST*/
