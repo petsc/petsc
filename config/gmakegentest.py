@@ -3,7 +3,7 @@
 import os,shutil, string, re
 from distutils.sysconfig import parse_makefile
 import sys
-import logging
+import logging, time
 import types
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from cmakegen import Mistakes, stripsplit, AUTODIRS, SKIPDIRS
@@ -53,12 +53,9 @@ class generateExamples(Petsc):
         self.sources[pkg][lang]['srcs']=[]
         self.tests[pkg][lang]={}
 
-    # Copy petsc tests harness script
-    harness_file=os.path.join(self.petsc_dir,"config","petsc_harness.sh")
-    reports_file=os.path.join(self.petsc_dir,"config","report_tests.py")
+    # Do some initialization
     self.testroot_dir=os.path.join(self.arch_dir,"tests")
     if not os.path.isdir(self.testroot_dir): os.makedirs(self.testroot_dir)
-
     return
 
   def nameSpace(self,srcfile,srcdir):
@@ -664,6 +661,8 @@ class generateExamples(Petsc):
     fd.write("testinit:\n")
     fd.write("\t-@rm -f ${PETSC_ARCH}/tests/test.log\n")
     fd.write("\t-@touch ${PETSC_ARCH}/tests/test.log\n")
+    fd.write("\t-@rm -f ${PETSC_ARCH}/tests/testcompile.log\n")
+    fd.write("\t-@touch ${PETSC_ARCH}/tests/testcompile.log\n")
     # Add executables to build right way to make the `make test` look
     # nicer
     fd.write("testex: "+testexdeps+"\n")    # Main test target
@@ -744,7 +743,7 @@ class generateExamples(Petsc):
             petsc_lib="${PETSC_"+pkg.upper()+"_LIB}"
             fd.write("\n"+execname+": "+objfile+" ${libpetscall}\n")
             # There should be a better way here
-            line="\t-cd "+testdir+"; ${"+linker+"} -o "+localexec+" "+localobj+" "+petsc_lib
+            line="\t@cd "+testdir+"; ${"+linker+"} -o "+localexec+" "+localobj+" "+petsc_lib+" >> $(PETSC_DIR)/$(PETSC_ARCH)/tests/testcompile.log  2>&1"
             fd.write(line+"\n")
           linker=self.getLanguage(exfile)[0].upper()+"LINKER"
 
