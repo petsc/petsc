@@ -24,12 +24,12 @@ def summarize_results(directory):
         if lval==0: continue
         val=line.split()[1]
         if not val.strip(): continue
-        append=" ("+str(lval)+"), " if lval>1 else ","
+        append=" ("+str(lval)+"), " if lval>1 else ", "
         val=val+append
 
       summary[var]=summary[var]+val
 
-  print "# FAILED "+summary['failures'].rstrip(',')
+  print "# FAILED "+summary['failures'].rstrip(', ')
   total=str(summary['total'])
 
   for t in "success failed todo skip".split():
