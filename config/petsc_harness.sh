@@ -130,3 +130,5 @@ function petsc_testend() {
     /bin/rm -f $rmfiles
   fi
 }
+
+export LC_ALL=C
