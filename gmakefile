@@ -324,4 +324,4 @@ echo_testsearch:
 	-@echo $(ACTUAL_RUN)
 
 report_tests: $(NEW_TESTTARGETS)
-	-@cd $(TESTDIR); $(PYTHON) ./report_tests.py
+	-@$(PYTHON) config/report_tests.py -d $(PETSC_ARCH)/tests/counts

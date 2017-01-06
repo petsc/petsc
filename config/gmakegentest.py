@@ -58,8 +58,6 @@ class generateExamples(Petsc):
     reports_file=os.path.join(self.petsc_dir,"config","report_tests.py")
     self.testroot_dir=os.path.join(self.arch_dir,"tests")
     if not os.path.isdir(self.testroot_dir): os.makedirs(self.testroot_dir)
-    shutil.copy(harness_file,self.testroot_dir)
-    shutil.copy(reports_file,self.testroot_dir)
 
     return
 

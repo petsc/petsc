@@ -8,7 +8,7 @@ testname='@TESTNAME@'
 label=@LABEL@
 runfiles=@LOCALRUNFILES@
 
-. @TESTROOT@/petsc_harness.sh
+. ${PETSC_DIR}/config/petsc_harness.sh
 """
 
 datfilespath="@DATAFILESPATH@"
