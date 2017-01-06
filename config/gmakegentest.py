@@ -310,7 +310,7 @@ class generateExamples(Petsc):
 
     # Now substitute the key variables into the header and footer
     header=self._substVars(subst,example_template.header)
-    footer=re.sub('@TESTSROOT@',subst['testroot'],example_template.footer)
+    footer=re.sub('@TESTROOT@',subst['testroot'],example_template.footer)
 
     # Start writing the file
     fh.write(header+"\n")

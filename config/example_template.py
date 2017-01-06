@@ -11,8 +11,8 @@ runfiles=@LOCALRUNFILES@
 . @TESTROOT@/petsc_harness.sh
 """
 
-datfilepath="@DATAFILEPATH@"
-footer='petsc_testend "@TESTSROOT@" '
+datfilespath="@DATAFILESPATH@"
+footer='petsc_testend "@TESTROOT@" '
 
 todoline='printf "ok ${label} # TODO @TODOCOMMENT@\\n"'
 skipline='printf "ok ${label} # SKIP @SKIPCOMMENT@\\n"'
