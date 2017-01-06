@@ -465,15 +465,6 @@ class generateExamples(Petsc):
         isNull=False
         if requirement.startswith("!"):
           requirement=requirement[1:]; isNull=True
-        # Scalar requirement
-        if requirement=="complex":
-          if self.conf['PETSC_SCALAR']=='complex':
-            if isNull:
-              testDict['SKIP']="Non-complex build required"
-              return False
-          else:
-            testDict['SKIP']="Complex build required"
-            return False
         # Precision requirement for reals
         if requirement in self.precision_types:
           if self.conf['PETSC_PRECISION']==requirement:
@@ -526,13 +517,13 @@ class generateExamples(Petsc):
             return False
 
         # Rest should be packages that we can just get from conf
-        if requirement.upper() == 'COMPLEX':  petscconfvar="PETSC_USE_"+requirement.upper()
+        if requirement == "complex":  petscconfvar="PETSC_USE_COMPLEX"
         else:   petscconfvar="PETSC_HAVE_"+requirement.upper()
         if self.conf.get(petscconfvar):
-          if isNull: 
+          if isNull:
             testDict['SKIP']="Not "+petscconfvar+" requirement not met"
             return False
-        else:
+        elif not isNull:
           if debug: print "requirement not found: ", requirement
           testDict['SKIP']=petscconfvar+" requirement not met"
           return False
