@@ -212,11 +212,13 @@ class generateExamples(Petsc):
     if not testDict.has_key('localrunfiles'): testDict['localrunfiles']=""
     if not testDict.has_key('args'): testDict['args']=""
     defroot=(re.sub("run","",testname) if testname.startswith("run") else testname)
+    #if not testDict.has_key('redirect_file'): testDict['redirect_file']=defroot+".tmp"
     if not testDict.has_key('output_file'): testDict['output_file']="output/"+defroot+".out"
 
     # Setup the variables in template_string that need to be substituted
     subst['srcdir']=os.path.join(self.petsc_dir,rpath)
     subst['label']=self.nameSpace(defroot,subst['srcdir'])
+    #subst['redirect_file']=testDict['redirect_file']
     subst['output_file']=os.path.join(subst['srcdir'],testDict['output_file'])
     subst['exec']="../"+testDict['execname']
     subst['filter']="'"+testDict['filter']+"'"   # Quotes are tricky
