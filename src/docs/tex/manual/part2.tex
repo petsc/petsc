@@ -7733,7 +7733,9 @@ For example, to quickly export a binary file containing a matrix, one may use
 \trl{-mat_view binary:matrix.out}, 
 or to output to a MATLAB-compatible ASCII file, one may use
 \trl{-mat_view ascii:matrix.m:ascii_matlab}.
-See the \lstinline{PetscOptionsGetViewer} man page for full details.
+See the \lstinline{PetscOptionsGetViewer()} man page for full details,
+as well as the \lstinline{XXXViewFromOptions()} man pages (for instance, \lstinline{PetscDrawSetFromOptions()})
+for many other convenient command-line options.
 
 \section{Using SAWS with PETSc} \label{sec_saws}
 \sindex{saws}
@@ -8183,6 +8185,11 @@ Predefined viewers, \lstinline{PETSC_VIEWER_DRAW_WORLD}
 and \lstinline{PETSC_VIEWER_DRAW_SELF}, may be used at any time. Their initial
 use will cause the appropriate window to be created.
 
+Implementations using OpenGL, TikZ, and other formats may be selected with
+\lstinline{PetscDrawSetType()}.
+PETSc can also produce movies; see \lstinline{PetscDrawSetSaveMovie()}, and
+note that command-line options can also be convenient; see the \lstinline{PetscDrawSetFromOptions()} man page.
+
 \medskip
 By default, PETSc drawing tools employ a private colormap,
 which remedies the problem of poor color choices for contour plots due
@@ -8193,7 +8200,7 @@ colormap can be used via the option \trl{-draw_x_shared_colormap}.
 
 \subsection{Simple PetscDrawing}
 
-One can open a window that is not associated with a viewer directly
+With the default format, one can open a window that is not associated with a viewer directly
 under the X11 Window System or OpenGL with the
 command \sindex{X windows} \sindex{OpenGL}
 \begin{lstlisting}
