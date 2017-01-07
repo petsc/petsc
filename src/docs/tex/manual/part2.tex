@@ -7767,9 +7767,9 @@ Also see the manual pages for \lstinline{PetscSAWsBlock}, \lstinline{PetscObject
 
 PETSc programs may be debugged using one of the two options below.
 \begin{itemize}
-\item \trl{-start_in_debugger} \trl{[noxterm,dbx,xxgdb]} \trl{[-display name]}
+\item \trl{-start_in_debugger} \trl{[noxterm,dbx,xxgdb,xdb,xldb,lldb]} \trl{[-display name]}
      - start all processes in debugger
-\item \trl{-on_error_attach_debugger} \trl{[noxterm,dbx,xxgdb]}
+\item \trl{-on_error_attach_debugger} \trl{[noxterm,dbx,xxgdb,xdb,xldb,lldb]}
       \trl{[-display name]} - start debugger only on encountering an error
 \end{itemize}
 Note that, in general, debugging MPI programs cannot be done in the usual
@@ -7778,10 +7778,10 @@ set up the MPI communication and remote processes).
 
 By default the GNU debugger \trl{gdb} is used when \trl{-start_in_debugger}
 or \trl{-on_error_attach_debugger} is specified. \sindex{debugging}
-To employ either {\em xxgdb} or the common UNIX debugger {\em dbx}, one uses
+To employ either \trl{xxgdb} or the common UNIX debugger \trl{dbx}, one uses
 command line options as indicated above. On HP-UX machines the debugger
 \trl{xdb} should be used instead of \trl{dbx}; on RS/6000 machines the
-{\em xldb} debugger is supported as well. 
+\trl{xldb} debugger is supported as well. 
 On OS X systems with XCode tools, \trl{lldb} is available.
 By  default, the debugger will be started in a new xterm (to enable
 running separate debuggers on each process), unless the option
