@@ -1,7 +1,7 @@
 #if !defined(_matcliqueimpl_h)
 #define _matcliqueimpl_h
 
-#include <EL.hpp>
+#include <El.hpp>
 #include <petsc/private/matimpl.h>
 
 #if defined(PETSC_USE_COMPLEX)
