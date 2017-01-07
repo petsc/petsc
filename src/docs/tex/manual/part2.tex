@@ -7644,20 +7644,20 @@ XXXView(XXX obj,PetscViewer viewer);
 Here \lstinline{obj} is any PETSc object of type
 \lstinline{XXX},  where \lstinline{XXX}
 is \lstinline{Mat}, \lstinline{Vec}, \lstinline{SNES}, etc. There are several
-predefined viewers:
+predefined viewers.
 \begin{itemize}
-\item Passing in a zero for the viewer causes the object to be printed
-      to the screen; this is most useful when viewing an object in
-      a debugger.
+  \item Passing in a zero (\lstinline{0}) for the viewer causes the object to be printed
+      to the screen; this is useful when viewing an object in
+      a debugger but should be avoided in source code.
     \item \lstinline{PETSC_VIEWER_STDOUT_SELF} and
       \lstinline{PETSC_VIEWER_STDOUT_WORLD}
-      cause the object to be printed to the screen.
-
+      causes the object to be printed to the screen.
     \item \lstinline{PETSC_VIEWER_DRAW_SELF}
       \lstinline{PETSC_VIEWER_DRAW_WORLD} causes the
-      object to be drawn in a default X window.
+      object to be drawn in a default X window. 
 \item Passing in a viewer obtained by
       \lstinline{PetscViewerDrawOpen()} causes the object to be displayed graphically.
+      See Section \ref{sec_graphics} for more on PETSc's graphics support.
 \item To save an object to a file in ASCII format, the user creates
       the viewer object with the command
       \lstinline{PetscViewerASCIIOpen(MPI_Comm comm, char* file, PetscViewer *viewer)}.
@@ -7667,13 +7667,11 @@ predefined viewers:
       \lstinline{PETSC_VIEWER_STDOUT_WORLD} (for a parallel communicator).
 \item To save an object to a file in binary format, the user creates
       the viewer object with the command
-      \lstinline{PetscViewerBinaryOpen(MPI_Comm) comm,char* file,PetscViewerBinaryType type, PetscViewer *viewer)}. Details of binary
+      \lstinline{PetscViewerBinaryOpen(MPI_Comm comm,char* file,PetscViewerBinaryType type, PetscViewer *viewer)}. Details of binary
       I/O are discussed below.
 \item Vector and matrix objects can be passed to a running MATLAB process
       with a viewer created by
-\begin{lstlisting}
-PetscViewerSocketOpen(MPI_Comm comm,char *machine,int port,PetscViewer *viewer).
-\end{lstlisting}
+    \lstinline{PetscViewerSocketOpen(MPI_Comm comm,char *machine,int port,PetscViewer *viewer)}.
     For more, see Section \ref{sec_matlabsocket}.
 \end{itemize}
 
@@ -7684,8 +7682,8 @@ PetscViewerPushFormat(PetscViewer viewer,PetscViewerFormat format);
 \end{lstlisting}
 \findex{PETSC_VIEWER_DEFAULT} \findex{PETSC_VIEWER_ASCII_MATLAB}
 \findex{PETSC_VIEWER_ASCII_IMPL}
-Possible formats include
-\lstinline{PETSC_VIEWER_DEFAULT}, \break\lstinline{PETSC_VIEWER_ASCII_MATLAB}, and
+Formats include
+\lstinline{PETSC_VIEWER_DEFAULT}, \lstinline{PETSC_VIEWER_ASCII_MATLAB}, and
 \lstinline{PETSC_VIEWER_ASCII_IMPL}.  The implementation-specific format,
 \lstinline{PETSC_VIEWER_ASCII_IMPL}, displays the object in the most natural way
 for a particular implementation.
@@ -8138,6 +8136,7 @@ PETSc include file) can freely use any MPI routine.
 
 % ---------------------------------------------------------------
 \section{Graphics}
+\label{sec_graphics}
 \sindex{graphics}
 
 Th PETSc graphics library is not intended to compete with
