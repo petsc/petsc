@@ -24,7 +24,7 @@ class Configure(config.base.Configure):
       if os.path.exists(os.path.join(self.petscdir.dir, '.git')):
         self.logPrint('.git directory exists')
         if hasattr(self.sourceControl,'git'):
-          (o1, e1, s1) = self.executeShellCommand("cd "+self.petscdir.dir+" && "+self.sourceControl.git+" describe",checkCommand = noCheck, log = self.log)
+          (o1, e1, s1) = self.executeShellCommand('cd '+self.petscdir.dir+' && '+self.sourceControl.git+' describe --match "v*"',checkCommand = noCheck, log = self.log)
           (o2, e2, s2) = self.executeShellCommand("cd "+self.petscdir.dir+" && "+self.sourceControl.git+" log -1 --pretty=format:%H",checkCommand = noCheck, log = self.log)
           (o3, e3, s3) = self.executeShellCommand("cd "+self.petscdir.dir+" && "+self.sourceControl.git+" log -1 --pretty=format:%ci",checkCommand = noCheck, log = self.log)
           (o4, e4, s4) = self.executeShellCommand('cd '+self.petscdir.dir+' && '+self.sourceControl.git+' branch',checkCommand = noCheck, log = self.log)
