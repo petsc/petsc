@@ -7725,6 +7725,7 @@ read into a block oriented data structure (for example,
 which (block) diagonals in the matrix have nonzero values.
 
 \subsection{Viewing From Options}
+\label{sec_viewfromoptions}
 Command-line options provide a particularly convenient way to view PETSc objects.
 All options of the form \trl{-xxx_view} accept colon(\trl{:})-separated compound arguments which
 specify a viewer type, format, and/or destination (e.g. file name or socket) if appropriate.
@@ -8149,24 +8150,27 @@ PETSc include file) can freely use any MPI routine.
 \label{sec_graphics}
 \sindex{graphics}
 
-Th PETSc graphics library is not intended to compete with
+The PETSc graphics library is not intended to compete with
 high-quality graphics packages.  Instead, it is intended to be
 easy to use interactively with PETSc programs. We urge users
 to generate their publication-quality graphics using a
 professional graphics package. If a user wants to hook
-certain packages in PETSc, he or she should send a message to
-\href{mailto:petsc-maint@mcs.anl.gov}{\trl{petsc-maint@mcs.anl.gov}}, and we will see whether it is reasonable
-to try to provide direct interfaces.
+certain packages into PETSc, he or she should send a message to
+\href{mailto:petsc-maint@mcs.anl.gov}{\trl{petsc-maint@mcs.anl.gov}};
+we will see whether it is reasonable to try to provide direct interfaces.
 
 \subsection{Windows as PetscViewers}
-For drawing predefined PETSc objects such as matrices and vectors, one must
+For drawing predefined PETSc objects such as matrices and vectors, one may
 first create a viewer using the
 command
 \begin{lstlisting}
 PetscViewerDrawOpen(MPI_Comm comm,char *display,char *title,int x,int y,int w,int h,PetscViewer *viewer);
 \end{lstlisting}
 This viewer may be passed to any of the \lstinline{XXXView()} routines.
-To draw into the viewer, one must obtain the \lstinline{PetscDraw} object with the
+Alternately, one may use command-line options to quickly specify viewer formats, 
+including \lstinline{PetscDraw}-based ones; see Section \ref{sec_viewfromoptions}.
+
+To draw directly into the viewer, one must obtain the \lstinline{PetscDraw} object with the
 command
 \begin{lstlisting}
 PetscViewerDrawGetDraw(PetscViewer viewer,PetscDraw *draw);
@@ -8182,9 +8186,8 @@ use will cause the appropriate window to be created.
 \medskip
 By default, PETSc drawing tools employ a private colormap,
 which remedies the problem of poor color choices for contour plots due
-to an external program's mangling of the colormap (e.g, Netscape tends
-to do this).
-Unfortunately, this causes flashing of colors as the mouse is moved
+to an external program's mangling of the colormap.
+Unfortunately, this may cause flashing of colors as the mouse is moved
 between the PETSc windows and other windows.  Alternatively, a shared
 colormap can be used via the option \trl{-draw_x_shared_colormap}.
 
@@ -8197,8 +8200,8 @@ command \sindex{X windows} \sindex{OpenGL}
 PetscDrawCreate(MPI_Comm comm,char *display,char *title,int x,int y,int w,int h,PetscDraw *win);
 PetscDrawSetFromOptions(win);
 \end{lstlisting}
-All drawing routines are done relative to the windows coordinate system
-and viewport. By default the drawing coordinates are from \trl{(0,0)} to
+All drawing routines are performed relative to the window's coordinate system
+and viewport. By default, the drawing coordinates are from \trl{(0,0)} to
 \trl{(1,1)}, where \trl{(0,0)} indicates the lower left corner of the
 window. The application program can change the window coordinates with the
 command  \sindex{coordinates}
