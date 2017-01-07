@@ -8125,16 +8125,17 @@ Note that there are many more options available that one can feed into the \text
 
 To use PETSc from MS Visual Studio, one would have to compile a PETSc example with its corresponding makefile and then transcribe all compiler and linker options used in this build into a Visual Studio project file, in the appropriate format in Visual Studio project settings. 
 
-\section{XCode Users (The Apple GUI Development System} \sindex{xcode}
+\section{XCode Users (The Apple GUI Development System)} \sindex{xcode}
 \subsection{Mac OS X}
 
 Follow the instructions in \trl{$PETSC_DIR/systems/Apple/OSX/bin/makeall} to build the PETSc framework and documentation suitable for use in XCode.
 
-You can then use the PETSc framework in \trl{$PETSC_DIR/arch-osx/PETSc.framework} in the usual manner for Apple frameworks, see the examples in \trl{$PETSC_DIR/systems/Apple/OSX/examples}.  When working in XCode, things like function name completion should work for all PETSc functions as well as MPI functions. You must also link against the Apple \trl{Accelerate.framework}.
+You can then use the PETSc framework in \trl{$PETSC_DIR/arch-osx/PETSc.framework} in the usual manner for Apple frameworks.
+See the examples in \trl{$PETSC_DIR/systems/Apple/OSX/examples}.  When working in XCode, things like function name completion should work for all PETSc functions as well as MPI functions. You must also link against the Apple \trl{Accelerate.framework}.
 
 \subsection{iPhone/iPad iOS}
 
-Follow the instructions in \trl{$PETSC_DIR/systems/Apple/ios/bin/iosbuilder.py} to build the PETSc library for use on the iPhone/iPad.
+Follow the instructions in \trl{$PETSC_DIR/systems/Apple/iOS/bin/iosbuilder.py} to build the PETSc library for use on the iPhone/iPad.
 
 You can then use the PETSc static library in \trl{$PETSC_DIR/arch-osx/libPETSc.a} in the usual manner for Apple libraries inside your iOS XCode projects; see the examples in \trl{$PETSC_DIR/systems/Apple/iOS/examples}.  You must also link against the Apple \trl{Accelerate.framework}.
 
