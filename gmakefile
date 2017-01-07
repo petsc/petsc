@@ -107,7 +107,7 @@ PETSC_COMPILE.cu = $(call quiet,CUDAC) -c $(CUDAC_FLAGS) --compiler-options="$(P
 PETSC_GENDEPS.cu = $(call quiet,CUDAC,.dep) --generate-dependencies --output-directory=$(@D) $(CUDAC_FLAGS) --compiler-options="$(PCC_FLAGS) $(CXXFLAGS) $(CCPPFLAGS)"
 PETSC_COMPILE.F = $(call quiet,FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS)
 
-PETSC_TEST_COMPILE.c = $(cc_name) -c $(PCC_FLAGS) $(CFLAGS) $(CCPPFLAGS) $(C_DEPFLAGS)
+PETSC_TEST_COMPILE.c = $($(cc_name)) -c $(PCC_FLAGS) $(CFLAGS) $(CCPPFLAGS) $(C_DEPFLAGS)
 PETSC_TEST_COMPILE.cxx = $(CXX) -c $(CXX_FLAGS) $(CFLAGS) $(CCPPFLAGS) $(CXX_DEPFLAGS)
 PETSC_TEST_COMPILE.cu = $(CUDAC) -c $(CUDAC_FLAGS) --compiler-options="$(PCC_FLAGS) $(CXXFLAGS) $(CCPPFLAGS)"
 PETSC_TEST_GENDEPS.cu = $(CUDAC) --generate-dependencies --output-directory=$(@D) $(CUDAC_FLAGS) --compiler-options="$(PCC_FLAGS) $(CXXFLAGS) $(CCPPFLAGS)"
