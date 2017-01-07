@@ -50,6 +50,7 @@ PetscErrorCode DMPlexGetFieldType_Internal(DM dm, PetscSection section, PetscInt
 PetscErrorCode VecView_Plex_Local_Draw(Vec v, PetscViewer viewer)
 {
   DM                 dm;
+  PetscSection       s;
   PetscDraw          draw, popup;
   DM                 cdm;
   PetscSection       coordSection;
@@ -58,15 +59,21 @@ PetscErrorCode VecView_Plex_Local_Draw(Vec v, PetscViewer viewer)
   PetscReal          bound[4] = {PETSC_MAX_REAL, PETSC_MAX_REAL, PETSC_MIN_REAL, PETSC_MIN_REAL};
   PetscReal          vbound[2], time;
   PetscBool          isnull, flg;
-  PetscInt           dim, vStart, vEnd, cStart, cEnd, c, N, level, step, nmax = 2;
+  PetscInt           dim, Nf, f, Nc, comp, vStart, vEnd, cStart, cEnd, c, N, level, step, w = 0;
   const char        *name;
   char               title[PETSC_MAX_PATH_LEN];
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
+  ierr = PetscViewerDrawGetDraw(viewer, 0, &draw);CHKERRQ(ierr);
+  ierr = PetscDrawIsNull(draw, &isnull);CHKERRQ(ierr);
+  if (isnull) PetscFunctionReturn(0);
+
   ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &dim);CHKERRQ(ierr);
   if (dim != 2) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Cannot draw meshes of dimension %D", dim);
+  ierr = DMGetDefaultSection(dm, &s);CHKERRQ(ierr);
+  ierr = PetscSectionGetNumFields(s, &Nf);CHKERRQ(ierr);
   ierr = DMGetCoarsenLevel(dm, &level);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(cdm, &coordSection);CHKERRQ(ierr);
@@ -74,13 +81,8 @@ PetscErrorCode VecView_Plex_Local_Draw(Vec v, PetscViewer viewer)
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
 
-  ierr = PetscViewerDrawGetDraw(viewer, 0, &draw);CHKERRQ(ierr);
-  ierr = PetscDrawIsNull(draw, &isnull);CHKERRQ(ierr);
-  if (isnull) PetscFunctionReturn(0);
   ierr = PetscObjectGetName((PetscObject) v, &name);CHKERRQ(ierr);
   ierr = DMGetOutputSequenceNumber(dm, &step, &time);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(title, sizeof(title), "%s Step: %D Time: %.4g", name, step, time);CHKERRQ(ierr);
-  ierr = PetscDrawSetTitle(draw, title);CHKERRQ(ierr);
 
   ierr = VecGetLocalSize(coordinates, &N);CHKERRQ(ierr);
   ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
@@ -89,57 +91,98 @@ PetscErrorCode VecView_Plex_Local_Draw(Vec v, PetscViewer viewer)
     bound[1] = PetscMin(bound[1], PetscRealPart(coords[c+1])); bound[3] = PetscMax(bound[3], PetscRealPart(coords[c+1]));
   }
   ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
-  ierr = PetscDrawSetCoordinates(draw, bound[0], bound[1], bound[2], bound[3]);CHKERRQ(ierr);
   ierr = PetscDrawClear(draw);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetRealArray(NULL, v->hdr.prefix, "-vec_view_bounds", vbound, &nmax, &flg);CHKERRQ(ierr);
-  if (!flg) {
-    ierr = VecMin(v, NULL, &vbound[0]);CHKERRQ(ierr);
-    ierr = VecMax(v, NULL, &vbound[1]);CHKERRQ(ierr);
-  }
-  ierr = PetscDrawGetPopup(draw, &popup);CHKERRQ(ierr);
-  ierr = PetscDrawScalePopup(popup, vbound[0], vbound[1]);CHKERRQ(ierr);
+  /* Could implement something like DMDASelectFields() */
+  for (f = 0; f < Nf; ++f) {
+    DM   fdm = dm;
+    Vec  fv  = v;
+    IS   fis;
+    char prefix[PETSC_MAX_PATH_LEN];
+    const char *fname;
 
-  ierr = VecGetArrayRead(v, &array);CHKERRQ(ierr);
-  for (c = cStart; c < cEnd; ++c) {
-    PetscScalar *coords = NULL, *a = NULL;
-    PetscInt     numCoords, color[4];
+    ierr = PetscSectionGetFieldComponents(s, f, &Nc);CHKERRQ(ierr);
+    ierr = PetscSectionGetFieldName(s, f, &fname);CHKERRQ(ierr);
 
-    ierr = DMPlexPointLocalRead(dm, c, array, &a);CHKERRQ(ierr);
-    if (a) {
-      color[0] = PetscDrawRealToColor(PetscRealPart(a[0]), vbound[0], vbound[1]);
-      color[1] = color[2] = color[3] = color[0];
-    } else {
-      PetscScalar *vals = NULL;
-      PetscInt     numVals, va;
+    if (v->hdr.prefix) {ierr = PetscStrcpy(prefix, v->hdr.prefix);CHKERRQ(ierr);}
+    else               {prefix[0] = '\0';}
+    if (Nf > 1) {
+      ierr = DMCreateSubDM(dm, 1, &f, &fis, &fdm);CHKERRQ(ierr);
+      ierr = VecGetSubVector(v, fis, &fv);CHKERRQ(ierr);
+      ierr = PetscStrcat(prefix, fname);CHKERRQ(ierr);
+      ierr = PetscStrcat(prefix, "_");CHKERRQ(ierr);
+    }
+    for (comp = 0; comp < Nc; ++comp, ++w) {
+      PetscInt nmax = 2;
 
-      ierr = DMPlexVecGetClosure(dm, NULL, v, c, &numVals, &vals);CHKERRQ(ierr);
-      switch (numVals) {
-      case 3:
-      case 4:
-        for (va = 0; va < numVals; ++va) color[va] = PetscDrawRealToColor(PetscRealPart(vals[va]), vbound[0], vbound[1]);
-        break;
-      default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of values for cell closure %D cannot be handled", numVals);
+      ierr = PetscViewerDrawGetDraw(viewer, w, &draw);CHKERRQ(ierr);
+      if (Nc > 1) {ierr = PetscSNPrintf(title, sizeof(title), "%s:%s_%D Step: %D Time: %.4g", name, fname, comp, step, time);CHKERRQ(ierr);}
+      else        {ierr = PetscSNPrintf(title, sizeof(title), "%s:%s Step: %D Time: %.4g", name, fname, step, time);CHKERRQ(ierr);}
+      ierr = PetscDrawSetTitle(draw, title);CHKERRQ(ierr);
+
+      /* TODO Get max and min only for this component */
+      ierr = PetscOptionsGetRealArray(NULL, prefix, "-vec_view_bounds", vbound, &nmax, &flg);CHKERRQ(ierr);
+      if (!flg) {
+        ierr = VecMin(fv, NULL, &vbound[0]);CHKERRQ(ierr);
+        ierr = VecMax(fv, NULL, &vbound[1]);CHKERRQ(ierr);
+        if (vbound[1] <= vbound[0]) vbound[1] = vbound[0] + 1.0;
       }
-      ierr = DMPlexVecRestoreClosure(dm, NULL, v, c, &numVals, &vals);CHKERRQ(ierr);
+      ierr = PetscDrawGetPopup(draw, &popup);CHKERRQ(ierr);
+      ierr = PetscDrawScalePopup(popup, vbound[0], vbound[1]);CHKERRQ(ierr);
+      ierr = PetscDrawSetCoordinates(draw, bound[0], bound[1], bound[2], bound[3]);CHKERRQ(ierr);
+
+      ierr = VecGetArrayRead(fv, &array);CHKERRQ(ierr);
+      for (c = cStart; c < cEnd; ++c) {
+        PetscScalar *coords = NULL, *a = NULL;
+        PetscInt     numCoords, color[4];
+
+        ierr = DMPlexPointLocalRead(fdm, c, array, &a);CHKERRQ(ierr);
+        if (a) {
+          color[0] = PetscDrawRealToColor(PetscRealPart(a[comp]), vbound[0], vbound[1]);
+          color[1] = color[2] = color[3] = color[0];
+        } else {
+          PetscScalar *vals = NULL;
+          PetscInt     numVals, va;
+
+          ierr = DMPlexVecGetClosure(fdm, NULL, fv, c, &numVals, &vals);CHKERRQ(ierr);
+          if (numVals % Nc) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The number of components %D does not divide the number of values in the closure %D", Nc, numVals);
+          switch (numVals/Nc) {
+          case 3: /* P1 Triangle */
+          case 4: /* P1 Quadrangle */
+            for (va = 0; va < numVals/Nc; ++va) color[va] = PetscDrawRealToColor(PetscRealPart(vals[va*Nc+comp]), vbound[0], vbound[1]);
+            break;
+          case 6: /* P2 Triangle */
+          case 8: /* P2 Quadrangle */
+            for (va = 0; va < numVals/(Nc*2); ++va) color[va] = PetscDrawRealToColor(PetscRealPart(vals[va*Nc+comp + numVals/(Nc*2)]), vbound[0], vbound[1]);
+            break;
+          default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of values for cell closure %D cannot be handled", numVals/Nc);
+          }
+          ierr = DMPlexVecRestoreClosure(fdm, NULL, fv, c, &numVals, &vals);CHKERRQ(ierr);
+        }
+        ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, c, &numCoords, &coords);CHKERRQ(ierr);
+        switch (numCoords) {
+        case 6:
+          ierr = PetscDrawTriangle(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[2]), PetscRealPart(coords[3]), PetscRealPart(coords[4]), PetscRealPart(coords[5]), color[0], color[1], color[2]);CHKERRQ(ierr);
+          break;
+        case 8:
+          ierr = PetscDrawTriangle(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[2]), PetscRealPart(coords[3]), PetscRealPart(coords[4]), PetscRealPart(coords[5]), color[0], color[1], color[2]);CHKERRQ(ierr);
+          ierr = PetscDrawTriangle(draw, PetscRealPart(coords[4]), PetscRealPart(coords[5]), PetscRealPart(coords[6]), PetscRealPart(coords[7]), PetscRealPart(coords[0]), PetscRealPart(coords[1]), color[2], color[3], color[0]);CHKERRQ(ierr);
+          break;
+        default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot draw cells with %D coordinates", numCoords);
+        }
+        ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, c, &numCoords, &coords);CHKERRQ(ierr);
+      }
+      ierr = VecRestoreArrayRead(fv, &array);CHKERRQ(ierr);
+      ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
+      ierr = PetscDrawPause(draw);CHKERRQ(ierr);
+      ierr = PetscDrawSave(draw);CHKERRQ(ierr);
     }
-    ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, c, &numCoords, &coords);CHKERRQ(ierr);
-    switch (numCoords) {
-    case 6:
-      ierr = PetscDrawTriangle(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[2]), PetscRealPart(coords[3]), PetscRealPart(coords[4]), PetscRealPart(coords[5]), color[0], color[1], color[2]);CHKERRQ(ierr);
-      break;
-    case 8:
-      ierr = PetscDrawTriangle(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[2]), PetscRealPart(coords[3]), PetscRealPart(coords[4]), PetscRealPart(coords[5]), color[0], color[1], color[2]);CHKERRQ(ierr);
-      ierr = PetscDrawTriangle(draw, PetscRealPart(coords[4]), PetscRealPart(coords[5]), PetscRealPart(coords[6]), PetscRealPart(coords[7]), PetscRealPart(coords[0]), PetscRealPart(coords[1]), color[2], color[3], color[0]);CHKERRQ(ierr);
-      break;
-    default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot draw cells with %D coordinates", numCoords);
+    if (Nf > 1) {
+      ierr = VecRestoreSubVector(v, fis, &fv);CHKERRQ(ierr);
+      ierr = ISDestroy(&fis);CHKERRQ(ierr);
+      ierr = DMDestroy(&fdm);CHKERRQ(ierr);
     }
-    ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, c, &numCoords, &coords);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArrayRead(v, &array);CHKERRQ(ierr);
-  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
-  ierr = PetscDrawPause(draw);CHKERRQ(ierr);
-  ierr = PetscDrawSave(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
