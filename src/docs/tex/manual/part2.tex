@@ -7724,6 +7724,16 @@ read into a block oriented data structure (for example,
 \lstinline{s1,s2,s3,...} indicates
 which (block) diagonals in the matrix have nonzero values.
 
+\subsection{Viewing From Options}
+Command-line options provide a particularly convenient way to view PETSc objects.
+All options of the form \trl{-xxx_view} accept colon(\trl{:})-separated compound arguments which
+specify a viewer type, format, and/or destination (e.g. file name or socket) if appropriate.
+For example, to quickly export a binary file containing a matrix, one may use
+\trl{-mat_view binary:matrix.out}, 
+or to output to a MATLAB-compatible ASCII file, one may use
+\trl{-mat_view ascii:matrix.m:ascii_matlab}.
+See the \lstinline{PetscOptionsGetViewer} man page for full details.
+
 \section{Using SAWS with PETSc} \label{sec_saws}
 \sindex{saws}
 The Scientific Application Web server, 
