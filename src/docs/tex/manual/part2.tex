@@ -5216,11 +5216,7 @@ introduced in \cite{Constantinescu_TR2016b}.}
 %
 
 \section{Using fully implicit methods}
-Either provide the Jacobian of $F() $ (and $G()$ if $G()$ is provided) or use a \lstinline{DM} that provides a coloring so the Jacobian can be computed efficiently via finite differences.
-
-{\bf Theta methods}
-
-{\bf GL methods}
+To use a fully implicit method like \lstinline{TSTHETA} or \lstinline{TSGL}, either provide the Jacobian of $F() $ (and $G()$ if $G()$ is provided) or use a \lstinline{DM} that provides a coloring so the Jacobian can be computed efficiently via finite differences.
 
 \section{Using the Explicit Runge-Kutta timestepper with variable timesteps}
 The explicit Euler and Runge-Kutta methods require the ODE be in the form
