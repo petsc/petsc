@@ -94,7 +94,8 @@ typedef struct {
   PetscObjectState mat_nonzerostate;               /* non-zero state when inodes were checked for */
 } Mat_SeqAIJ_Inode;
 
-typedef struct { /* used by MatGetSubMatrices_MPIAIJ_SingleIS_Local() */
+typedef struct { /* used by MatGetSubMatrices_MPIAIJ_SingleIS_Local() and MatGetSubMatrices_MPIAIJ_Local */
+  PetscInt   id;   /* index of submats, only submats[0] is responsible for deleting some arrays below */
   PetscInt   nrqs,nrqr;
   PetscInt   **rbuf1,**rbuf2,**rbuf3,**sbuf1,**sbuf2;
   PetscInt   **ptr;
