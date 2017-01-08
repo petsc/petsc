@@ -8028,26 +8028,22 @@ To make PETSc an Eclipse package
 \item Right-click on the PETSc symlink in the project explorer, and choose "Exclude from build..." to make sure Eclipse does not try to compile PETSc with the project.
 \end{itemize}
 
-\section{Qt Creator} \sindex{Qt Creator}
- Qt Creator is developed as a part of Qt SDK for cross-platform GUI programming using \texttt{C++} and thus has excellent support for application developing using \texttt{C/C++}. This information was provided by Mohammad Mirzadeh.
+\section{Qt Creator Users} \sindex{Qt Creator}
+This information was provided by Mohammad Mirzadeh.
+Qt Creator is developed as a part of the Qt SDK, developed by Nokia Inc. for cross-platform GUI programming using C++. 
+It is available under GPL v3, LGPL v2 and a commercial license and may be obtained, either as a part of Qt SDK or as an stand-alone software, via \url{http://qt.nokia.com/downloads/}.
+It supports automated and cross-platform \texttt{qmake} and \texttt{Cmake} build systems, and thus can
+generate makefiles to compile and run an application package on Linux, Windows and Mac systems.
+Qt Creator has a visual debugger, supports both GNU's GDB and Microsoft's CDB (on Windows), and
+(as of version 2.3) has interface to memory profiling software such as valgrind.
+Qt Creator has built-in auto-completion and function look-up. 
+This makes it possible for the user to easily browse inside large packages like PETSc and easily find relevant functions and objects.
+Qt Creator has inline error/warning messages which are dynamically generated during code editing.
 
-\begin{enumerate}
-\item Qt Creator supports automated and cross-platform \texttt{qmake} and \texttt{Cmake} build systems. What this means, is that, starting from a handful set of options, Qt Creator is able to generate makefiles that are used to compile and run your application package on Linux, Windows and Mac systems.
-\item Qt Creator makes the task of linking PETSc library to your application package easy.
-\item Qt Creator has visual debugger and supports both GNU's GDB and Microsoft's CDB (on Windows).
-\item Qt Creator (as of version 2.3) has interface to memory profiling software such as valgrind.
-\item Qt Creator has built-in auto-completion and function look-up. This feature of editor, makes it possible for the user to easily browse inside huge packages like PETSc and easily find relevant functions and objects.
-\item Qt Creator has inline error/warning messages. This feature of the editor greatly reduces programming bugs by informing the user of potential error/warning as the code is being written and even before the compile step.
-\item Qt Creator is an excellent environment for doing GUI programming using Qt framework. This means you can easily generate a nice GUI for you application package as well!
-\end{enumerate}
-
-Qt Creator is a part of Qt SDK, currently being developed by Nokia Inc. It is available under GPL v3, LGPL v2 and a commercial license and may be obtained, either as a part of Qt SDK or as an stand-alone software, via \url{http://qt.nokia.com/downloads/}.
-
-\section*{How to create a project?}
-Upon installation, all you really need to do to port your software package to Qt Creator is to build a \texttt{.pro} file. A \texttt{.pro} file is simply a configuration file that tells Qt Creator about all build/compile options and locations of source file. One may start with a blank \texttt{.pro} file and fill in the configuration options as needed:
-
+\subsection*{Creating a Project}
+Upon installation, one needs to build a \texttt{.pro} file. This is a configuration file that tells Qt Creator about all build/compile options and locations of source files. 
+One may start with a blank \texttt{.pro} file and fill in the configuration options as needed:
 \begin{lstlisting}
-
 TARGET = name_of_your_app
 
 APP_DIR    = /home/path/to/your/app
@@ -8078,22 +8074,24 @@ HEADERS += \
 OTHER_FILES += \
 	$$APP_DIR/src/some_file.cpp \
 	$$APP_DIR/dir/another_file.xyz
-
 \end{lstlisting}
 
-In this example, there are different keywords used. These include:
-\begin{itemize}
-\item \lstinline{TARGET}: This defines the name of your application executable. You can choose it however you like.
-\item \lstinline{INCLUDEPATH}: This is used in the compile time to point to all the needed include files. Essentially it is used as a \texttt{ -I \$\$INCLUDEPATH} flag for the compiler. This should include all your application-specific header files and those related to PETSc which may be found via \texttt{make getincludedirs}.
-\item \lstinline{LIBS}: This defines all needed external libraries to link with your application. To get PETSc's linking libraries do \texttt{make getlinklibs}.
-\item \lstinline{QMAKE_CC} and \lstinline{QMAKE_CXX}: These define which \texttt{C/C++} compilers to choose for your application.
-\item \lstinline{QMAKE_CFLAGS}, \lstinline{QMAKE_CXXFLAGS} and \lstinline{QMAKE_LFLAGS}: These set the corresponding compile and linking flags.
-\item \lstinline{SOURCES}: This sets all the source files that need to be compiled.
-\item \lstinline{HEADERS}: This sets all the header files that are needed for your application. Note that since header files are merely included in the source files, they are not compiled. As a result this is an optional flag and is simply included to allow users to easily access the header files in their application (or even PETSc header files).
-\item \lstinline{OTHER_FILES}: This can be used to virtually include any other file (source, header or any other extension) just as a way to make accessing to auxiliary files easier. They could be anything from a text file to a PETSc source file. Note that none of the source files placed here are compiled.
-\end{itemize}
+In this example, keywords include:
+\begin{tightitemize}
+\item \lstinline{TARGET}: The name of the application executable.
+\item \lstinline{INCLUDEPATH}: Used at compile time to point to required include files. Essentially, it is used as a \trl{ -I \$\$INCLUDEPATH} flag for the compiler. This should include all your application-specific header files and those related to PETSc (which may be found via \trl{make getincludedirs}).
+\item \lstinline{LIBS}: Defines all required external libraries to link with your application. To get PETSc's linking libraries, use \trl{make getlinklibs}.
+\item \lstinline{QMAKE_CC} and \lstinline{QMAKE_CXX}: Define which C/C++ compilers use.
+\item \lstinline{QMAKE_CFLAGS}, \lstinline{QMAKE_CXXFLAGS} and \lstinline{QMAKE_LFLAGS}: Set the corresponding compile and linking flags.
+\item \lstinline{SOURCES}: Source files to be compiled.
+\item \lstinline{HEADERS}: Header files required by the application. 
+\item \lstinline{OTHER_FILES}: Other files to include (source, header or any other extension). Note that none of the source files placed here are compiled.
+\end{tightitemize}
 
-Note that there are many more options available that one can feed into the \texttt{.pro} file. For more information, one should follow \url{http://doc.qt.nokia.com/latest/qmake-variable-reference.html}. Once the \texttt{.pro} file is generated, the user can simply open it via Qt Creator. Upon opening, generally one has the option to create two different build options, debug and release, and switch between the two easily at any time. For more information on how to use the Qt Creator interface, and other more advanced aspects of this IDE, one may refer to \url{http://doc.qt.nokia.com/qtcreator-snapshot/index.html}
+There are more options available that one can feed into the \trl{.pro} file; see e.g. \url{http://doc.qt.io/qt-5/qmake-project-files.html}. 
+Once the \trl{.pro} file is generated, the user can simply open it via Qt Creator. 
+Upon opening, one has the option to create two different build options, debug and release, and switch between the two easily at any time. 
+For more information on how to use the Qt Creator interface, and other more advanced aspects of the IDE, refer to \url{https://www.qt.io/ide/}
 
 \section{Developers Studio Users} \sindex{developers studio}
 
