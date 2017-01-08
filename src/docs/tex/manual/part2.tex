@@ -6930,32 +6930,10 @@ The option \findex{-log_mpe}
 -log_mpe [logfile]
 \end{lstlisting}
 creates a logfile of events appropriate for viewing with {\em Jumpshot}.
-The user can either use the default logging file, \trl{mpe.log}, or
-specify an optional name via \trl{logfile}.
-
-
-By default, not all PETSc events are logged with MPE. For example,
-since \lstinline{MatSetValues()} may be called thousands of times in a program,
-by default its calls are not logged with MPE. To activate MPE logging of
-a particular event, one should use the command
-\begin{lstlisting}
-PetscLogEventMPEActivate(int event);
-\end{lstlisting}
-To deactivate logging of an event for MPE, one should use
-\begin{lstlisting}
-PetscLogEventMPEDeactivate(int event);
-\end{lstlisting}
-The \lstinline{event} may be either a predefined PETSc event (as listed in
-the file \trl{${PETSC_DIR}/include/petsclog.h}) or one obtained with
-\lstinline{PetscLogEventRegister()} (as described in
-Section~\ref{sec_profileuser}).  These routines may be called as many
-times as desired in an application program, so that one could restrict
-MPE event logging only to certain code segments.
-
-To see what events are logged by default, the user can view the source code; see
-the files \trl{src/plot/src/plogmpe.c} and \trl{include/petsclog.h}.  A simple program and
-GUI interface to see the events that are predefined and their definition is
-being developed.
+The user can either use the default logging file or
+specify a name via \trl{logfile}.
+Events can be deactivated as described in Section 
+\ref{sec_deactivate}.
 
 The user can also log MPI events.  To do this, simply consider the
 PETSc application as any MPI application, and follow the MPI
@@ -7107,9 +7085,6 @@ the memory limitations of Tcl/Tk.  Thus, one should generally use
 \trl{-log_all} when running programs with a relatively small
 number of events or when disabling some of the events that occur many
 times in a code (e.g., \lstinline{VecSetValues()}, \lstinline{MatSetValues()}).
-
-Section~\ref{sec_mpelogs} gives information on the restriction of events
-in MPE logging.
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
