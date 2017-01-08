@@ -6952,22 +6952,25 @@ The basic steps involved in logging a
 user-defined portion of code, called an {\em event}, are shown in the
 code fragment below:
 \begin{lstlisting}
-#include <petsclog.h>
-int USER_EVENT;
-PetscLogEventRegister("User event name",0, &USER_EVENT);
+PetscLogEvent  USER_EVENT;
+PetscClassId   classid;
+PetscLogDouble user_event_flops;
+
+PetscClassIdRegister("class name",&classid);
+PetscLogEventRegister("User event name",classid,&USER_EVENT);
 PetscLogEventBegin(USER_EVENT,0,0,0,0);
-/* application code segment to monitor */
-PetscLogFlops(number of flops for this code segment);
+/* code segment to monitor */
+PetscLogFlops(user_event_flops);
 PetscLogEventEnd(USER_EVENT,0,0,0,0);
 \end{lstlisting}
 
 One must register the event by calling \lstinline{PetscLogEventRegister()}, which assigns a unique integer to identify the
 event for profiling purposes:
 \begin{lstlisting}
-PetscLogEventRegister(const char string[],PetscLogEvent *e);
+PetscLogEventRegister(const char string[],PetscClassId classid,PetscLogEvent *e);
 \end{lstlisting}
 Here \lstinline{string} is a user-defined event name, and \lstinline{color} is an
-optional user-defined event color (for use with {\em Jumpshot} logging);
+optional user-defined event color (for use with {\em Jumpshot} logging; see Section \ref{sec_mpelog});\findex{-log_mpe}
 one should see the manual page for details.  The argument returned in \lstinline{e} should then
 be passed to the \lstinline{PetscLogEventBegin()} and \lstinline{PetscLogEventEnd()}
 routines.
