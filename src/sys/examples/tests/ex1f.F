@@ -58,7 +58,8 @@
 !/*TEST
 !
 !     test:
-!      output_file: output/ex1f_1.out
-!      TODO: Needs further development from conversion
+!     filter: egrep  "(PETSC ERROR|My error handler)" | sort -b
+!     filter_output:   sort -b
+!     output_file: output/ex1f_1.out
 !
 !TEST*/

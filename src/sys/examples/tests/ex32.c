@@ -20,7 +20,7 @@ int main(int argc,char **argv)
 
 
 /*TEST
-   
+
    test:
       args: -skip_petscrc -options_left 0
       filter: grep -v malloc_test

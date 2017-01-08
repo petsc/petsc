@@ -80,7 +80,7 @@ def parseTest(testStr,srcfile):
   """
   This parses an individual test
   YAML is hierarchial so should use a state machine in the general case,
-  but in practice we only support to levels of test:
+  but in practice we only support two levels of test:
   """
   basename=os.path.basename(srcfile)
   # Handle the new at the begininng

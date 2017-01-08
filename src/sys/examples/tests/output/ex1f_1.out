@@ -1,2 +1,3 @@
-[0]PETSC ERROR: #1 User provided function() line 41 in User file
-[0]PETSC ERROR: User provided function() line 51 in User file Error message
+ My error handler Error message
+[0]PETSC ERROR: #1 User provided function() line 42 in User file
+[0]PETSC ERROR: User provided function() line 52 in User file Error message
