@@ -75,7 +75,7 @@ int main(int argc,char **args)
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
   {
-    /* configureation */
+    /* configuration */
     const PetscInt NP = (PetscInt)(PetscPowReal((PetscReal)npe,1./3.) + .5);
     const PetscInt ipx = mype%NP, ipy = (mype%(NP*NP))/NP, ipz = mype/(NP*NP);
     const PetscInt Ni0 = ipx*(nn/NP), Nj0 = ipy*(nn/NP), Nk0 = ipz*(nn/NP);

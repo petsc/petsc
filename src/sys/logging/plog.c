@@ -684,7 +684,6 @@ PetscErrorCode  PetscLogStageGetId(const char name[], PetscLogStage *stage)
 
 .keywords: log, event, register
 .seealso: PetscLogEventBegin(), PetscLogEventEnd(), PetscLogFlops(),
-          PetscLogEventMPEActivate(), PetscLogEventMPEDeactivate(),
           PetscLogEventActivate(), PetscLogEventDeactivate(), PetscClassIdRegister()
 @*/
 PetscErrorCode  PetscLogEventRegister(const char name[],PetscClassId classid,PetscLogEvent *event)
@@ -729,7 +728,7 @@ PetscErrorCode  PetscLogEventRegister(const char name[],PetscClassId classid,Pet
   Level: advanced
 
 .keywords: log, event, activate
-.seealso: PetscLogEventMPEDeactivate(),PetscLogEventMPEActivate(),PlogEventDeactivate()
+.seealso: PlogEventDeactivate()
 @*/
 PetscErrorCode  PetscLogEventActivate(PetscLogEvent event)
 {
@@ -767,7 +766,7 @@ PetscErrorCode  PetscLogEventActivate(PetscLogEvent event)
   Level: advanced
 
 .keywords: log, event, deactivate
-.seealso: PetscLogEventMPEDeactivate(),PetscLogEventMPEActivate(),PlogEventActivate()
+.seealso: PlogEventActivate()
 @*/
 PetscErrorCode  PetscLogEventDeactivate(PetscLogEvent event)
 {
@@ -794,7 +793,7 @@ PetscErrorCode  PetscLogEventDeactivate(PetscLogEvent event)
   Level: advanced
 
 .keywords: log, event, activate
-.seealso: PetscLogEventMPEDeactivate(),PetscLogEventMPEActivate(),PlogEventActivate(),PlogEventDeactivate()
+.seealso: PlogEventActivate(),PlogEventDeactivate()
 @*/
 PetscErrorCode  PetscLogEventSetActiveAll(PetscLogEvent event, PetscBool isActive)
 {

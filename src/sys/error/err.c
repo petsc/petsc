@@ -394,7 +394,7 @@ PetscErrorCode  PetscError(MPI_Comm comm,int line,const char *func,const char *f
 
   Level: intermediate
 
-    Developer Notes: idx cannot be const because may be passed to binary viewer where byte swappping is done
+    Developer Notes: idx cannot be const because may be passed to binary viewer where byte swapping is done
 
 .seealso: PetscRealView()
 @*/
@@ -481,7 +481,7 @@ PetscErrorCode  PetscIntView(PetscInt N,const PetscInt idx[],PetscViewer viewer)
 
   Level: intermediate
 
-    Developer Notes: idx cannot be const because may be passed to binary viewer where byte swappping is done
+    Developer Notes: idx cannot be const because may be passed to binary viewer where byte swapping is done
 
 .seealso: PetscIntView()
 @*/
@@ -568,7 +568,7 @@ PetscErrorCode  PetscRealView(PetscInt N,const PetscReal idx[],PetscViewer viewe
 
   Level: intermediate
 
-    Developer Notes: idx cannot be const because may be passed to binary viewer where byte swappping is done
+    Developer Notes: idx cannot be const because may be passed to binary viewer where byte swapping is done
 
 .seealso: PetscIntView(), PetscRealView()
 @*/
