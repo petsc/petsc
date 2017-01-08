@@ -8203,45 +8203,40 @@ is defined.  See, for example, \href{http://www.yolinux.com/TUTORIALS/LinuxTutor
 It is also possible to use GNU Global with Vim; see the description for Emacs above.
 
 \section{Eclipse Users} \sindex{eclipse}
-If you are interested in developing code that uses PETSc from Eclipse or developing PETSc in Eclipse and have knowledge of how to do indexing and build libraries in Eclipse please contact us at \href{mailto:petsc-dev@mcs.anl.gov}{\trl{petsc-dev@mcs.anl.gov}}.
+If you are interested in developing code that uses PETSc from Eclipse or developing PETSc in Eclipse and have knowledge of how to do indexing and build libraries in Eclipse, please contact us at \href{mailto:petsc-dev@mcs.anl.gov}{\trl{petsc-dev@mcs.anl.gov}}.
 
-To allow an Eclipse code to compile with the PETSc include files and link with the PETSc libraries someone has suggested
-To do this, click on your managed C project with the right sided mouse button, select
-
-Properties $\rightarrow$ C/C++ Build $\rightarrow$ Settings
-
-Then you get a new window with on the right hand side the various setting options.
-
-Select Includes, and add the required PETSc paths. In my case I have added
+To allow an Eclipse code to compile with the PETSc include files and link with the PETSc libraries, a PETSc user has suggested the following.
+\begin{enumerate}
+  \item Right-click on your C project and select ``Properties $\rightarrow$ C/C++ Build $\rightarrow$ Settings''
+\item A new window on the righthand side appears with various settings options.
+Select ``Includes'' and add the required PETSc paths,
 \begin{bashlisting}
 ${PETSC_DIR}/include
 ${PETSC_DIR}/${PETSC_ARCH}/include
 \end{bashlisting}
-
-Then select "Libraries" under the header Linker
-and you should set the Library search path:
+\item Select ``Libraries'' under the header Linker
+and set the library search path:
 \begin{bashlisting}
 ${PETSC_DIR}/${PETSC_ARCH}/lib
 \end{bashlisting}
-
-and then the libraries, in my case:
+and the libraries, for example
 \begin{bashlisting}
 m, petsc, stdc++, mpichxx, mpich, lapack, blas, gfortran, dl, rt,gcc_s, pthread, X11
 \end{bashlisting}
-
-To make PETSc an Eclipse package
-\begin{itemize}
+\end{enumerate}
+To make PETSc an Eclipse package,
+\begin{enumerate}
 \item Install the Mercurial plugin for Eclipse and then import the PETSc repository to Eclipse.
-\item elected New$\rightarrow$Convert to C/C++ project and selected shared library. After this point you can perform searches in the code.
-\end{itemize}
-
-  A PETSc user has provided the following steps to build an Eclipse index for PETSc that can be used with their own code without compiling PETSc source into their project.
-\begin{itemize}
-\item In the user project source directory, create a symlink to the petsc/src directory.
+\item Select ``New$\rightarrow$Convert to C/C++ project'' and select ``shared library''. At this point you can perform searches in the code.
+\end{enumerate}
+Another PETSc user has provided the following steps to build an Eclipse index for PETSc that can be used with their own code, without compiling PETSc source into their project.
+\begin{enumerate}
+\item In the user project source directory, create a symlink to the PETSC \trl{src/} directory.
 \item Refresh the project explorer in Eclipse, so the new symlink is followed.
-\item Right-click on the project in the project explorer, and choose "Index $\rightarrow$ Rebuild". The index should now be build.
-\item Right-click on the PETSc symlink in the project explorer, and choose "Exclude from build..." to make sure Eclipse does not try to compile PETSc with the project.
-\end{itemize}
+\item Right-click on the project in the project explorer, and choose ``Index $\rightarrow$ Rebuild''. The index should now be built.
+\item Right-click on the PETSc symlink in the project explorer, and choose ``Exclude from build...'' to make sure Eclipse does not try to compile PETSc with the project.
+\end{enumerate}
+For further examples of using Eclipse with a PETSc-based application, see the documentation for LaMEM\footnote{\trl{doc/} at \url{https://bitbucket.org/bkaus/lamem}}.
 
 \section{Qt Creator Users} \sindex{Qt Creator}
 This information was provided by Mohammad Mirzadeh.
