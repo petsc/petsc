@@ -16,10 +16,10 @@
        endif
 
        call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
-       print*, 'Greetings from', rank
+       print*, 'Greetings from rank', rank
 
        call PetscGetArchType(arch,ierr)
-       print*, 'Machine type ',arch
+       print*, 'PETSC_ARCH ',arch
 
        call PetscFinalize(ierr)
        end
@@ -28,6 +28,6 @@
 !/*TEST
 !
 !   test:
-!      TODO: Need to implement test
+!   filter: sed "s/ ${PETSC_ARCH}//g"
 !
 !TEST*/

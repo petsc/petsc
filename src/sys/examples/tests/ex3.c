@@ -31,8 +31,10 @@ int main(int argc,char **argv)
 
 
 /*TEST
-   
+
    test:
       args: -fp_trap
-      TODO: Needs further development from conversion
+      filter: grep "Floating point exception" 
+      output_file: output/ex3_1.out
+
 TEST*/

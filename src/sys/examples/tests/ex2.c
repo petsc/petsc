@@ -38,6 +38,7 @@ int main(int argc,char **argv)
 
    test:
       output_file: output/ex2_1.out
-      TODO: Needs further development from conversion
+      filter: egrep "(Caught signal number 11 SEGV|Caught signal number 4 Illegal)" | wc -l
+
 
 TEST*/

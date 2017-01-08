@@ -25,7 +25,7 @@ int main(int argc,char **argv)
 /*TEST
 
    test:
-      output_file: ex31-sh.tmp
-      TODO: Needs further development from conversion
+      output_file: output/ex31_1.out
+      filter: sed "s?${PWD}??g" |  sed "s?${HOME}??g"
 
 TEST*/
