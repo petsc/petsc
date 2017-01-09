@@ -4487,26 +4487,23 @@ and application-provided preconditioners.  If
  listed in Figure~\ref{fig_snesexample2}, is run with the options \trl{-snes_mf} and \trl{-user_precond} then it uses a matrix-free application of the matrix-vector multiple and a user provided matrix free Jacobian.
 
 \begin{center}
-\begin{table}[H]
-\begin{tabular}{|c|l|l|} \hline
-& & \\
+\begin{table}
+\begin{tabular}{ccc}
 {\bf Matrix Use} & {\bf Conventional Matrix Formats}                & {\bf Matrix-Free Versions}\\
-& & \\ \hline
-& & \\
+\hline
 Jacobian         & Create matrix with \lstinline|MatCreate()|. $^*$ & Create matrix with \lstinline|MatCreateShell()|.\\
-                 & Assemble matrix with user-defined                & Use \lstinline|MatShellSetOperation()| to set\\
-Matrix           & routine. $ ^\dagger $                            & various matrix actions.\\
-                 &                                                  & Or use \lstinline|MatCreateMFFD()| or \lstinline|MatCreateSNESMF()|.\\
-& & \\ \hline
-& & \\
+Matrix           & Assemble matrix with user-defined                & Use \lstinline|MatShellSetOperation()| to set\\
+                 & routine. $ ^\dagger $                            & various matrix actions, or use\\
+                 &                                                  & \lstinline|MatCreateMFFD()| or \lstinline|MatCreateSNESMF()|.\\
+\hline
 Preconditioning  & Create matrix with \lstinline|MatCreate()|. $^*$ & Use \lstinline|SNESGetKSP()| and \lstinline|KSPGetPC()| \\
 Matrix           & Assemble matrix with user-defined                & to access the \lstinline|PC|, then use\\
-                 & routine. $ ^\dagger $                            & \lstinline|PCSetType(pc,PCSHELL)|;\\
+                 & routine. $ ^\dagger $                            & \lstinline|PCSetType(pc,PCSHELL)|\\
                  &                                                  & followed by \lstinline|PCShellSetApply()|. \\
 
-& & \\ \hline
+\hline
+& & \\
 \end{tabular}
-
 \medskip
 $^*$ Use either the generic \lstinline|MatCreate()| or a format-specific variant
    such as \lstinline|MatCreateAIJ()|.\\
