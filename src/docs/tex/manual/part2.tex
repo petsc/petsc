@@ -8180,50 +8180,51 @@ For further examples of using Eclipse with a PETSc-based application, see the do
 
 \section{Qt Creator Users} \sindex{Qt Creator}
 This information was provided by Mohammad Mirzadeh.
-Qt Creator is developed as a part of the Qt SDK, developed by Nokia Inc. for cross-platform GUI programming using C++. 
-It is available under GPL v3, LGPL v2 and a commercial license and may be obtained, either as a part of Qt SDK or as an stand-alone software, via \url{http://qt.nokia.com/downloads/}.
-It supports automated and cross-platform \texttt{qmake} and \texttt{Cmake} build systems, and thus can
-generate makefiles to compile and run an application package on Linux, Windows and Mac systems.
-Qt Creator has a visual debugger, supports both GNU's GDB and Microsoft's CDB (on Windows), and
-(as of version 2.3) has interface to memory profiling software such as valgrind.
-Qt Creator has built-in auto-completion and function look-up. 
-This makes it possible for the user to easily browse inside large packages like PETSc and easily find relevant functions and objects.
-Qt Creator has inline error/warning messages which are dynamically generated during code editing.
+The Qt Creator IDE is part of the Qt SDK, developed for cross-platform GUI programming using C++. 
+It is available under GPL v3, LGPL v2 and a commercial license and may be obtained, either as a 
+part of Qt SDK or as an stand-alone software, via \url{http://qt.nokia.com/downloads/}.
+It supports automatic makefile generation using cross-platform \texttt{qmake} and \texttt{cmake}
+build systems as well as allowing one to import projects based on existing, possibly hand-written, makefiles.
+Qt Creator has a visual debugger using GDB and LLDB (on Linux and OSX) or Microsoft's
+CDB (on Windows) as backends. It also has interface to Valgrind's ``memcheck'' and ``callgrind''
+tools to detect memory leaks and profile your code. It has built-in support for a variety of version
+control using git, mercurial, subversion, etc. Finally, Qt Creator comes fully equipped with
+auto-completion, function look-up, and code refactoring tools. This enables one to easily browse source
+files, easily find relevant functions, and refactor them across the entire project.
 
 \subsection*{Creating a Project}
-Upon installation, one needs to build a \texttt{.pro} file. This is a configuration file that tells Qt Creator about all build/compile options and locations of source files. 
-One may start with a blank \texttt{.pro} file and fill in the configuration options as needed:
+When using Qt Creator with \texttt{qmake}, one needs a \texttt{.pro} file. This is a configuration file that
+tells Qt Creator about all build/compile options and locations of source files. One may start with
+a blank \texttt{.pro} file and fill in the configuration options as needed. Here's is an example:
 \begin{lstlisting}
-TARGET = name_of_your_app
+# This is the name of your application executable
+TARGET = ex1
 
-APP_DIR    = /home/path/to/your/app
-PETSC_DIR  = /home/path/to/your/petsc
-PETSC_ARCH = linux-gnu-cxx-debug
-PETSC_BINS = $$PETSC_DIR/$$PETSC_ARCH/bin
+# Set any include path and libs you need to link
+PETSC_INCLUDE = path/to/petsc_includes # e.g. obtained via running `make getincludedirs'
+PETSC_LIBS = path/to/petsc_libs # e.g. obtained via running `make getlinklibs'
 
-INCLUDEPATH += $$APP_DIR/include \
-               $$PETSC_DIR/include \
-               $$PETSC_DIR/$$PETSC_ARCH/include
+INCLUDEPATH += $$PETSC_INCLUDES
+LIBS += $$PETSC_LIBS
 
-LIBS += -L/path/to/petsc/libs -l_all_needed_petsc_libs
+# set appropriate complier and its flags
+QMAKE_CC = path/to/mpicc
+QMAKE_CXX = path/to/mpicxx # if this is a cpp project
+QMAKE_LINK = path/to/mpicxx # if this is a cpp project
 
-QMAKE_CC  = $$PETSC_BINS/mpicc
-QMAKE_CXX = $$PETSC_BINS/mpicxx
-
-QMAKE_CFLAGS   += -O3
+QMAKE_CFLAGS   += -O3 # add extra flags here
 QMAKE_CXXFLAGS += -O3
 QMAKE_LFLAGS   += -O3
 
-SOURCES += \
-  $$APP_DIR/src/source1.cpp \
-  $$APP_DIR/src/source2.cpp \
-  $$APP_DIR/src/main.cpp
-HEADERS += \
-  $$APP_DIR/src/source1.h \
-  $$APP_DIR/src/source2.h
+# Here we add all files that must be compiled.
+SOURCES += ex1.c source1.c source2.cpp
+
+HEADERS += source1.h source2.h
+
+# OTHER_FILES are ignored during compilation but will be shown in file panel in Qt Creator
 OTHER_FILES += \
-  $$APP_DIR/src/some_file.cpp \
-  $$APP_DIR/dir/another_file.xyz
+	path/to/resource_file \
+	path/to/another_file
 \end{lstlisting}
 
 In this example, keywords include:
@@ -8232,6 +8233,7 @@ In this example, keywords include:
 \item \lstinline{INCLUDEPATH}: Used at compile time to point to required include files. Essentially, it is used as a \trl{ -I \$\$INCLUDEPATH} flag for the compiler. This should include all your application-specific header files and those related to PETSc (which may be found via \trl{make getincludedirs}).
 \item \lstinline{LIBS}: Defines all required external libraries to link with your application. To get PETSc's linking libraries, use \trl{make getlinklibs}.
 \item \lstinline{QMAKE_CC} and \lstinline{QMAKE_CXX}: Define which C/C++ compilers use.
+\item \lstinline{QMAKE_LINK}: Defines the proper linker to be used. Relavant if compiling C++ projects
 \item \lstinline{QMAKE_CFLAGS}, \lstinline{QMAKE_CXXFLAGS} and \lstinline{QMAKE_LFLAGS}: Set the corresponding compile and linking flags.
 \item \lstinline{SOURCES}: Source files to be compiled.
 \item \lstinline{HEADERS}: Header files required by the application. 
