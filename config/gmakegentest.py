@@ -646,7 +646,7 @@ class generateExamples(Petsc):
     """
     # Different options for how to set up the targets
     compileExecsFirst=False
-    alltargets=""
+    alltargets=[]
 
     # Open file
     arch_files = self.arch_path('lib','petsc','conf', 'testfiles')
@@ -693,7 +693,7 @@ class generateExamples(Petsc):
           basedir=os.path.dirname(ftest)
           testdeps=testdeps+" "+self.nameSpace(test,basedir)
         fd.write("test-"+pkg+"-"+lang+":"+testdeps+"\n")
-        alltargets=alltargets+testdeps+" "
+        alltargets.append(testdeps)
 
         # test targets
         for ftest in self.tests[pkg][lang]:
@@ -713,29 +713,15 @@ class generateExamples(Petsc):
           fullscript=os.path.join(testdir,script)
           tmpfile=os.path.join(testdir,test,test+".tmp")
 
-          # SKIP and TODO tests do not depend on exec
-          if exfile in self.sources[pkg][lang]['srcs']:
-            #print "Found dep: "+exfile, execname
-            #fd.write(nmtest+": "+execname+"\n")
-
-            # Can't get implicit rules for running the scripts working
-            fd.write(nmtest+": "+execname+" "+tmpfile+"\n")
-            #fd.write(nmtest+": "+execname+" "+fullscript+"\n")
-          else:
-            # Still add dependency to file
-            #fd.write(nmtest+": "+fullex+" "+"\n")
-            # Can't get implicit rules for running the scripts working
-            fd.write(nmtest+": "+fullex+" "+tmpfile+"\n")
-            #fd.write(nmtest+": "+fullex+" "+fullscript+"\n")
-          cmd=fullscript+" ${TESTFLAGS}"
-          # Work on enabling implicit rules for running the script
-          # Can't get implicit rules for running the scripts working
-          #fd.write(".PHONY: "+fullscript+"\n")
-          fd.write(tmpfile+":\n")
-          fd.write("\t-@"+cmd+"\n")
+          # *.counts depends on the script and either executable (will
+          # be run) or the example source file (SKIP or TODO)
+          fd.write('%s.counts : %s %s\n'
+                   % (os.path.join('$(TESTDIR)/counts', nmtest),
+                      fullscript,
+                      execname if exfile in self.sources[pkg][lang]['srcs'] else fullex))
           # Now write the args:
           fa.write(nmtest+"_ARGS='"+self.tests[pkg][lang][ftest]['argLabel']+"'\n")
-    fd.write("alltesttargets='"+alltargets+"'\n")
+    fd.write("alltesttargets := %s\n" % ' '.join(alltargets))
     fd.write("helptests:\n\t -@grep '^[a-z]' ${generatedtest} | cut -f1 -d:\n")
     # Write out tests
     return
