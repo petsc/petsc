@@ -225,14 +225,10 @@ $(TESTDIR)/%f : $(TESTDIR)/%f.o $(libpetscall)
 $(TESTDIR)/%f90 : $(TESTDIR)/%f90.o $(libpetscall)
 			$(call quiet,FLINKER) -o $@ $^ $(PETSC_SYS_LIB)
 
+# Run targets
 $(alltesttargets) : % : $(TESTDIR)/counts/%.counts
 $(TESTDIR)/counts/%.counts :
 	@$< $(TESTFLAGS)
-
-# Run targets
-#$(TESTDIR)/%.tmp : $(TESTDIR)/%.sh
-#	-echo $@ $^
-#	-$^ $(TESTFLAGS)
 
 # Remove intermediate .o files
 # This only removes the files at the end which is insufficient
