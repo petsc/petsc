@@ -98,3 +98,4 @@ ex17: ex17.o   chkopts
 	-${CLINKER} -o ex17 ex17.o  ${PETSC_SYS_LIB}
 	${RM} -f ex17.o
 
+include ${PETSC_DIR}/lib/petsc/conf/test
