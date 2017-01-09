@@ -644,6 +644,10 @@ class generateExamples(Petsc):
      acting on a single file (oops) just depend on
      executable which in turn will depend on src file
     """
+    # Different options for how to set up the targets
+    compileExecsFirst=False
+    alltargets=""
+
     # Open file
     arch_files = self.arch_path('lib','petsc','conf', 'testfiles')
     arg_files = self.arch_path('lib','petsc','conf', 'testargfiles')
@@ -655,19 +659,21 @@ class generateExamples(Petsc):
 
     # Write out the tests and execname targets
     fd.write("\n#Tests and executables\n")    # Delimiter
+    fd.write("test: testinit testex testpkgs report_tests\n")    # Main test target
     testdeps=" ".join(["test-"+pkg for pkg in PKGS])
     testexdeps=" ".join(["test-ex-"+pkg for pkg in PKGS])
-    fd.write("test: testinit testex testpkgs report_tests\n")    # Main test target
     fd.write("testpkgs: "+testdeps+"\n")    # The test for the pkgs
     # Testinit handles the logging
     fd.write("testinit:\n")
     fd.write("\t-@rm -f ${PETSC_ARCH}/tests/test.log\n")
     fd.write("\t-@touch ${PETSC_ARCH}/tests/test.log\n")
-    fd.write("\t-@rm -f ${PETSC_ARCH}/tests/testcompile.log\n")
-    fd.write("\t-@touch ${PETSC_ARCH}/tests/testcompile.log\n")
-    # Add executables to build right way to make the `make test` look
-    # nicer
-    fd.write("testex: "+testexdeps+"\n")    # Main test target
+    # I like compiling executables first, but this is problematic for
+    # systems that static compile with limited disk space. Somewhat
+    # redundant 
+    if compileExecsFirst:
+      fd.write("testex: "+testexdeps+"\n")    # Main test target
+    else: 
+      fd.write("testex: \n")    # Main test target
 
     for pkg in PKGS:
       # These grab the ones that are built
@@ -687,6 +693,7 @@ class generateExamples(Petsc):
           basedir=os.path.dirname(ftest)
           testdeps=testdeps+" "+self.nameSpace(test,basedir)
         fd.write("test-"+pkg+"-"+lang+":"+testdeps+"\n")
+        alltargets=alltargets+testdeps+" "
 
         # test targets
         for ftest in self.tests[pkg][lang]:
@@ -703,52 +710,32 @@ class generateExamples(Petsc):
           fullex=os.path.join(self.petsc_dir,exfile)
           localexec=self.tests[pkg][lang][ftest]['exec']
           execname=os.path.join(testdir,localexec)
+          fullscript=os.path.join(testdir,script)
+          tmpfile=os.path.join(testdir,test,test+".tmp")
 
           # SKIP and TODO tests do not depend on exec
           if exfile in self.sources[pkg][lang]['srcs']:
             #print "Found dep: "+exfile, execname
-            fd.write(nmtest+": "+execname+"\n")
+            #fd.write(nmtest+": "+execname+"\n")
+
+            # Can't get implicit rules for running the scripts working
+            fd.write(nmtest+": "+execname+" "+tmpfile+"\n")
+            #fd.write(nmtest+": "+execname+" "+fullscript+"\n")
           else:
             # Still add dependency to file
-            fd.write(nmtest+": "+fullex+"\n")
-          cmd=testdir+"/"+script+" ${TESTFLAGS} | tee -a ${PETSC_ARCH}/tests/test.log"
+            #fd.write(nmtest+": "+fullex+" "+"\n")
+            # Can't get implicit rules for running the scripts working
+            fd.write(nmtest+": "+fullex+" "+tmpfile+"\n")
+            #fd.write(nmtest+": "+fullex+" "+fullscript+"\n")
+          cmd=fullscript+" ${TESTFLAGS}"
+          # Work on enabling implicit rules for running the script
+          # Can't get implicit rules for running the scripts working
+          #fd.write(".PHONY: "+fullscript+"\n")
+          fd.write(tmpfile+":\n")
           fd.write("\t-@"+cmd+"\n")
           # Now write the args:
           fa.write(nmtest+"_ARGS='"+self.tests[pkg][lang][ftest]['argLabel']+"'\n")
-
-        # executable targets -- add these to build earlier
-        testexdeps=""
-        if not self.single_ex:
-          for exfile in self.sources[pkg][lang]['srcs']:
-            localexec=os.path.basename(os.path.splitext(exfile)[0])
-            basedir=os.path.dirname(exfile)
-            testdir="${TESTDIR}/"+basedir+"/"
-            execname=os.path.join(testdir,localexec)
-            testexdeps=testexdeps+" "+execname
-          fd.write("test-ex-"+pkg+"-"+lang+":"+testexdeps+"\n")
-
-        for exfile in self.sources[pkg][lang]['srcs']:
-          root=os.path.join(self.petsc_dir,os.path.dirname(exfile))
-          basedir=os.path.dirname(exfile)
-          testdir="${TESTDIR}/"+basedir+"/"
-          base=os.path.basename(exfile)
-          objfile=testdir+os.path.splitext(base)[0]+".o"
-          linker=self.getLanguage(exfile)[0].upper()+"LINKER"
-          if self.sources[pkg][lang].has_key(exfile):
-            # Dependency for file
-            objfile=objfile+" "+self.sources[pkg][lang][exfile]
-            print objfile
-          if not self.single_ex:
-            localexec=os.path.basename(os.path.splitext(exfile)[0])
-            execname=os.path.join(testdir,localexec)
-            localobj=os.path.basename(objfile)
-            petsc_lib="${PETSC_"+pkg.upper()+"_LIB}"
-            fd.write("\n"+execname+": "+objfile+" ${libpetscall}\n")
-            # There should be a better way here
-            line="\t@cd "+testdir+"; ${"+linker+"} -o "+localexec+" "+localobj+" "+petsc_lib+" >> $(PETSC_DIR)/$(PETSC_ARCH)/tests/testcompile.log  2>&1"
-            fd.write(line+"\n")
-          linker=self.getLanguage(exfile)[0].upper()+"LINKER"
-
+    fd.write("alltesttargets='"+alltargets+"'\n")
     fd.write("helptests:\n\t -@grep '^[a-z]' ${generatedtest} | cut -f1 -d:\n")
     # Write out tests
     return

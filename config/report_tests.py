@@ -29,6 +29,9 @@ def summarize_results(directory):
 
       summary[var]=summary[var]+val
 
+  print "\n# -------------"
+  print "#   Summary    "
+  print "# -------------"
   print "# FAILED "+summary['failures'].rstrip(', ')
   total=str(summary['total'])
 

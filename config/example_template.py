@@ -14,8 +14,8 @@ runfiles=@LOCALRUNFILES@
 datfilespath="@DATAFILESPATH@"
 footer='petsc_testend "@TESTROOT@" '
 
-todoline='printf "ok ${label} # TODO @TODOCOMMENT@\\n"'
-skipline='printf "ok ${label} # SKIP @SKIPCOMMENT@\\n"'
+todoline='printf "ok ${label} # TODO @TODOCOMMENT@\\n"; touch @REDIRECT_FILE'
+skipline='printf "ok ${label} # SKIP @SKIPCOMMENT@\\n"; touch @REDIRECT_FILE'
 mpitest='petsc_testrun "${mpiexec} -n @NSIZE@ ${exec} @ARGS@" @REDIRECT_FILE@ ${testname}.err "${label}" @FILTER@'
 #Better labelling
 #mpitest='petsc_testrun "${mpiexec} -n @NSIZE@ ${exec} @ARGS@" @REDIRECT_FILE@ ${testname}.err "${label}-@ARGS@" @FILTER@'
