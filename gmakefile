@@ -333,3 +333,5 @@ echo_testsearch:
 
 report_tests: $(NEW_TESTTARGETS)
 	-@$(PYTHON) config/report_tests.py -d $(PETSC_ARCH)/tests/counts
+
+.INTERMEDIATE: $(testsrcs.o:%.o=%)
