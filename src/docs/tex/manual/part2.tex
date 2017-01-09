@@ -4852,52 +4852,35 @@ or the command line option \\
 \findex{-ts_type} \sindex{Euler}
 \sindex{backward Euler}
 
-A list of available methods is given in Table \ref{tab:TSPET}.
+A list of available methods is given in Table \ref{tab_TSPET}.
 
 %
 \begin{table}
-\caption{Time integration schemes.}
 \centering
-%{   \scriptsize
-%\tiny
-\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|}
-\hline
+\begin{tabular}{cccccccccccc}
 {\bf TS Name}&{\bf Reference}&{\bf Class}& {\bf Type}&{\bf Order}\\
 \hline
 euler&forward Euler&one-step&explicit&1\\
-\hline
 ssp&multistage SSP \cite{Ketcheson_2008}&Runge-Kutta&explicit&$\le$ 4\\
-\hline
 rk*&multistage&Runge-Kutta&explicit&$\ge$ 1\\
-\hline
 beuler&backward Euler&one-step&implicit&1\\
-\hline
 cn&Crank-Nicolson&one-step&implicit&2\\
-\hline
 theta*&theta-method&one-step&implicit&$\le$2\\
-\hline
 alpha&alpha-method \cite{Jansen_2000}&one-step&implicit&2\\
-\hline
 gl&general linear
 \cite{Butcher_2007}&multistep-multistage&implicit& $\le$ 3\\
-\hline
 eimex&extrapolated IMEX \cite{Constantinescu_A2010a}&one-step&$\ge
 1$, adaptive&\\
-\hline
-arkimex&  see Tab.\ \ref{tab:IMEX:RK:PETSc}& IMEX Runge-Kutta & IMEX& $1-5$\\
-\hline
-rosw& see Tab.\ \ref{tab:IMEX:RosW:PETSc} &Rosenbrock-W &linearly
-implicit&$1-4$\\ \hline
-glee& see Tab.\ \ref{tab:IMEX:GLEE:PETSc} &GL with global
+arkimex&  see Tab.\ \ref{tab_IMEX_RK_PETSc}& IMEX Runge-Kutta & IMEX& $1-5$\\
+rosw& see Tab.\ \ref{tab_IMEX_RosW_PETSc} &Rosenbrock-W &linearly
+implicit&$1-4$\\
+glee& see Tab.\ \ref{tab_IMEX_GLEE_PETSc} &GL with global
 error&explicit and implicit&$1-3$\\
 \hline
 \end{tabular}%}
-\label{tab:TSPET}
+\caption{Time integration schemes.}
+\label{tab_TSPET}
 \end{table}
-%
-
-
-
 
 \noindent Set the initial time and timestep with the command
 \begin{lstlisting}
@@ -4923,7 +4906,8 @@ and determines the behavior near the final time with
 \begin{lstlisting}
 TSSetExactFinalTime(TS ts,TSExactFinalTimeOption eftopt);
 \end{lstlisting}
-where \lstinline{eftopt} is one of \lstinline{TS_EXACTFINALTIME_STEPOVER},\lstinline{TS_EXACTFINALTIME_INTERPOLATE},or \lstinline{TS_EXACTFINALTIME_MATCHSTEP}.
+where \lstinline{eftopt} is one of \lstinline{TS_EXACTFINALTIME_STEPOVER},\lstinline{TS_EXACTFINALTIME_INTERPOLATE}, or\break
+\lstinline{TS_EXACTFINALTIME_MATCHSTEP}.
 One performs the requested number of time steps with
 \begin{lstlisting}
 TSSolve(TS ts,Vec U);
@@ -4969,14 +4953,28 @@ or
 An IMEX problem representation can be made
 implicit by setting \lstinline{TSARKIMEXSetFullyImplicit()}.
 
-Some use-case examples for \lstinline{TSARKIMEX} are listed in Table \ref{tab:DE:forms} and a
+Some use-case examples for \lstinline{TSARKIMEX} are listed in Table \ref{tab_DE_forms} and a
 list of methods with a summary of their properties is given in
-Table \ref{tab:IMEX:RK:PETSc}.
+Table \ref{tab_IMEX_RK_PETSc}.
 
 %
 \begin{table}
 \centering
-\caption{\label{tab:DE:forms}In PETSc the DAEs and ODEs are formulated
+\begin{tabular}{lp{1.7in}p{2.8in}}
+\hline
+$\dot{y}=g(t,y)$ & nonstiff ODE & $F(t,y,\dot{y}) = \dot{y}$,
+$G(t,y)=g(t,y)$\\
+$\dot{y}=f(t,y)$ & stiff ODE & $F(t,y,\dot{y}) =  \dot{y}-f(t,y)$,
+$G(t,y)=0$\\
+$M \dot{y}=f(t,y)$ & stiff ODE with mass matrix& $F(t,y,\dot{y}) = M \dot{y}-f(t,y)$,
+$G(t,y)=0$\\
+$M \dot{y} = g(t,y)$& nonstiff ODE with mass matrix&$F(t,y,\dot{y}) = \dot{y}, G(t,y) = M^{-1} g(t,y)$\\
+$\dot{y}=g(t,y)+f(t,y)$ & stiff-nonstiff ODE & $F(t,y,\dot{y}) = \dot{y}-f(t,y)$, $G(t,y)=g(t,y)$\\
+$M\dot{y}=g(t,y)+f(t,y)$ & stiff-nonstiff ODE with mass matrix & $F(t,y,\dot{y}) = M \dot{y}-f(t,y)$, $G(t,y)=M^{-1}g(t,y)$\\
+  $f(t,y,\dot{y})=0$       & implicit ODE/DAE                  & $F(t,y,\dot{y}) = f(t,y,\dot{y})$, $G(t,y) = 0$; the user needs to set \lstinline|TSSetEquationType()| to \lstinline|TS_EQ_IMPLICIT| or higher\\
+\hline
+\end{tabular}
+\caption{\label{tab_DE_forms}In PETSc, DAEs and ODEs are formulated
 as $F(t,y,\dot{y})=G(t,y)$, where $F()$ is meant to be integrated
 implicitly and $G()$ explicitly. An IMEX formulation such as
 $M\dot{y}=g(t,y)+f(t,y)$ requires the user to provide $M^{-1} g(t,y)$ or
@@ -4984,131 +4982,88 @@ solve  $g(t,y) - M x=0$ in place of $G(t,u)$. General cases such as
 $F(t,y,\dot{y})=G(t,y)$ are
 not amenable to IMEX Runge-Kutta, but can be solved by using fully implicit methods.}
 
-\begin{tabular}{|l|p{1.7in}|p{2.8in}|}
-\hline
-$\dot{y}=g(t,y)$ & nonstiff ODE & $F(t,y,\dot{y}) = \dot{y}$,
-$G(t,y)=g(t,y)$\\
-\hline
-$\dot{y}=f(t,y)$ & stiff ODE & $F(t,y,\dot{y}) =  \dot{y}-f(t,y)$,
-$G(t,y)=0$\\
-\hline
-$M \dot{y}=f(t,y)$ & stiff ODE w/ mass matrix& $F(t,y,\dot{y}) = M \dot{y}-f(t,y)$,
-$G(t,y)=0$\\
-\hline
-$M \dot{y} = g(t,y)$& nonstiff ODE w/ mass matrix&$F(t,y,\dot{y}) = \dot{y}, G(t,y) = M^{-1} g(t,y)$\\
-\hline
-$\dot{y}=g(t,y)+f(t,y)$ & stiff-nonstiff ODE & $F(t,y,\dot{y}) = \dot{y}-f(t,y)$, $G(t,y)=g(t,y)$\\
-\hline
-$M\dot{y}=g(t,y)+f(t,y)$ & stiff-nonstiff ODE w/ mass matrix & $F(t,y,\dot{y}) = M \dot{y}-f(t,y)$, $G(t,y)=M^{-1}g(t,y)$\\
-\hline
-  $f(t,y,\dot{y})=0$       & implicit ODE/DAE                  & $F(t,y,\dot{y}) = f(t,y,\dot{y})$, $G(t,y) = 0$; the user needs to set \lstinline|TSSetEquationType()| to \lstinline|TS_EQ_IMPLICIT| or higher\\
-\hline
-\end{tabular}
 \end{table}
 
 \begin{table}
 \centering
-\caption{\label{tab:IMEX:RK:PETSc} List of the  currently available
+\begin{tabular}{cccccccccccc}
+\hline
+{\bf Name}&{\bf Reference} &{\bf Stages} &{\bf Order}&{\bf IM}     &{\bf SA}&{\bf Embed.}&{\bf Dense}& {\bf Remarks}\\
+ &  &{\bf (IM)}   &{\bf (stage)}& {\bf Stab.}&&      &{\bf Output}&\\
+\hline
+a2&based on CN&2(1)&2(2)&A-Stable&yes&yes(1)&yes(2)&\\
+l2&SSP2(2,2,2)\cite{Pareschi_2005}
+&2(2)&2(1)&L-Stable&yes&yes(1)&yes(2)&SSP, SDIRK\\
+ars122&ARS122,
+\cite{Ascher_1997}&2(1)&3(1)&A-Stable&yes&yes(1)&yes(2)&\\
+2c&\cite{Giraldo_2013}&3(2)&2(2)&L-Stable&yes&yes(1)&yes(2)&SDIRK\\
+2d&\cite{Giraldo_2013}&3(2)&2(2)&L-Stable&yes&yes(1)&yes(2)&SDIRK\\
+2e&\cite{Giraldo_2013}&3(2)&2(2)&L-Stable&yes&yes(1)&yes(2)&SDIRK\\
+prssp2&PRS(3,3,2)
+\cite{Pareschi_2005}&3(3)&3(1)&L-Stable&yes&no&no&SSP, nonSDIRK\\
+3&\cite{Kennedy_2003}&4(3)&3(2)&L-Stable&yes&yes(2)&yes(2)&SDIRK\\
+bpr3&\cite{Boscarino_TR2011}&5(4)&3(2)&L-Stable&yes&no&no&SDIRK, DAE-1\\
+ars443&\cite{Ascher_1997}&5(4)&3(1)&L-Stable&yes&no&no&SDIRK\\
+4&\cite{Kennedy_2003}&6(5)&4(2)&L-Stable&yes&yes(3)&yes(2,3)&SDIRK\\
+5&\cite{Kennedy_2003}&8(7)&5(2)&L-Stable&yes&yes(4)&yes(3)&SDIRK\\
+\hline
+\end{tabular}
+\caption{\label{tab_IMEX_RK_PETSc} List of the  currently available
 IMEX Runge-Kutta schemes.  For each method we listed the \texttt{-ts\_arkimex\_type}
   name, the reference, the
   total number
   of stages/implicit stages, the order/stage-order,
   the implicit stability properties, stiff accuracy (SA), the
   existence of an embedded scheme, and dense output.}
-\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|}
-\hline
-{\bf Name}&{\bf Reference} &{\bf Stages} &{\bf Order}&{\bf IM}     &{\bf SA}&{\bf Embed.}&{\bf Dense}& {\bf Remarks}\\
- &  &{\bf (IM)}   &{\bf (stage)}& {\bf Stab.}&&      &{\bf Output}&\\
-\hline
-a2&based on CN&2(1)&2(2)&A-Stable&yes&yes(1)&yes(2)&\\
-\hline
-l2&SSP2(2,2,2)\cite{Pareschi_2005}
-&2(2)&2(1)&L-Stable&yes&yes(1)&yes(2)&SSP, SDIRK\\
-\hline
-ars122&ARS122,
-\cite{Ascher_1997}&2(1)&3(1)&A-Stable&yes&yes(1)&yes(2)&\\
-\hline
-2c&\cite{Giraldo_2013}&3(2)&2(2)&L-Stable&yes&yes(1)&yes(2)&SDIRK\\
-\hline
-2d&\cite{Giraldo_2013}&3(2)&2(2)&L-Stable&yes&yes(1)&yes(2)&SDIRK\\
-\hline
-2e&\cite{Giraldo_2013}&3(2)&2(2)&L-Stable&yes&yes(1)&yes(2)&SDIRK\\
-\hline
-prssp2&PRS(3,3,2)
-\cite{Pareschi_2005}&3(3)&3(1)&L-Stable&yes&no&no&SSP, nonSDIRK\\
-\hline
-3&\cite{Kennedy_2003}&4(3)&3(2)&L-Stable&yes&yes(2)&yes(2)&SDIRK\\
-\hline
-bpr3&\cite{Boscarino_TR2011}&5(4)&3(2)&L-Stable&yes&no&no&SDIRK, DAE-1\\
-\hline
-ars443&\cite{Ascher_1997}&5(4)&3(1)&L-Stable&yes&no&no&SDIRK\\
-\hline
-4&\cite{Kennedy_2003}&6(5)&4(2)&L-Stable&yes&yes(3)&yes(2,3)&SDIRK\\
-\hline
-5&\cite{Kennedy_2003}&8(7)&5(2)&L-Stable&yes&yes(4)&yes(3)&SDIRK\\
-\hline
-\end{tabular}
 \end{table}
 %
 
 ROSW are linearized implicit Runge-Kutta methods known as Rosenbrock
 W-methods. They can accommodate inexact Jacobian matrices in their
 formulation. A series of methods are available in PETSc listed in
-Table \ref{tab:IMEX:RosW:PETSc}.
+Table \ref{tab_IMEX_RosW_PETSc}.
 
 %
 \begin{table}
 \centering
-\caption{\label{tab:IMEX:RosW:PETSc}List
+{\scriptsize
+\begin{tabular}{ccccccccccccccc}
+{\bf TS} &{\bf Reference}& {\bf Stages} &{\bf Order}&{\bf IM}     &{\bf SA}&{\bf Embed.}&{\bf Dense}&{\bf -W}&{\bf PDAE} &{\bf Remarks}\\
+Name &  &(IM)   &(stage)&Stab.&&      &Output&&&\\
+\hline
+theta1& classical&
+1(1)&1(1)&L-Stable&-&-&-&-&-&-\\
+theta2& classical&
+1(1)&2(2)&A-Stable&-&-&-&-&-&-\\
+2m             &Zoltan&
+2(2)&2(1)&L-Stable&No&Yes(1)&Yes(2)&Yes&No&SSP\\
+2p             &Zoltan&
+2(2)&2(1)&L-Stable&No&Yes(1)&Yes(2)&Yes&No&SSP\\
+ra3pw          &\cite{Rang_2005}&
+3(3)&3(1)&A-Stable&No&Yes&Yes(2)&No&Yes(3)&-\\
+ra34pw2        &\cite{Rang_2005}&
+4(4)&3(1)&L-Stable&Yes&Yes&Yes(3)&Yes&Yes(3)&-\\
+rodas3         &\cite{Sandu_1997}&
+4(4)&3(1)&L-Stable&Yes&Yes&No&No&Yes&-\\
+sandu3         &\cite{Sandu_1997}&
+3(3)&3(1)&L-Stable&Yes&Yes&Yes(2)&No&No&-\\
+assp3p3s1c &unpublished&
+3(2)&3(1)&A-Stable&No&Yes&Yes(2)&Yes&No&SSP\\
+lassp3p4s2c&unpublished&
+4(3)&3(1)&L-Stable&No&Yes&Yes(3)&Yes&No&SSP\\
+lassp3p4s2c&unpublished&
+4(3)&3(1)&L-Stable&No&Yes&Yes(3)&Yes&No&SSP\\
+ark3       &unpublished&
+4(3)&3(1)&L-Stable&No&Yes&Yes(3)&Yes&No&IMEX-RK\\
+\hline
+\end{tabular}}
+\caption{\label{tab_IMEX_RosW_PETSc}List
 of the currently available Rosenbrock W-schemes. For each method we listed the reference, the total number
   of stages and implicit stages, the scheme order and stage-order,
   the implicit stability properties, stiff accuracy (SA), the
   existence of an embedded scheme, dense output, the capacity to use
   inexact Jacobian matrices (-W), and high order integration of differential
   algebraic equations (PDAE).}
-{\scriptsize
-\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
-\hline
-{\bf TS} &{\bf Reference}& {\bf Stages} &{\bf Order}&{\bf IM}     &{\bf SA}&{\bf Embed.}&{\bf Dense}&{\bf -W}&{\bf PDAE} &{\bf Remarks}\\
-Name &  &(IM)   &(stage)&Stab.&&      &Output&&&\\
-\hline
-theta1& classical&
-1(1)&1(1)&L-Stable&-&-&-&-&-&-\\
-\hline
-theta2& classical&
-1(1)&2(2)&A-Stable&-&-&-&-&-&-\\
-\hline
-2m             &Zoltan&
-2(2)&2(1)&L-Stable&No&Yes(1)&Yes(2)&Yes&No&SSP\\
-\hline
-2p             &Zoltan&
-2(2)&2(1)&L-Stable&No&Yes(1)&Yes(2)&Yes&No&SSP\\
-\hline
-ra3pw          &\cite{Rang_2005}&
-3(3)&3(1)&A-Stable&No&Yes&Yes(2)&No&Yes(3)&-\\
-\hline
-ra34pw2        &\cite{Rang_2005}&
-4(4)&3(1)&L-Stable&Yes&Yes&Yes(3)&Yes&Yes(3)&-\\
-\hline
-rodas3         &\cite{Sandu_1997}&
-4(4)&3(1)&L-Stable&Yes&Yes&No&No&Yes&-\\
-\hline
-sandu3         &\cite{Sandu_1997}&
-3(3)&3(1)&L-Stable&Yes&Yes&Yes(2)&No&No&-\\
-\hline
-assp3p3s1c &unpublished&
-3(2)&3(1)&A-Stable&No&Yes&Yes(2)&Yes&No&SSP\\
-\hline
-lassp3p4s2c&unpublished&
-4(3)&3(1)&L-Stable&No&Yes&Yes(3)&Yes&No&SSP\\
-\hline
-lassp3p4s2c&unpublished&
-4(3)&3(1)&L-Stable&No&Yes&Yes(3)&Yes&No&SSP\\
-\hline
-ark3       &unpublished&
-4(3)&3(1)&L-Stable&No&Yes&Yes(3)&Yes&No&IMEX-RK\\
-\hline
-\end{tabular}}
 \end{table}
 %
 \subsubsection{GLEE methods} In this section, we describe explicit and
@@ -5139,7 +5094,7 @@ S_{error}[0]*\varepsilon + S_\text{error}[1]*y$, where $y_\text{aux}$ is the 2nd
 component of the working vector $Y$. 
 \end{itemize}
 %%%%%%%
-The methods can be described in two mathematically equivalentl forms:
+The methods can be described in two mathematically equivalent forms:
 propagate two components (``$y\tilde{y}$ form'') and propagating the
 solution and its estimated error (``$y\varepsilon$ form''). The
 two forms are not explicitly specified in \lstinline{TSGLEE}; rather, the specific values
@@ -5185,35 +5140,26 @@ y)_{n+1} - (\tilde{y} - y)_n]$.
 %
 \begin{table}
 \centering
-\caption{
-\label{tab:IMEX:GLEE:PETSc}
-List
-of the currently available GL schemes with global error estimation
-introduced in \cite{Constantinescu_TR2016b}.}
-\begin{tabular}{|c|c|c|c|c|c|c|}
-\hline
+\begin{tabular}{ccccccc}
 {\bf TS} &{\bf Reference}& {\bf IM/EX} &{\bf (p,r,s)}&{\bf $\gamma$}
 &{\bf Form}&{\bf Notes}\\
 \hline
-  \lstinline|TSGLEEi1|     &\trl{BE1}    &IM&1,3,2& 0.5&$y\varepsilon$&Based on backward Euler\\
-\hline
-  \lstinline|TSGLEE23|     &\trl{23}     &EX&2,3,2&   0&$y\varepsilon$&\\
-\hline
-  \lstinline|TSGLEE24|     &\trl{24}     &EX&2,4,2&   0&  $y\tilde{y}$&\\
-\hline
-  \lstinline|TSGLEE25I|    &\trl{25i}    &EX&2,5,2&   0&  $y\tilde{y}$&\\
-\hline
-  \lstinline|TSGLEE35|     &\trl{35}     &EX&3,5,2&	  0&  $y\tilde{y}$&\\
-\hline
-  \lstinline|TSGLEEEXRK2A| &\trl{exrk2a} &EX&2,6,2&0.25&$y\varepsilon$&\\
-\hline
-  \lstinline|TSGLEERK32G1| &\trl{rk32g1} &EX&3,8,2&	 0 &$y\varepsilon$&\\
-\hline
-  \lstinline|TSGLEERK285EX|  &\trl{rk285ex}&EX&2,9,2&0.25&$y\varepsilon$&\\
+\lstinline|TSGLEEi1|       &\trl{BE1}    &IM&1,3,2& 0.5&$y\varepsilon$&Based on backward Euler\\
+\lstinline|TSGLEE23|       &\trl{23}     &EX&2,3,2&   0&$y\varepsilon$&\\
+\lstinline|TSGLEE24|       &\trl{24}     &EX&2,4,2&   0&$y\tilde{y}$  &\\
+\lstinline|TSGLEE25I|      &\trl{25i}    &EX&2,5,2&   0&$y\tilde{y}$  &\\
+\lstinline|TSGLEE35|       &\trl{35}     &EX&3,5,2&   0&$y\tilde{y}$  &\\
+\lstinline|TSGLEEEXRK2A|   &\trl{exrk2a} &EX&2,6,2&0.25&$y\varepsilon$&\\
+\lstinline|TSGLEERK32G1|   &\trl{rk32g1} &EX&3,8,2&  0 &$y\varepsilon$&\\
+\lstinline|TSGLEERK285EX|  &\trl{rk285ex}&EX&2,9,2&0.25&$y\varepsilon$&\\
 \hline
 \end{tabular}
+\caption{
+\label{tab_IMEX_GLEE_PETSc}
+List
+of the currently available GL schemes with global error estimation
+introduced in \cite{Constantinescu_TR2016b}.}
 \end{table}
-%
 
 \section{Using fully implicit methods}
 To use a fully implicit method like \lstinline{TSTHETA} or \lstinline{TSGL}, either provide the Jacobian of $F() $ (and $G()$ if $G()$ is provided) or use a \lstinline{DM} that provides a coloring so the Jacobian can be computed efficiently via finite differences.
@@ -5291,19 +5237,15 @@ Most of the time stepping methods avaialable in PETSc have an error
 estimation and error control mechanism. This mechanism is implemented by changing the
 step size in order to maintain user specified absolute and relative
 tolerances. The PETSc object responsible with error control is
-\lstinline{TSAdapt}. The available \lstinline{TSAdapt} types are listed in Table \ref{tab:adaptors}.
+\lstinline{TSAdapt}. The available \lstinline{TSAdapt} types are listed in Table \ref{tab_adaptors}.
 \begin{table}[tb]
 \centering
-  \caption{\texttt{TSAdapt}: available adaptors.\label{tab:adaptors}}
-\begin{tabular}{|l|c|p{5cm}|}
-\hline
+\begin{tabular}{lcp{5cm}}
 ID & Name & Notes\\
 \hline
 \lstinline|TSADAPTNONE| & \trl{none}    & no adaptivity\\
-\hline
 \lstinline|TSADAPTBASIC|& \trl{basic}   & the default
 adaptor \\
-\hline
 \lstinline|TSADAPTGLEE| & \trl{glee}   & extension of the basic adaptor to treat $\TolA$
 and $\TolR$ as separate criteria. It can also control global erorrs
 if the integrator (e.g., \lstinline|TSGLEE|) provides this information \\
@@ -5311,6 +5253,7 @@ if the integrator (e.g., \lstinline|TSGLEE|) provides this information \\
 %  \lstinline|TSADAPTCFL|  & \trl{cfl}&\\
 \hline
 \end{tabular}
+\caption{\texttt{TSAdapt}: available adaptors.\label{tab_adaptors}}
 \end{table}
 
 When using \lstinline{TSADAPTBASIC} (the default), the user typically provides a
