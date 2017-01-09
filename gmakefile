@@ -70,16 +70,13 @@ ifeq ($(shell basename $(AR)),ar)
 endif
 endif
 ifeq ($(V),)  # Default
-  quiet_HELP := "Use \"$(MAKE) V=1\" to see the verbose compile lines.\n"
+  quiet_HELP := "Use \"$(MAKE) V=1\" to see verbose compile lines, \"$(MAKE) V=0\" to suppress.\n"
   quiet = @printf $(quiet_HELP)$(eval quiet_HELP:=)"  %10s %s\n" "$1$2" "$@"; $($1)
-  testquiet = @printf "  %10s %s\n" "$1$2" "$@"; $($1)   # Summary
-else ifeq ($(V),0)		# Same, but do not print any help
-  quiet = @printf "  %10s %s\n" "$1$2" "$@"; $($1)
-  testquiet =  @$($1)      # Print nothing
+else ifeq ($(V),0)		# Suppress entire command
+  quiet = @$($1)
 else				# Show the full command line
   quiet = $($1)
-  testquiet = $($1)
-  TESTFLAGS=-v
+  TESTFLAGS := -v
 endif
 
 
@@ -111,13 +108,6 @@ PETSC_COMPILE.cxx = $(call quiet,CXX) -c $(CXX_FLAGS) $(CFLAGS) $(CCPPFLAGS) $(C
 PETSC_COMPILE.cu = $(call quiet,CUDAC) -c $(CUDAC_FLAGS) --compiler-options="$(PCC_FLAGS) $(CXXFLAGS) $(CCPPFLAGS)"
 PETSC_GENDEPS.cu = $(call quiet,CUDAC,.dep) --generate-dependencies --output-directory=$(@D) $(CUDAC_FLAGS) --compiler-options="$(PCC_FLAGS) $(CXXFLAGS) $(CCPPFLAGS)"
 PETSC_COMPILE.F = $(call quiet,FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS)
-
-PETSC_TEST_COMPILE.c = $(call testquiet,$(cc_name)) -c $(PCC_FLAGS) $(CFLAGS) $(CCPPFLAGS) $(C_DEPFLAGS)
-PETSC_TEST_COMPILE.cxx = $(call testquiet,CXX) -c $(CXX_FLAGS) $(CFLAGS) $(CCPPFLAGS) $(CXX_DEPFLAGS)
-PETSC_TEST_COMPILE.cu = $(call testquiet,CUDAC) -c $(CUDAC_FLAGS) --compiler-options="$(PCC_FLAGS) $(CXXFLAGS) $(CCPPFLAGS)"
-PETSC_TEST_GENDEPS.cu = $(call testquiet,CUDAC,.dep) --generate-dependencies --output-directory=$(@D) $(CUDAC_FLAGS) --compiler-options="$(PCC_FLAGS) $(CXXFLAGS) $(CCPPFLAGS)"
-PETSC_TEST_COMPILE.F = $(call testquiet,FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS)
-
 
 langs := c cu cxx F
 concatlang = $(foreach lang, $(langs), $(srcs-$(1).$(lang):%.$(lang)=$(OBJDIR)/%.o))
@@ -203,64 +193,46 @@ endif
 $(call soname_function,%) : $(call libname_function,%)
 	@ln -sf $(notdir $<) $@
 
-$(OBJDIR)/%.o : %.c | $$(@D)/.DIR
+$(OBJDIR)/%.o $(TESTDIR)/%.o : %.c | $$(@D)/.DIR
 	$(PETSC_COMPILE.c) $(abspath $<) -o $@
 
-$(OBJDIR)/%.o : %.cxx | $$(@D)/.DIR
+$(OBJDIR)/%.o $(TESTDIR)/%.o : %.cxx | $$(@D)/.DIR
 	$(PETSC_COMPILE.cxx) $(abspath $<) -o $@
 
-$(OBJDIR)/%.o : %.cu | $$(@D)/.DIR
+$(OBJDIR)/%.o $(TESTDIR)/%.o : %.cu | $$(@D)/.DIR
 	$(PETSC_COMPILE.cu) $(abspath $<) -o $@ # Compile first so that if there is an error, it comes from a normal compile
 	@$(PETSC_GENDEPS.cu) $(abspath $<) -o $(@:%.o=%.d) # Generate the dependencies for later
 
-$(OBJDIR)/%.o : %.F | $$(@D)/.DIR
+$(OBJDIR)/%.o $(TESTDIR)/%.o : %.F | $$(@D)/.DIR
 ifeq ($(FC_MODULE_OUTPUT_FLAG),)
 	cd $(MODDIR) && $(FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS) $(abspath $<) -o $(abspath $@)
 else
 	$(PETSC_COMPILE.F) $(abspath $<) -o $@ $(FC_MODULE_OUTPUT_FLAG)$(MODDIR)
 endif
 
-$(TESTDIR)/%.o : %.c | $$(@D)/.DIR
-	$(PETSC_TEST_COMPILE.c) $(abspath $<) -o $@
-
-$(TESTDIR)/%.o : %.cxx | $$(@D)/.DIR
-	@$(PETSC_TEST_COMPILE.cxx) $(abspath $<) -o $@
-
-$(TESTDIR)/%.o : %.cu | $$(@D)/.DIR
-	@$(PETSC_TEST_COMPILE.cu) $(abspath $<) -o $@
-# Compile first so that if there is an error, it comes from a normal compile
-	@$(PETSC_GENDEPS.cu) $(abspath $<) -o $(@:%.o=%.d)
-
-$(TESTDIR)/%.o : %.F | $$(@D)/.DIR
+$(OBJDIR)/%.o $(TESTDIR)/%.o : %.F90 | $$(@D)/.DIR
 ifeq ($(FC_MODULE_OUTPUT_FLAG),)
 	@cd $(MODDIR) && $(FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS) $(abspath $<) -o $(abspath $@)
 else
-	@$(PETSC_TEST_COMPILE.F) $(abspath $<) -o $@ $(FC_MODULE_OUTPUT_FLAG)$(MODDIR)
-endif
-
-$(TESTDIR)/%.o : %.F90 | $$(@D)/.DIR
-ifeq ($(FC_MODULE_OUTPUT_FLAG),)
-	@cd $(MODDIR) && $(FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS) $(abspath $<) -o $(abspath $@)
-else
-	@$(PETSC_TEST_COMPILE.F) $(abspath $<) -o $@ $(FC_MODULE_OUTPUT_FLAG)$(MODDIR)
+	@$(PETSC_COMPILE.F) $(abspath $<) -o $@ $(FC_MODULE_OUTPUT_FLAG)$(MODDIR)
 endif
 
 # Executables
 $(TESTDIR)/% : $(TESTDIR)/%.o $(libpetscall)
-			$(call testquiet,CLINKER) -o $@ $^ $(PETSC_SYS_LIB)
+			$(call quiet,CLINKER) -o $@ $^ $(PETSC_SYS_LIB)
 
 $(TESTDIR)/%f : $(TESTDIR)/%f.o $(libpetscall)
 $(TESTDIR)/%f90 : $(TESTDIR)/%f90.o $(libpetscall)
-			$(call testquiet,FLINKER) -o $@ $^ $(PETSC_SYS_LIB)
+			$(call quiet,FLINKER) -o $@ $^ $(PETSC_SYS_LIB)
 
 # Run targets
 #$(TESTDIR)/%.tmp : $(TESTDIR)/%.sh
 #	-echo $@ $^
 #	-$^ $(TESTFLAGS)
 
- ## Remove intermediate .o files
-## This only removes the files at the end which is insufficient
-#.INTERMEDIATE: $(testsrcs.o:%.o=%)
+# Remove intermediate .o files
+# This only removes the files at the end which is insufficient
+.INTERMEDIATE: $(testsrcs.o:%.o=%)
 
 # Hack: manual dependencies on object files
 ifeq ($(MPI_IS_MPIUNI),1)
@@ -294,7 +266,7 @@ $(testsrcs.o) : $(petscvariables)
 .PHONY: clean cleantest all print
 
 cleantest:
-	${RM} -rf $(TESTDIR) $(generatedtest) $(generatedtestargs)
+	${RM} -rf $(TESTDIR)
 
 clean: cleantest
 	${RM} -rf $(OBJDIR) $(LIBDIR)/libpetsc* $(MODDIR)/petsc*.mod $(MPIUNI_MOD) $(generated)
@@ -350,5 +322,3 @@ echo_testsearch:
 
 report_tests: $(NEW_TESTTARGETS)
 	-@$(PYTHON) config/report_tests.py -d $(PETSC_ARCH)/tests/counts
-
-.INTERMEDIATE: $(testsrcs.o:%.o=%)
