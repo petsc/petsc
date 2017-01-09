@@ -76,10 +76,6 @@ ifeq ($(V),)  # Default
 else ifeq ($(V),0)		# Same, but do not print any help
   quiet = @printf "  %10s %s\n" "$1$2" "$@"; $($1)
   testquiet =  @$($1)      # Print nothing
-else ifeq ($(V),1)		# Same, but do not print any help
-  quiet = $($1)
-  testquiet = @printf "  %10s %s\n" "$1$2" "$@"; $($1)   # Summary
-  TESTFLAGS=-v
 else				# Show the full command line
   quiet = $($1)
   testquiet = $($1)

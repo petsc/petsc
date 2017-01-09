@@ -407,7 +407,7 @@ class generateExamples(Petsc):
     """
     # Get the language based on file extension
     lang=self.getLanguage(exfile)
-    if lang=="f" and not self.have_fortran: 
+    if (lang=="F" or lang=="F90") and not self.have_fortran: 
       srcDict["SKIP"]="Fortran required for this test"
       return False
     if lang=="cu" and not self.conf.has_key('PETSC_HAVE_CUDA'): 
