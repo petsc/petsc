@@ -23,5 +23,5 @@ int main(int argc,char **argv)
 
    test:
       args: -skip_petscrc -options_left 0
-      filter: grep -v malloc_test
+      filter: grep -v malloc_test | grep -v saws_port_auto_select
 TEST*/

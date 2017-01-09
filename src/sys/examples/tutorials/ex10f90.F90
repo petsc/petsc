@@ -32,12 +32,14 @@
 !   test:
 !      suffix: 1
 !      args: -f petsc.yml
+!      filter:   grep -v saws_port_auto_select
 !      localrunfiles: petsc.yml
 !
 !   test:
 !      suffix: 2
 !      requires: yaml
 !      args: -options_file_yaml petsc.yml
+!      filter:   grep -v saws_port_auto_select
 !      localrunfiles: petsc.yml
 !
 !TEST*/

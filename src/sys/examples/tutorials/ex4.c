@@ -69,7 +69,8 @@ int main(int argc, char *argv[])
 
    test:
       nsize: 5
-      filter: sort -b
+      args: -options_left no
+      filter: sort -b | grep -v saws_port_auto_selectcd
       filter_output: sort -b
 
 TEST*/
