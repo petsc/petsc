@@ -6185,8 +6185,8 @@ code is set to be nonzero if an error has been detected; otherwise, it
 is zero.  For example, the Fortran and C variants of \lstinline{KSPSolve()} are
 given, respectively, below, where \lstinline{ierr} denotes the error variable:
 \begin{lstlisting}
-call KSPSolve(KSP ksp,Vec b,Vec x,PetscErrorCode ierr) ! Fortran
-ierr = KSPSolve(KSP ksp,Vec b,Vec x);                  /* C */
+call KSPSolve(ksp,b,x,ierr) ! Fortran
+ierr = KSPSolve(ksp,b,x);   /* C */
 \end{lstlisting}
 
 Fortran programmers
