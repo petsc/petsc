@@ -294,7 +294,7 @@ $(testsrcs.o) : $(petscvariables)
 .PHONY: clean cleantest all print
 
 cleantest:
-	${RM} -rf $(TESTDIR) $(generatedtest) $(generatedtestargs)
+	${RM} -rf $(TESTDIR)
 
 clean: cleantest
 	${RM} -rf $(OBJDIR) $(LIBDIR)/libpetsc* $(MODDIR)/petsc*.mod $(MPIUNI_MOD) $(generated)
