@@ -7,8 +7,6 @@ T*/
 
 #include <petscsys.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateError"
 int CreateError(int n)
 {
   PetscErrorCode ierr;
@@ -17,8 +15,6 @@ int CreateError(int n)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;

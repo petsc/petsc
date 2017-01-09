@@ -245,7 +245,6 @@ else
 	@$(PETSC_TEST_COMPILE.F) $(abspath $<) -o $@ $(FC_MODULE_OUTPUT_FLAG)$(MODDIR)
 endif
 
-
 # Executables
 $(TESTDIR)/% : $(TESTDIR)/%.o $(libpetscall)
 			$(call testquiet,CLINKER) -o $@ $^ $(PETSC_SYS_LIB)
@@ -351,3 +350,5 @@ echo_testsearch:
 
 report_tests: $(NEW_TESTTARGETS)
 	-@$(PYTHON) config/report_tests.py -d $(PETSC_ARCH)/tests/counts
+
+.INTERMEDIATE: $(testsrcs.o:%.o=%)
