@@ -87,11 +87,11 @@ function petsc_testrun() {
   fi
   eval $cmd
   if test $? == 0; then
-    #if "${verbose}"; then 
-    #  printf "ok $tlabel $cmd\n"
-    #else
-    #  printf "ok $tlabel\n"
-    #fi
+    if "${verbose}"; then
+     printf "ok $tlabel $cmd\n"
+    else
+     printf "ok $tlabel\n"
+    fi
     let success=$success+1
   else
     if "${verbose}"; then 

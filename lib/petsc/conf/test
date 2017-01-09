@@ -354,8 +354,11 @@ alltests:
             grep -v '^[\.]*$$' | wc -l | grep '^[ ]*0$$' > /dev/null; \
           fi;
 
-allgtest:
+allgtest-tap:
 	-@cd ${PETSC_DIR}; ${OMAKE} -f gmakefile -j ${MAKE_NP} test V=${V}
+
+allgtest:
+	-@cd ${PETSC_DIR}; ${OMAKE} -f gmakefile -j ${MAKE_NP} test V=${V} | grep -v '^ok [^#]*\(# SKIP\|$$\)'
 
 alltest:
 	-@date
