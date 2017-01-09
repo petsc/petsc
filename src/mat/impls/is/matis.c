@@ -621,6 +621,8 @@ PetscErrorCode MatTranspose_IS(Mat A,MatReuse reuse,Mat *B)
   } else {
     ierr = MatHeaderMerge(A,&C);CHKERRQ(ierr);
   }
+  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
