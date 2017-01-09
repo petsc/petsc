@@ -665,6 +665,7 @@ class generateExamples(Petsc):
     fd.write("testpkgs: "+testdeps+"\n")    # The test for the pkgs
     # Testinit handles the logging
     fd.write("testinit:\n")
+    fd.write("\t-@mkdir -p ${PETSC_ARCH}/tests\n")
     fd.write("\t-@rm -f ${PETSC_ARCH}/tests/test.log\n")
     fd.write("\t-@touch ${PETSC_ARCH}/tests/test.log\n")
     # I like compiling executables first, but this is problematic for
@@ -687,13 +688,13 @@ class generateExamples(Petsc):
         execname=pkg+"-ex"
         fd.write(execname+": "+" ".join(self.objects[pkg])+"\n\n")
       for lang in LANGS:
-        testdeps=""
+        testdeps=[]
         for ftest in self.tests[pkg][lang]:
           test=os.path.basename(ftest)
           basedir=os.path.dirname(ftest)
-          testdeps=testdeps+" "+self.nameSpace(test,basedir)
-        fd.write("test-"+pkg+"-"+lang+":"+testdeps+"\n")
-        alltargets.append(testdeps)
+          testdeps.append(self.nameSpace(test,basedir))
+        fd.write("test-"+pkg+"-"+lang+" : "+' '.join(testdeps)+"\n")
+        alltargets += testdeps
 
         # test targets
         for ftest in self.tests[pkg][lang]:
