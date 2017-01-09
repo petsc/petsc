@@ -236,7 +236,7 @@ $(TESTDIR)/counts/%.counts :
 
 # Remove intermediate .o files
 # This only removes the files at the end which is insufficient
-.INTERMEDIATE: $(testsrcs.o:%.o=%)
+#.INTERMEDIATE: $(testsrcs.o:%.o=%)
 
 # Hack: manual dependencies on object files
 ifeq ($(MPI_IS_MPIUNI),1)
@@ -271,6 +271,7 @@ $(testsrcs.o) : $(petscvariables)
 
 cleantest:
 	${RM} -rf $(TESTDIR)
+	$(PYTHON) ./config/gmakegentest.py --petsc-arch=$(PETSC_ARCH)
 
 clean: cleantest
 	${RM} -rf $(OBJDIR) $(LIBDIR)/libpetsc* $(MODDIR)/petsc*.mod $(MPIUNI_MOD) $(generated)

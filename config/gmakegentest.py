@@ -679,7 +679,7 @@ class generateExamples(Petsc):
     for pkg in PKGS:
       # These grab the ones that are built
       # Package tests
-      testdeps=" ".join(["test-"+pkg+"-"+lang for lang in LANGS])
+      testdeps=" ".join(["test-"+pkg+"-"+lang+" test-rm-"+pkg+"-"+lang for lang in LANGS])
       fd.write("test-"+pkg+": "+testdeps+"\n")
       testexdeps=" ".join(["test-ex-"+pkg+"-"+lang for lang in LANGS])
       fd.write("test-ex-"+pkg+": "+testexdeps+"\n")
@@ -722,6 +722,18 @@ class generateExamples(Petsc):
                       execname if exfile in self.sources[pkg][lang]['srcs'] else fullex))
           # Now write the args:
           fa.write(nmtest+"_ARGS='"+self.tests[pkg][lang][ftest]['argLabel']+"'\n")
+
+        # rm targets
+        fd.write("test-rm-"+pkg+"-"+lang+": test-"+pkg+"-"+lang+"\n")
+        for exfile in self.sources[pkg][lang]['srcs']:
+          root=os.path.join(self.petsc_dir,os.path.dirname(exfile))
+          basedir=os.path.dirname(exfile)
+          testdir="${TESTDIR}/"+basedir+"/"
+          localexec=os.path.basename(os.path.splitext(exfile)[0])
+          execname=os.path.join(testdir,localexec)
+          line="\t@$(RM) "+execname
+          fd.write(line+"\n")
+
     fd.write("alltesttargets := %s\n" % ' '.join(alltargets))
     fd.write("helptests:\n\t -@grep '^[a-z]' ${generatedtest} | cut -f1 -d:\n")
     # Write out tests
