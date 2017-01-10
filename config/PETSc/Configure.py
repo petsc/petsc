@@ -929,6 +929,7 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
       self.addDefine('HAVE_O_BINARY',1)
 
     if self.compilers.CC.find('win32fe') >= 0:
+      self.addDefine('HAVE_WINDOWS_COMPILERS',1)
       self.addDefine('PATH_SEPARATOR','\';\'')
       self.addDefine('DIR_SEPARATOR','\'\\\\\'')
       self.addDefine('REPLACE_DIR_SEPARATOR','\'/\'')
