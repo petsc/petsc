@@ -212,6 +212,7 @@ class generateExamples(Petsc):
     if not testDict.has_key('localrunfiles'): testDict['localrunfiles']=""
     if not testDict.has_key('args'): testDict['args']=""
     defroot=(re.sub("run","",testname) if testname.startswith("run") else testname)
+    if not "_" in defroot: defroot=defroot+"_1"
     if not testDict.has_key('redirect_file'): testDict['redirect_file']=defroot+".tmp"
     if not testDict.has_key('output_file'): testDict['output_file']="output/"+defroot+".out"
 
