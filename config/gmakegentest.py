@@ -651,50 +651,24 @@ class generateExamples(Petsc):
 
     # Open file
     arch_files = self.arch_path('lib','petsc','conf', 'testfiles')
-    arg_files = self.arch_path('lib','petsc','conf', 'testargfiles')
     fd = open(arch_files, 'w')
-    fa = open(arg_files, 'w')
 
     # Write out the sources
     gendeps = self.gen_gnumake(fd,prefix="testsrcs-")
 
     # Write out the tests and execname targets
     fd.write("\n#Tests and executables\n")    # Delimiter
-    fd.write("test: testinit testex testpkgs report_tests\n")    # Main test target
-    testdeps=" ".join(["test-"+pkg for pkg in PKGS])
-    testexdeps=" ".join(["test-ex-"+pkg for pkg in PKGS])
-    fd.write("testpkgs: "+testdeps+"\n")    # The test for the pkgs
-    # Testinit handles the logging
-    fd.write("testinit:\n")
-    fd.write("\t-@mkdir -p ${PETSC_ARCH}/tests\n")
-    fd.write("\t-@rm -f ${PETSC_ARCH}/tests/test.log\n")
-    fd.write("\t-@touch ${PETSC_ARCH}/tests/test.log\n")
-    # I like compiling executables first, but this is problematic for
-    # systems that static compile with limited disk space. Somewhat
-    # redundant 
-    if compileExecsFirst:
-      fd.write("testex: "+testexdeps+"\n")    # Main test target
-    else: 
-      fd.write("testex: \n")    # Main test target
 
     for pkg in PKGS:
       # These grab the ones that are built
-      # Package tests
-      testdeps=" ".join(["test-"+pkg+"-"+lang+" test-rm-"+pkg+"-"+lang for lang in LANGS])
-      fd.write("test-"+pkg+": "+testdeps+"\n")
-      testexdeps=" ".join(["test-ex-"+pkg+"-"+lang for lang in LANGS])
-      fd.write("test-ex-"+pkg+": "+testexdeps+"\n")
-      # This needs work
-      if self.single_ex:
-        execname=pkg+"-ex"
-        fd.write(execname+": "+" ".join(self.objects[pkg])+"\n\n")
       for lang in LANGS:
         testdeps=[]
         for ftest in self.tests[pkg][lang]:
           test=os.path.basename(ftest)
           basedir=os.path.dirname(ftest)
           testdeps.append(self.nameSpace(test,basedir))
-        fd.write("test-"+pkg+"-"+lang+" : "+' '.join(testdeps)+"\n")
+        fd.write("test-"+pkg+"."+lang+" := "+' '.join(testdeps)+"\n")
+        fd.write('test-%s-%s : $(test-%s.%s)\n' % (pkg, lang, pkg, lang))
         alltargets += testdeps
 
         # test targets
@@ -722,7 +696,7 @@ class generateExamples(Petsc):
                       fullscript,
                       execname if exfile in self.sources[pkg][lang]['srcs'] else fullex))
           # Now write the args:
-          fa.write(nmtest+"_ARGS='"+self.tests[pkg][lang][ftest]['argLabel']+"'\n")
+          fd.write(nmtest+"_ARGS := '"+self.tests[pkg][lang][ftest]['argLabel']+"'\n")
 
         # rm targets
         fd.write("test-rm-"+pkg+"-"+lang+": test-"+pkg+"-"+lang+"\n")
@@ -737,6 +711,7 @@ class generateExamples(Petsc):
 
     fd.write("alltesttargets := %s\n" % ' '.join(alltargets))
     fd.write("helptests:\n\t -@grep '^[a-z]' ${generatedtest} | cut -f1 -d:\n")
+    fd.close()
     # Write out tests
     return
 

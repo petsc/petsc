@@ -57,7 +57,6 @@ generated      := $(PETSC_ARCH)/lib/petsc/conf/files
 petscconf      := $(PETSC_ARCH)/include/petscconf.h
 petscvariables := $(PETSC_ARCH)/lib/petsc/conf/petscvariables
 generatedtest      := $(PETSC_ARCH)/lib/petsc/conf/testfiles
-generatedtestargs  := $(PETSC_ARCH)/lib/petsc/conf/testargfiles
 
 all : $(generated) $(libpetscall) 
 
@@ -86,11 +85,8 @@ $(generated) : $(petscconf) $(petscvariables) config/gmakegen.py
 $(generatedtest) : $(petscconf) $(petscvariables) config/gmakegentest.py | $$(@D)/.DIR
 	$(PYTHON) ./config/gmakegentest.py --petsc-arch=$(PETSC_ARCH)
 
-$(generatedtestargs) : $(generatedtest) 
-
--include $(generated)
--include $(generatedtest)
--include $(generatedtestargs)
+include $(generated)
+include $(generatedtest)
 
 ifeq ($(PETSC_LANGUAGE),CXXONLY)
   cc_name := CXX
@@ -227,8 +223,17 @@ $(TESTDIR)/%f90 : $(TESTDIR)/%f90.o $(libpetscall)
 
 # Run targets
 $(alltesttargets) : % : $(TESTDIR)/counts/%.counts
+
 $(TESTDIR)/counts/%.counts :
 	@$< $(TESTFLAGS)
+
+test: testinit testpkgs report_tests
+testinit:
+	-@mkdir -p ${PETSC_ARCH}/tests
+	-@rm -f ${PETSC_ARCH}/tests/test.log
+	-@touch ${PETSC_ARCH}/tests/test.log
+testpkgs: $(foreach pkg, $(pkgs), test-$(pkg))
+$(foreach pkg, $(pkgs), test-$(pkg)) : test-% : $(foreach lang, $(langs), test-%-$(lang) test-rm-%-$(lang))
 
 # Remove intermediate .o files
 # This only removes the files at the end which is insufficient
@@ -266,8 +271,7 @@ $(testsrcs.o) : $(petscvariables)
 .PHONY: clean cleantest all print
 
 cleantest:
-	${RM} -rf $(TESTDIR)
-	$(PYTHON) ./config/gmakegentest.py --petsc-arch=$(PETSC_ARCH)
+	${RM} -rf $(TESTDIR) $(generatedtest)
 
 clean: cleantest
 	${RM} -rf $(OBJDIR) $(LIBDIR)/libpetsc* $(MODDIR)/petsc*.mod $(MPIUNI_MOD) $(generated)
