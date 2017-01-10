@@ -73,10 +73,9 @@ int main(int argc,char **argv)
 
 
 /*TEST
-   
+
    test:
       nsize: 4
       args: -viewer
-      output_file: output/ex15_1.out
 
 TEST*/

@@ -136,7 +136,6 @@ int main(int argc,char **argv)
 
    test:
       args: -pbag_rho 44 -pbag_do_output true
-      output_file: output/ex5_1.out
 
    test:
       suffix: yaml

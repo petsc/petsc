@@ -43,6 +43,5 @@
 !
 !   test:
 !      args: -joe_jeff b456
-!      output_file: output/ex8f90_1.out
 !
 !TEST*/

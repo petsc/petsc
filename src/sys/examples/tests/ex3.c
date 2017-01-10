@@ -34,7 +34,6 @@ int main(int argc,char **argv)
 
    test:
       args: -fp_trap
-      filter: grep "Floating point exception" 
-      output_file: output/ex3_1.out
+      filter: grep "Floating point exception"
 
 TEST*/

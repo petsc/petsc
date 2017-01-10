@@ -30,8 +30,7 @@
 
 !
 !/*TEST
-!   
+!
 !   test:
-!      output_file: output/ex6f_1.out
 !
 !TEST*/

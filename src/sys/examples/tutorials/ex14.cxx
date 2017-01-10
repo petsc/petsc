@@ -87,10 +87,9 @@ int main(int argc,char **argv)
 
 
 /*TEST
-   
+
    test:
       nsize: 3
       filter: grep -v "Tpetra in Trilinos"
-      output_file: output/ex14_1.out
 
 TEST*/

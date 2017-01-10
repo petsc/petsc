@@ -41,9 +41,8 @@
 
 !
 !/*TEST
-!   
+!
 !   test:
 !      nsize: 3
-!      output_file: output/ex17f_1.out
 !
 !TEST*/

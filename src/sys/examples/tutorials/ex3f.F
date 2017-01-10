@@ -124,6 +124,5 @@
 !/*TEST
 !
 !   test:
-!      output_file: output/ex3f_1.out
 !
 !TEST*/

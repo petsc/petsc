@@ -42,7 +42,6 @@ int main(int argc,char **argv)
 
    test:
       requires: !windows_compilers
-      output_file: output/ex31_1.out
       filter: sed "s?${PWD}??g" |  sed "s?${HOME}??g"
 
    test:

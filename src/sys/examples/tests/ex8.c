@@ -187,7 +187,6 @@ int main(int argc,char **argv)
    test:
       nsize: 4
       args: -verbose -build_twosided allreduce
-      output_file: output/ex8_1.out
 
    test:
       suffix: f

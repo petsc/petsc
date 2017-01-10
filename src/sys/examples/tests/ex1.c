@@ -32,7 +32,6 @@ int main(int argc,char **argv)
 /*TEST
 
    test:
-      output_file: output/ex1_1.out
       filter: egrep "(PETSC ERROR)" | egrep "(main|CreateError|Error Created)" | cut -f1,2,3,4,5,6 -d" "
 
 

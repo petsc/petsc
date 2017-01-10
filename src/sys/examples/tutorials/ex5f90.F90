@@ -130,6 +130,5 @@
 !
 !   test:
 !      args: -pbag_rarray 4,5,88
-!      output_file: output/ex5f90_1.out
 !
 !TEST*/
