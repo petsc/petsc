@@ -97,7 +97,7 @@ PETSC_COMPILE.cu = $(call quiet,CUDAC) -c $(CUDAC_FLAGS) --compiler-options="$(P
 PETSC_GENDEPS.cu = $(call quiet,CUDAC,.dep) --generate-dependencies --output-directory=$(@D) $(CUDAC_FLAGS) --compiler-options="$(PCC_FLAGS) $(CXXFLAGS) $(CCPPFLAGS)"
 PETSC_COMPILE.F = $(call quiet,FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS)
 
-langs := c cu cxx F
+langs := F cu cxx c
 concatlang = $(foreach lang, $(langs), $(srcs-$(1).$(lang):%.$(lang)=$(OBJDIR)/%.o))
 srcs.o := $(foreach pkg, $(pkgs), $(call concatlang,$(pkg)))
 

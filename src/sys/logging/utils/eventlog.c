@@ -266,7 +266,7 @@ PetscErrorCode PetscLogEventEndMPE(PetscLogEvent event,int t,PetscObject o1,Pets
   Level: developer
 
 .keywords: log, event, register
-.seealso: PetscLogEventBegin(), PetscLogEventEnd(), PetscLogFlops(), PetscLogEventMPEActivate(), PetscLogEventMPEDeactivate(),
+.seealso: PetscLogEventBegin(), PetscLogEventEnd(), PetscLogFlops(), 
           PetscEventLogActivate(), PetscEventLogDeactivate()
 @*/
 PetscErrorCode PetscEventRegLogRegister(PetscEventRegLog eventLog,const char ename[],PetscClassId classid,PetscLogEvent *event)
@@ -341,7 +341,7 @@ PetscErrorCode PetscEventRegLogRegister(PetscEventRegLog eventLog,const char ena
   Level: developer
 
 .keywords: log, event, activate
-.seealso: PetscLogEventMPEDeactivate(), PetscLogEventMPEActivate(), PetscEventPerfLogDeactivate()
+.seealso: PetscEventPerfLogDeactivate()
 @*/
 PetscErrorCode PetscEventPerfLogActivate(PetscEventPerfLog eventLog,PetscLogEvent event)
 {
@@ -374,7 +374,7 @@ PetscErrorCode PetscEventPerfLogActivate(PetscEventPerfLog eventLog,PetscLogEven
   Level: developer
 
 .keywords: log, event, activate
-.seealso: PetscLogEventMPEDeactivate(), PetscLogEventMPEActivate(), PetscEventPerfLogActivate()
+.seealso: PetscEventPerfLogActivate()
 @*/
 PetscErrorCode PetscEventPerfLogDeactivate(PetscEventPerfLog eventLog,PetscLogEvent event)
 {

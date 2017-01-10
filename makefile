@@ -389,7 +389,7 @@ docsetdate: chk_petscdir
         fi; \
         datestr=`git log -1 --pretty=format:%ci | cut -d ' ' -f 1`; \
         export datestr; \
-        gitver=`git describe`; \
+        gitver=`git describe --match "v*"`; \
         export gitver; \
         find * -type d -wholename src/docs/website -prune -o -type d -wholename src/benchmarks/results -prune -o \
           -type d -wholename config/BuildSystem/docs/website -prune -o -type d -wholename include/web -prune -o \

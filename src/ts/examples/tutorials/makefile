@@ -830,8 +830,8 @@ runex44_b:
 	   ${RM} -f ex44_b.tmp
 
 runex44_2:
-	-@${MPIEXEC} -n 2 ./ex44 > ex44_2.tmp 2>&1; \
-	   ${DIFF} output/ex44_2.out ex44_2.tmp || printf "${PWD}\nPossible problem with ex44_2, diffs above\n=========================================\n"; \
+	-@${MPIEXEC} -n 2 ./ex44 | sort -b > ex44_2.tmp 2>&1; \
+	   sort  -b output/ex44_2.out | ${DIFF}  - ex44_2.tmp || printf "${PWD}\nPossible problem with ex44_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex44_2.tmp
 
 TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex3.PETSc runex3 runex3_2 runex3_4 runex3_5 ex3.rm \

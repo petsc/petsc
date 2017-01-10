@@ -182,15 +182,22 @@ PetscErrorCode PCGAMGCreateGraph(Mat Amat, Mat *a_Gmat)
 }
 
 /* -------------------------------------------------------------------------- */
-/*
-   PCGAMGFilterGraph - filter (remove zero and possibly small values from the) graph and symetrize if needed
+/*@C
+   PCGAMGFilterGraph - filter (remove zero and possibly small values from the) graph and make it symmetric if requested
 
- Input Parameter:
- . vfilter - threshold paramter [0,1)
- . symm - symetrize?
- In/Output Parameter:
- . a_Gmat - original graph
- */
+   Collective on Mat
+
+   Input Parameter:
++   a_Gmat - the graph
+.   vfilter - threshold paramter [0,1)
+-   symm - make the result symmetric
+
+   Level: developer
+
+   Notes: This is called before graph coarsers are called.
+
+.seealso: PCGAMGSetThreshold()
+@*/
 PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
 {
   PetscErrorCode    ierr;

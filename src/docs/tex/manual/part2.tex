@@ -5216,11 +5216,7 @@ introduced in \cite{Constantinescu_TR2016b}.}
 %
 
 \section{Using fully implicit methods}
-Either provide the Jacobian of $F() $ (and $G()$ if $G()$ is provided) or use a \lstinline{DM} that provides a coloring so the Jacobian can be computed efficiently via finite differences.
-
-{\bf Theta methods}
-
-{\bf GL methods}
+To use a fully implicit method like \lstinline{TSTHETA} or \lstinline{TSGL}, either provide the Jacobian of $F() $ (and $G()$ if $G()$ is provided) or use a \lstinline{DM} that provides a coloring so the Jacobian can be computed efficiently via finite differences.
 
 \section{Using the Explicit Runge-Kutta timestepper with variable timesteps}
 The explicit Euler and Runge-Kutta methods require the ODE be in the form
@@ -6256,8 +6252,8 @@ that the C convention of passing NULL (or 0) {\em cannot}
 be used.  For example, when no options prefix is desired in the
 routine \lstinline{PetscOptionsGetInt()}, one must use the following command in
 Fortran:
-\begin{lstlisting}
-call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-name',N,flg,ierr)
+\begin{lstlisting}[breakatwhitespace=false]
+call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,PETSC_NULL_CHARACTER,'-name',N,flg,ierr)
 \end{lstlisting}
 
 This Fortran requirement is inconsistent with C, where the
@@ -6277,8 +6273,8 @@ destroy them by calling \lstinline{VecDestroyVecs()}.
 For example, the following code fragment
 duplicates \lstinline{v_old} to form two new vectors, \lstinline{v_new(1)} and \lstinline{v_new(2)}.
 \begin{lstlisting}
-Vec     v_old, v_new(2)
-integer ierr
+Vec          v_old, v_new(2)
+PetscInt     ierr
 PetscScalar  alpha
 ....
 call VecDuplicateVecs(v_old,2,v_new,ierr)
@@ -6313,11 +6309,11 @@ Figure \ref{fig_make1} shows a sample makefile that can be used for
 PETSc programs.  In this makefile, one can compile and run a debugging version
 of the Fortran program \trl{ex3.F} with the actions \trl{make}  \trl{ex3} and
 \trl{make} \trl{runex3}, respectively. The compilation command is restated below:
-\begin{lstlisting}
+\begin{makelisting}
 ex3: ex3.o 
        -${FLINKER}} -o ex3 ex3.o ${PETSC_LIB}
         ${RM} ex3.o
-\end{lstlisting}
+\end{makelisting}
 
 \subsection{Routines with Different Fortran Interfaces}
 \label{sec_fortran_exceptions}
@@ -6418,14 +6414,14 @@ accept as input a user-specified array of dimension one and return an
 integer index to the actual array used for data storage within PETSc.
 The Fortran interface for several routines is as follows:
 \begin{lstlisting}
-double precision xx_v(1), aa_v(1)
+PetscScalar    xx_v(1), aa_v(1)
 PetscErrorCode ierr
-integer          ss_v(1), dd_v(1), nloc
-PetscOffset      ss_i, xx_i, aa_i, dd_i
-Vec x
-Mat A
-IS  s
-DM  d 
+PetscInt       ss_v(1), dd_v(1), nloc
+PetscOffset    ss_i, xx_i, aa_i, dd_i
+Vec            x
+Mat            A
+IS             s
+DM             d 
 
 call VecGetArray(x,xx_v,xx_i,ierr)
 call MatDenseGetArray(A,aa_v,aa_i,ierr)
@@ -6443,8 +6439,8 @@ Fortran manner.
 
    double precision xx_v(1)
    PetscOffset      xx_i
-   PetscErrorCode ierr
-   integer          i, n
+   PetscErrorCode   ierr
+   PetscInt         i, n
    Vec              x
    call VecGetArray(x,xx_v,xx_i,ierr)
    call VecGetLocalSize(x,n,ierr)
@@ -6473,7 +6469,7 @@ is done with the \trl{-C} compiler option, so never use the \trl{-C} option with
 \label{ch_matlab}\sindex{MATLAB}
 
 There are three basic ways to use MATLAB with PETSc: 
-\begin{enumerate}
+\begin{tightenumerate}
   \item (Section \ref{sec_matlabdump}) dumping files to be read into MATLAB,
   \item (Section \ref{sec_matlabsocket}) automatically sending data from a running PETSc program
 to a MATLAB process where you may interactively type MATLAB commands (or run
@@ -6481,13 +6477,16 @@ scripts), and
 \item (Section \ref{sec_matlabengine}) automatically sending data back and forth between PETSc and
 MATLAB where MATLAB commands are issued not interactively but from a script or
 the PETSc program (this uses the MATLAB Engine).
-\end{enumerate}
+\end{tightenumerate}
 
 \section{Dumping Data for MATLAB}
 \label{sec_matlabdump}
-One can dump PETSc matrices and vectors to the screen (and thus save in a file via
-\trl{> filename.m}) in an ASCII format that MATLAB can read in directly. This is done with the
-command line options \trl{-vec_view ::ascii_matlab} or \trl{-mat_view ::ascii_matlab}. This causes the PETSc program
+\subsection{Dumping ASCII MATLAB data}
+One can dump PETSc matrices and vectors to the screen in an ASCII format that MATLAB can read in directly. This is done with the
+command line options \trl{-vec_view ::ascii_matlab} or \trl{-mat_view ::ascii_matlab}. 
+To write a a file, use \trl{-vec_view :filename.m:ascii_matlab} or \trl{-mat_view :filename.m:ascii_matlab}.
+
+This causes the PETSc program
 to print the vectors and matrices every time \lstinline{VecAssemblyEnd()} or \lstinline{MatAssemblyEnd()} are called. \findex{-vec_view ::ascii_matlab} \findex{-mat_view ::ascii_matlab} 
 To provide finer control
 over when and what vectors and matrices are dumped one can use the \lstinline{VecView()} and
@@ -6505,33 +6504,51 @@ PetscObjectSetName((PetscObject)A,"name");
 \end{lstlisting}\sindex{PetscObjectSetName()}
 If no name is specified, the object is given a default name using \lstinline{PetscObjectName()}.
 
-One can also read PETSc binary files directly into MATLAB via the scripts available in \lstinline{$PETSC_DIR/share/matlab}.
-This requires less disk space.
+\subsection{Dumping Binary Data for MATLAB}
+One can also read PETSc binary files (see Section \ref{sec_viewers}) directly into MATLAB via the scripts available in \lstinline{$PETSC_DIR/share/matlab}.
+This requires less disk space and is recommended for all but the smallest data sizes.
+One can also use
+\begin{lstlisting}
+PetscViewerPushFormat(viewer,PETSC_VIEWER_BINARY_MATLAB} 
+\end{lstlisting}
+to dump both a PETSc binary file and a corresponding \trl{.info} file which 
+\lstinline{PetscReadBinaryMatlab.m} will use to format the binary file in more complex cases, such as using a \lstinline{DMDA}. 
+For an example, see \href{http://www.mcs.anl.gov/petsc/petsc-current/src/dm/examples/tutorials/ex7.c.html}{\trl{${PETSC_DIR}/src/dm/examples/tutorials/ex7.c}}.
+In MATLAB (R2015b), one may then generate a useful structure. For example:
+\begin{outputlisting}[\normalsize\ttfamily]
+setenv('PETSC_DIR','~/petsc');
+setenv('PETSC_ARCH','arch-darwin-double-debug');
+addpath('~/petsc/share/petsc/matlab');
+gridData=PetscReadBinaryMatlab('output_file');
+\end{outputlisting}
 
-\section{Sending Data to Interactive Running MATLAB Session}
+\section{Sending Data to an Interactive MATLAB Session}
 \label{sec_matlabsocket}
 
 One creates a viewer to MATLAB via
 \begin{lstlisting}
 PetscViewerSocketOpen(MPI_Comm,char *machine,int port,PetscViewer *v);
 \end{lstlisting}
-(port is usually set to \lstinline{PETSC_DEFAULT}; use \lstinline{NULL} for the machine if the
+(\lstinline{port} is usually set to \lstinline{PETSC_DEFAULT}; use \lstinline{NULL} for the machine if the
 MATLAB interactive session is running on the same machine as the PETSc program)
 and then sends matrices or vectors via
 \begin{lstlisting}
 VecView(Vec A,v);
 MatView(Mat B,v);
 \end{lstlisting}
-One can also send arrays or integer arrays via \lstinline{PetscIntView()}, \lstinline{PetscRealView()} and \break\lstinline{PetscScalarView()}.
+See Section \ref{sec_viewers} for more on PETSc viewers.
 One may start the MATLAB program manually or use the PETSc command
-\break \lstinline{PetscStartMATLAB(MPI_Comm,char *machine,char *script,FILE **fp)}; where machine and script may be \lstinline{NULL}.
-
-To receive the objects in MATLAB you must first make sure that \trl{${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/matlab}
-is in your MATLAB path. Use \lstinline{p = sopen;} (or \lstinline{p = sopen(portnum)} if you provided a port number in
-your call to \lstinline{PetscViewerSocketOpen()}), then \lstinline{a = PetscBinaryRead(p);} returns the object you have passed from PETSc.
-\lstinline{PetscBinaryRead()} may be called any number of times. Each call should correspond on the PETSc side with
-viewing a single vector or matrix. You many call \lstinline{sclose()} to close the connection from MATLAB.
+\lstinline{PetscStartMatlab(MPI_Comm,char *machine,char *script,FILE **fp)}; where \lstinline{machine} and \lstinline{script} may be \lstinline{NULL}.
 It is also possible to start your PETSc program from MATLAB via \lstinline{launch()}.
+
+To receive the objects in MATLAB, make sure that \trl{${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/matlab} and \trl{${PETSC_DIR}/share/petsc/matlab}
+are in the MATLAB path. Use \break\lstinline{p = PetscOpenSocket();} (or \lstinline{p = PetscOpenSocket(portnum)} if you provided a port number in
+your call to \lstinline{PetscViewerSocketOpen()}), and then \lstinline{a = PetscBinaryRead(p);} returns the object passed from PETSc.
+\lstinline{PetscBinaryRead()} may be called any number of times. Each call should correspond on the PETSc side with
+viewing a single vector or matrix. \lstinline{close()} closes the connection from MATLAB.
+On the PETSc side, one should destroy the viewer object with \lstinline{PetscViewerDestroy()}. 
+
+For an example, which includes sending data back to PETSc, see \href{http://www.mcs.anl.gov/petsc/petsc-current/src/vec/vec/examples/tutorials/ex42.c.html}{\trl{${PETSC_DIR}/src/vec/vec/examples/tutorials/ex42.c}} and the associated \trl{.m} file.
 
 \section{Using the MATLAB Compute Engine}
 \label{sec_matlabengine}
@@ -6548,9 +6565,9 @@ PetscMatlabEnginePut(PetscMatlabEngine e,PetscObject obj);
 One can get objects
 via
 \begin{lstlisting}
-PetscMatlabEngineGet(PetscMatlabEngine e,PetscObject obj);.
+PetscMatlabEngineGet(PetscMatlabEngine e,PetscObject obj); 
 \end{lstlisting}
-Similarly one can send arrays via
+Similarly, one can send arrays via
 \begin{lstlisting}
 PetscMatlabEnginePutArray(PetscMatlabEngine e,int m,int n,PetscScalar *array,char *name);
 \end{lstlisting}
@@ -6559,7 +6576,7 @@ and get them back via
 PetscMatlabEngineGetArray(PetscMatlabEngine e,int m,int n,PetscScalar *array,char *name);
 \end{lstlisting}
 One cannot use MATLAB
-interactively in this mode but you can send MATLAB commands via
+interactively in this mode but one can send MATLAB commands via
 \begin{lstlisting}
 PetscMatlabEngineEvaluate(PetscMatlabEngine,"format",...);
 \end{lstlisting}
@@ -6568,7 +6585,7 @@ For example,
 \begin{lstlisting}
 PetscMatlabEngineEvaluate(PetscMatlabEngine,"x = \%g *y + z;",avalue);
 \end{lstlisting}
-The name of each PETSc variable passed to Matlab may be set with
+The name of each PETSc variable passed to MATLAB may be set with
 \begin{lstlisting}
 PetscObjectSetName((PetscObject)A,"name");
 \end{lstlisting}
@@ -6655,7 +6672,7 @@ For simplicity, the remainder of this discussion focuses on
 interpreting profile data for the \lstinline{KSP} library,
 which provides the linear solvers at the heart of the
 PETSc package.  Recall the hierarchical organization of the PETSc
-library, as shown in Figure~\ref{fig_1}.  Each \lstinline{KSP} solver
+library, as shown in Figure~\ref{fig_library}.  Each \lstinline{KSP} solver
 is composed of a \lstinline{PC} (preconditioner) and a \lstinline{KSP} (Krylov
 subspace) part, which are in turn built on top of the \lstinline{Mat}
 (matrix) and \lstinline{Vec} (vector) modules.  Thus, operations in the
@@ -6909,32 +6926,10 @@ The option \findex{-log_mpe}
 -log_mpe [logfile]
 \end{lstlisting}
 creates a logfile of events appropriate for viewing with {\em Jumpshot}.
-The user can either use the default logging file, \trl{mpe.log}, or
-specify an optional name via \trl{logfile}.
-
-
-By default, not all PETSc events are logged with MPE. For example,
-since \lstinline{MatSetValues()} may be called thousands of times in a program,
-by default its calls are not logged with MPE. To activate MPE logging of
-a particular event, one should use the command
-\begin{lstlisting}
-PetscLogEventMPEActivate(int event);
-\end{lstlisting}
-To deactivate logging of an event for MPE, one should use
-\begin{lstlisting}
-PetscLogEventMPEDeactivate(int event);
-\end{lstlisting}
-The \lstinline{event} may be either a predefined PETSc event (as listed in
-the file \trl{${PETSC_DIR}/include/petsclog.h}) or one obtained with
-\lstinline{PetscLogEventRegister()} (as described in
-Section~\ref{sec_profileuser}).  These routines may be called as many
-times as desired in an application program, so that one could restrict
-MPE event logging only to certain code segments.
-
-To see what events are logged by default, the user can view the source code; see
-the files \trl{src/plot/src/plogmpe.c} and \trl{include/petsclog.h}.  A simple program and
-GUI interface to see the events that are predefined and their definition is
-being developed.
+The user can either use the default logging file or
+specify a name via \trl{logfile}.
+Events can be deactivated as described in Section 
+\ref{sec_deactivate}.
 
 The user can also log MPI events.  To do this, simply consider the
 PETSc application as any MPI application, and follow the MPI
@@ -6953,22 +6948,25 @@ The basic steps involved in logging a
 user-defined portion of code, called an {\em event}, are shown in the
 code fragment below:
 \begin{lstlisting}
-#include <petsclog.h>
-int USER_EVENT;
-PetscLogEventRegister("User event name",0, &USER_EVENT);
+PetscLogEvent  USER_EVENT;
+PetscClassId   classid;
+PetscLogDouble user_event_flops;
+
+PetscClassIdRegister("class name",&classid);
+PetscLogEventRegister("User event name",classid,&USER_EVENT);
 PetscLogEventBegin(USER_EVENT,0,0,0,0);
-/* application code segment to monitor */
-PetscLogFlops(number of flops for this code segment);
+/* code segment to monitor */
+PetscLogFlops(user_event_flops);
 PetscLogEventEnd(USER_EVENT,0,0,0,0);
 \end{lstlisting}
 
 One must register the event by calling \lstinline{PetscLogEventRegister()}, which assigns a unique integer to identify the
 event for profiling purposes:
 \begin{lstlisting}
-PetscLogEventRegister(const char string[],PetscLogEvent *e);
+PetscLogEventRegister(const char string[],PetscClassId classid,PetscLogEvent *e);
 \end{lstlisting}
 Here \lstinline{string} is a user-defined event name, and \lstinline{color} is an
-optional user-defined event color (for use with {\em Jumpshot} logging);
+optional user-defined event color (for use with {\em Jumpshot} logging; see Section \ref{sec_mpelog});\findex{-log_mpe}
 one should see the manual page for details.  The argument returned in \lstinline{e} should then
 be passed to the \lstinline{PetscLogEventBegin()} and \lstinline{PetscLogEventEnd()}
 routines.
@@ -7086,9 +7084,6 @@ the memory limitations of Tcl/Tk.  Thus, one should generally use
 \trl{-log_all} when running programs with a relatively small
 number of events or when disabling some of the events that occur many
 times in a code (e.g., \lstinline{VecSetValues()}, \lstinline{MatSetValues()}).
-
-Section~\ref{sec_mpelogs} gives information on the restriction of events
-in MPE logging.
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -7541,8 +7536,8 @@ spaces.  Note that the option values cannot
 have intervening spaces either, and tab characters cannot be used
 between the option names and values.
 The user can employ any naming convention.  For uniformity throughout
-PETSc, we employ the format \trl{-package_option} (for instance,
-\trl{-ksp_type} and \trl{-mat_view ::info}).
+PETSc, we employ the format \trl{-[prefix_]package_option} (for instance,
+\trl{-ksp_type}, \trl{-mat_view ::info}, or \trl{-mg_levels_ksp_type}).
 
 Users can specify an alias for any option name (to avoid typing the
 sometimes lengthy default name) by adding an alias to the
@@ -7557,6 +7552,16 @@ alias -kspt -ksp_type
 alias -sd -start_in_debugger
 \end{lstlisting}
 Comments can be placed in the \trl{.petscrc} file by using \lstinline{#} in the first column of a line.
+
+\subsection{Options Prefixes}
+Options prefixes allow specific objects to be controlled from the options database.
+For instance, \lstinline{PCMG} gives prefixes to its nested \lstinline{KSP} objects;
+one may control the coarse grid solver by adding the \trl{mg_coarse} prefix, for example 
+\trl{-mg_coarse_ksp_type preonly}.
+One may also use \break \lstinline{KSPSetOptionsPrefix()},\lstinline{DMSetOptionsPrefix()}
+, \lstinline{SNESSetOptionsPrefix()}, \lstinline{TSSetOptionsPrefix()}, and similar 
+functions to assign custom prefixes, useful for applications with multiple or nested 
+solvers.
 
 \subsection{User-Defined PetscOptions}
 
@@ -7612,21 +7617,21 @@ XXXView(XXX obj,PetscViewer viewer);
 \end{lstlisting}
 Here \lstinline{obj} is any PETSc object of type
 \lstinline{XXX},  where \lstinline{XXX}
-is \lstinline{Ma}t, \lstinline{Vec}, \lstinline{SNES}, etc. There are several
-predefined viewers:
+is \lstinline{Mat}, \lstinline{Vec}, \lstinline{SNES}, etc. There are several
+predefined viewers.
 \begin{itemize}
-\item Passing in a zero for the viewer causes the object to be printed
-      to the screen; this is most useful when viewing an object in
-      a debugger.
+  \item Passing in a zero (\lstinline{0}) for the viewer causes the object to be printed
+      to the screen; this is useful when viewing an object in
+      a debugger but should be avoided in source code.
     \item \lstinline{PETSC_VIEWER_STDOUT_SELF} and
       \lstinline{PETSC_VIEWER_STDOUT_WORLD}
-      cause the object to be printed to the screen.
-
+      causes the object to be printed to the screen.
     \item \lstinline{PETSC_VIEWER_DRAW_SELF}
       \lstinline{PETSC_VIEWER_DRAW_WORLD} causes the
-      object to be drawn in a default X window.
+      object to be drawn in a default X window. 
 \item Passing in a viewer obtained by
       \lstinline{PetscViewerDrawOpen()} causes the object to be displayed graphically.
+      See Section \ref{sec_graphics} for more on PETSc's graphics support.
 \item To save an object to a file in ASCII format, the user creates
       the viewer object with the command
       \lstinline{PetscViewerASCIIOpen(MPI_Comm comm, char* file, PetscViewer *viewer)}.
@@ -7636,20 +7641,12 @@ predefined viewers:
       \lstinline{PETSC_VIEWER_STDOUT_WORLD} (for a parallel communicator).
 \item To save an object to a file in binary format, the user creates
       the viewer object with the command
-      \lstinline{PetscViewerBinaryOpen(MPI_Comm) comm,char* file,PetscViewerBinaryType type, PetscViewer *viewer)}. Details of binary
+      \lstinline{PetscViewerBinaryOpen(MPI_Comm comm,char* file,PetscViewerBinaryType type, PetscViewer *viewer)}. Details of binary
       I/O are discussed below.
 \item Vector and matrix objects can be passed to a running MATLAB process
       with a viewer created by
-\begin{lstlisting}
-PetscViewerSocketOpen(MPI_Comm comm,char *machine,int port,PetscViewer *viewer).
-\end{lstlisting}
-      On the MATLAB side, one must first run \lstinline{v = sreader(int port)}
-      and then \break\lstinline{A = PetscBinaryRead(v)} to obtain the matrix or vector. Once all
-      objects have been received, the port can be closed from the MATLAB end
-      with \lstinline{close(v)}. On the PETSc side, one should destroy
-      the viewer object with  \break\lstinline{PetscViewerDestroy()}. 
-      The corresponding MATLAB \trl{mex}
-      files are located in \trl{${PETSC_DIR}/src/sys/classes/viewer/impls/socket/matlab}.
+    \lstinline{PetscViewerSocketOpen(MPI_Comm comm,char *machine,int port,PetscViewer *viewer)}.
+    For more, see Section \ref{sec_matlabsocket}.
 \end{itemize}
 
 The user can control the format of ASCII printed objects with viewers
@@ -7659,8 +7656,8 @@ PetscViewerPushFormat(PetscViewer viewer,PetscViewerFormat format);
 \end{lstlisting}
 \findex{PETSC_VIEWER_DEFAULT} \findex{PETSC_VIEWER_ASCII_MATLAB}
 \findex{PETSC_VIEWER_ASCII_IMPL}
-Possible formats include
-\lstinline{PETSC_VIEWER_DEFAULT}, \break\lstinline{PETSC_VIEWER_ASCII_MATLAB}, and
+Formats include
+\lstinline{PETSC_VIEWER_DEFAULT}, \lstinline{PETSC_VIEWER_ASCII_MATLAB}, and
 \lstinline{PETSC_VIEWER_ASCII_IMPL}.  The implementation-specific format,
 \lstinline{PETSC_VIEWER_ASCII_IMPL}, displays the object in the most natural way
 for a particular implementation.
@@ -7701,37 +7698,52 @@ read into a block oriented data structure (for example,
 \lstinline{s1,s2,s3,...} indicates
 which (block) diagonals in the matrix have nonzero values.
 
-\section{Using SAWS with PETSc} \label{sec_saws}
-\sindex{saws}
-The Scientific Application Web server, SAWs, \href{https://bitbucket.org/saws/saws/wiki/Home}{\trl{https://bitbucket.org/saws/saws/wiki/Home}}
-allows one to monitor PETSc applications from a browser as they run. ./configure PETSc with the additional option -download-saws. The options
-to use SAWs include:
-\begin{lstlisting}
--saws_options - allows setting values in the PETSc options database via the browser (works only on one process).
--stack_view saws - allows monitoring the current stack frame that PETSc is in, refresh to see the new location.
--ts_monitor_saws, -snes_monitor_saws, -ksp_monitor_saws - monitor the solvers iterations from the web browser.
-\end{lstlisting}
-For each of these you need to point your browser to \trl{https://hostname:8080}, for example \trl{https:/localhost:8080}.
-Options that control behavior of SAWs include
-\begin{lstlisting}
--saws_log filename - log all actions of SAWs in a file
--saws_https certfile - use HTTPS instead of HTTP with a certificate
--saws_port_auto_select - have SAWs pick a port number instead of using 8080
--saws_port port - use port instead of 8080
--saws_root rootdirectory - local directory that the SAWs browser will have read access on
--saws_local - use the local file system to obtain the SAWS javascript files (they much be located in rootdirectory/js)
-\end{lstlisting}
-See also the manual pages for PetscSAWsBlock, PetscObjectSAWsTakeAccess, PetscObjectSAWsGrantAccess, PetscObjectSAWsSetBlock, PetscStackSAWsGrantAccess
-PetscStackSAWsTakeAccess, KSPMonitorSAWs, SNESMonitorSAWs, TSMonitorSAWs.
+\subsection{Viewing From Options}
+\label{sec_viewfromoptions}
+Command-line options provide a particularly convenient way to view PETSc objects.
+All options of the form \trl{-xxx_view} accept colon(\trl{:})-separated compound arguments which
+specify a viewer type, format, and/or destination (e.g. file name or socket) if appropriate.
+For example, to quickly export a binary file containing a matrix, one may use
+\trl{-mat_view binary:matrix.out}, 
+or to output to a MATLAB-compatible ASCII file, one may use
+\trl{-mat_view ascii:matrix.m:ascii_matlab}.
+See the \lstinline{PetscOptionsGetViewer()} man page for full details,
+as well as the \lstinline{XXXViewFromOptions()} man pages (for instance, \lstinline{PetscDrawSetFromOptions()})
+for many other convenient command-line options.
 
+\section{Using SAWs with PETSc} \label{sec_saws}
+\sindex{saws}
+The Scientific Application Web server, 
+SAWs\footnote{\href{https://bitbucket.org/saws/saws/wiki/Home}{\trl{https://bitbucket.org/saws/saws/wiki/Home}}},
+allows one to monitor running PETSc applications from a browser.
+\trl{./configure} PETSc with the additional option \trl{--download-saws}. 
+Options to use SAWs include
+\begin{tightitemize}
+  \item\trl{-saws_options} - allows setting values in the PETSc options database via the browser (works only on one process).
+  \item\trl{-stack_view saws} - allows monitoring the current stack frame that PETSc is in; refresh to see the new location.
+  \item\trl{-snes_monitor_saws, -ksp_monitor_saws} - monitor the solvers' iterations from the web browser.
+\end{tightitemize}
+For each of these you need to point your browser to \trl{http://hostname:8080}, for example \trl{http://localhost:8080}.
+Options that control behavior of SAWs include
+\begin{tightitemize}
+  \item\trl{-saws_log filename} - log all SAWs actions in a file.
+  \item\trl{-saws_https certfile} - use HTTPS instead of HTTP with a certificate.
+  \item\trl{-saws_port_auto_select} - have SAWs pick a port number instead of using 8080.
+  \item\trl{-saws_port port} - use \trl{port} instead of 8080.
+  \item\trl{-saws_root rootdirectory} - local directory to which the SAWs browser will have read access.
+  \item\trl{-saws_local} - use the local file system to obtain the SAWS javascript files (they much be in \trl{rootdirectory/js}).
+\end{tightitemize}
+Also see the manual pages for \lstinline{PetscSAWsBlock}, \lstinline{PetscObjectSAWsTakeAccess},
+\lstinline{PetscObjectSAWsGrantAccess}, \lstinline{PetscObjectSAWsSetBlock}, \lstinline{PetscStackSAWsGrantAccess}
+\lstinline{PetscStackSAWsTakeAccess}, \lstinline{KSPMonitorSAWs}, and \lstinline{SNESMonitorSAWs}.
 
 \section{Debugging} \sindex{debugging} \label{sec_debugging}
 
 PETSc programs may be debugged using one of the two options below.
 \begin{itemize}
-\item \trl{-start_in_debugger} \trl{[noxterm,dbx,xxgdb]} \trl{[-display name]}
+\item \trl{-start_in_debugger} \trl{[noxterm,dbx,xxgdb,xdb,xldb,lldb]} \trl{[-display name]}
      - start all processes in debugger
-\item \trl{-on_error_attach_debugger} \trl{[noxterm,dbx,xxgdb]}
+\item \trl{-on_error_attach_debugger} \trl{[noxterm,dbx,xxgdb,xdb,xldb,lldb]}
       \trl{[-display name]} - start debugger only on encountering an error
 \end{itemize}
 Note that, in general, debugging MPI programs cannot be done in the usual
@@ -7740,10 +7752,10 @@ set up the MPI communication and remote processes).
 
 By default the GNU debugger \trl{gdb} is used when \trl{-start_in_debugger}
 or \trl{-on_error_attach_debugger} is specified. \sindex{debugging}
-To employ either {\em xxgdb} or the common UNIX debugger {\em dbx}, one uses
+To employ either \trl{xxgdb} or the common UNIX debugger \trl{dbx}, one uses
 command line options as indicated above. On HP-UX machines the debugger
 \trl{xdb} should be used instead of \trl{dbx}; on RS/6000 machines the
-{\em xldb} debugger is supported as well. 
+\trl{xldb} debugger is supported as well. 
 On OS X systems with XCode tools, \trl{lldb} is available.
 By  default, the debugger will be started in a new xterm (to enable
 running separate debuggers on each process), unless the option
@@ -7868,9 +7880,7 @@ PetscErrorCode MyRoutine1() {
 }
 \end{lstlisting}
 
-% -----------------------------------------------------------------------------
-\section{
- Numbers} \sindex{complex numbers} \label{sec_complex}
+\section{Numbers} \sindex{complex numbers} \label{sec_complex}
 
 PETSc supports the use of complex numbers in application programs
 written in C, C++, and Fortran.  To do so, we employ either the C99 \lstinline{complex} type or the C++ versions of
@@ -7912,195 +7922,6 @@ solves a linear system with a complex
 coefficient matrix.  Its Fortran counterpart is
 \href{http://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/ex11f.F.html}{\trl{${PETSC_DIR}/src/ksp/ksp/examples/tutorials/ex11f.F}}.
 
-\section{Emacs Users} \sindex{Emacs} \label{sec_emacs}
-
-\sindex{Emacs} \sindex{etags, in Emacs}
-If users develop application codes  using Emacs (which we
-highly recommend), the \trl{etags} feature can be used to search PETSc
-files quickly and efficiently.  To use this feature, one should
-first check if the file,
-\trl{${PETSC_DIR}/TAGS} exists.  If this file is
-not present, it should be generated by
-running \trl{make} \trl{alletags} from the PETSc home directory.
-Once the file exists, from
-Emacs the user should issue
-the command
-\begin{lstlisting}
-M-x visit-tags-table
-\end{lstlisting}
- where ``\trl{M}''
-denotes the Emacs Meta key, and enter the
-name of the \trl{TAGS} file. Then the command ``\trl{M-.}'' will cause Emacs
-to find the file and line number where a desired PETSc function
-is defined.  Any string in any of the PETSc files can be found with the
-command ``\trl{M-x} \trl{tags-search}''. To find repeated occurrences,
-one can simply use ``\trl{M-,}'' to find the next occurrence.
-
-An alternative which provides reverse lookups (e.g. find all call sites for a given function) and is somewhat more amenable to managing many projects is GNU Global, available from \href{https://www.gnu.org/software/global/}{\trl{https://www.gnu.org/s/global/}}.
-Tags for PETSc and all external packages can be generated by running the command
-\begin{bashlisting}
-find $PETSC_DIR/{include,src,tutorials,$PETSC_ARCH/include} any/other/paths \
-   -regex '.*\.\(cc\|hh\|cpp\|C\|hpp\|c\|h\|cu\)$' \
-   | grep -v ftn-auto | gtags -f -
-\end{bashlisting}
-from your home directory or wherever you keep source code.
-If you are making large changes, it is useful to either set this up to run as a cron job or to make a convenient alias so that refreshing is easy.
-Then add the following to \trl{~/.emacs} to enable gtags and replace the plain etags bindings.
-\begin{bashlisting}
-(when (require 'gtags)
-  (global-set-key "\C-cf" 'gtags-find-file)
-  (global-set-key "\M-." 'gtags-find-tag)
-  (define-key gtags-mode-map (kbd "C-c r") 'gtags-find-rtag))
-(add-hook 'c-mode-common-hook
-          '(lambda () (gtags-mode t))) ; Or add to existing hook
-\end{bashlisting}
-
-\section{Vi and Vim Users} \sindex{Vi} \sindex{Vim} \sindex{tags, in Vi/Vim}
-
-If users develop application codes  using Vi or Vim the \trl{tags} feature can be used to search PETSc
-files quickly and efficiently.  To use this feature, one should
-first check if the file,
-\trl{${PETSC_DIR}/CTAGS} exists.  If this file is
-not present, it should be generated by
-running \trl{make} \trl{alletags} from the PETSc home directory.
-Once the file exists, from
-Vi/Vim the user should issue
-the command
-\begin{lstlisting}
-:set tags=CTAGS
-\end{lstlisting}
-from the \trl{PETSC_DIR} directory and enter the
-name of the \trl{CTAGS} file. Then the command ``tag functionname'' will cause Vi/Vim
-to find the file and line number where a desired PETSc function
-is defined.  See, for example, \href{http://www.yolinux.com/TUTORIALS/LinuxTutorialAdvanced_vi.html}{\trl{http://www.yolinux.com/TUTORIALS/LinuxTutorialAdvanced_vi.html}} for additional Vi/Vim options that allow searches etc.
-It is also possible to use GNU Global with Vim; see the description for Emacs above.
-
-\section{Eclipse Users} \sindex{eclipse}
-If you are interested in developing code that uses PETSc from Eclipse or developing PETSc in Eclipse and have knowledge of how to do indexing and build libraries in Eclipse please contact us at \href{mailto:petsc-dev@mcs.anl.gov}{\trl{petsc-dev@mcs.anl.gov}}.
-
-To allow an Eclipse code to compile with the PETSc include files and link with the PETSc libraries someone has suggested
-To do this, click on your managed C project with the right sided mouse button, select
-
-Properties $\rightarrow$ C/C++ Build $\rightarrow$ Settings
-
-Then you get a new window with on the right hand side the various setting options.
-
-Select Includes, and add the required PETSc paths. In my case I have added
-\begin{bashlisting}
-${PETSC_DIR}/include
-${PETSC_DIR}/${PETSC_ARCH}/include
-\end{bashlisting}
-
-Then select "Libraries" under the header Linker
-and you should set the Library search path:
-\begin{bashlisting}
-${PETSC_DIR}/${PETSC_ARCH}/lib
-\end{bashlisting}
-
-and then the libraries, in my case:
-\begin{bashlisting}
-m, petsc, stdc++, mpichxx, mpich, lapack, blas, gfortran, dl, rt,gcc_s, pthread, X11
-\end{bashlisting}
-
-To make PETSc an Eclipse package
-\begin{itemize}
-\item Install the Mercurial plugin for Eclipse and then import the PETSc repository to Eclipse.
-\item elected New$\rightarrow$Convert to C/C++ project and selected shared library. After this point you can perform searches in the code.
-\end{itemize}
-
-  A PETSc user has provided the following steps to build an Eclipse index for PETSc that can be used with their own code without compiling PETSc source into their project.
-\begin{itemize}
-\item In the user project source directory, create a symlink to the petsc/src directory.
-\item Refresh the project explorer in Eclipse, so the new symlink is followed.
-\item Right-click on the project in the project explorer, and choose "Index $\rightarrow$ Rebuild". The index should now be build.
-\item Right-click on the PETSc symlink in the project explorer, and choose "Exclude from build..." to make sure Eclipse does not try to compile PETSc with the project.
-\end{itemize}
-
-\section{Qt Creator} \sindex{Qt Creator}
- Qt Creator is developed as a part of Qt SDK for cross-platform GUI programming using \texttt{C++} and thus has excellent support for application developing using \texttt{C/C++}. This information was provided by Mohammad Mirzadeh.
-
-\begin{enumerate}
-\item Qt Creator supports automated and cross-platform \texttt{qmake} and \texttt{Cmake} build systems. What this means, is that, starting from a handful set of options, Qt Creator is able to generate makefiles that are used to compile and run your application package on Linux, Windows and Mac systems.
-\item Qt Creator makes the task of linking PETSc library to your application package easy.
-\item Qt Creator has visual debugger and supports both GNU's GDB and Microsoft's CDB (on Windows).
-\item Qt Creator (as of version 2.3) has interface to memory profiling software such as valgrind.
-\item Qt Creator has built-in auto-completion and function look-up. This feature of editor, makes it possible for the user to easily browse inside huge packages like PETSc and easily find relevant functions and objects.
-\item Qt Creator has inline error/warning messages. This feature of the editor greatly reduces programming bugs by informing the user of potential error/warning as the code is being written and even before the compile step.
-\item Qt Creator is an excellent environment for doing GUI programming using Qt framework. This means you can easily generate a nice GUI for you application package as well!
-\end{enumerate}
-
-Qt Creator is a part of Qt SDK, currently being developed by Nokia Inc. It is available under GPL v3, LGPL v2 and a commercial license and may be obtained, either as a part of Qt SDK or as an stand-alone software, via \url{http://qt.nokia.com/downloads/}.
-
-\section*{How to create a project?}
-Upon installation, all you really need to do to port your software package to Qt Creator is to build a \texttt{.pro} file. A \texttt{.pro} file is simply a configuration file that tells Qt Creator about all build/compile options and locations of source file. One may start with a blank \texttt{.pro} file and fill in the configuration options as needed:
-
-\begin{lstlisting}
-
-TARGET = name_of_your_app
-
-APP_DIR    = /home/path/to/your/app
-PETSC_DIR  = /home/path/to/your/petsc
-PETSC_ARCH = linux-gnu-cxx-debug
-PETSC_BINS = $$PETSC_DIR/$$PETSC_ARCH/bin
-
-INCLUDEPATH += $$APP_DIR/include \
-               $$PETSC_DIR/include \
-               $$PETSC_DIR/$$PETSC_ARCH/include
-
-LIBS += -L/path/to/petsc/libs -l_all_needed_petsc_libs
-
-QMAKE_CC  = $$PETSC_BINS/mpicc
-QMAKE_CXX = $$PETSC_BINS/mpicxx
-
-QMAKE_CFLAGS   += -O3
-QMAKE_CXXFLAGS += -O3
-QMAKE_LFLAGS   += -O3
-
-SOURCES += \
-	$$APP_DIR/src/source1.cpp \
-	$$APP_DIR/src/source2.cpp \
-	$$APP_DIR/src/main.cpp
-HEADERS += \
-	$$APP_DIR/src/source1.h \
-	$$APP_DIR/src/source2.h
-OTHER_FILES += \
-	$$APP_DIR/src/some_file.cpp \
-	$$APP_DIR/dir/another_file.xyz
-
-\end{lstlisting}
-
-In this example, there are different keywords used. These include:
-\begin{itemize}
-\item \lstinline{TARGET}: This defines the name of your application executable. You can choose it however you like.
-\item \lstinline{INCLUDEPATH}: This is used in the compile time to point to all the needed include files. Essentially it is used as a \texttt{ -I \$\$INCLUDEPATH} flag for the compiler. This should include all your application-specific header files and those related to PETSc which may be found via \texttt{make getincludedirs}.
-\item \lstinline{LIBS}: This defines all needed external libraries to link with your application. To get PETSc's linking libraries do \texttt{make getlinklibs}.
-\item \lstinline{QMAKE_CC} and \lstinline{QMAKE_CXX}: These define which \texttt{C/C++} compilers to choose for your application.
-\item \lstinline{QMAKE_CFLAGS}, \lstinline{QMAKE_CXXFLAGS} and \lstinline{QMAKE_LFLAGS}: These set the corresponding compile and linking flags.
-\item \lstinline{SOURCES}: This sets all the source files that need to be compiled.
-\item \lstinline{HEADERS}: This sets all the header files that are needed for your application. Note that since header files are merely included in the source files, they are not compiled. As a result this is an optional flag and is simply included to allow users to easily access the header files in their application (or even PETSc header files).
-\item \lstinline{OTHER_FILES}: This can be used to virtually include any other file (source, header or any other extension) just as a way to make accessing to auxiliary files easier. They could be anything from a text file to a PETSc source file. Note that none of the source files placed here are compiled.
-\end{itemize}
-
-Note that there are many more options available that one can feed into the \texttt{.pro} file. For more information, one should follow \url{http://doc.qt.nokia.com/latest/qmake-variable-reference.html}. Once the \texttt{.pro} file is generated, the user can simply open it via Qt Creator. Upon opening, generally one has the option to create two different build options, debug and release, and switch between the two easily at any time. For more information on how to use the Qt Creator interface, and other more advanced aspects of this IDE, one may refer to \url{http://doc.qt.nokia.com/qtcreator-snapshot/index.html}
-
-\section{Developers Studio Users} \sindex{developers studio}
-
-To use PETSc from MS Visual Studio, one would have to compile a PETSc example with its corresponding makefile and then transcribe all compiler and linker options used in this build into a Visual Studio project file, in the appropriate format in Visual Studio project settings. 
-
-\section{XCode Users (The Apple GUI Development System} \sindex{xcode}
-\subsection{Mac OS X}
-
-Follow the instructions in \trl{$PETSC_DIR/systems/Apple/OSX/bin/makeall} to build the PETSc framework and documentation suitable for use in XCode.
-
-You can then use the PETSc framework in \trl{$PETSC_DIR/arch-osx/PETSc.framework} in the usual manner for Apple frameworks, see the examples in \trl{$PETSC_DIR/systems/Apple/OSX/examples}.  When working in XCode, things like function name completion should work for all PETSc functions as well as MPI functions. You must also link against the Apple \trl{Accelerate.framework}.
-
-\subsection{iPhone/iPad iOS}
-
-Follow the instructions in \trl{$PETSC_DIR/systems/Apple/ios/bin/iosbuilder.py} to build the PETSc library for use on the iPhone/iPad.
-
-You can then use the PETSc static library in \trl{$PETSC_DIR/arch-osx/libPETSc.a} in the usual manner for Apple libraries inside your iOS XCode projects; see the examples in \trl{$PETSC_DIR/systems/Apple/iOS/examples}.  You must also link against the Apple \trl{Accelerate.framework}.
-
-
 \section{Parallel Communication}
 
 When used in a message-passing environment, all communication \sindex{MPI}
@@ -8109,28 +7930,31 @@ PETSc is done through MPI, the message-passing interface standard
 \cite{MPI-final}.  Any file that includes \trl{petscsys.h} (or any other
 PETSc include file) can freely use any MPI routine.
 
-% ---------------------------------------------------------------
 \section{Graphics}
+\label{sec_graphics}
 \sindex{graphics}
 
-Th PETSc graphics library is not intended to compete with
+The PETSc graphics library is not intended to compete with
 high-quality graphics packages.  Instead, it is intended to be
 easy to use interactively with PETSc programs. We urge users
 to generate their publication-quality graphics using a
 professional graphics package. If a user wants to hook
-certain packages in PETSc, he or she should send a message to
-\href{mailto:petsc-maint@mcs.anl.gov}{\trl{petsc-maint@mcs.anl.gov}}, and we will see whether it is reasonable
-to try to provide direct interfaces.
+certain packages into PETSc, he or she should send a message to
+\href{mailto:petsc-maint@mcs.anl.gov}{\trl{petsc-maint@mcs.anl.gov}};
+we will see whether it is reasonable to try to provide direct interfaces.
 
 \subsection{Windows as PetscViewers}
-For drawing predefined PETSc objects such as matrices and vectors, one must
+For drawing predefined PETSc objects such as matrices and vectors, one may
 first create a viewer using the
 command
 \begin{lstlisting}
 PetscViewerDrawOpen(MPI_Comm comm,char *display,char *title,int x,int y,int w,int h,PetscViewer *viewer);
 \end{lstlisting}
 This viewer may be passed to any of the \lstinline{XXXView()} routines.
-To draw into the viewer, one must obtain the \lstinline{PetscDraw} object with the
+Alternately, one may use command-line options to quickly specify viewer formats, 
+including \lstinline{PetscDraw}-based ones; see Section \ref{sec_viewfromoptions}.
+
+To draw directly into the viewer, one must obtain the \lstinline{PetscDraw} object with the
 command
 \begin{lstlisting}
 PetscViewerDrawGetDraw(PetscViewer viewer,PetscDraw *draw);
@@ -8143,26 +7967,30 @@ Predefined viewers, \lstinline{PETSC_VIEWER_DRAW_WORLD}
 and \lstinline{PETSC_VIEWER_DRAW_SELF}, may be used at any time. Their initial
 use will cause the appropriate window to be created.
 
+Implementations using OpenGL, TikZ, and other formats may be selected with
+\lstinline{PetscDrawSetType()}.
+PETSc can also produce movies; see \lstinline{PetscDrawSetSaveMovie()}, and
+note that command-line options can also be convenient; see the \lstinline{PetscDrawSetFromOptions()} man page.
+
 \medskip
 By default, PETSc drawing tools employ a private colormap,
 which remedies the problem of poor color choices for contour plots due
-to an external program's mangling of the colormap (e.g, Netscape tends
-to do this).
-Unfortunately, this causes flashing of colors as the mouse is moved
+to an external program's mangling of the colormap.
+Unfortunately, this may cause flashing of colors as the mouse is moved
 between the PETSc windows and other windows.  Alternatively, a shared
 colormap can be used via the option \trl{-draw_x_shared_colormap}.
 
 \subsection{Simple PetscDrawing}
 
-One can open a window that is not associated with a viewer directly
+With the default format, one can open a window that is not associated with a viewer directly
 under the X11 Window System or OpenGL with the
 command \sindex{X windows} \sindex{OpenGL}
 \begin{lstlisting}
 PetscDrawCreate(MPI_Comm comm,char *display,char *title,int x,int y,int w,int h,PetscDraw *win);
 PetscDrawSetFromOptions(win);
 \end{lstlisting}
-All drawing routines are done relative to the windows coordinate system
-and viewport. By default the drawing coordinates are from \trl{(0,0)} to
+All drawing routines are performed relative to the window's coordinate system
+and viewport. By default, the drawing coordinates are from \trl{(0,0)} to
 \trl{(1,1)}, where \trl{(0,0)} indicates the lower left corner of the
 window. The application program can change the window coordinates with the
 command  \sindex{coordinates}
@@ -8305,22 +8133,203 @@ The two functions used are \lstinline{KSPMonitorLGResidualNorm()}
 and \break\lstinline{KSPMonitorLGResidualNormCreate()}. These
 can easily be modified to serve specialized needs.
 
-
 \subsection{Disabling Graphics at Compile Time}
 
 \sindex{graphics, disabling}
 To disable all X-window-based graphics, run \trl{./configure} with the
 additional option \trl{--with-x=0}
 
+\section{Emacs Users} \sindex{Emacs} \label{sec_emacs}
+
+\sindex{Emacs} \sindex{etags, in Emacs}
+If users develop application codes  using Emacs (which we
+highly recommend), the \trl{etags} feature can be used to search PETSc
+files quickly and efficiently.  To use this feature, one should
+first check if the file,
+\trl{${PETSC_DIR}/TAGS} exists.  If this file is
+not present, it should be generated by
+running \trl{make} \trl{alletags} from the PETSc home directory.
+Once the file exists, from
+Emacs the user should issue
+the command
+\begin{lstlisting}
+M-x visit-tags-table
+\end{lstlisting}
+ where ``\trl{M}''
+denotes the Emacs Meta key, and enter the
+name of the \trl{TAGS} file. Then the command ``\trl{M-.}'' will cause Emacs
+to find the file and line number where a desired PETSc function
+is defined.  Any string in any of the PETSc files can be found with the
+command ``\trl{M-x} \trl{tags-search}''. To find repeated occurrences,
+one can simply use ``\trl{M-,}'' to find the next occurrence.
+
+An alternative which provides reverse lookups (e.g. find all call sites for a given function) and is somewhat more amenable to managing many projects is GNU Global, available from \href{https://www.gnu.org/software/global/}{\trl{https://www.gnu.org/s/global/}}.
+Tags for PETSc and all external packages can be generated by running the command
+\begin{bashlisting}
+find $PETSC_DIR/{include,src,tutorials,$PETSC_ARCH/include} any/other/paths \
+   -regex '.*\.\(cc\|hh\|cpp\|C\|hpp\|c\|h\|cu\)$' \
+   | grep -v ftn-auto | gtags -f -
+\end{bashlisting}
+from your home directory or wherever you keep source code.
+If you are making large changes, it is useful to either set this up to run as a cron job or to make a convenient alias so that refreshing is easy.
+Then add the following to \trl{~/.emacs} to enable gtags and replace the plain etags bindings.
+\begin{bashlisting}
+(when (require 'gtags)
+  (global-set-key "\C-cf" 'gtags-find-file)
+  (global-set-key "\M-." 'gtags-find-tag)
+  (define-key gtags-mode-map (kbd "C-c r") 'gtags-find-rtag))
+(add-hook 'c-mode-common-hook
+          '(lambda () (gtags-mode t))) ; Or add to existing hook
+\end{bashlisting}
+
+\section{Vi and Vim Users} \sindex{Vi} \sindex{Vim} \sindex{tags, in Vi/Vim}
+
+If users develop application codes  using Vi or Vim the \trl{tags} feature can be used to search PETSc
+files quickly and efficiently.  To use this feature, one should
+first check if the file,
+\trl{${PETSC_DIR}/CTAGS} exists.  If this file is
+not present, it should be generated by
+running \trl{make} \trl{alletags} from the PETSc home directory.
+Once the file exists, from
+Vi/Vim the user should issue
+the command
+\begin{lstlisting}
+:set tags=CTAGS
+\end{lstlisting}
+from the \trl{PETSC_DIR} directory and enter the
+name of the \trl{CTAGS} file. Then the command ``tag functionname'' will cause Vi/Vim
+to find the file and line number where a desired PETSc function
+is defined.  See, for example, \href{http://www.yolinux.com/TUTORIALS/LinuxTutorialAdvanced_vi.html}{\trl{http://www.yolinux.com/TUTORIALS/LinuxTutorialAdvanced_vi.html}} for additional Vi/Vim options that allow searches etc.
+It is also possible to use GNU Global with Vim; see the description for Emacs above.
+
+\section{Eclipse Users} \sindex{eclipse}
+If you are interested in developing code that uses PETSc from Eclipse or developing PETSc in Eclipse and have knowledge of how to do indexing and build libraries in Eclipse, please contact us at \href{mailto:petsc-dev@mcs.anl.gov}{\trl{petsc-dev@mcs.anl.gov}}.
+
+To allow an Eclipse code to compile with the PETSc include files and link with the PETSc libraries, a PETSc user has suggested the following.
+\begin{enumerate}
+  \item Right-click on your C project and select ``Properties $\rightarrow$ C/C++ Build $\rightarrow$ Settings''
+\item A new window on the righthand side appears with various settings options.
+Select ``Includes'' and add the required PETSc paths,
+\begin{bashlisting}
+${PETSC_DIR}/include
+${PETSC_DIR}/${PETSC_ARCH}/include
+\end{bashlisting}
+\item Select ``Libraries'' under the header Linker
+and set the library search path:
+\begin{bashlisting}
+${PETSC_DIR}/${PETSC_ARCH}/lib
+\end{bashlisting}
+and the libraries, for example
+\begin{bashlisting}
+m, petsc, stdc++, mpichxx, mpich, lapack, blas, gfortran, dl, rt,gcc_s, pthread, X11
+\end{bashlisting}
+\end{enumerate}
+To make PETSc an Eclipse package,
+\begin{enumerate}
+\item Install the Mercurial plugin for Eclipse and then import the PETSc repository to Eclipse.
+\item Select ``New$\rightarrow$Convert to C/C++ project'' and select ``shared library''. At this point you can perform searches in the code.
+\end{enumerate}
+Another PETSc user has provided the following steps to build an Eclipse index for PETSc that can be used with their own code, without compiling PETSc source into their project.
+\begin{enumerate}
+\item In the user project source directory, create a symlink to the PETSC \trl{src/} directory.
+\item Refresh the project explorer in Eclipse, so the new symlink is followed.
+\item Right-click on the project in the project explorer, and choose ``Index $\rightarrow$ Rebuild''. The index should now be built.
+\item Right-click on the PETSc symlink in the project explorer, and choose ``Exclude from build...'' to make sure Eclipse does not try to compile PETSc with the project.
+\end{enumerate}
+For further examples of using Eclipse with a PETSc-based application, see the documentation for LaMEM\footnote{\trl{doc/} at \url{https://bitbucket.org/bkaus/lamem}}.
+
+\section{Qt Creator Users} \sindex{Qt Creator}
+This information was provided by Mohammad Mirzadeh.
+Qt Creator is developed as a part of the Qt SDK, developed by Nokia Inc. for cross-platform GUI programming using C++. 
+It is available under GPL v3, LGPL v2 and a commercial license and may be obtained, either as a part of Qt SDK or as an stand-alone software, via \url{http://qt.nokia.com/downloads/}.
+It supports automated and cross-platform \texttt{qmake} and \texttt{Cmake} build systems, and thus can
+generate makefiles to compile and run an application package on Linux, Windows and Mac systems.
+Qt Creator has a visual debugger, supports both GNU's GDB and Microsoft's CDB (on Windows), and
+(as of version 2.3) has interface to memory profiling software such as valgrind.
+Qt Creator has built-in auto-completion and function look-up. 
+This makes it possible for the user to easily browse inside large packages like PETSc and easily find relevant functions and objects.
+Qt Creator has inline error/warning messages which are dynamically generated during code editing.
+
+\subsection*{Creating a Project}
+Upon installation, one needs to build a \texttt{.pro} file. This is a configuration file that tells Qt Creator about all build/compile options and locations of source files. 
+One may start with a blank \texttt{.pro} file and fill in the configuration options as needed:
+\begin{lstlisting}
+TARGET = name_of_your_app
+
+APP_DIR    = /home/path/to/your/app
+PETSC_DIR  = /home/path/to/your/petsc
+PETSC_ARCH = linux-gnu-cxx-debug
+PETSC_BINS = $$PETSC_DIR/$$PETSC_ARCH/bin
+
+INCLUDEPATH += $$APP_DIR/include \
+               $$PETSC_DIR/include \
+               $$PETSC_DIR/$$PETSC_ARCH/include
+
+LIBS += -L/path/to/petsc/libs -l_all_needed_petsc_libs
+
+QMAKE_CC  = $$PETSC_BINS/mpicc
+QMAKE_CXX = $$PETSC_BINS/mpicxx
+
+QMAKE_CFLAGS   += -O3
+QMAKE_CXXFLAGS += -O3
+QMAKE_LFLAGS   += -O3
+
+SOURCES += \
+	$$APP_DIR/src/source1.cpp \
+	$$APP_DIR/src/source2.cpp \
+	$$APP_DIR/src/main.cpp
+HEADERS += \
+	$$APP_DIR/src/source1.h \
+	$$APP_DIR/src/source2.h
+OTHER_FILES += \
+	$$APP_DIR/src/some_file.cpp \
+	$$APP_DIR/dir/another_file.xyz
+\end{lstlisting}
+
+In this example, keywords include:
+\begin{tightitemize}
+\item \lstinline{TARGET}: The name of the application executable.
+\item \lstinline{INCLUDEPATH}: Used at compile time to point to required include files. Essentially, it is used as a \trl{ -I \$\$INCLUDEPATH} flag for the compiler. This should include all your application-specific header files and those related to PETSc (which may be found via \trl{make getincludedirs}).
+\item \lstinline{LIBS}: Defines all required external libraries to link with your application. To get PETSc's linking libraries, use \trl{make getlinklibs}.
+\item \lstinline{QMAKE_CC} and \lstinline{QMAKE_CXX}: Define which C/C++ compilers use.
+\item \lstinline{QMAKE_CFLAGS}, \lstinline{QMAKE_CXXFLAGS} and \lstinline{QMAKE_LFLAGS}: Set the corresponding compile and linking flags.
+\item \lstinline{SOURCES}: Source files to be compiled.
+\item \lstinline{HEADERS}: Header files required by the application. 
+\item \lstinline{OTHER_FILES}: Other files to include (source, header or any other extension). Note that none of the source files placed here are compiled.
+\end{tightitemize}
+
+There are more options available that one can feed into the \trl{.pro} file; see e.g. \url{http://doc.qt.io/qt-5/qmake-project-files.html}. 
+Once the \trl{.pro} file is generated, the user can simply open it via Qt Creator. 
+Upon opening, one has the option to create two different build options, debug and release, and switch between the two easily at any time. 
+For more information on how to use the Qt Creator interface, and other more advanced aspects of the IDE, refer to \url{https://www.qt.io/ide/}
+
+\section{Visual Studio Users} \sindex{visual studio}
+
+To use PETSc from MS Visual Studio, one would have to compile a PETSc example with its corresponding makefile and then transcribe all compiler and linker options used in this build into a Visual Studio project file, in the appropriate format in Visual Studio project settings. 
+
+\section{XCode Users (The Apple GUI Development System)} \sindex{xcode}
+\subsection{Mac OS X}
+
+Follow the instructions in \trl{$PETSC_DIR/systems/Apple/OSX/bin/makeall} to build the PETSc framework and documentation suitable for use in XCode.
+
+You can then use the PETSc framework in \trl{$PETSC_DIR/arch-osx/PETSc.framework} in the usual manner for Apple frameworks.
+See the examples in \trl{$PETSC_DIR/systems/Apple/OSX/examples}.  When working in XCode, things like function name completion should work for all PETSc functions as well as MPI functions. You must also link against the Apple \trl{Accelerate.framework}.
+
+\subsection{iPhone/iPad iOS}
+
+Follow the instructions in \trl{$PETSC_DIR/systems/Apple/iOS/bin/iosbuilder.py} to build the PETSc library for use on the iPhone/iPad.
+
+You can then use the PETSc static library in \trl{$PETSC_DIR/arch-osx/libPETSc.a} in the usual manner for Apple libraries inside your iOS XCode projects; see the examples in \trl{$PETSC_DIR/systems/Apple/iOS/examples}.  You must also link against the Apple \trl{Accelerate.framework}.
+
 %----------------------------------------------------------------------
 \cleardoublepage
 \chapter{Makefiles}
 \label{ch_makefiles}
 
-This chapter describes the design of the PETSc makefiles, which are the
-key to managing our code portability across a wide variety of UNIX and Windows systems.
+This chapter describes the design of the PETSc makefiles, which are
+key to managing code portability across a wide variety of UNIX and Windows systems.
 
-\section{Our Makefile System}
+\section{Makefile System}
 
 To make a program named \trl{ex1}, one may use the command
 \begin{bashlisting}
@@ -8329,34 +8338,33 @@ make PETSC_ARCH=arch ex1
 which will compile the
 example and automatically link the appropriate libraries.  The
 architecture, \trl{arch}, is one of \trl{solaris, rs6000, IRIX,
-hpux,arch-darwin-double-debug}, etc. Note 
-that when using command line options with make (as illustrated above),
-one must {\em not} place spaces on either side of the ``='' signs.
-The variable
-\trl{PETSC_ARCH} can also be set as environmental
-variables.  Although PETSc is written in C, it can be compiled with a
+hpux, arch-darwin-double-debug}, etc., as determined during the PETSc configuration process.
+Note that when using command line options with \trl{make} (as illustrated above),
+one must {\em not} place spaces on either side of the ``\trl{=}'' signs.
+The variable \trl{PETSC_ARCH} can also be set as environment
+variable.  Although PETSc is written in C, it can be compiled with a
 C++ compiler.  For many C++ users this may be the preferred route. To compile
 with the C++ compiler, one should use the ./configure option \trl{--with-clanguage=c++}. \sindex{C++}
 
 \subsection{Makefile Commands} \label{sec_common}
 
 The directory 
-\trl{${PETSC_DIR}/conf}
+\trl{${PETSC_DIR}/lib/petsc/conf}
 contains virtually all
 makefile commands and customizations to enable portability across
 different architectures.  Most makefile commands for maintaining the
 PETSc system are defined in the file 
-\trl{${PETSC_DIR}/conf}
+\trl{${PETSC_DIR}/lib/petsc/conf/rules}
 These commands, which process all appropriate files within the
 directory of execution, include
 \begin{itemize}
-\item \trl{lib} - Updates the PETSc libraries based on the source code
+\item \trl{lib} - Update the PETSc libraries based on the source code
       in the directory.
-\item \trl{libfast} - Updates the libraries faster.  Since
+\item \trl{libfast} - Update the libraries faster.  Since
       \trl{libfast} recompiles all source files in the directory at once,
       rather than individually, this command saves time when many files
       must be compiled.
-\item \trl{clean} - Removes garbage files.
+\item \trl{clean} - Remove garbage files.
 \end{itemize}
 
 The \trl{tree} command enables the user to execute a particular action
@@ -8383,20 +8391,19 @@ two makefiles:
 \end{itemize}
 These files are generated automatically when you run \trl{./configure}.
 
-The architecture independent makefiles, are located in
-\trl{${PETSC_DIR}/lib/petsc/conf}
-makefiles get included from here.
+These are included by the architecture-independent makefiles located in
+\trl{${PETSC_DIR}/lib/petsc/conf}.
 
 \section{PETSc Flags}
 \label{sec_makeflags}
 
 PETSc has several flags that determine how the source code will be
-compiled.  The default flags for particular versions are specified by
-the variable \trl{PETSCFLAGS} within the base files of \trl{${PETSC_DIR}/${PETSC_ARCH}/conf},
-discussed in Section ~\ref{sec_custom}.  The flags include
+compiled.  The default flags for particular versions are specified in
+\trl{${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h}.
+The flags include
 \begin{itemize}
 \item \trl{PETSC_USE_DEBUG} - The PETSc debugging options are activated. We
-      recommend always using this. \findex{PETSC_USE_DEBUG}
+      recommend always using this except when doing performance analysis or production runs. \findex{PETSC_USE_DEBUG}
 \item \trl{PETSC_USE_COMPLEX} - The version with scalars represented
       as complex numbers is used. \findex{PETSC_USE_COMPLEX}
 \item \trl{PETSC_USE_LOG} - Various monitoring statistics on floating-point operations,
@@ -8407,14 +8414,14 @@ discussed in Section ~\ref{sec_custom}.  The flags include
 
 Maintaining portable PETSc makefiles is very simple.
 
-A first example is a ``minimum'' makefile for maintaining
+A first example, shown in Figure \ref{fig_make1}, is a ``minimum'' makefile for maintaining
 a single program that uses the PETSc libraries.
-The most important line in this makefile is the line starting with \trl{include}:
+The most important lines in this makefile are the lines starting with \trl{include}:
 \begin{makelisting}
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 \end{makelisting}
-This line includes other makefiles that provide the needed definitions
+These lines includes other makefiles that provide the needed definitions
 and rules for the particular base PETSc installation (specified by
 \trl{PETSC_DIR}) and architecture (specified by
 \trl{PETSC_ARCH}).  (See \ref{sec_running} for information on
@@ -8443,9 +8450,10 @@ within the makefile.
 \label{fig_make1}
 \end{figure}
 
-For users who wish to manage the compile process themselves
-and {\bf not} use the rules PETSc uses for compiling programs
-include variables instead of base. That is, use something like
+Users who wish to manage the compile process themselves
+and {\emph not} use the rules PETSc uses for compiling programs
+should only include \trl{variables}. That is, use something like
+the makefile shown in Figure \ref{fig_make1var}.
 
 \begin{figure}[H]
 \begin{makelisting}
@@ -8461,15 +8469,19 @@ include variables instead of base. That is, use something like
 \caption{Sample PETSc Makefile that does {\bf not} use PETSc's rules for compiling}
 \label{fig_make1var}
 \end{figure}
+
 The variables \trl{PETSC_CC_INCLUDES}, \trl{PETSC_FC_INCLUDES}
-and \trl{PETSC_LIB} are defined by the included \lstinline{petsc/conf/variables} file.
+and \trl{PETSC_LIB} are defined by the included \trl{${PETSC_DIR}/lib/petsc/conf/variables} file.
 
 If you do not wish to include any PETSc makefiles in your makefile,
-you can use the commands (run in the PETSc root directory) to get the information
-needed by your makefile: make getlinklibs getincludedirs getpetscflags.
+you can use the following commands in the PETSc root directory to get the information
+needed by your makefile: 
+\begin{bashlisting}
+make getlinklibs getincludedirs getpetscflags
+\end{bashlisting}
 All the libraries listed need to be linked into your executable and the
-include directories and flags need to be passed to the compiler usually
-this is done with \lstinline{CFLAGS=<list of -I and other flags>} and
+include directories and flags need to be passed to the compiler.
+Usually this is done with \lstinline{CFLAGS=<list of -I and other flags>} and
 \lstinline{FFLAGS=<list of -I and other flags>} in your makefile.
 
 \findex{PETSC_LIB} \findex{PETSC_LIB}
@@ -8516,24 +8528,13 @@ controls the generation of several example programs.
         -@${MPIEXEC} ex3 -v -log_view
    runex4:
         -@${MPIEXEC} -n 4 ./ex4 -trdump
-
-   RUNEXAMPLES_1 = runex1 runex2
-   RUNEXAMPLES_2 = runex4
-   RUNEXAMPLES_3 = runex3
-   EXAMPLESC     = ex1.c ex2.c ex4.c
-   EXAMPLESF     = ex3.F
-   EXAMPLES_1    = ex1 ex2
-   EXAMPLES_2    = ex4
-   EXAMPLES_3    = ex3
-
-   include ${PETSC_DIR}/lib/petsc/conf/test
 \end{makelisting}
 \caption{Sample PETSc Makefile for Several Example Programs}
 \label{fig_make2}
 \end{figure}
 
-Again, the most important line in this makefile is the \lstinline{include}
-line that includes the files defining all of the macro variables.
+Again, the most important lines in this makefile are the \lstinline{include}
+lines that include the files defining all of the macro variables.
 Some additional variables that can be used in the makefile are defined
 as follows:
 \begin{tightitemize}
@@ -8544,21 +8545,8 @@ as follows:
 \item \lstinline{CLINKER, FLINKER} the C and Fortran linkers.
 \item \lstinline{RM} the remove command for deleting files.
 \end{tightitemize}
-Note that the PETSc example programs are divided into several
-categories, which currently include:
-\begin{tightitemize}
-\item \lstinline{EXAMPLES_1} basic C suite used in installation tests
-\item \lstinline{EXAMPLES_2} additional C suite including graphics
-\item \lstinline{EXAMPLES_3} basic Fortran .F suite
-\item \lstinline{EXAMPLES_4} subset of 1 and 2 that runs on only a single process
-\item \lstinline{EXAMPLES_5} examples that require complex numbers
-\item \lstinline{EXAMPLES_6} C examples that do not work with complex numbers
-\item \lstinline{EXAMPLES_8} Fortran \trl{.F} examples that do not work with complex numbers
-\item \lstinline{EXAMPLES_9} uniprocess version of 3
-\item \lstinline{EXAMPLES_10} Fortran \trl{.F} examples that require complex numbers
-\end{tightitemize}
 
-We next list in Figure \ref{fig_make3} a makefile that maintains a PETSc
+Figure \ref{fig_make3} contains a makefile that maintains a PETSc
 library.  Although most users do not need to understand or deal with such
 makefiles, they are also easily used.
 \begin{figure}[H]
@@ -8595,7 +8583,6 @@ the following:
 \item Each makefile must be called ``makefile''.
 \item Each makefile can maintain at most one archive library.
 \end{itemize}
-
 
 %------------------------------------------------------------------
 

@@ -15,11 +15,13 @@ class Configure(config.package.GNUPackage):
     config.package.GNUPackage.setupDependencies(self, framework)
     return
 
+  # the install is delayed until postProcess() since ctetgen install requires PETSc to have created its build/makefiles before installing
+  # note that ctetgen can (and is) built before PETSc is built.
   def Install(self):
     return self.installDir
 
   def configureLibrary(self):
-    ''' Just assume the downloaded library will work'''
+    ''' Since ctergen cannot be built until after PETSc configure is complete we need to just assume the downloaded library will work'''
     if self.framework.clArgDB.has_key('with-ctetgen'):
       raise RuntimeError('Ctetgen does not support --with-ctetgen; only --download-ctetgen')
     if self.framework.clArgDB.has_key('with-ctetgen-dir'):

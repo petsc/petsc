@@ -21,11 +21,12 @@ class Configure(config.package.GNUPackage):
     self.deps     = [self.mpi, self.hdf5]
     return
 
+  # the install is delayed until postProcess() since pflotran install requires PETSc to be installed before pflotran can be built
   def Install(self):
     return self.installDir
 
   def configureLibrary(self):
-    ''' Just assume the downloaded library will work'''
+    ''' Since pflotran cannot be built until after PETSc is compiled we need to just assume the downloaded library will work'''
     if self.framework.clArgDB.has_key('with-pflotran'):
       raise RuntimeError('Pflotran does not support --with-pflotran; only --download-pflotran')
     if self.framework.clArgDB.has_key('with-pflotran-dir'):

@@ -146,11 +146,12 @@ static PetscErrorCode PCView_FieldSplit(PC pc,PetscViewer viewer)
 
 static PetscErrorCode PCView_FieldSplit_Schur(PC pc,PetscViewer viewer)
 {
-  PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
-  PetscErrorCode    ierr;
-  PetscBool         iascii,isdraw;
-  PetscInt          i,j;
-  PC_FieldSplitLink ilink = jac->head;
+  PC_FieldSplit              *jac = (PC_FieldSplit*)pc->data;
+  PetscErrorCode             ierr;
+  PetscBool                  iascii,isdraw;
+  PetscInt                   i,j;
+  PC_FieldSplitLink          ilink = jac->head;
+  MatSchurComplementAinvType atype;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -166,13 +167,17 @@ static PetscErrorCode PCView_FieldSplit_Schur(PC pc,PetscViewer viewer)
     }
     switch (jac->schurpre) {
     case PC_FIELDSPLIT_SCHUR_PRE_SELF:
-      ierr = PetscViewerASCIIPrintf(viewer,"  Preconditioner for the Schur complement formed from S itself\n");CHKERRQ(ierr);break;
+      ierr = PetscViewerASCIIPrintf(viewer,"  Preconditioner for the Schur complement formed from S itself\n");CHKERRQ(ierr);
+      break;
     case PC_FIELDSPLIT_SCHUR_PRE_SELFP:
-      ierr = PetscViewerASCIIPrintf(viewer,"  Preconditioner for the Schur complement formed from Sp, an assembled approximation to S, which uses (lumped, if requested) A00's diagonal's inverse\n");CHKERRQ(ierr);break;
+      ierr = MatSchurComplementGetAinvType(jac->schur,&atype);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Preconditioner for the Schur complement formed from Sp, an assembled approximation to S, which uses A00's %sdiagonal's inverse\n",atype == MAT_SCHUR_COMPLEMENT_AINV_DIAG ? "" : "lumped ");CHKERRQ(ierr);break;
     case PC_FIELDSPLIT_SCHUR_PRE_A11:
-      ierr = PetscViewerASCIIPrintf(viewer,"  Preconditioner for the Schur complement formed from A11\n");CHKERRQ(ierr);break;
+      ierr = PetscViewerASCIIPrintf(viewer,"  Preconditioner for the Schur complement formed from A11\n");CHKERRQ(ierr);
+      break;
     case PC_FIELDSPLIT_SCHUR_PRE_FULL:
-      ierr = PetscViewerASCIIPrintf(viewer,"  Preconditioner for the Schur complement formed from the exact Schur complement\n");CHKERRQ(ierr);break;
+      ierr = PetscViewerASCIIPrintf(viewer,"  Preconditioner for the Schur complement formed from the exact Schur complement\n");CHKERRQ(ierr);
+      break;
     case PC_FIELDSPLIT_SCHUR_PRE_USER:
       if (jac->schur_user) {
         ierr = PetscViewerASCIIPrintf(viewer,"  Preconditioner for the Schur complement formed from user provided matrix\n");CHKERRQ(ierr);

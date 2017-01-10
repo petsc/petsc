@@ -15,11 +15,12 @@ class FakePETScDir:
 class Package(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
-    self.headerPrefix     = 'PETSC'
-    self.substPrefix      = 'PETSC'
-    self.arch             = None # The architecture identifier
+    self.headerPrefix        = 'PETSC'
+    self.substPrefix         = 'PETSC'
+    self.arch                = None # The architecture identifier
     self.externalPackagesDir = os.path.abspath('externalpackages')
-    # These are gderived by the configure tests
+
+    # These are determined by the configure tests
     self.found            = 0
     self.setNames()
     self.include          = []
@@ -28,57 +29,59 @@ class Package(config.base.Configure):
     self.dlib             = []   # all libraries in this package and all those it depends on
     self.directory        = None # path of the package installation point; for example /usr/local or /home/bsmith/mpich-2.0.1
     self.version          = ''
-    # These are specified for the package
-    self.required         = 0    # 1 means the package is required
-    self.lookforbydefault = 0    # 1 means the package is not required, but always look for and use if found
-                                 # cannot tell the difference between user requiring it with --with-PACKAGE=1 and
-                                 # this flag being one so hope user never requires it. Needs to be fixed in an overhaul of
-                                 # args database so it keeps track of what the user set vs what the program set
-    self.useddirectly     = 1    # 1 indicates used by PETSc directly, 0 indicates used by a package used by PETSc
-    self.linkedbypetsc    = 1    # 1 indicates PETSc shared libraries (and PETSc executables) need to link against this library
-    self.gitcommit        = None # Git commit to use for downloads (used in preference to tarball downloads)
-    self.download         = []   # list of URLs where repository or tarballs may be found
-    self.deps             = []   # other packages whose dlib or include we depend on, usually we also use self.framework.require()
-    self.odeps            = []   # dependent packages that are optional
-    self.defaultLanguage  = 'C'  # The language in which to run tests
-    self.liblist          = [[]] # list of libraries we wish to check for (override with your own generateLibList())
-    self.extraLib         = []   # additional libraries needed to link
-    self.includes         = []   # headers to check for
-    self.functions        = []   # functions we wish to check for in the libraries
-    self.functionsFortran = 0    # 1 means the above symbol is a Fortran symbol, so name-mangling is done
-    self.functionsCxx     = [0, '', ''] # 1 means the above symbol is a C++ symbol, so name-mangling with prototype/call is done
-    self.cxx              = 0    # 1 means requires C++
-    self.fc               = 0    # 1 means requires fortran
-    self.needsMath        = 0    # 1 means requires the system math library
-    self.needsCompression = 0    # 1 means requires the system compression library
-    self.noMPIUni         = 0    # 1 means requires a real MPI
-    self.libdir           = 'lib'     # location of libraries in the package directory tree
-    self.altlibdir        = 'lib64'   # alternate location of libraries in the package directory tree
-    self.includedir       = 'include' # location of includes in the package directory tree
-    self.license          = None # optional license text
-    self.excludedDirs     = []   # list of directory names that could be false positives, SuperLU_DIST when looking for SuperLU
-    self.downloadonWindows= 0  # 1 means the --download-package works on Microsoft Windows
-    self.requirescxx11    = 0
-    self.publicInstall    = 1  # Installs the package in the --prefix directory if it was given. Packages that are only used
-                               # during the configuration/installation process such as sowing, make etc should be marked as 0
-    self.parallelMake     = 1  # 1 indicates the package supports make -j np option
 
-    self.precisions       = ['__fp16','single','double','__float128']; # Floating point precision package works with
-    self.complex          = 1   # 0 means cannot use complex
-    self.requires32bitint = 0;  # 1 means that the package will not work with 64 bit integers
+    # These are specified for the package
+    self.required               = 0    # 1 means the package is required
+    self.lookforbydefault       = 0    # 1 means the package is not required, but always look for and use if found
+                                       # cannot tell the difference between user requiring it with --with-PACKAGE=1 and
+                                       # this flag being one so hope user never requires it. Needs to be fixed in an overhaul of
+                                       # args database so it keeps track of what the user set vs what the program set
+    self.useddirectly           = 1    # 1 indicates used by PETSc directly, 0 indicates used by a package used by PETSc
+    self.linkedbypetsc          = 1    # 1 indicates PETSc shared libraries (and PETSc executables) need to link against this library
+    self.gitcommit              = None # Git commit to use for downloads
+    self.download               = []   # list of URLs where repository or tarballs may be found (git is tested before tarballs)
+    self.deps                   = []   # other packages whose dlib or include we depend on, usually we also use self.framework.require()
+    self.odeps                  = []   # dependent packages that are optional
+    self.defaultLanguage        = 'C'  # The language in which to run tests
+    self.liblist                = [[]] # list of libraries we wish to check for (packages can override with their own generateLibList() method)
+    self.extraLib               = []   # additional libraries needed to link
+    self.includes               = []   # headers to check for
+    self.functions              = []   # functions we wish to check for in the libraries
+    self.functionsFortran       = 0    # 1 means the symbols in self.functions are Fortran symbols, so name-mangling is done
+    self.functionsCxx           = [0, '', ''] # 1 means the symbols in self.functions symbol are C++ symbol, so name-mangling with prototype/call is done
+    self.cxx                    = 0    # 1 means requires C++
+    self.fc                     = 0    # 1 means requires fortran
+    self.needsMath              = 0    # 1 means requires the system math library
+    self.needsCompression       = 0    # 1 means requires the system compression library
+    self.noMPIUni               = 0    # 1 means requires a real MPI
+    self.libdir                 = 'lib'     # location of libraries in the package directory tree
+    self.altlibdir              = 'lib64'   # alternate location of libraries in the package directory tree
+    self.includedir             = 'include' # location of includes in the package directory tree
+    self.license                = None # optional license text
+    self.excludedDirs           = []   # list of directory names that could be false positives, SuperLU_DIST when looking for SuperLU
+    self.downloadonWindows      = 0  # 1 means the --download-package works on Microsoft Windows
+    self.requirescxx11          = 0
+    self.publicInstall          = 1  # Installs the package in the --prefix directory if it was given. Packages that are only used
+                                     # during the configuration/installation process such as sowing, make etc should be marked as 0
+    self.parallelMake           = 1  # 1 indicates the package supports make -j np option
+
+    self.precisions             = ['__fp16','single','double','__float128']; # Floating point precision package works with
+    self.complex                = 1   # 0 means cannot use complex
+    self.requires32bitint       = 0;  # 1 means that the package will not work with 64 bit integers
     self.skippackagewithoptions = 0  # packages like fblaslapack and MPICH do not support --with-package* options so do not print them in help
-    self.alternativedownload = [] # Used by, for example mpi.py which does not support --download-mpi but one can use --download-mpich
-    self.requirec99flag      = 0 # package must be compiled with C99 flags
+    self.alternativedownload    = [] # Used by, for example mpi.py to print useful error messages, which does not support --download-mpi but one can use --download-mpich
+    self.requirec99flag         = 0 # package must be compiled with C99 flags
 
     # Outside coupling
-    self.defaultInstallDir= os.path.abspath('externalpackages')
-    self.installSudo      = '' # if user does not have write access to prefix directory then this is set to sudo
+    self.defaultInstallDir      = os.path.abspath('externalpackages')
+    self.installSudo            = '' # if user does not have write access to prefix directory then this is set to sudo
 
-    self.isMPI            = 0 # Is an MPI implementation, needed to check for compiler wrappers
-    self.hastests         = 0 # indicates that PETSc make alltests has tests for this package
-    self.hastestsdatafiles= 0 # indicates that PETSc make all tests has tests for this package that require DATAFILESPATH to be set
-    self.makerulename     = '' # some packages do too many things with the make stage; this allows a package to limit to, for example, just building the libraries
-    self.installedpetsc   = 0
+    self.isMPI                  = 0 # Is an MPI implementation, needed to check for compiler wrappers
+    self.hastests               = 0 # indicates that PETSc make alltests has tests for this package
+    self.hastestsdatafiles      = 0 # indicates that PETSc make all tests has tests for this package that require DATAFILESPATH to be set
+    self.makerulename           = '' # some packages do too many things with the make stage; this allows a package to limit to, for example, just building the libraries
+    self.installedpetsc         = 0
+    self.installwithbatch       = 0  # install the package even though configure is running in the initial batch mode; f2blaslapack and fblaslapack for example
     return
 
   def __str__(self):
@@ -462,7 +465,7 @@ class Package(config.base.Configure):
     '''Check if we should download the package, returning the install directory or the empty string indicating installation'''
     if not self.download:
       return ''
-    if self.framework.batchBodies:
+    if self.framework.batchBodies and not self.installwithbatch:
       return
     if self.argDB['download-'+self.downloadname.lower()]:
       if self.license and not os.path.isfile('.'+self.package+'_license'):
@@ -645,7 +648,7 @@ class Package(config.base.Configure):
         retriever.saveLog()
         pkgdir = self.getDir()
         if not pkgdir:
-          raise RuntimeError('Failed to download '+self.PACKAGE)
+          raise RuntimeError('Could not located downloaded package ' +self.PACKAGE +' in '+self.externalPackagesDir)
         self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.PACKAGE+' into '+pkgdir)
         retriever.restoreLog()
         return pkgdir
@@ -653,7 +656,7 @@ class Package(config.base.Configure):
         self.logPrint('ERROR: '+str(e))
         err += str(e)
     self.logWrite(retriever.restoreLog())
-    raise RuntimeError('Unable to download '+self.PACKAGE+'\n'+err)
+    raise RuntimeError('Error during download/extract/detection of '+self.PACKAGE+':\n'+err)
 
   def Install(self):
     raise RuntimeError('No custom installation implemented for package '+self.package+'\n')
@@ -788,7 +791,7 @@ class Package(config.base.Configure):
     return
 
   def configure(self):
-    if self.download and self.argDB['download-'+self.downloadname.lower()] and not self.framework.batchBodies:
+    if self.download and self.argDB['download-'+self.downloadname.lower()] and (not self.framework.batchBodies or self.installwithbatch):
       self.argDB['with-'+self.package] = 1
       downloadPackageVal = self.argDB['download-'+self.downloadname.lower()]
       if isinstance(downloadPackageVal, str):
