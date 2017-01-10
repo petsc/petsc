@@ -288,10 +288,10 @@ $(testsrcs.o) : $(petscvariables)
 .PHONY: clean cleantest all print
 
 cleantest:
-	${RM} -rf $(TESTDIR) $(generatedtest)
+	${RM} -r $(TESTDIR) $(generatedtest)
 
 clean: cleantest
-	${RM} -rf $(OBJDIR) $(LIBDIR)/libpetsc* $(MODDIR)/petsc*.mod $(MPIUNI_MOD) $(generated)
+	${RM} -r $(OBJDIR) $(LIBDIR)/libpetsc* $(MODDIR)/petsc*.mod $(MPIUNI_MOD) $(generated)
 
 # make print VAR=the-variable
 print:
