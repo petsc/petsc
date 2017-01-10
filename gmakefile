@@ -224,6 +224,11 @@ $(TESTDIR)/%f : $(TESTDIR)/%f.o $(libpetscall)
 $(TESTDIR)/%f90 : $(TESTDIR)/%f90.o $(libpetscall)
 	$(call quiet,FLINKER) -o $@ $^ $(PETSC_SYS_LIB)
 
+# Fortran source files need petsc*.mod, which isn't explicitly managed
+# in the makefile.  This prerequisite is excessive, but it makes sense
+# to ensure that the library builds cleanly first.
+$(testsrcs.o) : $(libpetscall)
+
 # Testing convenience targets
 .PHONY: alltest test pre-clean
 test: pre-clean report_tests
