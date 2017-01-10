@@ -8186,16 +8186,16 @@ part of Qt SDK or as an stand-alone software, via \url{http://qt.nokia.com/downl
 It supports automatic makefile generation using cross-platform \texttt{qmake} and \texttt{cmake}
 build systems as well as allowing one to import projects based on existing, possibly hand-written, makefiles.
 Qt Creator has a visual debugger using GDB and LLDB (on Linux and OSX) or Microsoft's
-CDB (on Windows) as backends. It also has interface to Valgrind's ``memcheck'' and ``callgrind''
-tools to detect memory leaks and profile your code. It has built-in support for a variety of version
-control using git, mercurial, subversion, etc. Finally, Qt Creator comes fully equipped with
+CDB (on Windows) as backends. It also has an interface to Valgrind's ``memcheck'' and ``callgrind''
+tools to detect memory leaks and profile code. It has built-in support for a variety of version
+control systems including git, mercurial, subversion, etc. Finally, Qt Creator comes fully equipped with
 auto-completion, function look-up, and code refactoring tools. This enables one to easily browse source
-files, easily find relevant functions, and refactor them across the entire project.
+files, easily find relevant functions, and refactor them across an entire project.
 
 \subsection*{Creating a Project}
-When using Qt Creator with \texttt{qmake}, one needs a \texttt{.pro} file. This is a configuration file that
+When using Qt Creator with \texttt{qmake}, one needs a \texttt{.pro} file. This configuration file
 tells Qt Creator about all build/compile options and locations of source files. One may start with
-a blank \texttt{.pro} file and fill in the configuration options as needed. Here's is an example:
+a blank \texttt{.pro} file and fill in configuration options as needed. For example:
 \begin{lstlisting}
 # This is the name of your application executable
 TARGET = ex1
@@ -8230,20 +8230,20 @@ OTHER_FILES += \
 In this example, keywords include:
 \begin{tightitemize}
 \item \lstinline{TARGET}: The name of the application executable.
-\item \lstinline{INCLUDEPATH}: Used at compile time to point to required include files. Essentially, it is used as a \trl{ -I \$\$INCLUDEPATH} flag for the compiler. This should include all your application-specific header files and those related to PETSc (which may be found via \trl{make getincludedirs}).
-\item \lstinline{LIBS}: Defines all required external libraries to link with your application. To get PETSc's linking libraries, use \trl{make getlinklibs}.
+\item \lstinline{INCLUDEPATH}: Used at compile time to point to required include files. Essentially, it is used as an \trl{ -I \$\$INCLUDEPATH} flag for the compiler. This should include all application-specific header files and those related to PETSc (which may be found via \trl{make getincludedirs}).
+\item \lstinline{LIBS}: Defines all required external libraries to link with the application. To get PETSc's linking libraries, use \trl{make getlinklibs}.
 \item \lstinline{QMAKE_CC} and \lstinline{QMAKE_CXX}: Define which C/C++ compilers use.
-\item \lstinline{QMAKE_LINK}: Defines the proper linker to be used. Relavant if compiling C++ projects
+\item \lstinline{QMAKE_LINK}: Defines the proper linker to be used. Relevant if compiling C++ projects.
 \item \lstinline{QMAKE_CFLAGS}, \lstinline{QMAKE_CXXFLAGS} and \lstinline{QMAKE_LFLAGS}: Set the corresponding compile and linking flags.
 \item \lstinline{SOURCES}: Source files to be compiled.
 \item \lstinline{HEADERS}: Header files required by the application. 
-\item \lstinline{OTHER_FILES}: Other files to include (source, header or any other extension). Note that none of the source files placed here are compiled.
+\item \lstinline{OTHER_FILES}: Other files to include (source, header, or any other extension). Note that none of the source files placed here are compiled.
 \end{tightitemize}
 
-There are more options available that one can feed into the \trl{.pro} file; see e.g. \url{http://doc.qt.io/qt-5/qmake-project-files.html}. 
+More options can be included in a \trl{.pro} file; see e.g. \url{http://doc.qt.io/qt-5/qmake-project-files.html}. 
 Once the \trl{.pro} file is generated, the user can simply open it via Qt Creator. 
-Upon opening, one has the option to create two different build options, debug and release, and switch between the two easily at any time. 
-For more information on how to use the Qt Creator interface, and other more advanced aspects of the IDE, refer to \url{https://www.qt.io/ide/}
+Upon opening, one has the option to create two different build options, debug and release, and switch between the two. 
+For more information on using the Qt Creator interface and other more advanced aspects of the IDE, refer to \url{https://www.qt.io/ide/}
 
 \section{Visual Studio Users} \sindex{visual studio}
 
