@@ -68,6 +68,7 @@ ifeq ($(shell basename $(AR)),ar)
   V ?=1
 endif
 endif
+V ?= $(if $(findstring s,$(MAKEFLAGS)),0)
 ifeq ($(V),)  # Default
   quiet_HELP := "Use \"$(MAKE) V=1\" to see verbose compile lines, \"$(MAKE) V=0\" to suppress.\n"
   quiet = @printf $(quiet_HELP)$(eval quiet_HELP:=)"  %10s %s\n" "$1$2" "$@"; $($1)
@@ -218,6 +219,8 @@ $(TESTDIR)/% : $(TESTDIR)/%.o $(libpetscall)
 	$(call quiet,CLINKER) -o $@ $^ $(PETSC_SYS_LIB)
 
 $(TESTDIR)/%f : $(TESTDIR)/%f.o $(libpetscall)
+	$(call quiet,FLINKER) -o $@ $^ $(PETSC_SYS_LIB)
+
 $(TESTDIR)/%f90 : $(TESTDIR)/%f90.o $(libpetscall)
 	$(call quiet,FLINKER) -o $@ $^ $(PETSC_SYS_LIB)
 
