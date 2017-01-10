@@ -234,10 +234,10 @@ $(testsrcs.o) : $(libpetscall)
 test: pre-clean report_tests
 pre-clean:
 	@$(RM) -r $(TESTDIR)/counts
-.PHONY: $(foreach pkg, $(pkgs), test-$(pkg) $(foreach lang, $(testlangs), test-$(pkg)-$(lang) test-rm-$(pkg)-$(lang)))
+.PHONY: $(foreach pkg, $(pkgs), test-$(pkg) $(foreach lang, $(testlangs), test-$(pkg)-$(lang) test-rm-$(pkg).$(lang)))
 testpkgs := $(foreach pkg, $(pkgs), test-$(pkg))
 # Targets to run tests in test-$pkg.$lang and delete the executables, language by language
-$(testpkgs) : test-% : $(foreach lang, $(testlangs), test-%-$(lang) test-rm-%-$(lang))
+$(testpkgs) : test-% : $(foreach lang, $(testlangs), test-%-$(lang) test-rm-%.$(lang))
 # List of raw test run targets
 alltesttargets := $(foreach tp, $(testpkgs), $(foreach lang, $(testlangs), $($(tp).$(lang))))
 
@@ -248,9 +248,9 @@ $(alltesttargets) : % : $(TESTDIR)/counts/%.counts
 $(TESTDIR)/counts/%.counts :
 	@$< $(TESTFLAGS)
 
-allrm=$(foreach pkg, $(pkgs), $(foreach lang, $(langs), test-rm-$(pkg)-$(lang)))
-$(allrm) : test-rm-%: test-%
-	@$(RM) $(test-ex-$*)
+allrm := $(foreach pkg, $(pkgs), $(foreach lang, $(testlangs), test-rm-$(pkg).$(lang)))
+$(allrm) : test-rm-% :
+	@$(RM) $(addprefix $(TESTDIR)/,$(basename $($(@:test-rm-%=testsrcs-%))))
 
 # Remove intermediate .o files
 # This only removes the files at the end which is insufficient

@@ -696,14 +696,6 @@ class generateExamples(Petsc):
           # Now write the args:
           fd.write(nmtest+"_ARGS := '"+self.tests[pkg][lang][ftest]['argLabel']+"'\n")
 
-        # rm targets
-        pkglangex=[]
-        for exfile in self.sources[pkg][lang]['srcs']:
-          basedir=os.path.dirname(exfile)
-          localexec=os.path.basename(os.path.splitext(exfile)[0])
-          pkglangex.append(os.path.join("${TESTDIR}",basedir,localexec))
-        fd.write("test-ex-"+pkg+"-"+lang+":= %s\n" % ' '.join(pkglangex))
-
     fd.close()
     return
 
