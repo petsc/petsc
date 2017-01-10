@@ -355,10 +355,10 @@ alltests:
           fi;
 
 allgtest-tap:
-	-@cd ${PETSC_DIR}; ${OMAKE} -f gmakefile -j ${MAKE_NP} test V=${V} | grep -v '[CF]LINKER'
+	-@cd ${PETSC_DIR}; ${OMAKE} -f gmakefile -j ${MAKE_NP} test V=${V} | grep -v '^[[:space:]]*[CF]\(LINKER\|C\)'
 
 allgtest:
-	-@cd ${PETSC_DIR}; ${OMAKE} -f gmakefile -j ${MAKE_NP} test V=${V} | grep -v -e '^ok [^#]*\(# SKIP\|$$\)' -e '[CF]LINKER'
+	-@cd ${PETSC_DIR}; ${OMAKE} -f gmakefile -j ${MAKE_NP} test V=${V} | grep -v -e '^ok [^#]*\(# SKIP\|$$\)' -e '^[[:space:]]*[CF]\(LINKER\|C\)'
 
 alltest:
 	-@date
