@@ -647,7 +647,6 @@ class generateExamples(Petsc):
     """
     # Different options for how to set up the targets
     compileExecsFirst=False
-    alltargets=[]
 
     # Open file
     arch_files = self.arch_path('lib','petsc','conf', 'testfiles')
@@ -669,7 +668,6 @@ class generateExamples(Petsc):
           testdeps.append(self.nameSpace(test,basedir))
         fd.write("test-"+pkg+"."+lang+" := "+' '.join(testdeps)+"\n")
         fd.write('test-%s-%s : $(test-%s.%s)\n' % (pkg, lang, pkg, lang))
-        alltargets += testdeps
 
         # test targets
         for ftest in self.tests[pkg][lang]:
@@ -706,10 +704,7 @@ class generateExamples(Petsc):
           pkglangex.append(os.path.join("${TESTDIR}",basedir,localexec))
         fd.write("test-ex-"+pkg+"-"+lang+":= %s\n" % ' '.join(pkglangex))
 
-    fd.write("alltesttargets := %s\n" % ' '.join(alltargets))
-    fd.write("helptests:\n\t -@grep '^[a-z]' ${generatedtest} | cut -f1 -d:\n")
     fd.close()
-    # Write out tests
     return
 
   def writeHarness(self,output,dataDict):
