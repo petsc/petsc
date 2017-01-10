@@ -8200,12 +8200,18 @@ a blank \texttt{.pro} file and fill in configuration options as needed. For exam
 # This is the name of your application executable
 TARGET = ex1
 
-# Set any include path and libs you need to link
+# There are two ways to add PETSc functionality
+# 1-Manual: Set all include path and libs required by PETSc
 PETSC_INCLUDE = path/to/petsc_includes # e.g. obtained via running `make getincludedirs'
 PETSC_LIBS = path/to/petsc_libs # e.g. obtained via running `make getlinklibs'
 
 INCLUDEPATH += $$PETSC_INCLUDES
 LIBS += $$PETSC_LIBS
+
+# 2-Automatic: Use the PKGCONFIG funtionality
+# NOTE: PETSc.pc must be in the pkgconfig path. You might need to adjust PKG_CONFIG_PATH
+CONFIG += link_pkgconfig
+PKGCONFIG += PETSc
 
 # set appropriate complier and its flags
 QMAKE_CC = path/to/mpicc
@@ -8232,6 +8238,8 @@ In this example, keywords include:
 \item \lstinline{TARGET}: The name of the application executable.
 \item \lstinline{INCLUDEPATH}: Used at compile time to point to required include files. Essentially, it is used as an \trl{ -I \$\$INCLUDEPATH} flag for the compiler. This should include all application-specific header files and those related to PETSc (which may be found via \trl{make getincludedirs}).
 \item \lstinline{LIBS}: Defines all required external libraries to link with the application. To get PETSc's linking libraries, use \trl{make getlinklibs}.
+\item \lstinline{CONFIG}: Configuration options to be used by \texttt{qmake}. Here, the option \texttt{link_pkgconfig} instructs \textt{qmake} to internally use \texttt{pkgconfig} to resolve \lstinline{INCLUDEPATH} and \lstinline{LIBS} variables.
+\item \lstinline{PKGCONFIG}: Name of the configuration file (the \texttt{.pc} file -- here \texttt{PETSc.pc}) to be passed to \texttt{pkgconfig}. Note that for this functionality to work, \texttt{PETSc.pc} must be in path which might require adjusting the \texttt{PKG_CONFIG_PATH} enviroment variable. For mor einformation see \url{http://doc.qt.io/qtcreator/creator-build-settings.html#build-environment}.
 \item \lstinline{QMAKE_CC} and \lstinline{QMAKE_CXX}: Define which C/C++ compilers use.
 \item \lstinline{QMAKE_LINK}: Defines the proper linker to be used. Relevant if compiling C++ projects.
 \item \lstinline{QMAKE_CFLAGS}, \lstinline{QMAKE_CXXFLAGS} and \lstinline{QMAKE_LFLAGS}: Set the corresponding compile and linking flags.
