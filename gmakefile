@@ -215,14 +215,14 @@ else
 endif
 
 # Test executables
-$(TESTDIR)/% : $(TESTDIR)/%.o $(libpetscall)
-	$(call quiet,CLINKER) -o $@ $^ $(PETSC_SYS_LIB)
-
 $(TESTDIR)/%f : $(TESTDIR)/%f.o $(libpetscall)
 	$(call quiet,FLINKER) -o $@ $^ $(PETSC_SYS_LIB)
 
 $(TESTDIR)/%f90 : $(TESTDIR)/%f90.o $(libpetscall)
 	$(call quiet,FLINKER) -o $@ $^ $(PETSC_SYS_LIB)
+
+$(TESTDIR)/% : $(TESTDIR)/%.o $(libpetscall)
+	$(call quiet,CLINKER) -o $@ $^ $(PETSC_SYS_LIB)
 
 # Fortran source files need petsc*.mod, which isn't explicitly managed
 # in the makefile.  This prerequisite is excessive, but it makes sense
