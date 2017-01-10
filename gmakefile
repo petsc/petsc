@@ -235,6 +235,10 @@ testinit:
 testpkgs: $(foreach pkg, $(pkgs), test-$(pkg))
 $(foreach pkg, $(pkgs), test-$(pkg)) : test-% : $(foreach lang, $(langs), test-%-$(lang) test-rm-%-$(lang))
 
+allrm=$(foreach pkg, $(pkgs), $(foreach lang, $(langs), test-rm-$(pkg)-$(lang)))
+$(allrm) : test-rm-%: test-%
+	@$(RM) $(test-ex-$*)
+
 # Remove intermediate .o files
 # This only removes the files at the end which is insufficient
 #.INTERMEDIATE: $(testsrcs.o:%.o=%)

@@ -699,15 +699,12 @@ class generateExamples(Petsc):
           fd.write(nmtest+"_ARGS := '"+self.tests[pkg][lang][ftest]['argLabel']+"'\n")
 
         # rm targets
-        fd.write("test-rm-"+pkg+"-"+lang+": test-"+pkg+"-"+lang+"\n")
+        pkglangex=[]
         for exfile in self.sources[pkg][lang]['srcs']:
-          root=os.path.join(self.petsc_dir,os.path.dirname(exfile))
           basedir=os.path.dirname(exfile)
-          testdir="${TESTDIR}/"+basedir+"/"
           localexec=os.path.basename(os.path.splitext(exfile)[0])
-          execname=os.path.join(testdir,localexec)
-          line="\t@$(RM) "+execname
-          fd.write(line+"\n")
+          pkglangex.append(os.path.join("${TESTDIR}",basedir,localexec))
+        fd.write("test-ex-"+pkg+"-"+lang+":= %s\n" % ' '.join(pkglangex))
 
     fd.write("alltesttargets := %s\n" % ' '.join(alltargets))
     fd.write("helptests:\n\t -@grep '^[a-z]' ${generatedtest} | cut -f1 -d:\n")
