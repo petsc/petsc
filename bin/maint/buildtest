@@ -60,6 +60,11 @@ set CONFIGURE='yes'
 set CONFIGURE_FILE=$PETSC_ARCH
 endif
 
+# Run initialization script
+if ( -f ./config/examples/${CONFIGURE_FILE}.csh ) then
+  source ./config/examples/${CONFIGURE_FILE}.csh
+endif
+
 # Run Configure
 ./config/examples/${CONFIGURE_FILE}.py --with-no-output -PETSC_ARCH=$PETSC_ARCH -PETSC_DIR=$nPETSC_DIR ${CONFIGURE_ARGS} >>& build.log
 set err=$?
