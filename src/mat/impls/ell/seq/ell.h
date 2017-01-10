@@ -53,8 +53,6 @@ typedef struct {
 /*
  Frees the arrays from the sliced XELLPACK matrix type
  */
-#undef __FUNCT__
-#define __FUNCT__ "MatSeqXELLFreeELL"
 PETSC_STATIC_INLINE PetscErrorCode MatSeqXELLFreeELL(Mat AA,MatScalar **val,PetscInt **colidx,char **bt)
 {
   PetscErrorCode ierr;

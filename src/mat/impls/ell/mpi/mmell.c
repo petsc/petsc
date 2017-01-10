@@ -5,8 +5,6 @@
 #include <../src/mat/impls/ell/mpi/mpiell.h>
 #include <petsc/private/isimpl.h>    /* needed because accesses data structure of ISLocalToGlobalMapping directly */
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetUpMultiply_MPIELL"
 PetscErrorCode MatSetUpMultiply_MPIELL(Mat mat)
 {
   Mat_MPIELL     *ell = (Mat_MPIELL*)mat->data;

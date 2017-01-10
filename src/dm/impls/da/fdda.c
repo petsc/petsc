@@ -784,8 +784,6 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
 }
 
 /* ---------------------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateMatrix_DA_2d_MPIELL"
 PetscErrorCode DMCreateMatrix_DA_2d_MPIELL(DM da,Mat J)
 {
   PetscErrorCode         ierr;
@@ -888,8 +886,6 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIELL(DM da,Mat J)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateMatrix_DA_2d_MPIAIJ"
 PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da,Mat J)
 {
   PetscErrorCode         ierr;

@@ -21,8 +21,6 @@ vec_y    = _mm512_mask3_fmadd_pd(vec_x,vec_vals,vec_y,mask); \
 
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSeqELLSetPreallocation"
 /*@C
  MatSeqELLSetPreallocation - For good matrix assembly performance
  the user should preallocate the matrix storage by setting the parameter nz
@@ -73,8 +71,6 @@ PetscErrorCode  MatSeqELLSetPreallocation(Mat B,PetscInt rlenmax,const PetscInt 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSeqELLSetPreallocation_SeqELL"
 PetscErrorCode  MatSeqELLSetPreallocation_SeqELL(Mat B,PetscInt maxallocrow,const PetscInt rlen[])
 {
   Mat_SeqELL     *b;
@@ -159,8 +155,6 @@ PetscErrorCode  MatSeqELLSetPreallocation_SeqELL(Mat B,PetscInt maxallocrow,cons
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_SeqELL"
 PetscErrorCode MatMult_SeqELL(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqELL        *a=(Mat_SeqELL*)A->data;
@@ -299,8 +293,6 @@ PetscErrorCode MatMult_SeqELL(Mat A,Vec xx,Vec yy)
 }
 
 #include <../src/mat/impls/aij/seq/ftn-kernels/fmultadd.h>
-#undef __FUNCT__
-#define __FUNCT__ "MatMultAdd_SeqELL"
 PetscErrorCode MatMultAdd_SeqELL(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqELL        *a=(Mat_SeqELL*)A->data;
@@ -381,8 +373,6 @@ PetscErrorCode MatMultAdd_SeqELL(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultTransposeAdd_SeqELL"
 PetscErrorCode MatMultTransposeAdd_SeqELL(Mat A,Vec xx,Vec zz,Vec yy)
 {
   Mat_SeqELL        *a=(Mat_SeqELL*)A->data;
@@ -415,8 +405,6 @@ PetscErrorCode MatMultTransposeAdd_SeqELL(Mat A,Vec xx,Vec zz,Vec yy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultTranspose_SeqELL"
 PetscErrorCode MatMultTranspose_SeqELL(Mat A,Vec xx,Vec yy)
 {
   PetscErrorCode ierr;
@@ -430,8 +418,6 @@ PetscErrorCode MatMultTranspose_SeqELL(Mat A,Vec xx,Vec yy)
 /*
      Checks for missing diagonals
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatMissingDiagonal_SeqELL"
 PetscErrorCode MatMissingDiagonal_SeqELL(Mat A,PetscBool  *missing,PetscInt *d)
 {
   Mat_SeqELL *a = (Mat_SeqELL*)A->data;
@@ -457,8 +443,6 @@ PetscErrorCode MatMissingDiagonal_SeqELL(Mat A,PetscBool  *missing,PetscInt *d)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMarkDiagonal_SeqELL"
 PetscErrorCode MatMarkDiagonal_SeqELL(Mat A)
 {
   Mat_SeqELL     *a=(Mat_SeqELL*)A->data;
@@ -484,8 +468,6 @@ PetscErrorCode MatMarkDiagonal_SeqELL(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatZeroEntries_SeqELL"
 PetscErrorCode MatZeroEntries_SeqELL(Mat A)
 {
   Mat_SeqELL     *a = (Mat_SeqELL*)A->data;
@@ -497,8 +479,6 @@ PetscErrorCode MatZeroEntries_SeqELL(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_SeqELL"
 PetscErrorCode MatDestroy_SeqELL(Mat A)
 {
   Mat_SeqELL     *a = (Mat_SeqELL*)A->data;
@@ -531,8 +511,6 @@ PetscErrorCode MatDestroy_SeqELL(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetOption_SeqELL"
 PetscErrorCode MatSetOption_SeqELL(Mat A,MatOption op,PetscBool flg)
 {
   Mat_SeqELL     *a = (Mat_SeqELL*)A->data;
@@ -576,8 +554,6 @@ PetscErrorCode MatSetOption_SeqELL(Mat A,MatOption op,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetDiagonal_SeqELL"
 PetscErrorCode MatGetDiagonal_SeqELL(Mat A,Vec v)
 {
   Mat_SeqELL     *a=(Mat_SeqELL*)A->data;
@@ -615,8 +591,6 @@ PetscErrorCode MatGetDiagonal_SeqELL(Mat A,Vec v)
 
 extern PetscErrorCode MatSetValues_SeqELL(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetValues_SeqELL"
 PetscErrorCode MatGetValues_SeqELL(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],PetscScalar v[])
 {
   Mat_SeqELL  *a = (Mat_SeqELL*)A->data;
@@ -660,8 +634,6 @@ PetscErrorCode MatGetValues_SeqELL(Mat A,PetscInt m,const PetscInt im[],PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatView_SeqELL_ASCII"
 PetscErrorCode MatView_SeqELL_ASCII(Mat A,PetscViewer viewer)
 {
   Mat_SeqELL        *a = (Mat_SeqELL*)A->data;
@@ -869,8 +841,6 @@ PetscErrorCode MatView_SeqELL_ASCII(Mat A,PetscViewer viewer)
 }
 
 #include <petscdraw.h>
-#undef __FUNCT__
-#define __FUNCT__ "MatView_SeqELL_Draw_Zoom"
 PetscErrorCode MatView_SeqELL_Draw_Zoom(PetscDraw draw,void *Aa)
 {
   Mat               A  = (Mat) Aa;
@@ -956,8 +926,6 @@ PetscErrorCode MatView_SeqELL_Draw_Zoom(PetscDraw draw,void *Aa)
 }
 
 #include <petscdraw.h>
-#undef __FUNCT__
-#define __FUNCT__ "MatView_SeqELL_Draw"
 PetscErrorCode MatView_SeqELL_Draw(Mat A,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -980,8 +948,6 @@ PetscErrorCode MatView_SeqELL_Draw(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatView_SeqELL"
 PetscErrorCode MatView_SeqELL(Mat A,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -1001,8 +967,6 @@ PetscErrorCode MatView_SeqELL(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd_SeqELL"
 PetscErrorCode MatAssemblyEnd_SeqELL(Mat A,MatAssemblyType mode)
 {
   Mat_SeqELL  *a = (Mat_SeqELL*)A->data;
@@ -1024,8 +988,6 @@ PetscErrorCode MatAssemblyEnd_SeqELL(Mat A,MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetInfo_SeqELL"
 PetscErrorCode MatGetInfo_SeqELL(Mat A,MatInfoType flag,MatInfo *info)
 {
   Mat_SeqELL *a = (Mat_SeqELL*)A->data;
@@ -1050,8 +1012,6 @@ PetscErrorCode MatGetInfo_SeqELL(Mat A,MatInfoType flag,MatInfo *info)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetValues_SeqELL"
 PetscErrorCode MatSetValues_SeqELL(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode is)
 {
   Mat_SeqELL     *a=(Mat_SeqELL*)A->data;
@@ -1133,8 +1093,6 @@ noinsert:;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCopy_SeqELL"
 PetscErrorCode MatCopy_SeqELL(Mat A,Mat B,MatStructure str)
 {
   PetscErrorCode ierr;
@@ -1153,8 +1111,6 @@ PetscErrorCode MatCopy_SeqELL(Mat A,Mat B,MatStructure str)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetUp_SeqELL"
 PetscErrorCode MatSetUp_SeqELL(Mat A)
 {
   PetscErrorCode ierr;
@@ -1164,8 +1120,6 @@ PetscErrorCode MatSetUp_SeqELL(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSeqELLGetArray_SeqELL"
 PetscErrorCode MatSeqELLGetArray_SeqELL(Mat A,PetscScalar *array[])
 {
   Mat_SeqELL *a=(Mat_SeqELL*)A->data;
@@ -1175,16 +1129,12 @@ PetscErrorCode MatSeqELLGetArray_SeqELL(Mat A,PetscScalar *array[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSeqELLRestoreArray_SeqELL"
 PetscErrorCode MatSeqELLRestoreArray_SeqELL(Mat A,PetscScalar *array[])
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatRealPart_SeqELL"
 PetscErrorCode MatRealPart_SeqELL(Mat A)
 {
   Mat_SeqELL  *a=(Mat_SeqELL*)A->data;
@@ -1196,8 +1146,6 @@ PetscErrorCode MatRealPart_SeqELL(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatImaginaryPart_SeqELL"
 PetscErrorCode MatImaginaryPart_SeqELL(Mat A)
 {
   Mat_SeqELL     *a=(Mat_SeqELL*)A->data;
@@ -1211,8 +1159,6 @@ PetscErrorCode MatImaginaryPart_SeqELL(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatShift_SeqELL"
 PetscErrorCode MatShift_SeqELL(Mat Y,PetscScalar a)
 {
   PetscErrorCode ierr;
@@ -1374,8 +1320,6 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqELL,
                                 /*144*/0
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "MatStoreValues_SeqELL"
 PetscErrorCode  MatStoreValues_SeqELL(Mat mat)
 {
   Mat_SeqELL     *a=(Mat_SeqELL*)mat->data;
@@ -1396,8 +1340,6 @@ PetscErrorCode  MatStoreValues_SeqELL(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatRetrieveValues_SeqELL"
 PetscErrorCode  MatRetrieveValues_SeqELL(Mat mat)
 {
   Mat_SeqELL     *a=(Mat_SeqELL*)mat->data;
@@ -1412,8 +1354,6 @@ PetscErrorCode  MatRetrieveValues_SeqELL(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSeqELLRestoreArray"
 /*@C
  MatSeqELLRestoreArray - returns access to the array where the data for a MATSEQELL matrix is stored obtained by MatSeqELLGetArray()
 
@@ -1436,8 +1376,6 @@ PetscErrorCode  MatSeqELLRestoreArray(Mat A,PetscScalar **array)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_SeqELL"
 PETSC_EXTERN PetscErrorCode MatCreate_SeqELL(Mat B)
 {
   Mat_SeqELL     *b;
@@ -1483,8 +1421,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqELL(Mat B)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDuplicateNoCreate_SeqELL"
 /*
  Given a matrix generated with MatGetFactor() duplicates all the information in A into B
  */
@@ -1566,8 +1502,6 @@ PetscErrorCode MatDuplicateNoCreate_SeqELL(Mat C,Mat A,MatDuplicateOption cpvalu
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDuplicate_SeqELL"
 PetscErrorCode MatDuplicate_SeqELL(Mat A,MatDuplicateOption cpvalues,Mat *B)
 {
   PetscErrorCode ierr;
@@ -1583,8 +1517,6 @@ PetscErrorCode MatDuplicate_SeqELL(Mat A,MatDuplicateOption cpvalues,Mat *B)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateSeqELL"
 /*@C
  MatCreateSeqELL - Creates a sparse matrix in ELL format.
 
@@ -1630,8 +1562,6 @@ PetscErrorCode  MatCreateSeqELL(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt max
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatEqual_SeqELL"
 PetscErrorCode MatEqual_SeqELL(Mat A,Mat B,PetscBool * flg)
 {
   Mat_SeqELL     *a=(Mat_SeqELL*)A->data,*b=(Mat_SeqELL*)B->data;
@@ -1668,8 +1598,6 @@ PetscErrorCode MatEqual_SeqELL(Mat A,Mat B,PetscBool * flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSeqELLInvalidateDiagonal"
 PetscErrorCode MatSeqELLInvalidateDiagonal(Mat A)
 {
   Mat_SeqELL     *a=(Mat_SeqELL*)A->data;

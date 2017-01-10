@@ -25,8 +25,6 @@
 .seealso: MatCreateell(), MatCreateSeqELL(), MATSEQELL, MATMPIELL
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDiagonalSet_MPIELL"
 PetscErrorCode  MatDiagonalSet_MPIELL(Mat Y,Vec D,InsertMode is)
 {
   PetscErrorCode    ierr;
@@ -48,8 +46,6 @@ storage of the matrix.  When PETSC_USE_CTABLE is used this is scalable at
 a slightly higher hash table cost; without it it is not scalable (each processor
 has an order N integer array but is fast to acess.
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateColmap_MPIELL_Private"
 PetscErrorCode MatCreateColmap_MPIELL_Private(Mat mat)
 {
   Mat_MPIELL     *ell = (Mat_MPIELL*)mat->data;
@@ -143,8 +139,6 @@ PetscErrorCode MatCreateColmap_MPIELL_Private(Mat mat)
     b->rlen[row] = nrow2; \
   }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetValues_MPIELL"
 PetscErrorCode MatSetValues_MPIELL(Mat mat,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode addv)
 {
   Mat_MPIELL     *ell=(Mat_MPIELL*)mat->data;
@@ -249,8 +243,6 @@ PetscErrorCode MatSetValues_MPIELL(Mat mat,PetscInt m,const PetscInt im[],PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetValues_MPIELL"
 PetscErrorCode MatGetValues_MPIELL(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,const PetscInt idxn[],PetscScalar v[])
 {
   Mat_MPIELL     *ell = (Mat_MPIELL*)mat->data;
@@ -293,8 +285,6 @@ PetscErrorCode MatGetValues_MPIELL(Mat mat,PetscInt m,const PetscInt idxm[],Pets
 
 extern PetscErrorCode MatMultDiagonalBlock_MPIELL(Mat,Vec,Vec);
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemblyBegin_MPIELL"
 PetscErrorCode MatAssemblyBegin_MPIELL(Mat mat,MatAssemblyType mode)
 {
   Mat_MPIELL     *ell = (Mat_MPIELL*)mat->data;
@@ -310,8 +300,6 @@ PetscErrorCode MatAssemblyBegin_MPIELL(Mat mat,MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd_MPIELL"
 PetscErrorCode MatAssemblyEnd_MPIELL(Mat mat,MatAssemblyType mode)
 {
   Mat_MPIELL     *ell = (Mat_MPIELL*)mat->data;
@@ -376,8 +364,6 @@ PetscErrorCode MatAssemblyEnd_MPIELL(Mat mat,MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatZeroEntries_MPIELL"
 PetscErrorCode MatZeroEntries_MPIELL(Mat A)
 {
   Mat_MPIELL     *l = (Mat_MPIELL*)A->data;
@@ -389,8 +375,6 @@ PetscErrorCode MatZeroEntries_MPIELL(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_MPIELL"
 PetscErrorCode MatMult_MPIELL(Mat A,Vec xx,Vec yy)
 {
   Mat_MPIELL     *a = (Mat_MPIELL*)A->data;
@@ -407,8 +391,6 @@ PetscErrorCode MatMult_MPIELL(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultDiagonalBlock_MPIELL"
 PetscErrorCode MatMultDiagonalBlock_MPIELL(Mat A,Vec bb,Vec xx)
 {
   Mat_MPIELL     *a = (Mat_MPIELL*)A->data;
@@ -419,8 +401,6 @@ PetscErrorCode MatMultDiagonalBlock_MPIELL(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultAdd_MPIELL"
 PetscErrorCode MatMultAdd_MPIELL(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPIELL     *a = (Mat_MPIELL*)A->data;
@@ -434,8 +414,6 @@ PetscErrorCode MatMultAdd_MPIELL(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultTranspose_MPIELL"
 PetscErrorCode MatMultTranspose_MPIELL(Mat A,Vec xx,Vec yy)
 {
   Mat_MPIELL     *a = (Mat_MPIELL*)A->data;
@@ -465,8 +443,6 @@ PetscErrorCode MatMultTranspose_MPIELL(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatIsTranspose_MPIELL"
 PetscErrorCode  MatIsTranspose_MPIELL(Mat Amat,Mat Bmat,PetscReal tol,PetscBool  *f)
 {
   MPI_Comm       comm;
@@ -507,8 +483,6 @@ PetscErrorCode  MatIsTranspose_MPIELL(Mat Amat,Mat Bmat,PetscReal tol,PetscBool 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultTransposeAdd_MPIELL"
 PetscErrorCode MatMultTransposeAdd_MPIELL(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPIELL     *a = (Mat_MPIELL*)A->data;
@@ -530,8 +504,6 @@ PetscErrorCode MatMultTransposeAdd_MPIELL(Mat A,Vec xx,Vec yy,Vec zz)
   This only works correctly for square matrices where the subblock A->A is the
    diagonal block
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatGetDiagonal_MPIELL"
 PetscErrorCode MatGetDiagonal_MPIELL(Mat A,Vec v)
 {
   PetscErrorCode ierr;
@@ -544,8 +516,6 @@ PetscErrorCode MatGetDiagonal_MPIELL(Mat A,Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatScale_MPIELL"
 PetscErrorCode MatScale_MPIELL(Mat A,PetscScalar aa)
 {
   Mat_MPIELL     *a = (Mat_MPIELL*)A->data;
@@ -557,8 +527,6 @@ PetscErrorCode MatScale_MPIELL(Mat A,PetscScalar aa)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_MPIELL"
 PetscErrorCode MatDestroy_MPIELL(Mat mat)
 {
   Mat_MPIELL     *ell = (Mat_MPIELL*)mat->data;
@@ -596,8 +564,6 @@ PetscErrorCode MatDestroy_MPIELL(Mat mat)
 }
 
 #include <petscdraw.h>
-#undef __FUNCT__
-#define __FUNCT__ "MatView_MPIELL_ASCIIorDraworSocket"
 PetscErrorCode MatView_MPIELL_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
 {
   Mat_MPIELL        *ell = (Mat_MPIELL*)mat->data;
@@ -730,8 +696,6 @@ PetscErrorCode MatView_MPIELL_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatView_MPIELL"
 PetscErrorCode MatView_MPIELL(Mat mat,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -748,8 +712,6 @@ PetscErrorCode MatView_MPIELL(Mat mat,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetGhosts_MPIELL"
 PetscErrorCode  MatGetGhosts_MPIELL(Mat mat,PetscInt *nghosts,const PetscInt *ghosts[])
 {
   Mat_MPIELL *ell = (Mat_MPIELL*)mat->data;
@@ -761,8 +723,6 @@ PetscErrorCode  MatGetGhosts_MPIELL(Mat mat,PetscInt *nghosts,const PetscInt *gh
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetInfo_MPIELL"
 PetscErrorCode MatGetInfo_MPIELL(Mat matin,MatInfoType flag,MatInfo *info)
 {
   Mat_MPIELL     *mat = (Mat_MPIELL*)matin->data;
@@ -810,8 +770,6 @@ PetscErrorCode MatGetInfo_MPIELL(Mat matin,MatInfoType flag,MatInfo *info)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetOption_MPIELL"
 PetscErrorCode MatSetOption_MPIELL(Mat A,MatOption op,PetscBool flg)
 {
   Mat_MPIELL     *a = (Mat_MPIELL*)A->data;
@@ -876,8 +834,6 @@ PetscErrorCode MatSetOption_MPIELL(Mat A,MatOption op,PetscBool flg)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDiagonalScale_MPIELL"
 PetscErrorCode MatDiagonalScale_MPIELL(Mat mat,Vec ll,Vec rr)
 {
   Mat_MPIELL     *ell = (Mat_MPIELL*)mat->data;
@@ -909,8 +865,6 @@ PetscErrorCode MatDiagonalScale_MPIELL(Mat mat,Vec ll,Vec rr)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetUnfactored_MPIELL"
 PetscErrorCode MatSetUnfactored_MPIELL(Mat A)
 {
   Mat_MPIELL     *a = (Mat_MPIELL*)A->data;
@@ -921,8 +875,6 @@ PetscErrorCode MatSetUnfactored_MPIELL(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatEqual_MPIELL"
 PetscErrorCode MatEqual_MPIELL(Mat A,Mat B,PetscBool  *flag)
 {
   Mat_MPIELL     *matB = (Mat_MPIELL*)B->data,*matA = (Mat_MPIELL*)A->data;
@@ -942,8 +894,6 @@ PetscErrorCode MatEqual_MPIELL(Mat A,Mat B,PetscBool  *flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCopy_MPIELL"
 PetscErrorCode MatCopy_MPIELL(Mat A,Mat B,MatStructure str)
 {
   PetscErrorCode ierr;
@@ -966,8 +916,6 @@ PetscErrorCode MatCopy_MPIELL(Mat A,Mat B,MatStructure str)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetUp_MPIELL"
 PetscErrorCode MatSetUp_MPIELL(Mat A)
 {
   PetscErrorCode ierr;
@@ -980,8 +928,6 @@ PetscErrorCode MatSetUp_MPIELL(Mat A)
 
 extern PetscErrorCode  MatConjugate_SeqELL(Mat);
 
-#undef __FUNCT__
-#define __FUNCT__ "MatConjugate_MPIELL"
 PetscErrorCode  MatConjugate_MPIELL(Mat mat)
 {
 #if defined(PETSC_USE_COMPLEX)
@@ -997,8 +943,6 @@ PetscErrorCode  MatConjugate_MPIELL(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatRealPart_MPIELL"
 PetscErrorCode MatRealPart_MPIELL(Mat A)
 {
   Mat_MPIELL     *a = (Mat_MPIELL*)A->data;
@@ -1010,8 +954,6 @@ PetscErrorCode MatRealPart_MPIELL(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatImaginaryPart_MPIELL"
 PetscErrorCode MatImaginaryPart_MPIELL(Mat A)
 {
   Mat_MPIELL     *a = (Mat_MPIELL*)A->data;
@@ -1023,8 +965,6 @@ PetscErrorCode MatImaginaryPart_MPIELL(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatInvertBlockDiagonal_MPIELL"
 PetscErrorCode  MatInvertBlockDiagonal_MPIELL(Mat A,const PetscScalar **values)
 {
   Mat_MPIELL     *a = (Mat_MPIELL*) A->data;
@@ -1036,8 +976,6 @@ PetscErrorCode  MatInvertBlockDiagonal_MPIELL(Mat A,const PetscScalar **values)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetRandom_MPIELL"
 static PetscErrorCode  MatSetRandom_MPIELL(Mat x,PetscRandom rctx)
 {
   PetscErrorCode ierr;
@@ -1051,8 +989,6 @@ static PetscErrorCode  MatSetRandom_MPIELL(Mat x,PetscRandom rctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetFromOptions_MPIELL"
 PetscErrorCode MatSetFromOptions_MPIELL(PetscOptionItems *PetscOptionsObject,Mat A)
 {
   PetscErrorCode       ierr;
@@ -1064,8 +1000,6 @@ PetscErrorCode MatSetFromOptions_MPIELL(PetscOptionItems *PetscOptionsObject,Mat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatShift_MPIELL"
 PetscErrorCode MatShift_MPIELL(Mat Y,PetscScalar a)
 {
   PetscErrorCode ierr;
@@ -1084,8 +1018,6 @@ PetscErrorCode MatShift_MPIELL(Mat Y,PetscScalar a)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMissingDiagonal_MPIELL"
 PetscErrorCode MatMissingDiagonal_MPIELL(Mat A,PetscBool  *missing,PetscInt *d)
 {
   Mat_MPIELL     *a = (Mat_MPIELL*)A->data;
@@ -1254,8 +1186,6 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIELL,
 
 /* ----------------------------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatStoreValues_MPIELL"
 PetscErrorCode  MatStoreValues_MPIELL(Mat mat)
 {
   Mat_MPIELL     *ell = (Mat_MPIELL*)mat->data;
@@ -1267,8 +1197,6 @@ PetscErrorCode  MatStoreValues_MPIELL(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatRetrieveValues_MPIELL"
 PetscErrorCode  MatRetrieveValues_MPIELL(Mat mat)
 {
   Mat_MPIELL     *ell = (Mat_MPIELL*)mat->data;
@@ -1280,8 +1208,6 @@ PetscErrorCode  MatRetrieveValues_MPIELL(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMPIELLSetPreallocation_MPIELL"
 PetscErrorCode  MatMPIELLSetPreallocation_MPIELL(Mat B,PetscInt d_rlenmax,const PetscInt d_rlen[],PetscInt o_rlenmax,const PetscInt o_rlen[])
 {
   Mat_MPIELL     *b;
@@ -1312,8 +1238,6 @@ PetscErrorCode  MatMPIELLSetPreallocation_MPIELL(Mat B,PetscInt d_rlenmax,const 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDuplicate_MPIELL"
 PetscErrorCode MatDuplicate_MPIELL(Mat matin,MatDuplicateOption cpvalues,Mat *newmat)
 {
   Mat            mat;
@@ -1375,8 +1299,6 @@ PetscErrorCode MatDuplicate_MPIELL(Mat matin,MatDuplicateOption cpvalues,Mat *ne
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMPIELLSetPreallocation"
 /*@C
    MatMPIELLSetPreallocation - Preallocates memory for a sparse parallel matrix in ell format.
    For good matrix assembly performance the user should preallocate the matrix storage by
@@ -1514,8 +1436,6 @@ PetscErrorCode  MatMPIELLSetPreallocation(Mat B,PetscInt d_nz,const PetscInt d_n
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateELL"
 /*@C
    MatCreateELL - Creates a sparse parallel matrix in ELL format.
 
@@ -1697,8 +1617,6 @@ PetscErrorCode  MatCreateELL(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMPIELLGetSeqELL"
 PetscErrorCode  MatMPIELLGetSeqELL(Mat A,Mat *Ad,Mat *Ao,const PetscInt *colmap[])
 {
   Mat_MPIELL     *a = (Mat_MPIELL*)A->data;
@@ -1714,8 +1632,6 @@ PetscErrorCode  MatMPIELLGetSeqELL(Mat A,Mat *Ad,Mat *Ao,const PetscInt *colmap[
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMPIELLGetLocalMatCondensed"
 /*@C
      MatMPIELLGetLocalMatCondensed - Creates a SeqELL matrix from an MATMPIELL matrix by taking all its local rows and NON-ZERO columns
 
@@ -1799,8 +1715,6 @@ PetscErrorCode  MatMPIELLGetLocalMatCondensed(Mat A,MatReuse scall,IS *row,IS *c
 .seealso: MatCreateell()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_MPIELL"
 PETSC_EXTERN PetscErrorCode MatCreate_MPIELL(Mat B)
 {
   Mat_MPIELL     *b;
