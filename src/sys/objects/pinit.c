@@ -612,14 +612,24 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
     PetscStackCallSAWs(SAWs_Push_Body,("index.html",0,intro));
     ierr = PetscFree(intro);CHKERRQ(ierr);
     ierr = PetscFree(appline);CHKERRQ(ierr);
-    PetscStackCallSAWs(SAWs_Initialize,());
     if (selectport) {
       PetscBool silent;
+
+      ierr = SAWs_Initialize();
+      /* another process may have grabbed the port so keep trying */
+      while (ierr) {
+        PetscStackCallSAWs(SAWs_Get_Available_Port,(&port));
+        PetscStackCallSAWs(SAWs_Set_Port,(port));
+        ierr = SAWs_Initialize();
+      }
+
       ierr = PetscOptionsGetBool(NULL,NULL,"-saws_port_auto_select_silent",&silent,NULL);CHKERRQ(ierr);
       if (!silent) {
         PetscStackCallSAWs(SAWs_Get_FullURL,(sizeof(sawsurl),sawsurl));
         ierr = PetscPrintf(PETSC_COMM_WORLD,"Point your browser to %s for SAWs\n",sawsurl);CHKERRQ(ierr);
       }
+    } else {
+      PetscStackCallSAWs(SAWs_Initialize,());
     }
     ierr = PetscCitationsRegister("@TechReport{ saws,\n"
                                   "  Author = {Matt Otten and Jed Brown and Barry Smith},\n"
