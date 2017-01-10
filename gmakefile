@@ -248,14 +248,6 @@ $(alltesttargets) : % : $(TESTDIR)/counts/%.counts
 $(TESTDIR)/counts/%.counts :
 	@$< $(TESTFLAGS)
 
-test: testinit testpkgs report_tests
-testinit:
-	-@mkdir -p ${PETSC_ARCH}/tests
-	-@rm -f ${PETSC_ARCH}/tests/test.log
-	-@touch ${PETSC_ARCH}/tests/test.log
-testpkgs: $(foreach pkg, $(pkgs), test-$(pkg))
-$(foreach pkg, $(pkgs), test-$(pkg)) : test-% : $(foreach lang, $(langs), test-%-$(lang) test-rm-%-$(lang))
-
 allrm=$(foreach pkg, $(pkgs), $(foreach lang, $(langs), test-rm-$(pkg)-$(lang)))
 $(allrm) : test-rm-%: test-%
 	@$(RM) $(test-ex-$*)
