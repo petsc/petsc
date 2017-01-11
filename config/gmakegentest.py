@@ -237,7 +237,7 @@ class generateExamples(Petsc):
 
     #Conf vars
     subst['mpiexec']=self.conf['MPIEXEC']  # make sure PETSC_DIR is defined!
-    subst['petsc_dir']=self.conf['PETSC_DIR']
+    subst['petsc_dir']=self.petsc_dir # not self.conf['PETSC_DIR'] as this could be windows path
     subst['diff']=self.conf['DIFF']
     subst['rm']=self.conf['RM']
     subst['grep']=self.conf['GREP']
