@@ -3971,13 +3971,13 @@ Line search Newton                               & \lstinline|SNESNEWTONLS|    &
   FAS                                            & \lstinline|SNESFAS|         & \trl{fas}         & --                             \\
   Nonlinear ASM                                  & \lstinline|SNESNASM|        & \trl{nasm}        & --                             \\
   ASPIN                                          & \lstinline|SNESASPIN|       & \trl{aspin}       & \lstinline|SNESLINESEARCHBT|   \\
-  Nonlinear Gauss-Seidel                         & \lstinline|SNESGS|          & \trl{ngs}         & --                             \\
+  Nonlinear Gauss-Seidel                         & \lstinline|SNESNGS|         & \trl{ngs}         & --                             \\
   Anderson Mixing                                & \lstinline|SNESANDERSON|    & \trl{anderson}    & --                             \\
   Newton with constraints (1)                    & \lstinline|SNESVINEWTONRSLS|& \trl{vinewtonrsls}& \lstinline|SNESLINESEARCHBT|   \\
   Newton with constraints (2)                    & \lstinline|SNESVINEWTONSSLS|& \trl{vinewtonssls}& \lstinline|SNESLINESEARCHBT|   \\
   Multi-stage Smoothers                          & \lstinline|SNESMS|          & \trl{ms}          & --                             \\
   Composite                                      & \lstinline|SNESCOMPOSITE|   & \trl{composite}   & --                             \\
-  KSP only (linear solver)                       & \lstinline|SNESKSPONLY|     & \trl{ksponly}     & --                             \\
+  \lstinline|KSP| only (linear solver)           & \lstinline|SNESKSPONLY|     & \trl{ksponly}     & --                             \\
   Python Shell                                   & \lstinline|SNESPYTHON|      & \trl{python}      & --                             \\
   Shell                                          & \lstinline|SNESSHELL|       & \trl{shell}       & --                             \\
 \hline
@@ -4487,26 +4487,23 @@ and application-provided preconditioners.  If
  listed in Figure~\ref{fig_snesexample2}, is run with the options \trl{-snes_mf} and \trl{-user_precond} then it uses a matrix-free application of the matrix-vector multiple and a user provided matrix free Jacobian.
 
 \begin{center}
-\begin{table}[H]
-\begin{tabular}{|c|l|l|} \hline
-& & \\
+\begin{table}
+\begin{tabular}{ccc}
 {\bf Matrix Use} & {\bf Conventional Matrix Formats}                & {\bf Matrix-Free Versions}\\
-& & \\ \hline
-& & \\
+\hline
 Jacobian         & Create matrix with \lstinline|MatCreate()|. $^*$ & Create matrix with \lstinline|MatCreateShell()|.\\
-                 & Assemble matrix with user-defined                & Use \lstinline|MatShellSetOperation()| to set\\
-Matrix           & routine. $ ^\dagger $                            & various matrix actions.\\
-                 &                                                  & Or use \lstinline|MatCreateMFFD()| or \lstinline|MatCreateSNESMF()|.\\
-& & \\ \hline
-& & \\
+Matrix           & Assemble matrix with user-defined                & Use \lstinline|MatShellSetOperation()| to set\\
+                 & routine. $ ^\dagger $                            & various matrix actions, or use\\
+                 &                                                  & \lstinline|MatCreateMFFD()| or \lstinline|MatCreateSNESMF()|.\\
+\hline
 Preconditioning  & Create matrix with \lstinline|MatCreate()|. $^*$ & Use \lstinline|SNESGetKSP()| and \lstinline|KSPGetPC()| \\
 Matrix           & Assemble matrix with user-defined                & to access the \lstinline|PC|, then use\\
-                 & routine. $ ^\dagger $                            & \lstinline|PCSetType(pc,PCSHELL)|;\\
+                 & routine. $ ^\dagger $                            & \lstinline|PCSetType(pc,PCSHELL)|\\
                  &                                                  & followed by \lstinline|PCShellSetApply()|. \\
 
-& & \\ \hline
+\hline
+& & \\
 \end{tabular}
-
 \medskip
 $^*$ Use either the generic \lstinline|MatCreate()| or a format-specific variant
    such as \lstinline|MatCreateAIJ()|.\\
@@ -4852,52 +4849,35 @@ or the command line option \\
 \findex{-ts_type} \sindex{Euler}
 \sindex{backward Euler}
 
-A list of available methods is given in Table \ref{tab:TSPET}.
+A list of available methods is given in Table \ref{tab_TSPET}.
 
 %
 \begin{table}
-\caption{Time integration schemes.}
 \centering
-%{   \scriptsize
-%\tiny
-\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|}
-\hline
+\begin{tabular}{cccccccccccc}
 {\bf TS Name}&{\bf Reference}&{\bf Class}& {\bf Type}&{\bf Order}\\
 \hline
 euler&forward Euler&one-step&explicit&1\\
-\hline
 ssp&multistage SSP \cite{Ketcheson_2008}&Runge-Kutta&explicit&$\le$ 4\\
-\hline
 rk*&multistage&Runge-Kutta&explicit&$\ge$ 1\\
-\hline
 beuler&backward Euler&one-step&implicit&1\\
-\hline
 cn&Crank-Nicolson&one-step&implicit&2\\
-\hline
 theta*&theta-method&one-step&implicit&$\le$2\\
-\hline
 alpha&alpha-method \cite{Jansen_2000}&one-step&implicit&2\\
-\hline
 gl&general linear
 \cite{Butcher_2007}&multistep-multistage&implicit& $\le$ 3\\
-\hline
 eimex&extrapolated IMEX \cite{Constantinescu_A2010a}&one-step&$\ge
 1$, adaptive&\\
-\hline
-arkimex&  see Tab.\ \ref{tab:IMEX:RK:PETSc}& IMEX Runge-Kutta & IMEX& $1-5$\\
-\hline
-rosw& see Tab.\ \ref{tab:IMEX:RosW:PETSc} &Rosenbrock-W &linearly
-implicit&$1-4$\\ \hline
-glee& see Tab.\ \ref{tab:IMEX:GLEE:PETSc} &GL with global
+arkimex&  see Tab.\ \ref{tab_IMEX_RK_PETSc}& IMEX Runge-Kutta & IMEX& $1-5$\\
+rosw& see Tab.\ \ref{tab_IMEX_RosW_PETSc} &Rosenbrock-W &linearly
+implicit&$1-4$\\
+glee& see Tab.\ \ref{tab_IMEX_GLEE_PETSc} &GL with global
 error&explicit and implicit&$1-3$\\
 \hline
 \end{tabular}%}
-\label{tab:TSPET}
+\caption{Time integration schemes.}
+\label{tab_TSPET}
 \end{table}
-%
-
-
-
 
 \noindent Set the initial time and timestep with the command
 \begin{lstlisting}
@@ -4923,7 +4903,8 @@ and determines the behavior near the final time with
 \begin{lstlisting}
 TSSetExactFinalTime(TS ts,TSExactFinalTimeOption eftopt);
 \end{lstlisting}
-where \lstinline{eftopt} is one of \lstinline{TS_EXACTFINALTIME_STEPOVER},\lstinline{TS_EXACTFINALTIME_INTERPOLATE},or \lstinline{TS_EXACTFINALTIME_MATCHSTEP}.
+where \lstinline{eftopt} is one of \lstinline{TS_EXACTFINALTIME_STEPOVER},\lstinline{TS_EXACTFINALTIME_INTERPOLATE}, or\break
+\lstinline{TS_EXACTFINALTIME_MATCHSTEP}.
 One performs the requested number of time steps with
 \begin{lstlisting}
 TSSolve(TS ts,Vec U);
@@ -4969,14 +4950,28 @@ or
 An IMEX problem representation can be made
 implicit by setting \lstinline{TSARKIMEXSetFullyImplicit()}.
 
-Some use-case examples for \lstinline{TSARKIMEX} are listed in Table \ref{tab:DE:forms} and a
+Some use-case examples for \lstinline{TSARKIMEX} are listed in Table \ref{tab_DE_forms} and a
 list of methods with a summary of their properties is given in
-Table \ref{tab:IMEX:RK:PETSc}.
+Table \ref{tab_IMEX_RK_PETSc}.
 
 %
 \begin{table}
 \centering
-\caption{\label{tab:DE:forms}In PETSc the DAEs and ODEs are formulated
+\begin{tabular}{lp{1.7in}p{2.8in}}
+\hline
+$\dot{y}=g(t,y)$ & nonstiff ODE & $F(t,y,\dot{y}) = \dot{y}$,
+$G(t,y)=g(t,y)$\\
+$\dot{y}=f(t,y)$ & stiff ODE & $F(t,y,\dot{y}) =  \dot{y}-f(t,y)$,
+$G(t,y)=0$\\
+$M \dot{y}=f(t,y)$ & stiff ODE with mass matrix& $F(t,y,\dot{y}) = M \dot{y}-f(t,y)$,
+$G(t,y)=0$\\
+$M \dot{y} = g(t,y)$& nonstiff ODE with mass matrix&$F(t,y,\dot{y}) = \dot{y}, G(t,y) = M^{-1} g(t,y)$\\
+$\dot{y}=g(t,y)+f(t,y)$ & stiff-nonstiff ODE & $F(t,y,\dot{y}) = \dot{y}-f(t,y)$, $G(t,y)=g(t,y)$\\
+$M\dot{y}=g(t,y)+f(t,y)$ & stiff-nonstiff ODE with mass matrix & $F(t,y,\dot{y}) = M \dot{y}-f(t,y)$, $G(t,y)=M^{-1}g(t,y)$\\
+  $f(t,y,\dot{y})=0$       & implicit ODE/DAE                  & $F(t,y,\dot{y}) = f(t,y,\dot{y})$, $G(t,y) = 0$; the user needs to set \lstinline|TSSetEquationType()| to \lstinline|TS_EQ_IMPLICIT| or higher\\
+\hline
+\end{tabular}
+\caption{\label{tab_DE_forms}In PETSc, DAEs and ODEs are formulated
 as $F(t,y,\dot{y})=G(t,y)$, where $F()$ is meant to be integrated
 implicitly and $G()$ explicitly. An IMEX formulation such as
 $M\dot{y}=g(t,y)+f(t,y)$ requires the user to provide $M^{-1} g(t,y)$ or
@@ -4984,131 +4979,88 @@ solve  $g(t,y) - M x=0$ in place of $G(t,u)$. General cases such as
 $F(t,y,\dot{y})=G(t,y)$ are
 not amenable to IMEX Runge-Kutta, but can be solved by using fully implicit methods.}
 
-\begin{tabular}{|l|p{1.7in}|p{2.8in}|}
-\hline
-$\dot{y}=g(t,y)$ & nonstiff ODE & $F(t,y,\dot{y}) = \dot{y}$,
-$G(t,y)=g(t,y)$\\
-\hline
-$\dot{y}=f(t,y)$ & stiff ODE & $F(t,y,\dot{y}) =  \dot{y}-f(t,y)$,
-$G(t,y)=0$\\
-\hline
-$M \dot{y}=f(t,y)$ & stiff ODE w/ mass matrix& $F(t,y,\dot{y}) = M \dot{y}-f(t,y)$,
-$G(t,y)=0$\\
-\hline
-$M \dot{y} = g(t,y)$& nonstiff ODE w/ mass matrix&$F(t,y,\dot{y}) = \dot{y}, G(t,y) = M^{-1} g(t,y)$\\
-\hline
-$\dot{y}=g(t,y)+f(t,y)$ & stiff-nonstiff ODE & $F(t,y,\dot{y}) = \dot{y}-f(t,y)$, $G(t,y)=g(t,y)$\\
-\hline
-$M\dot{y}=g(t,y)+f(t,y)$ & stiff-nonstiff ODE w/ mass matrix & $F(t,y,\dot{y}) = M \dot{y}-f(t,y)$, $G(t,y)=M^{-1}g(t,y)$\\
-\hline
-  $f(t,y,\dot{y})=0$       & implicit ODE/DAE                  & $F(t,y,\dot{y}) = f(t,y,\dot{y})$, $G(t,y) = 0$; the user needs to set \lstinline|TSSetEquationType()| to \lstinline|TS_EQ_IMPLICIT| or higher\\
-\hline
-\end{tabular}
 \end{table}
 
 \begin{table}
 \centering
-\caption{\label{tab:IMEX:RK:PETSc} List of the  currently available
+\begin{tabular}{cccccccccccc}
+\hline
+{\bf Name}&{\bf Reference} &{\bf Stages} &{\bf Order}&{\bf IM}     &{\bf SA}&{\bf Embed.}&{\bf Dense}& {\bf Remarks}\\
+ &  &{\bf (IM)}   &{\bf (stage)}& {\bf Stab.}&&      &{\bf Output}&\\
+\hline
+a2&based on CN&2(1)&2(2)&A-Stable&yes&yes(1)&yes(2)&\\
+l2&SSP2(2,2,2)\cite{Pareschi_2005}
+&2(2)&2(1)&L-Stable&yes&yes(1)&yes(2)&SSP, SDIRK\\
+ars122&ARS122,
+\cite{Ascher_1997}&2(1)&3(1)&A-Stable&yes&yes(1)&yes(2)&\\
+2c&\cite{Giraldo_2013}&3(2)&2(2)&L-Stable&yes&yes(1)&yes(2)&SDIRK\\
+2d&\cite{Giraldo_2013}&3(2)&2(2)&L-Stable&yes&yes(1)&yes(2)&SDIRK\\
+2e&\cite{Giraldo_2013}&3(2)&2(2)&L-Stable&yes&yes(1)&yes(2)&SDIRK\\
+prssp2&PRS(3,3,2)
+\cite{Pareschi_2005}&3(3)&3(1)&L-Stable&yes&no&no&SSP, nonSDIRK\\
+3&\cite{Kennedy_2003}&4(3)&3(2)&L-Stable&yes&yes(2)&yes(2)&SDIRK\\
+bpr3&\cite{Boscarino_TR2011}&5(4)&3(2)&L-Stable&yes&no&no&SDIRK, DAE-1\\
+ars443&\cite{Ascher_1997}&5(4)&3(1)&L-Stable&yes&no&no&SDIRK\\
+4&\cite{Kennedy_2003}&6(5)&4(2)&L-Stable&yes&yes(3)&yes(2,3)&SDIRK\\
+5&\cite{Kennedy_2003}&8(7)&5(2)&L-Stable&yes&yes(4)&yes(3)&SDIRK\\
+\hline
+\end{tabular}
+\caption{\label{tab_IMEX_RK_PETSc} List of the  currently available
 IMEX Runge-Kutta schemes.  For each method we listed the \texttt{-ts\_arkimex\_type}
   name, the reference, the
   total number
   of stages/implicit stages, the order/stage-order,
   the implicit stability properties, stiff accuracy (SA), the
   existence of an embedded scheme, and dense output.}
-\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|}
-\hline
-{\bf Name}&{\bf Reference} &{\bf Stages} &{\bf Order}&{\bf IM}     &{\bf SA}&{\bf Embed.}&{\bf Dense}& {\bf Remarks}\\
- &  &{\bf (IM)}   &{\bf (stage)}& {\bf Stab.}&&      &{\bf Output}&\\
-\hline
-a2&based on CN&2(1)&2(2)&A-Stable&yes&yes(1)&yes(2)&\\
-\hline
-l2&SSP2(2,2,2)\cite{Pareschi_2005}
-&2(2)&2(1)&L-Stable&yes&yes(1)&yes(2)&SSP, SDIRK\\
-\hline
-ars122&ARS122,
-\cite{Ascher_1997}&2(1)&3(1)&A-Stable&yes&yes(1)&yes(2)&\\
-\hline
-2c&\cite{Giraldo_2013}&3(2)&2(2)&L-Stable&yes&yes(1)&yes(2)&SDIRK\\
-\hline
-2d&\cite{Giraldo_2013}&3(2)&2(2)&L-Stable&yes&yes(1)&yes(2)&SDIRK\\
-\hline
-2e&\cite{Giraldo_2013}&3(2)&2(2)&L-Stable&yes&yes(1)&yes(2)&SDIRK\\
-\hline
-prssp2&PRS(3,3,2)
-\cite{Pareschi_2005}&3(3)&3(1)&L-Stable&yes&no&no&SSP, nonSDIRK\\
-\hline
-3&\cite{Kennedy_2003}&4(3)&3(2)&L-Stable&yes&yes(2)&yes(2)&SDIRK\\
-\hline
-bpr3&\cite{Boscarino_TR2011}&5(4)&3(2)&L-Stable&yes&no&no&SDIRK, DAE-1\\
-\hline
-ars443&\cite{Ascher_1997}&5(4)&3(1)&L-Stable&yes&no&no&SDIRK\\
-\hline
-4&\cite{Kennedy_2003}&6(5)&4(2)&L-Stable&yes&yes(3)&yes(2,3)&SDIRK\\
-\hline
-5&\cite{Kennedy_2003}&8(7)&5(2)&L-Stable&yes&yes(4)&yes(3)&SDIRK\\
-\hline
-\end{tabular}
 \end{table}
 %
 
 ROSW are linearized implicit Runge-Kutta methods known as Rosenbrock
 W-methods. They can accommodate inexact Jacobian matrices in their
 formulation. A series of methods are available in PETSc listed in
-Table \ref{tab:IMEX:RosW:PETSc}.
+Table \ref{tab_IMEX_RosW_PETSc}.
 
 %
 \begin{table}
 \centering
-\caption{\label{tab:IMEX:RosW:PETSc}List
+{\scriptsize
+\begin{tabular}{ccccccccccccccc}
+{\bf TS} &{\bf Reference}& {\bf Stages} &{\bf Order}&{\bf IM}     &{\bf SA}&{\bf Embed.}&{\bf Dense}&{\bf -W}&{\bf PDAE} &{\bf Remarks}\\
+Name &  &(IM)   &(stage)&Stab.&&      &Output&&&\\
+\hline
+theta1& classical&
+1(1)&1(1)&L-Stable&-&-&-&-&-&-\\
+theta2& classical&
+1(1)&2(2)&A-Stable&-&-&-&-&-&-\\
+2m             &Zoltan&
+2(2)&2(1)&L-Stable&No&Yes(1)&Yes(2)&Yes&No&SSP\\
+2p             &Zoltan&
+2(2)&2(1)&L-Stable&No&Yes(1)&Yes(2)&Yes&No&SSP\\
+ra3pw          &\cite{Rang_2005}&
+3(3)&3(1)&A-Stable&No&Yes&Yes(2)&No&Yes(3)&-\\
+ra34pw2        &\cite{Rang_2005}&
+4(4)&3(1)&L-Stable&Yes&Yes&Yes(3)&Yes&Yes(3)&-\\
+rodas3         &\cite{Sandu_1997}&
+4(4)&3(1)&L-Stable&Yes&Yes&No&No&Yes&-\\
+sandu3         &\cite{Sandu_1997}&
+3(3)&3(1)&L-Stable&Yes&Yes&Yes(2)&No&No&-\\
+assp3p3s1c &unpublished&
+3(2)&3(1)&A-Stable&No&Yes&Yes(2)&Yes&No&SSP\\
+lassp3p4s2c&unpublished&
+4(3)&3(1)&L-Stable&No&Yes&Yes(3)&Yes&No&SSP\\
+lassp3p4s2c&unpublished&
+4(3)&3(1)&L-Stable&No&Yes&Yes(3)&Yes&No&SSP\\
+ark3       &unpublished&
+4(3)&3(1)&L-Stable&No&Yes&Yes(3)&Yes&No&IMEX-RK\\
+\hline
+\end{tabular}}
+\caption{\label{tab_IMEX_RosW_PETSc}List
 of the currently available Rosenbrock W-schemes. For each method we listed the reference, the total number
   of stages and implicit stages, the scheme order and stage-order,
   the implicit stability properties, stiff accuracy (SA), the
   existence of an embedded scheme, dense output, the capacity to use
   inexact Jacobian matrices (-W), and high order integration of differential
   algebraic equations (PDAE).}
-{\scriptsize
-\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
-\hline
-{\bf TS} &{\bf Reference}& {\bf Stages} &{\bf Order}&{\bf IM}     &{\bf SA}&{\bf Embed.}&{\bf Dense}&{\bf -W}&{\bf PDAE} &{\bf Remarks}\\
-Name &  &(IM)   &(stage)&Stab.&&      &Output&&&\\
-\hline
-theta1& classical&
-1(1)&1(1)&L-Stable&-&-&-&-&-&-\\
-\hline
-theta2& classical&
-1(1)&2(2)&A-Stable&-&-&-&-&-&-\\
-\hline
-2m             &Zoltan&
-2(2)&2(1)&L-Stable&No&Yes(1)&Yes(2)&Yes&No&SSP\\
-\hline
-2p             &Zoltan&
-2(2)&2(1)&L-Stable&No&Yes(1)&Yes(2)&Yes&No&SSP\\
-\hline
-ra3pw          &\cite{Rang_2005}&
-3(3)&3(1)&A-Stable&No&Yes&Yes(2)&No&Yes(3)&-\\
-\hline
-ra34pw2        &\cite{Rang_2005}&
-4(4)&3(1)&L-Stable&Yes&Yes&Yes(3)&Yes&Yes(3)&-\\
-\hline
-rodas3         &\cite{Sandu_1997}&
-4(4)&3(1)&L-Stable&Yes&Yes&No&No&Yes&-\\
-\hline
-sandu3         &\cite{Sandu_1997}&
-3(3)&3(1)&L-Stable&Yes&Yes&Yes(2)&No&No&-\\
-\hline
-assp3p3s1c &unpublished&
-3(2)&3(1)&A-Stable&No&Yes&Yes(2)&Yes&No&SSP\\
-\hline
-lassp3p4s2c&unpublished&
-4(3)&3(1)&L-Stable&No&Yes&Yes(3)&Yes&No&SSP\\
-\hline
-lassp3p4s2c&unpublished&
-4(3)&3(1)&L-Stable&No&Yes&Yes(3)&Yes&No&SSP\\
-\hline
-ark3       &unpublished&
-4(3)&3(1)&L-Stable&No&Yes&Yes(3)&Yes&No&IMEX-RK\\
-\hline
-\end{tabular}}
 \end{table}
 %
 \subsubsection{GLEE methods} In this section, we describe explicit and
@@ -5139,7 +5091,7 @@ S_{error}[0]*\varepsilon + S_\text{error}[1]*y$, where $y_\text{aux}$ is the 2nd
 component of the working vector $Y$. 
 \end{itemize}
 %%%%%%%
-The methods can be described in two mathematically equivalentl forms:
+The methods can be described in two mathematically equivalent forms:
 propagate two components (``$y\tilde{y}$ form'') and propagating the
 solution and its estimated error (``$y\varepsilon$ form''). The
 two forms are not explicitly specified in \lstinline{TSGLEE}; rather, the specific values
@@ -5185,35 +5137,26 @@ y)_{n+1} - (\tilde{y} - y)_n]$.
 %
 \begin{table}
 \centering
-\caption{
-\label{tab:IMEX:GLEE:PETSc}
-List
-of the currently available GL schemes with global error estimation
-introduced in \cite{Constantinescu_TR2016b}.}
-\begin{tabular}{|c|c|c|c|c|c|c|}
-\hline
+\begin{tabular}{ccccccc}
 {\bf TS} &{\bf Reference}& {\bf IM/EX} &{\bf (p,r,s)}&{\bf $\gamma$}
 &{\bf Form}&{\bf Notes}\\
 \hline
-  \lstinline|TSGLEEi1|     &\trl{BE1}    &IM&1,3,2& 0.5&$y\varepsilon$&Based on backward Euler\\
-\hline
-  \lstinline|TSGLEE23|     &\trl{23}     &EX&2,3,2&   0&$y\varepsilon$&\\
-\hline
-  \lstinline|TSGLEE24|     &\trl{24}     &EX&2,4,2&   0&  $y\tilde{y}$&\\
-\hline
-  \lstinline|TSGLEE25I|    &\trl{25i}    &EX&2,5,2&   0&  $y\tilde{y}$&\\
-\hline
-  \lstinline|TSGLEE35|     &\trl{35}     &EX&3,5,2&	  0&  $y\tilde{y}$&\\
-\hline
-  \lstinline|TSGLEEEXRK2A| &\trl{exrk2a} &EX&2,6,2&0.25&$y\varepsilon$&\\
-\hline
-  \lstinline|TSGLEERK32G1| &\trl{rk32g1} &EX&3,8,2&	 0 &$y\varepsilon$&\\
-\hline
-  \lstinline|TSGLEERK285EX|  &\trl{rk285ex}&EX&2,9,2&0.25&$y\varepsilon$&\\
+\lstinline|TSGLEEi1|       &\trl{BE1}    &IM&1,3,2& 0.5&$y\varepsilon$&Based on backward Euler\\
+\lstinline|TSGLEE23|       &\trl{23}     &EX&2,3,2&   0&$y\varepsilon$&\\
+\lstinline|TSGLEE24|       &\trl{24}     &EX&2,4,2&   0&$y\tilde{y}$  &\\
+\lstinline|TSGLEE25I|      &\trl{25i}    &EX&2,5,2&   0&$y\tilde{y}$  &\\
+\lstinline|TSGLEE35|       &\trl{35}     &EX&3,5,2&   0&$y\tilde{y}$  &\\
+\lstinline|TSGLEEEXRK2A|   &\trl{exrk2a} &EX&2,6,2&0.25&$y\varepsilon$&\\
+\lstinline|TSGLEERK32G1|   &\trl{rk32g1} &EX&3,8,2&  0 &$y\varepsilon$&\\
+\lstinline|TSGLEERK285EX|  &\trl{rk285ex}&EX&2,9,2&0.25&$y\varepsilon$&\\
 \hline
 \end{tabular}
+\caption{
+\label{tab_IMEX_GLEE_PETSc}
+List
+of the currently available GL schemes with global error estimation
+introduced in \cite{Constantinescu_TR2016b}.}
 \end{table}
-%
 
 \section{Using fully implicit methods}
 To use a fully implicit method like \lstinline{TSTHETA} or \lstinline{TSGL}, either provide the Jacobian of $F() $ (and $G()$ if $G()$ is provided) or use a \lstinline{DM} that provides a coloring so the Jacobian can be computed efficiently via finite differences.
@@ -5291,19 +5234,15 @@ Most of the time stepping methods avaialable in PETSc have an error
 estimation and error control mechanism. This mechanism is implemented by changing the
 step size in order to maintain user specified absolute and relative
 tolerances. The PETSc object responsible with error control is
-\lstinline{TSAdapt}. The available \lstinline{TSAdapt} types are listed in Table \ref{tab:adaptors}.
+\lstinline{TSAdapt}. The available \lstinline{TSAdapt} types are listed in Table \ref{tab_adaptors}.
 \begin{table}[tb]
 \centering
-  \caption{\texttt{TSAdapt}: available adaptors.\label{tab:adaptors}}
-\begin{tabular}{|l|c|p{5cm}|}
-\hline
+\begin{tabular}{lcp{5cm}}
 ID & Name & Notes\\
 \hline
 \lstinline|TSADAPTNONE| & \trl{none}    & no adaptivity\\
-\hline
 \lstinline|TSADAPTBASIC|& \trl{basic}   & the default
 adaptor \\
-\hline
 \lstinline|TSADAPTGLEE| & \trl{glee}   & extension of the basic adaptor to treat $\TolA$
 and $\TolR$ as separate criteria. It can also control global erorrs
 if the integrator (e.g., \lstinline|TSGLEE|) provides this information \\
@@ -5311,6 +5250,7 @@ if the integrator (e.g., \lstinline|TSGLEE|) provides this information \\
 %  \lstinline|TSADAPTCFL|  & \trl{cfl}&\\
 \hline
 \end{tabular}
+\caption{\texttt{TSAdapt}: available adaptors.\label{tab_adaptors}}
 \end{table}
 
 When using \lstinline{TSADAPTBASIC} (the default), the user typically provides a
@@ -6168,11 +6108,11 @@ for example,
 \end{lstlisting}
 You must also use the appropriate Fortran module which is done with
 \begin{lstlisting}
-      use petscXXX
+use petscXXX
 \end{lstlisting}
 for example,
 \begin{lstlisting}
-      use petscksp
+use petscksp
 \end{lstlisting}
 
 \subsection{Error Checking}
@@ -6185,8 +6125,8 @@ code is set to be nonzero if an error has been detected; otherwise, it
 is zero.  For example, the Fortran and C variants of \lstinline{KSPSolve()} are
 given, respectively, below, where \lstinline{ierr} denotes the error variable:
 \begin{lstlisting}
-call KSPSolve(KSP ksp,Vec b,Vec x,PetscErrorCode ierr) ! Fortran
-ierr = KSPSolve(KSP ksp,Vec b,Vec x);                  /* C */
+call KSPSolve(ksp,b,x,ierr) ! Fortran
+ierr = KSPSolve(ksp,b,x);   /* C */
 \end{lstlisting}
 
 Fortran programmers
@@ -6644,7 +6584,7 @@ activated at runtime.  The profiling options include the following:
  As discussed in Section~\ref{sec_mpelogs},
 additional profiling can be done with MPE.
 
-\subsection{Interpreting {\tt -log\_summary} Output: The Basics}
+\subsection{Interpreting {\tt -log\_view} Output: The Basics}
 \label{sec_ploginfo}
 
 As shown in Figure~\ref{fig_exprof} (in Part I), the option
@@ -6739,7 +6679,7 @@ implementation (e.g., which operations are performed when using GMRES
 and ILU, as described above), so that interpreting the \trl{-log_view}
 data should be relatively straightforward.
 
-\subsection{Interpreting {\tt -log\_summary} Output: Parallel Performance}
+\subsection{Interpreting {\tt -log\_view} Output: Parallel Performance}
 \label{sec_parperformance}
 
 We next discuss performance summaries for parallel programs,
@@ -8240,68 +8180,80 @@ For further examples of using Eclipse with a PETSc-based application, see the do
 
 \section{Qt Creator Users} \sindex{Qt Creator}
 This information was provided by Mohammad Mirzadeh.
-Qt Creator is developed as a part of the Qt SDK, developed by Nokia Inc. for cross-platform GUI programming using C++. 
-It is available under GPL v3, LGPL v2 and a commercial license and may be obtained, either as a part of Qt SDK or as an stand-alone software, via \url{http://qt.nokia.com/downloads/}.
-It supports automated and cross-platform \texttt{qmake} and \texttt{Cmake} build systems, and thus can
-generate makefiles to compile and run an application package on Linux, Windows and Mac systems.
-Qt Creator has a visual debugger, supports both GNU's GDB and Microsoft's CDB (on Windows), and
-(as of version 2.3) has interface to memory profiling software such as valgrind.
-Qt Creator has built-in auto-completion and function look-up. 
-This makes it possible for the user to easily browse inside large packages like PETSc and easily find relevant functions and objects.
-Qt Creator has inline error/warning messages which are dynamically generated during code editing.
+The Qt Creator IDE is part of the Qt SDK, developed for cross-platform GUI programming using C++. 
+It is available under GPL v3, LGPL v2 and a commercial license and may be obtained, either as a 
+part of Qt SDK or as an stand-alone software, via \url{http://qt.nokia.com/downloads/}.
+It supports automatic makefile generation using cross-platform \trl{qmake} and \trl{cmake}
+build systems as well as allowing one to import projects based on existing, possibly hand-written, makefiles.
+Qt Creator has a visual debugger using GDB and LLDB (on Linux and OS X) or Microsoft's
+CDB (on Windows) as backends. It also has an interface to Valgrind's ``memcheck'' and ``callgrind''
+tools to detect memory leaks and profile code. It has built-in support for a variety of version
+control systems including git, mercurial, and subversion. Finally, Qt Creator comes fully equipped with
+auto-completion, function look-up, and code refactoring tools. This enables one to easily browse source
+files, find relevant functions, and refactor them across an entire project.
 
 \subsection*{Creating a Project}
-Upon installation, one needs to build a \texttt{.pro} file. This is a configuration file that tells Qt Creator about all build/compile options and locations of source files. 
-One may start with a blank \texttt{.pro} file and fill in the configuration options as needed:
+When using Qt Creator with \trl{qmake}, one needs a \trl{.pro} file. This configuration file
+tells Qt Creator about all build/compile options and locations of source files. One may start with
+a blank \trl{.pro} file and fill in configuration options as needed. For example:
 \begin{lstlisting}
-TARGET = name_of_your_app
+# The name of the application executable
+TARGET = ex1
 
-APP_DIR    = /home/path/to/your/app
-PETSC_DIR  = /home/path/to/your/petsc
-PETSC_ARCH = linux-gnu-cxx-debug
-PETSC_BINS = $$PETSC_DIR/$$PETSC_ARCH/bin
+# There are two ways to add PETSc functionality
+# 1-Manual: Set all include path and libs required by PETSc
+PETSC_INCLUDE = path/to/petsc_includes # e.g. obtained via running `make getincludedirs'
+PETSC_LIBS = path/to/petsc_libs # e.g. obtained via running `make getlinklibs'
 
-INCLUDEPATH += $$APP_DIR/include \
-               $$PETSC_DIR/include \
-               $$PETSC_DIR/$$PETSC_ARCH/include
+INCLUDEPATH += $$PETSC_INCLUDES
+LIBS += $$PETSC_LIBS
 
-LIBS += -L/path/to/petsc/libs -l_all_needed_petsc_libs
+# 2-Automatic: Use the PKGCONFIG funtionality
+# NOTE: PETSc.pc must be in the pkgconfig path. You might need to adjust PKG_CONFIG_PATH
+CONFIG += link_pkgconfig
+PKGCONFIG += PETSc
 
-QMAKE_CC  = $$PETSC_BINS/mpicc
-QMAKE_CXX = $$PETSC_BINS/mpicxx
+# Set appropriate compiler and its flags
+QMAKE_CC = path/to/mpicc
+QMAKE_CXX = path/to/mpicxx # if this is a cpp project
+QMAKE_LINK = path/to/mpicxx # if this is a cpp project
 
-QMAKE_CFLAGS   += -O3
+QMAKE_CFLAGS   += -O3 # add extra flags here
 QMAKE_CXXFLAGS += -O3
 QMAKE_LFLAGS   += -O3
 
-SOURCES += \
-	$$APP_DIR/src/source1.cpp \
-	$$APP_DIR/src/source2.cpp \
-	$$APP_DIR/src/main.cpp
-HEADERS += \
-	$$APP_DIR/src/source1.h \
-	$$APP_DIR/src/source2.h
+# Add all files that must be compiled
+SOURCES += ex1.c source1.c source2.cpp
+
+HEADERS += source1.h source2.h
+
+# OTHER_FILES are ignored during compilation but will be shown in file panel in Qt Creator
 OTHER_FILES += \
-	$$APP_DIR/src/some_file.cpp \
-	$$APP_DIR/dir/another_file.xyz
+	path/to/resource_file \
+	path/to/another_file
 \end{lstlisting}
 
 In this example, keywords include:
 \begin{tightitemize}
 \item \lstinline{TARGET}: The name of the application executable.
-\item \lstinline{INCLUDEPATH}: Used at compile time to point to required include files. Essentially, it is used as a \trl{ -I \$\$INCLUDEPATH} flag for the compiler. This should include all your application-specific header files and those related to PETSc (which may be found via \trl{make getincludedirs}).
-\item \lstinline{LIBS}: Defines all required external libraries to link with your application. To get PETSc's linking libraries, use \trl{make getlinklibs}.
+\item \lstinline{INCLUDEPATH}: Used at compile time to point to required include files. Essentially, it is used as an \trl{ -I \$\$INCLUDEPATH} flag for the compiler. This should include all application-specific header files and those related to PETSc (which may be found via \trl{make getincludedirs}).
+\item \lstinline{LIBS}: Defines all required external libraries to link with the application. To get PETSc's linking libraries, use \trl{make getlinklibs}.
+\item \lstinline{CONFIG}: Configuration options to be used by \trl{qmake}. Here, the option \lstinline{link_pkgconfig} instructs \trl{qmake} to internally 
+  use \lstinline{pkgconfig} to resolve \lstinline{INCLUDEPATH} and \lstinline{LIBS} variables.
+\item \lstinline{PKGCONFIG}: Name of the configuration file (the \trl{.pc} file -- here \trl{PETSc.pc}) to be passed to \trl{pkgconfig}. Note that for this functionality to work, \trl{PETSc.pc} must be in path which might require adjusting the \lstinline{PKG_CONFIG_PATH} enviroment variable. 
+  For more information see \url{http://doc.qt.io/qtcreator/creator-build-settings.html#build-environment}.
 \item \lstinline{QMAKE_CC} and \lstinline{QMAKE_CXX}: Define which C/C++ compilers use.
+\item \lstinline{QMAKE_LINK}: Defines the proper linker to be used. Relevant if compiling C++ projects.
 \item \lstinline{QMAKE_CFLAGS}, \lstinline{QMAKE_CXXFLAGS} and \lstinline{QMAKE_LFLAGS}: Set the corresponding compile and linking flags.
 \item \lstinline{SOURCES}: Source files to be compiled.
 \item \lstinline{HEADERS}: Header files required by the application. 
-\item \lstinline{OTHER_FILES}: Other files to include (source, header or any other extension). Note that none of the source files placed here are compiled.
+\item \lstinline{OTHER_FILES}: Other files to include (source, header, or any other extension). Note that none of the source files placed here are compiled.
 \end{tightitemize}
 
-There are more options available that one can feed into the \trl{.pro} file; see e.g. \url{http://doc.qt.io/qt-5/qmake-project-files.html}. 
+More options can be included in a \trl{.pro} file; see \url{http://doc.qt.io/qt-5/qmake-project-files.html}. 
 Once the \trl{.pro} file is generated, the user can simply open it via Qt Creator. 
-Upon opening, one has the option to create two different build options, debug and release, and switch between the two easily at any time. 
-For more information on how to use the Qt Creator interface, and other more advanced aspects of the IDE, refer to \url{https://www.qt.io/ide/}
+Upon opening, one has the option to create two different build options, debug and release, and switch between the two. 
+For more information on using the Qt Creator interface and other more advanced aspects of the IDE, refer to \url{https://www.qt.io/ide/}
 
 \section{Visual Studio Users} \sindex{visual studio}
 
