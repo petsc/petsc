@@ -533,7 +533,7 @@ class generateExamples(Petsc):
     """
     if not self.summarize: return
     indent="   "
-    fhname="GenPetscTests_summarize.txt"
+    fhname=os.path.join(self.testroot_dir,'GenPetscTests_summarize.txt')
     fh=open(fhname,"w")
     #print "See ", fhname
     for root in dataDict:
