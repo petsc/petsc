@@ -117,7 +117,7 @@ else
 endif
 #
 # do build/install
-make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR  ${BUILDTARGET} ${INSTALLTARGET} >>& build.log
+${ANALYZER} make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR  ${BUILDTARGET} ${INSTALLTARGET} >>& build.log
 set err=$?
 echo '****************************************************' >>& build.log
 echo "Finished Build on $MACH $PETSC_ARCH `date`" >>& build.log
