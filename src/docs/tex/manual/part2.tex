@@ -8183,21 +8183,21 @@ This information was provided by Mohammad Mirzadeh.
 The Qt Creator IDE is part of the Qt SDK, developed for cross-platform GUI programming using C++. 
 It is available under GPL v3, LGPL v2 and a commercial license and may be obtained, either as a 
 part of Qt SDK or as an stand-alone software, via \url{http://qt.nokia.com/downloads/}.
-It supports automatic makefile generation using cross-platform \texttt{qmake} and \texttt{cmake}
+It supports automatic makefile generation using cross-platform \trl{qmake} and \trl{cmake}
 build systems as well as allowing one to import projects based on existing, possibly hand-written, makefiles.
-Qt Creator has a visual debugger using GDB and LLDB (on Linux and OSX) or Microsoft's
+Qt Creator has a visual debugger using GDB and LLDB (on Linux and OS X) or Microsoft's
 CDB (on Windows) as backends. It also has an interface to Valgrind's ``memcheck'' and ``callgrind''
 tools to detect memory leaks and profile code. It has built-in support for a variety of version
-control systems including git, mercurial, subversion, etc. Finally, Qt Creator comes fully equipped with
+control systems including git, mercurial, and subversion. Finally, Qt Creator comes fully equipped with
 auto-completion, function look-up, and code refactoring tools. This enables one to easily browse source
-files, easily find relevant functions, and refactor them across an entire project.
+files, find relevant functions, and refactor them across an entire project.
 
 \subsection*{Creating a Project}
-When using Qt Creator with \texttt{qmake}, one needs a \texttt{.pro} file. This configuration file
+When using Qt Creator with \trl{qmake}, one needs a \trl{.pro} file. This configuration file
 tells Qt Creator about all build/compile options and locations of source files. One may start with
-a blank \texttt{.pro} file and fill in configuration options as needed. For example:
+a blank \trl{.pro} file and fill in configuration options as needed. For example:
 \begin{lstlisting}
-# This is the name of your application executable
+# The name of the application executable
 TARGET = ex1
 
 # There are two ways to add PETSc functionality
@@ -8213,7 +8213,7 @@ LIBS += $$PETSC_LIBS
 CONFIG += link_pkgconfig
 PKGCONFIG += PETSc
 
-# set appropriate complier and its flags
+# Set appropriate compiler and its flags
 QMAKE_CC = path/to/mpicc
 QMAKE_CXX = path/to/mpicxx # if this is a cpp project
 QMAKE_LINK = path/to/mpicxx # if this is a cpp project
@@ -8222,7 +8222,7 @@ QMAKE_CFLAGS   += -O3 # add extra flags here
 QMAKE_CXXFLAGS += -O3
 QMAKE_LFLAGS   += -O3
 
-# Here we add all files that must be compiled.
+# Add all files that must be compiled
 SOURCES += ex1.c source1.c source2.cpp
 
 HEADERS += source1.h source2.h
@@ -8238,8 +8238,10 @@ In this example, keywords include:
 \item \lstinline{TARGET}: The name of the application executable.
 \item \lstinline{INCLUDEPATH}: Used at compile time to point to required include files. Essentially, it is used as an \trl{ -I \$\$INCLUDEPATH} flag for the compiler. This should include all application-specific header files and those related to PETSc (which may be found via \trl{make getincludedirs}).
 \item \lstinline{LIBS}: Defines all required external libraries to link with the application. To get PETSc's linking libraries, use \trl{make getlinklibs}.
-\item \lstinline{CONFIG}: Configuration options to be used by \texttt{qmake}. Here, the option \texttt{link_pkgconfig} instructs \textt{qmake} to internally use \texttt{pkgconfig} to resolve \lstinline{INCLUDEPATH} and \lstinline{LIBS} variables.
-\item \lstinline{PKGCONFIG}: Name of the configuration file (the \texttt{.pc} file -- here \texttt{PETSc.pc}) to be passed to \texttt{pkgconfig}. Note that for this functionality to work, \texttt{PETSc.pc} must be in path which might require adjusting the \texttt{PKG_CONFIG_PATH} enviroment variable. For mor einformation see \url{http://doc.qt.io/qtcreator/creator-build-settings.html#build-environment}.
+\item \lstinline{CONFIG}: Configuration options to be used by \trl{qmake}. Here, the option \lstinline{link_pkgconfig} instructs \trl{qmake} to internally 
+  use \lstinline{pkgconfig} to resolve \lstinline{INCLUDEPATH} and \lstinline{LIBS} variables.
+\item \lstinline{PKGCONFIG}: Name of the configuration file (the \trl{.pc} file -- here \trl{PETSc.pc}) to be passed to \trl{pkgconfig}. Note that for this functionality to work, \trl{PETSc.pc} must be in path which might require adjusting the \lstinline{PKG_CONFIG_PATH} enviroment variable. 
+  For more information see \url{http://doc.qt.io/qtcreator/creator-build-settings.html#build-environment}.
 \item \lstinline{QMAKE_CC} and \lstinline{QMAKE_CXX}: Define which C/C++ compilers use.
 \item \lstinline{QMAKE_LINK}: Defines the proper linker to be used. Relevant if compiling C++ projects.
 \item \lstinline{QMAKE_CFLAGS}, \lstinline{QMAKE_CXXFLAGS} and \lstinline{QMAKE_LFLAGS}: Set the corresponding compile and linking flags.
@@ -8248,7 +8250,7 @@ In this example, keywords include:
 \item \lstinline{OTHER_FILES}: Other files to include (source, header, or any other extension). Note that none of the source files placed here are compiled.
 \end{tightitemize}
 
-More options can be included in a \trl{.pro} file; see e.g. \url{http://doc.qt.io/qt-5/qmake-project-files.html}. 
+More options can be included in a \trl{.pro} file; see \url{http://doc.qt.io/qt-5/qmake-project-files.html}. 
 Once the \trl{.pro} file is generated, the user can simply open it via Qt Creator. 
 Upon opening, one has the option to create two different build options, debug and release, and switch between the two. 
 For more information on using the Qt Creator interface and other more advanced aspects of the IDE, refer to \url{https://www.qt.io/ide/}
