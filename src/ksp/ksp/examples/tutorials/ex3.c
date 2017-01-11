@@ -22,7 +22,7 @@ T*/
 
 /* Declare user-defined routines */
 extern PetscErrorCode FormElementStiffness(PetscReal,PetscScalar*);
-extern PetscErrorCode FormElementRhs(PetscReal,PetscReal,PetscReal,PetscScalar*);
+extern PetscErrorCode FormElementRhs(PetscScalar,PetscScalar,PetscReal,PetscScalar*);
 
 int main(int argc,char **args)
 {
@@ -37,7 +37,7 @@ int main(int argc,char **args)
   PetscScalar    r[4];        /* element vector */
   PetscReal      h;           /* mesh width */
   PetscReal      norm;        /* norm of solution error */
-  PetscReal      x,y;
+  PetscScalar    x,y;
   PetscErrorCode ierr;
   PetscInt       idx[4],count,*rows,i,m = 5,start,end,its;
 
@@ -193,7 +193,7 @@ PetscErrorCode FormElementStiffness(PetscReal H,PetscScalar *Ke)
   PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------------------- */
-PetscErrorCode FormElementRhs(PetscReal x,PetscReal y,PetscReal H,PetscScalar *r)
+PetscErrorCode FormElementRhs(PetscScalar x,PetscScalar y,PetscReal H,PetscScalar *r)
 {
   PetscFunctionBeginUser;
   r[0] = 0.; r[1] = 0.; r[2] = 0.; r[3] = 0.0;
