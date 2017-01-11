@@ -13,5 +13,5 @@ int main(int argc,char **argv)
   ierr = PetscOptionsClearValue(NULL,"-FOO");CHKERRQ(ierr);
   ierr = PetscOptionsView(NULL,NULL);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

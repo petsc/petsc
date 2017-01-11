@@ -38,7 +38,6 @@ int main(int argc,char **args)
   PetscReal      h;           /* mesh width */
   PetscReal      norm;        /* norm of solution error */
   PetscReal      x,y;
-  PetscScalar    val;
   PetscErrorCode ierr;
   PetscInt       idx[4],count,*rows,i,m = 5,start,end,its;
 
@@ -69,10 +68,8 @@ int main(int argc,char **args)
   /*
      Assemble matrix
   */
-  ierr = FormElementStiffness(h*h,Ke);
+  ierr = FormElementStiffness(h*h,Ke);CHKERRQ(ierr);
   for (i=start; i<end; i++) {
-    /* location of lower left corner of element */
-    x = h*(i % m); y = h*(i/m);
     /* node numbers for the four corners of element */
     idx[0] = (m+1)*(i/m) + (i % m);
     idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
@@ -122,10 +119,9 @@ int main(int argc,char **args)
   count = 2*m; /* left side */
   for (i=2*m+1; i<m*(m+1); i+= m+1) rows[count++] = i;
   for (i=0; i<4*m; i++) {
-    x    = h*(rows[i] % (m+1)); y = h*(rows[i]/(m+1));
-    val  = y;
-    ierr = VecSetValues(u,1,&rows[i],&val,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecSetValues(b,1,&rows[i],&val,INSERT_VALUES);CHKERRQ(ierr);
+    y = h*(rows[i]/(m+1));
+    ierr = VecSetValues(u,1,&rows[i],&y,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = VecSetValues(b,1,&rows[i],&y,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = MatZeroRows(A,4*m,rows,1.0,0,0);CHKERRQ(ierr);
   ierr = PetscFree(rows);CHKERRQ(ierr);
@@ -157,9 +153,8 @@ int main(int argc,char **args)
   /* Check error */
   ierr = VecGetOwnershipRange(ustar,&start,&end);CHKERRQ(ierr);
   for (i=start; i<end; i++) {
-    x    = h*(i % (m+1)); y = h*(i/(m+1));
-    val  = y;
-    ierr = VecSetValues(ustar,1,&i,&val,INSERT_VALUES);CHKERRQ(ierr);
+    y = h*(i/(m+1));
+    ierr = VecSetValues(ustar,1,&i,&y,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(ustar);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(ustar);CHKERRQ(ierr);
