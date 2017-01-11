@@ -13,8 +13,6 @@
 PETSC_INTERN PetscErrorCode MatPtAPSymbolic_AIJ_AIJ_wHYPRE(Mat,Mat,PetscReal,Mat*);
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPtAP_SeqAIJ_SeqAIJ"
 PETSC_INTERN PetscErrorCode MatPtAP_SeqAIJ_SeqAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;

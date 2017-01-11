@@ -5,8 +5,6 @@
 #include <med.h>
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateMedFromFile"
 /*@C
   DMPlexCreateMedFromFile - Create a DMPlex mesh from a (Salome-)Med file.
 

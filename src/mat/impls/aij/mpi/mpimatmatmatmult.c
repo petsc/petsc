@@ -8,8 +8,6 @@
 PETSC_INTERN PetscErrorCode MatTransposeMatMatMultSymbolic_AIJ_AIJ_AIJ_wHYPRE(Mat,Mat,Mat,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatTransposeMatMatMultNumeric_AIJ_AIJ_AIJ_wHYPRE(Mat,Mat,Mat,Mat);
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMatMatMult_Transpose_AIJ_AIJ"
 PETSC_INTERN PetscErrorCode MatMatMatMult_Transpose_AIJ_AIJ(Mat R,Mat A,Mat P,MatReuse scall, PetscReal fill, Mat *RAP)
 {
   Mat            Rt;
@@ -32,8 +30,6 @@ PETSC_INTERN PetscErrorCode MatMatMatMult_Transpose_AIJ_AIJ(Mat R,Mat A,Mat P,Ma
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_MPIAIJ_MatMatMatMult"
 PetscErrorCode MatDestroy_MPIAIJ_MatMatMatMult(Mat A)
 {
   Mat_MPIAIJ        *a            = (Mat_MPIAIJ*)A->data;
