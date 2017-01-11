@@ -110,8 +110,8 @@ langs := c cu cxx F
 concatlang = $(foreach lang, $(langs), $(srcs-$(1).$(lang):%.$(lang)=$(OBJDIR)/%.o))
 srcs.o := $(foreach pkg, $(pkgs), $(call concatlang,$(pkg)))
 testlangs := c cu cxx F F90
-concattestlang = $(foreach lang, $(testlangs), $(testsrcs-$(1).$(lang):%.$(lang)=$(TESTDIR)/%.o))
-testsrcs.o := $(foreach pkg, $(pkgs), $(call concattestlang,$(pkg)))
+concattestlang = $(foreach lang, $(2), $(testsrcs-$(1).$(lang):%.$(lang)=$(TESTDIR)/%.o))
+testsrcs.o := $(foreach pkg, $(pkgs), $(call concattestlang,$(pkg),$(testlangs)))
 
 #foo:
 #	-echo $(testsrcs.o)
@@ -224,10 +224,8 @@ $(TESTDIR)/%f90 : $(TESTDIR)/%f90.o $(libpetscall)
 $(TESTDIR)/% : $(TESTDIR)/%.o $(libpetscall)
 	$(call quiet,CLINKER) -o $@ $< $(PETSC_LIB)
 
-# Fortran source files need petsc*.mod, which isn't explicitly managed
-# in the makefile.  This prerequisite is excessive, but it makes sense
-# to ensure that the library builds cleanly first.
-$(testsrcs.o) : $(libpetscall)
+# Fortran source files need petsc*.mod, which isn't explicitly managed in the makefile.
+$(foreach pkg, $(pkgs), $(call concattestlang,$(pkg),F F90)) : $(libpetscall)
 
 # Testing convenience targets
 .PHONY: alltest test pre-clean
