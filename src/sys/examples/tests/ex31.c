@@ -42,7 +42,7 @@ int main(int argc,char **argv)
 
    test:
       requires: !windows_compilers
-      filter: sed "s?${PWD}??g" |  sed "s?${HOME}??g"
+      filter: sed "s?$(pwd -P)??g" |  sed "s?${HOME}??g"
 
    test:
       suffix: 2
