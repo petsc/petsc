@@ -252,8 +252,7 @@ $(TESTDIR)/counts/%.counts :
 # doesn't guarantee an exploration order for the graph.  Only recursive
 # if there is something to be done.
 alltest-rm := $(foreach pkg, $(pkgs), $(foreach lang, $(testlangs), test-rm-$(pkg).$(lang)))
-$(alltest-rm) : test-rm-% :
-	@$(if $($(@:test-rm-%=test-%)),$(MAKE) -f gmakefile --no-print-directory quiet_HELP= $(@:test-rm-%=test-%))
+$(alltest-rm) : test-rm-% : test-%
 	@$(RM) $(addprefix $(TESTDIR)/,$(basename $($(@:test-rm-%=testsrcs-%))))
 
 # Remove intermediate .o files
