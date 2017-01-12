@@ -1220,6 +1220,7 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ_All(Mat A,MatGetSubMatrixOption flag,MatRe
   }
   PetscFunctionReturn(0);
 }
+
 PetscErrorCode MatDestroy_MPIAIJ_MatGetSubmatrices(Mat C)
 {
   PetscErrorCode ierr;
@@ -2007,8 +2008,8 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_SingleIS(Mat C,PetscInt ismax,const IS i
 PetscErrorCode MatGetSubMatrices_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[])
 {
   PetscErrorCode ierr;
-  PetscInt       nmax,nstages_local,nstages,i,pos,max_no,nrow,ncol;
-  PetscBool      rowflag,colflag,wantallmatrix=PETSC_FALSE,twantallmatrix,*allcolumns;
+  PetscInt       nmax,nstages,i,pos,max_no,nrow,ncol,in[2],out[2];
+  PetscBool      rowflag,colflag,wantallmatrix=PETSC_FALSE,*allcolumns;
 
   PetscFunctionBegin;
 #if 0
@@ -2030,8 +2031,24 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[],co
       ierr = PetscOptionsGetBool(((PetscObject)C)->options,((PetscObject)C)->prefix,"-use_fast_submatrix",&wantallmatrix,NULL);CHKERRQ(ierr);
     }
   }
-  ierr = MPIU_Allreduce(&wantallmatrix,&twantallmatrix,1,MPIU_BOOL,MPI_MIN,PetscObjectComm((PetscObject)C));CHKERRQ(ierr);
-  if (twantallmatrix) {
+
+  /* Determine the number of stages through which submatrices are done
+     Each stage will extract nmax submatrices.
+     nmax is determined by the matrix column dimension.
+     If the original matrix has 20M columns, only one submatrix per stage is allowed, etc.
+  */
+  nmax = 20*1000000 / (C->cmap->N * sizeof(PetscInt));
+  if (!nmax) nmax = 1;
+  nstages = ismax/nmax + ((ismax % nmax) ? 1 : 0); /* local nstages */
+
+  /* Collect global wantallmatrix and nstages */
+  in[0] = -1*wantallmatrix;
+  in[1] = nstages;
+  ierr = MPIU_Allreduce(in,out,2,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)C));CHKERRQ(ierr);
+  wantallmatrix = (PetscBool)(-out[0]);
+  nstages       = out[1]; /* Make sure every processor loops through the global nstages */
+
+  if (wantallmatrix) {
     ierr = MatGetSubMatrix_MPIAIJ_All(C,MAT_GET_VALUES,scall,submat);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -2054,20 +2071,6 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[],co
       allcolumns[i] = PETSC_FALSE;
     }
   }
-
-  /* Determine the number of stages through which submatrices are done */
-  nmax = 20*1000000 / (C->cmap->N * sizeof(PetscInt));
-
-  /*
-     Each stage will extract nmax submatrices.
-     nmax is determined by the matrix column dimension.
-     If the original matrix has 20M columns, only one submatrix per stage is allowed, etc.
-  */
-  if (!nmax) nmax = 1;
-  nstages_local = ismax/nmax + ((ismax % nmax) ? 1 : 0);
-
-  /* Make sure every processor loops through the nstages */
-  ierr = MPIU_Allreduce(&nstages_local,&nstages,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)C));CHKERRQ(ierr);
 
   for (i=0,pos=0; i<nstages; i++) {
     if (pos+nmax <= ismax) max_no = nmax;
