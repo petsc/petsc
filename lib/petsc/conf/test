@@ -358,7 +358,7 @@ allgtest-tap:
 	-@cd ${PETSC_DIR}; ${OMAKE} -f gmakefile -j ${MAKE_NP} test V=${V} | grep -v '^[[:space:]]*[CF]\(LINKER\|C\)'
 
 allgtest:
-	-@cd ${PETSC_DIR}; ${OMAKE} -f gmakefile -j ${MAKE_NP} test V=${V} | grep -v '^\(ok [^#]*\(# SKIP\|$$\)\|[[:space:]]*[CF]\(LINKER\|C\)\)'
+	-@cd ${PETSC_DIR}; ${OMAKE} -f gmakefile -j ${MAKE_NP} test V=${V} | egrep -v '^(ok [^#]*(# SKIP|$$)| *[CF](LINKER|C))'
 
 alltest:
 	-@date
