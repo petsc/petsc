@@ -1322,7 +1322,7 @@ runex49_8:
 
 runex50:
 	-@${MPIEXEC} -n 1 ./ex50 -pc_type mg -pc_mg_type full -ksp_type cg -ksp_monitor_short -da_refine 3  -mg_coarse_pc_type svd -ksp_view  > ex50.tmp 2>&1;         \
-        ${DIFF} output/ex50.out ex50.tmp || printf "${PWD}\nPossible problem with ex50, diffs above\n=========================================\n"; \
+        ${DIFF} output/ex50_1.out ex50.tmp || printf "${PWD}\nPossible problem with ex50, diffs above\n=========================================\n"; \
         ${RM} -f ex50.tmp
 
 runex50_2:
@@ -1424,7 +1424,7 @@ runex54f:
 
 runex55_geo:
 	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type geo -use_coordinates -ksp_monitor_short -mg_levels_esteig_ksp_type cg -ksp_type cg -ksp_norm_type unpreconditioned > ex.tmp 2>&1;	  \
-         ${DIFF} output/ex55_0.out ex.tmp || printf "${PWD}\nPossible problem with ex55_0.out, diffs above\n=========================================\n"; \
+         ${DIFF} output/ex55_0.out ex.tmp || printf "${PWD}\nPossible problem with ex55_0, diffs above\n=========================================\n"; \
         ${RM} -f ex.tmp
 
 runex55_hypre:
@@ -1434,44 +1434,44 @@ runex55_hypre:
 
 runex55:
 	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -use_coordinates -ksp_converged_reason -mg_levels_esteig_ksp_type cg -ksp_rtol 1.e-3 -ksp_monitor_short > ex.tmp 2>&1; \
-         ${DIFF} output/ex55_sa.out ex.tmp || printf "${PWD}\nPossible problem with ex55_sa.out, diffs above\n=========================================\n"; \
+         ${DIFF} output/ex55_sa.out ex.tmp || printf "${PWD}\nPossible problem with ex55_sa, diffs above\n=========================================\n"; \
         ${RM} -f ex.tmp
 
 runex55_Classical:
 	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type classical -mg_levels_ksp_max_it 5 -ksp_converged_reason -mg_levels_esteig_ksp_type cg > ex.tmp 2>&1; \
-         ${DIFF} output/ex55_classical.out ex.tmp || printf "${PWD}\nPossible problem with ex55_classical.out, diffs above\n=========================================\n"; \
+         ${DIFF} output/ex55_classical.out ex.tmp || printf "${PWD}\nPossible problem with ex55_classical, diffs above\n=========================================\n"; \
         ${RM} -f ex.tmp
 
 runex55_NC:
 	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -ksp_converged_reason -mg_levels_esteig_ksp_type cg > ex.tmp 2>&1; \
-         ${DIFF} output/ex55_NC.out ex.tmp || printf "${PWD}\nPossible problem with ex55_NC.out, diffs above\n======================================\n"; \
+         ${DIFF} output/ex55_NC.out ex.tmp || printf "${PWD}\nPossible problem with ex55_NC, diffs above\n======================================\n"; \
         ${RM} -f ex.tmp
 
 runex56:
 	-@${MPIEXEC} -n 8 ./ex56 -ne 13 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_agg_nsmooths 1 -pc_gamg_reuse_interpolation true -two_solves -ksp_converged_reason -ksp_view -use_mat_nearnullspace -mg_levels_esteig_ksp_type cg -mg_levels_esteig_ksp_max_it 10 -pc_gamg_square_graph 1 -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.2,0,1.05 -gamg_est_ksp_type cg -gamg_est_ksp_max_it 10 -pc_gamg_asm_use_agg true -mg_levels_sub_pc_type lu -mg_levels_pc_asm_overlap 0 -pc_gamg_threshold -0.01 -pc_gamg_coarse_eq_limit 200 -pc_gamg_process_eq_limit 30 -pc_gamg_repartition false -pc_mg_cycle_type v -pc_gamg_use_parallel_coarse_grid_solver -mg_coarse_pc_type jacobi -mg_coarse_ksp_type cg -ksp_monitor_short | grep -v variant > ex.tmp 2>&1; \
-         ${DIFF} output/ex56_0.out ex.tmp || printf "${PWD}\nPossible problem with ex56.out, diffs above \n=========================================\n"; \
+         ${DIFF} output/ex56_1.out ex.tmp || printf "${PWD}\nPossible problem with ex56, diffs above \n=========================================\n"; \
          ${RM} -f ex.tmp
 
 runex56_latebs:
 	-@${MPIEXEC} -n 8 ./ex56 -test_late_bs 0 -ne 13 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_agg_nsmooths 1 -pc_gamg_reuse_interpolation true -two_solves -ksp_converged_reason -ksp_view -use_mat_nearnullspace -mg_levels_esteig_ksp_type cg -mg_levels_esteig_ksp_max_it 10 -pc_gamg_square_graph 1 -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.2,0,1.05 -gamg_est_ksp_type cg -gamg_est_ksp_max_it 10 -pc_gamg_asm_use_agg true -mg_levels_sub_pc_type lu -mg_levels_pc_asm_overlap 0 -pc_gamg_threshold -0.01 -pc_gamg_coarse_eq_limit 200 -pc_gamg_process_eq_limit 30 -pc_gamg_repartition false -pc_mg_cycle_type v -pc_gamg_use_parallel_coarse_grid_solver -mg_coarse_pc_type jacobi -mg_coarse_ksp_type cg -ksp_monitor_short -ksp_view | grep -v variant > ex.tmp 2>&1; \
 	 ${MPIEXEC} -n 8 ./ex56 -test_late_bs -ne 13 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_agg_nsmooths 1 -pc_gamg_reuse_interpolation true -two_solves -ksp_converged_reason -ksp_view -use_mat_nearnullspace -mg_levels_esteig_ksp_type cg -mg_levels_esteig_ksp_max_it 10 -pc_gamg_square_graph 1 -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.2,0,1.05 -gamg_est_ksp_type cg -gamg_est_ksp_max_it 10 -pc_gamg_asm_use_agg true -mg_levels_sub_pc_type lu -mg_levels_pc_asm_overlap 0 -pc_gamg_threshold -0.01 -pc_gamg_coarse_eq_limit 200 -pc_gamg_process_eq_limit 30 -pc_gamg_repartition false -pc_mg_cycle_type v -pc_gamg_use_parallel_coarse_grid_solver -mg_coarse_pc_type jacobi -mg_coarse_ksp_type cg -ksp_monitor_short -ksp_view | grep -v variant > exlate.tmp 2>&1; \
-         ${DIFF} exlate.tmp ex.tmp || printf "${PWD}\nPossible problem with ex56_latebs.out, diffs above \n=========================================\n"; \
+         ${DIFF} exlate.tmp ex.tmp || printf "${PWD}\nPossible problem with ex56_latebs, diffs above \n=========================================\n"; \
          ${RM} -f ex.tmp exlate.tmp
 
 
 runex56_ml:
 	-@${MPIEXEC} -n 8 ./ex56 -ne 9 -alpha 1.e-3 -ksp_type cg -pc_type ml -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type sor -ksp_monitor_short -mg_levels_esteig_ksp_type cg > ex.tmp 2>&1;	\
-         ${DIFF} output/ex56_ml.out ex.tmp || printf "${PWD}\nPossible problem with ex56_ml.out, diffs above\n=========================================\n"; \
+         ${DIFF} output/ex56_ml.out ex.tmp || printf "${PWD}\nPossible problem with ex56_ml, diffs above\n=========================================\n"; \
         ${RM} -f ex.tmp
 
 runex56_nns:
 	-@${MPIEXEC} -n 1 ./ex56 -ne 9 -alpha 1.e-3 -ksp_converged_reason -ksp_type cg -ksp_max_it 50 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 1000 -mg_levels_ksp_type chebyshev -mg_levels_pc_type sor -pc_gamg_reuse_interpolation true -two_solves -use_mat_nearnullspace -mg_levels_esteig_ksp_type cg > ex.tmp 2>&1;	\
-         ${DIFF} output/ex56_nns.out ex.tmp || printf "${PWD}\nPossible problem with ex56_nns.out, diffs above\n=========================================\n"; \
+         ${DIFF} output/ex56_nns.out ex.tmp || printf "${PWD}\nPossible problem with ex56_nns, diffs above\n=========================================\n"; \
          ${RM} -f ex.tmp
 
 runex56_nns_telescope:
 	-@${MPIEXEC} -n 2 ./ex56 -use_mat_nearnullspace -ksp_monitor_short -pc_type telescope -pc_telescope_reduction_factor 2 -telescope_pc_type gamg > ex.tmp 2>&1;	\
-         ${DIFF} output/ex56_nns_telescope.out ex.tmp || printf "${PWD}\nPossible problem with ex56_nns_telescope.out, diffs above\n=========================================\n"; \
+         ${DIFF} output/ex56_nns_telescope.out ex.tmp || printf "${PWD}\nPossible problem with ex56_nns_telescope, diffs above\n=========================================\n"; \
          ${RM} -f ex.tmp
 
 runex58:
