@@ -388,6 +388,8 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
 
       ierr = KSPChebyshevComputeExtremeEigenvalues_Private(cheb->kspest,&min,&max);CHKERRQ(ierr);
 
+      cheb->emin_computed = min;
+      cheb->emax_computed = max;
       cheb->emin = cheb->tform[0]*min + cheb->tform[1]*max;
       cheb->emax = cheb->tform[2]*min + cheb->tform[3]*max;
 
@@ -512,8 +514,9 @@ static  PetscErrorCode KSPView_Chebyshev(KSP ksp,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Chebyshev: eigenvalue estimates:  min = %g, max = %g\n",(double)cheb->emin,(double)cheb->emax);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Chebyshev: eigenvalue estimates used:  min = %g, max = %g\n",(double)cheb->emin,(double)cheb->emax);CHKERRQ(ierr);
     if (cheb->kspest) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Chebyshev: eigenvalues estimate via %s min %g, max %g\n",((PetscObject)(cheb->kspest))->type_name,(double)cheb->emin_computed,(double)cheb->emax_computed);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  Chebyshev: eigenvalues estimated using %s with translations  [%g %g; %g %g]\n",((PetscObject) cheb->kspest)->type_name,(double)cheb->tform[0],(double)cheb->tform[1],(double)cheb->tform[2],(double)cheb->tform[3]);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = KSPView(cheb->kspest,viewer);CHKERRQ(ierr);

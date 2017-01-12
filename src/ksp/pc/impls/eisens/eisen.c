@@ -372,6 +372,13 @@ PetscErrorCode  PCEisenstatGetNoDiagonalScaling(PC pc,PetscBool *flg)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PCPreSolveChangeRHS_Eisenstat(PC pc, PetscBool* change)
+{
+  PetscFunctionBegin;
+  *change = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
 /* --------------------------------------------------------------------*/
 
 /*MC
@@ -423,5 +430,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_Eisenstat(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCEisenstatSetNoDiagonalScaling_C",PCEisenstatSetNoDiagonalScaling_Eisenstat);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCEisenstatGetOmega_C",PCEisenstatGetOmega_Eisenstat);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCEisenstatGetNoDiagonalScaling_C",PCEisenstatGetNoDiagonalScaling_Eisenstat);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPreSolveChangeRHS_C",PCPreSolveChangeRHS_Eisenstat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
