@@ -2715,7 +2715,6 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
 #endif
               if (tcol) {
                 *mat_j++ = tcol - 1;
-                //if (rank==1) printf("%d - col %d\n",row,tcol - 1);
                 *mat_a++ = vals[k];
                 ilen_row++;
               }
@@ -2783,7 +2782,6 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
 #endif
               if (tcol) {
                 *mat_j++ = tcol - 1;
-                //if (rank==1) printf("%d - off-proc col %d\n",row,tcol - 1);
                 *mat_a++ = rbuf4_i[ct2];
                 ilen++;
               }
@@ -2797,32 +2795,6 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
           }
           imat_ilen[row] = ilen;
         }
-      }
-    }
-  }
-
-  /* sort the rows -- do we need this? */
-  {
-    PetscInt    *imat_ilen,*imat_j,*imat_i;
-    PetscScalar *imat_a;
-
-    for (i=0; i<ismax; i++) {
-      subc      = (Mat_SeqAIJ*)submats[i]->data;
-      imat_j    = subc->j;
-      imat_i    = subc->i;
-      imat_a    = subc->a;
-      imat_ilen = subc->ilen;
-
-      if (allcolumns[i]) continue;
-      jmax = nrow[i];
-      for (j=0; j<jmax; j++) {
-        PetscInt ilen;
-
-        mat_i = imat_i[j];
-        mat_a = imat_a + mat_i;
-        mat_j = imat_j + mat_i;
-        ilen  = imat_ilen[j];
-        ierr  = PetscSortIntWithScalarArray(ilen,mat_j,mat_a);CHKERRQ(ierr);
       }
     }
   }
@@ -2864,7 +2836,6 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
 
   ierr = PetscFree(sbuf_aa[0]);CHKERRQ(ierr);
   ierr = PetscFree(sbuf_aa);CHKERRQ(ierr);
-
   ierr = PetscFree5(irow,icol,nrow,ncol,issorted);CHKERRQ(ierr);
 
   for (i=0; i<nrqs; ++i) {
