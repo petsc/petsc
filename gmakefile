@@ -232,10 +232,10 @@ $(foreach pkg, $(pkgs), $(call concattestlang,$(pkg),F F90)) : $(libpetscall)
 test: pre-clean report_tests
 pre-clean:
 	@$(RM) -r $(TESTDIR)/counts
-.PHONY: $(foreach pkg, $(pkgs), test-$(pkg) $(foreach lang, $(testlangs), test-$(pkg)-$(lang) test-rm-$(pkg).$(lang)))
+.PHONY: $(foreach pkg, $(pkgs), test-$(pkg) $(foreach lang, $(testlangs), test-$(pkg).$(lang) test-rm-$(pkg).$(lang)))
 testpkgs := $(foreach pkg, $(pkgs), test-$(pkg))
 # Targets to run tests in test-$pkg.$lang and delete the executables, language by language
-$(testpkgs) : test-% : $(foreach lang, $(testlangs), test-%-$(lang) test-rm-%.$(lang))
+$(testpkgs) : test-% : $(foreach lang, $(testlangs), test-rm-%.$(lang))
 # List of raw test run targets
 alltesttargets := $(foreach tp, $(testpkgs), $(foreach lang, $(testlangs), $($(tp).$(lang))))
 
@@ -246,8 +246,14 @@ $(alltesttargets) : % : $(TESTDIR)/counts/%.counts
 $(TESTDIR)/counts/%.counts :
 	@$< $(TESTFLAGS)
 
-allrm := $(foreach pkg, $(pkgs), $(foreach lang, $(testlangs), test-rm-$(pkg).$(lang)))
-$(allrm) : test-rm-% :
+# Targets to run tests and remove executables, by package-lang pairs.
+# Run the tests in each batch using recursive invocation of make because
+# we need all of them to complete before removing the executables.  Make
+# doesn't guarantee an exploration order for the graph.  Only recursive
+# if there is something to be done.
+alltest-rm := $(foreach pkg, $(pkgs), $(foreach lang, $(testlangs), test-rm-$(pkg).$(lang)))
+$(alltest-rm) : test-rm-% :
+	@$(if $($(@:test-rm-%=test-%)),$(MAKE) -f gmakefile --no-print-directory quiet_HELP= $(@:test-rm-%=test-%))
 	@$(RM) $(addprefix $(TESTDIR)/,$(basename $($(@:test-rm-%=testsrcs-%))))
 
 # Remove intermediate .o files
