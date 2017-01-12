@@ -58,7 +58,7 @@ petscconf      := $(PETSC_ARCH)/include/petscconf.h
 petscvariables := $(PETSC_ARCH)/lib/petsc/conf/petscvariables
 generatedtest      := $(PETSC_ARCH)/lib/petsc/conf/testfiles
 
-all : $(generated) $(libpetscall) 
+all : $(generated) $(libpetscall)
 
 .SECONDEXPANSION:		# to expand $$(@D)/.DIR
 
@@ -112,9 +112,6 @@ srcs.o := $(foreach pkg, $(pkgs), $(call concatlang,$(pkg)))
 testlangs := c cu cxx F F90
 concattestlang = $(foreach lang, $(2), $(testsrcs-$(1).$(lang):%.$(lang)=$(TESTDIR)/%.o))
 testsrcs.o := $(foreach pkg, $(pkgs), $(call concattestlang,$(pkg),$(testlangs)))
-
-#foo:
-#	-echo $(testsrcs.o)
 
 define SHARED_RECIPE_DLL
   @$(RM) $@ dllcmd.${PETSC_ARCH}
