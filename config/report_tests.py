@@ -8,7 +8,11 @@ Quick script for parsing the output of the test system and summarizing the resul
 def summarize_results(directory):
   ''' Loop over all of the results files and summarize the results'''
   startdir=os.path.realpath(os.path.curdir)
-  os.chdir(directory)
+  try:
+    os.chdir(directory)
+  except OSError:
+    print('# No tests run')
+    return
   summary={'total':0,'success':0,'failed':0,'failures':'','todo':0,'skip':0}
   for cfile in glob.glob('*.counts'):
     sh=open(cfile,"r"); fileStr=sh.read(); sh.close()
@@ -52,12 +56,7 @@ def main():
       parser.print_usage()
       return
 
-    directory=options.directory
-    if not os.path.isdir(directory):
-      print directory+' is not a directory'
-      return
-
-    summarize_results(directory)
+    summarize_results(options.directory)
 
 if __name__ == "__main__":
         main()
