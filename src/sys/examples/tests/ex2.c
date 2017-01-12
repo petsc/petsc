@@ -1,10 +1,6 @@
 
 static char help[] = "Tests the signal handler.\n";
 
-/*T
-   requires: x
-T*/
-
 #include <petscsys.h>
 
 #undef __FUNCT__

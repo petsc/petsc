@@ -1,10 +1,6 @@
 
 static char help[] = "Demonstrates PETSc error handlers.\n";
 
-/*T
-   requires: x
-T*/
-
 #include <petscsys.h>
 
 int CreateError(int n)

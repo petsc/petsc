@@ -8,7 +8,6 @@ static char help[] = "Synchronized printing.\n\n";
    Concepts: printf^synchronized
    Concepts: printf^in parallel
    Processors: n
-   requires: x
 T*/
 
 
@@ -84,5 +83,6 @@ int main(int argc,char **argv)
 /*TEST
 
    test:
+      requires: x
 
 TEST*/

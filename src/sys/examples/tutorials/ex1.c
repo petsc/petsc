@@ -5,7 +5,6 @@ static char help[] = "Introductory example that illustrates printing.\n\n";
    Concepts: introduction to PETSc;
    Concepts: printing^in parallel
    Processors: n
-   requires: x
 T*/
 
 
@@ -71,5 +70,6 @@ int main(int argc,char **argv)
 /*TEST
 
    test:
+      requires: x
 
 TEST*/

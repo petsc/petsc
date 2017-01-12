@@ -1,7 +1,4 @@
 static char help[] = "Example for PetscOptionsInsertFileYAML\n";
-/*T
-   requires: yaml
-T*/
 
 #include <petscsys.h>
 #include <petscviewer.h>
@@ -30,6 +27,7 @@ int main(int argc,char **argv)
 
    test:
       suffix: 1
+      requires: yaml
       args: -f petsc.yml
       filter:  grep -v saws_port_auto_select
       localrunfiles: petsc.yml

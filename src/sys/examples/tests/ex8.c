@@ -208,6 +208,7 @@ int main(int argc,char **argv)
 
    test:
       suffix: redscatter
+      requires: mpi_reduce_scatter_block
       nsize: 4
       args: -verbose -build_twosided redscatter
       output_file: output/ex8_1.out

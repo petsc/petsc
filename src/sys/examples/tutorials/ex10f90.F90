@@ -1,7 +1,4 @@
       program ex10f90
-!/*T
-!   requires: yaml
-!T*/
 
 #include "petsc/finclude/petsc.h"
       use petsc
@@ -31,6 +28,7 @@
 !
 !   test:
 !      suffix: 1
+!      requires: yaml
 !      args: -f petsc.yml
 !      filter:   grep -v saws_port_auto_select
 !      localrunfiles: petsc.yml

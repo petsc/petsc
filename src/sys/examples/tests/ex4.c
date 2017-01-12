@@ -2,10 +2,6 @@
 #define PETSC_USE_CXX_COMPLEX_FLOAT_WORKAROUND 1
 #endif
 
-/*T
-   requires: complex
-T*/
-
 #include <petscsys.h>
 
 static char help[] = "Test PetscComplex binary operators.\n";
@@ -45,6 +41,6 @@ int main(int argc,char **argv)
 /*TEST
 
    test:
- 
+      requires: complex
 
 TEST*/
