@@ -12,7 +12,6 @@ codes.\n\n";
    Concepts: PetscLog^activating/deactivating events for profiling
    Concepts: profiling^activating/deactivating events
    Processors: n
-   requires: x
 T*/
 
 
