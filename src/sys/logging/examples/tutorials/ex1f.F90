@@ -248,4 +248,3 @@
       call PetscFinalize(ierr)
 
       end program SchoolDay
-

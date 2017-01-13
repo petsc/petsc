@@ -2,6 +2,7 @@
 !  Simple PETSc Program to test setting error handlers from Fortran
 !
       subroutine GenerateErr(line,ierr)
+
 #include <petsc/finclude/petscsys.h>
       use petscsysdef
       PetscErrorCode  ierr
@@ -52,3 +53,12 @@
 
       call PetscFinalize(ierr)
       end
+
+!
+!/*TEST
+!
+!     test:
+!     filter: egrep  "(PETSC ERROR|My error handler)" | sort -b
+!     filter_output:   sort -b
+!
+!TEST*/

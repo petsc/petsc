@@ -118,10 +118,6 @@ ex25: ex25.o chkopts
 	-${CLINKER} -o ex25 ex25.o  ${PETSC_VEC_LIB}
 	${RM} -f ex25.o
 
-ex26: ex26.o chkopts
-	-${CLINKER} -o ex26 ex26.o  ${PETSC_VEC_LIB}
-	${RM} -f ex26.o
-
 ex27: ex27.o chkopts
 	-${CLINKER} -o ex27 ex27.o  ${PETSC_VEC_LIB}
 	${RM} -f ex27.o
@@ -384,11 +380,6 @@ runex25:
 	   if (${DIFF} output/ex25_1.out ex25_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex25_1, diffs above\n=========================================\n"; fi;\
 	   ${RM} -f ex25_1.tmp
-runex26:
-	-@${MPIEXEC} -n 4 ./ex26 > ex26_1.tmp 2>&1;\
-	   if (${DIFF} output/ex26_1.out ex26_1.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex26_1, diffs above\n=========================================\n"; fi;\
-	   ${RM} -f ex26_1.tmp
 runex28:
 	-@${MPIEXEC} -n 3 ./ex28
 runex28_2:

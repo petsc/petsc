@@ -202,7 +202,7 @@
       call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-par',user%lambda,flg,ierr);CHKERRQ(ierr)
       if (user%lambda .ge. lambda_max .or. user%lambda .le. lambda_min) then
          if (user%rank .eq. 0) write(6,*) 'Lambda is out of range'
-         SETERRQ(PETSC_COMM_SELF,1,' ',ierr)
+         SETERRQ(PETSC_COMM_SELF,1,' ')
       endif
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

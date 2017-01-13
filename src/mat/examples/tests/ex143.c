@@ -25,10 +25,6 @@ int main(int argc,char **args)
   PetscBool      view=PETSC_FALSE,use_interface=PETSC_TRUE;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-#if !defined(PETSC_USE_COMPLEX)
-  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires complex numbers");
-#endif
-
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "FFTW Options", "ex143");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-vec_view draw", "View the vectors", "ex143", view, &view, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-use_FFTW_interface", "Use PETSc-FFTW interface", "ex143",use_interface, &use_interface, NULL);CHKERRQ(ierr);

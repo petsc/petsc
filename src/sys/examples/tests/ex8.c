@@ -172,3 +172,37 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+
+
+/*TEST
+
+   test:
+      nsize: 4
+      args: -verbose -build_twosided allreduce
+
+   test:
+      suffix: f
+      nsize: 4
+      args: -verbose -build_twosided_f -build_twosided allreduce
+      output_file: output/ex8_1.out
+
+   test:
+      suffix: f_ibarrier
+      nsize: 4
+      args: -verbose -build_twosided_f -build_twosided ibarrier
+      output_file: output/ex8_1.out
+
+   test:
+      suffix: ibarrier
+      nsize: 4
+      args: -verbose -build_twosided ibarrier
+      output_file: output/ex8_1.out
+
+   test:
+      suffix: redscatter
+      requires: mpi_reduce_scatter_block
+      nsize: 4
+      args: -verbose -build_twosided redscatter
+      output_file: output/ex8_1.out
+
+TEST*/

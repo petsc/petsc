@@ -526,12 +526,6 @@ testex5f90t: ex5f90t.PETSc
            cat ex5f90t_1.tmp; fi;  \
          ${RM} -f ex5f90t_1.tmp ;\
          ${MAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ex5f90t.rm; fi
-runex7:
-	-@${MPIEXEC} -n 1 ./ex7 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex7_1.tmp 2>&1; \
-	   if (${DIFF} output/ex7_1.out ex7_1.tmp) then true; \
-           else  printf "${PWD}\nPossible problem with ex7_1, diffs above\n=========================================\n"; fi; \
-           ${RM} -f ex7_1.tmp
-
 runex9:
 	-@${MPIEXEC} -n 2 ./ex9 -da_refine 1 -snes_monitor_short -snes_type vinewtonrsls  > ex9_1.tmp 2>&1; \
            ${DIFF} output/ex9_1.out ex9_1.tmp || printf  "${PWD}\nPossible problem with ex9_1, diffs above\n=========================================\n"; \

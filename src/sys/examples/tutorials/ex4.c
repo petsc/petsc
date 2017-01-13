@@ -63,3 +63,14 @@ int main(int argc, char *argv[])
   ierr = MPI_Finalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      nsize: 5
+      args: -options_left no
+      filter: sort -b | grep -v saws_port_auto_selectcd
+      filter_output: sort -b
+
+TEST*/

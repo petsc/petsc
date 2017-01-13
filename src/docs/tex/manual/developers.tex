@@ -1170,6 +1170,563 @@ The parallel dense matrices are partitioned by rows across the
 processors, so that each local rectangular submatrix is stored in the
 dense format described above.
 
+
+\chapter{PETSc Testing System}
+  \label{petsc-testing-system}
+
+
+The PETSc test system consists of:
+%
+\begin{quote}
+\newcounter{listcnt0}
+\begin{list}{\arabic{listcnt0}.}
+{
+\usecounter{listcnt0}
+\setlength{\rightmargin}{\leftmargin}
+}
+
+\item A language contained within the source files that describes the
+tests to be run
+
+\item The \emph{test generator} (\lstinline{config/gmakegentest.py}) that at the
+\lstinline{make} step parses the source files and generates the makefiles
+and shell scripts that compose:
+
+\item The \emph{petsc test harness}: a harness consisting of makefile and
+shell scripts that runs the executables with several
+logging and reporting features.
+\end{list}
+
+\end{quote}
+
+
+\section{PETSc Test description language%
+  \label{petsc-test-description-language}%
+}
+
+PETSc tests and tutorials contain within their file a simple language to
+describe tests and subtests required to run executables associated with
+compilation of that file.  The general skeleton of the file is:
+%
+\begin{lstlisting}
+      static char help[] = "A simple MOAB example\n\
+
+      /*T
+         Concepts: Demonstrate MOAB bindings for DM
+         requires: moab
+      T*/
+      
+      ...
+      <source code>
+      ...
+
+      /*TESTS
+         test:
+           suffix: 1
+           requires: !complex
+         test:
+           suffix: 2
+           args: -debug -fields v1,v2,v3 
+      TESTS*/
+
+\end{lstlisting}
+
+For our language, a \emph{test} is associated with a shell script and
+makefile target.  A \emph{subtest} is a command invoked within the test
+script.  A typical test will have two subtests: one to execute the
+executable and one to compare the output with the \emph{expected results}.
+For example:
+%
+\begin{lstlisting}
+      mpiexec -n 1 ../ex1 1> ex1.tmp 2> ex1.err
+      diff ex1.tmp output/ex1.out 1> diff-ex1.tmp 2> diff-ex1.err
+\end{lstlisting}
+
+In practice, we want to do various logging and counting by the test
+harness, but this is explained further below.  The input language
+supports a simple, yet flexible, tests control and we begin by
+describing this language.
+
+
+\subsection{Runtime language options%
+  \label{runtime-language-options}%
+}
+
+At the end of each test, a marked comment block that uses YAML is
+inserted that describes the test to be run.  The elements of the
+test are done with a set of supported key words that sets up the test.
+%
+\begin{description}
+\item[{The goals of the language are to:}] \leavevmode \setcounter{listcnt0}{0}
+\begin{list}{\arabic{listcnt0}.}
+{
+\usecounter{listcnt0}
+\setlength{\rightmargin}{\leftmargin}
+}
+
+\item Be as minimal as possible with the simplest test requiring only one
+keyword
+
+\item Be independent of the filename such that a file can be renamed
+without rewriting the tests
+
+\item Be intuitive
+\end{list}
+
+\end{description}
+
+To enable the second bullet, the \emph{basestring} of the filename is defined
+as the filename without the extention; i.e., if the filename is \lstinline{ex1.c}
+then \lstinline{basestring=ex1}.f
+
+\noindent
+With this background, these keywords are are:
+
+\begin{itemize}
+
+  \item[] \textbf{test}: (\emph{Required})
+    \begin{itemize}
+
+      \item[] This is the top level keyword for the tests.  All other are
+    subsets of this keyword
+
+    \end{itemize}
+
+  \item[]  \textbf{suffix}: (\emph{Optional}; \emph{Default:} \lstinline{suffix=''})
+    \begin{itemize}
+
+      \item The testname is given by: \texttt{testname=`run'+basestring} if suffix is set to an empty string, and by \texttt{ testname=`run'+basestring+`\_'+suffix}
+
+
+      \item This can only be specified for top level test nodes
+
+     \end{itemize}
+
+
+   \item[]  \textbf{output\_file}: (\emph{Optional}; \emph{Default:} 
+                 \lstinline{output_file=testname+`.out'})
+      \begin{itemize}
+
+      \item The output of the test is to be compared to an \emph{expected result}
+      whose name is given by output\_file.
+
+      \item This file is described relative to the source directory of the
+      source file and should be in the output subdirectory (e.g.,
+      \lstinline{output/ex1.out})
+
+      \end{itemize}
+
+
+    \item[]  \textbf{nsize}: (\emph{Optional}; \emph{Default:} \lstinline{nsize=1})
+      \begin{itemize}
+
+      \item The integer that is passed to mpiexec; i.e., \lstinline{mpiexec -n nsize}
+
+      \end{itemize}
+
+
+    \item[]  \textbf{args}: (\emph{Optional}; \emph{Default:} \lstinline{""})
+
+      \begin{itemize}
+
+      \item The arguments to pass to the executable
+
+      \end{itemize}
+
+    \item[]  \textbf{TODO}: (\emph{Optional}; \emph{Default:} \lstinline{False})
+      \begin{itemize}
+
+      \item Setting this boolean to True will tell the test to appear in the test harness, but
+      report only TODO per the TAP standard.
+
+      \item A runscript will be generated and can easily be modified by hand to run
+
+      \end{itemize}
+
+    \item[]  \textbf{filter}: (\emph{Optional}; \emph{Default:} \lstinline{""})
+
+      \begin{itemize}
+
+      \item Sometimes only a subset of the output is meant to be tested
+      against the expected result.  If this keyword is used, it
+      processes the executable output and puts it into the file
+      to be actually compared with output\_file.
+
+      \item The value of this is the command to be run; e.g., \lstinline{grep foo} or
+      \lstinline{sort -nr}
+
+      \item A skeleton example of the resultant commands to be run is:
+      %
+      \begin{lstlisting}
+                 mpiexec -n 1 ../ex1 | grep residual 1> ex1.tmp 2> ex1.err
+                 diff ex1.tmp output/ex1.out 1> diff-ex1.tmp 2> diff-ex1.err
+      \end{lstlisting}
+
+      \end{itemize}
+
+    \item[]  \textbf{filter\_output}: (\emph{Optional}; \emph{Default:} \lstinline{""})
+
+      \begin{itemize}
+
+      \item Sometimes filtering the output is useful for standardizing
+            tests; for example, to handle the issues related to parallel
+            output.  This works the same as filter to implement this
+            feature
+
+      \end{itemize}
+
+    \item[]  \textbf{localrunfiles}: (\emph{Optional}; \emph{Default:} \lstinline{""})
+
+      \begin{itemize}
+
+      \item The tests are run under \lstinline{PETSC_ARCH/tests}, but
+            some tests require runtime files that are maintained in the
+            source tree.  Files in this (space-delimited) list will be
+            copied over.
+
+      \item The copying is done by the file generator and not by
+            creating makefile dependencies.
+
+      \end{itemize}
+
+    \item[]  \textbf{requires}: (\emph{Optional}; \emph{Default:} \lstinline{""})
+      \begin{itemize}
+
+        \item A space-delimited list of requirements of run requirements (not
+        build requirements. See Build requirements below)
+
+        \item In general, the language supports \lstinline{and} and \lstinline{not} constructs
+        using \lstinline{! => not} and \lstinline{, => and}
+
+        \item MPIUNI should work for all -n 1 examples so this need not be in the requirements list
+
+        \item Inputs sometimes include external matrices that are found in the
+        DATAFILES path.  \lstinline{requires: DATAFILES} can be specifed for these
+        tests.
+
+        \item Packages are specified with lower case specification; e.g.,
+        \lstinline{requires: superlu\_dist}
+
+        \item Any defined variable in petscconf.h can be specified with the
+        \lstinline{defined(...)} syntax; e.g., \lstinline{defined(PETSC_USE_INFO)}
+
+      \end{itemize}
+
+\end{itemize}
+
+
+
+\subsection{Additional specifications%
+  \label{additional-specifications}%
+}
+
+In addition to the above keywords, other language features are
+supported:
+%
+\begin{quote}
+%
+\begin{itemize}
+
+\item for loops:  Specifying $\{\{ ... \}\} $ will create for loops over
+enclosed space-delmited list.  For loops are supported within nsize
+and args.  An example would be:
+%
+\begin{lstlisting}
+             args: -matload_block_size {{2,3}}
+\end{lstlisting}
+
+In this case, two execution lines would be addded with two different
+arguments.  Associated \lstinline{diff} lines would be added as well
+automatically.  See examples below for how it works in practice.
+
+\end{itemize}
+
+\end{quote}
+
+
+\subsection{Test block examples%
+  \label{test-block-examples}%
+}
+
+This is the simplest test block:
+%
+\begin{lstlisting}
+      /*TESTS
+        test: 
+      TESTS*/
+\end{lstlisting}
+
+If this block is in ex1.c, then it will create a \lstinline{runex1} test that
+requires only one processor/thread, with no arguments, and diff the
+resultant output with \lstinline{output/ex1.out}.
+
+For fortran, the equivalent is:
+%
+\begin{lstlisting}
+      !/*TESTS
+      !  test: 
+      !TESTS*/
+\end{lstlisting}
+
+A fuller example would be:
+%
+\begin{lstlisting}
+      /*TESTS
+        test: 
+        test:
+          suffix: 1
+          nsize: 2
+          args:  -t 2 -pc_type jacobi -ksp_monitor_short -ksp_type gmres -ksp_gmres_cgs_refinement_type refine_always -s2_ksp_type bcgs -s2_pc_type jacobi -s2_ksp_monitor_short
+          requires: x
+      */TESTS
+\end{lstlisting}
+
+This creates two tests.  Assuming that this is \lstinline{ex1.c}, the tests would
+be \lstinline{runex1} and \lstinline{runex1\_1}.
+
+An example using a for loop would be:
+%
+\begin{lstlisting}
+
+      /*TESTS
+        test:
+             suffix: 1
+             args:   -f ${DATAFILESPATH}/matrices/small -mat\_type aij
+             requires: datafilespath
+         test:
+             suffix: 2
+             output\_file: output/ex138.out
+             args: -f ${DATAFILESPATH}/matrices/small -mat\_type baij -matload\_block\_size {{2,3}}
+             requires: datafilespath
+      */TESTS
+
+\end{lstlisting}
+
+In this example, runex138\_2 will invoke ex138 twice with two different
+arguments, but both are diffed with the same file.
+
+An example for showing the hieararchial nature of the test specification is:
+%
+\begin{lstlisting}
+
+      test: 
+        suffix:2
+        output\_file: output/ex1.out
+        args: -f ${DATAFILESPATH}/matrices/small -mat\_type baij
+        test:
+             args: -matload\_block\_size 2
+        test:
+             args: -matload\_block\_size 3
+
+
+\end{lstlisting}
+
+This is functionally equivalent to the for loop shown above.
+If you have different output files, this example is more extensible
+however as the different output\_files can be placed under tests.
+
+
+\subsection{Build language options%
+  \label{build-language-options}%
+}
+
+It is possible to specify issues related to the compilation of the
+source file.  The language is:
+%
+\begin{quote}
+%
+\begin{itemize}
+
+\item %
+\begin{description}
+\item[{requires: (\textbf{Optional}; \emph{Default:} \lstinline{""})}] \leavevmode \setcounter{listcnt0}{0}
+\begin{list}{\arabic{listcnt0}.}
+{
+\usecounter{listcnt0}
+\setlength{\rightmargin}{\leftmargin}
+}
+
+\item Same as the runtime requirements (e.g., can include requires: fftw)
+but also requirements related to types:
+A. Precision types: single, double, quad, int32
+B. Scalar types: complex  (and !complex)
+\end{list}
+
+\end{description}
+
+\item %
+\begin{description}
+\item[{depends: (\textbf{Optional}; \emph{Default:} \lstinline{""})}] \leavevmode \setcounter{listcnt0}{0}
+\begin{list}{\arabic{listcnt0}.}
+{
+\usecounter{listcnt0}
+\setlength{\rightmargin}{\leftmargin}
+}
+
+\item List any dependencies required to compile the file
+\end{list}
+
+\end{description}
+
+\end{itemize}
+
+\end{quote}
+
+A typical example for compiling for real/double only is:
+%
+\begin{lstlisting}
+      /*T
+        requires: !complex
+      T*/
+\end{lstlisting}
+
+
+\section{PETSC Test Harness%
+  \label{petsc-test-harness}%
+}
+
+The goals of the PETSc Test Harness are to:
+%
+\begin{tightitemize}
+\item Provide standard output used by other testing tools
+
+\item Lightweight as possible and easily fit within the PETSc build chain
+
+\item Provide information on all tests, even those that are not built or
+run because they do not meet the configuration requirements
+\end{tightitemize}
+
+Before understanding the test harness, it is first important to
+understand the desired requirements for reporting and logging.
+
+
+\subsection{Testing the parsing%
+  \label{testing-the-parsing}%
+}
+
+After inserting the language into the file, one can test the parsing
+by executuing:
+%
+%\begin{lstlisting}
+\begin{verbatim}
+     ${PETSC_DIR}/bin/maint/testparse.py -t <test src file>
+\end{verbatim}
+%\end{lstlisting}
+
+A dictionary will be pretty-printed out.  From this dictionary
+print-out, it is usually obvious if there is a problem in the parsing.
+This python file is used by 
+\begin{verbatim}
+      ${PETSC_DIR}/config/gmakegentest.py
+\end{verbatim}
+in generating the test harness.
+
+
+\section{Test output standards: TAP}%
+  \label{test-output-standards-tap}%
+
+The PETSc test system is designed to be compliant with the Test Anything
+Protocal (TAP): See \url{https://testanything.org/tap-specification.html}
+
+This is a very simple standard designed to allow testing tools to work
+together easily.  There are libraries to enable the output to be used
+easily including sharness, which is used by the git team.  However, the
+simplicity of the petsc tests and TAP specification means that we use
+our own simple harness given by a single shell script that each file
+sources: \lstinline{petsc\_harness.sh}.
+
+As an example, consider this test input:
+%
+%\begin{lstlisting}
+\begin{verbatim}
+     test:
+         suffix: 2
+         output_file: output/ex138.out
+         args: -f ${DATAFILESPATH}/matrices/small -mat_type {{aij,baij,sbaij}} -matload_block_size {{2,3}}
+         requires: datafilespath
+\end{verbatim}
+%\end{lstlisting}
+
+A sample output would be:
+%
+%\begin{lstlisting}
+\begin{verbatim}
+      ok 1 In mat...tests: "./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 2"
+      ok 2 In mat...tests: "Diff of ./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 2"
+      ok 3 In mat...tests: "./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 3"
+      ok 4 In mat...tests: "Diff of ./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 3"
+      ok 5 In mat...tests: "./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type baij -matload_block_size 2"
+      ok 6 In mat...tests: "Diff of ./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type baij -matload_block_size 2"
+      ...
+
+      ok 11 In mat...tests: "./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type saij -matload_block_size 2"
+      ok 12 In mat...tests: "Diff of ./ex138 -f ${DATAFILESPATH}/matrices/small -mat_type aij -matload_block_size 2"
+
+
+
+\end{verbatim}
+%\end{lstlisting}
+
+
+\section{Test harness implementation%
+  \label{test-harness-implementation}%
+}
+
+Most of the requirements for being TAP-compliant lie in the shell
+scripts so we focus on that description.
+
+A sample shell script is given by:
+%
+\begin{verbatim}
+      #!/bin/sh
+      . petsc_harness.sh
+
+      petsc_testrun ./ex1 ex1.tmp ex1.err
+      petsc_testrun 'diff ex1.tmp output/ex1.out' diff-ex1.tmp diff-ex1.err
+
+      petsc_testend
+\end{verbatim}
+
+\texttt{petsc\_harness.sh} is a small shell script that provides the logging and
+reporting functions \texttt{petsc\_testrun} and \texttt{petsc\_testend}.
+
+A small sample of the output from the test harness would be:
+%
+%\begin{lstlisting}
+\begin{verbatim}
+
+      ok 1 ./ex1
+      ok 2 diff ex1.tmp output/ex1.out
+      not ok 4 ./ex2
+      #	ex2: Error: cannot read file
+      not ok 5 diff ex2.tmp output/ex2.out
+      ok 7 ./ex3 -f /matrices/small -mat_type aij -matload_block_size 2
+      ok 8 diff ex3.tmp output/ex3.out
+      ok 9 ./ex3 -f /matrices/small -mat_type aij -matload_block_size 3
+      ok 10 diff ex3.tmp output/ex3.out
+      ok 11 ./ex3 -f /matrices/small -mat_type baij -matload_block_size 2
+      ok 12 diff ex3.tmp output/ex3.out
+      ok 13 ./ex3 -f /matrices/small -mat_type baij -matload_block_size 3
+      ok 14 diff ex3.tmp output/ex3.out
+      ok 15 ./ex3 -f /matrices/small -mat_type sbaij -matload_block_size 2
+      ok 16 diff ex3.tmp output/ex3.out
+      ok 17 ./ex3 -f /matrices/small -mat_type sbaij -matload_block_size 3
+      ok 18 diff ex3.tmp output/ex3.out
+      # FAILED   4 5
+      # failed 2/16 tests; 87.500% ok
+\end{verbatim}
+%\end{lstlisting}
+
+For developers, modifying the lines that get written to the file can be
+done by modifying:
+\begin{bashlisting}
+   ${PETSC_DIR}/config/example_template.py
+\end{bashlisting}
+To modify the test harness,  one can modify this file
+\begin{bashlisting}
+   ${PETSC_DIR}/config/petsc_harness.sh
+\end{bashlisting}
+
 \bibliographystyle{plain}
 \bibliography{../petsc}
 

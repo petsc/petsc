@@ -5,6 +5,8 @@ static char help[] = "Demonstrates using the PetscBag Object\n\n";
    Concepts: bags;
    Processors: n
 T*/
+
+
 #include <petscsys.h>
 #include <petscbag.h>
 #include <petscviewer.h>
@@ -125,3 +127,19 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+      args: -pbag_rho 44 -pbag_do_output true
+      requires: yaml !complex
+
+   test:
+      suffix: yaml
+      requires: yaml !complex
+      args: -options_file_yaml bag.yml -options_view
+      filter:  grep -v saws_port_auto_select
+      localrunfiles: bag.yml
+
+TEST*/

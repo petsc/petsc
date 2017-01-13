@@ -46,7 +46,7 @@
      &     fd,ierr)
       if (ierr .ne. 0) then
         print*, 'Unable to open file ',f
-        SETERRQ(PETSC_COMM_WORLD,1,' ',ierr)
+        SETERRQ(PETSC_COMM_WORLD,1,' ')
       endif
 
       call MatCreate(PETSC_COMM_WORLD,A,ierr)
@@ -54,7 +54,7 @@
       call MatLoad(A,fd,ierr)
       if (ierr .ne. 0) then
         print*, 'Unable to load matrix '
-        SETERRQ(PETSC_COMM_WORLD,1,' ',ierr)
+        SETERRQ(PETSC_COMM_WORLD,1,' ')
       endif
 
       call VecCreate(PETSC_COMM_WORLD,b,ierr)

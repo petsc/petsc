@@ -37,17 +37,6 @@ ex6: ex6.o  chkopts
 	${RM} -f ex6.o
 
 #------------------------------------------------------------------
-runex1:
-	-@${MPIEXEC} -n 1 ./ex1
-runex2:
-	-@${MPIEXEC} -n 1 ./ex2
-runex3:
-	-@${MPIEXEC} -n 1 ./ex3
-runex4:
-	-@${MPIEXEC} -n 1 ./ex4
-runex4_2:
-	-@${MPIEXEC} -n 2 ./ex4
-
 TESTEXAMPLES_C_X	  =
 TESTEXAMPLES_FORTRAN	  =
 TESTEXAMPLES_C_X_MPIUNI =
