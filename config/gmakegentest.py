@@ -84,7 +84,7 @@ class generateExamples(Petsc):
     if srcext in ".cxx".split(): langReq="cxx"
     if srcext == ".cu": langReq="cu"
     if srcext == ".c": langReq="c"
-    if not langReq: print "ERROR: ", srcext, srcfile
+    #if not langReq: print "ERROR: ", srcext, srcfile
     return langReq
 
   def getArgLabel(self,testDict):
@@ -120,6 +120,7 @@ class generateExamples(Petsc):
     fullfile=os.path.join(root,exfile)
     relpfile=self.relpath(self.petsc_dir,fullfile)
     lang=self.getLanguage(exfile)
+    if not lang: return
     self.sources[pkg][lang]['srcs'].append(relpfile)
     if srcDict.has_key('depends'):
       depSrc=srcDict['depends']
@@ -142,6 +143,7 @@ class generateExamples(Petsc):
     rpath=self.relpath(self.petsc_dir,root)
     nmtest=os.path.join(rpath,test)
     lang=self.getLanguage(exfile)
+    if not lang: return
     self.tests[pkg][lang][nmtest]={}
     self.tests[pkg][lang][nmtest]['exfile']=os.path.join(rpath,exfile)
     self.tests[pkg][lang][nmtest]['exec']=execname
