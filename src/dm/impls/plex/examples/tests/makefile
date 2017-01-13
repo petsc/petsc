@@ -102,7 +102,7 @@ runex3:
 	   ${RM} -f ex3_1.tmp
 
 runex3_constraints:
-	-@${MPIEXEC} -n 1 ./ex3 -simplex 0 -num_comp 2 -petscspace_poly_tensor -petscspace_order 1 -qorder 1 -constraints > ex3_constraints.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex3 -simplex 0 -num_comp 2 -petscspace_poly_tensor -petscspace_order 1 -qorder 0 -constraints > ex3_constraints.tmp 2>&1;\
 	   if (${DIFF} output/ex3_constraints.out ex3_constraints.tmp) then true ;  \
 	   else printf "${PWD}\nPossible problem with runex3_constraints, diffs above\n=========================================\n"; fi ;\
 	   ${RM} -f ex3_constraints.tmp
