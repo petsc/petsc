@@ -97,7 +97,7 @@ endif
 
 # implies shared libraries with MS compilers
 ifeq ($(SL_LINKER_FUNCTION),-LD)
-CCPPFLAGS+=-Dpetsc_EXPORTS
+$(OBJDIR)/%.o : CCPPFLAGS+=-Dpetsc_EXPORTS
 endif
 
 PETSC_COMPILE.c = $(call quiet,$(cc_name)) -c $(PCC_FLAGS) $(CFLAGS) $(CCPPFLAGS) $(C_DEPFLAGS)

@@ -241,6 +241,7 @@ class generateExamples(Petsc):
     subst['diff']=self.conf['DIFF']
     subst['rm']=self.conf['RM']
     subst['grep']=self.conf['GREP']
+    subst['petsc_lib_dir']=self.conf['PETSC_LIB_DIR']
 
     return subst
 
