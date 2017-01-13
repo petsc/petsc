@@ -197,18 +197,35 @@ $(OBJDIR)/%.o $(TESTDIR)/%.o : %.cu | $$(@D)/.DIR
 	$(PETSC_COMPILE.cu) $(abspath $<) -o $@ # Compile first so that if there is an error, it comes from a normal compile
 	@$(PETSC_GENDEPS.cu) $(abspath $<) -o $(@:%.o=%.d) # Generate the dependencies for later
 
-$(OBJDIR)/%.o $(TESTDIR)/%.o : %.F | $$(@D)/.DIR
+FCMOD = cd
+# PETSc sources
+$(OBJDIR)/%.o : %.F | $$(@D)/.DIR
 ifeq ($(FC_MODULE_OUTPUT_FLAG),)
-	cd $(MODDIR) && $(FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS) $(abspath $<) -o $(abspath $@)
+	$(call quiet,FCMOD) $(MODDIR) && $(FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS) $(abspath $<) -o $(abspath $@)
 else
 	$(PETSC_COMPILE.F) $(abspath $<) -o $@ $(FC_MODULE_OUTPUT_FLAG)$(MODDIR)
 endif
 
-$(OBJDIR)/%.o $(TESTDIR)/%.o : %.F90 | $$(@D)/.DIR
+$(OBJDIR)/%.o : %.F90 | $$(@D)/.DIR
 ifeq ($(FC_MODULE_OUTPUT_FLAG),)
-	@cd $(MODDIR) && $(FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS) $(abspath $<) -o $(abspath $@)
+	$(call quiet,FCMOD) $(MODDIR) && $(FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS) $(abspath $<) -o $(abspath $@)
 else
-	@$(PETSC_COMPILE.F) $(abspath $<) -o $@ $(FC_MODULE_OUTPUT_FLAG)$(MODDIR)
+	$(PETSC_COMPILE.F) $(abspath $<) -o $@ $(FC_MODULE_OUTPUT_FLAG)$(MODDIR)
+endif
+
+#Examples
+$(TESTDIR)/%.o : %.F | $$(@D)/.DIR
+ifeq ($(FC_MODULE_OUTPUT_FLAG),)
+	$(call quiet,FCMOD) $(shell dirname $(abspath $@)) && $(FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS) $(abspath $<) -o $(abspath $@)
+else
+	$(PETSC_COMPILE.F) $(abspath $<) -o $@ $(FC_MODULE_OUTPUT_FLAG)$(shell dirname $(abspath $@))
+endif
+
+$(TESTDIR)/%.o : %.F90 | $$(@D)/.DIR
+ifeq ($(FC_MODULE_OUTPUT_FLAG),)
+	$(call quiet,FCMOD) $(shell dirname $(abspath $@)) && $(FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS) $(abspath $<) -o $(abspath $@)
+else
+	$(PETSC_COMPILE.F) $(abspath $<) -o $@ $(FC_MODULE_OUTPUT_FLAG)$(shell dirname $(abspath $@))
 endif
 
 # Test executables
