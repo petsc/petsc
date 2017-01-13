@@ -49,11 +49,12 @@ static PetscErrorCode KSPFETIDPSetPressureOperators_FETIDP(KSP ksp, Mat A, Mat P
 
    Level: advanced
 
-   Notes: The operators can be either passed in monolithic global ordering or in interface pressure ordering.
-          In the latter case, the interface pressure ordering of dofs needs to satisfy
+   Notes: The operators can be either passed in a) monolithic global ordering, b) pressure-only global ordering
+          or c) interface pressure ordering.
+          In cases b) and c), the pressure ordering of dofs needs to satisfy
              pid_1 < pid_2  iff  gid_1 < gid_2
           where pid_1 and pid_2 are two different pressure dof numbers and gid_1 and gid_2 the corresponding
-          id in the global ordering.
+          id in the monolithic global ordering.
 
 .seealso: MATIS, PCBDDC, KSPFETIDPGetInnerBDDC, KSPFETIDPGetInnerKSP, KSPSetOperators
 @*/
@@ -636,20 +637,22 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         ierr = ISCreateGeneral(PETSC_COMM_SELF,ni,widxs,PETSC_COPY_VALUES,&lPall);CHKERRQ(ierr);
       }
 
+      if (!Pall) {
+        ierr = PetscMemzero(matis->sf_leafdata,n*sizeof(PetscInt));CHKERRQ(ierr);
+        ierr = PetscMemzero(matis->sf_rootdata,nl*sizeof(PetscInt));CHKERRQ(ierr);
+        ierr = ISGetLocalSize(lPall,&ni);CHKERRQ(ierr);
+        ierr = ISGetIndices(lPall,&idxs);CHKERRQ(ierr);
+        for (i=0;i<ni;i++) matis->sf_leafdata[idxs[i]] = 1;
+        ierr = ISRestoreIndices(lPall,&idxs);CHKERRQ(ierr);
+        ierr = PetscSFReduceBegin(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,MPIU_REPLACE);CHKERRQ(ierr);
+        ierr = PetscSFReduceEnd(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,MPIU_REPLACE);CHKERRQ(ierr);
+        for (i=0,ni=0;i<nl;i++) if (matis->sf_rootdata[i]) widxs[ni++] = i+rst;
+        ierr = ISCreateGeneral(PetscObjectComm((PetscObject)ksp),ni,widxs,PETSC_COPY_VALUES,&Pall);CHKERRQ(ierr);
+      }
+      ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_aP",(PetscObject)Pall);CHKERRQ(ierr);
+
       if (flip) {
         PetscInt npl;
-        if (!Pall) {
-          ierr = PetscMemzero(matis->sf_leafdata,n*sizeof(PetscInt));CHKERRQ(ierr);
-          ierr = PetscMemzero(matis->sf_rootdata,nl*sizeof(PetscInt));CHKERRQ(ierr);
-          ierr = ISGetLocalSize(lPall,&ni);CHKERRQ(ierr);
-          ierr = ISGetIndices(lPall,&idxs);CHKERRQ(ierr);
-          for (i=0;i<ni;i++) matis->sf_leafdata[idxs[i]] = 1;
-          ierr = ISRestoreIndices(lPall,&idxs);CHKERRQ(ierr);
-          ierr = PetscSFReduceBegin(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,MPIU_REPLACE);CHKERRQ(ierr);
-          ierr = PetscSFReduceEnd(matis->sf,MPIU_INT,matis->sf_leafdata,matis->sf_rootdata,MPIU_REPLACE);CHKERRQ(ierr);
-          for (i=0,ni=0;i<nl;i++) if (matis->sf_rootdata[i]) widxs[ni++] = i+rst;
-          ierr = ISCreateGeneral(PetscObjectComm((PetscObject)ksp),ni,widxs,PETSC_COPY_VALUES,&Pall);CHKERRQ(ierr);
-        }
         ierr = ISGetLocalSize(Pall,&npl);CHKERRQ(ierr);
         ierr = ISGetIndices(Pall,&idxs);CHKERRQ(ierr);
         ierr = MatCreateVecs(Ap,NULL,&fetidp->rhs_flip);CHKERRQ(ierr);
@@ -841,47 +844,67 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         ierr = MatAssemblyEnd(PAmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
         ierr = MatShift(PAmat,1.);CHKERRQ(ierr);
         ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_PAmat",(PetscObject)PAmat);CHKERRQ(ierr);
-      } else { /* check size of pressure operator and restrict if needed */
-        PetscInt AM,PAM,PAN,pam,pan,am,an,pl;
+      } else { /* check size of pressure operators passed in and restrict if needed */
+        Mat      C;
+        IS       Pall,restr;
+        PetscInt AM,PAM,PAN,pam,pan,am,an,pl,pIl,pIg;
 
+        ierr = PetscObjectQuery((PetscObject)fetidp->innerbddc,"__KSPFETIDP_aP",(PetscObject*)&Pall);CHKERRQ(ierr);
         ierr = MatGetSize(Ap,&AM,NULL);CHKERRQ(ierr);
         ierr = MatGetSize(PAmat,&PAM,&PAN);CHKERRQ(ierr);
+        ierr = ISGetSize(Pall,&pIg);CHKERRQ(ierr);
         ierr = MatGetLocalSize(PAmat,&pam,&pan);CHKERRQ(ierr);
         ierr = MatGetLocalSize(Ap,&am,&an);CHKERRQ(ierr);
+        ierr = ISGetLocalSize(Pall,&pIl);CHKERRQ(ierr);
         ierr = ISGetLocalSize(fetidp->pP,&pl);CHKERRQ(ierr);
         if (PAM != PAN) SETERRQ2(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Pressure matrix must be square, unsupported %D x %D",PAM,PAN);
         if (pam != pan) SETERRQ2(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Local sizes of pressure matrix must be equal, unsupported %D x %D",pam,pan);
-        if (pam != am && pam != pl) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local rows %D for pressure matrix! Supported are %D or %D",pam,am,pl);
-        if (pan != an && pan != pl) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local columns %D for pressure matrix! Supported are %D or %D",pan,an,pl);
+        if (pam != am && pam != pl && pam != pIl) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local rows %D for pressure matrix! Supported are %D, %D or %D",pam,am,pl,pIl);
+        if (pan != an && pan != pl && pan != pIl) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local columns %D for pressure matrix! Supported are %D, %D or %D",pan,an,pl,pIl);
         if (PAM == AM) { /* monolithic ordering, restrict to interface pressure */
-          Mat C;
-
-          ierr  = MatCreateSubMatrix(PAmat,fetidp->pP,fetidp->pP,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
-          ierr  = MatDestroy(&PAmat);CHKERRQ(ierr);
-          PAmat = C;
-          ierr  = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_PAmat",(PetscObject)PAmat);CHKERRQ(ierr);
+          ierr  = PetscObjectReference((PetscObject)fetidp->pP);CHKERRQ(ierr);
+          restr = fetidp->pP;
+        } else if (pIg == PAM) { /* global ordering for pressure only */
+          ierr  = ISRenumber(fetidp->pP,NULL,NULL,&restr);CHKERRQ(ierr);
+        } else {
+          SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Unable to use the pressure matrix");
         }
+        ierr  = MatCreateSubMatrix(PAmat,restr,restr,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
+        ierr  = MatDestroy(&PAmat);CHKERRQ(ierr);
+        ierr  = ISDestroy(&restr);CHKERRQ(ierr);
+        PAmat = C;
+        ierr  = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_PAmat",(PetscObject)PAmat);CHKERRQ(ierr);
       }
-      if (PPmat) {
-        PetscInt AM,PAM,PAN,pam,pan,am,an,pl;
+      if (PPmat && PPmat != PAmat) {
+        Mat      C;
+        IS       Pall,restr;
+        PetscInt AM,PAM,PAN,pam,pan,am,an,pl,pIl,pIg;
 
+        ierr = PetscObjectQuery((PetscObject)fetidp->innerbddc,"__KSPFETIDP_aP",(PetscObject*)&Pall);CHKERRQ(ierr);
         ierr = MatGetSize(Ap,&AM,NULL);CHKERRQ(ierr);
         ierr = MatGetSize(PPmat,&PAM,&PAN);CHKERRQ(ierr);
+        ierr = ISGetSize(Pall,&pIg);CHKERRQ(ierr);
         ierr = MatGetLocalSize(PPmat,&pam,&pan);CHKERRQ(ierr);
         ierr = MatGetLocalSize(Ap,&am,&an);CHKERRQ(ierr);
+        ierr = ISGetLocalSize(Pall,&pIl);CHKERRQ(ierr);
         ierr = ISGetLocalSize(fetidp->pP,&pl);CHKERRQ(ierr);
         if (PAM != PAN) SETERRQ2(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Pressure matrix must be square, unsupported %D x %D",PAM,PAN);
         if (pam != pan) SETERRQ2(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Local sizes of pressure matrix must be equal, unsupported %D x %D",pam,pan);
-        if (pam != am && pam != pl) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local rows %D for pressure matrix! Supported are %D or %D",pam,am,pl);
-        if (pan != an && pan != pl) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local columns %D for pressure matrix! Supported are %D or %D",pan,an,pl);
+        if (pam != am && pam != pl && pam != pIl) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local rows %D for pressure matrix! Supported are %D, %D or %D",pam,am,pl,pIl);
+        if (pan != an && pan != pl && pan != pIl) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_USER,"Invalid number of local columns %D for pressure matrix! Supported are %D, %D or %D",pan,an,pl,pIl);
         if (PAM == AM) { /* monolithic ordering, restrict to interface pressure */
-          Mat C;
-
-          ierr  = MatCreateSubMatrix(PPmat,fetidp->pP,fetidp->pP,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
-          ierr  = MatDestroy(&PPmat);CHKERRQ(ierr);
-          PPmat = C;
-          ierr  = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_PPmat",(PetscObject)PPmat);CHKERRQ(ierr);
+          ierr  = PetscObjectReference((PetscObject)fetidp->pP);CHKERRQ(ierr);
+          restr = fetidp->pP;
+        } else if (pIg == PAM) { /* global ordering for pressure only */
+          ierr  = ISRenumber(fetidp->pP,NULL,NULL,&restr);CHKERRQ(ierr);
+        } else {
+          SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Unable to use the pressure matrix");
         }
+        ierr  = MatCreateSubMatrix(PPmat,restr,restr,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
+        ierr  = MatDestroy(&PPmat);CHKERRQ(ierr);
+        ierr  = ISDestroy(&restr);CHKERRQ(ierr);
+        PPmat = C;
+        ierr  = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_PPmat",(PetscObject)PPmat);CHKERRQ(ierr);
       } else {
         ierr  = PetscObjectReference((PetscObject)PAmat);CHKERRQ(ierr);
         PPmat = PAmat;
