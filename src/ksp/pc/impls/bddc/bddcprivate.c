@@ -2240,6 +2240,7 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
   has_null_pressures = PETSC_TRUE;
   have_null = PETSC_TRUE;
   if (pcbddc->n_ISForDofsLocal) {
+    IS       iP = NULL;
     PetscInt npl,*idxs,p = pcbddc->n_ISForDofsLocal-1;
 
     ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)pc),((PetscObject)pc)->prefix,"BDDC benign options","PC");CHKERRQ(ierr);
@@ -2251,6 +2252,15 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
     ierr = ISGetIndices(pcbddc->ISForDofsLocal[p],(const PetscInt**)&idxs);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF,npl,idxs,PETSC_COPY_VALUES,&pressures);CHKERRQ(ierr);
     ierr = ISRestoreIndices(pcbddc->ISForDofsLocal[p],(const PetscInt**)&idxs);CHKERRQ(ierr);
+    /* remove zeroed out pressures if we are setting up a BDDC solver for a saddle-point FETI-DP */
+    ierr = PetscObjectQuery((PetscObject)pc,"__KSPFETIDP_lP",(PetscObject*)&iP);CHKERRQ(ierr);
+    if (iP) {
+      IS newpressures;
+
+      ierr = ISDifference(pressures,iP,&newpressures);CHKERRQ(ierr);
+      ierr = ISDestroy(&pressures);CHKERRQ(ierr);
+      pressures = newpressures;
+    }
     ierr = ISSorted(pressures,&sorted);CHKERRQ(ierr);
     if (!sorted) {
       ierr = ISSort(pressures);CHKERRQ(ierr);
