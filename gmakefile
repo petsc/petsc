@@ -72,10 +72,13 @@ V ?= $(if $(findstring s,$(MAKEFLAGS)),0)
 ifeq ($(V),)  # Default
   quiet_HELP := "Use \"$(MAKE) V=1\" to see verbose compile lines, \"$(MAKE) V=0\" to suppress.\n"
   quiet = @printf $(quiet_HELP)$(eval quiet_HELP:=)"  %10s %s\n" "$1$2" "$@"; $($1)
+  quiettest = @printf "  %10s %s\n" "TEST" "$(@:$(TESTDIR)/counts/%.counts=%)";
 else ifeq ($(V),0)		# Suppress entire command
   quiet = @$($1)
+  quiettest = @
 else				# Show the full command line
   quiet = $($1)
+  quiettest =
   TESTFLAGS := -v
 endif
 
@@ -244,7 +247,7 @@ $(alltesttargets) : % : $(TESTDIR)/counts/%.counts
 .PHONY: $(alltesttargets)
 
 $(TESTDIR)/counts/%.counts :
-	@$< $(TESTFLAGS)
+	$(quiettest) $< $(TESTFLAGS)
 
 # Targets to run tests and remove executables, by package-lang pairs.
 # Run the tests in each batch using recursive invocation of make because
@@ -253,7 +256,7 @@ $(TESTDIR)/counts/%.counts :
 # if there is something to be done.
 alltest-rm := $(foreach pkg, $(pkgs), $(foreach lang, $(testlangs), test-rm-$(pkg).$(lang)))
 $(alltest-rm) : test-rm-% : test-%
-	@$(RM) $(addprefix $(TESTDIR)/,$(basename $($(@:test-rm-%=testsrcs-%))))
+	$(call quiet,RM) $(addprefix $(TESTDIR)/,$(basename $($(@:test-rm-%=testsrcs-%))))
 
 # Remove intermediate .o files
 # This only removes the files at the end which is insufficient
