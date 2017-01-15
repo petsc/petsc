@@ -4895,7 +4895,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
     }
     ierr = KSPSetOperators(pcbddc->ksp_R,A_RR,A_RR);CHKERRQ(ierr);
     /* Reuse solver if it is present */
-    if (sub_schurs && sub_schurs->reuse_solver) {
+    if (sub_schurs && sub_schurs->reuse_solver && sub_schurs->A == pcbddc->local_mat) {
       PCBDDCReuseSolvers reuse_solver = sub_schurs->reuse_solver;
 
       ierr = KSPSetPC(pcbddc->ksp_R,reuse_solver->correction_solver);CHKERRQ(ierr);
@@ -8158,12 +8158,13 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
     ierr = MatSchurComplementSetKSP(S_j,pcbddc->ksp_D);CHKERRQ(ierr);
     ierr = PCBDDCSubSchursSetUp(sub_schurs,NULL,S_j,PETSC_FALSE,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,NULL,pcbddc->adaptive_selection,PETSC_FALSE,PETSC_FALSE,0,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   } else {
-    PetscBool reuse_solvers = (PetscBool)!pcbddc->use_change_of_basis;
-    PetscBool isseqaij,need_change = PETSC_FALSE;
-    PetscInt  benign_n;
     Mat       change = NULL;
     Vec       scaling = NULL;
-    IS        change_primal = NULL;
+    IS        change_primal = NULL, iP;
+    PetscInt  benign_n;
+    PetscBool reuse_solvers = (PetscBool)!pcbddc->use_change_of_basis;
+    PetscBool isseqaij,need_change = PETSC_FALSE;
+    PetscBool discrete_harmonic = PETSC_FALSE;
 
     if (!pcbddc->use_vertices && reuse_solvers) {
       PetscInt n_vertices;
@@ -8241,7 +8242,23 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
       ierr = PCDestroy(&pcf);CHKERRQ(ierr);
     }
     if (!pcbddc->use_deluxe_scaling) scaling = pcis->D;
-    ierr = PCBDDCSubSchursSetUp(sub_schurs,pcbddc->local_mat,S_j,pcbddc->sub_schurs_exact_schur,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,scaling,pcbddc->adaptive_selection,reuse_solvers,pcbddc->benign_saddle_point,benign_n,pcbddc->benign_p0_lidx,pcbddc->benign_zerodiag_subs,change,change_primal);CHKERRQ(ierr);
+
+    ierr = PetscObjectQuery((PetscObject)pc,"__KSPFETIDP_iP",(PetscObject*)&iP);CHKERRQ(ierr);
+    if (iP) {
+      ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)iP),sub_schurs->prefix,"BDDC sub_schurs options","PC");CHKERRQ(ierr);
+      ierr = PetscOptionsBool("-sub_schurs_discrete_harmonic",NULL,NULL,discrete_harmonic,&discrete_harmonic,NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    }
+    if (discrete_harmonic) {
+      Mat A;
+      ierr = MatDuplicate(pcbddc->local_mat,MAT_COPY_VALUES,&A);CHKERRQ(ierr);
+      ierr = MatZeroRowsColumnsIS(A,iP,1.0,NULL,NULL);CHKERRQ(ierr);
+      ierr = PetscObjectCompose((PetscObject)A,"__KSPFETIDP_iP",(PetscObject)iP);CHKERRQ(ierr);
+      ierr = PCBDDCSubSchursSetUp(sub_schurs,A,S_j,pcbddc->sub_schurs_exact_schur,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,scaling,pcbddc->adaptive_selection,reuse_solvers,pcbddc->benign_saddle_point,benign_n,pcbddc->benign_p0_lidx,pcbddc->benign_zerodiag_subs,change,change_primal);CHKERRQ(ierr);
+      ierr = MatDestroy(&A);CHKERRQ(ierr);
+    } else {
+      ierr = PCBDDCSubSchursSetUp(sub_schurs,pcbddc->local_mat,S_j,pcbddc->sub_schurs_exact_schur,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,scaling,pcbddc->adaptive_selection,reuse_solvers,pcbddc->benign_saddle_point,benign_n,pcbddc->benign_p0_lidx,pcbddc->benign_zerodiag_subs,change,change_primal);CHKERRQ(ierr);
+    }
     ierr = MatDestroy(&change);CHKERRQ(ierr);
     ierr = ISDestroy(&change_primal);CHKERRQ(ierr);
   }
