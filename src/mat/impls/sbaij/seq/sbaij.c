@@ -1814,6 +1814,52 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_petsc(Mat A,MatFactorType ftyp
   PetscFunctionReturn(0);
 }
 
+/*@C
+   MatSeqSBAIJGetArray - gives access to the array where the data for a MATSEQSBAIJ matrix is stored
+
+   Not Collective
+
+   Input Parameter:
+.  mat - a MATSEQSBAIJ matrix
+
+   Output Parameter:
+.   array - pointer to the data
+
+   Level: intermediate
+
+.seealso: MatSeqSBAIJRestoreArray(), MatSeqAIJGetArray(), MatSeqAIJRestoreArray()
+@*/
+PetscErrorCode  MatSeqSBAIJGetArray(Mat A,PetscScalar **array)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscUseMethod(A,"MatSeqSBAIJGetArray_C",(Mat,PetscScalar**),(A,array));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatSeqSBAIJRestoreArray - returns access to the array where the data for a MATSEQSBAIJ matrix is stored obtained by MatSeqSBAIJGetArray()
+
+   Not Collective
+
+   Input Parameters:
+.  mat - a MATSEQSBAIJ matrix
+.  array - pointer to the data
+
+   Level: intermediate
+
+.seealso: MatSeqSBAIJGetArray(), MatSeqAIJGetArray(), MatSeqAIJRestoreArray()
+@*/
+PetscErrorCode  MatSeqSBAIJRestoreArray(Mat A,PetscScalar **array)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscUseMethod(A,"MatSeqSBAIJRestoreArray_C",(Mat,PetscScalar**),(A,array));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*MC
   MATSEQSBAIJ - MATSEQSBAIJ = "seqsbaij" - A matrix type to be used for sequential symmetric block sparse matrices,
   based on block compressed sparse row format.  Only the upper triangular portion of the matrix is stored.
@@ -1883,6 +1929,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat B)
 
   ierr = PetscOptionsGetBool(((PetscObject)B)->options,((PetscObject)B)->prefix,"-mat_getrow_uppertriangular",&b->getrow_utriangular,NULL);CHKERRQ(ierr);
 
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqSBAIJGetArray_C",MatSeqSBAIJGetArray_SeqSBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqSBAIJRestoreArray_C",MatSeqSBAIJRestoreArray_SeqSBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatStoreValues_C",MatStoreValues_SeqSBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C",MatRetrieveValues_SeqSBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqSBAIJSetColumnIndices_C",MatSeqSBAIJSetColumnIndices_SeqSBAIJ);CHKERRQ(ierr);
