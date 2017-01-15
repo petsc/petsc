@@ -221,8 +221,8 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,PetscRea
   ptap->api = api;
   api[0]    = 0;
 
-  /* create and initialize a linked list */
-  ierr = PetscTableCreate(pN,pN,&ta);CHKERRQ(ierr); 
+  /* create and initialize a linked list -- TODO: replace it with PetscBTCreate()! */
+  ierr = PetscTableCreate(pn,pN,&ta);CHKERRQ(ierr); 
   MatRowMergeMax_SeqAIJ(p_loc,ptap->P_loc->rmap->N,ta);
   MatRowMergeMax_SeqAIJ(p_oth,ptap->P_oth->rmap->N,ta);
   ierr = PetscTableGetCount(ta,&Crmax);CHKERRQ(ierr);
@@ -706,7 +706,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
 
   /* get P_oth by taking rows of P (= non-zero cols of local A) from other processors */
   ierr = MatGetBrowsOfAoCols_MPIAIJ(A,P,MAT_INITIAL_MATRIX,&ptap->startsj_s,&ptap->startsj_r,&ptap->bufa,&ptap->P_oth);CHKERRQ(ierr);
-  
+
   /* get P_loc by taking all local rows of P */
   ierr = MatMPIAIJGetLocalMat(P,MAT_INITIAL_MATRIX,&ptap->P_loc);CHKERRQ(ierr);
 
@@ -727,14 +727,12 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
   api[0]    = 0;
 
   /* create and initialize a linked list */
-  apnz_max = 6*(p_loc->rmax + (PetscInt)(1.e-2*pN)); /* expected apnz_max */
-  if (apnz_max > pN) apnz_max = pN;
-  ierr = PetscTableCreate(apnz_max,pN,&ta);CHKERRQ(ierr); 
+  ierr = PetscTableCreate(pn,pN,&ta);CHKERRQ(ierr);
 
   /* Calculate apnz_max */
   apnz_max = 0;
   for (i=0; i<am; i++) {
-    ierr = PetscTableRemoveAll(ta);CHKERRQ(ierr); 
+    ierr = PetscTableRemoveAll(ta);CHKERRQ(ierr);
     /* diagonal portion of A */
     nzi  = adi[i+1] - adi[i];
     Jptr = adj+adi[i];  /* cols of A_diag */
@@ -750,7 +748,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
     if (apnz_max < apnz) apnz_max = apnz;
   }
   ierr = PetscTableDestroy(&ta);CHKERRQ(ierr);
- 
+
   ierr = PetscLLCondensedCreate_Scalable(apnz_max,&lnk);CHKERRQ(ierr);
 
   /* Initial FreeSpace size is fill*(nnz(A)+nnz(P)) */
@@ -1588,7 +1586,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   Mat                 Cmpi,A_loc,POt,PDt;
   Mat_PtAPMPI         *ptap;
   PetscFreeSpaceList  free_space=NULL,current_space=NULL;
-  Mat_MPIAIJ          *p        =(Mat_MPIAIJ*)P->data,*c;
+  Mat_MPIAIJ          *p=(Mat_MPIAIJ*)P->data,*a=(Mat_MPIAIJ*)A->data,*c;
   PetscInt            *pdti,*pdtj,*poti,*potj,*ptJ;
   PetscInt            nnz;
   PetscInt            *lnk,*owners_co,*coi,*coj,i,k,pnz,row;
@@ -1650,9 +1648,10 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   current_space = free_space;
 
   /* create and initialize a linked list */
-  ierr = PetscTableCreate(aN,aN,&ta);CHKERRQ(ierr);
+  ierr = PetscTableCreate(A->cmap->n + a->B->cmap->N,aN,&ta);CHKERRQ(ierr);
   MatRowMergeMax_SeqAIJ(a_loc,am,ta);
   ierr = PetscTableGetCount(ta,&Armax);CHKERRQ(ierr);
+
   ierr = PetscLLCondensedCreate_Scalable(Armax,&lnk);CHKERRQ(ierr);
 
   for (i=0; i<pon; i++) {
@@ -1755,13 +1754,15 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   if (merge->nsend) {ierr = MPI_Waitall(merge->nsend,swaits,sstatus);CHKERRQ(ierr);}
 
   /* add received column indices into table to update Armax */
+  /* Armax can be as large as aN if a P[row,:] is dense, see src/ksp/ksp/examples/tutorials/ex56.c! */
   for (k=0; k<merge->nrecv; k++) {/* k-th received message */
     Jptr = buf_rj[k];
     for (j=0; j<merge->len_r[k]; j++) {
-      ierr = PetscTableAdd(ta,*(Jptr+j)+1,1,INSERT_VALUES);CHKERRQ(ierr); 
+      ierr = PetscTableAdd(ta,*(Jptr+j)+1,1,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
   ierr = PetscTableGetCount(ta,&Armax);CHKERRQ(ierr);
+  /* printf("Armax %d, an %d + Bn %d = %d, aN %d\n",Armax,A->cmap->n,a->B->cmap->N,A->cmap->n+a->B->cmap->N,aN); */
 
   /* send and recv coi */
   /*-------------------*/

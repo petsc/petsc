@@ -207,7 +207,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   p_oth  = (Mat_SeqAIJ*)(ptap->P_oth)->data;
 
   /* create and initialize a linked list */
-  ierr = PetscTableCreate(pN,pN,&ta);CHKERRQ(ierr); /* for compute AP_loc and Cmpi */
+  ierr = PetscTableCreate(pn,pN,&ta);CHKERRQ(ierr); /* for compute AP_loc and Cmpi */
   MatRowMergeMax_SeqAIJ(p_loc,ptap->P_loc->rmap->N,ta);
   MatRowMergeMax_SeqAIJ(p_oth,ptap->P_oth->rmap->N,ta);
   ierr = PetscTableGetCount(ta,&Crmax);CHKERRQ(ierr); /* Crmax = nnz(sum of Prows) */
