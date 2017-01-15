@@ -70,13 +70,13 @@
 
    Synopsis:
    #include <petscsys.h>
-   PetscErrorCode SETERRQ(MPI_Comm comm,PetscErrorCode errorcode,char *message)
+   PetscErrorCode SETERRQ(MPI_Comm comm,PetscErrorCode ierr,char *message)
 
-   Not Collective
+   Collective on MPI_Comm
 
    Input Parameters:
-+  comm - A communicator, so that the error can be collective
-.  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
++  comm - A communicator, use PETSC_COMM_SELF unless you know all ranks of another communicator will detect the error
+.  ierr - nonzero error code, see the list of standard error codes in include/petscerror.h
 -  message - error message
 
   Level: beginner
@@ -94,20 +94,20 @@
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3()
 M*/
-#define SETERRQ(comm,n,s)              return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,n,PETSC_ERROR_INITIAL,s)
+#define SETERRQ(comm,ierr,s) return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_INITIAL,s)
 
 /*MC
    SETERRQ1 - Macro that is called when an error has been detected,
 
    Synopsis:
    #include <petscsys.h>
-   PetscErrorCode SETERRQ1(MPI_Comm comm,PetscErrorCode errorcode,char *formatmessage,arg)
+   PetscErrorCode SETERRQ1(MPI_Comm comm,PetscErrorCode ierr,char *formatmessage,arg)
 
-   Not Collective
+   Collective on MPI_Comm
 
    Input Parameters:
 +  comm - A communicator, so that the error can be collective
-.  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
+.  ierr - nonzero error code, see the list of standard error codes in include/petscerror.h
 .  message - error message in the printf format
 -  arg - argument (for example an integer, string or double)
 
@@ -122,20 +122,20 @@ M*/
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ(), SETERRQ2(), SETERRQ3()
 M*/
-#define SETERRQ1(comm,n,s,a1)          return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,n,PETSC_ERROR_INITIAL,s,a1)
+#define SETERRQ1(comm,ierr,s,a1) return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_INITIAL,s,a1)
 
 /*MC
    SETERRQ2 - Macro that is called when an error has been detected,
 
    Synopsis:
    #include <petscsys.h>
-   PetscErrorCode SETERRQ2(MPI_Comm comm,PetscErrorCode errorcode,char *formatmessage,arg1,arg2)
+   PetscErrorCode SETERRQ2(MPI_Comm comm,PetscErrorCode ierr,char *formatmessage,arg1,arg2)
 
-   Not Collective
+   Collective on MPI_Comm
 
    Input Parameters:
 +  comm - A communicator, so that the error can be collective
-.  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
+.  ierr - nonzero error code, see the list of standard error codes in include/petscerror.h
 .  message - error message in the printf format
 .  arg1 - argument (for example an integer, string or double)
 -  arg2 - argument (for example an integer, string or double)
@@ -151,20 +151,20 @@ M*/
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ3()
 M*/
-#define SETERRQ2(comm,n,s,a1,a2)       return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,n,PETSC_ERROR_INITIAL,s,a1,a2)
+#define SETERRQ2(comm,ierr,s,a1,a2) return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_INITIAL,s,a1,a2)
 
 /*MC
    SETERRQ3 - Macro that is called when an error has been detected,
 
    Synopsis:
    #include <petscsys.h>
-   PetscErrorCode SETERRQ3(MPI_Comm comm,PetscErrorCode errorcode,char *formatmessage,arg1,arg2,arg3)
+   PetscErrorCode SETERRQ3(MPI_Comm comm,PetscErrorCode ierr,char *formatmessage,arg1,arg2,arg3)
 
-   Not Collective
+   Collective on MPI_Comm
 
    Input Parameters:
 +  comm - A communicator, so that the error can be collective
-.  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
+.  ierr - nonzero error code, see the list of standard error codes in include/petscerror.h
 .  message - error message in the printf format
 .  arg1 - argument (for example an integer, string or double)
 .  arg2 - argument (for example an integer, string or double)
@@ -183,20 +183,20 @@ M*/
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2()
 M*/
-#define SETERRQ3(comm,n,s,a1,a2,a3)    return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3)
+#define SETERRQ3(comm,ierr,s,a1,a2,a3) return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_INITIAL,s,a1,a2,a3)
 
 /*MC
    SETERRQ4 - Macro that is called when an error has been detected,
 
    Synopsis:
    #include <petscsys.h>
-   PetscErrorCode SETERRQ4(MPI_Comm comm,PetscErrorCode errorcode,char *formatmessage,arg1,arg2,arg3)
+   PetscErrorCode SETERRQ4(MPI_Comm comm,PetscErrorCode ierr,char *formatmessage,arg1,arg2,arg3)
 
-   Not Collective
+   Collective on MPI_Comm
 
    Input Parameters:
 +  comm - A communicator, so that the error can be collective
-.  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
+.  ierr - nonzero error code, see the list of standard error codes in include/petscerror.h
 .  message - error message in the printf format
 .  arg1 - argument (for example an integer, string or double)
 .  arg2 - argument (for example an integer, string or double)
@@ -216,20 +216,20 @@ M*/
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2()
 M*/
-#define SETERRQ4(comm,n,s,a1,a2,a3,a4) return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4)
+#define SETERRQ4(comm,ierr,s,a1,a2,a3,a4) return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4)
 
 /*MC
    SETERRQ5 - Macro that is called when an error has been detected,
 
    Synopsis:
    #include <petscsys.h>
-   PetscErrorCode SETERRQ5(MPI_Comm comm,PetscErrorCode errorcode,char *formatmessage,arg1,arg2,arg3)
+   PetscErrorCode SETERRQ5(MPI_Comm comm,PetscErrorCode ierr,char *formatmessage,arg1,arg2,arg3)
 
-   Not Collective
+   Collective on MPI_COmm
 
    Input Parameters:
 +  comm - A communicator, so that the error can be collective
-.  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
+.  ierr - nonzero error code, see the list of standard error codes in include/petscerror.h
 .  message - error message in the printf format
 .  arg1 - argument (for example an integer, string or double)
 .  arg2 - argument (for example an integer, string or double)
@@ -250,20 +250,20 @@ M*/
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2()
 M*/
-#define SETERRQ5(comm,n,s,a1,a2,a3,a4,a5)       return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4,a5)
+#define SETERRQ5(comm,ierr,s,a1,a2,a3,a4,a5) return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4,a5)
 
 /*MC
    SETERRQ6 - Macro that is called when an error has been detected,
 
    Synopsis:
    #include <petscsys.h>
-   PetscErrorCode SETERRQ6(MPI_Comm comm,PetscErrorCode errorcode,char *formatmessage,arg1,arg2,arg3)
+   PetscErrorCode SETERRQ6(MPI_Comm comm,PetscErrorCode ierr,char *formatmessage,arg1,arg2,arg3)
 
-   Not Collective
+   Collective on MPI_Comm
 
    Input Parameters:
 +  comm - A communicator, so that the error can be collective
-.  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
+.  ierr - nonzero error code, see the list of standard error codes in include/petscerror.h
 .  message - error message in the printf format
 .  arg1 - argument (for example an integer, string or double)
 .  arg2 - argument (for example an integer, string or double)
@@ -285,20 +285,20 @@ M*/
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2()
 M*/
-#define SETERRQ6(comm,n,s,a1,a2,a3,a4,a5,a6)    return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4,a5,a6)
+#define SETERRQ6(comm,ierr,s,a1,a2,a3,a4,a5,a6) return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4,a5,a6)
 
 /*MC
    SETERRQ7 - Macro that is called when an error has been detected,
 
    Synopsis:
    #include <petscsys.h>
-   PetscErrorCode SETERRQ7(MPI_Comm comm,PetscErrorCode errorcode,char *formatmessage,arg1,arg2,arg3)
+   PetscErrorCode SETERRQ7(MPI_Comm comm,PetscErrorCode ierr,char *formatmessage,arg1,arg2,arg3)
 
-   Not Collective
+   Collective on MPI_Comm
 
    Input Parameters:
 +  comm - A communicator, so that the error can be collective
-.  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
+.  ierr - nonzero error code, see the list of standard error codes in include/petscerror.h
 .  message - error message in the printf format
 .  arg1 - argument (for example an integer, string or double)
 .  arg2 - argument (for example an integer, string or double)
@@ -321,20 +321,20 @@ M*/
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2()
 M*/
-#define SETERRQ7(comm,n,s,a1,a2,a3,a4,a5,a6,a7) return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4,a5,a6,a7)
+#define SETERRQ7(comm,ierr,s,a1,a2,a3,a4,a5,a6,a7) return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4,a5,a6,a7)
 
 /*MC
    SETERRQ8 - Macro that is called when an error has been detected,
 
    Synopsis:
    #include <petscsys.h>
-   PetscErrorCode SETERRQ8(MPI_Comm comm,PetscErrorCode errorcode,char *formatmessage,arg1,arg2,arg3)
+   PetscErrorCode SETERRQ8(MPI_Comm comm,PetscErrorCode ierr,char *formatmessage,arg1,arg2,arg3)
 
-   Not Collective
+   Collective on MPI_Comm
 
    Input Parameters:
 +  comm - A communicator, so that the error can be collective
-.  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
+.  ierr - nonzero error code, see the list of standard error codes in include/petscerror.h
 .  message - error message in the printf format
 .  arg1 - argument (for example an integer, string or double)
 .  arg2 - argument (for example an integer, string or double)
@@ -358,20 +358,20 @@ M*/
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2()
 M*/
-#define SETERRQ8(comm,n,s,a1,a2,a3,a4,a5,a6,a7,a8) return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4,a5,a6,a7,a8)
+#define SETERRQ8(comm,ierr,s,a1,a2,a3,a4,a5,a6,a7,a8) return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4,a5,a6,a7,a8)
 
 /*MC
    SETERRABORT - Macro that can be called when an error has been detected,
 
    Synopsis:
    #include <petscsys.h>
-   PetscErrorCode SETERRABORT(MPI_Comm comm,PetscErrorCode errorcode,char *message)
+   PetscErrorCode SETERRABORT(MPI_Comm comm,PetscErrorCode ierr,char *message)
 
-   Not Collective
+   Collective on MPI_Comm
 
    Input Parameters:
 +  comm - A communicator, so that the error can be collective
-.  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
+.  ierr - nonzero error code, see the list of standard error codes in include/petscerror.h
 -  message - error message in the printf format
 
   Level: beginner
@@ -383,19 +383,19 @@ M*/
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2()
 M*/
-#define SETERRABORT(comm,n,s)     do {PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,n,PETSC_ERROR_INITIAL,s);MPI_Abort(comm,n);} while (0)
+#define SETERRABORT(comm,ierr,s) do {PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_INITIAL,s);MPI_Abort(comm,ierr);} while (0)
 
 /*MC
    CHKERRQ - Checks error code, if non-zero it calls the error handler and then returns
 
    Synopsis:
    #include <petscsys.h>
-   PetscErrorCode CHKERRQ(PetscErrorCode errorcode)
+   PetscErrorCode CHKERRQ(PetscErrorCode ierr)
 
    Not Collective
 
    Input Parameters:
-.  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
+.  ierr - nonzero error code, see the list of standard error codes in include/petscerror.h
 
   Level: beginner
 
@@ -404,14 +404,14 @@ M*/
 
     Experienced users can set the error handler with PetscPushErrorHandler().
 
-    CHKERRQ(n) is fundamentally a macro replacement for
-         if (n) return(PetscError(...,n,...));
+    CHKERRQ(ierr) is fundamentally a macro replacement for
+         if (ierr) return(PetscError(...,ierr,...));
 
     Although typical usage resembles "void CHKERRQ(PetscErrorCode)" as described above, for certain uses it is
     highly inappropriate to use it in this manner as it invokes return(PetscErrorCode). In particular,
     it cannot be used in functions which return(void) or any other datatype.  In these types of functions,
     you can use CHKERRV() which returns without an error code (bad idea since the error is ignored or
-         if (n) {PetscError(....); return(YourReturnType);}
+         if (ierr) {PetscError(....); return(YourReturnType);}
     where you may pass back a NULL to indicate an error. You can also call CHKERRABORT(comm,n) to have
     MPI_Abort() returned immediately.
 
@@ -421,11 +421,11 @@ M*/
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ2()
 M*/
-#define CHKERRQ(n)             do {if (PetscUnlikely(n)) return PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,n,PETSC_ERROR_REPEAT," ");} while (0)
+#define CHKERRQ(ierr)          do {if (PetscUnlikely(ierr)) return PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_REPEAT," ");} while (0)
 
-#define CHKERRV(n)             do {if (PetscUnlikely(n)) {n = PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,n,PETSC_ERROR_REPEAT," ");return;}} while(0)
-#define CHKERRABORT(comm,n)    do {if (PetscUnlikely(n)) {PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,n,PETSC_ERROR_REPEAT," ");MPI_Abort(comm,n);}} while (0)
-#define CHKERRCONTINUE(n)      do {if (PetscUnlikely(n)) {PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,n,PETSC_ERROR_REPEAT," ");}} while (0)
+#define CHKERRV(ierr)          do {if (PetscUnlikely(ierr)) {n = PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_REPEAT," ");return;}} while(0)
+#define CHKERRABORT(comm,ierr) do {if (PetscUnlikely(ierr)) {PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_REPEAT," ");MPI_Abort(comm,ierr);}} while (0)
+#define CHKERRCONTINUE(ierr)   do {if (PetscUnlikely(ierr)) {PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_REPEAT," ");}} while (0)
 
 #ifdef PETSC_CLANGUAGE_CXX
 
@@ -434,12 +434,12 @@ M*/
 
    Synopsis:
    #include <petscsys.h>
-   void CHKERRXX(PetscErrorCode errorcode)
+   void CHKERRXX(PetscErrorCode ierr)
 
    Not Collective
 
    Input Parameters:
-.  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h
+.  ierr - nonzero error code, see the list of standard error codes in include/petscerror.h
 
   Level: beginner
 
@@ -453,11 +453,11 @@ M*/
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKERRQ(), CHKMEMQ
 M*/
-#define CHKERRXX(n)            do {if (PetscUnlikely(n)) {PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,n,PETSC_ERROR_IN_CXX,0);}} while(0)
+#define CHKERRXX(ierr)  do {if (PetscUnlikely(ierr)) {PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_IN_CXX,0);}} while(0)
 
 #endif
 
-#define CHKERRCUDA(err) do {if (PetscUnlikely(err)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error %d",err);} while(0)
+#define CHKERRCUDA(err)   do {if (PetscUnlikely(err)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUDA error %d",err);} while(0)
 #define CHKERRCUBLAS(err) do {if (PetscUnlikely(err)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUBLAS error %d",err);} while(0)
 
 /*MC
@@ -498,27 +498,27 @@ M*/
     These are defined to be empty for when error checking is turned off, with ./configure --with-errorchecking=0
 */
 
-#define SETERRQ(c,n,s)
-#define SETERRQ1(c,n,s,a1)
-#define SETERRQ2(c,n,s,a1,a2)
-#define SETERRQ3(c,n,s,a1,a2,a3)
-#define SETERRQ4(c,n,s,a1,a2,a3,a4)
-#define SETERRQ5(c,n,s,a1,a2,a3,a4,a5)
-#define SETERRQ6(c,n,s,a1,a2,a3,a4,a5,a6)
-#define SETERRQ7(c,n,s,a1,a2,a3,a4,a5,a6,a7)
-#define SETERRQ8(c,n,s,a1,a2,a3,a4,a5,a6,a7,a8)
-#define SETERRABORT(comm,n,s)
+#define SETERRQ(c,ierr,s)
+#define SETERRQ1(c,ierr,s,a1)
+#define SETERRQ2(c,ierr,s,a1,a2)
+#define SETERRQ3(c,ierr,s,a1,a2,a3)
+#define SETERRQ4(c,ierr,s,a1,a2,a3,a4)
+#define SETERRQ5(c,ierr,s,a1,a2,a3,a4,a5)
+#define SETERRQ6(c,ierr,s,a1,a2,a3,a4,a5,a6)
+#define SETERRQ7(c,ierr,s,a1,a2,a3,a4,a5,a6,a7)
+#define SETERRQ8(c,ierr,s,a1,a2,a3,a4,a5,a6,a7,a8)
+#define SETERRABORT(comm,ierr,s)
 
-#define CHKERRQ(n)     ;
-#define CHKERRV(n)     ;
+#define CHKERRQ(ierr)     ;
+#define CHKERRV(ierr)     ;
 #define CHKERRABORT(comm,n) ;
-#define CHKERRCONTINUE(n) ;
+#define CHKERRCONTINUE(ierr) ;
 #define CHKMEMQ        ;
 #define CHKERRCUDA(err) ;
 #define CHKERRCUBLAS(err) ;
 
 #ifdef PETSC_CLANGUAGE_CXX
-#define CHKERRXX(n) ;
+#define CHKERRXX(ierr) ;
 #endif
 
 #endif /* PETSC_USE_ERRORCHECKING */

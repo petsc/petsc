@@ -198,8 +198,8 @@
 #define CHKERRQ(ierr) if (ierr .ne. 0) call MPIU_Abort(PETSC_COMM_WORLD,ierr)
 #define CHKMEMQ call chkmemfortran(__LINE__,__FILE__,ierr)
 #else
-#define SETERRQ(c,n,s,ierr)
-#define CHKERRQ(n)
+#define SETERRQ(c,ierr,s)
+#define CHKERRQ(ierr)
 #define CHKMEMQ
 #endif
 
