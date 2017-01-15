@@ -1,5 +1,5 @@
 
-#requirespackage   'PETSC_HAVE_CLIQUE'
+#requirespackage   'PETSC_HAVE_ELEMENTAL'
 
 ALL: lib
 
