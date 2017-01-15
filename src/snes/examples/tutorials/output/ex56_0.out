@@ -17,9 +17,9 @@
   Linear solve converged due to CONVERGED_RTOL iterations 12
   1 SNES Function norm 1.982e-10 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
-DM Object: Parallel Mesh (ex56_) 4 MPI processes
+DM Object: Mesh (ex56_) 4 MPI processes
   type: plex
-Parallel Mesh in 3 dimensions:
+Mesh in 3 dimensions:
   0-cells: 8 8 8 8
   1-cells: 12 12 12 12
   2-cells: 6 6 6 6
@@ -51,9 +51,9 @@ Labels:
   Linear solve converged due to CONVERGED_RTOL iterations 15
   1 SNES Function norm 2.325e-10 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
-DM Object: Parallel Mesh (ex56_) 4 MPI processes
+DM Object: Mesh (ex56_) 4 MPI processes
   type: plex
-Parallel Mesh in 3 dimensions:
+Mesh in 3 dimensions:
   0-cells: 27 27 27 27
   1-cells: 54 54 54 54
   2-cells: 36 36 36 36
@@ -88,9 +88,9 @@ Labels:
   Linear solve converged due to CONVERGED_RTOL iterations 18
   1 SNES Function norm 1.076e-10 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
-DM Object: Parallel Mesh (ex56_) 4 MPI processes
+DM Object: Mesh (ex56_) 4 MPI processes
   type: plex
-Parallel Mesh in 3 dimensions:
+Mesh in 3 dimensions:
   0-cells: 125 125 125 125
   1-cells: 300 300 300 300
   2-cells: 240 240 240 240
@@ -101,4 +101,4 @@ Labels:
   marker: 1 strata of sizes (273)
   depth: 4 strata of sizes (125, 300, 240, 64)
 [0]main 1) N=         441, max displ=5.5560415e+01, disp diff= 1.19e+01, error=4.415e+00, rate=1.9
-[0]main 2) N=        4725, max displ=5.9638349e+01, disp diff= 4.08e+00, error=3.370e-01, rate=3.7
+[0]main 2) N=        4725, max displ=5.9638349e+01, disp diff= 4.08e+00, error=3.369e-01, rate=3.7
