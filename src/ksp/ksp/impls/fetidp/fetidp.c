@@ -707,16 +707,18 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
 
       /* We may want to use a discrete harmonic solver instead
          of a Stokes harmonic for the Dirichler preconditioner
-         Need to extract the interior pressure dofs in interior dofs ordering */
+         Need to extract the interior velocity dofs in interior dofs ordering (iV)
+         and interior pressure dofs in local ordering (iP) */
       ierr = ISDifference(lPall,lP,&is1);CHKERRQ(ierr);
+      ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_iP",(PetscObject)is1);CHKERRQ(ierr);
       ierr = ISDifference(II,is1,&is2);CHKERRQ(ierr);
       ierr = ISDestroy(&is1);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingCreateIS(II,&l2g);CHKERRQ(ierr);
       ierr = ISGlobalToLocalMappingApplyIS(l2g,IS_GTOLM_DROP,is2,&is1);CHKERRQ(ierr);
       ierr = ISGetLocalSize(is1,&i);CHKERRQ(ierr);
       ierr = ISGetLocalSize(is2,&j);CHKERRQ(ierr);
-      if (i != j) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inconsistent local sizes %D and %D for iP",i,j);
-      ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_iP",(PetscObject)is1);CHKERRQ(ierr);
+      if (i != j) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inconsistent local sizes %D and %D for iV",i,j);
+      ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_iV",(PetscObject)is1);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingDestroy(&l2g);CHKERRQ(ierr);
       ierr = ISDestroy(&is1);CHKERRQ(ierr);
       ierr = ISDestroy(&is2);CHKERRQ(ierr);

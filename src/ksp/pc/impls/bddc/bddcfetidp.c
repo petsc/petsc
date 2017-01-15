@@ -723,11 +723,11 @@ PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat fetimat, FETIDPPC_ctx fetidppc_ctx
   /* Dirichlet preconditioner */
   ierr = PetscOptionsGetBool(NULL,((PetscObject)fetimat)->prefix,"-pc_lumped",&lumped,NULL);CHKERRQ(ierr);
   if (!lumped) {
-    IS        iP;
+    IS        iV;
     PetscBool discrete_harmonic = PETSC_FALSE;
 
-    ierr = PetscObjectQuery((PetscObject)fetidppc_ctx->pc,"__KSPFETIDP_iP",(PetscObject*)&iP);CHKERRQ(ierr);
-    if (iP) {
+    ierr = PetscObjectQuery((PetscObject)fetidppc_ctx->pc,"__KSPFETIDP_iV",(PetscObject*)&iV);CHKERRQ(ierr);
+    if (iV) {
       ierr = PetscOptionsGetBool(NULL,((PetscObject)fetimat)->prefix,"-pc_discrete_harmonic",&discrete_harmonic,NULL);CHKERRQ(ierr);
     }
     if (discrete_harmonic) {
@@ -755,9 +755,9 @@ PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat fetimat, FETIDPPC_ctx fetidppc_ctx
       */
       ierr = ISGetLocalSize(pcis->is_B_local,&nb);CHKERRQ(ierr);
       ierr = ISCreateStride(PetscObjectComm((PetscObject)pcis->A_II),nb,0,1,&aB);CHKERRQ(ierr);
-      ierr = MatCreateSubMatrix(pcis->A_II,iP,iP,MAT_INITIAL_MATRIX,&A_II);CHKERRQ(ierr);
-      ierr = MatCreateSubMatrix(pcis->A_IB,iP,aB,MAT_INITIAL_MATRIX,&A_IB);CHKERRQ(ierr);
-      ierr = MatCreateSubMatrix(pcis->A_BI,aB,iP,MAT_INITIAL_MATRIX,&A_BI);CHKERRQ(ierr);
+      ierr = MatCreateSubMatrix(pcis->A_II,iV,iV,MAT_INITIAL_MATRIX,&A_II);CHKERRQ(ierr);
+      ierr = MatCreateSubMatrix(pcis->A_IB,iV,aB,MAT_INITIAL_MATRIX,&A_IB);CHKERRQ(ierr);
+      ierr = MatCreateSubMatrix(pcis->A_BI,aB,iV,MAT_INITIAL_MATRIX,&A_BI);CHKERRQ(ierr);
       ierr = MatCreateSchurComplement(A_II,A_II,A_IB,A_BI,pcis->A_BB,&fetidppc_ctx->S_j);CHKERRQ(ierr);
 
       /* propagate settings of solver */
