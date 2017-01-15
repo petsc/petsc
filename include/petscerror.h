@@ -423,7 +423,7 @@ M*/
 M*/
 #define CHKERRQ(ierr)          do {if (PetscUnlikely(ierr)) return PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_REPEAT," ");} while (0)
 
-#define CHKERRV(ierr)          do {if (PetscUnlikely(ierr)) {n = PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_REPEAT," ");return;}} while(0)
+#define CHKERRV(ierr)          do {if (PetscUnlikely(ierr)) {ierr = PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_REPEAT," ");return;}} while(0)
 #define CHKERRABORT(comm,ierr) do {if (PetscUnlikely(ierr)) {PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_REPEAT," ");MPI_Abort(comm,ierr);}} while (0)
 #define CHKERRCONTINUE(ierr)   do {if (PetscUnlikely(ierr)) {PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr,PETSC_ERROR_REPEAT," ");}} while (0)
 
