@@ -594,205 +594,6 @@ PetscErrorCode DataBucketRemovePoint(DataBucket db)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode _DataFieldViewBinary(DataField field,FILE *fp)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFPrintf(PETSC_COMM_SELF, fp,"<DataField>\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(PETSC_COMM_SELF, fp,"%D\n", field->L);CHKERRQ(ierr);
-  ierr = PetscFPrintf(PETSC_COMM_SELF, fp,"%zu\n",field->atomic_size);CHKERRQ(ierr);
-  ierr = PetscFPrintf(PETSC_COMM_SELF, fp,"%s\n", field->registeration_function);CHKERRQ(ierr);
-  ierr = PetscFPrintf(PETSC_COMM_SELF, fp,"%s\n", field->name);CHKERRQ(ierr);
-  fwrite(field->data, field->atomic_size, field->L, fp);
-  ierr = PetscFPrintf(PETSC_COMM_SELF, fp,"\n</DataField>\n");CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode _DataBucketRegisterFieldFromFile(FILE *fp,DataBucket db)
-{
-  PetscBool      val;
-  DataField      gfield;
-  char           dummy[100];
-  char           registeration_function[5000];
-  char           field_name[5000];
-  PetscInt       L;
-  size_t         atomic_size,strL;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  /* check we haven't finalised the registration of fields */
-  /*
-   if(db->finalised==PETSC_TRUE) {
-   printf("ERROR: DataBucketFinalize() has been called. Cannot register more fields\n");
-   ERROR();
-   }
-   */
-  /* read file contents */
-  if (!fgets(dummy,99,fp))  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Incorrect file format");
-  if (fscanf(fp, "%" PetscInt_FMT "\n",&L) != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Incorrect file format");
-  if (fscanf(fp, "%zu\n",&atomic_size) != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Incorrect file format");
-  if (!fgets(registeration_function,4999,fp))  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Incorrect file format");
-  strL = strlen(registeration_function);
-  if (strL > 1) {
-    registeration_function[strL-1] = 0;
-  }
-  if (!fgets(field_name,4999,fp)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Incorrect file format");
-  strL = strlen(field_name);
-  if (strL > 1) {
-    field_name[strL-1] = 0;
-  }
-
-#ifdef DATA_BUCKET_LOG
-  ierr = PetscPrintf(PETSC_COMM_SELF,"  ** read L=%D; atomic_size=%zu; reg_func=\"%s\"; name=\"%s\" \n", L,atomic_size,registeration_function,field_name);CHKERRQ(ierr);
-#endif
-  /* check for repeated name */
-  ierr = StringInList( field_name, db->nfields, (const DataField*)db->field, &val );CHKERRQ(ierr);
-  if (val == PETSC_TRUE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot add same field twice");
-  /* create new space for data */
-  ierr = PetscRealloc(sizeof(DataField)*(db->nfields+1), &db->field);CHKERRQ(ierr);
-  /* add field */
-  ierr = DataFieldCreate( registeration_function, field_name, atomic_size, L, &gfield );CHKERRQ(ierr);
-  /* copy contents of file */
-  if (fread(gfield->data, gfield->atomic_size, gfield->L, fp) != (size_t) gfield->L) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Incorrect file format");
-#ifdef DATA_BUCKET_LOG
-  ierr = PetscPrintf(PETSC_COMM_SELF,"  ** read %zu bytes for DataField \"%s\" \n", gfield->atomic_size * gfield->L, field_name);CHKERRQ(ierr);
-#endif
-  /* finish reading meta data */
-  if (!fgets(dummy,99,fp))  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Incorrect file format");
-  if (!fgets(dummy,99,fp)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Incorrect file format");
-  db->field[db->nfields] = gfield;
-  db->nfields++;
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode _DataBucketViewAscii_HeaderWrite_v00(FILE *fp)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"<DataBucketHeader>\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"type=DataBucket\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"format=ascii\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"version=0.0\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"options=\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"</DataBucketHeader>\n");CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode _DataBucketViewAscii_HeaderRead_v00(FILE *fp)
-{
-  char           dummy[100];
-  size_t         strL;
-  PetscBool      flg;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  /* header open */
-  if (!fgets(dummy,99,fp))  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Incorrect file format");
-
-  /* type */
-  if (!fgets(dummy,99,fp)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Incorrect file format");
-  strL = strlen(dummy);
-  if (strL > 1) {dummy[strL-1] = 0;}
-  ierr = PetscStrcmp(dummy, "type=DataBucket", &flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Data file doesn't contain a DataBucket type");
-  /* format */
-  if (!fgets(dummy,99,fp))  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Incorrect file format");
-  /* version */
-  if (!fgets(dummy,99,fp))  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Incorrect file format");
-  strL = strlen(dummy);
-  if (strL > 1) { dummy[strL-1] = 0; }
-  ierr = PetscStrcmp(dummy, "version=0.0", &flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"DataBucket file must be parsed with version=0.0 : You tried %s", dummy);
-  /* options */
-  if (!fgets(dummy,99,fp))  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Incorrect file format");
-  /* header close */
-  if (!fgets(dummy,99,fp))  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Incorrect file format");
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode _DataBucketLoadFromFileBinary_SEQ(const char filename[],DataBucket *_db)
-{
-  DataBucket db;
-  FILE *fp;
-  PetscInt L,buffer,f,nfields;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-#ifdef DATA_BUCKET_LOG
-  ierr = PetscPrintf(PETSC_COMM_SELF,"** DataBucketLoadFromFile **\n");CHKERRQ(ierr);
-#endif
-  /* open file */
-  fp = fopen(filename,"rb");
-  if (fp == NULL) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file with name %s", filename);
-  /* read header */
-  ierr = _DataBucketViewAscii_HeaderRead_v00(fp);CHKERRQ(ierr);
-  if (fscanf(fp,"%" PetscInt_FMT "\n%" PetscInt_FMT "\n%" PetscInt_FMT "\n",&L,&buffer,&nfields) != 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Incorrect file format");
-  ierr = DataBucketCreate(&db);CHKERRQ(ierr);
-  for (f = 0; f < nfields; ++f) {
-    ierr = _DataBucketRegisterFieldFromFile(fp,db);CHKERRQ(ierr);
-  }
-  fclose(fp);
-  ierr = DataBucketFinalize(db);CHKERRQ(ierr);
-  /*
-   DataBucketSetSizes(db,L,buffer);
-   */
-  db->L = L;
-  db->buffer = buffer;
-  db->allocated = L + buffer;
-  *_db = db;
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode DataBucketLoadFromFile(MPI_Comm comm,const char filename[],DataBucketViewType type,DataBucket *db)
-{
-  PetscMPIInt    nproc,rank;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MPI_Comm_size(comm,&nproc);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-#ifdef DATA_BUCKET_LOG
-  ierr = PetscPrintf(PETSC_COMM_SELF,"** DataBucketLoadFromFile **\n");CHKERRQ(ierr);
-#endif
-  if (type == DATABUCKET_VIEW_STDOUT) {
-  } else if (type == DATABUCKET_VIEW_ASCII) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot be implemented as we don't know the underlying particle data structure");
-  } else if (type == DATABUCKET_VIEW_BINARY) {
-    if (nproc == 1) {
-      ierr = _DataBucketLoadFromFileBinary_SEQ(filename,db);CHKERRQ(ierr);
-    } else {
-      char name[PETSC_MAX_PATH_LEN];
-
-      ierr = PetscSNPrintf(name, PETSC_MAX_PATH_LEN-1, "%s_p%1.5d", filename, rank);CHKERRQ(ierr);
-      ierr = _DataBucketLoadFromFileBinary_SEQ(name, db);CHKERRQ(ierr);
-    }
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unknown viewer requested");
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode _DataBucketViewBinary(DataBucket db,const char filename[])
-{
-  FILE          *fp = NULL;
-  PetscInt       f;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  fp = fopen(filename,"wb");
-  if (fp == NULL) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file with name %s", filename);
-  /* db header */
-  ierr =_DataBucketViewAscii_HeaderWrite_v00(fp);CHKERRQ(ierr);
-  /* meta-data */
-  ierr = PetscFPrintf(PETSC_COMM_SELF, fp, "%D\n%D\n%D\n", db->L,db->buffer,db->nfields);CHKERRQ(ierr);
-  /* load datafields */
-  for (f = 0; f < db->nfields; ++f) {
-    ierr = _DataFieldViewBinary(db->field[f],fp);CHKERRQ(ierr);
-  }
-  fclose(fp);
-  PetscFunctionReturn(0);
-}
-
 PetscErrorCode DataBucketView_SEQ(DataBucket db,const char filename[],DataBucketViewType type)
 {
   PetscErrorCode ierr;
@@ -825,20 +626,14 @@ PetscErrorCode DataBucketView_SEQ(DataBucket db,const char filename[],DataBucket
   }
   break;
   case DATABUCKET_VIEW_ASCII:
-  {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot be implemented as we don't know the underlying particle data structure");
-  }
-  break;
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for ascii output");
+    break;
   case DATABUCKET_VIEW_BINARY:
-  {
-    ierr = _DataBucketViewBinary(db,filename);CHKERRQ(ierr);
-  }
-  break;
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for binary output");
+    break;
   case DATABUCKET_VIEW_HDF5:
-  {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No HDF5 support");
-  }
-  break;
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for HDF5 output");
+    break;
   default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown viewer method requested");
   }
   PetscFunctionReturn(0);
@@ -877,25 +672,13 @@ PetscErrorCode DataBucketView_MPI(MPI_Comm comm,DataBucket db,const char filenam
   }
   break;
   case DATABUCKET_VIEW_ASCII:
-  {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot be implemented as we don't know the underlying data structure");
-  }
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for ascii output");
   break;
   case DATABUCKET_VIEW_BINARY:
-  {
-    char        name[PETSC_MAX_PATH_LEN];
-    PetscMPIInt rank;
-
-    /* create correct extension */
-    ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(name, PETSC_MAX_PATH_LEN-1, "%s_p%1.5d", filename, rank);CHKERRQ(ierr);
-    ierr = _DataBucketViewBinary(db, name);CHKERRQ(ierr);
-  }
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for binary output");
   break;
   case DATABUCKET_VIEW_HDF5:
-  {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for HDF5");
-  }
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for HDF5 output");
   break;
   default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown viewer method requested");
   }
