@@ -731,14 +731,14 @@ PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat fetimat, FETIDPPC_ctx fetidppc_ctx
       ierr = PetscOptionsGetBool(NULL,((PetscObject)fetimat)->prefix,"-pc_discrete_harmonic",&discrete_harmonic,NULL);CHKERRQ(ierr);
     }
     if (discrete_harmonic) {
-      KSP        sksp;
-      PC         pc;
-      Mat        A_II,A_IB,A_BI;
-      IS         aB;
-      PetscInt   nb;
-      PetscBool  isshell;
-      KSPType    ksptype;
-      const char *prefix;
+      KSP             sksp;
+      PC              pc;
+      PCBDDCSubSchurs sub_schurs = pcbddc->sub_schurs;
+      Mat             A_II,A_IB,A_BI;
+      IS              iP = NULL;
+      PetscBool       isshell,reuse = PETSC_FALSE;
+      KSPType         ksptype;
+      const char      *prefix;
 
       /*
         We constructs a Schur complement for
@@ -753,11 +753,25 @@ PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat fetimat, FETIDPPC_ctx fetidppc_ctx
         | A_DI  B^t_ID A_DD |
 
       */
-      ierr = ISGetLocalSize(pcis->is_B_local,&nb);CHKERRQ(ierr);
-      ierr = ISCreateStride(PetscObjectComm((PetscObject)pcis->A_II),nb,0,1,&aB);CHKERRQ(ierr);
-      ierr = MatCreateSubMatrix(pcis->A_II,iV,iV,MAT_INITIAL_MATRIX,&A_II);CHKERRQ(ierr);
-      ierr = MatCreateSubMatrix(pcis->A_IB,iV,aB,MAT_INITIAL_MATRIX,&A_IB);CHKERRQ(ierr);
-      ierr = MatCreateSubMatrix(pcis->A_BI,aB,iV,MAT_INITIAL_MATRIX,&A_BI);CHKERRQ(ierr);
+      if (sub_schurs && sub_schurs->reuse_solver) {
+        ierr = PetscObjectQuery((PetscObject)sub_schurs->A,"__KSPFETIDP_iP",(PetscObject*)&iP);CHKERRQ(ierr);
+        if (iP) reuse = PETSC_TRUE;
+      }
+      if (!reuse) {
+        IS       aB;
+        PetscInt nb;
+        ierr = ISGetLocalSize(pcis->is_B_local,&nb);CHKERRQ(ierr);
+        ierr = ISCreateStride(PetscObjectComm((PetscObject)pcis->A_II),nb,0,1,&aB);CHKERRQ(ierr);
+        ierr = MatCreateSubMatrix(pcis->A_II,iV,iV,MAT_INITIAL_MATRIX,&A_II);CHKERRQ(ierr);
+        ierr = MatCreateSubMatrix(pcis->A_IB,iV,aB,MAT_INITIAL_MATRIX,&A_IB);CHKERRQ(ierr);
+        ierr = MatCreateSubMatrix(pcis->A_BI,aB,iV,MAT_INITIAL_MATRIX,&A_BI);CHKERRQ(ierr);
+        ierr = ISDestroy(&aB);CHKERRQ(ierr);
+      } else {
+        ierr = MatCreateSubMatrix(sub_schurs->A,pcis->is_I_local,pcis->is_B_local,MAT_INITIAL_MATRIX,&A_IB);CHKERRQ(ierr);
+        ierr = MatCreateSubMatrix(sub_schurs->A,pcis->is_B_local,pcis->is_I_local,MAT_INITIAL_MATRIX,&A_BI);CHKERRQ(ierr);
+        ierr = PetscObjectReference((PetscObject)pcis->A_II);CHKERRQ(ierr);
+        A_II = pcis->A_II;
+      }
       ierr = MatCreateSchurComplement(A_II,A_II,A_IB,A_BI,pcis->A_BB,&fetidppc_ctx->S_j);CHKERRQ(ierr);
 
       /* propagate settings of solver */
@@ -784,11 +798,13 @@ PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat fetimat, FETIDPPC_ctx fetidppc_ctx
       ierr = MatDestroy(&A_II);CHKERRQ(ierr);
       ierr = MatDestroy(&A_IB);CHKERRQ(ierr);
       ierr = MatDestroy(&A_BI);CHKERRQ(ierr);
-      ierr = ISDestroy(&aB);CHKERRQ(ierr);
       ierr = MatGetOptionsPrefix(fetimat,&prefix);CHKERRQ(ierr);
       ierr = KSPSetOptionsPrefix(sksp,prefix);CHKERRQ(ierr);
       ierr = KSPAppendOptionsPrefix(sksp,"harmonic_");CHKERRQ(ierr);
       ierr = KSPSetFromOptions(sksp);CHKERRQ(ierr);
+      if (reuse) {
+        ierr = KSPSetPC(sksp,sub_schurs->reuse_solver->interior_solver);CHKERRQ(ierr);
+      }
     } else { /* default Dirichlet preconditioner is pde-harmonic */
       ierr = MatCreateSchurComplement(pcis->A_II,pcis->A_II,pcis->A_IB,pcis->A_BI,pcis->A_BB,&fetidppc_ctx->S_j);CHKERRQ(ierr);
       ierr = MatSchurComplementSetKSP(fetidppc_ctx->S_j,pcis->ksp_D);CHKERRQ(ierr);
