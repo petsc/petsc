@@ -1033,13 +1033,20 @@ static PetscErrorCode KSPSolve_FETIDP(KSP ksp)
 static PetscErrorCode KSPReset_FETIDP(KSP ksp)
 {
   KSP_FETIDP     *fetidp = (KSP_FETIDP*)ksp->data;
+  PC_BDDC        *pcbddc;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = ISDestroy(&fetidp->pP);CHKERRQ(ierr);
   ierr = VecDestroy(&fetidp->rhs_flip);CHKERRQ(ierr);
-  ierr = PCReset(fetidp->innerbddc);CHKERRQ(ierr);
-  ierr = KSPReset(fetidp->innerksp);CHKERRQ(ierr);
+  /* avoid PCReset that does not take into account ref counting */
+  ierr = PCDestroy(&fetidp->innerbddc);CHKERRQ(ierr);
+  ierr = PCCreate(PetscObjectComm((PetscObject)ksp),&fetidp->innerbddc);CHKERRQ(ierr);
+  ierr = PCSetType(fetidp->innerbddc,PCBDDC);CHKERRQ(ierr);
+  pcbddc = (PC_BDDC*)fetidp->innerbddc->data;
+  pcbddc->symmetric_primal = PETSC_FALSE;
+  ierr = PetscLogObjectParent((PetscObject)ksp,(PetscObject)fetidp->innerbddc);CHKERRQ(ierr);
+  ierr = KSPDestroy(&fetidp->innerksp);CHKERRQ(ierr);
   fetidp->saddlepoint  = PETSC_FALSE;
   fetidp->matstate     = -1;
   fetidp->matnnzstate  = -1;
