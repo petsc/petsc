@@ -8166,7 +8166,7 @@ One way to index and build PETSc in Eclipse is as follows.
 If you launch Eclipse from the Dock on Mac OS X, \trl{.bashrc} will not be loaded (a known OS X behavior, for security reasons).
 This will be a problem if you set the environment variables \trl{PETSC_DIR} and \trl{PETSC_ARCH} in \trl{.bashrc}.
 A solution which involves replacing the executable can be found at
-\href{http://stackoverflow.com/questions/829749/launch-mac-eclipse-with-environment-variables-set}
+\href{http://stackoverflow.com/questions/829749}
 {\trl{http://stackoverflow.com/questions/829749/launch-mac-eclipse-with-environment-variables-set}}.
 Alternatively, you can add \trl{PETSC_DIR} and \trl{PETSC_ARCH} manually under ``Properties $\rightarrow$ C/C++ Build $\rightarrow$ Environment''.
 
@@ -8188,11 +8188,6 @@ and the libraries, for example
 \begin{bashlisting}
 m, petsc, stdc++, mpichxx, mpich, lapack, blas, gfortran, dl, rt,gcc_s, pthread, X11
 \end{bashlisting}
-\end{enumerate}
-To make PETSc an Eclipse package,
-\begin{enumerate}
-\item Install the Mercurial plugin for Eclipse and then import the PETSc repository to Eclipse.
-\item Select ``New$\rightarrow$Convert to C/C++ project'' and select ``shared library''. At this point you can perform searches in the code.
 \end{enumerate}
 Another PETSc user has provided the following steps to build an Eclipse index for PETSc that can be used with their own code, without compiling PETSc source into their project.
 \begin{enumerate}
