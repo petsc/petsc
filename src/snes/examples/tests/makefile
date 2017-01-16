@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/snes/examples/tests/
-EXAMPLESC       = ex1.c ex7.c ex8.c ex15.c ex16.c ex17.c ex68.c ex69.c
+EXAMPLESC       = ex1.c ex7.c ex17.c ex68.c ex69.c
 EXAMPLESF       = ex1f.F ex12f.F ex18f90.F90
 DIRS	        =
 MANSEC          = SNES
@@ -44,10 +44,6 @@ ex7: ex7.o  chkopts
 	-${CLINKER} -o ex7 ex7.o ${PETSC_SNES_LIB}
 	${RM} ex7.o
 
-ex8: ex8.o  chkopts
-	-${CLINKER} -o ex8 ex8.o ${PETSC_SNES_LIB}
-	${RM} ex8.o
-
 ex9: ex9.o  chkopts
 	-${CLINKER} -o ex9 ex9.o ${PETSC_SNES_LIB}
 	${RM} ex9.o
@@ -71,14 +67,6 @@ ex13: ex13.o  chkopts
 ex14f: ex14f.o  chkopts
 	-${FLINKER} -o ex14f ex14f.o ${PETSC_SNES_LIB}
 	${RM} ex14f.o
-
-ex15: ex15.o  chkopts
-	-${CLINKER} -o ex15 ex15.o ${PETSC_SNES_LIB}
-	${RM} ex15.o
-
-ex16: ex16.o  chkopts
-	-${CLINKER} -o ex16 ex16.o ${PETSC_SNES_LIB}
-	${RM} ex16.o
 
 ex17: ex17.o chkopts
 	-${CLINKER} -o ex17 ex17.o ${PETSC_SNES_LIB}
