@@ -23,7 +23,7 @@ T*/
 
      Programming model: Combination of
         1) MPI message passing for PETSc routines
-        2) automatic loop parallism (using shared memory) for user
+        2) automatic loop parallelism (using shared memory) for user
            provided function.
 
        While the user function is being evaluated all MPI processes except process
