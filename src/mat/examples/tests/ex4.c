@@ -37,6 +37,7 @@ int main(int argc,char **argv)
     ierr   = ISCreateStride(PETSC_COMM_SELF,m,0,1,&irow);CHKERRQ(ierr);
     ierr   = ISCreateStride(PETSC_COMM_SELF,n,0,1,&icol);CHKERRQ(ierr);
     ierr   = MatGetSubMatrices(mat,1,&irow,&icol,MAT_INITIAL_MATRIX,&submatrices);CHKERRQ(ierr);
+    ierr   = MatGetSubMatrices(mat,1,&irow,&icol,MAT_REUSE_MATRIX,&submatrices);CHKERRQ(ierr);
     submat = *submatrices;
 
     /* sviewer will cause the submatrices (one per processor) to be printed in the correct order */
