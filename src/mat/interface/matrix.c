@@ -425,14 +425,14 @@ PetscErrorCode MatImaginaryPart(Mat mat)
 /*@
    MatMissingDiagonal - Determine if sparse matrix is missing a diagonal entry (or block entry for BAIJ matrices)
 
-   Collective on Mat
+   Not Collective
 
    Input Parameter:
 .  mat - the matrix
 
    Output Parameters:
 +  missing - is any diagonal missing
--  dd - first diagonal entry that is missing (optional)
+-  dd - first diagonal entry that is missing (optional) on this process
 
    Level: advanced
 
