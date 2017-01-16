@@ -461,7 +461,7 @@ static const char *HYPREBoomerAMGRelaxType[]   = {"Jacobi","sequential-Gauss-Sei
                                                   "" /* 10 */, "" /* 11 */, "" /* 12 */, "" /* 13 */, "" /* 14 */,
                                                   "CG" /* non-stationary */,"Chebyshev","FCF-Jacobi","l1scaled-Jacobi"};
 static const char *HYPREBoomerAMGInterpType[]  = {"classical", "", "", "direct", "multipass", "multipass-wts", "ext+i",
-                                                  "ext+i-cc", "standard", "standard-wts", "", "", "FF", "FF1"};
+                                                  "ext+i-cc", "standard", "standard-wts", "block", "block-wtd", "FF", "FF1"};
 static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
