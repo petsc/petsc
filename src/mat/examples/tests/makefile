@@ -921,6 +921,11 @@ runex4_4:
 	if (${DIFF} output/ex4_4.out ex4_1.tmp) then true; \
 	else printf "${PWD}\nPossible problem with ex4_4 for mpidense,np = 3,diffs above\n=========================================\n"; fi; \
 	${RM} -f ex4_1.tmp;
+runex4_5:
+	-@${MPIEXEC} -n 3 ./ex4 -mat_type aij -test_all > ex4_1.tmp 2>&1; \
+	if (${DIFF} output/ex4_5.out ex4_1.tmp) then true; \
+	else printf "${PWD}\nPossible problem with ex4_5 for mpiaij,np = 3,diffs above\n=========================================\n"; fi; \
+	${RM} -f ex4_1.tmp;
 
 runex5:
 	-@${MPIEXEC} -n 1 ./ex5 -mat_type seqaij -rectA > ex5_1.tmp 2>&1; \
@@ -2855,7 +2860,8 @@ runex206_sbaij_2_1_d:
 	   ${DIFF} output/ex206_sbaij_2_1_d.out ex206.tmp || printf "${PWD}\nPossible problem with ex206_sbaij_2_1_d, diffs above\n=========================================\n"; \
 	   ${RM} -f ex206.tmp
 
-TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 runex2_4 ex2.rm ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm  ex5.PETSc runex5 runex5_2 ex5.rm \
+TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 runex2_4 ex2.rm ex3.PETSc runex3 ex3.rm \
+                                 ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 runex4_5 ex4.rm ex5.PETSc runex5 runex5_2 ex5.rm \
                                  ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 ex7.rm ex8.PETSc runex8 ex8.rm \
                                  ex9.PETSc runex9 runex9_2 runex9_3 runex9_3_baij runex9_3_sbaij runex9_4_baij runex9_4_sbaij ex9.rm \
                                  ex10.PETSc runex10 ex10.rm ex11.PETSc runex11 runex11_2 runex11_3 runex11_4 ex11.rm ex14.PETSc \
