@@ -403,5 +403,6 @@ struct _p_VecTagger {
 
 PETSC_EXTERN PetscBool      VecTaggerRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode VecTaggerRegisterAll(void);
+PETSC_EXTERN PetscErrorCode VecTaggerComputeIS_FromIntervals(VecTagger,Vec,IS*);
 
 #endif
