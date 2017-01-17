@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/snes/examples/tests/
-EXAMPLESC       = ex1.c ex7.c ex8.c ex15.c ex16.c ex17.c ex68.c ex69.c
+EXAMPLESC       = ex1.c ex7.c ex17.c ex68.c ex69.c
 EXAMPLESF       = ex1f.F ex12f.F ex18f90.F90
 DIRS	        =
 MANSEC          = SNES
@@ -44,10 +44,6 @@ ex7: ex7.o  chkopts
 	-${CLINKER} -o ex7 ex7.o ${PETSC_SNES_LIB}
 	${RM} ex7.o
 
-ex8: ex8.o  chkopts
-	-${CLINKER} -o ex8 ex8.o ${PETSC_SNES_LIB}
-	${RM} ex8.o
-
 ex9: ex9.o  chkopts
 	-${CLINKER} -o ex9 ex9.o ${PETSC_SNES_LIB}
 	${RM} ex9.o
@@ -71,14 +67,6 @@ ex13: ex13.o  chkopts
 ex14f: ex14f.o  chkopts
 	-${FLINKER} -o ex14f ex14f.o ${PETSC_SNES_LIB}
 	${RM} ex14f.o
-
-ex15: ex15.o  chkopts
-	-${CLINKER} -o ex15 ex15.o ${PETSC_SNES_LIB}
-	${RM} ex15.o
-
-ex16: ex16.o  chkopts
-	-${CLINKER} -o ex16 ex16.o ${PETSC_SNES_LIB}
-	${RM} ex16.o
 
 ex17: ex17.o chkopts
 	-${CLINKER} -o ex17 ex17.o ${PETSC_SNES_LIB}
@@ -126,61 +114,6 @@ runex1f_3:
 	   if (${DIFF} output/ex1f_2.out ex1f_3.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex1f_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex1f_3.tmp
-runex2:
-	-@${MPIEXEC} -n 1 ./ex2	-ksp_gmres_cgs_refinement_type refine_always > ex2_1.tmp 2>&1;   \
-	   if (${DIFF} output/ex2_1.out ex2_1.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex2_1, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex2_1.tmp
-runex3:
-	-@${MPIEXEC} -n 1 ./ex3 -ksp_gmres_cgs_refinement_type refine_always -nox -snes_monitor_short -snes_view \
-		-pc_type jacobi >ex3_1.tmp 2>&1;	\
-	   if (${DIFF} output/ex3_1.out ex3_1.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex3_1, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex3_1.tmp
-runex3_2:
-	-@${MPIEXEC} -n 1 ./ex3 -ksp_gmres_cgs_refinement_type refine_always -nox -snes_monitor_short -snes_type newtontr -snes_view \
-		-pc_type jacobi > ex3_2.tmp 2>&1; \
-	   if (${DIFF} output/ex3_2.out ex3_2.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex3_2, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex3_2.tmp
-
-runex6:
-	-@${MPIEXEC} -n 4 ./ex6 -ksp_gmres_cgs_refinement_type refine_always -snes_mf -Nx 4 -Ny 1 -snes_monitor_short > ex6_1.tmp 2>&1; \
-	   if (${DIFF} output/ex6_1.out ex6_1.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex6_1, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex6_1.tmp
-runex6_2:
-	-@${MPIEXEC} -n 4 ./ex6 -ksp_gmres_cgs_refinement_type refine_always -mat_type mpiaij -Nx 2 -Ny 2 -snes_monitor_short > ex6_2.tmp 2>&1; \
-	   if (${DIFF} output/ex6_2.out ex6_2.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex6_2, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex6_2.tmp
-runex6_3:
-	-@${MPIEXEC} -n 4 ./ex6 -ksp_gmres_cgs_refinement_type refine_always -snes_mf -Nx 2 -Ny 2 -star -snes_monitor_short>ex6_3.tmp 2>&1;\
-	   if (${DIFF} output/ex6_1.out ex6_3.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex6_3, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex6_3.tmp
-runex6_4:
-	-@${MPIEXEC} -n 4 ./ex6 -ksp_gmres_cgs_refinement_type refine_always -mat_type mpiaij -Nx 2 -Ny 2 -snes_monitor_short -pc_type asm \
-	   -pc_asm_blocks 4 -pc_asm_overlap 1 > ex6_4.tmp 2>&1; \
-	   if (${DIFF} output/ex6_4.out ex6_4.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex6_4, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex6_4.tmp
-runex6_5:
-	-@${MPIEXEC} -n 4 ./ex6 -ksp_gmres_cgs_refinement_type refine_always -mat_type mpiaij -Nx 2 -Ny 2 -snes_monitor_short -pc_type bjacobi \
-	   -snes_view > ex6_5.tmp 2>&1; \
-	   if (${DIFF} output/ex6_5.out ex6_5.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex6_5, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex6_5.tmp
-runex6_6:
-	-@${MPIEXEC} -n 4 ./ex6 -ksp_gmres_cgs_refinement_type refine_always -snes_fd -Nx 2 -Ny 2 -snes_monitor_short > ex6_6.tmp 2>&1; \
-	   if (${DIFF} output/ex6_6.out ex6_6.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex6_6, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex6_6.tmp
-runex6_7:
-	-@${MPIEXEC} -n 3 ./ex6 -ksp_gmres_cgs_refinement_type refine_always -snes_fd  -snes_monitor_short > ex6_7.tmp 2>&1;\
-	   if (${DIFF} output/ex6_7.out ex6_7.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex6_7, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex6_7.tmp
 runex7:
 	-@${MPIEXEC} -n 1 ./ex7 -ksp_gmres_cgs_refinement_type refine_always -snes_monitor_cancel -snes_monitor_short > ex7_1.tmp 2>&1; \
 	   if (${DIFF} output/ex7_1.out ex7_1.tmp) then true; \

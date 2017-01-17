@@ -63,6 +63,11 @@ if ( -f /usr/bin/cygcheck.exe ) then
   mkdir -p $TMP
 endif
 
+# Run initialization script
+if ( -f ./config/examples/${CONFIGURE_FILE}.csh ) then
+  source ./config/examples/${CONFIGURE_FILE}.csh
+endif
+
 # Run Configure
 ./config/examples/${CONFIGURE_FILE}.py --with-no-output PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR ${CONFIGURE_ARGS} >>& build.log
 set err=$?
@@ -117,7 +122,7 @@ else
 endif
 #
 # do build/install
-make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR  ${BUILDTARGET} ${INSTALLTARGET} >>& build.log
+${ANALYZER} make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR  ${BUILDTARGET} ${INSTALLTARGET} >>& build.log
 set err=$?
 echo '****************************************************' >>& build.log
 echo "Finished Build on $MACH $PETSC_ARCH `date`" >>& build.log
@@ -156,7 +161,7 @@ git log --oneline -1 >>& examples.log
 if ( "${BUILDER}" == "yes" ) then
   env PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR ./config/builder2.py regression >>& examples.log
 else
-  $ANALYZER make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR alltests TESTMODE=$TESTMODE "${VALGRIND}" ${ANALYZER_PCC} |& grep -v 'up to date' >>& examples.log
+  $ANALYZER make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR alltests V=0 TESTMODE=$TESTMODE "${VALGRIND}" ${ANALYZER_PCC} |& grep -v 'up to date' >>& examples.log
 endif
 echo '******************************************************' >>& examples.log
 

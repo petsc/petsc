@@ -353,12 +353,18 @@ alltests:
           else \
             ALLTESTSLOG=alltests.log ;\
           fi; \
-          ${OMAKE} alltest PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} MPIEXEC="${MPIEXEC}" DATAFILESPATH=${DATAFILESPATH} 2>&1 | tee $${ALLTESTSLOG};\
+          ${OMAKE} allgtest alltest PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} MPIEXEC="${MPIEXEC}" DATAFILESPATH=${DATAFILESPATH} 2>&1 | tee $${ALLTESTSLOG};\
           if [ x${ALLTESTS_CHECK_FAILURES} = xyes -a ${PETSC_PRECISION} != single ]; then \
             cat $${ALLTESTSLOG} | sed -e '1d' -e '$$d' | \
             grep -v '^[\*]\{7,7\} Testing: ${TESTMODE}_[a-zA-Z0-9_]* [\*]\{7,7\}$$' | \
             grep -v '^[\.]*$$' | wc -l | grep '^[ ]*0$$' > /dev/null; \
           fi;
+
+allgtest-tap:
+	-@cd ${PETSC_DIR}; ${OMAKE} -f gmakefile -j ${MAKE_NP} test V=0
+
+allgtest:
+	-@cd ${PETSC_DIR}; ${OMAKE} -f gmakefile -j ${MAKE_NP} test V=0 | egrep -v '^(ok [^#]*(# SKIP|$$)|[A-Za-z][A-Za-z0-9_-]*.(c|F|cxx|F90)$$)'
 
 alltest:
 	-@date
@@ -386,6 +392,6 @@ palltests:
 
 
 tests_DATAFILESPATH:
-	make ACTION=testexamples_DATAFILESPATH tree DATAFILESPATH=${DATAFILESPATH}
+	${OMAKE} ACTION=testexamples_DATAFILESPATH tree DATAFILESPATH=${DATAFILESPATH}
 
 

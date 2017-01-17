@@ -285,7 +285,7 @@ int main(int argc,char ** argv)
   Vec               x, b;
   Mat               A;
   KSP               ksp;
-  int               *edgelist;
+  int               *edgelist = NULL;
   PetscInt          componentkey[2];
   Node              *node;
   Branch            *branch;

@@ -1,5 +1,9 @@
 
 
+!/*T
+!   requires: define(PETSC_USING_F2003) define(PETSC_USING_FREEFORM)
+!T*/
+
 #include "petsc/finclude/petsc.h"
       use petsc
       implicit none
@@ -33,3 +37,11 @@
 
 
 
+
+!
+!/*TEST
+!
+!   test:
+!      args: -joe_jeff b456
+!
+!TEST*/

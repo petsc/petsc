@@ -60,3 +60,19 @@ int main(int argc, char *argv[])
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
+
+
+/*TEST
+
+   test:
+      output_file: output/ex20_1.out
+
+   test:
+      suffix: 2
+      args: -cl -prefix_push cl_ -zero 10 -prefix_push a_ -one 11 -prefix_push bb_ -two 12 -prefix_pop -three 13 -prefix_push cc_ -prefix_push ddd_ -four 14 -prefix_pop -prefix_pop -prefix_pop -five 15 -prefix_pop
+
+   test:
+      suffix: 3
+      args: -str
+
+TEST*/

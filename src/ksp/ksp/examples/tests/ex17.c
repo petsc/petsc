@@ -94,10 +94,6 @@ int main(int argc,char **args)
 
 PetscErrorCode FormTestMatrix(Mat A,PetscInt n,TestType type)
 {
-#if !defined(PETSC_USE_COMPLEX)
-  SETERRQ(PetscObjectComm((PetscObject)A),1,"FormTestMatrix: These problems require complex numbers.");
-#else
-
   PetscScalar    val[5];
   PetscErrorCode ierr;
   PetscInt       i,j,Ii,J,col[5],Istart,Iend;
@@ -209,7 +205,6 @@ PetscErrorCode FormTestMatrix(Mat A,PetscInt n,TestType type)
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-#endif
 
   return 0;
 }

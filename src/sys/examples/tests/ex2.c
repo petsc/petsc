@@ -24,3 +24,12 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+
+
+/*TEST
+
+   test:
+      filter: egrep "(Caught signal number 11 SEGV|Caught signal number 4 Illegal)" | wc -l
+
+
+TEST*/

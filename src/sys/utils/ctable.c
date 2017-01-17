@@ -23,6 +23,21 @@ static PetscErrorCode PetscTableCreateHashSize(PetscInt sz, PetscInt *hsz)
   else if (sz < 819200)  *hsz = 1193557;
   else if (sz < 1638400) *hsz = 2297059;
   else if (sz < 3276800) *hsz = 4902383;
+  else if (sz < 6553600) *hsz = 9179113;
+  else if (sz < 13107200)*hsz = 18350009;
+  else if (sz < 26214400)*hsz = 36700021;
+  else if (sz < 52428800)*hsz = 73400279;
+  else if (sz < 104857600)*hsz = 146800471;
+  else if (sz < 209715200)*hsz = 293601569;
+  else if (sz < 419430400)*hsz = 587202269;
+  else if (sz < 838860800)*hsz = 1175862839;
+  else if (sz < 1677721600)*hsz = 2147321881;
+#if defined(PETSC_USE_64BIT_INDICES)
+  else if (sz < 3355443200l)*hsz = 4695452647l;
+  else if (sz < 6710886400l)*hsz = 9384888067l;
+  else if (sz < 13421772800l)*hsz = 18787024237l;
+  else if (sz < 26843545600l)*hsz = 32416190071l;
+#endif
   else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"A really huge hash is being requested.. cannot process: %D",sz);
   PetscFunctionReturn(0);
 }

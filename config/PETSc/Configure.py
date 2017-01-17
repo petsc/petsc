@@ -254,6 +254,7 @@ prepend-path PATH %s
     # And sometimes we need a C++ compiler even when PETSc is built with C
     if hasattr(self.compilers, 'CXX'):
       self.setCompilers.pushLanguage('Cxx')
+      self.addDefine('HAVE_CXX','1')
       self.addMakeMacro('CXX_FLAGS',self.setCompilers.getCompilerFlags())
       self.setCompilers.popLanguage()
 
@@ -923,6 +924,7 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
       self.addDefine('HAVE_O_BINARY',1)
 
     if self.compilers.CC.find('win32fe') >= 0:
+      self.addDefine('HAVE_WINDOWS_COMPILERS',1)
       self.addDefine('PATH_SEPARATOR','\';\'')
       self.addDefine('DIR_SEPARATOR','\'\\\\\'')
       self.addDefine('REPLACE_DIR_SEPARATOR','\'/\'')

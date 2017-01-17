@@ -36,6 +36,7 @@ int main(int argc,char **argv)
       ierr = PetscPrintf(PETSC_COMM_WORLD," %D ",Column[i]);CHKERRQ(ierr);
     }
   }
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n");CHKERRQ(ierr);
   ierr = PetscFree(Level);CHKERRQ(ierr);
   ierr = PetscFree(Levelcnt);CHKERRQ(ierr);
   ierr = PetscFree(Idbylevel);CHKERRQ(ierr);
@@ -43,3 +44,10 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+
+TEST*/

@@ -53,8 +53,8 @@ PetscInt main(PetscInt argc,char **args)
   ierr = PetscOptionsHasName(NULL,NULL, "-check_symmetry", &flg);CHKERRQ(ierr);
   if (flg) {
     Mat Trans;
-    ierr = MatTranspose(A,MAT_INITIAL_MATRIX, &Trans);
-    ierr = MatEqual(A, Trans, &isSymmetric);
+    ierr = MatTranspose(A,MAT_INITIAL_MATRIX, &Trans);CHKERRQ(ierr);
+    ierr = MatEqual(A, Trans, &isSymmetric);CHKERRQ(ierr);
     if (!isSymmetric) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"A must be symmetric");
     ierr = MatDestroy(&Trans);CHKERRQ(ierr);
   }
@@ -212,9 +212,9 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
   case 2:
     dot_max = 0.0;
     for (i = il; i<iu; i++) {
-      ierr = VecCopy(evec[i], vt1);
+      ierr = VecCopy(evec[i], vt1);CHKERRQ(ierr);
       for (j=il; j<iu; j++) {
-        ierr = VecDot(evec[j],vt1,&dot);
+        ierr = VecDot(evec[j],vt1,&dot);CHKERRQ(ierr);
         if (j == i) {
           dot = PetscAbsScalar(dot - 1.0);
         } else {
@@ -222,21 +222,21 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
         }
         if (dot > dot_max) dot_max = dot;
         if (dot > tols[1]) {
-          ierr = VecNorm(evec[i],NORM_INFINITY,&norm);
-          ierr = PetscPrintf(PETSC_COMM_SELF,"|delta(%D,%D)|: %g, norm: %g\n",i,j,(double)dot,(double)norm);
+          ierr = VecNorm(evec[i],NORM_INFINITY,&norm);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_SELF,"|delta(%D,%D)|: %g, norm: %g\n",i,j,(double)dot,(double)norm);CHKERRQ(ierr);
         }
       }
     }
-    ierr = PetscPrintf(PETSC_COMM_SELF,"    max|(x_j^T*x_i) - delta_ji|: %g\n",(double)dot_max);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"    max|(x_j^T*x_i) - delta_ji|: %g\n",(double)dot_max);CHKERRQ(ierr);
 
   case 1:
     norm_max = 0.0;
     for (i = il; i< iu; i++) {
-      ierr = MatMult(A, evec[i], vt1);
-      ierr = VecCopy(evec[i], vt2);
+      ierr = MatMult(A, evec[i], vt1);CHKERRQ(ierr);
+      ierr = VecCopy(evec[i], vt2);CHKERRQ(ierr);
       tmp  = -eval[i];
-      ierr = VecAXPY(vt1,tmp,vt2);
-      ierr = VecNorm(vt1, NORM_INFINITY, &norm);
+      ierr = VecAXPY(vt1,tmp,vt2);CHKERRQ(ierr);
+      ierr = VecNorm(vt1, NORM_INFINITY, &norm);CHKERRQ(ierr);
       norm = PetscAbsScalar(norm);
       if (norm > norm_max) norm_max = norm;
       /* sniff, and bark if necessary */
@@ -244,12 +244,12 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
         ierr = PetscPrintf(PETSC_COMM_SELF,"  residual violation: %D, resi: %g\n",i, norm);CHKERRQ(ierr);
       }
     }
-    ierr = PetscPrintf(PETSC_COMM_SELF,"    max_resi:                    %g\n", (double)norm_max);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"    max_resi:                    %g\n", (double)norm_max);CHKERRQ(ierr);
     break;
   default:
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: cklvl=%D is not supported \n",cklvl);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: cklvl=%D is not supported \n",cklvl);CHKERRQ(ierr);
   }
-  ierr = VecDestroy(&vt2);
-  ierr = VecDestroy(&vt1);
+  ierr = VecDestroy(&vt2);CHKERRQ(ierr);
+  ierr = VecDestroy(&vt1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

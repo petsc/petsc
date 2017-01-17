@@ -52,7 +52,7 @@
          if (rank .eq. 0) then
             write(6,*) 'This is a uniprocessor example only!'
          endif
-         SETERRQ(PETSC_COMM_WORLD,1,' ',ierr)
+         SETERRQ(PETSC_COMM_WORLD,1,' ')
       endif
       none = -1.0
       one  = 1.0

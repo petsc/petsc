@@ -24,3 +24,18 @@ int main(int argc,char **argv)
   return 0;
 }
 
+
+/*
+
+    Because this example may produce different output on different machines we filter out everything.
+    This makes the test uneffective but currently we don't have a good way to know which machines should handle
+    the floating point exceptions properly.
+
+*/
+/*TEST
+
+   test:
+      args: -fp_trap
+      filter:  true
+
+TEST*/

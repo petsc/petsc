@@ -260,7 +260,7 @@ int main(int argc,char **argv)
   ierr = VecGetArray(upperb,&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 1.1;
   ierr = VecRestoreArray(upperb,&x_ptr);CHKERRQ(ierr);
-  ierr = TaoSetVariableBounds(tao,lowerb,upperb);
+  ierr = TaoSetVariableBounds(tao,lowerb,upperb);CHKERRQ(ierr);
 
   /* Check for any TAO command line options */
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
@@ -405,7 +405,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = TSGetCostIntegral(ts,&q);CHKERRQ(ierr);
   /* ierr = VecView(q,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
   ierr = ComputeSensiP(lambda[0],mu[0],ctx);CHKERRQ(ierr);
-  ierr = VecCopy(mu[0],G);
+  ierr = VecCopy(mu[0],G);CHKERRQ(ierr);
 
   ierr = TSGetCostIntegral(ts,&q);CHKERRQ(ierr);
   ierr = VecGetArray(q,&x_ptr);CHKERRQ(ierr);

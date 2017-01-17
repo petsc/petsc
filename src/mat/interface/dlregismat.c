@@ -107,8 +107,8 @@ PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Pastix(void);
 #if defined(PETSC_HAVE_SUPERLU_DIST)
 PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_SuperLU_DIST(void);
 #endif
-#if defined(PETSC_HAVE_CLIQUE)
-PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Clique(void);
+#if defined(PETSC_HAVE_ELEMENTAL)
+PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_SparseElemental(void);
 #endif
 #if defined(PETSC_HAVE_MKL_PARDISO)
 PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_MKL_Pardiso(void);
@@ -358,8 +358,8 @@ PetscErrorCode  MatInitializePackage(void)
 #if defined(PETSC_HAVE_SUPERLU_DIST)
   ierr = MatSolverPackageRegister_SuperLU_DIST();CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_CLIQUE)
-  ierr = MatSolverPackageRegister_Clique();CHKERRQ(ierr);
+#if defined(PETSC_HAVE_ELEMENTAL)
+  ierr = MatSolverPackageRegister_SparseElemental();CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_MKL_PARDISO)
   ierr = MatSolverPackageRegister_MKL_Pardiso();CHKERRQ(ierr);
@@ -373,8 +373,8 @@ PetscErrorCode  MatInitializePackage(void)
 #if defined(PETSC_HAVE_LUSOL)
   ierr = MatSolverPackageRegister_Lusol();CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_CLIQUE)
-  ierr = MatSolverPackageRegister_Clique();CHKERRQ(ierr);
+#if defined(PETSC_HAVE_ELEMENTAL)
+  ierr = MatSolverPackageRegister_SparseElemental();CHKERRQ(ierr);
 #endif
 
   ierr = PetscRegisterFinalize(MatFinalizePackage);CHKERRQ(ierr);

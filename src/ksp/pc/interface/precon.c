@@ -1417,6 +1417,11 @@ PetscErrorCode  PCGetOptionsPrefix(PC pc,const char *prefix[])
   PetscFunctionReturn(0);
 }
 
+/*
+   Indicates the right hand side will be changed by KSPSolve(), this occurs for a few
+  preconditioners including BDDC and Eisentat that transform the equations before applying
+  the Krylov methods
+*/
 PETSC_INTERN PetscErrorCode  PCPreSolveChangeRHS(PC pc,PetscBool *change)
 {
   PetscErrorCode ierr;

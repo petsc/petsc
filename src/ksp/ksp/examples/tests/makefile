@@ -7,7 +7,7 @@ LOCDIR    = src/ksp/ksp/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex8.c ex10.c ex11.c ex14.c \
                 ex15.c ex17.c ex18.c ex19.c ex20.c ex21.c ex22.c ex24.c \
                 ex25.c ex26.c ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c \
-                ex33.c ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c \
+                ex33.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c \
                 ex43.c ex44.c ex45.c ex46.cxx ex47.c ex48.c ex49.c ex50.c ex51.c
 EXAMPLESCH      =
 EXAMPLESF       = ex5f.F ex12f.F ex16f.F ex52f.F
@@ -66,10 +66,6 @@ ex12f: ex12f.o  chkopts
 ex5f: ex5f.o  chkopts
 	-${FLINKER} -o ex5f ex5f.o  ${PETSC_KSP_LIB}
 	${RM} ex5f.o
-
-ex13: ex13.o  chkopts
-	-${CLINKER} -o ex13 ex13.o  ${PETSC_KSP_LIB}
-	${RM} ex13.o
 
 ex14: ex14.o  chkopts
 	-${CLINKER} -o ex14 ex14.o  ${PETSC_KSP_LIB}
@@ -140,9 +136,6 @@ ex33: ex33.o  chkopts
 ex34: ex34.o  chkopts
 	-${CLINKER} -o ex34 ex34.o  ${PETSC_KSP_LIB}
 	${RM} ex34.o
-ex36: ex36.o  chkopts
-	-${CLINKER} -o ex36 ex36.o  ${PETSC_KSP_LIB}
-	${RM} ex36.o
 ex37: ex37.o  chkopts
 	-${CLINKER} -o ex37 ex37.o  ${PETSC_KSP_LIB}
 	${RM} ex37.o
@@ -259,11 +252,6 @@ runex4_5:
 	   if (${DIFF} output/ex4_5.out ex4_5.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex4_5, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex4_5.tmp
-runex5:
-	-@${MPIEXEC} -n 2 ./ex5 -ksp_monitor_short -nokspview -ksp_gmres_cgs_refinement_type refine_always > ex5_1.tmp 2>&1; \
-	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex5_1, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex5_1.tmp
 runex5f:
 	-@${MPIEXEC} -n 1 ./ex5f -ksp_monitor_short > ex5f_1.tmp 2>&1; \
 	   if (${DIFF} output/ex5f_1.out ex5f_1.tmp) then true; \
@@ -377,11 +365,6 @@ runex12f:
 	   if (${DIFF} output/ex12f_1.out ex12f_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex12f_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex12f_1.tmp
-runex13:
-	-@${MPIEXEC} -n 2  ./ex13 -ksp_gmres_cgs_refinement_type refine_always -ksp_monitor_short > ex13_1.tmp 2>&1; \
-	   if (${DIFF} output/ex13_1.out ex13_1.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex13_1, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex13_1.tmp
 runex14:
 	-@${MPIEXEC} -n 1  ./ex14  > ex14_1.tmp 2>&1; \
 	   if (${DIFF} output/ex14_1.out ex14_1.tmp) then true; \

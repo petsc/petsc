@@ -63,10 +63,6 @@
         print*,'Unable to initialize PETSc'
         stop
       endif
-#if !defined(PETSC_USE_COMPLEX)
-      write(6,*) 'This example requires complex numbers.'
-      goto 200
-#endif
 
       none   = -1.0
       n      = 6
@@ -234,8 +230,5 @@
       call VecDestroy(b,ierr)
       call MatDestroy(A,ierr)
 
-#if !defined(PETSC_USE_COMPLEX)
- 200  continue
-#endif
       call PetscFinalize(ierr)
       end

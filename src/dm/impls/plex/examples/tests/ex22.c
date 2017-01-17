@@ -99,7 +99,6 @@ static PetscErrorCode testIdentity(DM dm, PetscBool dmIsSimplicial, PetscInt cel
         }
       }
       ierr = PetscSNPrintfCount(strBuf + offset,BUFSIZ-offset,")\n",&count);CHKERRQ(ierr);
-      offset += count;
       ierr = PetscInfo1(dm,"%s",strBuf);CHKERRQ(ierr);
     }
   }
@@ -167,7 +166,7 @@ int main(int argc, char **argv)
             ierr = DMSetCoordinatesLocal(dm,localCoords);CHKERRQ(ierr);
             ierr = VecDestroy(&localCoords);CHKERRQ(ierr);
           }
-          ierr = PetscInfo4(dm,"Testing %s%D %DD mesh embedded in %DD\n",isSimplex ? "P" : "Q" , order, dim, dimC);
+          ierr = PetscInfo4(dm,"Testing %s%D %DD mesh embedded in %DD\n",isSimplex ? "P" : "Q" , order, dim, dimC);CHKERRQ(ierr);
           ierr = DMGetCoordinatesLocal(dm,&coords);CHKERRQ(ierr);
           ierr = VecGetLocalSize(coords,&n);CHKERRQ(ierr);
           if (dimC > dim) { /* reembed in higher dimension */

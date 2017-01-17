@@ -266,7 +266,7 @@ int main(int argc,char ** argv)
   Vec               x, b;
   Mat               A;
   KSP               ksp;
-  int               *edgelist;
+  int               *edgelist = NULL;
   PetscInt          componentkey[2];
   Node              *node;
   Branch            *branch;
@@ -350,7 +350,7 @@ int main(int argc,char ** argv)
   ierr = DMCreateGlobalVector(networkdm,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
 
-  ierr = DMSetMatType(networkdm, MATNEST);
+  ierr = DMSetMatType(networkdm, MATNEST);CHKERRQ(ierr);
   ierr = DMCreateMatrix(networkdm,&A);CHKERRQ(ierr);
 
   /* Assembly system of equations */
@@ -360,7 +360,7 @@ int main(int argc,char ** argv)
   ierr = KSPSetOperators(ksp, A, A);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSolve(ksp, b, x);CHKERRQ(ierr);
-  ierr = VecView(x, 0);
+  ierr = VecView(x, 0);CHKERRQ(ierr);
 
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&b);CHKERRQ(ierr);
@@ -368,5 +368,5 @@ int main(int argc,char ** argv)
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = DMDestroy(&networkdm);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }

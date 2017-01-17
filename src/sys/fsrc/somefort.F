@@ -1,4 +1,22 @@
 !
+!     Prevents: Warning: Same actual argument associated with INTENT(IN)
+!     argument 'errorcode' and INTENT(OUT) argument 'ierror' at (1)
+!     when MPI_Abort() is called directly by CHKERRQ(ierr);
+!
+
+      subroutine MPIU_Abort(comm,ierr)
+      implicit none
+
+#include      <../src/sys/f90-mod/petscsys.h>
+
+      integer comm,ierr,nierr
+
+      call MPI_Abort(comm,ierr,nierr)
+
+      return
+      end
+
+!
 !
 !     Utility routine used to set constants into the
 !     PETSc Fortran common block

@@ -11,8 +11,6 @@
 #include <petscsnes.h>
 #include <petscao.h>
 
-#if !defined(PETSC_USE_COMPLEX)
-
 static char help[] = "An Unstructured Grid Example.\n\
 This example demonstrates how to solve a nonlinear system in parallel\n\
 with SNES for an unstructured mesh. The mesh and partitioning information\n\
@@ -721,11 +719,4 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat jac,void *ptr)
   /* MatView(jac,PETSC_VIEWER_STDOUT_SELF); */
   return 0;
 }
-#else
 
-int main(int argc,char **args)
-{
-  fprintf(stdout,"This example does not work for complex numbers.\n");
-  return 0;
-}
-#endif

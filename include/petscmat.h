@@ -92,24 +92,24 @@ typedef const char* MatType;
 .seealso: MatGetFactor(), Mat, MatSetType(), MatType
 J*/
 #define MatSolverPackage char*
-#define MATSOLVERSUPERLU      "superlu"
-#define MATSOLVERSUPERLU_DIST "superlu_dist"
-#define MATSOLVERSTRUMPACK    "strumpack"
-#define MATSOLVERUMFPACK      "umfpack"
-#define MATSOLVERCHOLMOD      "cholmod"
-#define MATSOLVERKLU          "klu"
-#define MATSOLVERCLIQUE       "clique"
-#define MATSOLVERELEMENTAL    "elemental"
-#define MATSOLVERESSL         "essl"
-#define MATSOLVERLUSOL        "lusol"
-#define MATSOLVERMUMPS        "mumps"
-#define MATSOLVERMKL_PARDISO  "mkl_pardiso"
-#define MATSOLVERMKL_CPARDISO "mkl_cpardiso"
-#define MATSOLVERPASTIX       "pastix"
-#define MATSOLVERMATLAB       "matlab"
-#define MATSOLVERPETSC        "petsc"
-#define MATSOLVERBAS          "bas"
-#define MATSOLVERCUSPARSE     "cusparse"
+#define MATSOLVERSUPERLU          "superlu"
+#define MATSOLVERSUPERLU_DIST     "superlu_dist"
+#define MATSOLVERSTRUMPACK        "strumpack"
+#define MATSOLVERUMFPACK          "umfpack"
+#define MATSOLVERCHOLMOD          "cholmod"
+#define MATSOLVERKLU              "klu"
+#define MATSOLVERSPARSEELEMENTAL  "sparseelemental"
+#define MATSOLVERELEMENTAL        "elemental"
+#define MATSOLVERESSL             "essl"
+#define MATSOLVERLUSOL            "lusol"
+#define MATSOLVERMUMPS            "mumps"
+#define MATSOLVERMKL_PARDISO      "mkl_pardiso"
+#define MATSOLVERMKL_CPARDISO     "mkl_cpardiso"
+#define MATSOLVERPASTIX           "pastix"
+#define MATSOLVERMATLAB           "matlab"
+#define MATSOLVERPETSC            "petsc"
+#define MATSOLVERBAS              "bas"
+#define MATSOLVERCUSPARSE         "cusparse"
 
 /*E
     MatFactorType - indicates what type of factorization is requested
@@ -363,6 +363,8 @@ PETSC_EXTERN PetscErrorCode MatSeqAIJGetArray(Mat,PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode MatSeqAIJRestoreArray(Mat,PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode MatSeqAIJGetMaxRowNonzeros(Mat,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatSeqAIJSetValuesLocalFast(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
+PETSC_EXTERN PetscErrorCode MatSeqSBAIJGetArray(Mat,PetscScalar *[]);
+PETSC_EXTERN PetscErrorCode MatSeqSBAIJRestoreArray(Mat,PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode MatDenseGetArray(Mat,PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode MatDenseRestoreArray(Mat,PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode MatGetBlockSize(Mat,PetscInt *);

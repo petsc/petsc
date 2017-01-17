@@ -559,7 +559,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Private(PC pc)
       ierr = MatDestroy(&deluxe_ctx->seq_mat_inv_sum[i]);CHKERRQ(ierr);
       ierr = MatDestroy(&deluxe_ctx->seq_mat[i]);CHKERRQ(ierr);
       ierr = MatDestroy(&X);CHKERRQ(ierr);
-      ierr = MatTranspose(Y,MAT_REUSE_MATRIX,&Y);CHKERRQ(ierr);
+      ierr = MatTranspose(Y,MAT_INPLACE_MATRIX,&Y);CHKERRQ(ierr);
       deluxe_ctx->seq_mat[i] = Y;
     }
     cum += subset_size;

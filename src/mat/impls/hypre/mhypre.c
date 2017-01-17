@@ -3,15 +3,6 @@
     Creates hypre ijmatrix from PETSc matrix
 */
 
-/*MC
-   MATHYPRE - MATHYPRE = "hypre" - A matrix type to be used for sequential and parallel sparse matrices
-          based on the hypre IJ interface.
-
-   Level: intermediate
-
-.seealso: MatCreate()
-M*/
-
 #include <petscmathypre.h>
 #include <petsc/private/matimpl.h>
 #include <../src/mat/impls/hypre/mhypre.h>
@@ -526,8 +517,6 @@ static PetscErrorCode MatConvert_HYPRE_AIJ(Mat A, MatType mtype, MatReuse reuse,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAIJGetParCSR_Private"
 static PetscErrorCode MatAIJGetParCSR_Private(Mat A, hypre_ParCSRMatrix **hA)
 {
   hypre_ParCSRMatrix *tA;
@@ -600,8 +589,6 @@ static PetscErrorCode MatAIJGetParCSR_Private(Mat A, hypre_ParCSRMatrix **hA)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAIJRestoreParCSR_Private"
 static PetscErrorCode MatAIJRestoreParCSR_Private(Mat A, hypre_ParCSRMatrix **hA)
 {
   hypre_CSRMatrix    *hdiag,*hoffd;
@@ -627,10 +614,7 @@ static PetscErrorCode MatAIJRestoreParCSR_Private(Mat A, hypre_ParCSRMatrix **hA
    It looks like we don't need to have the diagonal entries
    ordered first in the rows of the diagonal part
    for boomerAMGBuildCoarseOperator to work */
-#undef __FUNCT__
-#define __FUNCT__ "MatHYPRE_ParCSR_RAP"
-static PetscErrorCode MatHYPRE_ParCSR_RAP(hypre_ParCSRMatrix *hR, hypre_ParCSRMatrix *hA,
-                                          hypre_ParCSRMatrix *hP, hypre_ParCSRMatrix **hRAP)
+static PetscErrorCode MatHYPRE_ParCSR_RAP(hypre_ParCSRMatrix *hR, hypre_ParCSRMatrix *hA,hypre_ParCSRMatrix *hP, hypre_ParCSRMatrix **hRAP)
 {
   PetscErrorCode ierr;
   HYPRE_Int      P_owns_col_starts,R_owns_row_starts;
@@ -648,8 +632,6 @@ static PetscErrorCode MatHYPRE_ParCSR_RAP(hypre_ParCSRMatrix *hR, hypre_ParCSRMa
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPtAPNumeric_AIJ_AIJ_wHYPRE"
 static PetscErrorCode MatPtAPNumeric_AIJ_AIJ_wHYPRE(Mat A,Mat P,Mat C)
 {
   Mat                B;
@@ -667,8 +649,6 @@ static PetscErrorCode MatPtAPNumeric_AIJ_AIJ_wHYPRE(Mat A,Mat P,Mat C)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPtAPSymbolic_AIJ_AIJ_wHYPRE"
 PETSC_INTERN PetscErrorCode MatPtAPSymbolic_AIJ_AIJ_wHYPRE(Mat A,Mat P,PetscReal fill,Mat *C)
 {
   PetscErrorCode     ierr;
@@ -679,8 +659,6 @@ PETSC_INTERN PetscErrorCode MatPtAPSymbolic_AIJ_AIJ_wHYPRE(Mat A,Mat P,PetscReal
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPtAPNumeric_AIJ_HYPRE"
 static PetscErrorCode MatPtAPNumeric_AIJ_HYPRE(Mat A,Mat P,Mat C)
 {
   Mat                B;
@@ -709,8 +687,6 @@ static PetscErrorCode MatPtAPNumeric_AIJ_HYPRE(Mat A,Mat P,Mat C)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPtAP_AIJ_HYPRE"
 static PetscErrorCode MatPtAP_AIJ_HYPRE(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
@@ -740,8 +716,6 @@ static PetscErrorCode MatPtAP_AIJ_HYPRE(Mat A,Mat P,MatReuse scall,PetscReal fil
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPtAPNumeric_HYPRE_HYPRE"
 static PetscErrorCode MatPtAPNumeric_HYPRE_HYPRE(Mat A,Mat P,Mat C)
 {
   Mat                B;
@@ -770,8 +744,6 @@ static PetscErrorCode MatPtAPNumeric_HYPRE_HYPRE(Mat A,Mat P,Mat C)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPtAP_HYPRE_HYPRE"
 static PetscErrorCode MatPtAP_HYPRE_HYPRE(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
@@ -796,8 +768,6 @@ static PetscErrorCode MatPtAP_HYPRE_HYPRE(Mat A,Mat P,MatReuse scall,PetscReal f
    It looks like we don't need to have the diagonal entries
    ordered first in the rows of the diagonal part
    for boomerAMGBuildCoarseOperator to work */
-#undef __FUNCT__
-#define __FUNCT__ "MatHYPRE_ParCSR_MatMatMult"
 static PetscErrorCode MatHYPRE_ParCSR_MatMatMult(hypre_ParCSRMatrix *hA, hypre_ParCSRMatrix *hB, hypre_ParCSRMatrix **hAB)
 {
   PetscFunctionBegin;
@@ -807,8 +777,6 @@ static PetscErrorCode MatHYPRE_ParCSR_MatMatMult(hypre_ParCSRMatrix *hA, hypre_P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMatMultNumeric_AIJ_AIJ_wHYPRE"
 static PetscErrorCode MatMatMultNumeric_AIJ_AIJ_wHYPRE(Mat A,Mat B,Mat C)
 {
   Mat                D;
@@ -826,8 +794,6 @@ static PetscErrorCode MatMatMultNumeric_AIJ_AIJ_wHYPRE(Mat A,Mat B,Mat C)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMatMultSymbolic_AIJ_AIJ_wHYPRE"
 PETSC_INTERN PetscErrorCode MatMatMultSymbolic_AIJ_AIJ_wHYPRE(Mat A,Mat B,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
@@ -839,8 +805,6 @@ PETSC_INTERN PetscErrorCode MatMatMultSymbolic_AIJ_AIJ_wHYPRE(Mat A,Mat B,PetscR
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMatMultNumeric_HYPRE_HYPRE"
 static PetscErrorCode MatMatMultNumeric_HYPRE_HYPRE(Mat A,Mat B,Mat C)
 {
   Mat                D;
@@ -871,8 +835,6 @@ static PetscErrorCode MatMatMultNumeric_HYPRE_HYPRE(Mat A,Mat B,Mat C)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMatMult_HYPRE_HYPRE"
 static PetscErrorCode MatMatMult_HYPRE_HYPRE(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
@@ -891,9 +853,6 @@ static PetscErrorCode MatMatMult_HYPRE_HYPRE(Mat A,Mat B,MatReuse scall,PetscRea
   PetscFunctionReturn(0);
 }
 
-
-#undef __FUNCT__
-#define __FUNCT__ "MatTransposeMatMatMultNumeric_AIJ_AIJ_AIJ_wHYPRE"
 PETSC_INTERN PetscErrorCode MatTransposeMatMatMultNumeric_AIJ_AIJ_AIJ_wHYPRE(Mat A,Mat B,Mat C,Mat D)
 {
   Mat                E;
@@ -913,8 +872,6 @@ PETSC_INTERN PetscErrorCode MatTransposeMatMatMultNumeric_AIJ_AIJ_AIJ_wHYPRE(Mat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatTransposeMatMatMultSymbolic_AIJ_AIJ_AIJ_wHYPRE"
 PETSC_INTERN PetscErrorCode MatTransposeMatMatMultSymbolic_AIJ_AIJ_AIJ_wHYPRE(Mat A,Mat B,Mat C,PetscReal fill,Mat *D)
 {
   PetscErrorCode ierr;
@@ -925,8 +882,6 @@ PETSC_INTERN PetscErrorCode MatTransposeMatMatMultSymbolic_AIJ_AIJ_AIJ_wHYPRE(Ma
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultTranspose_HYPRE"
 static PetscErrorCode MatMultTranspose_HYPRE(Mat A, Vec x, Vec y)
 {
   PetscErrorCode ierr;
@@ -1339,6 +1294,15 @@ PetscErrorCode MatHYPREGetParCSR(Mat A, hypre_ParCSRMatrix **parcsr)
   PetscFunctionReturn(0);
 }
 
+/*MC
+   MATHYPRE - MATHYPRE = "hypre" - A matrix type to be used for sequential and parallel sparse matrices
+          based on the hypre IJ interface.
+
+   Level: intermediate
+
+.seealso: MatCreate()
+M*/
+
 PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
 {
   Mat_HYPRE      *hB;
@@ -1378,49 +1342,3 @@ static PetscErrorCode hypre_array_destroy(void *ptr)
    hypre_TFree(ptr);
    PetscFunctionReturn(0);
 }
-
-#if 0
-/*
-    Does NOT copy the data over, instead uses DIRECTLY the pointers from the PETSc MPIAIJ format
-
-    This is UNFINISHED and does NOT work! The problem is that hypre puts the diagonal entry first
-    which will corrupt the PETSc data structure if we did this. Need a work around to this problem.
-*/
-#include <_hypre_IJ_mv.h>
-#include <HYPRE_IJ_mv.h>
-
-PetscErrorCode MatHYPRE_IJMatrixLink(Mat A, HYPRE_IJMatrix *ij)
-{
-  PetscErrorCode        ierr;
-  PetscInt              rstart,rend,cstart,cend;
-  PetscBool             flg;
-  hypre_AuxParCSRMatrix *aux_matrix;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  PetscValidType(A,1);
-  PetscValidPointer(ij,2);
-  ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Can only use with PETSc MPIAIJ matrices");
-  ierr = MatSetUp(A);CHKERRQ(ierr);
-
-  ierr   = PetscLogEventBegin(MAT_Convert,A,0,0,0);CHKERRQ(ierr);
-  rstart = A->rmap->rstart;
-  rend   = A->rmap->rend;
-  cstart = A->cmap->rstart;
-  cend   = A->cmap->rend;
-  PetscStackCallStandard(HYPRE_IJMatrixCreate,(PetscObjectComm((PetscObject)A),rstart,rend-1,cstart,cend-1,ij));
-  PetscStackCallStandard(HYPRE_IJMatrixSetObjectType,(*ij,HYPRE_PARCSR));
-
-  PetscStackCallStandard(HYPRE_IJMatrixInitialize,(*ij));
-  PetscStackCall("hypre_IJMatrixTranslator",aux_matrix = (hypre_AuxParCSRMatrix*)hypre_IJMatrixTranslator(*ij));
-
-  hypre_AuxParCSRMatrixNeedAux(aux_matrix) = 0;
-
-  /* this is the Hack part where we monkey directly with the hypre datastructures */
-
-  PetscStackCallStandard(HYPRE_IJMatrixAssemble,(*ij));
-  ierr = PetscLogEventEnd(MAT_Convert,A,0,0,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-#endif

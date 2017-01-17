@@ -85,7 +85,8 @@ SNES Object: 1 MPI processes
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object: (mg_levels_1_) 1 MPI processes
         type: chebyshev
-          Chebyshev: eigenvalue estimates:  min = 0.499903, max = 1.09979
+          Chebyshev: eigenvalue estimates used:  min = 0.499903, max = 1.09979
+          Chebyshev: eigenvalues estimate via gmres min 0.27295, max 0.999806
           Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.5; 0. 1.1]
           KSP Object: (mg_levels_1_esteig_) 1 MPI processes
             type: gmres
@@ -115,7 +116,8 @@ SNES Object: 1 MPI processes
     Down solver (pre-smoother) on level 2 -------------------------------
       KSP Object: (mg_levels_2_) 1 MPI processes
         type: chebyshev
-          Chebyshev: eigenvalue estimates:  min = 0.498174, max = 1.09598
+          Chebyshev: eigenvalue estimates used:  min = 0.498174, max = 1.09598
+          Chebyshev: eigenvalues estimate via gmres min 0.0750615, max 0.996348
           Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.5; 0. 1.1]
           KSP Object: (mg_levels_2_esteig_) 1 MPI processes
             type: gmres
@@ -145,7 +147,8 @@ SNES Object: 1 MPI processes
     Down solver (pre-smoother) on level 3 -------------------------------
       KSP Object: (mg_levels_3_) 1 MPI processes
         type: chebyshev
-          Chebyshev: eigenvalue estimates:  min = 0.498857, max = 1.09748
+          Chebyshev: eigenvalue estimates used:  min = 0.498857, max = 1.09748
+          Chebyshev: eigenvalues estimate via gmres min 0.0185696, max 0.997713
           Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.5; 0. 1.1]
           KSP Object: (mg_levels_3_esteig_) 1 MPI processes
             type: gmres

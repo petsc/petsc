@@ -6277,7 +6277,7 @@ PetscErrorCode PetscFECreateDefault(DM dm, PetscInt dim, PetscInt numComp, Petsc
   ierr = PetscSpaceDestroy(&P);CHKERRQ(ierr);
   ierr = PetscDualSpaceDestroy(&Q);CHKERRQ(ierr);
   /* Create quadrature (with specified order if given) */
-  qorder = qorder > 0 ? qorder : order;
+  qorder = qorder >= 0 ? qorder : order;
   ierr = PetscObjectOptionsBegin((PetscObject)*fem);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-petscfe_default_quadrature_order","Quadrature order is one less than quadture points per edge","PetscFECreateDefault",qorder,&qorder,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);

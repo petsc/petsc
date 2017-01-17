@@ -6,7 +6,7 @@
 #include <petsc/finclude/petscsys.h>
        use petscsys
        implicit none
-       
+
       PetscErrorCode ierr
       PetscMPIInt rank
       PetscFortranAddr file
@@ -38,3 +38,11 @@
 
       call PetscFinalize(ierr)
       end
+
+!
+!/*TEST
+!
+!   test:
+!      nsize: 3
+!
+!TEST*/

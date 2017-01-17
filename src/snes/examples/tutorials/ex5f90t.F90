@@ -10,6 +10,7 @@
 !  Concepts: SNES^parallel Bratu example
 !  Concepts: DMDA^using distributed arrays;
 !  Processors: n
+!  TODO: Need to update to latest API
 !T*/
 !
 !  --------------------------------------------------------------------------
@@ -203,7 +204,7 @@
       call PetscOptionsGetReal(options,PETSC_NULL_CHARACTER,'-par',user%lambda,flg,ierr);CHKERRQ(ierr)
       if (user%lambda .ge. lambda_max .or. user%lambda .le. lambda_min) then
          if (user%rank .eq. 0) write(6,*) 'Lambda is out of range'
-         SETERRQ(PETSC_COMM_SELF,1,' ',ierr)
+         SETERRQ(PETSC_COMM_SELF,1,' ')
       endif
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

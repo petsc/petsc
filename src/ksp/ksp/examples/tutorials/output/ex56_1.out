@@ -1,15 +1,15 @@
-  0 KSP Residual norm 1541.48 
-  1 KSP Residual norm 457.912 
-  2 KSP Residual norm 179.472 
-  3 KSP Residual norm 48.887 
-  4 KSP Residual norm 24.3624 
-  5 KSP Residual norm 8.62227 
-  6 KSP Residual norm 3.02738 
-  7 KSP Residual norm 1.2471 
-  8 KSP Residual norm 0.355968 
-  9 KSP Residual norm 0.0902322 
- 10 KSP Residual norm 0.0203942 
- 11 KSP Residual norm 0.00480404 
+  0 KSP Residual norm 1541.54 
+  1 KSP Residual norm 457.831 
+  2 KSP Residual norm 179.445 
+  3 KSP Residual norm 48.872 
+  4 KSP Residual norm 24.3594 
+  5 KSP Residual norm 8.62095 
+  6 KSP Residual norm 3.02678 
+  7 KSP Residual norm 1.24662 
+  8 KSP Residual norm 0.355816 
+  9 KSP Residual norm 0.0902076 
+ 10 KSP Residual norm 0.0203908 
+ 11 KSP Residual norm 0.00480326 
 Linear solve converged due to CONVERGED_RTOL iterations 11
 KSP Object: 8 MPI processes
   type: cg
@@ -50,7 +50,8 @@ PC Object: 8 MPI processes
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 8 MPI processes
       type: chebyshev
-        Chebyshev: eigenvalue estimates:  min = 0.364029, max = 1.91115
+        Chebyshev: eigenvalue estimates used:  min = 0.364032, max = 1.91117
+        Chebyshev: eigenvalues estimate via cg min 0.0516467, max 1.82016
         Chebyshev: eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_1_esteig_) 8 MPI processes
           type: cg
@@ -107,7 +108,8 @@ PC Object: 8 MPI processes
   Down solver (pre-smoother) on level 2 -------------------------------
     KSP Object: (mg_levels_2_) 8 MPI processes
       type: chebyshev
-        Chebyshev: eigenvalue estimates:  min = 0.386231, max = 2.02771
+        Chebyshev: eigenvalue estimates used:  min = 0.386231, max = 2.02771
+        Chebyshev: eigenvalues estimate via cg min 0.0227137, max 1.93116
         Chebyshev: eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_2_esteig_) 8 MPI processes
           type: cg
@@ -170,18 +172,18 @@ PC Object: 8 MPI processes
     total number of mallocs used during MatSetValues calls =0
       has attached near null space
       using I-node (on process 0) routines: found 343 nodes, limit used is 5
-  0 KSP Residual norm 0.0154148 
-  1 KSP Residual norm 0.00457912 
-  2 KSP Residual norm 0.00179472 
-  3 KSP Residual norm 0.00048887 
-  4 KSP Residual norm 0.000243624 
-  5 KSP Residual norm 8.62227e-05 
-  6 KSP Residual norm 3.02738e-05 
-  7 KSP Residual norm 1.2471e-05 
-  8 KSP Residual norm 3.55968e-06 
-  9 KSP Residual norm 9.02322e-07 
- 10 KSP Residual norm 2.03942e-07 
- 11 KSP Residual norm 4.80404e-08 
+  0 KSP Residual norm 0.0154154 
+  1 KSP Residual norm 0.00457831 
+  2 KSP Residual norm 0.00179445 
+  3 KSP Residual norm 0.00048872 
+  4 KSP Residual norm 0.000243594 
+  5 KSP Residual norm 8.62095e-05 
+  6 KSP Residual norm 3.02678e-05 
+  7 KSP Residual norm 1.24662e-05 
+  8 KSP Residual norm 3.55816e-06 
+  9 KSP Residual norm 9.02076e-07 
+ 10 KSP Residual norm 2.03908e-07 
+ 11 KSP Residual norm 4.80326e-08 
 Linear solve converged due to CONVERGED_RTOL iterations 11
 KSP Object: 8 MPI processes
   type: cg
@@ -222,7 +224,8 @@ PC Object: 8 MPI processes
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 8 MPI processes
       type: chebyshev
-        Chebyshev: eigenvalue estimates:  min = 0.364029, max = 1.91115
+        Chebyshev: eigenvalue estimates used:  min = 0.364032, max = 1.91117
+        Chebyshev: eigenvalues estimate via cg min 0.0516467, max 1.82016
         Chebyshev: eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_1_esteig_) 8 MPI processes
           type: cg
@@ -279,7 +282,8 @@ PC Object: 8 MPI processes
   Down solver (pre-smoother) on level 2 -------------------------------
     KSP Object: (mg_levels_2_) 8 MPI processes
       type: chebyshev
-        Chebyshev: eigenvalue estimates:  min = 0.386231, max = 2.02771
+        Chebyshev: eigenvalue estimates used:  min = 0.386231, max = 2.02771
+        Chebyshev: eigenvalues estimate via cg min 0.0227137, max 1.93116
         Chebyshev: eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_2_esteig_) 8 MPI processes
           type: cg
@@ -342,18 +346,18 @@ PC Object: 8 MPI processes
     total number of mallocs used during MatSetValues calls =0
       has attached near null space
       using I-node (on process 0) routines: found 343 nodes, limit used is 5
-  0 KSP Residual norm 0.0154148 
-  1 KSP Residual norm 0.00457912 
-  2 KSP Residual norm 0.00179472 
-  3 KSP Residual norm 0.00048887 
-  4 KSP Residual norm 0.000243624 
-  5 KSP Residual norm 8.62227e-05 
-  6 KSP Residual norm 3.02738e-05 
-  7 KSP Residual norm 1.2471e-05 
-  8 KSP Residual norm 3.55968e-06 
-  9 KSP Residual norm 9.02322e-07 
- 10 KSP Residual norm 2.03942e-07 
- 11 KSP Residual norm 4.80404e-08 
+  0 KSP Residual norm 0.0154154 
+  1 KSP Residual norm 0.00457831 
+  2 KSP Residual norm 0.00179445 
+  3 KSP Residual norm 0.00048872 
+  4 KSP Residual norm 0.000243594 
+  5 KSP Residual norm 8.62095e-05 
+  6 KSP Residual norm 3.02678e-05 
+  7 KSP Residual norm 1.24662e-05 
+  8 KSP Residual norm 3.55816e-06 
+  9 KSP Residual norm 9.02076e-07 
+ 10 KSP Residual norm 2.03908e-07 
+ 11 KSP Residual norm 4.80326e-08 
 Linear solve converged due to CONVERGED_RTOL iterations 11
 KSP Object: 8 MPI processes
   type: cg
@@ -394,7 +398,8 @@ PC Object: 8 MPI processes
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 8 MPI processes
       type: chebyshev
-        Chebyshev: eigenvalue estimates:  min = 0.364029, max = 1.91115
+        Chebyshev: eigenvalue estimates used:  min = 0.364032, max = 1.91117
+        Chebyshev: eigenvalues estimate via cg min 0.0516467, max 1.82016
         Chebyshev: eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_1_esteig_) 8 MPI processes
           type: cg
@@ -451,7 +456,8 @@ PC Object: 8 MPI processes
   Down solver (pre-smoother) on level 2 -------------------------------
     KSP Object: (mg_levels_2_) 8 MPI processes
       type: chebyshev
-        Chebyshev: eigenvalue estimates:  min = 0.386231, max = 2.02771
+        Chebyshev: eigenvalue estimates used:  min = 0.386231, max = 2.02771
+        Chebyshev: eigenvalues estimate via cg min 0.0227137, max 1.93116
         Chebyshev: eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_2_esteig_) 8 MPI processes
           type: cg
@@ -514,4 +520,4 @@ PC Object: 8 MPI processes
     total number of mallocs used during MatSetValues calls =0
       has attached near null space
       using I-node (on process 0) routines: found 343 nodes, limit used is 5
-[0]main |b-Ax|/|b|=5.332472e-05, |b|=4.630910e+00, emax=9.960798e-01
+[0]main |b-Ax|/|b|=5.332293e-05, |b|=4.630910e+00, emax=9.960805e-01

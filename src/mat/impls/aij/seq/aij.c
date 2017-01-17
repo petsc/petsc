@@ -3724,7 +3724,7 @@ PETSC_EXTERN PetscErrorCode  MatlabEngineGet_SeqAIJ(PetscObject,void*);
 
 
 /*@C
-   MatSeqAIJGetArray - gives access to the array where the data for a SeqSeqAIJ matrix is stored
+   MatSeqAIJGetArray - gives access to the array where the data for a MATSEQAIJ matrix is stored
 
    Not Collective
 
