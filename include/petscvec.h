@@ -593,7 +593,7 @@ PETSC_EXTERN PetscErrorCode PetscSFCreateFromZero(MPI_Comm,Vec,PetscSF*);
 
   Level: advanced
 S*/
-typedef struct _p_VecTagger VecTagger;
+typedef struct _p_VecTagger *VecTagger;
 
 /*J
   VecTaggerType - String with the name of a VecTagger type
@@ -601,9 +601,9 @@ typedef struct _p_VecTagger VecTagger;
   Level: advanced
 J*/
 typedef const char* VecTaggerType;
-/* tag where the vector values are in an absolute range */
-#define VECTAGGERINTERVAL   "absolute"
-/* tag where the vector values are in a relative range to the set of all values in the vector */
+/* tag where the vector values are in an interval of explicitly defined values */
+#define VECTAGGERINTERVAL   "interval"
+/* tag where the vector values are in an interval of values relative to the set of all values in the vector */
 #define VECTAGGERRELATIVE   "relative"
 /* tag where the vector values are in a relative range of the *cumulative distribution* of values in the vector */
 #define VECTAGGERCUMULATIVE "cumulative"
@@ -613,6 +613,10 @@ typedef const char* VecTaggerType;
 #define VECTAGGERAND        "and"
 
 PETSC_EXTERN PetscClassId VEC_TAGGER_CLASSID;
+PETSC_EXTERN PetscFunctionList VecTaggerList;
+PETSC_EXTERN PetscErrorCode VecTaggerSetType(VecTagger,VecTaggerType);
+PETSC_EXTERN PetscErrorCode VecTaggerGetType(VecTagger,VecTaggerType *);
+PETSC_EXTERN PetscErrorCode VecTaggerRegister(const char[],PetscErrorCode (*) (VecTagger));
 
 PETSC_EXTERN PetscErrorCode VecTaggerCreate(MPI_Comm,VecTagger *);
 PETSC_EXTERN PetscErrorCode VecTaggerSetType(VecTagger,VecTaggerType);
@@ -622,19 +626,27 @@ PETSC_EXTERN PetscErrorCode VecTaggerGetInvert(VecTagger,PetscBool*);
 PETSC_EXTERN PetscErrorCode VecTaggerSetFromOptions(VecTagger);
 PETSC_EXTERN PetscErrorCode VecTaggerSetUp(VecTagger);
 PETSC_EXTERN PetscErrorCode VecTaggerView(VecTagger,PetscViewer);
-PETSC_EXTERN PetscErrorCode VecTaggerAbsoluteSetRange(VecTagger,PetscReal,PetscReal);
-PETSC_EXTERN PetscErrorCode VecTaggerAbsoluteGetRange(VecTagger,PetscReal*,PetscReal*);
-PETSC_EXTERN PetscErrorCode VecTaggerRelativeSetRange(VecTagger,PetscReal,PetscReal);
-PETSC_EXTERN PetscErrorCode VecTaggerRelativeGetRange(VecTagger,PetscReal*,PetscReal*);
-PETSC_EXTERN PetscErrorCode VecTaggerCumulativeSetRange(VecTagger,PetscReal,PetscReal);
-PETSC_EXTERN PetscErrorCode VecTaggerCumulativeGetRange(VecTagger,PetscReal*,PetscReal*);
-PETSC_EXTERN PetscErrorCode VecTaggerOrSetTaggers(VecTagger,PetscInt,VecTagger*);
-PETSC_EXTERN PetscErrorCode VecTaggerOrGetTaggers(VecTagger,PetscInt*,VecTagger**);
-PETSC_EXTERN PetscErrorCode VecTaggerAndSetTaggers(VecTagger,PetscInt,VecTagger*);
-PETSC_EXTERN PetscErrorCode VecTaggerAndGetTaggers(VecTagger,PetscInt*,VecTagger**);
-PETSC_EXTERN PetscErrorCode VecTaggerComputeRanges(VecTagger,Vec,PetscInt *,PetscReal (**)[2]);
+PETSC_EXTERN PetscErrorCode VecTaggerComputeIntervals(VecTagger,Vec,PetscInt *,PetscScalar (**)[2]);
 PETSC_EXTERN PetscErrorCode VecTaggerComputeIS(VecTagger,Vec,IS *);
 PETSC_EXTERN PetscErrorCode VecTaggerDestroy(VecTagger *);
+
+PETSC_EXTERN PetscErrorCode VecTaggerAbsoluteSetInterval(VecTagger,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode VecTaggerAbsoluteGetInterval(VecTagger,PetscReal*,PetscReal*);
+
+PETSC_EXTERN PetscErrorCode VecTaggerRelativeSetInterval(VecTagger,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode VecTaggerRelativeGetInterval(VecTagger,PetscReal*,PetscReal*);
+
+PETSC_EXTERN PetscErrorCode VecTaggerCumulativeSetInterval(VecTagger,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode VecTaggerCumulativeGetInterval(VecTagger,PetscReal*,PetscReal*);
+
+PETSC_EXTERN PetscErrorCode VecTaggerOrSetTaggers(VecTagger,PetscInt,VecTagger*);
+PETSC_EXTERN PetscErrorCode VecTaggerOrGetTaggers(VecTagger,PetscInt*,VecTagger**);
+
+PETSC_EXTERN PetscErrorCode VecTaggerAndSetTaggers(VecTagger,PetscInt,VecTagger*);
+PETSC_EXTERN PetscErrorCode VecTaggerAndGetTaggers(VecTagger,PetscInt*,VecTagger**);
+
+PETSC_EXTERN PetscErrorCode VecTaggerInitializePackage(void);
+PETSC_EXTERN PetscErrorCode VecTaggerFinalizePackage(void);
 
 #endif
 

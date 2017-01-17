@@ -387,15 +387,20 @@ typedef struct _VecTaggerOps *VecTaggerOps;
 struct _VecTaggerOps {
   PetscErrorCode (*create) (VecTagger);
   PetscErrorCode (*destroy) (VecTagger);
-  PetscErrorCode (*setfromoptions) (PetscOptionItem*,VecTagger);
+  PetscErrorCode (*setfromoptions) (PetscOptionItems*,VecTagger);
   PetscErrorCode (*setup) (VecTagger);
   PetscErrorCode (*view) (VecTagger,PetscViewer);
-  PetscErrorCode (*computeranges) (VecTagger,Vec,PetscInt *,PetscReal (**)[2]);
+  PetscErrorCode (*computeintervals) (VecTagger,Vec,PetscInt *,PetscScalar (**)[2]);
   PetscErrorCode (*computeis) (VecTagger,Vec,IS *);
 };
 struct _p_VecTagger {
   PETSCHEADER(struct _VecTaggerOps);
   void      *data;
   PetscBool invert;
+  PetscBool setupcalled;
 };
+
+PETSC_EXTERN PetscBool      VecTaggerRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode VecTaggerRegisterAll(void);
+
 #endif
