@@ -199,7 +199,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
       if (gmsh_elem[c].dim == dim) trueNumCells++;
     }
     ierr = PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING);CHKERRQ(ierr);;
-    ierr = PetscStrncmp(line, "$EndElements", PETSC_MAX_PATH_LEN, &match);CHKERRQ(ierr);
+    ierr = PetscStrncmp(line, "$EndElements", 12, &match);CHKERRQ(ierr);
     if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
   }
   /* For binary we read on all ranks, but only build the plex on rank 0 */
