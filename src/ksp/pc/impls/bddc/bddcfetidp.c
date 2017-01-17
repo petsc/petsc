@@ -930,7 +930,7 @@ PetscErrorCode FETIDPMatMultTranspose(Mat fetimat, Vec x, Vec y)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FETIDPPCApply(PC fetipc, Vec x, Vec y)
+PetscErrorCode FETIDPPCApply_Kernel(PC fetipc, Vec x, Vec y, PetscBool trans)
 {
   FETIDPPC_ctx   pc_ctx;
   PC_IS          *pcis;
@@ -945,7 +945,11 @@ PetscErrorCode FETIDPPCApply(PC fetipc, Vec x, Vec y)
   ierr = VecSet(pcis->vec2_B,0.0);CHKERRQ(ierr);
   ierr = MatMultTranspose(pc_ctx->B_Ddelta,pc_ctx->lambda_local,pcis->vec2_B);CHKERRQ(ierr);
   /* Application of local Schur complement */
-  ierr = MatMult(pc_ctx->S_j,pcis->vec2_B,pcis->vec1_B);CHKERRQ(ierr);
+  if (trans) {
+    ierr = MatMultTranspose(pc_ctx->S_j,pcis->vec2_B,pcis->vec1_B);CHKERRQ(ierr);
+  } else {
+    ierr = MatMult(pc_ctx->S_j,pcis->vec2_B,pcis->vec1_B);CHKERRQ(ierr);
+  }
   /* Application of B_Ddelta */
   ierr = MatMult(pc_ctx->B_Ddelta,pcis->vec1_B,pc_ctx->lambda_local);CHKERRQ(ierr);
   ierr = VecSet(y,0.0);CHKERRQ(ierr);
@@ -961,7 +965,11 @@ PetscErrorCode FETIDPPCApply(PC fetipc, Vec x, Vec y)
     ierr = VecGetArray(y,&ly);CHKERRQ(ierr);
     ierr = VecPlaceArray(pc_ctx->xPg,lx);CHKERRQ(ierr);
     ierr = VecPlaceArray(pc_ctx->yPg,ly);CHKERRQ(ierr);
-    ierr = KSPSolve(pc_ctx->kP,pc_ctx->xPg,pc_ctx->yPg);CHKERRQ(ierr);
+    if (trans) {
+      ierr = KSPSolveTranspose(pc_ctx->kP,pc_ctx->xPg,pc_ctx->yPg);CHKERRQ(ierr);
+    } else {
+      ierr = KSPSolve(pc_ctx->kP,pc_ctx->xPg,pc_ctx->yPg);CHKERRQ(ierr);
+    }
     ierr = VecResetArray(pc_ctx->xPg);CHKERRQ(ierr);
     ierr = VecResetArray(pc_ctx->yPg);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(x,&lx);CHKERRQ(ierr);
@@ -970,27 +978,21 @@ PetscErrorCode FETIDPPCApply(PC fetipc, Vec x, Vec y)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FETIDPPCApplyTranspose(PC fetipc, Vec x, Vec y)
+PetscErrorCode FETIDPPCApply(PC pc, Vec x, Vec y)
 {
-  FETIDPPC_ctx   pc_ctx;
-  PC_IS          *pcis;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PCShellGetContext(fetipc,(void**)&pc_ctx);CHKERRQ(ierr);
-  pcis = (PC_IS*)pc_ctx->pc->data;
-  /* Application of B_Ddelta^T */
-  ierr = VecScatterBegin(pc_ctx->l2g_lambda,x,pc_ctx->lambda_local,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(pc_ctx->l2g_lambda,x,pc_ctx->lambda_local,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecSet(pcis->vec2_B,0.0);CHKERRQ(ierr);
-  ierr = MatMultTranspose(pc_ctx->B_Ddelta,pc_ctx->lambda_local,pcis->vec2_B);CHKERRQ(ierr);
-  /* Application of local Schur complement */
-  ierr = MatMultTranspose(pc_ctx->S_j,pcis->vec2_B,pcis->vec1_B);CHKERRQ(ierr);
-  /* Application of B_Ddelta */
-  ierr = MatMult(pc_ctx->B_Ddelta,pcis->vec1_B,pc_ctx->lambda_local);CHKERRQ(ierr);
-  ierr = VecSet(y,0.0);CHKERRQ(ierr);
-  ierr = VecScatterBegin(pc_ctx->l2g_lambda,pc_ctx->lambda_local,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(pc_ctx->l2g_lambda,pc_ctx->lambda_local,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = FETIDPPCApply_Kernel(pc,x,y,PETSC_FALSE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode FETIDPPCApplyTranspose(PC pc, Vec x, Vec y)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = FETIDPPCApply_Kernel(pc,x,y,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
