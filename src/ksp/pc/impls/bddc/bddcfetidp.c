@@ -825,7 +825,7 @@ PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat fetimat, FETIDPPC_ctx fetidppc_ctx
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FETIDPMatMult(Mat fetimat, Vec x, Vec y)
+PetscErrorCode FETIDPMatMult_Kernel(Mat fetimat, Vec x, Vec y, PetscBool trans)
 {
   FETIDPMat_ctx  mat_ctx;
   PC_BDDC        *pcbddc;
@@ -847,9 +847,17 @@ PetscErrorCode FETIDPMatMult(Mat fetimat, Vec x, Vec y)
     ierr = VecScatterBegin(mat_ctx->l2g_p,x,mat_ctx->vP,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(mat_ctx->l2g_p,x,mat_ctx->vP,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     if (pcbddc->switch_static) {
-      ierr = MatMult(mat_ctx->Bt_BI,mat_ctx->vP,pcis->vec1_D);CHKERRQ(ierr);
+      if (trans) {
+        ierr = MatMultTranspose(mat_ctx->B_BI,mat_ctx->vP,pcis->vec1_D);CHKERRQ(ierr);
+      } else {
+        ierr = MatMult(mat_ctx->Bt_BI,mat_ctx->vP,pcis->vec1_D);CHKERRQ(ierr);
+      }
     }
-    ierr = MatMultAdd(mat_ctx->Bt_BB,mat_ctx->vP,pcis->vec1_B,pcis->vec1_B);CHKERRQ(ierr);
+    if (trans) {
+      ierr = MatMultTransposeAdd(mat_ctx->B_BB,mat_ctx->vP,pcis->vec1_B,pcis->vec1_B);CHKERRQ(ierr);
+    } else {
+      ierr = MatMultAdd(mat_ctx->Bt_BB,mat_ctx->vP,pcis->vec1_B,pcis->vec1_B);CHKERRQ(ierr);
+    }
   } else {
     if (pcbddc->switch_static) {
       ierr = VecSet(pcis->vec1_D,0.0);CHKERRQ(ierr);
@@ -857,7 +865,7 @@ PetscErrorCode FETIDPMatMult(Mat fetimat, Vec x, Vec y)
   }
   /* Application of \widetilde{S}^-1 */
   ierr = PetscMemzero(pcbddc->benign_p0,pcbddc->benign_n*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PCBDDCApplyInterfacePreconditioner(mat_ctx->pc,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PCBDDCApplyInterfacePreconditioner(mat_ctx->pc,trans);CHKERRQ(ierr);
   ierr = PetscMemzero(pcbddc->benign_p0,pcbddc->benign_n*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = VecSet(y,0.0);CHKERRQ(ierr);
   /* Application of B_delta */
@@ -872,7 +880,11 @@ PetscErrorCode FETIDPMatMult(Mat fetimat, Vec x, Vec y)
     ierr = VecGetArray(y,&ly);CHKERRQ(ierr);
     ierr = VecPlaceArray(mat_ctx->xPg,lx);CHKERRQ(ierr);
     ierr = VecPlaceArray(mat_ctx->yPg,ly);CHKERRQ(ierr);
-    ierr = MatMult(mat_ctx->C,mat_ctx->xPg,mat_ctx->yPg);CHKERRQ(ierr);
+    if (trans) {
+      ierr = MatMultTranspose(mat_ctx->C,mat_ctx->xPg,mat_ctx->yPg);CHKERRQ(ierr);
+    } else {
+      ierr = MatMult(mat_ctx->C,mat_ctx->xPg,mat_ctx->yPg);CHKERRQ(ierr);
+    }
     ierr = VecResetArray(mat_ctx->xPg);CHKERRQ(ierr);
     ierr = VecResetArray(mat_ctx->yPg);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(x,&lx);CHKERRQ(ierr);
@@ -880,9 +892,17 @@ PetscErrorCode FETIDPMatMult(Mat fetimat, Vec x, Vec y)
   }
   /* Add contribution from saddle point */
   if (mat_ctx->l2g_p) {
-    ierr = MatMult(mat_ctx->B_BB,pcis->vec1_B,mat_ctx->vP);CHKERRQ(ierr);
+    if (trans) {
+      ierr = MatMultTranspose(mat_ctx->Bt_BB,pcis->vec1_B,mat_ctx->vP);CHKERRQ(ierr);
+    } else {
+      ierr = MatMult(mat_ctx->B_BB,pcis->vec1_B,mat_ctx->vP);CHKERRQ(ierr);
+    }
     if (pcbddc->switch_static) {
-      ierr = MatMultAdd(mat_ctx->B_BI,pcis->vec1_D,mat_ctx->vP,mat_ctx->vP);CHKERRQ(ierr);
+      if (trans) {
+        ierr = MatMultTransposeAdd(mat_ctx->Bt_BI,pcis->vec1_D,mat_ctx->vP,mat_ctx->vP);CHKERRQ(ierr);
+      } else {
+        ierr = MatMultAdd(mat_ctx->B_BI,pcis->vec1_D,mat_ctx->vP,mat_ctx->vP);CHKERRQ(ierr);
+      }
     }
     ierr = VecScatterBegin(mat_ctx->l2g_p,mat_ctx->vP,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(mat_ctx->l2g_p,mat_ctx->vP,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -892,27 +912,21 @@ PetscErrorCode FETIDPMatMult(Mat fetimat, Vec x, Vec y)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FETIDPMatMultTranspose(Mat fetimat, Vec x, Vec y)
+PetscErrorCode FETIDPMatMult(Mat fetimat, Vec x, Vec y)
 {
-  FETIDPMat_ctx  mat_ctx;
-  PC_IS          *pcis;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(fetimat,(void**)&mat_ctx);CHKERRQ(ierr);
-  pcis = (PC_IS*)mat_ctx->pc->data;
-  /* Application of B_delta^T */
-  ierr = VecScatterBegin(mat_ctx->l2g_lambda,x,mat_ctx->lambda_local,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(mat_ctx->l2g_lambda,x,mat_ctx->lambda_local,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = MatMultTranspose(mat_ctx->B_delta,mat_ctx->lambda_local,pcis->vec1_B);CHKERRQ(ierr);
-  /* Application of \widetilde{S}^-1 */
-  ierr = VecSet(pcis->vec1_D,0.0);CHKERRQ(ierr);
-  ierr = PCBDDCApplyInterfacePreconditioner(mat_ctx->pc,PETSC_TRUE);CHKERRQ(ierr);
-  /* Application of B_delta */
-  ierr = MatMult(mat_ctx->B_delta,pcis->vec1_B,mat_ctx->lambda_local);CHKERRQ(ierr);
-  ierr = VecSet(y,0.0);CHKERRQ(ierr);
-  ierr = VecScatterBegin(mat_ctx->l2g_lambda,mat_ctx->lambda_local,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(mat_ctx->l2g_lambda,mat_ctx->lambda_local,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = FETIDPMatMult_Kernel(fetimat,x,y,PETSC_FALSE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode FETIDPMatMultTranspose(Mat fetimat, Vec x, Vec y)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = FETIDPMatMult_Kernel(fetimat,x,y,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
