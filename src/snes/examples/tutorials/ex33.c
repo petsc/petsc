@@ -125,13 +125,13 @@ int main(int argc, char **argv)
   /* Create solver */
   ierr = SNESCreate(PETSC_COMM_WORLD, &snes);CHKERRQ(ierr);
   /* Create mesh */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,-4,3,1,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,4,3,1,NULL,&da);CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
   ierr = DMSetUp(da);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(da, &user);CHKERRQ(ierr);
   ierr = SNESSetDM(snes, da);CHKERRQ(ierr);
   /* Create coefficient */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,-4,1,1,NULL,&user.cda);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,4,1,1,NULL,&user.cda);CHKERRQ(ierr);
   ierr = DMSetFromOptions(user.cda);CHKERRQ(ierr);
   ierr = DMSetUp(user.cda);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(user.cda, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
