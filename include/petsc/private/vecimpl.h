@@ -383,4 +383,19 @@ PETSC_EXTERN PetscErrorCode PetscSectionRestoreField_Internal(PetscSection, Pets
   if ((x)->map->N != (y)->map->N) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths parameter # %d %D != paramter # %d %D", ar1,(x)->map->N, ar2,(y)->map->N); \
   if ((x)->map->n != (y)->map->n) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths parameter # %d %D != parameter # %d %D", ar1,(x)->map->n, ar2,(y)->map->n);
 
+typedef struct _VecTaggerOps *VecTaggerOps;
+struct _VecTaggerOps {
+  PetscErrorCode (*create) (VecTagger);
+  PetscErrorCode (*destroy) (VecTagger);
+  PetscErrorCode (*setfromoptions) (PetscOptionItem*,VecTagger);
+  PetscErrorCode (*setup) (VecTagger);
+  PetscErrorCode (*view) (VecTagger,PetscViewer);
+  PetscErrorCode (*computeranges) (VecTagger,Vec,PetscInt *,PetscReal (**)[2]);
+  PetscErrorCode (*computeis) (VecTagger,Vec,IS *);
+};
+struct _p_VecTagger {
+  PETSCHEADER(struct _VecTaggerOps);
+  void      *data;
+  PetscBool invert;
+};
 #endif

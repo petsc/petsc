@@ -586,5 +586,55 @@ PETSC_EXTERN PetscErrorCode PetscSectionVecNorm(PetscSection, PetscSection, Vec,
 
 PETSC_EXTERN PetscErrorCode PetscSFCreateFromZero(MPI_Comm,Vec,PetscSF*);
 
+/*S
+  VecTagger - Object used to manage the tagging of a subset of indices based on the values of a vector.  The
+              motivating application is the selection of cells for refinement or coarsening based on vector containing
+              the values in an error indicator metric.
+
+  Level: advanced
+S*/
+typedef struct _p_VecTagger VecTagger;
+
+/*J
+  VecTaggerType - String with the name of a VecTagger type
+
+  Level: advanced
+J*/
+typedef const char* VecTaggerType;
+/* tag where the vector values are in an absolute range */
+#define VECTAGGERINTERVAL   "absolute"
+/* tag where the vector values are in a relative range to the set of all values in the vector */
+#define VECTAGGERRELATIVE   "relative"
+/* tag where the vector values are in a relative range of the *cumulative distribution* of values in the vector */
+#define VECTAGGERCUMULATIVE "cumulative"
+/* tag a vector as the union of other tags */
+#define VECTAGGEROR         "or"
+/* tag a vector as the intersection of other tags */
+#define VECTAGGERAND        "and"
+
+PETSC_EXTERN PetscClassId VEC_TAGGER_CLASSID;
+
+PETSC_EXTERN PetscErrorCode VecTaggerCreate(MPI_Comm,VecTagger *);
+PETSC_EXTERN PetscErrorCode VecTaggerSetType(VecTagger,VecTaggerType);
+PETSC_EXTERN PetscErrorCode VecTaggerGetType(VecTagger,VecTaggerType *);
+PETSC_EXTERN PetscErrorCode VecTaggerSetInvert(VecTagger,PetscBool);
+PETSC_EXTERN PetscErrorCode VecTaggerGetInvert(VecTagger,PetscBool*);
+PETSC_EXTERN PetscErrorCode VecTaggerSetFromOptions(VecTagger);
+PETSC_EXTERN PetscErrorCode VecTaggerSetUp(VecTagger);
+PETSC_EXTERN PetscErrorCode VecTaggerView(VecTagger,PetscViewer);
+PETSC_EXTERN PetscErrorCode VecTaggerAbsoluteSetRange(VecTagger,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode VecTaggerAbsoluteGetRange(VecTagger,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode VecTaggerRelativeSetRange(VecTagger,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode VecTaggerRelativeGetRange(VecTagger,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode VecTaggerCumulativeSetRange(VecTagger,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode VecTaggerCumulativeGetRange(VecTagger,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode VecTaggerOrSetTaggers(VecTagger,PetscInt,VecTagger*);
+PETSC_EXTERN PetscErrorCode VecTaggerOrGetTaggers(VecTagger,PetscInt*,VecTagger**);
+PETSC_EXTERN PetscErrorCode VecTaggerAndSetTaggers(VecTagger,PetscInt,VecTagger*);
+PETSC_EXTERN PetscErrorCode VecTaggerAndGetTaggers(VecTagger,PetscInt*,VecTagger**);
+PETSC_EXTERN PetscErrorCode VecTaggerComputeRanges(VecTagger,Vec,PetscInt *,PetscReal (**)[2]);
+PETSC_EXTERN PetscErrorCode VecTaggerComputeIS(VecTagger,Vec,IS *);
+PETSC_EXTERN PetscErrorCode VecTaggerDestroy(VecTagger *);
+
 #endif
 
