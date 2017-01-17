@@ -4444,15 +4444,16 @@ static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coar
         for (f = 0; f < lim; f++) {
           PetscScalar       *childMat   = &childrenMats[childId - pRefStart][f][0];
           PetscInt          n           = offsets[f+1]-offsets[f];
+          PetscInt          m           = rowOffsets[f+1]-rowOffsets[f];
           PetscInt          i, j;
           const PetscScalar *colValues  = &childValues[offsets[f]];
 
-          for (i = rowOffsets[f]; i < rowOffsets[f + 1]; i++) {
+          for (i = 0; i < m; i++) {
             PetscScalar val = 0.;
             for (j = 0; j < n; j++) {
               val += childMat[n * i + j] * colValues[j];
             }
-            parentValues[i] += val;
+            parentValues[rowOffsets[f] + i] += val;
           }
         }
       }
