@@ -2985,7 +2985,7 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatReuse call,Ma
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat,PetscInt,const IS[],const IS[],MatReuse,PetscBool*,Mat*);
+extern PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat*);
 /*
     Not great since it makes two copies of the submatrix, first an SeqAIJ
   in local and then by concatenating the local matrices the end result.
@@ -3009,7 +3009,7 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ_Private(Mat mat,IS isrow,IS iscol,PetscInt
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-
+#if 0
   ierr = ISIdentity(iscol,&colflag);CHKERRQ(ierr);
   ierr = ISGetLocalSize(iscol,&ncol);CHKERRQ(ierr);
   if (colflag && ncol == mat->cmap->N) {
@@ -3018,12 +3018,13 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ_Private(Mat mat,IS isrow,IS iscol,PetscInt
   } else {
     allcolumns = PETSC_FALSE;
   }
+#endif
   if (call ==  MAT_REUSE_MATRIX) {
     ierr = PetscObjectQuery((PetscObject)*newmat,"SubMatrix",(PetscObject*)&Mreuse);CHKERRQ(ierr);
     if (!Mreuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Submatrix passed in was not used before, cannot reuse");
-    ierr = MatGetSubMatrices_MPIAIJ_Local(mat,1,&isrow,&iscol,MAT_REUSE_MATRIX,&allcolumns,&Mreuse);CHKERRQ(ierr);
+    ierr = MatGetSubMatrices_MPIAIJ_Local(mat,1,&isrow,&iscol,MAT_REUSE_MATRIX,&Mreuse);CHKERRQ(ierr);
   } else {
-    ierr = MatGetSubMatrices_MPIAIJ_Local(mat,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&allcolumns,&Mreuse);CHKERRQ(ierr);
+    ierr = MatGetSubMatrices_MPIAIJ_Local(mat,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&Mreuse);CHKERRQ(ierr);
   }
 
   /*
