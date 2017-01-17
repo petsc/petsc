@@ -45,8 +45,6 @@ PetscErrorCode DMPlexGetFieldType_Internal(DM dm, PetscSection section, PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecView_Plex_Local_Draw"
 PetscErrorCode VecView_Plex_Local_Draw(Vec v, PetscViewer viewer)
 {
   DM                 dm;
@@ -186,8 +184,6 @@ PetscErrorCode VecView_Plex_Local_Draw(Vec v, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecView_Plex_Local"
 PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
 {
   DM             dm;
@@ -238,8 +234,6 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecView_Plex"
 PetscErrorCode VecView_Plex(Vec v, PetscViewer viewer)
 {
   DM             dm;

@@ -133,8 +133,6 @@ static void g2_ibp_phi(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   for (d = 0; d < dim; ++d) g2[d] = a[d];
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ProcessOptions"
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   const char    *formTypes[2] = {"primitive", "int_by_parts"};
@@ -156,8 +154,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateBCLabel"
 static PetscErrorCode CreateBCLabel(DM dm, const char name[])
 {
   DMLabel        label;
@@ -171,8 +167,6 @@ static PetscErrorCode CreateBCLabel(DM dm, const char name[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateMesh"
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *ctx)
 {
   DM             pdm = NULL;
@@ -202,8 +196,6 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetupProblem"
 static PetscErrorCode SetupProblem(PetscDS prob, AppCtx *ctx)
 {
   const PetscInt id = 1;
@@ -225,8 +217,6 @@ static PetscErrorCode SetupProblem(PetscDS prob, AppCtx *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetupVelocity"
 static PetscErrorCode SetupVelocity(DM dm, DM dmAux, AppCtx *user)
 {
   PetscErrorCode (*funcs[1])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx) = {velocity};
@@ -241,8 +231,6 @@ static PetscErrorCode SetupVelocity(DM dm, DM dmAux, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetupDiscretization"
 static PetscErrorCode SetupDiscretization(DM dm, AppCtx* ctx)
 {
   DM              cdm = dm;
@@ -291,8 +279,6 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx* ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPMonitorError"
 static PetscErrorCode KSPMonitorError(KSP ksp, PetscInt it, PetscReal rnorm, void *ctx)
 {
   AppCtx        *user = (AppCtx *) ctx;
@@ -322,8 +308,6 @@ static PetscErrorCode KSPMonitorError(KSP ksp, PetscInt it, PetscReal rnorm, voi
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSMonitorError"
 static PetscErrorCode TSMonitorError(TS ts, PetscInt step, PetscReal crtime, Vec u, void *ctx)
 {
   AppCtx        *user = (AppCtx *) ctx;
@@ -338,8 +322,6 @@ static PetscErrorCode TSMonitorError(TS ts, PetscInt step, PetscReal crtime, Vec
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   AppCtx         ctx;
