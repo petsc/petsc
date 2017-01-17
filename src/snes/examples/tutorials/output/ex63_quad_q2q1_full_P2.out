@@ -2,10 +2,10 @@ DMSWARM_PIC: Using method CellDM->LocatePoints
   DMSWARM_PIC: Using method CellDM->GetNeigbors
   0 SNES Function norm 18.1358 
     0 KSP Residual norm 18.1358 
-    1 KSP Residual norm 2.80386e-05 
-    2 KSP Residual norm 4.408e-11 
+    1 KSP Residual norm 4.47755e-05 
+    2 KSP Residual norm 1.255e-10 
   Linear solve converged due to CONVERGED_RTOL iterations 2
-  1 SNES Function norm 4.408e-11 
+  1 SNES Function norm 1.255e-10 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 2 MPI processes
   type: newtonls
@@ -51,7 +51,8 @@ SNES Object: 2 MPI processes
               Cycles per PCApply=1
               Using externally compute Galerkin coarse grid matrices
               GAMG specific options
-                Threshold for dropping small values from graph 0.
+                Threshold for dropping small values in graph on each level =          
+                Threshold scaling factor for each level not specified = 1.
                 AGG specific options
                   Symmetric graph false
                   Number of levels to square graph 1
@@ -79,33 +80,34 @@ SNES Object: 2 MPI processes
                   tolerance for zero pivot 2.22045e-14
                   using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
                   matrix ordering: nd
-                  factor fill ratio given 5., needed 1.5748
+                  factor fill ratio given 5., needed 1.28044
                     Factored matrix follows:
                       Mat Object: 1 MPI processes
                         type: seqaij
-                        rows=48, cols=48, bs=2
+                        rows=46, cols=46, bs=2
                         package used to perform factorization: petsc
-                        total: nonzeros=1600, allocated nonzeros=1600
+                        total: nonzeros=1388, allocated nonzeros=1388
                         total number of mallocs used during MatSetValues calls =0
                           using I-node routines: found 17 nodes, limit used is 5
                 linear system matrix = precond matrix:
                 Mat Object: 1 MPI processes
                   type: seqaij
-                  rows=48, cols=48, bs=2
-                  total: nonzeros=1016, allocated nonzeros=1016
+                  rows=46, cols=46, bs=2
+                  total: nonzeros=1084, allocated nonzeros=1084
                   total number of mallocs used during MatSetValues calls =0
-                    using I-node routines: found 24 nodes, limit used is 5
+                    using I-node routines: found 23 nodes, limit used is 5
               linear system matrix = precond matrix:
               Mat Object: 2 MPI processes
                 type: mpiaij
-                rows=48, cols=48, bs=2
-                total: nonzeros=1016, allocated nonzeros=1016
+                rows=46, cols=46, bs=2
+                total: nonzeros=1084, allocated nonzeros=1084
                 total number of mallocs used during MatSetValues calls =0
-                  using I-node (on process 0) routines: found 24 nodes, limit used is 5
+                  using I-node (on process 0) routines: found 23 nodes, limit used is 5
           Down solver (pre-smoother) on level 1 -------------------------------
             KSP Object: (fieldsplit_velocity_mg_levels_1_) 2 MPI processes
               type: chebyshev
-                Chebyshev: eigenvalue estimates:  min = 0.140607, max = 1.54668
+                Chebyshev: eigenvalue estimates used:  min = 0.139499, max = 1.53449
+                Chebyshev: eigenvalues estimate via gmres min 0.0274179, max 1.39499
                 Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
                 KSP Object: (fieldsplit_velocity_mg_levels_1_esteig_) 2 MPI processes
                   type: gmres
@@ -186,7 +188,8 @@ SNES Object: 2 MPI processes
                       Cycles per PCApply=1
                       Using externally compute Galerkin coarse grid matrices
                       GAMG specific options
-                        Threshold for dropping small values from graph 0.
+                        Threshold for dropping small values in graph on each level =                  
+                        Threshold scaling factor for each level not specified = 1.
                         AGG specific options
                           Symmetric graph false
                           Number of levels to square graph 1
@@ -214,33 +217,34 @@ SNES Object: 2 MPI processes
                           tolerance for zero pivot 2.22045e-14
                           using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
                           matrix ordering: nd
-                          factor fill ratio given 5., needed 1.5748
+                          factor fill ratio given 5., needed 1.28044
                             Factored matrix follows:
                               Mat Object: 1 MPI processes
                                 type: seqaij
-                                rows=48, cols=48, bs=2
+                                rows=46, cols=46, bs=2
                                 package used to perform factorization: petsc
-                                total: nonzeros=1600, allocated nonzeros=1600
+                                total: nonzeros=1388, allocated nonzeros=1388
                                 total number of mallocs used during MatSetValues calls =0
                                   using I-node routines: found 17 nodes, limit used is 5
                         linear system matrix = precond matrix:
                         Mat Object: 1 MPI processes
                           type: seqaij
-                          rows=48, cols=48, bs=2
-                          total: nonzeros=1016, allocated nonzeros=1016
+                          rows=46, cols=46, bs=2
+                          total: nonzeros=1084, allocated nonzeros=1084
                           total number of mallocs used during MatSetValues calls =0
-                            using I-node routines: found 24 nodes, limit used is 5
+                            using I-node routines: found 23 nodes, limit used is 5
                       linear system matrix = precond matrix:
                       Mat Object: 2 MPI processes
                         type: mpiaij
-                        rows=48, cols=48, bs=2
-                        total: nonzeros=1016, allocated nonzeros=1016
+                        rows=46, cols=46, bs=2
+                        total: nonzeros=1084, allocated nonzeros=1084
                         total number of mallocs used during MatSetValues calls =0
-                          using I-node (on process 0) routines: found 24 nodes, limit used is 5
+                          using I-node (on process 0) routines: found 23 nodes, limit used is 5
                   Down solver (pre-smoother) on level 1 -------------------------------
                     KSP Object: (fieldsplit_velocity_mg_levels_1_) 2 MPI processes
                       type: chebyshev
-                        Chebyshev: eigenvalue estimates:  min = 0.140607, max = 1.54668
+                        Chebyshev: eigenvalue estimates used:  min = 0.139499, max = 1.53449
+                        Chebyshev: eigenvalues estimate via gmres min 0.0274179, max 1.39499
                         Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
                         KSP Object: (fieldsplit_velocity_mg_levels_1_esteig_) 2 MPI processes
                           type: gmres
@@ -297,64 +301,64 @@ SNES Object: 2 MPI processes
         has attached null space
         using I-node (on process 0) routines: found 240 nodes, limit used is 5
 Number of SNES iterations = 1
-L_2 Error: 1.29e-10 [7.44e-12, 1.29e-10]
+L_2 Error: 5.9e-11 [4.78e-12, 5.88e-11]
 Timestep: 0 Np: 64
 Timestep: 0 Np: 80
 Timestep: 1 Np: 64
 Timestep: 1 Np: 80
 Timestep: 2 Np: 64
 Timestep: 2 Np: 80
-Timestep: 3 Np: 63
+Timestep: 3 Np: 60
 Timestep: 3 Np: 80
-Timestep: 4 Np: 61
-Timestep: 4 Np: 78
-Timestep: 5 Np: 61
+Timestep: 4 Np: 58
+Timestep: 4 Np: 79
+Timestep: 5 Np: 59
 Timestep: 5 Np: 78
-Timestep: 6 Np: 61
-Timestep: 6 Np: 76
-Timestep: 7 Np: 60
-Timestep: 7 Np: 75
-Timestep: 8 Np: 60
-Timestep: 8 Np: 74
-Timestep: 9 Np: 58
-Timestep: 9 Np: 73
-Timestep: 10 Np: 59
-Timestep: 10 Np: 70
-Timestep: 11 Np: 58
-Timestep: 11 Np: 70
-Timestep: 12 Np: 58
-Timestep: 12 Np: 70
-Timestep: 13 Np: 58
-Timestep: 13 Np: 68
-Timestep: 14 Np: 57
-Timestep: 14 Np: 67
-Timestep: 15 Np: 56
-Timestep: 15 Np: 67
-Timestep: 16 Np: 56
-Timestep: 16 Np: 67
-Timestep: 17 Np: 55
-Timestep: 17 Np: 68
-Timestep: 18 Np: 55
-Timestep: 18 Np: 68
-Timestep: 19 Np: 54
-Timestep: 19 Np: 68
-Timestep: 20 Np: 53
-Timestep: 20 Np: 67
-Timestep: 21 Np: 53
-Timestep: 21 Np: 67
-Timestep: 22 Np: 53
-Timestep: 22 Np: 66
-Timestep: 23 Np: 53
-Timestep: 23 Np: 66
-Timestep: 24 Np: 53
+Timestep: 6 Np: 60
+Timestep: 6 Np: 77
+Timestep: 7 Np: 58
+Timestep: 7 Np: 76
+Timestep: 8 Np: 57
+Timestep: 8 Np: 75
+Timestep: 9 Np: 57
+Timestep: 9 Np: 75
+Timestep: 10 Np: 57
+Timestep: 10 Np: 74
+Timestep: 11 Np: 57
+Timestep: 11 Np: 74
+Timestep: 12 Np: 57
+Timestep: 12 Np: 71
+Timestep: 13 Np: 55
+Timestep: 13 Np: 72
+Timestep: 14 Np: 52
+Timestep: 14 Np: 72
+Timestep: 15 Np: 53
+Timestep: 15 Np: 71
+Timestep: 16 Np: 53
+Timestep: 16 Np: 71
+Timestep: 17 Np: 51
+Timestep: 17 Np: 71
+Timestep: 18 Np: 50
+Timestep: 18 Np: 71
+Timestep: 19 Np: 50
+Timestep: 19 Np: 69
+Timestep: 20 Np: 47
+Timestep: 20 Np: 70
+Timestep: 21 Np: 48
+Timestep: 21 Np: 69
+Timestep: 22 Np: 49
+Timestep: 22 Np: 67
+Timestep: 23 Np: 48
+Timestep: 23 Np: 68
+Timestep: 24 Np: 48
 Timestep: 24 Np: 66
-Timestep: 25 Np: 51
-Timestep: 25 Np: 65
-Timestep: 26 Np: 49
-Timestep: 26 Np: 65
-Timestep: 27 Np: 48
-Timestep: 27 Np: 65
-Timestep: 28 Np: 48
-Timestep: 28 Np: 64
-Timestep: 29 Np: 48
-Timestep: 29 Np: 63
+Timestep: 25 Np: 48
+Timestep: 25 Np: 66
+Timestep: 26 Np: 48
+Timestep: 26 Np: 66
+Timestep: 27 Np: 50
+Timestep: 27 Np: 64
+Timestep: 28 Np: 49
+Timestep: 28 Np: 63
+Timestep: 29 Np: 45
+Timestep: 29 Np: 65
