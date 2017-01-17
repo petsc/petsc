@@ -2998,8 +2998,7 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ_Private(Mat mat,IS isrow,IS iscol,PetscInt
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
   PetscInt       i,m,n,rstart,row,rend,nz,*cwork,j,bs,cbs;
-  PetscInt       *ii,*jj,nlocal,*dlens,*olens,dlen,olen,jend,mglobal,ncol;
-  PetscBool      allcolumns, colflag;
+  PetscInt       *ii,*jj,nlocal,*dlens,*olens,dlen,olen,jend,mglobal;
   Mat            M,Mreuse;
   MatScalar      *vwork,*aa;
   MPI_Comm       comm;
@@ -3009,16 +3008,7 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ_Private(Mat mat,IS isrow,IS iscol,PetscInt
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-#if 0
-  ierr = ISIdentity(iscol,&colflag);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(iscol,&ncol);CHKERRQ(ierr);
-  if (colflag && ncol == mat->cmap->N) {
-    allcolumns = PETSC_TRUE;
-    ierr = PetscInfo(mat,"Optimizing for obtaining all columns of the matrix\n");CHKERRQ(ierr);
-  } else {
-    allcolumns = PETSC_FALSE;
-  }
-#endif
+
   if (call ==  MAT_REUSE_MATRIX) {
     ierr = PetscObjectQuery((PetscObject)*newmat,"SubMatrix",(PetscObject*)&Mreuse);CHKERRQ(ierr);
     if (!Mreuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Submatrix passed in was not used before, cannot reuse");
