@@ -15,6 +15,9 @@
 .  fgnorm - 2-norm of residual
 -  dummy -  a viewer
 
+   Options Database Keys:
+.  -snes_monitor_solution [ascii binary draw][:filename][:viewer format] - plots solution at each iteration
+
    Level: intermediate
 
 .keywords: SNES, nonlinear, vector, monitor, view
@@ -48,6 +51,9 @@ PetscErrorCode  SNESMonitorSolution(SNES snes,PetscInt its,PetscReal fgnorm,Pets
 .  fgnorm - 2-norm of residual
 -  dummy -  a viewer
 
+   Options Database Keys:
+.  -snes_monitor_residual [ascii binary draw][:filename][:viewer format] - plots residual (not its norm) at each iteration
+
    Level: intermediate
 
 .keywords: SNES, nonlinear, vector, monitor, view
@@ -80,6 +86,9 @@ PetscErrorCode  SNESMonitorResidual(SNES snes,PetscInt its,PetscReal fgnorm,Pets
 .  its - iteration number
 .  fgnorm - 2-norm of residual
 -  dummy - a viewer
+
+   Options Database Keys:
+.  -snes_monitor_solution_update [ascii binary draw][:filename][:viewer format] - plots update to solution at each iteration
 
    Level: intermediate
 

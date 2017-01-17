@@ -8145,6 +8145,31 @@ It is also possible to use GNU Global with Vim; see the description for Emacs ab
 \section{Eclipse Users} \sindex{eclipse}
 If you are interested in developing code that uses PETSc from Eclipse or developing PETSc in Eclipse and have knowledge of how to do indexing and build libraries in Eclipse, please contact us at \href{mailto:petsc-dev@mcs.anl.gov}{\trl{petsc-dev@mcs.anl.gov}}.
 
+One way to index and build PETSc in Eclipse is as follows.
+\begin{enumerate}
+  \item Open ``File$\rightarrow$Import$\rightarrow$Git$\rightarrow$Projects from Git''.
+  In the next two panels, you can either add your existing local repository or download PETSc from Bitbucket by providing the URL.
+  Most Eclipse distributions come with Git support. If not, install the EGit plugin. When importing the project, select the wizard ``Import as general project''.
+  \item Right-click on the project (or the ``File'' menu on top) and select ``New $\rightarrow$ Convert to a C/C++ Project (Adds C/C++ Nature)''.
+  In the setting window, choose ``C Project'' and specify the project type as ``Shared Library''.
+  \item Right-click on the C project and open the ``Properties'' panel. Under ``C/C++ Build $\rightarrow$ Builder Settings'',
+  set the Build directory to \trl{PETSC_DIR} and make sure ``Generate Makefiles automatically'' is unselected.
+  Under the section ``C/C++ General$\rightarrow$Paths and Symbols'', add the PETSc paths to ``Includes''.
+  \begin{bashlisting}
+  ${PETSC_DIR}/include
+  ${PETSC_DIR}/${PETSC_ARCH}/include
+  \end{bashlisting}
+  Under the section ``C/C++ General$\rightarrow$index'', choose ``Use active build configuration''.
+  \item Configure PETSc normally outside Eclipse to generate a makefile and then build the project in Eclipse. The source code will be parsed by Eclipse.
+\end{enumerate}
+
+If you launch Eclipse from the Dock on Mac OS X, \trl{.bashrc} will not be loaded (a known OS X behavior, for security reasons).
+This will be a problem if you set the environment variables \trl{PETSC_DIR} and \trl{PETSC_ARCH} in \trl{.bashrc}.
+A solution which involves replacing the executable can be found at
+\href{http://stackoverflow.com/questions/829749}
+{\trl{http://stackoverflow.com/questions/829749}}.
+Alternatively, you can add \trl{PETSC_DIR} and \trl{PETSC_ARCH} manually under ``Properties $\rightarrow$ C/C++ Build $\rightarrow$ Environment''.
+
 To allow an Eclipse code to compile with the PETSc include files and link with the PETSc libraries, a PETSc user has suggested the following.
 \begin{enumerate}
   \item Right-click on your C project and select ``Properties $\rightarrow$ C/C++ Build $\rightarrow$ Settings''
@@ -8163,11 +8188,6 @@ and the libraries, for example
 \begin{bashlisting}
 m, petsc, stdc++, mpichxx, mpich, lapack, blas, gfortran, dl, rt,gcc_s, pthread, X11
 \end{bashlisting}
-\end{enumerate}
-To make PETSc an Eclipse package,
-\begin{enumerate}
-\item Install the Mercurial plugin for Eclipse and then import the PETSc repository to Eclipse.
-\item Select ``New$\rightarrow$Convert to C/C++ project'' and select ``shared library''. At this point you can perform searches in the code.
 \end{enumerate}
 Another PETSc user has provided the following steps to build an Eclipse index for PETSc that can be used with their own code, without compiling PETSc source into their project.
 \begin{enumerate}
