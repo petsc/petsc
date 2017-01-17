@@ -1795,7 +1795,11 @@ PetscErrorCode DMPlexGetRedundantDM(DM dm, DM * redundantMesh)
   comm = PetscObjectComm((PetscObject)dm);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   *redundantMesh = NULL;
-  if (size == 1) PetscFunctionReturn(0);
+  if (size == 1) {
+    ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);
+    *redundantMesh = dm;
+    PetscFunctionReturn(0);
+  }
   ierr = DMPlexGetGatherDM(dm,&gatherDM);CHKERRQ(ierr);
   if (!gatherDM) PetscFunctionReturn(0);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
