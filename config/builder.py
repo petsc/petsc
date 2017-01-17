@@ -317,7 +317,7 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                   {'numProcs': 1, 'args': '-dim 3 -nbrVerEdge 5 -bdLabel marker -met 2 -init_dm_view -adapt_dm_view', 'requires': ['pragmatic']}
                                                                   ],
                         'src/dm/impls/plex/examples/tests/ex21': [{'numProcs': 1, 'args': '-dim 2 -n 100'},
-                                                                  {'numProcs': 1, 'args': '-dim 3 -n 50'},
+                                                                  {'numProcs': 1, 'args': '-dim 3 -n 20'},
                                                                   ],
                         'src/dm/impls/plex/examples/tests/ex1f90': [{'numProcs': 1, 'args': ''}],
                         'src/dm/impls/plex/examples/tests/ex2f90': [{'numProcs': 1, 'args': ''}],
