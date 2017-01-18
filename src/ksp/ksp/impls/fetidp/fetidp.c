@@ -2,6 +2,32 @@
 #include <../src/ksp/pc/impls/bddc/bddc.h>
 #include <../src/ksp/pc/impls/bddc/bddcprivate.h>
 
+static PetscBool  cited = PETSC_FALSE;
+static const char citation[] =
+"@article{ZampiniPCBDDC,\n"
+"author = {Stefano Zampini},\n"
+"title = {{PCBDDC}: A Class of Robust Dual-Primal Methods in {PETS}c},\n"
+"journal = {SIAM Journal on Scientific Computing},\n"
+"volume = {38},\n"
+"number = {5},\n"
+"pages = {S282-S306},\n"
+"year = {2016},\n"
+"doi = {10.1137/15M1025785},\n"
+"URL = {http://dx.doi.org/10.1137/15M1025785},\n"
+"eprint = {http://dx.doi.org/10.1137/15M1025785}\n"
+"}\n"
+"@article{ZampiniDualPrimal,\n"
+"author = {Stefano Zampini},\n"
+"title = {{D}ual-{P}rimal methods for the cardiac {B}idomain model},\n"
+"volume = {24},\n"
+"number = {04},\n"
+"pages = {667-696},\n"
+"year = {2014},\n"
+"doi = {10.1142/S0218202513500632},\n"
+"URL = {http://www.worldscientific.com/doi/abs/10.1142/S0218202513500632},\n"
+"eprint = {http://www.worldscientific.com/doi/pdf/10.1142/S0218202513500632}\n"
+"}\n";
+
 /*
     This file implements the FETI-DP method in PETSc as part of KSP.
 */
@@ -488,7 +514,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
   PetscBool        flip; /* Usually, Stokes is written
                            | A B'| | v | = | f |
                            | B 0 | | p | = | g |
-                            If saddlepoint_flip is true, the code assumes it is written as
+                            If -ksp_fetidp_saddlepoint_flip is true, the code assumes it is written as
                            | A B'| | v | = | f |
                            |-B 0 | | p | = |-g |
                          */
@@ -496,7 +522,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  pisz = PETSC_FALSE;
+  pisz = PETSC_TRUE;
   flip = PETSC_FALSE;
   allp = PETSC_FALSE;
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)ksp),((PetscObject)ksp)->prefix,"FETI-DP options","PC");CHKERRQ(ierr);
@@ -1021,6 +1047,7 @@ static PetscErrorCode KSPSolve_FETIDP(KSP ksp)
   PC_BDDC        *pcbddc = (PC_BDDC*)fetidp->innerbddc->data;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister(citation,&cited);CHKERRQ(ierr);
   ierr = KSPGetOperators(ksp,&A,NULL);CHKERRQ(ierr);
   ierr = KSPGetRhs(ksp,&B);CHKERRQ(ierr);
   ierr = KSPGetSolution(ksp,&X);CHKERRQ(ierr);
@@ -1146,11 +1173,21 @@ static PetscErrorCode KSPSetFromOptions_FETIDP(PetscOptionItems *PetscOptionsObj
 
    This class implements the FETI-DP method [1].
    The preconditioning matrix for the KSP must be of type MATIS.
-   The FETI-DP linear system (automatically generated constructing an internal PCBDDC object) is solved using an inner KSP object.
+   The FETI-DP linear system (automatically generated constructing an internal PCBDDC object) is solved using an internal KSP object.
 
    Options Database Keys:
-+   -ksp_fetidp_fullyredundant <false> : use a fully redundant set of Lagrange multipliers
--   -ksp_fetidp_saddlepoint <false>    : activates support for saddle point problems, see [2]
++   -ksp_fetidp_fullyredundant <false>   : use a fully redundant set of Lagrange multipliers
+.   -ksp_fetidp_saddlepoint <false>      : activates support for saddle point problems, see [2]
+.   -ksp_fetidp_saddlepoint_flip <false> : usually, an incompressible Stokes problem is written as
+                                           | A B^T | | v | = | f |
+                                           | B 0   | | p | = | g |
+                                           If -ksp_fetidp_saddlepoint_flip is true, the code assumes it is written as
+                                           | A B^T | | v | = | f |
+                                           |-B 0   | | p | = |-g |
+.   -ksp_fetidp_pressure_field <-1>      : activates support for saddle point problems, and identifies the pressure field id.
+                                           If this information is not provided, the pressure field is detected by using MatFindZeroDiagonals().
+.   -ksp_fetidp_pressure_iszero <true>   : if false, extracts the pressure block from the matrix (i.e. for Almost Incompressible Elasticity)
+-   -ksp_fetidp_pressure_all <false>     : if false, uses the interface pressures, as described in [2]. If true, uses the entire pressure field.
 
    Level: Advanced
 
@@ -1159,7 +1196,17 @@ static PetscErrorCode KSPSetFromOptions_FETIDP(PetscOptionItems *PetscOptionsObj
       -fetidp_ksp_type gmres -fetidp_bddc_pc_bddc_symmetric false
 .ve
    will use GMRES for the solution of the linear system on the Lagrange multipliers, generated using a non-symmetric PCBDDC.
-   For saddle point problems with continuous pressures, the operators for the interface pressure solver can be specified with KSPFETIDPSetPressureOperators().
+
+   For saddle point problems with continuous pressures, the operators for the pressure solver can be specified with KSPFETIDPSetPressureOperators().
+   Options for the pressure solver can be prefixed with -fetidp_p_, E.g.
+.vb
+      -fetidp_p_ksp_type preonly -fetidp_p_pc_type lu -fetidp_p_pc_factor_mat_solver_package mumps
+.ve
+   In order to use the deluxe version of FETI-DP, you must customize the inner BDDC operator with -fetidp_bddc_pc_bddc_use_deluxe_scaling -fetidp_bddc_pc_bddc_deluxe_singlemat and use
+   non-redundant multipliers, i.e. -ksp_fetidp_fullyredundant false. Options for the scaling solver are prefixed by -fetidp_bddelta_, E.g.
+.vb
+      -fetidp_bddelta_pc_factor_mat_solver_package mumps -my_fetidp_bddelta_pc_type lu
+.ve
 
    References:
 .vb
