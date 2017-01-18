@@ -151,13 +151,15 @@ PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec localU,
   PetscDualSpace *sp, *cellsp;
   PetscReal     **basisTab = NULL, **basisDerTab = NULL, **basisTabAux = NULL, **basisDerTabAux = NULL;
   PetscInt       *Nc;
-  PetscInt        dim, dimEmbed, maxHeight, h, Nf, NfAux = 0, f;
+  PetscInt        dim, dimEmbed, minHeight, maxHeight, h, Nf, NfAux = 0, f;
   PetscBool      *isFE, hasFE = PETSC_FALSE, hasFV = PETSC_FALSE;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetVTKCellHeight(dm, &minHeight);CHKERRQ(ierr);
   ierr = DMPlexGetMaxProjectionHeight(dm, &maxHeight);CHKERRQ(ierr);
+  maxHeight = PetscMax(maxHeight, minHeight);
   if (maxHeight < 0 || maxHeight > dim) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Maximum projection height %d not in [0, %d)\n", maxHeight, dim);}
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &dimEmbed);CHKERRQ(ierr);
@@ -200,7 +202,7 @@ PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec localU,
     PetscReal *points;
     PetscInt   numPoints, spDim, d;
 
-    if (maxHeight) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Field proejction not supported for face interpolation");
+    if (maxHeight > minHeight) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Field projection not supported for face interpolation");
     numPoints = 0;
     for (f = 0; f < Nf; ++f) {
       ierr = PetscDualSpaceGetDimension(cellsp[f], &spDim);CHKERRQ(ierr);
@@ -245,7 +247,7 @@ PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec localU,
     ierr = PetscFree(points);CHKERRQ(ierr);
   }
   /* Note: We make no attempt to optimize for height. Higher height things just overwrite the lower height results. */
-  for (h = 0; h <= maxHeight; h++) {
+  for (h = minHeight; h <= maxHeight; h++) {
     PetscScalar *values;
     PetscBool   *fieldActive;
     PetscInt     pStart, pEnd, p, spDim, totDim, numValues;
