@@ -15,7 +15,8 @@ class Configure(config.package.GNUPackage):
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
     self.mpi  = framework.require('config.packages.MPI',self)
-    self.deps = [self.mpi]
+    self.blasLapack = self.framework.require('config.packages.BlasLapack',self)
+    self.deps = [self.mpi,self.blasLapack]
     return
 
   def formGNUConfigureArgs(self):
