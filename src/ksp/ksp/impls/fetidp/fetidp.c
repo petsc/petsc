@@ -484,7 +484,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
   PC_BDDC          *pcbddc = (PC_BDDC*)fetidp->innerbddc->data;
   Mat              A,Ap;
   PetscInt         fid = -1;
-  PetscBool        ismatis,pisz;
+  PetscBool        ismatis,pisz,allp;
   PetscBool        flip; /* Usually, Stokes is written
                            | A B'| | v | = | f |
                            | B 0 | | p | = | g |
@@ -498,9 +498,11 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
   PetscFunctionBegin;
   pisz = PETSC_FALSE;
   flip = PETSC_FALSE;
+  allp = PETSC_FALSE;
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)ksp),((PetscObject)ksp)->prefix,"FETI-DP options","PC");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_fetidp_pressure_field","Field id for pressures for saddle-point problems",NULL,fid,&fid,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ksp_fetidp_pressure_iszero","Zero pressure block",NULL,pisz,&pisz,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_fetidp_pressure_all","Use the whole pressure set instead of just that at the interface",NULL,allp,&allp,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ksp_fetidp_saddlepoint_flip","Flip the sign of the pressure-velocity (lower-left) block",NULL,flip,&flip,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -618,6 +620,21 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         ierr = ISDestroy(&list[0]);CHKERRQ(ierr);
         Pall = list[1];
       }
+      /* if the user requested the entire pressure,
+         remove the interior pressure dofs from II (or pII) */
+      if (allp) {
+        if (ploc) {
+          IS nII;
+          ierr = ISDifference(II,lPall,&nII);CHKERRQ(ierr);
+          ierr = ISDestroy(&II);CHKERRQ(ierr);
+          II   = nII;
+        } else {
+          IS nII;
+          ierr = ISDifference(pII,Pall,&nII);CHKERRQ(ierr);
+          ierr = ISDestroy(&pII);CHKERRQ(ierr);
+          pII  = nII;
+        }
+      }
       if (ploc) {
         ierr = ISDifference(lPall,II,&lP);CHKERRQ(ierr);
         ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_lP",(PetscObject)lP);CHKERRQ(ierr);
@@ -705,23 +722,26 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
       }
       ierr = PetscFree(widxs);CHKERRQ(ierr);
 
-      /* We may want to use a discrete harmonic solver instead
-         of a Stokes harmonic for the Dirichler preconditioner
+      /* If there's any "interior pressure",
+         we may want to use a discrete harmonic solver instead
+         of a Stokes harmonic for the Dirichlet preconditioner
          Need to extract the interior velocity dofs in interior dofs ordering (iV)
          and interior pressure dofs in local ordering (iP) */
-      ierr = ISDifference(lPall,lP,&is1);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_iP",(PetscObject)is1);CHKERRQ(ierr);
-      ierr = ISDifference(II,is1,&is2);CHKERRQ(ierr);
-      ierr = ISDestroy(&is1);CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingCreateIS(II,&l2g);CHKERRQ(ierr);
-      ierr = ISGlobalToLocalMappingApplyIS(l2g,IS_GTOLM_DROP,is2,&is1);CHKERRQ(ierr);
-      ierr = ISGetLocalSize(is1,&i);CHKERRQ(ierr);
-      ierr = ISGetLocalSize(is2,&j);CHKERRQ(ierr);
-      if (i != j) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inconsistent local sizes %D and %D for iV",i,j);
-      ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_iV",(PetscObject)is1);CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingDestroy(&l2g);CHKERRQ(ierr);
-      ierr = ISDestroy(&is1);CHKERRQ(ierr);
-      ierr = ISDestroy(&is2);CHKERRQ(ierr);
+      if (!allp) {
+        ierr = ISDifference(lPall,lP,&is1);CHKERRQ(ierr);
+        ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_iP",(PetscObject)is1);CHKERRQ(ierr);
+        ierr = ISDifference(II,is1,&is2);CHKERRQ(ierr);
+        ierr = ISDestroy(&is1);CHKERRQ(ierr);
+        ierr = ISLocalToGlobalMappingCreateIS(II,&l2g);CHKERRQ(ierr);
+        ierr = ISGlobalToLocalMappingApplyIS(l2g,IS_GTOLM_DROP,is2,&is1);CHKERRQ(ierr);
+        ierr = ISGetLocalSize(is1,&i);CHKERRQ(ierr);
+        ierr = ISGetLocalSize(is2,&j);CHKERRQ(ierr);
+        if (i != j) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inconsistent local sizes %D and %D for iV",i,j);
+        ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_iV",(PetscObject)is1);CHKERRQ(ierr);
+        ierr = ISLocalToGlobalMappingDestroy(&l2g);CHKERRQ(ierr);
+        ierr = ISDestroy(&is1);CHKERRQ(ierr);
+        ierr = ISDestroy(&is2);CHKERRQ(ierr);
+      }
       ierr = ISDestroy(&lPall);CHKERRQ(ierr);
       ierr = ISDestroy(&II);CHKERRQ(ierr);
 
