@@ -920,7 +920,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     if (benign_trick) sub_schurs->is_posdef = PETSC_TRUE;
 
     if (n_I) { /* TODO add ordering from options */
-      IS is_schur;
+      IS is_schur, iP;
 
       if (sub_schurs->is_hermitian && sub_schurs->is_posdef) {
         ierr = MatGetFactor(A,solver,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
@@ -959,6 +959,8 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       /* we can reuse the solvers if we are not using the economic version */
       reuse_solvers = (PetscBool)(reuse_solvers && !economic);
       factor_workaround = (PetscBool)(reuse_solvers && factor_workaround);
+      ierr = PetscObjectQuery((PetscObject)sub_schurs->A,"__KSPFETIDP_iP",(PetscObject*)&iP);CHKERRQ(ierr);
+      if (iP) reuse_solvers = PETSC_FALSE;
       solver_S = PETSC_TRUE;
 
       /* update the Schur complement with the change of basis on the pressures */
