@@ -2118,11 +2118,12 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
   MPI_Status     *r_status1,*r_status2,*s_status1,*s_status3,*s_status2;
   MPI_Status     *r_status3,*r_status4,*s_status4;
   MPI_Comm       comm;
-  PetscScalar    **rbuf4,**sbuf_aa,*vals,*mat_a,*sbuf_aa_i;
+  PetscScalar    **rbuf4,*rbuf4_i,**sbuf_aa,*vals,*mat_a,*imat_a,*sbuf_aa_i;
   PetscMPIInt    *onodes1,*olengths1,end;
-  PetscInt       **row2proc,*row2proc_i;
+  PetscInt       **row2proc,*row2proc_i,ilen_row,*imat_ilen,*imat_j,*imat_i,old_row;
   Mat_SubMat     **smats,*smat_i;
-  PetscBool      *issorted,*allcolumns,colflag;
+  PetscBool      *issorted,*allcolumns,colflag,iscsorted=PETSC_TRUE;
+  PetscInt       *sbuf1_i,*rbuf2_i,*rbuf3_i,ilen;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)C,&comm);CHKERRQ(ierr);
@@ -2133,6 +2134,9 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
   ierr = PetscMalloc5(ismax,&irow,ismax,&icol,ismax,&nrow,ismax,&ncol,ismax,&issorted);CHKERRQ(ierr);
 
   for (i=0; i<ismax; i++) {
+    ierr = ISSorted(iscol[i],&issorted[i]);CHKERRQ(ierr);
+    if (!issorted[i]) iscsorted = issorted[i];
+
     ierr = ISSorted(isrow[i],&issorted[i]);CHKERRQ(ierr);
 
     ierr = ISGetIndices(isrow[i],&irow[i]);CHKERRQ(ierr);
@@ -2400,7 +2404,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
             ncols  = nzA + nzB;
             cworkA = a_j + a_i[row]; cworkB = b_j + b_i[row];
 
-            /* load the column indices for this row into sorted cols */
+            /* load the column indices for this row into cols */
             cols = sbuf_aj_i + ct2;
 
             lwrite = 0;
@@ -2680,127 +2684,137 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
 
   /* Assemble the matrices */
   /* First assemble the local rows */
-  {
-    PetscInt    ilen_row,*imat_ilen,*imat_j,*imat_i,old_row;
-    PetscScalar *imat_a;
+  for (i=0; i<ismax; i++) {
+    row2proc_i = row2proc[i];
+    subc      = (Mat_SeqAIJ*)submats[i]->data;
+    imat_ilen = subc->ilen;
+    imat_j    = subc->j;
+    imat_i    = subc->i;
+    imat_a    = subc->a;
 
-    for (i=0; i<ismax; i++) {
-      row2proc_i = row2proc[i];
-      subc      = (Mat_SeqAIJ*)submats[i]->data;
-      imat_ilen = subc->ilen;
-      imat_j    = subc->j;
-      imat_i    = subc->i;
-      imat_a    = subc->a;
-
-      if (!allcolumns[i]) cmap_i = cmap[i];
-      rmap_i = rmap[i];
-      irow_i = irow[i];
-      jmax   = nrow[i];
-      for (j=0; j<jmax; j++) {
-        row  = irow_i[j];
-        proc = row2proc_i[j];
-        if (proc == rank) {
-          old_row = row;
+    if (!allcolumns[i]) cmap_i = cmap[i];
+    rmap_i = rmap[i];
+    irow_i = irow[i];
+    jmax   = nrow[i];
+    for (j=0; j<jmax; j++) {
+      row  = irow_i[j];
+      proc = row2proc_i[j];
+      if (proc == rank) {
+        old_row = row;
 #if defined(PETSC_USE_CTABLE)
-          ierr = PetscTableFind(rmap_i,row+1,&row);CHKERRQ(ierr);
-          row--;
+        ierr = PetscTableFind(rmap_i,row+1,&row);CHKERRQ(ierr);
+        row--;
 #else
-          row = rmap_i[row];
+        row = rmap_i[row];
 #endif
-          ilen_row = imat_ilen[row];
-          ierr     = MatGetRow_MPIAIJ(C,old_row,&ncols,&cols,&vals);CHKERRQ(ierr);
-          mat_i    = imat_i[row];
-          mat_a    = imat_a + mat_i;
-          mat_j    = imat_j + mat_i;
-          if (!allcolumns[i]) {
-            for (k=0; k<ncols; k++) {
+        ilen_row = imat_ilen[row];
+        ierr     = MatGetRow_MPIAIJ(C,old_row,&ncols,&cols,&vals);CHKERRQ(ierr);
+        mat_i    = imat_i[row];
+        mat_a    = imat_a + mat_i;
+        mat_j    = imat_j + mat_i;
+        if (!allcolumns[i]) {
+          for (k=0; k<ncols; k++) {
 #if defined(PETSC_USE_CTABLE)
-              ierr = PetscTableFind(cmap_i,cols[k]+1,&tcol);CHKERRQ(ierr);
+            ierr = PetscTableFind(cmap_i,cols[k]+1,&tcol);CHKERRQ(ierr);
 #else
-              tcol = cmap_i[cols[k]];
+            tcol = cmap_i[cols[k]];
 #endif
-              if (tcol) {
-                *mat_j++ = tcol - 1;
-                *mat_a++ = vals[k];
-                ilen_row++;
-              }
-            }
-          } else { /* allcolumns */
-            for (k=0; k<ncols; k++) {
-              *mat_j++ = cols[k];  /* global col index! */
+            if (tcol) {
+              *mat_j++ = tcol - 1;
               *mat_a++ = vals[k];
               ilen_row++;
             }
           }
-          ierr = MatRestoreRow_MPIAIJ(C,old_row,&ncols,&cols,&vals);CHKERRQ(ierr);
-
-          imat_ilen[row] = ilen_row;
+        } else { /* allcolumns */
+          for (k=0; k<ncols; k++) {
+            *mat_j++ = cols[k];  /* global col index! */
+            *mat_a++ = vals[k];
+            ilen_row++;
+          }
         }
+        ierr = MatRestoreRow_MPIAIJ(C,old_row,&ncols,&cols,&vals);CHKERRQ(ierr);
+
+        imat_ilen[row] = ilen_row;
       }
     }
   }
 
-  /*   Now assemble the off proc rows*/
-  {
-    PetscInt    *sbuf1_i,*rbuf2_i,*rbuf3_i,*imat_ilen,ilen;
-    PetscInt    *imat_j,*imat_i;
-    PetscScalar *imat_a,*rbuf4_i;
-
-    ierr    = MPI_Waitall(nrqs,r_waits4,r_status4);CHKERRQ(ierr);
-    for (tmp2=0; tmp2<nrqs; tmp2++) {
-      sbuf1_i = sbuf1[pa[tmp2]];
-      jmax    = sbuf1_i[0];
-      ct1     = 2*jmax + 1;
-      ct2     = 0;
-      rbuf2_i = rbuf2[tmp2];
-      rbuf3_i = rbuf3[tmp2];
-      rbuf4_i = rbuf4[tmp2];
-      for (j=1; j<=jmax; j++) {
-        is_no     = sbuf1_i[2*j-1];
-        rmap_i    = rmap[is_no];
-        if (!allcolumns[is_no]) cmap_i = cmap[is_no];
-        subc      = (Mat_SeqAIJ*)submats[is_no]->data;
-        imat_ilen = subc->ilen;
-        imat_j    = subc->j;
-        imat_i    = subc->i;
-        imat_a    = subc->a;
-        max1      = sbuf1_i[2*j];
-        for (k=0; k<max1; k++,ct1++) {
-          row = sbuf1_i[ct1];
+  /* Now assemble the off proc rows */
+  ierr    = MPI_Waitall(nrqs,r_waits4,r_status4);CHKERRQ(ierr);
+  for (tmp2=0; tmp2<nrqs; tmp2++) {
+    sbuf1_i = sbuf1[pa[tmp2]];
+    jmax    = sbuf1_i[0];
+    ct1     = 2*jmax + 1;
+    ct2     = 0;
+    rbuf2_i = rbuf2[tmp2];
+    rbuf3_i = rbuf3[tmp2];
+    rbuf4_i = rbuf4[tmp2];
+    for (j=1; j<=jmax; j++) {
+      is_no     = sbuf1_i[2*j-1];
+      rmap_i    = rmap[is_no];
+      if (!allcolumns[is_no]) cmap_i = cmap[is_no];
+      subc      = (Mat_SeqAIJ*)submats[is_no]->data;
+      imat_ilen = subc->ilen;
+      imat_j    = subc->j;
+      imat_i    = subc->i;
+      imat_a    = subc->a;
+      max1      = sbuf1_i[2*j];
+      for (k=0; k<max1; k++,ct1++) {
+        row = sbuf1_i[ct1];
 #if defined(PETSC_USE_CTABLE)
-          ierr = PetscTableFind(rmap_i,row+1,&row);CHKERRQ(ierr);
-          row--;
+        ierr = PetscTableFind(rmap_i,row+1,&row);CHKERRQ(ierr);
+        row--;
 #else
-          row = rmap_i[row];
+        row = rmap_i[row];
 #endif
-          ilen  = imat_ilen[row];
-          mat_i = imat_i[row];
-          mat_a = imat_a + mat_i;
-          mat_j = imat_j + mat_i;
-          max2  = rbuf2_i[ct1];
-          if (!allcolumns[is_no]) {
-            for (l=0; l<max2; l++,ct2++) {
-
+        ilen  = imat_ilen[row];
+        mat_i = imat_i[row];
+        mat_a = imat_a + mat_i;
+        mat_j = imat_j + mat_i;
+        max2  = rbuf2_i[ct1];
+        if (!allcolumns[is_no]) {
+          for (l=0; l<max2; l++,ct2++) {
 #if defined(PETSC_USE_CTABLE)
-              ierr = PetscTableFind(cmap_i,rbuf3_i[ct2]+1,&tcol);CHKERRQ(ierr);
+            ierr = PetscTableFind(cmap_i,rbuf3_i[ct2]+1,&tcol);CHKERRQ(ierr);
 #else
-              tcol = cmap_i[rbuf3_i[ct2]];
+            tcol = cmap_i[rbuf3_i[ct2]];
 #endif
-              if (tcol) {
-                *mat_j++ = tcol - 1;
-                *mat_a++ = rbuf4_i[ct2];
-                ilen++;
-              }
-            }
-          } else { /* allcolumns */
-            for (l=0; l<max2; l++,ct2++) {
-              *mat_j++ = rbuf3_i[ct2]; /* same global column index of C */
+            if (tcol) {
+              *mat_j++ = tcol - 1;
               *mat_a++ = rbuf4_i[ct2];
               ilen++;
             }
           }
-          imat_ilen[row] = ilen;
+        } else { /* allcolumns */
+          for (l=0; l<max2; l++,ct2++) {
+            *mat_j++ = rbuf3_i[ct2]; /* same global column index of C */
+            *mat_a++ = rbuf4_i[ct2];
+            ilen++;
+          }
         }
+        imat_ilen[row] = ilen;
+      }
+    }
+  }
+
+  if (!iscsorted) { /* sort column indices of the rows */
+    for (i=0; i<ismax; i++) {
+      subc       = (Mat_SeqAIJ*)submats[i]->data;
+      imat_j    = subc->j;
+      imat_i    = subc->i;
+      imat_a    = subc->a;
+      imat_ilen = subc->ilen;
+
+      if (allcolumns[i]) continue;
+      jmax = nrow[i];
+      for (j=0; j<jmax; j++) {
+        PetscInt ilen;
+
+        mat_i = imat_i[j];
+        mat_a = imat_a + mat_i;
+        mat_j = imat_j + mat_i;
+        ilen  = imat_ilen[j];
+        ierr  = PetscSortIntWithScalarArray(ilen,mat_j,mat_a);CHKERRQ(ierr);
       }
     }
   }
