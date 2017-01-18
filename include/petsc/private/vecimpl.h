@@ -396,6 +396,7 @@ struct _VecTaggerOps {
 struct _p_VecTagger {
   PETSCHEADER(struct _VecTaggerOps);
   void      *data;
+  PetscInt  blocksize;
   PetscBool invert;
   PetscBool setupcalled;
 };

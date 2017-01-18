@@ -602,7 +602,7 @@ typedef struct _p_VecTagger *VecTagger;
 J*/
 typedef const char* VecTaggerType;
 /* tag where the vector values are in an interval of explicitly defined values */
-#define VECTAGGERINTERVAL   "interval"
+#define VECTAGGERABSOLUTE   "absolute"
 /* tag where the vector values are in an interval of values relative to the set of all values in the vector */
 #define VECTAGGERRELATIVE   "relative"
 /* tag where the vector values are in a relative range of the *cumulative distribution* of values in the vector */
@@ -619,6 +619,8 @@ PETSC_EXTERN PetscErrorCode VecTaggerGetType(VecTagger,VecTaggerType *);
 PETSC_EXTERN PetscErrorCode VecTaggerRegister(const char[],PetscErrorCode (*) (VecTagger));
 
 PETSC_EXTERN PetscErrorCode VecTaggerCreate(MPI_Comm,VecTagger *);
+PETSC_EXTERN PetscErrorCode VecTaggerSetBlockSize(VecTagger,PetscInt);
+PETSC_EXTERN PetscErrorCode VecTaggerGetBlockSize(VecTagger,PetscInt*);
 PETSC_EXTERN PetscErrorCode VecTaggerSetType(VecTagger,VecTaggerType);
 PETSC_EXTERN PetscErrorCode VecTaggerGetType(VecTagger,VecTaggerType *);
 PETSC_EXTERN PetscErrorCode VecTaggerSetInvert(VecTagger,PetscBool);
@@ -630,14 +632,14 @@ PETSC_EXTERN PetscErrorCode VecTaggerComputeIntervals(VecTagger,Vec,PetscInt *,P
 PETSC_EXTERN PetscErrorCode VecTaggerComputeIS(VecTagger,Vec,IS *);
 PETSC_EXTERN PetscErrorCode VecTaggerDestroy(VecTagger *);
 
-PETSC_EXTERN PetscErrorCode VecTaggerAbsoluteSetInterval(VecTagger,PetscReal,PetscReal);
-PETSC_EXTERN PetscErrorCode VecTaggerAbsoluteGetInterval(VecTagger,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode VecTaggerAbsoluteSetIntervals(VecTagger,PetscScalar(*)[2]);
+PETSC_EXTERN PetscErrorCode VecTaggerAbsoluteGetIntervals(VecTagger,const PetscScalar(**)[2]);
 
-PETSC_EXTERN PetscErrorCode VecTaggerRelativeSetInterval(VecTagger,PetscReal,PetscReal);
-PETSC_EXTERN PetscErrorCode VecTaggerRelativeGetInterval(VecTagger,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode VecTaggerRelativeSetIntervals(VecTagger,PetscScalar(*)[2]);
+PETSC_EXTERN PetscErrorCode VecTaggerRelativeGetIntervals(VecTagger,const PetscScalar(**)[2]);
 
-PETSC_EXTERN PetscErrorCode VecTaggerCumulativeSetInterval(VecTagger,PetscReal,PetscReal);
-PETSC_EXTERN PetscErrorCode VecTaggerCumulativeGetInterval(VecTagger,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode VecTaggerCumulativeSetIntervals(VecTagger,PetscScalar(*)[2]);
+PETSC_EXTERN PetscErrorCode VecTaggerCumulativeGetIntervals(VecTagger,const PetscScalar(**)[2]);
 
 PETSC_EXTERN PetscErrorCode VecTaggerOrSetTaggers(VecTagger,PetscInt,VecTagger*);
 PETSC_EXTERN PetscErrorCode VecTaggerOrGetTaggers(VecTagger,PetscInt*,VecTagger**);

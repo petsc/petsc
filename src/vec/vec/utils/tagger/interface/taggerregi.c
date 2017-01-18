@@ -1,6 +1,6 @@
 #include <petsc/private/vecimpl.h>     /*I  "petscvec.h"  I*/
 
-PETSC_EXTERN PetscErrorCode VecTaggerCreate_Interval(VecTagger);
+PETSC_EXTERN PetscErrorCode VecTaggerCreate_Absolute(VecTagger);
 PETSC_EXTERN PetscErrorCode VecTaggerCreate_Relative(VecTagger);
 PETSC_EXTERN PetscErrorCode VecTaggerCreate_Cumulative(VecTagger);
 PETSC_EXTERN PetscErrorCode VecTaggerCreate_Or(VecTagger);
@@ -26,7 +26,7 @@ PetscErrorCode  VecTaggerRegisterAll(void)
   PetscFunctionBegin;
   if (VecTaggerRegisterAllCalled) PetscFunctionReturn(0);
   VecTaggerRegisterAllCalled = PETSC_TRUE;
-  ierr = VecTaggerRegister(VECTAGGERINTERVAL,   VecTaggerCreate_Interval);CHKERRQ(ierr);
+  ierr = VecTaggerRegister(VECTAGGERABSOLUTE,   VecTaggerCreate_Absolute);CHKERRQ(ierr);
   ierr = VecTaggerRegister(VECTAGGERRELATIVE,   VecTaggerCreate_Relative);CHKERRQ(ierr);
   ierr = VecTaggerRegister(VECTAGGERCUMULATIVE, VecTaggerCreate_Cumulative);CHKERRQ(ierr);
   ierr = VecTaggerRegister(VECTAGGEROR,         VecTaggerCreate_Or);CHKERRQ(ierr);
