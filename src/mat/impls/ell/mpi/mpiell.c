@@ -210,7 +210,7 @@ PetscErrorCode MatSetValues_MPIELL(Mat mat,PetscInt m,const PetscInt im[],PetscI
             col = ell->colmap[in[j]] - 1;
 #endif
             if (col < 0 && !((Mat_SeqELL*)(ell->B->data))->nonew) {
-              /* ierr   = MatDisAssemble_MPIELL(mat);CHKERRQ(ierr); */
+              ierr   = MatDisAssemble_MPIELL(mat);CHKERRQ(ierr);
               col    = in[j];
               /* Reinitialize the variables required by MatSetValues_SeqELL_B_Private() */
               B      = ell->B;
@@ -338,7 +338,7 @@ PetscErrorCode MatAssemblyEnd_MPIELL(Mat mat,MatAssemblyType mode)
     ierr = MPIU_Allreduce(&mat->was_assembled,&other_disassembled,1,MPIU_BOOL,MPI_PROD,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
     if (mat->was_assembled && !other_disassembled) {
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatDisAssemble not implemented yet\n");
-      /* ierr = MatDisAssemble_MPIELL(mat);CHKERRQ(ierr); */
+      ierr = MatDisAssemble_MPIELL(mat);CHKERRQ(ierr);
     }
   }
   if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) {
@@ -1234,7 +1234,15 @@ PetscErrorCode  MatMPIELLSetPreallocation_MPIELL(Mat B,PetscInt d_rlenmax,const 
 
   ierr = MatSeqELLSetPreallocation(b->A,d_rlenmax,d_rlen);CHKERRQ(ierr);
   ierr = MatSeqELLSetPreallocation(b->B,o_rlenmax,o_rlen);CHKERRQ(ierr);
-  B->preallocated = PETSC_TRUE;
+  B->preallocated  = PETSC_TRUE;
+  B->was_assembled = PETSC_FALSE;
+
+  /*
+    critical for MatAssemblyEnd to work.
+    MatAssemblyBegin checks it to set up was_assembled
+    and MatAssemblyEnd checks was_assembled to determine whether to build garray
+  */
+  B->assembled     = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -1704,6 +1712,79 @@ PetscErrorCode  MatMPIELLGetLocalMatCondensed(Mat A,MatReuse scall,IS *row,IS *c
   PetscFunctionReturn(0);
 }
 
+#include <../src/mat/impls/aij/mpi/mpiaij.h>
+
+PetscErrorCode MatConvert_MPIELL_MPIAIJ(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
+{
+  PetscErrorCode ierr;
+  Mat_MPIELL     *a = (Mat_MPIELL*)A->data;
+  Mat            B;
+  Mat_MPIAIJ     *b;
+
+  PetscFunctionBegin;
+  if (!A->assembled) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Matrix must be assembled");
+
+  ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
+  ierr = MatSetType(B,MATMPIAIJ);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
+  ierr = MatSetBlockSizes(B,A->rmap->bs,A->cmap->bs);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(B,0,NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(B,0,NULL,0,NULL);CHKERRQ(ierr);
+  b    = (Mat_MPIAIJ*) B->data;
+
+  ierr = MatDestroy(&b->A);CHKERRQ(ierr);
+  ierr = MatDestroy(&b->B);CHKERRQ(ierr);
+  ierr = MatDisAssemble_MPIELL(A);CHKERRQ(ierr);
+  ierr = MatConvert_SeqELL_SeqAIJ(a->A, MATSEQAIJ, MAT_INITIAL_MATRIX, &b->A);CHKERRQ(ierr);
+  ierr = MatConvert_SeqELL_SeqAIJ(a->B, MATSEQAIJ, MAT_INITIAL_MATRIX, &b->B);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  if (reuse == MAT_INPLACE_MATRIX) {
+    ierr = MatHeaderReplace(A,&B);CHKERRQ(ierr);
+  } else {
+    *newmat = B;
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatConvert_MPIAIJ_MPIELL(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
+{
+  PetscErrorCode ierr;
+  Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
+  Mat            B;
+  Mat_MPIELL     *b;
+
+  PetscFunctionBegin;
+  if (!A->assembled) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Matrix must be assembled");
+
+  ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
+  ierr = MatSetType(B,MATMPIELL);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
+  ierr = MatSetBlockSizes(B,A->rmap->bs,A->cmap->bs);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(B,0,NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(B,0,NULL,0,NULL);CHKERRQ(ierr);
+  b    = (Mat_MPIELL*) B->data;
+
+  ierr = MatDestroy(&b->A);CHKERRQ(ierr);
+  ierr = MatDestroy(&b->B);CHKERRQ(ierr);
+  ierr = MatDisAssemble_MPIAIJ(A);CHKERRQ(ierr);
+  ierr = MatConvert_SeqAIJ_SeqELL(a->A, MATSEQELL, MAT_INITIAL_MATRIX, &b->A);CHKERRQ(ierr);
+  ierr = MatConvert_SeqAIJ_SeqELL(a->B, MATSEQELL, MAT_INITIAL_MATRIX, &b->B);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (reuse == MAT_INPLACE_MATRIX) {
+    ierr = MatHeaderReplace(A,&B);CHKERRQ(ierr);
+  } else {
+    *newmat = B;
+  }
+  PetscFunctionReturn(0);
+}
+
 /*MC
    MATMPIELL - MATMPIELL = "MPIELL" - A matrix type to be used for parallel sparse matrices.
 
@@ -1714,7 +1795,6 @@ PetscErrorCode  MatMPIELLGetLocalMatCondensed(Mat A,MatReuse scall,IS *row,IS *c
 
 .seealso: MatCreateell()
 M*/
-
 PETSC_EXTERN PetscErrorCode MatCreate_MPIELL(Mat B)
 {
   Mat_MPIELL     *b;
@@ -1754,6 +1834,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIELL(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C",MatRetrieveValues_MPIELL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatIsTranspose_C",MatIsTranspose_MPIELL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIELLSetPreallocation_C",MatMPIELLSetPreallocation_MPIELL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiell_mpiaij_C",MatConvert_MPIELL_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIELL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -5,6 +5,76 @@
 #include <../src/mat/impls/ell/mpi/mpiell.h>
 #include <petsc/private/isimpl.h>    /* needed because accesses data structure of ISLocalToGlobalMapping directly */
 
+
+/*
+   Takes the local part of an already assembled MPIELL matrix
+   and disassembles it. This is to allow new nonzeros into the matrix
+   that require more communication in the matrix vector multiply.
+   Thus certain data-structures must be rebuilt.
+
+   Kind of slow! But that's what application programmers get when
+   they are sloppy.
+*/
+PetscErrorCode MatDisAssemble_MPIELL(Mat A)
+{
+  Mat_MPIELL     *ell  = (Mat_MPIELL*)A->data;
+  Mat            B     = ell->B,Bnew;
+  Mat_SeqELL     *Bell = (Mat_SeqELL*)B->data;
+  PetscInt       i,j,m = B->rmap->n,n = A->cmap->N,ec,row;
+  PetscBool      bflag;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* free stuff related to matrix-vec multiply */
+  ierr = VecGetSize(ell->lvec,&ec);CHKERRQ(ierr); /* needed for PetscLogObjectMemory below */
+  ierr = VecDestroy(&ell->lvec);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&ell->Mvctx);CHKERRQ(ierr);
+  if (ell->colmap) {
+#if defined(PETSC_USE_CTABLE)
+    ierr = PetscTableDestroy(&ell->colmap);CHKERRQ(ierr);
+#else
+    ierr = PetscFree(ell->colmap);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)A,-ell->B->cmap->n*sizeof(PetscInt));CHKERRQ(ierr);
+#endif
+  }
+
+  /* make sure that B is assembled so we can access its values */
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  /* invent new B and copy stuff over */
+  ierr = MatCreate(PETSC_COMM_SELF,&Bnew);CHKERRQ(ierr);
+  ierr = MatSetSizes(Bnew,m,n,m,n);CHKERRQ(ierr);
+  ierr = MatSetBlockSizesFromMats(Bnew,A,A);CHKERRQ(ierr);
+  ierr = MatSetType(Bnew,((PetscObject)B)->type_name);CHKERRQ(ierr);
+  ierr = MatSeqELLSetPreallocation(Bnew,0,Bell->rlen);CHKERRQ(ierr);
+
+  ((Mat_SeqELL*)Bnew->data)->nonew = Bell->nonew; /* Inherit insertion error options. */
+  /*
+   Ensure that B's nonzerostate is monotonically increasing.
+   Or should this follow the MatSetValues() loop to preserve B's nonzerstate across a MatDisAssemble() call?
+   */
+  Bnew->nonzerostate = B->nonzerostate;
+
+  for (i=0; i<m/8; i++) { /* loop over slices */
+    for (j=Bell->sliidx[i],row=0; j<Bell->sliidx[i+1]; j++,row=((row+1)&0x07)) {
+      bflag = Bell->bt[j>>3] & (char)(1<<row);
+      if (bflag) {
+        ierr = MatSetValue(Bnew,8*i+row,ell->garray[Bell->colidx[j]],Bell->val[j],B->insertmode);CHKERRQ(ierr);
+      }
+    }
+  }
+  ierr = PetscFree(ell->garray);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)A,-ec*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)A,(PetscObject)Bnew);CHKERRQ(ierr);
+
+  ell->B           = Bnew;
+  A->was_assembled = PETSC_FALSE;
+  A->assembled     = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatSetUpMultiply_MPIELL(Mat mat)
 {
   Mat_MPIELL     *ell = (Mat_MPIELL*)mat->data;

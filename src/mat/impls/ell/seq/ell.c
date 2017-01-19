@@ -155,6 +155,88 @@ PetscErrorCode  MatSeqELLSetPreallocation_SeqELL(Mat B,PetscInt maxallocrow,cons
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatConvert_SeqELL_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
+{
+  Mat            B;
+  Mat_SeqELL     *a = (Mat_SeqELL*)A->data;
+  PetscInt       m = A->rmap->N,i,j,row;
+  PetscBool      bflag;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
+  ierr = MatSetType(B,MATSEQAIJ);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(B,0,a->rlen);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
+
+  for (i=0; i<m/8; i++) { /* loop over slices */
+    for (j=a->sliidx[i],row=0; j<a->sliidx[i+1]; j++,row=((row+1)&0x07)) {
+      bflag = a->bt[j>>3] & (char)(1<<row);
+      if (bflag) {
+        ierr = MatSetValue(B,8*i+row,a->colidx[j],a->val[j],INSERT_VALUES);CHKERRQ(ierr);
+      }
+    }
+  }
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  B->rmap->bs = A->rmap->bs;
+
+  if (reuse == MAT_INPLACE_MATRIX) {
+    ierr = MatHeaderReplace(A,&B);CHKERRQ(ierr);
+  } else {
+	*newmat = B;
+  }
+  PetscFunctionReturn(0);
+}
+
+#include <../src/mat/impls/aij/seq/aij.h>
+
+PetscErrorCode MatConvert_SeqAIJ_SeqELL(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
+{
+  Mat               B;
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  PetscErrorCode    ierr;
+  PetscInt          *ai=a->i,m=A->rmap->N,n=A->cmap->N,i,*rowlengths,row,ncols;
+  const PetscInt    *cols;
+  const PetscScalar *vals;
+
+  PetscFunctionBegin;
+  if (n != m) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix must be square");
+  if (A->rmap->bs > 1) {
+    ierr = MatConvert_Basic(A,newtype,reuse,newmat);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  /* Can we just use ilen? */
+  ierr = PetscMalloc1(m,&rowlengths);CHKERRQ(ierr);
+  for (i=0; i<m; i++) {
+    rowlengths[i] = ai[i+1] - ai[i];
+  }
+
+  ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,m,n,m,n);CHKERRQ(ierr);
+  ierr = MatSetType(B,MATSEQELL);CHKERRQ(ierr);
+  ierr = MatSeqELLSetPreallocation(B,0,rowlengths);CHKERRQ(ierr);
+  ierr = PetscFree(rowlengths);CHKERRQ(ierr);
+
+  ierr = MatSetOption(B,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
+
+  for (row=0; row<m; row++) {
+    ierr = MatGetRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
+    ierr = MatSetValues(B,1,&row,ncols,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatRestoreRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
+  }
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  B->rmap->bs = A->rmap->bs;
+
+  if (reuse == MAT_INPLACE_MATRIX) {
+    ierr = MatHeaderReplace(A,&B);CHKERRQ(ierr);
+  } else {
+    *newmat = B;
+  }
+  PetscFunctionReturn(0);
+}
 PetscErrorCode MatMult_SeqELL(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqELL        *a=(Mat_SeqELL*)A->data;
@@ -1418,6 +1500,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqELL(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatStoreValues_C",MatStoreValues_SeqELL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C",MatRetrieveValues_SeqELL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqELLSetPreallocation_C",MatSeqELLSetPreallocation_SeqELL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqell_seqaij_C",MatConvert_SeqELL_SeqAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

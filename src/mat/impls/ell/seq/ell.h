@@ -135,5 +135,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqELL(Mat);
 PETSC_INTERN PetscErrorCode MatDuplicate_SeqELL(Mat,MatDuplicateOption,Mat*);
 PETSC_INTERN PetscErrorCode MatEqual_SeqELL(Mat,Mat,PetscBool*);
 PETSC_INTERN PetscErrorCode MatSeqELLInvalidateDiagonal(Mat);
+PETSC_INTERN PetscErrorCode MatConvert_SeqELL_SeqAIJ(Mat,MatType,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqELL(Mat,MatType,MatReuse,Mat*);
 
 #endif

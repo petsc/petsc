@@ -41,9 +41,8 @@ typedef struct {
 
 PETSC_EXTERN PetscErrorCode MatCreate_MPIELL(Mat);
 PETSC_INTERN PetscErrorCode MatSetUpMultiply_MPIELL(Mat);
-/*
+
 PETSC_INTERN PetscErrorCode MatDisAssemble_MPIELL(Mat);
-*/
 PETSC_INTERN PetscErrorCode MatDuplicate_MPIELL(Mat,MatDuplicateOption,Mat*);
 
 PETSC_INTERN PetscErrorCode MatDestroy_MPIELL_PtAP(Mat);
@@ -58,3 +57,6 @@ PETSC_INTERN PetscErrorCode MatSetFromOptions_MPIELL(PetscOptionItems*,Mat);
 PETSC_INTERN PetscErrorCode MatMPIELLSetPreallocation_MPIELL(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
 
 extern PetscErrorCode MatGetDiagonalBlock_MPIELL(Mat,Mat*);
+
+PETSC_INTERN PetscErrorCode MatConvert_MPIELL_MPIAIJ(Mat,MatType,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIELL(Mat,MatType,MatReuse,Mat*);
