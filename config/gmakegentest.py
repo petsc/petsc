@@ -244,6 +244,7 @@ class generateExamples(Petsc):
     subst['rm']=self.conf['RM']
     subst['grep']=self.conf['GREP']
     subst['petsc_lib_dir']=self.conf['PETSC_LIB_DIR']
+    subst['wpetsc_dir']=self.conf['wPETSC_DIR']
 
     return subst
 

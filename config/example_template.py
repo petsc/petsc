@@ -9,6 +9,7 @@ exec=@EXEC@
 testname='@TESTNAME@'
 label=@LABEL@
 runfiles=@LOCALRUNFILES@
+wPETSC_DIR=@WPETSC_DIR@
 petsc_dir=@PETSC_DIR@
 
 . ${petsc_dir}/config/petsc_harness.sh
