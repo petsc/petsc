@@ -2047,7 +2047,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[],co
     */
     nstages = ismax/nmax + ((ismax % nmax) ? 1 : 0); /* local nstages */
 
-    in[0] = -1*wantallmatrix;
+    in[0] = -1*(PetscInt)wantallmatrix;
     in[1] = nstages;
     ierr = MPIU_Allreduce(in,out,2,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)C));CHKERRQ(ierr);
     wantallmatrix = (PetscBool)(-out[0]);
