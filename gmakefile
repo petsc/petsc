@@ -62,7 +62,7 @@ all : $(generated) $(libpetscall)
 
 .SECONDEXPANSION:		# to expand $$(@D)/.DIR
 
-TESTFLAGS := -v          # Initialize as simple variable
+TESTFLAGS :=             # Initialize as simple variable
 
 #workarround old cygwin versions
 ifeq ($(PETSC_CYGWIN_BROKEN_PIPE),1)
