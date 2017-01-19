@@ -1,9 +1,12 @@
 \documentclass[tikz]{standalone}
+
 \usepackage{pgflibraryshapes}
 \usetikzlibrary{backgrounds}
 \usetikzlibrary{arrows}
 \begin{document}
 Simplicial Mesh for process {\textcolor{gray}0}, and {\textcolor{orange}1}.
+
+
 \begin{tikzpicture}[scale = 1.,font=\fontsize{8}{8}\selectfont]
 \path (0.,1.) node(8_0) [draw,shape=circle,color=gray] {8};
 \path (1.,1.) node(9_0) [draw,shape=circle,color=gray] {9};
