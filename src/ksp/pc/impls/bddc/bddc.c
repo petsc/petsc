@@ -2408,15 +2408,50 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
   ierr = PCBDDCCreateFETIDPPCContext(pc,&fetidppc_ctx);CHKERRQ(ierr);
   ierr = PCBDDCSetupFETIDPPCContext(newmat,fetidppc_ctx);CHKERRQ(ierr);
   ierr = PCCreate(comm,&newpc);CHKERRQ(ierr);
-  ierr = PCSetType(newpc,PCSHELL);CHKERRQ(ierr);
-  ierr = PCShellSetContext(newpc,fetidppc_ctx);CHKERRQ(ierr);
-  ierr = PCShellSetApply(newpc,FETIDPPCApply);CHKERRQ(ierr);
-  ierr = PCShellSetApplyTranspose(newpc,FETIDPPCApplyTranspose);CHKERRQ(ierr);
-  ierr = PCShellSetView(newpc,FETIDPPCView);CHKERRQ(ierr);
-  ierr = PCShellSetDestroy(newpc,PCBDDCDestroyFETIDPPC);CHKERRQ(ierr);
   ierr = PCSetOperators(newpc,newmat,newmat);CHKERRQ(ierr);
   ierr = PCSetOptionsPrefix(newpc,prefix);CHKERRQ(ierr);
   ierr = PCAppendOptionsPrefix(newpc,"fetidp_");CHKERRQ(ierr);
+  if (!fetidpmat_ctx->l2g_lambda_only) {
+    ierr = PCSetType(newpc,PCSHELL);CHKERRQ(ierr);
+    ierr = PCShellSetContext(newpc,fetidppc_ctx);CHKERRQ(ierr);
+    ierr = PCShellSetApply(newpc,FETIDPPCApply);CHKERRQ(ierr);
+    ierr = PCShellSetApplyTranspose(newpc,FETIDPPCApplyTranspose);CHKERRQ(ierr);
+    ierr = PCShellSetView(newpc,FETIDPPCView);CHKERRQ(ierr);
+    ierr = PCShellSetDestroy(newpc,PCBDDCDestroyFETIDPPC);CHKERRQ(ierr);
+  } else {
+    KSP      *ksps;
+    PC       lagpc;
+    Mat      M,AM,PM;
+    PetscInt nn;
+
+    ierr = PetscObjectQuery((PetscObject)pc,"__KSPFETIDP_PPmat",(PetscObject*)&M);CHKERRQ(ierr);
+    ierr = PCSetType(newpc,PCFIELDSPLIT);CHKERRQ(ierr);
+    ierr = PCFieldSplitSetIS(newpc,"lag",fetidpmat_ctx->lagrange);CHKERRQ(ierr);
+    ierr = PCFieldSplitSetIS(newpc,"p",fetidpmat_ctx->pressure);CHKERRQ(ierr);
+    ierr = PCFieldSplitSetType(newpc,PC_COMPOSITE_SCHUR);CHKERRQ(ierr);
+    ierr = PCFieldSplitSetSchurPre(newpc,PC_FIELDSPLIT_SCHUR_PRE_USER,M);CHKERRQ(ierr);
+    ierr = PCSetFromOptions(newpc);CHKERRQ(ierr);
+    ierr = PCSetUp(newpc);CHKERRQ(ierr);
+
+    /* default to preonly */
+    ierr = PCFieldSplitGetSubKSP(newpc,&nn,&ksps);CHKERRQ(ierr);
+    ierr = KSPSetType(ksps[0],KSPPREONLY);CHKERRQ(ierr);
+    ierr = KSPSetType(ksps[1],KSPPREONLY);CHKERRQ(ierr);
+
+    /* set the solver for the (0,0) block */
+    ierr = PCCreate(comm,&lagpc);CHKERRQ(ierr);
+    ierr = PCSetType(lagpc,PCSHELL);CHKERRQ(ierr);
+    ierr = KSPGetOperators(ksps[0],&AM,&PM);CHKERRQ(ierr);
+    ierr = PCSetOperators(lagpc,AM,PM);CHKERRQ(ierr);
+    ierr = PCShellSetContext(lagpc,fetidppc_ctx);CHKERRQ(ierr);
+    ierr = PCShellSetApply(lagpc,FETIDPPCApply);CHKERRQ(ierr);
+    ierr = PCShellSetApplyTranspose(lagpc,FETIDPPCApplyTranspose);CHKERRQ(ierr);
+    ierr = PCShellSetView(lagpc,FETIDPPCView);CHKERRQ(ierr);
+    ierr = PCShellSetDestroy(lagpc,PCBDDCDestroyFETIDPPC);CHKERRQ(ierr);
+    ierr = KSPSetPC(ksps[0],lagpc);CHKERRQ(ierr);
+    ierr = PCDestroy(&lagpc);CHKERRQ(ierr);
+    ierr = PetscFree(ksps);CHKERRQ(ierr);
+  }
   /* return pointers for objects created */
   *fetidp_mat = newmat;
   *fetidp_pc = newpc;
