@@ -319,14 +319,25 @@ $(alltest.d) : ;
 #    make -f gmakefile test search=sys%ex2
 # To match internal substrings (matches *ex2*):
 #    make -f gmakefile test searchin=ex2
+# Search and searchin can be combined:
+#    make -f gmakefile test search='sys%' searchin=ex2
 # For args:
 #    make -f gmakefile test argsearch=cuda
+# For general glob-style searching using python:
+# NOTE: uses shell which is possibly slower and is possibly more brittle
+#    make -f gmakefile test pysearch='sys*ex2*'
 ifdef search
   TESTTARGETS := $(filter $(search),$(alltesttargets))
+  ifdef searchin
+    TESTTARGETS2 := $(foreach v,$(TESTTARGETS),$(if $(findstring $(searchin),$(v)),$(v)))
+    TESTTARGETS := $(TESTTARGETS2)
+  endif
 else ifdef searchin
   TESTTARGETS := $(foreach v,$(alltesttargets),$(if $(findstring $(searchin),$(v)),$(v)))
 else ifdef argsearch
   TESTTARGETS := $(foreach v,$(alltesttargets),$(if $(findstring $(argsearch),$($(v)_ARGS)),$(v)))
+else ifdef pysearch
+  TESTTARGETS := $(shell $(PYTHON) -c"import sys,fnmatch; print ' '.join(fnmatch.filter(sys.argv[2].split(),sys.argv[1]))" '$(pysearch)' '$(alltesttargets)')
 else                            # No filter - run them all, but delete the executables as we go
   TESTTARGETS := $(testpkgs)
 endif
