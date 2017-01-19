@@ -46,7 +46,7 @@ SNES Object: 1 MPI processes
     type: fieldsplit
       FieldSplit with Schur preconditioner, factorization FULL
       using Amat (not Pmat) as operator for blocks
-      Preconditioner for the Schur complement formed from Sp, an assembled approximation to S, which uses (lumped, if requested) A00's diagonal's inverse
+      Preconditioner for the Schur complement formed from Sp, an assembled approximation to S, which uses A00's diagonal's inverse
       Split info:
       Split number 0 Defined by IS
       Split number 1 Defined by IS

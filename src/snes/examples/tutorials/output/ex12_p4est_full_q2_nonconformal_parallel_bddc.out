@@ -1,5 +1,5 @@
-  0 SNES Function norm 18.4477 
-  1 SNES Function norm 1.38178e-06 
+0 SNES Function norm 18.1296 
+  1 SNES Function norm 1.2656e-06 
   2 SNES Function norm < 1.e-11
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 SNES Object: 7 MPI processes
@@ -60,15 +60,15 @@ SNES Object: 7 MPI processes
       BDDC: Benign subspace trick is active: 0
       BDDC: Algebraic computation of no-net-flux 0
       BDDC: ********************************** STATISTICS AT LEVEL 0 **********************************
-      BDDC: Global dofs sizes: all 1507 interface 173 coarse 19
-      BDDC: Coarsening ratios: all/coarse 79 interface/coarse 9
+      BDDC: Global dofs sizes: all 1495 interface 173 coarse 19
+      BDDC: Coarsening ratios: all/coarse 78 interface/coarse 9
       BDDC: Active processes : 7
       BDDC: Total subdomains : 7
       BDDC: Dofs type        :	MIN	MAX	MEAN
-      BDDC: Interior  dofs   :	182	203	190
+      BDDC: Interior  dofs   :	182	195	188
       BDDC: Interface dofs   :	46	58	50
-      BDDC: Primal    dofs   :	4	9	6
-      BDDC: Local     dofs   :	232	250	241
+      BDDC: Primal    dofs   :	4	8	6
+      BDDC: Local     dofs   :	228	250	239
       BDDC: Local     subs   :	1	1
       BDDC: ********************************** COARSE PROBLEM DETAILS *********************************
     KSP Object: (pc_bddc_coarse_) 7 MPI processes
@@ -84,7 +84,7 @@ SNES Object: 7 MPI processes
       Mat Object: 7 MPI processes
         type: mpiaij
         rows=19, cols=19
-        total: nonzeros=221, allocated nonzeros=267
+        total: nonzeros=229, allocated nonzeros=258
         total number of mallocs used during MatSetValues calls =0
           using I-node (on process 0) routines: found 1 nodes, limit used is 5
             KSP Object:     (pc_bddc_coarse_redundant_)     1 MPI processes
@@ -99,27 +99,27 @@ SNES Object: 7 MPI processes
                 Reusing fill from past factorization
                 tolerance for zero pivot 2.22045e-14
                 matrix ordering: nd
-                factor fill ratio given 5., needed 1.42534
+                factor fill ratio given 5., needed 1.35808
                   Factored matrix follows:
                     Mat Object:     1 MPI processes
                       type: seqaij
                       rows=19, cols=19
                       package used to perform factorization: petsc
-                      total: nonzeros=315, allocated nonzeros=315
+                      total: nonzeros=311, allocated nonzeros=311
                       total number of mallocs used during MatSetValues calls =0
-                        using I-node routines: found 10 nodes, limit used is 5
+                        using I-node routines: found 13 nodes, limit used is 5
               linear system matrix = precond matrix:
               Mat Object:     1 MPI processes
                 type: seqaij
                 rows=19, cols=19
-                total: nonzeros=221, allocated nonzeros=221
+                total: nonzeros=229, allocated nonzeros=229
                 total number of mallocs used during MatSetValues calls =0
                   not using I-node routines
     linear system matrix = precond matrix:
     Mat Object: 7 MPI processes
       type: is
-      rows=1507, cols=1507
-      total: nonzeros=23631, allocated nonzeros=26844
+      rows=1495, cols=1495
+      total: nonzeros=23495, allocated nonzeros=26720
       total number of mallocs used during MatSetValues calls =0
 Number of SNES iterations = 2
 L_2 Error: < 1.0e-11

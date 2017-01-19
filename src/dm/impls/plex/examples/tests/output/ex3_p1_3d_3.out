@@ -1,8 +1,8 @@
 Function tests pass for order 0 at tolerance 1e-10
 Function tests pass for order 0 derivatives at tolerance 1e-10
-Function   convergence rate at coarsening 0: 0.8
-Derivative convergence rate at coarsening 0: 0.38
-Function   convergence rate at coarsening 1: 0.53
-Derivative convergence rate at coarsening 1: 0.27
-Function   convergence rate at coarsening 2: 0.6
-Derivative convergence rate at coarsening 2: 0.25
+Function   convergence rate at coarsening 0: 0.81
+Derivative convergence rate at coarsening 0: 0.37
+Function   convergence rate at coarsening 1: 0.62
+Derivative convergence rate at coarsening 1: 0.33
+Function   convergence rate at coarsening 2: 0.58
+Derivative convergence rate at coarsening 2: 0.22

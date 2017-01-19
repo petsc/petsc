@@ -4,13 +4,13 @@
     2 KSP Residual norm 2.423552482853e-03 
     3 KSP Residual norm 2.692836092059e-04 
     4 KSP Residual norm 2.992040102288e-05 
-    5 KSP Residual norm 3.324489002532e-06 
-    6 KSP Residual norm 3.693876669548e-07 
-    7 KSP Residual norm 4.104307410421e-08 
-    8 KSP Residual norm 4.560341556522e-09 
-    9 KSP Residual norm 5.067046234062e-10 
-   10 KSP Residual norm 5.630051524422e-11 
-  1 SNES Function norm 1.602340882085e-10 
+    5 KSP Residual norm 3.324489002537e-06 
+    6 KSP Residual norm 3.693876669541e-07 
+    7 KSP Residual norm 4.104307409042e-08 
+    8 KSP Residual norm 4.560341574797e-09 
+    9 KSP Residual norm 5.067046189238e-10 
+   10 KSP Residual norm 5.630051731300e-11 
+  1 SNES Function norm 1.602340587693e-10 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
@@ -28,9 +28,9 @@ SNES Object: 1 MPI processes
     maximum iterations=40
   KSP Object: 1 MPI processes
     type: richardson
-      Richardson: damping factor=1
+      Richardson: damping factor=1.
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-09, absolute=1e-50, divergence=10000
+    tolerances:  relative=1e-09, absolute=1e-50, divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
   PC Object: 1 MPI processes
@@ -42,7 +42,7 @@ SNES Object: 1 MPI processes
       KSP Object: (sub_) 1 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
         using NONE norm type for convergence test
       PC Object: (sub_) 1 MPI processes
@@ -50,7 +50,7 @@ SNES Object: 1 MPI processes
           out-of-place factorization
           tolerance for zero pivot 2.22045e-14
           matrix ordering: nd
-          factor fill ratio given 5, needed 1.35714
+          factor fill ratio given 5., needed 1.35714
             Factored matrix follows:
               Mat Object: 1 MPI processes
                 type: seqaij
