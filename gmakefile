@@ -62,6 +62,8 @@ all : $(generated) $(libpetscall)
 
 .SECONDEXPANSION:		# to expand $$(@D)/.DIR
 
+TESTFLAGS := -v          # Initialize as simple variable
+
 #workarround old cygwin versions
 ifeq ($(PETSC_CYGWIN_BROKEN_PIPE),1)
 ifeq ($(shell basename $(AR)),ar)
@@ -79,7 +81,17 @@ else ifeq ($(V),0)		# Suppress entire command
 else				# Show the full command line
   quiet = $($1)
   quiettest =
-  TESTFLAGS := -v
+  TESTFLAGS += -v
+endif
+
+ifeq ($(REPLACE),1)
+  TESTFLAGS += -u    # Replace results by passing -u to petscdiff
+endif
+ifdef OPTIONS
+  TESTFLAGS += -a '$(OPTIONS)'   # override arguments
+endif
+ifdef EXTRA_OPTIONS
+  TESTFLAGS += -e '$(EXTRA_OPTIONS)'  # add extra arguments
 endif
 
 
@@ -255,8 +267,12 @@ $(TESTDIR)/counts/%.counts :
 # doesn't guarantee an exploration order for the graph.  Only recursive
 # if there is something to be done.
 alltest-rm := $(foreach pkg, $(pkgs), $(foreach lang, $(testlangs), test-rm-$(pkg).$(lang)))
+ifeq ($(NO_RM),1)
+$(alltest-rm) : test-rm-% : test-%
+else
 $(alltest-rm) : test-rm-% : test-%
 	$(call quiet,RM) $(addprefix $(TESTDIR)/,$(basename $($(@:test-rm-%=testsrcs-%))))
+endif
 
 # Remove intermediate .o files
 # This only removes the files at the end which is insufficient

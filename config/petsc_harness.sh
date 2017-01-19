@@ -26,8 +26,7 @@ OPTIONS
   -e <args> ......... Add extra arguments to default
   -h ................ help: print this message
   -n <integer> ...... Override the number of processors to use
-  -o <output file> .. Override default output file to diff with
-  -t <testname> ..... Override test name
+  -u ................ Update results using petscdiff
   -v ................ Verbose: Print commands
 EOF
 
@@ -39,17 +38,17 @@ EOF
 #
 verbose=false
 cleanup=false
-while getopts "a:c:e:hn:o:t:v" arg
+diff_flags=""
+while getopts "a:ce:hn:uv" arg
 do
   case $arg in
-    a ) args=$OPTARG     ;;  
-    c ) cleanup=true     ;;  
-    e ) extra_args=$OPTARG     ;;  
-    h ) print_usage; exit ;;  
-    n ) nsize=$OPTARG     ;;  
-    o ) output_file=$OPTARG     ;;  
-    t ) testname=$OPTARG     ;;  
-    v ) verbose=true     ;;  
+    a ) args=$OPTARG         ;;  
+    c ) cleanup=true         ;;  
+    e ) extra_args=$OPTARG   ;;  
+    h ) print_usage; exit    ;;  
+    n ) nsize=$OPTARG        ;;  
+    u ) diff_flags="-u"      ;;  
+    v ) verbose=true         ;;  
     *)  # To take care of any extra args
       if test -n "$OPTARG"; then
         eval $arg=\"$OPTARG\"

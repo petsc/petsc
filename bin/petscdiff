@@ -1,9 +1,22 @@
 #! /bin/sh -f
 #
 #  Replaces floating point numbers with XXX and then does a diff
+#  
 #
+
+# parse options -- using getopts because it is so easily extensible
+update=false
+while getopts "u" opt
+do
+  case $opt in
+    u ) update=true
+  esac
+done
+shift $(( $OPTIND - 1 ))
+
 if [ $# -lt 2 ]; then
-  echo Error! Usage: petscdiff  file1 file2
+  echo Error! Usage: petscdiff [-u]  file1 file2
+  echo  "-u Updates file1 with file2 (assumes it is [old new] ordering)"
   exit 1
 fi
 
@@ -47,6 +60,11 @@ fi
 ${RM} -f ${tmpA} ${tmpB}
 if [ "x${1}" = "x-" ]; then
   ${RM} -f ${file1}
+fi
+
+if ${update}; then
+  echo "Updating $file2 --> $file1"
+  mv "$file2" "$file1"
 fi
 
 exit ${err};
