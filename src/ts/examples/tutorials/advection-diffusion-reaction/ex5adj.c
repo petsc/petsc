@@ -107,10 +107,18 @@ int main(int argc,char **argv)
   } else {
     ierr = TSSetIFunction(ts,NULL,IFunction,&appctx);CHKERRQ(ierr);
     if (appctx.aijpc) {
-      Mat A,B;
+      Mat                    A,B;
+      ISLocalToGlobalMapping ltog;
+      PetscInt               dims[3],starts[3];
+
       ierr = DMSetMatType(da,MATELL);CHKERRQ(ierr);
       ierr = DMCreateMatrix(da,&A);CHKERRQ(ierr);
       ierr = MatConvert(A,MATAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+      ierr = DMGetLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
+      ierr = MatSetLocalToGlobalMapping(B,ltog,ltog);CHKERRQ(ierr);
+      ierr = DMDAGetGhostCorners(da,&starts[0],&starts[1],&starts[2],&dims[0],&dims[1],&dims[2]);CHKERRQ(ierr);
+      ierr = MatSetStencil(B,2,dims,starts,2);CHKERRQ(ierr);
+      /* FIXME do we need to change viewer to display matrix in natural ordering as DMCreateMatrix_DA does? */
       ierr = TSSetIJacobian(ts,A,B,IJacobian,&appctx);CHKERRQ(ierr);
       ierr = MatDestroy(&A);CHKERRQ(ierr);
       ierr = MatDestroy(&B);CHKERRQ(ierr);

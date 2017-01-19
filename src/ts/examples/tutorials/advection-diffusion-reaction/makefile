@@ -233,6 +233,6 @@ TESTEXAMPLES_FORTRAN	  =
 TESTEXAMPLES_C_X_MPIUNI   =
 TESTEXAMPLES_13		  =
 
-TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE = ex5adj.PETSc runex5adj_ell runex5adj_ell2 runex5adj_ell3 runex5adj_ell4 runex5adj_ell6 ex5adj.rm
+TESTEXAMPLES_C_NOCOMPLEX_NOTSINGLE = ex5adj.PETSc runex5adj_ell runex5adj_ell2 runex5adj_ell3 runex5adj_ell4 runex5adj_ell5 runex5adj_ell6 ex5adj.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test
