@@ -28,7 +28,7 @@ static PetscErrorCode VecTaggerComputeIntervals_Absolute(VecTagger tagger,Vec ve
 
   Input Arguments:
 + tagger - the VecTagger context
-. interval - the interval: a blocksize list of [min,max] pairs
+- interval - the interval: a blocksize list of [min,max] pairs
 
   Level: advanced
 

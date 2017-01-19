@@ -15,7 +15,6 @@ PetscErrorCode VecTaggerDestroy_Simple(VecTagger tagger)
 
 PetscErrorCode VecTaggerSetFromOptions_Simple(PetscOptionItems *PetscOptionsObject,VecTagger tagger)
 {
-  VecTagger_Simple *smpl = (VecTagger_Simple *) tagger->data;
   PetscInt       nvals, bs;
   char           headstring[BUFSIZ];
   char           funcstring[BUFSIZ];
