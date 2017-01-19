@@ -300,7 +300,6 @@ static PetscErrorCode DMPlexWriteTopology_Vertices_HDF5_Static(DM dm, DMLabel la
   ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
   if (cMax >= 0) cEnd = PetscMin(cEnd, cMax);
-  if (depth == 1) PetscFunctionReturn(0);
   for (cell = cStart; cell < cEnd; ++cell) {
     PetscInt *closure = NULL;
     PetscInt  closureSize, v, Nc = 0;
