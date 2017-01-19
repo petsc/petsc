@@ -59,6 +59,7 @@ def _stripIndent(block,srcfile):
   ext=os.path.splitext(srcfile)[1]
   for lline in block.split("\n"):
     line=lline[1:] if lline.startswith("!") else lline
+    line=line.split('#')[0]
     if not line.strip(): continue
     stripstr=" "
     nspace=len(line)-len(line.lstrip(stripstr))
@@ -70,6 +71,7 @@ def _stripIndent(block,srcfile):
   newTestStr="\n"
   for lline in block.split("\n"):
     line=lline[1:] if lline.startswith("!") else lline
+    line=line.split('#')[0]
     if not line.strip(): continue
     newline=line[nspace:]
     newTestStr=newTestStr+newline.rstrip()+"\n"
