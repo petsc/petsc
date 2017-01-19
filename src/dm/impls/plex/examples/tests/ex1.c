@@ -242,3 +242,136 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+  # CTetGen 0-1
+  test:
+    suffix: 0
+    args: -dim 3 -ctetgen_verbose 4 -dm_view ::ascii_info_detail -info -info_exclude null
+  test:
+    suffix: 1
+    args: -dim 3 -ctetgen_verbose 4 -refinement_limit 0.0625 -dm_view ::ascii_info_detail -info -info_exclude null
+
+  # 2D LaTex and ASCII output 2-9
+  test:
+    suffix: 2
+    args: -dim 2 -dm_view ::ascii_latex
+  test:
+    suffix: 3
+    args: -dim 2 -dm_refine 1 -interpolate 1 -dm_view ::ascii_info_detail
+  test:
+    suffix: 4
+    nsize: 2
+    args: -dim 2 -dm_refine 1 -interpolate 1 -test_partition -dm_view ::ascii_info_detail
+  test:
+    suffix: 5
+    nsize: 2
+    args: -dim 2 -dm_refine 1 -interpolate 1 -test_partition -dm_view ::ascii_latex
+  test:
+    suffix: 6
+    args: -dim 2 -cell_simplex 0 -dm_view ::ascii_info_detail
+  test:
+    suffix: 7
+    args: -dim 2 -cell_simplex 0 -dm_refine 1 -dm_view ::ascii_info_detail
+  test:
+    suffix: 8
+    nsize: 2
+    args: -dim 2 -cell_simplex 0 -dm_refine 1 -interpolate 1 -dm_view ::ascii_info_detail
+  test:
+    suffix: 9
+    nsize: 2
+    args: -dim 2 -cell_simplex 0 -dm_refine 1 -interpolate 1 -test_partition -dm_view ::ascii_latex
+
+  # Parallel refinement tests with overlap
+  test:
+    suffix: refine_overlap_0
+    nsize: 2
+    args: -dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -test_partition -overlap 1 -dm_view ::ascii_info_detail
+  test:
+    suffix: refine_overlap_1
+    nsize: 8
+    args: -dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -test_partition -overlap 1 -dm_view ::ascii_info_detail
+
+  # Parallel simple partitioner tests
+  test:
+    suffix: part_simple_0
+    nsize: 2
+    args: -dim 2 -cell_simplex 1 -dm_refine 0 -interpolate 0 -petscpartitioner_type simple -partition_view -dm_view ::ascii_info_detail
+  test:
+    suffix: part_simple_1
+    nsize: 8
+    args: -dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -petscpartitioner_type simple -partition_view -dm_view ::ascii_info_detail
+
+  # CGNS reader tests 10-11 (need to find smaller test meshes)
+  test:
+    suffix: cgns_0
+    requires: cgns
+    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/tut21.cgns -interpolate 1 -dm_view
+  test:
+    suffix: cgns_1
+    requires: cgns broken
+    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/StaticMixer.cgns -interpolate 1 -dm_view
+
+  # Gmsh mesh reader tests
+  test:
+    suffix: gmsh_0
+    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh -interpolate 1 -dm_view
+  test:
+    suffix: gmsh_1
+    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/square.msh -interpolate 1 -dm_view
+  test:
+    suffix: gmsh_2
+    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/square_bin.msh -interpolate 1 -dm_view
+  test:
+    suffix: gmsh_3
+    nsize: 3
+    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/square.msh -interpolate 1 -dm_view
+  test:
+    suffix: gmsh_4
+    nsize: 3
+    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/square_bin.msh -interpolate 1 -dm_view
+  test:
+    suffix: gmsh_5
+    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/square_quad.msh -interpolate 1 -dm_view
+  test:
+    suffix: gmsh_6
+    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/square_bin_physnames.msh -interpolate 1 -dm_view
+
+  # Fluent mesh reader tests
+  test:
+    suffix: fluent_0
+    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/square.cas -interpolate 1 -dm_view
+  test:
+    suffix: fluent_1
+    nsize: 3
+    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/square.cas -interpolate 1 -dm_view
+  test:
+    suffix: fluent_2
+    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/cube_5tets_ascii.cas -interpolate 1 -dm_view
+  test:
+    suffix: fluent_3
+    requires: broken
+    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/cube_5tets.cas -interpolate 1 -dm_view
+
+  # Med mesh reader tests, including parallel file reads
+  test:
+    suffix: med_0
+    requires: med
+    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/square.med -interpolate 1 -dm_view
+  test:
+    suffix: med_1
+    requires: med
+    nsize: 3
+    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/square.med -interpolate 1 -petscpartitioner_type parmetis -dm_view
+  test:
+    suffix: med_2
+    requires: med
+    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/cylinder.med -interpolate 1 -dm_view
+  test:
+    suffix: med_3
+    requires: med
+    nsize: 3
+    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/cylinder.med -interpolate 1 -petscpartitioner_type parmetis -dm_view
+
+TEST*/
