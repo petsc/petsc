@@ -853,6 +853,10 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
     exactFuncs[0]    = quadratic;
     exactFuncDers[0] = quadraticDer;
     break;
+  case 3:
+    exactFuncs[0]    = cubic;
+    exactFuncDers[0] = cubicDer;
+    break;
   default:
     SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "Could not determine functions to test for dimension %D order %D", dim, order);
   }
@@ -985,3 +989,265 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+  # 2D P_1 on a triangle
+  test:
+    suffix: p1_2d_0
+    args: -petscspace_order 1 -num_comp 2 -qorder 1 -convergence
+  test:
+    suffix: p1_2d_1
+    args: -petscspace_order 1 -num_comp 2 -qorder 1 -porder 1
+  test:
+    suffix: p1_2d_2
+    args: -petscspace_order 1 -num_comp 2 -qorder 1 -porder 2
+  test:
+    suffix: p1_2d_3
+    requires: pragmatic
+    args: -petscspace_order 1 -num_comp 2 -qorder 1 -dm_plex_hash_location -convergence -conv_refine 0
+  test:
+    suffix: p1_2d_4
+    requires: pragmatic
+    args: -petscspace_order 1 -num_comp 2 -qorder 1 -dm_plex_hash_location -porder 1 -conv_refine 0
+  test:
+    suffix: p1_2d_5
+    requires: pragmatic
+    args: -petscspace_order 1 -num_comp 2 -qorder 1 -dm_plex_hash_location -porder 2 -conv_refine 0
+
+  # 3D P_1 on a tetrahedron
+  test:
+    suffix: p1_3d_0
+    args: -dim 3 -petscspace_order 1 -num_comp 3 -qorder 1 -convergence
+  test:
+    suffix: p1_3d_1
+    args: -dim 3 -petscspace_order 1 -num_comp 3 -qorder 1 -porder 1
+  test:
+    suffix: p1_3d_2
+    args: -dim 3 -petscspace_order 1 -num_comp 3 -qorder 1 -porder 2
+  test:
+    suffix: p1_3d_3
+    requires: pragmatic
+    args: -dim 3 -petscspace_order 1 -num_comp 3 -qorder 1 -dm_plex_hash_location -convergence -conv_refine 0
+  test:
+    suffix: p1_3d_4
+    requires: pragmatic
+    args: -dim 3 -petscspace_order 1 -num_comp 3 -qorder 1 -dm_plex_hash_location -porder 1 -conv_refine 0
+  test:
+    suffix: p1_3d_5
+    requires: pragmatic
+    args: -dim 3 -petscspace_order 1 -num_comp 3 -qorder 1 -dm_plex_hash_location -porder 2 -conv_refine 0
+
+  # 2D P_2 on a triangle
+  test:
+    suffix: p2_2d_0
+    args: -petscspace_order 2 -num_comp 2 -qorder 2 -convergence
+  test:
+    suffix: p2_2d_1
+    args: -petscspace_order 2 -num_comp 2 -qorder 2 -porder 1
+  test:
+    suffix: p2_2d_2
+    args: -petscspace_order 2 -num_comp 2 -qorder 2 -porder 2
+  test:
+    suffix: p2_2d_3
+    requires: pragmatic
+    args: -petscspace_order 2 -num_comp 2 -qorder 2 -dm_plex_hash_location -convergence -conv_refine 0
+  test:
+    suffix: p2_2d_4
+    requires: pragmatic
+    args: -petscspace_order 2 -num_comp 2 -qorder 2 -dm_plex_hash_location -porder 1 -conv_refine 0
+  test:
+    suffix: p2_2d_5
+    requires: pragmatic
+    args: -petscspace_order 2 -num_comp 2 -qorder 2 -dm_plex_hash_location -porder 2 -conv_refine 0
+
+  # 3D P_2 on a tetrahedron
+  test:
+    suffix: p2_3d_0
+    args: -dim 3 -petscspace_order 2 -num_comp 3 -qorder 2 -convergence
+  test:
+    suffix: p2_3d_1
+    args: -dim 3 -petscspace_order 2 -num_comp 3 -qorder 2 -porder 1
+  test:
+    suffix: p2_3d_2
+    args: -dim 3 -petscspace_order 2 -num_comp 3 -qorder 2 -porder 2
+  test:
+    suffix: p2_3d_3
+    requires: pragmatic
+    args: -dim 3 -petscspace_order 2 -num_comp 3 -qorder 2 -dm_plex_hash_location -convergence -conv_refine 0
+  test:
+    suffix: p2_3d_4
+    requires: pragmatic
+    args: -dim 3 -petscspace_order 2 -num_comp 3 -qorder 2 -dm_plex_hash_location -porder 1 -conv_refine 0
+  test:
+    suffix: p2_3d_5
+    requires: pragmatic
+    args: -dim 3 -petscspace_order 2 -num_comp 3 -qorder 2 -dm_plex_hash_location -porder 2 -conv_refine 0
+
+  # 2D Q_1 on a quadrilaterial DA
+  test:
+    suffix: q1_2d_da_0
+    args: -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -num_comp 2 -qorder 1 -convergence
+  test:
+    suffix: q1_2d_da_1
+    args: -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -num_comp 2 -qorder 1 -porder 1
+  test:
+    suffix: q1_2d_da_2
+    args: -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -num_comp 2 -qorder 1 -porder 2
+
+  # 2D Q_1 on a quadrilaterial Plex
+  test:
+    suffix: q1_2d_plex_0
+    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -num_comp 2 -qorder 1 -convergence
+  test:
+    suffix: q1_2d_plex_1
+    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -num_comp 2 -qorder 1 -porder 1
+  test:
+    suffix: q1_2d_plex_2
+    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -num_comp 2 -qorder 1 -porder 2
+  test:
+    suffix: q1_2d_plex_3
+    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -num_comp 2 -qorder 1 -porder 1 -shear_coords
+  test:
+    suffix: q1_2d_plex_4
+    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -num_comp 2 -qorder 1 -porder 2 -shear_coords
+  test:
+    suffix: q1_2d_plex_5
+    args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 1 -petscspace_poly_tensor 1 -num_comp 2 -qorder 1 -porder 0 -non_affine_coords
+  test:
+    suffix: q1_2d_plex_6
+    args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 1 -petscspace_poly_tensor 1 -num_comp 2 -qorder 1 -porder 1 -non_affine_coords
+  test:
+    suffix: q1_2d_plex_7
+    args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 1 -petscspace_poly_tensor 1 -num_comp 2 -qorder 1 -porder 2 -non_affine_coords
+
+  # 2D Q_2 on a quadrilaterial
+  test:
+    suffix: q2_2d_da_0
+    args: -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -num_comp 2 -qorder 2 -convergence
+  test:
+    suffix: q2_2d_da_1
+    args: -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -num_comp 2 -qorder 2 -porder 1
+  test:
+    suffix: q2_2d_da_2
+    args: -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -num_comp 2 -qorder 2 -porder 2
+
+
+  # 2D P_3 on a triangle
+  test:
+    suffix: p3_2d_0
+    requires: broken
+    args: -petscspace_order 3 -num_comp 2 -qorder 3 -convergence
+  test:
+    suffix: p3_2d_1
+    requires: broken
+    args: -petscspace_order 3 -num_comp 2 -qorder 3 -porder 1
+  test:
+    suffix: p3_2d_2
+    requires: broken
+    args: -petscspace_order 3 -num_comp 2 -qorder 3 -porder 2
+  test:
+    suffix: p3_2d_3
+    requires: broken
+    args: -petscspace_order 3 -num_comp 2 -qorder 3 -porder 3
+
+  # 2D P_1disc on a triangle/quadrilateral
+  test:
+    suffix: p1d_2d_0
+    args: -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -num_comp 2 -qorder 1 -convergence
+  test:
+    suffix: p1d_2d_1
+    args: -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -num_comp 2 -qorder 1 -porder 1
+  test:
+    suffix: p1d_2d_2
+    args: -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -num_comp 2 -qorder 1 -porder 2
+  test:
+    suffix: p1d_2d_3
+    args: -simplex 0 -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -num_comp 2 -qorder 1 -convergence
+  test:
+    suffix: p1d_2d_4
+    args: -simplex 0 -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -num_comp 2 -qorder 1 -porder 1
+  test:
+    suffix: p1d_2d_5
+    args: -simplex 0 -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -num_comp 2 -qorder 1 -porder 2
+
+  # Test high order quadrature
+  test:
+    suffix: p1_quad_2
+    args: -petscspace_order 1 -num_comp 2 -qorder 2 -porder 1
+  test:
+    suffix: p1_quad_5
+    args: -petscspace_order 1 -num_comp 2 -qorder 5 -porder 1
+  test:
+    suffix: p2_quad_3
+    args: -petscspace_order 2 -num_comp 2 -qorder 3 -porder 2
+  test:
+    suffix: p2_quad_5
+    args: -petscspace_order 2 -num_comp 2 -qorder 5 -porder 2
+  test:
+    suffix: q1_quad_2
+    args: -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -num_comp 2 -qorder 2 -porder 1
+  test:
+    suffix: q1_quad_5
+    args: -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -num_comp 2 -qorder 5 -porder 1
+  test:
+    suffix: q2_quad_3
+    args: -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -num_comp 2 -qorder 3 -porder 1
+  test:
+    suffix: q2_quad_5
+    args: -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -num_comp 2 -qorder 5 -porder 1
+
+TEST*/
+
+/*
+   # 2D Q_2 on a quadrilaterial Plex
+  test:
+    suffix: q2_2d_plex_0
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -num_comp 2 -qorder 2 -convergence
+  test:
+    suffix: q2_2d_plex_1
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -num_comp 2 -qorder 2 -porder 1
+  test:
+    suffix: q2_2d_plex_2
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -num_comp 2 -qorder 2 -porder 2
+  test:
+    suffix: q2_2d_plex_3
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -num_comp 2 -qorder 2 -porder 1 -shear_coords
+  test:
+    suffix: q2_2d_plex_4
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -num_comp 2 -qorder 2 -porder 2 -shear_coords
+  test:
+    suffix: q2_2d_plex_5
+    args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 2 -petscspace_poly_tensor 1 -num_comp 2 -qorder 2 -porder 0 -non_affine_coords
+  test:
+    suffix: q2_2d_plex_6
+    args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 2 -petscspace_poly_tensor 1 -num_comp 2 -qorder 2 -porder 1 -non_affine_coords
+  test:
+    suffix: q2_2d_plex_7
+    args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 2 -petscspace_poly_tensor 1 -num_comp 2 -qorder 2 -porder 2 -non_affine_coords
+
+  test:
+    suffix: p3_2d_4
+    requires: pragmatic
+    args: -petscspace_order 3 -num_comp 2 -qorder 3 -dm_plex_hash_location -convergence -conv_refine 0
+  test:
+    suffix: p3_2d_5
+    requires: pragmatic
+    args: -petscspace_order 3 -num_comp 2 -qorder 3 -dm_plex_hash_location -porder 1 -conv_refine 0
+  test:
+    suffix: p3_2d_6
+    requires: pragmatic
+    args: -petscspace_order 3 -num_comp 2 -qorder 3 -dm_plex_hash_location -porder 3 -conv_refine 0
+
+  test:
+    suffix: p1d_2d_6
+    requires: pragmatic
+    args: -petscspace_order 1 -num_comp 2 -qorder 1 -dm_plex_hash_location -convergence -conv_refine 0
+  test:
+    suffix: p1d_2d_7
+    requires: pragmatic
+    args: -petscspace_order 1 -num_comp 2 -qorder 1 -dm_plex_hash_location -porder 1 -conv_refine 0
+  test:
+    suffix: p1d_2d_8
+    requires: pragmatic
+    args: -petscspace_order 1 -num_comp 2 -qorder 1 -dm_plex_hash_location -porder 2 -conv_refine 0
+*/
