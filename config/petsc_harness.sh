@@ -131,4 +131,12 @@ function petsc_testend() {
   fi
 }
 
+function petsc_mpiexec_valgrind() {
+  mpiexec=$1;shift
+  npopt=$1;shift
+  np=$1;shift
+
+  valgrind="valgrind -q --tool=memcheck --leak-check=yes --num-callers=20 --track-origins=yes --suppressions=$petsc_dir/bin/maint/petsc-val.supp"
+  $mpiexec $npopt $np $valgrind $*
+}
 export LC_ALL=C
