@@ -3455,7 +3455,7 @@ PetscErrorCode  MatSeqBAIJSetPreallocationCSR(Mat B,PetscInt bs,const PetscInt i
 .seealso: MatCreate(), MatCreateBAIJ(), MatCreateSeqBAIJ()
 
 @*/
-PetscErrorCode  MatCreateSeqBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt *i,PetscInt *j,PetscScalar *a,Mat *mat)
+PetscErrorCode  MatCreateSeqBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt i[],PetscInt j[],PetscScalar a[],Mat *mat)
 {
   PetscErrorCode ierr;
   PetscInt       ii;

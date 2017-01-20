@@ -4123,7 +4123,7 @@ $        v =  {1,2,3,4,5,6}  [size = 6]
 .seealso: MatCreate(), MatCreateAIJ(), MatCreateSeqAIJ(), MatCreateMPIAIJWithArrays(), MatMPIAIJSetPreallocationCSR()
 
 @*/
-PetscErrorCode  MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt *i,PetscInt *j,PetscScalar *a,Mat *mat)
+PetscErrorCode  MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt i[],PetscInt j[],PetscScalar a[],Mat *mat)
 {
   PetscErrorCode ierr;
   PetscInt       ii;
@@ -4211,7 +4211,7 @@ PetscErrorCode  MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pe
 .seealso: MatCreate(), MatCreateAIJ(), MatCreateSeqAIJ(), MatCreateSeqAIJWithArrays(), MatMPIAIJSetPreallocationCSR()
 
 @*/
-PetscErrorCode  MatCreateSeqAIJFromTriple(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt *i,PetscInt *j,PetscScalar *a,Mat *mat,PetscInt nz,PetscBool idx)
+PetscErrorCode  MatCreateSeqAIJFromTriple(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt i[],PetscInt j[],PetscScalar a[],Mat *mat,PetscInt nz,PetscBool idx)
 {
   PetscErrorCode ierr;
   PetscInt       ii, *nnz, one = 1,row,col;

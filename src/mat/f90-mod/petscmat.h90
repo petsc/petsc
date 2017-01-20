@@ -4,6 +4,27 @@
 #define MAT_INFO_SIZE MAT_INFO_SIZE_MOD
 #define MAT_FACTORINFO_SIZE MAT_FACTORINFO_SIZE_MOD
 
+      interface MatNullSpaceCreate
+      subroutine MatNullSpaceCreate1(a,b,c,d,e,z)
+      use petscmatdef
+       integer a
+       PetscBool b
+       PetscInt c
+       Vec d (*)
+       MatNullSpace e
+       integer z
+       end subroutine
+      subroutine MatNullSpaceCreate0(a,b,c,d,e,z)
+      use petscmatdef
+       integer a
+       PetscBool b
+       PetscInt c
+       Vec d
+       MatNullSpace e
+       integer z
+       end subroutine
+      end interface
+
       interface MatGetSize
       subroutine MatGetSize00(a,b,c,z)
       use petscmatdef

@@ -203,7 +203,7 @@ PetscErrorCode MatNullSpaceView(MatNullSpace sp,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    MatNullSpaceCreate - Creates a data structure used to project vectors
    out of null spaces.
 

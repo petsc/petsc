@@ -2405,7 +2405,7 @@ PetscErrorCode MatLoad_SeqSBAIJ(Mat newmat,PetscViewer viewer)
 .seealso: MatCreate(), MatCreateSBAIJ(), MatCreateSeqSBAIJ()
 
 @*/
-PetscErrorCode  MatCreateSeqSBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt *i,PetscInt *j,PetscScalar *a,Mat *mat)
+PetscErrorCode  MatCreateSeqSBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt i[],PetscInt j[],PetscScalar a[],Mat *mat)
 {
   PetscErrorCode ierr;
   PetscInt       ii;
