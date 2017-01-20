@@ -75,6 +75,8 @@ PetscErrorCode VecTaggerSetInterval_Simple(VecTagger tagger,PetscScalar (*interv
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(tagger,VEC_TAGGER_CLASSID,1);
+  PetscValidPointer(interval,2);
   if (interval != smpl->interval) {
     PetscInt bs, i;
 
@@ -94,6 +96,8 @@ PetscErrorCode VecTaggerGetInterval_Simple(VecTagger tagger,const PetscScalar (*
   VecTagger_Simple *smpl = (VecTagger_Simple *) tagger->data;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(tagger,VEC_TAGGER_CLASSID,1);
+  PetscValidPointer(interval,2);
   *interval = smpl->interval;
   PetscFunctionReturn(0);
 }

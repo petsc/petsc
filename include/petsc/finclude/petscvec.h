@@ -17,6 +17,7 @@
 #define VecOption PetscEnum
 #define VecType character*(80)
 #define VecOperation PetscEnum
+#define VecTaggerCDFMethod PetscEnum
 
 #define VECSEQ 'seq'
 #define VECMPI 'mpi'

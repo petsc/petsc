@@ -4,7 +4,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = simple.c absolute.c relative.c #cumulative.c union.c intersection.c
+SOURCEC  = simple.c absolute.c relative.c cdf.c #union.c intersection.c
 SOURCEF  =
 SOURCEH  =
 DIRS     =

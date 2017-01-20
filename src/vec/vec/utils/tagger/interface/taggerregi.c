@@ -2,7 +2,7 @@
 
 PETSC_EXTERN PetscErrorCode VecTaggerCreate_Absolute(VecTagger);
 PETSC_EXTERN PetscErrorCode VecTaggerCreate_Relative(VecTagger);
-PETSC_EXTERN PetscErrorCode VecTaggerCreate_Cumulative(VecTagger);
+PETSC_EXTERN PetscErrorCode VecTaggerCreate_CDF(VecTagger);
 PETSC_EXTERN PetscErrorCode VecTaggerCreate_Or(VecTagger);
 PETSC_EXTERN PetscErrorCode VecTaggerCreate_And(VecTagger);
 
@@ -26,11 +26,11 @@ PetscErrorCode  VecTaggerRegisterAll(void)
   PetscFunctionBegin;
   if (VecTaggerRegisterAllCalled) PetscFunctionReturn(0);
   VecTaggerRegisterAllCalled = PETSC_TRUE;
-  ierr = VecTaggerRegister(VECTAGGERABSOLUTE,   VecTaggerCreate_Absolute);CHKERRQ(ierr);
-  ierr = VecTaggerRegister(VECTAGGERRELATIVE,   VecTaggerCreate_Relative);CHKERRQ(ierr);
-  ierr = VecTaggerRegister(VECTAGGERCUMULATIVE, VecTaggerCreate_Cumulative);CHKERRQ(ierr);
-  ierr = VecTaggerRegister(VECTAGGEROR,         VecTaggerCreate_Or);CHKERRQ(ierr);
-  ierr = VecTaggerRegister(VECTAGGERAND,        VecTaggerCreate_And);CHKERRQ(ierr);
+  ierr = VecTaggerRegister(VECTAGGERABSOLUTE, VecTaggerCreate_Absolute);CHKERRQ(ierr);
+  ierr = VecTaggerRegister(VECTAGGERRELATIVE, VecTaggerCreate_Relative);CHKERRQ(ierr);
+  ierr = VecTaggerRegister(VECTAGGERCDF,      VecTaggerCreate_CDF);CHKERRQ(ierr);
+  ierr = VecTaggerRegister(VECTAGGEROR,       VecTaggerCreate_Or);CHKERRQ(ierr);
+  ierr = VecTaggerRegister(VECTAGGERAND,      VecTaggerCreate_And);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

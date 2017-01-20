@@ -606,7 +606,7 @@ typedef const char* VecTaggerType;
 /* tag where the vector values are in an interval of values relative to the set of all values in the vector */
 #define VECTAGGERRELATIVE   "relative"
 /* tag where the vector values are in a relative range of the *cumulative distribution* of values in the vector */
-#define VECTAGGERCUMULATIVE "cumulative"
+#define VECTAGGERCDF        "cdf"
 /* tag a vector as the union of other tags */
 #define VECTAGGEROR         "or"
 /* tag a vector as the intersection of other tags */
@@ -638,8 +638,22 @@ PETSC_EXTERN PetscErrorCode VecTaggerAbsoluteGetIntervals(VecTagger,const PetscS
 PETSC_EXTERN PetscErrorCode VecTaggerRelativeSetIntervals(VecTagger,PetscScalar(*)[2]);
 PETSC_EXTERN PetscErrorCode VecTaggerRelativeGetIntervals(VecTagger,const PetscScalar(**)[2]);
 
-PETSC_EXTERN PetscErrorCode VecTaggerCumulativeSetIntervals(VecTagger,PetscScalar(*)[2]);
-PETSC_EXTERN PetscErrorCode VecTaggerCumulativeGetIntervals(VecTagger,const PetscScalar(**)[2]);
+PETSC_EXTERN PetscErrorCode VecTaggerCDFSetIntervals(VecTagger,PetscScalar(*)[2]);
+PETSC_EXTERN PetscErrorCode VecTaggerCDFGetIntervals(VecTagger,const PetscScalar(**)[2]);
+
+/*E
+  VecTaggerCDFMethod - Determines what method is used to compute absolute values from cumulative distribution values (e.g., what value is the preimage of .95 in the cdf).  Relevant only in parallel: in serial it is directly computed.
+
+  Level: advanced
+.seealso: VecTaggerCDFSetMethod(), VecTaggerCDFMethods
+E*/
+typedef enum {VECTAGGER_CDF_GATHER,VECTAGGER_CDF_ITERATIVE,VECTAGGER_CDF_NUM_METHODS} VecTaggerCDFMethod;
+PETSC_EXTERN const char *const VecTaggerCDFMethods[];
+
+PETSC_EXTERN PetscErrorCode VecTaggerCDFSetMethod(VecTagger,VecTaggerCDFMethod);
+PETSC_EXTERN PetscErrorCode VecTaggerCDFGetMethod(VecTagger,VecTaggerCDFMethod*);
+PETSC_EXTERN PetscErrorCode VecTaggerCDFIterativeSetTolerances(VecTagger,PetscInt,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode VecTaggerCDFIterativeGetTolerances(VecTagger,PetscInt*,PetscReal*,PetscReal*);
 
 PETSC_EXTERN PetscErrorCode VecTaggerOrSetTaggers(VecTagger,PetscInt,VecTagger*);
 PETSC_EXTERN PetscErrorCode VecTaggerOrGetTaggers(VecTagger,PetscInt*,VecTagger**);

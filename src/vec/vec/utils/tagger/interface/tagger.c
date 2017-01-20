@@ -45,15 +45,15 @@ PetscErrorCode VecTaggerCreate(MPI_Comm comm,VecTagger *tagger)
 
    Options Database Key:
 .  -vec_tagger_type <type> - Sets the method; use -help for a list
-   of available methods (for instance, absolute, relative, cumulate, or, and)
+   of available methods (for instance, absolute, relative, cdf, or, and)
 
    Notes:
    See "include/petscvec.h" for available methods (for instance)
-+    VECTAGGERABSOLUTE   - tag based on an interval of values
-.    VECTAGGERRELATIVE   - tag based on an interval relative to the range of values present in the vector
-.    VECTAGGERCUMULATIVE - tag based on an interval in the cumulate distribution of values present in the vector
-.    VECTAGGEROR         - tag based on the union of a set of VecTagger contexts
-.    VECTAGGERAND        - tag based on the intersection of a set of other VecTagger contexts
++    VECTAGGERABSOLUTE - tag based on an interval of values
+.    VECTAGGERRELATIVE - tag based on an interval relative to the range of values present in the vector
+.    VECTAGGERCDF      - tag based on an interval in the cumulative distribution of values present in the vector
+.    VECTAGGEROR       - tag based on the union of a set of VecTagger contexts
+.    VECTAGGERAND      - tag based on the intersection of a set of other VecTagger contexts
 
   Level: advanced
 
