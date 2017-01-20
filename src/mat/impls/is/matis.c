@@ -1248,7 +1248,7 @@ static PetscErrorCode MatISGetMPIXAIJ_IS(Mat mat, MatReuse reuse, Mat *M)
     ierr = ISInvertPermutation(cols,mat->cmap->n,&icols);CHKERRQ(ierr);
     ierr = ISDestroy(&cols);CHKERRQ(ierr);
     ierr = ISDestroy(&rows);CHKERRQ(ierr);
-    ierr = MatConvert(matis->A,MATAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+    ierr = MatConvert(matis->A,MATSEQAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
     ierr = MatCreateSubMatrix(B,irows,icols,reuse,M);CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
     ierr = ISDestroy(&icols);CHKERRQ(ierr);
