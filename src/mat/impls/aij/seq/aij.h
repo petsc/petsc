@@ -94,7 +94,8 @@ typedef struct {
   PetscObjectState mat_nonzerostate;               /* non-zero state when inodes were checked for */
 } Mat_SeqAIJ_Inode;
 
-typedef struct { /* used by MatGetSubMatrices_MPIAIJ_SingleIS_Local() */
+typedef struct { /* used by MatGetSubMatrices_MPIAIJ_SingleIS_Local() and MatGetSubMatrices_MPIAIJ_Local */
+  PetscInt   id;   /* index of submats, only submats[0] is responsible for deleting some arrays below */
   PetscInt   nrqs,nrqr;
   PetscInt   **rbuf1,**rbuf2,**rbuf3,**sbuf1,**sbuf2;
   PetscInt   **ptr;
@@ -104,6 +105,7 @@ typedef struct { /* used by MatGetSubMatrices_MPIAIJ_SingleIS_Local() */
   PetscInt   *req_size,*req_source1,*req_source2;
   PetscBool  allcolumns;
   PetscInt   *row2proc; /* row to proc map */
+  PetscInt   nstages;
 #if defined(PETSC_USE_CTABLE)
   PetscTable     cmap,rmap;
   PetscInt       *cmap_loc,*rmap_loc;
