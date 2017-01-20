@@ -5,12 +5,12 @@ header="""#!/usr/bin/env bash
 # PATH for DLLs on windows
 PATH=$PATH:@PETSC_LIB_DIR@
 mpiexec='@MPIEXEC@'
-exec=@EXEC@
+exec='@EXEC@'
 testname='@TESTNAME@'
-label=@LABEL@
-runfiles=@LOCALRUNFILES@
-wPETSC_DIR=@WPETSC_DIR@
-petsc_dir=@PETSC_DIR@
+label='@LABEL@'
+runfiles='@LOCALRUNFILES@'
+wPETSC_DIR='@WPETSC_DIR@'
+petsc_dir='@PETSC_DIR@'
 args='@ARGS@'
 
 . ${petsc_dir}/config/petsc_harness.sh
