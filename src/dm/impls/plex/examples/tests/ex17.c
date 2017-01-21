@@ -1,5 +1,6 @@
 static char help[] = "Tests for point location\n\n";
 
+#include <petscsf.h>
 #include <petscdmplex.h>
 
 typedef struct {
@@ -153,3 +154,11 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+  test:
+    suffix: 0
+    args: -test_partition 0 -dm_view ascii::ascii_info_detail
+
+TEST*/
