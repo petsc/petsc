@@ -85,7 +85,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   } else {
     const PetscInt cells[3] = {2, 2, 2};
 
-    ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, PETSC_FALSE, PETSC_FALSE, PETSC_FALSE, dm);CHKERRQ(ierr);
+    ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);
   }
   if (!user->testRedundant) {
     if (user->testPartition) {
@@ -154,3 +154,47 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+  # Parallel, no overlap tests 0-2
+  test:
+    suffix: 0
+    args: -dm_view ascii:mesh.tex:ascii_latex
+  test:
+    suffix: 1
+    nsize: 3
+    args: -test_partition -dm_view ::ascii_info_detail
+  test:
+    suffix: 2
+    nsize: 8
+    args: -test_partition -dm_view ::ascii_info_detail
+  # Parallel, level-1 overlap tests 3-4
+  test:
+    suffix: 3
+    nsize: 3
+    args: -test_partition -overlap 1 -dm_view ::ascii_info_detail
+  test:
+    suffix: 4
+    nsize: 8
+    args: -test_partition -overlap 1 -dm_view ::ascii_info_detail
+  # Parallel, level-2 overlap test 5
+  test:
+    suffix: 5
+    nsize: 8
+    args: -test_partition -overlap 2 -dm_view ::ascii_info_detail
+  # Parallel load balancing, test 6-7
+  test:
+    suffix: 6
+    nsize: 2
+    args: -test_partition -overlap 1 -dm_view ::ascii_info_detail
+  test:
+    suffix: 7
+    nsize: 2
+    args: -test_partition -overlap 1 -load_balance -dm_view ::ascii_info_detail
+  # Parallel redundant copying, test 8
+  test:
+    suffix: 8
+    nsize: 2
+    args: -test_redundant -dm_view ::ascii_info_detail
+
+TEST*/
