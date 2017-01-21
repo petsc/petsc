@@ -189,18 +189,6 @@ runex15:
            if [ "$$x" = "bad" ]; then ${DIFF} output/ex15.out ex15.tmp ; ${DIFF} output/ex15_alt.out ex15.tmp ;${DIFF} output/ex15_alt_2.out ex15.tmp; printf "${PWD}\nPossible problem with ex15, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex15.tmp
 
-runex20_2d:
-	-@${MPIEXEC} -n 1 ./ex20 -pre_adapt_dm_view ::ascii_info_detail -post_adapt_dm_view ::ascii_info_detail -dim 2 > ex20_2d.tmp 2>&1;\
-		if (${DIFF} output/ex20_2d.out ex20_2d.tmp) then true ;\
-		else printf "${PWD}\nPossible problem with runex20_2d, diffs above\n================================================================\n"; fi ;\
-		${RM} -f ex20_2d.tmp
-
-runex20_3d:
-	-@${MPIEXEC} -n 1 ./ex20 -pre_adapt_dm_view ::ascii_info_detail -post_adapt_dm_view ::ascii_info_detail -dim 3 > ex20_3d.tmp 2>&1;\
-		if (${DIFF} output/ex20_3d.out ex20_3d.tmp) then true ;\
-		else printf "${PWD}\nPossible problem with runex20_3d, diffs above\n================================================================\n"; fi ;\
-		${RM} -f ex20_3d.tmp
-
 runex22:
 	-@${MPIEXEC} -n 1 ./ex22 -tensor_petscspace_order 2 -petscspace_order 2 -tensor_petscspace_poly_tensor 1 > ex22.tmp 2>&1;\
 		if (${DIFF} output/ex22.out ex22.tmp) then true ;\
