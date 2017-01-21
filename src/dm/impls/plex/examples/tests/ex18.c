@@ -474,3 +474,28 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return 0;
 }
+
+/*TEST
+
+  test:
+    suffix: 0
+    nsize: 2
+    args: -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 1
+    nsize: 2
+    args: -interpolate -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 2
+    nsize: 3
+    args: -testnum 1 -interpolate -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 3
+    nsize: 2
+    args: -dim 3 -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 4
+    nsize: 2
+    args: -dim 3 -interpolate -dm_view ascii::ascii_info_detail
+
+TEST*/
