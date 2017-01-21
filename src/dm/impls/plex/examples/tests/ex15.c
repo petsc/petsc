@@ -134,3 +134,15 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+  test:
+    suffix: 0
+    nsize: 2
+    args: -verbose -globaltonatural_sf_view
+  test:
+    suffix: 1
+    nsize: 2
+    args: -verbose -global_vec_view hdf5:V.h5:native -test_read
+
+TEST*/
