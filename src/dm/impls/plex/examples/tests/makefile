@@ -189,13 +189,7 @@ runex15:
            if [ "$$x" = "bad" ]; then ${DIFF} output/ex15.out ex15.tmp ; ${DIFF} output/ex15_alt.out ex15.tmp ;${DIFF} output/ex15_alt_2.out ex15.tmp; printf "${PWD}\nPossible problem with ex15, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex15.tmp
 
-runex22:
-	-@${MPIEXEC} -n 1 ./ex22 -tensor_petscspace_order 2 -petscspace_order 2 -tensor_petscspace_poly_tensor 1 > ex22.tmp 2>&1;\
-		if (${DIFF} output/ex22.out ex22.tmp) then true ;\
-		else printf "${PWD}\nPossible problem with runex22, diffs above\n================================================================\n"; fi ;\
-		${RM} -f ex22.tmp
-
-TESTEXAMPLES_C           = ex3.PETSc runex3_constraints runex3_nonconforming_tensor_2 runex3_nonconforming_tensor_3 runex3_nonconforming_tensor_2_fv runex3_nonconforming_tensor_3_fv ex3.rm ex6.PETSc runex6 ex6.rm ex22.PETSc runex22 ex22.rm
+TESTEXAMPLES_C           = ex3.PETSc runex3_constraints runex3_nonconforming_tensor_2 runex3_nonconforming_tensor_3 runex3_nonconforming_tensor_2_fv runex3_nonconforming_tensor_3_fv ex3.rm ex6.PETSc runex6 ex6.rm
 TESTEXAMPLES_C_NOTSINGLE = ex3.PETSc runex3_nonconforming_tensor_2_hi ex3.rm
 TESTEXAMPLES_TRIANGLE_HDF5 = ex15.PETSc runex15 ex15.rm
 TESTEXAMPLES_TRIANGLE    = ex3.PETSc runex3_nonconforming_simplex_2 runex3_nonconforming_simplex_2_hi runex3_nonconforming_simplex_2_fv ex3.rm ex20.PETSc runex20_2d ex20.rm
