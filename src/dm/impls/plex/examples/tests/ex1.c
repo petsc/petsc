@@ -248,9 +248,11 @@ int main(int argc, char **argv)
   # CTetGen 0-1
   test:
     suffix: 0
+    requires: ctetgen
     args: -dim 3 -ctetgen_verbose 4 -dm_view ::ascii_info_detail -info -info_exclude null
   test:
     suffix: 1
+    requires: ctetgen
     args: -dim 3 -ctetgen_verbose 4 -refinement_limit 0.0625 -dm_view ::ascii_info_detail -info -info_exclude null
 
   # 2D LaTex and ASCII output 2-9
@@ -373,5 +375,10 @@ int main(int argc, char **argv)
     requires: med
     nsize: 3
     args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/cylinder.med -interpolate 1 -petscpartitioner_type parmetis -dm_view
+
+  # Test shape quality
+  test:
+    suffix: test_shape
+    args: -dim 3 -interpolate -dm_refine_hierarchy 3 -test_shape
 
 TEST*/

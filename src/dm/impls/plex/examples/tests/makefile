@@ -65,35 +65,6 @@ ex22: ex22.o  chkopts
 
 
 #--------------------------------------------------------------------------
-runex1:
-	-@${MPIEXEC} -n 1 ./ex1 -dim 3 -ctetgen_verbose 4 -dm_view ascii::ascii_info_detail -info -info_exclude null > ex1_0.tmp 2>&1;\
-	   if (${DIFF} output/ex1_0.out ex1_0.tmp) then true ;  \
-	   else printf "${PWD}\nPossible problem with runex1, diffs above\n=========================================\n"; fi ;\
-	   ${RM} -f ex1_0.tmp
-runex1_2:
-	-@${MPIEXEC} -n 1 ./ex1 -dim 3 -ctetgen_verbose 4 -refinement_limit 0.0625 -dm_view ascii::ascii_info_detail -info -info_exclude null > ex1_1.tmp 2>&1;\
-	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true ;  \
-	   else printf "${PWD}\nPossible problem with runex1_2, diffs above\n=========================================\n"; fi ;\
-	   ${RM} -f ex1_1.tmp
-
-runex1_test_shape:
-	-@${MPIEXEC} -n 1 ./ex1 -dim 3 -interpolate -dm_refine_hierarchy 3 -test_shape > ex1_test_shape.tmp 2>&1;\
-	   if (${DIFF} output/ex1_test_shape.out ex1_test_shape.tmp) then true ;  \
-	   else printf "${PWD}\nPossible problem with runex1_test_shape, diffs above\n=================================\n"; fi ;\
-	   ${RM} -f ex1_test_shape.tmp
-
-
-runex1f90:
-	-@${MPIEXEC} -n 1 ./ex1f90 > ex1f90_0.tmp 2>&1;\
-	   if (${DIFF} output/ex1f90_0.out ex1f90_0.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with runex1f90, diffs above\n=========================================\n"; fi;\
-	   ${RM} -f ex1f90_0.tmp
-
-runex2f90:
-	-@${MPIEXEC} -n 1 ./ex2f90 |grep -v DM_ > ex2f90_0.tmp 2>&1;\
-	   if (${DIFF} output/ex2f90_0.out ex2f90_0.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with runex2f90, diffs above\n=========================================\n"; fi;\
-	   ${RM} -f ex2f90_0.tmp
 
 runex3:
 	-@${MPIEXEC} -n 1 ./ex3 > ex3_1.tmp 2>&1;\
@@ -178,7 +149,6 @@ runex3_nonconforming_tensor_3_view:
 TESTEXAMPLES_C           = ex3.PETSc runex3_constraints runex3_nonconforming_tensor_2 runex3_nonconforming_tensor_3 runex3_nonconforming_tensor_2_fv runex3_nonconforming_tensor_3_fv ex3.rm
 TESTEXAMPLES_C_NOTSINGLE = ex3.PETSc runex3_nonconforming_tensor_2_hi ex3.rm
 TESTEXAMPLES_TRIANGLE    = ex3.PETSc runex3_nonconforming_simplex_2 runex3_nonconforming_simplex_2_hi runex3_nonconforming_simplex_2_fv ex3.rm
-TESTEXAMPLES_CTETGEN     = ex1.PETSc runex1 runex1_2 runex1_test_shape ex1.rm ex3.PETSc runex3 runex3_nonconforming_simplex_3 runex3_nonconforming_simplex_3_hi runex3_nonconforming_simplex_3_fv ex3.rm
-TESTEXAMPLES_F90         = ex1f90.PETSc runex1f90 ex1f90.rm ex2f90.PETSc runex2f90 ex2f90.rm
+TESTEXAMPLES_CTETGEN     = ex3.PETSc runex3 runex3_nonconforming_simplex_3 runex3_nonconforming_simplex_3_hi runex3_nonconforming_simplex_3_fv ex3.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test
