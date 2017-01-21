@@ -178,3 +178,42 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+  # Two cell tests 0-3
+  test:
+    suffix: 0
+    args: -dim 2 -interpolate 1 -cell_simplex 1 -num_dof 1,0,0 -mat_view
+  test:
+    suffix: 1
+    args: -dim 2 -interpolate 1 -cell_simplex 0 -num_dof 1,0,0 -mat_view
+  test:
+    suffix: 2
+    args: -dim 3 -interpolate 1 -cell_simplex 1 -num_dof 1,0,0,0 -mat_view
+  test:
+    suffix: 3
+    args: -dim 3 -interpolate 1 -cell_simplex 0 -num_dof 1,0,0,0 -mat_view
+  # Refined tests 4-7
+  test:
+    suffix: 4
+    args: -dim 2 -interpolate 1 -cell_simplex 1 -refinement_limit 0.00625 -num_dof 1,0,0
+  test:
+    suffix: 5
+    args: -dim 2 -interpolate 1 -cell_simplex 0 -refinement_uniform       -num_dof 1,0,0
+  test:
+    suffix: 6
+    args: -dim 3 -interpolate 1 -cell_simplex 1 -refinement_limit 0.00625 -num_dof 1,0,0,0
+  test:
+    suffix: 7
+    args: -dim 3 -interpolate 1 -cell_simplex 0 -refinement_uniform       -num_dof 1,0,0,0
+  # Parallel tests
+  # Grouping tests
+  test:
+    suffix: group_1
+    args: -num_groups 1 -num_dof 1,0,0 -is_view -orig_mat_view -perm_mat_view
+  test:
+    suffix: group_2
+    args: -num_groups 2 -num_dof 1,0,0 -is_view -perm_mat_view
+
+TEST*/
