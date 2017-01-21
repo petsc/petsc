@@ -175,23 +175,8 @@ runex3_nonconforming_simplex_3_view:
 runex3_nonconforming_tensor_3_view:
 	-@${MPIEXEC} -n 4 ./ex3 -petscpartitioner_type simple -tree -num_comp 3 -simplex 0 -dim 3 -dm_view vtk:nonconformal_tensor_3.vtu:vtk_vtu
 
-runex6:
-	-@${MPIEXEC} -n 1 ./ex6 > ex6.tmp 2>&1;\
-	   if (${DIFF} output/ex6.out ex6.tmp) then true ;  \
-	   else printf "${PWD}\nPossible problem with runex6, diffs above\n=========================================\n"; fi ;\
-	   ${RM} -f ex6.tmp
-
-runex15:
-	-@x='bad';${MPIEXEC} -n 2 ./ex15 -verbose -globaltonatural_sf_view > ex15.tmp 2>&1;\
-          if (${DIFF} output/ex15.out ex15.tmp > /dev/null 2>&1) then x='good'; fi ;\
-           if (${DIFF} output/ex15_alt.out ex15.tmp > /dev/null 2>&1) then x='good'; fi; \
-           if (${DIFF} output/ex15_alt_2.out ex15.tmp > /dev/null 2>&1) then x='good'; fi; \
-           if [ "$$x" = "bad" ]; then ${DIFF} output/ex15.out ex15.tmp ; ${DIFF} output/ex15_alt.out ex15.tmp ;${DIFF} output/ex15_alt_2.out ex15.tmp; printf "${PWD}\nPossible problem with ex15, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex15.tmp
-
-TESTEXAMPLES_C           = ex3.PETSc runex3_constraints runex3_nonconforming_tensor_2 runex3_nonconforming_tensor_3 runex3_nonconforming_tensor_2_fv runex3_nonconforming_tensor_3_fv ex3.rm ex6.PETSc runex6 ex6.rm
+TESTEXAMPLES_C           = ex3.PETSc runex3_constraints runex3_nonconforming_tensor_2 runex3_nonconforming_tensor_3 runex3_nonconforming_tensor_2_fv runex3_nonconforming_tensor_3_fv ex3.rm
 TESTEXAMPLES_C_NOTSINGLE = ex3.PETSc runex3_nonconforming_tensor_2_hi ex3.rm
-TESTEXAMPLES_TRIANGLE_HDF5 = ex15.PETSc runex15 ex15.rm
 TESTEXAMPLES_TRIANGLE    = ex3.PETSc runex3_nonconforming_simplex_2 runex3_nonconforming_simplex_2_hi runex3_nonconforming_simplex_2_fv ex3.rm
 TESTEXAMPLES_CTETGEN     = ex1.PETSc runex1 runex1_2 runex1_test_shape ex1.rm ex3.PETSc runex3 runex3_nonconforming_simplex_3 runex3_nonconforming_simplex_3_hi runex3_nonconforming_simplex_3_fv ex3.rm
 TESTEXAMPLES_F90         = ex1f90.PETSc runex1f90 ex1f90.rm ex2f90.PETSc runex2f90 ex2f90.rm
