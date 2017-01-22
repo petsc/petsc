@@ -991,6 +991,10 @@ int main(int argc, char **argv)
 }
 
 /*TEST
+  test:
+    suffix: 1
+    requires: ctetgen
+
   # 2D P_1 on a triangle
   test:
     suffix: p1_2d_0
@@ -1195,6 +1199,68 @@ int main(int argc, char **argv)
   test:
     suffix: q2_quad_5
     args: -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -num_comp 2 -qorder 5 -porder 1
+
+
+  # Nonconforming tests
+  test:
+    suffix: constraints
+    args: -simplex 0 -num_comp 2 -petscspace_poly_tensor -petscspace_order 1 -qorder 0 -constraints
+  test:
+    suffix: nonconforming_tensor_2
+    nsize: 4
+    args: -test_fe_jacobian -test_injector -petscpartitioner_type simple -tree -simplex 0 -dim 2 -num_comp 2 -dm_plex_max_projection_height 1 -petscspace_poly_tensor -petscspace_order 2 -qorder 2 -dm_view ascii::ASCII_INFO_DETAIL
+  test:
+    suffix: nonconforming_tensor_3
+    nsize: 4
+    args: -test_fe_jacobian -petscpartitioner_type simple -tree -simplex 0 -dim 3 -num_comp 3 -dm_plex_max_projection_height 2 -petscspace_poly_tensor -petscspace_order 1 -qorder 1 -dm_view ascii::ASCII_INFO_DETAIL
+  test:
+    suffix: nonconforming_tensor_2_fv
+    nsize: 4
+    args: -test_fv_grad -test_injector -petsclimiter_type none -petscpartitioner_type simple -tree -simplex 0 -dim 2 -num_comp 2
+  test:
+    suffix: nonconforming_tensor_3_fv
+    nsize: 4
+    args: -test_fv_grad -test_injector -petsclimiter_type none -petscpartitioner_type simple -tree -simplex 0 -dim 3 -num_comp 3
+  test:
+    suffix: nonconforming_tensor_2_hi
+    #requires: notsingle
+    nsize: 4
+    args: -test_fe_jacobian -petscpartitioner_type simple -tree -simplex 0 -dim 2 -num_comp 2 -dm_plex_max_projection_height 1 -petscspace_poly_tensor -petscspace_order 4 -qorder 4
+  test:
+    suffix: nonconforming_tensor_3_hi
+    #requires: notsingle
+    nsize: 4
+    args: -test_fe_jacobian -petscpartitioner_type simple -tree -simplex 0 -dim 3 -num_comp 3 -dm_plex_max_projection_height 2 -petscspace_poly_tensor -petscspace_order 4 -qorder 4
+  test:
+    suffix: nonconforming_simplex_2
+    requires: triangle
+    nsize: 4
+    args: -test_fe_jacobian -test_injector -petscpartitioner_type simple -tree -simplex 1 -dim 2 -num_comp 2 -dm_plex_max_projection_height 1 -petscspace_order 2 -qorder 2 -dm_view ascii::ASCII_INFO_DETAIL
+  test:
+    suffix: nonconforming_simplex_2_hi
+    requires: triangle
+    nsize: 4
+    args: -test_fe_jacobian -petscpartitioner_type simple -tree -simplex 1 -dim 2 -num_comp 2 -dm_plex_max_projection_height 1 -petscspace_order 4 -qorder 4
+  test:
+    suffix: nonconforming_simplex_2_fv
+    requires: triangle
+    nsize: 4
+    args: -test_fv_grad -test_injector -petsclimiter_type none -petscpartitioner_type simple -tree -simplex 1 -dim 2 -num_comp 2
+  test:
+    suffix: nonconforming_simplex_3
+    requires: ctetgen
+    nsize: 4
+    args: -test_fe_jacobian -test_injector -petscpartitioner_type simple -tree -simplex 1 -dim 3 -num_comp 3 -dm_plex_max_projection_height 2 -petscspace_order 2 -qorder 2 -dm_view ascii::ASCII_INFO_DETAIL
+  test:
+    suffix: nonconforming_simplex_3_hi
+    requires: ctetgen
+    nsize: 4
+    args: -test_fe_jacobian -petscpartitioner_type simple -tree -simplex 1 -dim 3 -num_comp 3 -dm_plex_max_projection_height 2 -petscspace_order 4 -qorder 4
+  test:
+    suffix: nonconforming_simplex_3_fv
+    requires: ctetgen
+    nsize: 4
+    args: -test_fv_grad -test_injector -petsclimiter_type none -petscpartitioner_type simple -tree -simplex 1 -dim 3 -num_comp 3
 
 TEST*/
 
