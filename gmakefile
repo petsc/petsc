@@ -85,7 +85,10 @@ else				# Show the full command line
 endif
 
 ifeq ($(REPLACE),1)
-  TESTFLAGS += -u    # Replace results by passing -u to petscdiff
+  TESTFLAGS += -m    # Replace results by passing -m to petscdiff
+endif
+ifeq ($(DIFF_NUMBERS),1)
+  TESTFLAGS += -j    # Pass -j to petscdiff to diff the actual numbers
 endif
 ifdef OPTIONS
   TESTFLAGS += -a '$(OPTIONS)'   # override arguments
@@ -267,10 +270,8 @@ $(TESTDIR)/counts/%.counts :
 # doesn't guarantee an exploration order for the graph.  Only recursive
 # if there is something to be done.
 alltest-rm := $(foreach pkg, $(pkgs), $(foreach lang, $(testlangs), test-rm-$(pkg).$(lang)))
-ifeq ($(NO_RM),1)
 $(alltest-rm) : test-rm-% : test-%
-else
-$(alltest-rm) : test-rm-% : test-%
+ifneq ($(NO_RM),1)
 	$(call quiet,RM) $(addprefix $(TESTDIR)/,$(basename $($(@:test-rm-%=testsrcs-%))))
 endif
 
