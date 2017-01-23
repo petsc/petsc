@@ -159,6 +159,7 @@ int main(int argc, char **argv)
 
   test:
     suffix: 0
+    requires: triangle
     args: -test_partition 0 -dm_view ascii::ascii_info_detail
 
 TEST*/

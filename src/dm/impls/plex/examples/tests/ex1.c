@@ -258,9 +258,11 @@ int main(int argc, char **argv)
   # 2D LaTex and ASCII output 2-9
   test:
     suffix: 2
+    requires: triangle
     args: -dim 2 -dm_view ::ascii_latex
   test:
     suffix: 3
+    requires: triangle
     args: -dim 2 -dm_refine 1 -interpolate 1 -dm_view ::ascii_info_detail
   test:
     suffix: 4
@@ -379,6 +381,7 @@ int main(int argc, char **argv)
   # Test shape quality
   test:
     suffix: test_shape
+    requires: ctetgen
     args: -dim 3 -interpolate -dm_refine_hierarchy 3 -test_shape
 
 TEST*/

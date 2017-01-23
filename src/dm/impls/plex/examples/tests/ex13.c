@@ -150,17 +150,21 @@ int main(int argc, char **argv)
 /*TEST
   test:
     suffix: 0
+    requires: triangle
     args: -test_partition 0 -dm_view ascii::ascii_info_detail -oriented_dm_view ascii::ascii_info_detail -orientation_view
   test:
     suffix: 1
+    requires: triangle
     nsize: 2
     args: -dm_view ascii::ascii_info_detail -oriented_dm_view ascii::ascii_info_detail -orientation_view
   test:
     suffix: 2
+    requires: triangle
     nsize: 2
     args: -test_num 1 -dm_view ascii::ascii_info_detail -oriented_dm_view ascii::ascii_info_detail -orientation_view
   test:
     suffix: 3
+    requires: triangle
     nsize: 3
     args: -dm_view ascii::ascii_info_detail -oriented_dm_view ascii::ascii_info_detail -orientation_view
 

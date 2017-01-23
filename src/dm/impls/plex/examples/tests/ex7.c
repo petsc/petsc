@@ -516,9 +516,11 @@ int main(int argc, char **argv)
   # TetGen meshes 9-10
   test:
     suffix: 9
+    requires: triangle
     args: -dim 2 -use_generator -dm_view ::ascii_info_detail
   test:
     suffix: 10
+    requires: ctetgen
     args: -dim 3 -use_generator -dm_view ::ascii_info_detail
   # Cubit meshes 11
   test:

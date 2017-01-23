@@ -159,41 +159,50 @@ int main(int argc, char **argv)
   # Parallel, no overlap tests 0-2
   test:
     suffix: 0
+    requires: triangle
     args: -dm_view ascii:mesh.tex:ascii_latex
   test:
     suffix: 1
+    requires: triangle
     nsize: 3
     args: -test_partition -dm_view ::ascii_info_detail
   test:
     suffix: 2
+    requires: triangle
     nsize: 8
     args: -test_partition -dm_view ::ascii_info_detail
   # Parallel, level-1 overlap tests 3-4
   test:
     suffix: 3
+    requires: triangle
     nsize: 3
     args: -test_partition -overlap 1 -dm_view ::ascii_info_detail
   test:
     suffix: 4
+    requires: triangle
     nsize: 8
     args: -test_partition -overlap 1 -dm_view ::ascii_info_detail
   # Parallel, level-2 overlap test 5
   test:
     suffix: 5
+    requires: triangle
     nsize: 8
     args: -test_partition -overlap 2 -dm_view ::ascii_info_detail
   # Parallel load balancing, test 6-7
   test:
     suffix: 6
+    requires: triangle
     nsize: 2
     args: -test_partition -overlap 1 -dm_view ::ascii_info_detail
   test:
     suffix: 7
+    requires: triangle
     nsize: 2
     args: -test_partition -overlap 1 -load_balance -dm_view ::ascii_info_detail
   # Parallel redundant copying, test 8
   test:
     suffix: 8
+    requires: triangle
     nsize: 2
     args: -test_redundant -dm_view ::ascii_info_detail
 

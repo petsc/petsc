@@ -197,12 +197,14 @@ int main(int argc, char **argv)
   # Refined tests 4-7
   test:
     suffix: 4
+    requires: triangle
     args: -dim 2 -interpolate 1 -cell_simplex 1 -refinement_limit 0.00625 -num_dof 1,0,0
   test:
     suffix: 5
     args: -dim 2 -interpolate 1 -cell_simplex 0 -refinement_uniform       -num_dof 1,0,0
   test:
     suffix: 6
+    requires: ctetgen
     args: -dim 3 -interpolate 1 -cell_simplex 1 -refinement_limit 0.00625 -num_dof 1,0,0,0
   test:
     suffix: 7

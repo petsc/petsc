@@ -998,93 +998,105 @@ int main(int argc, char **argv)
   # 2D P_1 on a triangle
   test:
     suffix: p1_2d_0
+    requires: triangle
     args: -petscspace_order 1 -num_comp 2 -qorder 1 -convergence
   test:
     suffix: p1_2d_1
+    requires: triangle
     args: -petscspace_order 1 -num_comp 2 -qorder 1 -porder 1
   test:
     suffix: p1_2d_2
+    requires: triangle
     args: -petscspace_order 1 -num_comp 2 -qorder 1 -porder 2
   test:
     suffix: p1_2d_3
-    requires: pragmatic
+    requires: triangle pragmatic
     args: -petscspace_order 1 -num_comp 2 -qorder 1 -dm_plex_hash_location -convergence -conv_refine 0
   test:
     suffix: p1_2d_4
-    requires: pragmatic
+    requires: triangle pragmatic
     args: -petscspace_order 1 -num_comp 2 -qorder 1 -dm_plex_hash_location -porder 1 -conv_refine 0
   test:
     suffix: p1_2d_5
-    requires: pragmatic
+    requires: triangle pragmatic
     args: -petscspace_order 1 -num_comp 2 -qorder 1 -dm_plex_hash_location -porder 2 -conv_refine 0
 
   # 3D P_1 on a tetrahedron
   test:
     suffix: p1_3d_0
+    requires: ctetgen
     args: -dim 3 -petscspace_order 1 -num_comp 3 -qorder 1 -convergence
   test:
     suffix: p1_3d_1
+    requires: ctetgen
     args: -dim 3 -petscspace_order 1 -num_comp 3 -qorder 1 -porder 1
   test:
     suffix: p1_3d_2
+    requires: ctetgen
     args: -dim 3 -petscspace_order 1 -num_comp 3 -qorder 1 -porder 2
   test:
     suffix: p1_3d_3
-    requires: pragmatic
+    requires: ctetgen pragmatic
     args: -dim 3 -petscspace_order 1 -num_comp 3 -qorder 1 -dm_plex_hash_location -convergence -conv_refine 0
   test:
     suffix: p1_3d_4
-    requires: pragmatic
+    requires: ctetgen pragmatic
     args: -dim 3 -petscspace_order 1 -num_comp 3 -qorder 1 -dm_plex_hash_location -porder 1 -conv_refine 0
   test:
     suffix: p1_3d_5
-    requires: pragmatic
+    requires: ctetgen pragmatic
     args: -dim 3 -petscspace_order 1 -num_comp 3 -qorder 1 -dm_plex_hash_location -porder 2 -conv_refine 0
 
   # 2D P_2 on a triangle
   test:
     suffix: p2_2d_0
+    requires: triangle
     args: -petscspace_order 2 -num_comp 2 -qorder 2 -convergence
   test:
     suffix: p2_2d_1
+    requires: triangle
     args: -petscspace_order 2 -num_comp 2 -qorder 2 -porder 1
   test:
     suffix: p2_2d_2
+    requires: triangle
     args: -petscspace_order 2 -num_comp 2 -qorder 2 -porder 2
   test:
     suffix: p2_2d_3
-    requires: pragmatic
+    requires: triangle pragmatic
     args: -petscspace_order 2 -num_comp 2 -qorder 2 -dm_plex_hash_location -convergence -conv_refine 0
   test:
     suffix: p2_2d_4
-    requires: pragmatic
+    requires: triangle pragmatic
     args: -petscspace_order 2 -num_comp 2 -qorder 2 -dm_plex_hash_location -porder 1 -conv_refine 0
   test:
     suffix: p2_2d_5
-    requires: pragmatic
+    requires: triangle pragmatic
     args: -petscspace_order 2 -num_comp 2 -qorder 2 -dm_plex_hash_location -porder 2 -conv_refine 0
 
   # 3D P_2 on a tetrahedron
   test:
     suffix: p2_3d_0
+    requires: ctetgen
     args: -dim 3 -petscspace_order 2 -num_comp 3 -qorder 2 -convergence
   test:
     suffix: p2_3d_1
+    requires: ctetgen
     args: -dim 3 -petscspace_order 2 -num_comp 3 -qorder 2 -porder 1
   test:
     suffix: p2_3d_2
+    requires: ctetgen
     args: -dim 3 -petscspace_order 2 -num_comp 3 -qorder 2 -porder 2
   test:
     suffix: p2_3d_3
-    requires: pragmatic
+    requires: ctetgen pragmatic
     args: -dim 3 -petscspace_order 2 -num_comp 3 -qorder 2 -dm_plex_hash_location -convergence -conv_refine 0
   test:
     suffix: p2_3d_4
-    requires: pragmatic
+    requires: ctetgen pragmatic
     args: -dim 3 -petscspace_order 2 -num_comp 3 -qorder 2 -dm_plex_hash_location -porder 1 -conv_refine 0
   test:
     suffix: p2_3d_5
-    requires: pragmatic
+    requires: ctetgen pragmatic
     args: -dim 3 -petscspace_order 2 -num_comp 3 -qorder 2 -dm_plex_hash_location -porder 2 -conv_refine 0
 
   # 2D Q_1 on a quadrilaterial DA
@@ -1157,35 +1169,45 @@ int main(int argc, char **argv)
   # 2D P_1disc on a triangle/quadrilateral
   test:
     suffix: p1d_2d_0
+    requires: triangle
     args: -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -num_comp 2 -qorder 1 -convergence
   test:
     suffix: p1d_2d_1
+    requires: triangle
     args: -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -num_comp 2 -qorder 1 -porder 1
   test:
     suffix: p1d_2d_2
+    requires: triangle
     args: -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -num_comp 2 -qorder 1 -porder 2
   test:
     suffix: p1d_2d_3
+    requires: triangle
     args: -simplex 0 -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -num_comp 2 -qorder 1 -convergence
   test:
     suffix: p1d_2d_4
+    requires: triangle
     args: -simplex 0 -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -num_comp 2 -qorder 1 -porder 1
   test:
     suffix: p1d_2d_5
+    requires: triangle
     args: -simplex 0 -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -num_comp 2 -qorder 1 -porder 2
 
   # Test high order quadrature
   test:
     suffix: p1_quad_2
+    requires: triangle
     args: -petscspace_order 1 -num_comp 2 -qorder 2 -porder 1
   test:
     suffix: p1_quad_5
+    requires: triangle
     args: -petscspace_order 1 -num_comp 2 -qorder 5 -porder 1
   test:
     suffix: p2_quad_3
+    requires: triangle
     args: -petscspace_order 2 -num_comp 2 -qorder 3 -porder 2
   test:
     suffix: p2_quad_5
+    requires: triangle
     args: -petscspace_order 2 -num_comp 2 -qorder 5 -porder 2
   test:
     suffix: q1_quad_2
