@@ -100,3 +100,14 @@
 
       call PetscFinalize(ierr)
       end program DMPlexTestField
+
+!/*TEST
+!
+!  test:
+!    suffix: 0
+!
+!  test:
+!    suffix: 1
+!    args: -dim 3
+!
+!TEST*/
