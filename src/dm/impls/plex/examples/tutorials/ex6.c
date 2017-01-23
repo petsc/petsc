@@ -389,3 +389,46 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+  # Spectral ordering 2D 0-5
+  test:
+    suffix: 0
+    args: -dim 2 -num_fields 1 -num_components 1 -order 2
+  test:
+    suffix: 1
+    args: -dim 2 -num_fields 1 -num_components 1 -order 3
+  test:
+    suffix: 2
+    args: -dim 2 -num_fields 1 -num_components 1 -order 5
+  test:
+    suffix: 3
+    args: -dim 2 -num_fields 1 -num_components 2 -order 2
+  test:
+    suffix: 4
+    args: -dim 2 -num_fields 2 -num_components 1,1 -order 2,2
+  test:
+    suffix: 5
+    args: -dim 2 -num_fields 2 -num_components 1,2 -order 2,3
+  # Spectral ordering 3D 6-11
+  test:
+    suffix: 6
+    args: -dim 3 -num_fields 1 -num_components 1 -order 2
+  test:
+    suffix: 7
+    args: -dim 3 -num_fields 1 -num_components 1 -order 3
+  test:
+    suffix: 8
+    args: -dim 3 -num_fields 1 -num_components 1 -order 5
+  test:
+    suffix: 9
+    args: -dim 3 -num_fields 1 -num_components 2 -order 2
+  test:
+    suffix: 10
+    args: -dim 3 -num_fields 2 -num_components 1,1 -order 2,2
+  test:
+    suffix: 11
+    args: -dim 3 -num_fields 2 -num_components 1,2 -order 2,3
+
+TEST*/
