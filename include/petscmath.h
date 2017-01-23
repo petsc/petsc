@@ -405,7 +405,32 @@ typedef enum { PETSC_SCALAR_DOUBLE,PETSC_SCALAR_SINGLE, PETSC_SCALAR_LONG_DOUBLE
 #if defined(PETSC_HAVE_COMPLEX)
 /* PETSC_i is the imaginary number, i */
 PETSC_EXTERN PetscComplex PETSC_i;
+
+/* Try to do the right thing for complex number construction: see
+
+  http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1464.htm
+
+  for details
+*/
+static inline PetscComplex PetscCMPLX(PetscReal x, PetscReal y)
+{
+#if   defined(__cplusplus)
+  return PetscComplex(x,y);
+#elif defined(_Imaginary_I)
+  return x + y * _Imaginary_I;
+#else
+#if   defined(PETSC_USE_REAL_SINGLE) && defined(CMPLXF)
+  return CMPLXF(x,y);
+  PETSC_REAL
+#elif defined(PETSC_USE_REAL_DOUBLE) && defined(CMPLX)
+  return CMPLX(x,y);
+#else
+  return x + y * PETSC_i;
 #endif
+#endif
+}
+#endif
+
 
 /*MC
    PetscMin - Returns minimum of two numbers
