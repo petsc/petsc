@@ -8,7 +8,7 @@ static PetscErrorCode VecTaggerComputeIntervals_Absolute(VecTagger tagger,Vec ve
   PetscInt       bs, i;
   PetscScalar    (*ints) [2];
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = VecTaggerGetBlockSize(tagger,&bs);CHKERRQ(ierr);
   *numIntervals = 1;
@@ -67,7 +67,7 @@ PetscErrorCode VecTaggerAbsoluteGetInterval(VecTagger tagger,const PetscScalar (
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecTaggerCreate_Absolute(VecTagger tagger)
+PETSC_EXTERN PetscErrorCode VecTaggerCreate_Absolute(VecTagger tagger)
 {
   PetscErrorCode     ierr;
 

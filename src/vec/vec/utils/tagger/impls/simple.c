@@ -70,7 +70,7 @@ PetscErrorCode VecTaggerView_Simple(VecTagger tagger, PetscViewer viewer)
 #if !defined(PETSC_USE_COMPLEX)
       ierr = PetscViewerASCIIPrintf(viewer,"%g,%g",smpl->interval[i][0],smpl->interval[i][1]);CHKERRQ(ierr);
 #else
-      ierr = PetscViewerASCIIPrintf(viewer,"%g+i%g,%g+i%g",PetscRealPart(smpl->interval[0]),PetscImaginaryPart(smpl->interval[0]),PetscRealPart(smpl->interval[1]),PetscImaginaryPary(tagger->interval[1]));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"%g+%gi,%g+%gi",PetscRealPart(smpl->interval[i][0]),PetscImaginaryPart(smpl->interval[i][0]),PetscRealPart(smpl->interval[i][1]),PetscImaginaryPart(smpl->interval[i][1]));CHKERRQ(ierr);
 #endif
     }
     ierr = PetscViewerASCIIPrintf(viewer,"]\n");CHKERRQ(ierr);

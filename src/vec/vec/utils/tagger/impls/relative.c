@@ -9,7 +9,7 @@ static PetscErrorCode VecTaggerComputeIntervals_Relative(VecTagger tagger,Vec ve
   PetscScalar       (*ints) [2];
   const PetscScalar *vArray;
   PetscErrorCode    ierr;
-  
+
   PetscFunctionBegin;
   ierr = VecTaggerGetBlockSize(tagger,&bs);CHKERRQ(ierr);
   *numIntervals = 1;
@@ -21,8 +21,8 @@ static PetscErrorCode VecTaggerComputeIntervals_Relative(VecTagger tagger,Vec ve
     ints[i][0] = PETSC_MAX_REAL;
     ints[i][1] = PETSC_MIN_REAL;
 #else
-    ints[i][0] = PETSC_MAX_REAL + PETSC_i * PETSC_MAX_REAL;
-    ints[i][1] = PETSC_MIN_REAL + PETSC_i * PETSC_MIN_REAL;
+    ints[i][0] = PetscCMPLX(PETSC_MAX_REAL,PETSC_MAX_REAL);
+    ints[i][1] = PetscCMPLX(PETSC_MIN_REAL,PETSC_MIN_REAL);
 #endif
   }
   ierr = VecGetArrayRead(vec, &vArray);CHKERRQ(ierr);
@@ -32,10 +32,8 @@ static PetscErrorCode VecTaggerComputeIntervals_Relative(VecTagger tagger,Vec ve
       ints[j][0] = PetscMin(ints[j][0],vArray[k]);
       ints[j][1] = PetscMax(ints[j][1],vArray[k]);
 #else
-      ints[j][0] = PetscMin(PetscRealPart(ints[j][0]),PetscRealPart(vArray[k])) + PETSC_i *
-                   PetscMin(PetscImaginaryPart(ints[j][0]),PetscImaginaryPart(vArray[k]))
-      ints[j][1] = PetscMax(PetscRealPart(ints[j][1]),PetscRealPart(vArray[k])) + PETSC_i *
-                   PetscMax(PetscImaginaryPart(ints[j][1]),PetscImaginaryPart(vArray[k]))
+      ints[j][0] = PetscCMPLX(PetscMin(PetscRealPart(ints[j][0]),PetscRealPart(vArray[k])),PetscMin(PetscImaginaryPart(ints[j][0]),PetscImaginaryPart(vArray[k])));
+      ints[j][1] = PetscCMPLX(PetscMax(PetscRealPart(ints[j][1]),PetscRealPart(vArray[k])),PetscMax(PetscImaginaryPart(ints[j][1]),PetscImaginaryPart(vArray[k])));
 #endif
     }
   }
@@ -98,7 +96,7 @@ PetscErrorCode VecTaggerRelativeGetInterval(VecTagger tagger,const PetscScalar (
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecTaggerCreate_Relative(VecTagger tagger)
+PETSC_EXTERN PetscErrorCode VecTaggerCreate_Relative(VecTagger tagger)
 {
   PetscErrorCode     ierr;
 

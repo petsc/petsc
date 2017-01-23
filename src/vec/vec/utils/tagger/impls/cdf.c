@@ -42,15 +42,15 @@ static PetscErrorCode VecTaggerComputeIntervals_CDF_Serial(VecTagger tagger,Vec 
     ierr = VecGetArray(vComp,&cArray);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
     ierr = PetscSortReal(m,cArray);CHKERRQ(ierr);
-#else
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Need to implement complex sorting");
-#endif
     minCDF = PetscMax(0., smpl->interval[i][0]);
     maxCDF = PetscMin(1., smpl->interval[i][1]);
     minInd = (PetscInt) (minCDF * m);
     maxInd = (PetscInt) (maxCDF * m);
     intervals[i][0] = cArray[PetscMin(minInd,m-1)];
     intervals[i][1] = cArray[PetscMin(maxInd,m-1)];
+#else
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Need to implement complex sorting");
+#endif
     ierr = VecRestoreArray(vComp,&cArray);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&vComp);CHKERRQ(ierr);
@@ -142,7 +142,7 @@ static PetscErrorCode VecTaggerSetFromOptions_CDF(PetscOptionItems *PetscOptions
   ierr = VecTaggerSetFromOptions_Simple(PetscOptionsObject,tagger);CHKERRQ(ierr);
   ierr = PetscOptionsHead(PetscOptionsObject,"VecTagger options for CDF intervals");CHKERRQ(ierr);
   ierr = PetscOptionsEList("-vec_tagger_cdf_method","Method for computing absolute intervals from CDF intervals","VecTaggerCDFSetMethod()",VecTaggerCDFMethods,VECTAGGER_CDF_NUM_METHODS,VecTaggerCDFMethods[cuml->method],&method,&set);CHKERRQ(ierr);
-  if (set) cuml->method = method;
+  if (set) cuml->method = (VecTaggerCDFMethod) method;
   ierr = PetscOptionsInt("-vec_tagger_cdf_max_it","Maximum iterations for iterative computation of absolute intervals from CDF intervals","VecTaggerCDFIterativeSetTolerances()",cuml->maxit,&cuml->maxit,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-vec_tagger_cdf_rtol","Maximum relative tolerance for iterative computation of absolute intervals from CDF intervals","VecTaggerCDFIterativeSetTolerances()",cuml->rtol,&cuml->rtol,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-vec_tagger_cdf_atol","Maximum absolute tolerance for iterative computation of absolute intervals from CDF intervals","VecTaggerCDFIterativeSetTolerances()",cuml->atol,&cuml->atol,NULL);CHKERRQ(ierr);
@@ -306,7 +306,7 @@ PetscErrorCode VecTaggerCDFGetInterval(VecTagger tagger,const PetscScalar (**int
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecTaggerCreate_CDF(VecTagger tagger)
+PETSC_EXTERN PetscErrorCode VecTaggerCreate_CDF(VecTagger tagger)
 {
   VecTagger_CDF *cuml;
   PetscErrorCode       ierr;
