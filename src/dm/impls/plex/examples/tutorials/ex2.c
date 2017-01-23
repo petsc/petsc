@@ -121,3 +121,48 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+  # CGNS meshes 0-1
+  test:
+    suffix: 0
+    requires: CGNS broken
+    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/tut21.cgns -interpolate 1
+  test:
+    suffix: 1
+    requires: CGNS broken
+    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/grid_c.cgns -interpolate 1
+  # Gmsh meshes 2-4
+  test:
+    suffix: 2
+    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh -interpolate 1
+  test:
+    suffix: 3
+    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/square.msh -interpolate 1
+  test:
+    suffix: 4
+    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/square_bin.msh -interpolate 1
+  # Exodus meshes 5-9
+  test:
+    suffix: 5
+    requires: exodusii
+    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo -interpolate 1
+  test:
+    suffix: 6
+    requires: exodusii
+    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -interpolate 1
+  test:
+    suffix: 7
+    requires: exodusii
+    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/squaremotor-30.exo -interpolate 1
+  test:
+    suffix: 8
+    requires: exodusii
+    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -interpolate 1
+  test:
+    suffix: 9
+    requires: exodusii
+    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/simpleblock-100.exo -interpolate 1
+
+TEST*/
