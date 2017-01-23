@@ -72,7 +72,7 @@ static PetscOptions      defaultoptions = NULL;
 PetscErrorCode  PetscOptionsStringToInt(const char name[],PetscInt *a)
 {
   PetscErrorCode ierr;
-  size_t         i,len;
+  size_t         len;
   PetscBool      decide,tdefault,mouse;
 
   PetscFunctionBegin;
@@ -93,18 +93,18 @@ PetscErrorCode  PetscOptionsStringToInt(const char name[],PetscInt *a)
   else if (decide) *a = PETSC_DECIDE;
   else if (mouse)  *a = -1;
   else {
-    if (name[0] != '+' && name[0] != '-' && name[0] < '0' && name[0] > '9') SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no integer value (do not include . in it)",name);
+    char *endptr;
+    long strtolval;
 
-    for (i=1; i<len; i++) {
-      if (name[i] < '0' || name[i] > '9') SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no integer value (do not include . in it)",name);
-    }
+    strtolval = strtol(name,&endptr,10);
+    if ((size_t) (endptr - name) != len) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no integer value (do not include . in it)",name);
 
 #if defined(PETSC_USE_64BIT_INDICES) && defined(PETSC_HAVE_ATOLL)
     *a = atoll(name);
 #elif defined(PETSC_USE_64BIT_INDICES) && defined(PETSC_HAVE___INT64)
     *a = _atoi64(name);
 #else
-    *a = (PetscInt)atoi(name);
+    *a = (PetscInt)strtolval;
 #endif
   }
   PetscFunctionReturn(0);
@@ -113,6 +113,55 @@ PetscErrorCode  PetscOptionsStringToInt(const char name[],PetscInt *a)
 #if defined(PETSC_USE_REAL___FLOAT128)
 #include <quadmath.h>
 #endif
+
+static PetscErrorCode PetscStrtod(const char name[],PetscReal *a,char **endptr)
+{
+  PetscFunctionBegin;
+#if defined(PETSC_USE_REAL___FLOAT128)
+  *a = strtoflt128(name,endptr);
+#else
+  *a = (PetscReal)strtod(name,endptr);
+#endif
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PetscStrtoz(const char name[],PetscScalar *a,char **endptr,PetscBool *isImaginary)
+{
+  PetscBool      hasi = PETSC_FALSE;
+  char           *ptr;
+  PetscReal      strtoval;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscStrtod(name,&strtoval,&ptr);CHKERRQ(ierr);
+  if (ptr == name) {
+    strtoval = 1.;
+    hasi = PETSC_TRUE;
+    if (name[0] == 'i') {
+      ptr++;
+    } else if (name[0] == '+' && name[1] == 'i') {
+      ptr += 2;
+    } else if (name[0] == '-' && name[1] == 'i') {
+      strtoval = -1.;
+      ptr += 2;
+    }
+  } else if (*ptr == 'i') {
+    hasi = PETSC_TRUE;
+    ptr++;
+  }
+  *endptr = ptr;
+  *isImaginary = hasi;
+  if (hasi) {
+#if !defined(PETSC_USE_COMPLEX)
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s contains imaginary but complex not supported ",name);
+#else
+    *a = PetscCMPLX(0.,strtoval);
+#endif
+  } else {
+    *a = strtoval;
+  }
+  PetscFunctionReturn(0);
+}
 
 /*
    Converts a string to PetscReal value. Handles special cases like "default" and "decide"
@@ -139,100 +188,38 @@ PetscErrorCode  PetscOptionsStringToReal(const char name[],PetscReal *a)
   if (tdefault)    *a = PETSC_DEFAULT;
   else if (decide) *a = PETSC_DECIDE;
   else {
-    if (name[0] != '+' && name[0] != '-' && name[0] != '.' && name[0] < '0' && name[0] > '9') SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no numeric value ",name);
-#if defined(PETSC_USE_REAL___FLOAT128)
-    *a = strtoflt128(name,NULL);
-#else
-    *a = atof(name);
-#endif
+    char   *endptr;
+
+    ierr = PetscStrtod(name,a,&endptr);CHKERRQ(ierr);
+    if ((size_t) (endptr - name) != len) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no numeric value ",name);
   }
   PetscFunctionReturn(0);
 }
 
-/*
-   Converts a string to PetscScalar value. Handles
-      [-][2].0
-      [-][2].0i
-      [-][2].0+/-2.0i
-
-*/
 PetscErrorCode  PetscOptionsStringToScalar(const char name[],PetscScalar *a)
 {
-  PetscErrorCode ierr;
+  PetscBool      imag1;
   size_t         len;
+  PetscScalar    val;
+  char           *ptr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscStrlen(name,&len);CHKERRQ(ierr);
   if (!len) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"character string of length zero has no numerical value");
-
-  if (name[0] == '+') name++;
-  if (name[0] == 'i') {
+  ierr = PetscStrtoz(name,&val,&ptr,&imag1);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
-    *a = PETSC_i;
-#else
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s is imaginary but complex not supported ",name);
-#endif
-  } else {
-    PetscToken token;
-    char       *tvalue1,*tvalue2;
-    PetscBool  neg = PETSC_FALSE, negim = PETSC_FALSE;
-    PetscReal  re = 0.0,im = 0.0;
+  if ((size_t) (ptr - name) < len) {
+    PetscBool   imag2;
+    PetscScalar val2;
 
-    if (name[0] != '-' && name[0] != '.' && name[0] < '0' && name[0] > '9') SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no numeric value ",name);
-    if (name[0] == '-') {
-      neg = PETSC_TRUE;
-      name++;
-    }
-    if (name[0] == 'i') {
-#if defined(PETSC_USE_COMPLEX)
-      *a = -PETSC_i;
-#else
-     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s is imaginary but complex not supported ",name);
-#endif
-      PetscFunctionReturn(0);
-    }
-
-    ierr = PetscTokenCreate(name,'+',&token);CHKERRQ(ierr);
-    ierr = PetscTokenFind(token,&tvalue1);CHKERRQ(ierr);
-    ierr = PetscTokenFind(token,&tvalue2);CHKERRQ(ierr);
-    if (!tvalue2) {
-      negim = PETSC_TRUE;
-      ierr  = PetscTokenDestroy(&token);CHKERRQ(ierr);
-      ierr  = PetscTokenCreate(name,'-',&token);CHKERRQ(ierr);
-      ierr  = PetscTokenFind(token,&tvalue1);CHKERRQ(ierr);
-      ierr  = PetscTokenFind(token,&tvalue2);CHKERRQ(ierr);
-    }
-    if (!tvalue2) {
-      PetscBool isim;
-      ierr = PetscStrendswith(tvalue1,"i",&isim);CHKERRQ(ierr);
-      if (isim) {
-        tvalue2 = tvalue1;
-        tvalue1 = NULL;
-        negim   = neg;
-      }
-    } else {
-      PetscBool isim;
-      ierr = PetscStrendswith(tvalue2,"i",&isim);CHKERRQ(ierr);
-      if (!isim) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no numeric value ",name);
-    }
-    if (tvalue1) {
-      ierr = PetscOptionsStringToReal(tvalue1,&re);CHKERRQ(ierr);
-      if (neg) re = -re;
-    }
-    if (tvalue2) {
-      ierr = PetscStrlen(tvalue2,&len);CHKERRQ(ierr);
-      tvalue2[len-1] = 0;
-      ierr = PetscOptionsStringToReal(tvalue2,&im);CHKERRQ(ierr);
-      if (negim) im = -im;
-    }
-    ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
-#if defined(PETSC_USE_COMPLEX)
-    *a = re + im*PETSC_i;
-#else
-    if (im != 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s is complex but complex not supported ",name);
-    *a = re;
-#endif
+    ierr = PetscStrtoz(ptr,&val2,&ptr,&imag2);CHKERRQ(ierr);
+    if (imag1 || !imag2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s: must specify imaginary component second",name);
+    val = PetscCMPLX(PetscRealPart(val),PetscImaginaryPart(val2));
   }
+#endif
+  if ((size_t) (ptr - name) != len) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no numeric value ",name);
+  *a = val;
   PetscFunctionReturn(0);
 }
 
@@ -317,8 +304,7 @@ PetscErrorCode  PetscSetProgramName(const char name[])
 @*/
 PetscErrorCode  PetscOptionsValidKey(const char in_str[],PetscBool  *key)
 {
-  PetscBool      inf,INF;
-  PetscErrorCode ierr;
+  char           *ptr;
 
   PetscFunctionBegin;
   *key = PETSC_FALSE;
@@ -326,9 +312,8 @@ PetscErrorCode  PetscOptionsValidKey(const char in_str[],PetscBool  *key)
   if (in_str[0] != '-') PetscFunctionReturn(0);
   if (in_str[1] == '-') in_str++;
   if (!isalpha((int)(in_str[1]))) PetscFunctionReturn(0);
-  ierr = PetscStrncmp(in_str+1,"inf",3,&inf);CHKERRQ(ierr);
-  ierr = PetscStrncmp(in_str+1,"INF",3,&INF);CHKERRQ(ierr);
-  if ((inf || INF) && !(in_str[4] == '_' || isalnum((int)(in_str[4])))) PetscFunctionReturn(0);
+  (double) strtod(in_str,&ptr);
+  if (ptr != in_str && !(*ptr == '_' || isalnum((int)*ptr))) PetscFunctionReturn(0);
   *key = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
