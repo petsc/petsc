@@ -13,7 +13,7 @@
 #define PetscSection type(tPetscSection)
 #define PetscSectionSym type(tPetscSectionSym)
 
-#define PetscSF PetscFortranAddr
+#define PetscSF type(tPetscSF)
 #define PetscLayout PetscFortranAddr
 
 #define ISType PetscEnum

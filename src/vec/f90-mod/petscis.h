@@ -16,8 +16,12 @@
       type tPetscSectionSym
         PetscFortranAddr:: v
       end type tPetscSectionSym
+      type tPetscSF
+        PetscFortranAddr:: v
+      end type tPetscSF
 
       IS, parameter :: PETSC_NULL_IS = tIS(-1)
+      PetscSF, parameter :: PETSC_NULL_SF = tPetscSF(-1)
 
       PetscEnum IS_COLORING_GLOBAL
       PetscEnum IS_COLORING_LOCAL
