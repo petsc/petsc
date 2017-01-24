@@ -229,7 +229,7 @@ $   PCGalerkinGetKSP(pc,&ksp); KSPSetOperators(ksp,A,....)
 
    Level: intermediate
 
-   Developer Note: If KSPSetOperators() has not been called then PCGALERKIN could use MatRARt() or MatPtAP() to compute
+   Developer Note: If KSPSetOperators() has not been called on the inner KSP then PCGALERKIN could use MatRARt() or MatPtAP() to compute
                    the operators automatically.
                    Should there be a prefix for the inner KSP.
                    There is no KSPSetFromOptions_Galerkin() that calls KSPSetFromOptions() on the inner KSP
