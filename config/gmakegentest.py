@@ -238,7 +238,10 @@ class generateExamples(Petsc):
     if testDict.has_key('args'):  subst['args']=testDict['args']
 
     #Conf vars
-    subst['mpiexec']=self.conf['MPIEXEC']  # make sure PETSC_DIR is defined!
+    if self.petsc_arch.find('valgrind')>=0:
+      subst['mpiexec']='petsc_mpiexec_valgrind ' + self.conf['MPIEXEC']
+    else:
+      subst['mpiexec']=self.conf['MPIEXEC']
     subst['petsc_dir']=self.petsc_dir # not self.conf['PETSC_DIR'] as this could be windows path
     subst['diff']=self.conf['DIFF']
     subst['rm']=self.conf['RM']
