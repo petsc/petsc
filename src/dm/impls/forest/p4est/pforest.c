@@ -4073,6 +4073,7 @@ static PetscErrorCode DMPforestGetPlex(DM dm,DM *plex)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  if (plex) *plex = NULL;
   ierr    = DMSetUp(dm);CHKERRQ(ierr);
   pforest = (DM_Forest_pforest*) ((DM_Forest*) dm->data)->data;
   if (!pforest->plex) {
