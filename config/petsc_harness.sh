@@ -26,8 +26,9 @@ OPTIONS
   -e <args> ......... Add extra arguments to default
   -h ................ help: print this message
   -n <integer> ...... Override the number of processors to use
-  -o <output file> .. Override default output file to diff with
-  -t <testname> ..... Override test name
+  -j ................ Pass -j to petscdiff (just use diff)
+  -J <arg> .......... Pass -J to petscdiff (just use diff with arg)
+  -m ................ Update results using petscdiff
   -v ................ Verbose: Print commands
 EOF
 
@@ -39,17 +40,19 @@ EOF
 #
 verbose=false
 cleanup=false
-while getopts "a:c:e:hn:o:t:v" arg
+diff_flags=""
+while getopts "a:ce:hjJ:mn:v" arg
 do
   case $arg in
-    a ) args=$OPTARG     ;;  
-    c ) cleanup=true     ;;  
-    e ) extra_args=$OPTARG     ;;  
-    h ) print_usage; exit ;;  
-    n ) nsize=$OPTARG     ;;  
-    o ) output_file=$OPTARG     ;;  
-    t ) testname=$OPTARG     ;;  
-    v ) verbose=true     ;;  
+    a ) args="$OPTARG"       ;;  
+    c ) cleanup=true         ;;  
+    e ) extra_args="$OPTARG" ;;  
+    h ) print_usage; exit    ;;  
+    n ) nsize="$OPTARG"      ;;  
+    j ) diff_flags="-j"      ;;  
+    J ) diff_flags="-J $OPTARG" ;;  
+    m ) diff_flags="-m"      ;;  
+    v ) verbose=true         ;;  
     *)  # To take care of any extra args
       if test -n "$OPTARG"; then
         eval $arg=\"$OPTARG\"
@@ -131,4 +134,12 @@ function petsc_testend() {
   fi
 }
 
+function petsc_mpiexec_valgrind() {
+  mpiexec=$1;shift
+  npopt=$1;shift
+  np=$1;shift
+
+  valgrind="valgrind -q --tool=memcheck --leak-check=yes --num-callers=20 --track-origins=yes --suppressions=$petsc_dir/bin/maint/petsc-val.supp"
+  $mpiexec $npopt $np $valgrind $*
+}
 export LC_ALL=C
