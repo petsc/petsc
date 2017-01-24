@@ -11,7 +11,6 @@ label='@LABEL@'
 runfiles='@LOCALRUNFILES@'
 wPETSC_DIR='@WPETSC_DIR@'
 petsc_dir='@PETSC_DIR@'
-args='@ARGS@'
 
 . "${petsc_dir}/config/petsc_harness.sh"
 
@@ -27,6 +26,7 @@ todoline='printf "ok ${label} # TODO @TODOCOMMENT@\\n"'
 skipline='printf "ok ${label} # SKIP @SKIPCOMMENT@\\n"'
 mpitest='petsc_testrun "${mpiexec} -n @NSIZE@ ${exec} ${args}" @REDIRECT_FILE@ ${testname}.err "${label}" @FILTER@'
 subargsline='subargs="@SUBARGS@"'
+argsline='args="@ARGS@"'
 mpisubtest='petsc_testrun "${mpiexec} -n @NSIZE@ ${exec} ${args} ${subargs}" @REDIRECT_FILE@ ${testname}.err "${label}" @FILTER@'
 #Better labelling
 #mpitest='petsc_testrun "${mpiexec} -n @NSIZE@ ${exec} ${args}" @REDIRECT_FILE@ ${testname}.err "${label}-${args}" @FILTER@'
