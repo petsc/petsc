@@ -266,10 +266,12 @@ int main(int argc, char **argv)
     args: -dim 2 -dm_refine 1 -interpolate 1 -dm_view ::ascii_info_detail
   test:
     suffix: 4
+    requires: triangle
     nsize: 2
     args: -dim 2 -dm_refine 1 -interpolate 1 -test_partition -dm_view ::ascii_info_detail
   test:
     suffix: 5
+    requires: triangle
     nsize: 2
     args: -dim 2 -dm_refine 1 -interpolate 1 -test_partition -dm_view ::ascii_latex
   test:
@@ -290,20 +292,25 @@ int main(int argc, char **argv)
   # Parallel refinement tests with overlap
   test:
     suffix: refine_overlap_0
+    requires: triangle
     nsize: 2
+    requires: triangle
     args: -dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -test_partition -overlap 1 -dm_view ::ascii_info_detail
   test:
     suffix: refine_overlap_1
+    requires: triangle
     nsize: 8
     args: -dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -test_partition -overlap 1 -dm_view ::ascii_info_detail
 
   # Parallel simple partitioner tests
   test:
     suffix: part_simple_0
+    requires: triangle
     nsize: 2
     args: -dim 2 -cell_simplex 1 -dm_refine 0 -interpolate 0 -petscpartitioner_type simple -partition_view -dm_view ::ascii_info_detail
   test:
     suffix: part_simple_1
+    requires: triangle
     nsize: 8
     args: -dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -petscpartitioner_type simple -partition_view -dm_view ::ascii_info_detail
 
