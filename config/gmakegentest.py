@@ -251,7 +251,7 @@ class generateExamples(Petsc):
 
     return subst
 
-  def getCmds(self,subst,i):
+  def getCmds(self,subst,i,subtest=False):
     """
       Generate bash script using template found next to this file.  
       This file is read in at constructor time to avoid file I/O
@@ -261,7 +261,10 @@ class generateExamples(Petsc):
     cmdLines=""
     # MPI is the default -- but we have a few odd commands
     if not subst.has_key('command'):
-      cmd=indent*nindent+self._substVars(subst,example_template.mpitest)
+      if not subtest:
+        cmd=indent*nindent+self._substVars(subst,example_template.mpitest)
+      else:
+        cmd=indent*nindent+self._substVars(subst,example_template.mpisubtest)
     else:
       cmd=indent*nindent+self._substVars(subst,example_template.commandtest)
     cmdLines=cmdLines+cmd+"\n\n"
@@ -361,17 +364,20 @@ class generateExamples(Petsc):
       jorig=j
       for stest in testDict["subtests"]:
         j=jorig
-        subst=substP
+        subst=substP.copy()
         subst.update(testDict[stest])
+        if testDict[stest].has_key('output_file'):
+          subst['output_file']=os.path.join(subst['srcdir'],testDict[stest]['output_file'])
         subst['nsize']=str(subst['nsize'])
         if not testDict[stest].has_key('args'): testDict[stest]['args']=""
-        subst['args']=substP['args']+testDict[stest]['args']
         doFor=False
         if "{{" in subst['args']+subst['nsize']:
           doFor=True
           flines,dlines,i,j=self.getFor(subst,i,j)
           fh.write(flines+"\n")
-        fh.write(self.getCmds(subst,j)+"\n")
+        subargs=re.sub("@SUBARGS@",testDict[stest]['args'],example_template.subargsline)
+        fh.write(subargs+"\n")
+        fh.write(self.getCmds(subst,j,subtest=True)+"\n")
         if doFor: fh.write(dlines+"\n")
     else:
       fh.write(self.getCmds(subst,j)+"\n")

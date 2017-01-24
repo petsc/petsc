@@ -26,6 +26,8 @@ footer='petsc_testend "@TESTROOT@" '
 todoline='printf "ok ${label} # TODO @TODOCOMMENT@\\n"'
 skipline='printf "ok ${label} # SKIP @SKIPCOMMENT@\\n"'
 mpitest='petsc_testrun "${mpiexec} -n @NSIZE@ ${exec} ${args}" @REDIRECT_FILE@ ${testname}.err "${label}" @FILTER@'
+subargsline='subargs="@SUBARGS@"'
+mpisubtest='petsc_testrun "${mpiexec} -n @NSIZE@ ${exec} ${args} ${subargs}" @REDIRECT_FILE@ ${testname}.err "${label}" @FILTER@'
 #Better labelling
 #mpitest='petsc_testrun "${mpiexec} -n @NSIZE@ ${exec} ${args}" @REDIRECT_FILE@ ${testname}.err "${label}-${args}" @FILTER@'
 difftest='petsc_testrun "${diff_exe} @OUTPUT_FILE@ @REDIRECT_FILE@" diff-${testname}.out diff-${testname}.out diff-${label} ""'
