@@ -101,7 +101,7 @@ def parseTest(testStr,srcfile):
   for line in striptest.split("\n"):
     if not line.strip(): continue
     var=line.split(":")[0].strip()
-    val=line.split(":")[1].strip()
+    val=line.split(":", 1)[1].strip()
     # Start by seeing if we are in a subtest
     if line.startswith(" "):
       subdict[subtestname][var]=val
@@ -167,7 +167,7 @@ def parseTestFile(srcfile):
     if debug: print "No test found in: "+srcfile
     return {}
   # Allow for multiple "/*TEST" blocks even though it really should be
-  # on
+  # one
   srcTests=[]
   for t in fsplit: srcTests.append(t.split("TEST*/")[0])
   testString=" ".join(srcTests)
