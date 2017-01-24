@@ -4578,13 +4578,15 @@ PetscErrorCode  TSGetRHSJacobian(TS ts,Mat *Amat,Mat *Pmat,TSRHSJacobian *func,v
 PetscErrorCode  TSGetIJacobian(TS ts,Mat *Amat,Mat *Pmat,TSIJacobian *f,void **ctx)
 {
   PetscErrorCode ierr;
-  SNES           snes;
   DM             dm;
 
   PetscFunctionBegin;
-  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
-  ierr = SNESGetJacobian(snes,Amat,Pmat,NULL,NULL);CHKERRQ(ierr);
+  if (Amat || Pmat) {
+    SNES snes;
+    ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+    ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
+    ierr = SNESGetJacobian(snes,Amat,Pmat,NULL,NULL);CHKERRQ(ierr);
+  }
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMTSGetIJacobian(dm,f,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
