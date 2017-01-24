@@ -1,38 +1,25 @@
 
 static char help[] = "VecTagger interface routines.\n\n";
 
-/*T
-   Processors: n
-T*/
-
-#include <petscis.h>
 #include <petscvec.h>
 
 static PetscErrorCode ISGetBlockGlobalIS(IS is, Vec vec, PetscInt bs, IS *isBlockGlobal)
 {
-  PetscLayout    layout;
+  const PetscInt *idxin;
+  PetscInt       *idxout, i, n, rstart;
+  PetscLayout    map;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetLayout(vec, &layout);CHKERRQ(ierr);
-  if (bs == 1) {
-    if (layout->mapping) {
-      ierr = ISLocalToGlobalMappingApplyIS(layout->mapping,is,isBlockGlobal);CHKERRQ(ierr);
-    } else {
-      ierr = PetscObjectReference((PetscObject)is);CHKERRQ(ierr);
-      *isBlockGlobal = is;
-    }
-  } else {
-    const PetscInt *idxin;
-    PetscInt       *idxout, i, n, rstart = layout->rstart / bs;
 
-    ierr = ISGetLocalSize(is, &n);CHKERRQ(ierr);
-    ierr = PetscMalloc1(n, &idxout);CHKERRQ(ierr);
-    ierr = ISGetIndices(is, &idxin);CHKERRQ(ierr);
-    for (i = 0; i < n; i++) idxout[i] = rstart + idxin[i];
-    ierr = ISRestoreIndices(is, &idxin);CHKERRQ(ierr);
-    ierr = ISCreateBlock(PetscObjectComm((PetscObject)vec),bs,n,idxout,PETSC_OWN_POINTER,isBlockGlobal);CHKERRQ(ierr);
-  }
+  ierr = VecGetLayout(vec,&map);CHKERRQ(ierr);
+  rstart = map->rstart / bs;
+  ierr = ISGetLocalSize(is, &n);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n, &idxout);CHKERRQ(ierr);
+  ierr = ISGetIndices(is, &idxin);CHKERRQ(ierr);
+  for (i = 0; i < n; i++) idxout[i] = rstart + idxin[i];
+  ierr = ISRestoreIndices(is, &idxin);CHKERRQ(ierr);
+  ierr = ISCreateBlock(PetscObjectComm((PetscObject)vec),bs,n,idxout,PETSC_OWN_POINTER,isBlockGlobal);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -41,7 +28,7 @@ int main(int argc, char **argv)
   Vec            vec, tagged, untagged;
   VecScatter     taggedScatter, untaggedScatter;
   PetscInt       bs;
-  PetscInt       n, N, nloc, nint, i, j, k, localStart, localEnd, ntagged, nuntagged;
+  PetscInt       n, nloc, nint, i, j, k, localStart, localEnd, ntagged, nuntagged;
   MPI_Comm       comm;
   VecTagger      tagger;
   PetscScalar    *array;
@@ -59,15 +46,15 @@ int main(int argc, char **argv)
   ierr = PetscOptionsInt("-bs","The block size of the vector","ex1.c",bs,&bs,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-n","The size of the vector (in blocks)","ex1.c",n,&n,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  N    = n * bs;
-  ierr = VecCreate(comm,&vec);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(vec,bs);CHKERRQ(ierr);
-  ierr = VecSetSizes(vec,PETSC_DECIDE,N);CHKERRQ(ierr);
-  ierr = VecSetUp(vec);CHKERRQ(ierr);
 
   ierr = PetscRandomCreate(comm,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
 
+  ierr = VecCreate(comm,&vec);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)vec,"Vec to Tag");CHKERRQ(ierr);
+  ierr = VecSetBlockSize(vec,bs);CHKERRQ(ierr);
+  ierr = VecSetSizes(vec,PETSC_DECIDE,n);CHKERRQ(ierr);
+  ierr = VecSetUp(vec);CHKERRQ(ierr);
   ierr = VecGetLocalSize(vec,&nloc);CHKERRQ(ierr);
   ierr = VecGetArray(vec,&array);CHKERRQ(ierr);
   for (i = 0; i < nloc; i++) {
@@ -85,8 +72,13 @@ int main(int argc, char **argv)
   ierr = VecTaggerSetType(tagger,VECTAGGERABSOLUTE);CHKERRQ(ierr);
   ierr = PetscMalloc1(bs,&defaultInterval);CHKERRQ(ierr);
   for (i = 0; i < bs; i++) {
+#if !defined(PETSC_USE_COMPLEX)
     defaultInterval[i][0] = 0.1;
     defaultInterval[i][1] = 1.5;
+#else
+    defaultInterval[i][0] = PetscCMPLX(0.1,0.1);
+    defaultInterval[i][1] = PetscCMPLX(1.5,1.5);
+#endif
   }
   ierr = VecTaggerAbsoluteSetInterval(tagger,defaultInterval);CHKERRQ(ierr);
   ierr = PetscFree(defaultInterval);CHKERRQ(ierr);
@@ -114,6 +106,8 @@ int main(int argc, char **argv)
             if (j) {ierr = PetscViewerASCIIPrintf(viewer," x ");CHKERRQ(ierr);}
 #if !defined(PETSC_USE_COMPLEX)
             ierr = PetscViewerASCIIPrintf(viewer,"[%g,%g]",(double)intervals[k][0],(double)intervals[k][1]);CHKERRQ(ierr);
+#else
+            ierr = PetscViewerASCIIPrintf(viewer,"[%g+%gi,%g+%gi]",(double)PetscRealPart(intervals[k][0]),(double)PetscImaginaryPart(intervals[k][0]),(double)PetscRealPart(intervals[k][1]),(double)PetscImaginaryPart(intervals[k][1]));CHKERRQ(ierr);
 #endif
           }
           ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
@@ -127,20 +121,24 @@ int main(int argc, char **argv)
 
   ierr = VecTaggerComputeIS(tagger,vec,&is);CHKERRQ(ierr);
   ierr = ISGetBlockGlobalIS(is,vec,bs,&isBlockGlobal);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)isBlockGlobal,"Tagged IS (block global)");CHKERRQ(ierr);
   ierr = ISViewFromOptions(isBlockGlobal,NULL,"-tagged_is_view");CHKERRQ(ierr);
 
   ierr = VecGetOwnershipRange(vec,&localStart,&localEnd);CHKERRQ(ierr);
   ierr = ISComplement(isBlockGlobal,localStart,localEnd,&isComp);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)isComp,"Untagged IS (global)");CHKERRQ(ierr);
   ierr = ISViewFromOptions(isComp,NULL,"-untagged_is_view");CHKERRQ(ierr);
 
   ierr = ISGetLocalSize(isBlockGlobal,&ntagged);CHKERRQ(ierr);
   ierr = ISGetLocalSize(isComp,&nuntagged);CHKERRQ(ierr);
 
   ierr = VecCreate(comm,&tagged);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)tagged,"Tagged selection");CHKERRQ(ierr);
   ierr = VecSetSizes(tagged,ntagged,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetUp(tagged);CHKERRQ(ierr);
 
   ierr = VecCreate(comm,&untagged);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)untagged,"Untagged selection");CHKERRQ(ierr);
   ierr = VecSetSizes(untagged,nuntagged,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetUp(untagged);CHKERRQ(ierr);
 
@@ -169,3 +167,73 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+  test:
+    suffix: 0
+    requires: !complex
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view
+
+  test:
+    suffix: 1
+    requires: !complex
+    nsize: 3
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view
+
+  test:
+    suffix: 2
+    requires: !complex
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -bs 2
+
+  test:
+    suffix: 3
+    requires: !complex
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_block_size 2 -vec_tagger_interval 0.1,1.5,0.1,1.5
+
+  test:
+    suffix: 4
+    requires: !complex
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_invert
+
+  test:
+    suffix: 5
+    requires: !complex
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_type relative -vec_tagger_interval 0.25,0.75
+
+  test:
+    suffix: 6
+    requires: !complex
+    nsize: 3
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_type cdf -vec_tagger_interval 0.25,0.75
+
+  test:
+    suffix: 7
+    requires: !complex
+    nsize: 3
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_type cdf -vec_tagger_interval 0.25,0.75 -vec_tagger_cdf_method iterative -vec_tagger_cdf_max_it 10
+
+  test:
+    suffix: 8
+    requires: !complex
+    nsize: 3
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_type or -vec_tagger_num_subs 2 -sub_0_vec_tagger_type absolute -sub_0_vec_tagger_interval 0.0,0.25 -sub_1_vec_tagger_type relative -sub_1_vec_tagger_interval 0.75,inf
+
+  test:
+    suffix: 9
+    requires: !complex
+    nsize: 3
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_type and -vec_tagger_num_subs 2 -sub_0_vec_tagger_type absolute -sub_0_vec_tagger_interval -inf,0.5 -sub_1_vec_tagger_type relative -sub_1_vec_tagger_interval 0.25,0.75
+
+  test:
+    suffix: 10
+    requires: complex
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view
+
+  test:
+    suffix: 11
+    requires: complex
+    nsize: 3
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view
+
+TEST*/
