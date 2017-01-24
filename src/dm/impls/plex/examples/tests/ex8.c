@@ -286,7 +286,7 @@ PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool tran
         }
       }
       for (d = 0; d < dim; ++d) {
-        ierr = PetscRandomGetValueReal(r, &trans[d]);CHKERRQ(ierr);
+        ierr = PetscRandomGetValue(r, &trans[d]);CHKERRQ(ierr);
         for (p = 0; p < 3; ++p) {
           vertexCoords[p*dim+d] *= scale;
           vertexCoords[p*dim+d] += trans[d];
@@ -365,7 +365,7 @@ PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool tran
       ierr = PetscRandomGetValueReal(ang, &phi);CHKERRQ(ierr);
       ierr = PetscRandomGetValueReal(ang2, &theta);CHKERRQ(ierr);
       for (d = 0; d < dim; ++d) {
-        ierr = PetscRandomGetValueReal(r, &trans[d]);CHKERRQ(ierr);
+        ierr = PetscRandomGetValue(r, &trans[d]);CHKERRQ(ierr);
         for (p = 0; p < 3; ++p) {
           vertexCoords[p*dim+d] *= scale;
           vertexCoords[p*dim+d] += trans[d];
@@ -550,7 +550,7 @@ PetscErrorCode TestQuadrilateral(MPI_Comm comm, PetscBool interpolate, PetscBool
         }
       }
       for (d = 0; d < dim; ++d) {
-        ierr = PetscRandomGetValueReal(r, &trans[d]);CHKERRQ(ierr);
+        ierr = PetscRandomGetValue(r, &trans[d]);CHKERRQ(ierr);
         for (p = 0; p < 4; ++p) {
           vertexCoords[p*dim+d] *= scale;
           vertexCoords[p*dim+d] += trans[d];
@@ -614,7 +614,7 @@ PetscErrorCode TestQuadrilateral(MPI_Comm comm, PetscBool interpolate, PetscBool
       ierr = PetscRandomGetValueReal(ang, &phi);CHKERRQ(ierr);
       ierr = PetscRandomGetValueReal(ang2, &theta);CHKERRQ(ierr);
       for (d = 0; d < dim; ++d) {
-        ierr = PetscRandomGetValueReal(r, &trans[d]);CHKERRQ(ierr);
+        ierr = PetscRandomGetValue(r, &trans[d]);CHKERRQ(ierr);
         for (p = 0; p < 4; ++p) {
           vertexCoords[p*dim+d] *= scale;
           vertexCoords[p*dim+d] += trans[d];
@@ -763,7 +763,7 @@ PetscErrorCode TestTetrahedron(MPI_Comm comm, PetscBool interpolate, PetscBool t
       ierr = PetscRandomGetValueReal(ang, &phi);CHKERRQ(ierr);
       ierr = PetscRandomGetValueReal(ang2, &theta);CHKERRQ(ierr);
       for (d = 0; d < dim; ++d) {
-        ierr = PetscRandomGetValueReal(r, &trans[d]);CHKERRQ(ierr);
+        ierr = PetscRandomGetValue(r, &trans[d]);CHKERRQ(ierr);
         for (p = 0; p < 4; ++p) {
           vertexCoords[p*dim+d] *= scale;
           vertexCoords[p*dim+d] += trans[d];
@@ -906,7 +906,7 @@ PetscErrorCode TestHexahedron(MPI_Comm comm, PetscBool interpolate, PetscBool tr
       ierr = PetscRandomGetValueReal(ang, &phi);CHKERRQ(ierr);
       ierr = PetscRandomGetValueReal(ang2, &theta);CHKERRQ(ierr);
       for (d = 0; d < dim; ++d) {
-        ierr = PetscRandomGetValueReal(r, &trans[d]);CHKERRQ(ierr);
+        ierr = PetscRandomGetValue(r, &trans[d]);CHKERRQ(ierr);
         for (p = 0; p < 8; ++p) {
           vertexCoords[p*dim+d] *= scale;
           vertexCoords[p*dim+d] += trans[d];
