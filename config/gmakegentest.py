@@ -92,7 +92,8 @@ class generateExamples(Petsc):
     for key in testDict:
       keystr = str(testDict[key]).strip()
       if keystr.startswith('{{') and keystr.endswith('}}'):
-        loopVars[key] = keystr[2:-2].split(',')
+        import csv
+        loopVars[key] = [r for r in csv.reader([keystr[2:-2]],skipinitialspace=True)][0]
     varNames = testDict.copy()
     for key in loopVars:
       varNames[key] = '${' + str(key) + '}'
@@ -307,7 +308,7 @@ class generateExamples(Petsc):
     outstr=''
     indent="   "
     for key in loopVars:
-      newstr = indent * i + "for ${{{0}}} in '{1}'; do\n".format(key,','.join(loopVars[key]))
+      newstr = indent * i + "for {0} in {1}; do\n".format(key,' '.join(['"'+val+'"' for val in loopVars[key]]))
       outstr = outstr + newstr
       i = i + 1
     return (outstr,i)
@@ -338,7 +339,6 @@ class generateExamples(Petsc):
     (loopVars,varNames) = self._getLoopVars(testDict)
     
     subst=self.getSubstVars(varNames,rpath,testname)
-    if (loopVars): print subst
 
     #Handle runfiles
     if subst['localrunfiles']: 

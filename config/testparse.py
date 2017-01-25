@@ -78,6 +78,28 @@ def _stripIndent(block,srcfile):
 
   return newTestStr
 
+def parseTestInsert(dct,var,val,prefix=''):
+  """
+  Before inserting a string, look for implicit loop variables ({{a,b}}), and convert them into references to
+  automatically generated explicity loop variables in the dictionary (e.g., create the entry {var_0: {{a,b}}} and
+  replace '{{a,b}}' with @VAR_0@)
+  """
+  count = 0
+  impLoop = re.search('{{.*?}}',val)
+  while impLoop:
+    if impLoop.group(0) == val:
+      break
+    expLoop = '_'.join([prefix,str(var),str(count)])
+    while dct.has_key(expLoop):
+      count += 1
+      expLoop = '_'.join([prefix,str(var),str(count)])
+    dct[expLoop] = impLoop.group(0)
+    subs = '@'+expLoop.upper()+'@'
+    val = re.sub(impLoop.group(0),subs,val,count=1)
+    impLoop = re.search('{{.*?}}',val)
+  dct[var] = val
+
+
 def parseTest(testStr,srcfile):
   """
   This parses an individual test
@@ -104,7 +126,7 @@ def parseTest(testStr,srcfile):
     val=line.split(":")[1].strip()
     # Start by seeing if we are in a subtest
     if line.startswith(" "):
-      subdict[subtestname][var]=val
+      parseTestInsert(subdict[subtestname],var,val,prefix=subtestname)
     # Determine subtest name and make dict
     elif var=="test":
       subtestname="test"+str(subtestnum)
@@ -114,7 +136,7 @@ def parseTest(testStr,srcfile):
       subtestnum=subtestnum+1
     # The reset are easy
     else:
-      subdict[var]=val
+      parseTestInsert(subdict,var,val)
       if var=="suffix":
         if len(val)>0:
           testname=testname+"_"+val
