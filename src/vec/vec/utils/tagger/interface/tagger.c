@@ -346,7 +346,7 @@ PetscErrorCode VecTaggerView(VecTagger tagger,PetscViewer viewer)
 @*/
 PetscErrorCode VecTaggerComputeIntervals(VecTagger tagger,Vec vec,PetscInt *numIntervals,PetscScalar (**intervals)[2])
 {
-  PetscInt       vbs, tbs;
+  PetscInt       vls, tbs;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -354,9 +354,9 @@ PetscErrorCode VecTaggerComputeIntervals(VecTagger tagger,Vec vec,PetscInt *numI
   PetscValidHeaderSpecific(vec,VEC_CLASSID,2);
   PetscValidIntPointer(numIntervals,3);
   PetscValidPointer(intervals,4);
-  ierr = VecGetBlockSize(vec,&vbs);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(vec,&vls);CHKERRQ(ierr);
   ierr = VecTaggerGetBlockSize(tagger,&tbs);CHKERRQ(ierr);
-  if (vbs != tbs) SETERRQ2(PetscObjectComm((PetscObject)tagger),PETSC_ERR_ARG_INCOMP,"vec block size %D != tagger block size %D",vbs,tbs);
+  if (vls % tbs) SETERRQ2(PetscObjectComm((PetscObject)tagger),PETSC_ERR_ARG_INCOMP,"vec local size %D is not a multiple of tagger block size %D",vls,tbs);
   if (tagger->ops->computeintervals) {ierr = (*tagger->ops->computeintervals) (tagger,vec,numIntervals,intervals);CHKERRQ(ierr);}
   else {
     const char *type;
@@ -376,22 +376,22 @@ PetscErrorCode VecTaggerComputeIntervals(VecTagger tagger,Vec vec,PetscInt *numI
 -  vec - the vec to tag
 
    Output Arguments:
-.  IS - a list of the local *block* indices tagged by the tagger
+.  IS - a list of the local *block* indices tagged by the tagger, i.e., if the number of local indices will be n / bs, where n is VecGetLocalSize() and bs is VecTaggerGetBlockSize().
 
 .seealso: VecTaggerComputeIntervals()
 @*/
 PetscErrorCode VecTaggerComputeIS(VecTagger tagger,Vec vec,IS *is)
 {
-  PetscInt       vbs, tbs;
+  PetscInt       vls, tbs;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tagger,VEC_TAGGER_CLASSID,1);
   PetscValidHeaderSpecific(vec,VEC_CLASSID,2);
   PetscValidPointer(is,3);
-  ierr = VecGetBlockSize(vec,&vbs);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(vec,&vls);CHKERRQ(ierr);
   ierr = VecTaggerGetBlockSize(tagger,&tbs);CHKERRQ(ierr);
-  if (vbs != tbs) SETERRQ2(PetscObjectComm((PetscObject)tagger),PETSC_ERR_ARG_INCOMP,"vec block size %D != tagger block size %D",vbs,tbs);
+  if (vls % tbs) SETERRQ2(PetscObjectComm((PetscObject)tagger),PETSC_ERR_ARG_INCOMP,"vec local size %D is not a multiple of tagger block size %D",vls,tbs);
   if (tagger->ops->computeis) {ierr = (*tagger->ops->computeis) (tagger,vec,is);CHKERRQ(ierr);}
   else {
     SETERRQ(PetscObjectComm((PetscObject)tagger),PETSC_ERR_SUP,"VecTagger type does not compute ISs");
@@ -404,7 +404,7 @@ PetscErrorCode VecTaggerComputeIS_FromIntervals(VecTagger tagger, Vec vec, IS *i
   PetscScalar    (*intervals)[2];
   PetscInt       numTagged, offset;
   PetscInt       *tagged;
-  PetscInt       bs, b, i, j, k, l, n;
+  PetscInt       bs, b, i, j, k, n;
   PetscBool      invert;
   const PetscScalar *vecArray;
   PetscErrorCode ierr;
@@ -412,8 +412,8 @@ PetscErrorCode VecTaggerComputeIS_FromIntervals(VecTagger tagger, Vec vec, IS *i
   PetscFunctionBegin;
   ierr = VecTaggerGetBlockSize(tagger,&bs);CHKERRQ(ierr);
   ierr = VecTaggerComputeIntervals(tagger,vec,&numIntervals,&intervals);CHKERRQ(ierr);
-  ierr = VecGetArrayRead (vec, &vecArray);CHKERRQ(ierr);
-  ierr = VecGetLocalSize (vec, &n);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(vec, &vecArray);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(vec, &n);CHKERRQ(ierr);
   invert = tagger->invert;
   numTagged = 0;
   offset = 0;
@@ -423,11 +423,12 @@ PetscErrorCode VecTaggerComputeIS_FromIntervals(VecTagger tagger, Vec vec, IS *i
       ierr = PetscMalloc1(numTagged,&tagged);CHKERRQ(ierr);
     }
     for (j = 0; j < n; j++) {
-      PetscScalar val = vecArray[j];
 
-      for (k = 0, l = 0; k < numIntervals; k++) {
-        for (b = 0; b < bs; b++, l++) {
-          PetscScalar interval[2] = {intervals[k][0], intervals[k][1]};
+      for (k = 0; k < numIntervals; k++) {
+        for (b = 0; b < bs; b++) {
+          PetscScalar val = vecArray[j * bs + b];
+          PetscInt    l = k * bs + b;
+          PetscScalar interval[2] = {intervals[l][0], intervals[l][1]};
           PetscBool   in;
 #if !defined(PETSC_USE_COMPLEX)
           in = (interval[0] <= val) && (val <= interval[1]);
@@ -447,7 +448,8 @@ PetscErrorCode VecTaggerComputeIS_FromIntervals(VecTagger tagger, Vec vec, IS *i
       }
     }
   }
-  ierr = VecRestoreArrayRead (vec, &vecArray);CHKERRQ(ierr);
-  ierr = ISCreateGeneral (PetscObjectComm((PetscObject)vec),numTagged,tagged,PETSC_OWN_POINTER,is);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(vec, &vecArray);CHKERRQ(ierr);
+  ierr = PetscFree(intervals);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)vec),numTagged,tagged,PETSC_OWN_POINTER,is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
