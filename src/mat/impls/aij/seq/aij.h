@@ -35,8 +35,9 @@
   PetscScalar       *solve_work;      /* work space used in MatSolve */                    \
   IS                row, col, icol;   /* index sets, used for reorderings */ \
   PetscBool         pivotinblocks;    /* pivot inside factorization of each diagonal block */ \
-  Mat               parent             /* set if this matrix was formed with MatDuplicate(...,MAT_SHARE_NONZERO_PATTERN,....);
-                                         means that this shares some data structures with the parent including diag, ilen, imax, i, j */
+  Mat               parent;           /* set if this matrix was formed with MatDuplicate(...,MAT_SHARE_NONZERO_PATTERN,....); \
+                                         means that this shares some data structures with the parent including diag, ilen, imax, i, j */\
+  Mat_SubMat       *submatis1;        /* used by MatGetSubMatrices_MPIXAIJ_Local */
 
 typedef struct {
   MatTransposeColoring matcoloring;
@@ -94,29 +95,6 @@ typedef struct {
   PetscObjectState mat_nonzerostate;               /* non-zero state when inodes were checked for */
 } Mat_SeqAIJ_Inode;
 
-typedef struct { /* used by MatGetSubMatrices_MPIAIJ_SingleIS_Local() and MatGetSubMatrices_MPIAIJ_Local */
-  PetscInt   id;   /* index of submats, only submats[0] is responsible for deleting some arrays below */
-  PetscInt   nrqs,nrqr;
-  PetscInt   **rbuf1,**rbuf2,**rbuf3,**sbuf1,**sbuf2;
-  PetscInt   **ptr;
-  PetscInt   *tmp;
-  PetscInt   *ctr;
-  PetscInt   *pa; /* proc array */
-  PetscInt   *req_size,*req_source1,*req_source2;
-  PetscBool  allcolumns;
-  PetscBool  singleis;
-  PetscInt   *row2proc; /* row to proc map */
-  PetscInt   nstages;
-#if defined(PETSC_USE_CTABLE)
-  PetscTable     cmap,rmap;
-  PetscInt       *cmap_loc,*rmap_loc;
-#else
-  PetscInt       *cmap,*rmap;
-#endif
-
-  PetscErrorCode (*destroy)(Mat);
-} Mat_SubMat;
-
 PETSC_INTERN PetscErrorCode MatView_SeqAIJ_Inode(Mat,PetscViewer);
 PETSC_INTERN PetscErrorCode MatAssemblyEnd_SeqAIJ_Inode(Mat,MatAssemblyType);
 PETSC_INTERN PetscErrorCode MatDestroy_SeqAIJ_Inode(Mat);
@@ -138,16 +116,13 @@ typedef struct {
   PetscBool   ibdiagvalid;                    /* inverses of block diagonals are valid. */
   PetscScalar fshift,omega;                   /* last used omega and fshift */
 
-  ISColoring coloring;                        /* set with MatADSetColoring() used by MatADSetValues() */
+  ISColoring  coloring;                       /* set with MatADSetColoring() used by MatADSetValues() */
 
-  PetscScalar       *matmult_abdense;    /* used by MatMatMult() */
-  Mat_PtAP          *ptap;               /* used by MatPtAP() */
-  Mat_MatMatMatMult *matmatmatmult;      /* used by MatMatMatMult() */
-  Mat_RARt          *rart;               /* used by MatRARt() */
-  Mat_MatMatTransMult *abt;              /* used by MatMatTransposeMult() */
-
-  /* used by MatGetSubMatrices_MPIAIJ_SingleIS_Local */
-  Mat_SubMat       *submatis1;
+  PetscScalar         *matmult_abdense;    /* used by MatMatMult() */
+  Mat_PtAP            *ptap;               /* used by MatPtAP() */
+  Mat_MatMatMatMult   *matmatmatmult;      /* used by MatMatMatMult() */
+  Mat_RARt            *rart;               /* used by MatRARt() */
+  Mat_MatMatTransMult *abt;                /* used by MatMatTransposeMult() */
 } Mat_SeqAIJ;
 
 /*
