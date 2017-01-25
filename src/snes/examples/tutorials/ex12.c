@@ -21,7 +21,7 @@ typedef struct {
   PetscBool      showInitial, showSolution, restart, check, quiet, nonzInit;
   /* Domain and mesh definition */
   PetscInt       dim;               /* The topological mesh dimension */
-  char           filename[2048];    /* The optional ExodusII file */
+  char           filename[2048];    /* The optional mesh file */
   PetscBool      interpolate;       /* Generate intermediate mesh elements */
   PetscReal      refinementLimit;   /* The largest allowable cell volume */
   PetscBool      viewHierarchy;     /* Whether to view the hierarchy */
@@ -334,10 +334,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->runType = (RunType) run;
 
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex12.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-f", "Exodus.II filename to read", "ex12.c", options->filename, options->filename, sizeof(options->filename), &flg);CHKERRQ(ierr);
-#if !defined(PETSC_HAVE_EXODUSII)
-  if (flg) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "This option requires ExodusII support. Reconfigure using --download-exodusii");
-#endif
+  ierr = PetscOptionsString("-f", "Mesh filename to read", "ex12.c", options->filename, options->filename, sizeof(options->filename), &flg);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex12.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex12.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
   bc   = options->bcType;
