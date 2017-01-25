@@ -90,14 +90,13 @@ class generateExamples(Petsc):
   def _getLoopVars(self,testDict):
     loopVars={}
     for key in testDict:
-      keystr = str(testDict[key]).strip()
+      if type(testDict[key])!=types.StringType: continue
+      keystr = str(testDict[key])
       if keystr.startswith('{{') and keystr.endswith('}}'):
         import csv
         loopVars[key] = [r for r in csv.reader([keystr[2:-2]],skipinitialspace=True)][0]
-    varNames = testDict.copy()
-    for key in loopVars:
-      varNames[key] = '${' + str(key) + '}'
-    return (loopVars,varNames)
+        testDict[key] = '${' + str(key) + '}'
+    return loopVars
 
 
   def getArgLabel(self,testDict):
@@ -162,44 +161,6 @@ class generateExamples(Petsc):
     self.tests[pkg][lang][nmtest]['exec']=execname
     self.tests[pkg][lang][nmtest]['argLabel']=self.getArgLabel(testDict)
     return
-
-  def getFor(self,subst,i,j):
-    """
-      Get the for and done lines
-    """
-    forlines=""
-    donlines=""
-    indent="   "
-    nsizeStr=subst['nsize']
-    for loop in re.findall('{{(.*?)}}',subst['nsize']):
-      lindex=string.ascii_lowercase[i]
-      forline=indent*j+"for "+lindex+" in '"+loop+"'; do"
-      nsizeStr=re.sub("{{"+loop+"}}","${"+lindex+"}",nsizeStr)
-      donline=indent*j+"done"
-      forlines=forlines+forline+"\n"
-      donlines=donlines+donline+"\n"
-      i=i+1
-      j=j+1
-    subst['nsize']=nsizeStr
-    argStr=subst['args']
-    for loop in re.findall('{{(.*?)}}',subst['args']):
-      lindex=string.ascii_lowercase[i]
-      forline=indent*j+"for "+lindex+" in '"+loop+"'; do"
-      argStr=re.sub("{{"+loop+"}}","${"+lindex+"}",argStr)
-      donline=indent*j+"done"
-      forlines=forlines+forline+"\n"
-      donlines=donlines+donline+"\n"
-      i=i+1
-      j=j+1
-    subst['args']=argStr
-
-    # The do lines have reverse order with respect to indentation
-    dl=donlines.rstrip("\n").split("\n")
-    dl.reverse()
-    donlines="\n".join(dl)+"\n"
-
-    return forlines,donlines,i,j
-
 
   def getExecname(self,exfile,root):
     """
@@ -336,9 +297,9 @@ class generateExamples(Petsc):
     fh=open(os.path.join(runscript_dir,testname+".sh"),"w")
     petscvarfile=os.path.join(self.arch_dir,'lib','petsc','conf','petscvariables')
 
-    (loopVars,varNames) = self._getLoopVars(testDict)
+    loopVars = self._getLoopVars(testDict)
     
-    subst=self.getSubstVars(varNames,rpath,testname)
+    subst=self.getSubstVars(testDict,rpath,testname)
 
     #Handle runfiles
     if subst['localrunfiles']: 
@@ -393,12 +354,6 @@ class generateExamples(Petsc):
     (loopHead,j) = self.getLoopVarsHead(loopVars,j)
     if (loopHead): fh.write(loopHead+"\n")
 
-    #doForP=False
-    #if "{{" in subst['args']+subst['nsize']:
-    #  doForP=True
-    #  flinesP,dlinesP,i,j=self.getFor(subst,i,j)
-    #  fh.write(flinesP+"\n")
-
     args=indent*j+re.sub("@ARGS@",subst['args'],example_template.argsline)
     fh.write(args+"\n")
     # Subtests are special
@@ -407,15 +362,15 @@ class generateExamples(Petsc):
       for stest in testDict["subtests"]:
         sdict = testDict[stest]
         if not sdict.has_key('args'): sdict['args'] = ""
-        (sLoopVars,sVarNames) = self._getLoopVars(sdict)
+        sLoopVars = self._getLoopVars(sdict)
         subst=substP.copy()
-        subst.update(sVarNames)
+        subst.update(sdict)
         if testDict[stest].has_key('output_file'):
           subst['output_file']=os.path.join(subst['srcdir'],testDict[stest]['output_file'])
         for key in subst:
           if type(subst[key])!=types.StringType: continue
-          subst[key] = self._substVars(sVarNames,subst[key])
-          subst[key] = self._substVars(varNames,subst[key])
+          subst[key] = self._substVars(sdict,subst[key])
+          subst[key] = self._substVars(testDict,subst[key])
         (sLoopHead,j) = self.getLoopVarsHead(sLoopVars,j)
         if (sLoopHead): fh.write(sLoopHead+"\n")
         subargs=indent*j+re.sub("@SUBARGS@",subst['args'],example_template.subargsline)
