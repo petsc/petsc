@@ -14,7 +14,7 @@ int main(int argc,char **args)
   PetscRandom    rdm;
   Vec            xx,s1,s2;
   PetscReal      s1norm,s2norm,rnorm,tol = PETSC_SQRT_MACHINE_EPSILON;
-  PetscBool      flg;
+  PetscBool      flg,test_nd0=PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -24,6 +24,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetInt(NULL,NULL,"-mat_size",&m,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-ov",&ov,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-nd",&nd,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-test_nd0",&test_nd0,NULL);CHKERRQ(ierr);
 
   /* Create a AIJ matrix A */
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
@@ -83,6 +84,7 @@ int main(int argc,char **args)
   ierr = PetscMalloc1(nd,&is1);CHKERRQ(ierr);
   ierr = PetscMalloc1(nd,&is2);CHKERRQ(ierr);
 
+  if (!rank && test_nd0) nd = 0; /* test case */
 
   for (i=0; i<nd; i++) {
     ierr = PetscRandomGetValue(rdm,&rval);CHKERRQ(ierr);
@@ -109,6 +111,13 @@ int main(int argc,char **args)
   for (i=0; i<nd; ++i) {
     ierr = ISSort(is1[i]);CHKERRQ(ierr);
     ierr = ISSort(is2[i]);CHKERRQ(ierr);
+  }
+
+  if (!nd) { /* MatGetSubMatrices(....,MAT_REUSE_MATRIX,...) requires ismax>0. 
+              Set nd=1 with zero-length is1 and is2 instead */
+    nd = 1;
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,0,idx,PETSC_COPY_VALUES,is1);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,0,idx,PETSC_COPY_VALUES,is2);CHKERRQ(ierr);
   }
 
   ierr = MatGetSubMatrices(B,nd,is2,is2,MAT_INITIAL_MATRIX,&submatB);CHKERRQ(ierr);
@@ -138,7 +147,6 @@ int main(int argc,char **args)
   }
 
   /* Now test MatGetSubmatrices with MAT_REUSE_MATRIX option */
-
   ierr = MatGetSubMatrices(A,nd,is1,is1,MAT_REUSE_MATRIX,&submatA);CHKERRQ(ierr);
   ierr = MatGetSubMatrices(B,nd,is2,is2,MAT_REUSE_MATRIX,&submatB);CHKERRQ(ierr);
 

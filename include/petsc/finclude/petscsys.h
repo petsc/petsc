@@ -13,6 +13,7 @@
 #if defined (PETSC_HAVE_MPIUNI)
 #include "mpiunifdef.h"
 #endif
+#include "petscversion.h"
 #include "petsc/finclude/petscviewer.h"
 #include "petsc/finclude/petscerror.h"
 #include "petsc/finclude/petsclog.h"

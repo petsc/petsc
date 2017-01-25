@@ -196,6 +196,7 @@ int main(int argc, char **args)
     }
     ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
   }
+  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   cleanup:
   for (k=0;k<nsubdomains;++k) {
     ierr = MatDestroy(submats+k);CHKERRQ(ierr);

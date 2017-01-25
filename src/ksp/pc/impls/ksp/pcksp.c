@@ -163,6 +163,20 @@ PetscErrorCode  PCKSPGetKSP(PC pc,KSP *ksp)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PCSetFromOptions_KSP(PetscOptionItems *PetscOptionsObject,PC pc)
+{
+  PC_KSP         *jac = (PC_KSP*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsHead(PetscOptionsObject,"PC KSP options");CHKERRQ(ierr);
+  if (jac->ksp) {
+    ierr = KSPSetFromOptions(jac->ksp);CHKERRQ(ierr);
+   }
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* ----------------------------------------------------------------------------------*/
 
 /*MC
@@ -208,7 +222,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_KSP(PC pc)
   pc->ops->setup           = PCSetUp_KSP;
   pc->ops->reset           = PCReset_KSP;
   pc->ops->destroy         = PCDestroy_KSP;
-  pc->ops->setfromoptions  = 0;
+  pc->ops->setfromoptions  = PCSetFromOptions_KSP;
   pc->ops->view            = PCView_KSP;
   pc->ops->applyrichardson = 0;
 

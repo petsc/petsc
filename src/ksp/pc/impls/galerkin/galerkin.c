@@ -48,7 +48,7 @@ static PetscErrorCode PCSetUp_Galerkin(PC pc)
     ierr   = PetscFree(xx);CHKERRQ(ierr);
     ierr   = PetscFree(yy);CHKERRQ(ierr);
   }
-  if (!jac->R && !jac->P) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set restriction or interpolation of PCGALERKIN with PCGalerkinSetRestriction/Interpolation()");
+  if (!jac->R && !jac->P) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set restriction or interpolation of PCGALERKIN with PCGalerkinSetRestriction()/Interpolation()");
   /* should check here that sizes of R/P match size of a */
   PetscFunctionReturn(0);
 }
@@ -218,6 +218,29 @@ PetscErrorCode  PCGalerkinGetKSP(PC pc,KSP *ksp)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PCSetFromOptions_Galerkin(PetscOptionItems *PetscOptionsObject,PC pc)
+{
+  PC_Galerkin    *jac = (PC_Galerkin*)pc->data;
+  PetscErrorCode ierr;
+  const char     *prefix;
+  PetscBool      flg;
+
+  PetscFunctionBegin;
+  ierr = KSPGetOptionsPrefix(jac->ksp,&prefix);CHKERRQ(ierr);
+  ierr = PetscStrendswith(prefix,"galerkin_",&flg);CHKERRQ(ierr);
+  if (!flg) {
+    ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
+    ierr = KSPSetOptionsPrefix(jac->ksp,prefix);CHKERRQ(ierr);
+    ierr = KSPAppendOptionsPrefix(jac->ksp,"galerkin_");CHKERRQ(ierr);
+  }
+
+  ierr = PetscOptionsHead(PetscOptionsObject,"Galerkin options");CHKERRQ(ierr);
+  if (jac->ksp) {
+    ierr = KSPSetFromOptions(jac->ksp);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /* -------------------------------------------------------------------------------------------*/
 
@@ -229,7 +252,7 @@ $   PCGalerkinGetKSP(pc,&ksp); KSPSetOperators(ksp,A,....)
 
    Level: intermediate
 
-   Developer Note: If KSPSetOperators() has not been called then PCGALERKIN could use MatRARt() or MatPtAP() to compute
+   Developer Note: If KSPSetOperators() has not been called on the inner KSP then PCGALERKIN could use MatRARt() or MatPtAP() to compute
                    the operators automatically.
                    Should there be a prefix for the inner KSP.
                    There is no KSPSetFromOptions_Galerkin() that calls KSPSetFromOptions() on the inner KSP
@@ -252,7 +275,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_Galerkin(PC pc)
   pc->ops->reset           = PCReset_Galerkin;
   pc->ops->destroy         = PCDestroy_Galerkin;
   pc->ops->view            = PCView_Galerkin;
-  pc->ops->applyrichardson = 0;
+  pc->ops->setfromoptions  = PCSetFromOptions_Galerkin;
+  pc->ops->applyrichardson = NULL;
 
   ierr = KSPCreate(PetscObjectComm((PetscObject)pc),&jac->ksp);CHKERRQ(ierr);
   ierr = KSPSetErrorIfNotConverged(jac->ksp,pc->erroriffailure);CHKERRQ(ierr);
