@@ -632,14 +632,14 @@ PETSC_EXTERN PetscErrorCode VecTaggerComputeIntervals(VecTagger,Vec,PetscInt *,P
 PETSC_EXTERN PetscErrorCode VecTaggerComputeIS(VecTagger,Vec,IS *);
 PETSC_EXTERN PetscErrorCode VecTaggerDestroy(VecTagger *);
 
-PETSC_EXTERN PetscErrorCode VecTaggerAbsoluteSetIntervals(VecTagger,PetscScalar(*)[2]);
-PETSC_EXTERN PetscErrorCode VecTaggerAbsoluteGetIntervals(VecTagger,const PetscScalar(**)[2]);
+PETSC_EXTERN PetscErrorCode VecTaggerAbsoluteSetInterval(VecTagger,PetscScalar(*)[2]);
+PETSC_EXTERN PetscErrorCode VecTaggerAbsoluteGetInterval(VecTagger,const PetscScalar(**)[2]);
 
-PETSC_EXTERN PetscErrorCode VecTaggerRelativeSetIntervals(VecTagger,PetscScalar(*)[2]);
-PETSC_EXTERN PetscErrorCode VecTaggerRelativeGetIntervals(VecTagger,const PetscScalar(**)[2]);
+PETSC_EXTERN PetscErrorCode VecTaggerRelativeSetInterval(VecTagger,PetscScalar(*)[2]);
+PETSC_EXTERN PetscErrorCode VecTaggerRelativeGetInterval(VecTagger,const PetscScalar(**)[2]);
 
-PETSC_EXTERN PetscErrorCode VecTaggerCDFSetIntervals(VecTagger,PetscScalar(*)[2]);
-PETSC_EXTERN PetscErrorCode VecTaggerCDFGetIntervals(VecTagger,const PetscScalar(**)[2]);
+PETSC_EXTERN PetscErrorCode VecTaggerCDFSetInterval(VecTagger,PetscScalar(*)[2]);
+PETSC_EXTERN PetscErrorCode VecTaggerCDFGetInterval(VecTagger,const PetscScalar(**)[2]);
 
 /*E
   VecTaggerCDFMethod - Determines what method is used to compute absolute values from cumulative distribution values (e.g., what value is the preimage of .95 in the cdf).  Relevant only in parallel: in serial it is directly computed.
