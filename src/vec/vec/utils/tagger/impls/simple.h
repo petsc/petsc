@@ -8,6 +8,7 @@ typedef struct {
 
 PETSC_EXTERN PetscErrorCode VecTaggerDestroy_Simple(VecTagger);
 PETSC_EXTERN PetscErrorCode VecTaggerSetFromOptions_Simple(PetscOptionItems *,VecTagger);
+PETSC_EXTERN PetscErrorCode VecTaggerSetUp_Simple(VecTagger);
 PETSC_EXTERN PetscErrorCode VecTaggerView_Simple(VecTagger,PetscViewer);
 PETSC_EXTERN PetscErrorCode VecTaggerSetInterval_Simple(VecTagger,PetscScalar (*interval)[2]);
 PETSC_EXTERN PetscErrorCode VecTaggerGetInterval_Simple(VecTagger,const PetscScalar (**interval)[2]);

@@ -41,6 +41,15 @@ PetscErrorCode VecTaggerSetFromOptions_Simple(PetscOptionItems *PetscOptionsObje
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode VecTaggerSetUp_Simple(VecTagger tagger)
+{
+  VecTagger_Simple *smpl = (VecTagger_Simple *) tagger->data;
+
+  PetscFunctionBegin;
+  if (!smpl->interval) SETERRQ(PetscObjectComm((PetscObject)tagger),PETSC_ERR_ARG_WRONGSTATE,"Must set an interval before calling setup.");
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode VecTaggerView_Simple(VecTagger tagger, PetscViewer viewer)
 {
   VecTagger_Simple *smpl = (VecTagger_Simple *) tagger->data;
@@ -110,6 +119,7 @@ PetscErrorCode VecTaggerCreate_Simple(VecTagger tagger)
   PetscFunctionBegin;
   tagger->ops->destroy          = VecTaggerDestroy_Simple;
   tagger->ops->setfromoptions   = VecTaggerSetFromOptions_Simple;
+  tagger->ops->setup            = VecTaggerSetUp_Simple;
   tagger->ops->view             = VecTaggerView_Simple;
   tagger->ops->computeis        = VecTaggerComputeIS_FromIntervals;
   ierr = PetscNewLog(tagger,&smpl);CHKERRQ(ierr);
