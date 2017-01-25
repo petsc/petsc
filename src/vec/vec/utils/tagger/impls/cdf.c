@@ -251,7 +251,6 @@ PetscErrorCode VecTaggerCDFIterativeSetTolerances(VecTagger tagger, PetscInt max
 PetscErrorCode VecTaggerCDFIterativeGetTolerances(VecTagger tagger, PetscInt *maxit, PetscReal *rtol, PetscReal *atol)
 {
   VecTagger_CDF  *cuml = (VecTagger_CDF *) tagger->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tagger,VEC_TAGGER_CLASSID,1);
