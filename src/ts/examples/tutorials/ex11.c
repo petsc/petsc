@@ -281,8 +281,8 @@ static PetscErrorCode SetUpBC_Advect(PetscDS prob, Physics phys)
 
   PetscFunctionBeginUser;
   /* Register "canned" boundary conditions and defaults for where to apply. */
-  ierr = PetscDSAddBoundary(prob, PETSC_TRUE, "inflow",  "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_Advect_Inflow,  ALEN(inflowids),   inflowids,  phys);CHKERRQ(ierr);
-  ierr = PetscDSAddBoundary(prob, PETSC_FALSE, "outflow", "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_Advect_Outflow, ALEN(outflowids), outflowids, phys);CHKERRQ(ierr);
+  ierr = PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "inflow",  "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_Advect_Inflow,  ALEN(inflowids),  inflowids,  phys);CHKERRQ(ierr);
+  ierr = PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "outflow", "Face Sets", 0, 0, NULL, (void (*)()) PhysicsBoundary_Advect_Outflow, ALEN(outflowids), outflowids, phys);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2457,3 +2457,72 @@ int initLinearWave(EulerNode *ux, const PetscScalar gamma, const PetscReal coord
   ux->E = vp[2]/(gamma - 1.) + 0.5*vp[0]*vp[1]*vp[1];
   return 0;
 }
+
+/*TEST
+
+  # 2D Advection 0-10
+  test:
+    suffix: 0
+    requires: exodusii
+    args: -ufv_vtk_interval 0 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo
+  test:
+    suffix: 1
+    requires: exodusii
+    args: -ufv_vtk_interval 0 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo
+  test:
+    suffix: 2
+    requires: exodusii
+    nsize: 2
+    args: -ufv_vtk_interval 0 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo
+  test:
+    suffix: 3
+    requires: exodusii
+    nsize: 2
+    args: -ufv_vtk_interval 0 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo
+  test:
+    suffix: 4
+    requires: exodusii
+    nsize: 8
+    args: -ufv_vtk_interval 0 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo
+  test:
+    suffix: 5
+    requires: exodusii
+    args: -ufv_vtk_interval 0 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo -ts_type rosw -ts_adapt_basic_reject_safety 1
+  test:
+    suffix: 6
+    requires: exodusii
+    args: -ufv_vtk_interval 0 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/squaremotor-30.exo -ufv_split_faces
+  test:
+    suffix: 7
+    requires: exodusii
+    args: -ufv_vtk_interval 0 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -dm_refine 1
+  test:
+    suffix: 8
+    requires: exodusii
+    nsize: 2
+    args: -ufv_vtk_interval 0 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -dm_refine 2
+  test:
+    suffix: 9
+    requires: exodusii
+    nsize: 8
+    args: -ufv_vtk_interval 0 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -dm_refine 2
+  test:
+    suffix: 10
+    requires: exodusii
+    args: -ufv_vtk_interval 0 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo
+  # 2D Shallow water
+  test:
+    suffix: sw_0
+    requires: exodusii
+    args: -ufv_vtk_interval 0 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo -bc_wall 100,101 -physics sw -ufv_cfl 5 -petscfv_type leastsquares -petsclimiter_type sin -ts_final_time 1 -ts_ssp_type rks2 -ts_ssp_nstages 10 -monitor height,energy
+  # 2D Advection: p4est
+  test:
+    suffix: p4est_advec_2d
+    requires: p4est
+    args: -ufv_vtk_interval 0 -f -dm_type p4est -dm_forest_minimum_refinement 1 -dm_forest_initial_refinement 2 -dm_p4est_refine_pattern hash -dm_forest_maximum_refinement 5
+  # 3D Advection
+  test:
+    suffix: adv_0 broken
+    args: -ufv_vtk_interval 0 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -bc_inflow 100,101,200 -bc_outflow 201
+
+TEST*/
