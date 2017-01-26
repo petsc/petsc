@@ -477,6 +477,7 @@ PetscErrorCode  PetscOptionsInsertFile(MPI_Comm comm,PetscOptions options,const 
   int            err;
   char           cmt[1]={'#'},*cmatch;
   PetscMPIInt    rank,cnt=0,acnt=0,counts[2];
+  PetscBool      isdir;
 
   PetscFunctionBegin;
   options = options ? options : defaultoptions;
@@ -487,7 +488,9 @@ PetscErrorCode  PetscOptionsInsertFile(MPI_Comm comm,PetscOptions options,const 
 
     ierr = PetscFixFilename(file,fname);CHKERRQ(ierr);
     fd   = fopen(fname,"r");
-    if (fd) {
+    ierr = PetscTestDirectory(fname,'r',&isdir);CHKERRQ(ierr);
+    if (isdir && require) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Specified options file %s is a directory",fname);
+    if (fd && !isdir) {
       PetscSegBuffer vseg,aseg;
       ierr = PetscSegBufferCreate(1,4000,&vseg);CHKERRQ(ierr);
       ierr = PetscSegBufferCreate(1,2000,&aseg);CHKERRQ(ierr);
