@@ -84,7 +84,11 @@ function petsc_testrun() {
   filter=$5
 
   if test -z "$filter"; then
-    cmd="$1 > $2 2> $3"
+    if test "$2" == "$3"; then
+     cmd="$1 > $2 2>> $3"
+    else
+     cmd="$1 > $2 2> $3"
+    fi
   else
     cmd="$1 2>&1 | $filter > $2 2> $3"
   fi
