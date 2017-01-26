@@ -130,6 +130,12 @@ srcs.o := $(foreach pkg, $(pkgs), $(call concatlang,$(pkg)))
 testlangs := c cu cxx F F90
 concattestlang = $(foreach lang, $(2), $(testsrcs-$(1).$(lang):%.$(lang)=$(TESTDIR)/%.o))
 testsrcs.o := $(foreach pkg, $(pkgs), $(call concattestlang,$(pkg),$(testlangs)))
+testsrcs := $(foreach pkg, $(pkgs), $(foreach lang, $(testlangs), $(testsrcs-$(pkg).$(lang))))
+
+# Refresh testfiles when sources change, but don't balk if the source file is nonexistent (deleted)
+$(generatedtest) : $(testsrcs)
+$(testsrcs) :
+
 
 define SHARED_RECIPE_DLL
   @$(RM) $@ dllcmd.${PETSC_ARCH}
