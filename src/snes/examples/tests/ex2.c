@@ -17,6 +17,7 @@ static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], 
   return 0;
 }
 
+#if 0
 static PetscErrorCode quadratic(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   PetscInt d, c;
@@ -27,6 +28,7 @@ static PetscErrorCode quadratic(PetscInt dim, PetscReal time, const PetscReal x[
   }
   return 0;
 }
+#endif
 
 int main(int argc, char **argv)
 {
