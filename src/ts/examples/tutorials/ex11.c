@@ -2522,7 +2522,8 @@ int initLinearWave(EulerNode *ux, const PetscScalar gamma, const PetscReal coord
     args: -ufv_vtk_interval 0 -f -dm_type p4est -dm_forest_minimum_refinement 1 -dm_forest_initial_refinement 2 -dm_p4est_refine_pattern hash -dm_forest_maximum_refinement 5
   # 3D Advection
   test:
-    suffix: adv_0 broken
+    suffix: adv_0
+    requires: broken
     args: -ufv_vtk_interval 0 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -bc_inflow 100,101,200 -bc_outflow 201
 
 TEST*/
