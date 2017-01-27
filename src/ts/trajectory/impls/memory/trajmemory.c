@@ -228,7 +228,7 @@ static PetscErrorCode StackDumpAll(TSTrajectory tj,TS ts,Stack *stack,PetscInt i
 {
   Vec            *Y;
   PetscInt       i;
-  StackElement   e;
+  StackElement   e = NULL;
   PetscViewer    viewer;
   char           filename[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;

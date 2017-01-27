@@ -213,7 +213,7 @@ static void GeometryMapping_pforest(p4est_geometry_t *geom, p4est_topidx_t which
   (geom_pforest->inner->X)(geom_pforest->inner,which_tree,abc,ABC);
 
   for (i = 0; i < d; i++) PetscABC[i] = ABC[i];
-  ierr = (geom_pforest->map)(geom_pforest->base,(PetscInt) which_tree,geom_pforest->coordDim,PetscABC,PetscXYZ,geom_pforest->mapCtx);P4EST_ASSERT(!ierr);
+  ierr = (geom_pforest->map)(geom_pforest->base,(PetscInt) which_tree,geom_pforest->coordDim,PetscABC,PetscXYZ,geom_pforest->mapCtx);PETSC_P4EST_ASSERT(!ierr);
   for (i = 0; i < d; i++) xyz[i] = PetscXYZ[i];
 }
 
@@ -224,8 +224,8 @@ static void GeometryDestroy_pforest(p4est_geometry_t *geom)
   PetscErrorCode             ierr;
 
   p4est_geometry_destroy(geom_pforest->inner);
-  ierr = PetscFree(geom->user);P4EST_ASSERT(!ierr);
-  ierr = PetscFree(geom);P4EST_ASSERT(!ierr);
+  ierr = PetscFree(geom->user);PETSC_P4EST_ASSERT(!ierr);
+  ierr = PetscFree(geom);PETSC_P4EST_ASSERT(!ierr);
 }
 
 #define DMFTopologyDestroy_pforest _append_pforest(DMFTopologyDestroy)
@@ -4073,6 +4073,7 @@ static PetscErrorCode DMPforestGetPlex(DM dm,DM *plex)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  if (plex) *plex = NULL;
   ierr    = DMSetUp(dm);CHKERRQ(ierr);
   pforest = (DM_Forest_pforest*) ((DM_Forest*) dm->data)->data;
   if (!pforest->plex) {

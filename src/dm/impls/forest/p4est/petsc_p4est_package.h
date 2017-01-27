@@ -40,6 +40,12 @@ PETSC_INTERN jmp_buf PetscScJumpBuf;
 } while (0)
 #endif
 
+#if defined(P4EST_ENABLE_DEBUG)
+#define PETSC_P4EST_ASSERT(x) P4EST_ASSERT(x)
+#else
+#define PETSC_P4EST_ASSERT(x) (void)(x)
+#endif
+
 PETSC_EXTERN PetscErrorCode PetscP4estInitialize();
 
 PETSC_STATIC_INLINE PetscErrorCode P4estLocidxCast(PetscInt a,p4est_locidx_t *b)
