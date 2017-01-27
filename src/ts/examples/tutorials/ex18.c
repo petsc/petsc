@@ -864,7 +864,7 @@ static PetscErrorCode CreateDM(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetInitialConditionFVM(DM dm, Vec X, PetscInt field, PetscErrorCode (*func)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void *ctx)
+static PetscErrorCode SetInitialConditionFVM(DM dm, Vec X, PetscInt field, PetscErrorCode (*func)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void *ctx)
 {
   PetscDS            prob;
   DM                 dmCell;
@@ -890,7 +890,7 @@ static PetscErrorCode SetInitialConditionFVM(DM dm, Vec X, PetscInt field, Petsc
 
     ierr = DMPlexPointLocalRead(dmCell, c, cgeom, &cg);CHKERRQ(ierr);
     ierr = DMPlexPointGlobalFieldRef(dm, c, field, x, &xc);CHKERRQ(ierr);
-    if (xc) {ierr = (*func)(dim, cg->centroid, Nf, xc, ctx);CHKERRQ(ierr);}
+    if (xc) {ierr = (*func)(dim, 0.0, cg->centroid, Nf, xc, ctx);CHKERRQ(ierr);}
   }
   ierr = VecRestoreArrayRead(cellgeom, &cgeom);CHKERRQ(ierr);
   ierr = VecRestoreArray(X, &x);CHKERRQ(ierr);
