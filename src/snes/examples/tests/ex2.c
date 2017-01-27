@@ -155,24 +155,30 @@ int main(int argc, char **argv)
 
   test:
     suffix: 0
+    requires: ctetgen
     args: -petscspace_order 1
   test:
     suffix: 1
+    requires: ctetgen
     args: -petscspace_order 1 -dm_refine 2
   test:
     suffix: 2
+    requires: ctetgen
     nsize: 2
     args: -petscspace_order 1
   test:
     suffix: 3
+    requires: ctetgen
     nsize: 2
     args: -petscspace_order 1 -dm_refine 2
   test:
     suffix: 4
+    requires: ctetgen
     nsize: 5
     args: -petscspace_order 1
   test:
     suffix: 5
+    requires: ctetgen
     nsize: 5
     args: -petscspace_order 1 -dm_refine 2
 
