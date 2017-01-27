@@ -1176,23 +1176,23 @@ int main(int argc, char **argv)
   test:
     suffix: adv_0
     requires: exodusii
-    args: -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo -x_bd_type none -y_bd_type none -use_fv -velocity_dist zero -porosity_dist tilted -ts_type ssp -ts_final_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -ts_view -dm_view
+    args: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo -x_bd_type none -y_bd_type none -use_fv -velocity_dist zero -porosity_dist tilted -ts_type ssp -ts_final_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -ts_view -dm_view
   test:
     suffix: adv_0_im
     requires: exodusii broken
-    args: -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo -x_bd_type none -y_bd_type none -use_fv -use_implicit -velocity_dist zero -porosity_dist tilted -ts_type beuler -ts_final_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -ts_view -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu
+    args: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo -x_bd_type none -y_bd_type none -use_fv -use_implicit -velocity_dist zero -porosity_dist tilted -ts_type beuler -ts_final_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -ts_view -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu
   test:
     suffix: adv_0_im_2
     requires: exodusii broken
-    args: -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo -x_bd_type none -y_bd_type none -use_fv -use_implicit -velocity_dist constant -porosity_dist tilted -ts_type beuler -ts_final_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -ts_view -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu -snes_rtol 1.0e-7
+    args: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo -x_bd_type none -y_bd_type none -use_fv -use_implicit -velocity_dist constant -porosity_dist tilted -ts_type beuler -ts_final_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -ts_view -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu -snes_rtol 1.0e-7
   test:
     suffix: adv_0_im_3
     requires: exodusii broken
-    args: -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo -x_bd_type none -y_bd_type none -use_fv -use_implicit -velocity_petscspace_order 1 -velocity_petscspace_poly_tensor -velocity_dist constant -porosity_dist tilted -ts_type beuler -ts_final_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -ts_view -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type svd -snes_rtol 1.0e-7
+    args: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo -x_bd_type none -y_bd_type none -use_fv -use_implicit -velocity_petscspace_order 1 -velocity_petscspace_poly_tensor -velocity_dist constant -porosity_dist tilted -ts_type beuler -ts_final_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -ts_view -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type svd -snes_rtol 1.0e-7
   test:
     suffix: adv_0_im_4
     requires: exodusii broken
-    args: -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo -x_bd_type none -y_bd_type none -use_fv -use_implicit -velocity_petscspace_order 2 -velocity_petscspace_poly_tensor -velocity_dist constant -porosity_dist tilted -ts_type beuler -ts_final_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -ts_view -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type svd -snes_rtol 1.0e-7
+    args: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo -x_bd_type none -y_bd_type none -use_fv -use_implicit -velocity_petscspace_order 2 -velocity_petscspace_poly_tensor -velocity_dist constant -porosity_dist tilted -ts_type beuler -ts_final_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -ts_view -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type svd -snes_rtol 1.0e-7
   # 2D Advection, misc
   test:
     suffix: adv_1

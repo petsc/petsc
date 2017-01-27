@@ -42,12 +42,14 @@ static PetscErrorCode LoadData2D(DM dm, PetscInt Ni, PetscInt Nj, PetscInt clSiz
 {
   PetscInt       i, j, f, c;
   PetscErrorCode ierr;
+  PetscScalar *closure;
 
   PetscFunctionBeginUser;
+  ierr = PetscMalloc1(clSize,&closure);CHKERRQ(ierr);
   for (j = 0; j < Nj; ++j) {
     for (i = 0; i < Ni; ++i) {
-      PetscScalar closure[clSize];
       PetscInt    ki, kj, o = 0;
+      ierr = PetscMemzero(closure,sizeof(PetscScalar)*clSize);CHKERRQ(ierr);
 
       for (f = 0; f < user->Nf; ++f) {
         PetscInt ioff = i*user->k[f], joff = j*user->k[f];
@@ -63,6 +65,7 @@ static PetscErrorCode LoadData2D(DM dm, PetscInt Ni, PetscInt Nj, PetscInt clSiz
       ierr = DMPlexVecSetClosure(dm, NULL, u, j*Ni+i, closure, INSERT_VALUES);CHKERRQ(ierr);
     }
   }
+  ierr = PetscFree(closure);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -70,13 +73,15 @@ static PetscErrorCode LoadData3D(DM dm, PetscInt Ni, PetscInt Nj, PetscInt Nk, P
 {
   PetscInt       i, j, k, f, c;
   PetscErrorCode ierr;
+  PetscScalar *closure;
 
   PetscFunctionBeginUser;
+  ierr = PetscMalloc1(clSize,&closure);CHKERRQ(ierr);
   for (k = 0; k < Nk; ++k) {
     for (j = 0; j < Nj; ++j) {
       for (i = 0; i < Ni; ++i) {
-        PetscScalar closure[clSize];
         PetscInt    ki, kj, kk, o = 0;
+        ierr = PetscMemzero(closure,sizeof(PetscScalar)*clSize);CHKERRQ(ierr);
 
         for (f = 0; f < user->Nf; ++f) {
           PetscInt ioff = i*user->k[f], joff = j*user->k[f], koff = k*user->k[f];
@@ -95,6 +100,7 @@ static PetscErrorCode LoadData3D(DM dm, PetscInt Ni, PetscInt Nj, PetscInt Nk, P
       }
     }
   }
+  ierr = PetscFree(closure);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

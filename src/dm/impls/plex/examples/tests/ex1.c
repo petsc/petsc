@@ -318,72 +318,72 @@ int main(int argc, char **argv)
   test:
     suffix: cgns_0
     requires: cgns
-    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/tut21.cgns -interpolate 1 -dm_view
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/tut21.cgns -interpolate 1 -dm_view
   test:
     suffix: cgns_1
     requires: cgns broken
-    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/StaticMixer.cgns -interpolate 1 -dm_view
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/StaticMixer.cgns -interpolate 1 -dm_view
 
   # Gmsh mesh reader tests
   test:
     suffix: gmsh_0
-    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh -interpolate 1 -dm_view
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh -interpolate 1 -dm_view
   test:
     suffix: gmsh_1
-    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/square.msh -interpolate 1 -dm_view
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.msh -interpolate 1 -dm_view
   test:
     suffix: gmsh_2
-    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/square_bin.msh -interpolate 1 -dm_view
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin.msh -interpolate 1 -dm_view
   test:
     suffix: gmsh_3
     nsize: 3
-    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/square.msh -interpolate 1 -dm_view
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.msh -interpolate 1 -dm_view
   test:
     suffix: gmsh_4
     nsize: 3
-    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/square_bin.msh -interpolate 1 -dm_view
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin.msh -interpolate 1 -dm_view
   test:
     suffix: gmsh_5
-    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/square_quad.msh -interpolate 1 -dm_view
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_quad.msh -interpolate 1 -dm_view
   test:
     suffix: gmsh_6
-    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/square_bin_physnames.msh -interpolate 1 -dm_view
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin_physnames.msh -interpolate 1 -dm_view
 
   # Fluent mesh reader tests
   test:
     suffix: fluent_0
-    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/square.cas -interpolate 1 -dm_view
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.cas -interpolate 1 -dm_view
   test:
     suffix: fluent_1
     nsize: 3
-    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/square.cas -interpolate 1 -dm_view
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.cas -interpolate 1 -dm_view
   test:
     suffix: fluent_2
-    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/cube_5tets_ascii.cas -interpolate 1 -dm_view
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_5tets_ascii.cas -interpolate 1 -dm_view
   test:
     suffix: fluent_3
     requires: broken
-    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/cube_5tets.cas -interpolate 1 -dm_view
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_5tets.cas -interpolate 1 -dm_view
 
   # Med mesh reader tests, including parallel file reads
   test:
     suffix: med_0
     requires: med
-    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/square.med -interpolate 1 -dm_view
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.med -interpolate 1 -dm_view
   test:
     suffix: med_1
     requires: med
     nsize: 3
-    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/square.med -interpolate 1 -petscpartitioner_type parmetis -dm_view
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.med -interpolate 1 -petscpartitioner_type parmetis -dm_view
   test:
     suffix: med_2
     requires: med
-    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/cylinder.med -interpolate 1 -dm_view
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cylinder.med -interpolate 1 -dm_view
   test:
     suffix: med_3
     requires: med
     nsize: 3
-    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/cylinder.med -interpolate 1 -petscpartitioner_type parmetis -dm_view
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cylinder.med -interpolate 1 -petscpartitioner_type parmetis -dm_view
 
   # Test shape quality
   test:
