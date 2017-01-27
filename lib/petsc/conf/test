@@ -364,7 +364,7 @@ allgtest-tap:
 	-@cd ${PETSC_DIR}; ${OMAKE} -f gmakefile -j ${MAKE_NP} test V=0
 
 allgtest:
-	-@cd ${PETSC_DIR}; ${OMAKE} -f gmakefile -j ${MAKE_NP} test V=0 | egrep -v '^(ok [^#]*(# SKIP|$$)|[A-Za-z][A-Za-z0-9_-]*.(c|F|cxx|F90)$$)'
+	-@cd ${PETSC_DIR}; ${OMAKE} -k -f gmakefile -j ${MAKE_NP} test V=0 | egrep -v '^(ok [^#]*(# SKIP|$$)|[A-Za-z][A-Za-z0-9_-]*.(c|F|cxx|F90)$$)'
 
 alltest:
 	-@date
