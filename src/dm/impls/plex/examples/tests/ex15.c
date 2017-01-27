@@ -138,7 +138,7 @@ int main(int argc, char **argv)
 /*TEST
   test:
     suffix: 0
-    requires: triangle
+    requires: triangle hdf5
     nsize: 2
     args: -verbose -globaltonatural_sf_view
   test:
