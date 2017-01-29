@@ -1157,20 +1157,32 @@ int main(int argc, char **argv)
   # 2D P_3 on a triangle
   test:
     suffix: p3_2d_0
-    requires: broken
+    requires: triangle
     args: -petscspace_order 3 -num_comp 2 -qorder 3 -convergence
   test:
     suffix: p3_2d_1
-    requires: broken
+    requires: triangle
     args: -petscspace_order 3 -num_comp 2 -qorder 3 -porder 1
   test:
     suffix: p3_2d_2
-    requires: broken
+    requires: triangle
     args: -petscspace_order 3 -num_comp 2 -qorder 3 -porder 2
   test:
     suffix: p3_2d_3
-    requires: broken
+    requires: triangle
     args: -petscspace_order 3 -num_comp 2 -qorder 3 -porder 3
+  test:
+    suffix: p3_2d_4
+    requires: triangle pragmatic
+    args: -petscspace_order 3 -num_comp 2 -qorder 3 -dm_plex_hash_location -convergence -conv_refine 0
+  test:
+    suffix: p3_2d_5
+    requires: triangle pragmatic
+    args: -petscspace_order 3 -num_comp 2 -qorder 3 -dm_plex_hash_location -porder 1 -conv_refine 0
+  test:
+    suffix: p3_2d_6
+    requires: triangle pragmatic
+    args: -petscspace_order 3 -num_comp 2 -qorder 3 -dm_plex_hash_location -porder 3 -conv_refine 0
 
   # 2D P_1disc on a triangle/quadrilateral
   test:
@@ -1322,19 +1334,6 @@ TEST*/
   test:
     suffix: q2_2d_plex_7
     args: -use_da 0 -simplex 0 -petscfe_type nonaffine -petscspace_order 2 -petscspace_poly_tensor 1 -num_comp 2 -qorder 2 -porder 2 -non_affine_coords
-
-  test:
-    suffix: p3_2d_4
-    requires: pragmatic
-    args: -petscspace_order 3 -num_comp 2 -qorder 3 -dm_plex_hash_location -convergence -conv_refine 0
-  test:
-    suffix: p3_2d_5
-    requires: pragmatic
-    args: -petscspace_order 3 -num_comp 2 -qorder 3 -dm_plex_hash_location -porder 1 -conv_refine 0
-  test:
-    suffix: p3_2d_6
-    requires: pragmatic
-    args: -petscspace_order 3 -num_comp 2 -qorder 3 -dm_plex_hash_location -porder 3 -conv_refine 0
 
   test:
     suffix: p1d_2d_6
