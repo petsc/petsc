@@ -13,9 +13,20 @@
 
 PETSC_EXTERN void PETSC_STDCALL matcreatenest_(MPI_Fint *comm,PetscInt *nr,IS is_row[],PetscInt *nc,IS is_col[],Mat a[],Mat *B,int *ierr)
 {
+  Mat *m,*tmp;
+  PetscInt i;
+
   CHKFORTRANNULLOBJECT(is_row);
   CHKFORTRANNULLOBJECT(is_col);
-  *ierr = MatCreateNest(MPI_Comm_f2c(*comm),*nr,is_row,*nc,is_col,a,B);
+
+  *ierr = PetscMalloc1((*nr)*(*nc), &m); if(*ierr) return;
+  for(i=0; i<(*nr)*(*nc); i++) {
+    tmp = &(a[i]);
+    CHKFORTRANNULLOBJECT(tmp);
+    m[i] = (tmp == NULL ? NULL : a[i]);
+  }
+  *ierr = MatCreateNest(MPI_Comm_f2c(*comm),*nr,is_row,*nc,is_col,m,B); if (*ierr) return;
+  *ierr = PetscFree(m);
 }
 
 PETSC_EXTERN void PETSC_STDCALL  matnestgetiss_(Mat *A,IS rows[],IS cols[], int *ierr )
@@ -45,7 +56,11 @@ PETSC_EXTERN void PETSC_STDCALL matnestgetsubmats_(Mat *A,PetscInt *M,PetscInt *
   if (sub) {
     for (i=0; i<m; i++) {
       for (j=0; j<n; j++) {
-        sub[j + n * i] = mat[i][j];
+        if (mat[i][j]) {
+          sub[j + n * i] = mat[i][j];
+        } else {
+          sub[j + n * i] = (void *)-1;
+        }
       }
     }
   }
