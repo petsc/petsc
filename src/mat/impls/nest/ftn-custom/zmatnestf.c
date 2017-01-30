@@ -59,7 +59,7 @@ PETSC_EXTERN void PETSC_STDCALL matnestgetsubmats_(Mat *A,PetscInt *M,PetscInt *
         if (mat[i][j]) {
           sub[j + n * i] = mat[i][j];
         } else {
-          sub[j + n * i] = (void *)-1;
+          sub[j + n * i] = (Mat)-1;
         }
       }
     }
