@@ -531,7 +531,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[],c
   ierr = ISCompressIndicesGeneral(N,C->rmap->n,bs,ismax,isrow,isrow_block);CHKERRQ(ierr);
   ierr = ISCompressIndicesGeneral(N,C->cmap->n,bs,ismax,iscol,iscol_block);CHKERRQ(ierr);
 
-  /* Check for special case: each processor gets entire matrix columns */
+  /* Check for special case: each processor gets entire matrix columns -- rm! */
   ierr = PetscMalloc2(ismax+1,&allcolumns,ismax+1,&allrows);CHKERRQ(ierr);
   for (i=0; i<ismax; i++) {
     ierr = ISIdentity(iscol[i],&colflag);CHKERRQ(ierr);
@@ -710,14 +710,16 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local_new(Mat C,PetscInt ismax,const IS
     /* Check for special case: allcolumn */
     ierr = ISIdentity(iscol[i],&colflag);CHKERRQ(ierr);
     ierr = ISGetLocalSize(iscol[i],&ncol[i]);CHKERRQ(ierr);
-    if (colflag && ncol[i] == C->cmap->N) {
-      allcolumns[i] = PETSC_TRUE;
-      icol[i] = NULL;
-    } else {
+
+    //if (colflag && ncol[i] == c->Nbs) {
+    // allcolumns[i] = PETSC_TRUE;
+    //icol[i] = NULL;
+    //} else {
       allcolumns[i] = PETSC_FALSE;
       ierr = ISGetIndices(iscol[i],&icol[i]);CHKERRQ(ierr);
-    }
+      //}
   }
+  //printf("[%d] nrow %d, ncol %d\n",rank,nrow[0],ncol[0]);
 
   if (scall == MAT_REUSE_MATRIX) {
     /* Assumes new rows are same length as the old rows */
@@ -812,6 +814,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local_new(Mat C,PetscInt ismax,const IS
     /* Now post the Irecvs corresponding to these messages */
     tag0 = ((PetscObject)C)->tag;
     ierr = PetscPostIrecvInt(comm,tag0,nrqr,onodes1,olengths1,&rbuf1,&r_waits1);CHKERRQ(ierr);
+    /* printf("[%d] nrqs %d, nrqr %d\n",rank,nrqs,nrqr); */
 
     ierr = PetscFree(onodes1);CHKERRQ(ierr);
     ierr = PetscFree(olengths1);CHKERRQ(ierr);
@@ -1374,7 +1377,9 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local_new(Mat C,PetscInt ismax,const IS
   }
 
   /* Now assemble the off proc rows */
-  ierr    = MPI_Waitall(nrqs,r_waits4,r_status4);CHKERRQ(ierr);
+  if (!ijonly) {
+    ierr = MPI_Waitall(nrqs,r_waits4,r_status4);CHKERRQ(ierr);
+  }
   for (tmp2=0; tmp2<nrqs; tmp2++) {
     sbuf1_i = sbuf1[pa[tmp2]];
     jmax    = sbuf1_i[0];
@@ -1382,7 +1387,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local_new(Mat C,PetscInt ismax,const IS
     ct2     = 0;
     rbuf2_i = rbuf2[tmp2];
     rbuf3_i = rbuf3[tmp2];
-    rbuf4_i = rbuf4[tmp2];
+    if (!ijonly) rbuf4_i = rbuf4[tmp2];
     for (j=1; j<=jmax; j++) {
       is_no     = sbuf1_i[2*j-1];
       rmap_i    = rmap[is_no];
@@ -1391,19 +1396,20 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local_new(Mat C,PetscInt ismax,const IS
       imat_ilen = subc->ilen;
       imat_j    = subc->j;
       imat_i    = subc->i;
-      imat_a    = subc->a;
+      if (!ijonly) imat_a    = subc->a;
       max1      = sbuf1_i[2*j];
-      for (k=0; k<max1; k++,ct1++) {
+      for (k=0; k<max1; k++,ct1++) { /* for each recved block row */
         row = sbuf1_i[ct1];
 #if defined(PETSC_USE_CTABLE)
         ierr = PetscTableFind(rmap_i,row+1,&row);CHKERRQ(ierr);
         row--;
+        if (row < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"row not found in table");
 #else
         row = rmap_i[row];
 #endif
         ilen  = imat_ilen[row];
         mat_i = imat_i[row];
-        mat_a = imat_a + mat_i;
+        if (!ijonly) mat_a = imat_a + mat_i*bs2;
         mat_j = imat_j + mat_i;
         max2  = rbuf2_i[ct1];
         if (!allcolumns[is_no]) {
@@ -1415,14 +1421,22 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local_new(Mat C,PetscInt ismax,const IS
 #endif
             if (tcol) {
               *mat_j++ = tcol - 1;
-              *mat_a++ = rbuf4_i[ct2];
+              if (!ijonly) {
+                ierr   = PetscMemcpy(mat_a,rbuf4_i+ct2*bs2,bs2*sizeof(MatScalar));CHKERRQ(ierr);
+                mat_a += bs2;
+              }
+              //*mat_a++ = rbuf4_i[ct2];
               ilen++;
             }
           }
         } else { /* allcolumns */
           for (l=0; l<max2; l++,ct2++) {
             *mat_j++ = rbuf3_i[ct2]; /* same global column index of C */
-            *mat_a++ = rbuf4_i[ct2];
+            //*mat_a++ = rbuf4_i[ct2];
+            if (!ijonly) {
+              ierr   = PetscMemcpy(mat_a,rbuf4_i+ct2*bs2,bs2*sizeof(MatScalar));CHKERRQ(ierr);
+              mat_a += bs2;
+            }
             ilen++;
           }
         }
@@ -1431,7 +1445,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local_new(Mat C,PetscInt ismax,const IS
     }
   }
 
-  if (!iscsorted) { /* sort column indices of the rows */
+  if (!iscsorted) { /* sort column indices of the rows -- not done yet!!! */
     for (i=0; i<ismax; i++) {
       subc       = (Mat_SeqBAIJ*)submats[i]->data;
       imat_j    = subc->j;
@@ -1445,7 +1459,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local_new(Mat C,PetscInt ismax,const IS
         PetscInt ilen;
 
         mat_i = imat_i[j];
-        mat_a = imat_a + mat_i;
+        if (!ijonly) mat_a = imat_a + mat_i;
         mat_j = imat_j + mat_i;
         ilen  = imat_ilen[j];
         ierr  = PetscSortIntWithScalarArray(ilen,mat_j,mat_a);CHKERRQ(ierr);
