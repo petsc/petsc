@@ -50,6 +50,35 @@ sys.path.insert(0,maintdir)
 # These are special keys describing build
 buildkeys="requires TODO SKIP depends".split()
 
+
+import re
+def extractForVars(argStr):
+  """
+  Given: 'args: -bs {{1 2 3 4 5}} -pc_type {{cholesky sor}} -ksp_monitor'
+  Return: 
+      args: -ksp_monitor
+      forlist="bs pc_type"   # Don't assume OrderedDict
+      forargs[bs]['val']="1 2 3 4 5"
+      forargs[pc_type]['val']="cholesky sor"
+  """
+  loopstr=argStr
+  forargs={}
+  forlist=[]
+  newargs=""
+  for varset in re.split('-(?=[a-zA-Z])',loopstr):
+    if not varset.strip(): continue
+    if len(re.findall('{{(.*?)}}',varset))>0:
+      # Assuming only one for loop per var specification
+      forvar=varset.split("{{")[0].strip()
+      forlist.append(forvar)
+      forargs[forvar]={}
+      forargs[forvar]['val']=re.findall('{{(.*?)}}',varset)[0]
+    else:
+      newargs=newargs+"-"+varset+" "
+      
+  return forlist,forargs,newargs.strip()
+
+
 def _stripIndent(block,srcfile):
   """
   Go through and remove a level of indentation
@@ -71,7 +100,6 @@ def _stripIndent(block,srcfile):
   newTestStr="\n"
   for lline in block.split("\n"):
     line=lline[1:] if lline.startswith("!") else lline
-    line=line.split('#')[0]
     if not line.strip(): continue
     newline=line[nspace:]
     newTestStr=newTestStr+newline.rstrip()+"\n"
@@ -98,13 +126,21 @@ def parseTest(testStr,srcfile):
   # go through and parse
   subtestnum=0
   subdict={}
-  for line in striptest.split("\n"):
+  comments=[]
+  indentlevel=0
+  for ln in striptest.split("\n"):
+    line=ln.split('#')[0]
+    comment=("" if len(ln.split("#"))==1 else " ".join(ln.split("#")[1:]).strip())
+    if comment: comments.append(comment)
     if not line.strip(): continue
+    indentcount=line.split(":")[0].count(" ")
     var=line.split(":")[0].strip()
     val=line.split(":")[1].strip()
     # Start by seeing if we are in a subtest
     if line.startswith(" "):
       subdict[subtestname][var]=val
+      if not indentlevel: indentlevel=indentcount
+      #if indentlevel!=indentcount: print "Error in indentation:", ln
     # Determine subtest name and make dict
     elif var=="test":
       subtestname="test"+str(subtestnum)
@@ -112,13 +148,14 @@ def parseTest(testStr,srcfile):
       if not subdict.has_key("subtests"): subdict["subtests"]=[]
       subdict["subtests"].append(subtestname)
       subtestnum=subtestnum+1
-    # The reset are easy
+    # The rest are easy
     else:
       subdict[var]=val
       if var=="suffix":
         if len(val)>0:
           testname=testname+"_"+val
 
+  if len(comments): subdict['comments']="\n".join(comments).lstrip("\n")
   return testname,subdict
 
 def parseTests(testStr,srcfile):

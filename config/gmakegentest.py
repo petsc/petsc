@@ -150,42 +150,65 @@ class generateExamples(Petsc):
     self.tests[pkg][lang][nmtest]['argLabel']=self.getArgLabel(testDict)
     return
 
-  def getFor(self,subst,i,j):
+  def getLines(self,forvar,fordict,i,j):
+    """
+      Get the for and done lines
+    """
+    indent="   "
+    lindex=string.ascii_lowercase[i]
+    forStr=fordict[forvar]['val']
+    fordict[forvar]['loopvar']=lindex
+    forline=indent*j+"for "+lindex+" in "+forStr+"; do"
+    #subline=re.sub("{{"+loopvals+"}}","${"+lindex+"}",forStr)
+    subline="${"+lindex+"}"
+    donline=indent*j+"done"
+    return forline,subline,donline
+
+  def getFor(self,subst,i,j,parentD,subtest=False):
     """
       Get the for and done lines
     """
     forlines=""
     donlines=""
-    indent="   "
     nsizeStr=subst['nsize']
-    for loop in re.findall('{{(.*?)}}',subst['nsize']):
-      lindex=string.ascii_lowercase[i]
-      forline=indent*j+"for "+lindex+" in '"+loop+"'; do"
-      nsizeStr=re.sub("{{"+loop+"}}","${"+lindex+"}",nsizeStr)
-      donline=indent*j+"done"
-      forlines=forlines+forline+"\n"
-      donlines=donlines+donline+"\n"
-      i=i+1
-      j=j+1
-    subst['nsize']=nsizeStr
-    argStr=subst['args']
-    for loop in re.findall('{{(.*?)}}',subst['args']):
-      lindex=string.ascii_lowercase[i]
-      forline=indent*j+"for "+lindex+" in '"+loop+"'; do"
-      argStr=re.sub("{{"+loop+"}}","${"+lindex+"}",argStr)
-      donline=indent*j+"done"
-      forlines=forlines+forline+"\n"
-      donlines=donlines+donline+"\n"
-      i=i+1
-      j=j+1
-    subst['args']=argStr
+    ofname=""
+    if "{{" in subst['nsize']:
+      nd={'nsize':{'val':subst['nsize']}}
+      fline,sline,dline=self.getLines('nsize',nd,i,j)
+      forlines=fline+"\n"; donlines=dline+"\n"
+      i=i+1; j=j+1
+      subst['nsize']=sline
+
+    if not "{{" in subst['args']: return forlines,donlines,i,j,{}
+
+    # Now work on args
+    forlist,fordict,newargs=testparse.extractForVars(subst['args'])
+    if not subtest: subst['args']=newargs.strip() # promote to control arguments
+    forargs=""
+    for farg in forlist:
+      if farg in parentD.keys():
+        subline="${"+parentD[farg]['loopvar']+"}"
+        ofname+=farg+"-"+subline+"-"
+      else:
+        forline,subline,donline=self.getLines(farg,fordict,i,j)
+        forlines+=forline+"\n"; donlines+=donline+"\n"
+        forargs=forargs+" -"+farg+" "+subline
+        ofname=ofname+farg+"-"+subline+"-"
+        i=i+1; j=j+1
+    subst['forargs']=forargs.strip()
+    if subtest: subst['forargs']+=" "+newargs
+    # Do not overwrite the output file name if it is in source
+    if not subst['output_file_inSrc']:
+      subst['output_file']="output/"+subst['defroot']+"_"+ofname.strip('-')+".out"
+      subst['redirect_file']=subst['defroot']+"_"+ofname.strip('-')+".tmp"
+    subst['label_suffix']="_"+ofname.strip('-')
 
     # The do lines have reverse order with respect to indentation
     dl=donlines.rstrip("\n").split("\n")
     dl.reverse()
     donlines="\n".join(dl)+"\n"
 
-    return forlines,donlines,i,j
+    return forlines,donlines,i,j,fordict
 
 
   def getExecname(self,exfile,root):
@@ -213,29 +236,47 @@ class generateExamples(Petsc):
     if not testDict.has_key('filter_output'): testDict['filter_output']=""
     if not testDict.has_key('localrunfiles'): testDict['localrunfiles']=""
     if not testDict.has_key('args'): testDict['args']=""
+    if not testDict.has_key('forargs'): testDict['forargs']=""
+    if not testDict.has_key('comments'): testDict['comments']=""
     defroot=(re.sub("run","",testname) if testname.startswith("run") else testname)
     if not "_" in defroot: defroot=defroot+"_1"
     if not testDict.has_key('redirect_file'): testDict['redirect_file']=defroot+".tmp"
-    if not testDict.has_key('output_file'): testDict['output_file']="output/"+defroot+".out"
+
+    # Output file is special because of subtests override
+    if testDict.has_key('output_file'): 
+      subst['output_file']=testDict['output_file']
+      subst['output_file_inSrc']=True
+    else:
+      subst['output_file']="output/"+defroot+".out"
+      subst['output_file_inSrc']=False
 
     # Setup the variables in template_string that need to be substituted
+    subst['defroot']=defroot
     subst['srcdir']=os.path.join(self.petsc_dir,rpath)
     subst['label']=self.nameSpace(defroot,subst['srcdir'])
+    subst['label_suffix']=''
     subst['redirect_file']=testDict['redirect_file']
-    subst['output_file']=os.path.join(subst['srcdir'],testDict['output_file'])
+    subst['comments']="\n#".join(testDict['comments'].split("\n"))
+    if subst['comments']: subst['comments']="#"+subst['comments']
     subst['exec']="../"+testDict['execname']
     subst['filter']="'"+testDict['filter']+"'"   # Quotes are tricky
     subst['filter_output']=testDict['filter_output']
     subst['localrunfiles']=testDict['localrunfiles']
     subst['testroot']=self.testroot_dir
     subst['testname']=testname
+    if self.conf['PETSC_HAVE_DATAFILESPATH']: 
+      dp=self.conf['DATAFILESPATH']
+      dpl='DATAFILESPATH=${DATAFILESPATH:-"'+dp+'"}'
+    else:
+      dpl=''
+    subst['datafilespath_line']=dpl
 
     # Be careful with this
     if testDict.has_key('command'): subst['command']=testDict['command']
 
     # These can have for loops and are treated separately later
-    if testDict.has_key('nsize'): subst['nsize']=str(testDict['nsize'])
-    if testDict.has_key('args'):  subst['args']=testDict['args']
+    if testDict.has_key('nsize'):   subst['nsize']=str(testDict['nsize'])
+    if testDict.has_key('args'):    subst['args']=testDict['args']
 
     #Conf vars
     if self.petsc_arch.find('valgrind')>=0:
@@ -259,18 +300,22 @@ class generateExamples(Petsc):
     indent="   "
     nindent=i # the start and has to be consistent with below
     cmdLines=""
+
+    # Add in the full path here.
+    subst['output_file']=os.path.join(subst['srcdir'],subst['output_file'])
+
     # MPI is the default -- but we have a few odd commands
     if not subst.has_key('command'):
       cmd=indent*nindent+self._substVars(subst,example_template.mpitest)
     else:
       cmd=indent*nindent+self._substVars(subst,example_template.commandtest)
-    cmdLines=cmdLines+cmd+"\n\n"
+    cmdLines+=cmd+"\n\n"
 
     if not subst['filter_output']:
       cmd=indent*nindent+self._substVars(subst,example_template.difftest)
     else:
       cmd=indent*nindent+self._substVars(subst,example_template.filterdifftest)
-    cmdLines=cmdLines+cmd+"\n"
+    cmdLines+=cmd+"\n"
     return cmdLines
 
   def _substVars(self,subst,origStr):
@@ -283,6 +328,19 @@ class generateExamples(Petsc):
       patt="@"+subkey.upper()+"@"
       Str=re.sub(patt,subst[subkey],Str)
     return Str
+
+  def _writeTodoSkip(self,fh,tors,inDict,footer):
+    """
+    Write out the TODO and SKIP lines in the file
+    The TODO or SKIP variable, tors, should be lower case
+    """
+    TORS=tors.upper()
+    template=eval("example_template."+tors+"line")
+    tsStr=re.sub("@"+TORS+"COMMENT@",inDict[TORS],template)
+    fh.write(tsStr+"\ntotal=1; "+tors+"=1\n")
+    fh.write(footer+"\n")
+    fh.write("exit\n\n\n")
+    return
 
   def genRunScript(self,testname,root,isRun,srcDict):
     """
@@ -298,6 +356,14 @@ class generateExamples(Petsc):
     petscvarfile=os.path.join(self.arch_dir,'lib','petsc','conf','petscvariables')
     
     subst=self.getSubstVars(testDict,rpath,testname)
+
+    # If for loops are present in args, then we alter
+    i=8  # for loop counters
+    j=0  # for indentation 
+    doForP=False
+    if "{{" in subst['args']+subst['nsize']:
+      doForP=True
+      flinesP,dlinesP,i,j,fordict=self.getFor(subst,i,j,{})
 
     #Handle runfiles
     if subst['localrunfiles']: 
@@ -322,54 +388,29 @@ class generateExamples(Petsc):
     # If there is a TODO or a SKIP then we do it before writing out the
     # rest of the command (which is useful for working on the test)
     # SKIP and TODO can be for the source file or for the runs
-    if srcDict.has_key("SKIP") or srcDict.has_key("TODO"):
-      if srcDict.has_key("TODO"):
-        todo=re.sub("@TODOCOMMENT@",srcDict['TODO'],example_template.todoline)
-        fh.write(todo+"\ntotal=1; todo=1\n")
-        fh.write(footer+"\n")
-        fh.write("exit\n\n\n")
-      elif srcDict.has_key("SKIP") or srcDict.has_key("TODO"):
-        skip=re.sub("@SKIPCOMMENT@",srcDict['SKIP'],example_template.skipline)
-        fh.write(skip+"\ntotal=1; skip=1\n")
-        fh.write(footer+"\n")
-        fh.write("exit\n\n\n")
-    elif not isRun:
-      skip=re.sub("@SKIPCOMMENT@",testDict['SKIP'],example_template.skipline)
-      fh.write(skip+"\ntotal=1; skip=1\n")
-      fh.write(footer+"\n")
-      fh.write("exit\n\n\n")
-    elif testDict.has_key('TODO'):
-      todo=re.sub("@TODOCOMMENT@",testDict['TODO'],example_template.todoline)
-      fh.write(todo+"\ntotal=1; todo=1\n")
-      fh.write(footer+"\n")
-      fh.write("exit\n\n\n")
+    for tors in "todo skip".split():
+      for d in [srcDict,testDict]:
+        if d.has_key(tors.upper()): self._writeTodoSkip(fh,tors,d,footer)
 
-    # Need to handle loops
-    i=8  # for loop counters
-    j=0  # for indentation 
-
-    doForP=False
-    if "{{" in subst['args']+subst['nsize']:
-      doForP=True
-      flinesP,dlinesP,i,j=self.getFor(subst,i,j)
-      fh.write(flinesP+"\n")
+    # Now start writing the script.  First do for lines
+    if doForP: fh.write(flinesP+"\n")
 
     # Subtests are special
     if testDict.has_key("subtests"):
       substP=subst   # Subtests can inherit args but be careful
-      if not substP.has_key("arg"): substP["arg"]=""
       jorig=j
       for stest in testDict["subtests"]:
         j=jorig
         subst=substP
         subst.update(testDict[stest])
         subst['nsize']=str(subst['nsize'])
-        if not testDict[stest].has_key('args'): testDict[stest]['args']=""
-        subst['args']=substP['args']+testDict[stest]['args']
         doFor=False
         if "{{" in subst['args']+subst['nsize']:
           doFor=True
-          flines,dlines,i,j=self.getFor(subst,i,j)
+          if doForP:
+            flines,dlines,i,j,sfdict=self.getFor(subst,i,j,fordict,subtest=True)
+          else:
+            flines,dlines,i,j,sfdict=self.getFor(subst,i,j,{},subtest=True)
           fh.write(flines+"\n")
         fh.write(self.getCmds(subst,j)+"\n")
         if doFor: fh.write(dlines+"\n")
@@ -495,8 +536,9 @@ class generateExamples(Petsc):
               return False
         # Datafilespath
         if requirement=="datafilespath": 
-          testDict['SKIP']="Requires DATAFILESPATH"
-          return False
+          if not self.conf['PETSC_HAVE_DATAFILESPATH']: 
+            testDict['SKIP']="Requires DATAFILESPATH"
+            return False
         # Defines -- not sure I have comments matching
         if "define(" in requirement.lower():
           reqdef=requirement.split("(")[1].split(")")[0]
