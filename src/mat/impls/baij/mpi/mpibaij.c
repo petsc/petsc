@@ -3953,11 +3953,12 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPIBAIJ(MPI_Comm comm,Mat inmat,
     ierr = MatCreate(comm,outmat);CHKERRQ(ierr);
     ierr = MatSetSizes(*outmat,m,n*bs,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = MatSetBlockSizes(*outmat,bs,cbs);CHKERRQ(ierr);
-    ierr = MatSetType(*outmat,MATMPIBAIJ);CHKERRQ(ierr);
+    ierr = MatSetType(*outmat,MATBAIJ);CHKERRQ(ierr);
+    ierr = MatSeqBAIJSetPreallocation(*outmat,bs,0,dnz);CHKERRQ(ierr);
     ierr = MatMPIBAIJSetPreallocation(*outmat,bs,0,dnz,0,onz);CHKERRQ(ierr);
     ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
-  } 
-  
+  }
+
   /* numeric phase */
   ierr = MatGetBlockSizes(inmat,&bs,&cbs);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(*outmat,&rstart,NULL);CHKERRQ(ierr);
