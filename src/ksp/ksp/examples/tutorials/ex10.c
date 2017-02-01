@@ -26,6 +26,8 @@ users manual for a discussion of preloading.  Input parameters include\n\
    Processors: n
 T*/
 
+
+
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
@@ -442,3 +444,50 @@ int main(int argc,char **args)
   return ierr;
 }
 
+
+
+/*TEST
+   
+   test:
+      # All of the diffs are with the same output
+      # Fails because number of iterations changes with matload_block_size
+      suffix: 4
+      args: -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info -mat_type seqbaij -matload_block_size {{2 3 4}} -ksp_max_it 100 -ksp_gmres_cgs_refinement_type refine_always -ksp_rtol 1.0e-15 -ksp_monitor_short
+      output_file: output/ex10_7.out
+
+   test:
+      # For loop without output file has different files to compare
+      suffix: 5
+      args: -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info -mat_type seqbaij -matload_block_size {{2 3 4}} -ksp_max_it 100 -ksp_gmres_cgs_refinement_type refine_always -ksp_rtol 1.0e-15 -ksp_monitor_short
+
+   test:
+      # Instead of for loops, do by hand
+      suffix: 7
+      requires: datafilespath
+      args: -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info -mat_type seqbaij -ksp_max_it 100 -ksp_gmres_cgs_refinement_type refine_always -ksp_rtol 1.0e-15 -ksp_monitor_short
+
+      test:
+         args: -matload_block_size 2
+
+      test:
+         args: -matload_block_size 3
+
+      test:
+         args: -matload_block_size 4
+
+   test:
+      # This has two for loops
+      suffix: 8
+      args: -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info -mat_type seqbaij -matload_block_size {{2 3 4}} -ksp_max_it 100 -ksp_gmres_cgs_refinement_type refine_always -ksp_rtol {{1.0e-10 1.e-15}} -ksp_monitor_short
+
+   test:
+      # This has two for loops
+      # Using output_file will cause diffs as expected
+      suffix: 9
+      args: -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info -mat_type seqbaij -matload_block_size {{2 3 4}} -ksp_max_it 100 -ksp_gmres_cgs_refinement_type refine_always -ksp_rtol {{1.0e-10 1.e-15}} -ksp_monitor_short
+      output_file: output/ex10_9.out
+
+   test:
+      suffix: 1
+      args: -f0 ${DATAFILESPATH}/matrices/medium 
+TEST*/

@@ -87,6 +87,39 @@ class generateExamples(Petsc):
     #if not langReq: print "ERROR: ", srcext, srcfile
     return langReq
 
+  def _getLoopVars(self,testDict,i):
+    """
+    Given: 'args: -bs {{1 2 3 4 5}} -pc_type {{cholesky sor}} -ksp_monitor'
+    Return: 
+        args: -ksp_monitor
+        loopVars[bs]['val']="1 2 3 4 5"
+        loopVars[pc_type]['val']="cholesky sor"
+    """
+    loopVars={}
+    newargs=""
+    for key in testDict:
+      if type(testDict[key])!=types.StringType: continue
+      keystr = str(testDict[key])
+      for varset in re.split('-(?=[a-zA-Z])',keystr):
+        if not varset.strip(): continue
+        if len(re.findall('{{(.*?)}}',varset))>0:
+          # Assuming only one for loop per var specification
+          forvar=varset.split("{{")[0].strip()
+          lvar=string.ascii_lowercase[i]; i+=1
+          loopVars[key]={}
+          #print key, testDict
+          sys.exit()
+          loopVars[key][forvar]={}
+          loopVars[key][forvar]=re.findall('{{(.*?)}}',varset)[0]
+          akey=('subargs' if key=='args' else key)
+          testDict[akey] = '${' + lvar + '}'
+        else:
+          if key=='args': newargs+="-"+varset+" "
+
+    testDict['args']=newargs
+      
+    return loopVars
+
   def getArgLabel(self,testDict):
     """
     In all of the arguments in the test dictionary, create a simple
@@ -290,9 +323,13 @@ class generateExamples(Petsc):
     subst['petsc_lib_dir']=self.conf['PETSC_LIB_DIR']
     subst['wpetsc_dir']=self.conf['wPETSC_DIR']
 
+    for key in subst:
+      if type(subst[key])!=types.StringType: continue
+      subst[key] = self._substVars(testDict,subst[key])
+
     return subst
 
-  def getCmds(self,subst,i):
+  def getCmds(self,subst,i,subtest=False):
     """
       Generate bash script using template found next to this file.  
       This file is read in at constructor time to avoid file I/O
@@ -342,11 +379,30 @@ class generateExamples(Petsc):
     fh.write("exit\n\n\n")
     return
 
+  def getLoopVarsHead(self,loopVars,i):
+    outstr=''
+    indent="   "
+    for key in loopVars:
+      newstr = indent * i + "for {0} in {1}; do\n".format(key,' '.join(['"'+val+'"' for val in loopVars[key]]))
+      outstr = outstr + newstr
+      i = i + 1
+    return (outstr,i)
+
+  def getLoopVarsFoot(self,loopVars,i):
+    outstr=''
+    indent="   "
+    for key in loopVars:
+      i = i - 1
+      newstr = indent * i + "done\n"
+      outstr = outstr + newstr
+    return (outstr,i)
+
   def genRunScript(self,testname,root,isRun,srcDict):
     """
       Generate bash script using template found next to this file.  
       This file is read in at constructor time to avoid file I/O
     """
+    print testname
     # runscript_dir directory has to be consistent with gmakefile
     testDict=srcDict[testname]
     rpath=self.relpath(self.petsc_dir,root)
@@ -354,16 +410,8 @@ class generateExamples(Petsc):
     if not os.path.isdir(runscript_dir): os.makedirs(runscript_dir)
     fh=open(os.path.join(runscript_dir,testname+".sh"),"w")
     petscvarfile=os.path.join(self.arch_dir,'lib','petsc','conf','petscvariables')
-    
-    subst=self.getSubstVars(testDict,rpath,testname)
 
-    # If for loops are present in args, then we alter
-    i=8  # for loop counters
-    j=0  # for indentation 
-    doForP=False
-    if "{{" in subst['args']+subst['nsize']:
-      doForP=True
-      flinesP,dlinesP,i,j,fordict=self.getFor(subst,i,j,{})
+    subst=self.getSubstVars(testDict,rpath,testname)
 
     #Handle runfiles
     if subst['localrunfiles']: 
@@ -392,31 +440,42 @@ class generateExamples(Petsc):
       for d in [srcDict,testDict]:
         if d.has_key(tors.upper()): self._writeTodoSkip(fh,tors,d,footer)
 
-    # Now start writing the script.  First do for lines
-    if doForP: fh.write(flinesP+"\n")
+    # Need to handle loops
+    i=8  # for loop counters
+    j=0  # for indentation 
+    indent="   "
+
+    loopVars = self._getLoopVars(testDict,i)
+    if len(loopVars.keys())>0: print testname, loopVars
+    (loopHead,j) = self.getLoopVarsHead(loopVars,j)
+    if (loopHead): fh.write(loopHead+"\n")
 
     # Subtests are special
     if testDict.has_key("subtests"):
       substP=subst   # Subtests can inherit args but be careful
-      jorig=j
       for stest in testDict["subtests"]:
-        j=jorig
-        subst=substP
-        subst.update(testDict[stest])
-        subst['nsize']=str(subst['nsize'])
-        doFor=False
-        if "{{" in subst['args']+subst['nsize']:
-          doFor=True
-          if doForP:
-            flines,dlines,i,j,sfdict=self.getFor(subst,i,j,fordict,subtest=True)
-          else:
-            flines,dlines,i,j,sfdict=self.getFor(subst,i,j,{},subtest=True)
-          fh.write(flines+"\n")
-        fh.write(self.getCmds(subst,j)+"\n")
-        if doFor: fh.write(dlines+"\n")
+        sdict = testDict[stest]
+        if not sdict.has_key('args'): sdict['args'] = ""
+        sLoopVars = self._getLoopVars(sdict,i)
+        subst=substP.copy()
+        subst.update(sdict)
+        if testDict[stest].has_key('output_file'):
+          subst['output_file']=os.path.join(subst['srcdir'],testDict[stest]['output_file'])
+        for key in subst:
+          if type(subst[key])!=types.StringType: continue
+          subst[key] = self._substVars(sdict,subst[key])
+          subst[key] = self._substVars(testDict,subst[key])
+        (sLoopHead,j) = self.getLoopVarsHead(sLoopVars,j)
+        if (sLoopHead): fh.write(sLoopHead+"\n")
+        subst['subargs']=subst['args']  # Need to check here
+        fh.write(self.getCmds(subst,j,subtest=True)+"\n")
+        (sLoopFoot,j) = self.getLoopVarsFoot(sLoopVars,j)
+        if (sLoopFoot): fh.write(sLoopFoot+"\n")
     else:
       fh.write(self.getCmds(subst,j)+"\n")
-      if doForP: fh.write(dlinesP+"\n")
+
+    (loopFoot,j) = self.getLoopVarsFoot(loopVars,j)
+    if (loopFoot): fh.write(loopFoot+"\n")
 
     fh.write(footer+"\n")
     os.chmod(os.path.join(runscript_dir,testname+".sh"),0755)
