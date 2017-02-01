@@ -711,13 +711,14 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local_new(Mat C,PetscInt ismax,const IS
     ierr = ISIdentity(iscol[i],&colflag);CHKERRQ(ierr);
     ierr = ISGetLocalSize(iscol[i],&ncol[i]);CHKERRQ(ierr);
 
-    //if (colflag && ncol[i] == c->Nbs) {
-    // allcolumns[i] = PETSC_TRUE;
-    //icol[i] = NULL;
-    //} else {
+    if (colflag && ncol[i] == c->Nbs) {
+      allcolumns[i] = PETSC_TRUE;
+      icol[i] = NULL;
+      printf("[%d] allcolumns[%d] true\n",rank,i);
+    } else {
       allcolumns[i] = PETSC_FALSE;
       ierr = ISGetIndices(iscol[i],&icol[i]);CHKERRQ(ierr);
-      //}
+    }
   }
   //printf("[%d] nrow %d, ncol %d\n",rank,nrow[0],ncol[0]);
 
