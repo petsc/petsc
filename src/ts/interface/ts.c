@@ -3184,11 +3184,6 @@ PetscErrorCode  TSAdjointComputeDRDPFunction(TS ts,PetscReal t,Vec y,Vec *drdp)
 
   Level: intermediate
 
-  Note:
-  If a step is rejected, TSStep() will call this routine again before each attempt.
-  The last completed time step number can be queried using TSGetTimeStepNumber(), the
-  size of the step being attempted can be obtained using TSGetTimeStep().
-
 .keywords: TS, timestep
 .seealso: TSSetPreStage(), TSSetPostStage(), TSSetPostStep(), TSStep()
 @*/
