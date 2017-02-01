@@ -611,7 +611,7 @@ typedef struct { /* used by MatGetSubMatrices_MPIAIJ_SingleIS_Local() and MatGet
   PetscInt   *ctr;
   PetscInt   *pa; /* proc array */
   PetscInt   *req_size,*req_source1,*req_source2;
-  PetscBool  allcolumns;
+  PetscBool  allcolumns,allrows;
   PetscBool  singleis;
   PetscInt   *row2proc; /* row to proc map */
   PetscInt   nstages;
