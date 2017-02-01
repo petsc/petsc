@@ -2071,8 +2071,6 @@ PetscErrorCode MatGetSubMatrix_MPIBAIJ(Mat mat,IS isrow,IS iscol,MatReuse call,M
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat,PetscInt,const IS[],const IS[],MatReuse,PetscBool*,PetscBool*,Mat*);
-extern PetscErrorCode MatGetSubMatrices_MPIBAIJ_local_new(Mat,PetscInt,const IS[],const IS[],MatReuse,PetscBool*,PetscBool*,Mat*);
 /*
   Not great since it makes two copies of the submatrix, first an SeqBAIJ
   in local and then by concatenating the local matrices the end result.
