@@ -52,32 +52,6 @@ buildkeys="requires TODO SKIP depends".split()
 
 
 import re
-def extractForVars(argStr):
-  """
-  Given: 'args: -bs {{1 2 3 4 5}} -pc_type {{cholesky sor}} -ksp_monitor'
-  Return: 
-      args: -ksp_monitor
-      forlist="bs pc_type"   # Don't assume OrderedDict
-      forargs[bs]['val']="1 2 3 4 5"
-      forargs[pc_type]['val']="cholesky sor"
-  """
-  loopstr=argStr
-  forargs={}
-  forlist=[]
-  newargs=""
-  for varset in re.split('-(?=[a-zA-Z])',loopstr):
-    if not varset.strip(): continue
-    if len(re.findall('{{(.*?)}}',varset))>0:
-      # Assuming only one for loop per var specification
-      forvar=varset.split("{{")[0].strip()
-      forlist.append(forvar)
-      forargs[forvar]={}
-      forargs[forvar]['val']=re.findall('{{(.*?)}}',varset)[0]
-    else:
-      newargs=newargs+"-"+varset+" "
-      
-  return forlist,forargs,newargs.strip()
-
 
 def _stripIndent(block,srcfile):
   """
