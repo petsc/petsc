@@ -198,67 +198,6 @@ class generateExamples(Petsc):
     self.tests[pkg][lang][nmtest]['argLabel']=self.getArgLabel(testDict)
     return
 
-  def getLines(self,forvar,fordict,i,j):
-    """
-      Get the for and done lines
-    """
-    indent=self.indent
-    lindex=string.ascii_lowercase[i]
-    forStr=fordict[forvar]['val']
-    fordict[forvar]['loopvar']=lindex
-    forline=indent*j+"for "+lindex+" in "+forStr+"; do"
-    #subline=re.sub("{{"+loopvals+"}}","${"+lindex+"}",forStr)
-    subline="${"+lindex+"}"
-    donline=indent*j+"done"
-    return forline,subline,donline
-
-  def getFor(self,subst,i,j,parentD,subtest=False):
-    """
-      Get the for and done lines
-    """
-    forlines=""
-    donlines=""
-    nsizeStr=subst['nsize']
-    ofname=""
-    if "{{" in subst['nsize']:
-      nd={'nsize':{'val':subst['nsize']}}
-      fline,sline,dline=self.getLines('nsize',nd,i,j)
-      forlines=fline+"\n"; donlines=dline+"\n"
-      i=i+1; j=j+1
-      subst['nsize']=sline
-
-    if not "{{" in subst['args']: return forlines,donlines,i,j,{}
-
-    # Now work on args
-    forlist,fordict,newargs=testparse.extractForVars(subst['args'])
-    if not subtest: subst['args']=newargs.strip() # promote to control arguments
-    subargs=""
-    for farg in forlist:
-      if farg in parentD.keys():
-        subline="${"+parentD[farg]['loopvar']+"}"
-        ofname+=farg+"-"+subline+"-"
-      else:
-        forline,subline,donline=self.getLines(farg,fordict,i,j)
-        forlines+=forline+"\n"; donlines+=donline+"\n"
-        subargs=subargs+" -"+farg+" "+subline
-        ofname=ofname+farg+"-"+subline+"-"
-        i=i+1; j=j+1
-    subst['subargs']=subargs.strip()
-    if subtest: subst['subargs']+=" "+newargs
-    # Do not overwrite the output file name if it is in source
-    if not subst['output_file_inSrc']:
-      subst['output_file']="output/"+subst['defroot']+"_"+ofname.strip('-')+".out"
-      subst['redirect_file']=subst['defroot']+"_"+ofname.strip('-')+".tmp"
-    subst['label_suffix']="_"+ofname.strip('-')
-
-    # The do lines have reverse order with respect to indentation
-    dl=donlines.rstrip("\n").split("\n")
-    dl.reverse()
-    donlines="\n".join(dl)+"\n"
-
-    return forlines,donlines,i,j,fordict
-
-
   def getExecname(self,exfile,root):
     """
       Generate bash script using template found next to this file.  
@@ -423,6 +362,7 @@ class generateExamples(Petsc):
       Generate bash script using template found next to this file.  
       This file is read in at constructor time to avoid file I/O
     """
+    print testname
     # runscript_dir directory has to be consistent with gmakefile
     testDict=srcDict[testname]
     rpath=self.relpath(self.petsc_dir,root)
