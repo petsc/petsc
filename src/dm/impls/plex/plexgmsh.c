@@ -60,6 +60,83 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMPlexCreateGmsh_ReadElement(PetscViewer viewer, PetscInt numCells, PetscBool binary, PetscBool byteSwap, GmshElement **gmsh_elems)
+{
+  PetscInt       c, p;
+  GmshElement   *elements;
+  int            i, cellType, dim, numNodes, numElem, numTags;
+  int            ibuf[16];
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc1(numCells, &elements);CHKERRQ(ierr);
+  for (c = 0; c < numCells;) {
+    ierr = PetscViewerRead(viewer, &ibuf, 3, NULL, PETSC_ENUM);CHKERRQ(ierr);
+    if (byteSwap) ierr = PetscByteSwap(&ibuf, PETSC_ENUM, 3);CHKERRQ(ierr);
+    if (binary) {
+      cellType = ibuf[0];
+      numElem = ibuf[1];
+      numTags = ibuf[2];
+    } else {
+      elements[c].id = ibuf[0];
+      cellType = ibuf[1];
+      numTags = ibuf[2];
+      numElem = 1;
+    }
+    switch (cellType) {
+    case 1: /* 2-node line */
+      dim = 1;
+      numNodes = 2;
+      break;
+    case 2: /* 3-node triangle */
+      dim = 2;
+      numNodes = 3;
+      break;
+    case 3: /* 4-node quadrangle */
+      dim = 2;
+      numNodes = 4;
+      break;
+    case 4: /* 4-node tetrahedron */
+      dim  = 3;
+      numNodes = 4;
+      break;
+    case 5: /* 8-node hexahedron */
+      dim = 3;
+      numNodes = 8;
+      break;
+    case 15: /* 1-node vertex */
+      dim = 0;
+      numNodes = 1;
+      break;
+    default:
+      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unsupported Gmsh element type %d", cellType);
+    }
+    if (binary) {
+      const PetscInt nint = numNodes + numTags + 1;
+      for (i = 0; i < numElem; ++i, ++c) {
+        /* Loop over inner binary element block */
+        elements[c].dim = dim;
+        elements[c].numNodes = numNodes;
+        elements[c].numTags = numTags;
+
+        ierr = PetscViewerRead(viewer, &ibuf, nint, NULL, PETSC_ENUM);CHKERRQ(ierr);
+        if (byteSwap) ierr = PetscByteSwap( &ibuf, PETSC_ENUM, nint);CHKERRQ(ierr);
+        elements[c].id = ibuf[0];
+        for (p = 0; p < numTags; p++) elements[c].tags[p] = ibuf[1 + p];
+        for (p = 0; p < numNodes; p++) elements[c].nodes[p] = ibuf[1 + numTags + p];
+      }
+    } else {
+      elements[c].dim = dim;
+      elements[c].numNodes = numNodes;
+      elements[c].numTags = numTags;
+      ierr = PetscViewerRead(viewer, elements[c].tags, elements[c].numTags, NULL, PETSC_ENUM);CHKERRQ(ierr);
+      ierr = PetscViewerRead(viewer, elements[c].nodes, elements[c].numNodes, NULL, PETSC_ENUM);CHKERRQ(ierr);
+      c++;
+    }
+  }
+  *gmsh_elems = elements;
+  PetscFunctionReturn(0);
+}
 
 /*@
   DMPlexCreateGmsh - Create a DMPlex mesh from a Gmsh file viewer
@@ -324,83 +401,5 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   /* Clean up intermediate storage */
   if (!rank || binary) ierr = PetscFree(gmsh_elem);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(DMPLEX_CreateGmsh,*dm,0,0,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode DMPlexCreateGmsh_ReadElement(PetscViewer viewer, PetscInt numCells, PetscBool binary, PetscBool byteSwap, GmshElement **gmsh_elems)
-{
-  PetscInt       c, p;
-  GmshElement   *elements;
-  int            i, cellType, dim, numNodes, numElem, numTags;
-  int            ibuf[16];
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscMalloc1(numCells, &elements);CHKERRQ(ierr);
-  for (c = 0; c < numCells;) {
-    ierr = PetscViewerRead(viewer, &ibuf, 3, NULL, PETSC_ENUM);CHKERRQ(ierr);
-    if (byteSwap) ierr = PetscByteSwap(&ibuf, PETSC_ENUM, 3);CHKERRQ(ierr);
-    if (binary) {
-      cellType = ibuf[0];
-      numElem = ibuf[1];
-      numTags = ibuf[2];
-    } else {
-      elements[c].id = ibuf[0];
-      cellType = ibuf[1];
-      numTags = ibuf[2];
-      numElem = 1;
-    }
-    switch (cellType) {
-    case 1: /* 2-node line */
-      dim = 1;
-      numNodes = 2;
-      break;
-    case 2: /* 3-node triangle */
-      dim = 2;
-      numNodes = 3;
-      break;
-    case 3: /* 4-node quadrangle */
-      dim = 2;
-      numNodes = 4;
-      break;
-    case 4: /* 4-node tetrahedron */
-      dim  = 3;
-      numNodes = 4;
-      break;
-    case 5: /* 8-node hexahedron */
-      dim = 3;
-      numNodes = 8;
-      break;
-    case 15: /* 1-node vertex */
-      dim = 0;
-      numNodes = 1;
-      break;
-    default:
-      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unsupported Gmsh element type %d", cellType);
-    }
-    if (binary) {
-      const PetscInt nint = numNodes + numTags + 1;
-      for (i = 0; i < numElem; ++i, ++c) {
-        /* Loop over inner binary element block */
-        elements[c].dim = dim;
-        elements[c].numNodes = numNodes;
-        elements[c].numTags = numTags;
-
-        ierr = PetscViewerRead(viewer, &ibuf, nint, NULL, PETSC_ENUM);CHKERRQ(ierr);
-        if (byteSwap) ierr = PetscByteSwap( &ibuf, PETSC_ENUM, nint);CHKERRQ(ierr);
-        elements[c].id = ibuf[0];
-        for (p = 0; p < numTags; p++) elements[c].tags[p] = ibuf[1 + p];
-        for (p = 0; p < numNodes; p++) elements[c].nodes[p] = ibuf[1 + numTags + p];
-      }
-    } else {
-      elements[c].dim = dim;
-      elements[c].numNodes = numNodes;
-      elements[c].numTags = numTags;
-      ierr = PetscViewerRead(viewer, elements[c].tags, elements[c].numTags, NULL, PETSC_ENUM);CHKERRQ(ierr);
-      ierr = PetscViewerRead(viewer, elements[c].nodes, elements[c].numNodes, NULL, PETSC_ENUM);CHKERRQ(ierr);
-      c++;
-    }
-  }
-  *gmsh_elems = elements;
   PetscFunctionReturn(0);
 }
