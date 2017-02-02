@@ -1843,7 +1843,21 @@ PetscErrorCode DMPlexComputeCellGeometryFVM(DM dm, PetscInt cell, PetscReal *vol
   PetscFunctionReturn(0);
 }
 
-/* This should also take a PetscFE argument I think */
+/*@
+  DMPlexComputeGeometryFEM - Precompute cell geometry for the entire mesh
+
+  Collective on dm
+
+  Input Parameter:
+. dm - The DMPlex
+
+  Output Parameter:
+. cellgeom - A vector with the cell geometry data for each cell
+
+  Level: beginner
+
+.keywords: DMPlexComputeCellGeometryFEM()
+@*/
 PetscErrorCode DMPlexComputeGeometryFEM(DM dm, Vec *cellgeom)
 {
   DM             dmCell;
@@ -2310,6 +2324,24 @@ PetscErrorCode DMPlexComputeGradientFVM(DM dm, PetscFV fvm, Vec faceGeometry, Ve
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMPlexGetDataFVM - Retrieve precomputed cell geometry
+
+  Collective on DM
+
+  Input Arguments:
++ dm  - The DM
+- fvm - The PetscFV
+
+  Output Parameters:
++ cellGeometry - The cell geometry
+. faceGeometry - The face geometry
+- dmGrad       - The gradient matrices
+
+  Level: developer
+
+.seealso: DMPlexComputeGeometryFVM()
+@*/
 PetscErrorCode DMPlexGetDataFVM(DM dm, PetscFV fv, Vec *cellgeom, Vec *facegeom, DM *gradDM)
 {
   PetscObject    cellgeomobj, facegeomobj;
