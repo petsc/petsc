@@ -62,8 +62,8 @@ def _stripIndent(block,srcfile):
   ext=os.path.splitext(srcfile)[1]
   for lline in block.split("\n"):
     line=lline[1:] if lline.startswith("!") else lline
-    line=line.split('#')[0]
     if not line.strip(): continue
+    if line.strip().startswith('#'): continue
     stripstr=" "
     nspace=len(line)-len(line.lstrip(stripstr))
     newline=line[nspace:]
@@ -75,8 +75,11 @@ def _stripIndent(block,srcfile):
   for lline in block.split("\n"):
     line=lline[1:] if lline.startswith("!") else lline
     if not line.strip(): continue
-    newline=line[nspace:]
-    newTestStr=newTestStr+newline.rstrip()+"\n"
+    if line.strip().startswith('#'): 
+      newTestStr+=line+'\n'
+    else:
+      newline=line[nspace:]
+      newTestStr+=newline.rstrip()+"\n"
 
   return newTestStr
 
@@ -103,7 +106,7 @@ def parseTest(testStr,srcfile):
   comments=[]
   indentlevel=0
   for ln in striptest.split("\n"):
-    line=ln.split('#')[0]
+    line=ln.split('#')[0].rstrip()
     comment=("" if len(ln.split("#"))==1 else " ".join(ln.split("#")[1:]).strip())
     if comment: comments.append(comment)
     if not line.strip(): continue
@@ -149,7 +152,7 @@ def parseTests(testStr,srcfile):
   newTestStr=_stripIndent(testStr,srcfile)
 
   # Now go through each test.  First elem in split is blank
-  for test in newTestStr.split("\ntest:\n")[1:]:
+  for test in newTestStr.split("\ntest:")[1:]:
     testname,subdict=parseTest(test,srcfile)
     if testDict.has_key(testname):
       print "Multiple test names specified: "+testname+" in file: "+srcfile
