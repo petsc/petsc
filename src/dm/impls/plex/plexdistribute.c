@@ -625,6 +625,22 @@ PetscErrorCode DMPlexCreateOverlap(DM dm, PetscInt levels, PetscSection rootSect
   PetscFunctionReturn(0);
 }
 
+/*@C
+  DMPlexCreateOverlapMigrationSF - Create an SF describing the new mesh distribution to make the overlap described by the input SF
+
+  Collective on DM
+
+  Input Parameters:
++ dm          - The DM
+- overlapSF   - The SF mapping ghost points in overlap to owner points on other processes
+
+  Output Parameters:
++ migrationSF - An SF that maps original points in old locations to points in new locations
+
+  Level: developer
+
+.seealso: DMPlexCreateOverlap(), DMPlexDistribute()
+@*/
 PetscErrorCode DMPlexCreateOverlapMigrationSF(DM dm, PetscSF overlapSF, PetscSF *migrationSF)
 {
   MPI_Comm           comm;
@@ -939,7 +955,7 @@ PetscErrorCode DMPlexDistributeData(DM dm, PetscSF pointSF, PetscSection origina
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalToGlobalMapping original, ISLocalToGlobalMapping renumbering, DM dmParallel)
+static PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalToGlobalMapping original, ISLocalToGlobalMapping renumbering, DM dmParallel)
 {
   DM_Plex               *mesh  = (DM_Plex*) dm->data;
   DM_Plex               *pmesh = (DM_Plex*) (dmParallel)->data;
@@ -1030,7 +1046,7 @@ PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalToGlobal
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexDistributeCoordinates(DM dm, PetscSF migrationSF, DM dmParallel)
+static PetscErrorCode DMPlexDistributeCoordinates(DM dm, PetscSF migrationSF, DM dmParallel)
 {
   MPI_Comm         comm;
   PetscSection     originalCoordSection, newCoordSection;
@@ -1066,7 +1082,7 @@ PetscErrorCode DMPlexDistributeCoordinates(DM dm, PetscSF migrationSF, DM dmPara
 }
 
 /* Here we are assuming that process 0 always has everything */
-PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmParallel)
+static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmParallel)
 {
   DM_Plex         *mesh = (DM_Plex*) dm->data;
   MPI_Comm         comm;
@@ -1130,7 +1146,7 @@ PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmParallel)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexDistributeSetupHybrid(DM dm, PetscSF migrationSF, ISLocalToGlobalMapping renumbering, DM dmParallel)
+static PetscErrorCode DMPlexDistributeSetupHybrid(DM dm, PetscSF migrationSF, ISLocalToGlobalMapping renumbering, DM dmParallel)
 {
   DM_Plex        *mesh  = (DM_Plex*) dm->data;
   DM_Plex        *pmesh = (DM_Plex*) (dmParallel)->data;
@@ -1177,7 +1193,7 @@ PetscErrorCode DMPlexDistributeSetupHybrid(DM dm, PetscSF migrationSF, ISLocalTo
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexDistributeSetupTree(DM dm, PetscSF migrationSF, ISLocalToGlobalMapping original, ISLocalToGlobalMapping renumbering, DM dmParallel)
+static PetscErrorCode DMPlexDistributeSetupTree(DM dm, PetscSF migrationSF, ISLocalToGlobalMapping original, ISLocalToGlobalMapping renumbering, DM dmParallel)
 {
   DM_Plex        *mesh  = (DM_Plex*) dm->data;
   DM_Plex        *pmesh = (DM_Plex*) (dmParallel)->data;
@@ -1256,7 +1272,7 @@ PetscErrorCode DMPlexDistributeSetupTree(DM dm, PetscSF migrationSF, ISLocalToGl
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexDistributeSF(DM dm, PetscSF migrationSF, DM dmParallel)
+PETSC_UNUSED static PetscErrorCode DMPlexDistributeSF(DM dm, PetscSF migrationSF, DM dmParallel)
 {
   DM_Plex               *mesh  = (DM_Plex*) dm->data;
   DM_Plex               *pmesh = (DM_Plex*) (dmParallel)->data;
@@ -1644,7 +1660,7 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
 }
 
 /*@C
-  DMPlexDistribute - Add partition overlap to a distributed non-overlapping DM.
+  DMPlexDistributeOverlap - Add partition overlap to a distributed non-overlapping DM.
 
   Not Collective
 
