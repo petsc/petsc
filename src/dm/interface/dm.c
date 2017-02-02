@@ -4837,7 +4837,7 @@ PetscErrorCode DMOutputSequenceLoad(DM dm, PetscViewer viewer, const char *name,
 #if defined(PETSC_HAVE_HDF5)
     PetscScalar value;
 
-    ierr = DMSequenceLoad_HDF5(dm, name, num, &value, viewer);CHKERRQ(ierr);
+    ierr = DMSequenceLoad_HDF5_Internal(dm, name, num, &value, viewer);CHKERRQ(ierr);
     *val = PetscRealPart(value);
 #endif
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid viewer; open viewer with PetscViewerHDF5Open()");

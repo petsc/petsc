@@ -221,7 +221,7 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
     ierr = PetscViewerVTKAddField(viewer, (PetscObject) dm, DMPlexVTKWriteAll, ft, (PetscObject) v);CHKERRQ(ierr);
   } else if (ishdf5) {
 #if defined(PETSC_HAVE_HDF5)
-    ierr = VecView_Plex_Local_HDF5(v, viewer);CHKERRQ(ierr);
+    ierr = VecView_Plex_Local_HDF5_Internal(v, viewer);CHKERRQ(ierr);
 #else
     SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
 #endif
@@ -263,7 +263,7 @@ PetscErrorCode VecView_Plex(Vec v, PetscViewer viewer)
     ierr = DMRestoreLocalVector(dm, &locv);CHKERRQ(ierr);
   } else if (ishdf5) {
 #if defined(PETSC_HAVE_HDF5)
-    ierr = VecView_Plex_HDF5(v, viewer);CHKERRQ(ierr);
+    ierr = VecView_Plex_HDF5_Internal(v, viewer);CHKERRQ(ierr);
 #else
     SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
 #endif
@@ -324,7 +324,7 @@ PetscErrorCode VecView_Plex_Native(Vec originalv, PetscViewer viewer)
   }
   if (ishdf5) {
 #if defined(PETSC_HAVE_HDF5)
-    ierr = VecView_Plex_HDF5_Native(v, viewer);CHKERRQ(ierr);
+    ierr = VecView_Plex_HDF5_Native_Internal(v, viewer);CHKERRQ(ierr);
 #else
     SETERRQ(comm, PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
 #endif
@@ -382,7 +382,7 @@ PetscErrorCode VecLoad_Plex(Vec v, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
   if (ishdf5) {
 #if defined(PETSC_HAVE_HDF5)
-    ierr = VecLoad_Plex_HDF5(v, viewer);CHKERRQ(ierr);
+    ierr = VecLoad_Plex_HDF5_Internal(v, viewer);CHKERRQ(ierr);
 #else
     SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
 #endif
@@ -414,7 +414,7 @@ PetscErrorCode VecLoad_Plex_Native(Vec originalv, PetscViewer viewer)
         ierr = DMGetGlobalVector(dm, &v);CHKERRQ(ierr);
         ierr = PetscObjectGetName((PetscObject) originalv, &vecname);CHKERRQ(ierr);
         ierr = PetscObjectSetName((PetscObject) v, vecname);CHKERRQ(ierr);
-        ierr = VecLoad_Plex_HDF5_Native(v, viewer);CHKERRQ(ierr);
+        ierr = VecLoad_Plex_HDF5_Native_Internal(v, viewer);CHKERRQ(ierr);
         ierr = DMPlexNaturalToGlobalBegin(dm, v, originalv);CHKERRQ(ierr);
         ierr = DMPlexNaturalToGlobalEnd(dm, v, originalv);CHKERRQ(ierr);
         ierr = DMRestoreGlobalVector(dm, &v);CHKERRQ(ierr);
@@ -888,7 +888,7 @@ PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
   } else if (ishdf5) {
 #if defined(PETSC_HAVE_HDF5)
     ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_HDF5_VIZ);CHKERRQ(ierr);
-    ierr = DMPlexView_HDF5(dm, viewer);CHKERRQ(ierr);
+    ierr = DMPlexView_HDF5_Internal(dm, viewer);CHKERRQ(ierr);
     ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
 #else
     SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
@@ -914,7 +914,7 @@ PetscErrorCode DMLoad_Plex(DM dm, PetscViewer viewer)
   if (isbinary) {SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Do not yet support binary viewers");}
   else if (ishdf5) {
 #if defined(PETSC_HAVE_HDF5)
-    ierr = DMPlexLoad_HDF5(dm, viewer);CHKERRQ(ierr);
+    ierr = DMPlexLoad_HDF5_Internal(dm, viewer);CHKERRQ(ierr);
 #else
     SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
 #endif
