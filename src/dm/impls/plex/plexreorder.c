@@ -1,7 +1,7 @@
 #include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 #include <petsc/private/matorderimpl.h> /*I      "petscmat.h"      I*/
 
-PetscErrorCode DMPlexCreateOrderingClosure_Static(DM dm, PetscInt numPoints, const PetscInt pperm[], PetscInt **clperm, PetscInt **invclperm)
+static PetscErrorCode DMPlexCreateOrderingClosure_Static(DM dm, PetscInt numPoints, const PetscInt pperm[], PetscInt **clperm, PetscInt **invclperm)
 {
   PetscInt      *perm, *iperm;
   PetscInt       depth, d, pStart, pEnd, fStart, fMax, fEnd, p;
