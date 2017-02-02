@@ -520,8 +520,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[],c
   IS             *isrow_block,*iscol_block;
   Mat_MPIBAIJ    *c = (Mat_MPIBAIJ*)C->data;
   PetscErrorCode ierr;
-  PetscInt       nmax,nstages_local,nstages,i,pos,max_no,ncol,nrow,N=C->cmap->N,bs=C->rmap->bs;
-  PetscBool      colflag,*allcolumns,*allrows;
+  PetscInt       nmax,nstages_local,nstages,i,pos,max_no,N=C->cmap->N,bs=C->rmap->bs;
 
   PetscFunctionBegin;
   /* The compression and expansion should be avoided. Doesn't point
@@ -529,25 +528,6 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[],c
   ierr = PetscMalloc2(ismax+1,&isrow_block,ismax+1,&iscol_block);CHKERRQ(ierr);
   ierr = ISCompressIndicesGeneral(N,C->rmap->n,bs,ismax,isrow,isrow_block);CHKERRQ(ierr);
   ierr = ISCompressIndicesGeneral(N,C->cmap->n,bs,ismax,iscol,iscol_block);CHKERRQ(ierr);
-
-#if 1
-  /* Check for special case: each processor gets entire matrix columns -- rm! */
-  ierr = PetscMalloc2(ismax+1,&allcolumns,ismax+1,&allrows);CHKERRQ(ierr);
-  for (i=0; i<ismax; i++) {
-    ierr = ISIdentity(iscol[i],&colflag);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(iscol[i],&ncol);CHKERRQ(ierr);
-    if (colflag && ncol == C->cmap->N) allcolumns[i] = PETSC_TRUE;
-    else allcolumns[i] = PETSC_FALSE;
-
-    ierr = ISIdentity(isrow[i],&colflag);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(isrow[i],&nrow);CHKERRQ(ierr);
-    if (colflag && nrow == C->rmap->N) {
-      allrows[i] = PETSC_TRUE;
-      //printf("all rows \n");
-    }
-    else allrows[i] = PETSC_FALSE;
-  }
-#endif
 
   /* Allocate memory to hold all the submatrices */
   if (scall == MAT_INITIAL_MATRIX) {
@@ -565,13 +545,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[],c
     else if (pos == ismax) max_no = 0;
     else                   max_no = ismax-pos;
 
-    PetscBool isbaij;
-    ierr = PetscObjectTypeCompare((PetscObject)C,MATMPIBAIJ,&isbaij);CHKERRQ(ierr);
-    if (isbaij) {
-      ierr = MatGetSubMatrices_MPIBAIJ_local_new(C,max_no,isrow_block+pos,iscol_block+pos,scall,*submat+pos);CHKERRQ(ierr);
-    } else {
-      ierr = MatGetSubMatrices_MPIBAIJ_local(C,max_no,isrow_block+pos,iscol_block+pos,scall,allrows+pos,allcolumns+pos,*submat+pos);CHKERRQ(ierr);
-    }
+    ierr = MatGetSubMatrices_MPIBAIJ_local_new(C,max_no,isrow_block+pos,iscol_block+pos,scall,*submat+pos);CHKERRQ(ierr);
     pos += max_no;
   }
 
@@ -580,7 +554,6 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[],c
     ierr = ISDestroy(&iscol_block[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree2(isrow_block,iscol_block);CHKERRQ(ierr);
-  ierr = PetscFree2(allcolumns,allrows);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1138,6 +1111,8 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local_new(Mat C,PetscInt ismax,const IS
 #if defined(PETSC_USE_CTABLE)
             ierr = PetscTableFind(rmap_i,sbuf1_i[ct1]+1,&row);CHKERRQ(ierr);
             row--;
+            if (allrows[is_no] && sbuf1_i[ct1] != row) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"sbuf1_i[ct1] %d != row %d",sbuf1_i[ct1],row);
+
             if (row < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"row not found in table");
 #else
             row = rmap_i[sbuf1_i[ct1]]; /* the val in the new matrix to be */
@@ -1313,8 +1288,11 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local_new(Mat C,PetscInt ismax,const IS
           vworkB = b_a + b_i[row]*bs2;
         }
 #if defined(PETSC_USE_CTABLE)
+        PetscInt Crow = row+rstart;
         ierr = PetscTableFind(rmap_i,row+rstart+1,&row);CHKERRQ(ierr);
         row--;
+        if (allrows[i] && Crow != row) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Crow %d != row %d",Crow,row);
+
         if (row < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"row not found in table");
 #else
         row = rmap_i[row + rstart];
@@ -1429,9 +1407,12 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local_new(Mat C,PetscInt ismax,const IS
       for (k=0; k<max1; k++,ct1++) { /* for each recved block row */
         row = sbuf1_i[ct1];
 #if defined(PETSC_USE_CTABLE)
+        PetscInt Crow = row;
         ierr = PetscTableFind(rmap_i,row+1,&row);CHKERRQ(ierr);
         row--;
         if (row < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"row not found in table");
+
+        if (allrows[is_no] && Crow != row) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Crow %d != row %d",Crow,row);
 #else
         row = rmap_i[row];
 #endif
@@ -1553,7 +1534,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local_new(Mat C,PetscInt ismax,const IS
 
 //------------ endof new -------------
 
-PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,PetscBool *allrows,PetscBool *allcolumns,Mat *submats)
+PetscErrorCode MatGetSubMatrices_MPIBAIJ_local_old(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,PetscBool *allrows,PetscBool *allcolumns,Mat *submats)
 {
   Mat_MPIBAIJ    *c = (Mat_MPIBAIJ*)C->data;
   Mat            A  = c->A;
