@@ -31,7 +31,7 @@ PetscErrorCode DMPlexCreateFluentFromFile(MPI_Comm comm, const char filename[], 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexCreateFluent_ReadString(PetscViewer viewer, char *buffer, char delim)
+static PetscErrorCode DMPlexCreateFluent_ReadString(PetscViewer viewer, char *buffer, char delim)
 {
   PetscInt ret, i = 0;
   PetscErrorCode ierr;
@@ -43,7 +43,7 @@ PetscErrorCode DMPlexCreateFluent_ReadString(PetscViewer viewer, char *buffer, c
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexCreateFluent_ReadValues(PetscViewer viewer, void *data, PetscInt count, PetscDataType dtype, PetscBool binary)
+static PetscErrorCode DMPlexCreateFluent_ReadValues(PetscViewer viewer, void *data, PetscInt count, PetscDataType dtype, PetscBool binary)
 {
   int            fdes=0;
   FILE          *file;
@@ -91,7 +91,7 @@ PetscErrorCode DMPlexCreateFluent_ReadValues(PetscViewer viewer, void *data, Pet
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentSection *s)
+static PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentSection *s)
 {
   char           buffer[PETSC_MAX_PATH_LEN];
   int            snum;
