@@ -67,7 +67,7 @@ PetscErrorCode DMPlexVTKGetCellType_Internal(DM dm, PetscInt dim, PetscInt corne
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
+static PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
 {
   MPI_Comm       comm;
   DMLabel        label;
@@ -229,7 +229,7 @@ PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexVTKWritePartition_ASCII(DM dm, FILE *fp)
+static PetscErrorCode DMPlexVTKWritePartition_ASCII(DM dm, FILE *fp)
 {
   MPI_Comm       comm;
   PetscInt       numCells = 0, cellHeight;
@@ -272,7 +272,7 @@ PetscErrorCode DMPlexVTKWritePartition_ASCII(DM dm, FILE *fp)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, PetscSection globalSection, Vec v, FILE *fp, PetscInt enforceDof, PetscInt precision, PetscReal scale)
+static PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, PetscSection globalSection, Vec v, FILE *fp, PetscInt enforceDof, PetscInt precision, PetscReal scale)
 {
   MPI_Comm           comm;
   const MPI_Datatype mpiType = MPIU_SCALAR;
@@ -416,7 +416,7 @@ PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, PetscSec
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexVTKWriteField_ASCII(DM dm, PetscSection section, PetscSection globalSection, Vec field, const char name[], FILE *fp, PetscInt enforceDof, PetscInt precision, PetscReal scale)
+static PetscErrorCode DMPlexVTKWriteField_ASCII(DM dm, PetscSection section, PetscSection globalSection, Vec field, const char name[], FILE *fp, PetscInt enforceDof, PetscInt precision, PetscReal scale)
 {
   MPI_Comm       comm;
   PetscInt       numDof = 0, maxDof;
