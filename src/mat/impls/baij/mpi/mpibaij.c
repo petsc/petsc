@@ -2082,12 +2082,11 @@ PetscErrorCode MatGetSubMatrix_MPIBAIJ_Private(Mat mat,IS isrow,IS iscol,PetscIn
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
   PetscInt       i,m,n,rstart,row,rend,nz,*cwork,j,bs;
-  PetscInt       *ii,*jj,nlocal,*dlens,*olens,dlen,olen,jend,mglobal,ncol,nrow;
+  PetscInt       *ii,*jj,nlocal,*dlens,*olens,dlen,olen,jend,mglobal;
   Mat            M,Mreuse;
   MatScalar      *vwork,*aa;
   MPI_Comm       comm;
   IS             isrow_new, iscol_new;
-  PetscBool      idflag,allrows, allcols;
   Mat_SeqBAIJ    *aij;
 
   PetscFunctionBegin;
@@ -2099,23 +2098,12 @@ PetscErrorCode MatGetSubMatrix_MPIBAIJ_Private(Mat mat,IS isrow,IS iscol,PetscIn
   ierr = ISCompressIndicesGeneral(mat->rmap->N,mat->rmap->n,mat->rmap->bs,1,&isrow,&isrow_new);CHKERRQ(ierr);
   ierr = ISCompressIndicesGeneral(mat->cmap->N,mat->cmap->n,mat->cmap->bs,1,&iscol,&iscol_new);CHKERRQ(ierr);
 
-  /* Check for special case: each processor gets entire matrix columns */
-  ierr = ISIdentity(iscol,&idflag);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(iscol,&ncol);CHKERRQ(ierr);
-  if (idflag && ncol == mat->cmap->N) allcols = PETSC_TRUE;
-  else allcols = PETSC_FALSE;
-
-  ierr = ISIdentity(isrow,&idflag);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(isrow,&nrow);CHKERRQ(ierr);
-  if (idflag && nrow == mat->rmap->N) allrows = PETSC_TRUE;
-  else allrows = PETSC_FALSE;
-
   if (call ==  MAT_REUSE_MATRIX) {
     ierr = PetscObjectQuery((PetscObject)*newmat,"SubMatrix",(PetscObject*)&Mreuse);CHKERRQ(ierr);
     if (!Mreuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Submatrix passed in was not used before, cannot reuse");
-    ierr = MatGetSubMatrices_MPIBAIJ_local_old(mat,1,&isrow_new,&iscol_new,MAT_REUSE_MATRIX,&allrows,&allcols,&Mreuse);CHKERRQ(ierr);
+    ierr = MatGetSubMatrices_MPIBAIJ_local(mat,1,&isrow_new,&iscol_new,MAT_REUSE_MATRIX,&Mreuse);CHKERRQ(ierr);
   } else {
-    ierr = MatGetSubMatrices_MPIBAIJ_local_old(mat,1,&isrow_new,&iscol_new,MAT_INITIAL_MATRIX,&allrows,&allcols,&Mreuse);CHKERRQ(ierr);
+    ierr = MatGetSubMatrices_MPIBAIJ_local(mat,1,&isrow_new,&iscol_new,MAT_INITIAL_MATRIX,&Mreuse);CHKERRQ(ierr);
   }
   ierr = ISDestroy(&isrow_new);CHKERRQ(ierr);
   ierr = ISDestroy(&iscol_new);CHKERRQ(ierr);

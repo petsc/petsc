@@ -545,7 +545,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[],c
     else if (pos == ismax) max_no = 0;
     else                   max_no = ismax-pos;
 
-    ierr = MatGetSubMatrices_MPIBAIJ_local_new(C,max_no,isrow_block+pos,iscol_block+pos,scall,*submat+pos);CHKERRQ(ierr);
+    ierr = MatGetSubMatrices_MPIBAIJ_local(C,max_no,isrow_block+pos,iscol_block+pos,scall,*submat+pos);CHKERRQ(ierr);
     pos += max_no;
   }
 
@@ -629,7 +629,7 @@ PetscErrorCode MatDestroy_MPIBAIJ_MatGetSubmatrices(Mat C)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatGetSubMatrices_MPIBAIJ_local_new(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submats)
+PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submats)
 {
   Mat_MPIBAIJ    *c = (Mat_MPIBAIJ*)C->data;
   Mat            A  = c->A;
