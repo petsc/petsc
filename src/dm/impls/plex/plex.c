@@ -1051,7 +1051,7 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
 }
 
 /*@
-  DMPlexGetSubdomainGlobalSection - Returns the section associated with the subdomain
+  DMPlexGetSubdomainSection - Returns the section associated with the subdomain
 
   Not collective
 
