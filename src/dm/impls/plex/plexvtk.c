@@ -2,7 +2,7 @@
 #include <petsc/private/dmpleximpl.h>    /*I   "petscdmplex.h"   I*/
 #include <../src/sys/classes/viewer/impls/vtk/vtkvimpl.h>
 
-PetscErrorCode DMPlexVTKGetCellType(DM dm, PetscInt dim, PetscInt corners, PetscInt *cellType)
+PetscErrorCode DMPlexVTKGetCellType_Internal(DM dm, PetscInt dim, PetscInt corners, PetscInt *cellType)
 {
   PetscFunctionBegin;
   *cellType = -1;
@@ -207,7 +207,7 @@ PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
     PetscInt cellType;
 
     for (c = 0; c < numCells; ++c) {
-      ierr = DMPlexVTKGetCellType(dm, dim, corners[c], &cellType);CHKERRQ(ierr);
+      ierr = DMPlexVTKGetCellType_Internal(dm, dim, corners[c], &cellType);CHKERRQ(ierr);
       ierr = PetscFPrintf(comm, fp, "%d\n", cellType);CHKERRQ(ierr);
     }
     for (proc = 1; proc < numProcs; ++proc) {
@@ -216,7 +216,7 @@ PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
       ierr = MPI_Recv(&numCells, 1, MPIU_INT, proc, tag, comm, &status);CHKERRQ(ierr);
       ierr = MPI_Recv(corners, numCells, MPIU_INT, proc, tag, comm, &status);CHKERRQ(ierr);
       for (c = 0; c < numCells; ++c) {
-        ierr = DMPlexVTKGetCellType(dm, dim, corners[c], &cellType);CHKERRQ(ierr);
+        ierr = DMPlexVTKGetCellType_Internal(dm, dim, corners[c], &cellType);CHKERRQ(ierr);
         ierr = PetscFPrintf(comm, fp, "%d\n", cellType);CHKERRQ(ierr);
       }
     }
