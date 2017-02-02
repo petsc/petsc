@@ -80,8 +80,9 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C,PetscInt is_max,IS is[],PetscIn
         if (pos+nmax <= is_max) max_no = nmax;
         else if (pos == is_max) max_no = 0;
         else                    max_no = is_max-pos;
-        c->ijonly = PETSC_TRUE;
-        ierr      = MatGetSubMatrices_MPIBAIJ_local_old(C,max_no,is_row+pos,is_new+pos,MAT_INITIAL_MATRIX,allrows+pos,allcolumns+pos,submats+pos);CHKERRQ(ierr);
+        //c->ijonly = PETSC_TRUE;
+        //ierr      = MatGetSubMatrices_MPIBAIJ_local_old(C,max_no,is_row+pos,is_new+pos,MAT_INITIAL_MATRIX,allrows+pos,allcolumns+pos,submats+pos);CHKERRQ(ierr);
+        ierr      = MatGetSubMatrices_MPIBAIJ_local(C,max_no,is_row+pos,is_new+pos,MAT_INITIAL_MATRIX,submats+pos);CHKERRQ(ierr);
         pos      += max_no;
       }
 
