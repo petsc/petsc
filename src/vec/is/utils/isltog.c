@@ -706,7 +706,7 @@ PetscErrorCode ISLocalToGlobalMappingGetUseHashTable(ISLocalToGlobalMapping mapp
 PetscErrorCode  ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlobalToLocalMappingType type,
                                             PetscInt n,const PetscInt idx[],PetscInt *nout,PetscInt idxout[])
 {
-  PetscInt       i,*globals,nf = 0,tmp,start,end,bs,local;
+  PetscInt       i,*globals,nf = 0,tmp,start,end,bs;
   PetscBool      use_hash_table;
   PetscErrorCode ierr;
 
@@ -734,7 +734,7 @@ PetscErrorCode  ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlo
         if (idx[i] < 0)                   idxout[i] = idx[i];
         else if (idx[i] < bs*start)       idxout[i] = -1;
         else if (idx[i] > bs*(end+1)-1)   idxout[i] = -1;
-        else                              GTOL(idx[i], local);
+        else                              GTOL(idx[i], idxout[i]);
       }
     }
     if (nout) *nout = n;
