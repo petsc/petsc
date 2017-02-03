@@ -119,7 +119,7 @@ PetscErrorCode  ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping,PetscV
 
     Concepts: mapping^local to global
 
-.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate()
+.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingSetFromOptions()
 @*/
 PetscErrorCode  ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *mapping)
 {
@@ -166,7 +166,7 @@ PetscErrorCode  ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *map
 
     Concepts: mapping^local to global
 
-.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingCreateIS()
+.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingSetFromOptions()
 @*/
 PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF sf,PetscInt start,ISLocalToGlobalMapping *mapping)
 {
@@ -303,7 +303,7 @@ PetscErrorCode  ISLocalToGlobalMappingGetBlockSize(ISLocalToGlobalMapping mappin
 
     Concepts: mapping^local to global
 
-.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS()
+.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingSetFromOptions()
 @*/
 PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscInt indices[],PetscCopyMode mode,ISLocalToGlobalMapping *mapping)
 {
@@ -330,9 +330,9 @@ PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm comm,PetscInt bs,PetscInt 
     Do not create the global to local mapping. This is only created if
     ISGlobalToLocalMapping() is called
   */
-  (*mapping)->globals = 0;
-  (*mapping)->globalht = 0;
-  (*mapping)->use_hash_table = PETSC_TRUE;
+  (*mapping)->globals        = 0;
+  (*mapping)->globalht       = 0;
+  (*mapping)->use_hash_table = PETSC_FALSE;
   if (mode == PETSC_COPY_VALUES) {
     ierr = PetscMalloc1(n,&in);CHKERRQ(ierr);
     ierr = PetscMemcpy(in,indices,n*sizeof(PetscInt));CHKERRQ(ierr);
@@ -344,6 +344,39 @@ PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm comm,PetscInt bs,PetscInt 
   }
   else SETERRQ(comm,PETSC_ERR_SUP,"Cannot currently use PETSC_USE_POINTER");
   ierr = PetscStrallocpy("basic",&((PetscObject)*mapping)->type_name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   ISLocalToGlobalMappingSetFromOptions - Set mapping options from the options database.
+
+   Not collective
+
+   Input Parameters:
+.  mapping - mapping data structure
+
+   Options Database:
+.   -ltogm_use_hash_table true,false see ISLocalToGlobalMappingSetUseHashTable()
+
+   Level: advanced
+
+.seealso: ISLocalToGlobalMappingSetUseHashTable()
+@*/
+
+PetscErrorCode ISLocalToGlobalMappingSetFromOptions(ISLocalToGlobalMapping mapping)
+{
+  PetscErrorCode ierr;
+  PetscBool      flg;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,1);
+
+  ierr = PetscObjectOptionsBegin((PetscObject)mapping);CHKERRQ(ierr);
+
+  ierr = ISLocalToGlobalMappingGetUseHashTable(mapping,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ltogm_use_hash_table", "use hash table (memory scalable for global to local in ISLtoGMappings","ISLocalToGlobalMappingSetUseHashTable",flg,&flg,NULL);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingSetUseHashTable(mapping,flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -543,9 +576,11 @@ static PetscErrorCode ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping
 {
   PetscErrorCode ierr;
   PetscInt       i,*idx = mapping->indices,n = mapping->n,end,start,*globals;
+  PetscBool      use_hash_table;
 
   PetscFunctionBegin;
-  if (mapping->use_hash_table && mapping->globalht) PetscFunctionReturn(0);
+  ierr = ISLocalToGlobalMappingGetUseHashTable(mapping,&use_hash_table);CHKERRQ(ierr);
+  if (use_hash_table && mapping->globalht) PetscFunctionReturn(0);
   else if (mapping->globals) PetscFunctionReturn(0);
   end   = 0;
   start = PETSC_MAX_INT;
@@ -581,6 +616,57 @@ static PetscErrorCode ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping
 }
 
 /*@
+    ISLocalToGlobalMappingSetUseHashTable - Should global to local lookups use a hash table?
+
+    This is memory-scalable, but slightly slower, implementation than the default flat array.
+
+    Not collective
+
+    Input parameters:
++   mapping - mapping between local and global numbering
+-   flg - use a hash table?
+
+    Level: advanced
+
+.seealso: ISGlobalToLocalMappingApply(), ISGlobalToLocalMappingApplyBlock(), ISLocalToGlobalMappingSetFromOptions(), ISLocalToGlobalMappingGetUseHashTable()
+
+*/
+PetscErrorCode ISLocalToGlobalMappingSetUseHashTable(ISLocalToGlobalMapping mapping, PetscBool flg)
+{
+  PetscFunctionBegin;
+
+  mapping->use_hash_table = flg;
+
+  PetscFunctionReturn(0);
+}
+
+/*@
+    ISLocalToGlobalMappingGetUseHashTable - Do global to local lookups use a hash table?
+
+    This is memory-scalable, but slightly slower, implementation than the default flat array.
+
+    Not collective
+
+    Input parameter:
++   mapping - mapping between local and global numbering
+
+    Output parameter:
++   flg - does the mapping use a hash table?
+
+    Level: advanced
+
+.seealso: ISGlobalToLocalMappingApply(), ISGlobalToLocalMappingApplyBlock(), ISLocalToGlobalMappingSetFromOptions(), ISLocalToGlobalMappingSetUseHashTable()
+*/
+PetscErrorCode ISLocalToGlobalMappingGetUseHashTable(ISLocalToGlobalMapping mapping, PetscBool *flg)
+{
+  PetscFunctionBegin;
+
+  *flg = mapping->use_hash_table;
+
+  PetscFunctionReturn(0);
+}
+
+/*@
     ISGlobalToLocalMappingApply - Provides the local numbering for a list of integers
     specified with a global numbering.
 
@@ -604,8 +690,8 @@ static PetscErrorCode ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping
     Notes:
     Either nout or idxout may be NULL. idx and idxout may be identical.
 
-    This is not scalable in memory usage. Each processor requires O(Nglobal) size
-    array to compute these.
+    Unless the option -ltogm_use_hash_table is used, this is not scalable in memory usage. Each processor requires
+    O(Nglobal) size array to compute these.
 
     Level: advanced
 
@@ -615,18 +701,19 @@ static PetscErrorCode ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping
     Concepts: mapping^global to local
 
 .seealso: ISLocalToGlobalMappingApply(), ISGlobalToLocalMappingApplyBlock(), ISLocalToGlobalMappingCreate(),
-          ISLocalToGlobalMappingDestroy()
+          ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingGetUseHashTable(), ISLocalToGlobalMappingSetUseHashTable()
 @*/
 PetscErrorCode  ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlobalToLocalMappingType type,
                                             PetscInt n,const PetscInt idx[],PetscInt *nout,PetscInt idxout[])
 {
   PetscInt       i,*globals,nf = 0,tmp,start,end,bs,local;
-  const PetscBool use_hash_table = mapping->use_hash_table;
+  PetscBool      use_hash_table;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,1);
   ierr = ISGlobalToLocalMappingSetUp_Private(mapping);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetUseHashTable(mapping,&use_hash_table);CHKERRQ(ierr);
   globals = mapping->globals;
   start   = mapping->globalstart;
   end     = mapping->globalend;
@@ -747,8 +834,8 @@ PetscErrorCode  ISGlobalToLocalMappingApplyIS(ISLocalToGlobalMapping mapping,ISG
     Notes:
     Either nout or idxout may be NULL. idx and idxout may be identical.
 
-    This is not scalable in memory usage. Each processor requires O(Nglobal) size
-    array to compute these.
+    Unless the option -ltogm_use_hash_table is used, this is not scalable in memory usage. Each processor requires
+    O(Nglobal) size array to compute these.
 
     Level: advanced
 
@@ -758,18 +845,19 @@ PetscErrorCode  ISGlobalToLocalMappingApplyIS(ISLocalToGlobalMapping mapping,ISG
     Concepts: mapping^global to local
 
 .seealso: ISLocalToGlobalMappingApply(), ISGlobalToLocalMappingApply(), ISLocalToGlobalMappingCreate(),
-          ISLocalToGlobalMappingDestroy()
+          ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingGetUseHashTable(), ISLocalToGlobalMappingSetUseHashTable()
 @*/
 PetscErrorCode  ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping mapping,ISGlobalToLocalMappingType type,
                                   PetscInt n,const PetscInt idx[],PetscInt *nout,PetscInt idxout[])
 {
   PetscInt       i,*globals,nf = 0,tmp,start,end;
-  const PetscBool use_hash_table = mapping->use_hash_table;
+  PetscBool      use_hash_table;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,1);
   ierr = ISGlobalToLocalMappingSetUp_Private(mapping);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetUseHashTable(mapping,&use_hash_table);CHKERRQ(ierr);
   globals = mapping->globals;
   start   = mapping->globalstart;
   end     = mapping->globalend;
