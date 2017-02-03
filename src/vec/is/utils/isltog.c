@@ -331,6 +331,8 @@ PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm comm,PetscInt bs,PetscInt 
     ISGlobalToLocalMapping() is called
   */
   (*mapping)->globals = 0;
+  (*mapping)->globalht = 0;
+  (*mapping)->use_hash_table = PETSC_TRUE;
   if (mode == PETSC_COPY_VALUES) {
     ierr = PetscMalloc1(n,&in);CHKERRQ(ierr);
     ierr = PetscMemcpy(in,indices,n*sizeof(PetscInt));CHKERRQ(ierr);
@@ -370,6 +372,7 @@ PetscErrorCode  ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping *mapping)
   ierr = PetscFree((*mapping)->globals);CHKERRQ(ierr);
   ierr = PetscFree((*mapping)->info_procs);CHKERRQ(ierr);
   ierr = PetscFree((*mapping)->info_numprocs);CHKERRQ(ierr);
+  PetscHashIDestroy((*mapping)->globalht);
   if ((*mapping)->info_indices) {
     PetscInt i;
 
@@ -542,6 +545,8 @@ static PetscErrorCode ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping
   PetscInt       i,*idx = mapping->indices,n = mapping->n,end,start,*globals;
 
   PetscFunctionBegin;
+  if (mapping->use_hash_table && mapping->globalht) PetscFunctionReturn(0);
+  else if (mapping->globals) PetscFunctionReturn(0);
   end   = 0;
   start = PETSC_MAX_INT;
 
@@ -554,15 +559,24 @@ static PetscErrorCode ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping
   mapping->globalstart = start;
   mapping->globalend   = end;
 
-  ierr             = PetscMalloc1(end-start+2,&globals);CHKERRQ(ierr);
-  mapping->globals = globals;
-  for (i=0; i<end-start+1; i++) globals[i] = -1;
-  for (i=0; i<n; i++) {
-    if (idx[i] < 0) continue;
-    globals[idx[i] - start] = i;
-  }
+  if (mapping->use_hash_table) {
+    PetscHashICreate(mapping->globalht);
+    for (i=0; i<n; i++ ) {
+      if (idx[i] < 0) continue;
+      PetscHashIAdd(mapping->globalht, idx[i], i);
+    }
+    ierr = PetscLogObjectMemory((PetscObject)mapping,2*n*sizeof(PetscInt));CHKERRQ(ierr);
+  } else {
+    ierr             = PetscMalloc1(end-start+2,&globals);CHKERRQ(ierr);
+    mapping->globals = globals;
+    for (i=0; i<end-start+1; i++) globals[i] = -1;
+    for (i=0; i<n; i++) {
+      if (idx[i] < 0) continue;
+      globals[idx[i] - start] = i;
+    }
 
-  ierr = PetscLogObjectMemory((PetscObject)mapping,(end-start+1)*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)mapping,(end-start+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -606,18 +620,26 @@ static PetscErrorCode ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping
 PetscErrorCode  ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlobalToLocalMappingType type,
                                             PetscInt n,const PetscInt idx[],PetscInt *nout,PetscInt idxout[])
 {
-  PetscInt       i,*globals,nf = 0,tmp,start,end,bs;
+  PetscInt       i,*globals,nf = 0,tmp,start,end,bs,local;
+  const PetscBool use_hash_table = mapping->use_hash_table;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,1);
-  if (!mapping->globals) {
-    ierr = ISGlobalToLocalMappingSetUp_Private(mapping);CHKERRQ(ierr);
-  }
+  ierr = ISGlobalToLocalMappingSetUp_Private(mapping);CHKERRQ(ierr);
   globals = mapping->globals;
   start   = mapping->globalstart;
   end     = mapping->globalend;
   bs      = mapping->bs;
+
+#define GTOL(g, local) do {                        \
+    if (use_hash_table) {                          \
+      PetscHashIMap(mapping->globalht,g/bs,local); \
+    } else {                                       \
+      local = globals[g/bs - start];               \
+    }                                              \
+    local = bs*local + (g % bs);                   \
+  } while (0)
 
   if (type == IS_GTOLM_MASK) {
     if (idxout) {
@@ -625,7 +647,7 @@ PetscErrorCode  ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlo
         if (idx[i] < 0)                   idxout[i] = idx[i];
         else if (idx[i] < bs*start)       idxout[i] = -1;
         else if (idx[i] > bs*(end+1)-1)   idxout[i] = -1;
-        else                              idxout[i] = bs*globals[idx[i]/bs - start] + (idx[i] % bs);
+        else                              GTOL(idx[i], local);
       }
     }
     if (nout) *nout = n;
@@ -635,7 +657,7 @@ PetscErrorCode  ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlo
         if (idx[i] < 0) continue;
         if (idx[i] < bs*start) continue;
         if (idx[i] > bs*(end+1)-1) continue;
-        tmp = bs*globals[idx[i]/bs - start] + (idx[i] % bs);
+        GTOL(idx[i], tmp);
         if (tmp < 0) continue;
         idxout[nf++] = tmp;
       }
@@ -644,13 +666,14 @@ PetscErrorCode  ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlo
         if (idx[i] < 0) continue;
         if (idx[i] < bs*start) continue;
         if (idx[i] > bs*(end+1)-1) continue;
-        tmp = bs*globals[idx[i]/bs - start] + (idx[i] % bs);
+        GTOL(idx[i], tmp);
         if (tmp < 0) continue;
         nf++;
       }
     }
     if (nout) *nout = nf;
   }
+#undef GTOL
   PetscFunctionReturn(0);
 }
 
@@ -741,16 +764,23 @@ PetscErrorCode  ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping mapping,
                                   PetscInt n,const PetscInt idx[],PetscInt *nout,PetscInt idxout[])
 {
   PetscInt       i,*globals,nf = 0,tmp,start,end;
+  const PetscBool use_hash_table = mapping->use_hash_table;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,1);
-  if (!mapping->globals) {
-    ierr = ISGlobalToLocalMappingSetUp_Private(mapping);CHKERRQ(ierr);
-  }
+  ierr = ISGlobalToLocalMappingSetUp_Private(mapping);CHKERRQ(ierr);
   globals = mapping->globals;
   start   = mapping->globalstart;
   end     = mapping->globalend;
+
+#define GTOL(g, local) do {                     \
+    if (use_hash_table) {                       \
+      PetscHashIMap(mapping->globalht,g,local); \
+    } else {                                    \
+      local = globals[g - start];               \
+    }                                           \
+  } while (0)
 
   if (type == IS_GTOLM_MASK) {
     if (idxout) {
@@ -758,7 +788,7 @@ PetscErrorCode  ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping mapping,
         if (idx[i] < 0) idxout[i] = idx[i];
         else if (idx[i] < start) idxout[i] = -1;
         else if (idx[i] > end)   idxout[i] = -1;
-        else                     idxout[i] = globals[idx[i] - start];
+        else                     GTOL(idx[i], idxout[i]);
       }
     }
     if (nout) *nout = n;
@@ -768,7 +798,7 @@ PetscErrorCode  ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping mapping,
         if (idx[i] < 0) continue;
         if (idx[i] < start) continue;
         if (idx[i] > end) continue;
-        tmp = globals[idx[i] - start];
+        GTOL(idx[i], tmp);
         if (tmp < 0) continue;
         idxout[nf++] = tmp;
       }
@@ -777,13 +807,14 @@ PetscErrorCode  ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping mapping,
         if (idx[i] < 0) continue;
         if (idx[i] < start) continue;
         if (idx[i] > end) continue;
-        tmp = globals[idx[i] - start];
+        GTOL(idx[i], tmp);
         if (tmp < 0) continue;
         nf++;
       }
     }
     if (nout) *nout = nf;
   }
+#undef GTOL
   PetscFunctionReturn(0);
 }
 

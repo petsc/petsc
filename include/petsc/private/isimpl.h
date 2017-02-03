@@ -9,6 +9,7 @@ and matrices.
 
 #include <petscis.h>
 #include <petsc/private/petscimpl.h>
+#include <../src/sys/utils/hash.h>
 
 PETSC_EXTERN PetscBool ISRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode ISRegisterAll(void);
@@ -51,18 +52,20 @@ extern PetscErrorCode ISLoad_Default(IS, PetscViewer);
 
 struct _p_ISLocalToGlobalMapping{
   PETSCHEADER(int);
-  PetscInt  n;                  /* number of local indices */
-  PetscInt  bs;                 /* blocksize; there is one index per block */
-  PetscInt  *indices;           /* global index of each local index */
-  PetscInt  globalstart;        /* first global referenced in indices */
-  PetscInt  globalend;          /* last + 1 global referenced in indices */
-  PetscInt  *globals;           /* local index for each global index between start and end */
-  PetscBool info_cached;        /* reuse GetInfo */
-  PetscBool info_free;
-  PetscInt  info_nproc;
-  PetscInt  *info_procs;
-  PetscInt  *info_numprocs;
-  PetscInt  **info_indices;
+  PetscInt     n;               /* number of local indices */
+  PetscInt     bs;              /* blocksize; there is one index per block */
+  PetscInt    *indices;         /* global index of each local index */
+  PetscInt     globalstart;     /* first global referenced in indices */
+  PetscInt     globalend;       /* last + 1 global referenced in indices */
+  PetscInt    *globals;         /* local index for each global index between start and end */
+  PetscBool    use_hash_table;  /* Use hash table for global to local map? */
+  PetscHashI   globalht;        /* global to local indices (scalable) */
+  PetscBool    info_cached;     /* reuse GetInfo */
+  PetscBool    info_free;
+  PetscInt     info_nproc;
+  PetscInt    *info_procs;
+  PetscInt    *info_numprocs;
+  PetscInt   **info_indices;
 };
 
 struct _n_ISColoring {
