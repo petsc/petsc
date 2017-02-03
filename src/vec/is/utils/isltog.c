@@ -363,7 +363,6 @@ PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm comm,PetscInt bs,PetscInt 
 
 .seealso: ISLocalToGlobalMappingSetUseHashTable()
 @*/
-
 PetscErrorCode ISLocalToGlobalMappingSetFromOptions(ISLocalToGlobalMapping mapping)
 {
   PetscErrorCode ierr;
@@ -631,7 +630,7 @@ static PetscErrorCode ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping
 
 .seealso: ISGlobalToLocalMappingApply(), ISGlobalToLocalMappingApplyBlock(), ISLocalToGlobalMappingSetFromOptions(), ISLocalToGlobalMappingGetUseHashTable()
 
-*/
+@*/
 PetscErrorCode ISLocalToGlobalMappingSetUseHashTable(ISLocalToGlobalMapping mapping, PetscBool flg)
 {
   PetscFunctionBegin;
@@ -657,7 +656,7 @@ PetscErrorCode ISLocalToGlobalMappingSetUseHashTable(ISLocalToGlobalMapping mapp
     Level: advanced
 
 .seealso: ISGlobalToLocalMappingApply(), ISGlobalToLocalMappingApplyBlock(), ISLocalToGlobalMappingSetFromOptions(), ISLocalToGlobalMappingSetUseHashTable()
-*/
+@*/
 PetscErrorCode ISLocalToGlobalMappingGetUseHashTable(ISLocalToGlobalMapping mapping, PetscBool *flg)
 {
   PetscFunctionBegin;
