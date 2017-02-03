@@ -521,6 +521,8 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[],c
   Mat_MPIBAIJ    *c = (Mat_MPIBAIJ*)C->data;
   PetscErrorCode ierr;
   PetscInt       nmax,nstages_local,nstages,i,pos,max_no,N=C->cmap->N,bs=C->rmap->bs;
+  Mat_SeqBAIJ    *subc;
+  Mat_SubMat     *smat;
 
   PetscFunctionBegin;
   /* The compression and expansion should be avoided. Doesn't point
@@ -529,17 +531,26 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[],c
   ierr = ISCompressIndicesGeneral(N,C->rmap->n,bs,ismax,isrow,isrow_block);CHKERRQ(ierr);
   ierr = ISCompressIndicesGeneral(N,C->cmap->n,bs,ismax,iscol,iscol_block);CHKERRQ(ierr);
 
-  /* Allocate memory to hold all the submatrices */
-  if (scall == MAT_INITIAL_MATRIX) {
-    ierr = PetscMalloc1(ismax+1,submat);CHKERRQ(ierr);
-  }
   /* Determine the number of stages through which submatrices are done */
   nmax = 20*1000000 / (c->Nbs * sizeof(PetscInt));
   if (!nmax) nmax = 1;
-  nstages_local = ismax/nmax + ((ismax % nmax) ? 1 : 0);
 
-  /* Make sure every processor loops through the nstages */
-  ierr = MPIU_Allreduce(&nstages_local,&nstages,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)C));CHKERRQ(ierr);
+  if (scall == MAT_INITIAL_MATRIX) {
+    nstages_local = ismax/nmax + ((ismax % nmax) ? 1 : 0);
+
+    /* Make sure every processor loops through the nstages */
+    ierr = MPIU_Allreduce(&nstages_local,&nstages,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)C));CHKERRQ(ierr);
+
+    ierr = PetscMalloc1(ismax+1,submat);CHKERRQ(ierr);
+  } else {
+    subc = (Mat_SeqBAIJ*)((*submat)[0]->data);
+    smat   = subc->submatis1;
+    if (!smat) {
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"MatGetSubMatrices(...,MAT_REUSE_MATRIX,...) requires submat");
+    }
+    nstages = smat->nstages;
+  }
+
   for (i=0,pos=0; i<nstages; i++) {
     if (pos+nmax <= ismax) max_no = nmax;
     else if (pos == ismax) max_no = 0;
@@ -547,6 +558,14 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[],c
 
     ierr = MatGetSubMatrices_MPIBAIJ_local(C,max_no,isrow_block+pos,iscol_block+pos,scall,*submat+pos);CHKERRQ(ierr);
     pos += max_no;
+  }
+
+  if (scall == MAT_INITIAL_MATRIX && ismax) {
+    /* save nstages for reuse */
+    subc = (Mat_SeqBAIJ*)((*submat)[0]->data);
+    smat = subc->submatis1;
+    if (!smat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"smat does not exit");
+    smat->nstages = nstages;
   }
 
   for (i=0; i<ismax; i++) {
