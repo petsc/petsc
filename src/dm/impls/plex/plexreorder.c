@@ -75,7 +75,7 @@ $     MATORDERINGQMD - Quotient Minimum Degree
 PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS *perm)
 {
   PetscInt       numCells = 0;
-  PetscInt      *start = NULL, *adjacency = NULL, *cperm, *clperm, *invclperm, *mask, *xls, pStart, pEnd, c, i;
+  PetscInt      *start = NULL, *adjacency = NULL, *cperm, *clperm = NULL, *invclperm = NULL, *mask, *xls, pStart, pEnd, c, i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
