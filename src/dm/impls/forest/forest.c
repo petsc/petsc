@@ -273,13 +273,15 @@ PetscErrorCode DMForestGetTopology(DM dm, DMForestTopology *topology)
 /*@
   DMForestSetBaseDM - During the pre-setup phase, set the DM that defines the base mesh of a DMForest forest.  The
   forest will be hierarchically refined from the base, and all refinements/coarsenings of the forest will share its
-  base.  In general, two forest must share a bse to be comparable, to do things like construct interpolators.
+  base.  In general, two forest must share a base to be comparable, to do things like construct interpolators.
 
   Logically collective on dm
 
   Input Parameters:
 + dm - the forest
 - base - the base DM of the forest
+
+  Notes: Currently the base DM must be a DMPLEX
 
   Level: intermediate
 
