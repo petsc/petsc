@@ -1639,9 +1639,17 @@ static PetscErrorCode DMInitialize_Forest(DM dm)
 }
 
 /*MC
-  DMFOREST = "forest" - A DM object that encapsulates a hierarchically refined mesh.  Forests usually have a base DM (see DMForestGetBaseDM()), from which it is refined.  The refinement and partitioning of forests is considered immutable after DMSetUp() is called.  To adapt a mesh, one should call DMForestTemplate() to create a new mesh that will default to being identical to it, specify how that mesh should differ, and then calling DMSetUp() on the new mesh.
 
-  To specify that a mesh should be refined or coarsened from the previous mesh, a label should be defined on the previous mesh whose values indicate which cells should be refined (DM_ADAPT_REFINE) or coarsened (DM_ADAPT_COARSEN) and how (subtypes are free to allow additional values for things like anisotropic refinement).  The label should be given to the *new* mesh with DMForestSetAdaptivityLabel().
+     DMFOREST = "forest" - A DM object that encapsulates a hierarchically refined mesh.  Forests usually have a base DM
+  (see DMForestGetBaseDM()), from which it is refined.  The refinement and partitioning of forests is considered
+  immutable after DMSetUp() is called.  To adapt a mesh, one should call DMForestTemplate() to create a new mesh that
+  will default to being identical to it, specify how that mesh should differ, and then calling DMSetUp() on the new
+  mesh.
+
+  To specify that a mesh should be refined or coarsened from the previous mesh, a label should be defined on the
+  previous mesh whose values indicate which cells should be refined (DM_ADAPT_REFINE) or coarsened (DM_ADAPT_COARSEN)
+  and how (subtypes are free to allow additional values for things like anisotropic refinement).  The label should be
+  given to the *new* mesh with DMForestSetAdaptivityLabel().
 
   Level: advanced
 
