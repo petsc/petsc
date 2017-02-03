@@ -333,6 +333,7 @@ PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm comm,PetscInt bs,PetscInt 
   (*mapping)->globals        = 0;
   (*mapping)->globalht       = 0;
   (*mapping)->use_hash_table = PETSC_FALSE;
+  ierr = ISLocalToGlobalMappingSetFromOptions(*mapping);CHKERRQ(ierr);
   if (mode == PETSC_COPY_VALUES) {
     ierr = PetscMalloc1(n,&in);CHKERRQ(ierr);
     ierr = PetscMemcpy(in,indices,n*sizeof(PetscInt));CHKERRQ(ierr);
