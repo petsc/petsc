@@ -218,7 +218,7 @@ static PetscErrorCode DMDestroy_Forest(DM dm)
 
 /*@C
   DMForestSetTopology - Set the topology of a DMForest during the pre-setup phase.  The topology is a string (e.g.
-  "cube", "shell") and can be interpreted by subtypes of DMFOREST) to construct the base DM of a forest durint
+  "cube", "shell") and can be interpreted by subtypes of DMFOREST) to construct the base DM of a forest during
   DMSetUp().
 
   Logically collective on dm
@@ -309,7 +309,7 @@ PetscErrorCode DMForestSetBaseDM(DM dm, DM base)
 
 /*@
   DMForestGetBaseDM - Get the base DM of a DMForest forest.  The forest will be hierarchically refined from the base,
-  and all refinements/coarsenings of the forest will share its base.  In general, two forest must share a bse to be
+  and all refinements/coarsenings of the forest will share its base.  In general, two forest must share a base to be
   comparable, to do things like construct interpolators.
 
   Not collective
