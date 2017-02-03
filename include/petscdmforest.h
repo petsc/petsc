@@ -105,9 +105,6 @@ PETSC_EXTERN PetscErrorCode DMForestGetCellWeightFactor(DM, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMForestSetWeightCapacity(DM, PetscReal);
 PETSC_EXTERN PetscErrorCode DMForestGetWeightCapacity(DM, PetscReal *);
 
-PETSC_EXTERN PetscErrorCode DMForestSetFromOptions(DM);
-PETSC_EXTERN PetscErrorCode DMForestSetUp(DM);
-
 PETSC_EXTERN PetscErrorCode DMForestGetFineProjector(DM,Mat *);
 PETSC_EXTERN PetscErrorCode DMForestGetCoarseRestrictor(DM,Mat *);
 
