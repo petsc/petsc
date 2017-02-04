@@ -50,18 +50,29 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  PetscInt       dim             = user->dim;
-  PetscBool      interpolate     = user->interpolate;
-  PetscReal      refinementLimit = user->refinementLimit;
-  PetscBool      cellSimplex     = user->cellSimplex;
-  const char    *filename        = user->filename;
-  PetscInt       triSizes_n2[2]  = {4, 4};
-  PetscInt       triPoints_n2[8] = {3, 5, 6, 7, 0, 1, 2, 4};
-  PetscInt       triSizes_n8[8]  = {1, 1, 1, 1, 1, 1, 1, 1};
-  PetscInt       triPoints_n8[8] = {0, 1, 2, 3, 4, 5, 6, 7};
-  PetscInt       quadSizes[2]    = {2, 2};
-  PetscInt       quadPoints[4]   = {2, 3, 0, 1};
-  const PetscInt cells[3]        = {2, 2, 2};
+  PetscInt       dim                  = user->dim;
+  PetscBool      interpolate          = user->interpolate;
+  PetscReal      refinementLimit      = user->refinementLimit;
+  PetscBool      cellSimplex          = user->cellSimplex;
+  const char    *filename             = user->filename;
+  PetscInt       triSizes_n2[2]       = {4, 4};
+  PetscInt       triPoints_n2[8]      = {3, 5, 6, 7, 0, 1, 2, 4};
+  PetscInt       triSizes_n8[8]       = {1, 1, 1, 1, 1, 1, 1, 1};
+  PetscInt       triPoints_n8[8]      = {0, 1, 2, 3, 4, 5, 6, 7};
+  PetscInt       quadSizes[2]         = {2, 2};
+  PetscInt       quadPoints[4]        = {2, 3, 0, 1};
+  PetscInt       gmshSizes_n3[3]      = {14, 14, 14};
+  PetscInt       gmshPoints_n3[42]    = {1, 2,  4,  5,  9, 10, 11, 15, 16, 20, 21, 27, 28, 29,
+                                         3, 8, 12, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+                                         0, 6,  7, 13, 14, 17, 18, 19, 22, 23, 24, 25, 26, 41};
+  PetscInt       fluentSizes_n3[3]    = {50, 50, 50};
+  PetscInt       fluentPoints_n3[150] = { 5,  6,  7,  8, 12, 14, 16,  34,  36,  37,  38,  39,  40,  41,  42,  43,  44,  45,  46,  48,  50,  51,  80,  81,  89,
+                                         91, 93, 94, 95, 96, 97, 98,  99, 100, 101, 104, 121, 122, 124, 125, 126, 127, 128, 129, 131, 133, 143, 144, 145, 147,
+                                          1,  3,  4,  9, 10, 17, 18,  19,  24,  25,  26,  27,  28,  29,  30,  31,  32,  33,  35,  47,  61,  71,  72,  73,  74,
+                                         75, 76, 77, 78, 79, 86, 87,  88,  90,  92, 113, 115, 116, 117, 118, 119, 120, 123, 138, 140, 141, 142, 146, 148, 149,
+                                          0,  2, 11, 13, 15, 20, 21,  22,  23,  49,  52,  53,  54,  55,  56,  57,  58,  59,  60,  62,  63,  64,  65,  66,  67,
+                                         68, 69, 70, 82, 83, 84, 85, 102, 103, 105, 106, 107, 108, 109, 110, 111, 112, 114, 130, 132, 134, 135, 136, 137, 139};
+  const PetscInt cells[3]             = {2, 2, 2};
   size_t         len;
   PetscMPIInt    rank, numProcs;
   PetscErrorCode ierr;
@@ -90,6 +101,17 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           sizes = triSizes_n8; points = triPoints_n8;
         } else if (dim == 2 && !cellSimplex && numProcs == 2) {
           sizes = quadSizes; points = quadPoints;
+        } else if (dim == 2 && numProcs == 3) {
+          PetscInt Nc;
+
+          ierr = DMPlexGetHeightStratum(*dm, 0, NULL, &Nc);CHKERRQ(ierr);
+          if (Nc == 42) { /* Gmsh 3 & 4 */
+            sizes = gmshSizes_n3; points = gmshPoints_n3;
+          } else if (Nc == 150) { /* Fluent 1 */
+            sizes = fluentSizes_n3; points = fluentPoints_n3;
+          } else if (Nc == 42) { /* Med 1 */
+          } else if (Nc == 161) { /* Med 3 */
+          }
         }
       }
       ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
@@ -283,10 +305,6 @@ int main(int argc, char **argv)
   test:
     suffix: 8
     nsize: 2
-    args: -dim 2 -cell_simplex 0 -dm_refine 1 -interpolate 1 -dm_view ::ascii_info_detail
-  test:
-    suffix: 9
-    nsize: 2
     args: -dim 2 -cell_simplex 0 -dm_refine 1 -interpolate 1 -test_partition -dm_view ::ascii_latex
 
   # Parallel refinement tests with overlap
@@ -337,11 +355,11 @@ int main(int argc, char **argv)
   test:
     suffix: gmsh_3
     nsize: 3
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.msh -interpolate 1 -dm_view
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.msh -test_partition -interpolate 1 -dm_view
   test:
     suffix: gmsh_4
     nsize: 3
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin.msh -interpolate 1 -dm_view
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin.msh -test_partition -interpolate 1 -dm_view
   test:
     suffix: gmsh_5
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_quad.msh -interpolate 1 -dm_view
@@ -356,7 +374,7 @@ int main(int argc, char **argv)
   test:
     suffix: fluent_1
     nsize: 3
-    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.cas -interpolate 1 -dm_view
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.cas -interpolate 1 -test_partition -dm_view
   test:
     suffix: fluent_2
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_5tets_ascii.cas -interpolate 1 -dm_view
