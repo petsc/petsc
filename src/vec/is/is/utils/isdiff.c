@@ -586,7 +586,7 @@ PetscErrorCode ISEmbed(IS a, IS b, PetscBool drop, IS *c)
 {
   PetscErrorCode             ierr;
   ISLocalToGlobalMapping     ltog;
-  ISGlobalToLocalMappingType gtoltype = IS_GTOLM_DROP;
+  ISGlobalToLocalMappingMode gtoltype = IS_GTOLM_DROP;
   PetscInt                   alen, clen, *cindices, *cindices2;
   const PetscInt             *aindices;
 

@@ -5,7 +5,7 @@ native DMDAInterpolationType
 native DMDAElementType
 native DMBoundaryType
 native PetscDrawMarkerType
-native ISGlobalToLocalMappingType
+native ISGlobalToLocalMappingMode
 native ISColoringType
 native KSPFCDTruncationType
 native KSPGMRESCGSRefinementType

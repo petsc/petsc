@@ -94,6 +94,12 @@ runex4:
 	   else printf "${PWD}\nPossible problem with ex4, diffs above\n=========================================\n"; fi ;\
 	   ${RM} -f ex4.tmp
 
+runex4_2:
+	-@${MPIEXEC} -n 1 ./ex4 -islocaltoglobalmapping_type hash  > ex4.tmp 2>&1;\
+	   if (${DIFF} output/ex4_2.out ex4.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex4_2, diffs above\n=========================================\n"; fi ;\
+	   ${RM} -f ex4.tmp
+
 runex5:
 	-@${MPIEXEC} -n 1 ./ex5  > ex5.tmp 2>&1;\
 	   if (${DIFF} output/ex5_1.out ex5.tmp) then true; \

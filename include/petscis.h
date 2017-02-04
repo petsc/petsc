@@ -101,32 +101,44 @@ PETSC_EXTERN PetscErrorCode ISRenumber(IS,IS,PetscInt*,IS*);
 PETSC_EXTERN PetscClassId IS_LTOGM_CLASSID;
 
 /*E
-    ISGlobalToLocalMappingType - Indicates if missing global indices are
+    ISGlobalToLocalMappingMode - Indicates if missing global indices are
 
    IS_GTOLM_MASK - missing global indices are replaced with -1
    IS_GTOLM_DROP - missing global indices are dropped
 
    Level: beginner
 
-.seealso: ISGlobalToLocalMappingApplyBlock()
+.seealso: ISGlobalToLocalMappingApplyBlock(), ISGlobalToLocalMappingApply()
 
 E*/
-typedef enum {IS_GTOLM_MASK,IS_GTOLM_DROP} ISGlobalToLocalMappingType;
+typedef enum {IS_GTOLM_MASK,IS_GTOLM_DROP} ISGlobalToLocalMappingMode;
 
+/*J
+    ISLocalToGlobalMappingType - String with the name of a mapping method
+
+   Level: beginner
+
+.seealso: ISLocalToGlobalMappingSetType(), ISLocalToGlobalSetFromOptions()
+J*/
+typedef const char* ISLocalToGlobalMappingType;
+#define ISLOCALTOGLOBALMAPPINGBASIC "basic"
+#define ISLOCALTOGLOBALMAPPINGHASH  "hash"
+
+PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingSetType(ISLocalToGlobalMapping,ISLocalToGlobalMappingType);
+PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingRegisterAll(void);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingCreate(MPI_Comm,PetscInt,PetscInt,const PetscInt[],PetscCopyMode,ISLocalToGlobalMapping*);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingCreateIS(IS,ISLocalToGlobalMapping *);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF,PetscInt,ISLocalToGlobalMapping*);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingSetFromOptions(ISLocalToGlobalMapping);
-PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingSetUseHashTable(ISLocalToGlobalMapping,PetscBool);
-PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetUseHashTable(ISLocalToGlobalMapping,PetscBool*);
+PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingSetUp(ISLocalToGlobalMapping);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingView(ISLocalToGlobalMapping,PetscViewer);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping*);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping,PetscInt,const PetscInt[],PetscInt[]);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingApplyBlock(ISLocalToGlobalMapping,PetscInt,const PetscInt[],PetscInt[]);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping,IS,IS*);
-PETSC_EXTERN PetscErrorCode ISGlobalToLocalMappingApply(ISLocalToGlobalMapping,ISGlobalToLocalMappingType,PetscInt,const PetscInt[],PetscInt*,PetscInt[]);
-PETSC_EXTERN PetscErrorCode ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping,ISGlobalToLocalMappingType,PetscInt,const PetscInt[],PetscInt*,PetscInt[]);
-PETSC_EXTERN PetscErrorCode ISGlobalToLocalMappingApplyIS(ISLocalToGlobalMapping,ISGlobalToLocalMappingType,IS,IS*);
+PETSC_EXTERN PetscErrorCode ISGlobalToLocalMappingApply(ISLocalToGlobalMapping,ISGlobalToLocalMappingMode,PetscInt,const PetscInt[],PetscInt*,PetscInt[]);
+PETSC_EXTERN PetscErrorCode ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping,ISGlobalToLocalMappingMode,PetscInt,const PetscInt[],PetscInt*,PetscInt[]);
+PETSC_EXTERN PetscErrorCode ISGlobalToLocalMappingApplyIS(ISLocalToGlobalMapping,ISGlobalToLocalMappingMode,IS,IS*);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping,PetscInt*);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping,PetscInt*,PetscInt*[],PetscInt*[],PetscInt**[]);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping,PetscInt*,PetscInt*[],PetscInt*[],PetscInt**[]);

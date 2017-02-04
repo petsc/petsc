@@ -6,6 +6,145 @@
 PetscClassId IS_LTOGM_CLASSID;
 static PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGlobalMapping,PetscInt*,PetscInt**,PetscInt**,PetscInt***);
 
+typedef struct {
+  PetscInt    *globals;
+} ISLocalToGlobalMapping_Basic;
+
+typedef struct {
+  PetscHashI globalht;
+} ISLocalToGlobalMapping_Hash;
+
+
+/* -----------------------------------------------------------------------------------------*/
+
+/*
+    Creates the global mapping information in the ISLocalToGlobalMapping structure
+
+    If the user has not selected how to handle the global to local mapping then use HASH for "large" problems
+*/
+static PetscErrorCode ISGlobalToLocalMappingSetUp(ISLocalToGlobalMapping mapping)
+{
+  PetscInt       i,*idx = mapping->indices,n = mapping->n,end,start;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (mapping->data) PetscFunctionReturn(0);
+  end   = 0;
+  start = PETSC_MAX_INT;
+
+  for (i=0; i<n; i++) {
+    if (idx[i] < 0) continue;
+    if (idx[i] < start) start = idx[i];
+    if (idx[i] > end)   end   = idx[i];
+  }
+  if (start > end) {start = 0; end = -1;}
+  mapping->globalstart = start;
+  mapping->globalend   = end;
+  if (!((PetscObject)mapping)->type_name) {
+    if ((end - start) > PetscMax(4*n,1000000)) {
+      ierr = ISLocalToGlobalMappingSetType(mapping,ISLOCALTOGLOBALMAPPINGHASH);
+    } else {
+      ierr = ISLocalToGlobalMappingSetType(mapping,ISLOCALTOGLOBALMAPPINGBASIC);
+    }
+  }
+  ierr = (*mapping->ops->globaltolocalmappingsetup)(mapping);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode ISGlobalToLocalMappingSetUp_Basic(ISLocalToGlobalMapping mapping)
+{
+  PetscErrorCode              ierr;
+  PetscInt                    i,*idx = mapping->indices,n = mapping->n,end,start,*globals;
+  ISLocalToGlobalMapping_Basic *map;
+
+  PetscFunctionBegin;
+  start            = mapping->globalstart;
+  end              = mapping->globalend;
+  ierr             = PetscNew(&map);CHKERRQ(ierr);
+  ierr             = PetscMalloc1(end-start+2,&globals);CHKERRQ(ierr);
+  map->globals     = globals;
+  for (i=0; i<end-start+1; i++) globals[i] = -1;
+  for (i=0; i<n; i++) {
+    if (idx[i] < 0) continue;
+    globals[idx[i] - start] = i;
+  }
+  mapping->data = (void*)map;
+  ierr = PetscLogObjectMemory((PetscObject)mapping,(end-start+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode ISGlobalToLocalMappingSetUp_Hash(ISLocalToGlobalMapping mapping)
+{
+  PetscErrorCode              ierr;
+  PetscInt                    i,*idx = mapping->indices,n = mapping->n;
+  ISLocalToGlobalMapping_Hash *map;
+
+  PetscFunctionBegin;
+  ierr = PetscNew(&map);CHKERRQ(ierr);
+  PetscHashICreate(map->globalht);
+  for (i=0; i<n; i++ ) {
+    if (idx[i] < 0) continue;
+    PetscHashIAdd(map->globalht, idx[i], i);
+  }
+  mapping->data = (void*)map;
+  ierr = PetscLogObjectMemory((PetscObject)mapping,2*n*sizeof(PetscInt));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode ISLocalToGlobalMappingDestroy_Basic(ISLocalToGlobalMapping mapping)
+{
+  PetscErrorCode              ierr;
+  ISLocalToGlobalMapping_Basic *map  = (ISLocalToGlobalMapping_Basic *)mapping->data;
+
+  PetscFunctionBegin;
+  if (!map) PetscFunctionReturn(0);
+  ierr = PetscFree(map->globals);CHKERRQ(ierr);
+  ierr = PetscFree(mapping->data);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode ISLocalToGlobalMappingDestroy_Hash(ISLocalToGlobalMapping mapping)
+{
+  PetscErrorCode              ierr;
+  ISLocalToGlobalMapping_Hash *map  = (ISLocalToGlobalMapping_Hash*)mapping->data;
+
+  PetscFunctionBegin;
+  if (!map) PetscFunctionReturn(0);
+  PetscHashIDestroy(map->globalht);
+  ierr = PetscFree(mapping->data);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#define GTOLTYPE _Basic
+#define GTOLNAME _Basic
+#define GTOL(g, local) do {                  \
+    local = map->globals[g/bs - start];      \
+    local = bs*local + (g % bs);             \
+  } while (0)
+#include <../src/vec/is/utils/isltog.h>
+
+#define GTOLTYPE _Basic
+#define GTOLNAME Block_Basic
+#define GTOL(g, local) do {                  \
+    local = map->globals[g - start];         \
+  } while (0)
+#include <../src/vec/is/utils/isltog.h>
+
+#define GTOLTYPE _Hash
+#define GTOLNAME _Hash
+#define GTOL(g, local) do {                  \
+    PetscHashIMap(map->globalht,g/bs,local); \
+    local = bs*local + (g % bs);             \
+   } while (0)
+#include <../src/vec/is/utils/isltog.h>
+
+#define GTOLTYPE _Hash
+#define GTOLNAME Block_Hash
+#define GTOL(g, local) do {                  \
+    PetscHashIMap(map->globalht,g,local);    \
+  } while (0)
+#include <../src/vec/is/utils/isltog.h>
+
 /*@
     ISLocalToGlobalMappingDuplicate - Duplicates the local to global mapping object
 
@@ -250,9 +389,11 @@ PetscErrorCode  ISLocalToGlobalMappingSetBlockSize(ISLocalToGlobalMapping mappin
   mapping->bs          = bs;
   ierr                 = PetscFree(mapping->indices);CHKERRQ(ierr);
   mapping->indices     = nid;
-  ierr                 = PetscFree(mapping->globals);CHKERRQ(ierr);
   mapping->globalstart = 0;
   mapping->globalend   = 0;
+  if (mapping->ops->destroy) {
+    ierr = (*mapping->ops->destroy)(mapping);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -299,11 +440,17 @@ PetscErrorCode  ISLocalToGlobalMappingGetBlockSize(ISLocalToGlobalMapping mappin
 .   mapping - new mapping data structure
 
     Notes: There is one integer value in indices per block and it represents the actual indices bs*idx + j, where j=0,..,bs-1
+
+    For "small" problems when using ISGlobalToMappingApply() and ISGlobalToMappingApplyBlock(), the ISLocalToGlobalMappingType of ISLOCALTOGLOBALMAPPINGBASIC will be used;
+    this uses more memory but is faster; this approach is not scalable for extremely large mappings. For large problems ISLOCALTOGLOBALMAPPINGHASH is used, this is scalable.
+    Use ISLocalToGlobalMappingSetType() or call ISLocalToGlobalMappingSetFromOptions() with the option -islocaltoglobalmapping_type <basic,hash> to control which is used.
+
     Level: advanced
 
     Concepts: mapping^local to global
 
-.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingSetFromOptions()
+.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingSetFromOptions(), ISLOCALTOGLOBALMAPPINGBASIC, ISLOCALTOGLOBALMAPPINGHASH
+          ISLocalToGlobalMappingSetType(), ISLocalToGlobalMappingType
 @*/
 PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscInt indices[],PetscCopyMode mode,ISLocalToGlobalMapping *mapping)
 {
@@ -326,14 +473,10 @@ PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm comm,PetscInt bs,PetscInt 
   (*mapping)->info_procs    = NULL;
   (*mapping)->info_numprocs = NULL;
   (*mapping)->info_indices  = NULL;
-  /*
-    Do not create the global to local mapping. This is only created if
-    ISGlobalToLocalMapping() is called
-  */
-  (*mapping)->globals        = 0;
-  (*mapping)->globalht       = 0;
-  (*mapping)->use_hash_table = PETSC_FALSE;
-  ierr = ISLocalToGlobalMappingSetFromOptions(*mapping);CHKERRQ(ierr);
+
+  (*mapping)->ops->globaltolocalmappingapply      = NULL;
+  (*mapping)->ops->globaltolocalmappingapplyblock = NULL;
+  (*mapping)->ops->destroy                        = NULL;
   if (mode == PETSC_COPY_VALUES) {
     ierr = PetscMalloc1(n,&in);CHKERRQ(ierr);
     ierr = PetscMemcpy(in,indices,n*sizeof(PetscInt));CHKERRQ(ierr);
@@ -344,9 +487,11 @@ PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm comm,PetscInt bs,PetscInt 
     ierr = PetscLogObjectMemory((PetscObject)*mapping,n*sizeof(PetscInt));CHKERRQ(ierr);
   }
   else SETERRQ(comm,PETSC_ERR_SUP,"Cannot currently use PETSC_USE_POINTER");
-  ierr = PetscStrallocpy("basic",&((PetscObject)*mapping)->type_name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+PetscFunctionList ISLocalToGlobalMappingList = NULL;
+
 
 /*@
    ISLocalToGlobalMappingSetFromOptions - Set mapping options from the options database.
@@ -356,26 +501,24 @@ PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm comm,PetscInt bs,PetscInt 
    Input Parameters:
 .  mapping - mapping data structure
 
-   Options Database:
-.   -ltogm_use_hash_table true,false see ISLocalToGlobalMappingSetUseHashTable()
-
    Level: advanced
 
-.seealso: ISLocalToGlobalMappingSetUseHashTable()
 @*/
 PetscErrorCode ISLocalToGlobalMappingSetFromOptions(ISLocalToGlobalMapping mapping)
 {
-  PetscErrorCode ierr;
-  PetscBool      flg;
+  PetscErrorCode             ierr;
+  char                       type[256];
+  ISLocalToGlobalMappingType defaulttype = "Not set";
+  PetscBool                  flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,1);
-
+  ierr = ISLocalToGlobalMappingRegisterAll();CHKERRQ(ierr);
   ierr = PetscObjectOptionsBegin((PetscObject)mapping);CHKERRQ(ierr);
-
-  ierr = ISLocalToGlobalMappingGetUseHashTable(mapping,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-ltogm_use_hash_table", "use hash table (memory scalable for global to local in ISLtoGMappings","ISLocalToGlobalMappingSetUseHashTable",flg,&flg,NULL);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingSetUseHashTable(mapping,flg);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-islocaltoglobalmapping_type","ISLocalToGlobalMapping method","ISLocalToGlobalMappingSetType",ISLocalToGlobalMappingList,(char*)(((PetscObject)mapping)->type_name) ? ((PetscObject)mapping)->type_name : defaulttype,type,256,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = ISLocalToGlobalMappingSetType(mapping,type);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -402,10 +545,8 @@ PetscErrorCode  ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping *mapping)
   PetscValidHeaderSpecific((*mapping),IS_LTOGM_CLASSID,1);
   if (--((PetscObject)(*mapping))->refct > 0) {*mapping = 0;PetscFunctionReturn(0);}
   ierr = PetscFree((*mapping)->indices);CHKERRQ(ierr);
-  ierr = PetscFree((*mapping)->globals);CHKERRQ(ierr);
   ierr = PetscFree((*mapping)->info_procs);CHKERRQ(ierr);
   ierr = PetscFree((*mapping)->info_numprocs);CHKERRQ(ierr);
-  PetscHashIDestroy((*mapping)->globalht);
   if ((*mapping)->info_indices) {
     PetscInt i;
 
@@ -414,6 +555,9 @@ PetscErrorCode  ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping *mapping)
       ierr = PetscFree(((*mapping)->info_indices)[i]);CHKERRQ(ierr);
     }
     ierr = PetscFree((*mapping)->info_indices);CHKERRQ(ierr);
+  }
+  if ((*mapping)->ops->destroy) {
+    ierr = (*(*mapping)->ops->destroy)(*mapping);CHKERRQ(ierr);
   }
   ierr     = PetscHeaderDestroy(mapping);CHKERRQ(ierr);
   *mapping = 0;
@@ -567,105 +711,6 @@ PetscErrorCode ISLocalToGlobalMappingApplyBlock(ISLocalToGlobalMapping mapping,P
   PetscFunctionReturn(0);
 }
 
-/* -----------------------------------------------------------------------------------------*/
-
-/*
-    Creates the global fields in the ISLocalToGlobalMapping structure
-*/
-static PetscErrorCode ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping mapping)
-{
-  PetscErrorCode ierr;
-  PetscInt       i,*idx = mapping->indices,n = mapping->n,end,start,*globals;
-  PetscBool      use_hash_table;
-
-  PetscFunctionBegin;
-  ierr = ISLocalToGlobalMappingGetUseHashTable(mapping,&use_hash_table);CHKERRQ(ierr);
-  if (use_hash_table && mapping->globalht) PetscFunctionReturn(0);
-  else if (mapping->globals) PetscFunctionReturn(0);
-  end   = 0;
-  start = PETSC_MAX_INT;
-
-  for (i=0; i<n; i++) {
-    if (idx[i] < 0) continue;
-    if (idx[i] < start) start = idx[i];
-    if (idx[i] > end)   end   = idx[i];
-  }
-  if (start > end) {start = 0; end = -1;}
-  mapping->globalstart = start;
-  mapping->globalend   = end;
-
-  if (mapping->use_hash_table) {
-    PetscHashICreate(mapping->globalht);
-    for (i=0; i<n; i++ ) {
-      if (idx[i] < 0) continue;
-      PetscHashIAdd(mapping->globalht, idx[i], i);
-    }
-    ierr = PetscLogObjectMemory((PetscObject)mapping,2*n*sizeof(PetscInt));CHKERRQ(ierr);
-  } else {
-    ierr             = PetscMalloc1(end-start+2,&globals);CHKERRQ(ierr);
-    mapping->globals = globals;
-    for (i=0; i<end-start+1; i++) globals[i] = -1;
-    for (i=0; i<n; i++) {
-      if (idx[i] < 0) continue;
-      globals[idx[i] - start] = i;
-    }
-
-    ierr = PetscLogObjectMemory((PetscObject)mapping,(end-start+1)*sizeof(PetscInt));CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-/*@
-    ISLocalToGlobalMappingSetUseHashTable - Should global to local lookups use a hash table?
-
-    This is memory-scalable, but slightly slower, implementation than the default flat array.
-
-    Not collective
-
-    Input parameters:
-+   mapping - mapping between local and global numbering
--   flg - use a hash table?
-
-    Level: advanced
-
-.seealso: ISGlobalToLocalMappingApply(), ISGlobalToLocalMappingApplyBlock(), ISLocalToGlobalMappingSetFromOptions(), ISLocalToGlobalMappingGetUseHashTable()
-
-@*/
-PetscErrorCode ISLocalToGlobalMappingSetUseHashTable(ISLocalToGlobalMapping mapping, PetscBool flg)
-{
-  PetscFunctionBegin;
-
-  mapping->use_hash_table = flg;
-
-  PetscFunctionReturn(0);
-}
-
-/*@
-    ISLocalToGlobalMappingGetUseHashTable - Do global to local lookups use a hash table?
-
-    This is memory-scalable, but slightly slower, implementation than the default flat array.
-
-    Not collective
-
-    Input parameter:
-+   mapping - mapping between local and global numbering
-
-    Output parameter:
-+   flg - does the mapping use a hash table?
-
-    Level: advanced
-
-.seealso: ISGlobalToLocalMappingApply(), ISGlobalToLocalMappingApplyBlock(), ISLocalToGlobalMappingSetFromOptions(), ISLocalToGlobalMappingSetUseHashTable()
-@*/
-PetscErrorCode ISLocalToGlobalMappingGetUseHashTable(ISLocalToGlobalMapping mapping, PetscBool *flg)
-{
-  PetscFunctionBegin;
-
-  *flg = mapping->use_hash_table;
-
-  PetscFunctionReturn(0);
-}
-
 /*@
     ISGlobalToLocalMappingApply - Provides the local numbering for a list of integers
     specified with a global numbering.
@@ -690,8 +735,9 @@ PetscErrorCode ISLocalToGlobalMappingGetUseHashTable(ISLocalToGlobalMapping mapp
     Notes:
     Either nout or idxout may be NULL. idx and idxout may be identical.
 
-    Unless the option -ltogm_use_hash_table is used, this is not scalable in memory usage. Each processor requires
-    O(Nglobal) size array to compute these.
+    For "small" problems when using ISGlobalToMappingApply() and ISGlobalToMappingApplyBlock(), the ISLocalToGlobalMappingType of ISLOCALTOGLOBALMAPPINGBASIC will be used;
+    this uses more memory but is faster; this approach is not scalable for extremely large mappings. For large problems ISLOCALTOGLOBALMAPPINGHASH is used, this is scalable.
+    Use ISLocalToGlobalMappingSetType() or call ISLocalToGlobalMappingSetFromOptions() with the option -islocaltoglobalmapping_type <basic,hash> to control which is used.
 
     Level: advanced
 
@@ -701,66 +747,18 @@ PetscErrorCode ISLocalToGlobalMappingGetUseHashTable(ISLocalToGlobalMapping mapp
     Concepts: mapping^global to local
 
 .seealso: ISLocalToGlobalMappingApply(), ISGlobalToLocalMappingApplyBlock(), ISLocalToGlobalMappingCreate(),
-          ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingGetUseHashTable(), ISLocalToGlobalMappingSetUseHashTable()
+          ISLocalToGlobalMappingDestroy()
 @*/
-PetscErrorCode  ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlobalToLocalMappingType type,
-                                            PetscInt n,const PetscInt idx[],PetscInt *nout,PetscInt idxout[])
+PetscErrorCode  ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlobalToLocalMappingMode type,PetscInt n,const PetscInt idx[],PetscInt *nout,PetscInt idxout[])
 {
-  PetscInt       i,*globals,nf = 0,tmp,start,end,bs;
-  PetscBool      use_hash_table;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,1);
-  ierr = ISGlobalToLocalMappingSetUp_Private(mapping);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetUseHashTable(mapping,&use_hash_table);CHKERRQ(ierr);
-  globals = mapping->globals;
-  start   = mapping->globalstart;
-  end     = mapping->globalend;
-  bs      = mapping->bs;
-
-#define GTOL(g, local) do {                        \
-    if (use_hash_table) {                          \
-      PetscHashIMap(mapping->globalht,g/bs,local); \
-    } else {                                       \
-      local = globals[g/bs - start];               \
-    }                                              \
-    local = bs*local + (g % bs);                   \
-  } while (0)
-
-  if (type == IS_GTOLM_MASK) {
-    if (idxout) {
-      for (i=0; i<n; i++) {
-        if (idx[i] < 0)                   idxout[i] = idx[i];
-        else if (idx[i] < bs*start)       idxout[i] = -1;
-        else if (idx[i] > bs*(end+1)-1)   idxout[i] = -1;
-        else                              GTOL(idx[i], idxout[i]);
-      }
-    }
-    if (nout) *nout = n;
-  } else {
-    if (idxout) {
-      for (i=0; i<n; i++) {
-        if (idx[i] < 0) continue;
-        if (idx[i] < bs*start) continue;
-        if (idx[i] > bs*(end+1)-1) continue;
-        GTOL(idx[i], tmp);
-        if (tmp < 0) continue;
-        idxout[nf++] = tmp;
-      }
-    } else {
-      for (i=0; i<n; i++) {
-        if (idx[i] < 0) continue;
-        if (idx[i] < bs*start) continue;
-        if (idx[i] > bs*(end+1)-1) continue;
-        GTOL(idx[i], tmp);
-        if (tmp < 0) continue;
-        nf++;
-      }
-    }
-    if (nout) *nout = nf;
+  if (!mapping->data) {
+    ierr = ISGlobalToLocalMappingSetUp(mapping);CHKERRQ(ierr);
   }
-#undef GTOL
+  ierr = (*mapping->ops->globaltolocalmappingapply)(mapping,type,n,idx,nout,idxout);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -785,7 +783,7 @@ PetscErrorCode  ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlo
 .seealso: ISGlobalToLocalMappingApply(), ISLocalToGlobalMappingCreate(),
           ISLocalToGlobalMappingDestroy()
 @*/
-PetscErrorCode  ISGlobalToLocalMappingApplyIS(ISLocalToGlobalMapping mapping,ISGlobalToLocalMappingType type, IS is,IS *newis)
+PetscErrorCode  ISGlobalToLocalMappingApplyIS(ISLocalToGlobalMapping mapping,ISGlobalToLocalMappingMode type, IS is,IS *newis)
 {
   PetscErrorCode ierr;
   PetscInt       n,nout,*idxout;
@@ -834,8 +832,9 @@ PetscErrorCode  ISGlobalToLocalMappingApplyIS(ISLocalToGlobalMapping mapping,ISG
     Notes:
     Either nout or idxout may be NULL. idx and idxout may be identical.
 
-    Unless the option -ltogm_use_hash_table is used, this is not scalable in memory usage. Each processor requires
-    O(Nglobal) size array to compute these.
+    For "small" problems when using ISGlobalToMappingApply() and ISGlobalToMappingApplyBlock(), the ISLocalToGlobalMappingType of ISLOCALTOGLOBALMAPPINGBASIC will be used;
+    this uses more memory but is faster; this approach is not scalable for extremely large mappings. For large problems ISLOCALTOGLOBALMAPPINGHASH is used, this is scalable.
+    Use ISLocalToGlobalMappingSetType() or call ISLocalToGlobalMappingSetFromOptions() with the option -islocaltoglobalmapping_type <basic,hash> to control which is used.
 
     Level: advanced
 
@@ -845,66 +844,22 @@ PetscErrorCode  ISGlobalToLocalMappingApplyIS(ISLocalToGlobalMapping mapping,ISG
     Concepts: mapping^global to local
 
 .seealso: ISLocalToGlobalMappingApply(), ISGlobalToLocalMappingApply(), ISLocalToGlobalMappingCreate(),
-          ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingGetUseHashTable(), ISLocalToGlobalMappingSetUseHashTable()
+          ISLocalToGlobalMappingDestroy()
 @*/
-PetscErrorCode  ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping mapping,ISGlobalToLocalMappingType type,
-                                  PetscInt n,const PetscInt idx[],PetscInt *nout,PetscInt idxout[])
+PetscErrorCode  ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping mapping,ISGlobalToLocalMappingMode type,
+                                                 PetscInt n,const PetscInt idx[],PetscInt *nout,PetscInt idxout[])
 {
-  PetscInt       i,*globals,nf = 0,tmp,start,end;
-  PetscBool      use_hash_table;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,1);
-  ierr = ISGlobalToLocalMappingSetUp_Private(mapping);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetUseHashTable(mapping,&use_hash_table);CHKERRQ(ierr);
-  globals = mapping->globals;
-  start   = mapping->globalstart;
-  end     = mapping->globalend;
-
-#define GTOL(g, local) do {                     \
-    if (use_hash_table) {                       \
-      PetscHashIMap(mapping->globalht,g,local); \
-    } else {                                    \
-      local = globals[g - start];               \
-    }                                           \
-  } while (0)
-
-  if (type == IS_GTOLM_MASK) {
-    if (idxout) {
-      for (i=0; i<n; i++) {
-        if (idx[i] < 0) idxout[i] = idx[i];
-        else if (idx[i] < start) idxout[i] = -1;
-        else if (idx[i] > end)   idxout[i] = -1;
-        else                     GTOL(idx[i], idxout[i]);
-      }
-    }
-    if (nout) *nout = n;
-  } else {
-    if (idxout) {
-      for (i=0; i<n; i++) {
-        if (idx[i] < 0) continue;
-        if (idx[i] < start) continue;
-        if (idx[i] > end) continue;
-        GTOL(idx[i], tmp);
-        if (tmp < 0) continue;
-        idxout[nf++] = tmp;
-      }
-    } else {
-      for (i=0; i<n; i++) {
-        if (idx[i] < 0) continue;
-        if (idx[i] < start) continue;
-        if (idx[i] > end) continue;
-        GTOL(idx[i], tmp);
-        if (tmp < 0) continue;
-        nf++;
-      }
-    }
-    if (nout) *nout = nf;
+  if (!mapping->data) {
+    ierr = ISGlobalToLocalMappingSetUp(mapping);CHKERRQ(ierr);
   }
-#undef GTOL
+  ierr = (*mapping->ops->globaltolocalmappingapplyblock)(mapping,type,n,idx,nout,idxout);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 
 /*@C
     ISLocalToGlobalMappingGetBlockInfo - Gets the neighbor information for each processor and
@@ -943,10 +898,10 @@ PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo(ISLocalToGlobalMapping mappin
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,1);
   if (mapping->info_cached) {
-    *nproc = mapping->info_nproc;
-    *procs = mapping->info_procs;
+    *nproc    = mapping->info_nproc;
+    *procs    = mapping->info_procs;
     *numprocs = mapping->info_numprocs;
-    *indices = mapping->info_indices;
+    *indices  = mapping->info_indices;
   } else {
     ierr = ISLocalToGlobalMappingGetBlockInfo_Private(mapping,nproc,procs,numprocs,indices);CHKERRQ(ierr);
   }
@@ -1400,10 +1355,10 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreBlockInfo(ISLocalToGlobalMapping ma
       ierr = PetscFree(*indices);CHKERRQ(ierr);
     }
   }
-  *nproc = 0;
-  *procs = NULL;
+  *nproc    = 0;
+  *procs    = NULL;
   *numprocs = NULL;
-  *indices = NULL;
+  *indices  = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -1655,4 +1610,163 @@ PetscErrorCode ISLocalToGlobalMappingConcatenate(MPI_Comm comm,PetscInt n,const 
   PetscFunctionReturn(0);
 }
 
+/*MC
+      ISLOCALTOGLOBALMAPPINGBASIC - basic implementation of the ISLocalToGlobalMapping object. When ISGlobalToLocalMappingApply() is
+                                    used this is good for only small and moderate size problems.
+
+   Options Database Keys:
++   -islocaltoglobalmapping_type basic - select this method
+
+   Level: beginner
+
+.seealso:  ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingSetType(), ISLOCALTOGLOBALMAPPINGHASH
+M*/
+PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingCreate_Basic(ISLocalToGlobalMapping ltog)
+{
+  PetscFunctionBegin;
+  ltog->ops->globaltolocalmappingapply      = ISGlobalToLocalMappingApply_Basic;
+  ltog->ops->globaltolocalmappingsetup      = ISGlobalToLocalMappingSetUp_Basic;
+  ltog->ops->globaltolocalmappingapplyblock = ISGlobalToLocalMappingApplyBlock_Basic;
+  ltog->ops->destroy                        = ISLocalToGlobalMappingDestroy_Basic;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+      ISLOCALTOGLOBALMAPPINGHASH - hash implementation of the ISLocalToGlobalMapping object. When ISGlobalToLocalMappingApply() is
+                                    used this is good for only small and moderate size problems.
+
+   Options Database Keys:
++   -islocaltoglobalmapping_type hash - select this method
+
+   Level: beginner
+
+.seealso:  ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingSetType(), ISLOCALTOGLOBALMAPPINGHASH
+M*/
+PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingCreate_Hash(ISLocalToGlobalMapping ltog)
+{
+  PetscFunctionBegin;
+  ltog->ops->globaltolocalmappingapply      = ISGlobalToLocalMappingApply_Hash;
+  ltog->ops->globaltolocalmappingsetup      = ISGlobalToLocalMappingSetUp_Hash;
+  ltog->ops->globaltolocalmappingapplyblock = ISGlobalToLocalMappingApplyBlock_Hash;
+  ltog->ops->destroy                        = ISLocalToGlobalMappingDestroy_Hash;
+  PetscFunctionReturn(0);
+}
+
+
+/*@C
+    ISLocalToGlobalMappingRegister -  Adds a method for applying a global to local mapping with an ISLocalToGlobalMapping
+
+   Not Collective
+
+   Input Parameters:
++  sname - name of a new method
+-  routine_create - routine to create method context
+
+   Notes:
+   ISLocalToGlobalMappingRegister() may be called multiple times to add several user-defined solvers.
+
+   Sample usage:
+.vb
+   ISLocalToGlobalMappingRegister("my_mapper",MyCreate);
+.ve
+
+   Then, your solver can be chosen with the procedural interface via
+$     ISLocalToGlobalMappingSetType(ltog,"my_mapper")
+   or at runtime via the option
+$     -isglobaltolocalmapping_type my_mapper
+
+   Level: advanced
+
+.keywords: ISLocalToGlobalMappingType, register
+
+.seealso: ISLocalToGlobalMappingRegisterAll(), ISLocalToGlobalMappingRegisterDestroy(), ISLOCALTOGLOBALMAPPINGBASIC, ISLOCALTOGLOBALMAPPINGHASH
+
+@*/
+PetscErrorCode  ISLocalToGlobalMappingRegister(const char sname[],PetscErrorCode (*function)(ISLocalToGlobalMapping))
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFunctionListAdd(&ISLocalToGlobalMappingList,sname,function);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   ISLocalToGlobalMappingSetType - Builds ISLocalToGlobalMapping for a particular solver.
+
+   Logically Collective on ISLocalToGlobalMapping
+
+   Input Parameters:
++  ltog - the ISLocalToGlobalMapping object
+-  type - a known method
+
+   Options Database Key:
+.  -isglobaltolocalmapping_type  <method> - Sets the method; use -help for a list
+    of available methods (for instance, basic or hash)
+
+   Notes:
+   See "petsc/include/petscis.h" for available methods
+
+  Normally, it is best to use the ISLocalToGlobalMappingSetFromOptions() command and
+  then set the ISLocalToGlobalMapping type from the options database rather than by using
+  this routine.
+
+  Level: intermediate
+
+  Developer Note: ISLocalToGlobalMappingRegister() is used to add new types to ISLocalToGlobalMappingList from which they
+  are accessed by ISLocalToGlobalMappingSetType().
+
+.keywords: ISLocalToGlobalMapping, set, method
+
+.seealso: PCSetType(), ISLocalToGlobalMappingType, ISLocalToGlobalMappingRegister(), ISLocalToGlobalMappingCreate()
+
+@*/
+PetscErrorCode  ISLocalToGlobalMappingSetType(ISLocalToGlobalMapping ltog, ISLocalToGlobalMappingType type)
+{
+  PetscErrorCode ierr,(*r)(ISLocalToGlobalMapping);
+  PetscBool      match;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ltog,IS_LTOGM_CLASSID,1);
+  PetscValidCharPointer(type,2);
+
+  ierr = PetscObjectTypeCompare((PetscObject)ltog,type,&match);CHKERRQ(ierr);
+  if (match) PetscFunctionReturn(0);
+
+  ierr =  PetscFunctionListFind(ISLocalToGlobalMappingList,type,&r);CHKERRQ(ierr);
+  if (!r) SETERRQ1(PetscObjectComm((PetscObject)ltog),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested ISLocalToGlobalMapping type %s",type);
+  /* Destroy the previous private LTOG context */
+  if (ltog->ops->destroy) {
+    ierr              = (*ltog->ops->destroy)(ltog);CHKERRQ(ierr);
+    ltog->ops->destroy = NULL;
+  }
+  ierr = PetscObjectChangeTypeName((PetscObject)ltog,type);CHKERRQ(ierr);
+  ierr = (*r)(ltog);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscBool ISLocalToGlobalMappingRegisterAllCalled = PETSC_FALSE;
+
+/*@C
+  ISLocalToGlobalMappingRegisterAll - Registers all of the local to global mapping components in the IS package.
+
+  Not Collective
+
+  Level: advanced
+
+.keywords: IS, register, all
+.seealso:  ISRegister(),  ISLocalToGlobalRegister()
+@*/
+PetscErrorCode  ISLocalToGlobalMappingRegisterAll(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (ISLocalToGlobalMappingRegisterAllCalled) PetscFunctionReturn(0);
+  ISLocalToGlobalMappingRegisterAllCalled = PETSC_TRUE;
+
+  ierr = ISLocalToGlobalMappingRegister(ISLOCALTOGLOBALMAPPINGBASIC, ISLocalToGlobalMappingCreate_Basic);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingRegister(ISLOCALTOGLOBALMAPPINGHASH, ISLocalToGlobalMappingCreate_Hash);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
