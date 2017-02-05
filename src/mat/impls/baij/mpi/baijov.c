@@ -1485,19 +1485,19 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
       imat_ilen = subc->ilen;
       imat_j    = subc->j;
       imat_i    = subc->i;
-      if (ijonly) imat_a = subc->a;
-
+      if (!ijonly) imat_a = subc->a;
       if (allcolumns[i]) continue;
+
       jmax = nrow[i];
       for (j=0; j<jmax; j++) {
-        ilen  = imat_ilen[j];
         mat_i = imat_i[j];
         mat_j = imat_j + mat_i;
+        ilen  = imat_ilen[j];
         if (ijonly) {
           ierr = PetscSortInt(ilen,mat_j);CHKERRQ(ierr);
         } else {
-          mat_a = imat_a + mat_i;
-          ierr  = PetscSortIntWithDataArray(ilen,mat_j,mat_a,bs2*sizeof(MatScalar),work);CHKERRQ(ierr);
+          mat_a = imat_a + mat_i*bs2;
+          ierr = PetscSortIntWithDataArray(ilen,mat_j,mat_a,bs2*sizeof(MatScalar),work);CHKERRQ(ierr);
         }
       }
     }
