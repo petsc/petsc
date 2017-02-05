@@ -3617,10 +3617,11 @@ int main(int argc, char **argv)
   # 2D serial mantle tests
   test:
     suffix: mantle_q1p0
+    requires: broken
     args: -sol_type composite -simplex 0 -dm_plex_separate_marker -vel_petscspace_order 1 -vel_petscspace_poly_tensor -pres_petscspace_order 0 -pres_petscspace_poly_tensor -ksp_rtol 1e-12 -ksp_atol 1e-12 -pc_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition full -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type lu -snes_monitor_short -snes_converged_reason -snes_view -ksp_monitor_short -ksp_converged_reason -dm_view
   test:
     suffix: mantle_p2p1
-    requires: triangle
+    requires: triangle broken
     args: -sol_type composite -dm_plex_separate_marker -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_rtol 1e-12 -ksp_atol 1e-12 -pc_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition full -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type lu -snes_monitor_short -snes_converged_reason -snes_view -ksp_monitor_short -ksp_converged_reason -dm_view
 
 TEST*/
