@@ -453,7 +453,7 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
   PetscLayout              vLayout;
   Vec                      coordinates;
   PetscReal                lengthScale;
-  PetscInt                 vMax, totVertices, totCells = NULL;
+  PetscInt                 vMax, totVertices, totCells = 0;
   PetscBool                hasPoint = PETSC_FALSE, hasCell = PETSC_FALSE, writePartition = PETSC_FALSE;
   PetscErrorCode           ierr;
 
