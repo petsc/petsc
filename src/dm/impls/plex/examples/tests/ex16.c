@@ -101,3 +101,12 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+  test:
+    suffix: 0
+    requires: triangle
+    args: -dm_view ascii::ascii_info_detail
+
+TEST*/

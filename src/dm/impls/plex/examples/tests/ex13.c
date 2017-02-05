@@ -46,11 +46,11 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
   if (len)              {ierr = DMPlexCreateFromFile(comm, filename, PETSC_TRUE, dm);CHKERRQ(ierr);}
   else if (cellSimplex) {ierr = DMPlexCreateBoxMesh(comm, dim, dim == 2 ? 2 : 1, PETSC_TRUE, dm);CHKERRQ(ierr);}
-  else                  {ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, PETSC_FALSE, PETSC_FALSE, PETSC_FALSE, dm);CHKERRQ(ierr);}
+  else                  {ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);}
   if (user->testPartition) {
     PetscPartitioner part;
-    const PetscInt  *sizes  = NULL;
-    const PetscInt  *points = NULL;
+    PetscInt        *sizes  = NULL;
+    PetscInt        *points = NULL;
     PetscMPIInt      rank, numProcs;
 
     ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
@@ -146,3 +146,26 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+  test:
+    suffix: 0
+    requires: triangle
+    args: -test_partition 0 -dm_view ascii::ascii_info_detail -oriented_dm_view ascii::ascii_info_detail -orientation_view
+  test:
+    suffix: 1
+    requires: triangle
+    nsize: 2
+    args: -dm_view ascii::ascii_info_detail -oriented_dm_view ascii::ascii_info_detail -orientation_view
+  test:
+    suffix: 2
+    requires: triangle
+    nsize: 2
+    args: -test_num 1 -dm_view ascii::ascii_info_detail -oriented_dm_view ascii::ascii_info_detail -orientation_view
+  test:
+    suffix: 3
+    requires: triangle
+    nsize: 3
+    args: -dm_view ascii::ascii_info_detail -oriented_dm_view ascii::ascii_info_detail -orientation_view
+
+TEST*/

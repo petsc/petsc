@@ -286,7 +286,7 @@ PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool tran
         }
       }
       for (d = 0; d < dim; ++d) {
-        ierr = PetscRandomGetValueReal(r, &trans[d]);CHKERRQ(ierr);
+        ierr = PetscRandomGetValue(r, &trans[d]);CHKERRQ(ierr);
         for (p = 0; p < 3; ++p) {
           vertexCoords[p*dim+d] *= scale;
           vertexCoords[p*dim+d] += trans[d];
@@ -365,7 +365,7 @@ PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool tran
       ierr = PetscRandomGetValueReal(ang, &phi);CHKERRQ(ierr);
       ierr = PetscRandomGetValueReal(ang2, &theta);CHKERRQ(ierr);
       for (d = 0; d < dim; ++d) {
-        ierr = PetscRandomGetValueReal(r, &trans[d]);CHKERRQ(ierr);
+        ierr = PetscRandomGetValue(r, &trans[d]);CHKERRQ(ierr);
         for (p = 0; p < 3; ++p) {
           vertexCoords[p*dim+d] *= scale;
           vertexCoords[p*dim+d] += trans[d];
@@ -550,7 +550,7 @@ PetscErrorCode TestQuadrilateral(MPI_Comm comm, PetscBool interpolate, PetscBool
         }
       }
       for (d = 0; d < dim; ++d) {
-        ierr = PetscRandomGetValueReal(r, &trans[d]);CHKERRQ(ierr);
+        ierr = PetscRandomGetValue(r, &trans[d]);CHKERRQ(ierr);
         for (p = 0; p < 4; ++p) {
           vertexCoords[p*dim+d] *= scale;
           vertexCoords[p*dim+d] += trans[d];
@@ -614,7 +614,7 @@ PetscErrorCode TestQuadrilateral(MPI_Comm comm, PetscBool interpolate, PetscBool
       ierr = PetscRandomGetValueReal(ang, &phi);CHKERRQ(ierr);
       ierr = PetscRandomGetValueReal(ang2, &theta);CHKERRQ(ierr);
       for (d = 0; d < dim; ++d) {
-        ierr = PetscRandomGetValueReal(r, &trans[d]);CHKERRQ(ierr);
+        ierr = PetscRandomGetValue(r, &trans[d]);CHKERRQ(ierr);
         for (p = 0; p < 4; ++p) {
           vertexCoords[p*dim+d] *= scale;
           vertexCoords[p*dim+d] += trans[d];
@@ -763,7 +763,7 @@ PetscErrorCode TestTetrahedron(MPI_Comm comm, PetscBool interpolate, PetscBool t
       ierr = PetscRandomGetValueReal(ang, &phi);CHKERRQ(ierr);
       ierr = PetscRandomGetValueReal(ang2, &theta);CHKERRQ(ierr);
       for (d = 0; d < dim; ++d) {
-        ierr = PetscRandomGetValueReal(r, &trans[d]);CHKERRQ(ierr);
+        ierr = PetscRandomGetValue(r, &trans[d]);CHKERRQ(ierr);
         for (p = 0; p < 4; ++p) {
           vertexCoords[p*dim+d] *= scale;
           vertexCoords[p*dim+d] += trans[d];
@@ -906,7 +906,7 @@ PetscErrorCode TestHexahedron(MPI_Comm comm, PetscBool interpolate, PetscBool tr
       ierr = PetscRandomGetValueReal(ang, &phi);CHKERRQ(ierr);
       ierr = PetscRandomGetValueReal(ang2, &theta);CHKERRQ(ierr);
       for (d = 0; d < dim; ++d) {
-        ierr = PetscRandomGetValueReal(r, &trans[d]);CHKERRQ(ierr);
+        ierr = PetscRandomGetValue(r, &trans[d]);CHKERRQ(ierr);
         for (p = 0; p < 8; ++p) {
           vertexCoords[p*dim+d] *= scale;
           vertexCoords[p*dim+d] += trans[d];
@@ -1002,3 +1002,28 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+  test:
+    suffix: 0
+    args: -dm_view ::ascii_info_detail
+  test:
+    suffix: 1
+    args: -interpolate -dm_view ::ascii_info_detail
+  test:
+    suffix: 2
+    args: -transform
+  test:
+    suffix: 3
+    args: -interpolate -transform
+  test:
+    suffix: 4
+    requires: exodusii
+    args: -run_type file -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/simpleblock-100.exo -dm_view ::ascii_info_detail -v0 -1.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5 -J 0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0,0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0,0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0 -invJ 0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0,0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0,0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0 -detJ 0.125,0.125,0.125
+  test:
+    suffix: 5
+    requires: exodusii
+    args: -interpolate -run_type file -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/simpleblock-100.exo -dm_view ::ascii_info_detail -v0 -1.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5 -J 0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0,0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0,0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0 -invJ 0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0,0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0,0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0 -detJ 0.125,0.125,0.125 -centroid -1.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0 -normal 0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0 -vol 1.0,1.0,1.0
+
+TEST*/

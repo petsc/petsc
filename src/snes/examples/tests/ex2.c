@@ -17,6 +17,7 @@ static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], 
   return 0;
 }
 
+#if 0
 static PetscErrorCode quadratic(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   PetscInt d, c;
@@ -27,6 +28,7 @@ static PetscErrorCode quadratic(PetscInt dim, PetscReal time, const PetscReal x[
   }
   return 0;
 }
+#endif
 
 int main(int argc, char **argv)
 {
@@ -42,11 +44,12 @@ int main(int argc, char **argv)
   PetscReal          *pcoords;
   PetscBool           simplex = PETSC_TRUE, pointsAllProcs = PETSC_FALSE;
   PetscInt            dim = 3, spaceDim, c, Np, p;
-  PetscMPIInt         rank;
+  PetscMPIInt         rank, numProcs;
   PetscErrorCode      ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &numProcs);CHKERRQ(ierr);
   /* Create mesh */
   if (simplex) {
     ierr = DMPlexCreateBoxMesh(PETSC_COMM_WORLD, dim, 1, PETSC_TRUE, &dm);CHKERRQ(ierr);
@@ -109,14 +112,24 @@ int main(int argc, char **argv)
   for (c = 0; c < Nc; ++c) funcs[c] = linear;
   ierr = DMGetLocalVector(dm, &lu);CHKERRQ(ierr);
   ierr = DMProjectFunctionLocal(dm, 0.0, funcs, NULL, INSERT_ALL_VALUES, lu);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]solution\n", rank);CHKERRQ(ierr);
-  ierr = VecView(lu, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  for (p = 0; p < numProcs; ++p) {
+    if (p == rank) {
+      ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]solution\n", rank);CHKERRQ(ierr);
+      ierr = VecView(lu, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    }
+    ierr = PetscBarrier((PetscObject) dm);CHKERRQ(ierr);
+  }
   /* Check interpolant */
   ierr = VecCreateSeq(PETSC_COMM_SELF, interpolator->n * Nc, &fieldVals);CHKERRQ(ierr);
   ierr = DMInterpolationSetDof(interpolator, Nc);CHKERRQ(ierr);
   ierr = DMInterpolationEvaluate(interpolator, dm, lu, fieldVals);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]Field values\n", rank);CHKERRQ(ierr);
-  ierr = VecView(fieldVals, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  for (p = 0; p < numProcs; ++p) {
+    if (p == rank) {
+      ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]Field values\n", rank);CHKERRQ(ierr);
+      ierr = VecView(fieldVals, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    }
+    ierr = PetscBarrier((PetscObject) dm);CHKERRQ(ierr);
+  }
   ierr = VecGetArrayRead(interpolator->coords, &vcoords);CHKERRQ(ierr);
   ierr = VecGetArrayRead(fieldVals, &ivals);CHKERRQ(ierr);
   for (p = 0; p < interpolator->n; ++p) {
@@ -137,3 +150,36 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+  test:
+    suffix: 0
+    requires: ctetgen
+    args: -petscspace_order 1
+  test:
+    suffix: 1
+    requires: ctetgen
+    args: -petscspace_order 1 -dm_refine 2
+  test:
+    suffix: 2
+    requires: ctetgen
+    nsize: 2
+    args: -petscspace_order 1
+  test:
+    suffix: 3
+    requires: ctetgen
+    nsize: 2
+    args: -petscspace_order 1 -dm_refine 2
+  test:
+    suffix: 4
+    requires: ctetgen
+    nsize: 5
+    args: -petscspace_order 1
+  test:
+    suffix: 5
+    requires: ctetgen
+    nsize: 5
+    args: -petscspace_order 1 -dm_refine 2
+
+TEST*/

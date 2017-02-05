@@ -1,0 +1,12 @@
+Function tests pass for order 0 at tolerance 1e-10
+Function tests pass for order 0 derivatives at tolerance 1e-10
+Interpolation tests pass for order 0 at tolerance 1e-10
+Interpolation tests pass for order 0 derivatives at tolerance 1e-10
+Interpolation tests pass for order 0 at tolerance 1e-10
+Interpolation tests pass for order 0 derivatives at tolerance 1e-10
+Function   convergence rate at refinement 0: 4
+Derivative convergence rate at refinement 0: 3
+Function   convergence rate at refinement 1: 4
+Derivative convergence rate at refinement 1: 3
+Function   convergence rate at refinement 2: 4
+Derivative convergence rate at refinement 2: 3

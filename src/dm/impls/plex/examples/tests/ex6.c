@@ -122,3 +122,20 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+  test:
+    suffix: 0
+    args: -malloc_dump
+  test:
+    suffix: 1
+    args: -malloc_dump -pend 10000
+  test:
+    suffix: 2
+    args: -malloc_dump -pend 10000 -fill 0.05
+  test:
+    suffix: 3
+    args: -malloc_dump -pend 10000 -fill 0.25
+
+TEST*/

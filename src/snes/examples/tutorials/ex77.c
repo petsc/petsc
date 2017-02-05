@@ -558,7 +558,6 @@ int main(int argc, char **argv)
   DM             dm;                   /* problem definition */
   Vec            u,r;                  /* solution, residual vectors */
   Mat            A,J;                  /* Jacobian matrix */
-  MatNullSpace   nullSpace;            /* May be necessary for pressure */
   AppCtx         user;                 /* user-defined work context */
   PetscInt       its;                  /* iterations for convergence */
   PetscErrorCode ierr;
@@ -618,8 +617,7 @@ int main(int argc, char **argv)
     ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Residual: %g\n", res);CHKERRQ(ierr);
     /* Check Jacobian */
     {
-      Vec          b;
-      PetscBool    isNull;
+      Vec b;
 
       ierr = SNESComputeJacobian(snes, u, A, A);CHKERRQ(ierr);
       ierr = VecDuplicate(u, &b);CHKERRQ(ierr);
@@ -646,3 +644,12 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+  test:
+    suffix: 0
+    requires: ctetgen
+    args: -run_type full -dim 3 -dm_refine 3 -interpolate 1 -bc_fixed 1 -bc_pressure 2 -wall_pressure 0.4 -def_petscspace_order 2 -pres_petscspace_order 1 -elastMat_petscspace_order 0 -wall_pres_petscspace_order 0 -snes_rtol 1e-05 -ksp_type fgmres -ksp_rtol 1e-10 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type upper -fieldsplit_deformation_ksp_type preonly -fieldsplit_deformation_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -show_solution 0
+
+TEST*/
