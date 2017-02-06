@@ -172,8 +172,8 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     } else {
       for (v = 0; v < numVertices; ++v) {
         ierr = PetscViewerRead(viewer, &i, 1, NULL, PETSC_ENUM);CHKERRQ(ierr);
-        ierr = PetscViewerRead(viewer, &(coordsIn[v*3]), 3, NULL, PETSC_DOUBLE);CHKERRQ(ierr);
-        if (i != (int)v+1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid node number %d should be %d", i, v+1);
+        ierr = PetscViewerRead(viewer, &(coordsIn[v*3]), 3, NULL, PETSC_REAL);CHKERRQ(ierr);
+        if (i != (int)v+1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid node number %D should be %D", i, v+1);
       }
     }
     ierr = PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING);CHKERRQ(ierr);;
