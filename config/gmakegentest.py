@@ -523,7 +523,7 @@ class generateExamples(Petsc):
         # Rest should be packages that we can just get from conf
         if requirement == "complex":  petscconfvar="PETSC_USE_COMPLEX"
         else:   petscconfvar="PETSC_HAVE_"+requirement.upper()
-        if self.conf.get(petscconfvar) or self.conf.get("PETSC_HAVE_"+requirement.upper()):
+        if self.conf.get(petscconfvar):
           if isNull:
             testDict['SKIP']="Not "+petscconfvar+" requirement not met"
             return False

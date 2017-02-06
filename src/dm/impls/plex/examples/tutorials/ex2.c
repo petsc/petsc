@@ -142,7 +142,7 @@ int main(int argc, char **argv)
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.msh -interpolate 1
   test:
     suffix: 4
-    requires: real_double
+    requires: double
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin.msh -interpolate 1
   # Exodus meshes 5-9
   test:
