@@ -60,13 +60,19 @@ cdef extern from * nogil:
 
 cdef extern from * nogil:
 
-    ctypedef enum PetscGLMapType "ISGlobalToLocalMappingType":
+    ctypedef char* PetscISLocalToGlobalMappingType "const char*"
+    PetscISLocalToGlobalMappingType ISLOCALTOGLOBALMAPPINGBASIC
+    PetscISLocalToGlobalMappingType ISLOCALTOGLOBALMAPPINGHASH
+
+    ctypedef enum PetscGLMapMode "ISGlobalToLocalMappingMode":
         PETSC_IS_GTOLM_MASK "IS_GTOLM_MASK"
         PETSC_IS_GTOLM_DROP "IS_GTOLM_DROP"
 
     int ISLocalToGlobalMappingCreate(MPI_Comm,PetscInt,PetscInt,PetscInt[],PetscCopyMode,PetscLGMap*)
     int ISLocalToGlobalMappingCreateIS(PetscIS,PetscLGMap*)
     int ISLocalToGlobalMappingCreateSF(PetscSF,PetscInt,PetscLGMap*)
+    int ISLocalToGlobalMappingSetType(PetscLGMap,PetscISLocalToGlobalMappingType)
+    int ISLocalToGlobalMappingSetFromOptions(PetscLGMap)
     int ISLocalToGlobalMappingView(PetscLGMap,PetscViewer)
     int ISLocalToGlobalMappingDestroy(PetscLGMap*)
     int ISLocalToGlobalMappingGetSize(PetscLGMap,PetscInt*)
@@ -82,8 +88,8 @@ cdef extern from * nogil:
     int ISLocalToGlobalMappingApply(PetscLGMap,PetscInt,PetscInt[],PetscInt[])
     int ISLocalToGlobalMappingApplyBlock(PetscLGMap,PetscInt,PetscInt[],PetscInt[])
     int ISLocalToGlobalMappingApplyIS(PetscLGMap,PetscIS,PetscIS*)
-    int ISGlobalToLocalMappingApply(PetscLGMap,PetscGLMapType,PetscInt,PetscInt[],PetscInt*,PetscInt[])
-    int ISGlobalToLocalMappingApplyBlock(PetscLGMap,PetscGLMapType,PetscInt,PetscInt[],PetscInt*,PetscInt[])
+    int ISGlobalToLocalMappingApply(PetscLGMap,PetscGLMapMode,PetscInt,PetscInt[],PetscInt*,PetscInt[])
+    int ISGlobalToLocalMappingApplyBlock(PetscLGMap,PetscGLMapMode,PetscInt,PetscInt[],PetscInt*,PetscInt[])
 
 
 # --------------------------------------------------------------------

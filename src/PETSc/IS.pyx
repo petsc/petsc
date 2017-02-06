@@ -340,17 +340,23 @@ cdef class IS(Object):
 # --------------------------------------------------------------------
 
 
-class GLMapType(object):
+class GLMapMode(object):
     MASK = PETSC_IS_GTOLM_MASK
     DROP = PETSC_IS_GTOLM_DROP
+
+
+class LGMapType(object):
+    BASIC = S_(ISLOCALTOGLOBALMAPPINGBASIC)
+    HASH  = S_(ISLOCALTOGLOBALMAPPINGHASH)
 
 
 # --------------------------------------------------------------------
 
 cdef class LGMap(Object):
 
-    MapType = GLMapType
+    MapMode = GLMapMode
 
+    Type = LGMapType
     #
 
     def __cinit__(self):
@@ -361,6 +367,14 @@ cdef class LGMap(Object):
         self.apply(indices, result)
 
     #
+
+    def setType(self, lgmap_type):
+        cdef PetscISLocalToGlobalMappingType cval = NULL
+        lgmap_type = str2bytes(lgmap_type, &cval)
+        CHKERR( ISLocalToGlobalMappingSetType(self.lgm, cval) )
+
+    def setFromOptions(self):
+        CHKERR( ISLocalToGlobalMappingSetFromOptions(self.lgm) )
 
     def view(self, Viewer viewer=None):
         cdef PetscViewer cviewer = NULL
@@ -498,32 +512,32 @@ cdef class LGMap(Object):
             self.lgm, iset.iset, &result.iset) )
         return result
 
-    def applyInverse(self, indices, map_type=None):
-        cdef PetscGLMapType cmtype = PETSC_IS_GTOLM_MASK
-        if map_type is not None: cmtype = map_type
+    def applyInverse(self, indices, mode=None):
+        cdef PetscGLMapMode cmode = PETSC_IS_GTOLM_MASK
+        if mode is not None: cmode = mode
         cdef PetscInt n = 0, *idx = NULL
         indices = iarray_i(indices, &n, &idx)
         cdef PetscInt nout = n, *idxout = NULL
-        if cmtype != PETSC_IS_GTOLM_MASK:
+        if cmode != PETSC_IS_GTOLM_MASK:
             CHKERR( ISGlobalToLocalMappingApply(
-                    self.lgm, cmtype, n, idx, &nout, NULL) )
+                    self.lgm, cmode, n, idx, &nout, NULL) )
         result = oarray_i(empty_i(nout), &nout, &idxout)
         CHKERR( ISGlobalToLocalMappingApply(
-                self.lgm, cmtype, n, idx, &nout, idxout) )
+                self.lgm, cmode, n, idx, &nout, idxout) )
         return result
 
-    def applyBlockInverse(self, indices, map_type=None):
-        cdef PetscGLMapType cmtype = PETSC_IS_GTOLM_MASK
-        if map_type is not None: cmtype = map_type
+    def applyBlockInverse(self, indices, mode=None):
+        cdef PetscGLMapMode cmode = PETSC_IS_GTOLM_MASK
+        if mode is not None: cmode = mode
         cdef PetscInt n = 0, *idx = NULL
         indices = iarray_i(indices, &n, &idx)
         cdef PetscInt nout = n, *idxout = NULL
-        if cmtype != PETSC_IS_GTOLM_MASK:
+        if cmode != PETSC_IS_GTOLM_MASK:
             CHKERR( ISGlobalToLocalMappingApply(
-                    self.lgm, cmtype, n, idx, &nout, NULL) )
+                    self.lgm, cmode, n, idx, &nout, NULL) )
         result = oarray_i(empty_i(nout), &nout, &idxout)
         CHKERR( ISGlobalToLocalMappingApplyBlock(
-                self.lgm, cmtype, n, idx, &nout, idxout) )
+                self.lgm, cmode, n, idx, &nout, idxout) )
         return result
     #
 
@@ -554,6 +568,6 @@ cdef class LGMap(Object):
 # --------------------------------------------------------------------
 
 del ISType
-del GLMapType
-
+del GLMapMode
+del LGMapType
 # --------------------------------------------------------------------
