@@ -1050,7 +1050,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIELL,
                                 /*10*/ 0,
                                        0,
                                        0,
-                                       0,
+                                       MatSOR_MPIELL,
                                        0,
                                 /*15*/ MatGetInfo_MPIELL,
                                        MatEqual_MPIELL,
@@ -1782,6 +1782,79 @@ PetscErrorCode MatConvert_MPIAIJ_MPIELL(Mat A,MatType newtype,MatReuse reuse,Mat
   } else {
     *newmat = B;
   }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatSOR_MPIELL(Mat matin,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
+{
+  Mat_MPIELL     *mat = (Mat_MPIELL*)matin->data;
+  PetscErrorCode ierr;
+  Vec            bb1 = 0;
+
+  PetscFunctionBegin;
+  if (flag == SOR_APPLY_UPPER) {
+    ierr = (*mat->A->ops->sor)(mat->A,bb,omega,flag,fshift,lits,1,xx);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
+  if (its > 1 || ~flag & SOR_ZERO_INITIAL_GUESS || flag & SOR_EISENSTAT) {
+    ierr = VecDuplicate(bb,&bb1);CHKERRQ(ierr);
+  }
+
+  if ((flag & SOR_LOCAL_SYMMETRIC_SWEEP) == SOR_LOCAL_SYMMETRIC_SWEEP) {
+    if (flag & SOR_ZERO_INITIAL_GUESS) {
+      ierr = (*mat->A->ops->sor)(mat->A,bb,omega,flag,fshift,lits,1,xx);CHKERRQ(ierr);
+      its--;
+    }
+
+    while (its--) {
+      ierr = VecScatterBegin(mat->Mvctx,xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(mat->Mvctx,xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+      /* update rhs: bb1 = bb - B*x */
+      ierr = VecScale(mat->lvec,-1.0);CHKERRQ(ierr);
+      ierr = (*mat->B->ops->multadd)(mat->B,mat->lvec,bb,bb1);CHKERRQ(ierr);
+
+      /* local sweep */
+      ierr = (*mat->A->ops->sor)(mat->A,bb1,omega,SOR_SYMMETRIC_SWEEP,fshift,lits,1,xx);CHKERRQ(ierr);
+    }
+  } else if (flag & SOR_LOCAL_FORWARD_SWEEP) {
+    if (flag & SOR_ZERO_INITIAL_GUESS) {
+      ierr = (*mat->A->ops->sor)(mat->A,bb,omega,flag,fshift,lits,1,xx);CHKERRQ(ierr);
+      its--;
+    }
+    while (its--) {
+      ierr = VecScatterBegin(mat->Mvctx,xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(mat->Mvctx,xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+      /* update rhs: bb1 = bb - B*x */
+      ierr = VecScale(mat->lvec,-1.0);CHKERRQ(ierr);
+      ierr = (*mat->B->ops->multadd)(mat->B,mat->lvec,bb,bb1);CHKERRQ(ierr);
+
+      /* local sweep */
+      ierr = (*mat->A->ops->sor)(mat->A,bb1,omega,SOR_FORWARD_SWEEP,fshift,lits,1,xx);CHKERRQ(ierr);
+    }
+  } else if (flag & SOR_LOCAL_BACKWARD_SWEEP) {
+    if (flag & SOR_ZERO_INITIAL_GUESS) {
+      ierr = (*mat->A->ops->sor)(mat->A,bb,omega,flag,fshift,lits,1,xx);CHKERRQ(ierr);
+      its--;
+    }
+    while (its--) {
+      ierr = VecScatterBegin(mat->Mvctx,xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(mat->Mvctx,xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+      /* update rhs: bb1 = bb - B*x */
+      ierr = VecScale(mat->lvec,-1.0);CHKERRQ(ierr);
+      ierr = (*mat->B->ops->multadd)(mat->B,mat->lvec,bb,bb1);CHKERRQ(ierr);
+
+      /* local sweep */
+      ierr = (*mat->A->ops->sor)(mat->A,bb1,omega,SOR_BACKWARD_SWEEP,fshift,lits,1,xx);CHKERRQ(ierr);
+    }
+  } else SETERRQ(PetscObjectComm((PetscObject)matin),PETSC_ERR_SUP,"Parallel SOR not supported");
+
+  ierr = VecDestroy(&bb1);CHKERRQ(ierr);
+
+  matin->factorerrortype = mat->A->factorerrortype;
   PetscFunctionReturn(0);
 }
 

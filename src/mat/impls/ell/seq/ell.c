@@ -550,6 +550,54 @@ PetscErrorCode MatMarkDiagonal_SeqELL(Mat A)
   PetscFunctionReturn(0);
 }
 
+/*
+   Negative shift indicates do not generate an error if there is a zero diagonal, just invert it anyways
+*/
+PetscErrorCode  MatInvertDiagonal_SeqELL(Mat A,PetscScalar omega,PetscScalar fshift)
+{
+  Mat_SeqELL     *a = (Mat_SeqELL*) A->data;
+  PetscErrorCode ierr;
+  PetscInt       i,*diag,m = A->rmap->n;
+  MatScalar      *val = a->val;
+  PetscScalar    *idiag,*mdiag;
+
+  PetscFunctionBegin;
+  if (a->idiagvalid) PetscFunctionReturn(0);
+  ierr = MatMarkDiagonal_SeqELL(A);CHKERRQ(ierr);
+  diag = a->diag;
+  if (!a->idiag) {
+    ierr = PetscMalloc3(m,&a->idiag,m,&a->mdiag,m,&a->ssor_work);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)A, 3*m*sizeof(PetscScalar));CHKERRQ(ierr);
+    val  = a->val;
+  }
+  mdiag = a->mdiag;
+  idiag = a->idiag;
+
+  if (omega == 1.0 && PetscRealPart(fshift) <= 0.0) {
+    for (i=0; i<m; i++) {
+      mdiag[i] = val[diag[i]];
+      if (!PetscAbsScalar(mdiag[i])) { /* zero diagonal */
+        if (PetscRealPart(fshift)) {
+          ierr = PetscInfo1(A,"Zero diagonal on row %D\n",i);CHKERRQ(ierr);
+          A->factorerrortype             = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+          A->factorerror_zeropivot_value = 0.0;
+          A->factorerror_zeropivot_row   = i;
+        } SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Zero diagonal on row %D",i);
+      }
+      idiag[i] = 1.0/val[diag[i]];
+    }
+    ierr = PetscLogFlops(m);CHKERRQ(ierr);
+  } else {
+    for (i=0; i<m; i++) {
+      mdiag[i] = val[diag[i]];
+      idiag[i] = omega/(fshift + val[diag[i]]);
+    }
+    ierr = PetscLogFlops(2.0*m);CHKERRQ(ierr);
+  }
+  a->idiagvalid = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatZeroEntries_SeqELL(Mat A)
 {
   Mat_SeqELL     *a = (Mat_SeqELL*)A->data;
@@ -1254,6 +1302,109 @@ PetscErrorCode MatShift_SeqELL(Mat Y,PetscScalar a)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatSOR_SeqELL(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
+{
+  Mat_SeqELL        *a = (Mat_SeqELL*)A->data;
+  PetscScalar       *x,sum,*t;
+  const MatScalar   *idiag=0,*mdiag;
+  const PetscScalar *b,*xb;
+  PetscErrorCode    ierr;
+  PetscInt          n,m = A->rmap->n,i,j,shift;
+  const PetscInt    *diag;
+
+  PetscFunctionBegin;
+  its = its*lits;
+
+  if (fshift != a->fshift || omega != a->omega) a->idiagvalid = PETSC_FALSE; /* must recompute idiag[] */
+  if (!a->idiagvalid) {ierr = MatInvertDiagonal_SeqELL(A,omega,fshift);CHKERRQ(ierr);}
+  a->fshift = fshift;
+  a->omega  = omega;
+
+  diag  = a->diag;
+  t     = a->ssor_work;
+  idiag = a->idiag;
+  mdiag = a->mdiag;
+
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
+  /* We count flops by assuming the upper triangular and lower triangular parts have the same number of nonzeros */
+  if (flag == SOR_APPLY_UPPER) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"SOR_APPLY_UPPER is not implemented");
+  if (flag == SOR_APPLY_LOWER) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"SOR_APPLY_LOWER is not implemented");
+  if (flag & SOR_EISENSTAT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for Eisenstat");
+
+  if (flag & SOR_ZERO_INITIAL_GUESS) {
+    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) {
+      for (i=0; i<m; i++) {
+        shift = a->sliidx[i>>3]+(i&0x07); /* starting index of the row i */
+        sum   = b[i];
+        n     = (diag[i]-shift)/8;
+        for (j=0; j<n; j++) sum -= a->val[shift+j*8]*x[a->colidx[shift+j*8]];
+        t[i]  = sum;
+        x[i]  = sum*idiag[i];
+      }
+      xb   = t;
+      ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
+    } else xb = b;
+    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
+      for (i=m-1; i>=0; i--) {
+        shift = a->sliidx[i>>3]+(i&0x07); /* starting index of the row i */
+        sum   = xb[i];
+        n     = a->rlen[i]-(diag[i]-shift)/8-1;
+        for (j=1; j<=n; j++) sum -= a->val[diag[i]+j*8]*x[a->colidx[diag[i]+j*8]];
+        if (xb == b) {
+          x[i] = sum*idiag[i];
+        } else {
+          x[i] = (1.-omega)*x[i]+sum*idiag[i];  /* omega in idiag */
+        }
+      }
+      ierr = PetscLogFlops(a->nz);CHKERRQ(ierr); /* assumes 1/2 in upper */
+    }
+    its--;
+  }
+  while (its--) {
+    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) {
+      for (i=0; i<m; i++) {
+        /* lower */
+        shift = a->sliidx[i>>3]+(i&0x07); /* starting index of the row i */
+        sum   = b[i];
+        n     = (diag[i]-shift)/8;
+        for (j=0; j<n; j++) sum -= a->val[shift+j*8]*x[a->colidx[shift+j*8]];
+        t[i]  = sum;             /* save application of the lower-triangular part */
+        /* upper */
+        n     = a->rlen[i]-(diag[i]-shift)/8-1;
+        for (j=1; j<=n; j++) sum -= a->val[diag[i]+j*8]*x[a->colidx[diag[i]+j*8]];
+        x[i]  = (1.-omega)*x[i]+sum*idiag[i];  /* omega in idiag */
+      }
+      xb   = t;
+      ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
+    } else xb = b;
+    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
+      for (i=m-1; i>=0; i--) {
+        shift = a->sliidx[i>>3]+(i&0x07); /* starting index of the row i */
+        sum = xb[i];
+        if (xb == b) {
+          /* whole matrix (no checkpointing available) */
+          n     = a->rlen[i];
+          for (j=0; j<n; j++) sum -= a->val[shift+j*8]*x[a->colidx[shift+j*8]];
+          x[i] = (1.-omega)*x[i]+(sum+mdiag[i]*x[i])*idiag[i];
+        } else { /* lower-triangular part has been saved, so only apply upper-triangular */
+          n     = a->rlen[i]-(diag[i]-shift)/8-1;
+          for (j=1; j<=n; j++) sum -= a->val[diag[i]+j*8]*x[a->colidx[diag[i]+j*8]];
+          x[i]  = (1.-omega)*x[i]+sum*idiag[i];  /* omega in idiag */
+        }
+      }
+      if (xb == b) {
+        ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
+      } else {
+        ierr = PetscLogFlops(a->nz);CHKERRQ(ierr); /* assumes 1/2 in upper */
+      }
+    }
+  }
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_SeqELL,
                                        0,
@@ -1268,7 +1419,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqELL,
                                /* 10*/ 0,
                                        0,
                                        0,
-                                       0,
+									   MatSOR_SeqELL,
                                        0,
                                /* 15*/ MatGetInfo_SeqELL,
                                        MatEqual_SeqELL,

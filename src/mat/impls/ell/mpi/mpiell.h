@@ -60,3 +60,5 @@ extern PetscErrorCode MatGetDiagonalBlock_MPIELL(Mat,Mat*);
 
 PETSC_INTERN PetscErrorCode MatConvert_MPIELL_MPIAIJ(Mat,MatType,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIELL(Mat,MatType,MatReuse,Mat*);
+
+PETSC_INTERN PetscErrorCode MatSOR_MPIELL(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
