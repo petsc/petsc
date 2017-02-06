@@ -219,7 +219,7 @@ int main(int argc, char **argv)
   test:
     suffix: 1
     nsize: 2
-    requires: chaco
-    args: -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/2Dgrd.exo -overlap 1
+    requires: chaco exodusii
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/2Dgrd.exo -overlap 1
 
 TEST*/
