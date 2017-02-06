@@ -673,7 +673,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
   MPI_Status     *r_status1,*r_status2,*s_status1,*s_status3,*s_status2;
   MPI_Status     *r_status3,*r_status4,*s_status4;
   MPI_Comm       comm;
-  PetscScalar    **rbuf4,*rbuf4_i,**sbuf_aa,*vals,*mat_a,*imat_a,*sbuf_aa_i;
+  PetscScalar    **rbuf4,*rbuf4_i=NULL,**sbuf_aa,*vals,*mat_a,*imat_a,*sbuf_aa_i;
   PetscMPIInt    *onodes1,*olengths1,end;
   PetscInt       **row2proc,*row2proc_i,*imat_ilen,*imat_j,*imat_i;
   Mat_SubMat     **smats,*smat_i;
@@ -682,7 +682,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
   PetscInt       bs=C->rmap->bs,bs2=c->bs2,rstart = c->rstartbs;
   PetscBool      ijonly=c->ijonly; /* private flag indicates only matrix data structures are requested */
   PetscInt       nzA,nzB,*a_i=a->i,*b_i=b->i,*a_j = a->j,*b_j = b->j,ctmp,imark,*cworkA,*cworkB;
-  PetscScalar    *vworkA,*vworkB,*a_a = a->a,*b_a = b->a;
+  PetscScalar    *vworkA=NULL,*vworkB=NULL,*a_a = a->a,*b_a = b->a;
   PetscInt       cstart = c->cstartbs,*bmap = c->garray;
   PetscBool      *allrows,*allcolumns;
 
