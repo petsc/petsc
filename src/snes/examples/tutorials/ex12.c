@@ -387,8 +387,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   if (!len) {
     if (user->simplex) {
       ierr = DMPlexCreateBoxMesh(comm, dim, dim == 2 ? 2 : 1, interpolate, dm);CHKERRQ(ierr);
-    }
-    else {
+    } else {
       PetscInt cells[3] = {1, 1, 1}; /* coarse mesh is one cell; refine from there */
 
       ierr = DMPlexCreateHexBoxMesh(comm, dim, cells,  DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);
@@ -1060,7 +1059,7 @@ int main(int argc, char **argv)
     args: -run_type test -dim 3 -refinement_limit 0.0    -variable_coefficient analytic -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 20
-    requires: hdf5
+    requires: hdf5 ctetgen
     args: -run_type test -dim 3 -refinement_limit 0.0125 -variable_coefficient analytic -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1
   # P1 variable coefficient 21-28
   test:
@@ -1089,7 +1088,7 @@ int main(int argc, char **argv)
     args: -run_type test -dim 3 -refinement_limit 0.0125 -variable_coefficient field    -interpolate 1 -petscspace_order 1 -mat_petscspace_order 1 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 27
-    requires: hdf5
+    requires: hdf5 ctetgen
     args: -run_type test -dim 3 -refinement_limit 0.0    -variable_coefficient field    -interpolate 1 -petscspace_order 2 -mat_petscspace_order 1 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 28
@@ -1202,11 +1201,11 @@ int main(int argc, char **argv)
     args: -run_type test -dim 3              -interpolate 1 -bc_type dirichlet -field_bc -petscspace_order 1 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1
   test:
     suffix: field_bc_p1_5
-    requires: hdf5
+    requires: hdf5 ctetgen
     args: -run_type test -dim 3 -dm_refine 1 -interpolate 1 -bc_type dirichlet -field_bc -petscspace_order 1 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1
   test:
     suffix: field_bc_p1_6
-    requires: hdf5
+    requires: hdf5 ctetgen
     args: -run_type test -dim 3              -interpolate 1 -bc_type neumann   -field_bc -petscspace_order 1 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1
   test:
     suffix: field_bc_p1_7
@@ -1257,7 +1256,7 @@ int main(int argc, char **argv)
     args: -run_type full -dim 3 -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -dm_view -snes_converged_reason -pc_type lu
   test:
     suffix: tet_conv_p1_r3
-    requires: hdf5
+    requires: hdf5 ctetgen
     args: -run_type full -dim 3 -dm_refine 3 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -dm_view -snes_converged_reason -pc_type lu
   test:
     suffix: tet_conv_p2_r0
