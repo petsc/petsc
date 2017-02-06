@@ -1014,19 +1014,19 @@ int main(int argc, char **argv)
   # 3D serial P1 test 9-12
   test:
     suffix: 9
-    requires: hdf5
+    requires: hdf5 ctetgen
     args: -run_type test -dim 3 -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -petscspace_order 1 -show_initial -dm_plex_print_fem 1 -dm_view
   test:
     suffix: 10
-    requires: hdf5
+    requires: hdf5 ctetgen
     args: -run_type test -dim 3 -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1 -dm_view
   test:
     suffix: 11
-    requires: hdf5
+    requires: hdf5 ctetgen
     args: -run_type test -dim 3 -refinement_limit 0.0125 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1 -dm_view
   test:
     suffix: 12
-    requires: hdf5
+    requires: hdf5 ctetgen
     args: -run_type test -dim 3 -refinement_limit 0.0    -bc_type neumann   -interpolate 1 -petscspace_order 1 -snes_fd -show_initial -dm_plex_print_fem 1 -dm_view
   # Analytic variable coefficient 13-20
   test:
@@ -1047,15 +1047,15 @@ int main(int argc, char **argv)
     args: -run_type test -refinement_limit 0.0625 -variable_coefficient analytic -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 17
-    requires: hdf5
+    requires: hdf5 ctetgen
     args: -run_type test -dim 3 -refinement_limit 0.0    -variable_coefficient analytic -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 18
-    requires: hdf5
+    requires: hdf5 ctetgen
     args: -run_type test -dim 3 -refinement_limit 0.0125 -variable_coefficient analytic -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 19
-    requires: hdf5
+    requires: hdf5 ctetgen
     args: -run_type test -dim 3 -refinement_limit 0.0    -variable_coefficient analytic -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 20
@@ -1080,11 +1080,11 @@ int main(int argc, char **argv)
     args: -run_type test -refinement_limit 0.0625 -variable_coefficient field    -interpolate 1 -petscspace_order 2 -mat_petscspace_order 1 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 25
-    requires: hdf5
+    requires: hdf5 ctetgen
     args: -run_type test -dim 3 -refinement_limit 0.0    -variable_coefficient field    -interpolate 1 -petscspace_order 1 -mat_petscspace_order 1 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 26
-    requires: hdf5
+    requires: hdf5 ctetgen
     args: -run_type test -dim 3 -refinement_limit 0.0125 -variable_coefficient field    -interpolate 1 -petscspace_order 1 -mat_petscspace_order 1 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 27
@@ -1092,7 +1092,7 @@ int main(int argc, char **argv)
     args: -run_type test -dim 3 -refinement_limit 0.0    -variable_coefficient field    -interpolate 1 -petscspace_order 2 -mat_petscspace_order 1 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 28
-    requires: hdf5
+    requires: hdf5 ctetgen
     args: -run_type test -dim 3 -refinement_limit 0.0125 -variable_coefficient field    -interpolate 1 -petscspace_order 2 -mat_petscspace_order 1 -show_initial -dm_plex_print_fem 1
   # P0 variable coefficient 29-36
   test:
@@ -1112,20 +1112,20 @@ int main(int argc, char **argv)
     suffix: 32
     args: -run_type test -refinement_limit 0.0625 -variable_coefficient field    -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1
   test:
-    requires: hdf5
+    requires: hdf5 ctetgen
     suffix: 33
     args: -run_type test -dim 3 -refinement_limit 0.0    -variable_coefficient field    -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 34
-    requires: hdf5
+    requires: hdf5 ctetgen
     args: -run_type test -dim 3 -refinement_limit 0.0125 -variable_coefficient field    -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 35
-    requires: hdf5
+    requires: hdf5 ctetgen
     args: -run_type test -dim 3 -refinement_limit 0.0    -variable_coefficient field    -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 36
-    requires: hdf5
+    requires: hdf5 ctetgen
     args: -run_type test -dim 3 -refinement_limit 0.0125 -variable_coefficient field    -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1
   # Using ExodusII mesh 37-38 BROKEN
   test:
@@ -1197,7 +1197,7 @@ int main(int argc, char **argv)
   # 3D serial P1 test with field bc
   test:
     suffix: field_bc_p1_4
-    requires: hdf5
+    requires: hdf5 ctetgen
     args: -run_type test -dim 3              -interpolate 1 -bc_type dirichlet -field_bc -petscspace_order 1 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1
   test:
     suffix: field_bc_p1_5
@@ -1209,7 +1209,7 @@ int main(int argc, char **argv)
     args: -run_type test -dim 3              -interpolate 1 -bc_type neumann   -field_bc -petscspace_order 1 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1
   test:
     suffix: field_bc_p1_7
-    requires: hdf5
+    requires: hdf5 ctetgen
     args: -run_type test -dim 3 -dm_refine 1 -interpolate 1 -bc_type neumann   -field_bc -petscspace_order 1 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1
   # 2D serial P2 test with field bc
   test:
@@ -1231,28 +1231,28 @@ int main(int argc, char **argv)
   # 3D serial P2 test with field bc
   test:
     suffix: field_bc_p2_4
-    requires: hdf5
+    requires: hdf5 ctetgent
     args: -run_type test -dim 3              -interpolate 1 -bc_type dirichlet -field_bc -petscspace_order 2 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1
   test:
     suffix: field_bc_p2_5
-    requires: hdf5
+    requires: hdf5 ctetgen
     args: -run_type test -dim 3 -dm_refine 1 -interpolate 1 -bc_type dirichlet -field_bc -petscspace_order 2 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1
   test:
     suffix: field_bc_p2_6
-    requires: hdf5
+    requires: hdf5 ctetgen
     args: -run_type test -dim 3              -interpolate 1 -bc_type neumann   -field_bc -petscspace_order 2 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1
   test:
     suffix: field_bc_p2_7
-    requires: hdf5
+    requires: hdf5 ctetgen
     args: -run_type test -dim 3 -dm_refine 1 -interpolate 1 -bc_type neumann   -field_bc -petscspace_order 2 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1
   # Full solve simplex: Convergence
   test:
     suffix: tet_conv_p1_r0
-    requires: hdf5
+    requires: hdf5 ctetgen
     args: -run_type full -dim 3 -dm_refine 0 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -dm_view -snes_converged_reason -pc_type lu
   test:
     suffix: tet_conv_p1_r2
-    requires: hdf5
+    requires: hdf5 ctetgen
     args: -run_type full -dim 3 -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -dm_view -snes_converged_reason -pc_type lu
   test:
     suffix: tet_conv_p1_r3
@@ -1260,11 +1260,11 @@ int main(int argc, char **argv)
     args: -run_type full -dim 3 -dm_refine 3 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -dm_view -snes_converged_reason -pc_type lu
   test:
     suffix: tet_conv_p2_r0
-    requires: hdf5
+    requires: hdf5 ctetgen
     args: -run_type full -dim 3 -dm_refine 0 -bc_type dirichlet -interpolate 1 -petscspace_order 2 -dm_view -snes_converged_reason -pc_type lu
   test:
     suffix: tet_conv_p2_r2
-    requires: hdf5
+    requires: hdf5 ctetgen
     args: -run_type full -dim 3 -dm_refine 2 -bc_type dirichlet -interpolate 1 -petscspace_order 2 -dm_view -snes_converged_reason -pc_type lu
   # Full solve simplex: BDDC
   test:
