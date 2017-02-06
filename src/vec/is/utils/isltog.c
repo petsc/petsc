@@ -1633,10 +1633,13 @@ PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingCreate_Basic(ISLocalToGlobalMa
 
 /*MC
       ISLOCALTOGLOBALMAPPINGHASH - hash implementation of the ISLocalToGlobalMapping object. When ISGlobalToLocalMappingApply() is
-                                    used this is good for only small and moderate size problems.
+                                    used this is good for large memory problems.
 
    Options Database Keys:
 +   -islocaltoglobalmapping_type hash - select this method
+
+
+   Notes: This is selected automatically for large problems if the user does not set the type.
 
    Level: beginner
 
@@ -1663,17 +1666,17 @@ PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingCreate_Hash(ISLocalToGlobalMap
 -  routine_create - routine to create method context
 
    Notes:
-   ISLocalToGlobalMappingRegister() may be called multiple times to add several user-defined solvers.
+   ISLocalToGlobalMappingRegister() may be called multiple times to add several user-defined mappings.
 
    Sample usage:
 .vb
    ISLocalToGlobalMappingRegister("my_mapper",MyCreate);
 .ve
 
-   Then, your solver can be chosen with the procedural interface via
+   Then, your mapping can be chosen with the procedural interface via
 $     ISLocalToGlobalMappingSetType(ltog,"my_mapper")
    or at runtime via the option
-$     -isglobaltolocalmapping_type my_mapper
+$     -islocaltoglobalmapping_type my_mapper
 
    Level: advanced
 
@@ -1692,7 +1695,7 @@ PetscErrorCode  ISLocalToGlobalMappingRegister(const char sname[],PetscErrorCode
 }
 
 /*@C
-   ISLocalToGlobalMappingSetType - Builds ISLocalToGlobalMapping for a particular solver.
+   ISLocalToGlobalMappingSetType - Builds ISLocalToGlobalMapping for a particular global to local mapping approach.
 
    Logically Collective on ISLocalToGlobalMapping
 
@@ -1701,7 +1704,7 @@ PetscErrorCode  ISLocalToGlobalMappingRegister(const char sname[],PetscErrorCode
 -  type - a known method
 
    Options Database Key:
-.  -isglobaltolocalmapping_type  <method> - Sets the method; use -help for a list
+.  -islocaltoglobalmapping_type  <method> - Sets the method; use -help for a list
     of available methods (for instance, basic or hash)
 
    Notes:
