@@ -437,6 +437,8 @@ class Configure(config.package.Package):
     import re
     mpich_test = '#include <mpi.h>\nint mpich_ver = MPICH_NUMVERSION;\n'
     openmpi_test = '#include <mpi.h>\nint ompi_major = OMPI_MAJOR_VERSION;\nint ompi_minor = OMPI_MINOR_VERSION;\nint ompi_release = OMPI_RELEASE_VERSION;\n'
+    oldFlags = self.compilers.CPPFLAGS
+    self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
     if self.checkCompile(mpich_test):
       buf = self.outputPreprocess(mpich_test)
       try:
@@ -456,6 +458,8 @@ class Configure(config.package.Package):
         self.addDefine('HAVE_OMPI_RELEASE_VERSION',ompi_release_version)
       except:
         self.logPrint('Unable to parse OpenMPI version from header. Probably a buggy preprocessor')
+    self.compilers.CPPFLAGS = oldFlags
+    return
 
   def findMPIInc(self):
     '''Find MPI include paths from "mpicc -show" and use with CUDAC_FLAGS'''
