@@ -976,7 +976,7 @@ int main(int argc, char **argv)
   # 2D serial P1 test 0-4
   test:
     suffix: 0
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -petscspace_order 1 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 1
@@ -1009,7 +1009,7 @@ int main(int argc, char **argv)
     args: -run_type test -refinement_limit 0.0    -bc_type neumann   -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1 -dm_view ::ascii_info_detail
   test:
     suffix: 8
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type test -refinement_limit 0.0625 -bc_type neumann   -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1 -dm_view ::ascii_info_detail
   # 3D serial P1 test 9-12
   test:
@@ -1043,7 +1043,7 @@ int main(int argc, char **argv)
     args: -run_type test -refinement_limit 0.0    -variable_coefficient analytic -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 16
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type test -refinement_limit 0.0625 -variable_coefficient analytic -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 17
@@ -1155,7 +1155,7 @@ int main(int argc, char **argv)
     args: -run_type full -refinement_limit 0.0625 -variable_coefficient nonlinear -interpolate 1 -petscspace_order 1 -snes_type fas -snes_fas_levels 3 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason -dm_refine_hierarchy 2 -dm_plex_print_fem 0 -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short -fas_levels_2_snes_type newtonls -fas_levels_2_pc_type svd -fas_levels_2_ksp_rtol 1.0e-10 -fas_levels_2_snes_atol 1.0e-11 -fas_levels_2_snes_monitor_short
   test:
     suffix: 43
-    requires: hdf5
+    requires: hdf5 triangle
     nsize: 2
     args: -run_type full -refinement_limit 0.03125 -variable_coefficient nonlinear -interpolate 1 -petscspace_order 1 -snes_type fas -snes_fas_levels 2 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason -dm_refine_hierarchy 1 -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short
   test:
@@ -1184,15 +1184,15 @@ int main(int argc, char **argv)
     args: -run_type test              -interpolate 1 -bc_type dirichlet -field_bc -petscspace_order 1 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1
   test:
     suffix: field_bc_p1_1
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type test -dm_refine 1 -interpolate 1 -bc_type dirichlet -field_bc -petscspace_order 1 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1
   test:
     suffix: field_bc_p1_2
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type test              -interpolate 1 -bc_type neumann   -field_bc -petscspace_order 1 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1
   test:
     suffix: field_bc_p1_3
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type test -dm_refine 1 -interpolate 1 -bc_type neumann   -field_bc -petscspace_order 1 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1
   # 3D serial P1 test with field bc
   test:
@@ -1214,7 +1214,7 @@ int main(int argc, char **argv)
   # 2D serial P2 test with field bc
   test:
     suffix: field_bc_p2_0
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type test              -interpolate 1 -bc_type dirichlet -field_bc -petscspace_order 2 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1
   test:
     suffix: field_bc_p2_1
@@ -1304,36 +1304,36 @@ int main(int argc, char **argv)
     args: -run_type full -variable_coefficient nonlinear -interpolate 1 -petscspace_order 1 -snes_type fas -snes_fas_levels 2 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason -dm_refine_hierarchy 1 -snes_view -fas_levels_1_snes_type ngs -fas_levels_1_snes_monitor_short
   test:
     suffix: fas_newton_coarse_0
-    requires: hdf5 pragmatic broken
+    requires: hdf5 pragmatic triangle broken
     args: -run_type full -dm_refine 2 -dm_plex_hash_location -variable_coefficient nonlinear -interpolate 1 -petscspace_order 1 -snes_type fas -snes_fas_levels 2 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason -dm_coarsen_hierarchy 1 -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short
   test:
     suffix: mg_newton_coarse_0
-    requires: hdf5 pragmatic
+    requires: hdf5 triangle pragmatic
     args: -run_type full -dm_refine 3 -interpolate 1 -petscspace_order 1 -snes_monitor_short -ksp_monitor_true_residual -snes_linesearch_type basic -snes_converged_reason -dm_coarsen_hierarchy 3 -dm_plex_hash_location -snes_view -dm_view -ksp_type richardson -pc_type mg  -pc_mg_levels 4 -snes_atol 1.0e-8 -ksp_atol 1.0e-8 -snes_rtol 0.0 -ksp_rtol 0.0 -ksp_norm_type unpreconditioned -mg_levels_ksp_type gmres -mg_levels_pc_type ilu -mg_levels_ksp_max_it 10
   test:
     suffix: mg_newton_coarse_1
-    requires: hdf5 pragmatic
+    requires: hdf5 triangle pragmatic
     args: -run_type full -dm_refine 5 -interpolate 1 -petscspace_order 1 -dm_coarsen_hierarchy 5 -dm_plex_hash_location -dm_plex_separate_marker -dm_plex_coarsen_bd_label marker -dm_plex_remesh_bd -ksp_type richardson -ksp_rtol 1.0e-12 -pc_type mg -pc_mg_levels 3 -mg_levels_ksp_max_it 2 -snes_monitor -ksp_monitor_true_residual -mg_levels_ksp_monitor_true_residual -dm_view -ksp_view
   test:
     suffix: mg_newton_coarse_2
-    requires: hdf5 pragmatic
+    requires: hdf5 triangle pragmatic
     args: -run_type full -dm_refine 5 -interpolate 1 -petscspace_order 1 -dm_coarsen_hierarchy 5 -dm_plex_hash_location -dm_plex_separate_marker -dm_plex_remesh_bd -ksp_type richardson -ksp_rtol 1.0e-12 -pc_type mg -pc_mg_levels 3 -mg_levels_ksp_max_it 2 -snes_monitor -ksp_monitor_true_residual -mg_levels_ksp_monitor_true_residual -dm_view -ksp_view
   # Full solve tensor
   test:
     suffix: tensor_plex_2d
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type test -refinement_limit 0.0 -simplex 0 -bc_type dirichlet -petscspace_order 1 -petscspace_poly_tensor -dm_refine_hierarchy 2
   test:
     suffix: tensor_p4est_2d
-    requires: hdf5 p4est
+    requires: hdf5 p4est triangle
     args: -run_type test -refinement_limit 0.0 -simplex 0 -bc_type dirichlet -petscspace_order 1 -petscspace_poly_tensor -dm_forest_initial_refinement 2 -dm_forest_minimum_refinement 0 -dm_plex_convert_type p4est
   test:
     suffix: tensor_plex_3d
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type test -refinement_limit 0.0 -simplex 0 -bc_type dirichlet -petscspace_order 1 -petscspace_poly_tensor -dim 3 -dm_refine_hierarchy 1
   test:
     suffix: tensor_p4est_3d
-    requires: hdf5 p4est
+    requires: hdf5 p4est triangle
     args: -run_type test -refinement_limit 0.0 -simplex 0 -bc_type dirichlet -petscspace_order 1 -petscspace_poly_tensor -dm_forest_initial_refinement 1 -dm_forest_minimum_refinement 0 -dim 3 -dm_plex_convert_type p8est
   # Full solve tensor: AMR
   test:
@@ -1343,74 +1343,74 @@ int main(int argc, char **argv)
     args: -run_type test -refinement_limit 0.0 -simplex 0 -bc_type dirichlet -petscspace_order 1 -petscspace_poly_tensor -dm_refine 1
   test:
     suffix: amr_1
-    requires: hdf5 p4est
+    requires: hdf5 p4est triangle
     args: -run_type test -refinement_limit 0.0 -simplex 0 -bc_type dirichlet -petscspace_order 1 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_p4est_refine_pattern center -dm_forest_maximum_refinement 5 -dm_view vtk:amr.vtu:vtk_vtu -vec_view vtk:amr.vtu:vtk_vtu:append
   test:
     suffix: p4est_test_q2_conformal_serial
-    requires: hdf5 p4est
+    requires: hdf5 p4est triangle
     args: -run_type test -interpolate 1 -petscspace_order 2 -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2
   test:
     suffix: p4est_test_q2_conformal_parallel
-    requires: hdf5 p4est
+    requires: hdf5 p4est triangle
     nsize: 7
     args: -run_type test -interpolate 1 -petscspace_order 2 -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2
   test:
     suffix: p4est_test_q2_nonconformal_serial
-    requires: hdf5 p4est
+    requires: hdf5 p4est triangle
     args: -run_type test -interpolate 1 -petscspace_order 2 -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash
   test:
     suffix: p4est_test_q2_nonconformal_parallel
-    requires: hdf5 p4est
+    requires: hdf5 p4est triangle
     nsize: 7
     args: -run_type test -interpolate 1 -petscspace_order 2 -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash
   test:
     suffix: p4est_exact_q2_conformal_serial
-    requires: hdf5 p4est
+    requires: hdf5 p4est triangle
     args: -run_type exact -interpolate 1 -petscspace_order 2 -snes_max_it 1 -snes_type fas -snes_fas_levels 3 -pc_type none -ksp_type preonly -fas_coarse_pc_type none -fas_coarse_ksp_type preonly -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type none -fas_levels_ksp_type preonly -fas_levels_snes_monitor_short -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2
   test:
     suffix: p4est_exact_q2_conformal_parallel
-    requires: hdf5 p4est
+    requires: hdf5 p4est triangle
     nsize: 7
     args: -run_type exact -interpolate 1 -petscspace_order 2 -snes_max_it 1 -snes_type fas -snes_fas_levels 3 -pc_type none -ksp_type preonly -fas_coarse_pc_type none -fas_coarse_ksp_type preonly -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type none -fas_levels_ksp_type preonly -fas_levels_snes_monitor_short -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2
   test:
     suffix: p4est_exact_q2_nonconformal_serial
-    requires: hdf5 p4est
+    requires: hdf5 p4est  triangle
     args: -run_type exact -interpolate 1 -petscspace_order 2 -snes_max_it 1 -snes_type fas -snes_fas_levels 3 -pc_type none -ksp_type preonly -fas_coarse_pc_type none -fas_coarse_ksp_type preonly -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type none -fas_levels_ksp_type preonly -fas_levels_snes_monitor_short -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash
   test:
     suffix: p4est_exact_q2_nonconformal_parallel
-    requires: hdf5 p4est
+    requires: hdf5 p4est triangle
     nsize: 7
     args: -run_type exact -interpolate 1 -petscspace_order 2 -snes_max_it 1 -snes_type fas -snes_fas_levels 3 -pc_type none -ksp_type preonly -fas_coarse_pc_type none -fas_coarse_ksp_type preonly -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type none -fas_levels_ksp_type preonly -fas_levels_snes_monitor_short -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash
   test:
     suffix: p4est_full_q2_nonconformal_serial
-    requires: hdf5 p4est
+    requires: hdf5 p4est  triangle
     args: -run_type full -interpolate 1 -petscspace_order 2 -snes_max_it 20 -snes_type fas -snes_fas_levels 3 -pc_type jacobi -ksp_type cg -fas_coarse_pc_type jacobi -fas_coarse_ksp_type cg -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type jacobi -fas_levels_ksp_type cg -fas_levels_snes_monitor_short -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash
   test:
     suffix: p4est_full_q2_nonconformal_parallel
-    requires: p4est hdf5
+    requires: p4est hdf5 triangle
     nsize: 7
     args: -run_type full -interpolate 1 -petscspace_order 2 -snes_max_it 20 -snes_type fas -snes_fas_levels 3 -pc_type jacobi -ksp_type cg -fas_coarse_pc_type jacobi -fas_coarse_ksp_type cg -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type jacobi -fas_levels_ksp_type cg -fas_levels_snes_monitor_short -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash
   test:
     suffix: p4est_full_q2_nonconformal_parallel_bddcfas
-    requires: hdf5 p4est
+    requires: hdf5 p4est triangle
     nsize: 7
     args: -run_type full -interpolate 1 -petscspace_order 2 -snes_max_it 20 -snes_type fas -snes_fas_levels 3 -dm_mat_type is -pc_type bddc -ksp_type cg -fas_coarse_pc_type bddc -fas_coarse_ksp_type cg -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type bddc -fas_levels_ksp_type cg -fas_levels_snes_monitor_short -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash
   test:
     suffix: p4est_full_q2_nonconformal_parallel_bddc
-    requires: hdf5 p4est
+    requires: hdf5 p4est triangle
     nsize: 7
     args: -run_type full -interpolate 1 -petscspace_order 2 -snes_max_it 20 -snes_type newtonls -dm_mat_type is -pc_type bddc -ksp_type cg -snes_monitor_short -snes_linesearch_type basic -snes_converged_reason -snes_view -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash
   test:
     suffix: p4est_fas_q2_conformal_serial
-    requires: hdf5 p4est broken
+    requires: hdf5 p4est  triangle broken
     args: -run_type full -variable_coefficient nonlinear -interpolate 1 -petscspace_order 2 -snes_max_it 20 -snes_type fas -snes_fas_levels 3 -pc_type jacobi -ksp_type gmres -fas_coarse_pc_type svd -fas_coarse_ksp_type gmres -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type svd -fas_levels_ksp_type gmres -fas_levels_snes_monitor_short -simplex 0 -petscspace_poly_tensor -dm_refine_hierarchy 3
   test:
     suffix: p4est_fas_q2_nonconformal_serial
-    requires: hdf5 p4est broken
+    requires: hdf5 p4est  triangle broken
     args: -run_type full -variable_coefficient nonlinear -interpolate 1 -petscspace_order 2 -snes_max_it 20 -snes_type fas -snes_fas_levels 3 -pc_type jacobi -ksp_type gmres -fas_coarse_pc_type jacobi -fas_coarse_ksp_type gmres -fas_coarse_ksp_monitor_true_residual -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type jacobi -fas_levels_ksp_type gmres -fas_levels_snes_monitor_short -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash
   test:
     suffix: fas_newton_0_p4est
-    requires: hdf5 p4est
+    requires: hdf5 p4est  triangle
     args: -run_type full -variable_coefficient nonlinear -interpolate 1 -petscspace_order 1 -snes_type fas -snes_fas_levels 2 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash
 
 TEST*/
