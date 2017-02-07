@@ -980,32 +980,32 @@ int main(int argc, char **argv)
     args: -run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -petscspace_order 1 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 1
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 2
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 3
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type test -refinement_limit 0.0    -bc_type neumann   -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1 -dm_view ::ascii_info_detail
   test:
     suffix: 4
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type test -refinement_limit 0.0625 -bc_type neumann   -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1
   # 2D serial P2 test 5-8
   test:
     suffix: 5
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 6
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 7
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type test -refinement_limit 0.0    -bc_type neumann   -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1 -dm_view ::ascii_info_detail
   test:
     suffix: 8
@@ -1031,15 +1031,15 @@ int main(int argc, char **argv)
   # Analytic variable coefficient 13-20
   test:
     suffix: 13
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type test -refinement_limit 0.0    -variable_coefficient analytic -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 14
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type test -refinement_limit 0.0625 -variable_coefficient analytic -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 15
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type test -refinement_limit 0.0    -variable_coefficient analytic -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 16
@@ -1064,19 +1064,19 @@ int main(int argc, char **argv)
   # P1 variable coefficient 21-28
   test:
     suffix: 21
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type test -refinement_limit 0.0    -variable_coefficient field    -interpolate 1 -petscspace_order 1 -mat_petscspace_order 1 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 22
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type test -refinement_limit 0.0625 -variable_coefficient field    -interpolate 1 -petscspace_order 1 -mat_petscspace_order 1 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 23
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type test -refinement_limit 0.0    -variable_coefficient field    -interpolate 1 -petscspace_order 2 -mat_petscspace_order 1 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 24
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type test -refinement_limit 0.0625 -variable_coefficient field    -interpolate 1 -petscspace_order 2 -mat_petscspace_order 1 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 25
@@ -1097,18 +1097,18 @@ int main(int argc, char **argv)
   # P0 variable coefficient 29-36
   test:
     suffix: 29
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type test -refinement_limit 0.0    -variable_coefficient field    -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 30
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type test -refinement_limit 0.0625 -variable_coefficient field    -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1
   test:
     suffix: 31
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type test -refinement_limit 0.0    -variable_coefficient field    -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1
   test:
-    requires: hdf5
+    requires: hdf5 triangle
     suffix: 32
     args: -run_type test -refinement_limit 0.0625 -variable_coefficient field    -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1
   test:
@@ -1139,19 +1139,19 @@ int main(int argc, char **argv)
   # Full solve 39-44
   test:
     suffix: 39
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type full -refinement_limit 0.015625 -interpolate 1 -petscspace_order 2 -pc_type gamg -ksp_rtol 1.0e-10 -ksp_monitor_short -ksp_converged_reason -snes_monitor_short -snes_converged_reason
   test:
     suffix: 40
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type full -refinement_limit 0.015625 -variable_coefficient nonlinear -interpolate 1 -petscspace_order 2 -pc_type svd -ksp_rtol 1.0e-10 -snes_monitor_short -snes_converged_reason
   test:
     suffix: 41
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type full -refinement_limit 0.03125 -variable_coefficient nonlinear -interpolate 1 -petscspace_order 1 -snes_type fas -snes_fas_levels 2 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason -dm_refine_hierarchy 1 -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short
   test:
     suffix: 42
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type full -refinement_limit 0.0625 -variable_coefficient nonlinear -interpolate 1 -petscspace_order 1 -snes_type fas -snes_fas_levels 3 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason -dm_refine_hierarchy 2 -dm_plex_print_fem 0 -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short -fas_levels_2_snes_type newtonls -fas_levels_2_pc_type svd -fas_levels_2_ksp_rtol 1.0e-10 -fas_levels_2_snes_atol 1.0e-11 -fas_levels_2_snes_monitor_short
   test:
     suffix: 43
@@ -1160,27 +1160,27 @@ int main(int argc, char **argv)
     args: -run_type full -refinement_limit 0.03125 -variable_coefficient nonlinear -interpolate 1 -petscspace_order 1 -snes_type fas -snes_fas_levels 2 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason -dm_refine_hierarchy 1 -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short
   test:
     suffix: 44
-    requires: hdf5
+    requires: hdf5 triangle
     nsize: 2
     args: -run_type full -refinement_limit 0.0625 -variable_coefficient nonlinear -interpolate 1 -petscspace_order 1 -snes_type fas -snes_fas_levels 3 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason -dm_refine_hierarchy 2 -dm_plex_print_fem 0 -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short -fas_levels_2_snes_type newtonls -fas_levels_2_pc_type svd -fas_levels_2_ksp_rtol 1.0e-10 -fas_levels_2_snes_atol 1.0e-11 -fas_levels_2_snes_monitor_short
   # Restarting
   test:
     suffix: restart_0
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_order 1 -dm_view hdf5:sol.h5 -vec_view hdf5:sol.h5::append
   test:
     suffix: restart_1
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_order 1 -f sol.h5 -restart
   # Periodicity
   test:
     suffix: periodic_0
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type full -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_order 1
   # 2D serial P1 test with field bc
   test:
     suffix: field_bc_p1_0
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type test              -interpolate 1 -bc_type dirichlet -field_bc -petscspace_order 1 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1
   test:
     suffix: field_bc_p1_1
@@ -1218,15 +1218,15 @@ int main(int argc, char **argv)
     args: -run_type test              -interpolate 1 -bc_type dirichlet -field_bc -petscspace_order 2 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1
   test:
     suffix: field_bc_p2_1
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type test -dm_refine 1 -interpolate 1 -bc_type dirichlet -field_bc -petscspace_order 2 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1
   test:
     suffix: field_bc_p2_2
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type test              -interpolate 1 -bc_type neumann   -field_bc -petscspace_order 2 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1
   test:
     suffix: field_bc_p2_3
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type test -dm_refine 1 -interpolate 1 -bc_type neumann   -field_bc -petscspace_order 2 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1
   # 3D serial P2 test with field bc
   test:
@@ -1269,38 +1269,38 @@ int main(int argc, char **argv)
   # Full solve simplex: BDDC
   test:
     suffix: tri_bddc
-    requires: hdf5
+    requires: hdf5 triangle
     nsize: 5
     args: -run_type full -dm_refine 3 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -dm_mat_type is -pc_type bddc -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view -show_solution 0
   # Full solve simplex: ASM
   test:
     suffix: tri_q2q1_asm_lu
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type full -dm_refine 3 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type asm -pc_asm_type restrict -pc_asm_blocks 4 -sub_pc_type lu -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view -show_solution 0
   test:
     suffix: tri_q2q1_msm_lu
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type full -dm_refine 3 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type asm -pc_asm_type restrict -pc_asm_local_type multiplicative -pc_asm_blocks 4 -sub_pc_type lu -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view -show_solution 0
   test:
     suffix: tri_q2q1_asm_sor
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type full -dm_refine 3 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type asm -pc_asm_type restrict -pc_asm_blocks 4 -sub_pc_type sor -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view -show_solution 0
   test:
     suffix: tri_q2q1_msm_sor
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type full -dm_refine 3 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type asm -pc_asm_type restrict -pc_asm_local_type multiplicative -pc_asm_blocks 4 -sub_pc_type sor -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view -show_solution 0
   # Full solve simplex: FAS
   test:
     suffix: fas_newton_0
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type full -variable_coefficient nonlinear -interpolate 1 -petscspace_order 1 -snes_type fas -snes_fas_levels 2 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason -dm_refine_hierarchy 1 -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short
   test:
     suffix: fas_newton_1
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type full -dm_refine_hierarchy 3 -interpolate 1 -petscspace_order 1 -snes_type fas -snes_fas_levels 3 -ksp_rtol 1.0e-10 -fas_coarse_pc_type lu -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason -snes_view -fas_levels_snes_type newtonls -fas_levels_snes_linesearch_type basic -fas_levels_ksp_rtol 1.0e-10 -fas_levels_snes_monitor_short
   test:
     suffix: fas_ngs_0
-    requires: hdf5
+    requires: hdf5 triangle
     args: -run_type full -variable_coefficient nonlinear -interpolate 1 -petscspace_order 1 -snes_type fas -snes_fas_levels 2 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason -dm_refine_hierarchy 1 -snes_view -fas_levels_1_snes_type ngs -fas_levels_1_snes_monitor_short
   test:
     suffix: fas_newton_coarse_0
@@ -1338,7 +1338,7 @@ int main(int argc, char **argv)
   # Full solve tensor: AMR
   test:
     suffix: amr_0
-    requires: hdf5
+    requires: hdf5 triangle
     nsize: 5
     args: -run_type test -refinement_limit 0.0 -simplex 0 -bc_type dirichlet -petscspace_order 1 -petscspace_poly_tensor -dm_refine 1
   test:
