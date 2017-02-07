@@ -94,7 +94,7 @@ PetscErrorCode MatSetRandom(Mat x,PetscRandom rctx)
 }
 
 /*@
-   MatFactorGetErrorZeroPivot - returns the pivot value that was determined to be zero and the row it occurred in 
+   MatFactorGetErrorZeroPivot - returns the pivot value that was determined to be zero and the row it occurred in
 
    Logically Collective on Mat
 
@@ -104,7 +104,7 @@ PetscErrorCode MatSetRandom(Mat x,PetscRandom rctx)
    Output Parameter:
 +  pivot - the pivot value computed
 -  row - the row that the zero pivot occurred. Note that this row must be interpreted carefully due to row reorderings and which processes
-         the share the matrix 
+         the share the matrix
 
    Level: advanced
 
@@ -4871,7 +4871,7 @@ PetscErrorCode MatEqual(Mat A,Mat B,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
    MatDiagonalScale - Scales a matrix on the left and right by diagonal
    matrices that are stored as vectors.  Either of the two scaling
    matrices can be NULL.
