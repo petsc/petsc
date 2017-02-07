@@ -1010,7 +1010,7 @@ PetscErrorCode PetscViewerASCIIRead(PetscViewer viewer,void *data,PetscInt num,P
     else if (dtype == PETSC_ENUM)    ret = fscanf(fd, "%d",  &(((int*)data)[i]));
     else if (dtype == PETSC_FLOAT)   ret = fscanf(fd, "%f",  &(((float*)data)[i]));
     else if (dtype == PETSC_DOUBLE)  ret = fscanf(fd, "%lg", &(((double*)data)[i]));
-#if defined(PETSC_HAVE__FLOAT128)    
+#if defined(PETSC_HAVE___FLOAT128)
     else if (dtype == PETSC___FLOAT128) {
       double tmp;
       ret = fscanf(fd, "%lg", &tmp);

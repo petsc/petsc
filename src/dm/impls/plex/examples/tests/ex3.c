@@ -993,7 +993,7 @@ int main(int argc, char **argv)
 /*TEST
   test:
     suffix: 1
-    requires: ctetgen
+    requires: triangle
 
   # 2D P_1 on a triangle
   test:
