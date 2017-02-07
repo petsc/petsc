@@ -11,7 +11,7 @@
 PETSC_EXTERN void PETSC_STDCALL petscobjectgettype_(PetscObject *obj,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   const char *tmp;
-  *ierr = PetscObjectGetType(*obj,&tmp);
+  *ierr = PetscObjectGetType(*obj,&tmp);if (*ierr) return;
   *ierr = PetscStrncpy(type,tmp,len);if (*ierr) return;
   FIXRETURNCHAR(PETSC_TRUE,type,len);
 }
