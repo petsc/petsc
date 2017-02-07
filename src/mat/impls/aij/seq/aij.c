@@ -1741,9 +1741,7 @@ PetscErrorCode MatZeroRows_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
   PetscErrorCode    ierr;
   const PetscScalar *xx;
   PetscScalar       *bb;
-#if defined(PETSC_USE_DEBUG)
   PetscInt          d = 0;
-#endif
 
   PetscFunctionBegin;
   if (x && b) {
@@ -1763,12 +1761,10 @@ PetscErrorCode MatZeroRows_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
       ierr = PetscMemzero(&a->a[a->i[rows[i]]],a->ilen[rows[i]]*sizeof(PetscScalar));CHKERRQ(ierr);
     }
     if (diag != 0.0) {
-#if defined(PETSC_USE_DEBUG)
       for (i=0; i<N; i++) {
         d = rows[i];
         if (a->diag[d] >= a->i[d+1]) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry in the zeroed row %D",d);
       }
-#endif
       for (i=0; i<N; i++) {
         a->a[a->diag[rows[i]]] = diag;
       }
