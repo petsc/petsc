@@ -1588,7 +1588,7 @@ static PetscErrorCode DMPlexBuildCoordinates_Parallel_Private(DM dm, PetscInt sp
     MPI_Datatype coordtype;
 
     /* Need a temp buffer for coords if we have complex/single */
-    ierr = MPI_Type_contiguous(spaceDim, MPI_DOUBLE, &coordtype);CHKERRQ(ierr);
+    ierr = MPI_Type_contiguous(spaceDim, MPIU_REAL, &coordtype);CHKERRQ(ierr);
     ierr = MPI_Type_commit(&coordtype);CHKERRQ(ierr);
     ierr = PetscSFBcastBegin(sfVert, coordtype, vertexCoords, coords);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(sfVert, coordtype, vertexCoords, coords);CHKERRQ(ierr);
