@@ -26,6 +26,7 @@ PETSC_INTERN PetscErrorCode MatMatMult_MPIAIJ_MPIAIJ(Mat A,Mat B,MatReuse scall,
 #endif
   PetscInt       alg = 1; /* set default algorithm */
   MPI_Comm       comm;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
@@ -33,8 +34,23 @@ PETSC_INTERN PetscErrorCode MatMatMult_MPIAIJ_MPIAIJ(Mat A,Mat B,MatReuse scall,
     if (A->cmap->rstart != B->rmap->rstart || A->cmap->rend != B->rmap->rend) SETERRQ4(comm,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%D, %D) != (%D,%D)",A->cmap->rstart,A->cmap->rend,B->rmap->rstart,B->rmap->rend);
 
     ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
-    ierr = PetscOptionsEList("-matmatmult_via","Algorithmic approach","MatMatMult",algTypes,nalg,algTypes[1],&alg,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-matmatmult_via","Algorithmic approach","MatMatMult",algTypes,nalg,algTypes[1],&alg,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
+    if (!flg) { /* set default algorithm based on B->cmap->N */
+      PetscMPIInt size;
+      MatInfo     Ainfo,Binfo;
+      PetscInt    nz_local,nz;
+
+      ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+      ierr = MatGetInfo(A,MAT_LOCAL,&Ainfo);CHKERRQ(ierr);
+      ierr = MatGetInfo(B,MAT_LOCAL,&Binfo);CHKERRQ(ierr);
+      nz_local = (PetscInt)(Ainfo.nz_allocated + Binfo.nz_allocated);
+      ierr = MPIU_Allreduce(&nz_local,&nz,1,MPIU_INT,MPIU_SUM,comm);CHKERRQ(ierr);
+
+      if (B->cmap->N >100000 && B->cmap->N > fill*(PetscReal)(nz)/size) alg = 0; /* scalable algorithm would take 2x of time as nonscalable algorithm */
+      ierr = PetscInfo3(B,"Use algorithm %D, BN %D, fill*nz_allocated(A + B)/size %g\n",alg,B->cmap->N,fill*(PetscReal)(nz)/size);CHKERRQ(ierr);
+    }
 
     ierr = PetscLogEventBegin(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
     switch (alg) {
