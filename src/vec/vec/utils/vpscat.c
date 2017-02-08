@@ -66,8 +66,8 @@ PetscErrorCode VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
       }
       if (to->local.n) {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Indices for local part of scatter\n",rank);CHKERRQ(ierr);
-        for (i=0; i<to->local.n; i++) {
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] From %D to %D \n",rank,from->local.vslots[i],to->local.vslots[i]);CHKERRQ(ierr);
+        for (i=0; i<to->local.n; i++) {  /* the to and from have the opposite meaning from what you would expect */
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] From %D to %D \n",rank,to->local.vslots[i],from->local.vslots[i]);CHKERRQ(ierr);
         }
       }
 

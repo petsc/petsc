@@ -1357,14 +1357,27 @@ static PetscErrorCode DMView_VTK_pforest(PetscObject odm, PetscViewer viewer)
       name                = filenameStrip;
     }
     if (!pforest->topo->geom) PetscStackCallP4estReturn(geom,p4est_geometry_new_connectivity,(pforest->topo->conn));
-    PetscStackCallP4est(p4est_vtk_write_all,(pforest->forest,geom,(double)vtkScale,
-                                             1, /* write tree */
-                                             1, /* write level */
-                                             1, /* write rank */
-                                             0, /* do not wrap rank */
-                                             0, /* no scalar fields */
-                                             0, /* no vector fields */
-                                             name));
+    {
+      p4est_vtk_context_t *pvtk;
+      int                 footerr;
+
+      PetscStackCallP4estReturn(pvtk,p4est_vtk_context_new,(pforest->forest,name));
+      PetscStackCallP4est(p4est_vtk_context_set_geom,(pvtk,geom));
+      PetscStackCallP4est(p4est_vtk_context_set_scale,(pvtk,(double)vtkScale));
+      PetscStackCallP4estReturn(pvtk,p4est_vtk_write_header,(pvtk));
+      if (!pvtk) SETERRQ(PetscObjectComm((PetscObject)odm),PETSC_ERR_LIB,P4EST_STRING "_vtk_write_header() failed");
+      PetscStackCallP4estReturn(pvtk,p4est_vtk_write_cell_dataf,(pvtk,
+                                                                 1, /* write tree */
+                                                                 1, /* write level */
+                                                                 1, /* write rank */
+                                                                 0, /* do not wrap rank */
+                                                                 0, /* no scalar fields */
+                                                                 0, /* no vector fields */
+                                                                 pvtk));
+      if (!pvtk) SETERRQ(PetscObjectComm((PetscObject)odm),PETSC_ERR_LIB,P4EST_STRING "_vtk_write_cell_dataf() failed");
+      PetscStackCallP4estReturn(footerr,p4est_vtk_write_footer,(pvtk));
+      if (footerr) SETERRQ(PetscObjectComm((PetscObject)odm),PETSC_ERR_LIB,P4EST_STRING "_vtk_write_footer() failed");
+    }
     if (!pforest->topo->geom) PetscStackCallP4est(p4est_geometry_destroy,(geom));
     ierr = PetscFree(filenameStrip);CHKERRQ(ierr);
     break;

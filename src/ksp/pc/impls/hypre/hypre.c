@@ -1708,10 +1708,10 @@ PetscErrorCode  PCHYPREGetType(PC pc,const char *name[])
           the many hypre options can ONLY be set via the options database (e.g. the command line
           or with PetscOptionsSetValue(), there are no functions to set them)
 
-          The options -pc_hypre_boomeramg_max_iter and -pc_hypre_boomeramg_rtol refer to the number of iterations
+          The options -pc_hypre_boomeramg_max_iter and -pc_hypre_boomeramg_tol refer to the number of iterations
           (V-cycles) and tolerance that boomeramg does EACH time it is called. So for example, if
           -pc_hypre_boomeramg_max_iter is set to 2 then 2-V-cycles are being used to define the preconditioner
-          (-pc_hypre_boomeramg_rtol should be set to 0.0 - the default - to strictly use a fixed number of
+          (-pc_hypre_boomeramg_tol should be set to 0.0 - the default - to strictly use a fixed number of
           iterations per hypre call). -ksp_max_it and -ksp_rtol STILL determine the total number of iterations
           and tolerance for the Krylov solver. For example, if -pc_hypre_boomeramg_max_iter is 2 and -ksp_max_it is 10
           then AT MOST twenty V-cycles of boomeramg will be called.
