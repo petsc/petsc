@@ -29,6 +29,7 @@ OPTIONS
   -j ................ Pass -j to petscdiff (just use diff)
   -J <arg> .......... Pass -J to petscdiff (just use diff with arg)
   -m ................ Update results using petscdiff
+  -V ................ run Valgrind
   -v ................ Verbose: Print commands
 EOF
 
@@ -41,7 +42,7 @@ EOF
 verbose=false
 cleanup=false
 diff_flags=""
-while getopts "a:ce:hjJ:mn:v" arg
+while getopts "a:ce:hjJ:mn:vV" arg
 do
   case $arg in
     a ) args="$OPTARG"       ;;  
@@ -52,6 +53,7 @@ do
     j ) diff_flags="-j"      ;;  
     J ) diff_flags="-J $OPTARG" ;;  
     m ) diff_flags="-m"      ;;  
+    V ) mpiexec="petsc_mpiexec_valgrind $mpiexec" ;;  
     v ) verbose=true         ;;  
     *)  # To take care of any extra args
       if test -n "$OPTARG"; then

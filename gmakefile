@@ -84,6 +84,9 @@ else				# Show the full command line
   TESTFLAGS += -v
 endif
 
+ifeq ($(VALGRIND),1)
+  TESTFLAGS += -V    # Add valgrind to the flags
+endif
 ifeq ($(REPLACE),1)
   TESTFLAGS += -m    # Replace results by passing -m to petscdiff
 endif
