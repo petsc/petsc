@@ -24,7 +24,7 @@ int main(int argc, char **argv) {return 0;}
        args:  -my_arg cg -my_arg2 {{p q}}
 
      test:
-       args: -foo {{"s,t" "u,v"}} -rtol {{1.e-10 1.e-11}}
+       args: -foo {{"s,t" "u,v"}} -rtol {{1.e-4 1.e-5}}
 
    test: # subtests with suffix to generate separate files
      suffix: 3

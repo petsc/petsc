@@ -89,15 +89,15 @@ class generateExamples(Petsc):
     #if not langReq: print "ERROR: ", srcext, srcfile
     return langReq
 
-  def _getLoopVars(self,testDict,i,isSubtest=False):
+  def _getLoopVars(self,testDict,testname, isSubtest=False):
     """
     Given: 'args: -bs {{1 2 3 4 5}} -pc_type {{cholesky sor}} -ksp_monitor'
     Return: 
       testDict['args']: -ksp_monitor
-      testDict['subargs']: -bs ${i} -pc_type ${j}
+      testDict['subargs']: -bs ${bs} -pc_type ${pc_type}
       loopVars['subargs']['varlist']=['bs' 'pc_type']   # Don't worry about OrderedDict
-      loopVars['subargs']['bs']=[["i"],["1 2 3 4 5"]]
-      loopVars['subargs']['pc_type']=[["j"],["cholesky sor"]]
+      loopVars['subargs']['bs']=[["bs"],["1 2 3 4 5"]]
+      loopVars['subargs']['pc_type']=[["pc_type"],["cholesky sor"]]
     subst should be passed in instead of testDict
     """
     loopVars={}; newargs=""
@@ -114,28 +114,28 @@ class generateExamples(Petsc):
           if not loopVars.has_key(akey): loopVars[akey]={}
           # Assuming only one for loop per var specification
           keyvar=varset.split("{{")[0].strip()
+          if not keyvar.strip():
+            if key=='nsize': 
+              keyvar='nsize'
+            else:
+              print testname+": Problem in finding loop variables", keyvar, varset
           varlist.append(keyvar)
-          lvar=string.ascii_lowercase[i]; i+=1
-          loopVars[akey][keyvar]=[lvar,re.findall('{{(.*?)}}',varset)[0]]
-          testDict[akey] += '-'+keyvar+' ${' + lvar + '} '
+          loopVars[akey][keyvar]=[keyvar,re.findall('{{(.*?)}}',varset)[0]]
+          if akey=='nsize':
+            testDict[akey] = '${' + keyvar + '}'
+          else:
+            testDict[akey] += ' -'+keyvar+' ${' + keyvar + '}'
         else:
-          if key=='args': 
-            newargs+="-"+varset+" "
-            # Also move the datafilespath variables up to localrunfiles
-            keyvar=varset.split(" ")[0].strip()
-            if keyvar=='f0' or keyvar=='f1':
-              if testDict.has_key('localrunfiles'):
-          keyvar=
+          if key=='args': newargs+=" -"+varset.strip()
         if len(varlist)>0: loopVars[akey]['varlist']=varlist
 
       
     # For subtests, args are always substituted in (not top level)
     if isSubtest:
-      testDict['subargs']+=newargs
+      testDict['subargs']+=" "+newargs.strip()
       testDict['args']=''
     else:
-      if len(loopVars.keys())>0:
-        testDict['args']=newargs
+      if len(loopVars.keys())>0: testDict['args']=newargs.strip()
     if len(loopVars.keys())>0:
       return loopVars
     else:
@@ -283,10 +283,6 @@ class generateExamples(Petsc):
     subst['petsc_lib_dir']=self.conf['PETSC_LIB_DIR']
     subst['wpetsc_dir']=self.conf['wPETSC_DIR']
 
-    for key in subst:
-      if type(subst[key])!=types.StringType: continue
-      subst[key] = self._substVars(testDict,subst[key])
-
     return subst
 
   def getCmds(self,subst,i):
@@ -317,7 +313,7 @@ class generateExamples(Petsc):
 
   def _substVars(self,subst,origStr):
     """
-      Substitute varial
+      Substitute variables
     """
     Str=origStr
     for subkey in subst:
@@ -376,10 +372,9 @@ class generateExamples(Petsc):
     fh=open(os.path.join(runscript_dir,testname+".sh"),"w")
     petscvarfile=os.path.join(self.arch_dir,'lib','petsc','conf','petscvariables')
 
-    i=8  # for loop counters
     # This gets a datastructure for handling loops as well as alters testDict
     subst=self.getSubstVars(testDict,rpath,testname)
-    loopVars = self._getLoopVars(subst,i)
+    loopVars = self._getLoopVars(subst,testname)
 
     #Handle runfiles
     if subst['localrunfiles']: 
@@ -388,7 +383,6 @@ class generateExamples(Petsc):
         shutil.copy(fullfile,runscript_dir)
     # Check subtests for local runfiles
     if testDict.has_key("subtests"):
-      if 'mumps_cholesky' in testname: print testDict["subtests"]
       for stest in testDict["subtests"]:
         if testDict[stest].has_key('localrunfiles'):
           for lfile in testDict[stest]['localrunfiles'].split():
@@ -422,7 +416,8 @@ class generateExamples(Petsc):
         subst=substP.copy()
         subst.update(testDict[stest])
         subst['nsize']=str(subst['nsize'])
-        sLoopVars = self._getLoopVars(subst,i,isSubtest=True)
+        sLoopVars = self._getLoopVars(subst,testname,isSubtest=True)
+        #if '10_9' in testname: print sLoopVars
         if sLoopVars: 
           (sLoopHead,j) = self.getLoopVarsHead(sLoopVars,j)
           fh.write(sLoopHead+"\n")
@@ -439,6 +434,7 @@ class generateExamples(Petsc):
 
     fh.write(footer+"\n")
     os.chmod(os.path.join(runscript_dir,testname+".sh"),0755)
+    #if '10_9' in testname: sys.exit()
     return
 
   def  genScriptsAndInfo(self,exfile,root,srcDict):
