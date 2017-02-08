@@ -657,7 +657,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
   PetscInt       *nrow,*ncol,start;
   PetscErrorCode ierr;
   PetscMPIInt    rank,size,tag0,tag2,tag3,tag4,*w1,*w2,*w3,*w4,nrqr;
-  PetscInt       **sbuf1,**sbuf2,i,j,k,l,ct1,ct2,**rbuf1,row,proc=-1;
+  PetscInt       **sbuf1,**sbuf2,*sbuf2_i,i,j,k,l,ct1,ct2,**rbuf1,row,proc=-1;
   PetscInt       nrqs=0,msz,**ptr=NULL,*req_size=NULL,*ctr=NULL,*pa,*tmp=NULL,tcol;
   PetscInt       **rbuf3=NULL,*req_source1=NULL,*req_source2,**sbuf_aj,**rbuf2=NULL,max1,max2;
   PetscInt       **lens,is_no,ncols,*cols,mat_i,*mat_j,tmp2,jmax;
@@ -666,7 +666,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
 #else
   PetscInt       **cmap,*cmap_i=NULL,**rmap,*rmap_i;
 #endif
-  const PetscInt *irow_i;
+  const PetscInt *irow_i,*icol_i;;
   PetscInt       ctr_j,*sbuf1_j,*sbuf_aj_i,*rbuf1_i,kmax,*lens_i;
   MPI_Request    *s_waits1,*r_waits1,*s_waits2,*r_waits2,*r_waits3;
   MPI_Request    *r_waits4,*s_waits3,*s_waits4;
@@ -899,32 +899,29 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
     ierr = PetscMalloc1(nrqr+1,&s_waits2);CHKERRQ(ierr);
     ierr = PetscMalloc1(nrqr+1,&r_status1);CHKERRQ(ierr);
     ierr = PetscMalloc3(nrqr,&sbuf2,nrqr,&req_size,nrqr,&req_source1);CHKERRQ(ierr);
-    {
-      PetscInt   *sAi = a->i,*sBi = b->i,id;
-      PetscInt   *sbuf2_i;
 
-      ierr = MPI_Waitall(nrqr,r_waits1,r_status1);CHKERRQ(ierr);
-      for (i=0; i<nrqr; ++i) {
-        req_size[i] = 0;
-        rbuf1_i        = rbuf1[i];
-        start          = 2*rbuf1_i[0] + 1;
-        ierr           = MPI_Get_count(r_status1+i,MPIU_INT,&end);CHKERRQ(ierr);
-        ierr           = PetscMalloc1(end+1,&sbuf2[i]);CHKERRQ(ierr);
-        sbuf2_i        = sbuf2[i];
-        for (j=start; j<end; j++) {
-          id              = rbuf1_i[j] - rstart;
-          ncols           = sAi[id+1] - sAi[id] + sBi[id+1] - sBi[id];
-          sbuf2_i[j]      = ncols;
-          req_size[i] += ncols;
-        }
-        req_source1[i] = r_status1[i].MPI_SOURCE;
-        /* form the header */
-        sbuf2_i[0] = req_size[i];
-        for (j=1; j<start; j++) sbuf2_i[j] = rbuf1_i[j];
-
-        ierr = MPI_Isend(sbuf2_i,end,MPIU_INT,req_source1[i],tag2,comm,s_waits2+i);CHKERRQ(ierr);
+    ierr = MPI_Waitall(nrqr,r_waits1,r_status1);CHKERRQ(ierr);
+    for (i=0; i<nrqr; ++i) {
+      req_size[i] = 0;
+      rbuf1_i        = rbuf1[i];
+      start          = 2*rbuf1_i[0] + 1;
+      ierr           = MPI_Get_count(r_status1+i,MPIU_INT,&end);CHKERRQ(ierr);
+      ierr           = PetscMalloc1(end+1,&sbuf2[i]);CHKERRQ(ierr);
+      sbuf2_i        = sbuf2[i];
+      for (j=start; j<end; j++) {
+        row             = rbuf1_i[j] - rstart;
+        ncols           = a_i[row+1] - a_i[row] + b_i[row+1] - b_i[row];
+        sbuf2_i[j]      = ncols;
+        req_size[i] += ncols;
       }
+      req_source1[i] = r_status1[i].MPI_SOURCE;
+      /* form the header */
+      sbuf2_i[0] = req_size[i];
+      for (j=1; j<start; j++) sbuf2_i[j] = rbuf1_i[j];
+
+      ierr = MPI_Isend(sbuf2_i,end,MPIU_INT,req_source1[i],tag2,comm,s_waits2+i);CHKERRQ(ierr);
     }
+
     ierr = PetscFree(r_status1);CHKERRQ(ierr);
     ierr = PetscFree(r_waits1);CHKERRQ(ierr);
     ierr = PetscFree4(w1,w2,w3,w4);CHKERRQ(ierr);
@@ -993,7 +990,6 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
     ierr = PetscMalloc2(nrqs+1,&r_status3,nrqr+1,&s_status3);CHKERRQ(ierr);
 
     /* create col map: global col of C -> local col of submatrices */
-    const PetscInt *icol_i;
 #if defined(PETSC_USE_CTABLE)
     for (i=0; i<ismax; i++) {
       if (!allcolumns[i]) {
