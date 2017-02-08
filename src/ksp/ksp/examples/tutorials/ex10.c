@@ -24,7 +24,7 @@ users manual for a discussion of preloading.  Input parameters include\n\
 /*T
    Concepts: KSP^solving a linear system
    Processors: n
-   requires: !complex veccuda complex matlab   TODO: Need to determine if deprecated
+   requires: !complex 
 T*/
 
 

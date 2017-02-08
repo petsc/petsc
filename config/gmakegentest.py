@@ -89,24 +89,25 @@ class generateExamples(Petsc):
     #if not langReq: print "ERROR: ", srcext, srcfile
     return langReq
 
-  def _getLoopVars(self,testDict,testname, isSubtest=False):
+  def _getLoopVars(self,inDict,testname, isSubtest=False):
     """
     Given: 'args: -bs {{1 2 3 4 5}} -pc_type {{cholesky sor}} -ksp_monitor'
     Return: 
-      testDict['args']: -ksp_monitor
-      testDict['subargs']: -bs ${bs} -pc_type ${pc_type}
+      inDict['args']: -ksp_monitor
+      inDict['subargs']: -bs ${bs} -pc_type ${pc_type}
       loopVars['subargs']['varlist']=['bs' 'pc_type']   # Don't worry about OrderedDict
       loopVars['subargs']['bs']=[["bs"],["1 2 3 4 5"]]
       loopVars['subargs']['pc_type']=[["pc_type"],["cholesky sor"]]
-    subst should be passed in instead of testDict
+    subst should be passed in instead of inDict
     """
     loopVars={}; newargs=""
-    lkeys=testDict.keys()
+    lkeys=inDict.keys()
+    lsuffix='_'
     for key in lkeys:
-      if type(testDict[key])!=types.StringType: continue
-      keystr = str(testDict[key])
+      if type(inDict[key])!=types.StringType: continue
+      keystr = str(inDict[key])
       akey=('subargs' if key=='args' else key)  # what to assign
-      if not testDict.has_key(akey): testDict[akey]=''
+      if not inDict.has_key(akey): inDict[akey]=''
       varlist=[]
       for varset in re.split('-(?=[a-zA-Z])',keystr):
         if not varset.strip(): continue
@@ -122,9 +123,11 @@ class generateExamples(Petsc):
           varlist.append(keyvar)
           loopVars[akey][keyvar]=[keyvar,re.findall('{{(.*?)}}',varset)[0]]
           if akey=='nsize':
-            testDict[akey] = '${' + keyvar + '}'
+            inDict[akey] = '${' + keyvar + '}'
+            lsuffix+=akey+'-'+inDict[akey]+'_'
           else:
-            testDict[akey] += ' -'+keyvar+' ${' + keyvar + '}'
+            inDict[akey] += ' -'+keyvar+' ${' + keyvar + '}'
+            lsuffix+=keyvar+'-${' + keyvar + '}_'
         else:
           if key=='args': newargs+=" -"+varset.strip()
         if len(varlist)>0: loopVars[akey]['varlist']=varlist
@@ -132,10 +135,16 @@ class generateExamples(Petsc):
       
     # For subtests, args are always substituted in (not top level)
     if isSubtest:
-      testDict['subargs']+=" "+newargs.strip()
-      testDict['args']=''
+      inDict['subargs']+=" "+newargs.strip()
+      inDict['args']=''
+      if inDict.has_key('label_suffix'):
+        inDict['label_suffix']+=lsuffix.rstrip('_')
+      else:
+        inDict['label_suffix']=lsuffix.rstrip('_')
     else:
-      if len(loopVars.keys())>0: testDict['args']=newargs.strip()
+      if len(loopVars.keys())>0: 
+        inDict['args']=newargs.strip()
+        inDict['label_suffix']=lsuffix.rstrip('_')
     if len(loopVars.keys())>0:
       return loopVars
     else:
@@ -220,41 +229,36 @@ class generateExamples(Petsc):
     """
       Create a dictionary with all of the variables that get substituted
       into the template commands found in example_template.py
-      TODO: Cleanup
     """
     subst={}
-    # Handle defaults
+
+    # Handle defaults of testparse.acceptedkeys (e.g., ignores subtests)
     if not testDict.has_key('nsize'): testDict['nsize']=1
-    if not testDict.has_key('filter'): testDict['filter']=""
-    if not testDict.has_key('filter_output'): testDict['filter_output']=""
-    if not testDict.has_key('localrunfiles'): testDict['localrunfiles']=""
-    if not testDict.has_key('args'): testDict['args']=""
-    if not testDict.has_key('subargs'): testDict['subargs']=""
-    if not testDict.has_key('comments'): testDict['comments']=""
-    defroot=(re.sub("run","",testname) if testname.startswith("run") else testname)
-    if not "_" in defroot: defroot=defroot+"_1"
-    if not testDict.has_key('redirect_file'): testDict['redirect_file']=defroot+".tmp"
+    for ak in testparse.acceptedkeys: 
+      if ak=='test': continue
+      subst[ak]=(testDict[ak] if testDict.has_key(ak) else '')
+
+    # Now do other variables
+    subst['execname']=testDict['execname']
+    if testDict.has_key('filter'):
+      subst['filter']="'"+testDict['filter']+"'"   # Quotes are tricky - overwrite
 
     # Output file is special because of subtests override
-    if testDict.has_key('output_file'): 
-      subst['output_file']=testDict['output_file']
-      subst['output_file_inSrc']=True
-    else:
-      subst['output_file']="output/"+defroot+".out"
-      subst['output_file_inSrc']=False
-
-    # Setup the variables in template_string that need to be substituted
+    defroot=(re.sub("run","",testname) if testname.startswith("run") else testname)
     subst['defroot']=defroot
+    if not "_" in defroot: defroot=defroot+"_1"
+    if not testDict.has_key('output_file'): 
+      subst['output_file']="output/"+defroot+".out"
+    subst['redirect_file']=defroot+".tmp"
+
+    # Others
+    subst['subargs']=''  # Default.  For variables override
     subst['srcdir']=os.path.join(self.petsc_dir,rpath)
     subst['label']=self.nameSpace(defroot,subst['srcdir'])
     subst['label_suffix']=''
-    subst['redirect_file']=testDict['redirect_file']
-    subst['comments']="\n#".join(testDict['comments'].split("\n"))
+    subst['comments']="\n#".join(subst['comments'].split("\n"))
     if subst['comments']: subst['comments']="#"+subst['comments']
-    subst['exec']="../"+testDict['execname']
-    subst['filter']="'"+testDict['filter']+"'"   # Quotes are tricky
-    subst['filter_output']=testDict['filter_output']
-    subst['localrunfiles']=testDict['localrunfiles']
+    subst['exec']="../"+subst['execname']
     subst['testroot']=self.testroot_dir
     subst['testname']=testname
     if self.conf['PETSC_HAVE_DATAFILESPATH']: 
@@ -264,12 +268,8 @@ class generateExamples(Petsc):
       dpl=''
     subst['datafilespath_line']=dpl
 
-    # Be careful with this
-    if testDict.has_key('command'): subst['command']=testDict['command']
-
     # These can have for loops and are treated separately later
-    if testDict.has_key('nsize'): subst['nsize']=str(testDict['nsize'])
-    if testDict.has_key('args'):  subst['args']=testDict['args']
+    subst['nsize']=str(subst['nsize'])
 
     #Conf vars
     if self.petsc_arch.find('valgrind')>=0:
@@ -298,7 +298,7 @@ class generateExamples(Petsc):
     subst['output_file']=os.path.join(subst['srcdir'],subst['output_file'])
 
     # MPI is the default -- but we have a few odd commands
-    if not subst.has_key('command'):
+    if not subst['command']:
       cmd=indnt*nindnt+self._substVars(subst,example_template.mpitest)
     else:
       cmd=indnt*nindnt+self._substVars(subst,example_template.commandtest)
@@ -372,19 +372,20 @@ class generateExamples(Petsc):
     fh=open(os.path.join(runscript_dir,testname+".sh"),"w")
     petscvarfile=os.path.join(self.arch_dir,'lib','petsc','conf','petscvariables')
 
-    # This gets a datastructure for handling loops as well as alters testDict
+    # Get variables to go into shell scripts.  last time testDict used
     subst=self.getSubstVars(testDict,rpath,testname)
-    loopVars = self._getLoopVars(subst,testname)
+    loopVars = self._getLoopVars(subst,testname)  # Alters subst as well
+    #if '33_' in testname: print subst['subargs']
 
     #Handle runfiles
-    if subst['localrunfiles']: 
+    if subst.has_key('localrunfiles'):
       for lfile in subst['localrunfiles'].split():
         fullfile=os.path.join(self.petsc_dir,rpath,lfile)
         shutil.copy(fullfile,runscript_dir)
     # Check subtests for local runfiles
-    if testDict.has_key("subtests"):
-      for stest in testDict["subtests"]:
-        if testDict[stest].has_key('localrunfiles'):
+    if subst.has_key("subtests"):
+      for stest in subst["subtests"]:
+        if subst[stest].has_key('localrunfiles'):
           for lfile in testDict[stest]['localrunfiles'].split():
             fullfile=os.path.join(self.petsc_dir,rpath,lfile)
             shutil.copy(fullfile,self.runscript_dir)
@@ -651,7 +652,7 @@ class generateExamples(Petsc):
       fullex=os.path.join(root,exfile)
       relpfile=self.relpath(self.petsc_dir,fullex)
       if debug: print relpfile
-      dataDict[root].update(testparse.parseTestFile(fullex))
+      dataDict[root].update(testparse.parseTestFile(fullex,0))
       # Need to check and make sure tests are in the file
       # if verbosity>=1: print relpfile
       if dataDict[root].has_key(exfile):
