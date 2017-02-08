@@ -119,7 +119,13 @@ class generateExamples(Petsc):
           loopVars[akey][keyvar]=[lvar,re.findall('{{(.*?)}}',varset)[0]]
           testDict[akey] += '-'+keyvar+' ${' + lvar + '} '
         else:
-          if key=='args': newargs+="-"+varset+" "
+          if key=='args': 
+            newargs+="-"+varset+" "
+            # Also move the datafilespath variables up to localrunfiles
+            keyvar=varset.split(" ")[0].strip()
+            if keyvar=='f0' or keyvar=='f1':
+              if testDict.has_key('localrunfiles'):
+          keyvar=
         if len(varlist)>0: loopVars[akey]['varlist']=varlist
 
       
@@ -362,7 +368,6 @@ class generateExamples(Petsc):
       Generate bash script using template found next to this file.  
       This file is read in at constructor time to avoid file I/O
     """
-    print testname
     # runscript_dir directory has to be consistent with gmakefile
     testDict=srcDict[testname]
     rpath=self.relpath(self.petsc_dir,root)
@@ -383,6 +388,7 @@ class generateExamples(Petsc):
         shutil.copy(fullfile,runscript_dir)
     # Check subtests for local runfiles
     if testDict.has_key("subtests"):
+      if 'mumps_cholesky' in testname: print testDict["subtests"]
       for stest in testDict["subtests"]:
         if testDict[stest].has_key('localrunfiles'):
           for lfile in testDict[stest]['localrunfiles'].split():
