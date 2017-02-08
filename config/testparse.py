@@ -244,7 +244,7 @@ def splitTests(testname,sdict):
 
   return testnames, sdicts
 
-def parseTest(testStr,srcfile):
+def parseTest(testStr,srcfile,verbosity):
   """
   This parses an individual test
   YAML is hierarchial so should use a state machine in the general case,
@@ -268,6 +268,7 @@ def parseTest(testStr,srcfile):
   indentlevel=0
   for ln in striptest.split("\n"):
     line=ln.split('#')[0].rstrip()
+    if verbosity>2: print line
     comment=("" if len(ln.split("#"))==1 else " ".join(ln.split("#")[1:]).strip())
     if comment: comments.append(comment)
     if not line.strip(): continue
@@ -309,7 +310,7 @@ def parseTest(testStr,srcfile):
   testnames,subdicts=splitTests(testname,subdict)
   return testnames,subdicts
 
-def parseTests(testStr,srcfile,fileNums):
+def parseTests(testStr,srcfile,fileNums,verbosity):
   """
   Parse the yaml string describing tests and return 
   a dictionary with the info in the form of:
@@ -324,10 +325,11 @@ def parseTests(testStr,srcfile,fileNums):
 
   # The first entry should be test: but it might be indented. 
   newTestStr=_stripIndent(testStr,srcfile,entireBlock=True,fileNums=fileNums)
+  if verbosity>2: print srcfile
 
   # Now go through each test.  First elem in split is blank
   for test in newTestStr.split("\ntest:")[1:]:
-    testnames,subdicts=parseTest(test,srcfile)
+    testnames,subdicts=parseTest(test,srcfile,verbosity)
     for i in range(len(testnames)):
       if testDict.has_key(testnames[i]):
         raise Error("Multiple test names specified: "+testname+" in file: "+srcfile)
@@ -335,7 +337,7 @@ def parseTests(testStr,srcfile,fileNums):
       
   return testDict
 
-def parseTestFile(srcfile):
+def parseTestFile(srcfile,verbosity):
   """
   Parse single example files and return dictionary of the form:
     testDict[srcfile][test][subtest]
@@ -367,7 +369,7 @@ def parseTestFile(srcfile):
   flen=len(testString.split("\n"))
   fend=fstart+flen-1
   fileNums=range(fstart,fend)
-  testDict[basename]=parseTests(testString,srcfile,fileNums)
+  testDict[basename]=parseTests(testString,srcfile,fileNums,verbosity)
 
   ## Check and see if we have build reuqirements
   #
@@ -382,7 +384,7 @@ def parseTestFile(srcfile):
   os.chdir(curdir)
   return testDict
 
-def parseTestDir(directory):
+def parseTestDir(directory,verbosity):
   """
   Parse single example files and return dictionary of the form:
     testDict[srcfile][test][subtest]
@@ -393,7 +395,7 @@ def parseTestDir(directory):
 
   tDict={}
   for test_file in glob.glob("new_ex*.*"):
-    tDict.update(parseTestFile(test_file))
+    tDict.update(parseTestFile(test_file,verbosity))
 
   os.chdir(curdir)
   return tDict
@@ -426,9 +428,9 @@ def printExParseDict(rDict):
 def main(directory='',test_file='',verbosity=0):
 
     if directory:
-      tDict=parseTestDir(directory)
+      tDict=parseTestDir(directory,verbosity)
     else:
-      tDict=parseTestFile(test_file)
+      tDict=parseTestFile(test_file,verbosity)
     if verbosity>0: printExParseDict(tDict)
 
     return
