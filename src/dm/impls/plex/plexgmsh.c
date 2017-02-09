@@ -85,16 +85,17 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
 PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool interpolate, DM *dm)
 {
   PetscViewerType vtype;
-  GmshElement   *gmsh_elem;
-  PetscSection   coordSection;
-  Vec            coordinates;
-  PetscScalar   *coords, *coordsIn = NULL;
-  PetscInt       dim = 0, coordSize, c, v, d, r, cell;
-  int            i, numVertices = 0, numCells = 0, trueNumCells = 0, numRegions = 0, snum;
-  PetscMPIInt    num_proc, rank;
-  char           line[PETSC_MAX_PATH_LEN];
-  PetscBool      match, binary, bswap = PETSC_FALSE;
-  PetscErrorCode ierr;
+  GmshElement     *gmsh_elem;
+  PetscSection    coordSection;
+  Vec             coordinates;
+  PetscScalar     *coords;
+  PetscReal       *coordsIn = NULL;
+  PetscInt        dim = 0, coordSize, c, v, d, r, cell;
+  int             i, numVertices = 0, numCells = 0, trueNumCells = 0, numRegions = 0, snum;
+  PetscMPIInt     num_proc, rank;
+  char            line[PETSC_MAX_PATH_LEN];
+  PetscBool       match, binary, bswap = PETSC_FALSE;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
