@@ -24,6 +24,10 @@ PETSC_EXTERN PetscErrorCode MatCreate_Composite(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJPERM(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJPERM(Mat);
 
+PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJMKL(Mat);
+/* PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJMKL(Mat); */
+/* Uncomment above line when I have MPIAIJMKL completed. -- RTM */
+
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCRL(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCRL(Mat);
 
@@ -94,6 +98,11 @@ PetscErrorCode  MatRegisterAll(void)
   ierr = MatRegisterBaseName(MATAIJPERM,MATSEQAIJPERM,MATMPIAIJPERM);CHKERRQ(ierr);
   ierr = MatRegister(MATMPIAIJPERM,     MatCreate_MPIAIJPERM);CHKERRQ(ierr);
   ierr = MatRegister(MATSEQAIJPERM,     MatCreate_SeqAIJPERM);CHKERRQ(ierr);
+
+  ierr = MatRegisterBaseName(MATAIJMKL,MATSEQAIJMKL,MATMPIAIJMKL);CHKERRQ(ierr);
+  /* ierr = MatRegister(MATMPIAIJMKL,     MatCreate_MPIAIJMKL);CHKERRQ(ierr); */
+  /* Uncomment above line when I have MPIAIJMKL implemented. --RTM */
+  ierr = MatRegister(MATSEQAIJMKL,     MatCreate_SeqAIJMKL);CHKERRQ(ierr);
 
   ierr = MatRegisterBaseName(MATAIJCRL,MATSEQAIJCRL,MATMPIAIJCRL);CHKERRQ(ierr);
   ierr = MatRegister(MATSEQAIJCRL,      MatCreate_SeqAIJCRL);CHKERRQ(ierr);
