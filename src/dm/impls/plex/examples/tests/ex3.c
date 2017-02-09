@@ -1096,15 +1096,15 @@ int main(int argc, char **argv)
   # 2D Q_1 on a quadrilaterial DA
   test:
     suffix: q1_2d_da_0
-    requires: mpi_type_get_envelope
+    requires: mpi_type_get_envelope broken
     args: -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -num_comp 2 -qorder 1 -convergence
   test:
     suffix: q1_2d_da_1
-    requires: mpi_type_get_envelope
+    requires: mpi_type_get_envelope broken
     args: -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -num_comp 2 -qorder 1 -porder 1
   test:
     suffix: q1_2d_da_2
-    requires: mpi_type_get_envelope
+    requires: mpi_type_get_envelope broken
     args: -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -num_comp 2 -qorder 1 -porder 2
 
   # 2D Q_1 on a quadrilaterial Plex
