@@ -325,7 +325,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscFEInterpolate_Static(PetscFE fe, const P
 PETSC_STATIC_INLINE PetscErrorCode PetscFEInterpolateGradient_Static(PetscFE fe, const PetscScalar x[], PetscInt dim, const PetscReal invJ[], const PetscReal n[], PetscInt q, PetscScalar interpolant[])
 {
   PetscReal     *basisDer;
-  PetscReal      realSpaceDer[3], compGradient[3];
+  PetscReal      realSpaceDer[3];
+  PetscScalar    compGradient[3];
   PetscInt       Nb, Nc, fc, f, d, g;
   PetscErrorCode ierr;
 
