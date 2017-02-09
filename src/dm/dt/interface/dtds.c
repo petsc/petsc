@@ -320,7 +320,7 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
     prob->Nb[f]       = Nb;
     prob->off[f+1]    = Nc     + prob->off[f];
     prob->offDer[f+1] = Nc*dim + prob->offDer[f];
-    if (q) {ierr = PetscQuadratureGetData(q, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);}
+    if (q) {ierr = PetscQuadratureGetData(q, NULL, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);}
     NqMax          = PetscMax(NqMax, Nq);
     NcMax          = PetscMax(NcMax, Nc);
     prob->totDim  += Nb*Nc;

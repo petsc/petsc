@@ -37,12 +37,13 @@ static PetscErrorCode CheckSymmetry(PetscInt dim, PetscInt order, PetscBool tens
   for (i = 0; i < nFunc; i++) ids[i] = idsCopy2[i] = i;
   for (i = 0; i < nFunc; i++) {
     PetscQuadrature q;
-    PetscInt        numPoints, j;
+    PetscInt        numPoints, Nc, j;
     const PetscReal *points;
     const PetscReal *weights;
 
     ierr = PetscDualSpaceGetFunctional(sp,i,&q);CHKERRQ(ierr);
-    ierr = PetscQuadratureGetData(q,NULL,&numPoints,&points,&weights);CHKERRQ(ierr);
+    ierr = PetscQuadratureGetData(q,NULL,&Nc,&numPoints,&points,&weights);CHKERRQ(ierr);
+    if (Nc != 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only support scalar quadrature, not %D components\n",Nc);
     for (j = 0; j < dim; j++) vals[dim * i + j] = valsCopy2[dim * i + j] = (PetscScalar) points[j];
   }
   ierr = PetscDualSpaceGetNumDof(sp,&numDofs);CHKERRQ(ierr);
@@ -50,7 +51,7 @@ static PetscErrorCode CheckSymmetry(PetscInt dim, PetscInt order, PetscBool tens
   ierr = DMPlexGetTransitiveClosure(dm,0,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
   ierr = DMPlexGetDepthLabel(dm,&depthLabel);CHKERRQ(ierr);
   for (i = 0, offset = 0; i < closureSize; i++, offset += numDofs[depth]) {
-    PetscInt          point = closure[2 * i], coneSize, j, orig;
+    PetscInt          point = closure[2 * i], coneSize, j;
     const PetscInt    **pointPerms = perms ? perms[i] : NULL;
     const PetscScalar **pointFlips = flips ? flips[i] : NULL;
     PetscBool         anyPrinted = PETSC_FALSE;
@@ -130,3 +131,7 @@ int main(int argc, char **argv)
   return ierr;
 }
 
+/*TEST
+  test:
+    suffix: 0
+TEST*/

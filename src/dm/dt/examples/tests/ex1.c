@@ -78,3 +78,8 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+/*TEST
+  test:
+    suffix: 1
+    args: -degrees 1,2,3,4,5 -points 0,.2.-.5,.8,.9,1 -interval -.5,1
+TEST*/
