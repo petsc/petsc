@@ -2132,7 +2132,7 @@ static PetscErrorCode PetscDualSpaceGetSymmetries_Lagrange(PetscDualSpace sp, co
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
   PetscDualSpaceGetSymmetries - Returns a description of the symmetries of this basis
 
   Not collective
