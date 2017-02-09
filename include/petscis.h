@@ -70,6 +70,7 @@ PETSC_EXTERN PetscErrorCode ISSorted(IS,PetscBool  *);
 PETSC_EXTERN PetscErrorCode ISDifference(IS,IS,IS*);
 PETSC_EXTERN PetscErrorCode ISSum(IS,IS,IS*);
 PETSC_EXTERN PetscErrorCode ISExpand(IS,IS,IS*);
+PETSC_EXTERN PetscErrorCode ISIntersect(IS,IS,IS*);
 PETSC_EXTERN PetscErrorCode ISGetMinMax(IS,PetscInt*,PetscInt*);
 
 PETSC_EXTERN PetscErrorCode ISLocate(IS,PetscInt,PetscInt*);
