@@ -137,7 +137,7 @@ static PetscErrorCode ISLocate_General(IS is,PetscInt key,PetscInt *location)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscLayoutGetSize(is->map,&numIdx);CHKERRQ(ierr);
+  ierr = PetscLayoutGetLocalSize(is->map,&numIdx);CHKERRQ(ierr);
   if (sub->sorted) {ierr =  PetscFindInt(key,numIdx,sub->idx,location);CHKERRQ(ierr);}
   else {
     const PetscInt *idx = sub->idx;
