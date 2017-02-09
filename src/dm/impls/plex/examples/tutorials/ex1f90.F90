@@ -109,7 +109,7 @@
 !
 !  test:
 !    suffix: 1
-!    requires: triangle
+!    requires: ctetgen
 !    args: -dim 3
 !
 !TEST*/
