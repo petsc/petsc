@@ -1934,7 +1934,7 @@ PetscErrorCode DMPlexCreateFromDAG(DM dm, PetscInt depth, const PetscInt numPoin
 @*/
 PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
 {
-  const char    *extGmsh   = ".gmshmsh";
+  const char    *extGmsh   = ".msh";
   const char    *extCGNS   = ".cgns";
   const char    *extExodus = ".exo";
   const char    *extFluent = ".cas";
