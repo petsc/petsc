@@ -29,10 +29,8 @@ PetscErrorCode  VecTaggerRegisterAll(void)
   ierr = VecTaggerRegister(VECTAGGERABSOLUTE, VecTaggerCreate_Absolute);CHKERRQ(ierr);
   ierr = VecTaggerRegister(VECTAGGERRELATIVE, VecTaggerCreate_Relative);CHKERRQ(ierr);
   ierr = VecTaggerRegister(VECTAGGERCDF,      VecTaggerCreate_CDF);CHKERRQ(ierr);
-#if 0
   ierr = VecTaggerRegister(VECTAGGEROR,       VecTaggerCreate_Or);CHKERRQ(ierr);
   ierr = VecTaggerRegister(VECTAGGERAND,      VecTaggerCreate_And);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 

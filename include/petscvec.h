@@ -655,11 +655,11 @@ PETSC_EXTERN PetscErrorCode VecTaggerCDFGetMethod(VecTagger,VecTaggerCDFMethod*)
 PETSC_EXTERN PetscErrorCode VecTaggerCDFIterativeSetTolerances(VecTagger,PetscInt,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode VecTaggerCDFIterativeGetTolerances(VecTagger,PetscInt*,PetscReal*,PetscReal*);
 
-PETSC_EXTERN PetscErrorCode VecTaggerOrSetTaggers(VecTagger,PetscInt,VecTagger*);
-PETSC_EXTERN PetscErrorCode VecTaggerOrGetTaggers(VecTagger,PetscInt*,VecTagger**);
+PETSC_EXTERN PetscErrorCode VecTaggerOrSetSubs(VecTagger,PetscInt,VecTagger*,PetscCopyMode);
+PETSC_EXTERN PetscErrorCode VecTaggerOrGetSubs(VecTagger,PetscInt*,VecTagger**);
 
-PETSC_EXTERN PetscErrorCode VecTaggerAndSetTaggers(VecTagger,PetscInt,VecTagger*);
-PETSC_EXTERN PetscErrorCode VecTaggerAndGetTaggers(VecTagger,PetscInt*,VecTagger**);
+PETSC_EXTERN PetscErrorCode VecTaggerAndSetSubs(VecTagger,PetscInt,VecTagger*,PetscCopyMode);
+PETSC_EXTERN PetscErrorCode VecTaggerAndGetSubs(VecTagger,PetscInt*,VecTagger**);
 
 PETSC_EXTERN PetscErrorCode VecTaggerInitializePackage(void);
 PETSC_EXTERN PetscErrorCode VecTaggerFinalizePackage(void);

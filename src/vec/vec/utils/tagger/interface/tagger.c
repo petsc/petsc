@@ -451,5 +451,6 @@ PetscErrorCode VecTaggerComputeIS_FromIntervals(VecTagger tagger, Vec vec, IS *i
   ierr = VecRestoreArrayRead(vec, &vecArray);CHKERRQ(ierr);
   ierr = PetscFree(intervals);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject)vec),numTagged,tagged,PETSC_OWN_POINTER,is);CHKERRQ(ierr);
+  ierr = ISSort(*is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
