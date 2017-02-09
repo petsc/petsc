@@ -1235,7 +1235,7 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
     PetscClassId id;
     PetscSpace     bspace;
     PetscDualSpace dspace;
-    PetscInt i, j, k, nPoints, offset;
+    PetscInt i, j, k, nPoints, Nc, offset;
     PetscInt fSize, fComp, maxDof;
     PetscReal   *weights, *pointsRef, *pointsReal, *work;
     PetscScalar *scwork, *X;
@@ -1284,20 +1284,20 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
       PetscQuadrature quad;
 
       ierr = PetscDualSpaceGetFunctional(dspace,i,&quad);CHKERRQ(ierr);
-      ierr = PetscQuadratureGetData(quad,NULL,&qPoints,NULL,NULL);CHKERRQ(ierr);
+      ierr = PetscQuadratureGetData(quad,NULL,&Nc,&qPoints,NULL,NULL);CHKERRQ(ierr);
       nPoints += qPoints;
     }
-    ierr = PetscMalloc7(fSize,&sizes,nPoints,&weights,spdim*nPoints,&pointsRef,spdim*nPoints,&pointsReal,fSize*nPoints,&work,maxDof,&workIndRow,maxDof,&workIndCol);CHKERRQ(ierr);
+    ierr = PetscMalloc7(fSize,&sizes,nPoints,&weights,spdim*nPoints*Nc,&pointsRef,spdim*nPoints,&pointsReal,fSize*nPoints,&work,maxDof,&workIndRow,maxDof,&workIndCol);CHKERRQ(ierr);
     ierr = PetscMalloc1(maxDof * maxDof,&scwork);CHKERRQ(ierr);
     offset = 0;
     for (i = 0; i < fSize; i++) {
-      PetscInt        qPoints;
+      PetscInt        Nc,qPoints;
       const PetscReal    *p, *w;
       PetscQuadrature quad;
 
       ierr = PetscDualSpaceGetFunctional(dspace,i,&quad);CHKERRQ(ierr);
-      ierr = PetscQuadratureGetData(quad,NULL,&qPoints,&p,&w);CHKERRQ(ierr);
-      ierr = PetscMemcpy(weights+offset,w,qPoints*sizeof(*w));CHKERRQ(ierr);
+      ierr = PetscQuadratureGetData(quad,NULL,&Nc,&qPoints,&p,&w);CHKERRQ(ierr);
+      ierr = PetscMemcpy(weights+offset,w,Nc*qPoints*sizeof(*w));CHKERRQ(ierr);
       ierr = PetscMemcpy(pointsRef+spdim*offset,p,spdim*qPoints*sizeof(*p));CHKERRQ(ierr);
       sizes[i] = qPoints;
       offset  += qPoints;
@@ -3207,7 +3207,7 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
         ierr = PetscDualSpaceGetDimension(dsp,&fSize);CHKERRQ(ierr);
         for (i = 0; i < numSelfShapes; i++) { /* for every shape function */
           PetscQuadrature q;
-          PetscInt        dim, numPoints, j, k;
+          PetscInt        dim, Nc, numPoints, j, k;
           const PetscReal *points;
           const PetscReal *weights;
           PetscInt        *closure = NULL;
@@ -3216,7 +3216,8 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
           PetscReal       *Bparent;
 
           ierr = PetscDualSpaceGetFunctional(dsp,parentCellShapeDof,&q);CHKERRQ(ierr);
-          ierr = PetscQuadratureGetData(q,&dim,&numPoints,&points,&weights);CHKERRQ(ierr);
+          ierr = PetscQuadratureGetData(q,&dim,&Nc,&numPoints,&points,&weights);CHKERRQ(ierr);
+          if (Nc != 1) SETERRQ1(PetscObjectComm((PetscObject) refTree), PETSC_ERR_ARG_SIZ, "Can only handle scalar quadrature right now", Nc);
           ierr = PetscFEGetTabulation(fe,numPoints,points,&Bparent,NULL,NULL);CHKERRQ(ierr); /* I'm expecting a nodal basis: weights[:]' * Bparent[:,cellShapeDof] = 1. */
           for (k = 0; k < numChildShapes; k++) {
             pointMat[numChildShapes * i + k] = 0.;

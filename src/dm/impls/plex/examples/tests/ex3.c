@@ -969,15 +969,9 @@ int main(int argc, char **argv)
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(dm, user.dim, user.numComponents, user.simplex, NULL, user.qorder, &user.fe);CHKERRQ(ierr);
   ierr = SetupSection(dm, &user);CHKERRQ(ierr);
-  if (user.testFEjacobian) {
-    ierr = TestFEJacobian(dm, &user);CHKERRQ(ierr);
-  }
-  if (user.testFVgrad) {
-    ierr = TestFVGrad(dm, &user);CHKERRQ(ierr);
-  }
-  if (user.testInjector) {
-    ierr = TestInjector(dm, &user);CHKERRQ(ierr);
-  }
+  if (user.testFEjacobian) {ierr = TestFEJacobian(dm, &user);CHKERRQ(ierr);}
+  if (user.testFVgrad) {ierr = TestFVGrad(dm, &user);CHKERRQ(ierr);}
+  if (user.testInjector) {ierr = TestInjector(dm, &user);CHKERRQ(ierr);}
   ierr = CheckFunctions(dm, user.porder, &user);CHKERRQ(ierr);
   if (user.dim == 2 && user.simplex == PETSC_TRUE && user.tree == PETSC_FALSE) {
     ierr = CheckInterpolation(dm, PETSC_FALSE, user.porder, &user);CHKERRQ(ierr);
@@ -1200,15 +1194,15 @@ int main(int argc, char **argv)
   test:
     suffix: p1d_2d_3
     requires: triangle
-    args: -simplex 0 -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -num_comp 2 -qorder 1 -convergence
+    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -num_comp 2 -qorder 1 -convergence
   test:
     suffix: p1d_2d_4
     requires: triangle
-    args: -simplex 0 -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -num_comp 2 -qorder 1 -porder 1
+    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -num_comp 2 -qorder 1 -porder 1
   test:
     suffix: p1d_2d_5
     requires: triangle
-    args: -simplex 0 -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -num_comp 2 -qorder 1 -porder 2
+    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -num_comp 2 -qorder 1 -porder 2
 
   # Test high order quadrature
   test:
@@ -1230,19 +1224,19 @@ int main(int argc, char **argv)
   test:
     suffix: q1_quad_2
     requires: mpi_type_get_envelope
-    args: -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -num_comp 2 -qorder 2 -porder 1
+    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -num_comp 2 -qorder 2 -porder 1
   test:
     suffix: q1_quad_5
     requires: mpi_type_get_envelope
-    args: -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -num_comp 2 -qorder 5 -porder 1
+    args: -use_da 0 -simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -num_comp 2 -qorder 5 -porder 1
   test:
     suffix: q2_quad_3
     requires: mpi_type_get_envelope
-    args: -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -num_comp 2 -qorder 3 -porder 1
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -num_comp 2 -qorder 3 -porder 1
   test:
     suffix: q2_quad_5
     requires: mpi_type_get_envelope
-    args: -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -num_comp 2 -qorder 5 -porder 1
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -num_comp 2 -qorder 5 -porder 1
 
 
   # Nonconforming tests

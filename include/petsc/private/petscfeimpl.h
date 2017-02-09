@@ -26,9 +26,10 @@ struct _PetscSpaceOps {
 
 struct _p_PetscSpace {
   PETSCHEADER(struct _PetscSpaceOps);
-  void    *data;  /* Implementation object */
-  PetscInt order; /* The approximation order of the space */
-  DM       dm;    /* Shell to use for temp allocation */
+  void                   *data;          /* Implementation object */
+  PetscInt                order;         /* The approximation order of the space */
+  PetscInt                Nc;            /* The number of components */
+  DM                      dm;            /* Shell to use for temp allocation */
 };
 
 typedef struct {
@@ -41,7 +42,7 @@ typedef struct {
 typedef struct {
   PetscInt        numVariables; /* The spatial dimension */
   PetscQuadrature quad;         /* The points defining the space */
-} PetscSpace_DG;
+} PetscSpace_Point;
 
 typedef struct _PetscDualSpaceOps *PetscDualSpaceOps;
 struct _PetscDualSpaceOps {
@@ -55,6 +56,7 @@ struct _PetscDualSpaceOps {
   PetscErrorCode (*getnumdof)(PetscDualSpace,const PetscInt**);
   PetscErrorCode (*getheightsubspace)(PetscDualSpace,PetscInt,PetscDualSpace *);
   PetscErrorCode (*getsymmetries)(PetscDualSpace,const PetscInt****,const PetscScalar****);
+  PetscErrorCode (*apply)(PetscDualSpace, PetscInt, PetscReal, PetscFECellGeom *, PetscInt, PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void *, PetscScalar *);
 };
 
 struct _p_PetscDualSpace {
@@ -62,6 +64,7 @@ struct _p_PetscDualSpace {
   void            *data;       /* Implementation object */
   DM               dm;         /* The integration region K */
   PetscInt         order;      /* The approximation order of the space */
+  PetscInt         Nc;         /* The number of components */
   PetscQuadrature *functional; /* The basis of functionals for this space */
   PetscBool        setupcalled;
 };
@@ -108,7 +111,6 @@ struct _p_PetscFE {
   PetscInt        numComponents;         /* The number of field components */
   PetscQuadrature quadrature;            /* Suitable quadrature on K */
   PetscQuadrature faceQuadrature;        /* Suitable face quadrature on \partial K */
-  PetscInt       *numDof;                /* The number of dof on mesh points of each depth */
   PetscReal      *invV;                  /* Change of basis matrix, from prime to nodal basis set */
   PetscReal      *B,  *D,  *H;           /* Tabulation of basis and derivatives at quadrature points */
   PetscReal      *Bf, *Df, *Hf;          /* Tabulation of basis and derivatives at quadrature points on each face */
@@ -314,9 +316,37 @@ PETSC_STATIC_INLINE PetscErrorCode PetscFEInterpolate_Static(PetscFE fe, const P
   for (fc = 0; fc < Nc; ++fc) {
     interpolant[fc] = 0.0;
     for (f = 0; f < Nb; ++f) {
-      const PetscInt fidx = f*Nc+fc;
-      interpolant[fc] += x[fidx]*basis[q*Nb*Nc+fidx];
+      interpolant[fc] += x[f]*basis[(q*Nb + f)*Nc + fc];
     }
+  }
+  PetscFunctionReturn(0);
+}
+
+PETSC_STATIC_INLINE PetscErrorCode PetscFEInterpolateGradient_Static(PetscFE fe, const PetscScalar x[], PetscInt dim, const PetscReal invJ[], const PetscReal n[], PetscInt q, PetscScalar interpolant[])
+{
+  PetscReal     *basisDer;
+  PetscReal      realSpaceDer[3], compGradient[3];
+  PetscInt       Nb, Nc, fc, f, d, g;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginHot;
+  ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
+  ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
+  ierr = PetscFEGetDefaultTabulation(fe, NULL, &basisDer, NULL);CHKERRQ(ierr);
+  for (fc = 0; fc < Nc; ++fc) {
+    interpolant[fc] = 0.0;
+    for (d = 0; d < dim; ++d) compGradient[d] = 0.0;
+    for (f = 0; f < Nb; ++f) {
+
+      for (d = 0; d < dim; ++d) {
+        realSpaceDer[d] = 0.0;
+        for (g = 0; g < dim; ++g) {
+          realSpaceDer[d] += invJ[dim*dim*q + g*dim+d]*basisDer[((q*Nb + f)*Nc + fc)*dim + g];
+        }
+        compGradient[d] += x[f]*realSpaceDer[d];
+      }
+    }
+    for (d = 0; d < dim; ++d) interpolant[fc] += compGradient[d]*n[d];
   }
   PetscFunctionReturn(0);
 }
