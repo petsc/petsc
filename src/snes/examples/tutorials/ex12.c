@@ -686,7 +686,7 @@ static PetscErrorCode KSPMonitorError(KSP ksp, PetscInt its, PetscReal rnorm, vo
   /* Calculate solution */
   {
     PC        pc = user->pcmg; /* The MG PC */
-    DM        fdm,  cdm;
+    DM        fdm = NULL,  cdm;
     KSP       fksp, cksp;
     Vec       fu,   cu;
     PetscInt  levels, l;
