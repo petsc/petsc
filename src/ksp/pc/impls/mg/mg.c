@@ -608,10 +608,6 @@ PetscErrorCode PCSetUp_MG(PC pc)
    Skipping for galerkin==2 (externally managed hierarchy such as ML and GAMG). Cleaner logic here would be great. Wrap ML/GAMG as DMs?
   */
   if (missinginterpolate && pc->dm && mg->galerkin != PC_MG_GALERKIN_EXTERNAL && !pc->setupcalled) {
-	/* set the mat type of coarse level operators to be AIJ.
-	   It can be overwritten by -mat_type because KSPSetUp() reads command line options.
-	   So we suggest to use -dm_mat_type for the fine level operator */
-	ierr = DMSetMatType(pc->dm,MATAIJ);CHKERRQ(ierr);
 	/* construct the interpolation from the DMs */
     Mat p;
     Vec rscale;
@@ -619,6 +615,14 @@ PetscErrorCode PCSetUp_MG(PC pc)
     dms[n-1] = pc->dm;
     /* Separately create them so we do not get DMKSP interference between levels */
     for (i=n-2; i>-1; i--) {ierr = DMCoarsen(dms[i+1],MPI_COMM_NULL,&dms[i]);CHKERRQ(ierr);}
+	/*
+	   Force the mat type of coarse level operator to be AIJ because usually we want to use LU for coarse level.
+	   Notice that it can be overwritten by -mat_type because KSPSetUp() reads command line options.
+	   But it is safe to use -dm_mat_type.
+
+	   The mat type should not be hardcoded like this, we need to find a better way.
+    ierr = DMSetMatType(dms[0],MATAIJ);CHKERRQ(ierr);
+    */
     for (i=n-2; i>-1; i--) {
       DMKSP     kdm;
       PetscBool dmhasrestrict;
