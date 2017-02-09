@@ -3677,7 +3677,8 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPIAIJ(MPI_Comm comm,Mat inmat,P
     ierr = MatSetSizes(*outmat,m,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = MatGetBlockSizes(inmat,&bs,&cbs);CHKERRQ(ierr);
     ierr = MatSetBlockSizes(*outmat,bs,cbs);CHKERRQ(ierr);
-    ierr = MatSetType(*outmat,MATMPIAIJ);CHKERRQ(ierr);
+    ierr = MatSetType(*outmat,MATAIJ);CHKERRQ(ierr);
+    ierr = MatSeqAIJSetPreallocation(*outmat,0,dnz);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(*outmat,0,dnz,0,onz);CHKERRQ(ierr);
     ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
   }

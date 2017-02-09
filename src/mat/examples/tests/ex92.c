@@ -14,7 +14,7 @@ int main(int argc,char **args)
   PetscScalar    *vals,rval,one=1.0;
   IS             *is1,*is2;
   PetscRandom    rand;
-  PetscBool      flg,TestOverlap,TestSubMat,TestAllcols;
+  PetscBool      flg,TestOverlap,TestSubMat,TestAllcols,test_sorted=PETSC_FALSE;
   PetscInt       vid = -1;
 #if defined(PETSC_USE_LOG)
   PetscLogStage  stages[2];
@@ -32,6 +32,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsHasName(NULL,NULL, "-test_overlap", &TestOverlap);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,NULL, "-test_submat", &TestSubMat);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,NULL, "-test_allcols", &TestAllcols);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-test_sorted",&test_sorted,NULL);CHKERRQ(ierr);
 
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,mbs*bs,mbs*bs,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
@@ -176,19 +177,20 @@ int main(int argc,char **args)
 
   /* Test MatGetSubmatrices */
   if (TestSubMat) {
-    for (i = 0; i < nd; ++i) {
-      ierr = ISSort(is1[i]);CHKERRQ(ierr);
-      ierr = ISSort(is2[i]);CHKERRQ(ierr);
+    if (test_sorted) {
+      for (i = 0; i < nd; ++i) {
+        ierr = ISSort(is1[i]);CHKERRQ(ierr);
+      }
     }
     ierr = MatGetSubMatrices(A,nd,is1,is1,MAT_INITIAL_MATRIX,&submatA);CHKERRQ(ierr);
-    ierr = MatGetSubMatrices(sA,nd,is2,is2,MAT_INITIAL_MATRIX,&submatsA);CHKERRQ(ierr);
+    ierr = MatGetSubMatrices(sA,nd,is1,is1,MAT_INITIAL_MATRIX,&submatsA);CHKERRQ(ierr);
 
     ierr = MatMultEqual(A,sA,10,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"A != sA");
 
     /* Now test MatGetSubmatrices with MAT_REUSE_MATRIX option */
     ierr = MatGetSubMatrices(A,nd,is1,is1,MAT_REUSE_MATRIX,&submatA);CHKERRQ(ierr);
-    ierr = MatGetSubMatrices(sA,nd,is2,is2,MAT_REUSE_MATRIX,&submatsA);CHKERRQ(ierr);
+    ierr = MatGetSubMatrices(sA,nd,is1,is1,MAT_REUSE_MATRIX,&submatsA);CHKERRQ(ierr);
     ierr = MatMultEqual(A,sA,10,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"MatGetSubmatrices(): A != sA");
 

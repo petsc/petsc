@@ -1785,6 +1785,19 @@ runex92_3:
 	else printf "${PWD}\nPossible problem with ex92_3, -n $$np ./ex92 -ov  $$ov -mat_block_size $$bs -test_overlap -test_allcols, diffs above\n=========================================\n"; fi; \
 	${RM} -f ex92_1.tmp
 
+runex92_3_sorted:
+	-@touch ex92_1.tmp;\
+	for np in ${NPROCS}; do \
+	  for ov in ${OVERLAP}; do \
+            for bs in ${BS}; do \
+	      ${MPIEXEC} -n $$np  ./ex92 -ov $$ov -mat_block_size $$bs -test_overlap -test_allcols -test_sorted >> ex92_1.tmp 2>&1; \
+	    done; \
+	  done; \
+	done; \
+	if (${DIFF} output/ex92_1.out ex92_1.tmp) then true; \
+	else printf "${PWD}\nPossible problem with ex92_3_sorted, -n $$np ./ex92 -ov  $$ov -mat_block_size $$bs -test_overlap -test_allcols -test_unsorted, diffs above\n=========================================\n"; fi; \
+	${RM} -f ex92_1.tmp
+
 runex92_4:
 	-@touch ex92_1.tmp;\
 	for np in ${NPROCS}; do \
@@ -2879,7 +2892,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 runex2_2 runex
                                  ex65.rm ex66.PETSc ex66.rm ex68.PETSc runex68 ex68.rm ex98.PETSc runex98 ex98.rm ex102.PETSc runex102_1 runex102_2 runex102_3 ex102.rm\
                                  ex52.PETSc runex52_1 runex52_2 runex52_3 runex52_4 ex52.rm \
                                  ex86.PETSc runex86 runex86_2 runex86_3 ex86.rm printdot \
-                                 ex88.PETSc runex88 ex88.rm ex92.PETSc runex92 runex92_2 runex92_3 runex92_4 ex92.rm \
+                                 ex88.PETSc runex88 ex88.rm ex92.PETSc runex92 runex92_2 runex92_3 runex92_3_sorted runex92_4 ex92.rm \
                                  ex93.PETSc runex93 runex93_scalable runex93_scalable_fast runex93_heap runex93_btheap runex93_llcondensed \
                                  runex93_2 runex93_rap runex93_ptap ex93.rm \
                                  ex97.PETSc runex97 ex97.rm ex104.PETSc runex104 runex104_2 ex104.rm \
