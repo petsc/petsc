@@ -1261,12 +1261,11 @@ int main(int argc, char **argv)
     args: -test_fv_grad -test_injector -petsclimiter_type none -petscpartitioner_type simple -tree -simplex 0 -dim 3 -num_comp 3
   test:
     suffix: nonconforming_tensor_2_hi
-    #requires: notsingle
     nsize: 4
     args: -test_fe_jacobian -petscpartitioner_type simple -tree -simplex 0 -dim 2 -num_comp 2 -dm_plex_max_projection_height 1 -petscspace_poly_tensor -petscspace_order 4 -qorder 4
   test:
     suffix: nonconforming_tensor_3_hi
-    #requires: notsingle
+    requires: skip
     nsize: 4
     args: -test_fe_jacobian -petscpartitioner_type simple -tree -simplex 0 -dim 3 -num_comp 3 -dm_plex_max_projection_height 2 -petscspace_poly_tensor -petscspace_order 4 -qorder 4
   test:
@@ -1291,7 +1290,7 @@ int main(int argc, char **argv)
     args: -test_fe_jacobian -test_injector -petscpartitioner_type simple -tree -simplex 1 -dim 3 -num_comp 3 -dm_plex_max_projection_height 2 -petscspace_order 2 -qorder 2 -dm_view ascii::ASCII_INFO_DETAIL
   test:
     suffix: nonconforming_simplex_3_hi
-    requires: ctetgen
+    requires: ctetgen,skip
     nsize: 4
     args: -test_fe_jacobian -petscpartitioner_type simple -tree -simplex 1 -dim 3 -num_comp 3 -dm_plex_max_projection_height 2 -petscspace_order 4 -qorder 4
   test:
