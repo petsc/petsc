@@ -1980,11 +1980,12 @@ static PetscErrorCode PetscDualSpaceGetSymmetries_Lagrange(PetscDualSpace sp, co
 {
 
   PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
-  PetscInt           dim, order, p;
+  PetscInt           dim, order, p, Nc;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   ierr = PetscDualSpaceGetOrder(sp,&order);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetNumComponents(sp,&Nc);CHKERRQ(ierr);
   ierr = DMGetDimension(sp->dm,&dim);CHKERRQ(ierr);
   if (!dim || !lag->continuous || order < 3) PetscFunctionReturn(0);
   if (dim > 3) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Lagrange symmetries not implemented for dim = %D > 3",dim);
@@ -2017,77 +2018,94 @@ static PetscErrorCode PetscDualSpaceGetSymmetries_Lagrange(PetscDualSpace sp, co
         PetscInt dofPerEdge = order - 1;
 
         if (dofPerEdge > 1) {
-          PetscInt i, *reverse;
+          PetscInt i, j, *reverse;
 
-          ierr = PetscMalloc1(dofPerEdge,&reverse);CHKERRQ(ierr);
-          for (i = 0; i < dofPerEdge; i++) reverse[i] = (dofPerEdge - 1 - i);
+          ierr = PetscMalloc1(dofPerEdge*Nc,&reverse);CHKERRQ(ierr);
+          for (i = 0; i < dofPerEdge; i++) {
+            for (j = 0; j < Nc; j++) {
+              reverse[i*Nc + j] = Nc * (dofPerEdge - 1 - i) + j;
+            }
+          }
           symmetries[0][-2] = reverse;
 
           /* yes, this is redundant, but it makes it easier to cleanup if I don't have to worry about what not to free */
-          ierr = PetscMalloc1(dofPerEdge,&reverse);CHKERRQ(ierr);
-          for (i = 0; i < dofPerEdge; i++) reverse[i] = (dofPerEdge - 1 - i);
+          ierr = PetscMalloc1(dofPerEdge*Nc,&reverse);CHKERRQ(ierr);
+          for (i = 0; i < dofPerEdge; i++) {
+            for (j = 0; j < Nc; j++) {
+              reverse[i*Nc + j] = Nc * (dofPerEdge - 1 - i) + j;
+            }
+          }
           symmetries[0][1] = reverse;
         }
       } else {
         PetscInt dofPerEdge = lag->simplexCell ? (order - 2) : (order - 1), s;
+        PetscInt dofPerFace;
 
         if (dofPerEdge > 1) {
           for (s = -numFaces; s < numFaces; s++) {
-            PetscInt *sym, i, j, k, l;
+            PetscInt *sym, i, j, k, l, m;
 
             if (!s) continue;
             if (lag->simplexCell) {
-              ierr = PetscMalloc1((dofPerEdge * (dofPerEdge + 1))/2,&sym);CHKERRQ(ierr);
+              dofPerFace = (dofPerEdge * (dofPerEdge + 1))/2;
+              ierr = PetscMalloc1(Nc*dofPerFace,&sym);CHKERRQ(ierr);
               for (j = 0, l = 0; j < dofPerEdge; j++) {
                 for (k = 0; k < dofPerEdge - j; k++, l++) {
                   i = dofPerEdge - 1 - j - k;
                   switch (s) {
                   case -3:
-                    sym[l] = BaryIndex(dofPerEdge,i,k,j);
+                    sym[Nc*l] = BaryIndex(dofPerEdge,i,k,j);
                     break;
                   case -2:
-                    sym[l] = BaryIndex(dofPerEdge,j,i,k);
+                    sym[Nc*l] = BaryIndex(dofPerEdge,j,i,k);
                     break;
                   case -1:
-                    sym[l] = BaryIndex(dofPerEdge,k,j,i);
+                    sym[Nc*l] = BaryIndex(dofPerEdge,k,j,i);
                     break;
                   case 1:
-                    sym[l] = BaryIndex(dofPerEdge,k,i,j);
+                    sym[Nc*l] = BaryIndex(dofPerEdge,k,i,j);
                     break;
                   case 2:
-                    sym[l] = BaryIndex(dofPerEdge,j,k,i);
+                    sym[Nc*l] = BaryIndex(dofPerEdge,j,k,i);
                     break;
                   }
                 }
               }
             } else {
-              ierr = PetscMalloc1(dofPerEdge * dofPerEdge,&sym);CHKERRQ(ierr);
+              dofPerFace = dofPerEdge * dofPerEdge;
+              ierr = PetscMalloc1(Nc*dofPerFace,&sym);CHKERRQ(ierr);
               for (j = 0, l = 0; j < dofPerEdge; j++) {
                 for (k = 0; k < dofPerEdge; k++, l++) {
                   switch (s) {
                   case -4:
-                    sym[l] = CartIndex(dofPerEdge,k,j);
+                    sym[Nc*l] = CartIndex(dofPerEdge,k,j);
                     break;
                   case -3:
-                    sym[l] = CartIndex(dofPerEdge,(dofPerEdge - 1 - j),k);
+                    sym[Nc*l] = CartIndex(dofPerEdge,(dofPerEdge - 1 - j),k);
                     break;
                   case -2:
-                    sym[l] = CartIndex(dofPerEdge,(dofPerEdge - 1 - k),(dofPerEdge - 1 - j));
+                    sym[Nc*l] = CartIndex(dofPerEdge,(dofPerEdge - 1 - k),(dofPerEdge - 1 - j));
                     break;
                   case -1:
-                    sym[l] = CartIndex(dofPerEdge,j,(dofPerEdge - 1 - k));
+                    sym[Nc*l] = CartIndex(dofPerEdge,j,(dofPerEdge - 1 - k));
                     break;
                   case 1:
-                    sym[l] = CartIndex(dofPerEdge,(dofPerEdge - 1 - k),j);
+                    sym[Nc*l] = CartIndex(dofPerEdge,(dofPerEdge - 1 - k),j);
                     break;
                   case 2:
-                    sym[l] = CartIndex(dofPerEdge,(dofPerEdge - 1 - j),(dofPerEdge - 1 - k));
+                    sym[Nc*l] = CartIndex(dofPerEdge,(dofPerEdge - 1 - j),(dofPerEdge - 1 - k));
                     break;
                   case 3:
-                    sym[l] = CartIndex(dofPerEdge,k,(dofPerEdge - 1 - j));
+                    sym[Nc*l] = CartIndex(dofPerEdge,k,(dofPerEdge - 1 - j));
                     break;
                   }
                 }
+              }
+            }
+            for (i = 0; i < dofPerFace; i++) {
+              sym[Nc*i] *= Nc;
+              for (j = 1; j < Nc; j++) {
+                sym[Nc*i+j] = sym[Nc*i] + j;
               }
             }
             symmetries[0][s] = sym;
