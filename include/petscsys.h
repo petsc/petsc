@@ -374,7 +374,7 @@ M*/
 
     Synopsis:
     #include <petscsys.h>
-    PetscBool  PetscUnlikely(PetscBool  cond)
+    PetscBool  PetscLikely(PetscBool  cond)
 
     Not Collective
 
