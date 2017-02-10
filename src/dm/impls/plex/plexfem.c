@@ -1339,21 +1339,22 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
           PetscHashJKIter missing, iter;
 
           key.j = findices[i];
-          if (key.j < 0) continue;
-          /* Get indices for coarse elements */
-          for (ccell = 0; ccell < numCoarseCells; ++ccell) {
-            ierr = DMPlexGetClosureIndices(dmc, csection, globalCSection, coarseCells[ccell].index, &numCIndices, &cindices, NULL);CHKERRQ(ierr);
-            for (c = 0; c < numCIndices; ++c) {
-              key.k = cindices[c];
-              if (key.k < 0) continue;
-              ierr = PetscHashJKPut(ht, key, &missing, &iter);CHKERRQ(ierr);
-              if (missing) {
-                ierr = PetscHashJKSet(ht, iter, 1);CHKERRQ(ierr);
-                if ((key.k >= rStart) && (key.k < rEnd)) ++dnz[key.j-rStart];
-                else                                     ++onz[key.j-rStart];
+          if (key.j >= 0) {
+            /* Get indices for coarse elements */
+            for (ccell = 0; ccell < numCoarseCells; ++ccell) {
+              ierr = DMPlexGetClosureIndices(dmc, csection, globalCSection, coarseCells[ccell].index, &numCIndices, &cindices, NULL);CHKERRQ(ierr);
+              for (c = 0; c < numCIndices; ++c) {
+                key.k = cindices[c];
+                if (key.k < 0) continue;
+                ierr = PetscHashJKPut(ht, key, &missing, &iter);CHKERRQ(ierr);
+                if (missing) {
+                  ierr = PetscHashJKSet(ht, iter, 1);CHKERRQ(ierr);
+                  if ((key.k >= rStart) && (key.k < rEnd)) ++dnz[key.j-rStart];
+                  else                                     ++onz[key.j-rStart];
+                }
               }
+              ierr = DMPlexRestoreClosureIndices(dmc, csection, globalCSection, coarseCells[ccell].index, &numCIndices, &cindices, NULL);CHKERRQ(ierr);
             }
-            ierr = DMPlexRestoreClosureIndices(dmc, csection, globalCSection, coarseCells[ccell].index, &numCIndices, &cindices, NULL);CHKERRQ(ierr);
           }
         }
         ierr = PetscSFDestroy(&coarseCellSF);CHKERRQ(ierr);
