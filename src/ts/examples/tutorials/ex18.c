@@ -7,6 +7,11 @@ a forcing function $f$:
   \frac{\partial\phi}{\partial t} + \nabla\cdot \phi \mathbf{u} &= 0
 \end{align}
 F*/
+/*TEST
+
+   requires: !complex
+TEST*/
+
 #include <petscdmplex.h>
 #include <petscds.h>
 #include <petscts.h>

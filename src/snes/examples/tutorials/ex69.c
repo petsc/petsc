@@ -97,7 +97,7 @@ static void stokes_momentum_cx(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                                PetscReal t, const PetscReal x[], PetscScalar f1[])
 {
-  const PetscReal nu = x[0] < a[4] ? a[2] : a[3];
+  const PetscReal nu = PetscRealPart(x[0]) < PetscRealPart(a[4]) ? PetscRealPart(a[2]) : PetscRealPart(a[3]);
   PetscInt c, d;
   for (c = 0; c < dim; ++c) {
     for (d = 0; d < dim; ++d) {
@@ -118,16 +118,16 @@ static void stokes_momentum_cx(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   A       = [[a, b, c], [d, e, f], [g, h, i]]
   Tr(A)^2 = a^2 + e^2 + i^2 + 2ae + 2ai + 2ei
 */
-static PetscReal SecondInvariantSymmetric(PetscInt dim, const PetscReal u_x[])
+static PetscReal SecondInvariantSymmetric(PetscInt dim, const PetscScalar u_x[])
 {
   switch (dim) {
   case 2:
-    return u_x[0]*u_x[3] - 0.25*(u_x[1]*u_x[1] + 2.0*u_x[1]*u_x[2] + u_x[2]*u_x[2]);
+    return PetscRealPart(u_x[0]*u_x[3] - 0.25*(u_x[1]*u_x[1] + 2.0*u_x[1]*u_x[2] + u_x[2]*u_x[2]));
   }
   return 0.0;
 }
 
-static PetscReal CompositeViscosity(PetscInt dim, const PetscReal u_x[], const PetscReal x[], PetscReal T)
+static PetscReal CompositeViscosity(PetscInt dim, const PetscScalar u_x[], const PetscReal x[], PetscReal T)
 {
   const PetscReal R       = 8.314459848e-3;                      /* Gas constant kJ/K mol */
   const PetscReal g       = 9.8;                                 /* Acceleration due to gravity m/s^2 */
@@ -234,7 +234,7 @@ static void stokes_momentum_vel_J_cx(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                      const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                                      PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[])
 {
-  const PetscReal nu = x[0] < a[4] ? a[2] : a[3];
+  const PetscReal nu = PetscRealPart(x[0]) < PetscRealPart(a[4]) ? PetscRealPart(a[2]) : PetscRealPart(a[3]);
   PetscInt        cI, d;
 
   for (cI = 0; cI < dim; ++cI) {
@@ -3330,7 +3330,7 @@ static PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
     }
     break;
   default:
-    SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
+    SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %D", user->dim);
   }
   comp = 1;
   ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "wallB", "markerBottom", 0, 1, &comp, (void (*)()) user->exactFuncs[0], 1, &id, ctx);CHKERRQ(ierr);
@@ -3483,11 +3483,9 @@ int main(int argc, char **argv)
   DM              dm;                   /* problem definition */
   Vec             u,r;                  /* solution, residual vectors */
   Mat             J, M;                 /* Jacobian matrix */
-#if 1
   MatNullSpace    nullSpace;            /* May be necessary for pressure */
   Vec             nullVec;
-  PetscReal       pint;
-#endif
+  PetscScalar     pint;
   AppCtx          user;                 /* user-defined work context */
   PetscInt        its;                  /* iterations for convergence */
   PetscReal       error = 0.0;          /* L_2 error in the solution */
@@ -3529,7 +3527,7 @@ int main(int argc, char **argv)
   ierr = PetscObjectSetName((PetscObject) u, "Exact Solution");CHKERRQ(ierr);
   ierr = VecViewFromOptions(u, NULL, "-exact_vec_view");CHKERRQ(ierr);
   ierr = VecDot(nullVec, u, &pint);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "Integral of pressure: %g\n", PetscAbsReal(pint) < 1.0e-14 ? 0.0 : pint);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "Integral of pressure: %g\n",(double) (PetscAbsScalar(pint) < 1.0e-14 ? 0.0 : PetscRealPart(pint)));CHKERRQ(ierr);
   ierr = DMSNESCheckFromOptions(snes, u, user.exactFuncs, ctxs);CHKERRQ(ierr);
   ierr = DMProjectFunction(dm, 0.0, initialGuess, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) u, "Initial Solution");CHKERRQ(ierr);
@@ -3540,9 +3538,9 @@ int main(int argc, char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Number of SNES iterations = %D\n", its);CHKERRQ(ierr);
   ierr = DMComputeL2Diff(dm, 0.0, user.exactFuncs, ctxs, u, &error);CHKERRQ(ierr);
   ierr = DMComputeL2FieldDiff(dm, 0.0, user.exactFuncs, ctxs, u, ferrors);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %.3g [%.3g, %.3g]\n", error, ferrors[0], ferrors[1]);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %.3g [%.3g, %.3g]\n", (double)error, (double)ferrors[0], (double)ferrors[1]);CHKERRQ(ierr);
   ierr = VecDot(nullVec, u, &pint);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "Integral of pressure: %g\n", PetscAbsReal(pint) < 1.0e-14 ? 0.0 : pint);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "Integral of pressure: %g\n", (double) (PetscAbsScalar(pint) < 1.0e-14 ? 0.0 : PetscRealPart(pint)));CHKERRQ(ierr);
   if (user.showError) {
     Vec r;
 

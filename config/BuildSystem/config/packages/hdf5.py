@@ -16,6 +16,7 @@ class Configure(config.package.GNUPackage):
     self.needsCompression = 0
     self.complex          = 1
     self.hastests         = 1
+    self.precisions       = ['single','double'];
     return
 
   def setupDependencies(self, framework):

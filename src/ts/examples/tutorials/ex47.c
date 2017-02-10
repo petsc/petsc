@@ -328,7 +328,6 @@ int main(int argc, char **argv)
   TS             ts;
   Vec            u, r;
   PetscReal      t       = 0.0;
-  PetscReal      L2error = 0.0;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
@@ -361,13 +360,6 @@ int main(int argc, char **argv)
     ierr = KSPMonitorSet(ksp, KSPMonitorError, &ctx, NULL);CHKERRQ(ierr);
   }
   ierr = TSSolve(ts, u);CHKERRQ(ierr);
-
-#if 0
-  ierr = TSGetTime(ts, &t);CHKERRQ(ierr);
-  ierr = DMComputeL2Diff(dm, t, ctx.exactFuncs, NULL, u, &L2error);CHKERRQ(ierr);
-  if (L2error < 1.0e-11) {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: < 1.0e-11\n");CHKERRQ(ierr);}
-  else                   {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", L2error);CHKERRQ(ierr);}
-#endif
   ierr = VecViewFromOptions(u, NULL, "-sol_vec_view");CHKERRQ(ierr);
 
   ierr = VecDestroy(&u);CHKERRQ(ierr);
@@ -386,10 +378,12 @@ int main(int argc, char **argv)
     suffix: 2d_p1p1_r1
     requires: triangle
     args: -dm_refine 1 -phi_petscspace_order 1 -vel_petscspace_order 1 -ts_type beuler -ts_max_steps 10 -ts_dt 0.1 -pc_type lu -snes_monitor_short -snes_converged_reason -ts_monitor
+
   test:
     suffix: 2d_p1p1_sor_r1
     requires: triangle
     args: -dm_refine 1 -phi_petscspace_order 1 -vel_petscspace_order 1 -ts_type beuler -ts_max_steps 10 -ts_dt 0.1 -ksp_rtol 1.0e-9 -pc_type sor -snes_monitor_short -snes_converged_reason -ksp_monitor_short -ts_monitor
+
   test:
     suffix: 2d_p1p1_mg_r1
     requires: triangle

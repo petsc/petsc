@@ -370,17 +370,21 @@ int main(int argc, char **argv)
   # Fluent mesh reader tests
   test:
     suffix: fluent_0
+    requires: !complex
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.cas -interpolate 1 -dm_view
   test:
     suffix: fluent_1
     nsize: 3
+    requires: !complex
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.cas -interpolate 1 -test_partition -dm_view
   test:
     suffix: fluent_2
+    requires: !complex
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_5tets_ascii.cas -interpolate 1 -dm_view
   test:
     suffix: fluent_3
     requires: broken
+    requires: !complex
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_5tets.cas -interpolate 1 -dm_view
 
   # Med mesh reader tests, including parallel file reads

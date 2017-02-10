@@ -51,6 +51,10 @@ ex15: ex15.o  chkopts
 	-${CLINKER} -o ex15 ex15.o ${PETSC_DM_LIB}
 	${RM} -f ex15.o
 
+ex18: ex18.o  chkopts
+	-${CLINKER} -o ex18 ex18.o ${PETSC_DM_LIB}
+	${RM} -f ex18.o
+
 ex19: ex19.o  chkopts
 	-${CLINKER} -o ex19 ex19.o ${PETSC_DM_LIB}
 	${RM} -f ex19.o
