@@ -30,7 +30,6 @@ static PetscErrorCode DMProjectPoint_Func_Private(DM dm, PetscReal time, PetscFE
       }
     }
   }
-  if (v != totDim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The projection size %d != total DS dimension %d", v, totDim);
   PetscFunctionReturn(0);
 }
 
