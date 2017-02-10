@@ -113,7 +113,7 @@ PETSC_INTERN PetscErrorCode MatPtAPSymbolic_AIJ_AIJ_wHYPRE(Mat,Mat,PetscReal,Mat
 PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill,Mat *C)
 {
   PetscErrorCode      ierr;
-    Mat_PtAPMPI         *ptap;
+  Mat_PtAPMPI         *ptap;
   Mat_MPIAIJ          *a=(Mat_MPIAIJ*)A->data,*p=(Mat_MPIAIJ*)P->data,*c;
   MPI_Comm            comm;
   PetscMPIInt         size,rank;
@@ -135,14 +135,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
   Mat_SeqAIJ          *p_loc,*p_oth,*ad=(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data,*c_loc,*c_oth;
   PetscScalar         *apv;
   PetscTable          ta;
-#if defined(PETSC_HAVE_HYPRE)
-  const char          *algTypes[3] = {"scalable","nonscalable","hypre"};
-  PetscInt            nalg = 3;
-#else
-  const char          *algTypes[2] = {"scalable","nonscalable"};
-  PetscInt            nalg = 2;
-#endif
-  PetscInt            alg = 1; /* set default algorithm */
 #if defined(PETSC_USE_INFO)
   PetscReal           apfill; 
 #endif
@@ -154,6 +146,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  if (!rank) printf(" MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable...\n");
 
   /* create symbolic parallel matrix Cmpi */
   ierr = MatCreate(comm,&Cmpi);CHKERRQ(ierr);
@@ -454,9 +447,9 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
   ptap->duplicate = Cmpi->ops->duplicate;
   ptap->destroy   = Cmpi->ops->destroy;
 
-  if (alg == 1) {
-    ierr = PetscCalloc1(pN,&ptap->apa);CHKERRQ(ierr);
-  }
+  //if (alg == 1) {
+  ierr = PetscCalloc1(pN,&ptap->apa);CHKERRQ(ierr);
+  //}
 
   /* Cmpi is not ready for use - assembly will be done by MatPtAPNumeric() */
   Cmpi->assembled        = PETSC_FALSE;
