@@ -521,14 +521,27 @@ int main(int argc,char **args)
       args: -viewer_binary_skip_info  -matload_block_size {{1 2 3 4 5 6 7}} -ksp_max_it 100 -ksp_gmres_cgs_refinement_type refine_always -ksp_rtol 1.0e-15 -ksp_monitor_short
       separate_testvars: matload_block_size
       test:
+         suffix: a
          args: -mat_type seqbaij
       test:
+         suffix: b
          args: -mat_type seqbaij -trans
+      # separate_testvars not implemented for subtests
       test:
-         nsize: {{2 3}}
+         suffix: c
+         nsize: 2
          args: -mat_type mpibaij 
       test:
-         nsize: {{2 3}}
+         suffix: d
+         nsize: 2
+         args: -mat_type mpibaij -trans
+      test:
+         suffix: e
+         nsize: 3
+         args: -mat_type mpibaij 
+      test:
+         suffix: f
+         nsize: 3
          args: -mat_type mpibaij -trans
    
 
