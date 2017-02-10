@@ -14,9 +14,7 @@ int main(int argc,char **argv)
   PetscReal      fill=4;
   PetscReal      norm;
   PetscMPIInt    size,rank;
-#if defined(PETSC_HAVE_HYPRE)
   PetscBool      test_hypre=PETSC_FALSE;
-#endif
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 #if defined(PETSC_HAVE_HYPRE)
