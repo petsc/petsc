@@ -35,9 +35,11 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJMKL_SeqAIJ(Mat A,MatType type,MatRe
   }
 
   /* Reset the original function pointers. */
+  B->ops->duplicate   = MatDuplicate_SeqAIJ;
   B->ops->assemblyend = MatAssemblyEnd_SeqAIJ;
   B->ops->destroy     = MatDestroy_SeqAIJ;
-  B->ops->duplicate   = MatDuplicate_SeqAIJ;
+  B->ops->mult        = MatMult_SeqAIJ;
+  B->ops->multadd     = MatMultAdd_SeqAIJ;
 
   /* Free everything in the Mat_SeqAIJMKL data structure.
    * We don't free the Mat_SeqAIJMKL struct itself, as this will
