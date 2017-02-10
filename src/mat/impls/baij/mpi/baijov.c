@@ -666,7 +666,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
 #else
   PetscInt       **cmap,*cmap_i=NULL,**rmap,*rmap_i;
 #endif
-  const PetscInt *irow_i,*icol_i;;
+  const PetscInt *irow_i,*icol_i;
   PetscInt       ctr_j,*sbuf1_j,*sbuf_aj_i,*rbuf1_i,kmax,*lens_i;
   MPI_Request    *s_waits1,*r_waits1,*s_waits2,*r_waits2,*r_waits3;
   MPI_Request    *r_waits4,*s_waits3,*s_waits4;
