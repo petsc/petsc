@@ -596,7 +596,7 @@ PetscErrorCode PetscDTGaussTensorQuadrature(PetscInt dim, PetscInt Nc, PetscInt 
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot construct quadrature rule for dimension %d", dim);
   }
   ierr = PetscQuadratureCreate(PETSC_COMM_SELF, q);CHKERRQ(ierr);
-  ierr = PetscQuadratureSetOrder(*q, npoints);CHKERRQ(ierr);
+  ierr = PetscQuadratureSetOrder(*q, npoints-1);CHKERRQ(ierr);
   ierr = PetscQuadratureSetData(*q, dim, Nc, totpoints, x, w);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -740,11 +740,11 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature1D_Internal(PetscInt npoints, 
   Not Collective
 
   Input Arguments:
-+ dim   - The simplex dimension
-. Nc    - The number of components
-. order - The number of points in one dimension
-. a     - left end of interval (often-1)
-- b     - right end of interval (often +1)
++ dim     - The simplex dimension
+. Nc      - The number of components
+. npoints - The number of points in one dimension
+. a       - left end of interval (often-1)
+- b       - right end of interval (often +1)
 
   Output Argument:
 . q - A PetscQuadrature object
@@ -756,17 +756,17 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature1D_Internal(PetscInt npoints, 
 
 .seealso: PetscDTGaussTensorQuadrature(), PetscDTGaussQuadrature()
 @*/
-PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt dim, PetscInt Nc, PetscInt order, PetscReal a, PetscReal b, PetscQuadrature *q)
+PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt dim, PetscInt Nc, PetscInt npoints, PetscReal a, PetscReal b, PetscQuadrature *q)
 {
-  PetscInt       npoints = dim > 1 ? dim > 2 ? order*PetscSqr(order) : PetscSqr(order) : order;
+  PetscInt       totpoints = dim > 1 ? dim > 2 ? npoints*PetscSqr(npoints) : PetscSqr(npoints) : npoints;
   PetscReal     *px, *wx, *py, *wy, *pz, *wz, *x, *w;
   PetscInt       i, j, k, c;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if ((a != -1.0) || (b != 1.0)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must use default internal right now");
-  ierr = PetscMalloc1(npoints*dim, &x);CHKERRQ(ierr);
-  ierr = PetscMalloc1(npoints*Nc, &w);CHKERRQ(ierr);
+  ierr = PetscMalloc1(totpoints*dim, &x);CHKERRQ(ierr);
+  ierr = PetscMalloc1(totpoints*Nc, &w);CHKERRQ(ierr);
   switch (dim) {
   case 0:
     ierr = PetscFree(x);CHKERRQ(ierr);
@@ -777,33 +777,33 @@ PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt dim, PetscInt Nc, PetscInt 
     for (c = 0; c < Nc; ++c) w[c] = 1.0;
     break;
   case 1:
-    ierr = PetscMalloc1(order,&wx);CHKERRQ(ierr);
-    ierr = PetscDTGaussJacobiQuadrature1D_Internal(order, 0.0, 0.0, x, wx);CHKERRQ(ierr);
-    for (i = 0; i < order; ++i) for (c = 0; c < Nc; ++c) w[i*Nc+c] = wx[i];
+    ierr = PetscMalloc1(npoints,&wx);CHKERRQ(ierr);
+    ierr = PetscDTGaussJacobiQuadrature1D_Internal(npoints, 0.0, 0.0, x, wx);CHKERRQ(ierr);
+    for (i = 0; i < npoints; ++i) for (c = 0; c < Nc; ++c) w[i*Nc+c] = wx[i];
     ierr = PetscFree(wx);CHKERRQ(ierr);
     break;
   case 2:
-    ierr = PetscMalloc4(order,&px,order,&wx,order,&py,order,&wy);CHKERRQ(ierr);
-    ierr = PetscDTGaussJacobiQuadrature1D_Internal(order, 0.0, 0.0, px, wx);CHKERRQ(ierr);
-    ierr = PetscDTGaussJacobiQuadrature1D_Internal(order, 1.0, 0.0, py, wy);CHKERRQ(ierr);
-    for (i = 0; i < order; ++i) {
-      for (j = 0; j < order; ++j) {
-        ierr = PetscDTMapSquareToTriangle_Internal(px[i], py[j], &x[(i*order+j)*2+0], &x[(i*order+j)*2+1]);CHKERRQ(ierr);
-        for (c = 0; c < Nc; ++c) w[(i*order+j)*Nc+c] = 0.5 * wx[i] * wy[j];
+    ierr = PetscMalloc4(npoints,&px,npoints,&wx,npoints,&py,npoints,&wy);CHKERRQ(ierr);
+    ierr = PetscDTGaussJacobiQuadrature1D_Internal(npoints, 0.0, 0.0, px, wx);CHKERRQ(ierr);
+    ierr = PetscDTGaussJacobiQuadrature1D_Internal(npoints, 1.0, 0.0, py, wy);CHKERRQ(ierr);
+    for (i = 0; i < npoints; ++i) {
+      for (j = 0; j < npoints; ++j) {
+        ierr = PetscDTMapSquareToTriangle_Internal(px[i], py[j], &x[(i*npoints+j)*2+0], &x[(i*npoints+j)*2+1]);CHKERRQ(ierr);
+        for (c = 0; c < Nc; ++c) w[(i*npoints+j)*Nc+c] = 0.5 * wx[i] * wy[j];
       }
     }
     ierr = PetscFree4(px,wx,py,wy);CHKERRQ(ierr);
     break;
   case 3:
-    ierr = PetscMalloc6(order,&px,order,&wx,order,&py,order,&wy,order,&pz,order,&wz);CHKERRQ(ierr);
-    ierr = PetscDTGaussJacobiQuadrature1D_Internal(order, 0.0, 0.0, px, wx);CHKERRQ(ierr);
-    ierr = PetscDTGaussJacobiQuadrature1D_Internal(order, 1.0, 0.0, py, wy);CHKERRQ(ierr);
-    ierr = PetscDTGaussJacobiQuadrature1D_Internal(order, 2.0, 0.0, pz, wz);CHKERRQ(ierr);
-    for (i = 0; i < order; ++i) {
-      for (j = 0; j < order; ++j) {
-        for (k = 0; k < order; ++k) {
-          ierr = PetscDTMapCubeToTetrahedron_Internal(px[i], py[j], pz[k], &x[((i*order+j)*order+k)*3+0], &x[((i*order+j)*order+k)*3+1], &x[((i*order+j)*order+k)*3+2]);CHKERRQ(ierr);
-          for (c = 0; c < Nc; ++c) w[((i*order+j)*order+k)*Nc+c] = 0.125 * wx[i] * wy[j] * wz[k];
+    ierr = PetscMalloc6(npoints,&px,npoints,&wx,npoints,&py,npoints,&wy,npoints,&pz,npoints,&wz);CHKERRQ(ierr);
+    ierr = PetscDTGaussJacobiQuadrature1D_Internal(npoints, 0.0, 0.0, px, wx);CHKERRQ(ierr);
+    ierr = PetscDTGaussJacobiQuadrature1D_Internal(npoints, 1.0, 0.0, py, wy);CHKERRQ(ierr);
+    ierr = PetscDTGaussJacobiQuadrature1D_Internal(npoints, 2.0, 0.0, pz, wz);CHKERRQ(ierr);
+    for (i = 0; i < npoints; ++i) {
+      for (j = 0; j < npoints; ++j) {
+        for (k = 0; k < npoints; ++k) {
+          ierr = PetscDTMapCubeToTetrahedron_Internal(px[i], py[j], pz[k], &x[((i*npoints+j)*npoints+k)*3+0], &x[((i*npoints+j)*npoints+k)*3+1], &x[((i*npoints+j)*npoints+k)*3+2]);CHKERRQ(ierr);
+          for (c = 0; c < Nc; ++c) w[((i*npoints+j)*npoints+k)*Nc+c] = 0.125 * wx[i] * wy[j] * wz[k];
         }
       }
     }
@@ -813,8 +813,8 @@ PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt dim, PetscInt Nc, PetscInt 
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot construct quadrature rule for dimension %d", dim);
   }
   ierr = PetscQuadratureCreate(PETSC_COMM_SELF, q);CHKERRQ(ierr);
-  ierr = PetscQuadratureSetOrder(*q, order);CHKERRQ(ierr);
-  ierr = PetscQuadratureSetData(*q, dim, Nc, npoints, x, w);CHKERRQ(ierr);
+  ierr = PetscQuadratureSetOrder(*q, npoints-1);CHKERRQ(ierr);
+  ierr = PetscQuadratureSetData(*q, dim, Nc, totpoints, x, w);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
