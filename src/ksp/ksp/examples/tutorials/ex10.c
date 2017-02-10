@@ -688,7 +688,7 @@ int main(int argc,char **args)
          suffix: xyt
          args: -f0 ${DATAFILESPATH}/matrices/arco1 -ksp_type gmres -pc_type tfs
 
-    test:
+   test:
       # The output file here is the same as mumps
       suffix: mumps_cholesky
       output_file: output/ex10_mumps.out
