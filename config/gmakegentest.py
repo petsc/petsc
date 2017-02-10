@@ -268,6 +268,10 @@ class generateExamples(Petsc):
       dpl=''
     subst['datafilespath_line']=dpl
 
+    # This is used to label some matrices
+    subst['petsc_index_size']=str(self.conf['PETSC_INDEX_SIZE'])
+    subst['petsc_scalar_size']=str(self.conf['PETSC_SCALAR_SIZE'])
+
     # These can have for loops and are treated separately later
     subst['nsize']=str(subst['nsize'])
 
@@ -392,6 +396,8 @@ class generateExamples(Petsc):
 
     # Now substitute the key variables into the header and footer
     header=self._substVars(subst,example_template.header)
+    # The header is done twice to enable @...@ in header
+    header=self._substVars(subst,header)
     footer=re.sub('@TESTROOT@',subst['testroot'],example_template.footer)
 
     # Start writing the file

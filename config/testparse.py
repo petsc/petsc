@@ -142,9 +142,11 @@ def _getVarVals(findvar,testDict):
         # Assuming only one for loop per var specification
         keyvar=varset.split("{{")[0].strip()
         if keyvar!=findvar: 
-          newargs+="-"+varset+" "
+          newargs+="-"+varset.strip()+" "
           continue
         vals=re.findall('{{(.*?)}}',varset)[0]
+      else:
+        newargs+="-"+varset.strip()+" "
 
   if not vals: raise StandardError("Could not find separate_testvar: "+findvar)
   return vals,newargs
@@ -166,7 +168,10 @@ def genTestsSeparateTestvars(intests,indicts):
           del kvardict['separate_testvars']
           gensuffix="_"+kvar+"-"+val
           newtestnm=testname+gensuffix
-          kvardict['suffix']=sdict['suffix']+gensuffix
+          if sdict.has_key('suffix'):
+            kvardict['suffix']=sdict['suffix']+gensuffix
+          else:
+            kvardict['suffix']=gensuffix
           if kvar=='nsize':
             kvardict[kvar]=val
           else:
@@ -217,14 +222,15 @@ def genTestsSubtestSuffix(testnames,sdicts):
     else:
       tnms.append(testnames[i])
       sdcts.append(sdicts[i])
-    # Prune the tests to prepare for keeping
-    for rmtest in rmsubtests:
-      sdicts[i]['subtests'].remove(rmtest)
-      del sdicts[i][rmtest]
-    # If we are keeping any tests, then append
+    # If a subtest without a suffix exists, then save it
     if keepSubtests:
       tnms.append(testnames[i])
-      sdcts.append(sdicts[i])
+      newsdict=sdicts[i].copy()
+      # Prune the tests to prepare for keeping
+      for rmtest in rmsubtests:
+        newsdict['subtests'].remove(rmtest)
+        del newsdict[rmtest]
+      sdcts.append(newsdict)
     i+=1
   return tnms,sdcts
 
@@ -269,7 +275,7 @@ def parseTest(testStr,srcfile,verbosity):
   for ln in striptest.split("\n"):
     line=ln.split('#')[0].rstrip()
     if verbosity>2: print line
-    comment=("" if len(ln.split("#"))==1 else " ".join(ln.split("#")[1:]).strip())
+    comment=("" if len(ln.split("#"))>0 else " ".join(ln.split("#")[1:]).strip())
     if comment: comments.append(comment)
     if not line.strip(): continue
     lsplit=line.split(':')
