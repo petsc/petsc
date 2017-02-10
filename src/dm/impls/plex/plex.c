@@ -2966,38 +2966,7 @@ PetscErrorCode DMPlexCreateSectionInitial(DM dm, PetscInt dim, PetscInt numField
               if (flips) flips0 = flips[0];
               if (!(perms0 || flips0)) continue;
               ierr = DMPlexGetConeSize(K,kStart,&kConeSize);CHKERRQ(ierr);
-              if (numComp[f] == 1) {
-                ierr = PetscSectionSymLabelSetStratum(sym,depth - h,numDof[depth - h],-kConeSize,kConeSize,PETSC_USE_POINTER,perms0 ? &perms0[-kConeSize] : NULL,flips0 ? &flips0[-kConeSize] : NULL);CHKERRQ(ierr);
-              } else {
-                PetscInt    **fieldPerms = NULL, o;
-                PetscScalar **fieldFlips = NULL;
-
-                ierr = PetscCalloc1(2 * kConeSize,&fieldPerms);CHKERRQ(ierr);
-                ierr = PetscCalloc1(2 * kConeSize,&fieldFlips);CHKERRQ(ierr);
-                for (o = -kConeSize; o < kConeSize; o++) {
-                  if (perms0 && perms0[o]) {
-                    PetscInt r, s;
-
-                    ierr = PetscMalloc1(numComp[f] * numDof[depth - h],&fieldPerms[o+kConeSize]);CHKERRQ(ierr);
-                    for (r = 0; r < numDof[depth - h]; r++) {
-                      for (s = 0; s < numComp[f]; s++) {
-                        fieldPerms[o+kConeSize][r * numComp[f] + s] = numComp[f] * perms0[o][r] + s;
-                      }
-                    }
-                  }
-                  if (flips0 && flips0[o]) {
-                    PetscInt r, s;
-
-                    ierr = PetscMalloc1(numComp[f] * numDof[depth - h],&fieldFlips[o+kConeSize]);CHKERRQ(ierr);
-                    for (r = 0; r < numDof[depth - h]; r++) {
-                      for (s = 0; s < numComp[f]; s++) {
-                        fieldFlips[o+kConeSize][r * numComp[f] + s] = flips0[o][r];
-                      }
-                    }
-                  }
-                }
-                ierr = PetscSectionSymLabelSetStratum(sym,depth - h,numComp[f] * numDof[depth - h],-kConeSize,kConeSize,PETSC_OWN_POINTER,(const PetscInt **) fieldPerms,(const PetscScalar **)fieldFlips);CHKERRQ(ierr);
-              }
+              ierr = PetscSectionSymLabelSetStratum(sym,depth - h,numDof[depth - h],-kConeSize,kConeSize,PETSC_USE_POINTER,perms0 ? &perms0[-kConeSize] : NULL,flips0 ? &flips0[-kConeSize] : NULL);CHKERRQ(ierr);
             }
             ierr = PetscSectionSetFieldSym(*section,f,sym);CHKERRQ(ierr);
             ierr = PetscSectionSymDestroy(&sym);CHKERRQ(ierr);

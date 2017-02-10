@@ -741,7 +741,7 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
   ierr = PetscMalloc2(dim,&ind,dim,&tup);CHKERRQ(ierr);
   if (B) {
     /* B (npoints x pdim x Nc) */
-    ierr = PetscMemzero(B, npoints*pdim*Nc * sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscMemzero(B, npoints*pdim*Nc*Nc * sizeof(PetscReal));CHKERRQ(ierr);
     if (poly->tensor) {
       i = 0;
       ierr = PetscMemzero(ind, dim * sizeof(PetscInt));CHKERRQ(ierr);
@@ -2043,7 +2043,7 @@ static PetscErrorCode PetscDualSpaceGetSymmetries_Lagrange(PetscDualSpace sp, co
 
         if (dofPerEdge > 1) {
           for (s = -numFaces; s < numFaces; s++) {
-            PetscInt *sym, i, j, k, l, m;
+            PetscInt *sym, i, j, k, l;
 
             if (!s) continue;
             if (lag->simplexCell) {
