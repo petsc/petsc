@@ -1972,7 +1972,7 @@ PetscErrorCode PetscDSGetFieldSize(PetscDS prob, PetscInt f, PetscInt *size)
   PetscValidPointer(size, 3);
   if ((f < 0) || (f >= prob->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
   ierr = PetscDSSetUp(prob);CHKERRQ(ierr);
-  *size = prob->Nc[f] * prob->Nb[f];
+  *size = prob->Nb[f];
   PetscFunctionReturn(0);
 }
 
