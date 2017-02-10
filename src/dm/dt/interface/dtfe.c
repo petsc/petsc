@@ -4965,6 +4965,7 @@ PetscErrorCode PetscFEDestroy_OpenCL(PetscFE fem)
 #define STRING_ERROR_CHECK(MSG) do {CHKERRQ(ierr); string_tail += count; if (string_tail == end_of_buffer) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, MSG);} while(0)
 enum {LAPLACIAN = 0, ELASTICITY = 1};
 
+/* NOTE: This is now broken for vector problems. Must redo loops to respect vector basis elements */
 /* dim     Number of spatial dimensions:          2                   */
 /* N_b     Number of basis functions:             generated           */
 /* N_{bt}  Number of total basis functions:       N_b * N_{comp}      */
