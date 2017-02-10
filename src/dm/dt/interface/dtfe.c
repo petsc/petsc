@@ -4298,11 +4298,11 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscFE fem, PetscDS prob, PetscFE
       for (f = 0; f < NbI; ++f) {
         for (fc = 0; fc < NcI; ++fc) {
           const PetscInt fidx = f*NcI+fc; /* Test function basis index */
-          const PetscInt i    = offsetI+fidx; /* Element matrix row */
+          const PetscInt i    = offsetI+f; /* Element matrix row */
           for (g = 0; g < NbJ; ++g) {
             for (gc = 0; gc < NcJ; ++gc) {
               const PetscInt gidx = g*NcJ+gc; /* Trial function basis index */
-              const PetscInt j    = offsetJ+gidx; /* Element matrix column */
+              const PetscInt j    = offsetJ+g; /* Element matrix column */
               const PetscInt fOff = eOffset+i*totDim+j;
               PetscInt       d, d2;
 
@@ -4480,11 +4480,11 @@ PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscFE fem, PetscDS prob, Petsc
       for (f = 0; f < NbI; ++f) {
         for (fc = 0; fc < NcI; ++fc) {
           const PetscInt fidx = f*NcI+fc; /* Test function basis index */
-          const PetscInt i    = offsetI+fidx; /* Element matrix row */
+          const PetscInt i    = offsetI+f; /* Element matrix row */
           for (g = 0; g < NbJ; ++g) {
             for (gc = 0; gc < NcJ; ++gc) {
               const PetscInt gidx = g*NcJ+gc; /* Trial function basis index */
-              const PetscInt j    = offsetJ+gidx; /* Element matrix column */
+              const PetscInt j    = offsetJ+g; /* Element matrix column */
               const PetscInt fOff = eOffset+i*totDim+j;
               PetscInt       d, d2;
 
@@ -4863,11 +4863,11 @@ PetscErrorCode PetscFEIntegrateJacobian_Nonaffine(PetscFE fem, PetscDS prob, Pet
       for (f = 0; f < NbI; ++f) {
         for (fc = 0; fc < NcI; ++fc) {
           const PetscInt fidx = f*NcI+fc; /* Test function basis index */
-          const PetscInt i    = offsetI+fidx; /* Element matrix row */
+          const PetscInt i    = offsetI+f; /* Element matrix row */
           for (g = 0; g < NbJ; ++g) {
             for (gc = 0; gc < NcJ; ++gc) {
               const PetscInt gidx = g*NcJ+gc; /* Trial function basis index */
-              const PetscInt j    = offsetJ+gidx; /* Element matrix column */
+              const PetscInt j    = offsetJ+g; /* Element matrix column */
               const PetscInt fOff = eOffset+i*totDim+j;
               PetscInt       d, d2;
 

@@ -193,10 +193,10 @@ PETSC_STATIC_INLINE void EvaluateFieldJets(PetscInt dim, PetscInt Nf, const Pets
     for (d = 0; d < dim*Ncf; ++d) refSpaceDer[d] = 0.0;
     for (b = 0; b < Nbf; ++b) {
       for (c = 0; c < Ncf; ++c) {
-        const PetscInt    cidx = b*Ncf+c;
+        const PetscInt cidx = b*Ncf+c;
 
-        u[fOffset+c] += Bq[cidx]*coefficients[dOffset+cidx];
-        for (d = 0; d < dim; ++d) refSpaceDer[c*dim+d] += Dq[cidx*dim+d]*coefficients[dOffset+cidx];
+        u[fOffset+c] += Bq[cidx]*coefficients[dOffset+b];
+        for (d = 0; d < dim; ++d) refSpaceDer[c*dim+d] += Dq[cidx*dim+d]*coefficients[dOffset+b];
       }
     }
     for (c = 0; c < Ncf; ++c) for (d = 0; d < dim; ++d) for (e = 0, u_x[(fOffset+c)*dim+d] = 0.0; e < dim; ++e) u_x[(fOffset+c)*dim+d] += invJ[e*dim+d]*refSpaceDer[c*dim+e];
@@ -206,7 +206,7 @@ PETSC_STATIC_INLINE void EvaluateFieldJets(PetscInt dim, PetscInt Nf, const Pets
         for (c = 0; c < Ncf; ++c) {
           const PetscInt cidx = b*Ncf+c;
 
-          u_t[fOffset+c] += Bq[cidx]*coefficients_t[dOffset+cidx];
+          u_t[fOffset+c] += Bq[cidx]*coefficients_t[dOffset+b];
         }
       }
     }
@@ -220,7 +220,7 @@ PETSC_STATIC_INLINE void EvaluateFieldJets(PetscInt dim, PetscInt Nf, const Pets
     }
 #endif
     fOffset += Ncf;
-    dOffset += Nbf*Ncf;
+    dOffset += Nbf;
   }
 }
 
@@ -279,22 +279,23 @@ PETSC_STATIC_INLINE void UpdateElementVec(PetscInt dim, PetscInt Nq, PetscInt Nb
   PetscInt b, c;
 
   for (b = 0; b < Nb; ++b) {
+    elemVec[b] = 0.0;
+
     for (c = 0; c < Nc; ++c) {
       const PetscInt cidx = b*Nc+c;
       PetscInt       q;
 
-      elemVec[cidx] = 0.0;
       for (q = 0; q < Nq; ++q) {
         PetscInt d;
 
-        elemVec[cidx] += basis[q*Nb*Nc+cidx]*f0[q*Nc+c];
-        for (d = 0; d < dim; ++d) elemVec[cidx] += basisDer[(q*Nb*Nc+cidx)*dim+d]*f1[(q*Nc+c)*dim+d];
+        elemVec[b] += basis[q*Nb*Nc+cidx]*f0[q*Nc+c];
+        for (d = 0; d < dim; ++d) elemVec[b] += basisDer[(q*Nb*Nc+cidx)*dim+d]*f1[(q*Nc+c)*dim+d];
       }
     }
   }
 #if 0
   if (debug > 1) {
-    for (b = 0; b < Nb; ++b) {
+    for (b = 0; b < Nb/Nc; ++b) {
       for (c = 0; c < Nc; ++c) {
         ierr = PetscPrintf(PETSC_COMM_SELF, "    elemVec[%d,%d]: %g\n", b, c, PetscRealPart(elemVec[b*Nc+c]));CHKERRQ(ierr);
       }
