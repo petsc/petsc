@@ -453,57 +453,73 @@ int main(int argc,char **args)
    test:
       suffix: 1
       nsize: 2
-      args: -f0 ${wPETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int${PETSC_INDEX_SIZE}-float${PETSC_SCALAR_SIZE}
+      args: -f0 ${wPETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int@PETSC_INDEX_SIZE@-float@PETSC_SCALAR_SIZE@
    
    test:
       nsize: 2
       requires: datafilespath
-      args: 
+      args: -f0 ${DATAFILESPATH}/matrices/medium
+      args:  -ksp_type bicg
       test:
          suffix: 2
-         args: 
       test:
          suffix: 3
          args: -pc_type asm 
       
    test:
       requires: datafilespath
-      args: -ksp_type bicg -f0 ${DATAFILESPATH}/matrices/medium
+      args: -f0 ${DATAFILESPATH}/matrices/medium
+      args: -ksp_type bicg
       test:
          suffix: 4
          args: -pc_type lu 
       test:
          suffix: 5
-         args: 
    
    test:
       suffix: 6
       requires: datafilespath
-      args: -pc_factor_levels 2 -pc_factor_fill 1.73 -ksp_gmres_cgs_refinement_type refine_always -f0 ${DATAFILESPATH}/matrices/fem1
+      args: -f0 ${DATAFILESPATH}/matrices/fem1
+      args: -pc_factor_levels 2 -pc_factor_fill 1.73 -ksp_gmres_cgs_refinement_type refine_always
    
    test:
       suffix: 7
       requires: datafilespath
-      args: -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info -mat_type seqbaij -matload_block_size {{2 3 4 5 6 7 8}} 
+      args: -f0 ${DATAFILESPATH}/matrices/medium 
+      args: -viewer_binary_skip_info -mat_type seqbaij 
+      args: -matload_block_size {{2 3 4 5 6 7 8}} 
+      args: -ksp_max_it 100 -ksp_gmres_cgs_refinement_type refine_always 
+      args: -ksp_rtol 1.0e-15 -ksp_monitor_short
+      separate_testvars: matload_block_size
       test:
-         args: -ksp_max_it 100 -ksp_gmres_cgs_refinement_type refine_always -ksp_rtol 1.0e-15 -ksp_monitor_short
+         suffix: a
       test:
-         args: -ksp_max_it 100 -ksp_gmres_cgs_refinement_type refine_always -ksp_rtol 1.0e-15 -ksp_monitor_short -pc_factor_mat_ordering_type nd
+         suffix: b
+         args: -pc_factor_mat_ordering_type nd
       test:
-         args: -ksp_max_it 100 -ksp_gmres_cgs_refinement_type refine_always -ksp_rtol 1.0e-15 -ksp_monitor_short -pc_factor_levels 1
-      test:
-         args: -ksp_type preonly -pc_type lu
+         suffix: c
+         args: -pc_factor_levels 1
+
+   test:
+      suffix: 7_d
+      requires: datafilespath
+      args: -f0 ${DATAFILESPATH}/matrices/medium 
+      args: -viewer_binary_skip_info -mat_type seqbaij 
+      args: -matload_block_size {{2 3 4 5 6 7 8}} 
+      args: -ksp_type preonly -pc_type lu
    
    test:
       suffix: 8
       requires: datafilespath
-      args:-f0 ${DATAFILESPATH}/matrices/medium  -ksp_diagonal_scale -pc_type eisenstat -ksp_monitor_short -ksp_diagonal_scale_fix -ksp_gmres_cgs_refinement_type refine_always -mat_no_inode
+      args: -f0 ${DATAFILESPATH}/matrices/medium  
+      args: -ksp_diagonal_scale -pc_type eisenstat -ksp_monitor_short -ksp_diagonal_scale_fix -ksp_gmres_cgs_refinement_type refine_always -mat_no_inode
    
    test:
       suffix: 9
       requires: datafilespath
       args: -f0 ${DATAFILESPATH}/matrices/medium 
       args: -viewer_binary_skip_info  -matload_block_size {{1 2 3 4 5 6 7}} -ksp_max_it 100 -ksp_gmres_cgs_refinement_type refine_always -ksp_rtol 1.0e-15 -ksp_monitor_short
+      separate_testvars: matload_block_size
       test:
          args: -mat_type seqbaij
       test:
@@ -523,6 +539,7 @@ int main(int argc,char **args)
       args: -ksp_type fgmres -pc_type ksp -f0 ${DATAFILESPATH}/matrices/medium -ksp_fgmres_modifypcksp -ksp_monitor_short
    
    test:
+      TODO: Need to determine goal of this test
       suffix: 11
       nsize: 2
       args: -f0 http://ftp.mcs.anl.gov/pub/petsc/matrices/testmatrix.gz
@@ -535,7 +552,8 @@ int main(int argc,char **args)
    test:
       suffix: 13
       requires: lusol
-      args: -mat_type lusol -pc_type lu -f0 ${DATAFILESPATH}/matrices/arco1
+      args: -f0 ${DATAFILESPATH}/matrices/arco1
+      args: -mat_type lusol -pc_type lu
    
    test:
       nsize: 3
@@ -560,7 +578,10 @@ int main(int argc,char **args)
    test:
       suffix: 19
       requires: datafilespath
-      args: -f0 ${DATAFILESPATH}/matrices/poisson1 -ksp_type cg -pc_type icc -pc_factor_levels {{0 2 4}}
+      args: -f0 ${DATAFILESPATH}/matrices/poisson1
+      args: -ksp_type cg -pc_type icc 
+      args: -pc_factor_levels {{0 2 4}}
+      separate_testvars: pc_factor_levels
       test:
          args:
       test:
@@ -568,9 +589,10 @@ int main(int argc,char **args)
    
 
    test:
-      requires: datafilespath
-      args: -f0 ${DATAFILESPATH}/matrices/small -pc_factor_levels 1
       suffix: ILU
+      requires: datafilespath
+      args: -f0 ${DATAFILESPATH}/matrices/small
+      args: -pc_factor_levels 1
       test:
          args: 
       test:
@@ -614,14 +636,16 @@ int main(int argc,char **args)
    test:
       suffix: cg_singlereduction
       requires: datafilespath
-      args: -f0 ${DATAFILESPATH}/matrices/small -mat_type mpisbaij -ksp_type cg -pc_type eisenstat -ksp_monitor_short -ksp_converged_reason
+      args: -f0 ${DATAFILESPATH}/matrices/small
+      args: -mat_type mpisbaij -ksp_type cg -pc_type eisenstat -ksp_monitor_short -ksp_converged_reason
       test:
       test:
          args: -ksp_cg_single_reduction
       
    test:
       requires: datafilespath
-      args: -f0 ${DATAFILESPATH}/matrices/poisson2.gz -ksp_monitor_short -pc_type icc
+      args: -f0 ${DATAFILESPATH}/matrices/poisson2.gz
+      args: -ksp_monitor_short -pc_type icc
       test:
          suffix: cr
          args: -ksp_type cr
@@ -631,7 +655,8 @@ int main(int argc,char **args)
    
    test:
       requires: datafilespath
-      args: -f0 ${DATAFILESPATH}/matrices/small -ksp_monitor_short -ksp_view -mat_view ascii::ascii_info 
+      args: -f0 ${DATAFILESPATH}/matrices/small
+      args: -ksp_monitor_short -ksp_view -mat_view ascii::ascii_info 
       test:
          suffix: seqaijcrl
          args: -mat_type seqaijcrl
@@ -642,7 +667,8 @@ int main(int argc,char **args)
    test:
       nsize: 2
       requires: datafilespath
-      args: -f0 ${DATAFILESPATH}/matrices/small -ksp_monitor_short -ksp_view 
+      args: -f0 ${DATAFILESPATH}/matrices/small
+      args: -ksp_monitor_short -ksp_view 
       # Different output files
       test:
          suffix: mpiaijcrl
@@ -652,6 +678,17 @@ int main(int argc,char **args)
          args: -mat_type mpiaijperm
    
    test:
+      nsize: 8
+      requires: datafilespath
+      args: -ksp_monitor_short -ksp_view
+      test:
+         suffix: xxt
+         args: -f0 ${DATAFILESPATH}/matrices/poisson1 -check_symmetry -ksp_type cg -pc_type tfs
+      test:
+         suffix: xyt
+         args: -f0 ${DATAFILESPATH}/matrices/arco1 -ksp_type gmres -pc_type tfs
+
+    test:
       # The output file here is the same as mumps
       suffix: mumps_cholesky
       output_file: output/ex10_mumps.out
@@ -747,17 +784,7 @@ int main(int argc,char **args)
       requires: datafilespath suitesparse
       args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -mat_type seqaij -pc_factor_mat_solver_package umfpack -num_numfac 2 -num_rhs 2
    
-   test:
-      nsize: 8
-      requires: datafilespath
-      args: -ksp_monitor_short -ksp_view
-      test:
-         suffix: xxt
-         args: -f0 ${DATAFILESPATH}/matrices/poisson1 -check_symmetry -ksp_type cg -pc_type tfs
-      test:
-         suffix: xyt
-         args: -f0 ${DATAFILESPATH}/matrices/arco1 -ksp_type gmres -pc_type tfs
-      
+     
    test:
       suffix: zeropivot
       requires: mumps datafilespath
