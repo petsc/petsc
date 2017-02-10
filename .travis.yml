@@ -46,23 +46,29 @@ matrix:
     - env:
       compiler: clang
       os: osx
+      osx_image: xcode8
     - env: INT64=1 SCALAR=complex LANGUAGE=C++
       compiler: clang
       os: osx
+      osx_image: xcode8
 
     - env: MPI=mpich
       compiler: clang
       os: osx
+      osx_image: xcode8
     - env: MPI=mpich INT64=1 SCALAR=complex LANGUAGE=C++
       compiler: clang
       os: osx
+      osx_image: xcode8
 
     - env: MPI=openmpi
       compiler: clang
       os: osx
+      osx_image: xcode8
     - env: MPI=openmpi INT64=1 SCALAR=complex LANGUAGE=C++
       compiler: clang
       os: osx
+      osx_image: xcode8
 
 git:
   depth: 3
