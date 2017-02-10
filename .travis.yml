@@ -87,8 +87,8 @@ addons:
       - liblapack-dev
 
 before_install:
-  - if [[ -n "$MPI" && "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
-  - if [[ -n "$MPI" && "$TRAVIS_OS_NAME" == "osx" ]]; then brew install $MPI; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gcc $MPI; fi
   - if [[ -n "$MPI" ]]; then export CC=mpicc CXX=mpicxx FC=mpif90; fi
 install:
   - ./configure --with-cc=$CC --with-cxx=$CXX --with-fc=$FC --with-clanguage=${LANGUAGE:-C} --with-64-bit-indices=${INT64:-0} --with-scalar-type=${SCALAR:-real} --with-precision=${PRECISION:-double} --with-mpi=${MPI:-0} $BLASLAPACK
