@@ -1872,7 +1872,7 @@ runex93_hypre:
 	   else printf "${PWD}\nPossible problem with ex93_hypre, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex93_1.tmp
 runex93_ptap_scalable:
-	-@${MPIEXEC} -n 2 ./ex93 -A_matptap_via nonscalable > ex93_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex93 -A_matptap_via scalable > ex93_1.tmp 2>&1; \
 	   if (${DIFF} output/ex93_2.out ex93_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex93_ptap_scalable, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex93_1.tmp
