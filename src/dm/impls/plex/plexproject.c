@@ -294,6 +294,7 @@ PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec localU,
           const PetscInt  point = points[p];
 
           if ((point < pStart) || (point >= pEnd)) continue;
+          ierr = PetscMemzero(values, numValues * sizeof(PetscScalar));CHKERRQ(ierr);
           ierr = DMProjectPoint_Private(dm, dmAux, h, time, localU, localA, hasFE, hasFV, isFE, sp, point, basisTab, basisDerTab, basisTabAux, basisDerTabAux, type, funcs, ctxs, fieldActive, values);
           if (ierr) {
             PetscErrorCode ierr2;
@@ -308,6 +309,7 @@ PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec localU,
       }
     } else {
       for (p = pStart; p < pEnd; ++p) {
+        ierr = PetscMemzero(values, numValues * sizeof(PetscScalar));CHKERRQ(ierr);
         ierr = DMProjectPoint_Private(dm, dmAux, h, time, localU, localA, hasFE, hasFV, isFE, sp, p, basisTab, basisDerTab, basisTabAux, basisDerTabAux, type, funcs, ctxs, fieldActive, values);
         if (ierr) {
           PetscErrorCode ierr2;
