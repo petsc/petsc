@@ -72,12 +72,12 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm)
   const char    *filename    = ctx->filename;
   const PetscInt cells[3]    = {1, 1, 1};
   size_t         len;
-  PetscMPIInt    rank, numProcs;
+  PetscMPIInt    rank, size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
   if (len)              {ierr = DMPlexCreateFromFile(comm, filename, PETSC_TRUE, dm);CHKERRQ(ierr);}
   else if (cellSimplex) {ierr = DMPlexCreateBoxMesh(comm, dim, 1, PETSC_TRUE, dm);CHKERRQ(ierr);}
@@ -95,15 +95,15 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm)
       PetscInt         quadPoints[4]   = {2, 3, 0, 1};
 
       if (!rank) {
-        if (dim == 3 && cellSimplex && numProcs == 2) {
+        if (dim == 3 && cellSimplex && size == 2) {
            sizes = triSizes_n2; points = triPoints_n2;
-        } else if (dim == 2 && !cellSimplex && numProcs == 2) {
+        } else if (dim == 2 && !cellSimplex && size == 2) {
           sizes = quadSizes; points = quadPoints;
         }
       }
       ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
       ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
-      ierr = PetscPartitionerShellSetPartition(part, numProcs, sizes, points);CHKERRQ(ierr);
+      ierr = PetscPartitionerShellSetPartition(part, size, sizes, points);CHKERRQ(ierr);
     }
     /* Distribute mesh over processes */
     ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
@@ -262,7 +262,7 @@ int main(int argc, char **argv)
   PetscReal          *pcoords;
   PetscBool           pointsAllProcs;
   PetscInt            spaceDim, c, Np, p;
-  PetscMPIInt         rank, numProcs;
+  PetscMPIInt         rank, size;
   PetscErrorCode      ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);CHKERRQ(ierr);
@@ -270,7 +270,7 @@ int main(int argc, char **argv)
   ierr = CreateMesh(PETSC_COMM_WORLD, &ctx, &dm);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &spaceDim);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &numProcs);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
   /* Create points */
   ierr = CreatePoints(dm, &Np, &pcoords, &pointsAllProcs, &ctx);CHKERRQ(ierr);
   /* Create interpolator */
@@ -294,7 +294,7 @@ int main(int argc, char **argv)
   for (c = 0; c < Nc; ++c) funcs[c] = linear;
   ierr = DMGetLocalVector(dm, &lu);CHKERRQ(ierr);
   ierr = DMProjectFunctionLocal(dm, 0.0, funcs, NULL, INSERT_ALL_VALUES, lu);CHKERRQ(ierr);
-  for (p = 0; p < numProcs; ++p) {
+  for (p = 0; p < size; ++p) {
     if (p == rank) {
       ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]solution\n", rank);CHKERRQ(ierr);
       ierr = VecView(lu, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
@@ -305,7 +305,7 @@ int main(int argc, char **argv)
   ierr = VecCreateSeq(PETSC_COMM_SELF, interpolator->n * Nc, &fieldVals);CHKERRQ(ierr);
   ierr = DMInterpolationSetDof(interpolator, Nc);CHKERRQ(ierr);
   ierr = DMInterpolationEvaluate(interpolator, dm, lu, fieldVals);CHKERRQ(ierr);
-  for (p = 0; p < numProcs; ++p) {
+  for (p = 0; p < size; ++p) {
     if (p == rank) {
       ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]Field values\n", rank);CHKERRQ(ierr);
       ierr = VecView(fieldVals, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);

@@ -806,8 +806,8 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Shell(PetscPartitioner part)
 
   Input Parameters:
 + part     - The PetscPartitioner
-. numProcs - The number of partitions
-. sizes    - array of size numProcs (or NULL) providing the number of points in each partition
+. size - The number of partitions
+. sizes    - array of size size (or NULL) providing the number of points in each partition
 - points   - array of size sum(sizes) (may be NULL iff sizes is NULL), a permutation of the points that groups those assigned to each partition in order (i.e., partition 0 first, partition 1 next, etc.)
 
   Level: developer
@@ -818,7 +818,7 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Shell(PetscPartitioner part)
 
 .seealso DMPlexDistribute(), PetscPartitionerCreate()
 @*/
-PetscErrorCode PetscPartitionerShellSetPartition(PetscPartitioner part, PetscInt numProcs, const PetscInt sizes[], const PetscInt points[])
+PetscErrorCode PetscPartitionerShellSetPartition(PetscPartitioner part, PetscInt size, const PetscInt sizes[], const PetscInt points[])
 {
   PetscPartitioner_Shell *p = (PetscPartitioner_Shell *) part->data;
   PetscInt                proc, numPoints;
@@ -831,9 +831,9 @@ PetscErrorCode PetscPartitionerShellSetPartition(PetscPartitioner part, PetscInt
   ierr = PetscSectionDestroy(&p->section);CHKERRQ(ierr);
   ierr = ISDestroy(&p->partition);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject) part), &p->section);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(p->section, 0, numProcs);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(p->section, 0, size);CHKERRQ(ierr);
   if (sizes) {
-    for (proc = 0; proc < numProcs; ++proc) {
+    for (proc = 0; proc < size; ++proc) {
       ierr = PetscSectionSetDof(p->section, proc, sizes[proc]);CHKERRQ(ierr);
     }
   }
@@ -1730,8 +1730,8 @@ PetscErrorCode DMPlexPartitionLabelPropagate(DM dm, DMLabel label)
 PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF processSF, DMLabel leafLabel)
 {
   MPI_Comm           comm;
-  PetscMPIInt        rank, numProcs;
-  PetscInt           p, n, numNeighbors, size, l, nleaves;
+  PetscMPIInt        rank, size;
+  PetscInt           p, n, numNeighbors, ssize, l, nleaves;
   PetscSF            sfPoint;
   PetscSFNode       *rootPoints, *leafPoints;
   PetscSection       rootSection, leafSection;
@@ -1743,12 +1743,12 @@ PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF proc
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
 
   /* Convert to (point, rank) and use actual owners */
   ierr = PetscSectionCreate(comm, &rootSection);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(rootSection, 0, numProcs);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(rootSection, 0, size);CHKERRQ(ierr);
   ierr = DMLabelGetValueIS(rootLabel, &valueIS);CHKERRQ(ierr);
   ierr = ISGetLocalSize(valueIS, &numNeighbors);CHKERRQ(ierr);
   ierr = ISGetIndices(valueIS, &neighbors);CHKERRQ(ierr);
@@ -1759,8 +1759,8 @@ PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF proc
     ierr = PetscSectionAddDof(rootSection, neighbors[n], numPoints);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(rootSection);CHKERRQ(ierr);
-  ierr = PetscSectionGetStorageSize(rootSection, &size);CHKERRQ(ierr);
-  ierr = PetscMalloc1(size, &rootPoints);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(rootSection, &ssize);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ssize, &rootPoints);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sfPoint, NULL, &nleaves, &local, &remote);CHKERRQ(ierr);
   for (n = 0; n < numNeighbors; ++n) {
     IS              pointIS;
@@ -1786,8 +1786,8 @@ PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF proc
   ierr = PetscSectionCreate(comm, &leafSection);CHKERRQ(ierr);
   ierr = DMPlexDistributeData(dm, processSF, rootSection, MPIU_2INT, rootPoints, leafSection, (void**) &leafPoints);CHKERRQ(ierr);
   /* Filter remote contributions (ovLeafPoints) into the overlapSF */
-  ierr = PetscSectionGetStorageSize(leafSection, &size);CHKERRQ(ierr);
-  for (p = 0; p < size; p++) {
+  ierr = PetscSectionGetStorageSize(leafSection, &ssize);CHKERRQ(ierr);
+  for (p = 0; p < ssize; p++) {
     ierr = DMLabelSetValue(leafLabel, leafPoints[p].index, leafPoints[p].rank);CHKERRQ(ierr);
   }
   ierr = PetscFree(rootPoints);CHKERRQ(ierr);
@@ -1815,7 +1815,7 @@ PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF proc
 @*/
 PetscErrorCode DMPlexPartitionLabelCreateSF(DM dm, DMLabel label, PetscSF *sf)
 {
-  PetscMPIInt     rank, numProcs;
+  PetscMPIInt     rank, size;
   PetscInt        n, numRemote, p, numPoints, pStart, pEnd, idx = 0;
   PetscSFNode    *remotePoints;
   IS              remoteRootIS;
@@ -1824,9 +1824,9 @@ PetscErrorCode DMPlexPartitionLabelCreateSF(DM dm, DMLabel label, PetscSF *sf)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &numProcs);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRQ(ierr);
 
-  for (numRemote = 0, n = 0; n < numProcs; ++n) {
+  for (numRemote = 0, n = 0; n < size; ++n) {
     ierr = DMLabelGetStratumSize(label, n, &numPoints);CHKERRQ(ierr);
     numRemote += numPoints;
   }
@@ -1845,7 +1845,7 @@ PetscErrorCode DMPlexPartitionLabelCreateSF(DM dm, DMLabel label, PetscSF *sf)
     ierr = ISDestroy(&remoteRootIS);CHKERRQ(ierr);
   }
   /* Now add remote points */
-  for (n = 0; n < numProcs; ++n) {
+  for (n = 0; n < size; ++n) {
     ierr = DMLabelGetStratumSize(label, n, &numPoints);CHKERRQ(ierr);
     if (numPoints <= 0 || n == rank) continue;
     ierr = DMLabelGetStratumIS(label, n, &remoteRootIS);CHKERRQ(ierr);

@@ -1465,12 +1465,12 @@ static PetscErrorCode DMPlexBuildFromCellList_Parallel_Private(DM dm, PetscInt n
   const PetscInt *vrange;
   PetscInt        numVerticesAdj, off, *verticesAdj, numVerticesGhost = 0, *localVertex, *cone, c, p, v, g;
   PETSC_UNUSED PetscHashIIter ret, iter;
-  PetscMPIInt     rank, numProcs;
+  PetscMPIInt     rank, size;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &numProcs);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRQ(ierr);
   /* Partition vertices */
   ierr = PetscLayoutCreate(PetscObjectComm((PetscObject) dm), &vLayout);CHKERRQ(ierr);
   ierr = PetscLayoutSetLocalSize(vLayout, numVertices);CHKERRQ(ierr);
@@ -1494,7 +1494,7 @@ static PetscErrorCode DMPlexBuildFromCellList_Parallel_Private(DM dm, PetscInt n
     const PetscInt gv = verticesAdj[v];
     PetscInt       vrank;
 
-    ierr = PetscFindInt(gv, numProcs+1, vrange, &vrank);CHKERRQ(ierr);
+    ierr = PetscFindInt(gv, size+1, vrange, &vrank);CHKERRQ(ierr);
     vrank = vrank < 0 ? -(vrank+2) : vrank;
     remoteVerticesAdj[v].index = gv - vrange[vrank];
     remoteVerticesAdj[v].rank  = vrank;

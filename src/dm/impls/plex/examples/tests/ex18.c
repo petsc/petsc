@@ -131,13 +131,13 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 PetscErrorCode CreateSimplex_2D(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscInt       testNum = user->testNum, p;
-  PetscMPIInt    rank, numProcs;
+  PetscMPIInt    rank, size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
-  switch (numProcs) {
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  switch (size) {
   case 2:
     switch (rank) {
     case 0:
@@ -228,7 +228,7 @@ PetscErrorCode CreateSimplex_2D(MPI_Comm comm, AppCtx *user, DM *dm)
     default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
     }
     break;
-  default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for %d processes", numProcs);
+  default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for %d processes", size);
   }
   PetscFunctionReturn(0);
 }
@@ -236,13 +236,13 @@ PetscErrorCode CreateSimplex_2D(MPI_Comm comm, AppCtx *user, DM *dm)
 PetscErrorCode CreateSimplex_3D(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscInt       testNum = user->testNum, p;
-  PetscMPIInt    rank, numProcs;
+  PetscMPIInt    rank, size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
-  switch (numProcs) {
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  switch (size) {
   case 2:
     switch (rank) {
     case 0:
@@ -275,7 +275,7 @@ PetscErrorCode CreateSimplex_3D(MPI_Comm comm, AppCtx *user, DM *dm)
     default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for rank %d", rank);
     }
     break;
-  default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for %d processes", numProcs);
+  default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh for %d processes", size);
   }
   PetscFunctionReturn(0);
 }

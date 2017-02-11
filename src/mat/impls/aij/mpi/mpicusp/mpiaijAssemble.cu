@@ -233,7 +233,7 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   PetscInt       numSendEntries;     // Number of (i,j,v) entries sent to other processes
   PetscInt       numRecvEntries;     // Number of (i,j,v) entries received from other processes
   PetscInt       Nc;
-  PetscMPIInt    numProcs, rank;
+  PetscMPIInt    size, rank;
   PetscErrorCode ierr;
 
   // copy elemRows and elemMat to device
@@ -242,7 +242,7 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)J,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   // get matrix information
   ierr = MatGetLocalSize(J, &Nr, NULL);CHKERRQ(ierr);
@@ -264,7 +264,7 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   ierr = PetscLogEventBegin(MAT_SetValuesBatchI,0,0,0,0);CHKERRQ(ierr);
   PetscMPIInt *procSendSizes, *procRecvSizes;
 
-  ierr = PetscCalloc2(numProcs, &procSendSizes, numProcs, &procRecvSizes);CHKERRQ(ierr);
+  ierr = PetscCalloc2(size, &procSendSizes, size, &procRecvSizes);CHKERRQ(ierr);
 
   numNonlocalRows = 0;
   for (size_t i = 0; i < N; ++i) {
@@ -272,7 +272,7 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
 
     if ((row < firstRow) || (row >= lastRow)) {
       numNonlocalRows++;
-      for (IndexType p = 0; p < numProcs; ++p) {
+      for (IndexType p = 0; p < size; ++p) {
         if ((row >= rowRanges[p]) && (row < rowRanges[p+1])) {
           procSendSizes[p] += Nl;
           break;
@@ -286,7 +286,7 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   ierr = MPI_Alltoall(procSendSizes, 1, MPIU_INT, procRecvSizes, 1, MPIU_INT, comm);CHKERRQ(ierr);
 
   numRecvEntries = 0;
-  for (PetscInt p = 0; p < numProcs; ++p) numRecvEntries += procRecvSizes[p];
+  for (PetscInt p = 0; p < size; ++p) numRecvEntries += procRecvSizes[p];
   ierr = PetscInfo2(j->A, "Send entries %d Recv Entries %d\n", numSendEntries, numRecvEntries);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_SetValuesBatchI,0,0,0,0);CHKERRQ(ierr);
   // Allocate storage for "fat" COO representation of matrix
@@ -331,12 +331,12 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   PetscInt    *sendCols, *recvCols;
   PetscScalar *sendVals, *recvVals;
 
-  ierr = PetscMalloc2(numProcs, &procSendDispls, numProcs, &procRecvDispls);CHKERRQ(ierr);
+  ierr = PetscMalloc2(size, &procSendDispls, size, &procRecvDispls);CHKERRQ(ierr);
   ierr = PetscMalloc3(numSendEntries, &sendRows, numSendEntries, &sendCols, numSendEntries, &sendVals);CHKERRQ(ierr);
   ierr = PetscMalloc3(numRecvEntries, &recvRows, numRecvEntries, &recvCols, numRecvEntries, &recvVals);CHKERRQ(ierr);
 
   procSendDispls[0] = procRecvDispls[0] = 0;
-  for (PetscInt p = 1; p < numProcs; ++p) {
+  for (PetscInt p = 1; p < size; ++p) {
     procSendDispls[p] = procSendDispls[p-1] + procSendSizes[p-1];
     procRecvDispls[p] = procRecvDispls[p-1] + procRecvSizes[p-1];
   }

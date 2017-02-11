@@ -51,12 +51,12 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     PetscPartitioner part;
     const PetscInt  *sizes  = NULL;
     const PetscInt  *points = NULL;
-    PetscMPIInt      rank, numProcs;
+    PetscMPIInt      rank, size;
 
     ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
     if (!rank) {
-      if (dim == 2 && cellSimplex && numProcs == 2) {
+      if (dim == 2 && cellSimplex && size == 2) {
         switch (user->testNum) {
         case 0: {
           PetscInt triSizes_p2[2]  = {4, 4};
@@ -75,14 +75,14 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
         default:
           SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular mesh on 2 procs", user->testNum);
         }
-      } else if (dim == 2 && cellSimplex && numProcs == 3) {
+      } else if (dim == 2 && cellSimplex && size == 3) {
         PetscInt triSizes_p3[3]  = {3, 3, 2};
         PetscInt triPoints_p3[8] = {1, 2, 4, 3, 6, 7, 0, 5};
 
         ierr = PetscMalloc2(3, &sizes, 8, &points);CHKERRQ(ierr);
         ierr = PetscMemcpy(sizes,  triSizes_p3, 3 * sizeof(PetscInt));CHKERRQ(ierr);
         ierr = PetscMemcpy(points, triPoints_p3, 8 * sizeof(PetscInt));CHKERRQ(ierr);
-      } else if (dim == 2 && !cellSimplex && numProcs == 2) {
+      } else if (dim == 2 && !cellSimplex && size == 2) {
         PetscInt quadSizes_p2[2]  = {2, 2};
         PetscInt quadPoints_p2[4] = {2, 3, 0, 1};
 
@@ -93,7 +93,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     }
     ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
     ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
-    ierr = PetscPartitionerShellSetPartition(part, numProcs, sizes, points);CHKERRQ(ierr);
+    ierr = PetscPartitionerShellSetPartition(part, size, sizes, points);CHKERRQ(ierr);
     ierr = PetscFree2(sizes, points);CHKERRQ(ierr);
   }
   ierr = DMPlexDistribute(*dm, 0, NULL, &dmDist);CHKERRQ(ierr);
