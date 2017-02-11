@@ -64,7 +64,8 @@ static PetscErrorCode DMPlexCreateGmsh_ReadElement(PetscViewer viewer, PetscInt 
 {
   PetscInt       c, p;
   GmshElement   *elements;
-  int            i, cellType, dim, numNodes, numElem, numTags;
+  int            i, cellType, dim, numNodes, numNodesIgnore, numElem, numTags;
+  PetscInt       pibuf[64];
   int            ibuf[16];
   PetscErrorCode ierr;
 
@@ -83,6 +84,8 @@ static PetscErrorCode DMPlexCreateGmsh_ReadElement(PetscViewer viewer, PetscInt 
       numTags = ibuf[2];
       numElem = 1;
     }
+    /* http://gmsh.info/doc/texinfo/gmsh.html#MSH-ASCII-file-format */
+    numNodesIgnore = 0;
     switch (cellType) {
     case 1: /* 2-node line */
       dim = 1;
@@ -104,15 +107,32 @@ static PetscErrorCode DMPlexCreateGmsh_ReadElement(PetscViewer viewer, PetscInt 
       dim = 3;
       numNodes = 8;
       break;
+    case 8: /* 3-node 2nd order line */
+      dim = 1;
+      numNodes = 2;
+      numNodesIgnore = 1;
+      break;
+    case 9: /* 6-node 2nd order triangle */
+      dim = 2;
+      numNodes = 3;
+      numNodesIgnore = 3;
+      break;
     case 15: /* 1-node vertex */
       dim = 0;
       numNodes = 1;
       break;
+    case 6: /* 6-node prism */
+    case 7: /* 5-node pyramid */
+    case 10: /* 9-node 2nd order quadrangle */
+    case 11: /* 10-node 2nd order tetrahedron */
+    case 12: /* 27-node 2nd order hexhedron */
+    case 13: /* 19-node 2nd order prism */
+    case 14: /* 14-node 2nd order pyramid */
     default:
       SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unsupported Gmsh element type %d", cellType);
     }
     if (binary) {
-      const PetscInt nint = numNodes + numTags + 1;
+      const PetscInt nint = numNodes + numTags + 1 + numNodesIgnore;
       for (i = 0; i < numElem; ++i, ++c) {
         /* Loop over inner binary element block */
         elements[c].dim = dim;
@@ -131,6 +151,7 @@ static PetscErrorCode DMPlexCreateGmsh_ReadElement(PetscViewer viewer, PetscInt 
       elements[c].numTags = numTags;
       ierr = PetscViewerRead(viewer, elements[c].tags, elements[c].numTags, NULL, PETSC_ENUM);CHKERRQ(ierr);
       ierr = PetscViewerRead(viewer, elements[c].nodes, elements[c].numNodes, NULL, PETSC_ENUM);CHKERRQ(ierr);
+      ierr = PetscViewerRead(viewer, pibuf, numNodesIgnore, NULL, PETSC_ENUM);CHKERRQ(ierr);
       c++;
     }
   }
@@ -313,7 +334,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
             pcone[1] = pcone[3];
             pcone[3] = tmp;
           }
-        }   
+        }
         ierr = DMPlexSetCone(*dm, cell, pcone);CHKERRQ(ierr);
         cell++;
       }
