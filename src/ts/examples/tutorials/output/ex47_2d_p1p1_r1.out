@@ -1,0 +1,52 @@
+Timestep: 0000 time = 0        	 L_2 Error: 9.3452e-17
+0 TS dt 0.1 time 0.
+    0 SNES Function norm 0.38487 
+    1 SNES Function norm < 1.e-11
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+Timestep: 0001 time = 0.1      	 L_2 Error: 0.042609
+1 TS dt 0.1 time 0.1
+    0 SNES Function norm 0.383649 
+    1 SNES Function norm < 1.e-11
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+Timestep: 0002 time = 0.2      	 L_2 Error: 0.084372
+2 TS dt 0.1 time 0.2
+    0 SNES Function norm 0.380922 
+    1 SNES Function norm < 1.e-11
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+Timestep: 0003 time = 0.3      	 L_2 Error: 0.12562
+3 TS dt 0.1 time 0.3
+    0 SNES Function norm 0.377457 
+    1 SNES Function norm < 1.e-11
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+Timestep: 0004 time = 0.4      	 L_2 Error: 0.16664
+4 TS dt 0.1 time 0.4
+    0 SNES Function norm 0.37449 
+    1 SNES Function norm < 1.e-11
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+Timestep: 0005 time = 0.5      	 L_2 Error: 0.2076
+5 TS dt 0.1 time 0.5
+    0 SNES Function norm 0.372928 
+    1 SNES Function norm < 1.e-11
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+Timestep: 0006 time = 0.6      	 L_2 Error: 0.24859
+6 TS dt 0.1 time 0.6
+    0 SNES Function norm 0.372986 
+    1 SNES Function norm < 1.e-11
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+Timestep: 0007 time = 0.7      	 L_2 Error: 0.28962
+7 TS dt 0.1 time 0.7
+    0 SNES Function norm 0.374276 
+    1 SNES Function norm < 1.e-11
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+Timestep: 0008 time = 0.8      	 L_2 Error: 0.33068
+8 TS dt 0.1 time 0.8
+    0 SNES Function norm 0.376133 
+    1 SNES Function norm < 1.e-11
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+Timestep: 0009 time = 0.9      	 L_2 Error: 0.37179
+9 TS dt 0.1 time 0.9
+    0 SNES Function norm 0.377927 
+    1 SNES Function norm < 1.e-11
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+Timestep: 0010 time = 1        	 L_2 Error: 0.41293
+10 TS dt 0.1 time 1.
