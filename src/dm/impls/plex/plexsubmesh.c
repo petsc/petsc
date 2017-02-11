@@ -2,7 +2,7 @@
 #include <petsc/private/dmlabelimpl.h>   /*I      "petscdmlabel.h"   I*/
 #include <petscsf.h>
 
-PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt cellHeight, DMLabel label)
+static PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt cellHeight, DMLabel label)
 {
   PetscInt       fStart, fEnd, f;
   PetscErrorCode ierr;
@@ -43,7 +43,7 @@ PetscErrorCode DMPlexMarkBoundaryFaces(DM dm, DMLabel label)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexLabelComplete_Internal(DM dm, DMLabel label, PetscBool completeCells)
+static PetscErrorCode DMPlexLabelComplete_Internal(DM dm, DMLabel label, PetscBool completeCells)
 {
   IS              valueIS;
   const PetscInt *values;
@@ -1841,7 +1841,7 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
   DMPlexCreateHybridMesh - Create a mesh with hybrid cells along an internal interface
 
   Collective on dm
@@ -2171,7 +2171,7 @@ static PetscErrorCode DMPlexMarkCohesiveSubmesh_Interpolated(DM dm, DMLabel labe
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt numCorners, PetscInt indices[], PetscInt oppositeVertex, PetscInt origVertices[], PetscInt faceVertices[], PetscBool *posOriented)
+static PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt numCorners, PetscInt indices[], PetscInt oppositeVertex, PetscInt origVertices[], PetscInt faceVertices[], PetscBool *posOriented)
 {
   MPI_Comm       comm;
   PetscBool      posOrient = PETSC_FALSE;
@@ -2466,11 +2466,29 @@ PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt numCorner
   PetscFunctionReturn(0);
 }
 
-/*
-    Given a cell and a face, as a set of vertices,
-      return the oriented face, as a set of vertices, in faceVertices
-    The orientation is such that the face normal points out of the cell
-*/
+/*@
+  DMPlexGetOrientedFace - Given a cell and a face, as a set of vertices, return the oriented face, as a set of vertices,
+  in faceVertices. The orientation is such that the face normal points out of the cell
+
+  Not collective
+
+  Input Parameters:
++ dm           - The original mesh
+. cell         - The cell mesh point
+. faceSize     - The number of vertices on the face
+. face         - The face vertices
+. numCorners   - The number of vertices on the cell
+. indices      - Local numbering of face vertices in cell cone
+- origVertices - Original face vertices
+
+  Output Parameter:
++ faceVertices - The face vertices properly oriented
+- posOriented  - PETSC_TRUE if the face was oriented with outward normal
+
+  Level: developer
+
+.seealso: DMPlexGetCone()
+@*/
 PetscErrorCode DMPlexGetOrientedFace(DM dm, PetscInt cell, PetscInt faceSize, const PetscInt face[], PetscInt numCorners, PetscInt indices[], PetscInt origVertices[], PetscInt faceVertices[], PetscBool *posOriented)
 {
   const PetscInt *cone = NULL;
@@ -3252,7 +3270,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Interpolated(DM dm, const char
   PetscFunctionReturn(0);
 }
 
-/*
+/*@C
   DMPlexCreateCohesiveSubmesh - Extract from a mesh with cohesive cells the hypersurface defined by one face of the cells. Optionally, a Label an be given to restrict the cells.
 
   Input Parameters:
@@ -3269,7 +3287,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Interpolated(DM dm, const char
   Level: developer
 
 .seealso: DMPlexGetSubpointMap(), DMPlexCreateSubmesh()
-*/
+@*/
 PetscErrorCode DMPlexCreateCohesiveSubmesh(DM dm, PetscBool hasLagrange, const char label[], PetscInt value, DM *subdm)
 {
   PetscInt       dim, depth;
@@ -3347,7 +3365,19 @@ PetscErrorCode DMPlexGetSubpointMap(DM dm, DMLabel *subpointMap)
   PetscFunctionReturn(0);
 }
 
-/* Note: Should normally not be called by the user, since it is set in DMPlexCreateSubmesh() */
+/*@
+  DMPlexSetSubpointMap - Sets the DMLabel with point dimension as values
+
+  Input Parameters:
++ dm - The submesh DM
+- subpointMap - The DMLabel of all the points from the original mesh in this submesh
+
+  Note: Should normally not be called by the user, since it is set in DMPlexCreateSubmesh()
+
+  Level: developer
+
+.seealso: DMPlexCreateSubmesh(), DMPlexCreateSubpointIS()
+@*/
 PetscErrorCode DMPlexSetSubpointMap(DM dm, DMLabel subpointMap)
 {
   DM_Plex       *mesh = (DM_Plex *) dm->data;

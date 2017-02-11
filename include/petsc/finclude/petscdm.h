@@ -13,6 +13,7 @@
 #define DMBoundaryType      PetscEnum
 #define DMPointLocationType PetscEnum
 #define DMAdaptFlag         PetscEnum
+#define PetscUnit           PetscEnum
 
 #define DM               type(tDM)
 

@@ -92,7 +92,7 @@ static PetscErrorCode DMPlexGetVTKConnectivity(DM dm,PieceInfo *piece,PetscVTKIn
     offsets[countcell] = countconn;
 
     nverts = countconn - startoffset;
-    ierr   = DMPlexVTKGetCellType(dm,dim,nverts,&celltype);CHKERRQ(ierr);
+    ierr   = DMPlexVTKGetCellType_Internal(dm,dim,nverts,&celltype);CHKERRQ(ierr);
 
     types[countcell] = celltype;
     countcell++;

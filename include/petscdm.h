@@ -201,6 +201,13 @@ PETSC_EXTERN PetscErrorCode DMSetNumFields(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMGetField(DM, PetscInt, PetscObject *);
 PETSC_EXTERN PetscErrorCode DMSetField(DM, PetscInt, PetscObject);
 
+/*E
+  PetscUnit - The seven fundamental SI units
+
+  Level: beginner
+
+.seealso: DMPlexGetScale(), DMPlexSetScale()
+E*/
 typedef enum {PETSC_UNIT_LENGTH, PETSC_UNIT_MASS, PETSC_UNIT_TIME, PETSC_UNIT_CURRENT, PETSC_UNIT_TEMPERATURE, PETSC_UNIT_AMOUNT, PETSC_UNIT_LUMINOSITY, NUM_PETSC_UNITS} PetscUnit;
 
 struct _DMInterpolationInfo {

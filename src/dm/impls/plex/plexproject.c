@@ -139,10 +139,10 @@ static PetscErrorCode DMProjectPoint_Private(DM dm, DM dmAux, PetscInt h, PetscR
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec localU,
-                                           DMLabel label, PetscInt numIds, const PetscInt ids[],
-                                           DMBoundaryConditionType type, void (**funcs)(void), void **ctxs,
-                                           InsertMode mode, Vec localX)
+static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec localU,
+                                                  DMLabel label, PetscInt numIds, const PetscInt ids[],
+                                                  DMBoundaryConditionType type, void (**funcs)(void), void **ctxs,
+                                                  InsertMode mode, Vec localX)
 {
   DM              dmAux = NULL;
   PetscDS         prob, probAux = NULL;

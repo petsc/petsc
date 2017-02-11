@@ -2,7 +2,7 @@
 #include <petsc/private/dmpleximpl.h>    /*I   "petscdmplex.h"   I*/
 #include <../src/sys/classes/viewer/impls/vtk/vtkvimpl.h>
 
-PetscErrorCode DMPlexVTKGetCellType(DM dm, PetscInt dim, PetscInt corners, PetscInt *cellType)
+PetscErrorCode DMPlexVTKGetCellType_Internal(DM dm, PetscInt dim, PetscInt corners, PetscInt *cellType)
 {
   PetscFunctionBegin;
   *cellType = -1;
@@ -67,7 +67,7 @@ PetscErrorCode DMPlexVTKGetCellType(DM dm, PetscInt dim, PetscInt corners, Petsc
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
+static PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
 {
   MPI_Comm       comm;
   DMLabel        label;
@@ -207,7 +207,7 @@ PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
     PetscInt cellType;
 
     for (c = 0; c < numCells; ++c) {
-      ierr = DMPlexVTKGetCellType(dm, dim, corners[c], &cellType);CHKERRQ(ierr);
+      ierr = DMPlexVTKGetCellType_Internal(dm, dim, corners[c], &cellType);CHKERRQ(ierr);
       ierr = PetscFPrintf(comm, fp, "%D\n", cellType);CHKERRQ(ierr);
     }
     for (proc = 1; proc < size; ++proc) {
@@ -216,7 +216,7 @@ PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
       ierr = MPI_Recv(&numCells, 1, MPIU_INT, proc, tag, comm, &status);CHKERRQ(ierr);
       ierr = MPI_Recv(corners, numCells, MPIU_INT, proc, tag, comm, &status);CHKERRQ(ierr);
       for (c = 0; c < numCells; ++c) {
-        ierr = DMPlexVTKGetCellType(dm, dim, corners[c], &cellType);CHKERRQ(ierr);
+        ierr = DMPlexVTKGetCellType_Internal(dm, dim, corners[c], &cellType);CHKERRQ(ierr);
         ierr = PetscFPrintf(comm, fp, "%D\n", cellType);CHKERRQ(ierr);
       }
     }
@@ -229,7 +229,7 @@ PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexVTKWritePartition_ASCII(DM dm, FILE *fp)
+static PetscErrorCode DMPlexVTKWritePartition_ASCII(DM dm, FILE *fp)
 {
   MPI_Comm       comm;
   PetscInt       numCells = 0, cellHeight;
@@ -272,7 +272,7 @@ PetscErrorCode DMPlexVTKWritePartition_ASCII(DM dm, FILE *fp)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, PetscSection globalSection, Vec v, FILE *fp, PetscInt enforceDof, PetscInt precision, PetscReal scale)
+static PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, PetscSection globalSection, Vec v, FILE *fp, PetscInt enforceDof, PetscInt precision, PetscReal scale)
 {
   MPI_Comm           comm;
   const MPI_Datatype mpiType = MPIU_SCALAR;
@@ -416,7 +416,7 @@ PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, PetscSec
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexVTKWriteField_ASCII(DM dm, PetscSection section, PetscSection globalSection, Vec field, const char name[], FILE *fp, PetscInt enforceDof, PetscInt precision, PetscReal scale)
+static PetscErrorCode DMPlexVTKWriteField_ASCII(DM dm, PetscSection section, PetscSection globalSection, Vec field, const char name[], FILE *fp, PetscInt enforceDof, PetscInt precision, PetscReal scale)
 {
   MPI_Comm       comm;
   PetscInt       numDof = 0, maxDof;
@@ -453,7 +453,7 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
   PetscLayout              vLayout;
   Vec                      coordinates;
   PetscReal                lengthScale;
-  PetscInt                 vMax, totVertices, totCells;
+  PetscInt                 vMax, totVertices, totCells = 0;
   PetscBool                hasPoint = PETSC_FALSE, hasCell = PETSC_FALSE, writePartition = PETSC_FALSE;
   PetscErrorCode           ierr;
 
