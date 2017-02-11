@@ -200,7 +200,7 @@ PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec localU,
     PetscReal *points;
     PetscInt   numPoints, spDim, d;
 
-    if (maxHeight) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Field proejction not supported for face interpolation");
+    if (maxHeight) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Field projection not supported for face interpolation");
     numPoints = 0;
     for (f = 0; f < Nf; ++f) {
       ierr = PetscDualSpaceGetDimension(cellsp[f], &spDim);CHKERRQ(ierr);

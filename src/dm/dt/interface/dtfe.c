@@ -1907,11 +1907,11 @@ PetscErrorCode PetscDualSpaceApplyFVM(PetscDualSpace sp, PetscInt f, PetscReal t
   ierr = PetscQuadratureGetData(n, NULL, &qNc, &Nq, &points, &weights);CHKERRQ(ierr);
   if (qNc != Nc) SETERRQ2(PetscObjectComm((PetscObject) sp), PETSC_ERR_ARG_SIZ, "The quadrature components %D != function components %D", qNc, Nc);
   ierr = DMGetWorkArray(dm, Nc, PETSC_SCALAR, &val);CHKERRQ(ierr);
-  value[0] = 0.0;
+  for (c = 0; c < Nc; ++c) value[c] = 0.0;
   for (q = 0; q < Nq; ++q) {
     ierr = (*func)(dimEmbed, time, cgeom->centroid, Nc, val, ctx);CHKERRQ(ierr);
     for (c = 0; c < Nc; ++c) {
-      value[0] += val[c]*weights[q*Nc+c];
+      value[c] += val[c]*weights[q*Nc+c];
     }
   }
   ierr = DMRestoreWorkArray(dm, Nc, PETSC_SCALAR, &val);CHKERRQ(ierr);
@@ -2739,12 +2739,14 @@ PetscErrorCode PetscDualSpaceDestroy_Simple(PetscDualSpace sp)
 
 PetscErrorCode PetscDualSpaceDuplicate_Simple(PetscDualSpace sp, PetscDualSpace *spNew)
 {
-  PetscInt       dim, d;
+  PetscInt       dim, d, Nc;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) sp), spNew);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetType(*spNew, PETSCDUALSPACESIMPLE);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetNumComponents(sp, &Nc);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetNumComponents(sp, Nc);CHKERRQ(ierr);
   ierr = PetscDualSpaceGetDimension(sp, &dim);CHKERRQ(ierr);
   ierr = PetscDualSpaceSimpleSetDimension(*spNew, dim);CHKERRQ(ierr);
   for (d = 0; d < dim; ++d) {
@@ -2802,8 +2804,7 @@ PetscErrorCode PetscDualSpaceGetNumDof_Simple(PetscDualSpace sp, const PetscInt 
 
 PetscErrorCode PetscDualSpaceSimpleSetFunctional_Simple(PetscDualSpace sp, PetscInt f, PetscQuadrature q)
 {
-  PetscDualSpace_Simple *s   = (PetscDualSpace_Simple *) sp->data;
-  PetscReal              vol = 0.0;
+  PetscDualSpace_Simple *s = (PetscDualSpace_Simple *) sp->data;
   PetscReal             *weights;
   PetscInt               Nc, c, Nq, p;
   PetscErrorCode         ierr;
@@ -2814,8 +2815,10 @@ PetscErrorCode PetscDualSpaceSimpleSetFunctional_Simple(PetscDualSpace sp, Petsc
   /* Reweight so that it has unit volume: Do we want to do this for Nc > 1? */
   ierr = PetscQuadratureGetData(sp->functional[f], NULL, &Nc, &Nq, NULL, (const PetscReal **) &weights);CHKERRQ(ierr);
   for (c = 0; c < Nc; ++c) {
+    PetscReal vol = 0.0;
+
     for (p = 0; p < Nq; ++p) vol += weights[p*Nc+c];
-    for (p = 0; p < Nq; ++p) weights[p*Nc+c] /= vol;
+    for (p = 0; p < Nq; ++p) weights[p*Nc+c] /= (vol == 0.0 ? 1.0 : vol);
   }
   PetscFunctionReturn(0);
 }
