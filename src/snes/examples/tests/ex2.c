@@ -28,17 +28,6 @@ static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], 
   return 0;
 }
 
-static PetscErrorCode quadratic(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
-{
-  PetscInt d, c;
-
-  for (c = 0; c < Nc; ++c) {
-    u[c] = 0.0;
-    for (d = 0; d < dim; ++d) u[c] += x[d]*x[d];
-  }
-  return 0;
-}
-
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   const char    *pointTypes[3] = {"centroid", "grid", "grid_replicated"};
