@@ -11,7 +11,6 @@ typedef struct {
   PetscInt      dim;                          /* The topological mesh dimension */
   PetscBool     cellSimplex;                  /* Use simplices or hexes */
   char          filename[PETSC_MAX_PATH_LEN]; /* Import mesh from file */
-  PetscBool     testPartition;                /* Use a fixed partitioning for testing */
   PointType     pointType;                    /* Point generation mechanism */
 } AppCtx;
 
@@ -38,14 +37,12 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->dim           = 3;
   options->cellSimplex   = PETSC_TRUE;
   options->filename[0]   = '\0';
-  options->testPartition = PETSC_FALSE;
   options->pointType     = CENTROID;
 
   ierr = PetscOptionsBegin(comm, "", "Interpolation Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex2.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-cell_simplex", "Use simplices if true, otherwise hexes", "ex2.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-filename", "The mesh file", "ex2.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex2.c", options->testPartition, &options->testPartition, NULL);CHKERRQ(ierr);
   pt   = options->pointType;
   ierr = PetscOptionsEList("-point_type", "The point type", "ex2.c", pointTypes, 3, pointTypes[options->pointType], &pt, NULL);CHKERRQ(ierr);
   options->pointType = (PointType) pt;
@@ -72,28 +69,12 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm)
   else if (cellSimplex) {ierr = DMPlexCreateBoxMesh(comm, dim, 1, PETSC_TRUE, dm);CHKERRQ(ierr);}
   else                  {ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);}
   {
-    DM distributedMesh = NULL;
+    DM               distributedMesh = NULL;
+    PetscPartitioner part;
 
-    if (ctx->testPartition) {
-      PetscPartitioner part;
-      PetscInt        *sizes  = NULL;
-      PetscInt        *points = NULL;
-      PetscInt         triSizes_n2[2]  = {1, 1};
-      PetscInt         triPoints_n2[8] = {0, 1};
-      PetscInt         quadSizes[2]    = {2, 2};
-      PetscInt         quadPoints[4]   = {2, 3, 0, 1};
+    ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
+    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
 
-      if (!rank) {
-        if (dim == 3 && cellSimplex && size == 2) {
-           sizes = triSizes_n2; points = triPoints_n2;
-        } else if (dim == 2 && !cellSimplex && size == 2) {
-          sizes = quadSizes; points = quadPoints;
-        }
-      }
-      ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
-      ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
-      ierr = PetscPartitionerShellSetPartition(part, size, sizes, points);CHKERRQ(ierr);
-    }
     /* Distribute mesh over processes */
     ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
     if (distributedMesh) {
@@ -337,22 +318,22 @@ int main(int argc, char **argv)
     suffix: 2
     requires: ctetgen
     nsize: 2
-    args: -petscspace_order 1
+    args: -petscspace_order 1 -petscpartitioner_type simple
   test:
     suffix: 3
     requires: ctetgen
     nsize: 2
-    args: -petscspace_order 1 -dm_refine 2
+    args: -petscspace_order 1 -dm_refine 2 -petscpartitioner_type simple
   test:
     suffix: 4
     requires: ctetgen
     nsize: 5
-    args: -petscspace_order 1
+    args: -petscspace_order 1 -petscpartitioner_type simple
   test:
     suffix: 5
     requires: ctetgen
     nsize: 5
-    args: -petscspace_order 1 -dm_refine 2
+    args: -petscspace_order 1 -dm_refine 2 -petscpartitioner_type simple
   test:
     suffix: 6
     requires: ctetgen
@@ -365,7 +346,7 @@ int main(int argc, char **argv)
     suffix: 8
     requires: ctetgen
     nsize: 2
-    args: -petscspace_order 1 -point_type grid
+    args: -petscspace_order 1 -point_type grid -petscpartitioner_type simple
   test:
     suffix: 9
     requires: ctetgen
@@ -374,11 +355,11 @@ int main(int argc, char **argv)
     suffix: 10
     requires: ctetgen
     nsize: 2
-    args: -petscspace_order 1 -point_type grid_replicated
+    args: -petscspace_order 1 -point_type grid_replicated -petscpartitioner_type simple
   test:
     suffix: 11
     requires: ctetgen
     nsize: 2
-    args: -petscspace_order 1 -dm_refine 2 -point_type grid_replicated
+    args: -petscspace_order 1 -dm_refine 2 -point_type grid_replicated -petscpartitioner_type simple
 
 TEST*/

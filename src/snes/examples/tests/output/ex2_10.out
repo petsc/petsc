@@ -53,69 +53,50 @@
 [1]Point 25 (0.5, 1., 1.)
 [1]Point 26 (1., 1., 1.)
 [0]Point 0 is in Cell 0
-[0]Point 1 is in Cell 0
-[0]Point 2 is in Cell 0
-[0]Point 3 is in Cell 2
-[0]Point 4 is in Cell 1
-[0]Point 5 is in Cell 0
-[0]Point 6 is in Cell 1
-[0]Point 7 is in Cell 2
-[0]Point 8 is in Cell 2
+[0]Point 1 is in Cell 2
+[0]Point 2 is in Cell 2
+[0]Point 3 is in Cell 0
+[0]Point 4 is in Cell 0
+[0]Point 5 is in Cell 2
+[0]Point 6 is in Cell 0
+[0]Point 7 is in Cell 0
+[0]Point 8 is in Cell 0
 [0]Point 9 is in Cell 1
 [0]Point 10 is in Cell 1
 [0]Point 11 is in Cell 0
 [0]Point 12 is in Cell 2
-[0]Point 13 is in Cell 2
-[0]Point 14 is in Cell 2
+[0]Point 13 is in Cell 0
+[0]Point 14 is in Cell 0
 [0]Point 15 is in Cell 1
 [0]Point 16 is in Cell 1
-[0]Point 17 is in Cell 0
-[1]Point 0 is in Cell 1
-[1]Point 1 is in Cell 1
-[1]Point 2 is in Cell 1
+[0]Point 17 is in Cell 1
+[0]Point 18 is in Cell 1
+[0]Point 19 is in Cell 1
+[0]Point 20 is in Cell 0
+[1]Point 0 is in Cell 0
+[1]Point 1 is in Cell 0
+[1]Point 2 is in Cell 0
 [1]Point 3 is in Cell 1
 [1]Point 4 is in Cell 1
-[1]Point 5 is in Cell 0
-[1]Point 6 is in Cell 0
-[1]Point 7 is in Cell 0
-[1]Point 8 is in Cell 0
+[1]Point 5 is in Cell 2
 Vec Object: 2 MPI processes
   type: mpi
 Process [0]
 0.
 0.
 0.
-0.
-0.5
-0.
-0.5
 0.5
 0.
 0.
 1.
 0.
-0.5
-1.
-0.
-1.
-1.
-0.
 0.
 0.
 0.5
 0.
 0.5
 0.5
-0.5
-0.5
-0.5
 0.
-1.
-0.5
-0.5
-1.
-0.5
-1.
 1.
 0.5
 0.
@@ -124,45 +105,64 @@ Process [0]
 0.
 0.5
 1.
-0.5
-0.5
-1.
 0.
 1.
 1.
+0.
+0.
+0.
+0.5
+0.5
+0.
+0.5
+0.5
+0.5
 0.5
 1.
+0.5
+0.5
+0.5
+1.
+0.5
+1.
+1.
+0.5
+0.
+0.
+1.
+0.5
+0.
+1.
+1.
+0.
+1.
+0.5
+0.5
+1.
+1.
+0.5
 1.
 1.
 1.
 1.
 Process [1]
-0.5
-0.
-0.
-1.
-0.
-0.
-1.
-0.5
-0.
-0.5
-0.
-0.5
 1.
 0.
 0.5
-1.
-0.5
+0.
 0.5
 0.5
 0.
 1.
+0.5
+0.
+0.5
 1.
 0.
 1.
 1.
 0.5
+1.
 1.
 [0]solution
 Vec Object: 1 MPI processes
@@ -170,6 +170,9 @@ Vec Object: 1 MPI processes
 0.
 0.
 0.
+1.
+1.
+1.
 1.
 1.
 1.
@@ -194,12 +197,15 @@ Vec Object: 1 MPI processes
 1.
 1.
 1.
-2.
-2.
-2.
 1.
 1.
 1.
+1.
+1.
+1.
+2.
+2.
+2.
 2.
 2.
 2.
@@ -218,6 +224,15 @@ Vec Object: 1 MPI processes
 1.
 1.
 1.
+0.5
+0.5
+0.5
+1.
+1.
+1.
+1.5
+1.5
+1.5
 1.
 1.
 1.
@@ -236,9 +251,9 @@ Vec Object: 1 MPI processes
 1.5
 1.5
 1.5
-1.5
-1.5
-1.5
+2.
+2.
+2.
 2.
 2.
 2.
@@ -266,12 +281,6 @@ Vec Object: 1 MPI processes
 [1]Field values
 Vec Object: 1 MPI processes
   type: seq
-0.5
-0.5
-0.5
-1.
-1.
-1.
 1.5
 1.5
 1.5
@@ -281,9 +290,6 @@ Vec Object: 1 MPI processes
 1.5
 1.5
 1.5
-2.
-2.
-2.
 1.5
 1.5
 1.5
