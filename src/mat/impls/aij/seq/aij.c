@@ -3814,7 +3814,7 @@ M*/
    Options Database Keys:
 . -mat_type aij - sets the matrix type to "aij" during a call to MatSetFromOptions()
 
-  Developer Notes: Subclasses include MATAIJCUSP, MATAIJPERM, MATAIJCRL, and also automatically switches over to use inodes when
+  Developer Notes: Subclasses include MATAIJCUSP, MATAIJPERM, MATAIJMKL, MATAIJCRL, and also automatically switches over to use inodes when
    enough exist.
 
   Level: beginner

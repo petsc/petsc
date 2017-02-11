@@ -198,8 +198,14 @@ PetscErrorCode MatMultAdd_SeqAIJMKL(Mat A,Vec xx,Vec yy,Vec zz)
 
   /* Variables not in MatMultAdd_SeqAIJ. */
   char transa = 'n';  /* Used to indicate to MKL that we are not computing the transpose product. */
+  PetscScalar       alpha = 1.0;
+  PetscScalar       beta = 1.0;
+  char              matdescra[6];
 
   PetscFunctionBegin;
+  matdescra[0] = 'g';  /* Indicates to MKL that we using a general CSR matrix. */
+  matdescra[3] = 'c';  /* Indicates to MKL that we use C-style (0-based) indexing. */
+
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
   aj   = a->j;  /* aj[k] gives column index for element aa[k]. */
@@ -207,11 +213,16 @@ PetscErrorCode MatMultAdd_SeqAIJMKL(Mat A,Vec xx,Vec yy,Vec zz)
   ai   = a->i;  /* ai[k] is the position in aa and aj where row k starts. */
 
   /* Call MKL sparse BLAS routine to do the MatMult. */
-  mkl_cspblas_xcsrgemv(&transa,&m,aa,ai,aj,x,z);
-
-  /* Now add the vector y; MKL sparse BLAS does not have a MatMultAdd equivalent. */
-  for (i=0; i<m; i++) {
-    z[i] += y[i];
+  if (zz == yy) {
+    /* If zz and yy are the same vector, we can use MKL's mkl_xcsrmv(), which calculates y = alpha*A*x + beta*y. */
+    mkl_xcsrmv(&transa,&m,&m,&alpha,matdescra,aa,aj,ai,ai+1,x,&beta,y);
+  } else {
+    /* zz and yy are different vectors, so we call mkl_cspblas_xcsrgemv(), which calculates y = A*x, and then 
+     * we add the contents of vector yy to the result; MKL sparse BLAS does not have a MatMultAdd equivalent. */
+    mkl_cspblas_xcsrgemv(&transa,&m,aa,ai,aj,x,z);
+    for (i=0; i<m; i++) {
+      z[i] += y[i];
+    }
   }
 
   ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
@@ -235,8 +246,14 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL(Mat A,Vec xx,Vec yy,Vec zz)
 
   /* Variables not in MatMultTransposeAdd_SeqAIJ. */
   char transa = 't';  /* Used to indicate to MKL that we are computing the transpose product. */
+  PetscScalar       alpha = 1.0;
+  PetscScalar       beta = 1.0;
+  char              matdescra[6];
 
   PetscFunctionBegin;
+  matdescra[0] = 'g';  /* Indicates to MKL that we using a general CSR matrix. */
+  matdescra[3] = 'c';  /* Indicates to MKL that we use C-style (0-based) indexing. */
+
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
   aj   = a->j;  /* aj[k] gives column index for element aa[k]. */
@@ -244,11 +261,16 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL(Mat A,Vec xx,Vec yy,Vec zz)
   ai   = a->i;  /* ai[k] is the position in aa and aj where row k starts. */
 
   /* Call MKL sparse BLAS routine to do the MatMult. */
-  mkl_cspblas_xcsrgemv(&transa,&m,aa,ai,aj,x,z);
-
-  /* Now add the vector y; MKL sparse BLAS does not have a MatMultAdd equivalent. */
-  for (i=0; i<m; i++) {
-    z[i] += y[i];
+  if (zz == yy) {
+    /* If zz and yy are the same vector, we can use MKL's mkl_xcsrmv(), which calculates y = alpha*A*x + beta*y. */
+    mkl_xcsrmv(&transa,&m,&m,&alpha,matdescra,aa,aj,ai,ai+1,x,&beta,y);
+  } else {
+    /* zz and yy are different vectors, so we call mkl_cspblas_xcsrgemv(), which calculates y = A*x, and then 
+     * we add the contents of vector yy to the result; MKL sparse BLAS does not have a MatMultAdd equivalent. */
+    mkl_cspblas_xcsrgemv(&transa,&m,aa,ai,aj,x,z);
+    for (i=0; i<m; i++) {
+      z[i] += y[i];
+    }
   }
 
   ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
