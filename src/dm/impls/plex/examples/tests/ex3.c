@@ -1135,17 +1135,17 @@ int main(int argc, char **argv)
 
   # 2D Q_2 on a quadrilaterial
   test:
-    suffix: q2_2d_da_0
+    suffix: q2_2d_plex_0
     requires: mpi_type_get_envelope
-    args: -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -num_comp 2 -qorder 2 -convergence
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -num_comp 2 -qorder 2 -convergence
   test:
-    suffix: q2_2d_da_1
+    suffix: q2_2d_plex_1
     requires: mpi_type_get_envelope
-    args: -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -num_comp 2 -qorder 2 -porder 1
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -num_comp 2 -qorder 2 -porder 1
   test:
-    suffix: q2_2d_da_2
+    suffix: q2_2d_plex_2
     requires: mpi_type_get_envelope
-    args: -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -num_comp 2 -qorder 2 -porder 2
+    args: -use_da 0 -simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -num_comp 2 -qorder 2 -porder 2
 
 
   # 2D P_3 on a triangle
