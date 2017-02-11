@@ -1817,32 +1817,32 @@ runex93:
 	   else printf "${PWD}\nPossible problem with ex93_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex93_1.tmp
 runex93_scalable:
-	-@${MPIEXEC} -n 1 ./ex93 -matmatmult_via scalable > ex93_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex93 -B_matmatmult_via scalable > ex93_1.tmp 2>&1; \
 	   if (${DIFF} output/ex93_1.out ex93_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex93_scalable, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex93_1.tmp
 runex93_scalable_fast:
-	-@${MPIEXEC} -n 1 ./ex93 -matmatmult_via scalable_fast > ex93_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex93 -B_matmatmult_via scalable_fast > ex93_1.tmp 2>&1; \
 	   if (${DIFF} output/ex93_1.out ex93_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex93_scalable_fast, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex93_1.tmp
 runex93_heap:
-	-@${MPIEXEC} -n 1 ./ex93 -matmatmult_via heap> ex93_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex93 -B_matmatmult_via heap> ex93_1.tmp 2>&1; \
 	   if (${DIFF} output/ex93_1.out ex93_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex93_heap, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex93_1.tmp
 runex93_btheap:
-	-@${MPIEXEC} -n 1 ./ex93 -matmatmult_via btheap> ex93_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex93 -B_matmatmult_via btheap> ex93_1.tmp 2>&1; \
 	   if (${DIFF} output/ex93_1.out ex93_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex93_btheap, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex93_1.tmp
 runex93_llcondensed:
-	-@${MPIEXEC} -n 1 ./ex93 -matmatmult_via llcondensed > ex93_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex93 -B_matmatmult_via llcondensed > ex93_1.tmp 2>&1; \
 	   if (${DIFF} output/ex93_1.out ex93_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex93_llcondensed, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex93_1.tmp
 runex93_2:
-	-@${MPIEXEC} -n 2 ./ex93 -matmatmult_via nonscalable > ex93_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex93 -B_matmatmult_via nonscalable > ex93_1.tmp 2>&1; \
 	   if (${DIFF} output/ex93_2.out ex93_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex93_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex93_1.tmp
@@ -1855,6 +1855,11 @@ runex93_ptap:
 	-@${MPIEXEC} -n 2 ./ex93 -matrap false > ex93_1.tmp 2>&1; \
 	   if (${DIFF} output/ex93_2.out ex93_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex93_ptap, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex93_1.tmp
+runex93_hypre:
+	-@${MPIEXEC} -n 3 ./ex93 -B_matmatmult_via hypre -A_matptap_via hypre -test_hypre > ex93_1.tmp 2>&1; \
+	   if (${DIFF} output/ex93_hypre.out ex93_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex93_hypre, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex93_1.tmp
 
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
@@ -2984,6 +2989,6 @@ TESTEXAMPLES_SUPERLU_DIST_COMPLEX_DATAFILESPATH = ex125.PETSc runex125_superlu_d
 TESTEXAMPLES_F90               = ex196f90.PETSc ex196f90.rm ex16f90.PETSc runex16f90 ex16f90.rm
 TESTEXAMPLES_VECCUDA           = ex2.PETSc runex2_aijcusparse runex2_2_aijcusparse runex2_3_aijcusparse ex2.rm \
                                  ex5.PETSc runex5_aijcusparse runex5_2_aijcusparse runex5_3_aijcusparse ex5.rm
-TESTEXAMPLES_HYPRE             = ex115.PETSc runex115_1 runex115_2 runex115_3 runex115_4 runex115_5 ex115.rm
+TESTEXAMPLES_HYPRE             = ex93.PETSc runex93_hypre ex93.rm ex115.PETSc runex115_1 runex115_2 runex115_3 runex115_4 runex115_5 ex115.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test

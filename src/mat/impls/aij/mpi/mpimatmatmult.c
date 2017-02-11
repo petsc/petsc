@@ -24,8 +24,9 @@ PETSC_INTERN PetscErrorCode MatMatMult_MPIAIJ_MPIAIJ(Mat A,Mat B,MatReuse scall,
   const char     *algTypes[2] = {"scalable","nonscalable"};
   PetscInt       nalg = 2;
 #endif
-  PetscInt       alg = 1; /* set default algorithm */
+  PetscInt       alg = 1; /* set nonscalable algorithm as default */
   MPI_Comm       comm;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
@@ -33,8 +34,26 @@ PETSC_INTERN PetscErrorCode MatMatMult_MPIAIJ_MPIAIJ(Mat A,Mat B,MatReuse scall,
     if (A->cmap->rstart != B->rmap->rstart || A->cmap->rend != B->rmap->rend) SETERRQ4(comm,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%D, %D) != (%D,%D)",A->cmap->rstart,A->cmap->rend,B->rmap->rstart,B->rmap->rend);
 
     ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
-    ierr = PetscOptionsEList("-matmatmult_via","Algorithmic approach","MatMatMult",algTypes,nalg,algTypes[1],&alg,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-matmatmult_via","Algorithmic approach","MatMatMult",algTypes,nalg,algTypes[1],&alg,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
+    if (!flg && B->cmap->N > 100000) { /* may switch to scalable algorithm as default */
+      MatInfo     Ainfo,Binfo;
+      PetscInt    nz_local;
+      PetscBool   alg_scalable_loc=PETSC_FALSE,alg_scalable;
+
+      ierr = MatGetInfo(A,MAT_LOCAL,&Ainfo);CHKERRQ(ierr);
+      ierr = MatGetInfo(B,MAT_LOCAL,&Binfo);CHKERRQ(ierr);
+      nz_local = (PetscInt)(Ainfo.nz_allocated + Binfo.nz_allocated);
+
+      if (B->cmap->N > fill*nz_local) alg_scalable_loc = PETSC_TRUE;
+      ierr = MPIU_Allreduce(&alg_scalable_loc,&alg_scalable,1,MPIU_BOOL,MPI_LOR,comm);CHKERRQ(ierr);
+
+      if (alg_scalable) {
+        alg  = 0; /* scalable algorithm would 50% slower than nonscalable algorithm */
+        ierr = PetscInfo2(B,"Use scalable algorithm, BN %D, fill*nz_allocated %g\n",B->cmap->N,fill*nz_local);CHKERRQ(ierr);
+      }
+    }
 
     ierr = PetscLogEventBegin(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
     switch (alg) {
@@ -126,7 +145,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,Mat C)
   p_oth = NULL;
   if (size >1) {
     p_oth = (Mat_SeqAIJ*)(ptap->P_oth)->data;
-  } 
+  }
 
   /* get apa for storing dense row A[i,:]*P */
   apa = ptap->apa;
@@ -148,24 +167,21 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,Mat C)
     for (k0=0; k0<conz; k0++) {
       if (apJ[k] >= cstart) break;
       ca[k0]      = apa[apJ[k]];
-      apa[apJ[k]] = 0.0;
-      k++;
+      apa[apJ[k++]] = 0.0;
     }
 
     /* diagonal part of C */
     ca = cda + cd->i[i];
     for (k1=0; k1<cdnz; k1++) {
       ca[k1]      = apa[apJ[k]];
-      apa[apJ[k]] = 0.0;
-      k++;
+      apa[apJ[k++]] = 0.0;
     }
 
     /* 2nd off-diagoanl part of C */
     ca = coa + co->i[i];
     for (; k0<conz; k0++) {
       ca[k0]      = apa[apJ[k]];
-      apa[apJ[k]] = 0.0;
-      k++;
+      apa[apJ[k++]] = 0.0;
     }
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -186,11 +202,10 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,PetscRea
   PetscInt           *pi_loc,*pj_loc,*pi_oth,*pj_oth,*dnz,*onz;
   PetscInt           *adi=ad->i,*adj=ad->j,*aoi=ao->i,*aoj=ao->j,rstart=A->rmap->rstart;
   PetscInt           *lnk,i,pnz,row,*api,*apj,*Jptr,apnz,nspacedouble=0,j,nzi;
-  PetscInt           am=A->rmap->n,pN=P->cmap->N,pn=P->cmap->n,pm=P->rmap->n,Crmax;
+  PetscInt           am=A->rmap->n,pN=P->cmap->N,pn=P->cmap->n,pm=P->rmap->n;
   PetscBT            lnkbt;
   PetscScalar        *apa;
   PetscReal          afill;
-  PetscTable         ta;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
@@ -221,14 +236,8 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,PetscRea
   ptap->api = api;
   api[0]    = 0;
 
-  /* create and initialize a linked list -- TODO: replace it with PetscBTCreate()! */
-  ierr = PetscTableCreate(pn,pN,&ta);CHKERRQ(ierr); 
-  MatRowMergeMax_SeqAIJ(p_loc,ptap->P_loc->rmap->N,ta);
-  MatRowMergeMax_SeqAIJ(p_oth,ptap->P_oth->rmap->N,ta);
-  ierr = PetscTableGetCount(ta,&Crmax);CHKERRQ(ierr);
-  ierr = PetscTableDestroy(&ta);CHKERRQ(ierr);
-
-  ierr = PetscLLCondensedCreate(Crmax,pN,&lnk,&lnkbt);CHKERRQ(ierr);
+  /* create and initialize a linked list */
+  ierr = PetscLLCondensedCreate(pN,pN,&lnk,&lnkbt);CHKERRQ(ierr);
 
   /* Initial FreeSpace size is fill*(nnz(A)+nnz(P)) */
   ierr = PetscFreeSpaceGet(PetscRealIntMultTruncate(fill,PetscIntSumTruncate(adi[am],PetscIntSumTruncate(aoi[am],pi_loc[pm]))),&free_space);CHKERRQ(ierr);
