@@ -89,7 +89,7 @@ PetscErrorCode PetscQuadratureDuplicate(PetscQuadrature q, PetscQuadrature *r)
   ierr = PetscQuadratureSetOrder(*r, order);CHKERRQ(ierr);
   ierr = PetscQuadratureGetData(q, &dim, &Nc, &Nq, &points, &weights);CHKERRQ(ierr);
   ierr = PetscMalloc1(Nq*dim, &p);CHKERRQ(ierr);
-  ierr = PetscMalloc1(Nq, &w);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Nq*Nc, &w);CHKERRQ(ierr);
   ierr = PetscMemcpy(p, points, Nq*dim * sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscMemcpy(w, weights, Nc * Nq * sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscQuadratureSetData(*r, dim, Nc, Nq, p, w);CHKERRQ(ierr);
