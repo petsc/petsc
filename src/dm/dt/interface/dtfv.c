@@ -1509,19 +1509,32 @@ PetscErrorCode PetscFVGetDualSpace(PetscFV fvm, PetscDualSpace *sp)
   PetscValidPointer(sp, 2);
   if (!fvm->dualSpace) {
     DM              K;
-    PetscQuadrature q;
-    PetscInt        dim;
+    PetscInt        dim, Nc, c;
     PetscErrorCode  ierr;
 
     ierr = PetscFVGetSpatialDimension(fvm, &dim);CHKERRQ(ierr);
-    ierr = PetscFVGetQuadrature(fvm, &q);CHKERRQ(ierr);
+    ierr = PetscFVGetNumComponents(fvm, &Nc);CHKERRQ(ierr);
     ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) fvm), &fvm->dualSpace);CHKERRQ(ierr);
     ierr = PetscDualSpaceSetType(fvm->dualSpace, PETSCDUALSPACESIMPLE);CHKERRQ(ierr);
     ierr = PetscDualSpaceCreateReferenceCell(fvm->dualSpace, dim, PETSC_FALSE, &K);CHKERRQ(ierr); /* TODO: The reference cell type should be held by the discretization object */
+    ierr = PetscDualSpaceSetNumComponents(fvm->dualSpace, Nc);CHKERRQ(ierr);
     ierr = PetscDualSpaceSetDM(fvm->dualSpace, K);CHKERRQ(ierr);
     ierr = DMDestroy(&K);CHKERRQ(ierr);
-    ierr = PetscDualSpaceSimpleSetDimension(fvm->dualSpace, 1);CHKERRQ(ierr);
-    ierr = PetscDualSpaceSimpleSetFunctional(fvm->dualSpace, 0, q);CHKERRQ(ierr);
+    ierr = PetscDualSpaceSimpleSetDimension(fvm->dualSpace, Nc);CHKERRQ(ierr);
+    /* Should we be using PetscFVGetQuadrature() here? */
+    for (c = 0; c < Nc; ++c) {
+      PetscQuadrature qc;
+      PetscReal      *points, *weights;
+      PetscErrorCode  ierr;
+
+      ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &qc);CHKERRQ(ierr);
+      ierr = PetscCalloc1(dim, &points);CHKERRQ(ierr);
+      ierr = PetscCalloc1(Nc, &weights);CHKERRQ(ierr);
+      weights[c] = 1.0;
+      ierr = PetscQuadratureSetData(qc, dim, Nc, 1, points, weights);CHKERRQ(ierr);
+      ierr = PetscDualSpaceSimpleSetFunctional(fvm->dualSpace, c, qc);CHKERRQ(ierr);
+      ierr = PetscQuadratureDestroy(&qc);CHKERRQ(ierr);
+    }
   }
   *sp = fvm->dualSpace;
   PetscFunctionReturn(0);
