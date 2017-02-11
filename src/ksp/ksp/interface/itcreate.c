@@ -374,7 +374,7 @@ PetscErrorCode KSPNormSupportTableReset_Private(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPSetUpNorms_Private(KSP ksp,KSPNormType *normtype,PCSide *pcside)
+PetscErrorCode KSPSetUpNorms_Private(KSP ksp,PetscBool errorifnotsupported,KSPNormType *normtype,PCSide *pcside)
 {
   PetscInt i,j,best,ibest = 0,jbest = 0;
 
@@ -382,23 +382,21 @@ PetscErrorCode KSPSetUpNorms_Private(KSP ksp,KSPNormType *normtype,PCSide *pcsid
   best = 0;
   for (i=0; i<KSP_NORM_MAX; i++) {
     for (j=0; j<PC_SIDE_MAX; j++) {
-      if ((ksp->normtype == KSP_NORM_DEFAULT || ksp->normtype == i)
-          && (ksp->pc_side == PC_SIDE_DEFAULT || ksp->pc_side == j)
-          && (ksp->normsupporttable[i][j] > best)) {
+      if ((ksp->normtype == KSP_NORM_DEFAULT || ksp->normtype == i) && (ksp->pc_side == PC_SIDE_DEFAULT || ksp->pc_side == j) && (ksp->normsupporttable[i][j] > best)) {
         best  = ksp->normsupporttable[i][j];
         ibest = i;
         jbest = j;
       }
     }
   }
-  if (best < 1) {
+  if (best < 1 && errorifnotsupported) {
     if (ksp->normtype == KSP_NORM_DEFAULT && ksp->pc_side == PC_SIDE_DEFAULT) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"The %s KSP implementation did not call KSPSetSupportedNorm()",((PetscObject)ksp)->type_name);
     if (ksp->normtype == KSP_NORM_DEFAULT) SETERRQ2(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSP %s does not support %s",((PetscObject)ksp)->type_name,PCSides[ksp->pc_side]);
     if (ksp->pc_side == PC_SIDE_DEFAULT) SETERRQ2(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSP %s does not support %s",((PetscObject)ksp)->type_name,KSPNormTypes[ksp->normtype]);
     SETERRQ3(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSP %s does not support %s with %s",((PetscObject)ksp)->type_name,KSPNormTypes[ksp->normtype],PCSides[ksp->pc_side]);
   }
-  *normtype = (KSPNormType)ibest;
-  *pcside   = (PCSide)jbest;
+  if (normtype) *normtype = (KSPNormType)ibest;
+  if (pcside)   *pcside   = (PCSide)jbest;
   PetscFunctionReturn(0);
 }
 
@@ -426,7 +424,7 @@ PetscErrorCode  KSPGetNormType(KSP ksp, KSPNormType *normtype)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidPointer(normtype,2);
-  ierr      = KSPSetUpNorms_Private(ksp,&ksp->normtype,&ksp->pc_side);CHKERRQ(ierr);
+  ierr      = KSPSetUpNorms_Private(ksp,PETSC_TRUE,&ksp->normtype,&ksp->pc_side);CHKERRQ(ierr);
   *normtype = ksp->normtype;
   PetscFunctionReturn(0);
 }
