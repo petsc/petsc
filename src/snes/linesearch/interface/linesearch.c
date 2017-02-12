@@ -638,8 +638,8 @@ PetscErrorCode SNESLineSearchPreCheckPicard(SNESLineSearch linesearch,Vec X,Vec 
    Options Database Keys:
 + -snes_linesearch_type - basic, bt, l2, cp, nleqerr, shell
 . -snes_linesearch_monitor [:filename] - Print progress of line searches
-. -snes_linesearch_damping - The linesearch damping parameter
-. -snes_linesearch_norms   - Turn on/off the linesearch norms
+. -snes_linesearch_damping - The linesearch damping parameter, default is 1.0 (no damping)
+. -snes_linesearch_norms   - Turn on/off the linesearch norms computation (SNESLineSearchSetComputeNorms())
 . -snes_linesearch_keeplambda - Keep the previous search length as the initial guess
 - -snes_linesearch_max_it - The number of iterations for iterative line searches
 
@@ -655,7 +655,8 @@ PetscErrorCode SNESLineSearchPreCheckPicard(SNESLineSearch linesearch,Vec X,Vec 
 
 .keywords: SNESLineSearch, Create
 
-.seealso: SNESLineSearchCreate(), SNESLineSearchPreCheck(), SNESLineSearchPostCheck(), SNESSolve(), SNESComputeFunction()
+.seealso: SNESLineSearchCreate(), SNESLineSearchPreCheck(), SNESLineSearchPostCheck(), SNESSolve(), SNESComputeFunction(), SNESLineSearchSetComputeNorms(),
+          SNESLineSearchType, SNESLineSearchSetType()
 @*/
 PetscErrorCode SNESLineSearchApply(SNESLineSearch linesearch, Vec X, Vec F, PetscReal * fnorm, Vec Y)
 {
@@ -836,7 +837,7 @@ PetscErrorCode  SNESLineSearchMonitorSetFromOptions(SNESLineSearch ls,const char
    Options Database Keys:
 + -snes_linesearch_type <type> - basic, bt, l2, cp, nleqerr, shell
 . -snes_linesearch_order <order> - 1, 2, 3.  Most types only support certain orders (bt supports 2 or 3)
-. -snes_linesearch_norms   - Turn on/off the linesearch norms for the basic linesearch type
+. -snes_linesearch_norms   - Turn on/off the linesearch norms for the basic linesearch typem (SNESLineSearchSetComputeNorms())
 . -snes_linesearch_minlambda - The minimum step length
 . -snes_linesearch_maxstep - The maximum step size
 . -snes_linesearch_rtol - Relative tolerance for iterative line searches
@@ -854,7 +855,8 @@ PetscErrorCode  SNESLineSearchMonitorSetFromOptions(SNESLineSearch ls,const char
 
    Level: intermediate
 
-.seealso: SNESLineSearchCreate(), SNESLineSearchSetOrder(), SNESLineSearchSetType(), SNESLineSearchSetTolerances(), SNESLineSearchSetDamping(), SNESLineSearchPreCheckPicard()
+.seealso: SNESLineSearchCreate(), SNESLineSearchSetOrder(), SNESLineSearchSetType(), SNESLineSearchSetTolerances(), SNESLineSearchSetDamping(), SNESLineSearchPreCheckPicard(),
+          SNESLineSearchType, SNESLineSearchSetComputeNorms()
 @*/
 PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch)
 {
@@ -981,16 +983,19 @@ PetscErrorCode SNESLineSearchView(SNESLineSearch linesearch, PetscViewer viewer)
 -  type - The type of line search to be used
 
    Available Types:
-+  basic - Simple damping line search.
-.  bt - Backtracking line search over the L2 norm of the function
-.  l2 - Secant line search over the L2 norm of the function
-.  cp - Critical point secant line search assuming F(x) = grad G(x) for some unknown G(x)
-.  nleqerr - Affine-covariant error-oriented linesearch
--  shell - User provided SNESLineSearch implementation
++  SNESLINESEARCHBASIC - Simple damping line search, defaults to using the full Newton step
+.  SNESLINESEARCHBT - Backtracking line search over the L2 norm of the function
+.  SNESLINESEARCHL2 - Secant line search over the L2 norm of the function
+.  SNESLINESEARCHCP - Critical point secant line search assuming F(x) = grad G(x) for some unknown G(x)
+.  SNESLINESEARCHNLEQERR - Affine-covariant error-oriented linesearch
+-  SNESLINESEARCHSHELL - User provided SNESLineSearch implementation
+
+   Options Database:
+.  -snes_linesearch_type <type> - basic, bt, l2, cp, nleqerr, shell
 
    Level: intermediate
 
-.seealso: SNESLineSearchCreate()
+.seealso: SNESLineSearchCreate(), SNESLineSearchType, SNESLineSearchSetFromOptions()
 @*/
 PetscErrorCode SNESLineSearchSetType(SNESLineSearch linesearch, SNESLineSearchType type)
 {
@@ -1454,7 +1459,7 @@ PetscErrorCode SNESLineSearchComputeNorms(SNESLineSearch linesearch)
 -  flg  - indicates whether or not to compute norms
 
    Options Database Keys:
-.   -snes_linesearch_norms - turn norm computation on or off
+.   -snes_linesearch_turn - norms norm computation on or off
 
    Notes:
    This is most relevant to the SNESLINESEARCHBASIC line search type.
