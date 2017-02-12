@@ -1754,6 +1754,28 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse r
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode  MatHasOperation_Nest(Mat mat,MatOperation op,PetscBool  *has)
+{
+  PetscFunctionBegin;
+  *has = PETSC_FALSE;
+  if (op == MATOP_MULT_TRANSPOSE) {
+    Mat_Nest       *bA = (Mat_Nest*)mat->data;
+    PetscInt       i,j,nr = bA->nr,nc = bA->nc;
+    PetscErrorCode ierr;
+    PetscBool      flg;
+
+    for (j=0; j<nc; j++) {
+      for (i=0; i<nr; i++) {
+        if (!bA->m[i][j]) continue;
+        ierr = MatHasOperation(bA->m[i][j],MATOP_MULT_TRANSPOSE_ADD,&flg);CHKERRQ(ierr);
+        if (!flg) PetscFunctionReturn(0);
+      }
+    }
+  }
+  if (((void**)mat->ops)[op]) *has =  PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
 /*MC
   MATNEST - MATNEST = "nest" - Matrix type consisting of nested submatrices, each stored separately.
 
@@ -1763,6 +1785,10 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse r
   This matrix type permits scalable use of PCFieldSplit and avoids the large memory costs of extracting submatrices.
   It allows the use of symmetric and block formats for parts of multi-physics simulations.
   It is usually used with DMComposite and DMCreateMatrix()
+
+  Each of the submatrices lives on the same MPI communicator as the original nest matrix (though they can have zero
+  rows/columns on some processes.) Thus this is not meant for cases where the submatrices live on far fewer processes
+  than the nest matrix.
 
 .seealso: MatCreate(), MatType, MatCreateNest()
 M*/
@@ -1804,6 +1830,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Nest(Mat A)
   A->ops->shift                 = MatShift_Nest;
   A->ops->diagonalset           = MatDiagonalSet_Nest;
   A->ops->setrandom             = MatSetRandom_Nest;
+  A->ops->hasoperation          = MatHasOperation_Nest;
 
   A->spptr        = 0;
   A->assembled    = PETSC_FALSE;
