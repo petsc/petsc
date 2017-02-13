@@ -22,12 +22,12 @@ VecTagger Object: 3 MPI processes
     VecTagger Object: (sub_0_) 3 MPI processes
       type: absolute
       Block size: 1
-       absolute interval=[      0.+0.i,0.25+0.25i      ]
+       absolute box=[      0.+0.i,0.25+0.25i      ]
     VecTagger Object: (sub_1_) 3 MPI processes
       type: relative
       Block size: 1
-       relative interval=[      0.75+0.75i,inf.+inf.i      ]
-Num intervals: 2
+       relative box=[      0.75+0.75i,inf.+inf.i      ]
+Num boxes: 2
   0:   [0.+0.i,0.25+0.25i]  
   1:   [0.639043+0.763651i,inf.+inf.i]  
 IS Object: Tagged IS (block global) 3 MPI processes

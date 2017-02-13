@@ -15,9 +15,9 @@ Vec Object: Vec to Tag 1 MPI processes
 VecTagger Object: 1 MPI processes
   type: absolute
   Block size: 1
-   absolute interval=[  0.1,1.5  ]
+   absolute box=[  0.1,1.5  ]
   Inverting ISs.
-Num intervals: 1
+Num boxes: 1
   0:   [0.1,1.5]  
 IS Object: Tagged IS (block global) 1 MPI processes
   type: block

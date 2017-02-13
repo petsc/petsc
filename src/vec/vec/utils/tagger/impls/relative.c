@@ -2,87 +2,87 @@
 #include <petsc/private/vecimpl.h> /*I "petscvec.h" I*/
 #include "../src/vec/vec/utils/tagger/impls/simple.h"
 
-static PetscErrorCode VecTaggerComputeIntervals_Relative(VecTagger tagger,Vec vec,PetscInt *numIntervals,PetscScalar (**intervals)[2])
+static PetscErrorCode VecTaggerComputeBoxes_Relative(VecTagger tagger,Vec vec,PetscInt *numBoxes,VecTaggerBox **boxes)
 {
   VecTagger_Simple *smpl = (VecTagger_Simple *)tagger->data;
   PetscInt          bs, i, j, k, n;
-  PetscScalar       (*ints) [2];
+  VecTaggerBox      *bxs;
   const PetscScalar *vArray;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = VecTaggerGetBlockSize(tagger,&bs);CHKERRQ(ierr);
-  *numIntervals = 1;
-  ierr = PetscMalloc1(bs,&ints);CHKERRQ(ierr);
+  *numBoxes = 1;
+  ierr = PetscMalloc1(bs,&bxs);CHKERRQ(ierr);
   ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
   n /= bs;
   for (i = 0; i < bs; i++) {
 #if !defined(PETSC_USE_COMPLEX)
-    ints[i][0] = PETSC_MAX_REAL;
-    ints[i][1] = PETSC_MIN_REAL;
+    bxs[i].min = PETSC_MAX_REAL;
+    bxs[i].max = PETSC_MIN_REAL;
 #else
-    ints[i][0] = PetscCMPLX(PETSC_MAX_REAL,PETSC_MAX_REAL);
-    ints[i][1] = PetscCMPLX(PETSC_MIN_REAL,PETSC_MIN_REAL);
+    bxs[i].min = PetscCMPLX(PETSC_MAX_REAL,PETSC_MAX_REAL);
+    bxs[i].max = PetscCMPLX(PETSC_MIN_REAL,PETSC_MIN_REAL);
 #endif
   }
   ierr = VecGetArrayRead(vec, &vArray);CHKERRQ(ierr);
   for (i = 0, k = 0; i < n; i++) {
     for (j = 0; j < bs; j++, k++) {
 #if !defined(PETSC_USE_COMPLEX)
-      ints[j][0] = PetscMin(ints[j][0],vArray[k]);
-      ints[j][1] = PetscMax(ints[j][1],vArray[k]);
+      bxs[j].min = PetscMin(bxs[j].min,vArray[k]);
+      bxs[j].max = PetscMax(bxs[j].max,vArray[k]);
 #else
-      ints[j][0] = PetscCMPLX(PetscMin(PetscRealPart(ints[j][0]),PetscRealPart(vArray[k])),PetscMin(PetscImaginaryPart(ints[j][0]),PetscImaginaryPart(vArray[k])));
-      ints[j][1] = PetscCMPLX(PetscMax(PetscRealPart(ints[j][1]),PetscRealPart(vArray[k])),PetscMax(PetscImaginaryPart(ints[j][1]),PetscImaginaryPart(vArray[k])));
+      bxs[j].min = PetscCMPLX(PetscMin(PetscRealPart(bxs[j].min),PetscRealPart(vArray[k])),PetscMin(PetscImaginaryPart(bxs[j].min),PetscImaginaryPart(vArray[k])));
+      bxs[j].max = PetscCMPLX(PetscMax(PetscRealPart(bxs[j].max),PetscRealPart(vArray[k])),PetscMax(PetscImaginaryPart(bxs[j].max),PetscImaginaryPart(vArray[k])));
 #endif
     }
   }
-  for (i = 0; i < bs; i++) ints[i][1] = -ints[i][1];
+  for (i = 0; i < bs; i++) bxs[i].max = -bxs[i].max;
   ierr = VecRestoreArrayRead(vec, &vArray);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
-  ierr = MPI_Allreduce(MPI_IN_PLACE,ints,2*bs,MPIU_SCALAR,MPIU_MIN,PetscObjectComm((PetscObject)tagger));CHKERRQ(ierr);
+  ierr = MPI_Allreduce(MPI_IN_PLACE,(PetscScalar *) bxs,2*bs,MPIU_SCALAR,MPIU_MIN,PetscObjectComm((PetscObject)tagger));CHKERRQ(ierr);
 #else
-  ierr = MPI_Allreduce(MPI_IN_PLACE,ints,4*bs,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)tagger));CHKERRQ(ierr);
+  ierr = MPI_Allreduce(MPI_IN_PLACE,(PetscScalar *) bxs,4*bs,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)tagger));CHKERRQ(ierr);
 #endif
   for (i = 0; i < bs; i++) {
-    PetscScalar mins = ints[i][0];
-    PetscScalar difs = -ints[i][1] - mins;
+    PetscScalar mins = bxs[i].min;
+    PetscScalar difs = -bxs[i].max - mins;
 #if !defined(PETSC_USE_COMPLEX)
-    ints[i][0] = mins + smpl->interval[i][0] * difs;
-    ints[i][1] = mins + smpl->interval[i][1] * difs;
+    bxs[i].min = mins + smpl->box[i].min * difs;
+    bxs[i].max = mins + smpl->box[i].max * difs;
 #else
-    ints[i][0] = mins + PetscCMPLX(PetscRealPart(smpl->interval[i][0])*PetscRealPart(difs),PetscImaginaryPart(smpl->interval[i][0])*PetscImaginaryPart(difs));
-    ints[i][1] = mins + PetscCMPLX(PetscRealPart(smpl->interval[i][1])*PetscRealPart(difs),PetscImaginaryPart(smpl->interval[i][1])*PetscImaginaryPart(difs));
+    bxs[i].min = mins + PetscCMPLX(PetscRealPart(smpl->box[i].min)*PetscRealPart(difs),PetscImaginaryPart(smpl->box[i].min)*PetscImaginaryPart(difs));
+    bxs[i].max = mins + PetscCMPLX(PetscRealPart(smpl->box[i].max)*PetscRealPart(difs),PetscImaginaryPart(smpl->box[i].max)*PetscImaginaryPart(difs));
 #endif
   }
-  *intervals = ints;
+  *boxes = bxs;
   PetscFunctionReturn(0);
 }
 
 /*@C
-  VecTaggerRelativeSetInterval - Set the relative interval (multi-dimensional box) defining the values to be tagged by the tagger, where relative intervals are subsets of [0,1], where 0 indicates the smallest value present in the vector and 1 indicates the largest.
+  VecTaggerRelativeSetBox - Set the relative box defining the values to be tagged by the tagger, where relative boxes are subsets of [0,1] (or [0,1]+[0,1]i for complex scalars), where 0 indicates the smallest value present in the vector and 1 indicates the largest.
 
   Logically Collective
 
   Input Arguments:
 + tagger - the VecTagger context
-- interval - the interval: a blocksize list of [min,max] pairs
+- box - a blocksize list of VecTaggerBox boxes
 
   Level: advanced
 
-.seealso: VecTaggerRelativeGetInterval()
+.seealso: VecTaggerRelativeGetBox()
 @*/
-PetscErrorCode VecTaggerRelativeSetInterval(VecTagger tagger,PetscScalar (*interval)[2])
+PetscErrorCode VecTaggerRelativeSetBox(VecTagger tagger,VecTaggerBox *box)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecTaggerSetInterval_Simple(tagger,interval);CHKERRQ(ierr);
+  ierr = VecTaggerSetBox_Simple(tagger,box);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*@C
-  VecTaggerRelativeGetInterval - Get the relative interval (multi-dimensional box) defining the values to be tagged by the tagger, where relative intervals are subsets of [0,1], where 0 indicates the smallest value present in the vector and 1 indicates the largest.
+  VecTaggerRelativeGetBox - Get the relative box defining the values to be tagged by the tagger, where relative boxess are subsets of [0,1] (or [0,1]+[0,1]i for complex scalars), where 0 indicates the smallest value present in the vector and 1 indicates the largest.
 
   Logically Collective
 
@@ -90,18 +90,18 @@ PetscErrorCode VecTaggerRelativeSetInterval(VecTagger tagger,PetscScalar (*inter
 . tagger - the VecTagger context
 
   Output Arguments:
-. interval - the interval: a blocksize list of [min,max] pairs
+. box - a blocksize list of VecTaggerBox boxes
 
   Level: advanced
 
-.seealso: VecTaggerRelativeSetInterval()
+.seealso: VecTaggerRelativeSetBox()
 @*/
-PetscErrorCode VecTaggerRelativeGetInterval(VecTagger tagger,const PetscScalar (**interval)[2])
+PetscErrorCode VecTaggerRelativeGetBox(VecTagger tagger,const VecTaggerBox **box)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecTaggerGetInterval_Simple(tagger,interval);CHKERRQ(ierr);
+  ierr = VecTaggerGetBox_Simple(tagger,box);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -111,6 +111,6 @@ PETSC_INTERN PetscErrorCode VecTaggerCreate_Relative(VecTagger tagger)
 
   PetscFunctionBegin;
   ierr = VecTaggerCreate_Simple(tagger);CHKERRQ(ierr);
-  tagger->ops->computeintervals = VecTaggerComputeIntervals_Relative;
+  tagger->ops->computeboxes = VecTaggerComputeBoxes_Relative;
   PetscFunctionReturn(0);
 }

@@ -4,6 +4,15 @@
 
 const char *const VecTaggerCDFMethods[VECTAGGER_CDF_NUM_METHODS] = {"gather","iterative"};
 
+#if !defined (PETSC_USE_COMPLEX)
+typedef VecTaggerBox VecTaggerBoxReal;
+#else
+typedef struct {
+  PetscReal min;
+  PetscReal max;
+} VecTaggerBoxReal;
+#endif
+
 typedef struct {
   VecTagger_Simple   smpl;
   PetscReal          atol;
@@ -13,22 +22,22 @@ typedef struct {
   VecTaggerCDFMethod method;
 } VecTagger_CDF;
 
-static PetscErrorCode VecTaggerComputeInterval_CDF_SortedArray(const PetscReal *cArray, PetscInt m, const PetscReal ints[2], PetscReal intervals[2])
+static PetscErrorCode VecTaggerComputeBox_CDF_SortedArray(const PetscReal *cArray, PetscInt m, const VecTaggerBoxReal *bxs, VecTaggerBoxReal *boxes)
 {
   PetscInt    minInd, maxInd;
   PetscReal   minCDF, maxCDF;
 
   PetscFunctionBegin;
-  minCDF = PetscMax(0., ints[0]);
-  maxCDF = PetscMin(1., ints[1]);
+  minCDF = PetscMax(0., bxs->min);
+  maxCDF = PetscMin(1., bxs->max);
   minInd = (PetscInt) (minCDF * m);
   maxInd = (PetscInt) (maxCDF * m);
-  intervals[0] = cArray[PetscMin(minInd,m-1)];
-  intervals[1] = cArray[PetscMax(minInd,maxInd-1)];
+  boxes->min = cArray[PetscMin(minInd,m-1)];
+  boxes->max = cArray[PetscMax(minInd,maxInd-1)];
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecTaggerComputeIntervals_CDF_Serial(VecTagger tagger,Vec vec,PetscInt bs,PetscScalar (*intervals)[2])
+static PetscErrorCode VecTaggerComputeBoxes_CDF_Serial(VecTagger tagger,Vec vec,PetscInt bs,VecTaggerBox *boxes)
 {
   VecTagger_Simple *smpl = (VecTagger_Simple *) tagger->data;
   Vec              vComp;
@@ -61,12 +70,12 @@ static PetscErrorCode VecTaggerComputeIntervals_CDF_Serial(VecTagger tagger,Vec 
     ierr = VecGetArray(vComp,&cArray);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
     ierr = PetscSortReal(m,cArray);CHKERRQ(ierr);
-    ierr = VecTaggerComputeInterval_CDF_SortedArray(cArray,m,smpl->interval[i],intervals[i]);CHKERRQ(ierr);
+    ierr = VecTaggerComputeBox_CDF_SortedArray(cArray,m,&smpl->box[i],&boxes[i]);CHKERRQ(ierr);
 #else
     {
       PetscInt j;
-      PetscReal realInt[2], imagInt[2];
-      PetscReal realIntervals[2], imagIntervals[2];
+      VecTaggerBoxReal realBxs, imagBxs;
+      VecTaggerBoxReal realBoxes, imagBoxes;
 
       for (j = 0; j < m; j++) {
         cReal[j] = PetscRealPart(cArray[j]);
@@ -75,14 +84,14 @@ static PetscErrorCode VecTaggerComputeIntervals_CDF_Serial(VecTagger tagger,Vec 
       ierr = PetscSortReal(m,cReal);CHKERRQ(ierr);
       ierr = PetscSortReal(m,cImag);CHKERRQ(ierr);
 
-      realInt[0] = PetscRealPart(smpl->interval[i][0]);
-      realInt[1] = PetscRealPart(smpl->interval[i][1]);
-      imagInt[0] = PetscImaginaryPart(smpl->interval[i][0]);
-      imagInt[1] = PetscImaginaryPart(smpl->interval[i][1]);
-      ierr = VecTaggerComputeInterval_CDF_SortedArray(cReal,m,realInt,realIntervals);CHKERRQ(ierr);
-      ierr = VecTaggerComputeInterval_CDF_SortedArray(cImag,m,imagInt,imagIntervals);CHKERRQ(ierr);
-      intervals[i][0] = PetscCMPLX(realIntervals[0],imagIntervals[0]);
-      intervals[i][1] = PetscCMPLX(realIntervals[1],imagIntervals[1]);
+      realBxs.min = PetscRealPart(smpl->box[i].min);
+      realBxs.max = PetscRealPart(smpl->box[i].max);
+      imagBxs.min = PetscImaginaryPart(smpl->box[i].min);
+      imagBxs.max = PetscImaginaryPart(smpl->box[i].max);
+      ierr = VecTaggerComputeBox_CDF_SortedArray(cReal,m,&realBxs,&realBoxes);CHKERRQ(ierr);
+      ierr = VecTaggerComputeBox_CDF_SortedArray(cImag,m,&imagBxs,&imagBoxes);CHKERRQ(ierr);
+      boxes[i].min = PetscCMPLX(realBoxes.min,imagBoxes.min);
+      boxes[i].max = PetscCMPLX(realBoxes.max,imagBoxes.max);
     }
 #endif
     ierr = VecRestoreArray(vComp,&cArray);CHKERRQ(ierr);
@@ -94,7 +103,7 @@ static PetscErrorCode VecTaggerComputeIntervals_CDF_Serial(VecTagger tagger,Vec 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecTaggerComputeIntervals_CDF_Gather(VecTagger tagger,Vec vec,PetscInt bs,PetscScalar (*intervals)[2])
+static PetscErrorCode VecTaggerComputeBoxes_CDF_Gather(VecTagger tagger,Vec vec,PetscInt bs,VecTaggerBox *boxes)
 {
   Vec            gVec = NULL;
   VecScatter     vScat;
@@ -108,9 +117,9 @@ static PetscErrorCode VecTaggerComputeIntervals_CDF_Gather(VecTagger tagger,Vec 
   ierr = VecScatterDestroy(&vScat);CHKERRQ(ierr);
   ierr = MPI_Comm_rank (PetscObjectComm((PetscObject)vec),&rank);CHKERRQ(ierr);
   if (!rank) {
-    ierr = VecTaggerComputeIntervals_CDF_Serial(tagger,gVec,bs,intervals);CHKERRQ(ierr);
+    ierr = VecTaggerComputeBoxes_CDF_Serial(tagger,gVec,bs,boxes);CHKERRQ(ierr);
   }
-  ierr = MPI_Bcast(intervals,2*bs,MPIU_SCALAR,0,PetscObjectComm((PetscObject)vec));CHKERRQ(ierr);
+  ierr = MPI_Bcast((PetscScalar *)boxes,2*bs,MPIU_SCALAR,0,PetscObjectComm((PetscObject)vec));CHKERRQ(ierr);
   ierr = VecDestroy(&gVec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -149,14 +158,14 @@ static PetscErrorCode CDFUtilInverseEstimate(const CDFStats *stats,PetscReal cdf
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecTaggerComputeInterval_CDF_SortedArray_Iterative(VecTagger tagger, MPI_Datatype statType, MPI_Op statReduce, const PetscReal *cArray, PetscInt m, const PetscReal cdfInt[2], PetscReal absInt[2])
+static PetscErrorCode VecTaggerComputeBox_CDF_SortedArray_Iterative(VecTagger tagger, MPI_Datatype statType, MPI_Op statReduce, const PetscReal *cArray, PetscInt m, const VecTaggerBoxReal *cdfBox, VecTaggerBoxReal *absBox)
 {
   MPI_Comm       comm;
   VecTagger_CDF  *cdf;
   PetscInt       maxit, i, j, k, l, M;
   PetscInt       bounds[2][2];
   PetscInt       offsets[2];
-  PetscReal      intervalLen = cdfInt[1] - cdfInt[0];
+  PetscReal      intervalLen = cdfBox->max - cdfBox->min;
   PetscReal      rtol, atol;
   PetscErrorCode ierr;
 
@@ -171,16 +180,18 @@ static PetscErrorCode VecTaggerComputeInterval_CDF_SortedArray_Iterative(VecTagg
   offsets[1] = 0;
   bounds[0][0] = 0; bounds[0][1] = m;
   bounds[1][0] = 0; bounds[1][1] = m;
-  ierr = VecTaggerComputeInterval_CDF_SortedArray(cArray,m,cdfInt,absInt);CHKERRQ(ierr); /* compute a local estimate of the interval */
+  ierr = VecTaggerComputeBox_CDF_SortedArray(cArray,m,cdfBox,absBox);CHKERRQ(ierr); /* compute a local estimate of the interval */
   {
     CDFStats stats[3];
 
     for (i = 0; i < 2; i++) { /* compute statistics of those local estimates */
-      stats[i].min = m ? absInt[i] : PETSC_MAX_REAL;
-      stats[i].max = m ? absInt[i] : PETSC_MIN_REAL;
+      PetscReal val = i ? absBox->max : absBox->min;
+
+      stats[i].min = m ? val : PETSC_MAX_REAL;
+      stats[i].max = m ? val : PETSC_MIN_REAL;
       stats[i].moment[0] = m;
-      stats[i].moment[1] = m * absInt[i];
-      stats[i].moment[2] = m * absInt[i] * absInt[i];
+      stats[i].moment[1] = m * val;
+      stats[i].moment[2] = m * val * val;
     }
     stats[2].min = PETSC_MAX_REAL;
     stats[2].max = PETSC_MAX_REAL;
@@ -199,12 +210,12 @@ static PetscErrorCode VecTaggerComputeInterval_CDF_SortedArray_Iterative(VecTagg
     /* reduce those statistics */
     ierr = MPI_Allreduce(MPI_IN_PLACE,stats,3,statType,statReduce,comm);CHKERRQ(ierr);
     M    = (PetscInt) stats[2].moment[0];
-    /* use those initial statistics to get the initial (globally agreed-upon) choices for the absolute interval bounds */
+    /* use those initial statistics to get the initial (globally agreed-upon) choices for the absolute box bounds */
     for (i = 0; i < 2; i++) {
-      ierr = CDFUtilInverseEstimate(&stats[i],cdfInt[i],&absInt[i]);CHKERRQ(ierr);
+      ierr = CDFUtilInverseEstimate(&stats[i],i ? cdfBox->max : cdfBox->min,(i ? &absBox->max : &absBox->min));CHKERRQ(ierr);
     }
   }
-  /* refine the estimates by computing how close they come to the desired interval and refining */
+  /* refine the estimates by computing how close they come to the desired box and refining */
   for (k = 0; k < maxit; k++) {
     PetscReal maxDiff = 0.;
 
@@ -227,9 +238,9 @@ static PetscErrorCode VecTaggerComputeInterval_CDF_SortedArray_Iterative(VecTagg
         PetscReal val     = cArray[thisInd];
         PetscInt  section;
         if (!i) {
-          section = (val <  absInt[0]) ? 0 : 1;
+          section = (val <  absBox->min) ? 0 : 1;
         } else {
-          section = (val <= absInt[1]) ? 0 : 1;
+          section = (val <= absBox->max) ? 0 : 1;
         }
         stats[i][section].min = PetscMin(stats[i][section].min,val);
         stats[i][section].max = PetscMax(stats[i][section].max,val);
@@ -247,12 +258,12 @@ static PetscErrorCode VecTaggerComputeInterval_CDF_SortedArray_Iterative(VecTagg
       PetscReal diff;
       PetscInt  section;
 
-      if (cdfOfAbs == cdfInt[i]) {
+      if (cdfOfAbs == (i ? cdfBox->max : cdfBox->min)) {
         offsets[i] = totalLessThan;
         bounds[i][0] = bounds[i][1] = 0;
         continue;
       }
-      if (cdfOfAbs > cdfInt[i]) { /* the correct absolute value lies in the lower section */
+      if (cdfOfAbs > (i ? cdfBox->max : cdfBox->min)) { /* the correct absolute value lies in the lower section */
         section = 0;
       } else {
         section = 1;
@@ -261,8 +272,8 @@ static PetscErrorCode VecTaggerComputeInterval_CDF_SortedArray_Iterative(VecTagg
       for (j = 0; j < 2; j++) {
         bounds[i][j] = newBounds[i][section][j];
       }
-      ierr = CDFUtilInverseEstimate(&stats[i][section],(cdfInt[i] - ((PetscReal) offsets[i] / (PetscReal) M))/stats[i][section].moment[0],&absInt[i]);CHKERRQ(ierr);
-      diff = PetscAbs(cdfOfAbs - cdfInt[i]);
+      ierr = CDFUtilInverseEstimate(&stats[i][section],((i ? cdfBox->max : cdfBox->min) - ((PetscReal) offsets[i] / (PetscReal) M))/stats[i][section].moment[0],(i ? &absBox->max : &absBox->min));CHKERRQ(ierr);
+      diff = PetscAbs(cdfOfAbs - (i ? cdfBox->max : cdfBox->min));
       maxDiff = PetscMax(maxDiff,diff);
     }
     if (!maxDiff) PetscFunctionReturn(0);
@@ -273,7 +284,7 @@ static PetscErrorCode VecTaggerComputeInterval_CDF_SortedArray_Iterative(VecTagg
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecTaggerComputeIntervals_CDF_Iterative(VecTagger tagger,Vec vec,PetscInt bs,PetscScalar (*intervals)[2])
+static PetscErrorCode VecTaggerComputeBoxes_CDF_Iterative(VecTagger tagger,Vec vec,PetscInt bs,VecTaggerBox *boxes)
 {
   VecTagger_CDF    *cdf = (VecTagger_CDF *) tagger->data;
   VecTagger_Simple *smpl = &(cdf->smpl);
@@ -317,12 +328,12 @@ static PetscErrorCode VecTaggerComputeIntervals_CDF_Iterative(VecTagger tagger,V
     ierr = VecGetArray(vComp,&cArray);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
     ierr = PetscSortReal(m,cArray);CHKERRQ(ierr);
-    ierr = VecTaggerComputeInterval_CDF_SortedArray_Iterative(tagger,statType,statReduce,cArray,m,smpl->interval[i],intervals[i]);CHKERRQ(ierr);
+    ierr = VecTaggerComputeBox_CDF_SortedArray_Iterative(tagger,statType,statReduce,cArray,m,&smpl->box[i],&boxes[i]);CHKERRQ(ierr);
 #else
     {
       PetscInt j;
-      PetscReal realInt[2], imagInt[2];
-      PetscReal realIntervals[2], imagIntervals[2];
+      VecTaggerBoxReal realBxs, imagBxs;
+      VecTaggerBoxReal realBoxes, imagBoxes;
 
       for (j = 0; j < m; j++) {
         cReal[j] = PetscRealPart(cArray[j]);
@@ -331,14 +342,14 @@ static PetscErrorCode VecTaggerComputeIntervals_CDF_Iterative(VecTagger tagger,V
       ierr = PetscSortReal(m,cReal);CHKERRQ(ierr);
       ierr = PetscSortReal(m,cImag);CHKERRQ(ierr);
 
-      realInt[0] = PetscRealPart(smpl->interval[i][0]);
-      realInt[1] = PetscRealPart(smpl->interval[i][1]);
-      imagInt[0] = PetscImaginaryPart(smpl->interval[i][0]);
-      imagInt[1] = PetscImaginaryPart(smpl->interval[i][1]);
-      ierr = VecTaggerComputeInterval_CDF_SortedArray_Iterative(tagger,statType,statReduce,cReal,m,realInt,realIntervals);CHKERRQ(ierr);
-      ierr = VecTaggerComputeInterval_CDF_SortedArray_Iterative(tagger,statType,statReduce,cImag,m,imagInt,imagIntervals);CHKERRQ(ierr);
-      intervals[i][0] = PetscCMPLX(realIntervals[0],imagIntervals[0]);
-      intervals[i][1] = PetscCMPLX(realIntervals[1],imagIntervals[1]);
+      realBxs.min = PetscRealPart(smpl->box[i].min);
+      realBxs.max = PetscRealPart(smpl->box[i].max);
+      imagBxs.min = PetscImaginaryPart(smpl->box[i].min);
+      imagBxs.max = PetscImaginaryPart(smpl->box[i].max);
+      ierr = VecTaggerComputeBox_CDF_SortedArray_Iterative(tagger,statType,statReduce,cReal,m,&realBxs,&realBoxes);CHKERRQ(ierr);
+      ierr = VecTaggerComputeBox_CDF_SortedArray_Iterative(tagger,statType,statReduce,cImag,m,&imagBxs,&imagBoxes);CHKERRQ(ierr);
+      boxes[i].min = PetscCMPLX(realBoxes.min,imagBoxes.min);
+      boxes[i].max = PetscCMPLX(realBoxes.max,imagBoxes.max);
     }
 #endif
     ierr = VecRestoreArray(vComp,&cArray);CHKERRQ(ierr);
@@ -352,35 +363,35 @@ static PetscErrorCode VecTaggerComputeIntervals_CDF_Iterative(VecTagger tagger,V
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecTaggerComputeIntervals_CDF(VecTagger tagger,Vec vec,PetscInt *numIntervals,PetscScalar (**intervals)[2])
+static PetscErrorCode VecTaggerComputeBoxes_CDF(VecTagger tagger,Vec vec,PetscInt *numBoxes,VecTaggerBox **boxes)
 {
   VecTagger_CDF *cuml = (VecTagger_CDF *)tagger->data;
   PetscMPIInt          size;
   PetscInt             bs;
-  PetscScalar          (*ints) [2];
+  VecTaggerBox         *bxs;
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
   ierr = VecTaggerGetBlockSize(tagger,&bs);CHKERRQ(ierr);
-  *numIntervals = 1;
-  ierr = PetscMalloc1(bs,&ints);CHKERRQ(ierr);
+  *numBoxes = 1;
+  ierr = PetscMalloc1(bs,&bxs);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)tagger),&size);CHKERRQ(ierr);
   if (size == 1) {
-    ierr = VecTaggerComputeIntervals_CDF_Serial(tagger,vec,bs,ints);CHKERRQ(ierr);
-    *intervals = ints;
+    ierr = VecTaggerComputeBoxes_CDF_Serial(tagger,vec,bs,bxs);CHKERRQ(ierr);
+    *boxes = bxs;
     PetscFunctionReturn(0);
   }
   switch (cuml->method) {
   case VECTAGGER_CDF_GATHER:
-    ierr = VecTaggerComputeIntervals_CDF_Gather(tagger,vec,bs,ints);CHKERRQ(ierr);
+    ierr = VecTaggerComputeBoxes_CDF_Gather(tagger,vec,bs,bxs);CHKERRQ(ierr);
     break;
   case VECTAGGER_CDF_ITERATIVE:
-    ierr = VecTaggerComputeIntervals_CDF_Iterative(tagger,vec,bs,ints);CHKERRQ(ierr);
+    ierr = VecTaggerComputeBoxes_CDF_Iterative(tagger,vec,bs,bxs);CHKERRQ(ierr);
     break;
   default:
     SETERRQ(PetscObjectComm((PetscObject)tagger),PETSC_ERR_SUP,"Unknown CDF calculation/estimation method.");
   }
-  *intervals = ints;
+  *boxes = bxs;
   PetscFunctionReturn(0);
 }
 
@@ -415,19 +426,19 @@ static PetscErrorCode VecTaggerSetFromOptions_CDF(PetscOptionItems *PetscOptions
 
   PetscFunctionBegin;
   ierr = VecTaggerSetFromOptions_Simple(PetscOptionsObject,tagger);CHKERRQ(ierr);
-  ierr = PetscOptionsHead(PetscOptionsObject,"VecTagger options for CDF intervals");CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-vec_tagger_cdf_method","Method for computing absolute intervals from CDF intervals","VecTaggerCDFSetMethod()",VecTaggerCDFMethods,VECTAGGER_CDF_NUM_METHODS,VecTaggerCDFMethods[cuml->method],&method,&set);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"VecTagger options for CDF boxes");CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-vec_tagger_cdf_method","Method for computing absolute boxes from CDF boxes","VecTaggerCDFSetMethod()",VecTaggerCDFMethods,VECTAGGER_CDF_NUM_METHODS,VecTaggerCDFMethods[cuml->method],&method,&set);CHKERRQ(ierr);
   if (set) cuml->method = (VecTaggerCDFMethod) method;
-  ierr = PetscOptionsInt("-vec_tagger_cdf_max_it","Maximum iterations for iterative computation of absolute intervals from CDF intervals","VecTaggerCDFIterativeSetTolerances()",cuml->maxit,&cuml->maxit,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-vec_tagger_cdf_rtol","Maximum relative tolerance for iterative computation of absolute intervals from CDF intervals","VecTaggerCDFIterativeSetTolerances()",cuml->rtol,&cuml->rtol,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-vec_tagger_cdf_atol","Maximum absolute tolerance for iterative computation of absolute intervals from CDF intervals","VecTaggerCDFIterativeSetTolerances()",cuml->atol,&cuml->atol,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-vec_tagger_cdf_max_it","Maximum iterations for iterative computation of absolute boxes from CDF boxes","VecTaggerCDFIterativeSetTolerances()",cuml->maxit,&cuml->maxit,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-vec_tagger_cdf_rtol","Maximum relative tolerance for iterative computation of absolute boxes from CDF boxes","VecTaggerCDFIterativeSetTolerances()",cuml->rtol,&cuml->rtol,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-vec_tagger_cdf_atol","Maximum absolute tolerance for iterative computation of absolute boxes from CDF boxes","VecTaggerCDFIterativeSetTolerances()",cuml->atol,&cuml->atol,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
 
 /*@C
-  VecTaggerCDFSetMethod - Set the method used to compute absolute intervals from CDF intervals
+  VecTaggerCDFSetMethod - Set the method used to compute absolute boxes from CDF boxes
 
   Logically Collective on VecTagger
 
@@ -451,7 +462,7 @@ PetscErrorCode VecTaggerCDFSetMethod(VecTagger tagger, VecTaggerCDFMethod method
 }
 
 /*@C
-  VecTaggerCDFGetMethod - Get the method used to compute absolute intervals from CDF intervals
+  VecTaggerCDFGetMethod - Get the method used to compute absolute boxes from CDF boxes
 
   Logically Collective on VecTagger
 
@@ -477,13 +488,13 @@ PetscErrorCode VecTaggerCDFGetMethod(VecTagger tagger, VecTaggerCDFMethod *metho
 }
 
 /*@C
-  VecTaggerCDFIterativeSetTolerances - Set the tolerances for iterative computation of absolute intervals from CDF intervals.
+  VecTaggerCDFIterativeSetTolerances - Set the tolerances for iterative computation of absolute boxes from CDF boxes.
 
   Logically Collective on VecTagger
 
   Input Parameters:
 + tagger - the VecTagger context
-. maxit - the maximum number of iterations: 0 indicates the absolute values will be estimated from an initial guess based only on the minimum, maximum, mean, and standard deviation of the intervals.
+. maxit - the maximum number of iterations: 0 indicates the absolute values will be estimated from an initial guess based only on the minimum, maximum, mean, and standard deviation of the box endpoints.
 . rtol - the acceptable relative tolerance in the absolute values from the initial guess
 - atol - the acceptable absolute tolerance in the absolute values from the initial guess
 
@@ -507,7 +518,7 @@ PetscErrorCode VecTaggerCDFIterativeSetTolerances(VecTagger tagger, PetscInt max
 }
 
 /*@C
-  VecTaggerCDFIterativeGetTolerances - Get the tolerances for iterative computation of absolute intervals from CDF intervals.
+  VecTaggerCDFIterativeGetTolerances - Get the tolerances for iterative computation of absolute boxes from CDF boxes.
 
   Logically Collective on VecTagger
 
@@ -515,7 +526,7 @@ PetscErrorCode VecTaggerCDFIterativeSetTolerances(VecTagger tagger, PetscInt max
 . tagger - the VecTagger context
 
   Output Parameters:
-+ maxit - the maximum number of iterations: 0 indicates the absolute values will be estimated from an initial guess based only on the minimum, maximum, mean, and standard deviation of the intervals.
++ maxit - the maximum number of iterations: 0 indicates the absolute values will be estimated from an initial guess based only on the minimum, maximum, mean, and standard deviation of the box endpoints.
 . rtol - the acceptable relative tolerance in the absolute values from the initial guess
 - atol - the acceptable absolute tolerance in the absolute values from the initial guess
 
@@ -536,29 +547,29 @@ PetscErrorCode VecTaggerCDFIterativeGetTolerances(VecTagger tagger, PetscInt *ma
 }
 
 /*@C
-  VecTaggerCDFSetInterval - Set the cumulative interval (multi-dimensional box) defining the values to be tagged by the tagger, where cumulative intervals are subsets of [0,1], where 0 indicates the smallest value present in the vector and 1 indicates the largest.
+  VecTaggerCDFSetBox - Set the cumulative box defining the values to be tagged by the tagger, where cumulative boxes are subsets of [0,1], where 0 indicates the smallest value present in the vector and 1 indicates the largest.
 
   Logically Collective
 
   Input Arguments:
 + tagger - the VecTagger context
-- interval - the interval: a blocksize list of [min,max] pairs
+- boxes - a blocksize array of VecTaggerBox boxes
 
   Level: advanced
 
-.seealso: VecTaggerCDFGetInterval()
+.seealso: VecTaggerCDFGetBox()
 @*/
-PetscErrorCode VecTaggerCDFSetInterval(VecTagger tagger,PetscScalar (*interval)[2])
+PetscErrorCode VecTaggerCDFSetBox(VecTagger tagger,VecTaggerBox *box)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecTaggerSetInterval_Simple(tagger,interval);CHKERRQ(ierr);
+  ierr = VecTaggerSetBox_Simple(tagger,box);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*@C
-  VecTaggerCDFGetInterval - Get the cumulative interval (multi-dimensional box) defining the values to be tagged by the tagger, where cumulative intervals are subsets of [0,1], where 0 indicates the smallest value present in the vector and 1 indicates the largest.
+  VecTaggerCDFGetBox - Get the cumulative box (multi-dimensional box) defining the values to be tagged by the tagger, where cumulative boxes are subsets of [0,1], where 0 indicates the smallest value present in the vector and 1 indicates the largest.
 
   Logically Collective
 
@@ -566,18 +577,18 @@ PetscErrorCode VecTaggerCDFSetInterval(VecTagger tagger,PetscScalar (*interval)[
 . tagger - the VecTagger context
 
   Output Arguments:
-. interval - the interval: a blocksize list of [min,max] pairs
+. boxes - a blocksize array of VecTaggerBox boxes
 
   Level: advanced
 
-.seealso: VecTaggerCDFSetInterval()
+.seealso: VecTaggerCDFSetBox()
 @*/
-PetscErrorCode VecTaggerCDFGetInterval(VecTagger tagger,const PetscScalar (**interval)[2])
+PetscErrorCode VecTaggerCDFGetBox(VecTagger tagger,const VecTaggerBox **box)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecTaggerGetInterval_Simple(tagger,interval);CHKERRQ(ierr);
+  ierr = VecTaggerGetBox_Simple(tagger,box);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -592,8 +603,8 @@ PETSC_INTERN PetscErrorCode VecTaggerCreate_CDF(VecTagger tagger)
   ierr = PetscMemcpy(&(cuml->smpl),tagger->data,sizeof(VecTagger_Simple));CHKERRQ(ierr);
   ierr = PetscFree(tagger->data);CHKERRQ(ierr);
   tagger->data = cuml;
-  tagger->ops->view             = VecTaggerView_CDF;
-  tagger->ops->setfromoptions   = VecTaggerSetFromOptions_CDF;
-  tagger->ops->computeintervals = VecTaggerComputeIntervals_CDF;
+  tagger->ops->view           = VecTaggerView_CDF;
+  tagger->ops->setfromoptions = VecTaggerSetFromOptions_CDF;
+  tagger->ops->computeboxes   = VecTaggerComputeBoxes_CDF;
   PetscFunctionReturn(0);
 }

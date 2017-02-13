@@ -174,13 +174,13 @@ PetscErrorCode VecTaggerCreate_AndOr(VecTagger tagger)
   tagger->ops->setfromoptions   = VecTaggerSetFromOptions_AndOr;
   tagger->ops->setup            = VecTaggerSetUp_AndOr;
   tagger->ops->view             = VecTaggerView_AndOr;
-  tagger->ops->computeis        = VecTaggerComputeIS_FromIntervals;
+  tagger->ops->computeis        = VecTaggerComputeIS_FromBoxes;
   ierr = PetscNewLog(tagger,&andOr);CHKERRQ(ierr);
   tagger->data = andOr;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecTaggerAndOrIsSubinterval_Private(PetscInt bs, PetscScalar (*superInt)[2], PetscScalar (*subInt)[2],PetscBool *isSub)
+PetscErrorCode VecTaggerAndOrIsSubBox_Private(PetscInt bs, const VecTaggerBox *superBox, const VecTaggerBox *subBox,PetscBool *isSub)
 {
   PetscInt       i;
 
@@ -188,13 +188,13 @@ PetscErrorCode VecTaggerAndOrIsSubinterval_Private(PetscInt bs, PetscScalar (*su
   *isSub = PETSC_TRUE;
   for (i = 0; i < bs; i++) {
 #if !defined(PETSC_USE_COMPLEX)
-    if (superInt[i][0] > subInt[i][0] || superInt[i][1] < subInt[i][1]) {
+    if (superBox[i].min > subBox[i].min || superBox[i].max < subBox[i].max ) {
       *isSub = PETSC_FALSE;
       break;
     }
 #else
-    if (PetscRealPart(superInt[i][0]) > PetscRealPart(subInt[i][0]) || PetscImaginaryPart(superInt[i][0]) > PetscImaginaryPart(subInt[i][0]) ||
-        PetscRealPart(superInt[i][1]) < PetscRealPart(subInt[i][1]) || PetscImaginaryPart(superInt[i][1]) < PetscImaginaryPart(subInt[i][1])) {
+    if (PetscRealPart(superBox[i].min) > PetscRealPart(subBox[i].min) || PetscImaginaryPart(superBox[i].min) > PetscImaginaryPart(subBox[i].min) ||
+        PetscRealPart(superBox[i].max) < PetscRealPart(subBox[i].max) || PetscImaginaryPart(superBox[i].max) < PetscImaginaryPart(subBox[i].max)) {
       *isSub = PETSC_FALSE;
       break;
     }
@@ -203,7 +203,7 @@ PetscErrorCode VecTaggerAndOrIsSubinterval_Private(PetscInt bs, PetscScalar (*su
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecTaggerAndOrIntersect_Private(PetscInt bs, PetscScalar (*a)[2], PetscScalar (*b)[2],PetscScalar(*c)[2],PetscBool *empty)
+PetscErrorCode VecTaggerAndOrIntersect_Private(PetscInt bs, const VecTaggerBox *a, const VecTaggerBox *b,VecTaggerBox *c,PetscBool *empty)
 {
   PetscInt       i;
 
@@ -211,22 +211,22 @@ PetscErrorCode VecTaggerAndOrIntersect_Private(PetscInt bs, PetscScalar (*a)[2],
   *empty = PETSC_FALSE;
   for (i = 0; i < bs; i++) {
 #if !defined(PETSC_USE_COMPLEX)
-    c[i][0] = PetscMax(a[i][0],b[i][0]);
-    c[i][1] = PetscMin(a[i][1],b[i][1]);
-    if (c[i][1] < c[i][0]) {
+    c[i].min = PetscMax(a[i].min,b[i].min);
+    c[i].max = PetscMin(a[i].max,b[i].max);
+    if (c[i].max < c[i].min) {
       *empty = PETSC_TRUE;
       break;
     }
 #else
     {
-      PetscReal maxMinReal = PetscMax(PetscRealPart(a[i][0]),PetscRealPart(b[i][0]));
-      PetscReal maxMinImag = PetscMax(PetscImaginaryPart(a[i][0]),PetscImaginaryPart(b[i][0]));
-      PetscReal minMaxReal = PetscMin(PetscRealPart(a[i][1]),PetscRealPart(b[i][1]));
-      PetscReal minMaxImag = PetscMin(PetscImaginaryPart(a[i][1]),PetscImaginaryPart(b[i][1]));
+      PetscReal maxMinReal = PetscMax(PetscRealPart(a[i].min),PetscRealPart(b[i].min));
+      PetscReal maxMinImag = PetscMax(PetscImaginaryPart(a[i].min),PetscImaginaryPart(b[i].min));
+      PetscReal minMaxReal = PetscMin(PetscRealPart(a[i].max),PetscRealPart(b[i].max));
+      PetscReal minMaxImag = PetscMin(PetscImaginaryPart(a[i].max),PetscImaginaryPart(b[i].max));
 
-      c[i][0] = PetscCMPLX(maxMinReal,maxMinImag);
-      c[i][1] = PetscCMPLX(minMaxReal,minMaxImag);
-      if ((PetscRealPart(c[i][1] - c[i][0]) < 0.) || (PetscImaginaryPart(c[i][1] - c[i][0]) < 0.)) {
+      c[i].min = PetscCMPLX(maxMinReal,maxMinImag);
+      c[i].max = PetscCMPLX(minMaxReal,minMaxImag);
+      if ((PetscRealPart(c[i].max - c[i].min) < 0.) || (PetscImaginaryPart(c[i].max - c[i].min) < 0.)) {
         *empty = PETSC_TRUE;
         break;
       }

@@ -2,49 +2,49 @@
 #include <petsc/private/vecimpl.h> /*I "petscvec.h" I*/
 #include "../src/vec/vec/utils/tagger/impls/simple.h"
 
-static PetscErrorCode VecTaggerComputeIntervals_Absolute(VecTagger tagger,Vec vec,PetscInt *numIntervals,PetscScalar (**intervals)[2])
+static PetscErrorCode VecTaggerComputeBoxes_Absolute(VecTagger tagger,Vec vec,PetscInt *numBoxes,VecTaggerBox **boxes)
 {
   VecTagger_Simple *smpl = (VecTagger_Simple *)tagger->data;
   PetscInt       bs, i;
-  PetscScalar    (*ints) [2];
+  VecTaggerBox   *bxs;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecTaggerGetBlockSize(tagger,&bs);CHKERRQ(ierr);
-  *numIntervals = 1;
-  ierr = PetscMalloc1(bs,&ints);CHKERRQ(ierr);
+  *numBoxes = 1;
+  ierr = PetscMalloc1(bs,&bxs);CHKERRQ(ierr);
   for (i = 0; i < bs; i++) {
-    ints[i][0] = smpl->interval[i][0];
-    ints[i][1] = smpl->interval[i][1];
+    bxs[i].min = smpl->box[i].min;
+    bxs[i].max = smpl->box[i].max;
   }
-  *intervals = ints;
+  *boxes = bxs;
   PetscFunctionReturn(0);
 }
 
 /*@C
-  VecTaggerAbsoluteSetInterval - Set the interval (multi-dimensional box) defining the values to be tagged by the tagger.
+  VecTaggerAbsoluteSetBox - Set the box defining the values to be tagged by the tagger.
 
   Logically Collective
 
   Input Arguments:
 + tagger - the VecTagger context
-- interval - the interval: a blocksize list of [min,max] pairs
+- box - the box: a blocksize array of VecTaggerBox boxes
 
   Level: advanced
 
-.seealso: VecTaggerAbsoluteGetInterval()
+.seealso: VecTaggerAbsoluteGetBox()
 @*/
-PetscErrorCode VecTaggerAbsoluteSetInterval(VecTagger tagger,PetscScalar (*interval)[2])
+PetscErrorCode VecTaggerAbsoluteSetBox(VecTagger tagger,VecTaggerBox *box)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecTaggerSetInterval_Simple(tagger,interval);CHKERRQ(ierr);
+  ierr = VecTaggerSetBox_Simple(tagger,box);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*@C
-  VecTaggerAbsoluteGetInterval - Get the interval (multi-dimensional box) defining the values to be tagged by the tagger.
+  VecTaggerAbsoluteGetBox - Get the box defining the values to be tagged by the tagger.
 
   Logically Collective
 
@@ -52,18 +52,18 @@ PetscErrorCode VecTaggerAbsoluteSetInterval(VecTagger tagger,PetscScalar (*inter
 . tagger - the VecTagger context
 
   Output Arguments:
-. interval - the interval: a blocksize list of [min,max] pairs
+. box - the box: a blocksize array of VecTaggerBox boxes
 
   Level: advanced
 
-.seealso: VecTaggerAbsoluteSetInterval()
+.seealso: VecTaggerAbsoluteSetBox()
 @*/
-PetscErrorCode VecTaggerAbsoluteGetInterval(VecTagger tagger,const PetscScalar (**interval)[2])
+PetscErrorCode VecTaggerAbsoluteGetBox(VecTagger tagger,const VecTaggerBox **box)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecTaggerGetInterval_Simple(tagger,interval);CHKERRQ(ierr);
+  ierr = VecTaggerGetBox_Simple(tagger,box);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -73,6 +73,6 @@ PETSC_INTERN PetscErrorCode VecTaggerCreate_Absolute(VecTagger tagger)
 
   PetscFunctionBegin;
   ierr = VecTaggerCreate_Simple(tagger);CHKERRQ(ierr);
-  tagger->ops->computeintervals = VecTaggerComputeIntervals_Absolute;
+  tagger->ops->computeboxes = VecTaggerComputeBoxes_Absolute;
   PetscFunctionReturn(0);
 }

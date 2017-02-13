@@ -390,7 +390,7 @@ struct _VecTaggerOps {
   PetscErrorCode (*setfromoptions) (PetscOptionItems*,VecTagger);
   PetscErrorCode (*setup) (VecTagger);
   PetscErrorCode (*view) (VecTagger,PetscViewer);
-  PetscErrorCode (*computeintervals) (VecTagger,Vec,PetscInt *,PetscScalar (**)[2]);
+  PetscErrorCode (*computeboxes) (VecTagger,Vec,PetscInt *,VecTaggerBox **);
   PetscErrorCode (*computeis) (VecTagger,Vec,IS *);
 };
 struct _p_VecTagger {
@@ -403,6 +403,6 @@ struct _p_VecTagger {
 
 PETSC_EXTERN PetscBool      VecTaggerRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode VecTaggerRegisterAll(void);
-PETSC_EXTERN PetscErrorCode VecTaggerComputeIS_FromIntervals(VecTagger,Vec,IS*);
+PETSC_EXTERN PetscErrorCode VecTaggerComputeIS_FromBoxes(VecTagger,Vec,IS*);
 
 #endif

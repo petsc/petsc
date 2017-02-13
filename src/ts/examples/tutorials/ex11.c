@@ -1616,13 +1616,15 @@ int main(int argc, char **argv)
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   if (useAMR) {
-    PetscScalar refineInterval[2] = {PETSC_MAX_REAL,PETSC_MAX_REAL};
-    PetscScalar coarsenInterval[2] = {PETSC_MIN_REAL,PETSC_MIN_REAL};
+    VecTaggerBox refineBox, coasenBox;
+
+    refineBox->min  = refineBox->max  = PETSC_MAX_REAL;
+    coarsenBox->min = coarsenBox->max = PETSC_MIN_REAL;
 
     ierr = VecTaggerCreate(comm,&refineTag);CHKERRQ(ierr);
     ierr = PetscObjectSetOptionsPrefix((PetscObject)refineTag,"refine_");CHKERRQ(ierr);
     ierr = VecTaggerSetType(refineTag,VECTAGGERABSOLUTE);CHKERRQ(ierr);
-    ierr = VecTaggerAbsoluteSetInterval(refineTag,&refineInterval);CHKERRQ(ierr);
+    ierr = VecTaggerAbsoluteSetBox(refineTag,&refineBox);CHKERRQ(ierr);
     ierr = VecTaggerSetFromOptions(refineTag);CHKERRQ(ierr);
     ierr = VecTaggerSetUp(refineTag);CHKERRQ(ierr);
     ierr = PetscObjectViewFromOptions((PetscObject)refineTag,NULL,"-tag_view");CHKERRQ(ierr);
@@ -1630,7 +1632,7 @@ int main(int argc, char **argv)
     ierr = VecTaggerCreate(comm,&coarsenTag);CHKERRQ(ierr);
     ierr = PetscObjectSetOptionsPrefix((PetscObject)coarsenTag,"coarsen_");CHKERRQ(ierr);
     ierr = VecTaggerSetType(coarsenTag,VECTAGGERABSOLUTE);CHKERRQ(ierr);
-    ierr = VecTaggerAbsoluteSetInterval(coarsenTag,&coarsenInterval);CHKERRQ(ierr);
+    ierr = VecTaggerAbsoluteSetBox(coarsenTag,&coarsenBox);CHKERRQ(ierr);
     ierr = VecTaggerSetFromOptions(coarsenTag);CHKERRQ(ierr);
     ierr = VecTaggerSetUp(coarsenTag);CHKERRQ(ierr);
     ierr = PetscObjectViewFromOptions((PetscObject)coarsenTag,NULL,"-tag_view");CHKERRQ(ierr);

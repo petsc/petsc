@@ -49,9 +49,9 @@ PetscErrorCode VecTaggerCreate(MPI_Comm comm,VecTagger *tagger)
 
    Notes:
    See "include/petscvec.h" for available methods (for instance)
-+    VECTAGGERABSOLUTE - tag based on an interval of values
-.    VECTAGGERRELATIVE - tag based on an interval relative to the range of values present in the vector
-.    VECTAGGERCDF      - tag based on an interval in the cumulative distribution of values present in the vector
++    VECTAGGERABSOLUTE - tag based on a box of values
+.    VECTAGGERRELATIVE - tag based on a box relative to the range of values present in the vector
+.    VECTAGGERCDF      - tag based on a box in the cumulative distribution of values present in the vector
 .    VECTAGGEROR       - tag based on the union of a set of VecTagger contexts
 .    VECTAGGERAND      - tag based on the intersection of a set of other VecTagger contexts
 
@@ -327,7 +327,7 @@ PetscErrorCode VecTaggerView(VecTagger tagger,PetscViewer viewer)
 }
 
 /*@C
-   VecTaggerComputeIntervals - If the tag can be summarized as a list of intervals (or, for a tagger with a block size > 1, boxes matching that dimension), returns that list
+   VecTaggerComputeBoxes - If the tag can be summarized as a list of boxes, returns that list
 
    Collective on VecTagger
 
@@ -336,15 +336,15 @@ PetscErrorCode VecTaggerView(VecTagger tagger,PetscViewer viewer)
 -  vec - the vec to tag
 
    Output Arguments:
-+  numIntervals - the number of intervals/boxes in the tag definition
--  intervals - a newly allocated list of boxes: each box is a list of BlockSize [min,max] pairs.  This is a flat array of (BlockSize * numInterval) pairs that tue user can free with PetscFree().
++  numBoxes - the number of boxes in the tag definition
+-  boxes - a newly allocated list of boxes.  This is a flat array of (BlockSize * numBoxes) pairs that the user can free with PetscFree().
 
    Notes:
-.  A value is tagged if it is in any of the intervals, unless the tagger has been inverted (see VecTaggerSetInvert()/VecTaggerGetInvert()), in which case a value is tagged if it is in none of the intervals.
+.  A value is tagged if it is in any of the boxes, unless the tagger has been inverted (see VecTaggerSetInvert()/VecTaggerGetInvert()), in which case a value is tagged if it is in none of the boxes.
 
 .seealso: VecTaggerComputeIS()
 @*/
-PetscErrorCode VecTaggerComputeIntervals(VecTagger tagger,Vec vec,PetscInt *numIntervals,PetscScalar (**intervals)[2])
+PetscErrorCode VecTaggerComputeBoxes(VecTagger tagger,Vec vec,PetscInt *numBoxes,VecTaggerBox **boxes)
 {
   PetscInt       vls, tbs;
   PetscErrorCode ierr;
@@ -352,16 +352,16 @@ PetscErrorCode VecTaggerComputeIntervals(VecTagger tagger,Vec vec,PetscInt *numI
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tagger,VEC_TAGGER_CLASSID,1);
   PetscValidHeaderSpecific(vec,VEC_CLASSID,2);
-  PetscValidIntPointer(numIntervals,3);
-  PetscValidPointer(intervals,4);
+  PetscValidIntPointer(numBoxes,3);
+  PetscValidPointer(boxes,4);
   ierr = VecGetLocalSize(vec,&vls);CHKERRQ(ierr);
   ierr = VecTaggerGetBlockSize(tagger,&tbs);CHKERRQ(ierr);
   if (vls % tbs) SETERRQ2(PetscObjectComm((PetscObject)tagger),PETSC_ERR_ARG_INCOMP,"vec local size %D is not a multiple of tagger block size %D",vls,tbs);
-  if (tagger->ops->computeintervals) {ierr = (*tagger->ops->computeintervals) (tagger,vec,numIntervals,intervals);CHKERRQ(ierr);}
+  if (tagger->ops->computeboxes) {ierr = (*tagger->ops->computeboxes) (tagger,vec,numBoxes,boxes);CHKERRQ(ierr);}
   else {
     const char *type;
     ierr = PetscObjectGetType ((PetscObject)tagger,&type);CHKERRQ(ierr);
-    SETERRQ1(PetscObjectComm((PetscObject)tagger),PETSC_ERR_SUP,"VecTagger type %s does not compute value intervals",type);
+    SETERRQ1(PetscObjectComm((PetscObject)tagger),PETSC_ERR_SUP,"VecTagger type %s does not compute value boxes",type);
   }
   PetscFunctionReturn(0);
 }
@@ -378,7 +378,7 @@ PetscErrorCode VecTaggerComputeIntervals(VecTagger tagger,Vec vec,PetscInt *numI
    Output Arguments:
 .  IS - a list of the local *block* indices tagged by the tagger, i.e., if the number of local indices will be n / bs, where n is VecGetLocalSize() and bs is VecTaggerGetBlockSize().
 
-.seealso: VecTaggerComputeIntervals()
+.seealso: VecTaggerComputeBoxes()
 @*/
 PetscErrorCode VecTaggerComputeIS(VecTagger tagger,Vec vec,IS *is)
 {
@@ -399,9 +399,9 @@ PetscErrorCode VecTaggerComputeIS(VecTagger tagger,Vec vec,IS *is)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecTaggerComputeIS_FromIntervals(VecTagger tagger, Vec vec, IS *is)
-{ PetscInt       numIntervals;
-  PetscScalar    (*intervals)[2];
+PetscErrorCode VecTaggerComputeIS_FromBoxes(VecTagger tagger, Vec vec, IS *is)
+{ PetscInt       numBoxes;
+  VecTaggerBox   *boxes;
   PetscInt       numTagged, offset;
   PetscInt       *tagged;
   PetscInt       bs, b, i, j, k, n;
@@ -411,7 +411,7 @@ PetscErrorCode VecTaggerComputeIS_FromIntervals(VecTagger tagger, Vec vec, IS *i
 
   PetscFunctionBegin;
   ierr = VecTaggerGetBlockSize(tagger,&bs);CHKERRQ(ierr);
-  ierr = VecTaggerComputeIntervals(tagger,vec,&numIntervals,&intervals);CHKERRQ(ierr);
+  ierr = VecTaggerComputeBoxes(tagger,vec,&numBoxes,&boxes);CHKERRQ(ierr);
   ierr = VecGetArrayRead(vec, &vecArray);CHKERRQ(ierr);
   ierr = VecGetLocalSize(vec, &n);CHKERRQ(ierr);
   invert = tagger->invert;
@@ -424,35 +424,34 @@ PetscErrorCode VecTaggerComputeIS_FromIntervals(VecTagger tagger, Vec vec, IS *i
     }
     for (j = 0; j < n; j++) {
 
-      for (k = 0; k < numIntervals; k++) {
+      for (k = 0; k < numBoxes; k++) {
         for (b = 0; b < bs; b++) {
-          PetscScalar val = vecArray[j * bs + b];
-          PetscInt    l = k * bs + b;
-          PetscScalar interval[2];
-          PetscBool   in;
+          PetscScalar  val = vecArray[j * bs + b];
+          PetscInt     l = k * bs + b;
+          VecTaggerBox box;
+          PetscBool    in;
 
-          interval[0] = intervals[l][0];
-          interval[1] = intervals[l][1];
+          box = boxes[l];
 #if !defined(PETSC_USE_COMPLEX)
-          in = (PetscBool) ((interval[0] <= val) && (val <= interval[1]));
+          in = (PetscBool) ((box.min <= val) && (val <= box.max));
 #else
-          in = (PetscBool) ((PetscRealPart     (interval[0]) <= PetscRealPart     (val)        )&&
-                            (PetscImaginaryPart(interval[0]) <= PetscImaginaryPart(val)        )&&
-                            (PetscRealPart     (val)         <= PetscRealPart     (interval[1]))&&
-                            (PetscImaginaryPart(val)         <= PetscImaginaryPart(interval[1])));
+          in = (PetscBool) ((PetscRealPart     (box.min) <= PetscRealPart     (val)    )&&
+                            (PetscImaginaryPart(box.min) <= PetscImaginaryPart(val)    )&&
+                            (PetscRealPart     (val)     <= PetscRealPart     (box.max))&&
+                            (PetscImaginaryPart(val)     <= PetscImaginaryPart(box.max)));
 #endif
           if (!in) break;
         }
         if (b == bs) break;
       }
-      if ((k < numIntervals) ^ invert) {
+      if ((k < numBoxes) ^ invert) {
         if (!i) numTagged++;
         else    tagged[offset++] = j;
       }
     }
   }
   ierr = VecRestoreArrayRead(vec, &vecArray);CHKERRQ(ierr);
-  ierr = PetscFree(intervals);CHKERRQ(ierr);
+  ierr = PetscFree(boxes);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject)vec),numTagged,tagged,PETSC_OWN_POINTER,is);CHKERRQ(ierr);
   ierr = ISSort(*is);CHKERRQ(ierr);
   PetscFunctionReturn(0);

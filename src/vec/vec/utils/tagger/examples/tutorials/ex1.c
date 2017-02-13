@@ -33,8 +33,8 @@ int main(int argc, char **argv)
   VecTagger      tagger;
   PetscScalar    *array;
   PetscRandom    rand;
-  PetscScalar    (*defaultInterval)[2];
-  PetscScalar    (*intervals)[2];
+  VecTaggerBox   *defaultBox;
+  VecTaggerBox   *boxes;
   IS             is, isBlockGlobal, isComp;
   PetscErrorCode ierr;
 
@@ -70,44 +70,44 @@ int main(int argc, char **argv)
   ierr = VecTaggerCreate(comm,&tagger);CHKERRQ(ierr);
   ierr = VecTaggerSetBlockSize(tagger,bs);CHKERRQ(ierr);
   ierr = VecTaggerSetType(tagger,VECTAGGERABSOLUTE);CHKERRQ(ierr);
-  ierr = PetscMalloc1(bs,&defaultInterval);CHKERRQ(ierr);
+  ierr = PetscMalloc1(bs,&defaultBox);CHKERRQ(ierr);
   for (i = 0; i < bs; i++) {
 #if !defined(PETSC_USE_COMPLEX)
-    defaultInterval[i][0] = 0.1;
-    defaultInterval[i][1] = 1.5;
+    defaultBox[i].min = 0.1;
+    defaultBox[i].max = 1.5;
 #else
-    defaultInterval[i][0] = PetscCMPLX(0.1,0.1);
-    defaultInterval[i][1] = PetscCMPLX(1.5,1.5);
+    defaultBox[i].min = PetscCMPLX(0.1,0.1);
+    defaultBox[i].max = PetscCMPLX(1.5,1.5);
 #endif
   }
-  ierr = VecTaggerAbsoluteSetInterval(tagger,defaultInterval);CHKERRQ(ierr);
-  ierr = PetscFree(defaultInterval);CHKERRQ(ierr);
+  ierr = VecTaggerAbsoluteSetBox(tagger,defaultBox);CHKERRQ(ierr);
+  ierr = PetscFree(defaultBox);CHKERRQ(ierr);
   ierr = VecTaggerSetFromOptions(tagger);CHKERRQ(ierr);
   ierr = VecTaggerSetUp(tagger);CHKERRQ(ierr);
   ierr = PetscObjectViewFromOptions((PetscObject)tagger,NULL,"-vec_tagger_view");CHKERRQ(ierr);
   ierr = VecTaggerGetBlockSize(tagger,&bs);CHKERRQ(ierr);
 
-  ierr = VecTaggerComputeIntervals(tagger,vec,&nint,&intervals);
+  ierr = VecTaggerComputeBoxes(tagger,vec,&nint,&boxes);
   if (ierr && ierr != PETSC_ERR_SUP) CHKERRQ(ierr);
   else {
     PetscViewer viewer = NULL;
 
-    ierr = PetscOptionsGetViewer(comm,NULL,"-vec_tagger_intervals_view",&viewer,NULL,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetViewer(comm,NULL,"-vec_tagger_boxes_view",&viewer,NULL,NULL);CHKERRQ(ierr);
     if (viewer) {
       PetscBool iascii;
 
       ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
       if (iascii) {
-        ierr = PetscViewerASCIIPrintf(viewer,"Num intervals: %D\n",nint);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"Num boxes: %D\n",nint);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
         for (i = 0, k = 0; i < nint; i++) {
           ierr = PetscViewerASCIIPrintf(viewer,"%D: ",i);CHKERRQ(ierr);
           for (j = 0; j < bs; j++, k++) {
             if (j) {ierr = PetscViewerASCIIPrintf(viewer," x ");CHKERRQ(ierr);}
 #if !defined(PETSC_USE_COMPLEX)
-            ierr = PetscViewerASCIIPrintf(viewer,"[%g,%g]",(double)intervals[k][0],(double)intervals[k][1]);CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer,"[%g,%g]",(double)boxes[k].min,(double)boxes[k].max);CHKERRQ(ierr);
 #else
-            ierr = PetscViewerASCIIPrintf(viewer,"[%g+%gi,%g+%gi]",(double)PetscRealPart(intervals[k][0]),(double)PetscImaginaryPart(intervals[k][0]),(double)PetscRealPart(intervals[k][1]),(double)PetscImaginaryPart(intervals[k][1]));CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer,"[%g+%gi,%g+%gi]",(double)PetscRealPart(boxes[k].min),(double)PetscImaginaryPart(boxes[k].min),(double)PetscRealPart(boxes[k].max),(double)PetscImaginaryPart(boxes[k].max));CHKERRQ(ierr);
 #endif
           }
           ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
@@ -116,7 +116,7 @@ int main(int argc, char **argv)
       }
     }
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    ierr = PetscFree(intervals);CHKERRQ(ierr);
+    ierr = PetscFree(boxes);CHKERRQ(ierr);
   }
 
   ierr = VecTaggerComputeIS(tagger,vec,&is);CHKERRQ(ierr);
@@ -173,111 +173,111 @@ int main(int argc, char **argv)
   test:
     suffix: 0
     requires: !complex
-    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_boxes_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view
 
   test:
     suffix: 1
     requires: !complex
     nsize: 3
-    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_boxes_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view
 
   test:
     suffix: 2
     requires: !complex
-    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -bs 2
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_boxes_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -bs 2
 
   test:
     suffix: 3
     requires: !complex
-    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_block_size 2 -vec_tagger_interval 0.1,1.5,0.1,1.5
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_boxes_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_block_size 2 -vec_tagger_box 0.1,1.5,0.1,1.5
 
   test:
     suffix: 4
     requires: !complex
-    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_invert
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_boxes_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_invert
 
   test:
     suffix: 5
     requires: !complex
-    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_type relative -vec_tagger_interval 0.25,0.75
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_boxes_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_type relative -vec_tagger_box 0.25,0.75
 
   test:
     suffix: 6
     requires: !complex
     nsize: 3
-    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_type cdf -vec_tagger_interval 0.25,0.75
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_boxes_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_type cdf -vec_tagger_box 0.25,0.75
 
   test:
     suffix: 7
     requires: !complex
     nsize: 3
-    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_type cdf -vec_tagger_interval 0.25,0.75 -vec_tagger_cdf_method iterative -vec_tagger_cdf_max_it 10
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_boxes_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_type cdf -vec_tagger_box 0.25,0.75 -vec_tagger_cdf_method iterative -vec_tagger_cdf_max_it 10
 
   test:
     suffix: 8
     requires: !complex
     nsize: 3
-    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_type or -vec_tagger_num_subs 2 -sub_0_vec_tagger_type absolute -sub_0_vec_tagger_interval 0.0,0.25 -sub_1_vec_tagger_type relative -sub_1_vec_tagger_interval 0.75,inf
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_boxes_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_type or -vec_tagger_num_subs 2 -sub_0_vec_tagger_type absolute -sub_0_vec_tagger_box 0.0,0.25 -sub_1_vec_tagger_type relative -sub_1_vec_tagger_box 0.75,inf
 
   test:
     suffix: 9
     requires: !complex
     nsize: 3
-    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_type and -vec_tagger_num_subs 2 -sub_0_vec_tagger_type absolute -sub_0_vec_tagger_interval -inf,0.5 -sub_1_vec_tagger_type relative -sub_1_vec_tagger_interval 0.25,0.75
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_boxes_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_type and -vec_tagger_num_subs 2 -sub_0_vec_tagger_type absolute -sub_0_vec_tagger_box -inf,0.5 -sub_1_vec_tagger_type relative -sub_1_vec_tagger_box 0.25,0.75
 
   test:
     suffix: 10
     requires: complex
-    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_boxes_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view
 
   test:
     suffix: 11
     requires: complex
     nsize: 3
-    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_boxes_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view
 
   test:
     suffix: 12
     requires: complex
-    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -bs 2
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_boxes_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -bs 2
 
   test:
     suffix: 13
     requires: complex
-    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_block_size 2 -vec_tagger_interval 0.1+0.1i,1.5+1.5i,0.1+0.1i,1.5+1.5i
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_boxes_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_block_size 2 -vec_tagger_box 0.1+0.1i,1.5+1.5i,0.1+0.1i,1.5+1.5i
 
   test:
     suffix: 14
     requires: complex
-    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_invert
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_boxes_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_invert
 
   test:
     suffix: 15
     requires: complex
-    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_type relative -vec_tagger_interval 0.25+0.25i,0.75+0.75i
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_boxes_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_type relative -vec_tagger_box 0.25+0.25i,0.75+0.75i
 
   test:
     suffix: 16
     requires: complex
     nsize: 3
-    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_type cdf -vec_tagger_interval 0.25+0.25i,0.75+0.75i
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_boxes_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_type cdf -vec_tagger_box 0.25+0.25i,0.75+0.75i
 
   test:
     suffix: 17
     requires: complex
     nsize: 3
-    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_type cdf -vec_tagger_interval 0.25+0.25i,0.75+0.75i -vec_tagger_cdf_method iterative -vec_tagger_cdf_max_it 10
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_boxes_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_type cdf -vec_tagger_box 0.25+0.25i,0.75+0.75i -vec_tagger_cdf_method iterative -vec_tagger_cdf_max_it 10
 
   test:
     suffix: 18
     requires: complex
     nsize: 3
-    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_type or -vec_tagger_num_subs 2 -sub_0_vec_tagger_type absolute -sub_0_vec_tagger_interval 0.0+0.0i,0.25+0.25i -sub_1_vec_tagger_type relative -sub_1_vec_tagger_interval 0.75+0.75i,inf+infi
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_boxes_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_type or -vec_tagger_num_subs 2 -sub_0_vec_tagger_type absolute -sub_0_vec_tagger_box 0.0+0.0i,0.25+0.25i -sub_1_vec_tagger_type relative -sub_1_vec_tagger_box 0.75+0.75i,inf+infi
 
   test:
     suffix: 19
     requires: complex
     nsize: 3
-    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_type and -vec_tagger_num_subs 2 -sub_0_vec_tagger_type absolute -sub_0_vec_tagger_interval -inf-infi,0.75+0.75i -sub_1_vec_tagger_type relative -sub_1_vec_tagger_interval 0.25+0.25i,1.+1.i
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_boxes_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_type and -vec_tagger_num_subs 2 -sub_0_vec_tagger_type absolute -sub_0_vec_tagger_box -inf-infi,0.75+0.75i -sub_1_vec_tagger_type relative -sub_1_vec_tagger_box 0.25+0.25i,1.+1.i
 
 TEST*/

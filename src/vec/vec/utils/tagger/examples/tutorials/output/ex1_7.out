@@ -18,10 +18,10 @@ Process [2]
 VecTagger Object: 3 MPI processes
   type: cdf
   Block size: 1
-   cdf interval=[  0.25,0.75  ]
+   cdf box=[  0.25,0.75  ]
   CDF computation method: iterative
     max its: 10, abs tol: 0., rel tol 0.
-Num intervals: 1
+Num boxes: 1
   0:   [0.218198,0.725815]  
 IS Object: Tagged IS (block global) 3 MPI processes
   type: block

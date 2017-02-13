@@ -601,9 +601,9 @@ typedef struct _p_VecTagger *VecTagger;
   Level: advanced
 J*/
 typedef const char* VecTaggerType;
-/* tag where the vector values are in an interval of explicitly defined values */
+/* tag where the vector values are in a box of explicitly defined values */
 #define VECTAGGERABSOLUTE   "absolute"
-/* tag where the vector values are in an interval of values relative to the set of all values in the vector */
+/* tag where the vector values are in a box of values relative to the set of all values in the vector */
 #define VECTAGGERRELATIVE   "relative"
 /* tag where the vector values are in a relative range of the *cumulative distribution* of values in the vector */
 #define VECTAGGERCDF        "cdf"
@@ -628,18 +628,32 @@ PETSC_EXTERN PetscErrorCode VecTaggerGetInvert(VecTagger,PetscBool*);
 PETSC_EXTERN PetscErrorCode VecTaggerSetFromOptions(VecTagger);
 PETSC_EXTERN PetscErrorCode VecTaggerSetUp(VecTagger);
 PETSC_EXTERN PetscErrorCode VecTaggerView(VecTagger,PetscViewer);
-PETSC_EXTERN PetscErrorCode VecTaggerComputeIntervals(VecTagger,Vec,PetscInt *,PetscScalar (**)[2]);
 PETSC_EXTERN PetscErrorCode VecTaggerComputeIS(VecTagger,Vec,IS *);
 PETSC_EXTERN PetscErrorCode VecTaggerDestroy(VecTagger *);
 
-PETSC_EXTERN PetscErrorCode VecTaggerAbsoluteSetInterval(VecTagger,PetscScalar(*)[2]);
-PETSC_EXTERN PetscErrorCode VecTaggerAbsoluteGetInterval(VecTagger,const PetscScalar(**)[2]);
+/*S
+   VecTaggerBox - A box range used to tag values.  For real scalars, this is just a closed interval; for complex scalars, the box is the closed region in the complex plane
+   such that real(min) <= real(z) <= real(max) and imag(min) <= imag(z) <= imag(max).  INF is an acceptable endpoint.
 
-PETSC_EXTERN PetscErrorCode VecTaggerRelativeSetInterval(VecTagger,PetscScalar(*)[2]);
-PETSC_EXTERN PetscErrorCode VecTaggerRelativeGetInterval(VecTagger,const PetscScalar(**)[2]);
+   Level: beginner
 
-PETSC_EXTERN PetscErrorCode VecTaggerCDFSetInterval(VecTagger,PetscScalar(*)[2]);
-PETSC_EXTERN PetscErrorCode VecTaggerCDFGetInterval(VecTagger,const PetscScalar(**)[2]);
+.seealso: VecTaggerComputeIntervals()
+S*/
+typedef struct {
+  PetscScalar min;
+  PetscScalar max;
+} VecTaggerBox;
+PETSC_EXTERN PetscErrorCode VecTaggerComputeBoxes(VecTagger,Vec,PetscInt *,VecTaggerBox **);
+
+
+PETSC_EXTERN PetscErrorCode VecTaggerAbsoluteSetBox(VecTagger,VecTaggerBox *);
+PETSC_EXTERN PetscErrorCode VecTaggerAbsoluteGetBox(VecTagger,const VecTaggerBox **);
+
+PETSC_EXTERN PetscErrorCode VecTaggerRelativeSetBox(VecTagger,VecTaggerBox *);
+PETSC_EXTERN PetscErrorCode VecTaggerRelativeGetBox(VecTagger,const VecTaggerBox **);
+
+PETSC_EXTERN PetscErrorCode VecTaggerCDFSetBox(VecTagger,VecTaggerBox *);
+PETSC_EXTERN PetscErrorCode VecTaggerCDFGetBox(VecTagger,const VecTaggerBox **);
 
 /*E
   VecTaggerCDFMethod - Determines what method is used to compute absolute values from cumulative distribution values (e.g., what value is the preimage of .95 in the cdf).  Relevant only in parallel: in serial it is directly computed.

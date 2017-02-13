@@ -20,72 +20,66 @@ PetscErrorCode VecTaggerOrSetSubs(VecTagger tagger, PetscInt nsubs, VecTagger *s
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecTaggerComputeIntervals_Or(VecTagger tagger,Vec vec,PetscInt *numIntervals,PetscScalar (**intervals)[2])
+static PetscErrorCode VecTaggerComputeBoxes_Or(VecTagger tagger,Vec vec,PetscInt *numBoxes,VecTaggerBox **boxes)
 {
-  PetscInt        i, bs, nsubs, *numSubIntervals, nints, total;
-  PetscScalar     (**subIntervals)[2];
+  PetscInt        i, bs, nsubs, *numSubBoxes, nboxes, total;
+  VecTaggerBox    **subBoxes;
   VecTagger       *subs;
-  PetscScalar     (*ints) [2];
+  VecTaggerBox    *bxs;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = VecTaggerGetBlockSize(tagger,&bs);CHKERRQ(ierr);
   ierr = VecTaggerOrGetSubs(tagger,&nsubs,&subs);CHKERRQ(ierr);
-  ierr = PetscMalloc2(nsubs,&numSubIntervals,nsubs,&subIntervals);CHKERRQ(ierr);
+  ierr = PetscMalloc2(nsubs,&numSubBoxes,nsubs,&subBoxes);CHKERRQ(ierr);
   for (i = 0, total = 0; i < nsubs; i++) {
     PetscErrorCode ierr2;
 
-    ierr2 = VecTaggerComputeIntervals(subs[i],vec,&numSubIntervals[i],&subIntervals[i]);
+    ierr2 = VecTaggerComputeBoxes(subs[i],vec,&numSubBoxes[i],&subBoxes[i]);
     if (ierr2 == PETSC_ERR_SUP) { /* no support, clean up and exit */
       PetscInt j;
 
       for (j = 0; j < i; j++) {
-        ierr = PetscFree(subIntervals[j]);CHKERRQ(ierr);
+        ierr = PetscFree(subBoxes[j]);CHKERRQ(ierr);
       }
-      ierr = PetscFree2(numSubIntervals,subIntervals);CHKERRQ(ierr);
-      SETERRQ(PetscObjectComm((PetscObject)tagger),PETSC_ERR_SUP,"Sub tagger does not support interval computation");
+      ierr = PetscFree2(numSubBoxes,subBoxes);CHKERRQ(ierr);
+      SETERRQ(PetscObjectComm((PetscObject)tagger),PETSC_ERR_SUP,"Sub tagger does not support box computation");
     } else {
       CHKERRQ(ierr2);
     }
-    total += numSubIntervals[i];
+    total += numSubBoxes[i];
   }
-  ierr = PetscMalloc1(bs * total, &ints);CHKERRQ(ierr);
-  for (i = 0, nints = 0; i < nsubs; i++) { /* stupid O(N^2) check to remove subintervals */
+  ierr = PetscMalloc1(bs * total, &bxs);CHKERRQ(ierr);
+  for (i = 0, nboxes = 0; i < nsubs; i++) { /* stupid O(N^2) check to remove subboxes */
     PetscInt j;
 
-    for (j = 0; j < numSubIntervals[i]; j++) {
-      PetscInt    k;
-      PetscScalar (*subInt)[2] = &subIntervals[i][j*bs];
+    for (j = 0; j < numSubBoxes[i]; j++) {
+      PetscInt     k;
+      VecTaggerBox *subBox = &subBoxes[i][j*bs];
 
-      for (k = 0; k < nints; k++) {
+      for (k = 0; k < nboxes; k++) {
         PetscBool   isSub = PETSC_FALSE;
 
-        PetscScalar (*prevInt)[2] = &ints[bs * k];
-        ierr = VecTaggerAndOrIsSubinterval_Private(bs,prevInt,subInt,&isSub);CHKERRQ(ierr);
+        VecTaggerBox *prevBox = &bxs[bs * k];
+        ierr = VecTaggerAndOrIsSubBox_Private(bs,prevBox,subBox,&isSub);CHKERRQ(ierr);
         if (isSub) break;
-        ierr = VecTaggerAndOrIsSubinterval_Private(bs,subInt,prevInt,&isSub);CHKERRQ(ierr);
+        ierr = VecTaggerAndOrIsSubBox_Private(bs,subBox,prevBox,&isSub);CHKERRQ(ierr);
         if (isSub) {
           PetscInt l;
 
-          for (l = 0; l < bs; l++) {
-            prevInt[l][0] = subInt[l][0];
-            prevInt[l][1] = subInt[l][1];
-          }
+          for (l = 0; l < bs; l++) prevBox[l] = subBox[l];
           break;
         }
       }
-      if (k < nints) continue;
-      for (k = 0; k < bs; k++) {
-        ints[nints * bs + k][0] = subInt[k][0];
-        ints[nints * bs + k][1] = subInt[k][1];
-      }
-      nints++;
+      if (k < nboxes) continue;
+      for (k = 0; k < bs; k++) bxs[nboxes * bs + k] = subBox[k];
+      nboxes++;
     }
-    ierr = PetscFree(subIntervals[i]);CHKERRQ(ierr);
+    ierr = PetscFree(subBoxes[i]);CHKERRQ(ierr);
   }
-  ierr = PetscFree2(numSubIntervals,subIntervals);CHKERRQ(ierr);
-  *numIntervals = nints;
-  *intervals = ints;
+  ierr = PetscFree2(numSubBoxes,subBoxes);CHKERRQ(ierr);
+  *numBoxes = nboxes;
+  *boxes = bxs;
   PetscFunctionReturn(0);
 }
 
@@ -97,7 +91,7 @@ static PetscErrorCode VecTaggerComputeIS_Or(VecTagger tagger, Vec vec, IS *is)
   PetscErrorCode ierr, ierr2;
 
   PetscFunctionBegin;
-  ierr2 = VecTaggerComputeIS_FromIntervals(tagger,vec,is);
+  ierr2 = VecTaggerComputeIS_FromBoxes(tagger,vec,is);
   if (ierr2 != PETSC_ERR_SUP) {
     CHKERRQ(ierr2);
     PetscFunctionReturn(0);
@@ -124,7 +118,7 @@ PETSC_INTERN PetscErrorCode VecTaggerCreate_Or(VecTagger tagger)
 
   PetscFunctionBegin;
   ierr = VecTaggerCreate_AndOr(tagger);CHKERRQ(ierr);
-  tagger->ops->computeintervals = VecTaggerComputeIntervals_Or;
+  tagger->ops->computeboxes = VecTaggerComputeBoxes_Or;
   tagger->ops->computeis        = VecTaggerComputeIS_Or;
   PetscFunctionReturn(0);
 }
