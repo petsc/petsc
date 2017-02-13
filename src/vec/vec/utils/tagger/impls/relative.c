@@ -39,12 +39,21 @@ static PetscErrorCode VecTaggerComputeIntervals_Relative(VecTagger tagger,Vec ve
   }
   for (i = 0; i < bs; i++) ints[i][1] = -ints[i][1];
   ierr = VecRestoreArrayRead(vec, &vArray);CHKERRQ(ierr);
+#if !defined(PETSC_USE_COMPLEX)
   ierr = MPI_Allreduce(MPI_IN_PLACE,ints,2*bs,MPIU_SCALAR,MPIU_MIN,PetscObjectComm((PetscObject)tagger));CHKERRQ(ierr);
+#else
+  ierr = MPI_Allreduce(MPI_IN_PLACE,ints,4*bs,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)tagger));CHKERRQ(ierr);
+#endif
   for (i = 0; i < bs; i++) {
     PetscScalar mins = ints[i][0];
     PetscScalar difs = -ints[i][1] - mins;
+#if !defined(PETSC_USE_COMPLEX)
     ints[i][0] = mins + smpl->interval[i][0] * difs;
     ints[i][1] = mins + smpl->interval[i][1] * difs;
+#else
+    ints[i][0] = mins + PetscCMPLX(PetscRealPart(smpl->interval[i][0])*PetscRealPart(difs),PetscImaginaryPart(smpl->interval[i][0])*PetscImaginaryPart(difs));
+    ints[i][1] = mins + PetscCMPLX(PetscRealPart(smpl->interval[i][1])*PetscRealPart(difs),PetscImaginaryPart(smpl->interval[i][1])*PetscImaginaryPart(difs));
+#endif
   }
   *intervals = ints;
   PetscFunctionReturn(0);

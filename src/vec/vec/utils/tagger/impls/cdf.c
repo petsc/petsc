@@ -43,8 +43,8 @@ static PetscErrorCode VecTaggerComputeIntervals_CDF_Serial(VecTagger tagger,Vec 
   ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
   m    = n/bs;
   ierr = VecCreateSeq(PETSC_COMM_SELF,m,&vComp);CHKERRQ(ierr);
-#if defined (PETSC_USE_COMLEX)
-  ierr = PetscMalloc2(m,&cReal,&cImag);CHKERRQ(ierr);
+#if defined (PETSC_USE_COMPLEX)
+  ierr = PetscMalloc2(m,&cReal,m,&cImag);CHKERRQ(ierr);
 #endif
   for (i = 0; i < bs; i++) {
     IS          isStride;
@@ -296,8 +296,8 @@ static PetscErrorCode VecTaggerComputeIntervals_CDF_Iterative(VecTagger tagger,V
   ierr = VecCreateMPI(comm,m,M,&vComp);CHKERRQ(ierr);
   ierr = VecSetUp(vComp);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(vComp,&rstart,NULL);CHKERRQ(ierr);
-#if defined (PETSC_USE_COMLEX)
-  ierr = PetscMalloc2(m,&cReal,&cImag);CHKERRQ(ierr);
+#if defined (PETSC_USE_COMPLEX)
+  ierr = PetscMalloc2(m,&cReal,m,&cImag);CHKERRQ(ierr);
 #endif
   ierr = MPI_Type_contiguous(5,MPIU_REAL,&statType);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&statType);CHKERRQ(ierr);
@@ -319,7 +319,27 @@ static PetscErrorCode VecTaggerComputeIntervals_CDF_Iterative(VecTagger tagger,V
     ierr = PetscSortReal(m,cArray);CHKERRQ(ierr);
     ierr = VecTaggerComputeInterval_CDF_SortedArray_Iterative(tagger,statType,statReduce,cArray,m,smpl->interval[i],intervals[i]);CHKERRQ(ierr);
 #else
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Need to implement complex sorting");
+    {
+      PetscInt j;
+      PetscReal realInt[2], imagInt[2];
+      PetscReal realIntervals[2], imagIntervals[2];
+
+      for (j = 0; j < m; j++) {
+        cReal[j] = PetscRealPart(cArray[j]);
+        cImag[j] = PetscImaginaryPart(cArray[j]);
+      }
+      ierr = PetscSortReal(m,cReal);CHKERRQ(ierr);
+      ierr = PetscSortReal(m,cImag);CHKERRQ(ierr);
+
+      realInt[0] = PetscRealPart(smpl->interval[i][0]);
+      realInt[1] = PetscRealPart(smpl->interval[i][1]);
+      imagInt[0] = PetscImaginaryPart(smpl->interval[i][0]);
+      imagInt[1] = PetscImaginaryPart(smpl->interval[i][1]);
+      ierr = VecTaggerComputeInterval_CDF_SortedArray_Iterative(tagger,statType,statReduce,cReal,m,realInt,realIntervals);CHKERRQ(ierr);
+      ierr = VecTaggerComputeInterval_CDF_SortedArray_Iterative(tagger,statType,statReduce,cImag,m,imagInt,imagIntervals);CHKERRQ(ierr);
+      intervals[i][0] = PetscCMPLX(realIntervals[0],imagIntervals[0]);
+      intervals[i][1] = PetscCMPLX(realIntervals[1],imagIntervals[1]);
+    }
 #endif
     ierr = VecRestoreArray(vComp,&cArray);CHKERRQ(ierr);
   }

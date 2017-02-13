@@ -236,4 +236,48 @@ int main(int argc, char **argv)
     nsize: 3
     args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view
 
+  test:
+    suffix: 12
+    requires: complex
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -bs 2
+
+  test:
+    suffix: 13
+    requires: complex
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_block_size 2 -vec_tagger_interval 0.1+0.1i,1.5+1.5i,0.1+0.1i,1.5+1.5i
+
+  test:
+    suffix: 14
+    requires: complex
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_invert
+
+  test:
+    suffix: 15
+    requires: complex
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_type relative -vec_tagger_interval 0.25+0.25i,0.75+0.75i
+
+  test:
+    suffix: 16
+    requires: complex
+    nsize: 3
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_type cdf -vec_tagger_interval 0.25+0.25i,0.75+0.75i
+
+  test:
+    suffix: 17
+    requires: complex
+    nsize: 3
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_type cdf -vec_tagger_interval 0.25+0.25i,0.75+0.75i -vec_tagger_cdf_method iterative -vec_tagger_cdf_max_it 10
+
+  test:
+    suffix: 18
+    requires: complex
+    nsize: 3
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_type or -vec_tagger_num_subs 2 -sub_0_vec_tagger_type absolute -sub_0_vec_tagger_interval 0.0+0.0i,0.25+0.25i -sub_1_vec_tagger_type relative -sub_1_vec_tagger_interval 0.75+0.75i,inf+infi
+
+  test:
+    suffix: 19
+    requires: complex
+    nsize: 3
+    args: -n 12 -vec_view -vec_tagger_view -vec_tagger_intervals_view -tagged_is_view -untagged_is_view -tagged_vec_view -untagged_vec_view -vec_tagger_type and -vec_tagger_num_subs 2 -sub_0_vec_tagger_type absolute -sub_0_vec_tagger_interval -inf-infi,0.75+0.75i -sub_1_vec_tagger_type relative -sub_1_vec_tagger_interval 0.25+0.25i,1.+1.i
+
 TEST*/

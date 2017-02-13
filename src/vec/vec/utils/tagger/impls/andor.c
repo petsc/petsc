@@ -193,7 +193,11 @@ PetscErrorCode VecTaggerAndOrIsSubinterval_Private(PetscInt bs, PetscScalar (*su
       break;
     }
 #else
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Complex support not implemented yet.");
+    if (PetscRealPart(superInt[i][0]) > PetscRealPart(subInt[i][0]) || PetscImaginaryPart(superInt[i][0]) > PetscImaginaryPart(subInt[i][0]) ||
+        PetscRealPart(superInt[i][1]) < PetscRealPart(subInt[i][1]) || PetscImaginaryPart(superInt[i][1]) < PetscImaginaryPart(subInt[i][1])) {
+      *isSub = PETSC_FALSE;
+      break;
+    }
 #endif
   }
   PetscFunctionReturn(0);
@@ -214,7 +218,19 @@ PetscErrorCode VecTaggerAndOrIntersect_Private(PetscInt bs, PetscScalar (*a)[2],
       break;
     }
 #else
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Complex support not implemented yet.");
+    {
+      PetscReal maxMinReal = PetscMax(PetscRealPart(a[i][0]),PetscRealPart(b[i][0]));
+      PetscReal maxMinImag = PetscMax(PetscImaginaryPart(a[i][0]),PetscImaginaryPart(b[i][0]));
+      PetscReal minMaxReal = PetscMin(PetscRealPart(a[i][1]),PetscRealPart(b[i][1]));
+      PetscReal minMaxImag = PetscMin(PetscImaginaryPart(a[i][1]),PetscImaginaryPart(b[i][1]));
+
+      c[i][0] = PetscCMPLX(maxMinReal,maxMinImag);
+      c[i][1] = PetscCMPLX(minMaxReal,minMaxImag);
+      if ((PetscRealPart(c[i][1] - c[i][0]) < 0.) || (PetscImaginaryPart(c[i][1] - c[i][0]) < 0.)) {
+        *empty = PETSC_TRUE;
+        break;
+      }
+    }
 #endif
   }
   PetscFunctionReturn(0);
