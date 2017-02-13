@@ -66,7 +66,7 @@ static PetscErrorCode VecTaggerComputeIntervals_CDF_Serial(VecTagger tagger,Vec 
     {
       PetscInt j;
       PetscReal realInt[2], imagInt[2];
-      PetscReal realIntervals[2], imaginaryIntervals[2];
+      PetscReal realIntervals[2], imagIntervals[2];
 
       for (j = 0; j < m; j++) {
         cReal[j] = PetscRealPart(cArray[j]);
@@ -75,12 +75,12 @@ static PetscErrorCode VecTaggerComputeIntervals_CDF_Serial(VecTagger tagger,Vec 
       ierr = PetscSortReal(m,cReal);CHKERRQ(ierr);
       ierr = PetscSortReal(m,cImag);CHKERRQ(ierr);
 
-      realInt[0] = PetscRealPart(smpl->intervals[i][0]);
-      realInt[1] = PetscRealPart(smpl->intervals[i][1]);
-      imagInt[0] = PetscImaginaryPart(smpl->intervals[i][0]);
-      imagInt[1] = PetscImaginaryPart(smpl->intervals[i][1]);
-      ierr = VecTaggerComputeInterval_CDF_SortedArray(cArray,realInt,realIntervals);CHKERRQ(ierr);
-      ierr = VecTaggerComputeInteeval_CDF_SortedArray(cArray,imagInt,imagIntervals);CHKERRQ(ierr);
+      realInt[0] = PetscRealPart(smpl->interval[i][0]);
+      realInt[1] = PetscRealPart(smpl->interval[i][1]);
+      imagInt[0] = PetscImaginaryPart(smpl->interval[i][0]);
+      imagInt[1] = PetscImaginaryPart(smpl->interval[i][1]);
+      ierr = VecTaggerComputeInterval_CDF_SortedArray(cReal,m,realInt,realIntervals);CHKERRQ(ierr);
+      ierr = VecTaggerComputeInterval_CDF_SortedArray(cImag,m,imagInt,imagIntervals);CHKERRQ(ierr);
       intervals[i][0] = PetscCMPLX(realIntervals[0],imagIntervals[0]);
       intervals[i][1] = PetscCMPLX(realIntervals[1],imagIntervals[1]);
     }
