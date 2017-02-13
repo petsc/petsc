@@ -154,7 +154,7 @@ static PetscErrorCode VecTaggerView_AndOr(VecTagger tagger, PetscViewer viewer)
 
     ierr = VecTaggerGetSubs_AndOr(tagger,&nsubs,&subs);CHKERRQ(ierr);
     ierr = PetscObjectGetType((PetscObject)tagger,&name);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer," %s of %D subtags:\n",name);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer," %s of %D subtags:\n",name,nsubs);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     for (i = 0; i < nsubs; i++) {
       ierr = VecTaggerView(subs[i],viewer);CHKERRQ(ierr);
@@ -202,7 +202,6 @@ PetscErrorCode VecTaggerAndOrIsSubinterval_Private(PetscInt bs, PetscScalar (*su
 PetscErrorCode VecTaggerAndOrIntersect_Private(PetscInt bs, PetscScalar (*a)[2], PetscScalar (*b)[2],PetscScalar(*c)[2],PetscBool *empty)
 {
   PetscInt       i;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   *empty = PETSC_FALSE;

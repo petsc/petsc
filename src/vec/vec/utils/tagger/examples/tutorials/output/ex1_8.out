@@ -18,7 +18,7 @@ Process [2]
 VecTagger Object: 3 MPI processes
   type: or
   Block size: 1
-   or of 0 subtags:
+   or of 2 subtags:
     VecTagger Object: (sub_0_) 3 MPI processes
       type: absolute
       Block size: 1
