@@ -105,7 +105,7 @@ PetscErrorCode VecTaggerRelativeGetInterval(VecTagger tagger,const PetscScalar (
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode VecTaggerCreate_Relative(VecTagger tagger)
+PETSC_INTERN PetscErrorCode VecTaggerCreate_Relative(VecTagger tagger)
 {
   PetscErrorCode     ierr;
 

@@ -118,7 +118,7 @@ static PetscErrorCode VecTaggerComputeIS_Or(VecTagger tagger, Vec vec, IS *is)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecTaggerCreate_Or(VecTagger tagger)
+PETSC_INTERN PetscErrorCode VecTaggerCreate_Or(VecTagger tagger)
 {
   PetscErrorCode ierr;
 

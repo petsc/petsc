@@ -581,7 +581,7 @@ PetscErrorCode VecTaggerCDFGetInterval(VecTagger tagger,const PetscScalar (**int
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode VecTaggerCreate_CDF(VecTagger tagger)
+PETSC_INTERN PetscErrorCode VecTaggerCreate_CDF(VecTagger tagger)
 {
   VecTagger_CDF *cuml;
   PetscErrorCode       ierr;

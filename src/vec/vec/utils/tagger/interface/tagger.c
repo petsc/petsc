@@ -431,7 +431,7 @@ PetscErrorCode VecTaggerComputeIS_FromIntervals(VecTagger tagger, Vec vec, IS *i
           PetscScalar interval[2] = {intervals[l][0], intervals[l][1]};
           PetscBool   in;
 #if !defined(PETSC_USE_COMPLEX)
-          in = (PetscBool) (interval[0] <= val) && (val <= interval[1]);
+          in = (PetscBool) ((interval[0] <= val) && (val <= interval[1]));
 #else
           in = (PetscBool) ((PetscRealPart     (interval[0]) <= PetscRealPart     (val)        )&&
                             (PetscImaginaryPart(interval[0]) <= PetscImaginaryPart(val)        )&&

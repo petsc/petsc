@@ -67,7 +67,7 @@ PetscErrorCode VecTaggerAbsoluteGetInterval(VecTagger tagger,const PetscScalar (
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode VecTaggerCreate_Absolute(VecTagger tagger)
+PETSC_INTERN PetscErrorCode VecTaggerCreate_Absolute(VecTagger tagger)
 {
   PetscErrorCode     ierr;
 
