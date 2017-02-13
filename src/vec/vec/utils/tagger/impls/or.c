@@ -81,7 +81,7 @@ static PetscErrorCode VecTaggerComputeIntervals_Or(VecTagger tagger,Vec vec,Pets
       }
       nints++;
     }
-    ierr = PetscFree(subIntervals[i]);
+    ierr = PetscFree(subIntervals[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree2(numSubIntervals,subIntervals);CHKERRQ(ierr);
   *numIntervals = nints;

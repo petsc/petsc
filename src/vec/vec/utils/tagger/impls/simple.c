@@ -107,7 +107,7 @@ PetscErrorCode VecTaggerGetInterval_Simple(VecTagger tagger,const PetscScalar (*
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tagger,VEC_TAGGER_CLASSID,1);
   PetscValidPointer(interval,2);
-  *interval = smpl->interval;
+  *interval = (const PetscScalar (*)[2]) smpl->interval;
   PetscFunctionReturn(0);
 }
 

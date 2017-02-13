@@ -421,7 +421,6 @@ static inline PetscComplex PetscCMPLX(PetscReal x, PetscReal y)
 #else
 #if   defined(PETSC_USE_REAL_SINGLE) && defined(CMPLXF)
   return CMPLXF(x,y);
-  PETSC_REAL
 #elif defined(PETSC_USE_REAL_DOUBLE) && defined(CMPLX)
   return CMPLX(x,y);
 #else

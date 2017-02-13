@@ -428,8 +428,11 @@ PetscErrorCode VecTaggerComputeIS_FromIntervals(VecTagger tagger, Vec vec, IS *i
         for (b = 0; b < bs; b++) {
           PetscScalar val = vecArray[j * bs + b];
           PetscInt    l = k * bs + b;
-          PetscScalar interval[2] = {intervals[l][0], intervals[l][1]};
+          PetscScalar interval[2];
           PetscBool   in;
+
+          interval[0] = intervals[l][0];
+          interval[1] = intervals[l][1];
 #if !defined(PETSC_USE_COMPLEX)
           in = (PetscBool) ((interval[0] <= val) && (val <= interval[1]));
 #else

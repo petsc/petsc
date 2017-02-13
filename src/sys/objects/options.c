@@ -202,8 +202,8 @@ PetscErrorCode  PetscOptionsStringToScalar(const char name[],PetscScalar *a)
 {
   PetscBool      imag1;
   size_t         len;
-  PetscScalar    val;
-  char           *ptr;
+  PetscScalar    val = 0.;
+  char           *ptr = NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -314,7 +314,7 @@ PetscErrorCode  PetscOptionsValidKey(const char in_str[],PetscBool  *key)
   if (in_str[0] != '-') PetscFunctionReturn(0);
   if (in_str[1] == '-') in_str++;
   if (!isalpha((int)(in_str[1]))) PetscFunctionReturn(0);
-  (double) strtod(in_str,&ptr);
+  (void) strtod(in_str,&ptr);
   if (ptr != in_str && !(*ptr == '_' || isalnum((int)*ptr))) PetscFunctionReturn(0);
   *key = PETSC_TRUE;
   PetscFunctionReturn(0);
