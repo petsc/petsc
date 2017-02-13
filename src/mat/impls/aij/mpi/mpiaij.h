@@ -153,7 +153,56 @@ extern PetscErrorCode MatDiagonalScaleLocal_MPIAIJ(Mat,Vec);
 PETSC_INTERN PetscErrorCode MatGetSeqMats_MPIAIJ(Mat,Mat*,Mat*);
 PETSC_INTERN PetscErrorCode MatSetSeqMats_MPIAIJ(Mat,IS,IS,IS,MatStructure,Mat,Mat);
 
-/* compute apa = A[i,:]*P = Ad[i,:]*P_loc + Ao*[i,:]*P_oth */
+/* compute apa = A[i,:]*P = Ad[i,:]*P_loc + Ao*[i,:]*P_oth using sparse axpy */
+#define AProw_scalable(i,ad,ao,p_loc,p_oth,api,apj,apa) \
+{\
+  PetscInt    _anz,_pnz,_j,_k,*_ai,*_aj,_row,*_pi,*_pj,_nextp,*_apJ;      \
+  PetscScalar *_aa,_valtmp,*_pa;                             \
+  _apJ = apj + api[i];\
+  /* diagonal portion of A */\
+  _ai  = ad->i;\
+  _anz = _ai[i+1] - _ai[i];\
+  _aj  = ad->j + _ai[i];\
+  _aa  = ad->a + _ai[i];\
+  for (_j=0; _j<_anz; _j++) {\
+    _row = _aj[_j]; \
+    _pi  = p_loc->i;                                 \
+    _pnz = _pi[_row+1] - _pi[_row];         \
+    _pj  = p_loc->j + _pi[_row];                 \
+    _pa  = p_loc->a + _pi[_row];                 \
+    /* perform sparse axpy */                    \
+    _valtmp = _aa[_j];                           \
+    _nextp  = 0; \
+    for (_k=0; _nextp<_pnz; _k++) {                    \
+      if (_apJ[_k] == _pj[_nextp]) { /* column of AP == column of P */   \
+        apa[_k] += _valtmp*_pa[_nextp++];                                \
+      } \
+    }                                           \
+    PetscLogFlops(2.0*_pnz);                    \
+  }                                             \
+  /* off-diagonal portion of A */               \
+  _ai  = ao->i;\
+  _anz = _ai[i+1] - _ai[i];                     \
+  _aj  = ao->j + _ai[i];                         \
+  _aa  = ao->a + _ai[i];                         \
+  for (_j=0; _j<_anz; _j++) {                      \
+    _row = _aj[_j];    \
+    _pi  = p_oth->i;                         \
+    _pnz = _pi[_row+1] - _pi[_row];          \
+    _pj  = p_oth->j + _pi[_row];                  \
+    _pa  = p_oth->a + _pi[_row];                  \
+    /* perform sparse axpy */                     \
+    _valtmp = _aa[_j];                             \
+    _nextp  = 0; \
+    for (_k=0; _nextp<_pnz; _k++) {                     \
+      if (_apJ[_k] == _pj[_nextp]) { /* column of AP == column of P */\
+        apa[_k] += _valtmp*_pa[_nextp++];                       \
+      }                                                     \
+    }                                            \
+    PetscLogFlops(2.0*_pnz);                     \
+  } \
+}
+
 #define AProw_nonscalable(i,ad,ao,p_loc,p_oth,apa) \
 {\
   PetscInt    _anz,_pnz,_j,_k,*_ai,*_aj,_row,*_pi,*_pj;      \
@@ -195,4 +244,5 @@ PETSC_INTERN PetscErrorCode MatSetSeqMats_MPIAIJ(Mat,IS,IS,IS,MatStructure,Mat,M
     PetscLogFlops(2.0*_pnz);                     \
   } \
 }
+
 #endif
