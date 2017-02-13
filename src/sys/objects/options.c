@@ -100,8 +100,10 @@ PetscErrorCode  PetscOptionsStringToInt(const char name[],PetscInt *a)
     if ((size_t) (endptr - name) != len) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no integer value (do not include . in it)",name);
 
 #if defined(PETSC_USE_64BIT_INDICES) && defined(PETSC_HAVE_ATOLL)
+    (void) strtolval;
     *a = atoll(name);
 #elif defined(PETSC_USE_64BIT_INDICES) && defined(PETSC_HAVE___INT64)
+    (void) strtolval;
     *a = _atoi64(name);
 #else
     *a = (PetscInt)strtolval;

@@ -98,7 +98,7 @@ static PetscErrorCode VecTaggerComputeIntervals_CDF_Gather(VecTagger tagger,Vec 
 {
   Vec            gVec = NULL;
   VecScatter     vScat;
-  PetscInt       rank;
+  PetscMPIInt    rank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -388,7 +388,7 @@ static PetscErrorCode VecTaggerView_CDF(VecTagger tagger,PetscViewer viewer)
 {
   VecTagger_CDF *cuml = (VecTagger_CDF *) tagger->data;
   PetscBool            iascii;
-  PetscInt             size;
+  PetscMPIInt          size;
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
