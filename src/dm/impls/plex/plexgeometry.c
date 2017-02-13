@@ -2709,7 +2709,7 @@ static PetscErrorCode DMPlexReferenceToCoordinates_FE(DM dm, PetscFE fe, PetscIn
 
     for (k = 0; k < pdim; k++) {
       for (l = 0; l < Nc; l++) {
-        mapped[l] += modes[k] * B[k * Nc + l];
+        mapped[l] += modes[k] * B[(j * pdim + k) * Nc + l];
       }
     }
   }
