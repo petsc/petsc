@@ -23,13 +23,20 @@ T*/
 
 /*TEST
 
-   test:
+   # This is equivalent to test:
+   testset:
       args: -pc_type mg -ksp_type fgmres -da_refine 2 -ksp_monitor_short -mg_levels_ksp_monitor_short -mg_levels_ksp_norm_type unpreconditioned -ksp_view -pc_mg_type full
 
-   test:
+   testset:
       suffix: 2
       nsize: 2
       args: -pc_type mg -ksp_type fgmres -da_refine 2 -ksp_monitor_short -mg_levels_ksp_monitor_short -mg_levels_ksp_norm_type unpreconditioned -ksp_view -pc_mg_type full
+
+   testset:
+      suffix: 2
+      nsize: 2
+      args: -pc_type mg -ksp_type fgmres -da_refine 2 -ksp_monitor_short -mg_levels_ksp_monitor_short -mg_levels_ksp_norm_type unpreconditioned -ksp_view -pc_mg_type full
+      test:
 
 TEST*/
 
@@ -49,7 +56,7 @@ sys.path.insert(0,maintdir)
 # These are special keys describing build
 buildkeys="requires TODO SKIP depends".split()
 
-acceptedkeys="test nsize requires command suffix args separate_testvars filter filter_output localrunfiles comments TODO SKIP output_file".split()
+acceptedkeys="test nsize requires command suffix args filter filter_output localrunfiles comments TODO SKIP output_file".split()
 appendlist="args requires comments".split()
 
 import re
@@ -68,7 +75,7 @@ def _stripIndent(block,srcfile,entireBlock=False,fileNums=[]):
     if line.strip().startswith('#'): continue
     if entireBlock:
       var=line.split(":")[0].strip()
-      if not var=='test': 
+      if not (var=='test' or var=='testset'): 
         raise Exception("Formatting error in finding test in file: "+srcfile+"\n")
     nspace=len(line)-len(line.lstrip(stripstr))
     newline=line[nspace:]
@@ -94,7 +101,7 @@ def _stripIndent(block,srcfile,entireBlock=False,fileNums=[]):
       if line.strip().startswith('#'): continue
       if not newline.startswith(" "):
         var=newline.split(":")[0].strip()
-        if not var=='test': 
+        if not (var=='test' or var=='testset'): 
           err="Formatting error in file "+srcfile+" at line: " +line+"\n"
           if len(fileNums)>0:
             raise Exception(err+"Check indentation at line number: "+str(lineNum))
@@ -102,7 +109,7 @@ def _stripIndent(block,srcfile,entireBlock=False,fileNums=[]):
             raise Exception(err)
       else:
         var=line.split(":")[0].strip()
-        if var=='test':
+        if var=='test' or var=='testset':
           subnspace=len(line)-len(line.lstrip(stripstr))
           if firstPass:
             firstsubnspace=subnspace
@@ -125,6 +132,32 @@ def _getNewArgs(kvar,val,argStr):
   """
   return newTestStr
 
+def _getSeparateTestvars(testDict):
+  """
+  Given: dictionary that may have 
+  Return:  Variables that cause a test split
+  """
+  vals=None
+  sepvars=[]
+  # Check nsize
+  if testDict.has_key('nsize'): 
+    varset=testDict['nsize']
+    if len(re.findall('{{(.*?)}(?:[\w\s]*)?}',varset))>0:
+      if 'separate' in re.findall('{{(?:.*?)}([\w\s]*)?}',varset)[0]: 
+        sepvars.append('nsize')
+
+  # Now check args
+  if not testDict.has_key('args'): return sepvars
+  for varset in re.split('-(?=[a-zA-Z])',testDict['args']):
+    if not varset.strip(): continue
+    if len(re.findall('{{(.*?)}(?:[\w\s]*)?}',varset))>0:
+      # Assuming only one for loop per var specification
+      keyvar=varset.split("{{")[0].strip()
+      fortype=re.findall('{{(?:.*?)}([\w\s]*)?}',varset)[0]
+      if 'separate' in fortype: sepvars.append(keyvar)
+
+  return sepvars
+
 def _getVarVals(findvar,testDict):
   """
   Given: variable that is either nsize or in args
@@ -133,18 +166,19 @@ def _getVarVals(findvar,testDict):
   vals=None
   newargs=''
   if findvar=='nsize':
-    vals=testDict[findvar]
+    varset=testDict[findvar]
+    vals=re.findall('{{(.*?)}(?:[\w\s]*)?}',varset)[0]
   else:
     varlist=[]
     for varset in re.split('-(?=[a-zA-Z])',testDict['args']):
       if not varset.strip(): continue
-      if len(re.findall('{{(.*?)}}',varset))>0:
+      if len(re.findall('{{(.*?)}(?:[\w\s]*)?}',varset))>0:
         # Assuming only one for loop per var specification
         keyvar=varset.split("{{")[0].strip()
         if keyvar!=findvar: 
           newargs+="-"+varset.strip()+" "
           continue
-        vals=re.findall('{{(.*?)}}',varset)[0]
+        vals=re.findall('{{(.*?)}(?:[\w\s]*)?}',varset)[0]
       else:
         newargs+="-"+varset.strip()+" "
 
@@ -153,19 +187,19 @@ def _getVarVals(findvar,testDict):
 
 def genTestsSeparateTestvars(intests,indicts):
   """
-  Given: testname, sdict with separate_testvars
+  Given: testname, sdict with 'separate_testvars
   Return: testnames,sdicts: List of generated tests
   """
   testnames=[]; sdicts=[]
   for i in range(len(intests)):
     testname=intests[i]; sdict=indicts[i]; i+=1
-    if sdict.has_key('separate_testvars'):
-      for kvar in sdict['separate_testvars'].split():
+    separate_testvars=_getSeparateTestvars(sdict)
+    if len(separate_testvars)>0:
+      for kvar in separate_testvars:
         kvals,newargs=_getVarVals(kvar,sdict)
         # No errors means we are good to go
         for val in kvals.split():
           kvardict=sdict.copy()
-          del kvardict['separate_testvars']
           gensuffix="_"+kvar+"-"+val
           newtestnm=testname+gensuffix
           if sdict.has_key('suffix'):
@@ -334,7 +368,7 @@ def parseTests(testStr,srcfile,fileNums,verbosity):
   if verbosity>2: print srcfile
 
   # Now go through each test.  First elem in split is blank
-  for test in newTestStr.split("\ntest:")[1:]:
+  for test in re.split("\ntest(?:set)?:",newTestStr)[1:]:
     testnames,subdicts=parseTest(test,srcfile,verbosity)
     for i in range(len(testnames)):
       if testDict.has_key(testnames[i]):

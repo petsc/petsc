@@ -111,7 +111,7 @@ class generateExamples(Petsc):
       varlist=[]
       for varset in re.split('-(?=[a-zA-Z])',keystr):
         if not varset.strip(): continue
-        if len(re.findall('{{(.*?)}}',varset))>0:
+        if len(re.findall('{{(.*?)}(?:[\w\s]*)?}',varset))>0:
           if not loopVars.has_key(akey): loopVars[akey]={}
           # Assuming only one for loop per var specification
           keyvar=varset.split("{{")[0].strip()
@@ -121,7 +121,7 @@ class generateExamples(Petsc):
             else:
               print testname+": Problem in finding loop variables", keyvar, varset
           varlist.append(keyvar)
-          loopVars[akey][keyvar]=[keyvar,re.findall('{{(.*?)}}',varset)[0]]
+          loopVars[akey][keyvar]=[keyvar,re.findall('{{(.*?)}(?:[\w\s]*)?}',varset)[0]]
           if akey=='nsize':
             inDict[akey] = '${' + keyvar + '}'
             lsuffix+=akey+'-'+inDict[akey]+'_'

@@ -7,12 +7,11 @@ int main(int argc, char **argv) {return 0;}
 
 /*TEST
    test: 
-     # Test separate_testvars at the top lvel
+     # Test loop separation
      suffix: 1
      command: echo ${args}
      nsize: {{1,2}}
-     args: -a b -c {{d "e,f" g}} -h {{"i,j" "k"}} -l {{foo bar}}
-     separate_testvars: l
+     args: -a b -c {{d "e,f" g}} -h {{"i,j" "k"}} -l {{foo bar}separate output}
 
    test: # Simple subtest
      suffix: 2
@@ -52,6 +51,5 @@ int main(int argc, char **argv) {return 0;}
 
      test:
        suffix: gmres
-       args: -rtol {{1.e-4 1.e-5}}
-       separate_testvars: rtol
+       args: -rtol {{1.e-4 1.e-5}separate output}
 TEST*/
