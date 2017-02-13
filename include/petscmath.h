@@ -412,7 +412,7 @@ PETSC_EXTERN PetscComplex PETSC_i;
 
   for details
 */
-static inline PetscComplex PetscCMPLX(PetscReal x, PetscReal y)
+PETSC_STATIC_INLINE PetscComplex PetscCMPLX(PetscReal x, PetscReal y)
 {
 #if   defined(__cplusplus)
   return PetscComplex(x,y);
