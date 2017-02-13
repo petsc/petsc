@@ -202,6 +202,7 @@ static PetscErrorCode TSSetUp_SSP(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = TSCheckImplicitTerm(ts);CHKERRQ(ierr);
   ierr = TSGetAdapt(ts,&ts->adapt);CHKERRQ(ierr);
   ierr = TSAdaptCandidatesClear(ts->adapt);CHKERRQ(ierr);
   PetscFunctionReturn(0);

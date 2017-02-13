@@ -498,7 +498,6 @@ static PetscErrorCode TSStep_RK(TS ts)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-
   rk->status = TS_STEP_INCOMPLETE;
   while (!ts->reason && rk->status != TS_STEP_COMPLETE) {
     PetscReal t = ts->ptime;
@@ -812,6 +811,7 @@ static PetscErrorCode TSSetUp_RK(TS ts)
   DM             dm;
 
   PetscFunctionBegin;
+  ierr = TSCheckImplicitTerm(ts);CHKERRQ(ierr);
   ierr = TSRKTableauSetUp(ts);CHKERRQ(ierr);
   if (!rk->VecCostIntegral0 && ts->vec_costintegral && ts->costintegralfwd) { /* back up cost integral */
     ierr = VecDuplicate(ts->vec_costintegral,&rk->VecCostIntegral0);CHKERRQ(ierr);
