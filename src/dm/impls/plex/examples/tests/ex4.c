@@ -588,12 +588,12 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscInt       numRefinements = user->numRefinements;
   PetscBool      cellHybrid     = user->cellHybrid;
   PetscBool      cellSimplex    = user->cellSimplex;
-  PetscMPIInt    rank, numProcs;
+  PetscMPIInt    rank, size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
@@ -635,13 +635,13 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   default:
     SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make meshes for dimension %d", dim);
   }
-  if (user->testPartition && numProcs > 1) {
+  if (user->testPartition && size > 1) {
     PetscPartitioner part;
     PetscInt  *sizes  = NULL;
     PetscInt  *points = NULL;
 
     if (!rank) {
-      if (dim == 2 && cellSimplex && !cellHybrid && numProcs == 2) {
+      if (dim == 2 && cellSimplex && !cellHybrid && size == 2) {
         switch (user->testNum) {
         case 0: {
           PetscInt triSizes_p2[2]  = {1, 1};
@@ -653,7 +653,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
         default:
           SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular mesh on 2 procs", user->testNum);
         }
-      } else if (dim == 2 && cellSimplex && cellHybrid && numProcs == 2) {
+      } else if (dim == 2 && cellSimplex && cellHybrid && size == 2) {
         switch (user->testNum) {
         case 0: {
           PetscInt triSizes_p2[2]  = {1, 2};
@@ -665,7 +665,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
         default:
           SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular hybrid mesh on 2 procs", user->testNum);
         }
-      } else if (dim == 2 && !cellSimplex && !cellHybrid && numProcs == 2) {
+      } else if (dim == 2 && !cellSimplex && !cellHybrid && size == 2) {
         switch (user->testNum) {
         case 0: {
           PetscInt quadSizes_p2[2]  = {1, 1};
@@ -677,7 +677,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
         default:
           SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for quadrilateral mesh on 2 procs", user->testNum);
         }
-      } else if (dim == 2 && !cellSimplex && cellHybrid && numProcs == 2) {
+      } else if (dim == 2 && !cellSimplex && cellHybrid && size == 2) {
         switch (user->testNum) {
         case 0: {
           PetscInt quadSizes_p2[2]  = {1, 2};
@@ -689,7 +689,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
         default:
           SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for quadrilateral hybrid mesh on 2 procs", user->testNum);
         }
-      } else if (dim == 3 && cellSimplex && !cellHybrid && numProcs == 2) {
+      } else if (dim == 3 && cellSimplex && !cellHybrid && size == 2) {
         switch (user->testNum) {
         case 0: {
           PetscInt tetSizes_p2[2]  = {1, 1};
@@ -708,7 +708,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
         default:
           SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for tetrahedral mesh on 2 procs", user->testNum);
         }
-      } else if (dim == 3 && cellSimplex && cellHybrid && numProcs == 2) {
+      } else if (dim == 3 && cellSimplex && cellHybrid && size == 2) {
         switch (user->testNum) {
         case 0: {
           PetscInt tetSizes_p2[2]  = {1, 2};
@@ -727,7 +727,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
         default:
           SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for tetrahedral hybrid mesh on 2 procs", user->testNum);
         }
-      } else if (dim == 3 && !cellSimplex && !cellHybrid && numProcs == 2) {
+      } else if (dim == 3 && !cellSimplex && !cellHybrid && size == 2) {
         switch (user->testNum) {
         case 0: {
           PetscInt hexSizes_p2[2]  = {1, 1};
@@ -739,7 +739,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
         default:
           SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for hexahedral mesh on 2 procs", user->testNum);
         }
-      } else if (dim == 3 && !cellSimplex && cellHybrid && numProcs == 2) {
+      } else if (dim == 3 && !cellSimplex && cellHybrid && size == 2) {
         switch (user->testNum) {
         case 0: {
           PetscInt hexSizes_p2[2]  = {1, 1};
@@ -762,7 +762,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     }
     ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
     ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
-    ierr = PetscPartitionerShellSetPartition(part, numProcs, sizes, points);CHKERRQ(ierr);
+    ierr = PetscPartitionerShellSetPartition(part, size, sizes, points);CHKERRQ(ierr);
     ierr = PetscFree2(sizes, points);CHKERRQ(ierr);
   }
   {

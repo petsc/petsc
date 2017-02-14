@@ -189,7 +189,8 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
       PetscInt d;
 
       for (d = 0; d < ctx->dim; ++d, ++i) a[i] = globalPoints[p*ctx->dim+d];
-      ctx->cells[q++] = foundCells[p].index;
+      ctx->cells[q] = foundCells[q].index;
+      ++q;
     }
   }
   ierr = VecRestoreArray(ctx->coords, &a);CHKERRQ(ierr);

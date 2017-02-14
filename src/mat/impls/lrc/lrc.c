@@ -14,6 +14,7 @@ typedef struct {
 PetscErrorCode MatMult_LRC(Mat N,Vec x,Vec y)
 {
   Mat_LRC           *Na = (Mat_LRC*)N->data;
+  Mat               Uloc,Vloc;
   PetscErrorCode    ierr;
   PetscScalar       *w1,*w2;
   const PetscScalar *a;
@@ -22,12 +23,14 @@ PetscErrorCode MatMult_LRC(Mat N,Vec x,Vec y)
   ierr = VecGetArrayRead(x,&a);CHKERRQ(ierr);
   ierr = VecPlaceArray(Na->xl,a);CHKERRQ(ierr);
   ierr = VecGetLocalVector(y,Na->yl);CHKERRQ(ierr);
+  ierr = MatDenseGetLocalMatrix(Na->U,&Uloc);CHKERRQ(ierr);
+  ierr = MatDenseGetLocalMatrix(Na->V,&Vloc);CHKERRQ(ierr);
 
   /* multiply the local part of V with the local part of x */
 #if defined(PETSC_USE_COMPLEX)
-  ierr = MatMultHermitianTranspose(Na->V,Na->xl,Na->work1);CHKERRQ(ierr);
+  ierr = MatMultHermitianTranspose(Vloc,Na->xl,Na->work1);CHKERRQ(ierr);
 #else
-  ierr = MatMultTranspose(Na->V,Na->xl,Na->work1);CHKERRQ(ierr);
+  ierr = MatMultTranspose(Vloc,Na->xl,Na->work1);CHKERRQ(ierr);
 #endif
 
   /* form the sum of all the local multiplies: this is work2 = V'*x =
@@ -46,10 +49,10 @@ PetscErrorCode MatMult_LRC(Mat N,Vec x,Vec y)
     /* form y = A*x */
     ierr = MatMult(Na->A,x,y);CHKERRQ(ierr);
     /* multiply-add y = y + U*work2 */
-    ierr = MatMultAdd(Na->U,Na->work2,Na->yl,Na->yl);CHKERRQ(ierr);
+    ierr = MatMultAdd(Uloc,Na->work2,Na->yl,Na->yl);CHKERRQ(ierr);
   } else {
     /* multiply y = U*work2 */
-    ierr = MatMult(Na->U,Na->work2,Na->yl);CHKERRQ(ierr);
+    ierr = MatMult(Uloc,Na->work2,Na->yl);CHKERRQ(ierr);
   }
 
   ierr = VecRestoreArrayRead(x,&a);CHKERRQ(ierr);
@@ -196,10 +199,10 @@ PetscErrorCode MatCreateLRC(Mat A,Mat U,Vec c,Mat V,Mat *N)
   ierr       = PetscNewLog(*N,&Na);CHKERRQ(ierr);
   (*N)->data = (void*)Na;
   Na->A      = A;
+  Na->U      = U;
   Na->c      = c;
+  Na->V      = V;
 
-  ierr = MatDenseGetLocalMatrix(U,&Na->U);CHKERRQ(ierr);
-  ierr = MatDenseGetLocalMatrix(V,&Na->V);CHKERRQ(ierr);
   if (A) { ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr); }
   ierr = PetscObjectReference((PetscObject)Na->U);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)Na->V);CHKERRQ(ierr);

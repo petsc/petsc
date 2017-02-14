@@ -128,7 +128,7 @@ PetscErrorCode DMPlexTetgenSetOptions(DM dm, const char *opts)
 #if defined(PETSC_HAVE_TRIANGLE)
 #include <triangle.h>
 
-PetscErrorCode InitInput_Triangle(struct triangulateio *inputCtx)
+static PetscErrorCode InitInput_Triangle(struct triangulateio *inputCtx)
 {
   PetscFunctionBegin;
   inputCtx->numberofpoints             = 0;
@@ -148,7 +148,7 @@ PetscErrorCode InitInput_Triangle(struct triangulateio *inputCtx)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode InitOutput_Triangle(struct triangulateio *outputCtx)
+static PetscErrorCode InitOutput_Triangle(struct triangulateio *outputCtx)
 {
   PetscFunctionBegin;
   outputCtx->numberofpoints        = 0;
@@ -167,7 +167,7 @@ PetscErrorCode InitOutput_Triangle(struct triangulateio *outputCtx)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FiniOutput_Triangle(struct triangulateio *outputCtx)
+static PetscErrorCode FiniOutput_Triangle(struct triangulateio *outputCtx)
 {
   PetscFunctionBegin;
   free(outputCtx->pointlist);
@@ -181,7 +181,7 @@ PetscErrorCode FiniOutput_Triangle(struct triangulateio *outputCtx)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool interpolate, DM *dm)
+static PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool interpolate, DM *dm)
 {
   MPI_Comm             comm;
   DM_Plex             *mesh             = (DM_Plex *) boundary->data;
@@ -313,7 +313,7 @@ PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool interpolate, DM *d
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexRefine_Triangle(DM dm, double *maxVolumes, DM *dmRefined)
+static PetscErrorCode DMPlexRefine_Triangle(DM dm, double *maxVolumes, DM *dmRefined)
 {
   MPI_Comm             comm;
   PetscInt             dim       = 2;
@@ -452,7 +452,7 @@ PetscErrorCode DMPlexRefine_Triangle(DM dm, double *maxVolumes, DM *dmRefined)
 
 #if defined(PETSC_HAVE_TETGEN)
 #include <tetgen.h>
-PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpolate, DM *dm)
+static PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpolate, DM *dm)
 {
   MPI_Comm       comm;
   DM_Plex       *mesh      = (DM_Plex *) boundary->data;
@@ -583,7 +583,7 @@ PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpolate, DM *dm)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
+static PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
 {
   MPI_Comm       comm;
   const PetscInt dim       = 3;
@@ -712,7 +712,7 @@ PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
 #if defined(PETSC_HAVE_CTETGEN)
 #include <ctetgen.h>
 
-PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM *dm)
+static PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM *dm)
 {
   MPI_Comm       comm;
   const PetscInt dim       = 3;
@@ -875,7 +875,7 @@ PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM *dm
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, DM *dmRefined)
+static PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, DM *dmRefined)
 {
   MPI_Comm       comm;
   const PetscInt dim       = 3;

@@ -171,7 +171,6 @@ def chksynonyms():
 
   if downloadideas:
     downloadxsdk = 1
-    argsAddDownload('pflotran')
     argsAddDownload('alquimia')
     # mstk currently cannot build a shared library
     argsAddDownload('mstk',[],['--download-mstk-shared=0'])
@@ -180,6 +179,7 @@ def chksynonyms():
 
   if downloadxsdk:
     # Common external libraries
+    argsAddDownload('pflotran')
     argsAddDownload('hdf5')
     argsAddDownload('netcdf')
     argsAddDownload('metis')

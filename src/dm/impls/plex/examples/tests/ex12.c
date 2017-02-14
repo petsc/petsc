@@ -56,12 +56,12 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscInt       quadPoints[4]   = {2, 3, 0, 1};
   PetscInt       overlap         = user->overlap >= 0 ? user->overlap : 0;
   size_t         len;
-  PetscMPIInt    rank, numProcs;
+  PetscMPIInt    rank, size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
   if (len) {
     const char *extGmsh = ".msh";
@@ -94,21 +94,21 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       PetscPartitioner part;
 
       if (!rank) {
-        if (dim == 2 && cellSimplex && numProcs == 2) {
+        if (dim == 2 && cellSimplex && size == 2) {
           sizes = triSizes_n2; points = triPoints_n2;
-        } else if (dim == 2 && cellSimplex && numProcs == 3) {
+        } else if (dim == 2 && cellSimplex && size == 3) {
           sizes = triSizes_n3; points = triPoints_n3;
-        } else if (dim == 2 && cellSimplex && numProcs == 4) {
+        } else if (dim == 2 && cellSimplex && size == 4) {
           sizes = triSizes_n4; points = triPoints_n4;
-        } else if (dim == 2 && cellSimplex && numProcs == 8) {
+        } else if (dim == 2 && cellSimplex && size == 8) {
           sizes = triSizes_n8; points = triPoints_n8;
-        } else if (dim == 2 && !cellSimplex && numProcs == 2) {
+        } else if (dim == 2 && !cellSimplex && size == 2) {
           sizes = quadSizes; points = quadPoints;
         }
       }
       ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
       ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
-      ierr = PetscPartitionerShellSetPartition(part, numProcs, sizes, points);CHKERRQ(ierr);
+      ierr = PetscPartitionerShellSetPartition(part, size, sizes, points);CHKERRQ(ierr);
     }
     ierr = DMPlexDistribute(*dm, overlap, NULL, &distMesh);CHKERRQ(ierr);
   }
@@ -127,7 +127,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
     ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
     ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
-    ierr = PetscPartitionerShellSetPartition(part, numProcs, reSizes_n2, rePoints_n2);CHKERRQ(ierr);
+    ierr = PetscPartitionerShellSetPartition(part, size, reSizes_n2, rePoints_n2);CHKERRQ(ierr);
 
     ierr = DMPlexDistribute(*dm, overlap, NULL, &distMesh);CHKERRQ(ierr);
     if (distMesh) {

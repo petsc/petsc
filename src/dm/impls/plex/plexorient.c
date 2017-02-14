@@ -336,32 +336,32 @@ PetscErrorCode DMPlexOrient(DM dm)
     PetscSFNode *adj = NULL;
     PetscBool   *val = NULL;
     PetscMPIInt *recvcounts = NULL, *displs = NULL, *Nc, p, o;
-    PetscMPIInt  numProcs = 0;
+    PetscMPIInt  size = 0;
 
     ierr = PetscCalloc1(numComponents, &flipped);CHKERRQ(ierr);
-    if (!rank) {ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);}
-    ierr = PetscCalloc4(numProcs, &recvcounts, numProcs+1, &displs, numProcs, &Nc, numProcs+1, &Noff);CHKERRQ(ierr);
+    if (!rank) {ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);}
+    ierr = PetscCalloc4(size, &recvcounts, size+1, &displs, size, &Nc, size+1, &Noff);CHKERRQ(ierr);
     ierr = MPI_Gather(&numComponents, 1, MPI_INT, Nc, 1, MPI_INT, 0, comm);CHKERRQ(ierr);
-    for (p = 0; p < numProcs; ++p) {
+    for (p = 0; p < size; ++p) {
       displs[p+1] = displs[p] + Nc[p];
     }
-    if (!rank) {ierr = PetscMalloc1(displs[numProcs],&N);CHKERRQ(ierr);}
+    if (!rank) {ierr = PetscMalloc1(displs[size],&N);CHKERRQ(ierr);}
     ierr = MPI_Gatherv(numNeighbors, numComponents, MPIU_INT, N, Nc, displs, MPIU_INT, 0, comm);CHKERRQ(ierr);
-    for (p = 0, o = 0; p < numProcs; ++p) {
+    for (p = 0, o = 0; p < size; ++p) {
       recvcounts[p] = 0;
       for (c = 0; c < Nc[p]; ++c, ++o) recvcounts[p] += N[o];
       displs[p+1] = displs[p] + recvcounts[p];
     }
-    if (!rank) {ierr = PetscMalloc2(displs[numProcs], &adj, displs[numProcs], &val);CHKERRQ(ierr);}
+    if (!rank) {ierr = PetscMalloc2(displs[size], &adj, displs[size], &val);CHKERRQ(ierr);}
     ierr = MPI_Gatherv(nrankComp, totNeighbors, MPIU_2INT, adj, recvcounts, displs, MPIU_2INT, 0, comm);CHKERRQ(ierr);
     ierr = MPI_Gatherv(match, totNeighbors, MPIU_BOOL, val, recvcounts, displs, MPIU_BOOL, 0, comm);CHKERRQ(ierr);
     ierr = PetscFree2(numNeighbors, neighbors);CHKERRQ(ierr);
     if (!rank) {
-      for (p = 1; p <= numProcs; ++p) {Noff[p] = Noff[p-1] + Nc[p-1];}
+      for (p = 1; p <= size; ++p) {Noff[p] = Noff[p-1] + Nc[p-1];}
       if (flg) {
         PetscInt n;
 
-        for (p = 0, off = 0; p < numProcs; ++p) {
+        for (p = 0, off = 0; p < size; ++p) {
           for (c = 0; c < Nc[p]; ++c) {
             ierr = PetscPrintf(PETSC_COMM_SELF, "Proc %d Comp %d:\n", p, c);CHKERRQ(ierr);
             for (n = 0; n < N[Noff[p]+c]; ++n, ++off) {
@@ -372,9 +372,9 @@ PetscErrorCode DMPlexOrient(DM dm)
       }
       /* Symmetrize the graph */
       ierr = MatCreate(PETSC_COMM_SELF, &G);CHKERRQ(ierr);
-      ierr = MatSetSizes(G, Noff[numProcs], Noff[numProcs], Noff[numProcs], Noff[numProcs]);CHKERRQ(ierr);
+      ierr = MatSetSizes(G, Noff[size], Noff[size], Noff[size], Noff[size]);CHKERRQ(ierr);
       ierr = MatSetUp(G);CHKERRQ(ierr);
-      for (p = 0, off = 0; p < numProcs; ++p) {
+      for (p = 0, off = 0; p < size; ++p) {
         for (c = 0; c < Nc[p]; ++c) {
           const PetscInt r = Noff[p]+c;
           PetscInt       n;
@@ -391,13 +391,13 @@ PetscErrorCode DMPlexOrient(DM dm)
       ierr = MatAssemblyBegin(G, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd(G, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-      ierr = PetscBTCreate(Noff[numProcs], &seenProcs);CHKERRQ(ierr);
-      ierr = PetscBTMemzero(Noff[numProcs], seenProcs);CHKERRQ(ierr);
-      ierr = PetscBTCreate(Noff[numProcs], &flippedProcs);CHKERRQ(ierr);
-      ierr = PetscBTMemzero(Noff[numProcs], flippedProcs);CHKERRQ(ierr);
-      ierr = PetscMalloc1(Noff[numProcs], &procFIFO);CHKERRQ(ierr);
+      ierr = PetscBTCreate(Noff[size], &seenProcs);CHKERRQ(ierr);
+      ierr = PetscBTMemzero(Noff[size], seenProcs);CHKERRQ(ierr);
+      ierr = PetscBTCreate(Noff[size], &flippedProcs);CHKERRQ(ierr);
+      ierr = PetscBTMemzero(Noff[size], flippedProcs);CHKERRQ(ierr);
+      ierr = PetscMalloc1(Noff[size], &procFIFO);CHKERRQ(ierr);
       pTop = pBottom = 0;
-      for (p = 0; p < Noff[numProcs]; ++p) {
+      for (p = 0; p < Noff[size]; ++p) {
         if (PetscBTLookup(seenProcs, p)) continue;
         /* Initialize FIFO with next proc */
         procFIFO[pBottom++] = p;
@@ -441,12 +441,12 @@ PetscErrorCode DMPlexOrient(DM dm)
       PetscBool *flips = NULL;
 
       if (!rank) {
-        ierr = PetscMalloc1(Noff[numProcs], &flips);CHKERRQ(ierr);
-        for (p = 0; p < Noff[numProcs]; ++p) {
+        ierr = PetscMalloc1(Noff[size], &flips);CHKERRQ(ierr);
+        for (p = 0; p < Noff[size]; ++p) {
           flips[p] = PetscBTLookup(flippedProcs, p) ? PETSC_TRUE : PETSC_FALSE;
           if (flg && flips[p]) {ierr = PetscPrintf(comm, "Flipping Proc+Comp %d:\n", p);CHKERRQ(ierr);}
         }
-        for (p = 0; p < numProcs; ++p) {
+        for (p = 0; p < size; ++p) {
           displs[p+1] = displs[p] + Nc[p];
         }
       }

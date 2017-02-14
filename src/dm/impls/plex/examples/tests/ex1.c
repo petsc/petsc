@@ -383,8 +383,7 @@ int main(int argc, char **argv)
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_5tets_ascii.cas -interpolate 1 -dm_view
   test:
     suffix: fluent_3
-    requires: broken
-    requires: !complex
+    requires: broken !complex
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_5tets.cas -interpolate 1 -dm_view
 
   # Med mesh reader tests, including parallel file reads

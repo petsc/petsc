@@ -649,13 +649,13 @@ PetscErrorCode DMNetworkAssembleGraphStructures(DM dm)
 {
   PetscErrorCode ierr;
   MPI_Comm       comm;
-  PetscMPIInt    rank, numProcs;
+  PetscMPIInt    rank, size;
   DM_Network     *network = (DM_Network*)dm->data;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
 
   /* Create maps for vertices and edges */
   ierr = DMNetworkSetSubMap_private(network->vStart,network->vEnd,&network->vertex.mapping);CHKERRQ(ierr);
@@ -665,7 +665,7 @@ PetscErrorCode DMNetworkAssembleGraphStructures(DM dm)
   ierr = DMNetworkGetSubSection_private(network->DofSection,network->vStart,network->vEnd,&network->vertex.DofSection);CHKERRQ(ierr);
   ierr = DMNetworkGetSubSection_private(network->DofSection,network->eStart,network->eEnd,&network->edge.DofSection);CHKERRQ(ierr);
 
-  if (numProcs > 1) {
+  if (size > 1) {
     ierr = PetscSFGetSubSF(network->plex->sf, network->vertex.mapping, &network->vertex.sf);CHKERRQ(ierr); 
     ierr = PetscSectionCreateGlobalSection(network->vertex.DofSection, network->vertex.sf, PETSC_FALSE, PETSC_FALSE, &network->vertex.GlobalDofSection);CHKERRQ(ierr);
   ierr = PetscSFGetSubSF(network->plex->sf, network->edge.mapping, &network->edge.sf);CHKERRQ(ierr); 
