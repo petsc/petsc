@@ -1121,7 +1121,7 @@ static PetscErrorCode DMPlexSwap_Static(DM dmA, DM dmB)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *PetscOptionsObject,DM dm)
+PetscErrorCode DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *PetscOptionsObject,DM dm)
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
   PetscErrorCode ierr;
