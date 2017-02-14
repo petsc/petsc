@@ -1616,10 +1616,10 @@ int main(int argc, char **argv)
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   if (useAMR) {
-    VecTaggerBox refineBox, coasenBox;
+    VecTaggerBox refineBox, coarsenBox;
 
-    refineBox->min  = refineBox->max  = PETSC_MAX_REAL;
-    coarsenBox->min = coarsenBox->max = PETSC_MIN_REAL;
+    refineBox.min  = refineBox.max  = PETSC_MAX_REAL;
+    coarsenBox.min = coarsenBox.max = PETSC_MIN_REAL;
 
     ierr = VecTaggerCreate(comm,&refineTag);CHKERRQ(ierr);
     ierr = PetscObjectSetOptionsPrefix((PetscObject)refineTag,"refine_");CHKERRQ(ierr);
