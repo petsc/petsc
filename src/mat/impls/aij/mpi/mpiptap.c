@@ -118,7 +118,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,Mat C)
   Mat_SeqAIJ        *ap,*p_loc,*p_oth,*c_seq;
   Mat_PtAPMPI       *ptap = c->ptap;
   Mat               AP_loc,C_loc,C_oth;
-  PetscInt          i,rstart,rend,cm,ncols,row,*api,*apj,am = A->rmap->n,j,apnz;
+  PetscInt          i,rstart,rend,cm,ncols,row,*api,*apj,am = A->rmap->n,apnz;
   PetscScalar       *apa;
   const PetscInt    *cols;
   const PetscScalar *vals;
