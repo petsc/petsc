@@ -118,8 +118,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,Mat C)
   Mat_SeqAIJ        *ap,*p_loc,*p_oth,*c_seq;
   Mat_PtAPMPI       *ptap = c->ptap;
   Mat               AP_loc,C_loc,C_oth;
-  PetscInt          i,rstart,rend,cm,ncols,row;
-  PetscInt          *api,*apj,am = A->rmap->n,j,apnz;
+  PetscInt          i,rstart,rend,cm,ncols,row,*api,*apj,am = A->rmap->n,j,apnz;
   PetscScalar       *apa;
   const PetscInt    *cols;
   const PetscScalar *vals;
@@ -150,18 +149,14 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,Mat C)
   /* get data from symbolic products */
   p_loc = (Mat_SeqAIJ*)(ptap->P_loc)->data;
   p_oth = (Mat_SeqAIJ*)(ptap->P_oth)->data;
-  apa   = ptap->apa;
   api   = ap->i;
   apj   = ap->j;
   for (i=0; i<am; i++) {
     /* AP[i,:] = A[i,:]*P = Ad*P_loc Ao*P_oth */
-    AProw_scalable(i,ad,ao,p_loc,p_oth,api,apj,apa);
-
     apnz = api[i+1] - api[i];
-    for (j=0; j<apnz; j++) {
-      ap->a[j+ap->i[i]] = apa[j];
-      apa[j]            = 0.0;
-    }
+    apa = ap->a + api[i];
+    ierr = PetscMemzero(apa,sizeof(PetscScalar)*apnz);CHKERRQ(ierr);
+    AProw_scalable(i,ad,ao,p_loc,p_oth,api,apj,apa);
     ierr = PetscLogFlops(2.0*apnz);CHKERRQ(ierr);
   }
 
@@ -225,15 +220,12 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
   PetscLayout         rowmap;
   PetscInt            *owners_co,*coi,*coj;    /* i and j array of (p->B)^T*A*P - used in the communication */
   PetscMPIInt         *len_r,*id_r;    /* array of length of comm->size, store send/recv matrix values */
-  PetscInt            *api,*apj,*Jptr,apnz,*prmap=p->garray,con,j,ap_rmax=0,Crmax,*aj,*ai,*pi;
+  PetscInt            *api,*apj,*Jptr,apnz,*prmap=p->garray,con,j,Crmax,*aj,*ai,*pi;
   Mat_SeqAIJ          *p_loc,*p_oth,*ad=(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data,*c_loc,*c_oth;
   PetscScalar         *apv;
   PetscTable          ta;
 #if defined(PETSC_USE_INFO)
   PetscReal           apfill;
-#endif
-#if defined(PTAP_PROFILE)
-  PetscLogDouble      t0,t1,t11,t12,t2,t3,t4;
 #endif
 
   PetscFunctionBegin;
@@ -244,10 +236,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
   /* create symbolic parallel matrix Cmpi */
   ierr = MatCreate(comm,&Cmpi);CHKERRQ(ierr);
   ierr = MatSetType(Cmpi,MATMPIAIJ);CHKERRQ(ierr);
-
-#if defined(PTAP_PROFILE)
-  ierr = PetscTime(&t0);CHKERRQ(ierr);
-#endif
 
   /* create struct Mat_PtAPMPI and attached it to C later */
   ierr        = PetscNew(&ptap);CHKERRQ(ierr);
@@ -265,9 +253,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
   /* --------------------------------- */
   ierr = MatTranspose_SeqAIJ(p->A,MAT_INITIAL_MATRIX,&ptap->Rd);CHKERRQ(ierr);
   ierr = MatTranspose_SeqAIJ(p->B,MAT_INITIAL_MATRIX,&ptap->Ro);CHKERRQ(ierr);
-#if defined(PTAP_PROFILE)
-  ierr = PetscTime(&t11);CHKERRQ(ierr);
-#endif
 
   /* (1) compute symbolic AP = A_loc*P = Ad*P_loc + Ao*P_oth (api,apj) */
   /* ----------------------------------------------------------------- */
@@ -279,7 +264,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
   MatRowMergeMax_SeqAIJ(p_loc,P_loc->rmap->N,ta);
   MatRowMergeMax_SeqAIJ(p_oth,P_oth->rmap->N,ta);
   ierr = PetscTableGetCount(ta,&Crmax);CHKERRQ(ierr); /* Crmax = nnz(sum of Prows) */
-  /* printf("[%d] est %d, Crmax %d; pN %d\n",rank,5*(p_loc->rmax+p_oth->rmax + (PetscInt)(1.e-2*pN)),Crmax,pN); */
 
   ierr = PetscLLCondensedCreate_Scalable(Crmax,&lnk);CHKERRQ(ierr);
 
@@ -314,7 +298,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
     }
     apnz     = lnk[0];
     api[i+1] = api[i] + apnz;
-    if (ap_rmax < apnz) ap_rmax = apnz;
 
     /* if free space is not available, double the total space in the list */
     if (current_space->local_remaining<apnz) {
@@ -352,17 +335,10 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
   }
 #endif
 
-#if defined(PTAP_PROFILE)
-  ierr = PetscTime(&t12);CHKERRQ(ierr);
-#endif
-
   /* (2-1) compute symbolic Co = Ro*AP_loc  */
   /* ------------------------------------ */
   ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(ptap->Ro,ptap->AP_loc,fill,&ptap->C_oth);CHKERRQ(ierr);
-#if defined(PTAP_PROFILE)
-  ierr = PetscTime(&t1);CHKERRQ(ierr);
-#endif
-  
+
   /* (3) send coj of C_oth to other processors  */
   /* ------------------------------------------ */
   /* determine row ownership */
@@ -475,9 +451,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
   ierr = PetscFree(len_ri);CHKERRQ(ierr);
   ierr = PetscFree(swaits);CHKERRQ(ierr);
   ierr = PetscFree(buf_s);CHKERRQ(ierr);
-#if defined(PTAP_PROFILE)
-  ierr = PetscTime(&t2);CHKERRQ(ierr);
-#endif
+
   /* (5) compute the local portion of Cmpi      */
   /* ------------------------------------------ */
   /* set initial free space to be Crmax, sufficient for holding nozeros in each row of Cmpi */
@@ -518,9 +492,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
   ierr = PetscFree3(buf_ri_k,nextrow,nextci);CHKERRQ(ierr);
   ierr = PetscLLCondensedDestroy_Scalable(lnk);CHKERRQ(ierr);
   ierr = PetscFreeSpaceDestroy(free_space);CHKERRQ(ierr);
-#if defined(PTAP_PROFILE)
-  ierr = PetscTime(&t3);CHKERRQ(ierr);
-#endif
 
   /* local sizes and preallocation */
   ierr = MatSetSizes(Cmpi,pn,pn,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
@@ -543,21 +514,11 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,PetscReal fill
   ptap->duplicate = Cmpi->ops->duplicate;
   ptap->destroy   = Cmpi->ops->destroy;
 
-  ierr = PetscCalloc1(ap_rmax,&ptap->apa);CHKERRQ(ierr);
-  /* printf("[%d] pN %d, ap_rmax %d\n",rank,pN,ap_rmax); */
-
   /* Cmpi is not ready for use - assembly will be done by MatPtAPNumeric() */
   Cmpi->assembled        = PETSC_FALSE;
   Cmpi->ops->destroy     = MatDestroy_MPIAIJ_PtAP;
   Cmpi->ops->duplicate   = MatDuplicate_MPIAIJ_MatPtAP;
   *C                     = Cmpi;
-
-#if defined(PTAP_PROFILE)
-  ierr = PetscTime(&t4);CHKERRQ(ierr);
-  if (rank == 1) {
-    printf("PtAPSym: %g + %g + %g + %g + %g + %g = %g\n",t11-t0,t1-t11,t12-t11,t2-t2,t3-t2,t4-t3,t4-t0);
-  }
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -593,19 +554,41 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   const char          *algTypes[2] = {"scalable","nonscalable"};
   PetscInt            nalg = 2;
 #endif
-  PetscInt            alg = 0; /* set default algorithm */
+  PetscInt            alg = 1; /* set default algorithm */
 #if defined(PETSC_USE_INFO)
   PetscReal           apfill;
 #endif
 #if defined(PTAP_PROFILE)
   PetscLogDouble      t0,t1,t11,t12,t2,t3,t4;
 #endif
+  PetscBool           flg;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+
   /* pick an algorithm */
   ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-matptap_via","Algorithmic approach","MatPtAP",algTypes,nalg,algTypes[1],&alg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-matptap_via","Algorithmic approach","MatPtAP",algTypes,nalg,algTypes[1],&alg,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
+  if (!flg && pN > 100000) { /* may switch to scalable algorithm as default */
+    MatInfo     Ainfo,Pinfo;
+    PetscInt    nz_local;
+    PetscBool   alg_scalable_loc=PETSC_FALSE,alg_scalable;
+
+    ierr = MatGetInfo(A,MAT_LOCAL,&Ainfo);CHKERRQ(ierr);
+    ierr = MatGetInfo(P,MAT_LOCAL,&Pinfo);CHKERRQ(ierr);
+    nz_local = (PetscInt)(Ainfo.nz_allocated + Pinfo.nz_allocated);
+
+    if (pN > fill*nz_local) alg_scalable_loc = PETSC_TRUE;
+    ierr = MPIU_Allreduce(&alg_scalable_loc,&alg_scalable,1,MPIU_BOOL,MPI_LOR,comm);CHKERRQ(ierr);
+
+    if (alg_scalable) {
+      alg  = 0; /* scalable algorithm would 50% slower than nonscalable algorithm */
+      ierr = PetscInfo2(P,"Use scalable algorithm, pN %D, fill*nz_allocated %g\n",pN,fill*nz_local);CHKERRQ(ierr);
+    }
+  }
+  /* ierr = PetscInfo2(P,"Use algorithm %D, pN %D\n",alg,pN);CHKERRQ(ierr); */
 
   if (alg == 0) {
     ierr = MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(A,P,fill,C);CHKERRQ(ierr);
@@ -624,7 +607,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = PetscTime(&t0);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
