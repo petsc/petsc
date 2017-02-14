@@ -218,7 +218,7 @@ static PetscErrorCode DMDestroy_Forest(DM dm)
 
 /*@C
   DMForestSetTopology - Set the topology of a DMForest during the pre-setup phase.  The topology is a string (e.g.
-  "cube", "shell") and can be interpreted by subtypes of DMFOREST) to construct the base DM of a forest durint
+  "cube", "shell") and can be interpreted by subtypes of DMFOREST) to construct the base DM of a forest during
   DMSetUp().
 
   Logically collective on dm
@@ -273,13 +273,15 @@ PetscErrorCode DMForestGetTopology(DM dm, DMForestTopology *topology)
 /*@
   DMForestSetBaseDM - During the pre-setup phase, set the DM that defines the base mesh of a DMForest forest.  The
   forest will be hierarchically refined from the base, and all refinements/coarsenings of the forest will share its
-  base.  In general, two forest must share a bse to be comparable, to do things like construct interpolators.
+  base.  In general, two forest must share a base to be comparable, to do things like construct interpolators.
 
   Logically collective on dm
 
   Input Parameters:
 + dm - the forest
 - base - the base DM of the forest
+
+  Notes: Currently the base DM must be a DMPLEX
 
   Level: intermediate
 
@@ -309,7 +311,7 @@ PetscErrorCode DMForestSetBaseDM(DM dm, DM base)
 
 /*@
   DMForestGetBaseDM - Get the base DM of a DMForest forest.  The forest will be hierarchically refined from the base,
-  and all refinements/coarsenings of the forest will share its base.  In general, two forest must share a bse to be
+  and all refinements/coarsenings of the forest will share its base.  In general, two forest must share a base to be
   comparable, to do things like construct interpolators.
 
   Not collective
@@ -1639,9 +1641,17 @@ static PetscErrorCode DMInitialize_Forest(DM dm)
 }
 
 /*MC
-  DMFOREST = "forest" - A DM object that encapsulates a hierarchically refined mesh.  Forests usually have a base DM (see DMForestGetBaseDM()), from which it is refined.  The refinement and partitioning of forests is considered immutable after DMSetUp() is called.  To adapt a mesh, one should call DMForestTemplate() to create a new mesh that will default to being identical to it, specify how that mesh should differ, and then calling DMSetUp() on the new mesh.
 
-  To specify that a mesh should be refined or coarsened from the previous mesh, a label should be defined on the previous mesh whose values indicate which cells should be refined (DM_ADAPT_REFINE) or coarsened (DM_ADAPT_COARSEN) and how (subtypes are free to allow additional values for things like anisotropic refinement).  The label should be given to the *new* mesh with DMForestSetAdaptivityLabel().
+     DMFOREST = "forest" - A DM object that encapsulates a hierarchically refined mesh.  Forests usually have a base DM
+  (see DMForestGetBaseDM()), from which it is refined.  The refinement and partitioning of forests is considered
+  immutable after DMSetUp() is called.  To adapt a mesh, one should call DMForestTemplate() to create a new mesh that
+  will default to being identical to it, specify how that mesh should differ, and then calling DMSetUp() on the new
+  mesh.
+
+  To specify that a mesh should be refined or coarsened from the previous mesh, a label should be defined on the
+  previous mesh whose values indicate which cells should be refined (DM_ADAPT_REFINE) or coarsened (DM_ADAPT_COARSEN)
+  and how (subtypes are free to allow additional values for things like anisotropic refinement).  The label should be
+  given to the *new* mesh with DMForestSetAdaptivityLabel().
 
   Level: advanced
 

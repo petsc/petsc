@@ -1,5 +1,5 @@
 /*
-  DMForest, for parallel, hierarchically refined, distributed mesh problems.
+  DMFOREST, for parallel, hierarchically refined, distributed mesh problems.
 */
 #if !defined(__PETSCDMFOREST_H)
 #define __PETSCDMFOREST_H
@@ -7,11 +7,13 @@
 #include <petscdm.h>
 
 /*J
-    DMForestTopology - String with the name of a PETSc DMForest base mesh topology
+    DMForestTopology - String with the name of a PETSc DMFOREST base mesh topology. The topology is a string (e.g.
+  "cube", "shell") and can be interpreted by subtypes of DMFOREST) to construct the base DM of a forest during
+  DMSetUp().
 
    Level: beginner
 
-.seealso: DMForestSetType(), DMForest
+.seealso: DMForestSetTopology(), DMForestGetTopology(), DMFOREST
 J*/
 typedef const char* DMForestTopology;
 
@@ -102,9 +104,6 @@ PETSC_EXTERN PetscErrorCode DMForestGetCellWeightFactor(DM, PetscReal *);
 /* this process's capacity when redistributing the cells */
 PETSC_EXTERN PetscErrorCode DMForestSetWeightCapacity(DM, PetscReal);
 PETSC_EXTERN PetscErrorCode DMForestGetWeightCapacity(DM, PetscReal *);
-
-PETSC_EXTERN PetscErrorCode DMForestSetFromOptions(DM);
-PETSC_EXTERN PetscErrorCode DMForestSetUp(DM);
 
 PETSC_EXTERN PetscErrorCode DMForestGetFineProjector(DM,Mat *);
 PETSC_EXTERN PetscErrorCode DMForestGetCoarseRestrictor(DM,Mat *);

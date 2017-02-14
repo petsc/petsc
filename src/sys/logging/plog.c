@@ -1164,7 +1164,7 @@ PetscErrorCode  PetscLogView_Detailed(PetscViewer viewer)
   numRed = petsc_allreduce_ct + petsc_gather_ct + petsc_scatter_ct;
   /* Get the total elapsed time */
   PetscTime(&locTotalTime);  locTotalTime -= petsc_BaseTime;
-  ierr = PetscViewerASCIIPrintf(viewer,"numProcs   = %d\n",size);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"size   = %d\n",size);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"LocalTimes = {}\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"LocalFlops = {}\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"LocalMessageLens = {}\n");CHKERRQ(ierr);

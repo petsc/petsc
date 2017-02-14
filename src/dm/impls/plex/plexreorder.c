@@ -1,7 +1,7 @@
 #include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 #include <petsc/private/matorderimpl.h> /*I      "petscmat.h"      I*/
 
-PetscErrorCode DMPlexCreateOrderingClosure_Static(DM dm, PetscInt numPoints, const PetscInt pperm[], PetscInt **clperm, PetscInt **invclperm)
+static PetscErrorCode DMPlexCreateOrderingClosure_Static(DM dm, PetscInt numPoints, const PetscInt pperm[], PetscInt **clperm, PetscInt **invclperm)
 {
   PetscInt      *perm, *iperm;
   PetscInt       depth, d, pStart, pEnd, fStart, fMax, fEnd, p;
@@ -75,7 +75,7 @@ $     MATORDERINGQMD - Quotient Minimum Degree
 PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS *perm)
 {
   PetscInt       numCells = 0;
-  PetscInt      *start = NULL, *adjacency = NULL, *cperm, *clperm, *invclperm, *mask, *xls, pStart, pEnd, c, i;
+  PetscInt      *start = NULL, *adjacency = NULL, *cperm, *clperm = NULL, *invclperm = NULL, *mask, *xls, pStart, pEnd, c, i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

@@ -6,9 +6,11 @@
 #include <petscksp.h>         /*I "petscksp.h" I*/
 
 typedef struct {
-  KSP ksp;
-  Mat R,P;
-  Vec b,x;
+  KSP            ksp;
+  Mat            R,P;
+  Vec            b,x;
+  PetscErrorCode (*computeasub)(PC,Mat,Mat,Mat*,void*);
+  void           *computeasub_ctx;
 } PC_Galerkin;
 
 static PetscErrorCode PCApply_Galerkin(PC pc,Vec x,Vec y)
@@ -39,6 +41,18 @@ static PetscErrorCode PCSetUp_Galerkin(PC pc)
   Vec            *xx,*yy;
 
   PetscFunctionBegin;
+  if (jac->computeasub) {
+    Mat Ap;
+    if (!pc->setupcalled) {
+      ierr = (*jac->computeasub)(pc,pc->pmat,NULL,&Ap,jac->computeasub_ctx);CHKERRQ(ierr);
+      ierr = KSPSetOperators(jac->ksp,Ap,Ap);CHKERRQ(ierr);
+      ierr = MatDestroy(&Ap);CHKERRQ(ierr);
+    } else {
+      ierr = KSPGetOperators(jac->ksp,NULL,&Ap);CHKERRQ(ierr);
+      ierr = (*jac->computeasub)(pc,pc->pmat,Ap,NULL,jac->computeasub_ctx);CHKERRQ(ierr);
+    }
+  }
+
   if (!jac->x) {
     ierr = KSPGetOperatorsSet(jac->ksp,&a,NULL);CHKERRQ(ierr);
     if (!a) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set operator of PCGALERKIN KSP with PCGalerkinGetKSP()/KSPSetOperators()");
@@ -50,6 +64,7 @@ static PetscErrorCode PCSetUp_Galerkin(PC pc)
   }
   if (!jac->R && !jac->P) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set restriction or interpolation of PCGALERKIN with PCGalerkinSetRestriction()/Interpolation()");
   /* should check here that sizes of R/P match size of a */
+
   PetscFunctionReturn(0);
 }
 
@@ -129,6 +144,16 @@ static PetscErrorCode  PCGalerkinSetInterpolation_Galerkin(PC pc,Mat P)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode  PCGalerkinSetComputeSubmatrix_Galerkin(PC pc,PetscErrorCode (*computeAsub)(PC,Mat,Mat,Mat*,void*),void *ctx)
+{
+  PC_Galerkin    *jac = (PC_Galerkin*)pc->data;
+
+  PetscFunctionBegin;
+  jac->computeasub     = computeAsub;
+  jac->computeasub_ctx = ctx;
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------------------- */
 /*@
    PCGalerkinSetRestriction - Sets the restriction operator for the "Galerkin-type" preconditioner
@@ -189,6 +214,52 @@ PetscErrorCode  PCGalerkinSetInterpolation(PC pc,Mat P)
 }
 
 /*@
+   PCGalerkinSetComputeSubmatrix - Provide a routine that will be called to compute the Galerkin submatrix
+
+   Logically Collective
+
+   Input Parameter:
++  pc - the preconditioner context
+.  computeAsub - routine that computes the submatrix from the global matrix
+-  ctx - context used by the routine, or NULL
+
+   Calling sequence of computeAsub:
+$    computeAsub(PC pc,Mat A, Mat Ap, Mat *cAP,void *ctx);
+
++  PC - the Galerkin PC
+.  A - the matrix in the Galerkin PC
+.  Ap - the computed submatrix from any previous computation, if NULL it has not previously been computed
+.  cAp - the submatrix computed by this routine
+-  ctx - optional user-defined function context
+
+   Level: Intermediate
+
+   Notes: Instead of providing this routine you can call PCGalerkinGetKSP() and then KSPSetOperators() to provide the submatrix,
+          but that will not work for multiple KSPSolves with different matrices unless you call it for each solve.
+
+          This routine is called each time the outter matrix is changed. In the first call the Ap argument is NULL and the routine should create the
+          matrix and computes its values in cAp. On each subsequent call the routine should up the Ap matrix.
+
+   Developer Notes: If the user does not call this routine nor call PCGalerkinGetKSP() and KSPSetOperators() then PCGalerkin could
+                    could automatically compute the submatrix via calls to MatGalerkin() or MatRARt()
+
+.keywords: PC, get, Galerkin preconditioner, sub preconditioner
+
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PCGALERKIN,
+           PCGalerkinSetRestriction(), PCGalerkinSetInterpolation(), PCGalerkinGetKSP()
+
+@*/
+PetscErrorCode  PCGalerkinSetComputeSubmatrix(PC pc,PetscErrorCode (*computeAsub)(PC,Mat,Mat,Mat*,void*),void *ctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscTryMethod(pc,"PCGalerkinSetComputeSubmatrix_C",(PC,PetscErrorCode (*)(PC,Mat,Mat,Mat*,void*),void*),(pc,computeAsub,ctx));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
    PCGalerkinGetKSP - Gets the KSP object in the Galerkin PC.
 
    Not Collective
@@ -201,10 +272,13 @@ PetscErrorCode  PCGalerkinSetInterpolation(PC pc,Mat P)
 
    Level: Intermediate
 
+   Notes: Once you have called this routine you can call KSPSetOperators() on the resulting ksp to provide the operator for the Galerkin problem,
+          an alternative is to use PCGalerkinSetComputeSubmatrix() to provide a routine that computes the submatrix as needed.
+
 .keywords: PC, get, Galerkin preconditioner, sub preconditioner
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PCGALERKIN,
-           PCGalerkinSetRestriction(), PCGalerkinSetInterpolation()
+           PCGalerkinSetRestriction(), PCGalerkinSetInterpolation(), PCGalerkinSetComputeSubmatrix()
 
 @*/
 PetscErrorCode  PCGalerkinGetKSP(PC pc,KSP *ksp)
@@ -287,6 +361,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Galerkin(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGalerkinSetRestriction_C",PCGalerkinSetRestriction_Galerkin);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGalerkinSetInterpolation_C",PCGalerkinSetInterpolation_Galerkin);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGalerkinGetKSP_C",PCGalerkinGetKSP_Galerkin);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGalerkinSetComputeSubmatrix_C",PCGalerkinSetComputeSubmatrix_Galerkin);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

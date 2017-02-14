@@ -1737,11 +1737,11 @@ PetscErrorCode MatGetInfo_SeqAIJ(Mat A,MatInfoType flag,MatInfo *info)
 PetscErrorCode MatZeroRows_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
-  PetscInt          i,m = A->rmap->n - 1,d = 0;
+  PetscInt          i,m = A->rmap->n - 1;
   PetscErrorCode    ierr;
   const PetscScalar *xx;
   PetscScalar       *bb;
-  PetscBool         missing;
+  PetscInt          d = 0;
 
   PetscFunctionBegin;
   if (x && b) {
@@ -1755,14 +1755,16 @@ PetscErrorCode MatZeroRows_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
     ierr = VecRestoreArray(b,&bb);CHKERRQ(ierr);
   }
 
-  ierr = MatMissingDiagonal_SeqAIJ(A,&missing,&d);CHKERRQ(ierr);
   if (a->keepnonzeropattern) {
     for (i=0; i<N; i++) {
       if (rows[i] < 0 || rows[i] > m) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"row %D out of range", rows[i]);
       ierr = PetscMemzero(&a->a[a->i[rows[i]]],a->ilen[rows[i]]*sizeof(PetscScalar));CHKERRQ(ierr);
     }
     if (diag != 0.0) {
-      if (missing) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry in row %D",d);
+      for (i=0; i<N; i++) {
+        d = rows[i];
+        if (a->diag[d] >= a->i[d+1]) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry in the zeroed row %D",d);
+      }
       for (i=0; i<N; i++) {
         a->a[a->diag[rows[i]]] = diag;
       }
@@ -4258,9 +4260,15 @@ PetscErrorCode MatSeqAIJInvalidateDiagonal(Mat A)
 PetscErrorCode MatCreateMPIMatConcatenateSeqMat_SeqAIJ(MPI_Comm comm,Mat inmat,PetscInt n,MatReuse scall,Mat *outmat)
 {
   PetscErrorCode ierr;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MatCreateMPIMatConcatenateSeqMat_MPIAIJ(comm,inmat,n,scall,outmat);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size == 1 && scall == MAT_REUSE_MATRIX) {
+    ierr = MatCopy(inmat,*outmat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  } else {
+    ierr = MatCreateMPIMatConcatenateSeqMat_MPIAIJ(comm,inmat,n,scall,outmat);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

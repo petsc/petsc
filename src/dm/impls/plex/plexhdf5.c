@@ -36,7 +36,7 @@ static PetscErrorCode DMSequenceView_HDF5(DM dm, const char *seqname, PetscInt s
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMSequenceLoad_HDF5(DM dm, const char *seqname, PetscInt seqnum, PetscScalar *value, PetscViewer viewer)
+PetscErrorCode DMSequenceLoad_HDF5_Internal(DM dm, const char *seqname, PetscInt seqnum, PetscScalar *value, PetscViewer viewer)
 {
   Vec            stamp;
   PetscMPIInt    rank;
@@ -67,7 +67,7 @@ PetscErrorCode DMSequenceLoad_HDF5(DM dm, const char *seqname, PetscInt seqnum, 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecView_Plex_Local_HDF5(Vec v, PetscViewer viewer)
+PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec v, PetscViewer viewer)
 {
   DM                      dm;
   DM                      dmBC;
@@ -142,7 +142,7 @@ PetscErrorCode VecView_Plex_Local_HDF5(Vec v, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecView_Plex_HDF5(Vec v, PetscViewer viewer)
+PetscErrorCode VecView_Plex_HDF5_Internal(Vec v, PetscViewer viewer)
 {
   DM             dm;
   Vec            locv;
@@ -165,7 +165,7 @@ PetscErrorCode VecView_Plex_HDF5(Vec v, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecView_Plex_HDF5_Native(Vec v, PetscViewer viewer)
+PetscErrorCode VecView_Plex_HDF5_Native_Internal(Vec v, PetscViewer viewer)
 {
   PetscBool      isseq;
   PetscErrorCode ierr;
@@ -179,7 +179,7 @@ PetscErrorCode VecView_Plex_HDF5_Native(Vec v, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecLoad_Plex_HDF5(Vec v, PetscViewer viewer)
+PetscErrorCode VecLoad_Plex_HDF5_Internal(Vec v, PetscViewer viewer)
 {
   DM             dm;
   Vec            locv;
@@ -203,7 +203,7 @@ PetscErrorCode VecLoad_Plex_HDF5(Vec v, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecLoad_Plex_HDF5_Native(Vec v, PetscViewer viewer)
+PetscErrorCode VecLoad_Plex_HDF5_Native_Internal(Vec v, PetscViewer viewer)
 {
   DM             dm;
   PetscInt       seqnum;
@@ -479,7 +479,7 @@ static PetscErrorCode DMPlexWriteCoordinates_Vertices_HDF5_Static(DM dm, PetscVi
 }
 
 /* We only write cells and vertices. Does this screw up parallel reading? */
-PetscErrorCode DMPlexView_HDF5(DM dm, PetscViewer viewer)
+PetscErrorCode DMPlexView_HDF5_Internal(DM dm, PetscViewer viewer)
 {
   DMLabel           label   = NULL;
   PetscInt          labelId = 0;
@@ -624,7 +624,7 @@ static herr_t ReadLabelHDF5_Static(hid_t g_id, const char *name, const H5L_info_
 /* The first version will read everything onto proc 0, letting the user distribute
    The next will create a naive partition, and then rebalance after reading
 */
-PetscErrorCode DMPlexLoad_HDF5(DM dm, PetscViewer viewer)
+PetscErrorCode DMPlexLoad_HDF5_Internal(DM dm, PetscViewer viewer)
 {
   LabelCtx        ctx;
   PetscSection    coordSection;

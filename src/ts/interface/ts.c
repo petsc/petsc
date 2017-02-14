@@ -1047,20 +1047,26 @@ PetscErrorCode  TSSetSolutionFunction(TS ts,PetscErrorCode (*f)(TS,PetscReal,Vec
 
     Input Parameters:
 +   ts - the TS context obtained from TSCreate()
-.   f - routine for evaluating the forcing function
+.   func - routine for evaluating the forcing function
 -   ctx - [optional] user-defined context for private data for the
           function evaluation routine (may be NULL)
 
     Calling sequence of func:
-$     func (TS ts,PetscReal t,Vec u,void *ctx);
+$     func (TS ts,PetscReal t,Vec f,void *ctx);
 
 +   t - current timestep
-.   u - output vector
+.   f - output vector
 -   ctx - [optional] user-defined function context
 
     Notes:
     This routine is useful for testing accuracy of time integration schemes when using the Method of Manufactured Solutions to
-    create closed-form solutions with a non-physical forcing term.
+    create closed-form solutions with a non-physical forcing term. It allows you to use the Method of Manufactored Solution without directly editing the
+    definition of the problem you are solving and hence possibly introducing bugs.
+
+    This replaces the ODE F(u,u_t,t) = 0 the TS is solving with F(u,u_t,t) - func(t) = 0
+
+    This forcing function does not depend on the solution to the equations, it can only depend on spatial location, time, and possibly parameters, the
+    parameters can be passed in the ctx variable.
 
     For low-dimensional problems solved in serial, such as small discrete systems, TSMonitorLGError() can be used to monitor the error history.
 
@@ -1070,7 +1076,7 @@ $     func (TS ts,PetscReal t,Vec u,void *ctx);
 
 .seealso: TSSetRHSJacobian(), TSSetIJacobian(), TSComputeSolutionFunction(), TSSetSolutionFunction()
 @*/
-PetscErrorCode  TSSetForcingFunction(TS ts,TSForcingFunction f,void *ctx)
+PetscErrorCode  TSSetForcingFunction(TS ts,TSForcingFunction func,void *ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
@@ -1078,7 +1084,7 @@ PetscErrorCode  TSSetForcingFunction(TS ts,TSForcingFunction f,void *ctx)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-  ierr = DMTSSetForcingFunction(dm,f,ctx);CHKERRQ(ierr);
+  ierr = DMTSSetForcingFunction(dm,func,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3178,11 +3184,6 @@ PetscErrorCode  TSAdjointComputeDRDPFunction(TS ts,PetscReal t,Vec y,Vec *drdp)
 
   Level: intermediate
 
-  Note:
-  If a step is rejected, TSStep() will call this routine again before each attempt.
-  The last completed time step number can be queried using TSGetTimeStepNumber(), the
-  size of the step being attempted can be obtained using TSGetTimeStep().
-
 .keywords: TS, timestep
 .seealso: TSSetPreStage(), TSSetPostStage(), TSSetPostStep(), TSStep()
 @*/
@@ -4573,12 +4574,15 @@ PetscErrorCode  TSGetOptionsPrefix(TS ts,const char *prefix[])
 PetscErrorCode  TSGetRHSJacobian(TS ts,Mat *Amat,Mat *Pmat,TSRHSJacobian *func,void **ctx)
 {
   PetscErrorCode ierr;
-  SNES           snes;
   DM             dm;
 
   PetscFunctionBegin;
-  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  ierr = SNESGetJacobian(snes,Amat,Pmat,NULL,NULL);CHKERRQ(ierr);
+  if (Amat || Pmat) {
+    SNES snes;
+    ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+    ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
+    ierr = SNESGetJacobian(snes,Amat,Pmat,NULL,NULL);CHKERRQ(ierr);
+  }
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMTSGetRHSJacobian(dm,func,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -4609,13 +4613,15 @@ PetscErrorCode  TSGetRHSJacobian(TS ts,Mat *Amat,Mat *Pmat,TSRHSJacobian *func,v
 PetscErrorCode  TSGetIJacobian(TS ts,Mat *Amat,Mat *Pmat,TSIJacobian *f,void **ctx)
 {
   PetscErrorCode ierr;
-  SNES           snes;
   DM             dm;
 
   PetscFunctionBegin;
-  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
-  ierr = SNESGetJacobian(snes,Amat,Pmat,NULL,NULL);CHKERRQ(ierr);
+  if (Amat || Pmat) {
+    SNES snes;
+    ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+    ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
+    ierr = SNESGetJacobian(snes,Amat,Pmat,NULL,NULL);CHKERRQ(ierr);
+  }
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMTSGetIJacobian(dm,f,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);

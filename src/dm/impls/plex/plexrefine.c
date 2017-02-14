@@ -5634,7 +5634,7 @@ PetscErrorCode DMPlexCreateProcessSF(DM dm, PetscSF sfPoint, IS *processRanks, P
   PetscInt          *localPointsNew;
   PetscSFNode       *remotePointsNew;
   PetscInt          *ranks, *ranksNew;
-  PetscMPIInt        numProcs;
+  PetscMPIInt        size;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -5642,7 +5642,7 @@ PetscErrorCode DMPlexCreateProcessSF(DM dm, PetscSF sfPoint, IS *processRanks, P
   PetscValidHeaderSpecific(sfPoint, PETSCSF_CLASSID, 2);
   if (processRanks) {PetscValidPointer(processRanks, 3);}
   if (sfProcess)    {PetscValidPointer(sfProcess, 4);}
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &numProcs);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
   ierr = PetscMalloc1(numLeaves, &ranks);CHKERRQ(ierr);
   for (l = 0; l < numLeaves; ++l) {
@@ -5665,7 +5665,7 @@ PetscErrorCode DMPlexCreateProcessSF(DM dm, PetscSF sfPoint, IS *processRanks, P
     ierr = PetscSFCreate(PetscObjectComm((PetscObject)dm), sfProcess);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) *sfProcess, "Process SF");CHKERRQ(ierr);
     ierr = PetscSFSetFromOptions(*sfProcess);CHKERRQ(ierr);
-    ierr = PetscSFSetGraph(*sfProcess, numProcs, numLeaves, localPointsNew, PETSC_OWN_POINTER, remotePointsNew, PETSC_OWN_POINTER);CHKERRQ(ierr);
+    ierr = PetscSFSetGraph(*sfProcess, size, numLeaves, localPointsNew, PETSC_OWN_POINTER, remotePointsNew, PETSC_OWN_POINTER);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

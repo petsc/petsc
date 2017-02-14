@@ -9,6 +9,10 @@
 
 testexamples_C: ${TESTEXAMPLES_C}
 	-@ if test ${PRINT_PROGRESS}foo = debugtestfoo -a -n "${TESTEXAMPLES_C}"; then printf "Running examples in `pwd`:\n ${TESTEXAMPLES_C}\n"; fi
+testexamples_PFLOTRAN: ${TESTEXAMPLES_PFLOTRAN}
+	-@ if test ${PRINT_PROGRESS}foo = debugtestfoo -a -n "${TESTEXAMPLES_PFLOTRAN}"; then printf "Running examples in `pwd`:\n ${TESTEXAMPLES_PFLOTRAN}\n"; fi
+testexamples_ALQUIMIA: ${TESTEXAMPLES_ALQUIMIA}
+	-@ if test ${PRINT_PROGRESS}foo = debugtestfoo -a -n "${TESTEXAMPLES_ALQUIMIA}"; then printf "Running examples in `pwd`:\n ${TESTEXAMPLES_ALQUIMIA}\n"; fi
 testexamples_C_Python: ${TESTEXAMPLES_C_PYTHON}
 	-@ if test ${PRINT_PROGRESS}foo = debugtestfoo -a -n "${TESTEXAMPLES_C_PYTHON}"; then printf "Running examples in `pwd`:\n ${TESTEXAMPLES_C_PYTHON}\n"; fi
 testexamples_C_Info: ${TESTEXAMPLES_C_INFO}
@@ -364,7 +368,7 @@ allgtest-tap:
 	-@cd ${PETSC_DIR}; ${OMAKE} -f gmakefile -j ${MAKE_NP} test V=0
 
 allgtest:
-	-@cd ${PETSC_DIR}; ${OMAKE} -f gmakefile -j ${MAKE_NP} test V=0 | egrep -v '^(ok [^#]*(# SKIP|$$)|[A-Za-z][A-Za-z0-9_-]*.(c|F|cxx|F90)$$)'
+	-@cd ${PETSC_DIR}; ${OMAKE} -k -f gmakefile -j ${MAKE_NP} test V=0 | egrep -v '^(ok [^#]*(# SKIP|$$)|[A-Za-z][A-Za-z0-9_-]*.(c|F|cxx|F90)$$)'
 
 alltest:
 	-@date

@@ -39,6 +39,10 @@ PetscErrorCode _DMDADetermineRankFromGlobalIJK(PetscInt dim,PetscInt i,PetscInt 
   PetscInt pi,pj,pk,n;
 
   PetscFunctionBegin;
+  *rank_re = -1;
+  if (_pi) *_pi = -1;
+  if (_pj) *_pj = -1;
+  if (_pk) *_pk = -1;
   pi = pj = pk = -1;
   if (_pi) {
     for (n=0; n<Mp; n++) {

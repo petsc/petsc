@@ -45,17 +45,20 @@ PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened)
         for (j = 0; j < i; ++j, ++r) {
           for (d = 0; d < dim; ++d) e[d] = PetscRealPart(cellCoords[i*dim+d] - cellCoords[j*dim+d]);
           /* FORTRAN ORDERING */
-          if (dim == 2) {
+          switch (dim) {
+          case 2:
             eqns[0*size+r] = PetscSqr(e[0]);
             eqns[1*size+r] = 2.0*e[0]*e[1];
             eqns[2*size+r] = PetscSqr(e[1]);
-          } else {
+            break;
+          case 3:
             eqns[0*size+r] = PetscSqr(e[0]);
             eqns[1*size+r] = 2.0*e[0]*e[1];
             eqns[2*size+r] = 2.0*e[0]*e[2];
             eqns[3*size+r] = PetscSqr(e[1]);
             eqns[4*size+r] = 2.0*e[1]*e[2];
             eqns[5*size+r] = PetscSqr(e[2]);
+            break;
           }
         }
       }

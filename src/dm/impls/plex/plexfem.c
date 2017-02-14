@@ -4,6 +4,22 @@
 #include <petsc/private/petscfeimpl.h>
 #include <petsc/private/petscfvimpl.h>
 
+/*@
+  DMPlexGetScale - Get the scale for the specified fundamental unit
+
+  Not collective
+
+  Input Arguments:
++ dm   - the DM
+- unit - The SI unit
+
+  Output Argument:
+. scale - The value used to scale all quantities with this unit
+
+  Level: advanced
+
+.seealso: DMPlexSetScale(), PetscUnit
+@*/
 PetscErrorCode DMPlexGetScale(DM dm, PetscUnit unit, PetscReal *scale)
 {
   DM_Plex *mesh = (DM_Plex*) dm->data;
@@ -15,6 +31,20 @@ PetscErrorCode DMPlexGetScale(DM dm, PetscUnit unit, PetscReal *scale)
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMPlexSetScale - Set the scale for the specified fundamental unit
+
+  Not collective
+
+  Input Arguments:
++ dm   - the DM
+. unit - The SI unit
+- scale - The value used to scale all quantities with this unit
+
+  Level: advanced
+
+.seealso: DMPlexGetScale(), PetscUnit
+@*/
 PetscErrorCode DMPlexSetScale(DM dm, PetscUnit unit, PetscReal scale)
 {
   DM_Plex *mesh = (DM_Plex*) dm->data;
@@ -1472,6 +1502,21 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMPlexComputeInjectorFEM - Compute a mapping from coarse unknowns to fine unknowns
+
+  Input Parameters:
++ dmc  - The coarse mesh
+- dmf  - The fine mesh
+- user - The user context
+
+  Output Parameter:
+. sc   - The mapping
+
+  Level: developer
+
+.seealso: DMPlexComputeInterpolatorNested(), DMPlexComputeJacobianFEM()
+@*/
 PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *user)
 {
   PetscDS        prob;

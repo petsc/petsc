@@ -23,7 +23,7 @@
 @*/
 PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
 {
-  PetscMPIInt     rank, numProcs;
+  PetscMPIInt     rank, size;
 #if defined(PETSC_HAVE_MED)
   PetscInt        i, nstep, ngeo, fileID, cellID, facetID, spaceDim, meshDim;
   PetscInt        numVertices = 0, numCells = 0, numCorners, numCellsLocal, numVerticesLocal;
@@ -46,7 +46,7 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MED)
   fileID = MEDfileOpen(filename, MED_ACC_RDONLY);
   if (fileID < 0) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Unable to open .med mesh file: %s", filename);
@@ -160,14 +160,14 @@ PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], Pet
         }
       }
       /* Build a global process SF */
-      ierr = PetscMalloc1(numProcs, &remoteProc);CHKERRQ(ierr);
-      for (p = 0; p < numProcs; ++p) {
+      ierr = PetscMalloc1(size, &remoteProc);CHKERRQ(ierr);
+      for (p = 0; p < size; ++p) {
         remoteProc[p].rank  = p;
         remoteProc[p].index = rank;
       }
       ierr = PetscSFCreate(comm, &sfProcess);CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) sfProcess, "Process SF");CHKERRQ(ierr);
-      ierr = PetscSFSetGraph(sfProcess, numProcs, numProcs, NULL, PETSC_OWN_POINTER, remoteProc, PETSC_OWN_POINTER);CHKERRQ(ierr);
+      ierr = PetscSFSetGraph(sfProcess, size, size, NULL, PETSC_OWN_POINTER, remoteProc, PETSC_OWN_POINTER);CHKERRQ(ierr);
       /* Convert facet rendezvous label into SF for migration */
       ierr = DMPlexPartitionLabelInvert(*dm, lblFacetRendezvous, sfProcess, lblFacetMigration);CHKERRQ(ierr);
       ierr = DMPlexPartitionLabelCreateSF(*dm, lblFacetMigration, &sfFacetMigration);CHKERRQ(ierr);

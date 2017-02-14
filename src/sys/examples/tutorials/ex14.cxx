@@ -66,9 +66,9 @@ int main(int argc,char **argv)
   // Get my process' rank, and the total number of processes.
   // Equivalent to MPI_Comm_rank resp. MPI_Comm_size.
   const int myRank = comm->getRank ();
-  const int numProcs = comm->getSize ();
+  const int size = comm->getSize ();
   if (myRank == 0) {
-    cout << "Total number of processes: " << numProcs << endl;
+    cout << "Total number of processes: " << size << endl;
   }
   // Do something with the new communicator.
   exampleRoutine (comm);

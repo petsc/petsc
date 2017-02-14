@@ -1,0 +1,301 @@
+[0]Point 0 (0., 0., 0.)
+[0]Point 1 (0.5, 0., 0.)
+[0]Point 2 (1., 0., 0.)
+[0]Point 3 (0., 0.5, 0.)
+[0]Point 4 (0.5, 0.5, 0.)
+[0]Point 5 (1., 0.5, 0.)
+[0]Point 6 (0., 1., 0.)
+[0]Point 7 (0.5, 1., 0.)
+[0]Point 8 (1., 1., 0.)
+[0]Point 9 (0., 0., 0.5)
+[0]Point 10 (0.5, 0., 0.5)
+[0]Point 11 (1., 0., 0.5)
+[0]Point 12 (0., 0.5, 0.5)
+[0]Point 13 (0.5, 0.5, 0.5)
+[0]Point 14 (1., 0.5, 0.5)
+[0]Point 15 (0., 1., 0.5)
+[0]Point 16 (0.5, 1., 0.5)
+[0]Point 17 (1., 1., 0.5)
+[0]Point 18 (0., 0., 1.)
+[0]Point 19 (0.5, 0., 1.)
+[0]Point 20 (1., 0., 1.)
+[0]Point 21 (0., 0.5, 1.)
+[0]Point 22 (0.5, 0.5, 1.)
+[0]Point 23 (1., 0.5, 1.)
+[0]Point 24 (0., 1., 1.)
+[0]Point 25 (0.5, 1., 1.)
+[0]Point 26 (1., 1., 1.)
+[1]Point 0 (0., 0., 0.)
+[1]Point 1 (0.5, 0., 0.)
+[1]Point 2 (1., 0., 0.)
+[1]Point 3 (0., 0.5, 0.)
+[1]Point 4 (0.5, 0.5, 0.)
+[1]Point 5 (1., 0.5, 0.)
+[1]Point 6 (0., 1., 0.)
+[1]Point 7 (0.5, 1., 0.)
+[1]Point 8 (1., 1., 0.)
+[1]Point 9 (0., 0., 0.5)
+[1]Point 10 (0.5, 0., 0.5)
+[1]Point 11 (1., 0., 0.5)
+[1]Point 12 (0., 0.5, 0.5)
+[1]Point 13 (0.5, 0.5, 0.5)
+[1]Point 14 (1., 0.5, 0.5)
+[1]Point 15 (0., 1., 0.5)
+[1]Point 16 (0.5, 1., 0.5)
+[1]Point 17 (1., 1., 0.5)
+[1]Point 18 (0., 0., 1.)
+[1]Point 19 (0.5, 0., 1.)
+[1]Point 20 (1., 0., 1.)
+[1]Point 21 (0., 0.5, 1.)
+[1]Point 22 (0.5, 0.5, 1.)
+[1]Point 23 (1., 0.5, 1.)
+[1]Point 24 (0., 1., 1.)
+[1]Point 25 (0.5, 1., 1.)
+[1]Point 26 (1., 1., 1.)
+[0]Point 0 is in Cell 0
+[0]Point 1 is in Cell 2
+[0]Point 2 is in Cell 2
+[0]Point 3 is in Cell 0
+[0]Point 4 is in Cell 0
+[0]Point 5 is in Cell 2
+[0]Point 6 is in Cell 0
+[0]Point 7 is in Cell 0
+[0]Point 8 is in Cell 0
+[0]Point 9 is in Cell 1
+[0]Point 10 is in Cell 1
+[0]Point 11 is in Cell 0
+[0]Point 12 is in Cell 2
+[0]Point 13 is in Cell 0
+[0]Point 14 is in Cell 0
+[0]Point 15 is in Cell 1
+[0]Point 16 is in Cell 1
+[0]Point 17 is in Cell 1
+[0]Point 18 is in Cell 1
+[0]Point 19 is in Cell 1
+[0]Point 20 is in Cell 0
+[1]Point 0 is in Cell 0
+[1]Point 1 is in Cell 0
+[1]Point 2 is in Cell 0
+[1]Point 3 is in Cell 1
+[1]Point 4 is in Cell 1
+[1]Point 5 is in Cell 2
+Vec Object: 2 MPI processes
+  type: mpi
+Process [0]
+0.
+0.
+0.
+0.5
+0.
+0.
+1.
+0.
+0.
+0.
+0.5
+0.
+0.5
+0.5
+0.
+1.
+0.5
+0.
+0.
+1.
+0.
+0.5
+1.
+0.
+1.
+1.
+0.
+0.
+0.
+0.5
+0.5
+0.
+0.5
+0.5
+0.5
+0.5
+1.
+0.5
+0.5
+0.5
+1.
+0.5
+1.
+1.
+0.5
+0.
+0.
+1.
+0.5
+0.
+1.
+1.
+0.
+1.
+0.5
+0.5
+1.
+1.
+0.5
+1.
+1.
+1.
+1.
+Process [1]
+1.
+0.
+0.5
+0.
+0.5
+0.5
+0.
+1.
+0.5
+0.
+0.5
+1.
+0.
+1.
+1.
+0.5
+1.
+1.
+[0]solution
+Vec Object: 1 MPI processes
+  type: seq
+0.
+0.
+0.
+1.
+1.
+1.
+1.
+1.
+1.
+2.
+2.
+2.
+1.
+1.
+1.
+2.
+2.
+2.
+3.
+3.
+3.
+[1]solution
+Vec Object: 1 MPI processes
+  type: seq
+0.
+0.
+0.
+1.
+1.
+1.
+1.
+1.
+1.
+1.
+1.
+1.
+2.
+2.
+2.
+2.
+2.
+2.
+3.
+3.
+3.
+[0]Field values
+Vec Object: 1 MPI processes
+  type: seq
+0.
+0.
+0.
+0.5
+0.5
+0.5
+1.
+1.
+1.
+0.5
+0.5
+0.5
+1.
+1.
+1.
+1.5
+1.5
+1.5
+1.
+1.
+1.
+1.5
+1.5
+1.5
+2.
+2.
+2.
+0.5
+0.5
+0.5
+1.
+1.
+1.
+1.5
+1.5
+1.5
+2.
+2.
+2.
+2.
+2.
+2.
+2.5
+2.5
+2.5
+1.
+1.
+1.
+1.5
+1.5
+1.5
+2.
+2.
+2.
+2.
+2.
+2.
+2.5
+2.5
+2.5
+3.
+3.
+3.
+[1]Field values
+Vec Object: 1 MPI processes
+  type: seq
+1.5
+1.5
+1.5
+1.
+1.
+1.
+1.5
+1.5
+1.5
+1.5
+1.5
+1.5
+2.
+2.
+2.
+2.5
+2.5
+2.5
