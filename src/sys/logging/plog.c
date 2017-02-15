@@ -1100,7 +1100,7 @@ PetscErrorCode  PetscLogDump(const char sname[])
   ierr = PetscFOpen(PETSC_COMM_WORLD, fname, "w", &fd);CHKERRQ(ierr);
   if ((!rank) && (!fd)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN, "Cannot open file: %s", fname);
   /* Output totals */
-  ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Total Flops %14e %16.8e\n", petsc_TotalFlops, _TotalTime);CHKERRQ(ierr);
+  ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Total Flop %14e %16.8e\n", petsc_TotalFlops, _TotalTime);CHKERRQ(ierr);
   ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Clock Resolution %g\n", 0.0);CHKERRQ(ierr);
   /* Output actions */
   if (petsc_logActions) {
@@ -1166,7 +1166,7 @@ PetscErrorCode  PetscLogView_Detailed(PetscViewer viewer)
   PetscTime(&locTotalTime);  locTotalTime -= petsc_BaseTime;
   ierr = PetscViewerASCIIPrintf(viewer,"size   = %d\n",size);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"LocalTimes = {}\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"LocalFlops = {}\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"LocalFlop = {}\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"LocalMessageLens = {}\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"LocalMessages = {}\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"LocalReductions = {}\n");CHKERRQ(ierr);
@@ -1185,7 +1185,7 @@ PetscErrorCode  PetscLogView_Detailed(PetscViewer viewer)
   }
   ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"LocalTimes[%d] = %g\n",rank,locTotalTime);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"LocalFlops[%d] = %g\n",rank,petsc_TotalFlops);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"LocalFlop[%d] = %g\n",rank,petsc_TotalFlops);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"LocalMessageLens[%d] = %g\n",rank,(petsc_irecv_len + petsc_isend_len + petsc_recv_len + petsc_send_len));CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"LocalMessages[%d] = %g\n",rank,(petsc_irecv_ct + petsc_isend_ct + petsc_recv_ct + petsc_send_ct));CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"LocalReductions[%d] = %g\n",rank,numRed);CHKERRQ(ierr);
@@ -1194,14 +1194,14 @@ PetscErrorCode  PetscLogView_Detailed(PetscViewer viewer)
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"LocalMemory[%d] = %g\n",rank,maxMem);CHKERRQ(ierr);
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   for (stage=0; stage<numStages; stage++) {
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Stages[\"%s\"][\"summary\"][%d] = {\"time\" : %g, \"numMessages\" : %g, \"messageLength\" : %g, \"numReductions\" : %g, \"flops\" : %g}\n",
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Stages[\"%s\"][\"summary\"][%d] = {\"time\" : %g, \"numMessages\" : %g, \"messageLength\" : %g, \"numReductions\" : %g, \"flop\" : %g}\n",
                                               stageLog->stageInfo[stage].name,rank,
                                               stageLog->stageInfo[stage].perfInfo.time,stageLog->stageInfo[stage].perfInfo.numMessages,stageLog->stageInfo[stage].perfInfo.messageLength,
                                               stageLog->stageInfo[stage].perfInfo.numReductions,stageLog->stageInfo[stage].perfInfo.flops);CHKERRQ(ierr);
     ierr = MPIU_Allreduce(&stageLog->stageInfo[stage].eventLog->numEvents, &numEvents, 1, MPI_INT, MPI_MAX, comm);CHKERRQ(ierr);
     for (event = 0; event < numEvents; event++) {
       eventInfo = stageLog->stageInfo[stage].eventLog->eventInfo;
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Stages[\"%s\"][\"%s\"][%d] = {\"count\" : %D, \"time\" : %g, \"numMessages\" : %g, \"messageLength\" : %g, \"numReductions\" : %g, \"flops\" : %g}\n",stageLog->stageInfo[stage].name,stageLog->eventLog->eventInfo[event].name,rank,
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Stages[\"%s\"][\"%s\"][%d] = {\"count\" : %D, \"time\" : %g, \"numMessages\" : %g, \"messageLength\" : %g, \"numReductions\" : %g, \"flop\" : %g}\n",stageLog->stageInfo[stage].name,stageLog->eventLog->eventInfo[event].name,rank,
                                                 eventInfo[event].count, eventInfo[event].time,eventInfo[event].numMessages, eventInfo[event].messageLength,
                                                 eventInfo[event].numReductions,eventInfo[event].flops);CHKERRQ(ierr);
     }
@@ -1319,7 +1319,7 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
   avg  = (tot)/((PetscLogDouble) size);
   if (min != 0.0) ratio = max/min;
   else ratio = 0.0;
-  ierr = PetscFPrintf(comm, fd, "Flops:                %5.3e   %10.5f   %5.3e  %5.3e\n", max, ratio, avg, tot);CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "Flop:                 %5.3e   %10.5f   %5.3e  %5.3e\n", max, ratio, avg, tot);CHKERRQ(ierr);
   TotalFlops = tot;
   /*   Flops/sec -- Must talk to Barry here */
   if (locTotalTime != 0.0) flops = petsc_TotalFlops/locTotalTime;
@@ -1330,7 +1330,7 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
   avg  = (tot)/((PetscLogDouble) size);
   if (min != 0.0) ratio = max/min;
   else ratio = 0.0;
-  ierr = PetscFPrintf(comm, fd, "Flops/sec:            %5.3e   %10.5f   %5.3e  %5.3e\n", max, ratio, avg, tot);CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "Flop/sec:            %5.3e   %10.5f   %5.3e  %5.3e\n", max, ratio, avg, tot);CHKERRQ(ierr);
   /*   Memory */
   ierr = PetscMallocGetMaximumUsage(&mem);CHKERRQ(ierr);
   if (mem > 0.0) {
@@ -1372,8 +1372,8 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
   ierr = PetscFPrintf(comm, fd, "MPI Reductions:       %5.3e   %10.5f\n", max, ratio);CHKERRQ(ierr);
   numReductions = red; /* wrong because uses count from process zero */
   ierr = PetscFPrintf(comm, fd, "\nFlop counting convention: 1 flop = 1 real number operation of type (multiply/divide/add/subtract)\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "                            e.g., VecAXPY() for real vectors of length N --> 2N flops\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "                            and VecAXPY() for complex vectors of length N --> 8N flops\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "                            e.g., VecAXPY() for real vectors of length N --> 2N flop\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "                            and VecAXPY() for complex vectors of length N --> 8N flop\n");CHKERRQ(ierr);
 
   /* Get total number of stages --
        Currently, a single processor can register more stages than another, but stages must all be registered in order.
@@ -1401,7 +1401,7 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
     ierr = MPIU_Allreduce(localStageVisible, stageVisible, numStages, MPIU_BOOL, MPI_LAND, comm);CHKERRQ(ierr);
     for (stage = 0; stage < numStages; stage++) {
       if (stageUsed[stage]) {
-        ierr = PetscFPrintf(comm, fd, "\nSummary of Stages:   ----- Time ------  ----- Flops -----  --- Messages ---  -- Message Lengths --  -- Reductions --\n");CHKERRQ(ierr);
+        ierr = PetscFPrintf(comm, fd, "\nSummary of Stages:   ----- Time ------  ----- Flop -----  --- Messages ---  -- Message Lengths --  -- Reductions --\n");CHKERRQ(ierr);
         ierr = PetscFPrintf(comm, fd, "                        Avg     %%Total     Avg     %%Total   counts   %%Total     Avg         %%Total   counts   %%Total \n");CHKERRQ(ierr);
         break;
       }
@@ -1442,23 +1442,23 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
   ierr = PetscFPrintf(comm, fd, "See the 'Profiling' chapter of the users' manual for details on interpreting output.\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "Phase summary info:\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "   Count: number of times phase was executed\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "   Time and Flops: Max - maximum over all processors\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "   Time and Flop: Max - maximum over all processors\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "                   Ratio - ratio of maximum to minimum over all processors\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "   Mess: number of messages sent\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "   Avg. len: average message length (bytes)\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "   Reduct: number of global reductions\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "   Global: entire computation\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "   Stage: stages of a computation. Set stages with PetscLogStagePush() and PetscLogStagePop().\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      %%T - percent time in this phase         %%F - percent flops in this phase\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "      %%T - percent time in this phase         %%F - percent flop in this phase\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "      %%M - percent messages in this phase     %%L - percent message lengths in this phase\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "      %%R - percent reductions in this phase\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "   Total Mflop/s: 10e-6 * (sum of flops over all processors)/(max time over all processors)\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "   Total Mflop/s: 10e-6 * (sum of flop over all processors)/(max time over all processors)\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "------------------------------------------------------------------------------------------------------------------------\n");CHKERRQ(ierr);
 
   ierr = PetscLogViewWarnDebugging(comm,fd);CHKERRQ(ierr);
 
   /* Report events */
-  ierr = PetscFPrintf(comm, fd,"Event                Count      Time (sec)     Flops                             --- Global ---  --- Stage ---   Total\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd,"Event                Count      Time (sec)     Flop                             --- Global ---  --- Stage ---   Total\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd,"                   Max Ratio  Max     Ratio   Max  Ratio  Mess   Avg len Reduct  %%T %%F %%M %%L %%R  %%T %%F %%M %%L %%R Mflop/s\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,"------------------------------------------------------------------------------------------------------------------------\n");CHKERRQ(ierr);
 
@@ -1533,7 +1533,7 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
         ierr = PetscFPrintf(comm, fd, "WARNING!!! Minimum time %g over all processors for %s is negative! This happens\n on some machines whose times cannot handle too rapid calls.!\n artificially changing minimum to zero.\n",mint,name);
         mint = 0;
       }
-      if (minf < 0.0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Minimum flops %g over all processors for %s is negative! Not possible!",minf,name);
+      if (minf < 0.0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Minimum flop %g over all processors for %s is negative! Not possible!",minf,name);
       totm *= 0.5; totml *= 0.5; totr /= size;
 
       if (maxCt != 0) {
