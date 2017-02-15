@@ -505,12 +505,10 @@ typedef const char *kh_cstr_t;
         KHASH_INIT(name, kh_cstr_t, khval_t, 1, kh_str_hash_func, kh_str_hash_equal)
 
 /* HASHI */
-#if PETSC_SIZEOF_INT == 8
+#if PETSC_USE_64BIT_INDICES
 KHASH_MAP_INIT_INT64(HASHI,PetscInt)
-#elif PETSC_SIZEOF_INT == 4
-KHASH_MAP_INIT_INT(HASHI,PetscInt)
 #else
-#error "This value of PETSC_SIZEOF_INT is not supported by petsckhash."
+KHASH_MAP_INIT_INT(HASHI,PetscInt)
 #endif
 
 typedef khash_t(HASHI) *PetscHashI;

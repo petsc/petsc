@@ -25,6 +25,10 @@ Contributed by: Julian Andrej <juan@tf.uni-kiel.de>\n\n\n";
     3 - (2 + 2 + 2) + 3 = 0
 */
 
+/*T
+  requires: !mpiuni
+T*/
+
 typedef struct {
   PetscInt          dim;
   PetscBool         simplex;
@@ -45,7 +49,7 @@ static void f0_temp(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                     PetscReal t, const PetscReal x[], PetscScalar f0[])
 {
-  f0[0] = u_t[0] + dim;
+  f0[0] = u_t[0] + (PetscScalar) dim;
 }
 
 static void f1_temp(PetscInt dim, PetscInt Nf, PetscInt NfAux,

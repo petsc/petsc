@@ -45,6 +45,10 @@ Next Steps:
 For tensor product meshes, see SNES ex67, ex72
 */
 
+/*T
+  requires: !mpiuni
+T*/
+
 #include <petscdmplex.h>
 #include <petscsnes.h>
 #include <petscds.h>
