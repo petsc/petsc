@@ -3228,29 +3228,29 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     const PetscInt  *points = NULL;
     PetscPartitioner part;
     PetscInt         cEnd;
-    PetscMPIInt      rank, numProcs;
+    PetscMPIInt      rank, size;
 
     ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
     ierr = DMPlexGetHeightStratum(*dm, 0, NULL, &cEnd);CHKERRQ(ierr);
     if (!rank) {
-      if (dim == 2 && user->simplex && numProcs == 2 && cEnd == 8) {
+      if (dim == 2 && user->simplex && size == 2 && cEnd == 8) {
         sizes = triSizes_n2; points = triPoints_n2;
-      } else if (dim == 2 && user->simplex && numProcs == 3 && cEnd == 8) {
+      } else if (dim == 2 && user->simplex && size == 3 && cEnd == 8) {
         sizes = triSizes_n3; points = triPoints_n3;
-      } else if (dim == 2 && user->simplex && numProcs == 5 && cEnd == 8) {
+      } else if (dim == 2 && user->simplex && size == 5 && cEnd == 8) {
         sizes = triSizes_n5; points = triPoints_n5;
-      } else if (dim == 2 && user->simplex && numProcs == 2 && cEnd == 16) {
+      } else if (dim == 2 && user->simplex && size == 2 && cEnd == 16) {
         sizes = triSizes_ref_n2; points = triPoints_ref_n2;
-      } else if (dim == 2 && user->simplex && numProcs == 3 && cEnd == 16) {
+      } else if (dim == 2 && user->simplex && size == 3 && cEnd == 16) {
         sizes = triSizes_ref_n3; points = triPoints_ref_n3;
-      } else if (dim == 2 && user->simplex && numProcs == 5 && cEnd == 16) {
+      } else if (dim == 2 && user->simplex && size == 5 && cEnd == 16) {
         sizes = triSizes_ref_n5; points = triPoints_ref_n5;
       } else SETERRQ(comm, PETSC_ERR_ARG_WRONG, "No stored partition matching run parameters");
     }
     ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
     ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
-    ierr = PetscPartitionerShellSetPartition(part, numProcs, sizes, points);CHKERRQ(ierr);
+    ierr = PetscPartitionerShellSetPartition(part, size, sizes, points);CHKERRQ(ierr);
   }
   /* Distribute mesh over processes */
   ierr = DMPlexDistribute(*dm, 0, NULL, &dmDist);CHKERRQ(ierr);

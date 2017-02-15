@@ -88,7 +88,7 @@ PetscErrorCode PetscSubcommSetOptionsPrefix(PetscSubcomm psubcomm,const char pre
 }
 
 /*@C
-   PetsSubcommcView - Views a PetscSubcomm of values as either ASCII text or a binary file
+   PetscSubcommView - Views a PetscSubcomm of values as either ASCII text or a binary file
 
    Collective on PetscSubcomm
 

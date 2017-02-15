@@ -4023,7 +4023,7 @@ SNESLineSearchSetOrder(SNESLineSearch ls, PetscInt order);
 for instance, 2 for quadratic or 3 for cubic. Sometimes, it may not be necessary to monitor the progress of the
 nonlinear iteration.  In this case, \trl{-snes_linesearch_norms} or
 \begin{lstlisting}
-SNESLineSearchSetNorms(SNESLineSearch ls,PetscBool norms);
+SNESLineSearchSetComputeNorms(SNESLineSearch ls,PetscBool norms);
 \end{lstlisting}
 may be used to turn off function, step, and solution norm computation at the end of the linesearch.
 

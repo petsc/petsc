@@ -1018,25 +1018,12 @@ extern PetscErrorCode DMCreateDefaultSection_Plex(DM dm);
 extern PetscErrorCode DMCreateDefaultConstraints_Plex(DM dm);
 extern PetscErrorCode DMCreateMatrix_Plex(DM dm,  Mat *J);
 extern PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm);
-extern PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined);
-extern PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened);
-extern PetscErrorCode DMAdaptLabel_Plex(DM dm, DMLabel adaptLabel, DM *dmRefined);
-extern PetscErrorCode DMRefineHierarchy_Plex(DM dm, PetscInt nlevels, DM dmRefined[]);
-extern PetscErrorCode DMCoarsenHierarchy_Plex(DM dm, PetscInt nlevels, DM dmCoarsened[]);
-extern PetscErrorCode DMClone_Plex(DM dm, DM *newdm);
+PETSC_INTERN PetscErrorCode DMClone_Plex(DM dm, DM *newdm);
 extern PetscErrorCode DMSetUp_Plex(DM dm);
 extern PetscErrorCode DMDestroy_Plex(DM dm);
 extern PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer);
 extern PetscErrorCode DMLoad_Plex(DM dm, PetscViewer viewer);
 extern PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm);
-extern PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, PetscSF cellSF);
-extern PetscErrorCode DMProjectFunctionLocal_Plex(DM,PetscReal,PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar *,void *),void **,InsertMode,Vec);
-extern PetscErrorCode DMProjectFunctionLabelLocal_Plex(DM,PetscReal,DMLabel,PetscInt,const PetscInt[],PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar *,void *),void **,InsertMode,Vec);
-extern PetscErrorCode DMProjectFieldLocal_Plex(DM,PetscReal,Vec,void (**)(PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[],const PetscScalar[],const PetscScalar[],const PetscInt[],const PetscInt[],const PetscScalar[],const PetscScalar[],const PetscScalar[],PetscReal,const PetscReal[],PetscScalar[]),InsertMode,Vec);
-extern PetscErrorCode DMProjectFieldLabelLocal_Plex(DM,PetscReal,DMLabel,PetscInt,const PetscInt[],Vec,void (**)(PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[],const PetscScalar[],const PetscScalar[],const PetscInt[],const PetscInt[],const PetscScalar[],const PetscScalar[],const PetscScalar[],PetscReal,const PetscReal[],PetscScalar[]),InsertMode,Vec);
-extern PetscErrorCode DMComputeL2Diff_Plex(DM,PetscReal,PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar *,void *),void **,Vec,PetscReal *);
-extern PetscErrorCode DMComputeL2GradientDiff_Plex(DM,PetscReal,PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal[], const PetscReal[],PetscInt,PetscScalar *,void *),void **,Vec,const PetscReal [],PetscReal *);
-extern PetscErrorCode DMComputeL2FieldDiff_Plex(DM,PetscReal,PetscErrorCode(**)(PetscInt,PetscReal,const PetscReal[],PetscInt,PetscScalar *,void *),void **,Vec,PetscReal *);
 
 /* Replace dm with the contents of dmNew
    - Share the DM_Plex structure
@@ -1134,7 +1121,7 @@ static PetscErrorCode DMPlexSwap_Static(DM dmA, DM dmB)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *PetscOptionsObject,DM dm)
+PetscErrorCode DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *PetscOptionsObject,DM dm)
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
   PetscErrorCode ierr;
@@ -1154,7 +1141,7 @@ PetscErrorCode  DMSetFromOptions_NonRefinement_Plex(PetscOptionItems *PetscOptio
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject,DM dm)
+static PetscErrorCode DMSetFromOptions_Plex(PetscOptionItems *PetscOptionsObject,DM dm)
 {
   PetscInt       refine = 0, coarsen = 0, r;
   PetscBool      isHierarchy;
@@ -1291,7 +1278,7 @@ static PetscErrorCode DMGetNeighors_Plex(DM dm, PetscInt *nranks, const PetscMPI
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMInitialize_Plex(DM dm)
+static PetscErrorCode DMInitialize_Plex(DM dm)
 {
   PetscErrorCode ierr;
 
@@ -1337,7 +1324,7 @@ PetscErrorCode DMInitialize_Plex(DM dm)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMClone_Plex(DM dm, DM *newdm)
+PETSC_INTERN PetscErrorCode DMClone_Plex(DM dm, DM *newdm)
 {
   DM_Plex        *mesh = (DM_Plex *) dm->data;
   PetscErrorCode ierr;
@@ -1465,12 +1452,12 @@ static PetscErrorCode DMPlexBuildFromCellList_Parallel_Private(DM dm, PetscInt n
   const PetscInt *vrange;
   PetscInt        numVerticesAdj, off, *verticesAdj, numVerticesGhost = 0, *localVertex, *cone, c, p, v, g;
   PETSC_UNUSED PetscHashIIter ret, iter;
-  PetscMPIInt     rank, numProcs;
+  PetscMPIInt     rank, size;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &numProcs);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRQ(ierr);
   /* Partition vertices */
   ierr = PetscLayoutCreate(PetscObjectComm((PetscObject) dm), &vLayout);CHKERRQ(ierr);
   ierr = PetscLayoutSetLocalSize(vLayout, numVertices);CHKERRQ(ierr);
@@ -1494,7 +1481,7 @@ static PetscErrorCode DMPlexBuildFromCellList_Parallel_Private(DM dm, PetscInt n
     const PetscInt gv = verticesAdj[v];
     PetscInt       vrank;
 
-    ierr = PetscFindInt(gv, numProcs+1, vrange, &vrank);CHKERRQ(ierr);
+    ierr = PetscFindInt(gv, size+1, vrange, &vrank);CHKERRQ(ierr);
     vrank = vrank < 0 ? -(vrank+2) : vrank;
     remoteVerticesAdj[v].index = gv - vrange[vrank];
     remoteVerticesAdj[v].rank  = vrank;

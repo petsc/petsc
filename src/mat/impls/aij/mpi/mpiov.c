@@ -2025,7 +2025,8 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[],co
   if (scall == MAT_REUSE_MATRIX && !ismax) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"n=0 is not supported for MatGetSubMatrices(mat,n,isrow,iscol,MAT_REUSE_MATRIX,...). Set n=1 with zero-length isrow and iscolumn instead");
 
   /* Collect global wantallmatrix and nstages */
-  nmax = 20*1000000 / (C->cmap->N * sizeof(PetscInt));
+  if (!C->cmap->N) nmax=20*1000000/sizeof(PetscInt);
+  else nmax = 20*1000000 / (C->cmap->N * sizeof(PetscInt));
   if (!nmax) nmax = 1;
 
   if (scall == MAT_INITIAL_MATRIX) {

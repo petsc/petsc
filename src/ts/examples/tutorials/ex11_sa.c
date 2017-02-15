@@ -873,9 +873,9 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   const PetscInt    *localPoints;
   PetscInt          *glocalPoints,*newLocation,*newRemoteLocation;
   PetscInt          numRoots, numLeaves;
-  PetscMPIInt       numProcs;
+  PetscMPIInt       size;
 
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm), &numProcs);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size);CHKERRQ(ierr);
   ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
   ierr = DMGetPointSF(sdm, &gsfPoint);CHKERRQ(ierr);
   ierr = DMPlexGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);

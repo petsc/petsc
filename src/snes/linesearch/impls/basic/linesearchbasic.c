@@ -72,8 +72,8 @@ static PetscErrorCode  SNESLineSearchApply_Basic(SNESLineSearch linesearch)
    well-behaved problems.
 
    Options Database Keys:
-+   -snes_linesearch_damping <damping> search vector is scaled by this amount, default is 1.0
--   -snes_linesearch_norms <flag> whether to compute norms or not, default is true
++   -snes_linesearch_damping <damping> - search vector is scaled by this amount, default is 1.0
+-   -snes_linesearch_norms <flag> - whether to compute norms or not, default is true (SNESLineSearchSetComputeNorms())
 
    Notes:
    For methods with ill-scaled updates (SNESNRICHARDSON, SNESNCG), a small
@@ -84,7 +84,7 @@ static PetscErrorCode  SNESLineSearchApply_Basic(SNESLineSearch linesearch)
 
 .keywords: SNES, SNESLineSearch, damping
 
-.seealso: SNESLineSearchCreate(), SNESLineSearchSetType()
+.seealso: SNESLineSearchCreate(), SNESLineSearchSetType(), SNESLineSearchSetDamping(), SNESLineSearchSetComputeNorms()
 M*/
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_Basic(SNESLineSearch linesearch)
 {
