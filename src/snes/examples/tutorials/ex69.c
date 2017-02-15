@@ -19,6 +19,10 @@ To produce nice output, use
 Citcom: 1250 x 850 on 900 steps (3.5h per 100 timeteps)
 */
 
+/*T
+  requires: !mpiuni
+T*/
+
 #include <petscdmplex.h>
 #include <petscsnes.h>
 #include <petscds.h>

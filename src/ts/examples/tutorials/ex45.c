@@ -25,6 +25,10 @@ Contributed by: Julian Andrej <juan@tf.uni-kiel.de>\n\n\n";
     3 - (2 + 2 + 2) + 3 = 0
 */
 
+/*T
+  requires: !mpiuni
+T*/
+
 typedef struct {
   PetscInt          dim;
   PetscBool         simplex;
