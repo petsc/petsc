@@ -460,7 +460,7 @@ numbering scheme back to the global PETSc numbering can be handled with the
 
 If one is given a list of block indices in a global numbering, the routine
 \begin{lstlisting}
-ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping ctx,ISGlobalToLocalMappingType type,PetscInt nin,PetscInt idxin[],PetscInt *nout,PetscInt idxout[]);
+ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping ctx,ISGlobalToLocalMappingMode type,PetscInt nin,PetscInt idxin[],PetscInt *nout,PetscInt idxout[]);
 \end{lstlisting}
 \sindex{global to local mapping} will provide
 a new list of indices in the local numbering. Again, negative values in

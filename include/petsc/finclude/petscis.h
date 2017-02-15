@@ -16,9 +16,10 @@
 #define PetscSF type(tPetscSF)
 #define PetscLayout PetscFortranAddr
 
-#define ISType PetscEnum
+#define ISType character*(80)
 #define ISLocalToGlobalMapping PetscFortranAddr
-#define ISGlobalToLocalMappingType PetscEnum
+#define ISGlobalToLocalType character*(80)
+#define ISGlobalToLocalMappingMode PetscEnum
 #define ISColoringType PetscEnum
 
 #define ISColoringValue PETSC_IS_COLOR_VALUE_TYPE_F
@@ -26,4 +27,7 @@
 #define ISGENERAL 'general'
 #define ISSTRIDE 'stride'
 #define ISBLOCK 'block'
+
+#define ISGLOBALTOLOCALMAPPINGBASIC 'basic'
+#define ISGLOBALTOLOCALMAPPINGHASH  'hash'
 #endif
