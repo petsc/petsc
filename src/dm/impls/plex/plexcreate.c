@@ -433,6 +433,66 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMPlexCreateBoxMesh - Creates a mesh on the tensor product of unit intervals (box) using simplices.
+
+  Collective on MPI_Comm
+
+  Input Parameters:
++ comm - The communicator for the DM object
+. dim - The spatial dimension
+. numFaces - Number of faces per dimension
+- interpolate - Flag to create intermediate mesh pieces (edges, faces)
+
+  Output Parameter:
+. dm  - The DM object
+
+  Level: beginner
+
+.keywords: DM, create
+.seealso: DMPlexCreateHexBoxMesh(), DMSetType(), DMCreate()
+@*/
+PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt numFaces, PetscBool interpolate, DM *dm)
+{
+  DM             boundary;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidPointer(dm, 4);
+  ierr = DMCreate(comm, &boundary);CHKERRQ(ierr);
+  PetscValidLogicalCollectiveInt(boundary,dim,2);
+  ierr = DMSetType(boundary, DMPLEX);CHKERRQ(ierr);
+  ierr = DMSetDimension(boundary, dim-1);CHKERRQ(ierr);
+  ierr = DMSetCoordinateDim(boundary, dim);CHKERRQ(ierr);
+  switch (dim) {
+  case 2:
+  {
+    PetscReal lower[2] = {0.0, 0.0};
+    PetscReal upper[2] = {1.0, 1.0};
+    PetscInt  edges[2];
+
+    edges[0] = numFaces; edges[1] = numFaces;
+    ierr = DMPlexCreateSquareBoundary(boundary, lower, upper, edges);CHKERRQ(ierr);
+    break;
+  }
+  case 3:
+  {
+    PetscReal lower[3] = {0.0, 0.0, 0.0};
+    PetscReal upper[3] = {1.0, 1.0, 1.0};
+    PetscInt  faces[3];
+
+    faces[0] = numFaces; faces[1] = numFaces; faces[2] = numFaces;
+    ierr = DMPlexCreateCubeBoundary(boundary, lower, upper, faces);CHKERRQ(ierr);
+    break;
+  }
+  default:
+    SETERRQ1(comm, PETSC_ERR_SUP, "Dimension not supported: %d", dim);
+  }
+  ierr = DMPlexGenerate(boundary, NULL, interpolate, dm);CHKERRQ(ierr);
+  ierr = DMDestroy(&boundary);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt edges[], DMBoundaryType bdX, DMBoundaryType bdY, DMBoundaryType bdZ)
 {
   PetscInt       markerTop      = 1, faceMarkerTop      = 1;
@@ -819,112 +879,6 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
 }
 
 /*@
-  DMPlexCreateSquareMesh - Creates a 2D mesh for a square lattice.
-
-  Collective on MPI_Comm
-
-  Input Parameters:
-+ comm  - The communicator for the DM object
-. lower - The lower left corner coordinates
-. upper - The upper right corner coordinates
-. edges - The number of cells in each direction
-. bdX   - The boundary type for the X direction
-- bdY   - The boundary type for the Y direction
-
-  Output Parameter:
-. dm  - The DM object
-
-  Note: Here is the numbering returned for 2 cells in each direction:
-$ 22--8-23--9--24
-$  |     |     |
-$ 13  2 14  3  15
-$  |     |     |
-$ 19--6-20--7--21
-$  |     |     |
-$ 10  0 11  1 12
-$  |     |     |
-$ 16--4-17--5--18
-
-  Level: beginner
-
-.keywords: DM, create
-.seealso: DMPlexCreateBoxMesh(), DMPlexCreateSquareBoundary(), DMPlexCreateCubeBoundary(), DMSetType(), DMCreate()
-@*/
-PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt edges[], DMBoundaryType bdX, DMBoundaryType bdY)
-{
-  PetscReal      lower3[3], upper3[3];
-  PetscInt       edges3[3];
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  lower3[0] = lower[0]; lower3[1] = lower[1]; lower3[2] = 0.;
-  upper3[0] = upper[0]; upper3[1] = upper[1]; upper3[2] = 0.;
-  edges3[0] = edges[0]; edges3[1] = edges[1]; edges3[2] = 0;
-  ierr = DMPlexCreateCubeMesh_Internal(dm, lower3, upper3, edges3, bdX, bdY, DM_BOUNDARY_NONE);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*@
-  DMPlexCreateBoxMesh - Creates a mesh on the tensor product of unit intervals (box) using simplices.
-
-  Collective on MPI_Comm
-
-  Input Parameters:
-+ comm - The communicator for the DM object
-. dim - The spatial dimension
-. numFaces - Number of faces per dimension
-- interpolate - Flag to create intermediate mesh pieces (edges, faces)
-
-  Output Parameter:
-. dm  - The DM object
-
-  Level: beginner
-
-.keywords: DM, create
-.seealso: DMPlexCreateHexBoxMesh(), DMSetType(), DMCreate()
-@*/
-PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt numFaces, PetscBool interpolate, DM *dm)
-{
-  DM             boundary;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidPointer(dm, 4);
-  ierr = DMCreate(comm, &boundary);CHKERRQ(ierr);
-  PetscValidLogicalCollectiveInt(boundary,dim,2);
-  ierr = DMSetType(boundary, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetDimension(boundary, dim-1);CHKERRQ(ierr);
-  ierr = DMSetCoordinateDim(boundary, dim);CHKERRQ(ierr);
-  switch (dim) {
-  case 2:
-  {
-    PetscReal lower[2] = {0.0, 0.0};
-    PetscReal upper[2] = {1.0, 1.0};
-    PetscInt  edges[2];
-
-    edges[0] = numFaces; edges[1] = numFaces;
-    ierr = DMPlexCreateSquareBoundary(boundary, lower, upper, edges);CHKERRQ(ierr);
-    break;
-  }
-  case 3:
-  {
-    PetscReal lower[3] = {0.0, 0.0, 0.0};
-    PetscReal upper[3] = {1.0, 1.0, 1.0};
-    PetscInt  faces[3];
-
-    faces[0] = numFaces; faces[1] = numFaces; faces[2] = numFaces;
-    ierr = DMPlexCreateCubeBoundary(boundary, lower, upper, faces);CHKERRQ(ierr);
-    break;
-  }
-  default:
-    SETERRQ1(comm, PETSC_ERR_SUP, "Dimension not supported: %d", dim);
-  }
-  ierr = DMPlexGenerate(boundary, NULL, interpolate, dm);CHKERRQ(ierr);
-  ierr = DMDestroy(&boundary);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*@
   DMPlexCreateHexBoxMesh - Creates a mesh on the tensor product of unit intervals (box) using hexahedra.
 
   Collective on MPI_Comm
@@ -939,6 +893,17 @@ PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt numFace
 
   Output Parameter:
 . dm  - The DM object
+
+  Note: Here is the numbering returned for 2 cells in each direction:
+$ 22--8-23--9--24
+$  |     |     |
+$ 13  2 14  3  15
+$  |     |     |
+$ 19--6-20--7--21
+$  |     |     |
+$ 10  0 11  1 12
+$  |     |     |
+$ 16--4-17--5--18
 
   Level: beginner
 
@@ -959,10 +924,10 @@ PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const PetscIn
   switch (dim) {
   case 2:
   {
-    PetscReal lower[2] = {0.0, 0.0};
-    PetscReal upper[2] = {1.0, 1.0};
+    PetscReal lower[3] = {0.0, 0.0, 0.0};
+    PetscReal upper[3] = {1.0, 1.0, 0.0};
 
-    ierr = DMPlexCreateSquareMesh(*dm, lower, upper, cells, periodicX, periodicY);CHKERRQ(ierr);
+    ierr = DMPlexCreateCubeMesh_Internal(*dm, lower, upper, cells, periodicX, periodicY, DM_BOUNDARY_NONE);CHKERRQ(ierr);
     if (periodicX == DM_BOUNDARY_PERIODIC || periodicX == DM_BOUNDARY_TWIST ||
         periodicY == DM_BOUNDARY_PERIODIC || periodicY == DM_BOUNDARY_TWIST) {
       PetscReal      L[2];
