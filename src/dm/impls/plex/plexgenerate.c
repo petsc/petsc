@@ -1075,7 +1075,15 @@ PetscErrorCode DMPlexGenerate(DM boundary, const char name[], PetscBool interpol
     } else SETERRQ1(PetscObjectComm((PetscObject)boundary), PETSC_ERR_SUP, "Unknown 2D mesh generation package %s", name);
     break;
   case 2:
-    if (!name || isCTetgen) {
+    if (!name) {
+#if defined(PETSC_HAVE_CTETGEN)
+      ierr = DMPlexGenerate_CTetgen(boundary, interpolate, mesh);CHKERRQ(ierr);
+#elif defined(PETSC_HAVE_TETGEN)
+      ierr = DMPlexGenerate_Tetgen(boundary, interpolate, mesh);CHKERRQ(ierr);
+#else
+      SETERRQ(PetscObjectComm((PetscObject)boundary), PETSC_ERR_SUP, "External package CTetgen or Tetgen needed.\nPlease reconfigure with --download-ctetgen or --download-tetgen.");
+#endif
+    } else if (isCTetgen) {
 #if defined(PETSC_HAVE_CTETGEN)
       ierr = DMPlexGenerate_CTetgen(boundary, interpolate, mesh);CHKERRQ(ierr);
 #else
