@@ -15,6 +15,13 @@
             type(tPC), intent(in) :: A,B
           end function
         end interface operator (.ne.)
+        interface operator(.eq.)
+          function pcequals(A,B)
+            use petscpcdefdummy
+            logical pcequals
+            type(tPC), intent(in) :: A,B
+          end function
+        end interface operator (.eq.)
         end module
 
         function pcnotequal(A,B)
@@ -22,6 +29,13 @@
           logical pcnotequal
           type(tPC), intent(in) :: A,B
           pcnotequal = (A%v .ne. B%v)
+        end function
+
+        function pcequals(A,B)
+          use petscpcdefdummy
+          logical pcequals
+          type(tPC), intent(in) :: A,B
+          pcequals = (A%v .eq. B%v)
         end function
 
         module petsckspdefdummy
@@ -37,6 +51,13 @@
             type(tKSP), intent(in) :: A,B
           end function
         end interface operator (.ne.)
+        interface operator(.eq.)
+          function kspequals(A,B)
+            use petsckspdefdummy
+            logical kspequals
+            type(tKSP), intent(in) :: A,B
+          end function
+        end interface operator (.eq.)
         end module
 
         function kspnotequal(A,B)
@@ -44,6 +65,13 @@
           logical kspnotequal
           type(tKSP), intent(in) :: A,B
           kspnotequal = (A%v .ne. B%v)
+        end function
+
+        function kspequals(A,B)
+          use petsckspdefdummy
+          logical kspequals
+          type(tKSP), intent(in) :: A,B
+          kspequals = (A%v .eq. B%v)
         end function
 
         module petscpc
