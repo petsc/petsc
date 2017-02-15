@@ -250,7 +250,7 @@ PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool tran
       for (p = 0; p < 3; ++p) {
         for (d = 0; d < dim; ++d) {
           for (e = 0, rot[d] = 0.0; e < dim; ++e) {
-            rot[d] += R[d*dim+e] * vertexCoords[p*dim+e];
+            rot[d] += R[d*dim+e] * PetscRealPart(vertexCoords[p*dim+e]);
           }
         }
         for (d = 0; d < dim; ++d) vertexCoords[p*dim+d] = rot[d];
@@ -291,14 +291,14 @@ PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool tran
           vertexCoords[p*dim+d] *= scale;
           vertexCoords[p*dim+d] += trans[d];
         }
-        v0Ex[d] = vertexCoords[d];
+        v0Ex[d] = PetscRealPart(vertexCoords[d]);
         for (e = 0; e < dim; ++e) {
           JEx[d*dim+e]    *= scale;
           invJEx[d*dim+e] /= scale;
         }
         detJEx *= scale;
         centroidEx[d] *= scale;
-        centroidEx[d] += trans[d];
+        centroidEx[d] += PetscRealPart(trans[d]);
         volEx *= scale;
       }
       ierr = ChangeCoordinates(dm, dim, vertexCoords);CHKERRQ(ierr);
@@ -371,7 +371,7 @@ PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool tran
           vertexCoords[p*dim+d] += trans[d];
         }
         centroidEx[d] *= scale;
-        centroidEx[d] += trans[d];
+        centroidEx[d] += PetscRealPart(trans[d]);
         for (e = 0; e < dim-1; ++e) {
           JEx[d*dim+e]    *= scale;
           invJEx[d*dim+e] /= scale;
@@ -387,7 +387,7 @@ PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool tran
       for (p = 0; p < 3; ++p) {
         for (d = 0; d < dim; ++d) {
           for (e = 0, rot[d] = 0.0; e < dim; ++e) {
-            rot[d] += R[d*dim+e] * vertexCoords[p*dim+e];
+            rot[d] += R[d*dim+e] * PetscRealPart(vertexCoords[p*dim+e]);
           }
         }
         for (d = 0; d < dim; ++d) vertexCoords[p*dim+d] = rot[d];
@@ -405,7 +405,7 @@ PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool tran
       }
       for (d = 0; d < dim; ++d) normalEx[d] = rot[d];
       for (d = 0; d < dim; ++d) {
-        v0Ex[d] = vertexCoords[d];
+        v0Ex[d] = PetscRealPart(vertexCoords[d]);
         for (e = 0; e < dim; ++e) {
           for (f = 0, rotM[d*dim+e] = 0.0; f < dim; ++f) {
             rotM[d*dim+e] += R[d*dim+f] * JEx[f*dim+e];
@@ -514,7 +514,7 @@ PetscErrorCode TestQuadrilateral(MPI_Comm comm, PetscBool interpolate, PetscBool
       for (p = 0; p < 4; ++p) {
         for (d = 0; d < dim; ++d) {
           for (e = 0, rot[d] = 0.0; e < dim; ++e) {
-            rot[d] += R[d*dim+e] * vertexCoords[p*dim+e];
+            rot[d] += R[d*dim+e] * PetscRealPart(vertexCoords[p*dim+e]);
           }
         }
         for (d = 0; d < dim; ++d) vertexCoords[p*dim+d] = rot[d];
@@ -555,14 +555,14 @@ PetscErrorCode TestQuadrilateral(MPI_Comm comm, PetscBool interpolate, PetscBool
           vertexCoords[p*dim+d] *= scale;
           vertexCoords[p*dim+d] += trans[d];
         }
-        v0Ex[d] = vertexCoords[d];
+        v0Ex[d] = PetscRealPart(vertexCoords[d]);
         for (e = 0; e < dim; ++e) {
           JEx[d*dim+e]    *= scale;
           invJEx[d*dim+e] /= scale;
         }
         detJEx *= scale;
         centroidEx[d] *= scale;
-        centroidEx[d] += trans[d];
+        centroidEx[d] += PetscRealPart(trans[d]);
         volEx *= scale;
       }
       ierr = ChangeCoordinates(dm, dim, vertexCoords);CHKERRQ(ierr);
@@ -620,7 +620,7 @@ PetscErrorCode TestQuadrilateral(MPI_Comm comm, PetscBool interpolate, PetscBool
           vertexCoords[p*dim+d] += trans[d];
         }
         centroidEx[d] *= scale;
-        centroidEx[d] += trans[d];
+        centroidEx[d] += PetscRealPart(trans[d]);
         for (e = 0; e < dim-1; ++e) {
           JEx[d*dim+e]    *= scale;
           invJEx[d*dim+e] /= scale;
@@ -636,7 +636,7 @@ PetscErrorCode TestQuadrilateral(MPI_Comm comm, PetscBool interpolate, PetscBool
       for (p = 0; p < 4; ++p) {
         for (d = 0; d < dim; ++d) {
           for (e = 0, rot[d] = 0.0; e < dim; ++e) {
-            rot[d] += R[d*dim+e] * vertexCoords[p*dim+e];
+            rot[d] += R[d*dim+e] * PetscRealPart(vertexCoords[p*dim+e]);
           }
         }
         for (d = 0; d < dim; ++d) vertexCoords[p*dim+d] = rot[d];
@@ -654,7 +654,7 @@ PetscErrorCode TestQuadrilateral(MPI_Comm comm, PetscBool interpolate, PetscBool
       }
       for (d = 0; d < dim; ++d) normalEx[d] = rot[d];
       for (d = 0; d < dim; ++d) {
-        v0Ex[d] = vertexCoords[d];
+        v0Ex[d] = PetscRealPart(vertexCoords[d]);
         for (e = 0; e < dim; ++e) {
           for (f = 0, rotM[d*dim+e] = 0.0; f < dim; ++f) {
             rotM[d*dim+e] += R[d*dim+f] * JEx[f*dim+e];
@@ -769,7 +769,7 @@ PetscErrorCode TestTetrahedron(MPI_Comm comm, PetscBool interpolate, PetscBool t
           vertexCoords[p*dim+d] += trans[d];
         }
         centroidEx[d] *= scale;
-        centroidEx[d] += trans[d];
+        centroidEx[d] += PetscRealPart(trans[d]);
         for (e = 0; e < dim; ++e) {
           JEx[d*dim+e]    *= scale;
           invJEx[d*dim+e] /= scale;
@@ -783,7 +783,7 @@ PetscErrorCode TestTetrahedron(MPI_Comm comm, PetscBool interpolate, PetscBool t
       for (p = 0; p < 4; ++p) {
         for (d = 0; d < dim; ++d) {
           for (e = 0, rot[d] = 0.0; e < dim; ++e) {
-            rot[d] += R[d*dim+e] * vertexCoords[p*dim+e];
+            rot[d] += R[d*dim+e] * PetscRealPart(vertexCoords[p*dim+e]);
           }
         }
         for (d = 0; d < dim; ++d) vertexCoords[p*dim+d] = rot[d];
@@ -795,7 +795,7 @@ PetscErrorCode TestTetrahedron(MPI_Comm comm, PetscBool interpolate, PetscBool t
       }
       for (d = 0; d < dim; ++d) centroidEx[d] = rot[d];
       for (d = 0; d < dim; ++d) {
-        v0Ex[d] = vertexCoords[d];
+        v0Ex[d] = PetscRealPart(vertexCoords[d]);
         for (e = 0; e < dim; ++e) {
           for (f = 0, rotM[d*dim+e] = 0.0; f < dim; ++f) {
             rotM[d*dim+e] += R[d*dim+f] * JEx[f*dim+e];
@@ -912,7 +912,7 @@ PetscErrorCode TestHexahedron(MPI_Comm comm, PetscBool interpolate, PetscBool tr
           vertexCoords[p*dim+d] += trans[d];
         }
         centroidEx[d] *= scale;
-        centroidEx[d] += trans[d];
+        centroidEx[d] += PetscRealPart(trans[d]);
         for (e = 0; e < dim; ++e) {
           JEx[d*dim+e]    *= scale;
           invJEx[d*dim+e] /= scale;
@@ -926,7 +926,7 @@ PetscErrorCode TestHexahedron(MPI_Comm comm, PetscBool interpolate, PetscBool tr
       for (p = 0; p < 8; ++p) {
         for (d = 0; d < dim; ++d) {
           for (e = 0, rot[d] = 0.0; e < dim; ++e) {
-            rot[d] += R[d*dim+e] * vertexCoords[p*dim+e];
+            rot[d] += R[d*dim+e] * PetscRealPart(vertexCoords[p*dim+e]);
           }
         }
         for (d = 0; d < dim; ++d) vertexCoords[p*dim+d] = rot[d];
@@ -938,7 +938,7 @@ PetscErrorCode TestHexahedron(MPI_Comm comm, PetscBool interpolate, PetscBool tr
       }
       for (d = 0; d < dim; ++d) centroidEx[d] = rot[d];
       for (d = 0; d < dim; ++d) {
-        v0Ex[d] = vertexCoords[d];
+        v0Ex[d] = PetscRealPart(vertexCoords[d]);
         for (e = 0; e < dim; ++e) {
           for (f = 0, rotM[d*dim+e] = 0.0; f < dim; ++f) {
             rotM[d*dim+e] += R[d*dim+f] * JEx[f*dim+e];
