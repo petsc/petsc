@@ -37,7 +37,7 @@ PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabel
   PetscBool          flg;
 #ifdef PETSC_HAVE_PRAGMATIC
   DMLabel            bdLabelNew;
-  PetscScalar       *coordsNew;
+  double            *coordsNew;
   PetscInt          *bdTags;
   PetscReal         *xNew[3] = {NULL, NULL, NULL};
   PetscInt          *cellsNew;
@@ -155,7 +155,7 @@ PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabel
   default:
     SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "No Pragmatic adaptation defined for dimension %d", dim);
   }
-  for (v = 0; v < numVerticesNew; ++v) {for (d = 0; d < dim; ++d) coordsNew[v*dim+d] = xNew[d][v];}
+  for (v = 0; v < numVerticesNew; ++v) {for (d = 0; d < dim; ++d) coordsNew[v*dim+d] = (double) xNew[d][v];}
   ierr = PetscMalloc1(numCellsNew*(dim+1), &cellsNew);CHKERRQ(ierr);
   pragmatic_get_elements(cellsNew);
   ierr = DMPlexCreateFromCellList(PetscObjectComm((PetscObject) dm), dim, numCellsNew, numVerticesNew, numCornersNew, PETSC_TRUE, cellsNew, dim, coordsNew, dmNew);CHKERRQ(ierr);
