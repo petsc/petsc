@@ -3300,17 +3300,19 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
       }
       else { /* just the volume-weighted averages of the children */
         PetscReal parentVol;
+        PetscInt  childCell;
 
         ierr = DMPlexComputeCellGeometryFVM(refTree, p, &parentVol, NULL, NULL);CHKERRQ(ierr);
-        for (i = 0; i < numChildren; i++) {
+        for (i = 0, childCell = 0; i < numChildren; i++) {
           PetscInt  child = children[i], j;
           PetscReal childVol;
 
           if (child < cStart || child >= cEnd) continue;
           ierr = DMPlexComputeCellGeometryFVM(refTree, child, &childVol, NULL, NULL);CHKERRQ(ierr);
           for (j = 0; j < Nc; j++) {
-            pointMat[(j * numChildren + i) *  Nc + j] = childVol / parentVol;
+            pointMat[j * numChildDof + Nc * childCell + j] = childVol / parentVol;
           }
+          childCell++;
         }
       }
       /* Insert pointMat into mat */
