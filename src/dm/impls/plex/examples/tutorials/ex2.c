@@ -2,6 +2,7 @@ static char help[] = "Read in a mesh and test whether it is valid\n\n";
 
 #include <petscdmplex.h>
 #if defined(PETSC_HAVE_CGNS)
+#undef I /* Very old CGNS stupidly uses I as a variable, which fails when using complex. Curse you idiot package managers */
 #include <cgnslib.h>
 #endif
 #if defined(PETSC_HAVE_EXODUSII)
