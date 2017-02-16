@@ -551,8 +551,11 @@ static PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpolate, 
       }
     }
     if (interpolate) {
+#if 0
       PetscInt e;
 
+      /* This check is never actually executed for ctetgen (which never returns edgemarkers) and seems to be broken for
+       * tetgen */
       for (e = 0; e < out.numberofedges; e++) {
         if (out.edgemarkerlist[e]) {
           const PetscInt  vertices[2] = {out.edgelist[e*2+0]+numCells, out.edgelist[e*2+1]+numCells};
@@ -565,13 +568,14 @@ static PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpolate, 
           ierr = DMPlexRestoreJoin(*dm, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
         }
       }
+#endif
       for (f = 0; f < out.numberoftrifaces; f++) {
         if (out.trifacemarkerlist[f]) {
           const PetscInt  vertices[3] = {out.trifacelist[f*3+0]+numCells, out.trifacelist[f*3+1]+numCells, out.trifacelist[f*3+2]+numCells};
           const PetscInt *faces;
           PetscInt        numFaces;
 
-          ierr = DMPlexGetJoin(*dm, 3, vertices, &numFaces, &faces);CHKERRQ(ierr);
+          ierr = DMPlexGetFullJoin(*dm, 3, vertices, &numFaces, &faces);CHKERRQ(ierr);
           if (numFaces != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Three vertices must cover only one face, not %D", numFaces);
           if (glabel) {ierr = DMLabelSetValue(glabel, faces[0], out.trifacemarkerlist[f]);CHKERRQ(ierr);}
           ierr = DMPlexRestoreJoin(*dm, 3, vertices, &numFaces, &faces);CHKERRQ(ierr);
