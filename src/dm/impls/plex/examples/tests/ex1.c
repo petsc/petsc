@@ -14,6 +14,7 @@ typedef struct {
   PetscReal     refinementLimit;              /* The largest allowable cell volume */
   PetscBool     cellSimplex;                  /* Use simplices or hexes */
   DomainShape   domainShape;                  /* Shep of the region to be meshed */
+  DMBoundaryType periodicity[3];              /* The domain periodicity */
   char          filename[PETSC_MAX_PATH_LEN]; /* Import mesh from file */
   PetscBool     testPartition;                /* Use a fixed partitioning for testing */
   PetscInt      overlap;                      /* The cell overlap to use during partitioning */
@@ -23,7 +24,7 @@ typedef struct {
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   const char    *dShapes[2] = {"box", "cylinder"};
-  PetscInt       shape;
+  PetscInt       shape, bd;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -33,6 +34,9 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->refinementLimit   = 0.0;
   options->cellSimplex       = PETSC_TRUE;
   options->domainShape       = BOX;
+  options->periodicity[0]    = DM_BOUNDARY_NONE;
+  options->periodicity[1]    = DM_BOUNDARY_NONE;
+  options->periodicity[2]    = DM_BOUNDARY_NONE;
   options->filename[0]       = '\0';
   options->testPartition     = PETSC_FALSE;
   options->overlap           = PETSC_FALSE;
@@ -47,6 +51,15 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   shape = options->domainShape;
   ierr = PetscOptionsEList("-domain_shape","The shape of the domain","ex1.c", dShapes, 2, dShapes[options->domainShape], &shape, NULL);CHKERRQ(ierr);
   options->domainShape = (DomainShape) shape;
+  bd = options->periodicity[0];
+  ierr = PetscOptionsEList("-x_periodicity", "The x-boundary periodicity", "ex1.c", DMBoundaryTypes, 5, DMBoundaryTypes[options->periodicity[0]], &bd, NULL);CHKERRQ(ierr);
+  options->periodicity[0] = (DMBoundaryType) bd;
+  bd = options->periodicity[1];
+  ierr = PetscOptionsEList("-y_periodicity", "The y-boundary periodicity", "ex1.c", DMBoundaryTypes, 5, DMBoundaryTypes[options->periodicity[1]], &bd, NULL);CHKERRQ(ierr);
+  options->periodicity[1] = (DMBoundaryType) bd;
+  bd = options->periodicity[2];
+  ierr = PetscOptionsEList("-z_periodicity", "The z-boundary periodicity", "ex1.c", DMBoundaryTypes, 5, DMBoundaryTypes[options->periodicity[2]], &bd, NULL);CHKERRQ(ierr);
+  options->periodicity[2] = (DMBoundaryType) bd;
   ierr = PetscOptionsString("-filename", "The mesh file", "ex1.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex1.c", options->testPartition, &options->testPartition, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-overlap", "The cell overlap for partitioning", "ex1.c", options->overlap, &options->overlap, NULL);CHKERRQ(ierr);
@@ -97,12 +110,12 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     switch (user->domainShape) {
     case BOX:
       if (cellSimplex) {ierr = DMPlexCreateBoxMesh(comm, dim, dim == 2 ? 2 : 1, interpolate, dm);CHKERRQ(ierr);}
-      else             {ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);}
+      else             {ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, user->periodicity[0], user->periodicity[1], user->periodicity[2], dm);CHKERRQ(ierr);}
       break;
     case CYLINDER:
       if (cellSimplex) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Cannot mesh a cylinder with simplices");
       if (dim != 3)    SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Dimension must be 3 for a cylinder mesh, not %D", dim);
-      ierr = DMPlexCreateHexCylinderMesh(comm, 3, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);
+      ierr = DMPlexCreateHexCylinderMesh(comm, 0, user->periodicity[2], dm);CHKERRQ(ierr);
       break;
     default: SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Unknown domain shape %D", user->domainShape);
     }
@@ -434,9 +447,13 @@ int main(int argc, char **argv)
     requires: ctetgen
     args: -dim 3 -interpolate -dm_refine_hierarchy 3 -test_shape
 
-  # Test domaina shapes
+  # Test domain shapes
   test:
     suffix: cylinder
     args: -dim 3 -cell_simplex 0 -domain_shape cylinder -dm_view
+
+  test:
+    suffix: cylinder_per
+    args: -dim 3 -cell_simplex 0 -domain_shape cylinder -z_periodicity periodic -dm_view
 
 TEST*/
