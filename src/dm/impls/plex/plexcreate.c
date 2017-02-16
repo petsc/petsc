@@ -1210,25 +1210,26 @@ PetscErrorCode DMPlexCreateHexCylinderMesh(MPI_Comm comm, PetscInt numRefine, DM
     ierr = DMGetCoordinatesLocal(*dm, &coordinates);CHKERRQ(ierr);
     ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
     for (v = vStart; v < vEnd; ++v) {
-      PetscReal phi, sinp, cosp, rad, dc, df, xc, yc;
+      PetscReal phi, sinp, cosp, dc, df, x, y, xc, yc;
       PetscInt  off;
 
       ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
-      if ((PetscAbs(coords[off+0]) <= ds2) && (PetscAbs(coords[off+1]) <= ds2)) continue;
-      phi  = PetscAtan2Real(coords[off+1], coords[off]);
+      if ((PetscAbsScalar(coords[off+0]) <= ds2) && (PetscAbsScalar(coords[off+1]) <= ds2)) continue;
+      x    = PetscRealPart(coords[off]);
+      y    = PetscRealPart(coords[off+1]);
+      phi  = PetscAtan2Real(y, x);
       sinp = PetscSinReal(phi);
       cosp = PetscCosReal(phi);
-      rad  = PetscSqrtReal(PetscSqr(coords[off]) + PetscSqr(coords[off+1]));
       if ((PetscAbsReal(phi) > PETSC_PI/4.0) && (PetscAbsReal(phi) < 3.0*PETSC_PI/4.0)) {
-        dc = PetscAbs(ds2/sinp);
-        df = PetscAbs(dis/sinp);
-        xc = ds2*coords[off]/PetscAbsScalar(coords[off+1]);
-        yc = ds2*PetscSignReal(coords[off+1]);
+        dc = PetscAbsReal(ds2/sinp);
+        df = PetscAbsReal(dis/sinp);
+        xc = ds2*x/PetscAbsScalar(y);
+        yc = ds2*PetscSignReal(y);
       } else {
-        dc = PetscAbs(ds2/cosp);
-        df = PetscAbs(dis/cosp);
-        xc = ds2*PetscSignReal(coords[off+0]);
-        yc = ds2*coords[off+1]/PetscAbsScalar(coords[off]);
+        dc = PetscAbsReal(ds2/cosp);
+        df = PetscAbsReal(dis/cosp);
+        xc = ds2*PetscSignReal(x);
+        yc = ds2*y/PetscAbsScalar(x);
       }
       coords[off+0] = xc + (coords[off+0] - xc)*(1.0 - dc)/(df - dc);
       coords[off+1] = yc + (coords[off+1] - yc)*(1.0 - dc)/(df - dc);
