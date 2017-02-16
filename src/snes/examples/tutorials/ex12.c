@@ -1343,7 +1343,7 @@ int main(int argc, char **argv)
     args: -run_type test -refinement_limit 0.0 -simplex 0 -bc_type dirichlet -petscspace_order 1 -petscspace_poly_tensor -dm_refine 1
   test:
     suffix: amr_1
-    requires: hdf5 p4est triangle
+    requires: hdf5 p4est triangle !complex
     args: -run_type test -refinement_limit 0.0 -simplex 0 -bc_type dirichlet -petscspace_order 1 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_p4est_refine_pattern center -dm_forest_maximum_refinement 5 -dm_view vtk:amr.vtu:vtk_vtu -vec_view vtk:amr.vtu:vtk_vtu:append
   test:
     suffix: p4est_test_q2_conformal_serial

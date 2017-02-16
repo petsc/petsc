@@ -653,9 +653,12 @@ static PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefin
   if (!rank) {
     char args[32];
 
+#if 1
     /* Take away 'Q' for verbose output */
-    /*ierr = PetscStrcpy(args, "qezQra");CHKERRQ(ierr); */
+    ierr = PetscStrcpy(args, "qezQra");CHKERRQ(ierr);
+#else
     ierr = PetscStrcpy(args, "qezraVVVV");CHKERRQ(ierr);
+#endif
     ::tetrahedralize(args, &in, &out);
   }
   in.tetrahedronvolumelist = NULL;
@@ -680,7 +683,9 @@ static PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefin
       }
     }
     if (interpolate) {
-      PetscInt e, f;
+      PetscInt f;
+#if 0
+      PetscInt e;
 
       for (e = 0; e < out.numberofedges; e++) {
         if (out.edgemarkerlist[e]) {
@@ -694,13 +699,14 @@ static PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefin
           ierr = DMPlexRestoreJoin(*dmRefined, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
         }
       }
+#endif
       for (f = 0; f < out.numberoftrifaces; f++) {
         if (out.trifacemarkerlist[f]) {
           const PetscInt  vertices[3] = {out.trifacelist[f*3+0]+numCells, out.trifacelist[f*3+1]+numCells, out.trifacelist[f*3+2]+numCells};
           const PetscInt *faces;
           PetscInt        numFaces;
 
-          ierr = DMPlexGetJoin(*dmRefined, 3, vertices, &numFaces, &faces);CHKERRQ(ierr);
+          ierr = DMPlexGetFullJoin(*dmRefined, 3, vertices, &numFaces, &faces);CHKERRQ(ierr);
           if (numFaces != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Three vertices must cover only one face, not %D", numFaces);
           if (rlabel) {ierr = DMLabelSetValue(rlabel, faces[0], out.trifacemarkerlist[f]);CHKERRQ(ierr);}
           ierr = DMPlexRestoreJoin(*dmRefined, 3, vertices, &numFaces, &faces);CHKERRQ(ierr);
@@ -963,6 +969,7 @@ static PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, DM *dmR
     ierr = TetGenCheckOpts(&t);CHKERRQ(ierr);
     ierr = TetGenTetrahedralize(&t, in, out);CHKERRQ(ierr);
   }
+  in->tetrahedronvolumelist = NULL;
   {
     DMLabel        rlabel      = NULL;
     const PetscInt numCorners  = 4;
@@ -1085,7 +1092,7 @@ PetscErrorCode DMPlexGenerate(DM boundary, const char name[], PetscBool interpol
 #elif defined(PETSC_HAVE_TETGEN)
       ierr = DMPlexGenerate_Tetgen(boundary, interpolate, mesh);CHKERRQ(ierr);
 #else
-      SETERRQ(PetscObjectComm((PetscObject)boundary), PETSC_ERR_SUP, "External package CTetgen or Tetgen needed.\nPlease reconfigure with --download-ctetgen or --download-tetgen.");
+      SETERRQ(PetscObjectComm((PetscObject)boundary), PETSC_ERR_SUP, "External package CTetgen or Tetgen needed.\nPlease reconfigure with '--download-ctetgen' or '--with-clanguage=cxx --download-tetgen'.");
 #endif
     } else if (isCTetgen) {
 #if defined(PETSC_HAVE_CTETGEN)
@@ -1238,8 +1245,7 @@ static PetscErrorCode DMRefine_Plex_Internal(DM dm, MPI_Comm comm, DMLabel adapt
     } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unknown 2D mesh generation package %s", name);
     break;
   case 3:
-    if (!name || isCTetgen) {
-#if defined(PETSC_HAVE_CTETGEN)
+    if (!name || isCTetgen || isTetgen) {
       PetscReal *maxVolumes;
       PetscInt   c;
 
@@ -1256,32 +1262,28 @@ static PetscErrorCode DMRefine_Plex_Internal(DM dm, MPI_Comm comm, DMLabel adapt
       } else {
         for (c = 0; c < cEnd-cStart; ++c) maxVolumes[c] = refinementLimit;
       }
-      ierr = DMPlexRefine_CTetgen(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
+      if (!name) {
+#if defined(PETSC_HAVE_CTETGEN)
+        ierr = DMPlexRefine_CTetgen(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
+#elif defined(PETSC_HAVE_TETGEN)
+        ierr = DMPlexRefine_Tetgen(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
 #else
-      SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "CTetgen needs external package support.\nPlease reconfigure with --download-ctetgen.");
+        SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "External package CTetgen or Tetgen needed.\nPlease reconfigure with '--download-ctetgen' or '--with-clanguage=cxx --download-tetgen'.");
 #endif
-    } else if (isTetgen) {
-#if defined(PETSC_HAVE_TETGEN)
-      double  *maxVolumes;
-      PetscInt c;
-
-      ierr = PetscMalloc1(cEnd - cStart, &maxVolumes);CHKERRQ(ierr);
-      if (adaptLabel) {
-        ierr = DMRefine_Plex_Label(dm,adaptLabel,cStart,cEnd,maxVolumes);CHKERRQ(ierr);
-      } else if (refinementFunc) {
-        for (c = cStart; c < cEnd; ++c) {
-          PetscReal vol, centroid[3];
-
-          ierr = DMPlexComputeCellGeometryFVM(dm, c, &vol, centroid, NULL);CHKERRQ(ierr);
-          ierr = (*refinementFunc)(centroid, &maxVolumes[c-cStart]);CHKERRQ(ierr);
-        }
+      } else if (isCTetgen) {
+#if defined(PETSC_HAVE_CTETGEN)
+        ierr = DMPlexRefine_CTetgen(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
+#else
+        SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "CTetgen needs external package support.\nPlease reconfigure with --download-ctetgen.");
+#endif
       } else {
-        for (c = 0; c < cEnd-cStart; ++c) maxVolumes[c] = refinementLimit;
-      }
-      ierr = DMPlexRefine_Tetgen(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_TETGEN)
+        ierr = DMPlexRefine_Tetgen(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
 #else
-      SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Tetgen needs external package support.\nPlease reconfigure with --with-c-language=cxx --download-tetgen.");
+        SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Tetgen needs external package support.\nPlease reconfigure with --download-tetgen.");
 #endif
+      }
+      ierr = PetscFree(maxVolumes);CHKERRQ(ierr);
     } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unknown 3D mesh generation package %s", name);
     break;
   default:
