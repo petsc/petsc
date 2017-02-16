@@ -489,7 +489,12 @@ static PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpolate, 
 
       ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
       for (d = 0; d < dim; ++d) in.pointlist[idx*dim + d] = PetscRealPart(array[off+d]);
-      if (label) {ierr = DMLabelGetValue(label, v, &in.pointmarkerlist[idx]);CHKERRQ(ierr);}
+      if (label) {
+        PetscInt val;
+
+        ierr = DMLabelGetValue(label, v, &val);CHKERRQ(ierr);
+        in.pointmarkerlist[idx] = (int) val;
+      }
     }
     ierr = VecRestoreArray(coordinates, &array);CHKERRQ(ierr);
   }
@@ -521,7 +526,12 @@ static PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpolate, 
         const PetscInt vIdx = points[v] - vStart;
         poly->vertexlist[v] = vIdx;
       }
-      if (label) {ierr = DMLabelGetValue(label, f, &in.facetmarkerlist[idx]);CHKERRQ(ierr);}
+      if (label) {
+        PetscInt val;
+
+        ierr = DMLabelGetValue(label, f, &val);CHKERRQ(ierr);
+        in.facetmarkerlist[idx] = (int) val;
+      }
       ierr = DMPlexRestoreTransitiveClosure(boundary, f, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
     }
   }
@@ -625,7 +635,12 @@ static PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefin
 
       ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
       for (d = 0; d < dim; ++d) in.pointlist[idx*dim + d] = PetscRealPart(array[off+d]);
-      if (label) {ierr = DMLabelGetValue(label, v, &in.pointmarkerlist[idx]);CHKERRQ(ierr);}
+      if (label) {
+        PetscInt val;
+        
+        ierr = DMLabelGetValue(label, v, &val);CHKERRQ(ierr);
+        in.pointmarkerlist[idx] = (int) val;
+      }
     }
     ierr = VecRestoreArray(coordinates, &array);CHKERRQ(ierr);
   }
