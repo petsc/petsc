@@ -1027,16 +1027,13 @@ $       20-----15
 @*/
 PetscErrorCode DMPlexCreateHexCylinderMesh(MPI_Comm comm, PetscInt numRefine, DMBoundaryType periodicZ, DM *dm)
 {
-  const PetscInt dim         = 3;
-  const PetscInt numCells    = 5;
-  const PetscInt numVertices = 16;
-  PetscInt       r;
+  const PetscInt dim = 3;
+  PetscInt       numCells, numVertices, r;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(dm, 4);
   if (numRefine < 0) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Number of refinements %D cannot be negative", numRefine);
-  if (periodicZ == DM_BOUNDARY_PERIODIC || periodicZ == DM_BOUNDARY_TWIST) numRefine = PetscMax(1, numRefine);
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
@@ -1044,24 +1041,63 @@ PetscErrorCode DMPlexCreateHexCylinderMesh(MPI_Comm comm, PetscInt numRefine, DM
   {
     PetscInt cone[8], c;
 
+    numCells    = 5;
+    numVertices = 16;
+    if (periodicZ == DM_BOUNDARY_PERIODIC) {
+      numCells *= 2;
+    }
     ierr = DMPlexSetChart(*dm, 0, numCells+numVertices);CHKERRQ(ierr);
     for (c = 0; c < numCells; c++) {ierr = DMPlexSetConeSize(*dm, c, 8);CHKERRQ(ierr);}
     ierr = DMSetUp(*dm);CHKERRQ(ierr);
-    cone[0] =  5; cone[1] =  6; cone[2] =  7; cone[3] =  8;
-    cone[4] =  9; cone[5] = 10; cone[6] = 11; cone[7] = 12;
-    ierr = DMPlexSetCone(*dm, 0, cone);CHKERRQ(ierr);
-    cone[0] =  6; cone[1] = 13; cone[2] = 14; cone[3] =  7;
-    cone[4] = 12; cone[5] = 11; cone[6] = 16; cone[7] = 15;
-    ierr = DMPlexSetCone(*dm, 1, cone);CHKERRQ(ierr);
-    cone[0] =  8; cone[1] =  7; cone[2] = 14; cone[3] = 17;
-    cone[4] = 10; cone[5] = 18; cone[6] = 16; cone[7] = 11;
-    ierr = DMPlexSetCone(*dm, 2, cone);CHKERRQ(ierr);
-    cone[0] = 19; cone[1] =  5; cone[2] =  8; cone[3] = 17;
-    cone[4] = 20; cone[5] = 18; cone[6] = 10; cone[7] =  9;
-    ierr = DMPlexSetCone(*dm, 3, cone);CHKERRQ(ierr);
-    cone[0] = 19; cone[1] = 13; cone[2] =  6; cone[3] =  5;
-    cone[4] = 20; cone[5] =  9; cone[6] = 12; cone[7] = 15;
-    ierr = DMPlexSetCone(*dm, 4, cone);CHKERRQ(ierr);
+    if (periodicZ == DM_BOUNDARY_PERIODIC) {
+      cone[0] = 10; cone[1] = 11; cone[2] = 12; cone[3] = 13;
+      cone[4] = 14; cone[5] = 15; cone[6] = 16; cone[7] = 17;
+      ierr = DMPlexSetCone(*dm, 0, cone);CHKERRQ(ierr);
+      cone[0] = 11; cone[1] = 18; cone[2] = 19; cone[3] = 12;
+      cone[4] = 17; cone[5] = 16; cone[6] = 21; cone[7] = 20;
+      ierr = DMPlexSetCone(*dm, 1, cone);CHKERRQ(ierr);
+      cone[0] = 13; cone[1] = 12; cone[2] = 19; cone[3] = 22;
+      cone[4] = 15; cone[5] = 23; cone[6] = 21; cone[7] = 16;
+      ierr = DMPlexSetCone(*dm, 2, cone);CHKERRQ(ierr);
+      cone[0] = 24; cone[1] = 10; cone[2] = 13; cone[3] = 22;
+      cone[4] = 25; cone[5] = 23; cone[6] = 15; cone[7] = 14;
+      ierr = DMPlexSetCone(*dm, 3, cone);CHKERRQ(ierr);
+      cone[0] = 24; cone[1] = 18; cone[2] = 11; cone[3] = 10;
+      cone[4] = 25; cone[5] = 14; cone[6] = 17; cone[7] = 20;
+      ierr = DMPlexSetCone(*dm, 4, cone);CHKERRQ(ierr);
+
+      cone[0] = 14; cone[1] = 17; cone[2] = 16; cone[3] = 15;
+      cone[4] = 10; cone[5] = 13; cone[6] = 12; cone[7] = 11;
+      ierr = DMPlexSetCone(*dm, 5, cone);CHKERRQ(ierr);
+      cone[0] = 17; cone[1] = 20; cone[2] = 21; cone[3] = 16;
+      cone[4] = 11; cone[5] = 12; cone[6] = 19; cone[7] = 18;
+      ierr = DMPlexSetCone(*dm, 6, cone);CHKERRQ(ierr);
+      cone[0] = 15; cone[1] = 16; cone[2] = 21; cone[3] = 23;
+      cone[4] = 13; cone[5] = 22; cone[6] = 19; cone[7] = 12;
+      ierr = DMPlexSetCone(*dm, 7, cone);CHKERRQ(ierr);
+      cone[0] = 25; cone[1] = 14; cone[2] = 15; cone[3] = 23;
+      cone[4] = 24; cone[5] = 22; cone[6] = 13; cone[7] = 10;
+      ierr = DMPlexSetCone(*dm, 8, cone);CHKERRQ(ierr);
+      cone[0] = 25; cone[1] = 20; cone[2] = 17; cone[3] = 14;
+      cone[4] = 24; cone[5] = 10; cone[6] = 11; cone[7] = 18;
+      ierr = DMPlexSetCone(*dm, 9, cone);CHKERRQ(ierr);
+    } else {
+      cone[0] =  5; cone[1] =  6; cone[2] =  7; cone[3] =  8;
+      cone[4] =  9; cone[5] = 10; cone[6] = 11; cone[7] = 12;
+      ierr = DMPlexSetCone(*dm, 0, cone);CHKERRQ(ierr);
+      cone[0] =  6; cone[1] = 13; cone[2] = 14; cone[3] =  7;
+      cone[4] = 12; cone[5] = 11; cone[6] = 16; cone[7] = 15;
+      ierr = DMPlexSetCone(*dm, 1, cone);CHKERRQ(ierr);
+      cone[0] =  8; cone[1] =  7; cone[2] = 14; cone[3] = 17;
+      cone[4] = 10; cone[5] = 18; cone[6] = 16; cone[7] = 11;
+      ierr = DMPlexSetCone(*dm, 2, cone);CHKERRQ(ierr);
+      cone[0] = 19; cone[1] =  5; cone[2] =  8; cone[3] = 17;
+      cone[4] = 20; cone[5] = 18; cone[6] = 10; cone[7] =  9;
+      ierr = DMPlexSetCone(*dm, 3, cone);CHKERRQ(ierr);
+      cone[0] = 19; cone[1] = 13; cone[2] =  6; cone[3] =  5;
+      cone[4] = 20; cone[5] =  9; cone[6] = 12; cone[7] = 15;
+      ierr = DMPlexSetCone(*dm, 4, cone);CHKERRQ(ierr);
+    }
     ierr = DMPlexSymmetrize(*dm);CHKERRQ(ierr);
     ierr = DMPlexStratify(*dm);CHKERRQ(ierr);
   }
@@ -1119,6 +1155,24 @@ PetscErrorCode DMPlexCreateHexCylinderMesh(MPI_Comm comm, PetscInt numRefine, DM
     ierr = DMSetCoordinatesLocal(*dm, coordinates);CHKERRQ(ierr);
     ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
   }
+  /* Create periodicity */
+  if (periodicZ == DM_BOUNDARY_PERIODIC || periodicZ == DM_BOUNDARY_TWIST) {
+    PetscReal      L[3];
+    PetscReal      maxCell[3];
+    DMBoundaryType bdType[3];
+    PetscReal      lower[3] = {0.0, 0.0, 0.0};
+    PetscReal      upper[3] = {1.0, 1.0, 2.0};
+    PetscInt       i, numZCells = PetscPowInt(2, numRefine);
+
+    bdType[0] = DM_BOUNDARY_NONE;
+    bdType[1] = DM_BOUNDARY_NONE;
+    bdType[2] = periodicZ;
+    for (i = 0; i < dim; i++) {
+      L[i]       = upper[i] - lower[i];
+      maxCell[i] = 1.1 * (L[i] / numZCells);
+    }
+    ierr = DMSetPeriodicity(*dm, maxCell, L, bdType);CHKERRQ(ierr);
+  }
   /* Refine topology */
   for (r = 0; r < numRefine; ++r) {
     DM rdm = NULL;
@@ -1156,7 +1210,7 @@ PetscErrorCode DMPlexCreateHexCylinderMesh(MPI_Comm comm, PetscInt numRefine, DM
     ierr = DMGetCoordinatesLocal(*dm, &coordinates);CHKERRQ(ierr);
     ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
     for (v = vStart; v < vEnd; ++v) {
-      PetscReal phi, sinp, cosp, rad, dc, df, xc, yc, xo, yo;
+      PetscReal phi, sinp, cosp, rad, dc, df, xc, yc;
       PetscInt  off;
 
       ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
@@ -1176,30 +1230,13 @@ PetscErrorCode DMPlexCreateHexCylinderMesh(MPI_Comm comm, PetscInt numRefine, DM
         xc = ds2*PetscSignReal(coords[off+0]);
         yc = ds2*coords[off+1]/PetscAbsScalar(coords[off]);
       }
-      xo = coords[off+0];
-      yo = coords[off+1];
       coords[off+0] = xc + (coords[off+0] - xc)*(1.0 - dc)/(df - dc);
       coords[off+1] = yc + (coords[off+1] - yc)*(1.0 - dc)/(df - dc);
     }
     ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
-  }
-  /* Create periodicity */
-  if (periodicZ == DM_BOUNDARY_PERIODIC || periodicZ == DM_BOUNDARY_TWIST) {
-    PetscReal      L[3];
-    PetscReal      maxCell[3];
-    DMBoundaryType bdType[3];
-    PetscReal      lower[3] = {0.0, 0.0, 0.0};
-    PetscReal      upper[3] = {1.0, 1.0, 1.0};
-    PetscInt       i, numZCells = PetscPowInt(2, numRefine);
-
-    bdType[0] = DM_BOUNDARY_NONE;
-    bdType[1] = DM_BOUNDARY_NONE;
-    bdType[2] = periodicZ;
-    for (i = 0; i < dim; i++) {
-      L[i]       = upper[i] - lower[i];
-      maxCell[i] = 1.1 * (L[i] / numZCells);
+    if (periodicZ == DM_BOUNDARY_PERIODIC || periodicZ == DM_BOUNDARY_TWIST) {
+      ierr = DMLocalizeCoordinates(*dm);CHKERRQ(ierr);
     }
-    ierr = DMSetPeriodicity(*dm, maxCell, L, bdType);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
