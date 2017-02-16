@@ -1129,7 +1129,6 @@ PetscErrorCode DMPlexGenerate(DM boundary, const char name[], PetscBool interpol
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_TRIANGLE) || defined(PETSC_HAVE_CTETGEN) || defined(PETSC_HAVE_TETGEN)
 static PetscErrorCode DMRefine_Plex_Label(DM dm, DMLabel adaptLabel, PetscInt cStart, PetscInt cEnd, PetscReal maxVolumes[])
 {
   PetscInt       dim, c;
@@ -1183,7 +1182,6 @@ static PetscErrorCode DMRefine_Plex_Label(DM dm, DMLabel adaptLabel, PetscInt cS
   }
   PetscFunctionReturn(0);
 }
-#endif
 
 static PetscErrorCode DMRefine_Plex_Internal(DM dm, MPI_Comm comm, DMLabel adaptLabel, DM *dmRefined)
 {
