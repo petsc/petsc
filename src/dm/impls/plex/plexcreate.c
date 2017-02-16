@@ -983,6 +983,7 @@ PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const PetscIn
 
   Input Parameters:
 + comm      - The communicator for the DM object
+. numRefine - The number of regular refinements to the basic 5 cell structure
 - periodicZ - The boundary type for the Z direction
 
   Output Parameter:
@@ -1024,21 +1025,18 @@ $       20-----15
 .keywords: DM, create
 .seealso: DMPlexCreateHexBoxMesh(), DMPlexCreateBoxMesh(), DMSetType(), DMCreate()
 @*/
-#define REAL_CYL
-PetscErrorCode DMPlexCreateHexCylinderMesh(MPI_Comm comm, DMBoundaryType periodicZ, DM *dm)
+PetscErrorCode DMPlexCreateHexCylinderMesh(MPI_Comm comm, PetscInt numRefine, DMBoundaryType periodicZ, DM *dm)
 {
   const PetscInt dim         = 3;
-#ifdef REAL_CYL
   const PetscInt numCells    = 5;
   const PetscInt numVertices = 16;
-#else
-  const PetscInt numCells    = 2;
-  const PetscInt numVertices = 12;
-#endif
+  PetscInt       r;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(dm, 4);
+  if (numRefine < 0) SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Number of refinements %D cannot be negative", numRefine);
+  if (periodicZ == DM_BOUNDARY_PERIODIC || periodicZ == DM_BOUNDARY_TWIST) numRefine = PetscMax(1, numRefine);
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
@@ -1049,14 +1047,6 @@ PetscErrorCode DMPlexCreateHexCylinderMesh(MPI_Comm comm, DMBoundaryType periodi
     ierr = DMPlexSetChart(*dm, 0, numCells+numVertices);CHKERRQ(ierr);
     for (c = 0; c < numCells; c++) {ierr = DMPlexSetConeSize(*dm, c, 8);CHKERRQ(ierr);}
     ierr = DMSetUp(*dm);CHKERRQ(ierr);
-#ifndef REAL_CYL
-    cone[0] =  2; cone[1] =  3; cone[2] =  4; cone[3] =  5;
-    cone[4] =  6; cone[5] = 7; cone[6] = 8; cone[7] = 9;
-    ierr = DMPlexSetCone(*dm, 0, cone);CHKERRQ(ierr);
-    cone[0] =  3; cone[1] = 10; cone[2] = 11; cone[3] =  4;
-    cone[4] = 9; cone[5] = 8; cone[6] = 13; cone[7] = 12;
-    ierr = DMPlexSetCone(*dm, 1, cone);CHKERRQ(ierr);
-#else
     cone[0] =  5; cone[1] =  6; cone[2] =  7; cone[3] =  8;
     cone[4] =  9; cone[5] = 10; cone[6] = 11; cone[7] = 12;
     ierr = DMPlexSetCone(*dm, 0, cone);CHKERRQ(ierr);
@@ -1072,7 +1062,6 @@ PetscErrorCode DMPlexCreateHexCylinderMesh(MPI_Comm comm, DMBoundaryType periodi
     cone[0] = 19; cone[1] = 13; cone[2] =  6; cone[3] =  5;
     cone[4] = 20; cone[5] =  9; cone[6] = 12; cone[7] = 15;
     ierr = DMPlexSetCone(*dm, 4, cone);CHKERRQ(ierr);
-#endif
     ierr = DMPlexSymmetrize(*dm);CHKERRQ(ierr);
     ierr = DMPlexStratify(*dm);CHKERRQ(ierr);
   }
@@ -1084,7 +1073,7 @@ PetscErrorCode DMPlexCreateHexCylinderMesh(MPI_Comm comm, DMBoundaryType periodi
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = idm;
   }
-  /* Create geometry */
+  /* Create cube geometry */
   {
     Vec             coordinates;
     PetscSection    coordSection;
@@ -1122,15 +1111,77 @@ PetscErrorCode DMPlexCreateHexCylinderMesh(MPI_Comm comm, DMBoundaryType periodi
     coords[ 9*dim+0] =  dis; coords[ 9*dim+1] =  dis; coords[ 9*dim+2] = 0.0;
     coords[10*dim+0] =  dis; coords[10*dim+1] = -dis; coords[10*dim+2] = 1.0;
     coords[11*dim+0] =  dis; coords[11*dim+1] =  dis; coords[11*dim+2] = 1.0;
-#ifdef REAL_CYL
     coords[12*dim+0] = -dis; coords[12*dim+1] =  dis; coords[12*dim+2] = 0.0;
     coords[13*dim+0] = -dis; coords[13*dim+1] =  dis; coords[13*dim+2] = 1.0;
     coords[14*dim+0] = -dis; coords[14*dim+1] = -dis; coords[14*dim+2] = 0.0;
     coords[15*dim+0] = -dis; coords[15*dim+1] = -dis; coords[15*dim+2] = 1.0;
-#endif
     ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
     ierr = DMSetCoordinatesLocal(*dm, coordinates);CHKERRQ(ierr);
     ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
+  }
+  /* Refine topology */
+  for (r = 0; r < numRefine; ++r) {
+    DM rdm = NULL;
+
+    ierr = DMRefine(*dm, comm, &rdm);CHKERRQ(ierr);
+    ierr = DMDestroy(dm);CHKERRQ(ierr);
+    *dm  = rdm;
+  }
+  /* Remap geometry to cylinder
+       Interior square: Linear interpolation is correct
+       The other cells all have vertices on rays from the origin. We want to uniformly expand the spacing
+       such that the last vertex is on the unit circle. So the closest and farthest vertices are at distance
+
+         phi     = arctan(y/x)
+         d_close = sqrt(1/8 + 1/4 sin^2(phi))
+         d_far   = sqrt(1/2 + sin^2(phi))
+
+       so we remap them using
+
+         x_new = x_close + (x - x_close) (1 - d_close) / (d_far - d_close)
+         y_new = y_close + (y - y_close) (1 - d_close) / (d_far - d_close)
+
+       If pi/4 < phi < 3pi/4 or -3pi/4 < phi < -pi/4, then we switch x and y.
+  */
+  {
+    Vec           coordinates;
+    PetscSection  coordSection;
+    PetscScalar  *coords;
+    PetscInt      vStart, vEnd, v;
+    const PetscReal dis = 1.0/PetscSqrtReal(2.0);
+    const PetscReal ds2 = 0.5*dis;
+
+    ierr = DMPlexGetDepthStratum(*dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+    ierr = DMGetCoordinateSection(*dm, &coordSection);CHKERRQ(ierr);
+    ierr = DMGetCoordinatesLocal(*dm, &coordinates);CHKERRQ(ierr);
+    ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
+    for (v = vStart; v < vEnd; ++v) {
+      PetscReal phi, sinp, cosp, rad, dc, df, xc, yc, xo, yo;
+      PetscInt  off;
+
+      ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
+      if ((PetscAbs(coords[off+0]) <= ds2) && (PetscAbs(coords[off+1]) <= ds2)) continue;
+      phi  = PetscAtan2Real(coords[off+1], coords[off]);
+      sinp = PetscSinReal(phi);
+      cosp = PetscCosReal(phi);
+      rad  = PetscSqrtReal(PetscSqr(coords[off]) + PetscSqr(coords[off+1]));
+      if ((PetscAbsReal(phi) > PETSC_PI/4.0) && (PetscAbsReal(phi) < 3.0*PETSC_PI/4.0)) {
+        dc = PetscAbs(ds2/sinp);
+        df = PetscAbs(dis/sinp);
+        xc = ds2*coords[off]/PetscAbsScalar(coords[off+1]);
+        yc = ds2*PetscSignReal(coords[off+1]);
+      } else {
+        dc = PetscAbs(ds2/cosp);
+        df = PetscAbs(dis/cosp);
+        xc = ds2*PetscSignReal(coords[off+0]);
+        yc = ds2*coords[off+1]/PetscAbsScalar(coords[off]);
+      }
+      xo = coords[off+0];
+      yo = coords[off+1];
+      coords[off+0] = xc + (coords[off+0] - xc)*(1.0 - dc)/(df - dc);
+      coords[off+1] = yc + (coords[off+1] - yc)*(1.0 - dc)/(df - dc);
+    }
+    ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
   }
   /* Create periodicity */
   if (periodicZ == DM_BOUNDARY_PERIODIC || periodicZ == DM_BOUNDARY_TWIST) {
@@ -1139,7 +1190,7 @@ PetscErrorCode DMPlexCreateHexCylinderMesh(MPI_Comm comm, DMBoundaryType periodi
     DMBoundaryType bdType[3];
     PetscReal      lower[3] = {0.0, 0.0, 0.0};
     PetscReal      upper[3] = {1.0, 1.0, 1.0};
-    PetscInt       i, numZCells = 3;
+    PetscInt       i, numZCells = PetscPowInt(2, numRefine);
 
     bdType[0] = DM_BOUNDARY_NONE;
     bdType[1] = DM_BOUNDARY_NONE;
