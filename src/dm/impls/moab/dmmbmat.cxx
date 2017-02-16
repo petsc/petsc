@@ -57,6 +57,8 @@ PETSC_EXTERN PetscErrorCode DMCreateMatrix_Moab(DM dm, Mat *J)
   /* set up internal matrix data-structures */
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
+  MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE);
+
   *J = A;
   PetscFunctionReturn(0);
 }
@@ -69,9 +71,8 @@ PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm, PetscInt
   PetscInt        i, f, nloc, vpere, bs, n_nnz, n_onz, ivtx = 0;
   PetscInt        ibs, jbs, inbsize, iobsize, nfields, nlsiz;
   DM_Moab         *dmmoab = (DM_Moab*)dm->data;
-  const moab::EntityHandle *connect;
-  moab::Range     adjs, found;
-  std::vector<moab::EntityHandle> storage;
+  moab::Range     found;
+  std::vector<moab::EntityHandle> adjs, storage;
   PetscBool isinterlaced;
   moab::EntityHandle vtx;
   moab::ErrorCode merr;
@@ -91,19 +92,31 @@ PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm, PetscInt
        to the current vertex. We can then decipher if a vertex is ghosted or not and compute the
        non-zero pattern accordingly. */
     adjs.clear();
-    merr = dmmoab->mbiface->get_adjacencies(&vtx, 1, dmmoab->dim, true, adjs, moab::Interface::INTERSECT); MBERRNM(merr);
+    if (dmmoab->hlevel) {
+      merr = dmmoab->hierarchy->get_adjacencies(vtx, dmmoab->dim, adjs); MBERRNM(merr);
+    }
+    else {
+      merr = dmmoab->mbiface->get_adjacencies(&vtx, 1, dmmoab->dim, true, adjs, moab::Interface::INTERSECT); MBERRNM(merr);
+    }
 
     /* reset counters */
     n_nnz = n_onz = 0;
     found.clear();
 
     /* loop over vertices and update the number of connectivity */
-    for (moab::Range::const_iterator jter = adjs.begin(); jter != adjs.end(); jter++) {
-
-      const moab::EntityHandle jhandle = *jter;
+    for (unsigned jter = 0; jter < adjs.size(); ++jter) {
 
       /* Get connectivity information in canonical ordering for the local element */
-      merr = dmmoab->mbiface->get_connectivity(jhandle, connect, vpere, false, &storage); MBERRNM(merr);
+      const moab::EntityHandle *connect;
+      std::vector<moab::EntityHandle> cconnect;
+      if (dmmoab->hlevel) {
+        merr = dmmoab->hierarchy->get_connectivity(adjs[jter], dmmoab->hlevel, cconnect); MBERRNM(merr);
+        connect=cconnect.data();
+        vpere=cconnect.size();
+      }
+      else {
+        merr = dmmoab->mbiface->get_connectivity(adjs[jter], connect, vpere, false, &storage); MBERRNM(merr);
+      }
 
       /* loop over each element connected to the adjacent vertex and update as needed */
       for (i = 0; i < vpere; ++i) {

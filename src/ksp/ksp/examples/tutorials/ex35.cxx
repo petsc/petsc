@@ -295,12 +295,8 @@ PetscScalar EvaluateStrongDirichletCondition(PetscReal coords[3], UserContext* u
   case 3:
     if ( BCHECK(coords[0], user->bounds[0]) || BCHECK(coords[0], user->bounds[1]) || BCHECK(coords[1], user->bounds[2]) || BCHECK(coords[1], user->bounds[3]) )
       return 0.0;
-    //else if ( BCHECK( std::pow(coords[0]-0.5,2) + std::pow(coords[1]-0.5,2), 0.0025 ) )
-    else if ( coords[0]*coords[0] + coords[1]*coords[1] < 0.01 + BCHECKEPS )
+    else // ( coords[0]*coords[0] + coords[1]*coords[1] < 0.04 + BCHECKEPS )
       return 1.0;
-    else {
-      SETERRQ3(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid domain boundary query. Boundary point coordinates = (%g,%g,%g).\n", coords[0], coords[1], coords[2]);
-    }
   case 2:
     return ComputeForcingFunction(coords, user);
   case 1:

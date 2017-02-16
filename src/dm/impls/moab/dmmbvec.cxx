@@ -4,6 +4,8 @@
 #include <petscdmmoab.h>
 #include <MBTagConventions.hpp>
 
+#define USE_NATIVE_PETSCVEC
+
 /* declare some private DMMoab specific overrides */
 static PetscErrorCode DMCreateVector_Moab_Private(DM dm,moab::Tag tag,const moab::Range* userrange,PetscBool is_global_vec,PetscBool destroy_tag,Vec *vec);
 static PetscErrorCode DMVecUserDestroy_Moab(void *user);

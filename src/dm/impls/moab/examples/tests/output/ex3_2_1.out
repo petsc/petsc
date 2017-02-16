@@ -4,7 +4,7 @@ Level 0
 DM Object: Coarse Mesh 2 MPI processes
   type: moab
   Coarse Mesh in 3 dimensions:
-    Sizes: cells=27, vertices=8, blocks=1
+    Sizes: cells=8, vertices=27, blocks=1
     Boundary trace:
       cells=8, faces=12, vertices=17
     Fields: 1 components
@@ -13,17 +13,17 @@ Level 1
 DM Object: 2 MPI processes
   type: moab
   DM_0x84000004_0 in 3 dimensions:
-    Sizes: cells=125, vertices=64, blocks=1
+    Sizes: cells=64, vertices=125, blocks=1
     Boundary trace:
-      cells=40, faces=48, vertices=57
+      cells=32, faces=64, vertices=57
     Fields: 1 components
       [0] - DEFAULT
 Level 2
 DM Object: 2 MPI processes
   type: moab
   DM_0x84000004_1 in 3 dimensions:
-    Sizes: cells=729, vertices=512, blocks=1
+    Sizes: cells=512, vertices=729, blocks=1
     Boundary trace:
-      cells=176, faces=192, vertices=209
+      cells=184, faces=256, vertices=193
     Fields: 1 components
       [0] - DEFAULT

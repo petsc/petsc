@@ -1124,13 +1124,13 @@ runex35_3:
 	   ${RM} -f ex35_3.tmp
 
 runex36:
-	-@${MPIEXEC} -n 1 ./ex36 -levels 1 -nu .01 -n 4 -mg -ksp_converged_reason -error > ex36_1.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex36 -levels 1 -nu .01 -n 4 -mg -ksp_converged_reason > ex36_1.tmp 2>&1;\
 	   if (${DIFF} output/ex36_1.out ex36_1.tmp) then true ;  \
 	   else echo ${PWD} ; echo "Possible problem with runex36, diffs above \n========================================="; fi ;\
 	   ${RM} -f ex36_1.tmp
 
 runex36_2:
-	-@${MPIEXEC} -n 2 ./ex36 -levels 2 -nu .01 -n 2 -mg -ksp_converged_reason -error > ex36_2.tmp 2>&1;\
+	-@${MPIEXEC} -n 2 ./ex36 -levels 2 -nu .01 -n 2 -mg -ksp_converged_reason > ex36_2.tmp 2>&1;\
 	   if (${DIFF} output/ex36_2.out ex36_2.tmp) then true ;  \
 	   else echo ${PWD} ; echo "Possible problem with runex36_2, diffs above \n========================================="; fi ;\
 	   ${RM} -f ex36_2.tmp

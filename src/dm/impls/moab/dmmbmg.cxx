@@ -54,7 +54,7 @@ PetscErrorCode DMMoabGenerateHierarchy(DM dm, PetscInt nlevels, PetscInt *ldegre
   ierr = PetscMalloc1(nlevels + 1, &dmmoab->hsets);CHKERRQ(ierr);
 
   /* generate the mesh hierarchy */
-  merr = dmmoab->hierarchy->generate_mesh_hierarchy(nlevels, pdegrees, hsets);MBERRNM(merr);
+  merr = dmmoab->hierarchy->generate_mesh_hierarchy(nlevels, pdegrees, hsets, false);MBERRNM(merr);
 
 #ifdef MOAB_HAVE_MPI
   if (dmmoab->pcomm->size() > 1) {
@@ -70,6 +70,11 @@ PetscErrorCode DMMoabGenerateHierarchy(DM dm, PetscInt nlevels, PetscInt *ldegre
     }
 
     dmmoab->hsets[ilevel] = hsets[ilevel];
+#ifdef MOAB_HAVE_MPI
+    if (ilevel) {
+      merr = dmmoab->pcomm->assign_global_ids(hsets[ilevel], dmmoab->dim, 1, false, true, false);MBERRNM(merr);
+    }
+#endif
   }
 
   hsets.clear();
