@@ -263,10 +263,11 @@ PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec localU,
     /* Compute totDim, the number of dofs in the closure of a point at this height */
     totDim = 0;
     for (f = 0; f < Nf; ++f) {
-      if (!h) {
+      PetscInt effectiveHeight = h - minHeight;
+      if (!effectiveHeight) {
         sp[f] = cellsp[f];
       } else {
-        ierr = PetscDualSpaceGetHeightSubspace(cellsp[f], h, &sp[f]);CHKERRQ(ierr);
+        ierr = PetscDualSpaceGetHeightSubspace(cellsp[f], effectiveHeight, &sp[f]);CHKERRQ(ierr);
         if (!sp[f]) continue;
       }
       ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
