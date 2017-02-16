@@ -926,8 +926,13 @@ PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const PetscIn
   {
     PetscReal lower[3] = {0.0, 0.0, 0.0};
     PetscReal upper[3] = {1.0, 1.0, 0.0};
+    PetscInt  edges[3];
 
-    ierr = DMPlexCreateCubeMesh_Internal(*dm, lower, upper, cells, periodicX, periodicY, DM_BOUNDARY_NONE);CHKERRQ(ierr);
+    edges[0] = cells[0];
+    edges[1] = cells[1];
+    edges[2] = 0;
+
+    ierr = DMPlexCreateCubeMesh_Internal(*dm, lower, upper, edges, periodicX, periodicY, DM_BOUNDARY_NONE);CHKERRQ(ierr);
     if (periodicX == DM_BOUNDARY_PERIODIC || periodicX == DM_BOUNDARY_TWIST ||
         periodicY == DM_BOUNDARY_PERIODIC || periodicY == DM_BOUNDARY_TWIST) {
       PetscReal      L[2];
@@ -938,7 +943,7 @@ PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const PetscIn
       bdType[1] = periodicY;
       for (i = 0; i < dim; i++) {
         L[i]       = upper[i] - lower[i];
-        maxCell[i] = 1.1 * (L[i] / cells[i]);
+        maxCell[i] = 1.1 * (L[i] / PetscMax(1,cells[i]));
       }
 
       ierr = DMSetPeriodicity(*dm,maxCell,L,bdType);CHKERRQ(ierr);
