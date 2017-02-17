@@ -20,8 +20,9 @@ class Configure(config.package.GNUPackage):
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
-    self.mpi  = framework.require('config.packages.MPI',self)
-    self.deps = [self.mpi]
+    self.mpi        = framework.require('config.packages.MPI',self)
+    self.blasLapack = self.framework.require('config.packages.BlasLapack',self)
+    self.deps = [self.mpi,self.blasLapack]
     return
 
   def formGNUConfigureArgs(self):
@@ -29,6 +30,7 @@ class Configure(config.package.GNUPackage):
     if self.argDB['with-p4est-debugging']:
       args.append('--enable-debug')
     args.append('--enable-mpi')
+    args.append('LIBS="'+self.libraries.toString(self.blasLapack.dlib)+'"')
     return args
 
   def updateGitDir(self):
