@@ -178,6 +178,7 @@ int main(int argc, char **argv)
 
   test:
     suffix: 0
+    requires: !single
     args: -snes_converged_reason -snes_monitor_short
 
 TEST*/

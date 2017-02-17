@@ -1267,12 +1267,12 @@ int main(int argc, char **argv)
     args: -test_fv_grad -test_injector -petsclimiter_type none -petscpartitioner_type simple -tree -simplex 0 -dim 3 -num_comp 3
   test:
     suffix: nonconforming_tensor_2_hi
-    #requires: notsingle
+    requires: !single
     nsize: 4
     args: -test_fe_jacobian -petscpartitioner_type simple -tree -simplex 0 -dim 2 -num_comp 2 -dm_plex_max_projection_height 1 -petscspace_poly_tensor -petscspace_order 4 -qorder 4
   test:
     suffix: nonconforming_tensor_3_hi
-    #requires: notsingle
+    requires: !single
     nsize: 4
     args: -test_fe_jacobian -petscpartitioner_type simple -tree -simplex 0 -dim 3 -num_comp 3 -dm_plex_max_projection_height 2 -petscspace_poly_tensor -petscspace_order 4 -qorder 4
   test:
