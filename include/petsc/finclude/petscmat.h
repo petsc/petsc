@@ -126,6 +126,7 @@
 #define MATLOCALREF        'localref'
 #define MATNEST            'nest'
 #define MATPREALLOCATOR    'preallocator'
+#define MATDUMMY           'dummy'
 
 !
 ! MatMFFDType values
