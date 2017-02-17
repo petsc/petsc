@@ -115,7 +115,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     case CYLINDER:
       if (cellSimplex) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Cannot mesh a cylinder with simplices");
       if (dim != 3)    SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Dimension must be 3 for a cylinder mesh, not %D", dim);
-      ierr = DMPlexCreateHexCylinderMesh(comm, 0, user->periodicity[2], dm);CHKERRQ(ierr);
+      ierr = DMPlexCreateHexCylinderMesh(comm, 3, user->periodicity[2], dm);CHKERRQ(ierr);
       break;
     default: SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Unknown domain shape %D", user->domainShape);
     }
@@ -458,6 +458,10 @@ int main(int argc, char **argv)
 
   test:
     suffix: box_2d
+    args: -dim 2 -cell_simplex 0 -domain_shape box -dm_refine 2 -dm_view
+
+  test:
+    suffix: box_2d_per
     args: -dim 2 -cell_simplex 0 -domain_shape box -dm_refine 2 -dm_view
 
   test:
