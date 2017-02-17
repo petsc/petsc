@@ -2,6 +2,22 @@
 #include <petsc/private/vecimpl.h> /*I "petscvec.h" I*/
 #include "../src/vec/vec/utils/tagger/impls/andor.h"
 
+/*@C
+  VecTaggerAndGetSubs - Get the sub VecTaggers whose intersection defines the outer VecTagger
+
+  Not collective
+
+  Input Arguments:
+. tagger - the VecTagger context
+
+  Output Arguments:
++ nsubs - the number of sub VecTaggers
+- subs - the sub VecTaggers
+
+  Level: advanced
+
+.seealso: VecTaggerAndSetSubs()
+@*/
 PetscErrorCode VecTaggerAndGetSubs(VecTagger tagger, PetscInt *nsubs, VecTagger **subs)
 {
   PetscErrorCode ierr;
@@ -11,6 +27,20 @@ PetscErrorCode VecTaggerAndGetSubs(VecTagger tagger, PetscInt *nsubs, VecTagger 
   PetscFunctionReturn(0);
 }
 
+/*@C
+  VecTaggerAndSetSubs - Set the sub VecTaggers whose intersection defines the outer VecTagger
+
+  Logically collective
+
+  Input Arguments:
++ tagger - the VecTagger context
+. nsubs - the number of sub VecTaggers
+- subs - the sub VecTaggers
+
+  Level: advanced
+
+.seealso: VecTaggerAndSetSubs()
+@*/
 PetscErrorCode VecTaggerAndSetSubs(VecTagger tagger, PetscInt nsubs, VecTagger *subs, PetscCopyMode mode)
 {
   PetscErrorCode ierr;
