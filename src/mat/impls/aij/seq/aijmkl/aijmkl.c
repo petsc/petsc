@@ -9,12 +9,18 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/seq/aijmkl/aijmkl.h>
 
+#define USE_MKL_SPMV2 1
+/* TODO: Eventually fix the above--I shouldn't hard code things like this!
+ * Use of MKL SpMV2 should eventually be determined at configure time, run time, or 
+ * it should just always be used -- not sure what makes sense yet! --RTM */
+
 /* MKL include files. */
 #include <mkl_spblas.h>  /* Sparse BLAS */
 
 typedef struct {
-  /* "Handle" used by SpMV2 inspector-executor routines. */
-  sparse_matrix_t csrA;
+  PetscBool use_SpMV2;  /* If PETSC_TRUE, then use the MKL SpMV2 inspector-executor routines. */
+  sparse_matrix_t csrA; /* "Handle" used by SpMV2 inspector-executor routines. */
+  struct matrix_descr descr;
 } Mat_SeqAIJMKL;
 
 extern PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat,MatAssemblyType);
@@ -97,8 +103,14 @@ PetscErrorCode MatDuplicate_SeqAIJMKL(Mat A, MatDuplicateOption op, Mat *M)
 #define __FUNCT__ "MatAssemblyEnd_SeqAIJMKL"
 PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode)
 {
-  PetscErrorCode ierr;
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
+  PetscErrorCode  ierr;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
+  Mat_SeqAIJMKL   *aijmkl;
+
+  MatScalar       *aa;
+  PetscInt        n;
+  PetscInt        *aj,*ai;
+  sparse_status_t stat = SPARSE_STATUS_SUCCESS;
 
   PetscFunctionBegin;
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
@@ -115,6 +127,25 @@ PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode)
    * Do I need to disable this somehow?) */
   a->inode.use = PETSC_FALSE;  /* Must disable: otherwise the MKL routines won't get used. */
   ierr         = MatAssemblyEnd_SeqAIJ(A, mode);CHKERRQ(ierr);
+
+#ifdef USE_MKL_SPMV2
+  /* Now perform the SpMV2 setup and matrix optimization. */
+  aijmkl = (Mat_SeqAIJMKL*) A->spptr;
+  aijmkl->descr.type        = SPARSE_MATRIX_TYPE_GENERAL;
+  aijmkl->descr.mode        = SPARSE_FILL_MODE_LOWER;
+  aijmkl->descr.diag        = SPARSE_DIAG_NON_UNIT;
+  n = A->rmap->n;
+  aj   = a->j;  /* aj[k] gives column index for element aa[k]. */
+  aa   = a->a;  /* Nonzero elements stored row-by-row. */
+  ai   = a->i;  /* ai[k] is the position in aa and aj where row k starts. */
+  stat = mkl_sparse_x_create_csr (&aijmkl->csrA,SPARSE_INDEX_BASE_ZERO,n,n,ai,ai+1,aj,aa);
+  stat = mkl_sparse_set_mv_hint(aijmkl->csrA,SPARSE_OPERATION_NON_TRANSPOSE,aijmkl->descr,1000);
+  stat = mkl_sparse_set_memory_hint(aijmkl->csrA,SPARSE_MEMORY_AGGRESSIVE);
+  stat = mkl_sparse_optimize(aijmkl->csrA);
+  if (stat != SPARSE_STATUS_SUCCESS) {
+    PetscFunctionReturn(PETSC_ERR_LIB);
+  }
+#endif /* USE_MKL_SPMV2 */
 
   PetscFunctionReturn(0);
 }
@@ -152,6 +183,38 @@ PetscErrorCode MatMult_SeqAIJMKL(Mat A,Vec xx,Vec yy)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatMult_SeqAIJMKL_SpMV2"
+PetscErrorCode MatMult_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
+{
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  Mat_SeqAIJMKL     *aijmkl=(Mat_SeqAIJMKL*)A->spptr;
+  const PetscScalar *x;
+  PetscScalar       *y;
+  const MatScalar   *aa;
+  PetscErrorCode    ierr;
+  sparse_status_t stat = SPARSE_STATUS_SUCCESS;
+
+  PetscFunctionBegin;
+
+#ifdef DEBUG
+  printf("DEBUG: In MatMult_SeqAIJMKL_SpMV2\n");
+#endif
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
+
+  /* Call MKL SpMV2 executor routine to do the MatMult. */
+  stat = mkl_sparse_x_mv(SPARSE_OPERATION_NON_TRANSPOSE,1.0,aijmkl->csrA,aijmkl->descr,x,0.0,y);
+  
+  ierr = PetscLogFlops(2.0*a->nz - a->nonzerorowcnt);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
+  if (stat != SPARSE_STATUS_SUCCESS) {
+    PetscFunctionReturn(PETSC_ERR_LIB);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatMultTranspose_SeqAIJMKL"
 PetscErrorCode MatMultTranspose_SeqAIJMKL(Mat A,Vec xx,Vec yy)
 {
@@ -180,6 +243,38 @@ PetscErrorCode MatMultTranspose_SeqAIJMKL(Mat A,Vec xx,Vec yy)
   ierr = PetscLogFlops(2.0*a->nz - a->nonzerorowcnt);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMultTranspose_SeqAIJMKL_SpMV2"
+PetscErrorCode MatMultTranspose_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy)
+{
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  Mat_SeqAIJMKL     *aijmkl=(Mat_SeqAIJMKL*)A->spptr;
+  const PetscScalar *x;
+  PetscScalar       *y;
+  const MatScalar   *aa;
+  PetscErrorCode    ierr;
+  sparse_status_t stat = SPARSE_STATUS_SUCCESS;
+
+  PetscFunctionBegin;
+
+#ifdef DEBUG
+  printf("DEBUG: In MatMultTranspose_SeqAIJMKL_SpMV2\n");
+#endif
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
+
+  /* Call MKL SpMV2 executor routine to do the MatMultTranspose. */
+  stat = mkl_sparse_x_mv(SPARSE_OPERATION_TRANSPOSE,1.0,aijmkl->csrA,aijmkl->descr,x,0.0,y);
+  
+  ierr = PetscLogFlops(2.0*a->nz - a->nonzerorowcnt);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
+  if (stat != SPARSE_STATUS_SUCCESS) {
+    PetscFunctionReturn(PETSC_ERR_LIB);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -232,6 +327,58 @@ PetscErrorCode MatMultAdd_SeqAIJMKL(Mat A,Vec xx,Vec yy,Vec zz)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatMultAdd_SeqAIJMKL_SpMV2"
+PetscErrorCode MatMultAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
+{
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  Mat_SeqAIJMKL     *aijmkl=(Mat_SeqAIJMKL*)A->spptr;
+  const PetscScalar *x;
+  PetscScalar       *y,*z;
+  const MatScalar   *aa;
+  PetscErrorCode    ierr;
+  PetscInt          m=A->rmap->n;
+  const PetscInt    *aj,*ai;
+  PetscInt          i;
+
+  /* Variables not in MatMultAdd_SeqAIJ. */
+  sparse_status_t stat = SPARSE_STATUS_SUCCESS;
+
+  PetscFunctionBegin;
+
+#ifdef DEBUG
+  printf("DEBUG: In MatMultAdd_SeqAIJMKL_SpMV2\n");
+#endif
+
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
+  aj   = a->j;  /* aj[k] gives column index for element aa[k]. */
+  aa   = a->a;  /* Nonzero elements stored row-by-row. */
+  ai   = a->i;  /* ai[k] is the position in aa and aj where row k starts. */
+
+  /* Call MKL sparse BLAS routine to do the MatMult. */
+  if (zz == yy) {
+    /* If zz and yy are the same vector, we can use mkl_sparse_x_mv, which calculates y = alpha*A*x + beta*y, 
+     * with alpha and beta both set to 1.0. */
+    stat = mkl_sparse_x_mv(SPARSE_OPERATION_NON_TRANSPOSE,1.0,aijmkl->csrA,aijmkl->descr,x,1.0,y);
+  } else {
+    /* zz and yy are different vectors, so we call mkl_sparse_x_mv with alpha=1.0 and beta=0.0, and then 
+     * we add the contents of vector yy to the result; MKL sparse BLAS does not have a MatMultAdd equivalent. */
+    stat = mkl_sparse_x_mv(SPARSE_OPERATION_NON_TRANSPOSE,1.0,aijmkl->csrA,aijmkl->descr,x,0.0,y);
+    for (i=0; i<m; i++) {
+      z[i] += y[i];
+    }
+  }
+
+  ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
+  if (stat != SPARSE_STATUS_SUCCESS) {
+    PetscFunctionReturn(PETSC_ERR_LIB);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatMultTransposeAdd_SeqAIJMKL"
 PetscErrorCode MatMultTransposeAdd_SeqAIJMKL(Mat A,Vec xx,Vec yy,Vec zz)
 {
@@ -279,6 +426,59 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatMultTransposeAdd_SeqAIJMKL_SpMV2"
+PetscErrorCode MatMultTransposeAdd_SeqAIJMKL_SpMV2(Mat A,Vec xx,Vec yy,Vec zz)
+{
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  Mat_SeqAIJMKL     *aijmkl=(Mat_SeqAIJMKL*)A->spptr;
+  const PetscScalar *x;
+  PetscScalar       *y,*z;
+  const MatScalar   *aa;
+  PetscErrorCode    ierr;
+  PetscInt          m=A->rmap->n;
+  const PetscInt    *aj,*ai;
+  PetscInt          i;
+
+  /* Variables not in MatMultTransposeAdd_SeqAIJ. */
+  sparse_status_t stat = SPARSE_STATUS_SUCCESS;
+
+  PetscFunctionBegin;
+
+#ifdef DEBUG
+  printf("DEBUG: In MatMultTransposeAdd_SeqAIJMKL_SpMV2\n");
+#endif
+
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
+  aj   = a->j;  /* aj[k] gives column index for element aa[k]. */
+  aa   = a->a;  /* Nonzero elements stored row-by-row. */
+  ai   = a->i;  /* ai[k] is the position in aa and aj where row k starts. */
+
+  /* Call MKL sparse BLAS routine to do the MatMult. */
+  if (zz == yy) {
+    /* If zz and yy are the same vector, we can use mkl_sparse_x_mv, which calculates y = alpha*A*x + beta*y, 
+     * with alpha and beta both set to 1.0. */
+    stat = mkl_sparse_x_mv(SPARSE_OPERATION_TRANSPOSE,1.0,aijmkl->csrA,aijmkl->descr,x,1.0,y);
+  } else {
+    /* zz and yy are different vectors, so we call mkl_sparse_x_mv with alpha=1.0 and beta=0.0, and then 
+     * we add the contents of vector yy to the result; MKL sparse BLAS does not have a MatMultAdd equivalent. */
+    stat = mkl_sparse_x_mv(SPARSE_OPERATION_TRANSPOSE,1.0,aijmkl->csrA,aijmkl->descr,x,0.0,y);
+    for (i=0; i<m; i++) {
+      z[i] += y[i];
+    }
+  }
+
+  ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
+  if (stat != SPARSE_STATUS_SUCCESS) {
+    PetscFunctionReturn(PETSC_ERR_LIB);
+  }
+  PetscFunctionReturn(0);
+}
+
+
 /* MatConvert_SeqAIJ_SeqAIJMKL converts a SeqAIJ matrix into a
  * SeqAIJMKL matrix.  This routine is called by the MatCreate_SeqMKLAIJ()
  * routine, but can also be used to convert an assembled SeqAIJ matrix
@@ -299,14 +499,23 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
   ierr     = PetscNewLog(B,&aijmkl);CHKERRQ(ierr);
   B->spptr = (void*) aijmkl;
 
-  /* Set function pointers for methods that we inherit from AIJ but override. */
+  /* Set function pointers for methods that we inherit from AIJ but override. 
+   * Currently the transposed operations are not being set because I encounter memory corruption 
+   * when these are enabled.  Need to look at this with Valgrind or similar. --RTM */
   B->ops->duplicate        = MatDuplicate_SeqAIJMKL;
   B->ops->assemblyend      = MatAssemblyEnd_SeqAIJMKL;
   B->ops->destroy          = MatDestroy_SeqAIJMKL;
+#ifdef USE_MKL_SPMV2
+  B->ops->mult             = MatMult_SeqAIJMKL_SpMV2;
+  /* B->ops->multtranspose    = MatMultTranspose_SeqAIJMKL_SpMV2; */
+  B->ops->multadd          = MatMultAdd_SeqAIJMKL_SpMV2;
+  /* B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJMKL_SpMV2; */
+#else
   B->ops->mult             = MatMult_SeqAIJMKL;
-  B->ops->multtranspose    = MatMultTranspose_SeqAIJMKL;
+//  B->ops->multtranspose    = MatMultTranspose_SeqAIJMKL;
   B->ops->multadd          = MatMultAdd_SeqAIJMKL;
-  B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJMKL;
+//  B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJMKL;
+#endif /* USE_MKL_SPMV2 */
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaijmkl_seqaij_C",MatConvert_SeqAIJMKL_SeqAIJ);CHKERRQ(ierr);
 
@@ -366,5 +575,3 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJMKL(Mat A)
   ierr = MatConvert_SeqAIJ_SeqAIJMKL(A,MATSEQAIJMKL,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
