@@ -170,8 +170,7 @@ int main(int argc,char **args)
     ierr = ISDestroy(&is2[i]);CHKERRQ(ierr);
     ierr = MatDestroy(&submatB[i]);CHKERRQ(ierr);
   }
-  ierr = MatDestroyMatrices(nd,&submatA);CHKERRQ(ierr);
-  //ierr = MatDestroyMatrices(nd,&submatB);CHKERRQ(ierr);
+  ierr = MatDestroySubMatrices(nd,&submatA);CHKERRQ(ierr);
 
   ierr = PetscFree(is1);CHKERRQ(ierr);
   ierr = PetscFree(is2);CHKERRQ(ierr);

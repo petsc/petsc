@@ -33,6 +33,7 @@
 #define matgetrowmax_                    MATGETROWMAX
 #define matgetrowmaxabs_                 MATGETROWMAXABS
 #define matdestroymatrices_              MATDESTROYMATRICES
+#define matdestroysubmatrices_           MATDESTROYSUBMATRICES
 #define matgetfactor_                    MATGETFACTOR
 #define matfactorgetsolverpackage_       MATFACTORGETSOLVERPACKAGE
 #define matgetrowij_                     MATGETROWIJ
@@ -112,6 +113,7 @@
 #define matgetrowmax_                    matgetrowmax
 #define matgetrowmaxabs_                 matgetrowmaxabs
 #define matdestroymatrices_              matdestroymatrices
+#define matdestroysubmatrices_           matdestroysubmatrices
 #define matgetfactor_                    matgetfactor
 #define matfactorgetsolverpackage_       matfactorgetsolverpackage
 #define matcreatevecs_                   matcreatevecs
@@ -549,6 +551,31 @@ PETSC_EXTERN void PETSC_STDCALL matdestroymatrices_(Mat *mat,PetscInt *n,Mat *sm
 {
   PetscInt i;
 
+  for (i=0; i<*n; i++) {
+    *ierr = MatDestroy(&smat[i]);if (*ierr) return;
+  }
+}
+
+PETSC_EXTERN void PETSC_STDCALL matdestroysubmatrices_(Mat *mat,PetscInt *n,Mat *smat,PetscErrorCode *ierr)
+{
+  PetscInt   i;
+#if 0
+  Mat_SubMat *smat_i;
+  PetscBool  isdummy;
+
+  /* Destroy dummy submatrices (*mat)[n]...(*mat)[n+nstages-1] used for reuse struct Mat_SubMat */
+  if ((*mat)[n]) {
+    *ierr = PetscObjectTypeCompare((PetscObject)(*mat)[n],MATDUMMY,&isdummy);if (*ierr) return;
+    if (isdummy) {
+      smat_i = (Mat_SubMat*)smat[0]->data); /* singleis and nstages are saved in (*mat)[0]->data */
+      if (smat_i && !smat_i->singleis) {
+        for (i=0; i<smat_i->nstages; i++) {
+          *ierr = MatDestroy(&smat[n+i]);if (*ierr) return;
+        }
+      }
+    }
+  }
+#endif
   for (i=0; i<*n; i++) {
     *ierr = MatDestroy(&smat[i]);if (*ierr) return;
   }

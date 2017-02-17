@@ -541,7 +541,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[],c
     /* Make sure every processor loops through the nstages */
     ierr = MPIU_Allreduce(&nstages_local,&nstages,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)C));CHKERRQ(ierr);
 
-    ierr = PetscMalloc1(ismax+1,submat);CHKERRQ(ierr);
+    ierr = PetscCalloc1(ismax+1,submat);CHKERRQ(ierr);
   } else {
     subc = (Mat_SeqBAIJ*)((*submat)[0]->data);
     smat   = subc->submatis1;
