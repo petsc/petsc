@@ -3351,7 +3351,6 @@ PetscErrorCode MatGetSubMatricesMPI_MPIXAIJ(Mat C,PetscInt ismax,const IS isrow[
 	}
 
         ierr = MatDestroy(&AA);CHKERRQ(ierr);
-        ierr = MatDestroy(&BB);CHKERRQ(ierr);
       }
       ierr = ISDestroy(ciscol+ii);CHKERRQ(ierr);
       ierr = ISDestroy(ciscol_p+ii);CHKERRQ(ierr);
@@ -3375,7 +3374,7 @@ PetscErrorCode MatGetSubMatricesMPI_MPIXAIJ(Mat C,PetscInt ismax,const IS isrow[
   ierr = PetscFree2(isrow_p,iscol_p);CHKERRQ(ierr);
   ierr = PetscFree(ciscol_p);CHKERRQ(ierr);
   ierr = PetscFree(A);CHKERRQ(ierr);
-  ierr = PetscFree(B);CHKERRQ(ierr);
+  ierr = MatDestroyMatrices(cismax,&B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
