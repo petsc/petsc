@@ -487,6 +487,7 @@ extern PetscErrorCode DMCreateMatrix_DA_3d_MPIBAIJ(DM,Mat);
 extern PetscErrorCode DMCreateMatrix_DA_2d_MPISBAIJ(DM,Mat);
 extern PetscErrorCode DMCreateMatrix_DA_3d_MPISBAIJ(DM,Mat);
 extern PetscErrorCode DMCreateMatrix_DA_2d_MPIELL(DM,Mat);
+extern PetscErrorCode DMCreateMatrix_DA_3d_MPIELL(DM,Mat);
 
 /*@C
    MatSetupDM - Sets the DMDA that is to be used by the HYPRE_StructMatrix PETSc matrix
@@ -759,8 +760,10 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
       ierr = DMCreateMatrix_DA_3d_MPISBAIJ(da,A);CHKERRQ(ierr);
     } else SETERRQ3(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not implemented for %D dimension and Matrix Type: %s in %D dimension! Send mail to petsc-maint@mcs.anl.gov for code",dim,Atype,dim);
   } else if (ell) {
-     if (dim ==2) {
+     if (dim == 2) {
        ierr = DMCreateMatrix_DA_2d_MPIELL(da,A);CHKERRQ(ierr);
+     } else if (dim == 3) {
+       ierr = DMCreateMatrix_DA_3d_MPIELL(da,A);CHKERRQ(ierr);
      } else SETERRQ3(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not implemented for %D dimension and Matrix Type: %s in %D dimension! Send mail to petsc-maint@mcs.anl.gov for code",dim,Atype,dim);
   }else {
     ISLocalToGlobalMapping ltog;
@@ -875,6 +878,116 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIELL(DM da,Mat J)
           rows[k] = k + nc*(slot);
         }
         ierr = MatSetValuesLocal(J,nc,rows,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
+      }
+    }
+    ierr = PetscFree(values);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatSetOption(J,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  }
+  ierr = PetscFree2(rows,cols);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMCreateMatrix_DA_3d_MPIELL(DM da,Mat J)
+{
+  PetscErrorCode         ierr;
+  PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;
+  PetscInt               m,n,dim,s,*cols = NULL,k,nc,*rows = NULL,col,cnt,l,p,*dnz = NULL,*onz = NULL;
+  PetscInt               istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk,M,N,P;
+  MPI_Comm               comm;
+  PetscScalar            *values;
+  DMBoundaryType         bx,by,bz;
+  ISLocalToGlobalMapping ltog;
+  DMDAStencilType        st;
+
+  PetscFunctionBegin;
+  /*
+         nc - number of components per grid point
+         col - number of colors needed in one direction for single component problem
+
+  */
+  ierr = DMDAGetInfo(da,&dim,&m,&n,&p,&M,&N,&P,&nc,&s,&bx,&by,&bz,&st);CHKERRQ(ierr);
+  col  = 2*s + 1;
+  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&nx,&ny,&nz);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gnx,&gny,&gnz);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
+
+  ierr = PetscMalloc2(nc,&rows,col*col*col*nc*nc,&cols);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
+
+  ierr = MatSetBlockSize(J,nc);CHKERRQ(ierr);
+  /* determine the matrix preallocation information */
+  ierr = MatPreallocateInitialize(comm,nc*nx*ny*nz,nc*nx*ny*nz,dnz,onz);CHKERRQ(ierr);
+  for (i=xs; i<xs+nx; i++) {
+    istart = (bx == DM_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-i));
+    iend   = (bx == DM_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,m-i-1));
+    for (j=ys; j<ys+ny; j++) {
+      jstart = (by == DM_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-j));
+      jend   = (by == DM_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,n-j-1));
+      for (k=zs; k<zs+nz; k++) {
+        kstart = (bz == DM_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-k));
+        kend   = (bz == DM_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,p-k-1));
+
+        slot = i - gxs + gnx*(j - gys) + gnx*gny*(k - gzs);
+
+        cnt = 0;
+        for (l=0; l<nc; l++) {
+          for (ii=istart; ii<iend+1; ii++) {
+            for (jj=jstart; jj<jend+1; jj++) {
+              for (kk=kstart; kk<kend+1; kk++) {
+                if ((st == DMDA_STENCIL_BOX) || ((!ii && !jj) || (!jj && !kk) || (!ii && !kk))) {/* entries on star*/
+                  cols[cnt++] = l + nc*(slot + ii + gnx*jj + gnx*gny*kk);
+                }
+              }
+            }
+          }
+          rows[l] = l + nc*(slot);
+        }
+        ierr = MatPreallocateSetLocal(ltog,nc,rows,ltog,cnt,cols,dnz,onz);CHKERRQ(ierr);
+      }
+    }
+  }
+  ierr = MatSetBlockSize(J,nc);CHKERRQ(ierr);
+  ierr = MatSeqELLSetPreallocation(J,0,dnz);CHKERRQ(ierr);
+  ierr = MatMPIELLSetPreallocation(J,0,dnz,0,onz);CHKERRQ(ierr);
+  ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(J,ltog,ltog);CHKERRQ(ierr);
+
+  /*
+    For each node in the grid: we get the neighbors in the local (on processor ordering
+    that includes the ghost points) then MatSetValuesLocal() maps those indices to the global
+    PETSc ordering.
+  */
+  if (!da->prealloc_only) {
+    ierr = PetscCalloc1(col*col*col*nc*nc*nc,&values);CHKERRQ(ierr);
+    for (i=xs; i<xs+nx; i++) {
+      istart = (bx == DM_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-i));
+      iend   = (bx == DM_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,m-i-1));
+      for (j=ys; j<ys+ny; j++) {
+        jstart = (by == DM_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-j));
+        jend   = (by == DM_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,n-j-1));
+        for (k=zs; k<zs+nz; k++) {
+          kstart = (bz == DM_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-k));
+          kend   = (bz == DM_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,p-k-1));
+
+          slot = i - gxs + gnx*(j - gys) + gnx*gny*(k - gzs);
+
+          cnt = 0;
+          for (l=0; l<nc; l++) {
+            for (ii=istart; ii<iend+1; ii++) {
+              for (jj=jstart; jj<jend+1; jj++) {
+                for (kk=kstart; kk<kend+1; kk++) {
+                  if ((st == DMDA_STENCIL_BOX) || ((!ii && !jj) || (!jj && !kk) || (!ii && !kk))) {/* entries on star*/
+                    cols[cnt++] = l + nc*(slot + ii + gnx*jj + gnx*gny*kk);
+                  }
+                }
+              }
+            }
+            rows[l] = l + nc*(slot);
+          }
+          ierr = MatSetValuesLocal(J,nc,rows,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
+        }
       }
     }
     ierr = PetscFree(values);CHKERRQ(ierr);
