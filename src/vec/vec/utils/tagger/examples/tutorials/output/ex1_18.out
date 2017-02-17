@@ -1,0 +1,82 @@
+Vec Object: Vec to Tag 3 MPI processes
+  type: mpi
+Process [0]
+0.720032 + 0.061794 i
+0.0100223 + 0.144639 i
+0.397778 + 0.0730366 i
+0.103866 + 0.25078 i
+Process [1]
+0.541144 + 0.529699 i
+0.848716 + 0.503472 i
+0.110874 + 0.885142 i
+0.151178 + 0.569963 i
+Process [2]
+0.362256 + 0.997603 i
+0.68741 + 0.862305 i
+0.823971 + 0.697248 i
+0.198489 + 0.889145 i
+VecTagger Object: 3 MPI processes
+  type: or
+  Block size: 1
+   or of 2 subtags:
+    VecTagger Object: (sub_0_) 3 MPI processes
+      type: absolute
+      Block size: 1
+       absolute box=[      0.+0.i,0.25+0.25i      ]
+    VecTagger Object: (sub_1_) 3 MPI processes
+      type: relative
+      Block size: 1
+       relative box=[      0.75+0.75i,inf.+inf.i      ]
+Num boxes: 2
+  0:   [0.+0.i,0.25+0.25i]  
+  1:   [0.639043+0.763651i,inf.+inf.i]  
+IS Object: Tagged IS (block global) 3 MPI processes
+  type: block
+Block size 1
+Number of block indices in set 1
+The first indices of each block are
+Block 0 Index 1
+Block size 1
+Number of block indices in set 0
+The first indices of each block are
+Block size 1
+Number of block indices in set 1
+The first indices of each block are
+Block 0 Index 9
+IS Object: Untagged IS (global) 3 MPI processes
+  type: general
+[0] Number of indices in set 3
+[0] 0 0
+[0] 1 2
+[0] 2 3
+[1] Number of indices in set 4
+[1] 0 4
+[1] 1 5
+[1] 2 6
+[1] 3 7
+[2] Number of indices in set 3
+[2] 0 8
+[2] 1 10
+[2] 2 11
+Vec Object: Tagged selection 3 MPI processes
+  type: mpi
+Process [0]
+0.0100223 + 0.144639 i
+Process [1]
+Process [2]
+0.68741 + 0.862305 i
+Vec Object: Untagged selection 3 MPI processes
+  type: mpi
+Process [0]
+0.720032 + 0.061794 i
+0.397778 + 0.0730366 i
+0.103866 + 0.25078 i
+Process [1]
+0.541144 + 0.529699 i
+0.848716 + 0.503472 i
+0.110874 + 0.885142 i
+0.151178 + 0.569963 i
+Process [2]
+0.362256 + 0.997603 i
+0.823971 + 0.697248 i
+0.198489 + 0.889145 i

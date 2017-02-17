@@ -1,17 +1,16 @@
 
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
-SOURCEC  = vinv.c vscat.c vpscat.c vecio.c comb.c vecstash.c vecmpitoseq.c vecs.c vsection.c projection.c
+SOURCEC  = tagger.c taggerregi.c dlregistagger.c
 SOURCEF  =
-SOURCEH  = vpscat.h
-DIRS     = matlab tagger
+SOURCEH  =
+DIRS     =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
-LOCDIR   = src/vec/vec/utils/
+LOCDIR   = src/vec/vec/utils/tagger/interface
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 include ${PETSC_DIR}/lib/petsc/conf/test
-

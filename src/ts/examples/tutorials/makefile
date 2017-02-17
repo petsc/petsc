@@ -420,7 +420,7 @@ runex11_advect_p4est:
 		-f -grid_bounds -1.,1.,-1.,1. -bc_outflow 1,2,3,4 \
 			-dm_type p4est -dm_forest_partition_overlap 1 -dm_forest_maximum_refinement 6 -dm_forest_minimum_refinement 2 -dm_forest_initial_refinement 4 \
 		-ts_ssp_type rks2 -ts_ssp_nstages 10 -ts_final_time 1. \
-		-ufv_use_amr -ufv_refine_tol 1.e-2 -ufv_coarsen_tol 1.e-4
+		-ufv_use_amr -refine_vec_tagger_box 1.e-2,inf -coarsen_vec_tagger_box 0.,1.e-4 -refine_tag_view -coarsen_tag_view
 
 runex11_advect_p4est_fine:
 	-@${MPIEXEC} -n 4 ./ex11 \
@@ -430,13 +430,13 @@ runex11_advect_p4est_fine:
 		-f -grid_bounds -1.,1.,-1.,1. -bc_outflow 1,2,3,4 \
 			-dm_type p4est -dm_forest_partition_overlap 1 -dm_forest_maximum_refinement 7 -dm_forest_minimum_refinement 3 -dm_forest_initial_refinement 4 \
 		-ts_ssp_type rks2 -ts_ssp_nstages 10 -ts_final_time 1. \
-		-ufv_use_amr -ufv_refine_tol 2.5e-3 -ufv_coarsen_tol 2.5e-5
+		-ufv_use_amr -refine_vec_tagger_box 2.5e-3,inf -coarsen_vec_tagger_box 0,2.5e-5 -refine_tag_view -coarsen_tag_view
 
 runex11_euler_p4est:
 	-@${MPIEXEC} -n 4 ./ex11 -ufv_vtk_interval 1 -monitor density,energy -f -grid_size 2,1 -grid_bounds -1,1.,0.,1 -bc_wall 1,2,3,4 \
           -dm_type p4est -dm_forest_partition_overlap 1 -dm_forest_maximum_refinement 6 -dm_forest_minimum_refinement 2 -dm_forest_initial_refinement 2 -physics euler -eu_type iv_shock -ufv_cfl 10 -eu_alpha 60. -grid_skew_60 -eu_gamma 1.4 -eu_amach 2.02 -eu_rho2 3. -ts_final_time 1 \
           -ts_ssp_type rks2 -ts_ssp_nstages 10 -petscfv_type leastsquares -petscfv_compute_gradients 0 -petsclimiter_type minmod \
-					-ufv_use_amr -ufv_view_initial_refinement -ufv_refine_tol 0.5 -ufv_coarsen_tol 1.e-2 -ts_final_time 0.1
+					-ufv_use_amr -ufv_view_initial_refinement -refine_vec_tagger_box 0.5,inf -coarsen_vec_tagger_box 0,1.e-2 -refine_tag_view -coarsen_tag_view -ts_final_time 0.1
 
 runex12:
 	-@${MPIEXEC} -n 1 ./ex12 -da_grid_x 20 -ts_final_time 3 -ts_dt 1e-1 -ts_theta_initial_guess_extrapolate 0 \

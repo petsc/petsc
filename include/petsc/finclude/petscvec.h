@@ -9,6 +9,7 @@
 
 #define Vec type(tVec)
 #define VecScatter type(tVecScatter)
+#define VecTagger type(tVecTagger)
 
 #define NormType PetscEnum
 #define InsertMode PetscEnum
@@ -16,6 +17,7 @@
 #define VecOption PetscEnum
 #define VecType character*(80)
 #define VecOperation PetscEnum
+#define VecTaggerCDFMethod PetscEnum
 
 #define VECSEQ 'seq'
 #define VECMPI 'mpi'
