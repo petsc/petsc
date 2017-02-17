@@ -702,17 +702,17 @@ int main(int argc, char **argv)
     suffix: 19
     requires: triangle
     nsize: 2
-    args: -run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view
+    args: -run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view -petscpartitioner_type simple
   test:
     suffix: 20
     requires: triangle
     nsize: 3
-    args: -run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view
+    args: -run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view -petscpartitioner_type simple
   test:
     suffix: 21
     requires: triangle
     nsize: 5
-    args: -run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view
+    args: -run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view -petscpartitioner_type simple
   test:
     suffix: 22
     requires: triangle
@@ -721,17 +721,17 @@ int main(int argc, char **argv)
     suffix: 23
     requires: triangle
     nsize: 2
-    args: -run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view
+    args: -run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view -petscpartitioner_type simple
   test:
     suffix: 24
     requires: triangle
     nsize: 3
-    args: -run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view
+    args: -run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view -petscpartitioner_type simple
   test:
     suffix: 25
     requires: triangle
     nsize: 5
-    args: -run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view
+    args: -run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view -petscpartitioner_type simple
   test:
     suffix: 26
     requires: triangle
@@ -740,17 +740,17 @@ int main(int argc, char **argv)
     suffix: 27
     requires: triangle
     nsize: 2
-    args: -run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view
+    args: -run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view -petscpartitioner_type simple
   test:
     suffix: 28
     requires: triangle
     nsize: 3
-    args: -run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view
+    args: -run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view -petscpartitioner_type simple
   test:
     suffix: 29
     requires: triangle
     nsize: 5
-    args: -run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view
+    args: -run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view -petscpartitioner_type simple
   # Full solutions with quads
   #   FULL Schur with LU/Jacobi
   test:
@@ -810,7 +810,7 @@ int main(int argc, char **argv)
     suffix: fetidp_2d_tri
     requires: triangle suitesparse
     nsize: 5
-    args: -run_type full -dm_refine 2 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -snes_view -snes_converged_reason -show_solution 0 -dm_mat_type is -ksp_type fetidp -ksp_rtol 1.0e-8 -ksp_fetidp_saddlepoint -fetidp_ksp_type cg -fetidp_p_ksp_max_it 1 -fetidp_p_ksp_type richardson -fetidp_p_ksp_richardson_scale 200 -fetidp_p_pc_type none -ksp_fetidp_saddlepoint_flip 1 -fetidp_bddc_pc_bddc_vertex_size 2 -fetidp_bddc_pc_bddc_dirichlet_pc_factor_mat_solver_package umfpack -fetidp_bddc_pc_bddc_neumann_pc_factor_mat_solver_package umfpack
+    args: -run_type full -dm_refine 2 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -snes_view -snes_converged_reason -show_solution 0 -dm_mat_type is -ksp_type fetidp -ksp_rtol 1.0e-8 -ksp_fetidp_saddlepoint -fetidp_ksp_type cg -fetidp_p_ksp_max_it 1 -fetidp_p_ksp_type richardson -fetidp_p_ksp_richardson_scale 200 -fetidp_p_pc_type none -ksp_fetidp_saddlepoint_flip 1 -fetidp_bddc_pc_bddc_vertex_size 2 -fetidp_bddc_pc_bddc_dirichlet_pc_factor_mat_solver_package umfpack -fetidp_bddc_pc_bddc_neumann_pc_factor_mat_solver_package umfpack -petscpartitioner_type simple
   test:
     suffix: fetidp_3d_tet
     requires: ctetgen mumps suitesparse
@@ -820,11 +820,11 @@ int main(int argc, char **argv)
     suffix: fetidp_2d_quad
     requires: suitesparse
     nsize: 5
-    args: -run_type full -dm_refine 2 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -snes_view -snes_converged_reason -show_solution 0 -dm_mat_type is -ksp_type fetidp -ksp_rtol 1.0e-8 -ksp_fetidp_saddlepoint -fetidp_ksp_type cg -fetidp_p_ksp_max_it 1 -fetidp_p_ksp_type richardson -fetidp_p_ksp_richardson_scale 200 -fetidp_p_pc_type none -ksp_fetidp_saddlepoint_flip 1 -fetidp_bddc_pc_bddc_vertex_size 2 -fetidp_bddc_pc_bddc_dirichlet_pc_factor_mat_solver_package umfpack -fetidp_bddc_pc_bddc_neumann_pc_factor_mat_solver_package umfpack -simplex 0 -pres_petscspace_poly_tensor -simplex 0 -vel_petscspace_poly_tensor
+    args: -run_type full -dm_refine 2 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -snes_view -snes_converged_reason -show_solution 0 -dm_mat_type is -ksp_type fetidp -ksp_rtol 1.0e-8 -ksp_fetidp_saddlepoint -fetidp_ksp_type cg -fetidp_p_ksp_max_it 1 -fetidp_p_ksp_type richardson -fetidp_p_ksp_richardson_scale 200 -fetidp_p_pc_type none -ksp_fetidp_saddlepoint_flip 1 -fetidp_bddc_pc_bddc_vertex_size 2 -fetidp_bddc_pc_bddc_dirichlet_pc_factor_mat_solver_package umfpack -fetidp_bddc_pc_bddc_neumann_pc_factor_mat_solver_package umfpack -simplex 0 -pres_petscspace_poly_tensor -simplex 0 -vel_petscspace_poly_tensor -petscpartitioner_type simple
   test:
     suffix: fetidp_3d_hex
     requires: mumps suitesparse
     nsize: 5
-    args: -run_type full -dm_refine 2 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -snes_view -snes_converged_reason -show_solution 0 -dm_mat_type is -ksp_type fetidp -ksp_rtol 1.0e-8 -ksp_fetidp_saddlepoint -fetidp_ksp_type cg -fetidp_p_ksp_max_it 1 -fetidp_p_ksp_type richardson -fetidp_p_ksp_richardson_scale 20000 -fetidp_p_pc_type none -ksp_fetidp_saddlepoint_flip 1 -fetidp_bddc_pc_bddc_vertex_size 3 -fetidp_bddc_pc_bddc_use_deluxe_scaling -fetidp_bddc_pc_bddc_benign_trick -fetidp_bddc_pc_bddc_deluxe_singlemat -dim 3 -simplex 0 -pres_petscspace_poly_tensor -simplex 0 -vel_petscspace_poly_tensor -fetidp_pc_discrete_harmonic -fetidp_harmonic_pc_factor_mat_solver_package cholmod -fetidp_harmonic_pc_type cholesky -fetidp_bddelta_pc_factor_mat_solver_package umfpack
+    args: -run_type full -dm_refine 2 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -snes_view -snes_converged_reason -show_solution 0 -dm_mat_type is -ksp_type fetidp -ksp_rtol 1.0e-8 -ksp_fetidp_saddlepoint -fetidp_ksp_type cg -fetidp_p_ksp_max_it 1 -fetidp_p_ksp_type richardson -fetidp_p_ksp_richardson_scale 20000 -fetidp_p_pc_type none -ksp_fetidp_saddlepoint_flip 1 -fetidp_bddc_pc_bddc_vertex_size 3 -fetidp_bddc_pc_bddc_use_deluxe_scaling -fetidp_bddc_pc_bddc_benign_trick -fetidp_bddc_pc_bddc_deluxe_singlemat -dim 3 -simplex 0 -pres_petscspace_poly_tensor -simplex 0 -vel_petscspace_poly_tensor -fetidp_pc_discrete_harmonic -fetidp_harmonic_pc_factor_mat_solver_package cholmod -fetidp_harmonic_pc_type cholesky -fetidp_bddelta_pc_factor_mat_solver_package umfpack -petscpartitioner_type simple
 
 TEST*/

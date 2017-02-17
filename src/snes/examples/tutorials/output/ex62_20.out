@@ -8,12 +8,12 @@
     6 KSP Residual norm 0.0122113 
     7 KSP Residual norm 0.0046995 
     8 KSP Residual norm 0.00183816 
-    9 KSP Residual norm 6.80094e-06 
-   10 KSP Residual norm 4.06185e-06 
-   11 KSP Residual norm 3.94466e-09 
-   12 KSP Residual norm 2.459e-11 
+    9 KSP Residual norm 6.80095e-06 
+   10 KSP Residual norm 4.49923e-06 
+   11 KSP Residual norm 3.13304e-09 
+   12 KSP Residual norm 8.047e-11 
   Linear solve converged due to CONVERGED_RTOL iterations 12
-  1 SNES Function norm 9.624e-11 
+  1 SNES Function norm 3.121e-10 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 3 MPI processes
   type: newtonls
@@ -46,32 +46,32 @@ SNES Object: 3 MPI processes
       total: nonzeros=237, allocated nonzeros=237
       total number of mallocs used during MatSetValues calls =0
         has attached null space
-        using I-node (on process 0) routines: found 1 nodes, limit used is 5
+        not using I-node (on process 0) routines
 Number of SNES iterations = 1
 L_2 Error: 1.03 [0.1, 1.02]
 Solution
 Vec Object: 3 MPI processes
   type: mpi
 Process [0]
--3.
--1.5
+3.
 Process [1]
+0.
+-3.
+0.125
+0.125
+-1.5
+Process [2]
+1.5
+-1.5
 0.5
 0.
+0.
+1.5
+-1.5
 0.
 0.625
 -0.125
 3.
-Process [2]
-0.
-1.5
-3.
--1.5
-1.5
-0.
-0.125
-0.125
--1.5
 0.625
 0.875
 -3.
