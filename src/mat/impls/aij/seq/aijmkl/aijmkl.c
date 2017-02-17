@@ -9,16 +9,11 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/seq/aijmkl/aijmkl.h>
 
-#define USE_MKL_SPMV2 1
-/* TODO: Eventually fix the above--I shouldn't hard code things like this!
- * Use of MKL SpMV2 should eventually be determined at configure time, run time, or 
- * it should just always be used -- not sure what makes sense yet! --RTM */
-
 /* MKL include files. */
 #include <mkl_spblas.h>  /* Sparse BLAS */
 
 typedef struct {
-  PetscBool use_SpMV2;  /* If PETSC_TRUE, then use the MKL SpMV2 inspector-executor routines. */
+  PetscBool no_SpMV2;  /* If PETSC_TRUE, then don't use the MKL SpMV2 inspector-executor routines. */
   sparse_matrix_t csrA; /* "Handle" used by SpMV2 inspector-executor routines. */
   struct matrix_descr descr;
 } Mat_SeqAIJMKL;
@@ -111,6 +106,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode)
   PetscInt        n;
   PetscInt        *aj,*ai;
   sparse_status_t stat = SPARSE_STATUS_SUCCESS;
+  PetscBool       set;
 
   PetscFunctionBegin;
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
@@ -128,24 +124,24 @@ PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode)
   a->inode.use = PETSC_FALSE;  /* Must disable: otherwise the MKL routines won't get used. */
   ierr         = MatAssemblyEnd_SeqAIJ(A, mode);CHKERRQ(ierr);
 
-#ifdef USE_MKL_SPMV2
-  /* Now perform the SpMV2 setup and matrix optimization. */
   aijmkl = (Mat_SeqAIJMKL*) A->spptr;
-  aijmkl->descr.type        = SPARSE_MATRIX_TYPE_GENERAL;
-  aijmkl->descr.mode        = SPARSE_FILL_MODE_LOWER;
-  aijmkl->descr.diag        = SPARSE_DIAG_NON_UNIT;
-  n = A->rmap->n;
-  aj   = a->j;  /* aj[k] gives column index for element aa[k]. */
-  aa   = a->a;  /* Nonzero elements stored row-by-row. */
-  ai   = a->i;  /* ai[k] is the position in aa and aj where row k starts. */
-  stat = mkl_sparse_x_create_csr (&aijmkl->csrA,SPARSE_INDEX_BASE_ZERO,n,n,ai,ai+1,aj,aa);
-  stat = mkl_sparse_set_mv_hint(aijmkl->csrA,SPARSE_OPERATION_NON_TRANSPOSE,aijmkl->descr,1000);
-  stat = mkl_sparse_set_memory_hint(aijmkl->csrA,SPARSE_MEMORY_AGGRESSIVE);
-  stat = mkl_sparse_optimize(aijmkl->csrA);
-  if (stat != SPARSE_STATUS_SUCCESS) {
-    PetscFunctionReturn(PETSC_ERR_LIB);
+  if (!aijmkl->no_SpMV2) {
+    /* Now perform the SpMV2 setup and matrix optimization. */
+    aijmkl->descr.type        = SPARSE_MATRIX_TYPE_GENERAL;
+    aijmkl->descr.mode        = SPARSE_FILL_MODE_LOWER;
+    aijmkl->descr.diag        = SPARSE_DIAG_NON_UNIT;
+    n = A->rmap->n;
+    aj   = a->j;  /* aj[k] gives column index for element aa[k]. */
+    aa   = a->a;  /* Nonzero elements stored row-by-row. */
+    ai   = a->i;  /* ai[k] is the position in aa and aj where row k starts. */
+    stat = mkl_sparse_x_create_csr (&aijmkl->csrA,SPARSE_INDEX_BASE_ZERO,n,n,ai,ai+1,aj,aa);
+    stat = mkl_sparse_set_mv_hint(aijmkl->csrA,SPARSE_OPERATION_NON_TRANSPOSE,aijmkl->descr,1000);
+    stat = mkl_sparse_set_memory_hint(aijmkl->csrA,SPARSE_MEMORY_AGGRESSIVE);
+    stat = mkl_sparse_optimize(aijmkl->csrA);
+    if (stat != SPARSE_STATUS_SUCCESS) {
+      PetscFunctionReturn(PETSC_ERR_LIB);
+    }
   }
-#endif /* USE_MKL_SPMV2 */
 
   PetscFunctionReturn(0);
 }
@@ -490,6 +486,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
   PetscErrorCode ierr;
   Mat            B = *newmat;
   Mat_SeqAIJMKL *aijmkl;
+  PetscBool       set;
 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
@@ -505,17 +502,24 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A,MatType type,MatRe
   B->ops->duplicate        = MatDuplicate_SeqAIJMKL;
   B->ops->assemblyend      = MatAssemblyEnd_SeqAIJMKL;
   B->ops->destroy          = MatDestroy_SeqAIJMKL;
-#ifdef USE_MKL_SPMV2
-  B->ops->mult             = MatMult_SeqAIJMKL_SpMV2;
-  /* B->ops->multtranspose    = MatMultTranspose_SeqAIJMKL_SpMV2; */
-  B->ops->multadd          = MatMultAdd_SeqAIJMKL_SpMV2;
-  /* B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJMKL_SpMV2; */
-#else
-  B->ops->mult             = MatMult_SeqAIJMKL;
-//  B->ops->multtranspose    = MatMultTranspose_SeqAIJMKL;
-  B->ops->multadd          = MatMultAdd_SeqAIJMKL;
-//  B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJMKL;
-#endif /* USE_MKL_SPMV2 */
+
+  /* Parse command line options. */
+  aijmkl->no_SpMV2 = PETSC_FALSE;  /* Default to using the SpMV2 routines. */
+  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"AIJMKL Options","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-mat_aijmkl_no_spmv2","NoSPMV2","None",(PetscBool)aijmkl->no_SpMV2,(PetscBool*)&aijmkl->no_SpMV2,&set);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
+  if(!aijmkl->no_SpMV2) {
+    B->ops->mult             = MatMult_SeqAIJMKL_SpMV2;
+    /* B->ops->multtranspose    = MatMultTranspose_SeqAIJMKL_SpMV2; */
+    B->ops->multadd          = MatMultAdd_SeqAIJMKL_SpMV2;
+    /* B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJMKL_SpMV2; */
+  } else {
+    B->ops->mult             = MatMult_SeqAIJMKL;
+    /* B->ops->multtranspose    = MatMultTranspose_SeqAIJMKL; */
+    B->ops->multadd          = MatMultAdd_SeqAIJMKL;
+    /* B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJMKL; */
+  }
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaijmkl_seqaij_C",MatConvert_SeqAIJMKL_SeqAIJ);CHKERRQ(ierr);
 
