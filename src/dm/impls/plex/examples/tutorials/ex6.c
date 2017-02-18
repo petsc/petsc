@@ -119,7 +119,7 @@ static PetscErrorCode CheckPoint(DM dm, Vec u, PetscInt point, AppCtx *user)
   ierr = PetscPrintf(PETSC_COMM_SELF, "Point %D: ", point);CHKERRQ(ierr);
   for (d = 0; d < dof; ++d) {
     if (d > 0) {ierr = PetscPrintf(PETSC_COMM_SELF, ", ");CHKERRQ(ierr);}
-    ierr = PetscPrintf(PETSC_COMM_SELF, "%2.0f", a[d]);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF, "%2.0f", (double) a[d]);CHKERRQ(ierr);
   }
   ierr = PetscPrintf(PETSC_COMM_SELF, "\n");CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(u, &array);CHKERRQ(ierr);
@@ -146,7 +146,7 @@ static PetscErrorCode ReadData2D(DM dm, Vec u, AppCtx *user)
           if (ki > 0) {ierr = PetscPrintf(PETSC_COMM_SELF, "  ");CHKERRQ(ierr);}
           for (c = 0; c < user->Nc[f]; ++c) {
             if (c > 0) ierr = PetscPrintf(PETSC_COMM_SELF, ",");CHKERRQ(ierr);
-            ierr = PetscPrintf(PETSC_COMM_SELF, "%2.0f", closure[(kj*(user->k[f]+1) + ki)*user->Nc[f]+c + foff]);CHKERRQ(ierr);
+            ierr = PetscPrintf(PETSC_COMM_SELF, "%2.0f", (double) closure[(kj*(user->k[f]+1) + ki)*user->Nc[f]+c + foff]);CHKERRQ(ierr);
           }
         }
         ierr = PetscPrintf(PETSC_COMM_SELF, "\n");CHKERRQ(ierr);
@@ -181,7 +181,7 @@ static PetscErrorCode ReadData3D(DM dm, Vec u, AppCtx *user)
             if (ki > 0) {ierr = PetscPrintf(PETSC_COMM_SELF, "  ");CHKERRQ(ierr);}
             for (c = 0; c < user->Nc[f]; ++c) {
               if (c > 0) ierr = PetscPrintf(PETSC_COMM_SELF, ",");CHKERRQ(ierr);
-              ierr = PetscPrintf(PETSC_COMM_SELF, "%2.0f", closure[((kk*(user->k[f]+1) + kj)*(user->k[f]+1) + ki)*user->Nc[f]+c + foff]);CHKERRQ(ierr);
+              ierr = PetscPrintf(PETSC_COMM_SELF, "%2.0f", (double) closure[((kk*(user->k[f]+1) + kj)*(user->k[f]+1) + ki)*user->Nc[f]+c + foff]);CHKERRQ(ierr);
             }
           }
           ierr = PetscPrintf(PETSC_COMM_SELF, "\n");CHKERRQ(ierr);
