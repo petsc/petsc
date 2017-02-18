@@ -136,9 +136,11 @@ int main(int argc, char **argv)
   # Gmsh meshes 2-4
   test:
     suffix: 2
+    requires: !quad
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh -interpolate 1
   test:
     suffix: 3
+    requires: !quad
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.msh -interpolate 1
   test:
     suffix: 4
