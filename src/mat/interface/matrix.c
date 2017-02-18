@@ -6780,7 +6780,8 @@ PetscErrorCode MatDestroySubMatrices(PetscInt n,Mat *mat[])
   if ((*mat)[n]) {
     ierr = PetscObjectTypeCompare((PetscObject)(*mat)[n],MATDUMMY,&isdummy);CHKERRQ(ierr);
     if (isdummy) {
-      smat = (Mat_SubMat*)((*mat)[0]->data); /* singleis and nstages are saved in (*mat)[0]->data */
+      smat = (Mat_SubMat*)((*mat)[n]->data); /* singleis and nstages are saved in (*mat)[n]->data */
+
       if (smat && !smat->singleis) {
         for (i=0; i<smat->nstages; i++) {
           ierr = MatDestroy(&(*mat)[n+i]);CHKERRQ(ierr);

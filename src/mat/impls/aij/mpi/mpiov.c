@@ -2144,18 +2144,17 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[],co
     else                   max_no = ismax-pos;
     /* if (!max_no) printf("[%d] max_no=0, %d-stage\n",rank,i); */
     ierr = MatGetSubMatrices_MPIAIJ_Local(C,max_no,isrow+pos,iscol+pos,scall,*submat+pos);CHKERRQ(ierr);
+    if (!max_no && scall == MAT_INITIAL_MATRIX) { /* submat[pos] is a dummy matrix */
+      smat = (Mat_SubMat*)(*submat)[pos]->data;
+      smat->nstages = nstages;
+    }
     pos += max_no;
   }
 
-  if (scall == MAT_INITIAL_MATRIX) {
+  if (ismax && scall == MAT_INITIAL_MATRIX) {
     /* save nstages for reuse */
-    if (ismax) {
-      subc = (Mat_SeqAIJ*)(*submat)[0]->data;
-      smat = subc->submatis1;
-    } else { /* dummy (*submat)[0] */
-      smat = (Mat_SubMat*)(*submat)[0]->data;
-    }
-    if (!smat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"smat does not exit");
+    subc = (Mat_SeqAIJ*)(*submat)[0]->data;
+    smat = subc->submatis1;
     smat->nstages = nstages;
   }
   PetscFunctionReturn(0);

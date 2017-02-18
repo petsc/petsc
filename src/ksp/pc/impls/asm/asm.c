@@ -604,7 +604,7 @@ static PetscErrorCode PCReset_ASM(PC pc)
   }
   if (osm->pmat) {
     if (osm->n_local_true > 0) {
-      ierr = MatDestroyMatrices(osm->n_local_true,&osm->pmat);CHKERRQ(ierr);
+      ierr = MatDestroySubMatrices(osm->n_local_true,&osm->pmat);CHKERRQ(ierr);
     }
   }
   if (osm->restriction) {
