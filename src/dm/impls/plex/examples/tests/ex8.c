@@ -92,7 +92,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
   if (options->transform) {ierr = PetscPrintf(comm, "Using random transforms");CHKERRQ(ierr);}
   PetscFunctionReturn(0);
-};
+}
 
 PetscErrorCode ChangeCoordinates(DM dm, PetscInt spaceDim, PetscScalar vertexCoords[])
 {
