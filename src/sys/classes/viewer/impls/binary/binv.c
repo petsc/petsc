@@ -81,7 +81,7 @@ static PetscErrorCode PetscViewerRestoreSubViewer_Binary(PetscViewer viewer,MPI_
   Concepts: file descriptor^getting
   Concepts: PetscViewerBinary^accessing file descriptor
 
-.seealso: PetscViewerBinaryOpen(),PetscViewerBinaryGetInfoPointer()
+.seealso: PetscViewerBinaryOpen(), PetscViewerBinaryGetInfoPointer(), PetscViewerBinaryGetUseMPIIO(), PetscViewerBinarySetUseMPIIO(), PetscViewerBinaryAddMPIIOOffset()
 @*/
 PetscErrorCode PetscViewerBinaryGetMPIIOOffset(PetscViewer viewer,MPI_Offset *off)
 {
@@ -111,7 +111,7 @@ PetscErrorCode PetscViewerBinaryGetMPIIOOffset(PetscViewer viewer,MPI_Offset *of
   Concepts: file descriptor^getting
   Concepts: PetscViewerBinary^accessing file descriptor
 
-.seealso: PetscViewerBinaryOpen(),PetscViewerBinaryGetInfoPointer()
+.seealso: PetscViewerBinaryOpen(),PetscViewerBinaryGetInfoPointer(), PetscViewerBinaryGetUseMPIIO(), PetscViewerBinarySetUseMPIIO(), PetscViewerBinaryGetMPIIOOffset()
 @*/
 PetscErrorCode PetscViewerBinaryAddMPIIOOffset(PetscViewer viewer,MPI_Offset off)
 {
@@ -141,7 +141,7 @@ PetscErrorCode PetscViewerBinaryAddMPIIOOffset(PetscViewer viewer,MPI_Offset off
   Concepts: file descriptor^getting
   Concepts: PetscViewerBinary^accessing file descriptor
 
-.seealso: PetscViewerBinaryOpen(),PetscViewerBinaryGetInfoPointer()
+.seealso: PetscViewerBinaryOpen(),PetscViewerBinaryGetInfoPointer(), PetscViewerBinaryGetUseMPIIO(), PetscViewerBinarySetUseMPIIO(), PetscViewerBinaryGetMPIIOOffset()
 @*/
 PetscErrorCode PetscViewerBinaryGetMPIIODescriptor(PetscViewer viewer,MPI_File *fdes)
 {
@@ -190,7 +190,7 @@ static PetscErrorCode PetscViewerBinaryGetUseMPIIO_Binary(PetscViewer viewer,Pet
   Concepts: file descriptor^getting
   Concepts: PetscViewerBinary^accessing file descriptor
 
-.seealso: PetscViewerBinaryOpen(), PetscViewerBinaryGetInfoPointer()
+.seealso: PetscViewerBinaryOpen(), PetscViewerBinaryGetInfoPointer(), PetscViewerBinarySetUseMPIIO(), PetscViewerBinaryGetMPIIOOffset()
 @*/
 PetscErrorCode PetscViewerBinaryGetUseMPIIO(PetscViewer viewer,PetscBool *flg)
 {
@@ -760,7 +760,8 @@ $    FILE_MODE_APPEND - open existing file for binary output
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerPushFormat(), PetscViewerDestroy(),
           VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),
-          PetscViewerBinaryGetInfoPointer(), PetscFileMode, PetscViewer, PetscViewerBinaryRead()
+          PetscViewerBinaryGetInfoPointer(), PetscFileMode, PetscViewer, PetscViewerBinaryRead(), PetscViewerBinarySetUseMPIIO(),
+          PetscViewerBinaryGetUseMPIIO(), PetscViewerBinaryGetMPIIOOffset()
 @*/
 PetscErrorCode PetscViewerBinaryOpen(MPI_Comm comm,const char name[],PetscFileMode type,PetscViewer *binv)
 {
@@ -1091,7 +1092,7 @@ static PetscErrorCode PetscViewerFileSetName_Binary(PetscViewer viewer,const cha
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
   PetscErrorCode     ierr;
-    
+
   PetscFunctionBegin;
   if (vbinary->filename) { ierr = PetscFree(vbinary->filename);CHKERRQ(ierr); }
   ierr = PetscStrallocpy(name,&vbinary->filename);CHKERRQ(ierr);
@@ -1326,7 +1327,8 @@ static PetscErrorCode PetscViewerSetFromOptions_Binary(PetscOptionItems *PetscOp
 
 .seealso:  PetscViewerBinaryOpen(), PETSC_VIEWER_STDOUT_(),PETSC_VIEWER_STDOUT_SELF, PETSC_VIEWER_STDOUT_WORLD, PetscViewerCreate(), PetscViewerASCIIOpen(),
            PetscViewerMatlabOpen(), VecView(), DMView(), PetscViewerMatlabPutArray(), PETSCVIEWERASCII, PETSCVIEWERMATLAB, PETSCVIEWERDRAW,
-           PetscViewerFileSetName(), PetscViewerFileSetMode(), PetscViewerFormat, PetscViewerType, PetscViewerSetType()
+           PetscViewerFileSetName(), PetscViewerFileSetMode(), PetscViewerFormat, PetscViewerType, PetscViewerSetType(),
+           PetscViewerBinaryGetUseMPIIO(), PetscViewerBinarySetUseMPIIO()
 
   Level: beginner
 
