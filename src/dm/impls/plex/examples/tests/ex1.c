@@ -237,7 +237,7 @@ static PetscErrorCode TestCellShape(DM dm)
     mean = globalStats.sum / globalStats.count;
     stdev = PetscSqrtReal(globalStats.squaresum / globalStats.count - mean * mean);
   }
-  ierr = PetscPrintf(comm,"Mesh with %d cells, shape condition numbers: min = %g, max = %g, mean = %g, stddev = %g\n", count, (double) min, (double) max, (double) mean, (double) stdev);
+  ierr = PetscPrintf(comm,"Mesh with %d cells, shape condition numbers: min = %g, max = %g, mean = %g, stddev = %g\n", count, (double) min, (double) max, (double) mean, (double) stdev);CHKERRQ(ierr);
 
   ierr = PetscFree2(J,invJ);CHKERRQ(ierr);
 

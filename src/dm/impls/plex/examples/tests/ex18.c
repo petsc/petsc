@@ -472,7 +472,7 @@ int main(int argc, char **argv)
   ierr = CheckMesh(user.dm, &user);CHKERRQ(ierr);
   ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 
 /*TEST
