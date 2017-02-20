@@ -97,6 +97,7 @@ function petsc_testrun() {
   else
     cmd="$1 2>&1 | $filter > $2 2> $3"
   fi
+  echo $cmd > ${tlabel}.sh; chmod 755 ${tlabel}.sh
   eval $cmd
   if test $? == 0; then
     if "${verbose}"; then
