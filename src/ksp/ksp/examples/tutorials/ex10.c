@@ -24,7 +24,12 @@ users manual for a discussion of preloading.  Input parameters include\n\
 /*T
    Concepts: KSP^solving a linear system
    Processors: n
+   requires: !complex 
 T*/
+
+
+
+
 
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
@@ -442,3 +447,363 @@ int main(int argc,char **args)
   return ierr;
 }
 
+
+/*TEST
+   
+   testset:
+      suffix: 1
+      nsize: 2
+      args: -f0 ${wPETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int@PETSC_INDEX_SIZE@-float@PETSC_SCALAR_SIZE@
+   
+   testset:
+      nsize: 2
+      requires: datafilespath
+      args: -f0 ${DATAFILESPATH}/matrices/medium
+      args:  -ksp_type bicg
+      test:
+         suffix: 2
+      test:
+         suffix: 3
+         args: -pc_type asm 
+      
+   testset:
+      requires: datafilespath
+      args: -f0 ${DATAFILESPATH}/matrices/medium
+      args: -ksp_type bicg
+      test:
+         suffix: 4
+         args: -pc_type lu 
+      test:
+         suffix: 5
+   
+   testset:
+      suffix: 6
+      requires: datafilespath
+      args: -f0 ${DATAFILESPATH}/matrices/fem1
+      args: -pc_factor_levels 2 -pc_factor_fill 1.73 -ksp_gmres_cgs_refinement_type refine_always
+   
+   testset:
+      suffix: 7
+      requires: datafilespath
+      args: -f0 ${DATAFILESPATH}/matrices/medium 
+      args: -viewer_binary_skip_info -mat_type seqbaij 
+      args: -matload_block_size {{2 3 4 5 6 7 8}separate output}
+      args: -ksp_max_it 100 -ksp_gmres_cgs_refinement_type refine_always 
+      args: -ksp_rtol 1.0e-15 -ksp_monitor_short
+      test:
+         suffix: a
+      test:
+         suffix: b
+         args: -pc_factor_mat_ordering_type nd
+      test:
+         suffix: c
+         args: -pc_factor_levels 1
+
+   testset:
+      suffix: 7_d
+      requires: datafilespath
+      args: -f0 ${DATAFILESPATH}/matrices/medium 
+      args: -viewer_binary_skip_info -mat_type seqbaij 
+      args: -matload_block_size {{2 3 4 5 6 7 8}shared output}
+      args: -ksp_type preonly -pc_type lu
+   
+   testset:
+      suffix: 8
+      requires: datafilespath
+      args: -f0 ${DATAFILESPATH}/matrices/medium  
+      args: -ksp_diagonal_scale -pc_type eisenstat -ksp_monitor_short -ksp_diagonal_scale_fix -ksp_gmres_cgs_refinement_type refine_always -mat_no_inode
+   
+   testset:
+      suffix: 9
+      requires: datafilespath
+      args: -f0 ${DATAFILESPATH}/matrices/medium 
+      args: -viewer_binary_skip_info  -matload_block_size {{1 2 3 4 5 6 7}separate output} -ksp_max_it 100 -ksp_gmres_cgs_refinement_type refine_always -ksp_rtol 1.0e-15 -ksp_monitor_short
+      test:
+         suffix: a
+         args: -mat_type seqbaij
+      test:
+         suffix: b
+         args: -mat_type seqbaij -trans
+      test:
+         suffix: c
+         nsize: 2
+         args: -mat_type mpibaij 
+      test:
+         suffix: d
+         nsize: 2
+         args: -mat_type mpibaij -trans
+      test:
+         suffix: e
+         nsize: 3
+         args: -mat_type mpibaij 
+      test:
+         suffix: f
+         nsize: 3
+         args: -mat_type mpibaij -trans
+   
+
+   testset:
+      suffix: 10
+      nsize: 2
+      requires: datafilespath
+      args: -ksp_type fgmres -pc_type ksp -f0 ${DATAFILESPATH}/matrices/medium -ksp_fgmres_modifypcksp -ksp_monitor_short
+   
+   testset:
+      TODO: Need to determine goal of this test
+      suffix: 11
+      nsize: 2
+      args: -f0 http://ftp.mcs.anl.gov/pub/petsc/matrices/testmatrix.gz
+   
+   testset:
+      suffix: 12
+      requires: matlab
+      args: -pc_type lu -pc_factor_mat_solver_package matlab -f0 ${DATAFILESPATH}/matrices/arco1
+   
+   testset:
+      suffix: 13
+      requires: lusol
+      args: -f0 ${DATAFILESPATH}/matrices/arco1
+      args: -mat_type lusol -pc_type lu
+   
+   testset:
+      nsize: 3
+      args: -f0 ${DATAFILESPATH}/matrices/medium
+      test:
+         suffix: 14
+         requires: spai datafilespath
+         args: -pc_type spai 
+      test:
+         suffix: 15
+         requires: hypre
+         args: -pc_type hypre -pc_hypre_type pilut 
+      test:
+         suffix: 16
+         requires: hypre datafilespath
+         args: -pc_type hypre -pc_hypre_type parasails
+      test:
+         suffix: 17
+         requires: hypre datafilespath
+         args: -pc_type hypre -pc_hypre_type boomeramg 
+   
+   testset:
+      suffix: 19
+      requires: datafilespath
+      args: -f0 ${DATAFILESPATH}/matrices/poisson1
+      args: -ksp_type cg -pc_type icc 
+      args: -pc_factor_levels {{0 2 4}separate output}
+      test:
+      test:
+         args: -mat_type seqsbaij
+   
+
+   testset:
+      suffix: ILU
+      requires: datafilespath
+      args: -f0 ${DATAFILESPATH}/matrices/small
+      args: -pc_factor_levels 1
+      test:
+      test:
+         # This is tested against regular ILU (used to be denoted ILUBAIJ)
+         args: -mat_type baij
+   
+   testset:
+      suffix: aijcusparse
+      requires: datafilespath cusparse
+      args: -f0 ${DATAFILESPATH}/matrices/medium -ksp_monitor_short -ksp_view -mat_view ascii::ascii_info -mat_type aijcusparse -pc_factor_mat_solver_package cusparse -pc_type ilu
+   
+   testset:
+      suffix: asm_viennacl
+      nsize: 2
+      requires: viennacl
+      args: -pc_type asm -pc_asm_sub_mat_type aijviennacl -f0 ${wPETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int${PETSC_INDEX_SIZE}-float${PETSC_SCALAR_SIZE}
+      TODO: Need to determine if deprecated
+   
+   testset:
+      nsize: 2
+      requires: hypre
+      args: -f0 ${DATAFILESPATH}/matrices/poisson2.gz -ksp_monitor_short -ksp_rtol 1.E-9 -pc_type hypre -pc_hypre_type boomeramg 
+      test:
+         suffix: boomeramg_euclid
+         args: -pc_hypre_boomeramg_smooth_type Euclid -pc_hypre_boomeramg_smooth_num_levels 2 -pc_hypre_boomeramg_eu_level 1 -pc_hypre_boomeramg_eu_droptolerance 0.01 
+         TODO: Need to determine if deprecated
+      test:
+         suffix: boomeramg_euclid_bj
+         args: -pc_hypre_boomeramg_smooth_type Euclid -pc_hypre_boomeramg_smooth_num_levels 2 -pc_hypre_boomeramg_eu_level 1 -pc_hypre_boomeramg_eu_droptolerance 0.01 -pc_hypre_boomeramg_eu_bj 
+         TODO: Need to determine if deprecated
+      test:
+         suffix: boomeramg_parasails
+         args: -pc_hypre_boomeramg_smooth_type ParaSails -pc_hypre_boomeramg_smooth_num_levels 2 
+      test:
+         suffix: boomeramg_pilut
+         args: -pc_hypre_boomeramg_smooth_type Pilut -pc_hypre_boomeramg_smooth_num_levels 2 
+      test:
+         suffix: boomeramg_schwarz
+         args: -pc_hypre_boomeramg_smooth_type Schwarz-smoothers 
+      
+   testset:
+      suffix: cg_singlereduction
+      requires: datafilespath
+      args: -f0 ${DATAFILESPATH}/matrices/small
+      args: -mat_type mpisbaij -ksp_type cg -pc_type eisenstat -ksp_monitor_short -ksp_converged_reason
+      test:
+      test:
+         args: -ksp_cg_single_reduction
+      
+   testset:
+      requires: datafilespath
+      args: -f0 ${DATAFILESPATH}/matrices/poisson2.gz
+      args: -ksp_monitor_short -pc_type icc
+      test:
+         suffix: cr
+         args: -ksp_type cr
+      test:
+         suffix: lcd
+         args: -ksp_type lcd
+   
+   testset:
+      requires: datafilespath
+      args: -f0 ${DATAFILESPATH}/matrices/small
+      args: -ksp_monitor_short -ksp_view -mat_view ascii::ascii_info 
+      test:
+         suffix: seqaijcrl
+         args: -mat_type seqaijcrl
+      test:
+         suffix: seqaijperm
+         args: -mat_type seqaijperm
+
+   testset:
+      nsize: 2
+      requires: datafilespath
+      args: -f0 ${DATAFILESPATH}/matrices/small
+      args: -ksp_monitor_short -ksp_view 
+      # Different output files
+      test:
+         suffix: mpiaijcrl
+         args: -mat_type mpiaijcrl
+      test:
+         suffix: mpiaijperm
+         args: -mat_type mpiaijperm
+   
+   testset:
+      nsize: 8
+      requires: datafilespath
+      args: -ksp_monitor_short -ksp_view
+      test:
+         suffix: xxt
+         args: -f0 ${DATAFILESPATH}/matrices/poisson1 -check_symmetry -ksp_type cg -pc_type tfs
+      test:
+         suffix: xyt
+         args: -f0 ${DATAFILESPATH}/matrices/arco1 -ksp_type gmres -pc_type tfs
+
+   testset:
+      # The output file here is the same as mumps
+      suffix: mumps_cholesky
+      output_file: output/ex10_mumps.out
+      requires: mumps datafilespath
+      args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type cholesky -mat_type sbaij -pc_factor_mat_solver_package mumps -num_numfac 2 -num_rhs 2 -mat_ignore_lower_triangular 
+      nsize: {{1 2}}
+      test:
+         args: -mat_type sbaij -mat_ignore_lower_triangular
+      test:
+         args: -mat_type aij
+      test:
+         args: -mat_type aij -matload_spd
+      
+   testset:
+      # The output file here is the same as mumps
+      suffix: mumps_lu
+      output_file: output/ex10_mumps.out
+      requires: mumps datafilespath
+      args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package mumps -num_numfac 2 -num_rhs 2
+      test:
+         args: -mat_type seqaij
+      test:
+         nsize: 2
+         args: -mat_type mpiaij
+      test:
+         args: -mat_type seqbaij -matload_block_size 2
+      test:
+         nsize: 2
+         args: -mat_type mpibaij -matload_block_size 2
+      test:
+         args: -mat_type aij -mat_mumps_icntl_7 5
+         TODO: Need to determine if deprecated
+      test:
+         nsize: 2
+         args: -mat_type mpiaij -mat_mumps_icntl_28 2 -mat_mumps_icntl_29 2
+         TODO: Need to determine if deprecated
+      
+   testset:
+      # The output file here is the same as mumps
+      suffix: mumps_redundant
+      output_file: output/ex10_mumps_redundant.out
+      nsize: 8
+      requires: mumps datafilespath
+      args: -f0 ${DATAFILESPATH}/matrices/medium -ksp_type preonly -pc_type redundant -pc_redundant_number {{8 7 6 5 4 3 2 1}} -redundant_pc_factor_mat_solver_package mumps -num_numfac 2 -num_rhs 2
+   
+   testset:
+      suffix: pastix_cholesky
+      requires: pastix datafilespath
+      output_file: output/ex10_mumps.out
+      nsize: {{1 2}}
+      args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_factor_mat_solver_package pastix -num_numfac 2 -num_rhs 2 -pc_type cholesky -mat_type sbaij -mat_ignore_lower_triangular
+      
+   testset:
+      suffix: pastix_lu
+      requires: pastix datafilespath
+      args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package pastix -num_numfac 2 -num_rhs 2
+      test:
+         args: -mat_type seqaij
+      test:
+         nsize: 2
+         args: -mat_type mpiaij
+   
+   testset:
+      suffix: pastix_redundant
+      output_file: output/ex10_mumps_redundant.out
+      nsize: 8
+      requires: pastix datafilespath
+      args: -f0 ${DATAFILESPATH}/matrices/medium -ksp_type preonly -pc_type redundant -pc_redundant_number {{8 7 6 5 4 3 2 1}} -redundant_pc_factor_mat_solver_package pastix -num_numfac 2 -num_rhs 2
+   
+     
+   testset:
+      suffix: superlu_dist_lu
+      requires: datafilespath superlu_dist
+      output_file: output/ex10_mumps.out
+      args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package superlu_dist -num_numfac 2 -num_rhs 2
+      nsize: {{1 2}}
+      
+   testset:
+      suffix: superlu_dist_redundant
+      nsize: 8
+      output_file: output/ex10_mumps_redundant.out
+      requires: datafilespath superlu
+      args: -f0 ${DATAFILESPATH}/matrices/medium -ksp_type preonly -pc_type redundant -pc_redundant_number {{8 7 6 5 4 3 2 1}} -redundant_pc_factor_mat_solver_package superlu_dist -num_numfac 2 -num_rhs 2
+   
+   testset:
+      suffix: superlu_lu
+      output_file: output/ex10_mumps.out
+      requires: datafilespath superlu
+      args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package superlu -num_numfac 2 -num_rhs 2
+   
+   testset:
+      suffix: umfpack
+      requires: datafilespath suitesparse
+      args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -mat_type seqaij -pc_factor_mat_solver_package umfpack -num_numfac 2 -num_rhs 2
+   
+     
+   testset:
+      suffix: zeropivot
+      requires: mumps datafilespath
+      args: -f0 ${DATAFILESPATH}/matrices/small -test_zeropivot -ksp_converged_reason -ksp_type fgmres -pc_type ksp
+      test:
+         nsize: 3
+         args: -ksp_pc_type bjacobi
+      test:
+         nsize: 2
+         args: -ksp_ksp_type cg -ksp_pc_type bjacobi -ksp_pc_bjacobi_blocks 1
+      test:
+         nsize: 3
+         args: -ksp_ksp_converged_reason -ksp_pc_type bjacobi -ksp_sub_ksp_converged_reason
+         TODO: Need to determine if deprecated
+TEST*/
