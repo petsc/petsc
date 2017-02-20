@@ -46,22 +46,33 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
   ierr = PetscLogEventRegister("CreateMesh",          DM_CLASSID,   &options->createMeshEvent);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-};
+}
 
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  PetscInt       dim             = user->dim;
-  PetscBool      interpolate     = user->interpolate;
-  PetscReal      refinementLimit = user->refinementLimit;
-  PetscBool      cellSimplex     = user->cellSimplex;
-  const char    *filename        = user->filename;
-  PetscInt       triSizes_n2[2]  = {4, 4};
-  PetscInt       triPoints_n2[8] = {3, 5, 6, 7, 0, 1, 2, 4};
-  PetscInt       triSizes_n8[8]  = {1, 1, 1, 1, 1, 1, 1, 1};
-  PetscInt       triPoints_n8[8] = {0, 1, 2, 3, 4, 5, 6, 7};
-  PetscInt       quadSizes[2]    = {2, 2};
-  PetscInt       quadPoints[4]   = {2, 3, 0, 1};
-  const PetscInt cells[3]        = {2, 2, 2};
+  PetscInt       dim                  = user->dim;
+  PetscBool      interpolate          = user->interpolate;
+  PetscReal      refinementLimit      = user->refinementLimit;
+  PetscBool      cellSimplex          = user->cellSimplex;
+  const char    *filename             = user->filename;
+  PetscInt       triSizes_n2[2]       = {4, 4};
+  PetscInt       triPoints_n2[8]      = {3, 5, 6, 7, 0, 1, 2, 4};
+  PetscInt       triSizes_n8[8]       = {1, 1, 1, 1, 1, 1, 1, 1};
+  PetscInt       triPoints_n8[8]      = {0, 1, 2, 3, 4, 5, 6, 7};
+  PetscInt       quadSizes[2]         = {2, 2};
+  PetscInt       quadPoints[4]        = {2, 3, 0, 1};
+  PetscInt       gmshSizes_n3[3]      = {14, 14, 14};
+  PetscInt       gmshPoints_n3[42]    = {1, 2,  4,  5,  9, 10, 11, 15, 16, 20, 21, 27, 28, 29,
+                                         3, 8, 12, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+                                         0, 6,  7, 13, 14, 17, 18, 19, 22, 23, 24, 25, 26, 41};
+  PetscInt       fluentSizes_n3[3]    = {50, 50, 50};
+  PetscInt       fluentPoints_n3[150] = { 5,  6,  7,  8, 12, 14, 16,  34,  36,  37,  38,  39,  40,  41,  42,  43,  44,  45,  46,  48,  50,  51,  80,  81,  89,
+                                         91, 93, 94, 95, 96, 97, 98,  99, 100, 101, 104, 121, 122, 124, 125, 126, 127, 128, 129, 131, 133, 143, 144, 145, 147,
+                                          1,  3,  4,  9, 10, 17, 18,  19,  24,  25,  26,  27,  28,  29,  30,  31,  32,  33,  35,  47,  61,  71,  72,  73,  74,
+                                         75, 76, 77, 78, 79, 86, 87,  88,  90,  92, 113, 115, 116, 117, 118, 119, 120, 123, 138, 140, 141, 142, 146, 148, 149,
+                                          0,  2, 11, 13, 15, 20, 21,  22,  23,  49,  52,  53,  54,  55,  56,  57,  58,  59,  60,  62,  63,  64,  65,  66,  67,
+                                         68, 69, 70, 82, 83, 84, 85, 102, 103, 105, 106, 107, 108, 109, 110, 111, 112, 114, 130, 132, 134, 135, 136, 137, 139};
+  const PetscInt cells[3]             = {2, 2, 2};
   size_t         len;
   PetscMPIInt    rank, size;
   PetscErrorCode ierr;
@@ -90,6 +101,17 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           sizes = triSizes_n8; points = triPoints_n8;
         } else if (dim == 2 && !cellSimplex && size == 2) {
           sizes = quadSizes; points = quadPoints;
+        } else if (dim == 2 && size == 3) {
+          PetscInt Nc;
+
+          ierr = DMPlexGetHeightStratum(*dm, 0, NULL, &Nc);CHKERRQ(ierr);
+          if (Nc == 42) { /* Gmsh 3 & 4 */
+            sizes = gmshSizes_n3; points = gmshPoints_n3;
+          } else if (Nc == 150) { /* Fluent 1 */
+            sizes = fluentSizes_n3; points = fluentPoints_n3;
+          } else if (Nc == 42) { /* Med 1 */
+          } else if (Nc == 161) { /* Med 3 */
+          }
         }
       }
       ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
@@ -215,7 +237,7 @@ static PetscErrorCode TestCellShape(DM dm)
     mean = globalStats.sum / globalStats.count;
     stdev = PetscSqrtReal(globalStats.squaresum / globalStats.count - mean * mean);
   }
-  ierr = PetscPrintf(comm,"Mesh with %d cells, shape condition numbers: min = %g, max = %g, mean = %g, stddev = %g\n", count, (double) min, (double) max, (double) mean, (double) stdev);
+  ierr = PetscPrintf(comm,"Mesh with %d cells, shape condition numbers: min = %g, max = %g, mean = %g, stddev = %g\n", count, (double) min, (double) max, (double) mean, (double) stdev);CHKERRQ(ierr);
 
   ierr = PetscFree2(J,invJ);CHKERRQ(ierr);
 
@@ -242,3 +264,159 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+  # CTetGen 0-1
+  test:
+    suffix: 0
+    requires: ctetgen
+    args: -dim 3 -ctetgen_verbose 4 -dm_view ::ascii_info_detail -info -info_exclude null
+  test:
+    suffix: 1
+    requires: ctetgen
+    args: -dim 3 -ctetgen_verbose 4 -refinement_limit 0.0625 -dm_view ::ascii_info_detail -info -info_exclude null
+
+  # 2D LaTex and ASCII output 2-9
+  test:
+    suffix: 2
+    requires: triangle
+    args: -dim 2 -dm_view ::ascii_latex
+  test:
+    suffix: 3
+    requires: triangle
+    args: -dim 2 -dm_refine 1 -interpolate 1 -dm_view ::ascii_info_detail
+  test:
+    suffix: 4
+    requires: triangle
+    nsize: 2
+    args: -dim 2 -dm_refine 1 -interpolate 1 -test_partition -dm_view ::ascii_info_detail
+  test:
+    suffix: 5
+    requires: triangle
+    nsize: 2
+    args: -dim 2 -dm_refine 1 -interpolate 1 -test_partition -dm_view ::ascii_latex
+  test:
+    suffix: 6
+    args: -dim 2 -cell_simplex 0 -dm_view ::ascii_info_detail
+  test:
+    suffix: 7
+    args: -dim 2 -cell_simplex 0 -dm_refine 1 -dm_view ::ascii_info_detail
+  test:
+    suffix: 8
+    nsize: 2
+    args: -dim 2 -cell_simplex 0 -dm_refine 1 -interpolate 1 -test_partition -dm_view ::ascii_latex
+
+  # Parallel refinement tests with overlap
+  test:
+    suffix: refine_overlap_0
+    requires: triangle
+    nsize: 2
+    requires: triangle
+    args: -dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -test_partition -overlap 1 -dm_view ::ascii_info_detail
+  test:
+    suffix: refine_overlap_1
+    requires: triangle
+    nsize: 8
+    args: -dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -test_partition -overlap 1 -dm_view ::ascii_info_detail
+
+  # Parallel simple partitioner tests
+  test:
+    suffix: part_simple_0
+    requires: triangle
+    nsize: 2
+    args: -dim 2 -cell_simplex 1 -dm_refine 0 -interpolate 0 -petscpartitioner_type simple -partition_view -dm_view ::ascii_info_detail
+  test:
+    suffix: part_simple_1
+    requires: triangle
+    nsize: 8
+    args: -dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -petscpartitioner_type simple -partition_view -dm_view ::ascii_info_detail
+
+  # CGNS reader tests 10-11 (need to find smaller test meshes)
+  test:
+    suffix: cgns_0
+    requires: cgns
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/tut21.cgns -interpolate 1 -dm_view
+  test:
+    suffix: cgns_1
+    requires: cgns broken
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/StaticMixer.cgns -interpolate 1 -dm_view
+
+  # Gmsh mesh reader tests
+  test:
+    suffix: gmsh_0
+    requires: !quad
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh -interpolate 1 -dm_view
+  test:
+    suffix: gmsh_1
+    requires: !quad
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.msh -interpolate 1 -dm_view
+  test:
+    suffix: gmsh_2
+    requires: !quad
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin.msh -interpolate 1 -dm_view
+  test:
+    suffix: gmsh_3
+    requires: !quad
+    nsize: 3
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.msh -test_partition -interpolate 1 -dm_view
+  test:
+    suffix: gmsh_4
+    requires: !quad
+    nsize: 3
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin.msh -test_partition -interpolate 1 -dm_view
+  test:
+    suffix: gmsh_5
+    requires: !quad
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_quad.msh -interpolate 1 -dm_view
+  test:
+    suffix: gmsh_6
+    requires: !quad
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin_physnames.msh -interpolate 1 -dm_view
+
+  # Fluent mesh reader tests
+  test:
+    suffix: fluent_0
+    requires: !complex !quad
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.cas -interpolate 1 -dm_view
+  test:
+    suffix: fluent_1
+    nsize: 3
+    requires: !complex !quad
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.cas -interpolate 1 -test_partition -dm_view
+  test:
+    suffix: fluent_2
+    requires: !complex !quad
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_5tets_ascii.cas -interpolate 1 -dm_view
+  test:
+    suffix: fluent_3
+    requires: broken !complex !quad
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_5tets.cas -interpolate 1 -dm_view
+
+  # Med mesh reader tests, including parallel file reads
+  test:
+    suffix: med_0
+    requires: med
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.med -interpolate 1 -dm_view
+  test:
+    suffix: med_1
+    requires: med
+    nsize: 3
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.med -interpolate 1 -petscpartitioner_type parmetis -dm_view
+  test:
+    suffix: med_2
+    requires: med
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cylinder.med -interpolate 1 -dm_view
+  test:
+    suffix: med_3
+    requires: med
+    nsize: 3
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cylinder.med -interpolate 1 -petscpartitioner_type parmetis -dm_view
+
+  # Test shape quality
+  test:
+    suffix: test_shape
+    requires: ctetgen
+    args: -dim 3 -interpolate -dm_refine_hierarchy 3 -test_shape
+
+TEST*/

@@ -89,3 +89,16 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+  test:
+    suffix: 0
+    requires: triangle
+    args: -dim 2 -n 100
+  test:
+    suffix: 1
+    requires: ctetgen
+    args: -dim 3 -n 20
+
+TEST*/

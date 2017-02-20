@@ -51,7 +51,7 @@ PetscErrorCode ProcessOptions(AppCtx *options)
   ierr = PetscOptionsInt("-num_groups", "Group permutation by this many label values", "ex10.c", options->numGroups, &options->numGroups, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
-};
+}
 
 PetscErrorCode CleanupContext(AppCtx *user)
 {
@@ -68,7 +68,7 @@ PetscErrorCode CreateTestMesh(MPI_Comm comm, DM *dm, AppCtx *options)
 {
   const int         cells[16*3]  = {6, 7, 8,   7, 9, 10,  10, 11, 12,  11, 13, 14,   0,  6, 8,  6,  2,  7,   1, 8,  7,   1,  7, 10,
                                     2, 9, 7,  10, 9,  4,   1, 10, 12,  10,  4, 11,  12, 11, 3,  3, 11, 14,  11, 4, 13,  14, 13,  5};
-  const PetscScalar coords[15*2] = {0, -3,  0, -1,  2, -1,  0,  1,  2, 1,
+  const double      coords[15*2] = {0, -3,  0, -1,  2, -1,  0,  1,  2, 1,
                                     0,  3,  1, -2,  1, -1,  0, -2,  2, 0,
                                     1,  0,  1,  1,  0,  0,  1,  2,  0, 2};
   PetscErrorCode ierr;
@@ -178,3 +178,44 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+  # Two cell tests 0-3
+  test:
+    suffix: 0
+    args: -dim 2 -interpolate 1 -cell_simplex 1 -num_dof 1,0,0 -mat_view
+  test:
+    suffix: 1
+    args: -dim 2 -interpolate 1 -cell_simplex 0 -num_dof 1,0,0 -mat_view
+  test:
+    suffix: 2
+    args: -dim 3 -interpolate 1 -cell_simplex 1 -num_dof 1,0,0,0 -mat_view
+  test:
+    suffix: 3
+    args: -dim 3 -interpolate 1 -cell_simplex 0 -num_dof 1,0,0,0 -mat_view
+  # Refined tests 4-7
+  test:
+    suffix: 4
+    requires: triangle
+    args: -dim 2 -interpolate 1 -cell_simplex 1 -refinement_limit 0.00625 -num_dof 1,0,0
+  test:
+    suffix: 5
+    args: -dim 2 -interpolate 1 -cell_simplex 0 -refinement_uniform       -num_dof 1,0,0
+  test:
+    suffix: 6
+    requires: ctetgen
+    args: -dim 3 -interpolate 1 -cell_simplex 1 -refinement_limit 0.00625 -num_dof 1,0,0,0
+  test:
+    suffix: 7
+    args: -dim 3 -interpolate 1 -cell_simplex 0 -refinement_uniform       -num_dof 1,0,0,0
+  # Parallel tests
+  # Grouping tests
+  test:
+    suffix: group_1
+    args: -num_groups 1 -num_dof 1,0,0 -is_view -orig_mat_view -perm_mat_view
+  test:
+    suffix: group_2
+    args: -num_groups 2 -num_dof 1,0,0 -is_view -perm_mat_view
+
+TEST*/

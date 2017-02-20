@@ -1190,8 +1190,8 @@ static PetscErrorCode DMRefine_Plex_Internal(DM dm, MPI_Comm comm, DMLabel adapt
   case 2:
     if (!name || isTriangle) {
 #if defined(PETSC_HAVE_TRIANGLE)
-      double  *maxVolumes;
-      PetscInt c;
+      PetscReal *maxVolumes;
+      PetscInt  c;
 
       ierr = PetscMalloc1(cEnd - cStart, &maxVolumes);CHKERRQ(ierr);
       if (adaptLabel) {
@@ -1208,7 +1208,17 @@ static PetscErrorCode DMRefine_Plex_Internal(DM dm, MPI_Comm comm, DMLabel adapt
       } else {
         for (c = 0; c < cEnd-cStart; ++c) maxVolumes[c] = refinementLimit;
       }
+#if !defined(PETSC_USE_REAL_DOUBLE)
+      {
+        double *mvols;
+        ierr = PetscMalloc1(cEnd - cStart,&mvols);CHKERRQ(ierr);
+        for (c = 0; c < cEnd-cStart; ++c) mvols[c] = (double)maxVolumes[c];
+        ierr = DMPlexRefine_Triangle(dm, mvols, dmRefined);CHKERRQ(ierr);
+        ierr = PetscFree(mvols);CHKERRQ(ierr);
+      }
+#else
       ierr = DMPlexRefine_Triangle(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
+#endif
       ierr = PetscFree(maxVolumes);CHKERRQ(ierr);
 #else
       SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Mesh refinement needs external package support.\nPlease reconfigure with --download-triangle.");

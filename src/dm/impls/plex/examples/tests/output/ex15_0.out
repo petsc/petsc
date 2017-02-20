@@ -1,0 +1,68 @@
+PetscSF Object: 2 MPI processes
+  type not yet set
+  [0] Number of roots=4, leaves=4, remote ranks=2
+  [0] 0 <- (0,0)
+  [0] 1 <- (0,1)
+  [0] 2 <- (1,0)
+  [0] 3 <- (1,1)
+  [1] Number of roots=14, leaves=14, remote ranks=2
+  [1] 0 <- (1,2)
+  [1] 1 <- (1,3)
+  [1] 2 <- (0,2)
+  [1] 3 <- (0,3)
+  [1] 4 <- (1,4)
+  [1] 5 <- (1,5)
+  [1] 6 <- (1,6)
+  [1] 7 <- (1,7)
+  [1] 8 <- (1,8)
+  [1] 9 <- (1,9)
+  [1] 10 <- (1,10)
+  [1] 11 <- (1,11)
+  [1] 12 <- (1,12)
+  [1] 13 <- (1,13)
+==== original V in global ordering. size==18	block size=2
+Vec Object: V 2 MPI processes
+  type: mpi
+Process [0]
+0.
+0.
+0.
+0.5
+Process [1]
+0.5
+0.
+1.
+0.
+0.5
+0.5
+1.
+0.5
+0.
+1.
+0.5
+1.
+1.
+1.
+====  V in natural ordering. size==18	block size=2
+Vec Object: NV 2 MPI processes
+  type: mpi
+Process [0]
+0.
+0.
+0.5
+0.
+Process [1]
+1.
+0.
+0.
+0.5
+0.5
+0.5
+1.
+0.5
+0.
+1.
+0.5
+1.
+1.
+1.
