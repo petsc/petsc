@@ -612,11 +612,11 @@ int main(int argc,char **args)
       args: -f0 ${DATAFILESPATH}/matrices/medium -ksp_monitor_short -ksp_view -mat_view ascii::ascii_info -mat_type aijcusparse -pc_factor_mat_solver_package cusparse -pc_type ilu
    
    testset:
+      TODO: No output file. Need to determine if deprecated
       suffix: asm_viennacl
       nsize: 2
       requires: viennacl
       args: -pc_type asm -pc_asm_sub_mat_type aijviennacl -f0 ${wPETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int${PETSC_INDEX_SIZE}-float${PETSC_SCALAR_SIZE}
-      TODO: Need to determine if deprecated
    
    testset:
       nsize: 2
@@ -752,6 +752,7 @@ int main(int argc,char **args)
       suffix: pastix_lu
       requires: pastix datafilespath
       args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package pastix -num_numfac 2 -num_rhs 2
+      output_file: output/ex10_mumps.out
       test:
          args: -mat_type seqaij
       test:
