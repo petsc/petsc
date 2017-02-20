@@ -533,7 +533,7 @@ PETSC_EXTERN void PETSC_STDCALL matgetsubmatrices_(Mat *mat,PetscInt *n,IS *isro
 
   if (*scall == MAT_INITIAL_MATRIX) {
     *ierr = MatGetSubMatrices(*mat,*n,isrow,iscol,*scall,&lsmat);
-    for (i=0; i<*n; i++) {
+    for (i=0; i<=*n; i++) { /* lsmat[*n] might be a dummy matrix for saving data struc */
       smat[i] = lsmat[i];
     }
     *ierr = PetscFree(lsmat);
@@ -544,10 +544,10 @@ PETSC_EXTERN void PETSC_STDCALL matgetsubmatrices_(Mat *mat,PetscInt *n,IS *isro
 
 /*
     MatDestroyMatrices() is slightly different from C since the
-    Fortran provides the array to hold the submatrix objects,while in C that
-    array is allocated by the MatGetSubmatrices()
+    Fortran does not free the array of matrix objects, while in C that
+    the array is freed
 */
-PETSC_EXTERN void PETSC_STDCALL matdestroymatrices_(Mat *mat,PetscInt *n,Mat *smat,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL matdestroymatrices_(PetscInt *n,Mat *smat,PetscErrorCode *ierr)
 {
   PetscInt i;
 
@@ -556,29 +556,21 @@ PETSC_EXTERN void PETSC_STDCALL matdestroymatrices_(Mat *mat,PetscInt *n,Mat *sm
   }
 }
 
-PETSC_EXTERN void PETSC_STDCALL matdestroysubmatrices_(Mat *mat,PetscInt *n,Mat *smat,PetscErrorCode *ierr)
+/*
+    MatDestroySubMatrices() is slightly different from C since the
+    Fortran provides the array to hold the submatrix objects, while in C that
+    array is allocated by the MatGetSubmatrices()
+*/
+PETSC_EXTERN void PETSC_STDCALL matdestroysubmatrices_(PetscInt *n,Mat *smat,PetscErrorCode *ierr)
 {
-  PetscInt   i;
-#if 0
-  Mat_SubMat *smat_i;
-  PetscBool  isdummy;
+  Mat      *lsmat;
+  PetscInt i;
 
-  /* Destroy dummy submatrices (*mat)[n]...(*mat)[n+nstages-1] used for reuse struct Mat_SubMat */
-  if ((*mat)[n]) {
-    *ierr = PetscObjectTypeCompare((PetscObject)(*mat)[n],MATDUMMY,&isdummy);if (*ierr) return;
-    if (isdummy) {
-      smat_i = (Mat_SubMat*)smat[0]->data); /* singleis and nstages are saved in (*mat)[0]->data */
-      if (smat_i && !smat_i->singleis) {
-        for (i=0; i<smat_i->nstages; i++) {
-          *ierr = MatDestroy(&smat[n+i]);if (*ierr) return;
-        }
-      }
-    }
+  *ierr = PetscMalloc1(*n+1,&lsmat);
+  for (i=0; i<=*n; i++) {
+      lsmat[i] = smat[i];
   }
-#endif
-  for (i=0; i<*n; i++) {
-    *ierr = MatDestroy(&smat[i]);if (*ierr) return;
-  }
+  *ierr = MatDestroySubMatrices(*n,&lsmat);
 }
 
 PETSC_EXTERN void PETSC_STDCALL matzerorowscolumns_(Mat *mat,PetscInt *numRows,PetscInt *rows,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)

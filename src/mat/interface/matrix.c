@@ -6767,9 +6767,6 @@ PetscErrorCode MatDestroyMatrices(PetscInt n,Mat *mat[])
 PetscErrorCode MatDestroySubMatrices(PetscInt n,Mat *mat[])
 {
   PetscErrorCode ierr;
-  PetscInt       i;
-  Mat_SubMat     *smat;
-  PetscBool      isdummy;
 
   PetscFunctionBegin;
   if (!*mat) PetscFunctionReturn(0);
@@ -6778,9 +6775,11 @@ PetscErrorCode MatDestroySubMatrices(PetscInt n,Mat *mat[])
 
   /* Destroy dummy submatrices (*mat)[n]...(*mat)[n+nstages-1] used for reuse struct Mat_SubMat */
   if ((*mat)[n]) {
+    PetscBool      isdummy;
     ierr = PetscObjectTypeCompare((PetscObject)(*mat)[n],MATDUMMY,&isdummy);CHKERRQ(ierr);
     if (isdummy) {
-      smat = (Mat_SubMat*)((*mat)[n]->data); /* singleis and nstages are saved in (*mat)[n]->data */
+      Mat_SubMat* smat = (Mat_SubMat*)((*mat)[n]->data); /* singleis and nstages are saved in (*mat)[n]->data */
+      PetscInt    i;
 
       if (smat && !smat->singleis) {
         for (i=0; i<smat->nstages; i++) {
@@ -6790,12 +6789,7 @@ PetscErrorCode MatDestroySubMatrices(PetscInt n,Mat *mat[])
     }
   }
 
-  for (i=0; i<n; i++) {
-    ierr = MatDestroy(&(*mat)[i]);CHKERRQ(ierr);
-  }
-
-  /* memory is allocated even if n = 0 */
-  ierr = PetscFree(*mat);CHKERRQ(ierr);
+  ierr = MatDestroyMatrices(n,mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

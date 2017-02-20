@@ -1228,8 +1228,6 @@ PetscErrorCode MatDestroy_Dummy_MatGetSubmatrices(Mat C)
   PetscInt       i;
 
   PetscFunctionBegin;
-  printf("MatDestroy_Dummy_MatGetSubmatrices...\n");
-  
   if (!submatj->id) { /* delete data that are linked only to submats[id=0] */
     ierr = PetscFree4(submatj->sbuf1,submatj->ptr,submatj->tmp,submatj->ctr);CHKERRQ(ierr);
 
@@ -2955,10 +2953,6 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
   for (i=0; i<ismax; i++) {
     ierr = MatAssemblyBegin(submats[i],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(submats[i],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  }
-  if (!ismax) { /* a dummy matrix */
-    //ierr = MatAssemblyBegin(submats[0],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    //ierr = MatAssemblyEnd(submats[0],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
 
   /* Destroy allocated memory */
