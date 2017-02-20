@@ -243,18 +243,9 @@ class generateExamples(Petsc):
     if testDict.has_key('filter'):
       subst['filter']="'"+testDict['filter']+"'"   # Quotes are tricky - overwrite
 
-    # Output file is special because of subtests override
-    defroot=(re.sub("run","",testname) if testname.startswith("run") else testname)
-    subst['defroot']=defroot
-    if not "_" in defroot: defroot=defroot+"_1"
-    if not testDict.has_key('output_file'): 
-      subst['output_file']="output/"+defroot+".out"
-    subst['redirect_file']=defroot+".tmp"
-
     # Others
     subst['subargs']=''  # Default.  For variables override
     subst['srcdir']=os.path.join(self.petsc_dir,rpath)
-    subst['label']=self.nameSpace(defroot,subst['srcdir'])
     subst['label_suffix']=''
     subst['comments']="\n#".join(subst['comments'].split("\n"))
     if subst['comments']: subst['comments']="#"+subst['comments']
@@ -287,6 +278,32 @@ class generateExamples(Petsc):
     subst['petsc_lib_dir']=self.conf['PETSC_LIB_DIR']
     subst['wpetsc_dir']=self.conf['wPETSC_DIR']
 
+    # Output file is special because of subtests override
+    defroot=(re.sub("run","",testname) if testname.startswith("run") else testname)
+    if not "_" in defroot: defroot=defroot+"_1"
+    subst['defroot']=defroot
+    subst['label']=self.nameSpace(defroot,subst['srcdir'])
+    subst['redirect_file']=defroot+".tmp"
+    if not testDict.has_key('output_file'): 
+      subst['output_file']="output/"+defroot+".out"
+    # Add in the full path here.
+    subst['output_file']=os.path.join(subst['srcdir'],subst['output_file'])
+    if not os.path.isfile(os.path.join(self.petsc_dir,subst['output_file'])):
+      if not subst['TODO']:
+        print "Warning: "+subst['output_file']+" not found."
+    # Worry about alt files here -- see
+    #   src/snes/examples/tutorials/output/ex22*.out
+    altlist=[subst['output_file']]
+    for i in range(1,3):
+      altroot=defroot+"_alt"
+      if i==2: altroot=altroot+"_2"
+      af="output/"+altroot+".out"
+      srcaf=os.path.join(subst['srcdir'],af)
+      fullaf=os.path.join(self.petsc_dir,srcaf)
+      if os.path.isfile(fullaf): altlist.append(srcaf)
+    if len(altlist)>1: subst['altfiles']=altlist
+    #if len(altlist)>1: print "Found alt files: ",altlist
+
     return subst
 
   def getCmds(self,subst,i):
@@ -298,9 +315,6 @@ class generateExamples(Petsc):
     nindnt=i # the start and has to be consistent with below
     cmdLines=""
 
-    # Add in the full path here.
-    subst['output_file']=os.path.join(subst['srcdir'],subst['output_file'])
-
     # MPI is the default -- but we have a few odd commands
     if not subst['command']:
       cmd=indnt*nindnt+self._substVars(subst,example_template.mpitest)
@@ -309,7 +323,20 @@ class generateExamples(Petsc):
     cmdLines+=cmd+"\n\n"
 
     if not subst['filter_output']:
-      cmd=indnt*nindnt+self._substVars(subst,example_template.difftest)
+      if not subst.has_key('altfiles'):
+        cmd=indnt*nindnt+self._substVars(subst,example_template.difftest)
+      else:
+        # Have to do it by hand a bit because of variable number of alt files
+        rf=subst['redirect_file']
+        cmd=indnt*nindnt+example_template.difftest.split('@')[0]
+        for i in range(len(subst['altfiles'])):
+          af=subst['altfiles'][i]
+          cmd+=af+' '+rf+' > diff-${testname}-'+str(i)+'.out 2> diff-${testname}-'+str(i)+'.out'
+          if i!=len(subst['altfiles'])-1:
+            cmd+=' || ${diff_exe} '
+          else:
+            cmd+='" diff-${testname}.out diff-${testname}.out diff-${label}'
+            cmd+=subst['label_suffix']+' ""'  # Quotes are painful
     else:
       cmd=indnt*nindnt+self._substVars(subst,example_template.filterdifftest)
     cmdLines+=cmd+"\n"
