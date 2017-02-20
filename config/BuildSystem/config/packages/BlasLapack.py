@@ -16,6 +16,7 @@ class Configure(config.package.Package):
     self.required            = 1
     self.lookforbydefault    = 1
     self.alternativedownload = 'f2cblaslapack'
+    self.missingRoutines     = []
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
