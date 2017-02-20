@@ -8,7 +8,7 @@
 
       Mat             A,B(2)
       PetscErrorCode  ierr
-      PetscInt        one,zero(1)
+      PetscInt        nis,zero(1)
       PetscViewer     v
       IS              isrow
       PetscMPIInt     rank
@@ -36,28 +36,31 @@
       call MatSetType(A, MATAIJ,ierr)
       call MatLoad(A,v,ierr)
 
-      one  = 1
+      nis     = 1
       zero(1) = 0
-      call ISCreateGeneral(PETSC_COMM_SELF,one,zero,PETSC_COPY_VALUES,    &
+      if (rank .eq. 1) then
+         nis = 0 ! test nis = 0
+      endif
+      call ISCreateGeneral(PETSC_COMM_SELF,nis,zero,PETSC_COPY_VALUES,    &
      &                     isrow,ierr)
 
-      call MatGetSubmatrices(A,one,isrow,isrow,                           &
+      call MatGetSubmatrices(A,nis,isrow,isrow,                           &
      &        MAT_INITIAL_MATRIX,B,ierr)
 
       if (rank .eq. 0) then
-         call MatView(B,PETSC_VIEWER_STDOUT_SELF,ierr)
+         call MatView(B(1),PETSC_VIEWER_STDOUT_SELF,ierr)
       endif
 
-      call MatGetSubmatrices(A,one,isrow,isrow,                           &
+      call MatGetSubmatrices(A,nis,isrow,isrow,                           &
      &        MAT_REUSE_MATRIX,B,ierr)
 
       if (rank .eq. 0) then
-         call MatView(B,PETSC_VIEWER_STDOUT_SELF,ierr)
+         call MatView(B(1),PETSC_VIEWER_STDOUT_SELF,ierr)
       endif
 
       call ISDestroy(isrow,ierr)
       call MatDestroy(A,ierr)
-      call MatDestroySubMatrices(one,B,ierr)
+      call MatDestroySubMatrices(nis,B,ierr)
       call PetscViewerDestroy(v,ierr)
 
       call PetscFinalize(ierr)
