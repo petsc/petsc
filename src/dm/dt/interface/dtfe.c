@@ -1095,7 +1095,7 @@ PetscErrorCode PetscSpaceEvaluate_Point(PetscSpace sp, PetscInt npoints, const P
   }
   /* Replicate for other components */
   for (c = 1; c < sp->Nc; ++c) {
-    for (p = 0; c < npoints; ++p) {
+    for (p = 0; p < npoints; ++p) {
       for (i = 0; i < pdim; ++i) {
         B[(c*npoints + p)*pdim + i] = B[p*pdim + i];
       }
