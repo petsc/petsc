@@ -598,8 +598,10 @@ PetscErrorCode  PetscStageLogGetStage(PetscStageLog stageLog, const char name[],
   *stage = -1;
   for (s = 0; s < stageLog->numStages; s++) {
     ierr = PetscStrcasecmp(stageLog->stageInfo[s].name, name, &match);CHKERRQ(ierr);
-    *stage = s;
-    if (match) break;
+    if (match) {
+      *stage = s;
+      break;
+    }
   }
   PetscFunctionReturn(0);
 }
