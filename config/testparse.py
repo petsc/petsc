@@ -100,12 +100,8 @@ def parseTest(testStr,srcfile):
   subdict={}
   for line in striptest.split("\n"):
     if not line.strip(): continue
-    lsplit=line.split(':')
-    if len(lsplit)==0: raise Exception("Missing : in line: "+line)
-    indentcount=lsplit[0].count(" ")
-    var=lsplit[0].strip()
-    val=line[line.find(':')+1:].strip()
-    if not var in acceptedkeys: raise Exception("Not a defined key: "+var+" from:  "+line)
+    var=line.split(":")[0].strip()
+    val=line.split(":", 1)[1].strip()
     # Start by seeing if we are in a subtest
     if line.startswith(" "):
       subdict[subtestname][var]=val
