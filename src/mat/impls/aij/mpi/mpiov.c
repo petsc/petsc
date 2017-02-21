@@ -2032,16 +2032,11 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[],co
     ierr = PetscCalloc1(ismax+nstages,submat);CHKERRQ(ierr);
   }
 
-#if 0
-  PetscMPIInt rank;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)C),&rank);CHKERRQ(ierr);
-  printf("[%d] reuse %d, ismax %d, CN %d, nstages %d, nmax %d\n",rank,scall,ismax,C->cmap->N,nstages,nmax);
-#endif
   for (i=0,pos=0; i<nstages; i++) {
     if (pos+nmax <= ismax) max_no = nmax;
     else if (pos == ismax) max_no = 0;
     else                   max_no = ismax-pos;
-    /* if (!max_no) printf("[%d] max_no=0, %d-stage\n",rank,i); */
+ 
     ierr = MatGetSubMatrices_MPIAIJ_Local(C,max_no,isrow+pos,iscol+pos,scall,*submat+pos);CHKERRQ(ierr);
     if (!max_no && scall == MAT_INITIAL_MATRIX) { /* submat[pos] is a dummy matrix */
       smat = (Mat_SubMat*)(*submat)[pos]->data;
