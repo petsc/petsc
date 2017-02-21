@@ -315,6 +315,9 @@ PETSC_INTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat_SeqAIJ(MPI_Comm,Mat
 PETSC_INTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPIAIJ(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
 
 PETSC_INTERN PetscErrorCode MatSetSeqMat_SeqAIJ(Mat,IS,IS,MatStructure,Mat);
+PETSC_INTERN PetscErrorCode MatDestroySubMatrices_Private(Mat_SubMat*);
+PETSC_INTERN PetscErrorCode MatDestroy_SeqAIJ_Submatrices(Mat);
+PETSC_INTERN PetscErrorCode MatDestroy_Dummy_Submatrices(Mat);
 
 /*
     PetscSparseDenseMinusDot - The inner kernel of triangular solves and Gauss-Siedel smoothing. \sum_i xv[i] * r[xi[i]] for CSR storage

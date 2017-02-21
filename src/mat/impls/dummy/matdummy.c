@@ -1,4 +1,16 @@
 #include <petsc/private/matimpl.h>      /*I "petscmat.h" I*/
+#include <../src/mat/impls/aij/seq/aij.h>
+
+PetscErrorCode MatDestroy_Dummy_Submatrices(Mat C)
+{
+  PetscErrorCode ierr;
+  Mat_SubMat     *submatj = (Mat_SubMat*)C->data;
+
+  PetscFunctionBegin;
+  ierr = submatj->destroy(C);CHKERRQ(ierr);
+  ierr = MatDestroySubMatrices_Private(submatj);
+  PetscFunctionReturn(0);
+}
 
 PetscErrorCode MatDestroy_Dummy(Mat A)
 {

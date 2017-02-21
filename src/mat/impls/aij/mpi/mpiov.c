@@ -1221,105 +1221,6 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ_All(Mat A,MatGetSubMatrixOption flag,MatRe
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDestroy_Dummy_MatGetSubmatrices(Mat C)
-{
-  PetscErrorCode ierr;
-  Mat_SubMat     *submatj = (Mat_SubMat*)C->data;
-  PetscInt       i;
-
-  PetscFunctionBegin;
-  if (!submatj->id) { /* delete data that are linked only to submats[id=0] */
-    ierr = PetscFree4(submatj->sbuf1,submatj->ptr,submatj->tmp,submatj->ctr);CHKERRQ(ierr);
-
-    for (i=0; i<submatj->nrqr; ++i) {
-      ierr = PetscFree(submatj->sbuf2[i]);CHKERRQ(ierr);
-    }
-    ierr = PetscFree3(submatj->sbuf2,submatj->req_size,submatj->req_source1);CHKERRQ(ierr);
-
-    if (submatj->rbuf1) {
-      ierr = PetscFree(submatj->rbuf1[0]);CHKERRQ(ierr);
-      ierr = PetscFree(submatj->rbuf1);CHKERRQ(ierr);
-    }
-
-    for (i=0; i<submatj->nrqs; ++i) {
-      ierr = PetscFree(submatj->rbuf3[i]);CHKERRQ(ierr);
-    }
-    ierr = PetscFree3(submatj->req_source2,submatj->rbuf2,submatj->rbuf3);CHKERRQ(ierr);
-    ierr = PetscFree(submatj->pa);CHKERRQ(ierr);
-  }
-
-#if defined(PETSC_USE_CTABLE)
-  ierr = PetscTableDestroy((PetscTable*)&submatj->rmap);CHKERRQ(ierr);
-  if (submatj->cmap_loc) {ierr = PetscFree(submatj->cmap_loc);CHKERRQ(ierr);}
-  ierr = PetscFree(submatj->rmap_loc);CHKERRQ(ierr);
-#else
-  ierr = PetscFree(submatj->rmap);CHKERRQ(ierr);
-#endif
-
-  if (!submatj->allcolumns) {
-#if defined(PETSC_USE_CTABLE)
-    ierr = PetscTableDestroy((PetscTable*)&submatj->cmap);CHKERRQ(ierr);
-#else
-    ierr = PetscFree(submatj->cmap);CHKERRQ(ierr);
-#endif
-  }
-  ierr = submatj->destroy(C);CHKERRQ(ierr);
-  ierr = PetscFree(submatj->row2proc);CHKERRQ(ierr);
-
-  ierr = PetscFree(submatj);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode MatDestroy_MPIAIJ_MatGetSubmatrices(Mat C)
-{
-  PetscErrorCode ierr;
-  Mat_SeqAIJ     *c = (Mat_SeqAIJ*)C->data;
-  Mat_SubMat     *submatj = c->submatis1;
-  PetscInt       i;
-
-  PetscFunctionBegin;
-  if (!submatj->id) { /* delete data that are linked only to submats[id=0] */
-    ierr = PetscFree4(submatj->sbuf1,submatj->ptr,submatj->tmp,submatj->ctr);CHKERRQ(ierr);
-
-    for (i=0; i<submatj->nrqr; ++i) {
-      ierr = PetscFree(submatj->sbuf2[i]);CHKERRQ(ierr);
-    }
-    ierr = PetscFree3(submatj->sbuf2,submatj->req_size,submatj->req_source1);CHKERRQ(ierr);
-
-    if (submatj->rbuf1) {
-      ierr = PetscFree(submatj->rbuf1[0]);CHKERRQ(ierr);
-      ierr = PetscFree(submatj->rbuf1);CHKERRQ(ierr);
-    }
-
-    for (i=0; i<submatj->nrqs; ++i) {
-      ierr = PetscFree(submatj->rbuf3[i]);CHKERRQ(ierr);
-    }
-    ierr = PetscFree3(submatj->req_source2,submatj->rbuf2,submatj->rbuf3);CHKERRQ(ierr);
-    ierr = PetscFree(submatj->pa);CHKERRQ(ierr);
-  }
-
-#if defined(PETSC_USE_CTABLE)
-  ierr = PetscTableDestroy((PetscTable*)&submatj->rmap);CHKERRQ(ierr);
-  if (submatj->cmap_loc) {ierr = PetscFree(submatj->cmap_loc);CHKERRQ(ierr);}
-  ierr = PetscFree(submatj->rmap_loc);CHKERRQ(ierr);
-#else
-  ierr = PetscFree(submatj->rmap);CHKERRQ(ierr);
-#endif
-
-  if (!submatj->allcolumns) {
-#if defined(PETSC_USE_CTABLE)
-    ierr = PetscTableDestroy((PetscTable*)&submatj->cmap);CHKERRQ(ierr);
-#else
-    ierr = PetscFree(submatj->cmap);CHKERRQ(ierr);
-#endif
-  }
-  ierr = submatj->destroy(C);CHKERRQ(ierr);
-  ierr = PetscFree(submatj->row2proc);CHKERRQ(ierr);
-
-  ierr = PetscFree(submatj);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 PetscErrorCode MatGetSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,PetscBool allcolumns,Mat *submats)
 {
   Mat_MPIAIJ     *c = (Mat_MPIAIJ*)C->data;
@@ -1758,7 +1659,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,cons
 #endif
 
     smatis1->destroy     = submat->ops->destroy;
-    submat->ops->destroy = MatDestroy_MPIAIJ_MatGetSubmatrices;
+    submat->ops->destroy = MatDestroy_SeqAIJ_Submatrices;
     submat->factortype   = C->factortype;
 
     /* compute rmax */
@@ -2668,9 +2569,9 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
       ierr = PetscNew(&smat_i);CHKERRQ(ierr);
       subc = (Mat_SeqAIJ*)submats[i]->data;
       subc->submatis1 = smat_i;
-     
+
       smat_i->destroy          = submats[i]->ops->destroy;
-      submats[i]->ops->destroy = MatDestroy_MPIAIJ_MatGetSubmatrices;
+      submats[i]->ops->destroy = MatDestroy_SeqAIJ_Submatrices;
       submats[i]->factortype   = C->factortype;
 
       smat_i->id          = i;
@@ -2708,7 +2609,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
       submats[0]->data = (void*)smat_i;
 
       smat_i->destroy          = submats[0]->ops->destroy;
-      submats[0]->ops->destroy = MatDestroy_Dummy_MatGetSubmatrices;
+      submats[0]->ops->destroy = MatDestroy_Dummy_Submatrices;
       submats[0]->factortype   = C->factortype;
 
       smat_i->id          = i;

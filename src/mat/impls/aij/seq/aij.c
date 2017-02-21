@@ -2407,6 +2407,65 @@ PetscErrorCode MatScale_SeqAIJ(Mat inA,PetscScalar alpha)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatDestroySubMatrices_Private(Mat_SubMat *submatj)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  if (!submatj->id) { /* delete data that are linked only to submats[id=0] */
+    ierr = PetscFree4(submatj->sbuf1,submatj->ptr,submatj->tmp,submatj->ctr);CHKERRQ(ierr);
+
+    for (i=0; i<submatj->nrqr; ++i) {
+      ierr = PetscFree(submatj->sbuf2[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree3(submatj->sbuf2,submatj->req_size,submatj->req_source1);CHKERRQ(ierr);
+
+    if (submatj->rbuf1) {
+      ierr = PetscFree(submatj->rbuf1[0]);CHKERRQ(ierr);
+      ierr = PetscFree(submatj->rbuf1);CHKERRQ(ierr);
+    }
+
+    for (i=0; i<submatj->nrqs; ++i) {
+      ierr = PetscFree(submatj->rbuf3[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree3(submatj->req_source2,submatj->rbuf2,submatj->rbuf3);CHKERRQ(ierr);
+    ierr = PetscFree(submatj->pa);CHKERRQ(ierr);
+  }
+
+#if defined(PETSC_USE_CTABLE)
+  ierr = PetscTableDestroy((PetscTable*)&submatj->rmap);CHKERRQ(ierr);
+  if (submatj->cmap_loc) {ierr = PetscFree(submatj->cmap_loc);CHKERRQ(ierr);}
+  ierr = PetscFree(submatj->rmap_loc);CHKERRQ(ierr);
+#else
+  ierr = PetscFree(submatj->rmap);CHKERRQ(ierr);
+#endif
+
+  if (!submatj->allcolumns) {
+#if defined(PETSC_USE_CTABLE)
+    ierr = PetscTableDestroy((PetscTable*)&submatj->cmap);CHKERRQ(ierr);
+#else
+    ierr = PetscFree(submatj->cmap);CHKERRQ(ierr);
+#endif
+  }
+  ierr = PetscFree(submatj->row2proc);CHKERRQ(ierr);
+
+  ierr = PetscFree(submatj);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatDestroy_SeqAIJ_Submatrices(Mat C)
+{
+  PetscErrorCode ierr;
+  Mat_SeqAIJ     *c = (Mat_SeqAIJ*)C->data;
+  Mat_SubMat     *submatj = c->submatis1;
+
+  PetscFunctionBegin;
+  ierr = submatj->destroy(C);CHKERRQ(ierr);
+  ierr = MatDestroySubMatrices_Private(submatj);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatGetSubMatrices_SeqAIJ(Mat A,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *B[])
 {
   PetscErrorCode ierr;
