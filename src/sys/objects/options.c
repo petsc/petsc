@@ -2500,7 +2500,7 @@ PetscErrorCode  PetscOptionsLeft(PetscOptions options)
 
 .seealso: PetscOptionsAllUsed(), PetscOptionsLeft()
 @*/
-PetscErrorCode  PetscOptionsLeftGet(PetscOptions options,PetscInt *N, char **names[], char **values[])
+PetscErrorCode  PetscOptionsLeftGet(PetscOptions options,PetscInt *N,char **names[],char **values[])
 {
   PetscErrorCode ierr;
   PetscInt       i,n;
@@ -2547,14 +2547,15 @@ PetscErrorCode  PetscOptionsLeftGet(PetscOptions options,PetscInt *N, char **nam
 
 .seealso: PetscOptionsAllUsed(), PetscOptionsLeft(), PetscOptionsLeftGet
 @*/
-PetscErrorCode  PetscOptionsLeftRestore(PetscOptions options, char *names[], char *values[])
+PetscErrorCode  PetscOptionsLeftRestore(PetscOptions options,PetscInt *N,char **names[],char **values[])
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   options = options ? options : defaultoptions;
-  if (names)  { ierr = PetscFree(names);CHKERRQ(ierr); }
-  if (values) { ierr = PetscFree(values);CHKERRQ(ierr); }
+  if(N) *N = 0;
+  if (names)  { ierr = PetscFree(*names);CHKERRQ(ierr); }
+  if (values) { ierr = PetscFree(*values);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 

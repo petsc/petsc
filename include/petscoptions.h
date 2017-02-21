@@ -34,7 +34,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsAllUsed(PetscOptions,PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscOptionsUsed(PetscOptions,const char *,PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscOptionsLeft(PetscOptions);
 PETSC_EXTERN PetscErrorCode PetscOptionsLeftGet(PetscOptions,PetscInt*,char***,char***);
-PETSC_EXTERN PetscErrorCode PetscOptionsLeftRestore(PetscOptions,char**,char**);
+PETSC_EXTERN PetscErrorCode PetscOptionsLeftRestore(PetscOptions,PetscInt*,char***,char***);
 PETSC_EXTERN PetscErrorCode PetscOptionsView(PetscOptions,PetscViewer);
 
 PETSC_EXTERN PetscErrorCode PetscOptionsCreateDefault(void);
