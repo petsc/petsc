@@ -2043,7 +2043,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_SingleIS(Mat C,PetscInt ismax,const IS i
   PetscFunctionBegin;
   /* Allocate memory to hold all the submatrices */
   if (scall == MAT_INITIAL_MATRIX) {
-    ierr = PetscMalloc1(1,submat);CHKERRQ(ierr);
+    ierr = PetscCalloc1(2,submat);CHKERRQ(ierr);
   }
 
   /* Check for special case: each processor gets entire matrix columns */
