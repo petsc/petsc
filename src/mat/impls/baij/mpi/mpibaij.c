@@ -3912,15 +3912,15 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPIBAIJ(MPI_Comm comm,Mat inmat,
     Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)inmat->data;
     PetscInt       *dnz,*onz,sum,mbs,Nbs;
     PetscInt       *bindx,rmax=a->rmax,j;
-   
+
     ierr = MatGetBlockSizes(inmat,&bs,&cbs);CHKERRQ(ierr);
     mbs = m/bs; Nbs = N/cbs;
     if (n == PETSC_DECIDE) {
       ierr = PetscSplitOwnership(comm,&n,&Nbs);CHKERRQ(ierr);
     }
-    /* Check sum(n) = Nbs */
+    /* Check sum(n) = N */
     ierr = MPIU_Allreduce(&n,&sum,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
-    if (sum != Nbs) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Sum of local columns != global columns %d",Nbs);
+    if (sum != N) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Sum of local columns != global columns %d",Nbs);
 
     ierr    = MPI_Scan(&mbs, &rstart,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
     rstart -= mbs;
