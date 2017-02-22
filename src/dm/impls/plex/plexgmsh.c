@@ -475,7 +475,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     for (cell = 0, c = 0; c < numCells; ++c) {
       if (gmsh_elem[c].dim == dim) {
         ierr = PetscSectionSetDof(newSection, cell, gmsh_elem[c].numNodes*dim);CHKERRQ(ierr);
-        ierr = PetscSectionSetFieldDof(newSection, cell, 0, dim);CHKERRQ(ierr);
+        ierr = PetscSectionSetFieldDof(newSection, cell, 0, gmsh_elem[c].numNodes*dim);CHKERRQ(ierr);
         cell++;
       }
     }
