@@ -295,7 +295,8 @@ PetscErrorCode DMMoabGetFieldDof(DM dm, moab::EntityHandle point, PetscInt field
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   dmmoab = (DM_Moab*)(dm)->data;
 
-  *dof = dmmoab->gidmap[((PetscInt)point - dmmoab->seqstart)] * dmmoab->numFields + field;
+  *dof = (dmmoab->bs == 1 ? dmmoab->gidmap[dmmoab->mbiface->id_from_handle(point) - dmmoab->seqstart] + field * dmmoab->n :
+              dmmoab->gidmap[dmmoab->mbiface->id_from_handle(point) - dmmoab->seqstart] * dmmoab->numFields + field);
   PetscFunctionReturn(0);
 }
 
@@ -340,8 +341,8 @@ PetscErrorCode DMMoabGetFieldDofs(DM dm, PetscInt npoints, const moab::EntityHan
   /* We also assume all fields have equal distribution; i.e., all fields are either defined on vertices or elements and not on a mixture */
   /* TODO: eliminate the limitation using PetscSection to manage DOFs */
   for (i = 0; i < npoints; ++i)
-    dof[i] = (dmmoab->bs == 1 ? dmmoab->gidmap[(PetscInt)points[i] - dmmoab->seqstart] + field * dmmoab->n :
-              dmmoab->gidmap[(PetscInt)points[i] - dmmoab->seqstart] * dmmoab->numFields + field);
+    dof[i] = (dmmoab->bs == 1 ? dmmoab->gidmap[dmmoab->mbiface->id_from_handle(points[i]) - dmmoab->seqstart] + field * dmmoab->n :
+              dmmoab->gidmap[dmmoab->mbiface->id_from_handle(points[i]) - dmmoab->seqstart] * dmmoab->numFields + field);
   PetscFunctionReturn(0);
 }
 
@@ -386,8 +387,8 @@ PetscErrorCode DMMoabGetFieldDofsLocal(DM dm, PetscInt npoints, const moab::Enti
   /* assume all fields have equal distribution; i.e., all fields are either defined on vertices or elements and not on a mixture */
   /* TODO: eliminate the limitation using PetscSection to manage DOFs */
   for (i = 0; i < npoints; ++i) {
-    dof[i] = (dmmoab->bs > 1 ? dmmoab->lidmap[(PetscInt)points[i] - dmmoab->seqstart] * dmmoab->numFields + field :
-              dmmoab->lidmap[(PetscInt)points[i] - dmmoab->seqstart] + field * dmmoab->n);
+    dof[i] = (dmmoab->bs > 1 ? dmmoab->lidmap[dmmoab->mbiface->id_from_handle(points[i]) - dmmoab->seqstart] * dmmoab->numFields + field :
+              dmmoab->lidmap[dmmoab->mbiface->id_from_handle(points[i]) - dmmoab->seqstart] + field * dmmoab->n);
   }
   PetscFunctionReturn(0);
 }
@@ -434,8 +435,8 @@ PetscErrorCode DMMoabGetDofs(DM dm, PetscInt npoints, const moab::EntityHandle* 
   for (field = 0; field < dmmoab->numFields; ++field) {
     offset = field * dmmoab->n;
     for (i = 0; i < npoints; ++i)
-      dof[i * dmmoab->numFields + field] = (dmmoab->bs > 1 ? dmmoab->gidmap[(PetscInt)points[i] - dmmoab->seqstart] * dmmoab->numFields + field :
-                                            dmmoab->gidmap[(PetscInt)points[i] - dmmoab->seqstart] + offset);
+      dof[i * dmmoab->numFields + field] = (dmmoab->bs > 1 ? dmmoab->gidmap[dmmoab->mbiface->id_from_handle(points[i]) - dmmoab->seqstart] * dmmoab->numFields + field :
+                                            dmmoab->gidmap[dmmoab->mbiface->id_from_handle(points[i]) - dmmoab->seqstart] + offset);
   }
   PetscFunctionReturn(0);
 }
@@ -483,8 +484,8 @@ PetscErrorCode DMMoabGetDofsLocal(DM dm, PetscInt npoints, const moab::EntityHan
   for (field = 0; field < dmmoab->numFields; ++field) {
     offset = field * dmmoab->n;
     for (i = 0; i < npoints; ++i)
-      dof[i * dmmoab->numFields + field] = (dmmoab->bs > 1 ? dmmoab->lidmap[(PetscInt)points[i] - dmmoab->seqstart] * dmmoab->numFields + field :
-                                            dmmoab->lidmap[(PetscInt)points[i] - dmmoab->seqstart] + offset);
+      dof[i * dmmoab->numFields + field] = (dmmoab->bs > 1 ? dmmoab->lidmap[dmmoab->mbiface->id_from_handle(points[i]) - dmmoab->seqstart] * dmmoab->numFields + field :
+                                            dmmoab->lidmap[dmmoab->mbiface->id_from_handle(points[i]) - dmmoab->seqstart] + offset);
   }
   PetscFunctionReturn(0);
 }

@@ -63,18 +63,17 @@ PetscErrorCode DMMoabGenerateHierarchy(DM dm, PetscInt nlevels, PetscInt *ldegre
 #endif
 
   /* copy the mesh sets for nested refinement hierarchy */
-  for (ilevel = 0; ilevel <= nlevels; ilevel++)
+  dmmoab->hsets[0] = hsets[0];
+  for (ilevel = 1; ilevel <= nlevels; ilevel++)
   {
-    if (ilevel) { /* Update material and other geometric tags from parent to child sets */ 
-      merr = dmmoab->hierarchy->update_special_tags(ilevel, hsets[ilevel]);MBERRNM(merr);
-    }
-
     dmmoab->hsets[ilevel] = hsets[ilevel];
+
 #ifdef MOAB_HAVE_MPI
-    if (ilevel) {
-      merr = dmmoab->pcomm->assign_global_ids(hsets[ilevel], dmmoab->dim, 1, false, true, false);MBERRNM(merr);
-    }
+    merr = dmmoab->pcomm->assign_global_ids(hsets[ilevel], dmmoab->dim, 0, false, true, false);MBERRNM(merr);
 #endif
+
+    /* Update material and other geometric tags from parent to child sets */ 
+    merr = dmmoab->hierarchy->update_special_tags(ilevel, hsets[ilevel]);MBERRNM(merr);
   }
 
   hsets.clear();

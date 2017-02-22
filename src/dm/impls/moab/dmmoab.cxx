@@ -1132,7 +1132,6 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
     /* set the GID map */
     for (i = 0; i < totsize; ++i) {
       dmmoab->gsindices[i] -= dmmoab->gminmax[0]; /* zero based index needed for IS */
-      PetscInfo2(NULL, "GLOBAL_ID %d: %D\n", i, dmmoab->gsindices[i]);
 
     }
     dmmoab->lminmax[0] -= dmmoab->gminmax[0];
@@ -1153,7 +1152,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
     i = j = 0;
     /* set the owned vertex data first */
     for (moab::Range::iterator iter = dmmoab->vowned->begin(); iter != dmmoab->vowned->end(); iter++, i++) {
-      vent = (PetscInt)(*iter) - dmmoab->seqstart;
+      vent = dmmoab->mbiface->id_from_handle(*iter) - dmmoab->seqstart;
       dmmoab->gidmap[vent] = dmmoab->gsindices[i];
       dmmoab->lidmap[vent] = i;
       for (f = 0; f < dmmoab->numFields; f++, j++) {
@@ -1162,7 +1161,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
     }
     /* next arrange all the ghosted data information */
     for (moab::Range::iterator iter = dmmoab->vghost->begin(); iter != dmmoab->vghost->end(); iter++, i++) {
-      vent = (PetscInt)(*iter) - dmmoab->seqstart;
+      vent = dmmoab->mbiface->id_from_handle(*iter) - dmmoab->seqstart;
       dmmoab->gidmap[vent] = dmmoab->gsindices[i];
       dmmoab->lidmap[vent] = i;
       for (f = 0; f < dmmoab->numFields; f++, j++) {

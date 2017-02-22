@@ -57,7 +57,7 @@ PETSC_EXTERN PetscErrorCode DMCreateMatrix_Moab(DM dm, Mat *J)
   /* set up internal matrix data-structures */
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
-  MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE);
+  /* MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE); */
 
   *J = A;
   PetscFunctionReturn(0);
@@ -92,11 +92,11 @@ PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm, PetscInt
        to the current vertex. We can then decipher if a vertex is ghosted or not and compute the
        non-zero pattern accordingly. */
     adjs.clear();
-    if (dmmoab->hlevel) {
+    if (dmmoab->hlevel && (dmmoab->pcomm->size() == 1)) {
       merr = dmmoab->hierarchy->get_adjacencies(vtx, dmmoab->dim, adjs); MBERRNM(merr);
     }
     else {
-      merr = dmmoab->mbiface->get_adjacencies(&vtx, 1, dmmoab->dim, true, adjs, moab::Interface::INTERSECT); MBERRNM(merr);
+      merr = dmmoab->mbiface->get_adjacencies(&vtx, 1, dmmoab->dim, true, adjs, moab::Interface::UNION); MBERRNM(merr);
     }
 
     /* reset counters */
@@ -109,14 +109,7 @@ PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm, PetscInt
       /* Get connectivity information in canonical ordering for the local element */
       const moab::EntityHandle *connect;
       std::vector<moab::EntityHandle> cconnect;
-      if (dmmoab->hlevel) {
-        merr = dmmoab->hierarchy->get_connectivity(adjs[jter], dmmoab->hlevel, cconnect); MBERRNM(merr);
-        connect=cconnect.data();
-        vpere=cconnect.size();
-      }
-      else {
-        merr = dmmoab->mbiface->get_connectivity(adjs[jter], connect, vpere, false, &storage); MBERRNM(merr);
-      }
+      merr = dmmoab->mbiface->get_connectivity(adjs[jter], connect, vpere, false, &storage); MBERRNM(merr);
 
       /* loop over each element connected to the adjacent vertex and update as needed */
       for (i = 0; i < vpere; ++i) {
