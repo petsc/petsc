@@ -3910,7 +3910,7 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPIBAIJ(MPI_Comm comm,Mat inmat,
   ierr = MatGetSize(inmat,&m,&N);CHKERRQ(ierr);
   if (scall == MAT_INITIAL_MATRIX) { /* symbolic phase */
     Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)inmat->data;
-    PetscInt       *dnz,*onz,sum,mbs,Nbs,nbs;
+    PetscInt       *dnz,*onz,mbs,Nbs,nbs;
     PetscInt       *bindx,rmax=a->rmax,j;
     PetscMPIInt    rank,size;
 
@@ -3931,7 +3931,7 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPIBAIJ(MPI_Comm comm,Mat inmat,
     ierr = MPI_Comm_rank(comm,&size);CHKERRQ(ierr);
     if (rank == size-1) {
       /* Check sum(nbs) = Nbs */
-      if (__end != Nbs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Sum of local block columns %D != global block columns %D",sum,Nbs);
+      if (__end != Nbs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Sum of local block columns %D != global block columns %D",__end,Nbs);
     }
 
     rstart = __rstart; /* block rstart of *outmat; see inline function MatPreallocateInitialize */
