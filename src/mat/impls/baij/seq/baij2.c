@@ -219,7 +219,7 @@ PetscErrorCode MatDestroy_SeqBAIJ_Submatrices(Mat C)
 
   PetscFunctionBegin;
   ierr = submatj->destroy(C);CHKERRQ(ierr);
-  ierr = MatDestroySubMatrices_Private(submatj);
+  ierr = MatDestroySubMatrices_Private(submatj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
