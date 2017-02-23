@@ -740,7 +740,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
       req_size    = smat_i->req_size;
       req_source1 = smat_i->req_source1;
 
-      allcolumns[0] = PETSC_TRUE;
+      allcolumns[0] = PETSC_FALSE;
     }
   } else { /* scall == MAT_INITIAL_MATRIX */
     /* Get some new tags to keep the communication clean */
@@ -1212,7 +1212,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
       smat_i->req_size     = req_size;
       smat_i->req_source1  = req_source1;
 
-      smat_i->allcolumns  = PETSC_TRUE;
+      smat_i->allcolumns  = PETSC_FALSE;
       smat_i->singleis    = PETSC_FALSE;
       smat_i->row2proc    = NULL;
       smat_i->rmap        = NULL;
