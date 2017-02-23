@@ -409,3 +409,58 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+  # 2D Simplex P_1 scalar tests
+  test:
+    suffix: 0
+    requires: performance
+    args: -num_dof 1,0,0 -iterations 10000 -max_cone_time 1.1e-8 -max_closure_time 1.3e-7 -max_vec_closure_time 3.6e-7
+  test:
+    suffix: 1
+    requires: performance
+    args: -refinement_limit 1.0e-5 -num_dof 1,0,0 -iterations 2 -max_cone_time 2.1e-8 -max_closure_time 1.5e-7 -max_vec_closure_time 3.6e-7
+  test:
+    suffix: 2
+    requires: performance
+    args: -num_fields 1 -num_components 1 -num_dof 1,0,0 -iterations 10000 -max_cone_time 1.1e-8 -max_closure_time 1.3e-7 -max_vec_closure_time 4.5e-7
+  test:
+    suffix: 3
+    requires: performance
+    args: -refinement_limit 1.0e-5 -num_fields 1 -num_components 1 -num_dof 1,0,0 -iterations 2 -max_cone_time 2.1e-8 -max_closure_time 1.5e-7 -max_vec_closure_time 4.7e-7
+  test:
+    suffix: 4
+    requires: performance
+    args: -interpolate -num_dof 1,0,0 -iterations 10000 -max_cone_time 1.1e-8 -max_closure_time 6.5e-7 -max_vec_closure_time 1.0e-6
+  test:
+    suffix: 5
+    requires: performance
+    args: -interpolate -refinement_limit 1.0e-4 -num_dof 1,0,0 -iterations 2 -max_cone_time 2.1e-8 -max_closure_time 6.5e-7 -max_vec_closure_time 1.0e-6
+  test:
+    suffix: 6
+    requires: performance
+    args: -interpolate -num_fields 1 -num_components 1 -num_dof 1,0,0 -iterations 10000 -max_cone_time 1.1e-8 -max_closure_time 6.5e-7 -max_vec_closure_time 1.1e-6
+  test:
+    suffix: 7
+    requires: performance
+    args: -interpolate -refinement_limit 1.0e-4 -num_fields 1 -num_components 1 -num_dof 1,0,0 -iterations 2 -max_cone_time 2.1e-8 -max_closure_time 6.5e-7 -max_vec_closure_time 1.2e-6
+
+  # 2D Simplex P_1 vector tests
+  # 2D Simplex P_2 scalar tests
+  # 2D Simplex P_2 vector tests
+  # 2D Simplex P_2/P_1 vector/scalar tests
+  # 2D Quad P_1 scalar tests
+  # 2D Quad P_1 vector tests
+  # 2D Quad P_2 scalar tests
+  # 2D Quad P_2 vector tests
+  # 3D Simplex P_1 scalar tests
+  # 3D Simplex P_1 vector tests
+  # 3D Simplex P_2 scalar tests
+  # 3D Simplex P_2 vector tests
+  # 3D Hex P_1 scalar tests
+  # 3D Hex P_1 vector tests
+  # 3D Hex P_2 scalar tests
+  # 3D Hex P_2 vector tests
+
+TEST*/

@@ -65,6 +65,9 @@ Vec Object: 1 MPI processes
 1.
 1.
 1.
+1.
+1.
+1.
 2.
 2.
 2.
@@ -137,7 +140,7 @@ Vec Object: 1 MPI processes
 1.5
 1.5
 1.5
-[3]Field values
+[2]Field values
 Vec Object: 1 MPI processes
   type: seq
 1.5

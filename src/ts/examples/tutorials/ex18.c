@@ -7,6 +7,11 @@ a forcing function $f$:
   \frac{\partial\phi}{\partial t} + \nabla\cdot \phi \mathbf{u} &= 0
 \end{align}
 F*/
+/*TEST
+
+   requires: !complex
+TEST*/
+
 #include <petscdmplex.h>
 #include <petscds.h>
 #include <petscts.h>
@@ -487,7 +492,6 @@ static PetscErrorCode shear_bc(PetscInt dim, PetscReal time, const PetscReal x[]
 
 static PetscErrorCode initialVelocity(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
-  AppCtx  *user = (AppCtx *) ctx;
   PetscInt d;
   for (d = 0; d < dim; ++d) u[d] = 0.0;
   return 0;
@@ -508,7 +512,6 @@ static PetscErrorCode constant_phi(PetscInt dim, PetscReal time, const PetscReal
 static PetscErrorCode delta_phi_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   const PetscReal x0[2] = {globalUser->source[0], globalUser->source[1]};
-  const PetscReal t     = *((PetscReal *) ctx);
   PetscReal       xn[2];
 
   constant_x_2d(dim, time, x0, Nf, xn, ctx);
@@ -538,7 +541,6 @@ Check: constant v(t) = {v0, w0}, x(t) = {x0 + v0 t, y0 + w0 t}
 static PetscErrorCode gaussian_phi_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   const PetscReal x0[2] = {0.5, 0.5};
-  const PetscReal t     = *((PetscReal *) ctx);
   const PetscReal sigma = 1.0/6.0;
   PetscReal       xn[2];
 
@@ -734,14 +736,14 @@ static PetscErrorCode SetupBC(DM dm, AppCtx *user)
   if (label) {
     const PetscInt id = 1;
 
-    ierr = PetscDSAddBoundary(prob, PETSC_TRUE, "wall", "marker", 0, 0, NULL, (void (*)()) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
+    ierr = PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "wall", "marker", 0, 0, NULL, (void (*)()) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
   }
   ierr = DMGetLabel(dm, "Face Sets", &label);CHKERRQ(ierr);
   if (label && user->useFV) {
     const PetscInt inflowids[] = {100,200,300}, outflowids[] = {101};
 
-    ierr = PetscDSAddBoundary(prob, PETSC_TRUE, "inflow",  "Face Sets", 1, 0, NULL, (void (*)()) advect_inflow,  ALEN(inflowids),  inflowids,  user);CHKERRQ(ierr);
-    ierr = PetscDSAddBoundary(prob, PETSC_FALSE, "outflow", "Face Sets", 1, 0, NULL, (void (*)()) advect_outflow, ALEN(outflowids), outflowids, user);CHKERRQ(ierr);
+    ierr = PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "inflow",  "Face Sets", 1, 0, NULL, (void (*)()) advect_inflow,  ALEN(inflowids),  inflowids,  user);CHKERRQ(ierr);
+    ierr = PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "outflow", "Face Sets", 1, 0, NULL, (void (*)()) advect_outflow, ALEN(outflowids), outflowids, user);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -867,7 +869,7 @@ static PetscErrorCode CreateDM(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetInitialConditionFVM(DM dm, Vec X, PetscInt field, PetscErrorCode (*func)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void *ctx)
+static PetscErrorCode SetInitialConditionFVM(DM dm, Vec X, PetscInt field, PetscErrorCode (*func)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void *ctx)
 {
   PetscDS            prob;
   DM                 dmCell;
@@ -893,7 +895,7 @@ static PetscErrorCode SetInitialConditionFVM(DM dm, Vec X, PetscInt field, Petsc
 
     ierr = DMPlexPointLocalRead(dmCell, c, cgeom, &cg);CHKERRQ(ierr);
     ierr = DMPlexPointGlobalFieldRef(dm, c, field, x, &xc);CHKERRQ(ierr);
-    if (xc) {ierr = (*func)(dim, cg->centroid, Nf, xc, ctx);CHKERRQ(ierr);}
+    if (xc) {ierr = (*func)(dim, 0.0, cg->centroid, Nf, xc, ctx);CHKERRQ(ierr);}
   }
   ierr = VecRestoreArrayRead(cellgeom, &cgeom);CHKERRQ(ierr);
   ierr = VecRestoreArray(X, &x);CHKERRQ(ierr);
@@ -907,7 +909,6 @@ static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time
   DM                 dm;
   PetscSection       s;
   Vec                cellgeom;
-  const char        *prefix;
   const PetscScalar *x, *a;
   PetscReal         *xnorms;
   PetscInt           pStart, pEnd, p, Nf, f, cEndInterior;
@@ -1144,3 +1145,154 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+  # 2D harmonic velocity, no porosity
+  test:
+    suffix: p1p1
+    args: -x_bd_type none -y_bd_type none -velocity_petscspace_order 1 -velocity_petscspace_poly_tensor -porosity_petscspace_order 1 -porosity_petscspace_poly_tensor -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_factor_shift_type nonzero -ts_monitor -snes_monitor_short -ksp_monitor_short -dmts_check
+  test:
+    suffix: p1p1_xper
+    args: -dm_refine 1 -y_bd_type none -velocity_petscspace_order 1 -velocity_petscspace_poly_tensor -porosity_petscspace_order 1 -porosity_petscspace_poly_tensor -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu -pc_factor_shift_type nonzero -ksp_rtol 1.0e-8 -ts_monitor -snes_monitor_short -ksp_monitor_short -dmts_check
+  test:
+    suffix: p1p1_xper_ref
+    args: -dm_refine 3 -y_bd_type none -velocity_petscspace_order 1 -velocity_petscspace_poly_tensor -porosity_petscspace_order 1 -porosity_petscspace_poly_tensor -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu -pc_factor_shift_type nonzero -ksp_rtol 1.0e-8 -ts_monitor -snes_monitor_short -ksp_monitor_short -dmts_check
+  test:
+    suffix: p1p1_xyper
+    args: -dm_refine 1 -velocity_petscspace_order 1 -velocity_petscspace_poly_tensor -porosity_petscspace_order 1 -porosity_petscspace_poly_tensor -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu -pc_factor_shift_type nonzero -ksp_rtol 1.0e-8 -ts_monitor -snes_monitor_short -ksp_monitor_short -dmts_check
+  test:
+    suffix: p1p1_xyper_ref
+    args: -dm_refine 3 -velocity_petscspace_order 1 -velocity_petscspace_poly_tensor -porosity_petscspace_order 1 -porosity_petscspace_poly_tensor -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu -pc_factor_shift_type nonzero -ksp_rtol 1.0e-8 -ts_monitor -snes_monitor_short -ksp_monitor_short -dmts_check
+  test:
+    suffix: p2p1
+    args: -x_bd_type none -y_bd_type none -velocity_petscspace_order 2 -velocity_petscspace_poly_tensor -porosity_petscspace_order 1 -porosity_petscspace_poly_tensor -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -ts_monitor -snes_monitor_short -ksp_monitor_short -dmts_check
+  test:
+    suffix: p2p1_xyper
+    args: -dm_refine 1 -velocity_petscspace_order 2 -velocity_petscspace_poly_tensor -porosity_petscspace_order 1 -porosity_petscspace_poly_tensor -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu -pc_factor_shift_type nonzero -ksp_rtol 1.0e-8 -ts_monitor -snes_monitor_short -ksp_monitor_short -dmts_check
+  test:
+    suffix: p2p1_xyper_ref
+    args: -dm_refine 3 -velocity_petscspace_order 2 -velocity_petscspace_poly_tensor -porosity_petscspace_order 1 -porosity_petscspace_poly_tensor -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu -pc_factor_shift_type nonzero -ksp_rtol 1.0e-8 -ts_monitor -snes_monitor_short -ksp_monitor_short -dmts_check
+  #   Must check that FV BCs propagate to coarse meshes
+  #   Must check that FV BC ids propagate to coarse meshes
+  #   Must check that FE+FV BCs work at the same time
+  # 2D Advection, matching wind in ex11 8-11
+  #   NOTE implicit solves are limited by accuracy of FD Jacobian
+  test:
+    suffix: adv_0
+    requires: exodusii
+    args: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo -x_bd_type none -y_bd_type none -use_fv -velocity_dist zero -porosity_dist tilted -ts_type ssp -ts_final_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -ts_view -dm_view
+  test:
+    suffix: adv_0_im
+    requires: exodusii broken
+    args: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo -x_bd_type none -y_bd_type none -use_fv -use_implicit -velocity_dist zero -porosity_dist tilted -ts_type beuler -ts_final_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -ts_view -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu
+  test:
+    suffix: adv_0_im_2
+    requires: exodusii broken
+    args: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo -x_bd_type none -y_bd_type none -use_fv -use_implicit -velocity_dist constant -porosity_dist tilted -ts_type beuler -ts_final_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -ts_view -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu -snes_rtol 1.0e-7
+  test:
+    suffix: adv_0_im_3
+    requires: exodusii broken
+    args: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo -x_bd_type none -y_bd_type none -use_fv -use_implicit -velocity_petscspace_order 1 -velocity_petscspace_poly_tensor -velocity_dist constant -porosity_dist tilted -ts_type beuler -ts_final_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -ts_view -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type svd -snes_rtol 1.0e-7
+  test:
+    suffix: adv_0_im_4
+    requires: exodusii broken
+    args: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo -x_bd_type none -y_bd_type none -use_fv -use_implicit -velocity_petscspace_order 2 -velocity_petscspace_poly_tensor -velocity_dist constant -porosity_dist tilted -ts_type beuler -ts_final_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -ts_view -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type svd -snes_rtol 1.0e-7
+  # 2D Advection, misc
+  test:
+    suffix: adv_1
+    args: -x_bd_type none -y_bd_type none -use_fv -velocity_dist zero -porosity_dist tilted -ts_type ssp -ts_final_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -bc_inflow 1,2,4 -bc_outflow 3 -ts_view -dm_view
+  test:
+    suffix: adv_2
+    requires: broken
+    args: -x_bd_type none -y_bd_type none -use_fv -velocity_dist zero -porosity_dist tilted -ts_type beuler -ts_final_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -bc_inflow 3,4 -bc_outflow 1,2 -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -ksp_max_it 100 -ts_view -dm_view -snes_converged_reason -ksp_converged_reason
+  test:
+    suffix: adv_3
+    requires: broken
+    args: -y_bd_type none -use_fv -velocity_dist zero -porosity_dist tilted -ts_type beuler -ts_final_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -bc_inflow 3 -bc_outflow 1 -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -ksp_max_it 100 -ts_view -dm_view -snes_converged_reason
+  test:
+    suffix: adv_3_ex
+    args: -y_bd_type none -use_fv -velocity_dist zero -porosity_dist tilted -ts_type ssp -ts_final_time 2.0 -ts_max_steps 1000 -ts_dt 0.1 -bc_inflow 3 -bc_outflow 1 -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -ksp_max_it 100 -ts_view -dm_view -snes_converged_reason
+  test:
+    suffix: adv_4
+    requires: broken
+    args: -x_bd_type none -y_bd_type none -use_fv -velocity_dist zero -porosity_dist tilted -ts_type beuler -ts_final_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -bc_inflow 3 -bc_outflow 1 -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -ksp_max_it 100 -ts_view -dm_view -snes_converged_reason
+  # 2D Advection, box, delta
+  test:
+    suffix: adv_delta_yper_0
+    args: -x_bd_type none -use_fv -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type euler -ts_final_time 5.0 -ts_max_steps 20 -ts_dt 0.333333 -bc_inflow 2 -bc_outflow 4 -ts_view -dm_view -monitor Error
+  test:
+    suffix: adv_delta_yper_1
+    args: -x_bd_type none -use_fv -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type euler -ts_final_time 5.0 -ts_max_steps 40 -ts_dt 0.166666 -bc_inflow 2 -bc_outflow 4 -ts_view -dm_view -monitor Error -dm_refine 1 -source_loc 0.416666,0.416666
+  test:
+    suffix: adv_delta_yper_2
+    args: -x_bd_type none -use_fv -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type euler -ts_final_time 5.0 -ts_max_steps 80 -ts_dt 0.083333 -bc_inflow 2 -bc_outflow 4 -ts_view -dm_view -monitor Error -dm_refine 2 -source_loc 0.458333,0.458333
+  test:
+    suffix: adv_delta_yper_fim_0
+    args: -x_bd_type none -use_fv -use_implicit -velocity_petscspace_order 0 -velocity_petscspace_poly_tensor -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_final_time 5.0 -ts_max_steps 20 -ts_dt 0.333333 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -mat_coloring_greedy_symmetric 0 -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason
+  test:
+    suffix: adv_delta_yper_fim_1
+    args: -x_bd_type none -use_fv -use_implicit -velocity_petscspace_order 1 -velocity_petscspace_poly_tensor -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_final_time 5.0 -ts_max_steps 20 -ts_dt 0.333333 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -mat_coloring_greedy_symmetric 0 -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason -snes_linesearch_type basic
+  test:
+    suffix: adv_delta_yper_fim_2
+    args: -x_bd_type none -use_fv -use_implicit -velocity_petscspace_order 2 -velocity_petscspace_poly_tensor -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_final_time 5.0 -ts_max_steps 20 -ts_dt 0.333333 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -mat_coloring_greedy_symmetric 0 -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason -snes_linesearch_type basic
+  test:
+    suffix: adv_delta_yper_im_0
+    requires: broken
+    args: -x_bd_type none -use_fv -use_implicit -velocity_petscspace_order 0 -velocity_petscspace_poly_tensor -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_mimex_version 0 -ts_final_time 5.0 -ts_max_steps 20 -ts_dt 0.333333 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason
+  test:
+    suffix: adv_delta_yper_im_1
+    requires: broken
+    args: -x_bd_type none -use_fv -use_implicit -velocity_petscspace_order 0 -velocity_petscspace_poly_tensor -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_mimex_version 0 -ts_final_time 5.0 -ts_max_steps 40 -ts_dt 0.166666 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason -dm_refine 1 -source_loc 0.416666,0.416666
+  test:
+    suffix: adv_delta_yper_im_2
+    requires: broken
+    args: -x_bd_type none -use_fv -use_implicit -velocity_petscspace_order 0 -velocity_petscspace_poly_tensor -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_mimex_version 0 -ts_final_time 5.0 -ts_max_steps 80 -ts_dt 0.083333 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason -dm_refine 2 -source_loc 0.458333,0.458333
+  test:
+    suffix: adv_delta_yper_im_3
+    requires: broken
+    args: -x_bd_type none -use_fv -use_implicit -velocity_petscspace_order 1 -velocity_petscspace_poly_tensor -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_mimex_version 0 -ts_final_time 5.0 -ts_max_steps 20 -ts_dt 0.333333 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason
+  #    I believe the nullspace is sin(pi y)
+  test:
+    suffix: adv_delta_yper_im_4
+    requires: broken
+    args: -x_bd_type none -use_fv -use_implicit -velocity_petscspace_order 1 -velocity_petscspace_poly_tensor -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_mimex_version 0 -ts_final_time 5.0 -ts_max_steps 40 -ts_dt 0.166666 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason -dm_refine 1 -source_loc 0.416666,0.416666
+  test:
+    suffix: adv_delta_yper_im_5
+    requires: broken
+    args: -x_bd_type none -use_fv -use_implicit -velocity_petscspace_order 1 -velocity_petscspace_poly_tensor -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_mimex_version 0 -ts_final_time 5.0 -ts_max_steps 80 -ts_dt 0.083333 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason -dm_refine 2 -source_loc 0.458333,0.458333
+  test:
+    suffix: adv_delta_yper_im_6
+    requires: broken
+    args: -x_bd_type none -use_fv -use_implicit -velocity_petscspace_order 2 -velocity_petscspace_poly_tensor -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_final_time 5.0 -ts_max_steps 20 -ts_dt 0.333333 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -snes_rtol 1.0e-7 -pc_type svd -snes_converged_reason
+  # 2D Advection, magma benchmark 1
+  test:
+    suffix: adv_delta_shear_im_0
+    requires: broken
+    args: -y_bd_type none -dm_refine 2 -use_fv -use_implicit -velocity_petscspace_order 1 -velocity_petscspace_poly_tensor -velocity_dist shear -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_final_time 5.0 -ts_max_steps 20 -ts_dt 0.333333 -bc_inflow 1,3 -ts_view -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason -source_loc 0.458333,0.708333
+  # 2D Advection, box, gaussian
+  test:
+    suffix: adv_gauss
+    args: -x_bd_type none -y_bd_type none -use_fv -velocity_dist constant -porosity_dist gaussian -inflow_state 0.0 -ts_type ssp -ts_final_time 2.0 -ts_max_steps 100 -ts_dt 0.01 -bc_inflow 1 -bc_outflow 3 -ts_view -dm_view
+  test:
+    suffix: adv_gauss_im
+    requires: broken
+    args: -x_bd_type none -y_bd_type none -use_fv -use_implicit -velocity_dist constant -porosity_dist gaussian -inflow_state 0.0 -ts_type beuler -ts_final_time 2.0 -ts_max_steps 100 -ts_dt 0.01 -bc_inflow 1 -bc_outflow 3 -ts_view -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -snes_rtol 1.0e-7
+  test:
+    suffix: adv_gauss_im_1
+    requires: broken
+    args: -x_bd_type none -y_bd_type none -use_fv -use_implicit -velocity_petscspace_order 1 -velocity_petscspace_poly_tensor -velocity_dist constant -porosity_dist gaussian -inflow_state 0.0 -ts_type beuler -ts_final_time 2.0 -ts_max_steps 100 -ts_dt 0.01 -bc_inflow 1 -bc_outflow 3 -ts_view -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -snes_rtol 1.0e-7
+  test:
+    suffix: adv_gauss_im_2
+    requires: broken
+    args: -x_bd_type none -y_bd_type none -use_fv -use_implicit -velocity_petscspace_order 2 -velocity_petscspace_poly_tensor -velocity_dist constant -porosity_dist gaussian -inflow_state 0.0 -ts_type beuler -ts_final_time 2.0 -ts_max_steps 100 -ts_dt 0.01 -bc_inflow 1 -bc_outflow 3 -ts_view -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -snes_rtol 1.0e-7
+  test:
+    suffix: adv_gauss_corner
+    args: -x_bd_type none -y_bd_type none -use_fv -velocity_dist constant -porosity_dist gaussian -inflow_state 0.0 -ts_type ssp -ts_final_time 2.0 -ts_max_steps 100 -ts_dt 0.01 -bc_inflow 1 -bc_outflow 2 -ts_view -dm_view
+  # 2D Advection+Harmonic 12-
+  test:
+    suffix: adv_harm_0
+    requires: broken
+    args: -x_bd_type none -y_bd_type none -velocity_petscspace_order 2 -velocity_petscspace_poly_tensor -use_fv -velocity_dist harmonic -porosity_dist gaussian -ts_type beuler -ts_final_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -bc_inflow 1,2,4 -bc_outflow 3 -use_implicit -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -ksp_max_it 100 -ts_view -dm_view -snes_converged_reason -ksp_converged_reason -snes_monitor -dmts_check
+
+TEST*/
