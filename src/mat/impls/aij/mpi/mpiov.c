@@ -2607,7 +2607,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
       submats[0]->ops->destroy = MatDestroy_Dummy_Submatrices;
       submats[0]->factortype   = C->factortype;
 
-      smat_i->id          = i;
+      smat_i->id          = 0;
       smat_i->nrqs        = nrqs;
       smat_i->nrqr        = nrqr;
       smat_i->rbuf1       = rbuf1;

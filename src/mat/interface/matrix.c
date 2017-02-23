@@ -6779,10 +6779,10 @@ PetscErrorCode MatDestroySubMatrices(PetscInt n,Mat *mat[])
     ierr = PetscObjectTypeCompare((PetscObject)(*mat)[n],MATDUMMY,&isdummy);CHKERRQ(ierr);
     if (isdummy) {
       Mat_SubMat* smat = (Mat_SubMat*)((*mat)[n]->data); /* singleis and nstages are saved in (*mat)[n]->data */
-      PetscInt    i;
 
       if (smat && !smat->singleis) {
-        for (i=0; i<smat->nstages; i++) {
+        PetscInt i,nstages=smat->nstages;
+        for (i=0; i<nstages; i++) {
           ierr = MatDestroy(&(*mat)[n+i]);CHKERRQ(ierr);
         }
       }
