@@ -16,7 +16,7 @@ def get_conf():
     indices = None
     complexscalars = None
 
-    if os.environ.has_key('PETSC_DIR'):
+    if 'PETSC_DIR' in os.environ:
         petscdir = os.environ['PETSC_DIR']
     else:
         warnings.warn('PETSC_DIR env not set - unable to locate PETSc installation, using defaults')
@@ -27,7 +27,7 @@ def get_conf():
         petscvariables = os.path.join(petscdir,'lib','petsc','conf','petscvariables')
         petscconfinclude = os.path.join(petscdir,'include','petscconf.h')
     else:
-        if os.environ.has_key('PETSC_ARCH'):
+        if 'PETSC_ARCH' in os.environ:
             petscarch = os.environ['PETSC_ARCH']
             if os.path.isfile(os.path.join(petscdir,petscarch,'lib','petsc','conf','petscrules')):
                 # found legacy install
