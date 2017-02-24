@@ -39,15 +39,10 @@ static PetscErrorCode TSSetUp_Euler(TS ts)
 {
   TS_Euler       *euler = (TS_Euler*)ts->data;
   PetscErrorCode ierr;
-  TSRHSFunction  rhsfunction;
-  TSIFunction    ifunction;
 
   PetscFunctionBegin;
-  ierr =  TSGetIFunction(ts,NULL,&ifunction,NULL);CHKERRQ(ierr);
-  ierr =  TSGetRHSFunction(ts,NULL,&rhsfunction,NULL);CHKERRQ(ierr);
-  if (!rhsfunction || ifunction) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must define RHSFunction() and leave IFunction() undefined in order to use -ts_type euler");
+  ierr = TSCheckImplicitTerm(ts);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&euler->update);CHKERRQ(ierr);
-
   ierr = TSGetAdapt(ts,&ts->adapt);CHKERRQ(ierr);
   ierr = TSAdaptCandidatesClear(ts->adapt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
