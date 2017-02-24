@@ -246,8 +246,6 @@ class Configure(config.base.Configure):
           if not arg in lflags:
             if arg == '-lkernel32':
               continue
-            elif arg == '-lm':
-              continue
             else:
               lflags.append(arg)
             self.logPrint('Found library : '+arg, 4, 'compilers')
@@ -507,8 +505,6 @@ class Configure(config.base.Configure):
         if m:
           if not arg in lflags:
             if arg == '-lkernel32':
-              continue
-            elif arg == '-lm':
               continue
             else:
               lflags.append(arg)
@@ -906,8 +902,6 @@ class Configure(config.base.Configure):
           if not arg in lflags:
             if arg == '-lkernel32':
               continue
-            elif arg == '-lm':
-              pass
             elif arg == '-lgfortranbegin':
               fmainlibs.append(arg)
               continue
