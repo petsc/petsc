@@ -211,6 +211,18 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall,Ma
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatDestroy_SeqBAIJ_Submatrices(Mat C)
+{
+  PetscErrorCode ierr;
+  Mat_SeqBAIJ    *c = (Mat_SeqBAIJ*)C->data;
+  Mat_SubMat     *submatj = c->submatis1;
+
+  PetscFunctionBegin;
+  ierr = submatj->destroy(C);CHKERRQ(ierr);
+  ierr = MatDestroySubMatrices_Private(submatj);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatGetSubMatrices_SeqBAIJ(Mat A,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *B[])
 {
   PetscErrorCode ierr;
@@ -218,7 +230,7 @@ PetscErrorCode MatGetSubMatrices_SeqBAIJ(Mat A,PetscInt n,const IS irow[],const 
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
-    ierr = PetscMalloc1(n+1,B);CHKERRQ(ierr);
+    ierr = PetscCalloc1(n+1,B);CHKERRQ(ierr);
   }
 
   for (i=0; i<n; i++) {

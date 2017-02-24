@@ -762,7 +762,14 @@ static PetscErrorCode PCReset_GASM(PC pc)
   }
   if (osm->pmat) {
     if (osm->n > 0) {
-      ierr = MatDestroyMatrices(osm->n,&osm->pmat);CHKERRQ(ierr);
+      PetscMPIInt size;
+      ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
+      if (size > 1) {
+        /* osm->pmat is created by MatGetSubMatricesMPI(), cannot use MatDestroySubMatrices() */
+        ierr = MatDestroyMatrices(osm->n,&osm->pmat);CHKERRQ(ierr);
+      } else {
+        ierr = MatDestroySubMatrices(osm->n,&osm->pmat);CHKERRQ(ierr);
+      }
     }
   }
   if (osm->x) {

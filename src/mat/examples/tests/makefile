@@ -1642,6 +1642,12 @@ runex67f:
 	   if (${DIFF} output/ex67f_1.out ex67f_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex67f_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex67f_1.tmp
+runex67f_2:
+	-@${MPIEXEC} -n 3 ./ex67f -binary_read_double -options_left false  > ex67f_1.tmp 2>&1;   \
+	   if (${DIFF} output/ex67f_1.out ex67f_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex67f_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex67f_1.tmp
+
 runex68:
 	-@${MPIEXEC} -n 1 ./ex68  > ex68_1.tmp 2>&1; \
 	   ${DIFF} output/ex68_1.out ex68_1.tmp || printf "${PWD}\nPossible problem with ex68, diffs above\n=========================================\n"; \
@@ -2975,7 +2981,7 @@ TESTEXAMPLES_DATAFILESPATH     = ex40.PETSc runex40 runex40_2 ex40.rm ex41.PETSc
                                  ex199.PETSc runex199 ex199.rm printdot \
                                  ex206.PETSc runex206_aij_1 runex206_aij_2 runex206_baij_1_2 runex206_baij_2_2 runex206_sbaij_1_1 runex206_sbaij_1_2 runex206_sbaij_2_2 \
                                  runex206_aij_2_d runex206_baij_2_1_d runex206_baij_2_2_d runex206_sbaij_2_1_d ex206.rm
-TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex67f.PETSc runex67f ex67f.rm
+TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex67f.PETSc runex67f runex67f_2 ex67f.rm
 TESTEXAMPLES_DOUBLEINT32       =  ex72.PETSc runex72 ex72.rm
 TESTEXAMPLES_FORTRAN_DOUBLEINT32  = ex79f.PETSc runex79f ex79f.rm ex58f.PETSc runex58f ex58f.rm
 TESTEXAMPLES_F90	       = ex16f90.PETSc runex16f90 ex16f90.rm

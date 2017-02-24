@@ -81,6 +81,7 @@ typedef const char* MatType;
 #define MATLOCALREF        "localref"
 #define MATNEST            "nest"
 #define MATPREALLOCATOR    "preallocator"
+#define MATDUMMY           "dummy"
 
 /*J
     MatSolverPackage - String with the name of a PETSc matrix solver type.
@@ -496,6 +497,7 @@ PETSC_EXTERN PetscErrorCode MatGetOwnershipIS(Mat,IS*,IS*);
 PETSC_EXTERN PetscErrorCode MatGetSubMatrices(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
 PETSC_EXTERN PetscErrorCode MatGetSubMatricesMPI(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
 PETSC_EXTERN PetscErrorCode MatDestroyMatrices(PetscInt,Mat *[]);
+PETSC_EXTERN PetscErrorCode MatDestroySubMatrices(PetscInt,Mat *[]);
 PETSC_EXTERN PetscErrorCode MatGetSubMatrix(Mat,IS,IS,MatReuse,Mat *);
 PETSC_EXTERN PetscErrorCode MatGetLocalSubMatrix(Mat,IS,IS,Mat*);
 PETSC_EXTERN PetscErrorCode MatRestoreLocalSubMatrix(Mat,IS,IS,Mat*);

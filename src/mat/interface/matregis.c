@@ -52,6 +52,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat);
 
 PETSC_EXTERN PetscErrorCode MatCreate_Preallocator(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_Dummy(Mat);
 
 #if defined PETSC_HAVE_HYPRE
 PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat);
@@ -148,6 +149,7 @@ PetscErrorCode  MatRegisterAll(void)
 #endif
 
   ierr = MatRegister(MATPREALLOCATOR,   MatCreate_Preallocator);CHKERRQ(ierr);
+  ierr = MatRegister(MATDUMMY,          MatCreate_Dummy);CHKERRQ(ierr);
 
 #if defined PETSC_HAVE_HYPRE
   ierr = MatRegister(MATHYPRE,          MatCreate_HYPRE);CHKERRQ(ierr);

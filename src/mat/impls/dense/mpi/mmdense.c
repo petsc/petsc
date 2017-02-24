@@ -48,7 +48,7 @@ PetscErrorCode MatGetSubMatrices_MPIDense(Mat C,PetscInt ismax,const IS isrow[],
   PetscFunctionBegin;
   /* Allocate memory to hold all the submatrices */
   if (scall != MAT_REUSE_MATRIX) {
-    ierr = PetscMalloc1(ismax+1,submat);CHKERRQ(ierr);
+    ierr = PetscCalloc1(ismax+1,submat);CHKERRQ(ierr);
   }
   /* Determine the number of stages through which submatrices are done */
   nmax = 20*1000000 / (C->cmap->N * sizeof(PetscInt));

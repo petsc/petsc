@@ -6713,7 +6713,42 @@ PetscErrorCode MatGetSubMatricesMPI(Mat mat,PetscInt n,const IS irow[],const IS 
 }
 
 /*@C
-   MatDestroyMatrices - Destroys a set of matrices obtained with MatGetSubMatrices().
+   MatDestroyMatrices - Destroys an array of matrices.
+
+   Collective on Mat
+
+   Input Parameters:
++  n - the number of local matrices
+-  mat - the matrices (note that this is a pointer to the array of matrices)
+
+   Level: advanced
+
+    Notes: Frees not only the matrices, but also the array that contains the matrices
+           In Fortran will not free the array.
+
+.seealso: MatGetSubMatrices() MatDestroySubMatrices()
+@*/
+PetscErrorCode MatDestroyMatrices(PetscInt n,Mat *mat[])
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  if (!*mat) PetscFunctionReturn(0);
+  if (n < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to destroy negative number of matrices %D",n);
+  PetscValidPointer(mat,2);
+
+  for (i=0; i<n; i++) {
+    ierr = MatDestroy(&(*mat)[i]);CHKERRQ(ierr);
+  }
+
+  /* memory is allocated even if n = 0 */
+  ierr = PetscFree(*mat);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatDestroySubMatrices - Destroys a set of matrices obtained with MatGetSubMatrices().
 
    Collective on Mat
 
@@ -6729,21 +6764,32 @@ PetscErrorCode MatGetSubMatricesMPI(Mat mat,PetscInt n,const IS irow[],const IS 
 
 .seealso: MatGetSubMatrices()
 @*/
-PetscErrorCode MatDestroyMatrices(PetscInt n,Mat *mat[])
+PetscErrorCode MatDestroySubMatrices(PetscInt n,Mat *mat[])
 {
   PetscErrorCode ierr;
-  PetscInt       i;
 
   PetscFunctionBegin;
   if (!*mat) PetscFunctionReturn(0);
   if (n < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to destroy negative number of matrices %D",n);
   PetscValidPointer(mat,2);
-  for (i=0; i<n; i++) {
-    ierr = MatDestroy(&(*mat)[i]);CHKERRQ(ierr);
+
+  /* Destroy dummy submatrices (*mat)[n]...(*mat)[n+nstages-1] used for reuse struct Mat_SubMat */
+  if ((*mat)[n]) {
+    PetscBool      isdummy;
+    ierr = PetscObjectTypeCompare((PetscObject)(*mat)[n],MATDUMMY,&isdummy);CHKERRQ(ierr);
+    if (isdummy) {
+      Mat_SubMat* smat = (Mat_SubMat*)((*mat)[n]->data); /* singleis and nstages are saved in (*mat)[n]->data */
+
+      if (smat && !smat->singleis) {
+        PetscInt i,nstages=smat->nstages;
+        for (i=0; i<nstages; i++) {
+          ierr = MatDestroy(&(*mat)[n+i]);CHKERRQ(ierr);
+        }
+      }
+    }
   }
-  /* memory is allocated even if n = 0 */
-  ierr = PetscFree(*mat);CHKERRQ(ierr);
-  *mat = NULL;
+
+  ierr = MatDestroyMatrices(n,mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

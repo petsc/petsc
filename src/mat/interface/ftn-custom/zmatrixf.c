@@ -33,6 +33,7 @@
 #define matgetrowmax_                    MATGETROWMAX
 #define matgetrowmaxabs_                 MATGETROWMAXABS
 #define matdestroymatrices_              MATDESTROYMATRICES
+#define matdestroysubmatrices_           MATDESTROYSUBMATRICES
 #define matgetfactor_                    MATGETFACTOR
 #define matfactorgetsolverpackage_       MATFACTORGETSOLVERPACKAGE
 #define matgetrowij_                     MATGETROWIJ
@@ -112,6 +113,7 @@
 #define matgetrowmax_                    matgetrowmax
 #define matgetrowmaxabs_                 matgetrowmaxabs
 #define matdestroymatrices_              matdestroymatrices
+#define matdestroysubmatrices_           matdestroysubmatrices
 #define matgetfactor_                    matgetfactor
 #define matfactorgetsolverpackage_       matfactorgetsolverpackage
 #define matcreatevecs_                   matcreatevecs
@@ -531,7 +533,7 @@ PETSC_EXTERN void PETSC_STDCALL matgetsubmatrices_(Mat *mat,PetscInt *n,IS *isro
 
   if (*scall == MAT_INITIAL_MATRIX) {
     *ierr = MatGetSubMatrices(*mat,*n,isrow,iscol,*scall,&lsmat);
-    for (i=0; i<*n; i++) {
+    for (i=0; i<=*n; i++) { /* lsmat[*n] might be a dummy matrix for saving data struc */
       smat[i] = lsmat[i];
     }
     *ierr = PetscFree(lsmat);
@@ -542,16 +544,33 @@ PETSC_EXTERN void PETSC_STDCALL matgetsubmatrices_(Mat *mat,PetscInt *n,IS *isro
 
 /*
     MatDestroyMatrices() is slightly different from C since the
-    Fortran provides the array to hold the submatrix objects,while in C that
-    array is allocated by the MatGetSubmatrices()
+    Fortran does not free the array of matrix objects, while in C that
+    the array is freed
 */
-PETSC_EXTERN void PETSC_STDCALL matdestroymatrices_(Mat *mat,PetscInt *n,Mat *smat,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL matdestroymatrices_(PetscInt *n,Mat *smat,PetscErrorCode *ierr)
 {
   PetscInt i;
 
   for (i=0; i<*n; i++) {
     *ierr = MatDestroy(&smat[i]);if (*ierr) return;
   }
+}
+
+/*
+    MatDestroySubMatrices() is slightly different from C since the
+    Fortran provides the array to hold the submatrix objects, while in C that
+    array is allocated by the MatGetSubmatrices()
+*/
+PETSC_EXTERN void PETSC_STDCALL matdestroysubmatrices_(PetscInt *n,Mat *smat,PetscErrorCode *ierr)
+{
+  Mat      *lsmat;
+  PetscInt i;
+
+  *ierr = PetscMalloc1(*n+1,&lsmat);
+  for (i=0; i<=*n; i++) {
+      lsmat[i] = smat[i];
+  }
+  *ierr = MatDestroySubMatrices(*n,&lsmat);
 }
 
 PETSC_EXTERN void PETSC_STDCALL matzerorowscolumns_(Mat *mat,PetscInt *numRows,PetscInt *rows,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
