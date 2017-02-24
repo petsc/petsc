@@ -7833,16 +7833,6 @@ The file \href{https://www.mcs.anl.gov/petsc/documentation/installation.html}{\t
 provides detailed instructions for installing PETSc. 
 You can use \trl{--with-clanguage=c} (the default) to use the C99 complex numbers or \trl{--with-clanguage=c++} to use the C++ complex type. 
 
-We recommend using optimized Fortran kernels for some key numerical
-routines with complex numbers (such as matrix-vector products, vector
-norms, etc.) instead of the default C/C++ routines.  This can be done with the \trl{./configure}  option \trl{--with-fortran-kernels=generic}.
-This implementation exploits the
-maturity of Fortran compilers while retaining the identical user
-interface.  For example, on rs6000 machines, the base single-node
-performance when using the Fortran kernels is 4-5 times faster than
-the default C++ code.
-
-
 Recall that each variant of the PETSc libraries is stored in a
 different directory, given by
 \trl{${PETSC_DIR}/lib/${PETSC_ARCH}}
