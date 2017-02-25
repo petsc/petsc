@@ -791,7 +791,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
     if (mglevels[i]->eventsmoothsetup) {ierr = PetscLogEventEnd(mglevels[i]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
     if (!mglevels[i]->residual) {
       Mat mat;
-      ierr = KSPGetOperators(mglevels[i]->smoothd,NULL,&mat);CHKERRQ(ierr);
+      ierr = KSPGetOperators(mglevels[i]->smoothd,&mat,NULL);CHKERRQ(ierr);
       ierr = PCMGSetResidual(pc,i,PCMGResidualDefault,mat);CHKERRQ(ierr);
     }
   }
