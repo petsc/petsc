@@ -16,7 +16,25 @@ To produce nice output, use
 
   -dm_refine 3 -show_error -dm_view hdf5:sol1.h5 -error_vec_view hdf5:sol1.h5::append -sol_vec_view hdf5:sol1.h5::append -exact_vec_view hdf5:sol1.h5::append
 
-Citcom: 1250 x 850 on 900 steps (3.5h per 100 timeteps)
+Citcom:
+ 1250 x 850 on 900 steps (3.5h per 100 timeteps)
+
+ *_vects.ascii
+ Nx Ny Nz
+ <Nx values in co-latitude = 90 - degrees latitude>
+ <Ny values in degrees longitude>
+ <Nz values in non-dimensionalized by the radius of the Earth R = 6.371137 10^6 m, and these are ordered bottom to top>
+
+ *_therm.bin
+  Temperature is non-dimensionalized [0 (top), 1 (bottom)]
+  The ordering is Y, X, Z where Z is the fastest dimension
+  X is lat, counts N to S
+  Y is long, counts W to E
+  Z is depth, count bottom to top
+
+ Parallel reads:
+  - Assume vects can be read by any process
+  - Can we do T with a GlobalToNatural reordering?
 */
 
 #include <petscdmplex.h>
@@ -45,6 +63,7 @@ typedef struct {
   PetscInt      dim;               /* The topological mesh dimension */
   PetscBool     simplex;           /* Use simplices or tensor product cells */
   PetscBool     testPartition;     /* Use a fixed partitioning for testing */
+  char          mantleBasename[PETSC_MAX_PATH_LEN];
   /* Problem definition */
   SolutionType  solType;           /* The type of exact solution */
   PetscBag      bag;               /* Holds problem parameters */
@@ -3135,6 +3154,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->showSolution    = PETSC_FALSE;
   options->showError       = PETSC_FALSE;
   options->solType         = SOLKX;
+  options->mantleBasename[0] = '\0';
 
   ierr = PetscOptionsBegin(comm, "", "Variable-Viscosity Stokes Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex69.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
@@ -3146,6 +3166,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   sol  = options->solType;
   ierr = PetscOptionsEList("-sol_type", "Type of exact solution", "ex69.c", solTypes, NUM_SOL_TYPES, solTypes[options->solType], &sol, NULL);CHKERRQ(ierr);
   options->solType = (SolutionType) sol;
+  ierr = PetscOptionsString("-mantle_basename", "The basename for mantle files", "ex69.c", options->mantleBasename, options->mantleBasename, sizeof(options->mantleBasename), NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -3187,12 +3208,69 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   DM             dmDist   = NULL;
   PetscInt       dim      = user->dim;
-  const PetscInt cells[3] = {3, 3, 3};
+  PetscInt       cells[3] = {3, 3, 3};
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  if (user->simplex) {ierr = DMPlexCreateBoxMesh(comm, dim, 2, PETSC_TRUE, dm);CHKERRQ(ierr);}
-  else               {ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);}
+  if (user->mantleBasename) {
+    PetscViewer viewer;
+    PetscInt    count;
+    char        filename[PETSC_MAX_PATH_LEN];
+    char        line[PETSC_MAX_PATH_LEN];
+    double     *axes[3];
+    int         verts[3], perm[3] = {0, 1, 2}, invperm[3] = {0, 1, 2};
+    int         snum, d;
+
+    ierr = PetscStrcpy(filename, user->mantleBasename);CHKERRQ(ierr);
+    ierr = PetscStrcat(filename, "_vects.ascii");CHKERRQ(ierr);
+    ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
+    ierr = PetscViewerRead(viewer, line, 3, NULL, PETSC_STRING);CHKERRQ(ierr);
+    if (dim == 2) {perm[0] = 2; perm[1] = 0; perm[2] = 1; invperm[0] = 1; invperm[1] = 2; invperm[2] = 0;}
+    snum = sscanf(line, "%d %d %d", &verts[perm[0]], &verts[perm[1]], &verts[perm[2]]);
+    if (snum != 3) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse Citcom vertex file header: %s", line);
+    for (d = 0; d < 3; ++d) {
+      ierr = PetscMalloc1(verts[perm[d]], &axes[perm[d]]);CHKERRQ(ierr);
+      ierr = PetscViewerRead(viewer, axes[perm[d]], verts[perm[d]], &count, PETSC_DOUBLE);CHKERRQ(ierr);
+      if (count != verts[perm[d]]) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse Citcom vertex file dimension %d: %D %= %d", d, count, verts[perm[d]]);
+    }
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    for (d = 0; d < 3; ++d) cells[d] = verts[d]-1;
+    ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);
+    /* Remap coordinates to unit ball */
+    {
+      Vec           coordinates;
+      PetscSection  coordSection;
+      PetscScalar  *coords;
+      PetscInt      vStart, vEnd, v;
+
+      ierr = DMPlexGetDepthStratum(*dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+      ierr = DMGetCoordinateSection(*dm, &coordSection);CHKERRQ(ierr);
+      ierr = DMGetCoordinatesLocal(*dm, &coordinates);CHKERRQ(ierr);
+      ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
+      for (v = vStart; v < vEnd; ++v) {
+        PetscInt  vert[3] = {0, 0, 0};
+        PetscReal theta, phi, r;
+        PetscInt  off;
+
+        ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
+        for (d = 0; d < dim; ++d) vert[d] = round(coords[off+d]*cells[d]);
+        theta = axes[perm[0]][vert[perm[0]]]*2.0*PETSC_PI/360;
+        phi   = axes[perm[1]][vert[perm[1]]]*2.0*PETSC_PI/360;
+        r     = axes[perm[2]][vert[perm[2]]];
+        coords[off+0] = r*PetscSinReal(theta)*PetscSinReal(phi);
+        coords[off+1] = r*PetscSinReal(theta)*PetscCosReal(phi);
+        if (dim > 2) {coords[off+2] = r*PetscCosReal(theta);}
+      }
+      ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
+    }
+    for (d = 0; d < 3; ++d) {ierr = PetscFree(axes[d]);CHKERRQ(ierr);}
+  } else {
+    if (user->simplex) {ierr = DMPlexCreateBoxMesh(comm, dim, 2, PETSC_TRUE, dm);CHKERRQ(ierr);}
+    else               {ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);}
+  }
   /* Make split labels so that we can have corners in multiple labels */
   {
     const char *names[4] = {"markerBottom", "markerRight", "markerTop", "markerLeft"};
@@ -3626,6 +3704,6 @@ int main(int argc, char **argv)
   test:
     suffix: mantle_p2p1
     requires: !single triangle broken
-    args: -sol_type composite -dm_plex_separate_marker -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_rtol 1e-12 -ksp_atol 1e-12 -pc_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition full -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type lu -snes_monitor_short -snes_converged_reason -snes_view -ksp_monitor_short -ksp_converged_reason -dm_view
+    args: -sol_type composite -mantle_basename $HOME/Desktop/TwoDim_forMatt/TwoDimSlab45cg1deg -dm_plex_separate_marker -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_rtol 1e-12 -ksp_atol 1e-12 -pc_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition full -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type lu -snes_monitor_short -snes_converged_reason -snes_view -ksp_monitor_short -ksp_converged_reason -dm_view
 
 TEST*/
