@@ -1581,7 +1581,7 @@ PetscErrorCode  MatInvertDiagonal_SeqAIJ(Mat A,PetscScalar omega,PetscScalar fsh
           A->factorerrortype             = MAT_FACTOR_NUMERIC_ZEROPIVOT;
           A->factorerror_zeropivot_value = 0.0;
           A->factorerror_zeropivot_row   = i;
-        } SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Zero diagonal on row %D",i);
+        } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Zero diagonal on row %D",i);
       }
       idiag[i] = 1.0/v[diag[i]];
     }

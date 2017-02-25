@@ -102,6 +102,8 @@ PetscErrorCode  MatSeqELLSetPreallocation_SeqELL(Mat B,PetscInt maxallocrow,cons
   b = (Mat_SeqELL*)B->data;
 
   if (!skipallocation) {
+	if (B->rmap->n & 0x07) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"SEQELL matrix requires the number of rows be the multiple of 8: value %D",B->rmap->n);
+
     if (!b->rlen) {
       /* sliidx gives the starting index of each slice, the last element is the total space allocated */
       ierr = PetscMalloc1(B->rmap->n,&b->rlen);CHKERRQ(ierr);
@@ -582,7 +584,7 @@ PetscErrorCode  MatInvertDiagonal_SeqELL(Mat A,PetscScalar omega,PetscScalar fsh
           A->factorerrortype             = MAT_FACTOR_NUMERIC_ZEROPIVOT;
           A->factorerror_zeropivot_value = 0.0;
           A->factorerror_zeropivot_row   = i;
-        } SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Zero diagonal on row %D",i);
+        } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Zero diagonal on row %D",i);
       }
       idiag[i] = 1.0/val[diag[i]];
     }

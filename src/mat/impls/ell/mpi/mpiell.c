@@ -1219,6 +1219,8 @@ PetscErrorCode  MatMPIELLSetPreallocation_MPIELL(Mat B,PetscInt d_rlenmax,const 
   b = (Mat_MPIELL*)B->data;
 
   if (!B->preallocated) {
+	if (B->rmap->n & 0x07) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"MPIELL matrix requires the number of rows be the multiple of 8: value %D",B->rmap->n);
+
     /* Explicitly create 2 MATSEQELL matrices. */
     ierr = MatCreate(PETSC_COMM_SELF,&b->A);CHKERRQ(ierr);
     ierr = MatSetSizes(b->A,B->rmap->n,B->cmap->n,B->rmap->n,B->cmap->n);CHKERRQ(ierr);
