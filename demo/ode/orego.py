@@ -29,6 +29,7 @@ OptDB = PETSc.Options()
 ode = Orego()
 
 J = PETSc.Mat().createDense([ode.n, ode.n], comm=ode.comm)
+J.setUp()
 x = PETSc.Vec().createSeq(ode.n, comm=ode.comm)
 f = x.duplicate()
 
@@ -48,6 +49,7 @@ ts.setTime(0.0)
 ts.setTimeStep(0.1)
 ts.setMaxTime(360)
 ts.setMaxSteps(2000)
+ts.setExactFinalTime(PETSc.TS.ExactFinalTime.INTERPOLATE)
 ts.setMaxSNESFailures(-1)       # allow an unlimited number of failures (step will be rejected and retried)
 
 # Set a different tolerance on each variable. Can use a scalar or a vector for either or both atol and rtol.
@@ -83,14 +85,14 @@ if OptDB.getBool('plot_history', True):
 
     rc('text', usetex=True)
     pylab.suptitle('Oregonator: TS \\texttt{%s}' % ts.getType())
-    pylab.subplot(2,2,0)
+    pylab.subplot(2,2,1)
     pylab.subplots_adjust(wspace=0.3)
     pylab.semilogy(ii[:-1], np.diff(tt), )
     pylab.xlabel('step number')
     pylab.ylabel('timestep')
 
     for i in range(0,3):
-        pylab.subplot(2,2,i+1)
+        pylab.subplot(2,2,i+2)
         pylab.semilogy(tt, xx[:,i], "rgb"[i])
         pylab.xlabel('time')
         pylab.ylabel('$x_%d$' % i)
