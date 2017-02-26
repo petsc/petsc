@@ -32,6 +32,7 @@ OptDB = PETSc.Options()
 ode = Rober()
 
 J = PETSc.Mat().createDense([ode.n, ode.n], comm=ode.comm)
+J.setUp()
 x = PETSc.Vec().createSeq(ode.n, comm=ode.comm)
 f = x.duplicate()
 
