@@ -8,3 +8,4 @@ Labels:
   Face Sets: 4 strata of sizes (14, 14, 14, 14)
   marker: 1 strata of sizes (64)
   depth: 3 strata of sizes (81, 144, 64)
+Mesh with 64 cells, shape condition numbers: min = 2., max = 2., mean = 2., stddev = 0.

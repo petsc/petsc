@@ -115,7 +115,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     case CYLINDER:
       if (cellSimplex) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Cannot mesh a cylinder with simplices");
       if (dim != 3)    SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Dimension must be 3 for a cylinder mesh, not %D", dim);
-      ierr = DMPlexCreateHexCylinderMesh(comm, 3, user->periodicity[2], dm);CHKERRQ(ierr);
+      ierr = DMPlexCreateHexCylinderMesh(comm, 1, user->periodicity[2], dm);CHKERRQ(ierr);
+      ierr = DMLocalizeCoordinates(*dm);CHKERRQ(ierr);
       break;
     default: SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Unknown domain shape %D", user->domainShape);
     }
@@ -235,6 +236,7 @@ static PetscErrorCode TestCellShape(DM dm)
     PetscReal frobJ = 0., frobInvJ = 0., cond2, cond, detJ;
 
     ierr = DMPlexComputeCellGeometryAffineFEM(dm,c,NULL,J,invJ,&detJ);CHKERRQ(ierr);
+    if (detJ < 0.0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %D is inverted", c);
 
     for (i = 0; i < dim * dim; i++) {
       frobJ += J[i] * J[i];
@@ -450,22 +452,22 @@ int main(int argc, char **argv)
   # Test domain shapes
   test:
     suffix: cylinder
-    args: -dim 3 -cell_simplex 0 -domain_shape cylinder -dm_view
+    args: -dim 3 -cell_simplex 0 -domain_shape cylinder -test_shape -dm_view
 
   test:
     suffix: cylinder_per
-    args: -dim 3 -cell_simplex 0 -domain_shape cylinder -z_periodicity periodic -dm_view
+    args: -dim 3 -cell_simplex 0 -domain_shape cylinder -z_periodicity periodic -test_shape -dm_view
 
   test:
     suffix: box_2d
-    args: -dim 2 -cell_simplex 0 -domain_shape box -dm_refine 2 -dm_view
+    args: -dim 2 -cell_simplex 0 -domain_shape box -dm_refine 2 -test_shape -dm_view
 
   test:
     suffix: box_2d_per
-    args: -dim 2 -cell_simplex 0 -domain_shape box -dm_refine 2 -dm_view
+    args: -dim 2 -cell_simplex 0 -domain_shape box -dm_refine 2 -test_shape -dm_view
 
   test:
     suffix: box_3d
-    args: -dim 3 -cell_simplex 0 -domain_shape box -dm_refine 2 -dm_view
+    args: -dim 3 -cell_simplex 0 -domain_shape box -dm_refine 2 -test_shape -dm_view
 
 TEST*/
