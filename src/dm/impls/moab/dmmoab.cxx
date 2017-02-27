@@ -661,13 +661,12 @@ PetscErrorCode DMMoabGetHierarchyLevel(DM dm, PetscInt *nlevel)
 PetscErrorCode DMMoabGetMaterialBlock(DM dm, const moab::EntityHandle ehandle, PetscInt *mat)
 {
   DM_Moab         *dmmoab;
-  moab::ErrorCode merr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (*mat) {
     dmmoab = (DM_Moab*)(dm)->data;
-    merr = dmmoab->mbiface->tag_get_data(dmmoab->material_tag, &ehandle, 1, mat); MBERRNM(merr);
+    *mat = dmmoab->materials[dmmoab->elocal->index(ehandle)];
   }
   PetscFunctionReturn(0);
 }
@@ -1250,8 +1249,6 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
     }
 #ifdef MOAB_HAVE_MPI
     /* filter all the non-owned and shared entities out of the list */
-    // merr = dmmoab->pcomm->filter_pstatus(*dmmoab->bndyfaces, PSTATUS_NOT_OWNED, PSTATUS_NOT); MBERRNM(merr);
-    // merr = dmmoab->pcomm->filter_pstatus(*dmmoab->bndyfaces, PSTATUS_INTERFACE, PSTATUS_NOT); MBERRNM(merr);
     merr = dmmoab->pcomm->filter_pstatus(*dmmoab->bndyvtx,   PSTATUS_NOT_OWNED, PSTATUS_NOT); MBERRNM(merr);
     merr = dmmoab->pcomm->filter_pstatus(*dmmoab->bndyfaces, PSTATUS_NOT_OWNED, PSTATUS_NOT); MBERRNM(merr);
     merr = dmmoab->pcomm->filter_pstatus(*dmmoab->bndyelems, PSTATUS_NOT_OWNED, PSTATUS_NOT); MBERRNM(merr);
@@ -1259,6 +1256,31 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
 
   }
   PetscInfo3(NULL, "Found %D boundary vertices, %D boundary faces and %D boundary elements.\n", dmmoab->bndyvtx->size(), dmmoab->bndyfaces->size(), dmmoab->bndyelems->size());
+
+  /* Get the material sets and populate the data for all locally owned elements */
+  {
+    ierr = PetscCalloc1(dmmoab->elocal->size(), &dmmoab->materials);CHKERRQ(ierr);
+    /* Get the count of entities of particular type from dmmoab->elocal
+       -- Then, for each non-zero type, loop through and query the fileset to get the material tag data */
+    moab::Range msets;
+    merr = dmmoab->mbiface->get_entities_by_type_and_tag(dmmoab->fileset, moab::MBENTITYSET, &dmmoab->material_tag, NULL, 1, msets, moab::Interface::UNION);MB_CHK_ERR(merr);
+    if (msets.size() == 0) {
+      PetscInfo(NULL, "No material sets found in the fileset.");
+    }
+
+    for (unsigned i=0; i < msets.size(); ++i) {
+      moab::Range msetelems;
+      merr = dmmoab->mbiface->get_entities_by_dimension(msets[i], dmmoab->dim, msetelems, true);MB_CHK_ERR(merr);
+
+      int partID;
+      moab::EntityHandle mset=msets[i];
+      merr = dmmoab->mbiface->tag_get_data(dmmoab->material_tag, &mset, 1, &partID);MB_CHK_ERR(merr);
+
+      for (unsigned j=0; j < msetelems.size(); ++j)
+        dmmoab->materials[dmmoab->elocal->index(msetelems[j])]=partID;
+    }
+  }
+
   PetscFunctionReturn(0);
 }
 

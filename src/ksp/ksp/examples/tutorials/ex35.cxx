@@ -90,7 +90,7 @@ static char help[] = "\
 #include <petscksp.h>
 #include <petscdmmoab.h>
 
-// #define LOCAL_ASSEMBLY
+#define LOCAL_ASSEMBLY
 
 typedef enum {DIRICHLET, NEUMANN} BCType;
 
@@ -465,8 +465,6 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
     ierr = DMMoabGetFieldDofs(dm, nconn, connect, 0, dof_indices);CHKERRQ(ierr);
 #endif
 
-    PetscInfo5(NULL, "[Element %d]: %d %d %d %d \n", ehandle, dof_indices[0], dof_indices[1], dof_indices[2], dof_indices[3]);
-
     /* 1) compute the basis functions and the derivatives wrt x and y directions
        2) compute the quadrature points transformed to the physical space */
     ierr = DMMoabFEMComputeBasis(2, nconn, vpos, quadratureObj, phypts, jxw, phi, dphi);CHKERRQ(ierr);
@@ -569,10 +567,11 @@ PetscErrorCode ComputeDiscreteL2Error(KSP ksp, Vec err, UserContext *user)
   for (moab::Range::iterator iter = ownedvtx->begin(); iter != ownedvtx->end(); iter++) {
     const moab::EntityHandle vhandle = *iter;
 
+    /* get the local DoF numbers to appropriately set the element contribution in the operator */
 #ifdef LOCAL_ASSEMBLY
-    ierr = DMMoabGetDofsBlockedLocal(dm, 1, &vhandle, &dof_index);CHKERRQ(ierr);
+    ierr = DMMoabGetFieldDofsLocal(dm, 1, &vhandle, 0, &dof_index);CHKERRQ(ierr);
 #else
-    ierr = DMMoabGetDofsBlocked(dm, 1, &vhandle, &dof_index);CHKERRQ(ierr);
+    ierr = DMMoabGetFieldDofs(dm, 1, &vhandle, 0, &dof_index);CHKERRQ(ierr);
 #endif
 
     /* compute the mid-point of the element and use a 1-point lumped quadrature */
