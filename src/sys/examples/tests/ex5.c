@@ -32,6 +32,7 @@ int main(int argc,char **argv)
 /*TEST
 
    test:
-      args: -unused_petsc_option_1 -unused_petsc_option_2 -get_an_integer 10
+      args: -unused_petsc_option_1 -unused_petsc_option_2 -get_an_integer 10 -options_left no
+      filter: grep -v malloc_dump |grep -v options_left
 
 TEST*/
