@@ -50,8 +50,9 @@ static PetscErrorCode KSPChebyshevEstEigSet_Chebyshev(KSP ksp,PetscReal a,PetscR
       ierr = KSPCreate(PetscObjectComm((PetscObject)ksp),&cheb->kspest);CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject)cheb->kspest,(PetscObject)ksp,1);CHKERRQ(ierr);
       ierr = KSPSetPC(cheb->kspest,ksp->pc);CHKERRQ(ierr);
-      ierr = KSPSetOptionsPrefix(cheb->kspest,((PetscObject)ksp)->prefix);CHKERRQ(ierr);
-      ierr = KSPAppendOptionsPrefix(cheb->kspest,"esteig_");CHKERRQ(ierr);
+      /* use PetscObjectSet/AppendOptionsPrefix() instead of KSPSet/AppendOptionsPrefix() so that the PC prefix is not changed */
+      ierr = PetscObjectSetOptionsPrefix((PetscObject)cheb->kspest,((PetscObject)ksp)->prefix);CHKERRQ(ierr);
+      ierr = PetscObjectAppendOptionsPrefix((PetscObject)cheb->kspest,"esteig_");CHKERRQ(ierr);
       ierr = KSPSetSkipPCSetFromOptions(cheb->kspest,PETSC_TRUE);CHKERRQ(ierr);
 
       ierr = KSPSetComputeEigenvalues(cheb->kspest,PETSC_TRUE);CHKERRQ(ierr);
