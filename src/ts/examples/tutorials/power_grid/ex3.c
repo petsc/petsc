@@ -219,7 +219,7 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetDuration(ts,100000,35.0);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,0.0,.01);CHKERRQ(ierr);
+  ierr = TSSetInitialTimeStep(ts,0.0,.1);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   direction[0] = direction[1] = 1;
