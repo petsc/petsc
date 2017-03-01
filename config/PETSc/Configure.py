@@ -182,7 +182,7 @@ class Configure(config.base.Configure):
 
     fd.write('Cflags: '+self.allincludes+'\n')
 
-    plibs = self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),' -lpetsc'])
+    plibs = self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'), self.petsclib])
     if self.framework.argDB['prefix']:
       fd.write('Libs: '+plibs.replace(os.path.join(self.petscdir.dir,self.arch.arch),self.installdir.dir)+'\n')
     else:
@@ -370,10 +370,10 @@ prepend-path PATH %s
         self.addMakeMacro(i.PACKAGE.replace('-','_')+'_INCLUDE',self.headers.toStringNoDupes(i.include))
     self.packagelibs = libs
     if self.framework.argDB['with-single-library']:
-      self.alllibs = self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),' -lpetsc']+libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs)+' '+self.compilers.LIBS
-      self.addMakeMacro('PETSC_WITH_EXTERNAL_LIB',self.alllibs)
+      self.petsclib = '-lpetsc'
     else:
-      self.alllibs = self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),'-lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys']+libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs)+' '+self.compilers.LIBS
+      self.petsclib = '-lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys'
+    self.alllibs = self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'), self.petsclib]+libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs)+' '+self.compilers.LIBS
     self.PETSC_EXTERNAL_LIB_BASIC = self.libraries.toStringNoDupes(libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs)+' '+self.compilers.LIBS
     if self.framework.argDB['prefix'] and self.setCompilers.CSharedLinkerFlag not in ['-L']:
       lib_basic = self.PETSC_EXTERNAL_LIB_BASIC.replace(self.setCompilers.CSharedLinkerFlag+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),self.setCompilers.CSharedLinkerFlag+os.path.join(self.installdir.dir,'lib'))
@@ -400,6 +400,7 @@ prepend-path PATH %s
       self.addMakeMacro('PETSC_KSP_LIB_BASIC','-lpetsc')
       self.addMakeMacro('PETSC_TS_LIB_BASIC','-lpetsc')
       self.addMakeMacro('PETSC_TAO_LIB_BASIC','-lpetsc')
+      self.addMakeMacro('PETSC_WITH_EXTERNAL_LIB',self.alllibs)
       self.addDefine('USE_SINGLE_LIBRARY', '1')
       if self.sharedlibraries.useShared:
         self.addMakeMacro('PETSC_SYS_LIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
@@ -474,11 +475,7 @@ prepend-path PATH %s
       self.setCompilers.pushLanguage('FC')
       fd.write('\"Using Fortran linker: %s\\n\"\n' % (escape(self.setCompilers.getLinker())))
       self.setCompilers.popLanguage()
-    if self.framework.argDB['with-single-library']:
-      petsclib = '-lpetsc'
-    else:
-      petsclib = '-lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys'
-    fd.write('\"Using libraries: %s%s -L%s %s %s\\n\"\n' % (escape(self.setCompilers.CSharedLinkerFlag), escape(os.path.join(self.petscdir.dir, self.arch.arch, 'lib')), escape(os.path.join(self.petscdir.dir, self.arch.arch, 'lib')), escape(petsclib), escape(self.PETSC_EXTERNAL_LIB_BASIC)))
+    fd.write('\"Using libraries: %s%s -L%s %s %s\\n\"\n' % (escape(self.setCompilers.CSharedLinkerFlag), escape(os.path.join(self.petscdir.dir, self.arch.arch, 'lib')), escape(os.path.join(self.petscdir.dir, self.arch.arch, 'lib')), escape(self.petsclib), escape(self.PETSC_EXTERNAL_LIB_BASIC)))
     fd.write('\"-----------------------------------------\\n\";\n')
     fd.close()
     return
