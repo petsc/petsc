@@ -5027,7 +5027,7 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
   ierr = PetscFEGetDimension(fem, &N_b);CHKERRQ(ierr);
   ierr = PetscFEGetNumComponents(fem, &N_c);CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fem, &q);CHKERRQ(ierr);
-  ierr = PetscQuadratureGetData(q, NULL, &qNc, &Nq, &points, &weights);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(q, NULL, &qNc, &N_q, &points, &weights);CHKERRQ(ierr);
   if (qNc != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %D components\n", qNc);
   N_t  = N_b * N_c * N_q * N_bl;
   /* Enable device extension for double precision */
@@ -5517,6 +5517,7 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscDS prob, PetscI
   void             *oclCoeff, *oclCoeffAux, *oclInvJ, *oclDetJ;
   size_t            local_work_size[3], global_work_size[3];
   size_t            realSize, x, y, z;
+  const PetscReal   *points, *weights;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
