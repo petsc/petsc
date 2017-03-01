@@ -913,8 +913,6 @@ class Configure(config.base.Configure):
             self.logPrint('Found library: '+arg, 4, 'compilers')
             if arg in self.clibs:
               self.logPrint('Library already in C list so skipping in Fortran')
-            elif arg in self.cxxlibs:
-              self.logPrint('Library already in Cxx list so skipping in Fortran')
             else:
               flibs.append(arg)
           else:
