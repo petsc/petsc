@@ -48,6 +48,7 @@ static PetscErrorCode DMPlexLabelComplete_Internal(DM dm, DMLabel label, PetscBo
   IS              valueIS;
   const PetscInt *values;
   PetscInt        numValues, v, cStart, cEnd;
+  PetscMPIInt     size;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -82,6 +83,47 @@ static PetscErrorCode DMPlexLabelComplete_Internal(DM dm, DMLabel label, PetscBo
   }
   ierr = ISRestoreIndices(valueIS, &values);CHKERRQ(ierr);
   ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size);CHKERRQ(ierr);
+  if (size != 1) {
+    PetscSF         sfPoint;
+    DMLabel         lblRoots, lblLeaves;
+    IS              valueIS, pointIS;
+    const PetscInt *values;
+    PetscInt        numValues, v;
+    PetscErrorCode  ierr;
+
+    ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
+    /* Pull point contributions from remote leaves into local roots */
+    ierr = DMLabelGather(label, sfPoint, &lblLeaves);CHKERRQ(ierr);
+    ierr = DMLabelGetValueIS(lblLeaves, &valueIS);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(valueIS, &numValues);CHKERRQ(ierr);
+    ierr = ISGetIndices(valueIS, &values);CHKERRQ(ierr);
+    for (v = 0; v < numValues; ++v) {
+      const PetscInt value = values[v];
+      
+      ierr = DMLabelGetStratumIS(lblLeaves, value, &pointIS);CHKERRQ(ierr);
+      ierr = DMLabelInsertIS(label, pointIS, value);CHKERRQ(ierr);
+      ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
+    }
+    ierr = ISRestoreIndices(valueIS, &values);CHKERRQ(ierr);
+    ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
+    ierr = DMLabelDestroy(&lblLeaves);CHKERRQ(ierr);
+    /* Push point contributions from roots into remote leaves */
+    ierr = DMLabelDistribute(label, sfPoint, &lblRoots);CHKERRQ(ierr);
+    ierr = DMLabelGetValueIS(lblRoots, &valueIS);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(valueIS, &numValues);CHKERRQ(ierr);
+    ierr = ISGetIndices(valueIS, &values);CHKERRQ(ierr);
+    for (v = 0; v < numValues; ++v) {
+      const PetscInt value = values[v];
+      
+      ierr = DMLabelGetStratumIS(lblRoots, value, &pointIS);CHKERRQ(ierr);
+      ierr = DMLabelInsertIS(label, pointIS, value);CHKERRQ(ierr);
+      ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
+    }
+    ierr = ISRestoreIndices(valueIS, &values);CHKERRQ(ierr);
+    ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
+    ierr = DMLabelDestroy(&lblRoots);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
