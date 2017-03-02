@@ -29,6 +29,12 @@ extern PetscErrorCode FormJacobian2(SNES,Vec,Mat,Mat,void*);
 extern PetscErrorCode FormFunction2(SNES,Vec,Vec,void*);
 extern PetscErrorCode FormObjective(SNES,Vec,PetscReal*,void*);
 
+/*
+     This is a very hacking way to trigger the objective function generating an infinity at a particular count to the call FormObjective().
+     Different line searches evaluate the full step at different counts. For l2 it is the third call (infatcount == 2) while for bt it is the second call.
+*/
+PetscInt infatcount = 0;
+
 int main(int argc,char **argv)
 {
   SNES           snes;         /* nonlinear solver context */
@@ -40,8 +46,18 @@ int main(int argc,char **argv)
   PetscInt       its;
   PetscMPIInt    size;
   PetscScalar    *xx;
+  PetscBool      flg;
+  char           type[256];
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  ierr = PetscOptionsGetString(NULL,NULL,"-snes_linesearch_type",type,256,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscStrcmp(type,SNESLINESEARCHBT,&flg);CHKERRQ(ierr);
+    if (flg) infatcount = 1;
+    ierr = PetscStrcmp(type,SNESLINESEARCHL2,&flg);CHKERRQ(ierr);
+    if (flg) infatcount = 2;
+  }
+
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Example is only for sequential runs");
 
@@ -131,7 +147,7 @@ PetscErrorCode FormObjective(SNES snes,Vec x,PetscReal *f,void *dummy)
   Vec               F;
   static PetscInt   cnt = 0;
 
-  if (cnt++ == 2) *f = 1.0/0.0;
+  if (cnt++ == infatcount) *f = 1.0/0.0;
   else {
     ierr = VecDuplicate(x,&F);CHKERRQ(ierr);
     ierr = FormFunction2(snes,x,F,dummy);CHKERRQ(ierr);
