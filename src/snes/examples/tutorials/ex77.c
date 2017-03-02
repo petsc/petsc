@@ -398,6 +398,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       PetscInt         triPoints_ref_n3[16] = {1, 7, 10, 14, 15, 2, 6, 8, 11, 12, 13, 0, 3, 4, 5, 9};
       PetscInt         triSizes_ref_n5[5]   = {3, 4, 3, 3, 3};
       PetscInt         triPoints_ref_n5[16] = {1, 7, 10, 2, 11, 13, 14, 5, 6, 15, 0, 8, 9, 3, 4, 12};
+      PetscInt         tetSizes_n2[2]       = {3, 3};
+      PetscInt         tetPoints_n2[6]      = {1, 2, 3, 0, 4, 5};
       const PetscInt  *sizes = NULL;
       const PetscInt  *points = NULL;
       PetscPartitioner part;
@@ -420,6 +422,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           sizes = triSizes_ref_n3; points = triPoints_ref_n3;
         } else if (dim == 2 && user->simplex && size == 5 && cEnd == 16) {
           sizes = triSizes_ref_n5; points = triPoints_ref_n5;
+        } else if (dim == 3 && user->simplex && size == 2 && cEnd == 6) {
+          sizes = tetSizes_n2; points = tetPoints_n2;
         } else SETERRQ(comm, PETSC_ERR_ARG_WRONG, "No stored partition matching run parameters");
       }
       ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
