@@ -99,8 +99,8 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
         ierr = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_REDUCT);CHKERRQ(ierr);
         PetscFunctionReturn(0);
       }
+      maxstep = .95*lambda; /* forbid the search from ever going back to the "failed" length that generates Nan or Inf */
       lambda  = .5*(lambda + lambda_old);
-      maxstep = lambda;
       lambda_mid = .5*(lambda + lambda_old);
     }
 
