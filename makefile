@@ -111,6 +111,9 @@ info: chk_makej
 	   echo "Using Fortran flags: ${FC_LINKER_FLAGS}";\
          fi
 	-@echo "-----------------------------------------"
+	-@echo "Using system modules: ${LOADEDMODULES}"
+	-@echo -n "Using mpi.h: "; echo '#include <mpi.h>' > ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/mpitest.c; ${CPP} ${PETSC_CCPPFLAGS} ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/mpitest.c |grep 'mpi\.h' |head -1
+	-@echo "-----------------------------------------"
 	-@echo "Using libraries: ${PETSC_LIB}"
 	-@echo "------------------------------------------"
 	-@echo "Using mpiexec: ${MPIEXEC}"
