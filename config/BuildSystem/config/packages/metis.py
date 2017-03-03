@@ -3,8 +3,8 @@ import config.package
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit         = 'v5.1.0-p3'
-    self.download          = ['git://https://bitbucket.org/petsc/pkg-metis.git','http://ftp.mcs.anl.gov/pub/petsc/externalpackages/metis-5.1.0-p3.tar.gz']
+    self.gitcommit         = 'v5.1.0-p4'
+    self.download          = ['git://https://bitbucket.org/petsc/pkg-metis.git','https://bitbucket.org/petsc/pkg-metis/get/'+self.gitcommit+'.tar.gz']
     self.functions         = ['METIS_PartGraphKway']
     self.includes          = ['metis.h']
     self.liblist           = [['libmetis.a'],['libmetis.a','libexecinfo.a']]
@@ -36,4 +36,5 @@ class Configure(config.package.CMakePackage):
       args.append('-DMETIS_USE_DOUBLEPRECISION=1')
     elif self.scalartypes.precision == 'quad':
       raise RuntimeError('METIS cannot be built with quad precision')
+    args.append('-DMATH_LIB="'+self.libraries.toStringNoDupes(self.libraries.math)+'"')
     return args

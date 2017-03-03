@@ -246,8 +246,6 @@ class Configure(config.base.Configure):
           if not arg in lflags:
             if arg == '-lkernel32':
               continue
-            elif arg == '-lm':
-              continue
             else:
               lflags.append(arg)
             self.logPrint('Found library : '+arg, 4, 'compilers')
@@ -507,8 +505,6 @@ class Configure(config.base.Configure):
         if m:
           if not arg in lflags:
             if arg == '-lkernel32':
-              continue
-            elif arg == '-lm':
               continue
             else:
               lflags.append(arg)
@@ -906,8 +902,6 @@ class Configure(config.base.Configure):
           if not arg in lflags:
             if arg == '-lkernel32':
               continue
-            elif arg == '-lm':
-              pass
             elif arg == '-lgfortranbegin':
               fmainlibs.append(arg)
               continue
@@ -919,8 +913,6 @@ class Configure(config.base.Configure):
             self.logPrint('Found library: '+arg, 4, 'compilers')
             if arg in self.clibs:
               self.logPrint('Library already in C list so skipping in Fortran')
-            elif arg in self.cxxlibs:
-              self.logPrint('Library already in Cxx list so skipping in Fortran')
             else:
               flibs.append(arg)
           else:
