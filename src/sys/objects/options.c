@@ -2467,6 +2467,86 @@ PetscErrorCode  PetscOptionsLeft(PetscOptions options)
   PetscFunctionReturn(0);
 }
 
+/*@C
+  PetscOptionsLeftGet - Returns all options that were set and never used.
+
+  Not collective
+
+   Input Parameter:
+.  options - options database use NULL for default global database
+
+   Output Parameter:
+.   N - count of options not used
+.   names - names of options not used
+.   values - values of options not used
+
+  Level: advanced
+
+  Notes:
+  Users should call PetscOptionsLeftRestore() to free the memory allocated in this routine
+
+.seealso: PetscOptionsAllUsed(), PetscOptionsLeft()
+@*/
+PetscErrorCode  PetscOptionsLeftGet(PetscOptions options,PetscInt *N,char **names[],char **values[])
+{
+  PetscErrorCode ierr;
+  PetscInt       i,n;
+
+  PetscFunctionBegin;
+  options = options ? options : defaultoptions;
+
+  /* The number of unused PETSc options */
+  n = 0;
+  for (i=0; i<options->N; i++) {
+    if (!options->used[i]) {
+      n++;
+    }
+  }
+  if (N) {*N = n;}
+  if (names)  { ierr = PetscMalloc1(n,names);CHKERRQ(ierr); }
+  if (values) { ierr = PetscMalloc1(n,values);CHKERRQ(ierr); }
+
+  n = 0;
+  if (names || values) {
+    for (i=0; i<options->N; i++) {
+      if (!options->used[i]) {
+        if (names)  (*names)[n]  = options->names[i];
+        if (values) (*values)[n] = options->values[i];
+        n++;
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+
+/*@C
+  PetscOptionsLeftRestore - Free memory for the unused PETSc options obtained using PetscOptionsLeftGet.
+
+  Not collective
+
+   Input Parameter:
+.   options - options database use NULL for default global database
+.   names - names of options not used
+.   values - values of options not used
+
+  Level: advanced
+
+.seealso: PetscOptionsAllUsed(), PetscOptionsLeft(), PetscOptionsLeftGet
+@*/
+PetscErrorCode  PetscOptionsLeftRestore(PetscOptions options,PetscInt *N,char **names[],char **values[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  options = options ? options : defaultoptions;
+  if(N) *N = 0;
+  if (names)  { ierr = PetscFree(*names);CHKERRQ(ierr); }
+  if (values) { ierr = PetscFree(*values);CHKERRQ(ierr); }
+  PetscFunctionReturn(0);
+}
+
+
 /*@
     PetscOptionsCreate - Creates the empty options database.
 
