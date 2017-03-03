@@ -217,10 +217,10 @@ class Configure(config.package.Package):
           if not os.path.exists(os.path.join(dir,libdir)):
             self.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
           else:
-            yield ('User specified MKL-C/Pardiso Intel-Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_core','mkl_intel_thread']+mkl_blacs_64+['iomp5','dl','pthread','m'],1)
-            yield ('User specified MKL-C/Pardiso GNU-Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_core','mkl_gnu_thread']+mkl_blacs_64+['gomp','dl','pthread','m'],1)
-            yield ('User specified MKL-C/Pardiso Intel-Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_core','mkl_intel_thread']+mkl_blacs_32+['iomp5','dl','pthread','m'],1)
-            yield ('User specified MKL-C/Pardiso GNU-Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_core','mkl_gnu_thread']+mkl_blacs_32+['gomp','dl','pthread','m'],1)
+            yield ('User specified MKL-C/Pardiso Intel-Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_core','mkl_intel_thread']+mkl_blacs_64+['iomp5','dl','pthread']+self.libraries.math,1)
+            yield ('User specified MKL-C/Pardiso GNU-Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_core','mkl_gnu_thread']+mkl_blacs_64+['gomp','dl','pthread']+self.libraries.math,1)
+            yield ('User specified MKL-C/Pardiso Intel-Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_core','mkl_intel_thread']+mkl_blacs_32+['iomp5','dl','pthread']+self.libraries.math,1)
+            yield ('User specified MKL-C/Pardiso GNU-Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_core','mkl_gnu_thread']+mkl_blacs_32+['gomp','dl','pthread']+self.libraries.math,1)
         return
 
       yield ('User specified installation root (HPUX)', os.path.join(dir, 'libveclib.a'),  os.path.join(dir, 'liblapack.a'), 1)
@@ -236,12 +236,12 @@ class Configure(config.package.Package):
         if not os.path.exists(os.path.join(dir,libdir)):
           self.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
         else:
-          yield ('User specified MKL11/12 Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_sequential','mkl_core','pthread','-lm'],1)
+          yield ('User specified MKL11/12 Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_sequential','mkl_core','pthread']+self.libraries.math,1)
       for libdir in [os.path.join('lib','64'),os.path.join('lib','ia64'),os.path.join('lib','em64t'),os.path.join('lib','intel64'),'lib','64','ia64','em64t','intel64','']:
         if not os.path.exists(os.path.join(dir,libdir)):
           self.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
         else:
-          yield ('User specified MKL11/12 Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_sequential','mkl_core','pthread','-lm'],1)
+          yield ('User specified MKL11/12 Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_sequential','mkl_core','pthread']+self.libraries.math,1)
       # Older Linux MKL checks
       yield ('User specified MKL Linux lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'mkl', 'guide', 'pthread'], 1)
       for libdir in ['32','64','em64t']:
