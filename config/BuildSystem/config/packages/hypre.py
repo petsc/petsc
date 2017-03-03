@@ -21,16 +21,10 @@ class Configure(config.package.GNUPackage):
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
     self.openmp     = framework.require('config.packages.openmp',self)
+    self.cxxlibs    = framework.require('config.packages.cxxlibs',self)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
     self.mpi        = framework.require('config.packages.MPI',self)
-    self.deps       = [self.mpi,self.blasLapack]
-
-  def generateLibList(self,dir):
-    '''Normally the one in package.py is used, but hypre requires the extra C++ library'''
-    alllibs = config.package.GNUPackage.generateLibList(self,dir)
-    if self.getDefaultLanguage() == 'C':
-      alllibs[0].extend(self.compilers.cxxlibs)
-    return alllibs
+    self.deps       = [self.mpi,self.blasLapack,self.cxxlibs]
 
   def formGNUConfigureArgs(self):
     self.packageDir = os.path.join(self.packageDir,'src')

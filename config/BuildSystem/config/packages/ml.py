@@ -23,24 +23,11 @@ class Configure(config.package.GNUPackage):
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
+    self.cxxlibs    = framework.require('config.packages.cxxlibs',self)
     self.mpi        = framework.require('config.packages.MPI',self)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
-    self.deps       = [self.mpi,self.blasLapack]
+    self.deps       = [self.mpi,self.blasLapack,self.cxxlibs]
     return
-
-  def generateLibList(self,dir):
-    import os
-    '''Normally the one in package.py is used, but ML requires the extra C++ library'''
-    libs = ['libml']
-    alllibs = []
-    for l in libs:
-      alllibs.append(l+'.a')
-    # Now specify -L ml-lib-path only to the first library
-    alllibs[0] = os.path.join(dir,alllibs[0])
-    import config.setCompilers
-    if self.getDefaultLanguage() == 'C':
-      alllibs.extend(self.compilers.cxxlibs)
-    return [alllibs]
 
   def formGNUConfigureArgs(self):
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
