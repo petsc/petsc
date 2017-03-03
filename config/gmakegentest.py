@@ -252,12 +252,8 @@ class generateExamples(Petsc):
     subst['exec']="../"+subst['execname']
     subst['testroot']=self.testroot_dir
     subst['testname']=testname
-    if self.conf['PETSC_HAVE_DATAFILESPATH']: 
-      dp=self.conf['DATAFILESPATH']
-      dpl='DATAFILESPATH=${DATAFILESPATH:-"'+dp+'"}'
-    else:
-      dpl=''
-    subst['datafilespath_line']=dpl
+    dp = self.conf.get('DATAFILESPATH','')
+    subst['datafilespath_line'] = 'DATAFILESPATH=${DATAFILESPATH:-"'+dp+'"}'
 
     # This is used to label some matrices
     subst['petsc_index_size']=str(self.conf['PETSC_INDEX_SIZE'])
@@ -353,17 +349,26 @@ class generateExamples(Petsc):
       Str=re.sub(patt,subst[subkey],Str)
     return Str
 
-  def _writeTodoSkip(self,fh,tors,inDict,footer):
+  def _writeTodoSkip(self,fh,tors,reasons,footer):
     """
     Write out the TODO and SKIP lines in the file
     The TODO or SKIP variable, tors, should be lower case
     """
     TORS=tors.upper()
     template=eval("example_template."+tors+"line")
-    tsStr=re.sub("@"+TORS+"COMMENT@",inDict[TORS],template)
-    fh.write(tsStr+"\ntotal=1; "+tors+"=1\n")
-    fh.write(footer+"\n")
-    fh.write("exit\n\n\n")
+    tsStr=re.sub("@"+TORS+"COMMENT@",', '.join(reasons),template)
+    tab = ''
+    if reasons == ["Requires DATAFILESPATH"]:
+      # The only reason not to run is DATAFILESPATH, which we check at run-time
+      tab = '    '
+      fh.write('if test -z "${DATAFILESPATH}"; then\n')
+    if reasons:
+      fh.write(tab+tsStr+"\ntotal=1; "+tors+"=1\n")
+      fh.write(tab+footer+"\n")
+      fh.write(tab+"exit\n")
+    if reasons == ["Requires DATAFILESPATH"]:
+      fh.write('fi\n')
+    fh.write('\n\n')
     return
 
   def getLoopVarsHead(self,loopVars,i):
@@ -433,9 +438,8 @@ class generateExamples(Petsc):
     # If there is a TODO or a SKIP then we do it before writing out the
     # rest of the command (which is useful for working on the test)
     # SKIP and TODO can be for the source file or for the runs
-    for tors in "todo skip".split():
-      for d in [srcDict,testDict]:
-        if d.has_key(tors.upper()): self._writeTodoSkip(fh,tors,d,footer)
+    self._writeTodoSkip(fh,'todo',[s for s in [srcDict.get('TODO',''), testDict.get('TODO','')] if s],footer)
+    self._writeTodoSkip(fh,'skip',srcDict.get('SKIP',[]) + testDict.get('SKIP',[]),footer)
 
     j=0  # for indentation 
 
@@ -505,26 +509,25 @@ class generateExamples(Petsc):
     Determine if this file should be built. 
     """
     # Get the language based on file extension
+    srcDict['SKIP'] = []
     lang=self.getLanguage(exfile)
     if (lang=="F" or lang=="F90") and not self.have_fortran: 
-      srcDict["SKIP"]="Fortran required for this test"
-      return False
+      srcDict["SKIP"].append("Fortran required for this test")
     if lang=="cu" and not self.conf.has_key('PETSC_HAVE_CUDA'): 
-      srcDict["SKIP"]="CUDA required for this test"
-      return False
+      srcDict["SKIP"].append("CUDA required for this test")
     if lang=="cxx" and not self.conf.has_key('PETSC_HAVE_CXX'): 
-      srcDict["SKIP"]="C++ required for this test"
-      return False
+      srcDict["SKIP"].append("C++ required for this test")
 
     # Deprecated source files
-    if srcDict.has_key("TODO"): return False
+    if srcDict.get("TODO"):
+      return False
 
     # isRun can work with srcDict to handle the requires
     if srcDict.has_key("requires"): 
       if len(srcDict["requires"])>0: 
         return self._isRun(srcDict)
 
-    return True
+    return srcDict['SKIP'] == []
 
 
   def _isRun(self,testDict):
@@ -535,12 +538,13 @@ class generateExamples(Petsc):
     indent="  "
     debug=False
 
+    if 'SKIP' not in testDict:
+      testDict['SKIP'] = []
     # MPI requirements
     if testDict.has_key('nsize'):
       if testDict['nsize']>1 and self.conf.has_key('MPI_IS_MPIUNI'): 
         if debug: print indent+"Cannot run parallel tests"
-        testDict['SKIP']="Parallel test with serial build"
-        return False
+        testDict['SKIP'].append("Parallel test with serial build")
  
     # The requirements for the test are the sum of all the run subtests
     if testDict.has_key('subtests'):
@@ -562,68 +566,60 @@ class generateExamples(Petsc):
         # Precision requirement for reals
         if requirement in self.precision_types:
           if self.conf['PETSC_PRECISION']==requirement:
-            testDict['SKIP']="not "+requirement+" required"
-            if isNull: return False
-          else:
-            testDict['SKIP']=requirement+" required"
-            return False
+            if isNull:
+              testDict['SKIP'].append("not "+requirement+" required")
+              continue
+          elif not isNull:
+            testDict['SKIP'].append(requirement+" required")
+            continue
         # Precision requirement for ints
         if requirement in self.integer_types:
           if requirement=="int32":
             if self.conf['PETSC_SIZEOF_INT']==4:
-              testDict['SKIP']="not int32 required"
-              if isNull: return False
-            else:
-              testDict['SKIP']="int32 required"
-              return False
+              if isNull:
+                testDict['SKIP'].append("not int32 required")
+                continue
+            elif not isNull:
+              testDict['SKIP'].append("int32 required")
+              continue
           if requirement=="int64":
             if self.conf['PETSC_SIZEOF_INT']==8:
-              testDict['SKIP']="NOT int64 required"
-              if isNull: return False
-            else:
-              testDict['SKIP']="int64 required"
-              return False
+              if isNull:
+                testDict['SKIP'].append("NOT int64 required")
+                continue
+            elif not isNull:
+              testDict['SKIP'].append("int64 required")
+              continue
         # Datafilespath
-        if requirement=="datafilespath": 
-          if not self.conf['PETSC_HAVE_DATAFILESPATH']: 
-            testDict['SKIP']="Requires DATAFILESPATH"
-            return False
+        if requirement=="datafilespath" and not isNull:
+          testDict['SKIP'].append("Requires DATAFILESPATH")
+          continue
         # Defines -- not sure I have comments matching
         if "define(" in requirement.lower():
           reqdef=requirement.split("(")[1].split(")")[0]
-          val=(reqdef.split()[1] if " " in reqdef else "")
-          if self.conf.has_key(reqdef):
-            if val:
-              if self.conf[reqdef]==val:
-                if isNull: 
-                  testDict['SKIP']="Null requirement not met: "+requirement
-                  return False
-              else:
-                testDict['SKIP']="Required: "+requirement
-                return False
-            else:
-              if isNull: 
-                testDict['SKIP']="Null requirement not met: "+requirement
-                return False
-              else:
-                return True
-          else:
-            testDict['SKIP']="Requirement not met: "+requirement
-            return False
+          if reqdef in self.conf:
+            if isNull:
+              testDict['SKIP'].append("Null requirement not met: "+requirement)
+              continue
+            elif isNull:
+              testDict['SKIP'].append("Required: "+requirement)
+              continue
 
         # Rest should be packages that we can just get from conf
-        if requirement == "complex":  petscconfvar="PETSC_USE_COMPLEX"
-        else:   petscconfvar="PETSC_HAVE_"+requirement.upper()
+        if requirement == "complex":
+          petscconfvar="PETSC_USE_COMPLEX"
+        else:
+          petscconfvar="PETSC_HAVE_"+requirement.upper()
         if self.conf.get(petscconfvar):
           if isNull:
-            testDict['SKIP']="Not "+petscconfvar+" requirement not met"
-            return False
+            testDict['SKIP'].append("Not "+petscconfvar+" requirement not met")
+            continue
         elif not isNull:
           if debug: print "requirement not found: ", requirement
-          testDict['SKIP']=petscconfvar+" requirement not met"
-          return False
+          testDict['SKIP'].append(petscconfvar+" requirement not met")
+          continue
 
-    return True
+    return testDict['SKIP'] == []
 
   def genPetscTests_summarize(self,dataDict):
     """
