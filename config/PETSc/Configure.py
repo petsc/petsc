@@ -164,14 +164,18 @@ class Configure(config.base.Configure):
 
     self.setCompilers.pushLanguage('C')
     fd.write('ccompiler='+self.setCompilers.getCompiler()+'\n')
+    fd.write('cflags_extra="'+self.setCompilers.getCompilerFlags()+'"\n')
+    fd.write('ldflags_rpath="'+self.setCompilers.CSharedLinkerFlag+'${libdir}"\n')
     self.setCompilers.popLanguage()
     if hasattr(self.compilers, 'C++'):
       self.setCompilers.pushLanguage('C++')
       fd.write('cxxcompiler='+self.setCompilers.getCompiler()+'\n')
+      fd.write('cxxflags_extra="'+self.setCompilers.getCompilerFlags()+'"\n')
       self.setCompilers.popLanguage()
     if hasattr(self.compilers, 'FC'):
       self.setCompilers.pushLanguage('FC')
       fd.write('fcompiler='+self.setCompilers.getCompiler()+'\n')
+      fd.write('fflags_extra="'+self.setCompilers.getCompilerFlags()+'"\n')
       self.setCompilers.popLanguage()
     fd.write('blaslapacklibs='+self.libraries.toStringNoDupes(self.blaslapack.lib)+'\n')
 
@@ -179,14 +183,8 @@ class Configure(config.base.Configure):
     fd.write('Name: PETSc\n')
     fd.write('Description: Library to solve ODEs and algebraic equations\n')
     fd.write('Version: %s\n' % self.petscdir.version)
-
-    fd.write('Cflags: '+self.allincludes+'\n')
-
-    plibs = self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'), self.petsclib])
-    if self.framework.argDB['prefix']:
-      fd.write('Libs: '+plibs.replace(os.path.join(self.petscdir.dir,self.arch.arch),self.installdir.dir)+'\n')
-    else:
-      fd.write('Libs: '+plibs+'\n')
+    fd.write('Cflags: ' + self.setCompilers.CPPFLAGS + ' ' + self.PETSC_CC_INCLUDES + '\n')
+    fd.write('Libs: '+self.libraries.toStringNoDupes(['-L${libdir}', self.petsclib])+'\n')
     fd.write('Libs.private: '+self.libraries.toStringNoDupes(self.packagelibs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs)+' '+self.compilers.LIBS+'\n')
 
     fd.close()
