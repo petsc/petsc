@@ -546,7 +546,7 @@ PetscErrorCode  MatCompositeSetType(Mat mat,MatCompositeType type)
 }
 
 
-/*@C
+/*@
    MatCompositeMerge - Given a composite matrix, replaces it with a "regular" matrix
      by summing all the matrices inside the composite matrix.
 
