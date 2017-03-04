@@ -164,19 +164,19 @@ class Configure(config.base.Configure):
 
     self.setCompilers.pushLanguage('C')
     fd.write('ccompiler='+self.setCompilers.getCompiler()+'\n')
-    fd.write('cflags_extra="'+self.setCompilers.getCompilerFlags()+'"\n')
+    fd.write('cflags_extra="'+self.setCompilers.getCompilerFlags().strip()+'"\n')
     fd.write('cflags_dep="'+self.compilers.dependenciesGenerationFlag.get('C','')+'"\n')
-    fd.write('ldflags_rpath="'+self.setCompilers.CSharedLinkerFlag+'${libdir}"\n')
+    fd.write('ldflag_rpath="'+self.setCompilers.CSharedLinkerFlag+'"\n')
     self.setCompilers.popLanguage()
     if hasattr(self.compilers, 'C++'):
       self.setCompilers.pushLanguage('C++')
       fd.write('cxxcompiler='+self.setCompilers.getCompiler()+'\n')
-      fd.write('cxxflags_extra="'+self.setCompilers.getCompilerFlags()+'"\n')
+      fd.write('cxxflags_extra="'+self.setCompilers.getCompilerFlags().strip()+'"\n')
       self.setCompilers.popLanguage()
     if hasattr(self.compilers, 'FC'):
       self.setCompilers.pushLanguage('FC')
       fd.write('fcompiler='+self.setCompilers.getCompiler()+'\n')
-      fd.write('fflags_extra="'+self.setCompilers.getCompilerFlags()+'"\n')
+      fd.write('fflags_extra="'+self.setCompilers.getCompilerFlags().strip()+'"\n')
       self.setCompilers.popLanguage()
     fd.write('blaslapacklibs='+self.libraries.toStringNoDupes(self.blaslapack.lib)+'\n')
 
@@ -186,7 +186,10 @@ class Configure(config.base.Configure):
     fd.write('Version: %s\n' % self.petscdir.version)
     fd.write('Cflags: ' + self.setCompilers.CPPFLAGS + ' ' + self.PETSC_CC_INCLUDES + '\n')
     fd.write('Libs: '+self.libraries.toStringNoDupes(['-L${libdir}', self.petsclib])+'\n')
-    fd.write('Libs.private: '+self.libraries.toStringNoDupes(self.packagelibs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split())+'\n')
+    # Remove RPATH flags from library list.  User can add them using
+    # pkg-config --variable=ldflag_rpath and pkg-config --libs-only-L
+    lflags = self.packagelibs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split()
+    fd.write('Libs.private: '+self.libraries.toStringNoDupes([f for f in lflags if not f.startswith(self.setCompilers.CSharedLinkerFlag)])+'\n')
 
     fd.close()
     return
