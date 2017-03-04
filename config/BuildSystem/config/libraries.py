@@ -121,13 +121,25 @@ class Configure(config.base.Configure):
       else:
         newlibs += self.getLibArgumentList(lib)
     libs = newlibs
+    newldflags = []
     newlibs = []
+    frame = 0
     for j in libs:
       # do not remove duplicate non-consecutive -l, because there is a tiny chance that order may matter
+      if frame:
+        newlibs.append(j)
+        frame = 0
+        continue
+      if j in newldflags: continue
       if newlibs and j == newlibs[-1]: continue
-      if j in newlibs and not ( j.startswith('-l') or j == '-framework') : continue
-      newlibs.append(j)
-    return ' '.join(newlibs)
+      if j.startswith('-l'):
+        newlibs.append(j)
+      elif j == '-framework':
+        newlibs.append(j)
+        frame = 1
+      else:
+        newldflags.append(j)
+    return ' '.join(newldflags + newlibs)
 
   def getShortLibName(self,lib):
     '''returns the short name for the library. Valid names are foo -lfoo or libfoo.[a,so,lib]'''
