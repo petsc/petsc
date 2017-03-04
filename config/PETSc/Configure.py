@@ -186,7 +186,7 @@ class Configure(config.base.Configure):
     fd.write('Version: %s\n' % self.petscdir.version)
     fd.write('Cflags: ' + self.setCompilers.CPPFLAGS + ' ' + self.PETSC_CC_INCLUDES + '\n')
     fd.write('Libs: '+self.libraries.toStringNoDupes(['-L${libdir}', self.petsclib])+'\n')
-    fd.write('Libs.private: '+self.libraries.toStringNoDupes(self.packagelibs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs)+' '+self.compilers.LIBS+'\n')
+    fd.write('Libs.private: '+self.libraries.toStringNoDupes(self.packagelibs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split())+'\n')
 
     fd.close()
     return
@@ -373,7 +373,7 @@ prepend-path PATH %s
     else:
       self.petsclib = '-lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys'
     self.alllibs = self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'), self.petsclib]+libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs)+' '+self.compilers.LIBS
-    self.PETSC_EXTERNAL_LIB_BASIC = self.libraries.toStringNoDupes(libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs)+' '+self.compilers.LIBS
+    self.PETSC_EXTERNAL_LIB_BASIC = self.libraries.toStringNoDupes(libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split())
     if self.framework.argDB['prefix'] and self.setCompilers.CSharedLinkerFlag not in ['-L']:
       lib_basic = self.PETSC_EXTERNAL_LIB_BASIC.replace(self.setCompilers.CSharedLinkerFlag+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),self.setCompilers.CSharedLinkerFlag+os.path.join(self.installdir.dir,'lib'))
     else:
