@@ -574,7 +574,7 @@ PetscErrorCode  MatCompositeSetType(Mat mat,MatCompositeType type)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCompositeMerge"
-/*@C
+/*@
    MatCompositeMerge - Given a composite matrix, replaces it with a "regular" matrix
      by summing all the matrices inside the composite matrix.
 
