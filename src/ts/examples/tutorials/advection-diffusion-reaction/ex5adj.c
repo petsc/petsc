@@ -62,7 +62,6 @@ int main(int argc,char **argv)
   PetscScalar    *x_ptr;
   PetscBool      forwardonly=PETSC_FALSE,implicitform=PETSC_TRUE;
 
-  ierr = PetscMallocSet(PetscHBWMalloc,PetscHBWFree);if (ierr) return ierr;
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetBool(NULL,NULL,"-forwardonly",&forwardonly,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-implicitform",&implicitform,NULL);CHKERRQ(ierr);

@@ -42,7 +42,7 @@ PetscErrorCode PetscHBWMalloc(size_t a,int lineno,const char function[],const ch
 #endif
 }
 
-PetscErrorCode  PetscHBWFree(void *aa,int line,const char function[],const char file[])
+PetscErrorCode PetscHBWFree(void *aa,int line,const char function[],const char file[])
 {
 #if !defined(PETSC_HAVE_MEMKIND)
   return PetscFreeAlign(aa,line,function,file);
@@ -50,4 +50,14 @@ PetscErrorCode  PetscHBWFree(void *aa,int line,const char function[],const char 
   hbw_free(aa);
   return 0;
 #endif
+}
+
+PetscErrorCode PetscSetUseHBWMalloc_Private(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscMallocSet(PetscHBWMalloc,PetscHBWFree);CHKERRQ(ierr);
+  PetscTrRealloc = NULL;
+  PetscFunctionReturn(0);
 }

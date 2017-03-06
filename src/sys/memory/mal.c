@@ -209,3 +209,27 @@ PetscErrorCode PetscMemoryTrace(const char label[])
   oldmal = mal;
   PetscFunctionReturn(0);
 }
+
+#if defined(PETSC_HAVE_MEMKIND)
+PetscErrorCode (*PetscTrMallocOld)(size_t,int,const char[],const char[],void**) = PetscMallocAlign;
+PetscErrorCode (*PetscTrFreeOld)(void*,int,const char[],const char[])           = PetscFreeAlign;
+PetscErrorCode PetscMallocSetDRAM(void)
+{
+  PetscFunctionBegin;
+  /* Save the previous choice */
+  PetscTrMallocOld = PetscTrMalloc;
+  PetscTrFreeOld   = PetscTrFree;
+  PetscTrMalloc    = PetscMallocAlign;
+  PetscTrFree      = PetscFreeAlign;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscMallocResetDRAM(void)
+{
+  PetscFunctionBegin;
+  /* Reset to the previous choice */
+  PetscTrMalloc = PetscTrMallocOld;
+  PetscTrFree   = PetscTrFreeOld;
+  PetscFunctionReturn(0);
+}
+#endif

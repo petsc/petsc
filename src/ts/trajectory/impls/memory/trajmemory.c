@@ -3,6 +3,10 @@
 #if defined(PETSC_HAVE_REVOLVE)
 #include <revolve_c.h>
 #endif
+#if defined(PETSC_HAVE_MEMKIND)
+extern PetscErrorCode PetscMallocSetDRAM(void);
+extern PetscErrorCode PetscMallocResetDRAM(void);
+#endif
 
 PetscLogEvent TSTrajectory_DiskWrite, TSTrajectory_DiskRead;
 
@@ -107,7 +111,9 @@ static PetscErrorCode ElementCreate(TS ts,Stack *stack,StackElement *e)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMallocClear();CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MEMKIND)
+  ierr = PetscMallocSetDRAM();CHKERRQ(ierr);
+#endif
   ierr = PetscCalloc1(1,e);CHKERRQ(ierr);
   ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&(*e)->X);CHKERRQ(ierr);
@@ -115,7 +121,9 @@ static PetscErrorCode ElementCreate(TS ts,Stack *stack,StackElement *e)
     ierr = TSGetStages(ts,&stack->numY,&Y);CHKERRQ(ierr);
     ierr = VecDuplicateVecs(Y[0],stack->numY,&(*e)->Y);CHKERRQ(ierr);
   }
-  ierr = PetscMallocSet(PetscHBWMalloc,PetscHBWFree);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MEMKIND)
+  ierr = PetscMallocResetDRAM();CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -151,13 +159,17 @@ static PetscErrorCode ElementDestroy(Stack *stack,StackElement e)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMallocClear();CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MEMKIND)
+  ierr = PetscMallocSetDRAM();CHKERRQ(ierr);
+#endif
   ierr = VecDestroy(&e->X);CHKERRQ(ierr);
   if (stack->numY > 0 && !stack->solution_only) {
     ierr = VecDestroyVecs(stack->numY,&e->Y);CHKERRQ(ierr);
   }
   ierr = PetscFree(e);CHKERRQ(ierr);
-  ierr = PetscMallocSet(PetscHBWMalloc,PetscHBWFree);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MEMKIND)
+  ierr = PetscMallocResetDRAM();CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 

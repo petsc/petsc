@@ -216,6 +216,7 @@ PetscErrorCode  PetscEnd(void)
 
 PetscBool PetscOptionsPublish = PETSC_FALSE;
 extern PetscErrorCode PetscSetUseTrMalloc_Private(void);
+extern PetscErrorCode PetscSetUseHBWMalloc_Private(void);
 extern PetscBool      petscsetmallocvisited;
 static char           emacsmachinename[256];
 
@@ -311,7 +312,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 #endif
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-malloc_hbw",&flg1,NULL);CHKERRQ(ierr);
-  if (flg1) {ierr = PetscMallocSet(PetscHBWMalloc,PetscHBWFree);CHKERRQ(ierr);;CHKERRQ(ierr);}
+  if (flg1) {ierr = PetscSetUseHBWMalloc_Private();CHKERRQ(ierr);}
 
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-malloc_info",&flg1,NULL);CHKERRQ(ierr);
