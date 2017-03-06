@@ -48,6 +48,5 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
-    self.addDefine('HAVE_DATAFILESPATH', '1')
     self.executeTest(self.getDatafilespath)
     return
