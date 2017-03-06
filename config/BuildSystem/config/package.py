@@ -51,7 +51,6 @@ class Package(config.base.Configure):
     self.functionsCxx           = [0, '', ''] # 1 means the symbols in self.functions symbol are C++ symbol, so name-mangling with prototype/call is done
     self.cxx                    = 0    # 1 means requires C++
     self.fc                     = 0    # 1 means requires fortran
-    self.needsCompression       = 0    # 1 means requires the system compression library
     self.noMPIUni               = 0    # 1 means requires a real MPI
     self.libdir                 = 'lib'     # location of libraries in the package directory tree
     self.altlibdir              = 'lib64'   # alternate location of libraries in the package directory tree
@@ -708,11 +707,6 @@ class Package(config.base.Configure):
     libs  = []
     incls = []
     self.checkDependencies(libs, incls)
-    if self.needsCompression:
-      if self.libraries.compression is None:
-        raise RuntimeError('Compression library [libz.a or equivalent] not found')
-      libs += self.libraries.compression
-
     for location, directory, lib, incl in self.generateGuesses():
       if directory and not os.path.isdir(directory):
         self.logPrint('Directory does not exist: %s (while checking "%s" for "%r")' % (directory,location,lib))
