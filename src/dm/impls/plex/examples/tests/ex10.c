@@ -178,15 +178,3 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
-
-/*TEST
- 
- test:
-    suffix: restart
-    args: -run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_order 1
-    test:
-        args: -dm_view hdf5:sol.h5 -vec_view hdf5:sol.h5::append
-    test:
-        args: -f sol.h5 -restart
- 
-TEST*/
