@@ -46,9 +46,9 @@ PetscErrorCode DMPlexMarkBoundaryFaces(DM dm, DMLabel label)
 static PetscErrorCode DMPlexLabelComplete_Internal(DM dm, DMLabel label, PetscBool completeCells)
 {
   IS              valueIS;
+  PetscSF         sfPoint;
   const PetscInt *values;
-  PetscInt        numValues, v, cStart, cEnd;
-  PetscMPIInt     size;
+  PetscInt        numValues, v, cStart, cEnd, nroots;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -83,9 +83,9 @@ static PetscErrorCode DMPlexLabelComplete_Internal(DM dm, DMLabel label, PetscBo
   }
   ierr = ISRestoreIndices(valueIS, &values);CHKERRQ(ierr);
   ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size);CHKERRQ(ierr);
-  if (size != 1) {
-    PetscSF         sfPoint;
+  ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sfPoint, &nroots, NULL, NULL, NULL);CHKERRQ(ierr);
+  if (nroots >= 0) {
     DMLabel         lblRoots, lblLeaves;
     IS              valueIS, pointIS;
     const PetscInt *values;
