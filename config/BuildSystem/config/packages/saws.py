@@ -12,10 +12,11 @@ class Configure(config.package.GNUPackage):
     self.liblist   = [['libSAWs.a']]
     self.libdir           = 'lib' # location of libraries in the package directory tree
     self.includedir       = 'include' # location of includes in the package directory tree    return
-    self.needsMath        = 1;
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
+    self.mathlib        = framework.require('config.packages.mathlib',self)
+    self.deps           = [self.mathlib]
     return
 
 

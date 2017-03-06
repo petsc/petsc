@@ -16,7 +16,6 @@ class Configure(config.package.GNUPackage):
     self.complex           = 0
     self.hastests          = 1
     self.hastestsdatafiles = 1
-    self.needsMath         = 1
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
@@ -24,7 +23,8 @@ class Configure(config.package.GNUPackage):
     self.cxxlibs    = framework.require('config.packages.cxxlibs',self)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
     self.mpi        = framework.require('config.packages.MPI',self)
-    self.deps       = [self.mpi,self.blasLapack,self.cxxlibs]
+    self.mathlib    = framework.require('config.packages.mathlib',self)
+    self.deps       = [self.mpi,self.blasLapack,self.cxxlibs,self.mathlib]
 
   def formGNUConfigureArgs(self):
     self.packageDir = os.path.join(self.packageDir,'src')

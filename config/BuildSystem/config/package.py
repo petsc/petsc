@@ -51,7 +51,6 @@ class Package(config.base.Configure):
     self.functionsCxx           = [0, '', ''] # 1 means the symbols in self.functions symbol are C++ symbol, so name-mangling with prototype/call is done
     self.cxx                    = 0    # 1 means requires C++
     self.fc                     = 0    # 1 means requires fortran
-    self.needsMath              = 0    # 1 means requires the system math library
     self.needsCompression       = 0    # 1 means requires the system compression library
     self.noMPIUni               = 0    # 1 means requires a real MPI
     self.libdir                 = 'lib'     # location of libraries in the package directory tree
@@ -709,10 +708,6 @@ class Package(config.base.Configure):
     libs  = []
     incls = []
     self.checkDependencies(libs, incls)
-    if self.needsMath:
-      if self.libraries.math is None:
-        raise RuntimeError('Math library [libm.a or equivalent] is not found')
-      libs += self.libraries.math
     if self.needsCompression:
       if self.libraries.compression is None:
         raise RuntimeError('Compression library [libz.a or equivalent] not found')

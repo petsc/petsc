@@ -6,7 +6,6 @@ class Configure(config.package.Package):
     self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/Chaco-2.2-p2.tar.gz']
     self.functions         = ['interface']
     self.includes          = [] #Chaco does not have an include file
-    self.needsMath         = 1
     self.liblist           = [['libchaco.a']]
     self.license           = 'http://www.cs.sandia.gov/web1400/1400_download.html'
     self.downloadonWindows = 1
@@ -16,6 +15,8 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
+    self.mathlib        = framework.require('config.packages.mathlib',self)
+    self.deps           = [self.mathlib]
     return
 
   def Install(self):

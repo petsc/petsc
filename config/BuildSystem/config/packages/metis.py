@@ -8,13 +8,14 @@ class Configure(config.package.CMakePackage):
     self.functions         = ['METIS_PartGraphKway']
     self.includes          = ['metis.h']
     self.liblist           = [['libmetis.a'],['libmetis.a','libexecinfo.a']]
-    self.needsMath         = 1
     self.hastests          = 1
     return
 
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)
     self.compilerFlags = framework.require('config.compilerFlags', self)
+    self.mathlib       = framework.require('config.packages.mathlib',self)
+    self.deps          = [self.mathlib]
     return
 
   def formCMakeConfigureArgs(self):

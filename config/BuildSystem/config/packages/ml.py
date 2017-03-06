@@ -16,7 +16,6 @@ class Configure(config.package.GNUPackage):
     self.downloadonWindows = 1
     self.requires32bitint  = 1;  # ml uses a combination of "global" indices that can be 64 bit and local indices that are always int therefore it is
                                  # essentially impossible to use ML's 64 bit integer mode with PETSc's --with-64-bit-indices
-    self.needsMath         = 1   # ml test needs the system math library
     self.hastests          = 1
     self.downloaddirnames  = ['petsc-pkg-ml']
     return
@@ -26,7 +25,8 @@ class Configure(config.package.GNUPackage):
     self.cxxlibs    = framework.require('config.packages.cxxlibs',self)
     self.mpi        = framework.require('config.packages.MPI',self)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
-    self.deps       = [self.mpi,self.blasLapack,self.cxxlibs]
+    self.mathlib    = framework.require('config.packages.mathlib',self)
+    self.deps       = [self.mpi,self.blasLapack,self.cxxlibs,self.mathlib]
     return
 
   def formGNUConfigureArgs(self):

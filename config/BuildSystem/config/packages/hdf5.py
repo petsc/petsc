@@ -12,7 +12,6 @@ class Configure(config.package.GNUPackage):
     self.functions = ['H5T_init']
     self.includes  = ['hdf5.h']
     self.liblist   = [['libhdf5_hl.a', 'libhdf5.a']]
-    self.needsMath = 1
     self.needsCompression = 0
     self.complex          = 1
     self.hastests         = 1
@@ -20,8 +19,9 @@ class Configure(config.package.GNUPackage):
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
-    self.mpi  = framework.require('config.packages.MPI',self)
-    self.deps = [self.mpi]
+    self.mpi            = framework.require('config.packages.MPI',self)
+    self.mathlib        = framework.require('config.packages.mathlib',self)
+    self.deps           = [self.mpi,self.mathlib]
     return
 
   def generateLibList(self, framework):

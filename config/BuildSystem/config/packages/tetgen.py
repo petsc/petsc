@@ -119,14 +119,14 @@ class Configure(config.package.Package):
     self.includes     = ['tetgen.h']
     self.liblist      = [['libtet.a']]
     self.cxx          = 1
-    self.needsMath    = 1
     return
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     self.languages       = framework.require('PETSc.options.languages',   self)
     self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
-    self.deps            = []
+    self.mathlib         = framework.require('config.packages.mathlib',self)
+    self.deps            = [self.mathlib]
     return
 
   def Install(self):

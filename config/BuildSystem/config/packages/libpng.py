@@ -8,8 +8,13 @@ class Configure(config.package.GNUPackage):
     self.liblist          = [['libpng.a']]
     self.functions        = ['png_create_write_struct']
     self.lookforbydefault = 0
-    self.needsMath        = 1
     self.needsCompression = 1
+
+  def setupDependencies(self, framework):
+    config.package.Package.setupDependencies(self, framework)
+    self.mathlib        = framework.require('config.packages.mathlib',self)
+    self.deps           = [self.mathlib]
+    return
 
   def generateLibList(self, framework):
     '''First try library list without compression libraries (zlib) then try with'''

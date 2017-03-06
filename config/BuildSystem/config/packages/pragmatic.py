@@ -9,7 +9,6 @@ class Configure(config.package.CMakePackage):
     self.functions         = ['pragmatic_2d_init']
     self.includes          = ['pragmatic.h']
     self.liblist           = [['libpragmatic.a']]
-    self.needsMath         = 1
     self.includedir        = os.path.join('include', 'pragmatic')
     return
 
@@ -21,7 +20,8 @@ class Configure(config.package.CMakePackage):
     self.indexTypes      = framework.require('PETSc.options.indexTypes', self)
     self.metis           = framework.require('config.packages.metis', self)
     self.eigen           = framework.require('config.packages.eigen', self)
-    self.deps            = [self.metis, self.eigen]
+    self.mathlib         = framework.require('config.packages.mathlib',self)
+    self.deps            = [self.metis, self.eigen, self.mathlib]
     return
 
   def formCMakeConfigureArgs(self):
