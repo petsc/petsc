@@ -41,7 +41,7 @@ class Configure(config.package.CMakePackage):
 
   def configureLibrary(self):
     config.package.Package.configureLibrary(self)
-    if self.libraries.check(self.lib, 'ParMETIS_ComputeVertexSeparator',otherLibs=self.metis.lib+self.mpi.lib+self.libraries.math):
+    if self.libraries.check(self.lib, 'ParMETIS_ComputeVertexSeparator',otherLibs=self.metis.lib+self.mpi.lib+self.mathlib.lib):
       self.ComputeVertexSeparator = 1
     else:
       self.ComputeVertexSeparator = 0

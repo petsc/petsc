@@ -36,5 +36,5 @@ class Configure(config.package.CMakePackage):
       args.append('-DMETIS_USE_DOUBLEPRECISION=1')
     elif self.getDefaultPrecision() == 'quad':
       raise RuntimeError('METIS cannot be built with quad precision')
-    args.append('-DMATH_LIB="'+self.libraries.toStringNoDupes(self.libraries.math)+'"')
+    args.append('-DMATH_LIB="'+self.libraries.toStringNoDupes(self.mathlib.lib)+'"')
     return args
