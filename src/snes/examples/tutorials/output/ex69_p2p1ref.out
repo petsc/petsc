@@ -45,7 +45,6 @@ SNES Object: 1 MPI processes
   PC Object: 1 MPI processes
     type: fieldsplit
       FieldSplit with Schur preconditioner, factorization FULL
-      using Amat (not Pmat) as operator for blocks
       Preconditioner for the Schur complement formed from A11
       Split info:
       Split number 0 Defined by IS
