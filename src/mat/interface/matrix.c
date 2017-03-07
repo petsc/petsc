@@ -7766,10 +7766,10 @@ PetscErrorCode MatCreateSubMatrix(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *ne
     ierr = PetscLogEventBegin(MAT_CreateSubMat,mat,0,0,0);CHKERRQ(ierr);
     switch (cll) {
     case MAT_INITIAL_MATRIX:
-      ierr = MatCreateSubMatrixComposite(mat,isrow,iscoltmp,newmat);CHKERRQ(ierr);
+      ierr = MatCreateSubMatrixVirtual(mat,isrow,iscoltmp,newmat);CHKERRQ(ierr);
       break;
     case MAT_REUSE_MATRIX:
-      ierr = MatSubMatrixUpdate(*newmat,mat,isrow,iscoltmp);CHKERRQ(ierr);
+      ierr = MatSubMatrixVirtualUpdate(*newmat,mat,isrow,iscoltmp);CHKERRQ(ierr);
       break;
     default: SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"Invalid MatReuse, must be either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX");
     }
