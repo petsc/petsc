@@ -5339,13 +5339,24 @@ The event monitoring functionality is only available with PETSc's implicit time-
 
 %\section{Debugging ODE solvers}
 
+\section{Using TChem from PETSc}
+\label{sec_tchem}
+
+\url{https://bitbucket.org/jedbrown/tchem} is a package originally developed at Sandia National Laboratory that can read in
+\url{https://en.wikipedia.org/wiki/CHEMKIN} data files and compute the right hand side function and its Jacobian for the ODE reaction system.
+To utilize the PETSc ODE solvers for these systems first install PETSc with the additional {\tt ./configure} 
+ option {\tt --download-tchem}. We currently provide two examples of its use; one for single cell reaction and one for an ``artificial''
+one dimensional problem with periodic boundary conditions and diffusion of all species. The examples self explanatory and are {\tt \$PETSC\_DIR/src/ts/examples/tutorials/extchem.c and exchemfield.c.
+
+
 \section{Using Sundials from PETSc}
 \label{sec_sundials}
 
-Sundials is a parallel ODE solver developed by Hindmarsh et al. at LLNL.
-The \lstinline{TS} library provides an interface to use the CVODE component of
-Sundials directly from PETSc.  (To configure PETSc to use Sundials, see
-the installation guide, \trl{docs/installation/index.htm}.)
+Sundials is a parallel ODE solver developed by Hindmarsh et al. at
+LLNL.  The \lstinline{TS} library provides an interface to use the
+CVODE component of Sundials directly from PETSc.  (To configure PETSc
+to use Sundials, see the installation
+guide, \trl{docs/installation/index.htm}.)
 
 To use the Sundials integrators, call
 \begin{lstlisting}
