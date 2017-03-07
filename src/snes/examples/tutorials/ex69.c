@@ -64,6 +64,8 @@ typedef struct {
   PetscBool     simplex;           /* Use simplices or tensor product cells */
   PetscBool     testPartition;     /* Use a fixed partitioning for testing */
   char          mantleBasename[PETSC_MAX_PATH_LEN];
+  int           verts[3];          /* The number of vertices in each dimension for mantle problems */
+  int           perm[3] ;          /* The permutation of axes for mantle problems */
   /* Problem definition */
   SolutionType  solType;           /* The type of exact solution */
   PetscBag      bag;               /* Holds problem parameters */
@@ -3212,15 +3214,17 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  if (user->mantleBasename) {
+  if (user->solType == COMPOSITE) {
     PetscViewer viewer;
     PetscInt    count;
     char        filename[PETSC_MAX_PATH_LEN];
     char        line[PETSC_MAX_PATH_LEN];
     double     *axes[3];
-    int         verts[3], perm[3] = {0, 1, 2}, invperm[3] = {0, 1, 2};
+    int        *verts = user->verts;
+    int        *perm  = user->perm;
     int         snum, d;
 
+    if (user->simplex) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Citom grids do not use simplices. Use -simplex 0");
     ierr = PetscStrcpy(filename, user->mantleBasename);CHKERRQ(ierr);
     ierr = PetscStrcat(filename, "_vects.ascii");CHKERRQ(ierr);
     ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
@@ -3228,7 +3232,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
     ierr = PetscViewerRead(viewer, line, 3, NULL, PETSC_STRING);CHKERRQ(ierr);
-    if (dim == 2) {perm[0] = 2; perm[1] = 0; perm[2] = 1; invperm[0] = 1; invperm[1] = 2; invperm[2] = 0;}
+    if (dim == 2) {perm[0] = 2; perm[1] = 0; perm[2] = 1;}
+    else          {perm[0] = 0; perm[1] = 1; perm[2] = 2;}
     snum = sscanf(line, "%d %d %d", &verts[perm[0]], &verts[perm[1]], &verts[perm[2]]);
     if (snum != 3) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse Citcom vertex file header: %s", line);
     for (d = 0; d < 3; ++d) {
@@ -3237,6 +3242,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       if (count != verts[perm[d]]) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse Citcom vertex file dimension %d: %D %= %d", d, count, verts[perm[d]]);
     }
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    if (dim == 2) {verts[perm[0]] = 1;}
     for (d = 0; d < 3; ++d) cells[d] = verts[d]-1;
     ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);
     /* Remap coordinates to unit ball */
@@ -3434,32 +3440,76 @@ static PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
   ierr = PetscBagGetData(user->bag, (void **) &param);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(dmAux, &paramVec);CHKERRQ(ierr);
   ierr = VecGetArray(paramVec, &p);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dmAux, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
-  cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
-  for (c = cStart; c < cEnd; ++c) {
-    ierr = DMPlexPointLocalRef(dmAux, c, p, &a);CHKERRQ(ierr);
-    switch (user->solType) {
-    case SOLKX:
-      a[0] = param->m;
-      a[1] = param->n;
-      a[2] = param->B;
-      break;
-    case SOLCX:
-      a[0] = param->m;
-      a[1] = param->n;
-      a[2] = param->etaA;
-      a[3] = param->etaB;
-      a[4] = param->xc;
-      break;
-    case COMPOSITE:
-      a[0] = param->T;
-      break;
-    default: SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "No parameter information for solution type %d", user->solType);
+  if (user->solType == COMPOSITE) {
+    PetscSection s;
+    PetscViewer  viewer;
+    PetscInt     count;
+    char         filename[PETSC_MAX_PATH_LEN];
+    float       *temp;
+    PetscInt     Nx = user->verts[user->perm[0]], Ny = user->verts[user->perm[1]], Nz = user->verts[user->perm[2]], vStart, vx, vy, vz;
+
+    ierr = DMGetDefaultSection(dmAux, &s);CHKERRQ(ierr);
+    ierr = DMPlexGetDepthStratum(dmAux, 0, &vStart, NULL);CHKERRQ(ierr);
+    ierr = PetscStrcpy(filename, user->mantleBasename);CHKERRQ(ierr);
+    ierr = PetscStrcat(filename, "_therm.bin");CHKERRQ(ierr);
+    ierr = PetscViewerCreate(PetscObjectComm((PetscObject) dm), &viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSCVIEWERBINARY);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
+    ierr = PetscMalloc1(Nz, &temp);CHKERRQ(ierr);
+    /* The ordering is Y, X, Z where Z is the fastest dimension */
+    for (vy = 0; vy < Ny; ++vy) {
+      for (vx = 0; vx < Nx; ++vx) {
+        ierr = PetscViewerRead(viewer, temp, Nz, &count, PETSC_FLOAT);CHKERRQ(ierr);
+        if (count != Nz) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Mantle temperature file %s had incorrect length", filename);
+        for (vz = 0; vz < Nz; ++vz) {
+          PetscInt off;
+
+          ierr = PetscSectionGetOffset(s, (vz*Ny + vy)*Nx + vx + vStart, &off);CHKERRQ(ierr);
+          p[off] = temp[vz];
+        }
+      }
+    }
+    ierr = PetscFree(temp);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  } else {
+    ierr = DMPlexGetHeightStratum(dmAux, 0, &cStart, &cEnd);CHKERRQ(ierr);
+    ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
+    cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
+    for (c = cStart; c < cEnd; ++c) {
+      ierr = DMPlexPointLocalRef(dmAux, c, p, &a);CHKERRQ(ierr);
+      switch (user->solType) {
+      case SOLKX:
+        a[0] = param->m;
+        a[1] = param->n;
+        a[2] = param->B;
+        break;
+      case SOLCX:
+        a[0] = param->m;
+        a[1] = param->n;
+        a[2] = param->etaA;
+        a[3] = param->etaB;
+        a[4] = param->xc;
+        break;
+      case COMPOSITE:
+        a[0] = param->T;
+        break;
+      default: SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "No parameter information for solution type %d", user->solType);
+      }
     }
   }
   ierr = VecRestoreArray(paramVec, &p);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject) dm, "A", (PetscObject) paramVec);CHKERRQ(ierr);
+  ierr = DMViewFromOptions(dmAux, NULL, "-dm_aux_view");CHKERRQ(ierr);
+  {
+    Vec gvec;
+
+    ierr = DMGetGlobalVector(dmAux, &gvec);CHKERRQ(ierr);
+    ierr = DMLocalToGlobalBegin(dmAux, paramVec, INSERT_VALUES, gvec);CHKERRQ(ierr);
+    ierr = DMLocalToGlobalEnd(dmAux, paramVec, INSERT_VALUES, gvec);CHKERRQ(ierr);
+    ierr = VecViewFromOptions(gvec, NULL, "-vec_param_view");CHKERRQ(ierr);
+    ierr = DMRestoreGlobalVector(dmAux, &gvec);CHKERRQ(ierr);
+  }
   ierr = VecDestroy(&paramVec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3494,10 +3544,21 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   ierr = PetscBagGetNames(user->bag, auxFieldNames);CHKERRQ(ierr);
   ierr = PetscDSCreate(PetscObjectComm((PetscObject)dm),&probAux);CHKERRQ(ierr);
   for (f = 0; f < numAux; ++f) {
-    ierr = PetscFECreateDefault(dm, dim, 1, PETSC_FALSE, NULL, 0, &feAux[f]);CHKERRQ(ierr);
+    char prefix[PETSC_MAX_PATH_LEN];
+
+    ierr = PetscSNPrintf(prefix, PETSC_MAX_PATH_LEN, "aux_%d_", f);CHKERRQ(ierr);
+    ierr = PetscFECreateDefault(dm, dim, 1, user->simplex, prefix, 0, &feAux[f]);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) feAux[f], auxFieldNames[f]);CHKERRQ(ierr);
     ierr = PetscFESetQuadrature(feAux[f], q);CHKERRQ(ierr);
     ierr = PetscDSSetDiscretization(probAux, f, (PetscObject) feAux[f]);CHKERRQ(ierr);
+    if (user->solType == COMPOSITE) {
+      PetscSpace sp;
+      PetscInt   order;
+
+      ierr = PetscFEGetBasisSpace(feAux[f], &sp);CHKERRQ(ierr);
+      ierr = PetscSpaceGetOrder(sp, &order);CHKERRQ(ierr);
+      if (order != 1) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Temperature element must be linear, not order %D", order);
+    }
   }
   /* Set discretization and boundary conditions for each mesh */
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
