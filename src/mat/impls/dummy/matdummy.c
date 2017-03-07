@@ -4,7 +4,7 @@
 PetscErrorCode MatDestroy_Dummy_Submatrices(Mat C)
 {
   PetscErrorCode ierr;
-  Mat_SubMat     *submatj = (Mat_SubMat*)C->data;
+  Mat_SubSppt    *submatj = (Mat_SubSppt*)C->data;
 
   PetscFunctionBegin;
   ierr = submatj->destroy(C);CHKERRQ(ierr);

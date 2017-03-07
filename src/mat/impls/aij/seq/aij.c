@@ -2409,7 +2409,7 @@ PetscErrorCode MatScale_SeqAIJ(Mat inA,PetscScalar alpha)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDestroySubMatrices_Private(Mat_SubMat *submatj)
+PetscErrorCode MatDestroySubMatrices_Private(Mat_SubSppt *submatj)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -2460,7 +2460,7 @@ PetscErrorCode MatDestroy_SeqAIJ_Submatrices(Mat C)
 {
   PetscErrorCode ierr;
   Mat_SeqAIJ     *c = (Mat_SeqAIJ*)C->data;
-  Mat_SubMat     *submatj = c->submatis1;
+  Mat_SubSppt    *submatj = c->submatis1;
 
   PetscFunctionBegin;
   ierr = submatj->destroy(C);CHKERRQ(ierr);

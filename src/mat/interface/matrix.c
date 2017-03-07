@@ -6773,12 +6773,12 @@ PetscErrorCode MatDestroySubMatrices(PetscInt n,Mat *mat[])
   if (n < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to destroy negative number of matrices %D",n);
   PetscValidPointer(mat,2);
 
-  /* Destroy dummy submatrices (*mat)[n]...(*mat)[n+nstages-1] used for reuse struct Mat_SubMat */
+  /* Destroy dummy submatrices (*mat)[n]...(*mat)[n+nstages-1] used for reuse struct Mat_SubSppt */
   if ((*mat)[n]) {
     PetscBool      isdummy;
     ierr = PetscObjectTypeCompare((PetscObject)(*mat)[n],MATDUMMY,&isdummy);CHKERRQ(ierr);
     if (isdummy) {
-      Mat_SubMat* smat = (Mat_SubMat*)((*mat)[n]->data); /* singleis and nstages are saved in (*mat)[n]->data */
+      Mat_SubSppt* smat = (Mat_SubSppt*)((*mat)[n]->data); /* singleis and nstages are saved in (*mat)[n]->data */
 
       if (smat && !smat->singleis) {
         PetscInt i,nstages=smat->nstages;

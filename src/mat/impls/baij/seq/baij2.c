@@ -215,7 +215,7 @@ PetscErrorCode MatDestroy_SeqBAIJ_Submatrices(Mat C)
 {
   PetscErrorCode ierr;
   Mat_SeqBAIJ    *c = (Mat_SeqBAIJ*)C->data;
-  Mat_SubMat     *submatj = c->submatis1;
+  Mat_SubSppt    *submatj = c->submatis1;
 
   PetscFunctionBegin;
   ierr = submatj->destroy(C);CHKERRQ(ierr);

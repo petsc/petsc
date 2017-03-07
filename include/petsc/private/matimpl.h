@@ -623,7 +623,7 @@ typedef struct { /* used by MatCreateSubMatrices_MPIAIJ_SingleIS_Local() and Mat
 #endif
 
   PetscErrorCode (*destroy)(Mat);
-} Mat_SubMat;
+} Mat_SubSppt;
 
 PETSC_EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
 PETSC_INTERN PetscErrorCode MatShift_Basic(Mat,PetscScalar);
