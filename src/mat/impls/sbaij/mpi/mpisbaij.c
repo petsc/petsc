@@ -1450,7 +1450,7 @@ PetscErrorCode MatImaginaryPart_MPISBAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
-/* Check if isrow is a subset of iscol_local, called by MatGetSubMatrix_MPISBAIJ()
+/* Check if isrow is a subset of iscol_local, called by MatCreateSubMatrix_MPISBAIJ()
    Input: isrow       - distributed(parallel), 
           iscol_local - locally owned (seq) 
 */
@@ -1500,7 +1500,7 @@ PetscErrorCode ISEqual_private(IS isrow,IS iscol_local,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatGetSubMatrix_MPISBAIJ(Mat mat,IS isrow,IS iscol,MatReuse call,Mat *newmat)
+PetscErrorCode MatCreateSubMatrix_MPISBAIJ(Mat mat,IS isrow,IS iscol,MatReuse call,Mat *newmat)
 {
   PetscErrorCode ierr;
   IS             iscol_local;
@@ -1518,8 +1518,8 @@ PetscErrorCode MatGetSubMatrix_MPISBAIJ(Mat mat,IS isrow,IS iscol,MatReuse call,
     if (!isequal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"For symmetric format, iscol must equal isrow");
   }
 
-  /* now call MatGetSubMatrix_MPIBAIJ() */
-  ierr = MatGetSubMatrix_MPIBAIJ_Private(mat,isrow,iscol_local,csize,call,newmat);CHKERRQ(ierr); 
+  /* now call MatCreateSubMatrix_MPIBAIJ() */
+  ierr = MatCreateSubMatrix_MPIBAIJ_Private(mat,isrow,iscol_local,csize,call,newmat);CHKERRQ(ierr); 
   if (call == MAT_INITIAL_MATRIX) {
     ierr = PetscObjectCompose((PetscObject)*newmat,"ISAllGather",(PetscObject)iscol_local);CHKERRQ(ierr);
     ierr = ISDestroy(&iscol_local);CHKERRQ(ierr);
@@ -1821,14 +1821,14 @@ PetscErrorCode MatAXPY_MPISBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatGetSubMatrices_MPISBAIJ(Mat A,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *B[])
+PetscErrorCode MatCreateSubMatrices_MPISBAIJ(Mat A,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *B[])
 {
   PetscErrorCode ierr;
   PetscInt       i;
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = MatGetSubMatrices_MPIBAIJ(A,n,irow,icol,scall,B);CHKERRQ(ierr); /* B[] are sbaij matrices */
+  ierr = MatCreateSubMatrices_MPIBAIJ(A,n,irow,icol,scall,B);CHKERRQ(ierr); /* B[] are sbaij matrices */
   for (i=0; i<n; i++) {
     ierr = ISEqual(irow[i],icol[i],&flg);CHKERRQ(ierr);
     if (!flg) { 
@@ -1921,7 +1921,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPISBAIJ,
                                        0,
                                        0,
                                /* 39*/ MatAXPY_MPISBAIJ,
-                                       MatGetSubMatrices_MPISBAIJ,
+                                       MatCreateSubMatrices_MPISBAIJ,
                                        MatIncreaseOverlap_MPISBAIJ,
                                        MatGetValues_MPISBAIJ,
                                        MatCopy_MPISBAIJ,
@@ -1940,7 +1940,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPISBAIJ,
                                        MatSetUnfactored_MPISBAIJ,
                                        0,
                                        MatSetValuesBlocked_MPISBAIJ,
-                               /* 59*/ MatGetSubMatrix_MPISBAIJ,
+                               /* 59*/ MatCreateSubMatrix_MPISBAIJ,
                                        0,
                                        0,
                                        0,
@@ -2237,7 +2237,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat B)
   b->ht_total_ct  = 0;
   b->ht_insert_ct = 0;
 
-  /* stuff for MatGetSubMatrices_MPIBAIJ_local() */
+  /* stuff for MatCreateSubMatrices_MPIBAIJ_local() */
   b->ijonly = PETSC_FALSE;
 
   b->in_loc = 0;

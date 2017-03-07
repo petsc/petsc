@@ -33,7 +33,7 @@ int main(int argc, char **args)
   m = 5;
   ierr = PetscOptionsInt("-m","Local matrix size","MatSetSizes",m,&m,&flg);CHKERRQ(ierr);
   total_subdomains = size-1;
-  ierr = PetscOptionsInt("-total_subdomains","Number of submatrices where 0 < n < comm size","MatGetSubMatricesMPI",total_subdomains,&total_subdomains,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-total_subdomains","Number of submatrices where 0 < n < comm size","MatCreateSubMatricesMPI",total_subdomains,&total_subdomains,&flg);CHKERRQ(ierr);
   permute_indices = PETSC_FALSE;
   ierr = PetscOptionsBool("-permute_indices","Whether to permute indices before breaking them into subdomains","ISCreateGeneral",permute_indices,&permute_indices,&flg);CHKERRQ(ierr);
   hash = 7;
@@ -145,7 +145,7 @@ int main(int argc, char **args)
   ierr = ISSort(rowis[0]);CHKERRQ(ierr);
   ierr = ISSort(colis[0]);CHKERRQ(ierr);
   nsubdomains = 1;
-  ierr = MatGetSubMatricesMPI(A,nsubdomains,rowis,colis,MAT_INITIAL_MATRIX,&submats);CHKERRQ(ierr);
+  ierr = MatCreateSubMatricesMPI(A,nsubdomains,rowis,colis,MAT_INITIAL_MATRIX,&submats);CHKERRQ(ierr);
   /*
     Now view the matrices.  To avoid deadlock when viewing a list of objects on different subcomms,
     we need to obtain the global numbers of our local objects and wait for the corresponding global
@@ -172,7 +172,7 @@ int main(int argc, char **args)
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   if (rep == 1) goto cleanup;
   nsubdomains = 1;
-  ierr = MatGetSubMatricesMPI(A,nsubdomains,rowis,colis,MAT_REUSE_MATRIX,&submats);CHKERRQ(ierr);
+  ierr = MatCreateSubMatricesMPI(A,nsubdomains,rowis,colis,MAT_REUSE_MATRIX,&submats);CHKERRQ(ierr);
   /*
     Now view the matrices.  To avoid deadlock when viewing a list of objects on different subcomms,
     we need to obtain the global numbers of our local objects and wait for the corresponding global

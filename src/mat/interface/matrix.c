@@ -18,9 +18,9 @@ PetscLogEvent MAT_MultTransposeConstrained, MAT_MultTransposeAdd, MAT_Solve, MAT
 PetscLogEvent MAT_SolveTransposeAdd, MAT_SOR, MAT_ForwardSolve, MAT_BackwardSolve, MAT_LUFactor, MAT_LUFactorSymbolic;
 PetscLogEvent MAT_LUFactorNumeric, MAT_CholeskyFactor, MAT_CholeskyFactorSymbolic, MAT_CholeskyFactorNumeric, MAT_ILUFactor;
 PetscLogEvent MAT_ILUFactorSymbolic, MAT_ICCFactorSymbolic, MAT_Copy, MAT_Convert, MAT_Scale, MAT_AssemblyBegin;
-PetscLogEvent MAT_AssemblyEnd, MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetRowIJ, MAT_GetSubMatrices, MAT_GetOrdering, MAT_RedundantMat, MAT_GetSeqNonzeroStructure;
+PetscLogEvent MAT_AssemblyEnd, MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetRowIJ, MAT_CreateSubMats, MAT_GetOrdering, MAT_RedundantMat, MAT_GetSeqNonzeroStructure;
 PetscLogEvent MAT_IncreaseOverlap, MAT_Partitioning, MAT_Coarsen, MAT_ZeroEntries, MAT_Load, MAT_View, MAT_AXPY, MAT_FDColoringCreate;
-PetscLogEvent MAT_FDColoringSetUp, MAT_FDColoringApply,MAT_Transpose,MAT_FDColoringFunction, MAT_GetSubMatrix;
+PetscLogEvent MAT_FDColoringSetUp, MAT_FDColoringApply,MAT_Transpose,MAT_FDColoringFunction, MAT_CreateSubMat;
 PetscLogEvent MAT_TransposeColoringCreate;
 PetscLogEvent MAT_MatMult, MAT_MatMultSymbolic, MAT_MatMultNumeric;
 PetscLogEvent MAT_PtAP, MAT_PtAPSymbolic, MAT_PtAPNumeric,MAT_RARt, MAT_RARtSymbolic, MAT_RARtNumeric;
@@ -487,7 +487,7 @@ PetscErrorCode MatMissingDiagonal(Mat mat,PetscBool *missing,PetscInt *dd)
    You can only have one call to MatGetRow() outstanding for a particular
    matrix at a time, per processor. MatGetRow() can only obtain rows
    associated with the given processor, it cannot get rows from the
-   other processors; for that we suggest using MatGetSubMatrices(), then
+   other processors; for that we suggest using MatCreateSubMatrices(), then
    MatGetRow() on the submatrix. The row index passed to MatGetRows()
    is in the global number of rows.
 
@@ -512,7 +512,7 @@ PetscErrorCode MatMissingDiagonal(Mat mat,PetscBool *missing,PetscInt *dd)
 
    Concepts: matrices^row access
 
-.seealso: MatRestoreRow(), MatSetValues(), MatGetValues(), MatGetSubMatrices(), MatGetDiagonal()
+.seealso: MatRestoreRow(), MatSetValues(), MatGetValues(), MatCreateSubMatrices(), MatGetDiagonal()
 @*/
 PetscErrorCode MatGetRow(Mat mat,PetscInt row,PetscInt *ncols,const PetscInt *cols[],const PetscScalar *vals[])
 {
@@ -1118,7 +1118,7 @@ PetscErrorCode MatDestroy_Redundant(Mat_Redundant **redundant)
 
   PetscFunctionBegin;
   if (redund){
-    if (redund->matseq) { /* via MatGetSubMatrices()  */
+    if (redund->matseq) { /* via MatCreateSubMatrices()  */
       ierr = ISDestroy(&redund->isrow);CHKERRQ(ierr);
       ierr = ISDestroy(&redund->iscol);CHKERRQ(ierr);
       ierr = MatDestroy(&redund->matseq[0]);CHKERRQ(ierr);
@@ -1862,7 +1862,7 @@ PetscErrorCode MatSetValuesBlocked(Mat mat,PetscInt m,const PetscInt idxm[],Pets
 
    Concepts: matrices^accessing values
 
-.seealso: MatGetRow(), MatGetSubMatrices(), MatSetValues()
+.seealso: MatGetRow(), MatCreateSubMatrices(), MatSetValues()
 @*/
 PetscErrorCode MatGetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,const PetscInt idxn[],PetscScalar v[])
 {
@@ -4381,7 +4381,7 @@ PetscErrorCode MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
 
    Concepts: matrices^accessing diagonals
 
-.seealso: MatGetRow(), MatGetSubMatrices(), MatGetSubmatrix(), MatGetRowMaxAbs()
+.seealso: MatGetRow(), MatCreateSubMatrices(), MatCreateSubmatrix(), MatGetRowMaxAbs()
 @*/
 PetscErrorCode MatGetDiagonal(Mat mat,Vec v)
 {
@@ -4422,7 +4422,7 @@ PetscErrorCode MatGetDiagonal(Mat mat,Vec v)
 
    Concepts: matrices^getting row maximums
 
-.seealso: MatGetDiagonal(), MatGetSubMatrices(), MatGetSubmatrix(), MatGetRowMaxAbs(),
+.seealso: MatGetDiagonal(), MatCreateSubMatrices(), MatCreateSubmatrix(), MatGetRowMaxAbs(),
           MatGetRowMax()
 @*/
 PetscErrorCode MatGetRowMin(Mat mat,Vec v,PetscInt idx[])
@@ -4464,7 +4464,7 @@ PetscErrorCode MatGetRowMin(Mat mat,Vec v,PetscInt idx[])
 
    Concepts: matrices^getting row maximums
 
-.seealso: MatGetDiagonal(), MatGetSubMatrices(), MatGetSubmatrix(), MatGetRowMax(), MatGetRowMaxAbs(), MatGetRowMin()
+.seealso: MatGetDiagonal(), MatCreateSubMatrices(), MatCreateSubmatrix(), MatGetRowMax(), MatGetRowMaxAbs(), MatGetRowMin()
 @*/
 PetscErrorCode MatGetRowMinAbs(Mat mat,Vec v,PetscInt idx[])
 {
@@ -4506,7 +4506,7 @@ PetscErrorCode MatGetRowMinAbs(Mat mat,Vec v,PetscInt idx[])
 
    Concepts: matrices^getting row maximums
 
-.seealso: MatGetDiagonal(), MatGetSubMatrices(), MatGetSubmatrix(), MatGetRowMaxAbs(), MatGetRowMin()
+.seealso: MatGetDiagonal(), MatCreateSubMatrices(), MatCreateSubmatrix(), MatGetRowMaxAbs(), MatGetRowMin()
 @*/
 PetscErrorCode MatGetRowMax(Mat mat,Vec v,PetscInt idx[])
 {
@@ -4547,7 +4547,7 @@ PetscErrorCode MatGetRowMax(Mat mat,Vec v,PetscInt idx[])
 
    Concepts: matrices^getting row maximums
 
-.seealso: MatGetDiagonal(), MatGetSubMatrices(), MatGetSubmatrix(), MatGetRowMax(), MatGetRowMin()
+.seealso: MatGetDiagonal(), MatCreateSubMatrices(), MatCreateSubmatrix(), MatGetRowMax(), MatGetRowMin()
 @*/
 PetscErrorCode MatGetRowMaxAbs(Mat mat,Vec v,PetscInt idx[])
 {
@@ -4584,7 +4584,7 @@ PetscErrorCode MatGetRowMaxAbs(Mat mat,Vec v,PetscInt idx[])
 
    Concepts: matrices^getting row sums
 
-.seealso: MatGetDiagonal(), MatGetSubMatrices(), MatGetSubmatrix(), MatGetRowMax(), MatGetRowMin()
+.seealso: MatGetDiagonal(), MatCreateSubMatrices(), MatCreateSubmatrix(), MatGetRowMax(), MatGetRowMin()
 @*/
 PetscErrorCode MatGetRowSum(Mat mat, Vec v)
 {
@@ -6567,7 +6567,7 @@ PetscErrorCode MatICCFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFactorInfo
 }
 
 /*@C
-   MatGetSubMatrices - Extracts several submatrices from a matrix. If submat
+   MatCreateSubMatrices - Extracts several submatrices from a matrix. If submat
    points to an array of valid matrices, they may be reused to store the new
    submatrices.
 
@@ -6583,8 +6583,8 @@ PetscErrorCode MatICCFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFactorInfo
 .  submat - the array of submatrices
 
    Notes:
-   MatGetSubMatrices() can extract ONLY sequential submatrices
-   (from both sequential and parallel matrices). Use MatGetSubMatrix()
+   MatCreateSubMatrices() can extract ONLY sequential submatrices
+   (from both sequential and parallel matrices). Use MatCreateSubMatrix()
    to extract a parallel submatrix.
 
    Some matrix types place restrictions on the row and column
@@ -6600,7 +6600,7 @@ PetscErrorCode MatICCFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFactorInfo
    them with MatDestroyMatrices().
 
    MAT_REUSE_MATRIX can only be used when the nonzero structure of the
-   original matrix has not changed from that last call to MatGetSubMatrices().
+   original matrix has not changed from that last call to MatCreateSubMatrices().
 
    This routine creates the matrices in submat; you should NOT create them before
    calling it. It also allocates the array of matrix pointers submat.
@@ -6619,9 +6619,9 @@ PetscErrorCode MatICCFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFactorInfo
    Concepts: matrices^accessing submatrices
    Concepts: submatrices
 
-.seealso: MatDestroyMatrices(), MatGetSubMatrix(), MatGetRow(), MatGetDiagonal(), MatReuse
+.seealso: MatDestroyMatrices(), MatCreateSubMatrix(), MatGetRow(), MatGetDiagonal(), MatReuse
 @*/
-PetscErrorCode MatGetSubMatrices(Mat mat,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *submat[])
+PetscErrorCode MatCreateSubMatrices(Mat mat,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *submat[])
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -6641,14 +6641,14 @@ PetscErrorCode MatGetSubMatrices(Mat mat,PetscInt n,const IS irow[],const IS ico
     PetscValidPointer(*submat,6);
     PetscValidHeaderSpecific(**submat,MAT_CLASSID,6);
   }
-  if (!mat->ops->getsubmatrices) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
+  if (!mat->ops->createsubmatrices) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   MatCheckPreallocated(mat,1);
 
-  ierr = PetscLogEventBegin(MAT_GetSubMatrices,mat,0,0,0);CHKERRQ(ierr);
-  ierr = (*mat->ops->getsubmatrices)(mat,n,irow,icol,scall,submat);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_GetSubMatrices,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_CreateSubMats,mat,0,0,0);CHKERRQ(ierr);
+  ierr = (*mat->ops->createsubmatrices)(mat,n,irow,icol,scall,submat);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_CreateSubMats,mat,0,0,0);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     (*submat)[i]->factortype = MAT_FACTOR_NONE;  /* in case in place factorization was previously done on submatrix */
     if (mat->symmetric || mat->structurally_symmetric || mat->hermitian) {
@@ -6667,7 +6667,7 @@ PetscErrorCode MatGetSubMatrices(Mat mat,PetscInt n,const IS irow[],const IS ico
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatGetSubMatricesMPI(Mat mat,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *submat[])
+PetscErrorCode MatCreateSubMatricesMPI(Mat mat,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *submat[])
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -6687,14 +6687,14 @@ PetscErrorCode MatGetSubMatricesMPI(Mat mat,PetscInt n,const IS irow[],const IS 
     PetscValidPointer(*submat,6);
     PetscValidHeaderSpecific(**submat,MAT_CLASSID,6);
   }
-  if (!mat->ops->getsubmatricesmpi) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
+  if (!mat->ops->createsubmatricesmpi) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   MatCheckPreallocated(mat,1);
 
-  ierr = PetscLogEventBegin(MAT_GetSubMatrices,mat,0,0,0);CHKERRQ(ierr);
-  ierr = (*mat->ops->getsubmatricesmpi)(mat,n,irow,icol,scall,submat);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_GetSubMatrices,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_CreateSubMats,mat,0,0,0);CHKERRQ(ierr);
+  ierr = (*mat->ops->createsubmatricesmpi)(mat,n,irow,icol,scall,submat);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_CreateSubMats,mat,0,0,0);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     if (mat->symmetric || mat->structurally_symmetric || mat->hermitian) {
       ierr = ISEqual(irow[i],icol[i],&eq);CHKERRQ(ierr);
@@ -6726,7 +6726,7 @@ PetscErrorCode MatGetSubMatricesMPI(Mat mat,PetscInt n,const IS irow[],const IS 
     Notes: Frees not only the matrices, but also the array that contains the matrices
            In Fortran will not free the array.
 
-.seealso: MatGetSubMatrices() MatDestroySubMatrices()
+.seealso: MatCreateSubMatrices() MatDestroySubMatrices()
 @*/
 PetscErrorCode MatDestroyMatrices(PetscInt n,Mat *mat[])
 {
@@ -6748,21 +6748,21 @@ PetscErrorCode MatDestroyMatrices(PetscInt n,Mat *mat[])
 }
 
 /*@C
-   MatDestroySubMatrices - Destroys a set of matrices obtained with MatGetSubMatrices().
+   MatDestroySubMatrices - Destroys a set of matrices obtained with MatCreateSubMatrices().
 
    Collective on Mat
 
    Input Parameters:
 +  n - the number of local matrices
 -  mat - the matrices (note that this is a pointer to the array of matrices, just to match the calling
-                       sequence of MatGetSubMatrices())
+                       sequence of MatCreateSubMatrices())
 
    Level: advanced
 
     Notes: Frees not only the matrices, but also the array that contains the matrices
            In Fortran will not free the array.
 
-.seealso: MatGetSubMatrices()
+.seealso: MatCreateSubMatrices()
 @*/
 PetscErrorCode MatDestroySubMatrices(PetscInt n,Mat *mat[])
 {
@@ -6806,7 +6806,7 @@ PetscErrorCode MatDestroySubMatrices(PetscInt n,Mat *mat[])
 
   Level: intermediate
 
-.seealso: MatDestroySeqNonzeroStructure(), MatGetSubMatrices(), MatDestroyMatrices()
+.seealso: MatDestroySeqNonzeroStructure(), MatCreateSubMatrices(), MatDestroyMatrices()
 @*/
 PetscErrorCode MatGetSeqNonzeroStructure(Mat mat,Mat *matstruct)
 {
@@ -6873,7 +6873,7 @@ PetscErrorCode MatDestroySeqNonzeroStructure(Mat *mat)
    Concepts: overlap
    Concepts: ASM^computing overlap
 
-.seealso: MatGetSubMatrices()
+.seealso: MatCreateSubMatrices()
 @*/
 PetscErrorCode MatIncreaseOverlap(Mat mat,PetscInt n,IS is[],PetscInt ov)
 {
@@ -6923,7 +6923,7 @@ PetscErrorCode MatIncreaseOverlapSplit_Single(Mat,IS*,PetscInt);
    Concepts: overlap
    Concepts: ASM^computing overlap
 
-.seealso: MatGetSubMatrices()
+.seealso: MatCreateSubMatrices()
 @*/
 PetscErrorCode MatIncreaseOverlapSplit(Mat mat,PetscInt n,IS is[],PetscInt ov)
 {
@@ -7625,7 +7625,7 @@ M*/
 
 
 /*@
-    MatGetSubMatrix - Gets a single submatrix on the same number of processors
+    MatCreateSubMatrix - Gets a single submatrix on the same number of processors
                       as the original matrix.
 
     Collective on Mat
@@ -7650,7 +7650,7 @@ M*/
     The index sets may not have duplicate entries.
 
       The first time this is called you should use a cll of MAT_INITIAL_MATRIX,
-   the MatGetSubMatrix() routine will create the newmat for you. Any additional calls
+   the MatCreateSubMatrix() routine will create the newmat for you. Any additional calls
    to this routine with a mat of the same nonzero structure and with a call of MAT_REUSE_MATRIX
    will reuse the matrix generated the first time.  You should call MatDestroy() on newmat when
    you are finished using it.
@@ -7694,9 +7694,9 @@ M*/
 
     Concepts: matrices^submatrices
 
-.seealso: MatGetSubMatrices()
+.seealso: MatCreateSubMatrices()
 @*/
-PetscErrorCode MatGetSubMatrix(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *newmat)
+PetscErrorCode MatCreateSubMatrix(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *newmat)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -7751,37 +7751,37 @@ PetscErrorCode MatGetSubMatrix(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *newma
   }
 
   /* if original matrix is on just one processor then use submatrix generated */
-  if (mat->ops->getsubmatrices && !mat->ops->getsubmatrix && size == 1 && cll == MAT_REUSE_MATRIX) {
-    ierr = MatGetSubMatrices(mat,1,&isrow,&iscoltmp,MAT_REUSE_MATRIX,&newmat);CHKERRQ(ierr);
+  if (mat->ops->createsubmatrices && !mat->ops->createsubmatrix && size == 1 && cll == MAT_REUSE_MATRIX) {
+    ierr = MatCreateSubMatrices(mat,1,&isrow,&iscoltmp,MAT_REUSE_MATRIX,&newmat);CHKERRQ(ierr);
     if (!iscol) {ierr = ISDestroy(&iscoltmp);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
-  } else if (mat->ops->getsubmatrices && !mat->ops->getsubmatrix && size == 1) {
-    ierr    = MatGetSubMatrices(mat,1,&isrow,&iscoltmp,MAT_INITIAL_MATRIX,&local);CHKERRQ(ierr);
+  } else if (mat->ops->createsubmatrices && !mat->ops->createsubmatrix && size == 1) {
+    ierr    = MatCreateSubMatrices(mat,1,&isrow,&iscoltmp,MAT_INITIAL_MATRIX,&local);CHKERRQ(ierr);
     *newmat = *local;
     ierr    = PetscFree(local);CHKERRQ(ierr);
     if (!iscol) {ierr = ISDestroy(&iscoltmp);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
-  } else if (!mat->ops->getsubmatrix) {
+  } else if (!mat->ops->createsubmatrix) {
     /* Create a new matrix type that implements the operation using the full matrix */
-    ierr = PetscLogEventBegin(MAT_GetSubMatrix,mat,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(MAT_CreateSubMat,mat,0,0,0);CHKERRQ(ierr);
     switch (cll) {
     case MAT_INITIAL_MATRIX:
-      ierr = MatCreateSubMatrix(mat,isrow,iscoltmp,newmat);CHKERRQ(ierr);
+      ierr = MatCreateSubMatrixComposite(mat,isrow,iscoltmp,newmat);CHKERRQ(ierr);
       break;
     case MAT_REUSE_MATRIX:
       ierr = MatSubMatrixUpdate(*newmat,mat,isrow,iscoltmp);CHKERRQ(ierr);
       break;
     default: SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"Invalid MatReuse, must be either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX");
     }
-    ierr = PetscLogEventEnd(MAT_GetSubMatrix,mat,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_CreateSubMat,mat,0,0,0);CHKERRQ(ierr);
     if (!iscol) {ierr = ISDestroy(&iscoltmp);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
   }
 
-  if (!mat->ops->getsubmatrix) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
-  ierr = PetscLogEventBegin(MAT_GetSubMatrix,mat,0,0,0);CHKERRQ(ierr);
-  ierr = (*mat->ops->getsubmatrix)(mat,isrow,iscoltmp,cll,newmat);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_GetSubMatrix,mat,0,0,0);CHKERRQ(ierr);
+  if (!mat->ops->createsubmatrix) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
+  ierr = PetscLogEventBegin(MAT_CreateSubMat,mat,0,0,0);CHKERRQ(ierr);
+  ierr = (*mat->ops->createsubmatrix)(mat,isrow,iscoltmp,cll,newmat);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_CreateSubMat,mat,0,0,0);CHKERRQ(ierr);
   if (!iscol) {ierr = ISDestroy(&iscoltmp);CHKERRQ(ierr);}
   if (*newmat && cll == MAT_INITIAL_MATRIX) {ierr = PetscObjectStateIncrease((PetscObject)*newmat);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
@@ -9883,7 +9883,7 @@ PetscErrorCode MatCreateRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subco
     iscol  = redund->iscol;
     matseq = redund->matseq;
   }
-  ierr = MatGetSubMatrices(mat,1,&isrow,&iscol,reuse,&matseq);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(mat,1,&isrow,&iscol,reuse,&matseq);CHKERRQ(ierr);
 
   /* get matredundant over subcomm */
   if (reuse == MAT_INITIAL_MATRIX) {
@@ -9938,7 +9938,7 @@ PetscErrorCode MatCreateRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subco
   Concepts: subcommunicator
   Concepts: submatrices
 
-.seealso: MatGetSubMatrices()
+.seealso: MatCreateSubMatrices()
 @*/
 PetscErrorCode   MatGetMultiProcBlock(Mat mat, MPI_Comm subComm, MatReuse scall,Mat *subMat)
 {

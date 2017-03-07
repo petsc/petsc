@@ -515,7 +515,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Receive(Mat C,PetscInt nrqr,Pet
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[])
+PetscErrorCode MatCreateSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[])
 {
   IS             *isrow_block,*iscol_block;
   Mat_MPIBAIJ    *c = (Mat_MPIBAIJ*)C->data;
@@ -552,7 +552,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[],c
       smat = (Mat_SubMat*)(*submat)[0]->data;
     }
     if (!smat) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"MatGetSubMatrices(...,MAT_REUSE_MATRIX,...) requires submat");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"MatCreateSubMatrices(...,MAT_REUSE_MATRIX,...) requires submat");
     }
     nstages = smat->nstages;
   }
@@ -562,7 +562,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[],c
     else if (pos == ismax) max_no = 0;
     else                   max_no = ismax-pos;
 
-    ierr = MatGetSubMatrices_MPIBAIJ_local(C,max_no,isrow_block+pos,iscol_block+pos,scall,*submat+pos);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrices_MPIBAIJ_local(C,max_no,isrow_block+pos,iscol_block+pos,scall,*submat+pos);CHKERRQ(ierr);
     if (!max_no && scall == MAT_INITIAL_MATRIX) { /* submat[pos] is a dummy matrix */
       smat = (Mat_SubMat*)(*submat)[pos]->data;
       smat->nstages = nstages;
@@ -606,7 +606,7 @@ PetscErrorCode PetscGetProc(const PetscInt row, const PetscMPIInt size, const Pe
 
 /* -------------------------------------------------------------------------*/
 /* This code is used for BAIJ and SBAIJ matrices (unfortunate dependency) */
-PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submats)
+PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submats)
 {
   Mat_MPIBAIJ    *c = (Mat_MPIBAIJ*)C->data;
   Mat            A  = c->A;

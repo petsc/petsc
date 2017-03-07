@@ -37,7 +37,7 @@
   PetscBool         pivotinblocks;    /* pivot inside factorization of each diagonal block */ \
   Mat               parent;           /* set if this matrix was formed with MatDuplicate(...,MAT_SHARE_NONZERO_PATTERN,....); \
                                          means that this shares some data structures with the parent including diag, ilen, imax, i, j */\
-  Mat_SubMat       *submatis1         /* used by MatGetSubMatrices_MPIXAIJ_Local */
+  Mat_SubMat       *submatis1         /* used by MatCreateSubMatrices_MPIXAIJ_Local */
 
 typedef struct {
   MatTransposeColoring matcoloring;

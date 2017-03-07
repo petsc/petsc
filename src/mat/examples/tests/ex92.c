@@ -1,5 +1,5 @@
 
-static char help[] = "Tests MatIncreaseOverlap(), MatGetSubMatrices() for parallel MatSBAIJ format.\n";
+static char help[] = "Tests MatIncreaseOverlap(), MatCreateSubMatrices() for parallel MatSBAIJ format.\n";
 /* Example of usage:
       mpiexec -n 2 ./ex92 -nd 2 -ov 3 -mat_block_size 2 -view_id 0 -test_overlap -test_submat
 */
@@ -175,24 +175,24 @@ int main(int argc,char **args)
     }
   }
 
-  /* Test MatGetSubmatrices */
+  /* Test MatCreateSubmatrices */
   if (TestSubMat) {
     if (test_sorted) {
       for (i = 0; i < nd; ++i) {
         ierr = ISSort(is1[i]);CHKERRQ(ierr);
       }
     }
-    ierr = MatGetSubMatrices(A,nd,is1,is1,MAT_INITIAL_MATRIX,&submatA);CHKERRQ(ierr);
-    ierr = MatGetSubMatrices(sA,nd,is1,is1,MAT_INITIAL_MATRIX,&submatsA);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrices(A,nd,is1,is1,MAT_INITIAL_MATRIX,&submatA);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrices(sA,nd,is1,is1,MAT_INITIAL_MATRIX,&submatsA);CHKERRQ(ierr);
 
     ierr = MatMultEqual(A,sA,10,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"A != sA");
 
-    /* Now test MatGetSubmatrices with MAT_REUSE_MATRIX option */
-    ierr = MatGetSubMatrices(A,nd,is1,is1,MAT_REUSE_MATRIX,&submatA);CHKERRQ(ierr);
-    ierr = MatGetSubMatrices(sA,nd,is1,is1,MAT_REUSE_MATRIX,&submatsA);CHKERRQ(ierr);
+    /* Now test MatCreateSubmatrices with MAT_REUSE_MATRIX option */
+    ierr = MatCreateSubMatrices(A,nd,is1,is1,MAT_REUSE_MATRIX,&submatA);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrices(sA,nd,is1,is1,MAT_REUSE_MATRIX,&submatsA);CHKERRQ(ierr);
     ierr = MatMultEqual(A,sA,10,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"MatGetSubmatrices(): A != sA");
+    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"MatCreateSubmatrices(): A != sA");
 
     for (i=0; i<nd; ++i) {
       ierr = MatDestroy(&submatA[i]);CHKERRQ(ierr);

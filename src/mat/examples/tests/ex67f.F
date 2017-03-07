@@ -1,5 +1,5 @@
 !
-!   This program demonstrates use of MatGetSubMatrices() from Fortran
+!   This program demonstrates use of MatCreateSubMatrices() from Fortran
 !
       program main
 #include <petsc/finclude/petscmat.h>
@@ -44,14 +44,14 @@
       call ISCreateGeneral(PETSC_COMM_SELF,nis,zero,PETSC_COPY_VALUES,    &
      &                     isrow,ierr)
 
-      call MatGetSubmatrices(A,nis,isrow,isrow,                           &
+      call MatCreateSubmatrices(A,nis,isrow,isrow,                           &
      &        MAT_INITIAL_MATRIX,B,ierr)
 
       if (rank .eq. 0) then
          call MatView(B(1),PETSC_VIEWER_STDOUT_SELF,ierr)
       endif
 
-      call MatGetSubmatrices(A,nis,isrow,isrow,                           &
+      call MatCreateSubmatrices(A,nis,isrow,isrow,                           &
      &        MAT_REUSE_MATRIX,B,ierr)
 
       if (rank .eq. 0) then

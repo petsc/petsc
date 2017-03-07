@@ -8562,7 +8562,7 @@ we recommend skipping this chapter during an initial reading.
 
 One can extract a (parallel) submatrix from a given (parallel) using
 \begin{lstlisting}
-MatGetSubMatrix(Mat A,IS rows,IS cols,MatReuse call,Mat *B);
+MatCreateSubMatrix(Mat A,IS rows,IS cols,MatReuse call,Mat *B);
 \end{lstlisting}
 This extracts the \lstinline{rows} and \lstinline{col}umns of the matrix \lstinline{A} into \lstinline{B}. If
 call is  \lstinline{MAT_INITIAL_MATRIX} \findex{MAT_INITIAL_MATRIX} it will create the matrix

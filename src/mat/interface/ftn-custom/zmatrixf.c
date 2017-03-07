@@ -47,7 +47,7 @@
 #define matdensegetarray_                MATDENSEGETARRAY
 #define matdenserestorearray_            MATDENSERESTOREARRAY
 #define matconvert_                      MATCONVERT
-#define matgetsubmatrices_               MATGETSUBMATRICES
+#define matcreatesubmatrices_            MATCREATESUBMATRICES
 #define matzerorowscolumns_              MATZEROROWSCOLUMNS
 #define matzerorowscolumnsis_            MATZEROROWSCOLUMNSIS
 #define matzerorowsstencil_              MATZEROROWSSTENCIL
@@ -128,7 +128,7 @@
 #define matdensegetarray_                matdensegetarray
 #define matdenserestorearray_            matdenserestorearray
 #define matconvert_                      matconvert
-#define matgetsubmatrices_               matgetsubmatrices
+#define matcreatesubmatrices_            matcreatesubmatrices
 #define matzerorowscolumns_              matzerorowscolumns
 #define matzerorowscolumnsis_            matzerorowscolumnsis
 #define matzerorowsstencil_              matzerorowsstencil
@@ -522,23 +522,23 @@ PETSC_EXTERN void PETSC_STDCALL matconvert_(Mat *mat,char* outtype PETSC_MIXED_L
 }
 
 /*
-    MatGetSubmatrices() is slightly different from C since the
+    MatCreateSubmatrices() is slightly different from C since the
     Fortran provides the array to hold the submatrix objects,while in C that
-    array is allocated by the MatGetSubmatrices()
+    array is allocated by the MatCreateSubmatrices()
 */
-PETSC_EXTERN void PETSC_STDCALL matgetsubmatrices_(Mat *mat,PetscInt *n,IS *isrow,IS *iscol,MatReuse *scall,Mat *smat,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL matcreatesubmatrices_(Mat *mat,PetscInt *n,IS *isrow,IS *iscol,MatReuse *scall,Mat *smat,PetscErrorCode *ierr)
 {
   Mat      *lsmat;
   PetscInt i;
 
   if (*scall == MAT_INITIAL_MATRIX) {
-    *ierr = MatGetSubMatrices(*mat,*n,isrow,iscol,*scall,&lsmat);
+    *ierr = MatCreateSubMatrices(*mat,*n,isrow,iscol,*scall,&lsmat);
     for (i=0; i<=*n; i++) { /* lsmat[*n] might be a dummy matrix for saving data struc */
       smat[i] = lsmat[i];
     }
     *ierr = PetscFree(lsmat);
   } else {
-    *ierr = MatGetSubMatrices(*mat,*n,isrow,iscol,*scall,&smat);
+    *ierr = MatCreateSubMatrices(*mat,*n,isrow,iscol,*scall,&smat);
   }
 }
 
@@ -559,7 +559,7 @@ PETSC_EXTERN void PETSC_STDCALL matdestroymatrices_(PetscInt *n,Mat *smat,PetscE
 /*
     MatDestroySubMatrices() is slightly different from C since the
     Fortran provides the array to hold the submatrix objects, while in C that
-    array is allocated by the MatGetSubmatrices()
+    array is allocated by the MatCreateSubmatrices()
 */
 PETSC_EXTERN void PETSC_STDCALL matdestroysubmatrices_(PetscInt *n,Mat *smat,PetscErrorCode *ierr)
 {

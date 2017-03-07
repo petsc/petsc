@@ -87,13 +87,13 @@ PETSC_INTERN PetscErrorCode MatIncreaseOverlap_MPIAIJ(Mat,PetscInt,IS [],PetscIn
 PETSC_INTERN PetscErrorCode MatIncreaseOverlap_MPIAIJ_Scalable(Mat,PetscInt,IS [],PetscInt);
 PETSC_INTERN PetscErrorCode MatFDColoringCreate_MPIXAIJ(Mat,ISColoring,MatFDColoring);
 PETSC_INTERN PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat,ISColoring,MatFDColoring);
-PETSC_INTERN PetscErrorCode MatGetSubMatrices_MPIAIJ (Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
-PETSC_INTERN PetscErrorCode MatGetSubMatricesMPI_MPIAIJ (Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
-PETSC_INTERN PetscErrorCode MatGetSubMatrix_MPIAIJ_All(Mat,MatGetSubMatrixOption,MatReuse,Mat *[]);
+PETSC_INTERN PetscErrorCode MatCreateSubMatrices_MPIAIJ (Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
+PETSC_INTERN PetscErrorCode MatCreateSubMatricesMPI_MPIAIJ (Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
+PETSC_INTERN PetscErrorCode MatCreateSubMatrix_MPIAIJ_All(Mat,MatCreateSubMatrixOption,MatReuse,Mat *[]);
 
 
-PETSC_INTERN PetscErrorCode MatGetSubMatrix_MPIAIJ(Mat,IS,IS,MatReuse,Mat*);
-PETSC_INTERN PetscErrorCode MatGetSubMatrix_MPIAIJ_Private (Mat,IS,IS,PetscInt,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatCreateSubMatrix_MPIAIJ(Mat,IS,IS,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatCreateSubMatrix_MPIAIJ_Private (Mat,IS,IS,PetscInt,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatGetMultiProcBlock_MPIAIJ(Mat,MPI_Comm,MatReuse,Mat*);
 
 PETSC_INTERN PetscErrorCode MatLoad_MPIAIJ(Mat,PetscViewer);

@@ -40,7 +40,7 @@
       parameter(MAT_FACTOR_CHOLESKY=2,MAT_FACTOR_ILU=3)
       parameter(MAT_FACTOR_ICC=4)
 
-! MatGetSubMatrixOption
+! MatCreateSubMatrixOption
       PetscEnum MAT_DO_NOT_GET_VALUES
       PetscEnum MAT_GET_VALUES
       parameter(MAT_DO_NOT_GET_VALUES=0,MAT_GET_VALUES=1)
@@ -283,7 +283,7 @@
       PetscEnum MATOP_ILUFACTOR
       PetscEnum MATOP_ICCFACTOR
       PetscEnum MATOP_AXPY
-      PetscEnum MATOP_GET_SUBMATRICES
+      PetscEnum MATOP_CREATE_SUBMATRICES
       PetscEnum MATOP_INCREASE_OVERLAP
       PetscEnum MATOP_GET_VALUES
       PetscEnum MATOP_COPY
@@ -302,7 +302,7 @@
       PetscEnum MATOP_SET_UNFACTORED
       PetscEnum MATOP_PERMUTE
       PetscEnum MATOP_SET_VALUES_BLOCKED
-      PetscEnum MATOP_GET_SUBMATRIX
+      PetscEnum MATOP_CREATE_SUBMATRIX
       PetscEnum MATOP_DESTROY
       PetscEnum MATOP_VIEW
       PetscEnum MATOP_CONVERT_FROM
@@ -428,7 +428,7 @@
       parameter(MATOP_ILUFACTOR=37)
       parameter(MATOP_ICCFACTOR=38)
       parameter(MATOP_AXPY=39)
-      parameter(MATOP_GET_SUBMATRICES=40)
+      parameter(MATOP_CREATE_SUBMATRICES=40)
       parameter(MATOP_INCREASE_OVERLAP=41)
       parameter(MATOP_GET_VALUES=42)
       parameter(MATOP_COPY=43)
@@ -447,7 +447,7 @@
       parameter(MATOP_SET_UNFACTORED=56)
       parameter(MATOP_PERMUTE=57)
       parameter(MATOP_SET_VALUES_BLOCKED=58)
-      parameter(MATOP_GET_SUBMATRIX=59)
+      parameter(MATOP_CREATE_SUBMATRIX=59)
       parameter(MATOP_DESTROY=60)
       parameter(MATOP_VIEW=61)
       parameter(MATOP_CONVERT_FROM=62)

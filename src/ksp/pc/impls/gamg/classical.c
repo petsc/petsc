@@ -604,7 +604,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, Mat A, Mat G, PetscCo
     ierr = MatIncreaseOverlap(A,1,&lis,2);CHKERRQ(ierr);
     ierr = ISSort(lis);CHKERRQ(ierr);
     /* get the local part of A */
-    ierr = MatGetSubMatrices(A,1,&lis,&lis,MAT_INITIAL_MATRIX,&lAs);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrices(A,1,&lis,&lis,MAT_INITIAL_MATRIX,&lAs);CHKERRQ(ierr);
     lA = lAs[0];
     /* build an SF out of it */
     ierr = ISGetLocalSize(lis,&nl);CHKERRQ(ierr);

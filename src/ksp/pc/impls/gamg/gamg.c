@@ -340,7 +340,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
 #endif
 
     /*
-      Invert for MatGetSubMatrix
+      Invert for MatCreateSubMatrix
     */
     ierr = ISInvertPermutation(is_eq_num, ncrs_eq_new, &new_eq_indices);CHKERRQ(ierr);
     ierr = ISSort(new_eq_indices);CHKERRQ(ierr); /* is this needed? */
@@ -360,7 +360,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
     /* 'a_Amat_crs' output */
     {
       Mat mat;
-      ierr        = MatGetSubMatrix(Cmat, new_eq_indices, new_eq_indices, MAT_INITIAL_MATRIX, &mat);CHKERRQ(ierr);
+      ierr        = MatCreateSubMatrix(Cmat, new_eq_indices, new_eq_indices, MAT_INITIAL_MATRIX, &mat);CHKERRQ(ierr);
       *a_Amat_crs = mat;
     }
     ierr = MatDestroy(&Cmat);CHKERRQ(ierr);
@@ -380,7 +380,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
 #endif
       ierr = ISCreateStride(comm,Iend-Istart,Istart,1,&findices);CHKERRQ(ierr);
       ierr = ISSetBlockSize(findices,f_bs);CHKERRQ(ierr);
-      ierr = MatGetSubMatrix(Pold, findices, new_eq_indices, MAT_INITIAL_MATRIX, &Pnew);CHKERRQ(ierr);
+      ierr = MatCreateSubMatrix(Pold, findices, new_eq_indices, MAT_INITIAL_MATRIX, &Pnew);CHKERRQ(ierr);
       ierr = ISDestroy(&findices);CHKERRQ(ierr);
 
 #if defined PETSC_GAMG_USE_LOG

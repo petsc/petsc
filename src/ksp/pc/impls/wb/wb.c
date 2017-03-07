@@ -136,7 +136,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
   /*
        I are the indices for all the needed vertices (in global numbering)
        Iint are the indices for the interior values, I surf for the surface values
-            (This is just for the part of the global matrix obtained with MatGetSubMatrix(), it
+            (This is just for the part of the global matrix obtained with MatCreateSubMatrix(), it
              is NOT the local DMDA ordering.)
        IIint and IIsurf are the same as the Iint, Isurf except they are in the global numbering
   */
@@ -171,13 +171,13 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
   ierr = ISCreateGeneral(PETSC_COMM_SELF,Nsurf,Isurf,PETSC_COPY_VALUES,&issurf);CHKERRQ(ierr);
   ierr = PetscFree3(II,Iint,Isurf);CHKERRQ(ierr);
 
-  ierr = MatGetSubMatrices(Aglobal,1,&is,&is,MAT_INITIAL_MATRIX,&Aholder);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(Aglobal,1,&is,&is,MAT_INITIAL_MATRIX,&Aholder);CHKERRQ(ierr);
   A    = *Aholder;
   ierr = PetscFree(Aholder);CHKERRQ(ierr);
 
-  ierr = MatGetSubMatrix(A,isint,isint,MAT_INITIAL_MATRIX,&Aii);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(A,isint,issurf,MAT_INITIAL_MATRIX,&Ais);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(A,issurf,isint,MAT_INITIAL_MATRIX,&Asi);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix(A,isint,isint,MAT_INITIAL_MATRIX,&Aii);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix(A,isint,issurf,MAT_INITIAL_MATRIX,&Ais);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix(A,issurf,isint,MAT_INITIAL_MATRIX,&Asi);CHKERRQ(ierr);
 
   /*
      Solve for the interpolation onto the interior Xint
@@ -415,7 +415,7 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
   /*
        I are the indices for all the needed vertices (in global numbering)
        Iint are the indices for the interior values, I surf for the surface values
-            (This is just for the part of the global matrix obtained with MatGetSubMatrix(), it
+            (This is just for the part of the global matrix obtained with MatCreateSubMatrix(), it
              is NOT the local DMDA ordering.)
        IIint and IIsurf are the same as the Iint, Isurf except they are in the global numbering
   */
@@ -451,13 +451,13 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
   ierr = PetscFree3(II,Iint,Isurf);CHKERRQ(ierr);
 
   ierr = ISSort(is);CHKERRQ(ierr);
-  ierr = MatGetSubMatrices(Aglobal,1,&is,&is,MAT_INITIAL_MATRIX,&Aholder);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(Aglobal,1,&is,&is,MAT_INITIAL_MATRIX,&Aholder);CHKERRQ(ierr);
   A    = *Aholder;
   ierr = PetscFree(Aholder);CHKERRQ(ierr);
 
-  ierr = MatGetSubMatrix(A,isint,isint,MAT_INITIAL_MATRIX,&Aii);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(A,isint,issurf,MAT_INITIAL_MATRIX,&Ais);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(A,issurf,isint,MAT_INITIAL_MATRIX,&Asi);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix(A,isint,isint,MAT_INITIAL_MATRIX,&Aii);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix(A,isint,issurf,MAT_INITIAL_MATRIX,&Ais);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix(A,issurf,isint,MAT_INITIAL_MATRIX,&Asi);CHKERRQ(ierr);
 
   /*
      Solve for the interpolation onto the interior Xint

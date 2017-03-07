@@ -742,7 +742,7 @@ static PetscErrorCode PetscLayoutMapLocal_Private(PetscLayout map,PetscInt N,con
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatGetSubMatrix_IS(Mat mat,IS irow,IS icol,MatReuse scall,Mat *newmat)
+static PetscErrorCode MatCreateSubMatrix_IS(Mat mat,IS irow,IS icol,MatReuse scall,Mat *newmat)
 {
   Mat               locmat,newlocmat;
   Mat_IS            *newmatis;
@@ -880,7 +880,7 @@ static PetscErrorCode MatGetSubMatrix_IS(Mat mat,IS irow,IS icol,MatReuse scall,
   }
   ierr = MatISGetLocalMat(mat,&locmat);CHKERRQ(ierr);
   newmatis = (Mat_IS*)(*newmat)->data;
-  ierr = MatGetSubMatrix(locmat,newmatis->getsub_ris,newmatis->getsub_cis,scall,&newlocmat);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix(locmat,newmatis->getsub_ris,newmatis->getsub_cis,scall,&newlocmat);CHKERRQ(ierr);
   if (scall == MAT_INITIAL_MATRIX) {
     ierr = MatISSetLocalMat(*newmat,newlocmat);CHKERRQ(ierr);
     ierr = MatDestroy(&newlocmat);CHKERRQ(ierr);
@@ -1249,7 +1249,7 @@ static PetscErrorCode MatISGetMPIXAIJ_IS(Mat mat, MatReuse reuse, Mat *M)
     ierr = ISDestroy(&cols);CHKERRQ(ierr);
     ierr = ISDestroy(&rows);CHKERRQ(ierr);
     ierr = MatConvert(matis->A,MATAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-    ierr = MatGetSubMatrix(B,irows,icols,reuse,M);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix(B,irows,icols,reuse,M);CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
     ierr = ISDestroy(&icols);CHKERRQ(ierr);
     ierr = ISDestroy(&irows);CHKERRQ(ierr);
@@ -2163,7 +2163,7 @@ PetscErrorCode  MatCreateIS(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,Pets
 .  MatDuplicate()
 .  MatCopy()
 .  MatAXPY()
-.  MatGetSubMatrix()
+.  MatCreateSubMatrix()
 .  MatGetLocalSubMatrix()
 .  MatTranspose()
 -  MatSetLocalToGlobalMapping()
@@ -2221,7 +2221,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
   A->ops->missingdiagonal         = MatMissingDiagonal_IS;
   A->ops->copy                    = MatCopy_IS;
   A->ops->getlocalsubmatrix       = MatGetLocalSubMatrix_IS;
-  A->ops->getsubmatrix            = MatGetSubMatrix_IS;
+  A->ops->createsubmatrix         = MatCreateSubMatrix_IS;
   A->ops->axpy                    = MatAXPY_IS;
   A->ops->diagonalset             = MatDiagonalSet_IS;
   A->ops->shift                   = MatShift_IS;

@@ -513,7 +513,7 @@
       call DMCompositeGetAccessArray(solver%da,X,ione,PETSC_NULL_INTEGER,Xsub,ierr);CHKERRQ(ierr)
 
 !     Compute entries for the locally owned part of the Jacobian preconditioner.
-      call MatGetSubMatrix(jac_prec,solver%isPhi,solver%isPhi,MAT_INITIAL_MATRIX,Amat,ierr);CHKERRQ(ierr)
+      call MatCreateSubMatrix(jac_prec,solver%isPhi,solver%isPhi,MAT_INITIAL_MATRIX,Amat,ierr);CHKERRQ(ierr)
 
       call FormJacobianLocal(Xsub(1),Amat,solver,.true.,ierr);CHKERRQ(ierr)
       call MatDestroy(Amat,ierr);CHKERRQ(ierr) ! discard our reference

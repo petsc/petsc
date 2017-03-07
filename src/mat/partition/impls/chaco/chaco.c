@@ -88,7 +88,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
     ierr   = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
     ierr   = ISCreateStride(PETSC_COMM_SELF,M,0,1,&isrow);CHKERRQ(ierr);
     ierr   = ISCreateStride(PETSC_COMM_SELF,N,0,1,&iscol);CHKERRQ(ierr);
-    ierr   = MatGetSubMatrices(mat,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
+    ierr   = MatCreateSubMatrices(mat,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
     ierr   = ISDestroy(&isrow);CHKERRQ(ierr);
     ierr   = ISDestroy(&iscol);CHKERRQ(ierr);
     matSeq = *A;

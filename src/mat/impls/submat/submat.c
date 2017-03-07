@@ -229,7 +229,7 @@ static PetscErrorCode MatDestroy_SubMatrix(Mat N)
 }
 
 /*@
-   MatCreateSubMatrix - Creates a composite matrix that acts as a submatrix
+   MatCreateSubMatrixComposite - Creates a composite matrix that acts as a submatrix
 
    Collective on Mat
 
@@ -244,11 +244,11 @@ static PetscErrorCode MatDestroy_SubMatrix(Mat N)
    Level: developer
 
    Notes:
-   Most will use MatGetSubMatrix which provides a more efficient representation if it is available.
+   Most will use MatCreateSubMatrix which provides a more efficient representation if it is available.
 
-.seealso: MatGetSubMatrix(), MatSubMatrixUpdate()
+.seealso: MatCreateSubMatrix(), MatSubMatrixUpdate()
 @*/
-PetscErrorCode  MatCreateSubMatrix(Mat A,IS isrow,IS iscol,Mat *newmat)
+PetscErrorCode MatCreateSubMatrixComposite(Mat A,IS isrow,IS iscol,Mat *newmat)
 {
   Vec            left,right;
   PetscInt       m,n;
@@ -326,9 +326,9 @@ PetscErrorCode  MatCreateSubMatrix(Mat A,IS isrow,IS iscol,Mat *newmat)
    Level: developer
 
    Notes:
-   Most will use MatGetSubMatrix which provides a more efficient representation if it is available.
+   Most will use MatCreateSubMatrix which provides a more efficient representation if it is available.
 
-.seealso: MatGetSubMatrix(), MatCreateSubMatrix()
+.seealso: MatCreateSubMatrix()
 @*/
 PetscErrorCode  MatSubMatrixUpdate(Mat N,Mat A,IS isrow,IS iscol)
 {
