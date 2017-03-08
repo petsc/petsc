@@ -205,6 +205,7 @@ PETSC_INTERN PetscErrorCode MatMult_SeqBAIJ_4(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMult_SeqBAIJ_5(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMult_SeqBAIJ_6(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMult_SeqBAIJ_7(Mat,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatMult_SeqBAIJ_11(Mat,Vec,Vec);
 
 PETSC_INTERN PetscErrorCode MatMult_SeqBAIJ_15_ver1(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMult_SeqBAIJ_15_ver2(Mat,Vec,Vec);
@@ -220,6 +221,7 @@ PETSC_INTERN PetscErrorCode MatMultAdd_SeqBAIJ_4(Mat,Vec,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMultAdd_SeqBAIJ_5(Mat,Vec,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMultAdd_SeqBAIJ_6(Mat,Vec,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMultAdd_SeqBAIJ_7(Mat,Vec,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatMultAdd_SeqBAIJ_11(Mat,Vec,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMultAdd_SeqBAIJ_N(Mat,Vec,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatLoad_SeqBAIJ(Mat,PetscViewer);
 PETSC_INTERN PetscErrorCode MatSeqBAIJSetNumericFactorization_inplace(Mat,PetscBool);

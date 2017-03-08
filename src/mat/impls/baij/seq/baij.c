@@ -2814,6 +2814,10 @@ static PetscErrorCode  MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,PetscInt bs,Pets
       B->ops->mult    = MatMult_SeqBAIJ_7;
       B->ops->multadd = MatMultAdd_SeqBAIJ_7;
       break;
+    case 11:
+      B->ops->mult    = MatMult_SeqBAIJ_11;
+      B->ops->multadd = MatMultAdd_SeqBAIJ_11;
+      break;
     case 15:
       B->ops->mult    = MatMult_SeqBAIJ_15_ver1;
       B->ops->multadd = MatMultAdd_SeqBAIJ_N;
