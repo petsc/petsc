@@ -261,14 +261,14 @@ class Configure(config.package.CMakePackage):
     if self.hdf5.found:
       args.append('-DTPL_ENABLE_HDF5:BOOL=ON')
       args.append('-DTPL_HDF5_INCLUDE_DIRS="'+';'.join(self.hdf5.include)+'"')
-      args.append('-DTPL_HDF5_LIBRARIES="'+self.toStringNoDupes(self.hdf5.lib)+'"')
+      args.append('-DTPL_HDF5_LIBRARIES="'+self.toStringNoDupes(self.hdf5.dlib)+'"')
     else:
       args.append('-DTPL_ENABLE_HDF5:BOOL=OFF')
 
     if self.netcdf.found:
       args.append('-DTPL_ENABLE_Netcdf:BOOL=ON')
       args.append('-DTPL_Netcdf_INCLUDE_DIRS="'+';'.join(self.netcdf.include)+'"')
-      args.append('-DTPL_Netcdf_LIBRARIES="'+self.toStringNoDupes(self.netcdf.lib+self.hdf5.lib)+'"')
+      args.append('-DTPL_Netcdf_LIBRARIES="'+self.toStringNoDupes(self.netcdf.dlib)+'"')
     else:
       args.append('-DTPL_ENABLE_Netcdf:BOOL=OFF')
 
