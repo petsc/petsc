@@ -680,6 +680,30 @@ class Package(config.base.Configure):
     self.compilers.LIBS = oldLibs
     return result
 
+  @staticmethod
+  def sortPackageDependencies(startnode):
+    '''Create a dependency graph for all deps, and sort them'''
+    import graph
+    depGraph = graph.DirectedGraph()
+
+    def addGraph(Graph,node,nodesAdded=[]):
+      '''Recursively traverse the dependency graph - and add them as graph edges.'''
+      if not hasattr(node,'deps'): return
+      Graph.addVertex(node)
+      nodesAdded.append(node)
+      deps = list(node.deps)
+      for odep in node.odeps:
+        if odep.found: deps.append(odep)
+      if deps:
+        Graph.addEdges(node,outputs=deps)
+      for dep in deps:
+        if dep not in nodesAdded:
+          addGraph(Graph,dep,nodesAdded)
+      return
+
+    addGraph(depGraph,startnode)
+    return [sortnode for sortnode in graph.DirectedGraph.topologicalSort(depGraph,start=startnode)]
+
   def checkDependencies(self, libs = None, incls = None):
     for package in self.deps:
       if not hasattr(package, 'found'):
@@ -691,7 +715,9 @@ class Package(config.base.Configure):
           str = ''
           if package.download: str = ' or --download-'+package.package
           raise RuntimeError('Did not find package '+package.PACKAGE+' needed by '+self.name+'.\nEnable the package using --with-'+package.package+str)
-    for package in self.deps + self.odeps:
+    dpkgs = Package.sortPackageDependencies(self)
+    dpkgs.remove(self)
+    for package in dpkgs:
       if hasattr(package, 'dlib')    and not libs  is None: libs  += package.dlib
       if hasattr(package, 'include') and not incls is None: incls += package.include
     return
