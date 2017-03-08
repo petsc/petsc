@@ -23,6 +23,8 @@ class Configure(config.package.Package):
     self.f2cblaslapack = framework.require('config.packages.f2cblaslapack', self)
     self.fblaslapack   = framework.require('config.packages.fblaslapack', self)
     self.openblas      = framework.require('config.packages.openblas', self)
+    self.flibs         = framework.require('config.packages.flibs',self)
+    self.deps          = [self.flibs]
     return
 
 
