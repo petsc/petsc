@@ -12,7 +12,7 @@ PetscErrorCode MatDSFischer(Mat, Vec, Vec, Vec, Vec, PetscReal, Vec, Vec, Vec, V
 /*E
   TaoSubsetType - PetscInt representing the way TAO handles active sets
 
-+ TAO_SUBSET_SUBVEC - TAO uses PETSc's MatGetSubMatrix and VecGetSubVector
++ TAO_SUBSET_SUBVEC - TAO uses PETSc's MatCreateSubMatrix and VecGetSubVector
 . TAO_SUBSET_MASK - Matrices are zeroed out corresponding to active set entries
 - TAO_SUBSET_MATRIXFREE - Same as TAO_SUBSET_MASK, but can be applied to matrix-free operators
 

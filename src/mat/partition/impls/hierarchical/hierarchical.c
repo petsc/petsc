@@ -215,7 +215,7 @@ PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat adj,IS destinat
   ierr = ISGetIndices(irows,&irows_indices);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreate(comm,1,irows_ln,irows_indices,PETSC_COPY_VALUES,mapping);CHKERRQ(ierr);
   ierr = ISRestoreIndices(irows,&irows_indices);CHKERRQ(ierr);
-  ierr = MatGetSubMatrices(adj,1,&irows,&icols,MAT_INITIAL_MATRIX,&sadj);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(adj,1,&irows,&icols,MAT_INITIAL_MATRIX,&sadj);CHKERRQ(ierr);
   ierr = ISDestroy(&irows);CHKERRQ(ierr);
   ierr = ISDestroy(&icols);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -544,10 +544,10 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
     ierr = MatDestroy(&Ap);CHKERRQ(ierr); /* get rid of extra reference */
     reuse = MAT_REUSE_MATRIX;
   }
-  ierr = MatGetSubMatrix(mat,isrow0,iscol0,reuse,&A);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(mat,isrow0,iscol1,reuse,&B);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(mat,isrow1,iscol0,reuse,&C);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(mat,isrow1,iscol1,reuse,&D);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix(mat,isrow0,iscol0,reuse,&A);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix(mat,isrow0,iscol1,reuse,&B);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix(mat,isrow1,iscol0,reuse,&C);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix(mat,isrow1,iscol1,reuse,&D);CHKERRQ(ierr);
   switch (mreuse) {
   case MAT_INITIAL_MATRIX:
     ierr = MatCreateSchurComplement(A,A,B,C,D,newmat);CHKERRQ(ierr);
@@ -603,7 +603,7 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
 
     Concepts: matrices^submatrices
 
-.seealso: MatGetSubMatrix(), PCFIELDSPLIT, MatCreateSchurComplement(), MatSchurComplementAinvType
+.seealso: MatCreateSubMatrix(), PCFIELDSPLIT, MatCreateSchurComplement(), MatSchurComplementAinvType
 @*/
 PetscErrorCode  MatGetSchurComplement(Mat A,IS isrow0,IS iscol0,IS isrow1,IS iscol1,MatReuse mreuse,Mat *S,MatSchurComplementAinvType ainvtype,MatReuse preuse,Mat *Sp)
 {
@@ -834,7 +834,7 @@ PetscErrorCode  MatSchurComplementGetPmat_Basic(Mat S,MatReuse preuse,Mat *Spmat
 
     Concepts: matrices^submatrices
 
-.seealso: MatGetSubMatrix(), PCFIELDSPLIT, MatGetSchurComplement(), MatCreateSchurComplement(), MatSchurComplementSetAinvType()
+.seealso: MatCreateSubMatrix(), PCFIELDSPLIT, MatGetSchurComplement(), MatCreateSchurComplement(), MatSchurComplementSetAinvType()
 @*/
 PetscErrorCode  MatSchurComplementGetPmat(Mat S,MatReuse preuse,Mat *Sp)
 {

@@ -586,7 +586,7 @@ static PetscErrorCode MatMarkDiagonal_BlockMat(Mat A)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatGetSubMatrix_BlockMat(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *B)
+static PetscErrorCode MatCreateSubMatrix_BlockMat(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *B)
 {
   Mat_BlockMat   *a = (Mat_BlockMat*)A->data;
   Mat_SeqAIJ     *c;
@@ -776,7 +776,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_BlockMat,
                                        0,
                                        0,
                                        0,
-                               /* 59*/ MatGetSubMatrix_BlockMat,
+                               /* 59*/ MatCreateSubMatrix_BlockMat,
                                        MatDestroy_BlockMat,
                                        MatView_BlockMat,
                                        0,

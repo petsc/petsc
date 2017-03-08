@@ -18,7 +18,7 @@
 #define MatType character*(80)
 #define MatSolverPackage character*(80)
 #define MatOption PetscEnum
-#define MatGetSubMatrixOption PetscEnum
+#define MatCreateSubMatrixOption PetscEnum
 #define MPChacoGlobalType PetscEnum
 #define MPChacoLocalType PetscEnum
 #define MPChacoEigenType PetscEnum

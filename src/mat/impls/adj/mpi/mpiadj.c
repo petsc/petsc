@@ -6,9 +6,9 @@
 #include <petscsf.h>
 
 /*
- * The interface should be easy to use for both MatGetSubMatrix (parallel sub-matrix) and MatGetSubMatrices (sequential sub-matrices)
+ * The interface should be easy to use for both MatCreateSubMatrix (parallel sub-matrix) and MatCreateSubMatrices (sequential sub-matrices)
  * */
-static PetscErrorCode MatGetSubMatrix_MPIAdj_data(Mat adj,IS irows, IS icols, PetscInt **sadj_xadj,PetscInt **sadj_adjncy,PetscInt **sadj_values)
+static PetscErrorCode MatCreateSubMatrix_MPIAdj_data(Mat adj,IS irows, IS icols, PetscInt **sadj_xadj,PetscInt **sadj_adjncy,PetscInt **sadj_values)
 {
   PetscInt           nlrows_is,icols_n,i,j,nroots,nleaves,owner,rlocalindex,*ncols_send,*ncols_recv;
   PetscInt           nlrows_mat,*adjncy_recv,Ncols_recv,Ncols_send,*xadj_recv,*values_recv;
@@ -135,7 +135,7 @@ static PetscErrorCode MatGetSubMatrix_MPIAdj_data(Mat adj,IS irows, IS icols, Pe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatGetSubMatrices_MPIAdj_Private(Mat mat,PetscInt n,const IS irow[],const IS icol[],PetscBool subcomm,MatReuse scall,Mat *submat[])
+static PetscErrorCode MatCreateSubMatrices_MPIAdj_Private(Mat mat,PetscInt n,const IS irow[],const IS icol[],PetscBool subcomm,MatReuse scall,Mat *submat[])
 {
   PetscInt           i,irow_n,icol_n,*sxadj,*sadjncy,*svalues;
   PetscInt          *indices,nindx,j,k,loc;
@@ -169,7 +169,7 @@ static PetscErrorCode MatGetSubMatrices_MPIAdj_Private(Mat mat,PetscInt n,const 
     }
     /*get sub-matrix data*/
     sxadj=0; sadjncy=0; svalues=0;
-    ierr = MatGetSubMatrix_MPIAdj_data(mat,irow[i],icol[i],&sxadj,&sadjncy,&svalues);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix_MPIAdj_data(mat,irow[i],icol[i],&sxadj,&sadjncy,&svalues);CHKERRQ(ierr);
     ierr = ISGetLocalSize(irow[i],&irow_n);CHKERRQ(ierr);
     ierr = ISGetLocalSize(icol[i],&icol_n);CHKERRQ(ierr);
     ierr = ISGetIndices(irow[i],&irow_indices);CHKERRQ(ierr);
@@ -210,22 +210,22 @@ static PetscErrorCode MatGetSubMatrices_MPIAdj_Private(Mat mat,PetscInt n,const 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatGetSubMatricesMPI_MPIAdj(Mat mat,PetscInt n, const IS irow[],const IS icol[],MatReuse scall,Mat *submat[])
+static PetscErrorCode MatCreateSubMatricesMPI_MPIAdj(Mat mat,PetscInt n, const IS irow[],const IS icol[],MatReuse scall,Mat *submat[])
 {
   PetscErrorCode     ierr;
   /*get sub-matrices across a sub communicator */
   PetscFunctionBegin;
-  ierr = MatGetSubMatrices_MPIAdj_Private(mat,n,irow,icol,PETSC_TRUE,scall,submat);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices_MPIAdj_Private(mat,n,irow,icol,PETSC_TRUE,scall,submat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatGetSubMatrices_MPIAdj(Mat mat,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *submat[])
+static PetscErrorCode MatCreateSubMatrices_MPIAdj(Mat mat,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *submat[])
 {
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   /*get sub-matrices based on PETSC_COMM_SELF */
-  ierr = MatGetSubMatrices_MPIAdj_Private(mat,n,irow,icol,PETSC_FALSE,scall,submat);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices_MPIAdj_Private(mat,n,irow,icol,PETSC_FALSE,scall,submat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -515,7 +515,7 @@ static struct _MatOps MatOps_Values = {0,
                                        0,
                                        0,
                                 /*39*/ 0,
-                                       MatGetSubMatrices_MPIAdj,
+                                       MatCreateSubMatrices_MPIAdj,
                                        0,
                                        0,
                                        0,
@@ -603,7 +603,7 @@ static struct _MatOps MatOps_Values = {0,
                                        0,
                                        0,
                                        0,
-                                       MatGetSubMatricesMPI_MPIAdj,
+                                       MatCreateSubMatricesMPI_MPIAdj,
                                /*129*/ 0,
                                        0,
                                        0,

@@ -1,5 +1,5 @@
 
-static char help[] = "Creates a matrix, inserts some values, and tests MatGetSubMatrices() and MatZeroEntries().\n\n";
+static char help[] = "Creates a matrix, inserts some values, and tests MatCreateSubMatrices() and MatZeroEntries().\n\n";
 
 #include <petscmat.h>
 
@@ -31,13 +31,13 @@ int main(int argc,char **argv)
   ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"Original matrix\n");CHKERRQ(ierr);
   ierr = MatView(mat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  /* Test MatGetSubMatrix_XXX_All(), i.e., submatrix = A */
+  /* Test MatCreateSubMatrix_XXX_All(), i.e., submatrix = A */
   ierr = PetscOptionsGetBool(NULL,NULL,"-test_all",&allA,NULL);CHKERRQ(ierr);
   if (allA) {
     ierr   = ISCreateStride(PETSC_COMM_SELF,m,0,1,&irow);CHKERRQ(ierr);
     ierr   = ISCreateStride(PETSC_COMM_SELF,n,0,1,&icol);CHKERRQ(ierr);
-    ierr   = MatGetSubMatrices(mat,1,&irow,&icol,MAT_INITIAL_MATRIX,&submatrices);CHKERRQ(ierr);
-    ierr   = MatGetSubMatrices(mat,1,&irow,&icol,MAT_REUSE_MATRIX,&submatrices);CHKERRQ(ierr);
+    ierr   = MatCreateSubMatrices(mat,1,&irow,&icol,MAT_INITIAL_MATRIX,&submatrices);CHKERRQ(ierr);
+    ierr   = MatCreateSubMatrices(mat,1,&irow,&icol,MAT_REUSE_MATRIX,&submatrices);CHKERRQ(ierr);
     submat = *submatrices;
 
     /* sviewer will cause the submatrices (one per processor) to be printed in the correct order */
@@ -57,11 +57,11 @@ int main(int argc,char **argv)
   /* Form submatrix with rows 2-4 and columns 4-8 */
   ierr   = ISCreateStride(PETSC_COMM_SELF,3,2,1,&irow);CHKERRQ(ierr);
   ierr   = ISCreateStride(PETSC_COMM_SELF,5,4,1,&icol);CHKERRQ(ierr);
-  ierr   = MatGetSubMatrices(mat,1,&irow,&icol,MAT_INITIAL_MATRIX,&submatrices);CHKERRQ(ierr);
+  ierr   = MatCreateSubMatrices(mat,1,&irow,&icol,MAT_INITIAL_MATRIX,&submatrices);CHKERRQ(ierr);
   submat = *submatrices;
 
   /* Test reuse submatrices */
-  ierr = MatGetSubMatrices(mat,1,&irow,&icol,MAT_REUSE_MATRIX,&submatrices);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(mat,1,&irow,&icol,MAT_REUSE_MATRIX,&submatrices);CHKERRQ(ierr);
   ierr = PetscFree(submatrices);CHKERRQ(ierr);
 
   /* sviewer will cause the submatrices (one per processor) to be printed in the correct order */
@@ -75,8 +75,8 @@ int main(int argc,char **argv)
   ierr   = ISDestroy(&icol);CHKERRQ(ierr);
   ierr   = MatDestroy(&submat);CHKERRQ(ierr);
   ierr   = ISCreateStride(PETSC_COMM_SELF,10,0,1,&icol);CHKERRQ(ierr);
-  ierr   = MatGetSubMatrices(mat,1,&irow,&icol,MAT_INITIAL_MATRIX,&submatrices);CHKERRQ(ierr);
-  ierr   = MatGetSubMatrices(mat,1,&irow,&icol,MAT_REUSE_MATRIX,&submatrices);CHKERRQ(ierr);
+  ierr   = MatCreateSubMatrices(mat,1,&irow,&icol,MAT_INITIAL_MATRIX,&submatrices);CHKERRQ(ierr);
+  ierr   = MatCreateSubMatrices(mat,1,&irow,&icol,MAT_REUSE_MATRIX,&submatrices);CHKERRQ(ierr);
   submat = *submatrices;
   ierr   = PetscFree(submatrices);CHKERRQ(ierr);
 

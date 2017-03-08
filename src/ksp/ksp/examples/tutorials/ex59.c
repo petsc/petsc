@@ -364,7 +364,7 @@ static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat
       }
     }
     ierr = ISCreateGeneral(PETSC_COMM_SELF,ii,indexg,PETSC_COPY_VALUES,&submatIS);CHKERRQ(ierr);
-    ierr = MatGetSubMatrix(glldata.elem_mat,submatIS,submatIS,MAT_INITIAL_MATRIX,&elem_mat_DBC);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix(glldata.elem_mat,submatIS,submatIS,MAT_INITIAL_MATRIX,&elem_mat_DBC);CHKERRQ(ierr);
     ierr = ISDestroy(&submatIS);CHKERRQ(ierr);
   }
 

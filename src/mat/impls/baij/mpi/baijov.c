@@ -515,14 +515,14 @@ static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Receive(Mat C,PetscInt nrqr,Pet
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[])
+PetscErrorCode MatCreateSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[])
 {
   IS             *isrow_block,*iscol_block;
   Mat_MPIBAIJ    *c = (Mat_MPIBAIJ*)C->data;
   PetscErrorCode ierr;
   PetscInt       nmax,nstages_local,nstages,i,pos,max_no,N=C->cmap->N,bs=C->rmap->bs;
   Mat_SeqBAIJ    *subc;
-  Mat_SubMat     *smat;
+  Mat_SubSppt    *smat;
 
   PetscFunctionBegin;
   /* The compression and expansion should be avoided. Doesn't point
@@ -549,10 +549,10 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[],c
       subc = (Mat_SeqBAIJ*)((*submat)[0]->data);
       smat   = subc->submatis1;
     } else { /* (*submat)[0] is a dummy matrix */
-      smat = (Mat_SubMat*)(*submat)[0]->data;
+      smat = (Mat_SubSppt*)(*submat)[0]->data;
     }
     if (!smat) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"MatGetSubMatrices(...,MAT_REUSE_MATRIX,...) requires submat");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"MatCreateSubMatrices(...,MAT_REUSE_MATRIX,...) requires submat");
     }
     nstages = smat->nstages;
   }
@@ -562,9 +562,9 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[],c
     else if (pos == ismax) max_no = 0;
     else                   max_no = ismax-pos;
 
-    ierr = MatGetSubMatrices_MPIBAIJ_local(C,max_no,isrow_block+pos,iscol_block+pos,scall,*submat+pos);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrices_MPIBAIJ_local(C,max_no,isrow_block+pos,iscol_block+pos,scall,*submat+pos);CHKERRQ(ierr);
     if (!max_no && scall == MAT_INITIAL_MATRIX) { /* submat[pos] is a dummy matrix */
-      smat = (Mat_SubMat*)(*submat)[pos]->data;
+      smat = (Mat_SubSppt*)(*submat)[pos]->data;
       smat->nstages = nstages;
     }
     pos += max_no;
@@ -606,7 +606,7 @@ PetscErrorCode PetscGetProc(const PetscInt row, const PetscMPIInt size, const Pe
 
 /* -------------------------------------------------------------------------*/
 /* This code is used for BAIJ and SBAIJ matrices (unfortunate dependency) */
-PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submats)
+PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submats)
 {
   Mat_MPIBAIJ    *c = (Mat_MPIBAIJ*)C->data;
   Mat            A  = c->A;
@@ -634,7 +634,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
   PetscScalar    **rbuf4,*rbuf4_i=NULL,**sbuf_aa,*vals,*mat_a=NULL,*imat_a,*sbuf_aa_i;
   PetscMPIInt    *onodes1,*olengths1,end;
   PetscInt       **row2proc,*row2proc_i,*imat_ilen,*imat_j,*imat_i;
-  Mat_SubMat     *smat_i;
+  Mat_SubSppt    *smat_i;
   PetscBool      *issorted,colflag,iscsorted=PETSC_TRUE;
   PetscInt       *sbuf1_i,*rbuf2_i,*rbuf3_i,ilen;
   PetscInt       bs=C->rmap->bs,bs2=c->bs2,rstart = c->rstartbs;
@@ -721,7 +721,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
 
     if (!ismax){ /* Get dummy submatrices and retrieve struct submatis1 */
       if (!submats[0]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"submats are null, cannot reuse");
-      smat_i = (Mat_SubMat*)submats[0]->data;
+      smat_i = (Mat_SubSppt*)submats[0]->data;
 
       nrqs        = smat_i->nrqs;
       nrqr        = smat_i->nrqr;
@@ -1146,7 +1146,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
       ierr = MatSeqBAIJSetPreallocation(submats[i],bs_tmp,0,lens[i]);CHKERRQ(ierr); 
       ierr = MatSeqSBAIJSetPreallocation(submats[i],bs_tmp,0,lens[i]);CHKERRQ(ierr); /* this subroutine is used by SBAIJ routines */
 
-      /* create struct Mat_SubMat and attached it to submat */
+      /* create struct Mat_SubSppt and attached it to submat */
       ierr = PetscNew(&smat_i);CHKERRQ(ierr);
       subc = (Mat_SeqBAIJ*)submats[i]->data;
       subc->submatis1 = smat_i;
@@ -1186,7 +1186,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
       ierr = MatSetSizes(submats[0],0,0,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
       ierr = MatSetType(submats[0],MATDUMMY);CHKERRQ(ierr);
 
-      /* create struct Mat_SubMat and attached it to submat */
+      /* create struct Mat_SubSppt and attached it to submat */
       ierr = PetscNewLog(submats[0],&smat_i);CHKERRQ(ierr);
       submats[0]->data = (void*)smat_i;
 
