@@ -6667,6 +6667,27 @@ PetscErrorCode MatCreateSubMatrices(Mat mat,PetscInt n,const IS irow[],const IS 
   PetscFunctionReturn(0);
 }
 
+/*@C
+   MatCreateSubMatricesMPI - Extracts MPI submatrices across a sub communicator of mat (by pairs of IS that may live on subcomms).
+
+   Collective on Mat
+
+   Input Parameters:
++  mat - the matrix
+.  n   - the number of submatrixes to be extracted
+.  irow, icol - index sets of rows and columns to extract
+-  scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+
+   Output Parameter:
+.  submat - the array of submatrices
+
+   Level: advanced
+
+   Concepts: matrices^accessing submatrices
+   Concepts: submatrices
+
+.seealso: MatCreateSubMatrices(), MatCreateSubMatrix(), MatGetRow(), MatGetDiagonal(), MatReuse
+@*/
 PetscErrorCode MatCreateSubMatricesMPI(Mat mat,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *submat[])
 {
   PetscErrorCode ierr;
