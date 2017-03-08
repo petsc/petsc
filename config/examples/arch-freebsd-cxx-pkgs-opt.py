@@ -17,6 +17,7 @@ configure_options = [
   '--download-mumps=1',
   # no with-cxx-dialect=C++11 support '--download-elemental=1',
   '--download-hdf5',
+  '--download-zlib=1',
   '--download-sundials=1',
   '--download-hypre=1',
   '--download-suitesparse=1',

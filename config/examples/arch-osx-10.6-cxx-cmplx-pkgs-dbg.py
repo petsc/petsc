@@ -21,6 +21,7 @@ configure_options = [
   '--download-scalapack=1',
   '--download-mumps=1',
   '--download-hdf5',
+  '--download-zlib=1',
   '--download-petsc4py=1',
   '--download-mpi4py=1',
   '--with-cxx-dialect=C++11',

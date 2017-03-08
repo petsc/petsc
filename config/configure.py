@@ -180,7 +180,7 @@ def chksynonyms():
   if downloadxsdk:
     # Common external libraries
     argsAddDownload('pflotran')
-    argsAddDownload('hdf5')
+    argsAddDownload('hdf5',['zlib'])
     argsAddDownload('netcdf')
     argsAddDownload('metis')
 

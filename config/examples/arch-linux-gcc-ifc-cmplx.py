@@ -22,6 +22,7 @@ configure_options = [
   'LIBS=-L'+ifort_lib_dir+' -lifcore -ldl -limf -lirc -L'+mpich_lib_dir+' -lmpifort -lmpi',
   '--with-scalar-type=complex',
   '--download-hdf5',
+  '--with-zlib=1',
   '--download-fblaslapack=1'
   ]
 
