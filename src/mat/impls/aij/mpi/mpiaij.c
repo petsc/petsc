@@ -1019,7 +1019,7 @@ PetscErrorCode  MatIsTranspose_MPIAIJ(Mat Amat,Mat Bmat,PetscReal tol,PetscBool 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size == 1) PetscFunctionReturn(0);
 
-  /* Hard test: off-diagonal block. This takes a MatGetSubMatrix. */
+  /* Hard test: off-diagonal block. This takes a MatCreateSubMatrix. */
   ierr = MatGetSize(Amat,&M,&N);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Amat,&first,&last);CHKERRQ(ierr);
   ierr = PetscMalloc1(N-last+first,&notme);CHKERRQ(ierr);
@@ -1027,9 +1027,9 @@ PetscErrorCode  MatIsTranspose_MPIAIJ(Mat Amat,Mat Bmat,PetscReal tol,PetscBool 
   for (i=last; i<M; i++) notme[i-last+first] = i;
   ierr = ISCreateGeneral(MPI_COMM_SELF,N-last+first,notme,PETSC_COPY_VALUES,&Notme);CHKERRQ(ierr);
   ierr = ISCreateStride(MPI_COMM_SELF,last-first,first,1,&Me);CHKERRQ(ierr);
-  ierr = MatGetSubMatrices(Amat,1,&Me,&Notme,MAT_INITIAL_MATRIX,&Aoffs);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(Amat,1,&Me,&Notme,MAT_INITIAL_MATRIX,&Aoffs);CHKERRQ(ierr);
   Aoff = Aoffs[0];
-  ierr = MatGetSubMatrices(Bmat,1,&Notme,&Me,MAT_INITIAL_MATRIX,&Boffs);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(Bmat,1,&Notme,&Me,MAT_INITIAL_MATRIX,&Boffs);CHKERRQ(ierr);
   Boff = Boffs[0];
   ierr = MatIsTranspose(Aoff,Boff,tol,f);CHKERRQ(ierr);
   ierr = MatDestroyMatrices(1,&Aoffs);CHKERRQ(ierr);
@@ -2347,7 +2347,7 @@ PetscErrorCode MatGetSeqNonzeroStructure_MPIAIJ(Mat mat,Mat *newmat)
   Mat            *dummy;
 
   PetscFunctionBegin;
-  ierr    = MatGetSubMatrix_MPIAIJ_All(mat,MAT_DO_NOT_GET_VALUES,MAT_INITIAL_MATRIX,&dummy);CHKERRQ(ierr);
+  ierr    = MatCreateSubMatrix_MPIAIJ_All(mat,MAT_DO_NOT_GET_VALUES,MAT_INITIAL_MATRIX,&dummy);CHKERRQ(ierr);
   *newmat = *dummy;
   ierr    = PetscFree(dummy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2500,7 +2500,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        0,
                                        0,
                                 /*39*/ MatAXPY_MPIAIJ,
-                                       MatGetSubMatrices_MPIAIJ,
+                                       MatCreateSubMatrices_MPIAIJ,
                                        MatIncreaseOverlap_MPIAIJ,
                                        MatGetValues_MPIAIJ,
                                        MatCopy_MPIAIJ,
@@ -2519,7 +2519,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        MatSetUnfactored_MPIAIJ,
                                        MatPermute_MPIAIJ,
                                        0,
-                                /*59*/ MatGetSubMatrix_MPIAIJ,
+                                /*59*/ MatCreateSubMatrix_MPIAIJ,
                                        MatDestroy_MPIAIJ,
                                        MatView_MPIAIJ,
                                        0,
@@ -2588,7 +2588,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        MatGetColumnNorms_MPIAIJ,
                                        MatInvertBlockDiagonal_MPIAIJ,
                                        0,
-                                       MatGetSubMatricesMPI_MPIAIJ,
+                                       MatCreateSubMatricesMPI_MPIAIJ,
                                 /*129*/0,
                                        MatTransposeMatMult_MPIAIJ_MPIAIJ,
                                        MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ,
@@ -2940,7 +2940,7 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
 }
 
 /* TODO: Not scalable because of ISAllGather() unless getting all columns. */
-PetscErrorCode MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatReuse call,Mat *newmat)
+PetscErrorCode MatCreateSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatReuse call,Mat *newmat)
 {
   PetscErrorCode ierr;
   IS             iscol_local;
@@ -2977,7 +2977,7 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatReuse call,Ma
       ierr = ISSetBlockSize(iscol_local,cbs);CHKERRQ(ierr);
     }
   }
-  ierr = MatGetSubMatrix_MPIAIJ_Private(mat,isrow,iscol_local,csize,call,newmat);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix_MPIAIJ_Private(mat,isrow,iscol_local,csize,call,newmat);CHKERRQ(ierr);
   if (call == MAT_INITIAL_MATRIX) {
     ierr = PetscObjectCompose((PetscObject)*newmat,"ISAllGather",(PetscObject)iscol_local);CHKERRQ(ierr);
     ierr = ISDestroy(&iscol_local);CHKERRQ(ierr);
@@ -2985,15 +2985,15 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatReuse call,Ma
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat*);
+extern PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat*);
 /*
     Not great since it makes two copies of the submatrix, first an SeqAIJ
   in local and then by concatenating the local matrices the end result.
-  Writing it directly would be much like MatGetSubMatrices_MPIAIJ()
+  Writing it directly would be much like MatCreateSubMatrices_MPIAIJ()
 
   Note: This requires a sequential iscol with all indices.
 */
-PetscErrorCode MatGetSubMatrix_MPIAIJ_Private(Mat mat,IS isrow,IS iscol,PetscInt csize,MatReuse call,Mat *newmat)
+PetscErrorCode MatCreateSubMatrix_MPIAIJ_Private(Mat mat,IS isrow,IS iscol,PetscInt csize,MatReuse call,Mat *newmat)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
@@ -3012,9 +3012,9 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ_Private(Mat mat,IS isrow,IS iscol,PetscInt
   if (call ==  MAT_REUSE_MATRIX) {
     ierr = PetscObjectQuery((PetscObject)*newmat,"SubMatrix",(PetscObject*)&Mreuse);CHKERRQ(ierr);
     if (!Mreuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Submatrix passed in was not used before, cannot reuse");
-    ierr = MatGetSubMatrices_MPIAIJ_Local(mat,1,&isrow,&iscol,MAT_REUSE_MATRIX,&Mreuse);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrices_MPIAIJ_Local(mat,1,&isrow,&iscol,MAT_REUSE_MATRIX,&Mreuse);CHKERRQ(ierr);
   } else {
-    ierr = MatGetSubMatrices_MPIAIJ_Local(mat,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&Mreuse);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrices_MPIAIJ_Local(mat,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&Mreuse);CHKERRQ(ierr);
   }
 
   /*
@@ -4366,7 +4366,7 @@ PetscErrorCode  MatMPIAIJGetLocalMatCondensed(Mat A,MatReuse scall,IS *row,IS *c
     ierr    = PetscMalloc1(1,&aloc);CHKERRQ(ierr);
     aloc[0] = *A_loc;
   }
-  ierr   = MatGetSubMatrices(A,1,&isrowa,&iscola,scall,&aloc);CHKERRQ(ierr);
+  ierr   = MatCreateSubMatrices(A,1,&isrowa,&iscola,scall,&aloc);CHKERRQ(ierr);
   *A_loc = aloc[0];
   ierr   = PetscFree(aloc);CHKERRQ(ierr);
   if (!row) {
@@ -4432,7 +4432,7 @@ PetscErrorCode  MatGetBrowsOfAcols(Mat A,Mat B,MatReuse scall,IS *rowb,IS *colb,
     ierr    = PetscMalloc1(1,&bseq);CHKERRQ(ierr);
     bseq[0] = *B_seq;
   }
-  ierr   = MatGetSubMatrices(B,1,&isrowb,&iscolb,scall,&bseq);CHKERRQ(ierr);
+  ierr   = MatCreateSubMatrices(B,1,&isrowb,&iscolb,scall,&bseq);CHKERRQ(ierr);
   *B_seq = bseq[0];
   ierr   = PetscFree(bseq);CHKERRQ(ierr);
   if (!rowb) {

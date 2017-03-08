@@ -1,4 +1,4 @@
-static const char help[] = "Tests MatGetSubMatrix with MatSubMatrix versus MatAIJ, non-square\n";
+static const char help[] = "Tests MatCreateSubMatrix with MatSubMatrix versus MatAIJ, non-square\n";
 
 #include <petscmat.h>
 
@@ -110,8 +110,8 @@ int main(int argc, char *argv[])
   ierr = PetscInitialize(&argc,&argv,NULL,help);CHKERRQ(ierr);
   ierr = AssembleMatrix(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = AssembleMatrix(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(B,MATOP_GET_SUBMATRIX,NULL);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(B,MATOP_GET_SUBMATRICES,NULL);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(B,MATOP_CREATE_SUBMATRIX,NULL);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(B,MATOP_CREATE_SUBMATRICES,NULL);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&ms,NULL);CHKERRQ(ierr);
 
   idxrow[0] = ms+1;
@@ -125,8 +125,8 @@ int main(int argc, char *argv[])
   idxcol[3] = ms+5;
   ierr      = ISCreateGeneral(PETSC_COMM_WORLD,4,idxcol,PETSC_USE_POINTER,&iscol);CHKERRQ(ierr);
 
-  ierr = MatGetSubMatrix(A,isrow,iscol,MAT_INITIAL_MATRIX,&Asub);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(B,isrow,iscol,MAT_INITIAL_MATRIX,&Bsub);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix(A,isrow,iscol,MAT_INITIAL_MATRIX,&Asub);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix(B,isrow,iscol,MAT_INITIAL_MATRIX,&Bsub);CHKERRQ(ierr);
 
   ierr = MatCreateVecs(Asub,&right,&left);CHKERRQ(ierr);
   ierr = VecDuplicate(right,&X);CHKERRQ(ierr);

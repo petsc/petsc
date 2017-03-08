@@ -1,5 +1,5 @@
 
-static char help[] = "Tests MatIncreaseOverlap(), MatGetSubMatrices() for MatBAIJ format.\n";
+static char help[] = "Tests MatIncreaseOverlap(), MatCreateSubMatrices() for MatBAIJ format.\n";
 
 #include <petscmat.h>
 
@@ -87,8 +87,8 @@ int main(int argc,char **args)
     ierr = ISSort(is2[i]);CHKERRQ(ierr);
   }
 
-  ierr = MatGetSubMatrices(A,nd,is1,is1,MAT_INITIAL_MATRIX,&submatA);CHKERRQ(ierr);
-  ierr = MatGetSubMatrices(B,nd,is2,is2,MAT_INITIAL_MATRIX,&submatB);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(A,nd,is1,is1,MAT_INITIAL_MATRIX,&submatA);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(B,nd,is2,is2,MAT_INITIAL_MATRIX,&submatB);CHKERRQ(ierr);
 
   /* Test MatMult() */
   for (i=0; i<nd; i++) {
@@ -111,9 +111,9 @@ int main(int argc,char **args)
     ierr = VecDestroy(&s1);CHKERRQ(ierr);
     ierr = VecDestroy(&s2);CHKERRQ(ierr);
   }
-  /* Now test MatGetSubmatrices with MAT_REUSE_MATRIX option */
-  ierr = MatGetSubMatrices(A,nd,is1,is1,MAT_REUSE_MATRIX,&submatA);CHKERRQ(ierr);
-  ierr = MatGetSubMatrices(B,nd,is2,is2,MAT_REUSE_MATRIX,&submatB);CHKERRQ(ierr);
+  /* Now test MatCreateSubmatrices with MAT_REUSE_MATRIX option */
+  ierr = MatCreateSubMatrices(A,nd,is1,is1,MAT_REUSE_MATRIX,&submatA);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(B,nd,is2,is2,MAT_REUSE_MATRIX,&submatB);CHKERRQ(ierr);
 
   /* Test MatMult() */
   for (i=0; i<nd; i++) {

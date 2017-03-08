@@ -250,12 +250,12 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
   if (!jac->pmat) {
     ierr = PetscMalloc1(nsplit,&jac->pmat);CHKERRQ(ierr);
     for (i=0; i<nsplit; i++) {
-      ierr  = MatGetSubMatrix(pc->pmat,ilink->is,ilink->is,MAT_INITIAL_MATRIX,&jac->pmat[i]);CHKERRQ(ierr);
+      ierr  = MatCreateSubMatrix(pc->pmat,ilink->is,ilink->is,MAT_INITIAL_MATRIX,&jac->pmat[i]);CHKERRQ(ierr);
       ilink = ilink->next;
     }
   } else {
     for (i=0; i<nsplit; i++) {
-      ierr  = MatGetSubMatrix(pc->pmat,ilink->is,ilink->is,MAT_REUSE_MATRIX,&jac->pmat[i]);CHKERRQ(ierr);
+      ierr  = MatCreateSubMatrix(pc->pmat,ilink->is,ilink->is,MAT_REUSE_MATRIX,&jac->pmat[i]);CHKERRQ(ierr);
       ilink = ilink->next;
     }
   }
@@ -264,12 +264,12 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
     if (!jac->mat) {
       ierr = PetscMalloc1(nsplit,&jac->mat);CHKERRQ(ierr);
       for (i=0; i<nsplit; i++) {
-        ierr  = MatGetSubMatrix(pc->mat,ilink->is,ilink->is,MAT_INITIAL_MATRIX,&jac->mat[i]);CHKERRQ(ierr);
+        ierr  = MatCreateSubMatrix(pc->mat,ilink->is,ilink->is,MAT_INITIAL_MATRIX,&jac->mat[i]);CHKERRQ(ierr);
         ilink = ilink->next;
       }
     } else {
       for (i=0; i<nsplit; i++) {
-        if (jac->mat[i]) {ierr = MatGetSubMatrix(pc->mat,ilink->is,ilink->is,MAT_REUSE_MATRIX,&jac->mat[i]);CHKERRQ(ierr);}
+        if (jac->mat[i]) {ierr = MatCreateSubMatrix(pc->mat,ilink->is,ilink->is,MAT_REUSE_MATRIX,&jac->mat[i]);CHKERRQ(ierr);}
         ilink = ilink->next;
       }
     }
@@ -283,12 +283,12 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
     if (!jac->Afield) {
       ierr = PetscMalloc1(nsplit,&jac->Afield);CHKERRQ(ierr);
       for (i=0; i<nsplit; i++) {
-        ierr  = MatGetSubMatrix(pc->mat,ilink->is,NULL,MAT_INITIAL_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
+        ierr  = MatCreateSubMatrix(pc->mat,ilink->is,NULL,MAT_INITIAL_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
         ilink = ilink->next;
       }
     } else {
       for (i=0; i<nsplit; i++) {
-        ierr  = MatGetSubMatrix(pc->mat,ilink->is,NULL,MAT_REUSE_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
+        ierr  = MatCreateSubMatrix(pc->mat,ilink->is,NULL,MAT_REUSE_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
         ilink = ilink->next;
       }
     }
@@ -308,11 +308,11 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
     if (jac->schur) {
       ilink = jac->head;
       ierr  = ISComplement(ilink->is,rstart,rend,&ccis);CHKERRQ(ierr);
-      ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->B);CHKERRQ(ierr);
+      ierr  = MatCreateSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->B);CHKERRQ(ierr);
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       ilink = ilink->next;
       ierr  = ISComplement(ilink->is,rstart,rend,&ccis);CHKERRQ(ierr);
-      ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->C);CHKERRQ(ierr);
+      ierr  = MatCreateSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->C);CHKERRQ(ierr);
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       ierr  = MatSchurComplementUpdateSubMatrices(jac->schur,jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->pmat[1]);CHKERRQ(ierr);
       ierr  = KSPSetOperators(jac->kspschur,jac->schur,FieldSplitSchurPre(jac),pc->flag);CHKERRQ(ierr);
@@ -324,11 +324,11 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
       /* extract the A01 and A10 matrices */
       ilink = jac->head;
       ierr  = ISComplement(ilink->is,rstart,rend,&ccis);CHKERRQ(ierr);
-      ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->B);CHKERRQ(ierr);
+      ierr  = MatCreateSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->B);CHKERRQ(ierr);
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       ilink = ilink->next;
       ierr  = ISComplement(ilink->is,rstart,rend,&ccis);CHKERRQ(ierr);
-      ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
+      ierr  = MatCreateSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       /* Use mat[0] (diagonal block of the real matrix) preconditioned by pmat[0] */
       ierr = MatCreateSchurComplement(jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->mat[1],&jac->schur);CHKERRQ(ierr);

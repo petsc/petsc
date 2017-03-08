@@ -68,7 +68,7 @@ PetscErrorCode MatIncreaseOverlap_SeqBAIJ(Mat A,PetscInt is_max,IS is[],PetscInt
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *B)
+PetscErrorCode MatCreateSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *B)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*c;
   PetscErrorCode ierr;
@@ -160,7 +160,7 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,MatReuse 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *B)
+PetscErrorCode MatCreateSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *B)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
   IS             is1,is2;
@@ -205,7 +205,7 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall,Ma
   ierr = ISRestoreIndices(iscol,&icol);CHKERRQ(ierr);
   ierr = PetscFree2(vary,iary);CHKERRQ(ierr);
 
-  ierr = MatGetSubMatrix_SeqBAIJ_Private(A,is1,is2,scall,B);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix_SeqBAIJ_Private(A,is1,is2,scall,B);CHKERRQ(ierr);
   ierr = ISDestroy(&is1);CHKERRQ(ierr);
   ierr = ISDestroy(&is2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -215,7 +215,7 @@ PetscErrorCode MatDestroy_SeqBAIJ_Submatrices(Mat C)
 {
   PetscErrorCode ierr;
   Mat_SeqBAIJ    *c = (Mat_SeqBAIJ*)C->data;
-  Mat_SubMat     *submatj = c->submatis1;
+  Mat_SubSppt    *submatj = c->submatis1;
 
   PetscFunctionBegin;
   ierr = submatj->destroy(C);CHKERRQ(ierr);
@@ -223,7 +223,7 @@ PetscErrorCode MatDestroy_SeqBAIJ_Submatrices(Mat C)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatGetSubMatrices_SeqBAIJ(Mat A,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *B[])
+PetscErrorCode MatCreateSubMatrices_SeqBAIJ(Mat A,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *B[])
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -234,7 +234,7 @@ PetscErrorCode MatGetSubMatrices_SeqBAIJ(Mat A,PetscInt n,const IS irow[],const 
   }
 
   for (i=0; i<n; i++) {
-    ierr = MatGetSubMatrix_SeqBAIJ(A,irow[i],icol[i],scall,&(*B)[i]);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix_SeqBAIJ(A,irow[i],icol[i],scall,&(*B)[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

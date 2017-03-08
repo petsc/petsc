@@ -114,7 +114,7 @@ int main(int argc,char **args)
     }
   }
   ierr = PetscMalloc1(nsub, &S);CHKERRQ(ierr);
-  ierr = MatGetSubMatrices(A,nsub,rowis,colis,MAT_INITIAL_MATRIX, &S);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(A,nsub,rowis,colis,MAT_INITIAL_MATRIX, &S);CHKERRQ(ierr);
 
   show_inversions = PETSC_FALSE;
 

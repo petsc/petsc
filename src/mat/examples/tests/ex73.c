@@ -105,7 +105,7 @@ int main(int argc,char **args)
 
   /* move the matrix rows to the new processes they have been assigned to by the permutation */
   ierr = ISSort(is);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(A,is,is,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix(A,is,is,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
 
   /* move the vector rows to the new processes they have been assigned to */

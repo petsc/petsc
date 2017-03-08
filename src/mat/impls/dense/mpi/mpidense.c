@@ -154,7 +154,7 @@ PetscErrorCode MatDenseGetArray_MPIDense(Mat A,PetscScalar *array[])
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatGetSubMatrix_MPIDense(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *B)
+static PetscErrorCode MatCreateSubMatrix_MPIDense(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *B)
 {
   Mat_MPIDense   *mat  = (Mat_MPIDense*)A->data,*newmatd;
   Mat_SeqDense   *lmat = (Mat_SeqDense*)mat->A->data;
@@ -1078,7 +1078,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_MPIDense,
                                         0,
                                         0,
                                 /* 39*/ MatAXPY_MPIDense,
-                                        MatGetSubMatrices_MPIDense,
+                                        MatCreateSubMatrices_MPIDense,
                                         0,
                                         MatGetValues_MPIDense,
                                         0,
@@ -1097,7 +1097,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_MPIDense,
                                         0,
                                         0,
                                         0,
-                                /* 59*/ MatGetSubMatrix_MPIDense,
+                                /* 59*/ MatCreateSubMatrix_MPIDense,
                                         MatDestroy_MPIDense,
                                         MatView_MPIDense,
                                         0,

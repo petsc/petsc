@@ -297,7 +297,7 @@ PetscErrorCode PCGASMSetHierarchicalPartitioning(PC pc)
    ierr = VecCreateMPI(comm,fromrows_localsize,PETSC_DETERMINE,&(osm->pcx));CHKERRQ(ierr);
    ierr = VecDuplicate(osm->pcx,&(osm->pcy));CHKERRQ(ierr);
    ierr = VecScatterCreate(osm->pcx,NULL,outervec,fromrows,&(osm->pctoouter));CHKERRQ(ierr);
-   ierr = MatGetSubMatrix(pc->pmat,fromrows,fromrows,MAT_INITIAL_MATRIX,&(osm->permutationP));CHKERRQ(ierr);
+   ierr = MatCreateSubMatrix(pc->pmat,fromrows,fromrows,MAT_INITIAL_MATRIX,&(osm->permutationP));CHKERRQ(ierr);
    ierr = PetscObjectReference((PetscObject)fromrows);CHKERRQ(ierr);
    osm->permutationIS = fromrows;
    osm->pcmat =  pc->pmat;
@@ -577,7 +577,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
       scall = MAT_INITIAL_MATRIX;
     }
     if(osm->permutationIS){
-      ierr = MatGetSubMatrix(pc->pmat,osm->permutationIS,osm->permutationIS,scall,&osm->permutationP);CHKERRQ(ierr);
+      ierr = MatCreateSubMatrix(pc->pmat,osm->permutationIS,osm->permutationIS,scall,&osm->permutationP);CHKERRQ(ierr);
       ierr = PetscObjectReference((PetscObject)osm->permutationP);CHKERRQ(ierr);
       osm->pcmat = pc->pmat;
       pc->pmat   = osm->permutationP;
@@ -590,9 +590,9 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
      Extract out the submatrices.
   */
   if (size > 1) {
-    ierr = MatGetSubMatricesMPI(pc->pmat,osm->n,osm->ois,osm->ois,scall,&osm->pmat);CHKERRQ(ierr);
+    ierr = MatCreateSubMatricesMPI(pc->pmat,osm->n,osm->ois,osm->ois,scall,&osm->pmat);CHKERRQ(ierr);
   } else {
-    ierr = MatGetSubMatrices(pc->pmat,osm->n,osm->ois,osm->ois,scall,&osm->pmat);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrices(pc->pmat,osm->n,osm->ois,osm->ois,scall,&osm->pmat);CHKERRQ(ierr);
   }
   if (scall == MAT_INITIAL_MATRIX) {
     ierr = PetscObjectGetOptionsPrefix((PetscObject)pc->pmat,&pprefix);CHKERRQ(ierr);
@@ -765,7 +765,7 @@ static PetscErrorCode PCReset_GASM(PC pc)
       PetscMPIInt size;
       ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
       if (size > 1) {
-        /* osm->pmat is created by MatGetSubMatricesMPI(), cannot use MatDestroySubMatrices() */
+        /* osm->pmat is created by MatCreateSubMatricesMPI(), cannot use MatDestroySubMatrices() */
         ierr = MatDestroyMatrices(osm->n,&osm->pmat);CHKERRQ(ierr);
       } else {
         ierr = MatDestroySubMatrices(osm->n,&osm->pmat);CHKERRQ(ierr);

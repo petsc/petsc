@@ -49,7 +49,7 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C,PetscInt is_max,IS is[],PetscIn
       is_row[i]  = is_row[0]; /* reuse is_row[0] */
     }
 
-    /* Allocate memory to hold all the submatrices - Modified from MatGetSubMatrices_MPIBAIJ() */
+    /* Allocate memory to hold all the submatrices - Modified from MatCreateSubMatrices_MPIBAIJ() */
     ierr = PetscMalloc1(is_max+1,&submats);CHKERRQ(ierr);
 
     /* Determine the number of stages through which submatrices are done */
@@ -67,7 +67,7 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C,PetscInt is_max,IS is[],PetscIn
         else if (pos == is_max) max_no = 0;
         else                    max_no = is_max-pos;
         c->ijonly = PETSC_TRUE; /* only matrix data structures are requested */
-        ierr      = MatGetSubMatrices_MPIBAIJ_local(C,max_no,is_row+pos,is_new+pos,MAT_INITIAL_MATRIX,submats+pos);CHKERRQ(ierr);
+        ierr      = MatCreateSubMatrices_MPIBAIJ_local(C,max_no,is_row+pos,is_new+pos,MAT_INITIAL_MATRIX,submats+pos);CHKERRQ(ierr);
         pos      += max_no;
       }
 

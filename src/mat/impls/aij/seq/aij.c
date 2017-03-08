@@ -2162,7 +2162,7 @@ PetscErrorCode MatDiagonalScale_SeqAIJ(Mat A,Vec ll,Vec rr)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,PetscInt csize,MatReuse scall,Mat *B)
+PetscErrorCode MatCreateSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,PetscInt csize,MatReuse scall,Mat *B)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data,*c;
   PetscErrorCode ierr;
@@ -2409,7 +2409,7 @@ PetscErrorCode MatScale_SeqAIJ(Mat inA,PetscScalar alpha)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDestroySubMatrices_Private(Mat_SubMat *submatj)
+PetscErrorCode MatDestroySubMatrices_Private(Mat_SubSppt *submatj)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -2460,7 +2460,7 @@ PetscErrorCode MatDestroy_SeqAIJ_Submatrices(Mat C)
 {
   PetscErrorCode ierr;
   Mat_SeqAIJ     *c = (Mat_SeqAIJ*)C->data;
-  Mat_SubMat     *submatj = c->submatis1;
+  Mat_SubSppt    *submatj = c->submatis1;
 
   PetscFunctionBegin;
   ierr = submatj->destroy(C);CHKERRQ(ierr);
@@ -2468,7 +2468,7 @@ PetscErrorCode MatDestroy_SeqAIJ_Submatrices(Mat C)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatGetSubMatrices_SeqAIJ(Mat A,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *B[])
+PetscErrorCode MatCreateSubMatrices_SeqAIJ(Mat A,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *B[])
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -2479,7 +2479,7 @@ PetscErrorCode MatGetSubMatrices_SeqAIJ(Mat A,PetscInt n,const IS irow[],const I
   }
 
   for (i=0; i<n; i++) {
-    ierr = MatGetSubMatrix_SeqAIJ(A,irow[i],icol[i],PETSC_DECIDE,scall,&(*B)[i]);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix_SeqAIJ(A,irow[i],icol[i],PETSC_DECIDE,scall,&(*B)[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -3077,7 +3077,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqAIJ,
                                         MatILUFactor_SeqAIJ,
                                         0,
                                 /* 39*/ MatAXPY_SeqAIJ,
-                                        MatGetSubMatrices_SeqAIJ,
+                                        MatCreateSubMatrices_SeqAIJ,
                                         MatIncreaseOverlap_SeqAIJ,
                                         MatGetValues_SeqAIJ,
                                         MatCopy_SeqAIJ,

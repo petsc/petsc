@@ -38,13 +38,13 @@ PetscErrorCode  MatHasOperation(Mat mat,MatOperation op,PetscBool  *has)
   } else {
     if (((void**)mat->ops)[op]) *has =  PETSC_TRUE;
     else {
-      if (op == MATOP_GET_SUBMATRIX) {
+      if (op == MATOP_CREATE_SUBMATRIX) {
         PetscErrorCode ierr;
         PetscMPIInt    size;
 
         ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRQ(ierr);
         if (size == 1) {
-          ierr = MatHasOperation(mat,MATOP_GET_SUBMATRICES,has);CHKERRQ(ierr);
+          ierr = MatHasOperation(mat,MATOP_CREATE_SUBMATRICES,has);CHKERRQ(ierr);
         } else {
           *has = PETSC_FALSE;
         }

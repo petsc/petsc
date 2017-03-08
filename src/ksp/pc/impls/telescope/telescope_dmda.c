@@ -756,7 +756,7 @@ PetscErrorCode PCTelescopeMatCreate_dmda_dmactivefalse(PC pc,PC_Telescope sred,M
   isrow = sred->isin;
   ierr = ISCreateStride(comm,nc,0,1,&iscol);CHKERRQ(ierr);
 
-  ierr = MatGetSubMatrices(Bperm,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&_Blocal);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(Bperm,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&_Blocal);CHKERRQ(ierr);
   Blocal = *_Blocal;
   Bred = NULL;
   if (isActiveRank(sred->psubcomm)) {

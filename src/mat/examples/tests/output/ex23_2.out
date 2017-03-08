@@ -52,7 +52,7 @@ Test MatISGetMPIXAIJ
 Test MatDiagonalScale
 Test MatGetLocalSubMatrix
 Test MatConvert_Nest_IS
-Test MatGetSubMatrix
+Test MatCreateSubMatrix
 Test MatDiagonalSet
 Test MatShift
 IS Object: 4 MPI processes

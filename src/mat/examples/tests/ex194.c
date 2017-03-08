@@ -1,5 +1,5 @@
 
-static char help[] = "Tests MatGetSubmatrix() with certain entire rows of matrix, modified from ex181.c.";
+static char help[] = "Tests MatCreateSubmatrix() with certain entire rows of matrix, modified from ex181.c.";
 
 #include <petscmat.h>
 
@@ -47,7 +47,7 @@ int main(int argc,char **args)
 
   ierr = ISCreateStride(PETSC_COMM_WORLD,rend-rstart > 0 ? rend-rstart-1 : 0,rstart,1,&isrow);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_WORLD,cend-cstart,cstart,1,&iscol);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(C,isrow,NULL,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix(C,isrow,NULL,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
 
   /* Change C to test the case MAT_REUSE_MATRIX */
   if (!rank ) {
@@ -57,7 +57,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = MatGetSubMatrix(C,isrow,NULL,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix(C,isrow,NULL,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

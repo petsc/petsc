@@ -39,8 +39,8 @@ PetscErrorCode MatSetUpMultiply_MPIDense(Mat mat)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat*);
-PetscErrorCode MatGetSubMatrices_MPIDense(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[])
+extern PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat*);
+PetscErrorCode MatCreateSubMatrices_MPIDense(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[])
 {
   PetscErrorCode ierr;
   PetscInt       nmax,nstages_local,nstages,i,pos,max_no;
@@ -63,13 +63,13 @@ PetscErrorCode MatGetSubMatrices_MPIDense(Mat C,PetscInt ismax,const IS isrow[],
     if (pos+nmax <= ismax) max_no = nmax;
     else if (pos == ismax) max_no = 0;
     else                   max_no = ismax-pos;
-    ierr = MatGetSubMatrices_MPIDense_Local(C,max_no,isrow+pos,iscol+pos,scall,*submat+pos);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrices_MPIDense_Local(C,max_no,isrow+pos,iscol+pos,scall,*submat+pos);CHKERRQ(ierr);
     pos += max_no;
   }
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------*/
-PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submats)
+PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submats)
 {
   Mat_MPIDense   *c = (Mat_MPIDense*)C->data;
   Mat            A  = c->A;

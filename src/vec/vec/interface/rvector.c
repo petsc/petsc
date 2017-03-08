@@ -1251,7 +1251,7 @@ PetscErrorCode  VecMAXPY(Vec y,PetscInt nv,const PetscScalar alpha[],Vec x[])
    This function may return a subvector without making a copy, therefore it is not safe to use the original vector while
    modifying the subvector.  Other non-overlapping subvectors can still be obtained from X using this function.
 
-.seealso: MatGetSubMatrix()
+.seealso: MatCreateSubMatrix()
 @*/
 PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
 {

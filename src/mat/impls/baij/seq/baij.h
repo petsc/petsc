@@ -50,8 +50,8 @@ PETSC_INTERN PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat,Mat,IS,IS,co
 PETSC_INTERN PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat,Mat,IS,IS,const MatFactorInfo*);
 PETSC_INTERN PetscErrorCode MatLUFactor_SeqBAIJ(Mat,IS,IS,const MatFactorInfo*);
 PETSC_INTERN PetscErrorCode MatIncreaseOverlap_SeqBAIJ(Mat,PetscInt,IS*,PetscInt);
-PETSC_INTERN PetscErrorCode MatGetSubMatrix_SeqBAIJ(Mat,IS,IS,MatReuse,Mat*);
-PETSC_INTERN PetscErrorCode MatGetSubMatrices_SeqBAIJ(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat*[]);
+PETSC_INTERN PetscErrorCode MatCreateSubMatrix_SeqBAIJ(Mat,IS,IS,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatCreateSubMatrices_SeqBAIJ(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat*[]);
 PETSC_INTERN PetscErrorCode MatMultTranspose_SeqBAIJ(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMultHermitianTranspose_SeqBAIJ(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMultTransposeAdd_SeqBAIJ(Mat,Vec,Vec,Vec);

@@ -62,10 +62,10 @@ PetscErrorCode MatCreateSubMatrixFree(Mat mat,IS Rows, IS Cols, Mat *J)
   ierr = MatShellSetOperation(*J,MATOP_SCALE,(void(*)(void))MatScale_SMF);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_TRANSPOSE,(void(*)(void))MatTranspose_SMF);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_GET_DIAGONAL,(void(*)(void))MatGetDiagonal_SMF);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MATOP_GET_SUBMATRICES,(void(*)(void))MatGetSubMatrices_SMF);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_CREATE_SUBMATRICES,(void(*)(void))MatCreateSubMatrices_SMF);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_NORM,(void(*)(void))MatNorm_SMF);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_DUPLICATE,(void(*)(void))MatDuplicate_SMF);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MATOP_GET_SUBMATRIX,(void(*)(void))MatGetSubMatrix_SMF);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_CREATE_SUBMATRIX,(void(*)(void))MatCreateSubMatrix_SMF);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_GET_ROW_MAX,(void(*)(void))MatDuplicate_SMF);CHKERRQ(ierr);
 
   ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)(*J));CHKERRQ(ierr);
@@ -236,7 +236,7 @@ PetscErrorCode MatGetRowMax_SMF(Mat M, Vec D)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatGetSubMatrices_SMF(Mat A,PetscInt n, IS *irow,IS *icol,MatReuse scall,Mat **B)
+PetscErrorCode MatCreateSubMatrices_SMF(Mat A,PetscInt n, IS *irow,IS *icol,MatReuse scall,Mat **B)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -247,12 +247,12 @@ PetscErrorCode MatGetSubMatrices_SMF(Mat A,PetscInt n, IS *irow,IS *icol,MatReus
   }
 
   for ( i=0; i<n; i++ ) {
-    ierr = MatGetSubMatrix_SMF(A,irow[i],icol[i],scall,&(*B)[i]);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix_SMF(A,irow[i],icol[i],scall,&(*B)[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatGetSubMatrix_SMF(Mat mat,IS isrow,IS iscol,MatReuse cll,
+PetscErrorCode MatCreateSubMatrix_SMF(Mat mat,IS isrow,IS iscol,MatReuse cll,
                         Mat *newmat)
 {
   PetscErrorCode   ierr;

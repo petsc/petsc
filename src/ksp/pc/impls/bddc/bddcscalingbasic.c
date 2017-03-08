@@ -310,7 +310,7 @@ PetscErrorCode PCBDDCScalingSetUp(PC pc)
       IS is_dummy;
 
       ierr = ISCreateStride(PETSC_COMM_SELF,pcbddc->benign_n,0,1,&is_dummy);CHKERRQ(ierr);
-      ierr = MatGetSubMatrix(pcbddc->benign_B0,is_dummy,pcis->is_B_local,MAT_INITIAL_MATRIX,&B0_B);CHKERRQ(ierr);
+      ierr = MatCreateSubMatrix(pcbddc->benign_B0,is_dummy,pcis->is_B_local,MAT_INITIAL_MATRIX,&B0_B);CHKERRQ(ierr);
       ierr = ISDestroy(&is_dummy);CHKERRQ(ierr);
       ierr = MatCreateVecs(B0_B,NULL,&B0_Bv);CHKERRQ(ierr);
       ierr = VecDuplicate(B0_Bv,&B0_Bv2);CHKERRQ(ierr);
