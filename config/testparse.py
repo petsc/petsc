@@ -125,12 +125,17 @@ def _stripIndent(block,srcfile,entireBlock=False,fileNums=[]):
 
   return newTestStr
 
-def _getNewArgs(kvar,val,argStr):
+def parseLoopArgs(varset):
   """
-  Given:   String containing arguments
-  Return:  String without the value in it
+  Given:   String containing loop variables
+  Return: tuple containing separate/shared and string of loop vars
   """
-  return newTestStr
+  keynm=varset.split("{{")[0].strip()
+  if not keynm.strip(): keynm='nsize'
+  lvars=varset.split('{{')[1].split('}')[0]
+  suffx=varset.split('{{')[1].split('}')[1]
+  ftype='separate' if suffx.startswith('separate') else 'shared' 
+  return keynm,lvars,ftype
 
 def _getSeparateTestvars(testDict):
   """
@@ -142,19 +147,18 @@ def _getSeparateTestvars(testDict):
   # Check nsize
   if testDict.has_key('nsize'): 
     varset=testDict['nsize']
-    if len(re.findall('{{(.*?)}(?:[\w\s]*)?}',varset))>0:
-      if 'separate' in re.findall('{{(?:.*?)}([\w\s]*)?}',varset)[0]: 
-        sepvars.append('nsize')
+    if '{{' in varset:
+      keynm,lvars,ftype=parseLoopArgs(varset)
+      if ftype=='separate': sepvars.append(keynm)
 
   # Now check args
   if not testDict.has_key('args'): return sepvars
   for varset in re.split('-(?=[a-zA-Z])',testDict['args']):
     if not varset.strip(): continue
-    if len(re.findall('{{(.*?)}(?:[\w\s]*)?}',varset))>0:
+    if '{{' in varset:
       # Assuming only one for loop per var specification
-      keyvar=varset.split("{{")[0].strip()
-      fortype=re.findall('{{(?:.*?)}([\w\s]*)?}',varset)[0]
-      if 'separate' in fortype: sepvars.append(keyvar)
+      keynm,lvars,ftype=parseLoopArgs(varset)
+      if ftype=='separate': sepvars.append(keynm)
 
   return sepvars
 
@@ -167,18 +171,16 @@ def _getVarVals(findvar,testDict):
   newargs=''
   if findvar=='nsize':
     varset=testDict[findvar]
-    vals=re.findall('{{(.*?)}(?:[\w\s]*)?}',varset)[0]
+    keynm,vals,ftype=parseLoopArgs('nsize '+varset)
   else:
     varlist=[]
     for varset in re.split('-(?=[a-zA-Z])',testDict['args']):
       if not varset.strip(): continue
-      if len(re.findall('{{(.*?)}(?:[\w\s]*)?}',varset))>0:
-        # Assuming only one for loop per var specification
-        keyvar=varset.split("{{")[0].strip()
+      if '{{' in varset:
+        keyvar,vals,ftype=parseLoopArgs(varset)
         if keyvar!=findvar: 
           newargs+="-"+varset.strip()+" "
           continue
-        vals=re.findall('{{(.*?)}(?:[\w\s]*)?}',varset)[0]
       else:
         newargs+="-"+varset.strip()+" "
 
