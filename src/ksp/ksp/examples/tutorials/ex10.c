@@ -568,9 +568,10 @@ int main(int argc,char **args)
    testset:
       nsize: 3
       args: -f0 ${DATAFILESPATH}/matrices/medium
+      requires: datafilespath
       test:
          suffix: 14
-         requires: spai datafilespath
+         requires: spai 
          args: -pc_type spai 
       test:
          suffix: 15
@@ -578,11 +579,11 @@ int main(int argc,char **args)
          args: -pc_type hypre -pc_hypre_type pilut 
       test:
          suffix: 16
-         requires: hypre datafilespath
+         requires: hypre
          args: -pc_type hypre -pc_hypre_type parasails
       test:
          suffix: 17
-         requires: hypre datafilespath
+         requires: hypre
          args: -pc_type hypre -pc_hypre_type boomeramg 
    
    testset:
@@ -620,7 +621,7 @@ int main(int argc,char **args)
    
    testset:
       nsize: 2
-      requires: hypre
+      requires: hypre datafilespath
       args: -f0 ${DATAFILESPATH}/matrices/poisson2.gz -ksp_monitor_short -ksp_rtol 1.E-9 -pc_type hypre -pc_hypre_type boomeramg 
       test:
          suffix: boomeramg_euclid

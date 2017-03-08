@@ -116,7 +116,7 @@ class generateExamples(Petsc):
           keyvar,lvars,ftype=parseLoopArgs(varset)
           if akey not in loopVars: loopVars[akey]={}
           varlist.append(keyvar)
-          loopVars[akey][keyvar]=lvars
+          loopVars[akey][keyvar]=[keyvar,lvars]
           if akey=='nsize':
             inDict[akey] = '${' + keyvar + '}'
             lsuffix+=akey+'-'+inDict[akey]+'_'
