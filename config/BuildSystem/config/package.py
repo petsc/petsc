@@ -704,7 +704,7 @@ class Package(config.base.Configure):
     addGraph(depGraph,startnode)
     return [sortnode for sortnode in graph.DirectedGraph.topologicalSort(depGraph,start=startnode)]
 
-  def checkDependencies(self, libs = None, incls = None):
+  def checkDependencies(self):
     for package in self.deps:
       if not hasattr(package, 'found'):
         raise RuntimeError('Package '+package.name+' does not have found attribute!')
@@ -725,8 +725,8 @@ class Package(config.base.Configure):
     dpkgs = Package.sortPackageDependencies(self)
     dpkgs.remove(self)
     for package in dpkgs:
-      if hasattr(package, 'dlib')    and not libs  is None: libs  += package.dlib
-      if hasattr(package, 'include') and not incls is None: incls += package.include
+      if hasattr(package, 'lib'):     self.dlib += package.lib
+      if hasattr(package, 'include'): self.dinclude += package.include
     return
 
   def configureLibrary(self):
@@ -736,10 +736,6 @@ class Package(config.base.Configure):
     foundLibrary = 0
     foundHeader  = 0
 
-    # get any libraries and includes we depend on
-    libs  = []
-    incls = []
-    self.checkDependencies(libs, incls)
     for location, directory, lib, incl in self.generateGuesses():
       if directory and not os.path.isdir(directory):
         self.logPrint('Directory does not exist: %s (while checking "%s" for "%r")' % (directory,location,lib))
@@ -759,16 +755,16 @@ class Package(config.base.Configure):
       else:
         self.logPrint('Not checking for library in '+location+': '+str(lib)+' because no functions given to check for')
       self.libraries.saveLog()
-      if self.executeTest(self.libraries.check,[lib, self.functions],{'otherLibs' : libs, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': self.cxx}):
+      if self.executeTest(self.libraries.check,[lib, self.functions],{'otherLibs' : self.dlib, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': self.cxx}):
         self.lib = lib
         self.logWrite(self.libraries.restoreLog())
         self.logPrint('Checking for headers '+location+': '+str(incl))
-        if (not self.includes) or self.checkInclude(incl, self.includes, incls, timeout = 1800.0):
+        if (not self.includes) or self.checkInclude(incl, self.includes, self.dinclude, timeout = 1800.0):
           if self.includes:
             self.include = testedincl
           self.found     = 1
-          self.dlib      = self.lib+libs
-          self.dinclude  = list(set(incl+incls))
+          self.dlib      = self.lib+self.dlib
+          self.dinclude  = list(set(incl+self.dinclude))
           if not hasattr(self.framework, 'packages'):
             self.framework.packages = []
           self.directory = directory
@@ -833,6 +829,7 @@ class Package(config.base.Configure):
     if self.argDB['with-'+self.package]:
       # If clanguage is c++, test external packages with the c++ compiler
       self.libraries.pushLanguage(self.defaultLanguage)
+      self.executeTest(self.checkDependencies)
       self.executeTest(self.configureLibrary)
       self.executeTest(self.checkSharedLibrary)
       self.libraries.popLanguage()
