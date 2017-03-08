@@ -715,6 +715,13 @@ class Package(config.base.Configure):
           str = ''
           if package.download: str = ' or --download-'+package.package
           raise RuntimeError('Did not find package '+package.PACKAGE+' needed by '+self.name+'.\nEnable the package using --with-'+package.package+str)
+    for package in self.odeps:
+      if not hasattr(package, 'found'):
+        raise RuntimeError('Package '+package.name+' does not have found attribute!')
+      if not package.found:
+        if self.argDB['with-'+package.package] == 1:
+          raise RuntimeError('Package '+package.PACKAGE+' needed by '+self.name+' failed to configure.\nMail configure.log to petsc-maint@mcs.anl.gov.')
+
     dpkgs = Package.sortPackageDependencies(self)
     dpkgs.remove(self)
     for package in dpkgs:
@@ -771,6 +778,8 @@ class Package(config.base.Configure):
         self.logWrite(self.libraries.restoreLog())
     if not self.lookforbydefault or (self.framework.clArgDB.has_key('with-'+self.package) and self.argDB['with-'+self.package]):
       raise RuntimeError('Could not find a functional '+self.name+'\n')
+    if self.lookforbydefault and not self.framework.clArgDB.has_key('with-'+self.package):
+      self.argDB['with-'+self.package] = 0
 
   def checkSharedLibrary(self):
     '''By default we don\'t care about checking if the library is shared'''
@@ -1301,14 +1310,6 @@ class GNUPackage(Package):
       raise RuntimeError('Error running make; make install on '+self.PACKAGE+': '+str(e))
     self.postInstall(output1+err1+output2+err2+output3+err3+output4+err4, conffile)
     return self.installDir
-
-  def checkDependencies(self, libs = None, incls = None):
-    Package.checkDependencies(self, libs, incls)
-    for package in self.odeps:
-      if not package.found:
-        if self.argDB['with-'+package.package] == 1:
-          raise RuntimeError('Package '+package.PACKAGE+' needed by '+self.name+' failed to configure.\nMail configure.log to petsc-maint@mcs.anl.gov.')
-    return
 
 class CMakePackage(Package):
   def __init__(self, framework):
