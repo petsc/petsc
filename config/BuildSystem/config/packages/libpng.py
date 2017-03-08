@@ -18,6 +18,6 @@ class Configure(config.package.GNUPackage):
 
   def formGNUConfigureArgs(self):
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
-    args.append('CPPFLAGS="'+self.headers.toStringNoDupes(self.zlib.include)+'"')
-    args.append('LIBS="'+self.libraries.toStringNoDupes(self.zlib.lib+self.mathlib.lib)+'"')
+    args.append('CPPFLAGS="'+self.headers.toStringNoDupes(self.dinclude)+'"')
+    args.append('LIBS="'+self.libraries.toStringNoDupes(self.dlib)+'"')
     return args
