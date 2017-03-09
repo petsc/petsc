@@ -52,6 +52,8 @@ import inspect
 thisscriptdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 maintdir=os.path.join(os.path.join(os.path.dirname(thisscriptdir),'bin'),'maint')
 sys.path.insert(0,maintdir) 
+# Don't print out trace when raise Exceptions 
+sys.tracebacklimit = 0
 
 # These are special keys describing build
 buildkeys="requires TODO SKIP depends".split()
@@ -69,14 +71,16 @@ def _stripIndent(block,srcfile,entireBlock=False,fileNums=[]):
   # The first entry should be test: but it might be indented. 
   ext=os.path.splitext(srcfile)[1]
   stripstr=" "
+  if len(fileNums)>0: lineNum=fileNums[0]-1
   for lline in block.split("\n"):
+    if len(fileNums)>0: lineNum+=1
     line=lline[1:] if lline.startswith("!") else lline
     if not line.strip(): continue
     if line.strip().startswith('#'): continue
     if entireBlock:
       var=line.split(":")[0].strip()
       if not (var=='test' or var=='testset'): 
-        raise Exception("Formatting error in finding test in file: "+srcfile+"\n")
+        raise Exception("Formatting error: Cannot find test in file: "+srcfile+" at line: "+str(lineNum)+"\n")
     nspace=len(line)-len(line.lstrip(stripstr))
     newline=line[nspace:]
     break
