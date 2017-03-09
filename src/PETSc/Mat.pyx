@@ -432,11 +432,11 @@ cdef class Mat(Object):
         PetscCLEAR(self.obj); self.mat = newmat
         return self
 
-    def createSubMatrix(self, Mat A not None,
+    def createSubMatrixVirtual(self, Mat A not None,
                         IS isrow not None, IS iscol=None):
         if iscol is None: iscol = isrow
         cdef PetscMat newmat = NULL
-        CHKERR( MatCreateSubMatrix(A.mat, isrow.iset, iscol.iset, &newmat) )
+        CHKERR( MatCreateSubMatrixVirtual(A.mat, isrow.iset, iscol.iset, &newmat) )
         PetscCLEAR(self.obj); self.mat = newmat
         return self
 
@@ -1129,17 +1129,17 @@ cdef class Mat(Object):
         cdef PetscInt ival = asInt(overlap)
         CHKERR( MatIncreaseOverlap(self.mat, 1, &iset.iset, ival) )
 
-    def getSubMatrix(self, IS isrow not None, IS iscol=None, Mat submat=None):
+    def createSubMatrix(self, IS isrow not None, IS iscol=None, Mat submat=None):
         cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX
         cdef PetscIS ciscol = NULL
         if iscol is not None: ciscol = iscol.iset
         if submat is None: submat = Mat()
         if submat.mat != NULL: reuse = MAT_REUSE_MATRIX
-        CHKERR( MatGetSubMatrix(self.mat, isrow.iset, ciscol,
+        CHKERR( MatCreateSubMatrix(self.mat, isrow.iset, ciscol,
                                 reuse, &submat.mat) )
         return submat
 
-    def getSubMatrices(self, isrows not None, iscols=None, submats=None):
+    def createSubMatrices(self, isrows not None, iscols=None, submats=None):
         if iscols is None: iscols = isrows
         isrows = [isrows] if isinstance(isrows, IS) else list(isrows)
         iscols = [iscols] if isinstance(iscols, IS) else list(iscols)
@@ -1161,7 +1161,7 @@ cdef class Mat(Object):
             assert len(submats) == len(isrows)
             CHKERR( PetscMalloc(<size_t>(n+1)*sizeof(PetscMat), &cmats) )
             for i from 0 <= i < n: cmats[i] = (<Mat?>submats[i]).mat
-        CHKERR( MatGetSubMatrices(self.mat, <PetscInt>n, cisrows, ciscols, reuse, &cmats) )
+        CHKERR( MatCreateSubMatrices(self.mat, <PetscInt>n, cisrows, ciscols, reuse, &cmats) )
         for i from 0 <= i < n: PetscINCREF(<PetscObject*>&cmats[i])
         if reuse == MAT_INITIAL_MATRIX:
             submats = [None] * n

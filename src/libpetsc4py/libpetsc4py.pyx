@@ -463,7 +463,7 @@ cdef extern from * nogil:
         PetscErrorCode (*view)(PetscMat,PetscViewer) except IERR
         PetscErrorCode (*duplicate)(PetscMat,MatDuplicateOption,PetscMat*) except IERR
         PetscErrorCode (*copy)(PetscMat,PetscMat,MatStructure) except IERR
-        PetscErrorCode (*getsubmatrix)(PetscMat,PetscIS,PetscIS,MatReuse,PetscMat*) except IERR
+        PetscErrorCode (*createsubmatrix)(PetscMat,PetscIS,PetscIS,MatReuse,PetscMat*) except IERR
         PetscErrorCode (*setoption)(PetscMat,MatOption,PetscBool) except IERR
         PetscErrorCode (*setup)(PetscMat) except IERR
         PetscErrorCode (*assemblybegin)(PetscMat,MatAssemblyType) except IERR
@@ -549,7 +549,7 @@ cdef PetscErrorCode MatCreate_Python(
     ops.view              = MatView_Python
     ops.duplicate         = MatDuplicate_Python
     ops.copy              = MatCopy_Python
-    ops.getsubmatrix      = MatGetSubMatrix_Python
+    ops.createsubmatrix   = MatCreateSubMatrix_Python
     ops.setoption         = MatSetOption_Python
     ops.setup             = MatSetUp_Python
     ops.assemblybegin     = MatAssemblyBegin_Python
@@ -693,7 +693,7 @@ cdef PetscErrorCode MatGetDiagonalBlock_Python(
     if sub is not None: out[0] = sub.mat
     return FunctionEnd()
 
-cdef PetscErrorCode MatGetSubMatrix_Python(
+cdef PetscErrorCode MatCreateSubMatrix_Python(
     PetscMat mat,
     PetscIS  row,
     PetscIS  col,
@@ -702,15 +702,15 @@ cdef PetscErrorCode MatGetSubMatrix_Python(
     ) \
     except IERR with gil:
     FunctionBegin(b"MatCopy_Python")
-    cdef getSubMatrix = PyMat(mat).getSubMatrix
-    if getSubMatrix is None: return UNSUPPORTED(b"getSubMatrix")
+    cdef createSubMatrix = PyMat(mat).createSubMatrix
+    if createSubMatrix is None: return UNSUPPORTED(b"createSubMatrix")
     cdef Mat sub = None
     if op == MAT_IGNORE_MATRIX:
         sub = None
     elif op == MAT_INITIAL_MATRIX:
-        sub = getSubMatrix(Mat_(mat), IS_(row), IS_(col), None)
+        sub = createSubMatrix(Mat_(mat), IS_(row), IS_(col), None)
     elif op == MAT_REUSE_MATRIX:
-        sub = getSubMatrix(Mat_(mat), IS_(row), IS_(col), Mat_(out[0]))
+        sub = createSubMatrix(Mat_(mat), IS_(row), IS_(col), Mat_(out[0]))
     if sub is not None:
         addRef(sub.mat)
         out[0] = sub.mat

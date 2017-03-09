@@ -204,7 +204,7 @@ class BaseTestMatAnyAIJ(object):
             tmp[i-s,:,:] = N.linalg.inv(vals)
         self.assertTrue(N.allclose(ibdiag, tmp))
 
-    def testGetSubMatrix(self):
+    def testCreateSubMatrix(self):
         if 'baij' in self.A.getType(): return # XXX
         self._preallocate()
         self._set_values_ijv()
@@ -218,17 +218,17 @@ class BaseTestMatAnyAIJ(object):
         rows = PETSc.IS().createGeneral(rows, comm=self.A.getComm())
         cols = PETSc.IS().createGeneral(cols, comm=self.A.getComm())
         #
-        S = self.A.getSubMatrix(rows, None)
+        S = self.A.createSubMatrix(rows, None)
         S.zeroEntries()
-        self.A.getSubMatrix(rows, None, S)
+        self.A.createSubMatrix(rows, None, S)
         S.destroy()
         #
-        S = self.A.getSubMatrix(rows, cols)
+        S = self.A.createSubMatrix(rows, cols)
         S.zeroEntries()
-        self.A.getSubMatrix(rows, cols, S)
+        self.A.createSubMatrix(rows, cols, S)
         S.destroy()
 
-    def testGetSubMatrices(self):
+    def testCreateSubMatrices(self):
         if 'baij' in self.A.getType(): return # XXX
         self._preallocate()
         self._set_values_ijv()
@@ -241,26 +241,26 @@ class BaseTestMatAnyAIJ(object):
         rows = PETSc.IS().createGeneral(rows, comm=self.A.getComm())
         cols = PETSc.IS().createGeneral(cols, comm=self.A.getComm())
         #
-        (S,) = self.A.getSubMatrices(rows, cols)
+        (S,) = self.A.createSubMatrices(rows, cols)
         S.zeroEntries()
-        self.A.getSubMatrices(rows, cols, submats=[S])
+        self.A.createSubMatrices(rows, cols, submats=[S])
         S.destroy()
         #
-        (S1,) = self.A.getSubMatrices([rows], [cols])
-        (S2,) = self.A.getSubMatrices([rows], [cols])
+        (S1,) = self.A.createSubMatrices([rows], [cols])
+        (S2,) = self.A.createSubMatrices([rows], [cols])
         self.assertTrue(S1.equal(S2))
         S2.zeroEntries()
-        self.A.getSubMatrices([rows], [cols], [S2])
+        self.A.createSubMatrices([rows], [cols], [S2])
         self.assertTrue(S1.equal(S2))
         S1.destroy()
         S2.destroy()
         #
         if 'seq' not in self.A.getType(): return # XXX
-        S1, S2 = self.A.getSubMatrices([rows, rows], [cols, cols])
+        S1, S2 = self.A.createSubMatrices([rows, rows], [cols, cols])
         self.assertTrue(S1.equal(S2))
         S1.zeroEntries()
         S2.zeroEntries()
-        self.A.getSubMatrices([rows, rows], [cols, cols], [S1, S2])
+        self.A.createSubMatrices([rows, rows], [cols, cols], [S1, S2])
         self.assertTrue(S1.equal(S2))
         S1.destroy()
         S2.destroy()
