@@ -178,7 +178,6 @@ class Configure(config.base.Configure):
       fd.write('fcompiler='+self.setCompilers.getCompiler()+'\n')
       fd.write('fflags_extra="'+self.setCompilers.getCompilerFlags().strip()+'"\n')
       self.setCompilers.popLanguage()
-    fd.write('blaslapacklibs='+self.libraries.toStringNoDupes(self.blaslapack.lib)+'\n')
 
     fd.write('\n')
     fd.write('Name: PETSc\n')
