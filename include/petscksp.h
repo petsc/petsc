@@ -54,6 +54,7 @@ typedef const char* KSPType;
 #define   KSPFBCGS      "fbcgs"
 #define   KSPFBCGSR     "fbcgsr"
 #define   KSPBCGSL      "bcgsl"
+#define   KSPPIPEBCGS   "pipebcgs"
 #define KSPCGS        "cgs"
 #define KSPTFQMR      "tfqmr"
 #define KSPCR         "cr"
