@@ -24,12 +24,12 @@ class Configure(config.base.Configure):
     self.headers      = framework.require('config.headers',      self)
     return
 
-  def getLibArgumentList(self, library):
+  def getLibArgumentList(self, library, with_rpath=True):
     '''Return the proper link line argument for the given filename library as a list of options
       - If the path is empty, return it unchanged
       - If starts with - then return unchanged
       - If the path ends in ".lib" return it unchanged
-      - If the path is absolute and the filename is "lib"<name>, return -L<dir> -l<name>
+      - If the path is absolute and the filename is "lib"<name>, return -L<dir> -l<name> (optionally including rpath flag)
       - If the filename is "lib"<name>, return -l<name>
       - If the path ends in ".so" return it unchanged
       - If the path is absolute, return it unchanged
@@ -37,9 +37,9 @@ class Configure(config.base.Configure):
     if not library:
       return []
     if library.startswith('${CC_LINKER_SLFLAG}'):
-      return [library]
+      return [library] if with_rpath else []
     if library.startswith('${FC_LINKER_SLFLAG}'):
-      return [library]
+      return [library] if with_rpath else []
     if library.lstrip()[0] == '-':
       return [library]
     if len(library) > 3 and library[-4:] == '.lib':
@@ -50,12 +50,12 @@ class Configure(config.base.Configure):
         flagName  = self.language[-1]+'SharedLinkerFlag'
         flagSubst = self.language[-1].upper()+'_LINKER_SLFLAG'
         dirname   = os.path.dirname(library).replace('\\ ',' ').replace(' ', '\\ ').replace('\\(','(').replace('(', '\\(').replace('\\)',')').replace(')', '\\)')
-        if hasattr(self.setCompilers, flagName) and not getattr(self.setCompilers, flagName) is None:
-          return [getattr(self.setCompilers, flagName)+dirname,'-L'+dirname,'-l'+name]
-        if flagSubst in self.argDB:
-          return [self.argDB[flagSubst]+dirname,'-L'+dirname,'-l'+name]
-        else:
-          return ['-L'+dirname,' -l'+name]
+        if with_rpath:
+          if hasattr(self.setCompilers, flagName) and not getattr(self.setCompilers, flagName) is None:
+            return [getattr(self.setCompilers, flagName)+dirname,'-L'+dirname,'-l'+name]
+          if flagSubst in self.argDB:
+            return [self.argDB[flagSubst]+dirname,'-L'+dirname,'-l'+name]
+        return ['-L'+dirname,' -l'+name]
       else:
         return ['-l'+name]
     if os.path.splitext(library)[1] == '.so':
@@ -107,7 +107,7 @@ class Configure(config.base.Configure):
         newlibs += self.getLibArgumentList(lib)
     return ' '.join(newlibs)
 
-  def toStringNoDupes(self,libs):
+  def toStringNoDupes(self,libs,with_rpath=True):
     '''Converts a list of libraries to a string suitable for a linker, removes duplicates'''
     newlibs = []
     frame = 0
@@ -119,7 +119,7 @@ class Configure(config.base.Configure):
         newlibs += [lib]
         frame = 1
       else:
-        newlibs += self.getLibArgumentList(lib)
+        newlibs += self.getLibArgumentList(lib, with_rpath)
     libs = newlibs
     newldflags = []
     newlibs = []

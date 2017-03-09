@@ -184,11 +184,11 @@ class Configure(config.base.Configure):
     fd.write('Description: Library to solve ODEs and algebraic equations\n')
     fd.write('Version: %s\n' % self.petscdir.version)
     fd.write('Cflags: ' + self.setCompilers.CPPFLAGS + ' ' + self.PETSC_CC_INCLUDES + '\n')
-    fd.write('Libs: '+self.libraries.toStringNoDupes(['-L${libdir}', self.petsclib])+'\n')
+    fd.write('Libs: '+self.libraries.toStringNoDupes(['-L${libdir}', self.petsclib], with_rpath=False)+'\n')
     # Remove RPATH flags from library list.  User can add them using
     # pkg-config --variable=ldflag_rpath and pkg-config --libs-only-L
     lflags = self.packagelibs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split()
-    fd.write('Libs.private: '+self.libraries.toStringNoDupes([f for f in lflags if not f.startswith(self.setCompilers.CSharedLinkerFlag)])+'\n')
+    fd.write('Libs.private: '+self.libraries.toStringNoDupes([f for f in lflags if not f.startswith(self.setCompilers.CSharedLinkerFlag)], with_rpath=False)+'\n')
 
     fd.close()
     return
