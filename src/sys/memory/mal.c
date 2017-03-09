@@ -210,7 +210,6 @@ PetscErrorCode PetscMemoryTrace(const char label[])
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_MEMKIND)
 static PetscErrorCode (*PetscTrMallocOld)(size_t,int,const char[],const char[],void**) = PetscMallocAlign;
 static PetscErrorCode (*PetscTrFreeOld)(void*,int,const char[],const char[])           = PetscFreeAlign;
 PetscErrorCode PetscMallocSetDRAM(void)
@@ -232,4 +231,3 @@ PetscErrorCode PetscMallocResetDRAM(void)
   PetscTrFree   = PetscTrFreeOld;
   PetscFunctionReturn(0);
 }
-#endif
