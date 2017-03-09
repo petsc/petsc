@@ -3262,7 +3262,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
         PetscInt  off;
 
         ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
-        for (d = 0; d < dim; ++d) vert[d] = round(coords[off+d]*cells[d]);
+        for (d = 0; d < dim; ++d) vert[d] = round(PetscRealPart(coords[off+d])*cells[d]);
         theta = axes[perm[0]][vert[perm[0]]]*2.0*PETSC_PI/360;
         phi   = axes[perm[1]][vert[perm[1]]]*2.0*PETSC_PI/360;
         r     = axes[perm[2]][vert[perm[2]]];
