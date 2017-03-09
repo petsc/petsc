@@ -23,7 +23,7 @@ extern PetscErrorCode PetscFreeAlign(void*,int,const char[],const char[]);
    double aligned pointer to requested storage, or null if not
    available.
 */
-PetscErrorCode PetscHBWMalloc(size_t a,int lineno,const char function[],const char filename[],void **result)
+static PetscErrorCode PetscHBWMalloc(size_t a,int lineno,const char function[],const char filename[],void **result)
 {
 #if !defined(PETSC_HAVE_MEMKIND)
   return PetscMallocAlign(a,lineno,function,filename,result);
@@ -42,7 +42,7 @@ PetscErrorCode PetscHBWMalloc(size_t a,int lineno,const char function[],const ch
 #endif
 }
 
-PetscErrorCode PetscHBWFree(void *aa,int line,const char function[],const char file[])
+static PetscErrorCode PetscHBWFree(void *aa,int line,const char function[],const char file[])
 {
 #if !defined(PETSC_HAVE_MEMKIND)
   return PetscFreeAlign(aa,line,function,file);

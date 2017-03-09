@@ -211,8 +211,8 @@ PetscErrorCode PetscMemoryTrace(const char label[])
 }
 
 #if defined(PETSC_HAVE_MEMKIND)
-PetscErrorCode (*PetscTrMallocOld)(size_t,int,const char[],const char[],void**) = PetscMallocAlign;
-PetscErrorCode (*PetscTrFreeOld)(void*,int,const char[],const char[])           = PetscFreeAlign;
+static PetscErrorCode (*PetscTrMallocOld)(size_t,int,const char[],const char[],void**) = PetscMallocAlign;
+static PetscErrorCode (*PetscTrFreeOld)(void*,int,const char[],const char[])           = PetscFreeAlign;
 PetscErrorCode PetscMallocSetDRAM(void)
 {
   PetscFunctionBegin;
