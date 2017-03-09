@@ -1763,7 +1763,7 @@ PetscErrorCode MatFactorSetSchurIS_MUMPS(Mat F, IS is)
     PetscBool ls,gs;
 
     ierr = ISGetLocalSize(is,&size);CHKERRQ(ierr);
-    ls   = mumps->myid ? !size : PETSC_TRUE;
+    ls   = mumps->myid ? (size ? PETSC_FALSE : PETSC_TRUE) : PETSC_TRUE;
     ierr = MPI_Allreduce(&ls,&gs,1,MPIU_BOOL,MPI_LAND,mumps->comm_mumps);CHKERRQ(ierr);
     if (!gs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MUMPS distributed parallel Schur complements not yet supported from PETSc\n");
   }
