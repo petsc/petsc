@@ -6,7 +6,12 @@
 #if defined(PETSC_HAVE_MALLOC_H)
 #include <malloc.h>
 #endif
-
+#if defined(PETSC_HAVE_MEMKIND)
+#include <memkind.h>
+typedef enum {PETSC_MK_DEFAULT=0,PETSC_MK_HBW_PREFERRED=1} PetscMemkindType;
+PetscMemkindType currentmktype = PETSC_MK_HBW_PREFERRED;
+PetscMemkindType previousmktype = PETSC_MK_HBW_PREFERRED;
+#endif
 /*
         We want to make sure that all mallocs of double or complex numbers are complex aligned.
     1) on systems with memalign() we call that routine to get an aligned memory location
@@ -21,15 +26,40 @@ PetscErrorCode  PetscMallocAlign(size_t mem,int line,const char func[],const cha
 {
   if (!mem) { *result = NULL; return 0; }
 #if defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)
+#  if defined(PETSC_HAVE_MEMKIND)
+  {
+    int ierr;
+    if (!currentmktype) ierr = memkind_posix_memalign(MEMKIND_DEFAULT,result,PETSC_MEMALIGN,mem);
+    else ierr = memkind_posix_memalign(MEMKIND_HBW_PREFERRED,result,PETSC_MEMALIGN,mem);
+    if (ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MEM,"Memory requested with memkind %.0f",(PetscLogDouble)mem);
+  }
+#  else
   *result = malloc(mem);
+#  endif
 #elif defined(PETSC_HAVE_MEMALIGN)
+#  if defined(PETSC_HAVE_MEMKIND)
+  {
+    int ierr;
+    if (!currentmktype) ierr = memkind_posix_memalign(MEMKIND_DEFAULT,result,PETSC_MEMALIGN,mem);
+    else ierr = memkind_posix_memalign(MEMKIND_HBW_PREFERRED,result,PETSC_MEMALIGN,mem);
+    if (ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MEM,"Memory requested with memkind %.0f",(PetscLogDouble)mem);
+  }
+#  else
   *result = memalign(PETSC_MEMALIGN,mem);
+#  endif
 #else
   {
     /*
       malloc space for two extra chunks and shift ptr 1 + enough to get it PetscScalar aligned
     */
+#  if defined(PETSC_HAVE_MEMKIND)
+    int *ptr,ierr; 
+    if (!currentmktype) ierr = memkind_posix_memalign(MEMKIND_DEFAULT,&ptr,PETSC_MEMALIGN,mem+2*PETSC_MEMALIGN);
+    else ierr = memkind_posix_memalign(MEMKIND_HBW_PREFERRED,&ptr,PETSC_MEMALIGN,mem+2*PETSC_MEMALIGN);
+    if (ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MEM,"Memory requested with memkind %.0f",(PetscLogDouble)(mem+2*PETSC_MEMALIGN));
+#  else
     int *ptr = (int*)malloc(mem + 2*PETSC_MEMALIGN);
+#  endif
     if (ptr) {
       int shift    = (int)(((PETSC_UINTPTR_T) ptr) % PETSC_MEMALIGN);
       shift        = (2*PETSC_MEMALIGN - shift)/sizeof(int);
@@ -64,6 +94,8 @@ PetscErrorCode  PetscFreeAlign(void *ptr,int line,const char func[],const char f
 #if defined(PETSC_HAVE_FREE_RETURN_INT)
   int err = free(ptr);
   if (err) return PetscError(PETSC_COMM_SELF,line,func,file,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL,"System free returned error %d\n",err);
+#elif defined(PETSC_HAVE_MEMKIND)
+  memkind_free(0,ptr); /* specify the kind to 0 so that memkind will look up for the right type */
 #else
   free(ptr);
 #endif
@@ -94,13 +126,24 @@ PetscErrorCode PetscReallocAlign(size_t mem, int line, const char func[], const 
 #endif
 
 #if (defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)) || defined(PETSC_HAVE_MEMALIGN)
+#  if defined(PETSC_HAVE_MEMKIND)
+  if (!currentmktype) *result = memkind_realloc(MEMKIND_DEFAULT,*result,mem);
+  else *result = memkind_realloc(MEMKIND_HBW_PREFERRED,*result,mem);
+#  else
   *result = realloc(*result, mem);
+#  endif
 #else
   {
     /*
       malloc space for two extra chunks and shift ptr 1 + enough to get it PetscScalar aligned
     */
+#  if defined(PETSC_HAVE_MEMKIND)
+    int *ptr;
+    if (!currentmktype) ptr = (int*)memkind_realloc(MEMKIND_DEFAULT,*result,mem+2*PETSC_MEMALIGN);
+    else ptr = (int*)memkind_realloc(MEMKIND_HBW_PREFERRED,*result,mem+2*PETSC_MEMALIGN);
+#  else
     int *ptr = (int *) realloc(*result, mem + 2*PETSC_MEMALIGN);
+#  endif
     if (ptr) {
       int shift    = (int)(((PETSC_UINTPTR_T) ptr) % PETSC_MEMALIGN);
       shift        = (2*PETSC_MEMALIGN - shift)/sizeof(int);
@@ -123,14 +166,18 @@ PetscErrorCode PetscReallocAlign(size_t mem, int line, const char func[], const 
     if (!newResult) return PetscError(PETSC_COMM_SELF,line,func,file,PETSC_ERR_MEM,PETSC_ERROR_INITIAL,"Memory requested %.0f",(PetscLogDouble)mem);
     ierr = PetscMemcpy(newResult,*result,mem);
     if (ierr) return ierr;
-#if defined(PETSC_HAVE_FREE_RETURN_INT)
+#  if defined(PETSC_HAVE_FREE_RETURN_INT)
     {
       int err = free(*result);
       if (err) return PetscError(PETSC_COMM_SELF,line,func,file,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL,"System free returned error %d\n",err);
     }
-#else
+#  else
+#    if defined(PETSC_HAVE_MEMKIND)
+    memkind_free(0,*result);
+#    else
     free(*result);
-#endif
+#    endif
+#  endif
     *result = newResult;
   }
 #endif
@@ -212,22 +259,61 @@ PetscErrorCode PetscMemoryTrace(const char label[])
 
 static PetscErrorCode (*PetscTrMallocOld)(size_t,int,const char[],const char[],void**) = PetscMallocAlign;
 static PetscErrorCode (*PetscTrFreeOld)(void*,int,const char[],const char[])           = PetscFreeAlign;
+
+/*@C
+   PetscMallocSetDRAM - Set PetscMalloc to use DRAM.
+     If memkind is available, change the memkind type. Otherwise, switch the
+     current malloc and free routines to the PetscMallocAlign and
+     PetscFreeAlign (PETSc default).
+
+   Not Collective
+
+   Level: developer
+
+   Notes:
+     This provides a way to do the allocation on DRAM temporarily. One
+     can switch back to the previous choice by calling PetscMallocReset().
+ 
+.seealso: PetscMallocReset()
+@*/
 PetscErrorCode PetscMallocSetDRAM(void)
 {
   PetscFunctionBegin;
-  /* Save the previous choice */
-  PetscTrMallocOld = PetscTrMalloc;
-  PetscTrFreeOld   = PetscTrFree;
-  PetscTrMalloc    = PetscMallocAlign;
-  PetscTrFree      = PetscFreeAlign;
+  if (PetscTrMalloc == PetscMallocAlign) {
+#if defined(PETSC_HAVE_MEMKIND)
+    previousmktype = currentmktype;
+    currentmktype  = PETSC_MK_DEFAULT;
+#endif
+  } else { 
+    /* Save the previous choice */
+    PetscTrMallocOld = PetscTrMalloc;
+    PetscTrFreeOld   = PetscTrFree;
+    PetscTrMalloc    = PetscMallocAlign;
+    PetscTrFree      = PetscFreeAlign;
+  }
   PetscFunctionReturn(0);
 }
 
+/*@C
+   PetscMallocResetDRAM - Reset the changes made by PetscMallocSetDRAM
+
+   Not Collective
+
+   Level: developer
+
+.seealso: PetscMallocSetDRAM()
+@*/
 PetscErrorCode PetscMallocResetDRAM(void)
 {
   PetscFunctionBegin;
-  /* Reset to the previous choice */
-  PetscTrMalloc = PetscTrMallocOld;
-  PetscTrFree   = PetscTrFreeOld;
+  if (PetscTrMalloc == PetscMallocAlign) {
+#if defined(PETSC_HAVE_MEMKIND)
+    currentmktype = previousmktype;
+#endif 
+  } else {
+    /* Reset to the previous choice */
+    PetscTrMalloc = PetscTrMallocOld;
+    PetscTrFree   = PetscTrFreeOld;
+  }
   PetscFunctionReturn(0);
 }
