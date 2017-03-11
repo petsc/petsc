@@ -430,7 +430,7 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
       } else {
         value = v[k + l*m];
       }
-      if ((value == 0.0 && ignorezeroentries) && (is == ADD_VALUES)) continue;
+      if ((value == 0.0 && ignorezeroentries) && (is == ADD_VALUES) && row != col) continue;
 
       if (col <= lastcol) low = 0;
       else high = nrow;
@@ -449,7 +449,7 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
           goto noinsert;
         }
       }
-      if (value == 0.0 && ignorezeroentries) goto noinsert;
+      if (value == 0.0 && ignorezeroentries && row != col) goto noinsert;
       if (nonew == 1) goto noinsert;
       if (nonew == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at (%D,%D) in the matrix",row,col);
       MatSeqXAIJReallocateAIJ(A,A->rmap->n,1,nrow,row,col,rmax,aa,ai,aj,rp,ap,imax,nonew,MatScalar);
