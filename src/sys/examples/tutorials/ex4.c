@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
      Always call PetscFinalize() before exiting a program.  This routine
        - finalizes the PETSc libraries as well as MPI
        - provides summary and diagnostic information if certain runtime
-         options are chosen (e.g., -log_summary).  See PetscFinalize()
+         options are chosen (e.g., -log_view).  See PetscFinalize()
      manpage for more information.
   */
   ierr = PetscFinalize();if (ierr) return ierr;
