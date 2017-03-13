@@ -115,7 +115,7 @@ PETSC_EXTERN void PETSC_STDCALL petscgetcommoncomm_(PetscMPIInt*);
      Different Fortran compilers handle command lines in different ways
 */
 #if defined(PETSC_HAVE_FORTRAN_GET_COMMAND_ARGUMENT) /* Fortran 2003  - same as 'else' case */
-PETSC_EXTERN int iargc_();
+PETSC_EXTERN int iargc_(void);
 PETSC_EXTERN void getarg_(int*,char*,int);
 #elif defined(PETSC_USE_NARGS)
 PETSC_EXTERN short __stdcall NARGS();
