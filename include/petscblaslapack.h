@@ -106,7 +106,6 @@ PETSC_EXTERN double BLASdot_(const PetscBLASInt*,const PetscScalar*,const PetscB
 PETSC_EXTERN double BLASdotu_(const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);
 #else
 PETSC_EXTERN PetscScalar BLASdot_(const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);
-PETSC_EXTERN PetscScalar BLASdotu_(const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);
 #endif
 #endif
 

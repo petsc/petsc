@@ -145,7 +145,7 @@
 #if !defined(PETSC_USE_COMPLEX)
 # define LAPACKungqr_ PETSCBLAS(orgqr,ORGQR)
 # define BLASdot_     PETSCBLAS(dot,DOT)
-# define BLASdotu_    PETSCBLAS(dotu,DOTU)
+# define BLASdotu_    PETSCBLAS(dot,DOT)
 
 # define LAPACKsyev_  PETSCBLAS(syev,SYEV)  /* eigenvalues and eigenvectors of a symm matrix */
 # define LAPACKsyevx_ PETSCBLAS(syevx,SYEVX) /* selected eigenvalues and eigenvectors of a symm matrix */
