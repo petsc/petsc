@@ -37,7 +37,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_p8est(DM);
 .keywords: DM, register, all
 .seealso:  DMRegister(), DMRegisterDestroy()
 @*/
-PetscErrorCode  DMRegisterAll()
+PetscErrorCode  DMRegisterAll(void)
 {
   PetscErrorCode ierr;
 
@@ -84,7 +84,7 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Gather(PetscPartitioner);
 .keywords: PetscPartitioner, register, all
 .seealso:  PetscPartitionerRegister(), PetscPartitionerRegisterDestroy()
 @*/
-PetscErrorCode PetscPartitionerRegisterAll()
+PetscErrorCode PetscPartitionerRegisterAll(void)
 {
   PetscErrorCode ierr;
 
@@ -117,7 +117,7 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_DG(PetscSpace);
 .keywords: PetscSpace, register, all
 .seealso:  PetscSpaceRegister(), PetscSpaceRegisterDestroy()
 @*/
-PetscErrorCode PetscSpaceRegisterAll()
+PetscErrorCode PetscSpaceRegisterAll(void)
 {
   PetscErrorCode ierr;
 
@@ -146,7 +146,7 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Simple(PetscDualSpace);
 .keywords: PetscDualSpace, register, all
 .seealso:  PetscDualSpaceRegister(), PetscDualSpaceRegisterDestroy()
 @*/
-PetscErrorCode PetscDualSpaceRegisterAll()
+PetscErrorCode PetscDualSpaceRegisterAll(void)
 {
   PetscErrorCode ierr;
 
@@ -179,7 +179,7 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_OpenCL(PetscFE);
 .keywords: PetscFE, register, all
 .seealso:  PetscFERegister(), PetscFERegisterDestroy()
 @*/
-PetscErrorCode PetscFERegisterAll()
+PetscErrorCode PetscFERegisterAll(void)
 {
   PetscErrorCode ierr;
 
@@ -219,7 +219,7 @@ PETSC_EXTERN PetscErrorCode PetscLimiterCreate_MC(PetscLimiter);
 .keywords: PetscLimiter, register, all
 .seealso:  PetscLimiterRegister(), PetscLimiterRegisterDestroy()
 @*/
-PetscErrorCode PetscLimiterRegisterAll()
+PetscErrorCode PetscLimiterRegisterAll(void)
 {
   PetscErrorCode ierr;
 
@@ -254,7 +254,7 @@ PETSC_EXTERN PetscErrorCode PetscFVCreate_LeastSquares(PetscFV);
 .keywords: PetscFV, register, all
 .seealso:  PetscFVRegister(), PetscFVRegisterDestroy()
 @*/
-PetscErrorCode PetscFVRegisterAll()
+PetscErrorCode PetscFVRegisterAll(void)
 {
   PetscErrorCode ierr;
 
@@ -283,7 +283,7 @@ PETSC_EXTERN PetscErrorCode PetscDSCreate_Basic(PetscDS);
 .keywords: PetscDS, register, all
 .seealso:  PetscDSRegister(), PetscDSRegisterDestroy()
 @*/
-PetscErrorCode PetscDSRegisterAll()
+PetscErrorCode PetscDSRegisterAll(void)
 {
   PetscErrorCode ierr;
 

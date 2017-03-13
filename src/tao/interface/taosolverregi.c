@@ -60,7 +60,7 @@ extern PetscBool TaoRegisterAllCalled;
 
 .seealso TaoRegister(), TaoRegisterDestroy()
 @*/
-PetscErrorCode TaoRegisterAll()
+PetscErrorCode TaoRegisterAll(void)
 {
   PetscErrorCode ierr;
 
