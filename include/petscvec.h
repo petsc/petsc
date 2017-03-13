@@ -614,8 +614,6 @@ typedef const char* VecTaggerType;
 
 PETSC_EXTERN PetscClassId VEC_TAGGER_CLASSID;
 PETSC_EXTERN PetscFunctionList VecTaggerList;
-PETSC_EXTERN PetscErrorCode VecTaggerSetType(VecTagger,VecTaggerType);
-PETSC_EXTERN PetscErrorCode VecTaggerGetType(VecTagger,VecTaggerType *);
 PETSC_EXTERN PetscErrorCode VecTaggerRegister(const char[],PetscErrorCode (*) (VecTagger));
 
 PETSC_EXTERN PetscErrorCode VecTaggerCreate(MPI_Comm,VecTagger *);

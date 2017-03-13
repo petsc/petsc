@@ -196,7 +196,6 @@ PETSC_INTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering(Mat,Mat
 
 PETSC_INTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_15_NaturalOrdering(Mat,Mat,const MatFactorInfo*);
 PETSC_INTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_inplace(Mat,Mat,const MatFactorInfo*);
-PETSC_INTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat,Mat,const MatFactorInfo*);
 
 PETSC_INTERN PetscErrorCode MatMult_SeqBAIJ_1(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMult_SeqBAIJ_2(Mat,Vec,Vec);

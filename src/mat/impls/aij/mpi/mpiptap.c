@@ -12,7 +12,6 @@
 
 /* #define PTAP_PROFILE */
 
-extern PetscErrorCode MatDestroy_MPIAIJ(Mat);
 PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat A)
 {
   PetscErrorCode ierr;

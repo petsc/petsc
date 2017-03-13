@@ -44,13 +44,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_TSIRM(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_CGLS(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_FETIDP(KSP);
 
-/*
-    This is used by KSPSetType() to make sure that at least one
-    KSPRegisterAll() is called. In general, if there is more than one
-    DLL, then KSPRegisterAll() may be called several times.
-*/
-extern PetscBool KSPRegisterAllCalled;
-
 /*@C
   KSPRegisterAll - Registers all of the Krylov subspace methods in the KSP package.
 

@@ -47,8 +47,6 @@ typedef struct {
   PetscInt **iperm_list;
 } Mat_SeqAIJPERM;
 
-extern PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat,MatAssemblyType);
-
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJPERM_SeqAIJ(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
   /* This routine is only called to convert a MATAIJPERM to its base PETSc type, */

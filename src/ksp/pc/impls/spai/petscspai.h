@@ -10,11 +10,6 @@
 PETSC_EXTERN PetscErrorCode MatDumpSPAI(Mat,FILE*);
 PETSC_EXTERN PetscErrorCode VecDumpSPAI(Vec,FILE*);
 
-PETSC_EXTERN PetscErrorCode PCSPAISetEpsilon(PC,double);
-PETSC_EXTERN PetscErrorCode PCSPAISetNBSteps(PC,int);
-PETSC_EXTERN PetscErrorCode PCSPAISetMaxNew(PC,int);
-PETSC_EXTERN PetscErrorCode PCSPAISetCacheSize(PC,int);
-
 #endif
 
 
