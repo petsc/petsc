@@ -78,6 +78,7 @@ int main(int argc,char **argv)
   TSConvergedReason reason;
   char              **snames,*names;
   PetscInt          i;
+  TSTrajectory      tj;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Chemistry solver options","");CHKERRQ(ierr);
@@ -152,6 +153,10 @@ int main(int argc,char **argv)
   ierr = VecAssemblyBegin(lambda);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(lambda);CHKERRQ(ierr);
 
+  ierr = TSGetTrajectory(ts,&tj);CHKERRQ(ierr);
+  if (tj) {
+    ierr = TSTrajectorySetVariableNames(tj,(const char * const *)user.snames);CHKERRQ(ierr);
+  }
 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

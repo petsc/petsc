@@ -180,7 +180,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerBinaryGetSkipOptions(PetscViewer,PetscBoo
 PETSC_EXTERN PetscErrorCode PetscViewerBinarySetSkipHeader(PetscViewer,PetscBool);
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryGetSkipHeader(PetscViewer,PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryReadStringArray(PetscViewer,char***);
-PETSC_EXTERN PetscErrorCode PetscViewerBinaryWriteStringArray(PetscViewer,char**);
+PETSC_EXTERN PetscErrorCode PetscViewerBinaryWriteStringArray(PetscViewer,const char *const*);
 
 PETSC_EXTERN PetscErrorCode PetscViewerFileSetName(PetscViewer,const char[]);
 PETSC_EXTERN PetscErrorCode PetscViewerFileGetName(PetscViewer,const char**);

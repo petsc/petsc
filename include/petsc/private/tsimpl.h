@@ -79,6 +79,7 @@ struct _p_TSTrajectory {
   PetscInt    setupcalled;             /* true if setup has been called */
   PetscInt    recomps;                 /* counter for recomputations in the adjoint run */
   PetscInt    diskreads,diskwrites;    /* counters for disk checkpoint reads and writes */
+  char        **names;                 /* the name of each variable; each process has only the local names */
   void        *data;
 };
 

@@ -444,6 +444,33 @@ PetscErrorCode  TSSetFromOptions(TS ts)
 }
 
 /*@
+   TSGetTrajectory - Gets the trajectory from a TS if it exists
+
+   Collective on TS
+
+   Input Parameters:
+.  ts - the TS context obtained from TSCreate()
+
+   Output Parameters;
+.  tr - the TSTrajectory object, if it exists
+
+   Note: This routine should be called after all TS options have been set
+
+   Level: advanced
+
+.seealso: TSGetTrajectory(), TSAdjointSolve(), TSTrajectory, TSTrajectoryCreate()
+
+.keywords: TS, set, checkpoint,
+@*/
+PetscErrorCode  TSGetTrajectory(TS ts,TSTrajectory *tr)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  *tr = ts->trajectory;
+  PetscFunctionReturn(0);
+}
+
+/*@
    TSSetSaveTrajectory - Causes the TS to save its solutions as it iterates forward in time in a TSTrajectory object
 
    Collective on TS
@@ -451,11 +478,18 @@ PetscErrorCode  TSSetFromOptions(TS ts)
    Input Parameters:
 .  ts - the TS context obtained from TSCreate()
 
+   Options Database:
++  -ts_save_trajectory - saves the trajectory to a file
+-  -ts_trajectory_type type
+
 Note: This routine should be called after all TS options have been set
+
+    The TSTRAJECTORYVISUALIZATION files can be loaded into Python with $PETSC_DIR/bin/PetscBinaryIOTrajectory.py and 
+   MATLAB with $PETSC_DIR/share/petsc/matlab/PetscReadBinaryTrajectory.m
 
    Level: intermediate
 
-.seealso: TSGetTrajectory(), TSAdjointSolve()
+.seealso: TSGetTrajectory(), TSAdjointSolve(), TSTrajectoryType, TSSetTrajectoryType()
 
 .keywords: TS, set, checkpoint,
 @*/
