@@ -332,6 +332,7 @@ PETSC_EXTERN PetscErrorCode KSPReasonViewFromOptions(KSP);
 
 PETSC_EXTERN PetscErrorCode KSPLSQRSetStandardErrorVec(KSP,Vec);
 PETSC_EXTERN PetscErrorCode KSPLSQRGetStandardErrorVec(KSP,Vec*);
+PETSC_EXTERN PetscErrorCode KSPLSQRGetArnorm(KSP,PetscReal*,PetscReal*,PetscReal*);
 
 PETSC_EXTERN PetscErrorCode PCRedundantGetKSP(PC,KSP*);
 PETSC_EXTERN PetscErrorCode PCRedistributeGetKSP(PC,KSP*);
