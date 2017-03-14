@@ -192,7 +192,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)pc),((PetscObject)pc)->prefix,"BDDC Nedelec options","PC");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_nedelec_field_primal","All edge dofs set as primals: Toselli's algorithm C",NULL,setprimal,&setprimal,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_nedelec_singular","Infer nullspace from discrete gradient",NULL,singular,&singular,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt ("-pc_bddc_nedelec_order","Test variable order code (to be removed)",NULL,order,&order,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_bddc_nedelec_order","Test variable order code (to be removed)",NULL,order,&order,NULL);CHKERRQ(ierr);
   /* print debug info TODO: to be removed */
   ierr = PetscOptionsBool("-pc_bddc_nedelec_print","Print debug info",NULL,print,&print,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -1633,8 +1633,12 @@ PetscErrorCode PCBDDCComputeLocalTopologyInfo(PC pc)
   Vec            local,global;
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
   Mat_IS         *matis = (Mat_IS*)pc->pmat->data;
+  PetscBool      monolithic = PETSC_FALSE;
 
   PetscFunctionBegin;
+  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)pc),((PetscObject)pc)->prefix,"BDDC topology options","PC");CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_bddc_monolithic","Don't split dofs by block size",NULL,monolithic,&monolithic,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = MatCreateVecs(pc->pmat,&global,NULL);CHKERRQ(ierr);
   /* need to convert from global to local topology information and remove references to information in global ordering */
   ierr = MatCreateVecs(matis->A,&local,NULL);CHKERRQ(ierr);
@@ -1654,7 +1658,7 @@ PetscErrorCode PCBDDCComputeLocalTopologyInfo(PC pc)
     if (!pcbddc->n_ISForDofsLocal) { /* field split not present, create it in local ordering if bs > 1 */
       PetscInt i, n = matis->A->rmap->n;
       ierr = MatGetBlockSize(pc->pmat,&i);CHKERRQ(ierr);
-      if (i > 1) {
+      if (i > 1 && !monolithic) {
         pcbddc->n_ISForDofsLocal = i;
         ierr = PetscMalloc1(pcbddc->n_ISForDofsLocal,&pcbddc->ISForDofsLocal);CHKERRQ(ierr);
         for (i=0;i<pcbddc->n_ISForDofsLocal;i++) {
@@ -2239,7 +2243,7 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, IS *zerodiaglocal)
     PetscInt npl,*idxs,p = pcbddc->n_ISForDofsLocal-1;
 
     ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)pc),((PetscObject)pc)->prefix,"BDDC benign options","PC");CHKERRQ(ierr);
-    ierr = PetscOptionsInt ("-pc_bddc_pressure_field","Field id for pressures",NULL,p,&p,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_bddc_pressure_field","Field id for pressures",NULL,p,&p,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     if (p < 0 || p > pcbddc->n_ISForDofsLocal-1) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"Invalid field id for pressures %D",p);
     /* Dofs splitting for BDDC cannot have PETSC_COMM_SELF, so create a sequential IS */
