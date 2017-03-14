@@ -3165,7 +3165,7 @@ static PetscErrorCode DMPlexCreateSectionBCIndicesField(DM dm, PetscInt numBC,co
 {
   PetscSection   aSec;
   PetscInt      *indices;
-  PetscInt       numFields, maxDof, pStart, pEnd, p, bc, f, d;
+  PetscInt       numFields, cdof, maxDof = 0, pStart, pEnd, p, bc, f, d;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -3173,7 +3173,7 @@ static PetscErrorCode DMPlexCreateSectionBCIndicesField(DM dm, PetscInt numBC,co
   if (!numFields) PetscFunctionReturn(0);
   /* Initialize all field indices to -1 */
   ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = PetscSectionGetMaxDof(section, &maxDof);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; ++p) {ierr = PetscSectionGetConstraintDof(section, p, &cdof);CHKERRQ(ierr); maxDof = PetscMax(maxDof, cdof);}
   ierr = PetscMalloc1(maxDof, &indices);CHKERRQ(ierr);
   for (d = 0; d < maxDof; ++d) indices[d] = -1;
   for (p = pStart; p < pEnd; ++p) for (f = 0; f < numFields; ++f) {ierr = PetscSectionSetFieldConstraintIndices(section, p, f, indices);CHKERRQ(ierr);}
@@ -3190,18 +3190,23 @@ static PetscErrorCode DMPlexCreateSectionBCIndicesField(DM dm, PetscInt numBC,co
     for (i = 0; i < n; ++i) {
       const PetscInt  p = idx[i];
       const PetscInt *find;
-      PetscInt        fcdof, c;
+      PetscInt        fdof, fcdof, c;
 
-      ierr = PetscSectionGetFieldConstraintDof(section, p, field, &fcdof);CHKERRQ(ierr);
+      ierr = PetscSectionGetFieldDof(section, p, field, &fdof);CHKERRQ(ierr);
+      if (!fdof) continue;
       if (Nc < 0) {
-        for (d = 0; d < fcdof; ++d) indices[d] = d;
+        for (d = 0; d < fdof; ++d) indices[d] = d;
+        fcdof = fdof;
       } else {
+        ierr = PetscSectionGetFieldConstraintDof(section, p, field, &fcdof);CHKERRQ(ierr);
         ierr = PetscSectionGetFieldConstraintIndices(section, p, field, &find);CHKERRQ(ierr);
         for (d = 0; d < fcdof; ++d) {if (find[d] < 0) break; indices[d] = find[d];}
-        for (c = 0; c < Nc; ++c) indices[d+c] = comp[c];
-        ierr = PetscSortInt(d+Nc, indices);CHKERRQ(ierr);
-        for (c = d+Nc; c < fcdof; ++c) indices[c] = -1;
+        for (c = 0; c < Nc; ++c) indices[d++] = comp[c];
+        ierr = PetscSortRemoveDupsInt(&d, indices);CHKERRQ(ierr);
+        for (c = d; c < fcdof; ++c) indices[c] = -1;
+        fcdof = d;
       }
+      ierr = PetscSectionSetFieldConstraintDof(section, p, field, fcdof);CHKERRQ(ierr);
       ierr = PetscSectionSetFieldConstraintIndices(section, p, field, indices);CHKERRQ(ierr);
     }
     if (bcComps && bcComps[bc]) {ierr = ISRestoreIndices(bcComps[bc], &comp);CHKERRQ(ierr);}
@@ -3215,13 +3220,12 @@ static PetscErrorCode DMPlexCreateSectionBCIndicesField(DM dm, PetscInt numBC,co
     for (d = 0; d < maxDof; ++d) indices[d] = d;
     ierr = PetscSectionGetChart(aSec, &aStart, &aEnd);CHKERRQ(ierr);
     for (a = aStart; a < aEnd; a++) {
-      PetscInt dof, fdof, f;
+      PetscInt dof, f;
 
       ierr = PetscSectionGetDof(aSec, a, &dof);CHKERRQ(ierr);
       if (dof) {
         /* if there are point-to-point constraints, then all dofs are constrained */
         for (f = 0; f < numFields; f++) {
-          ierr = PetscSectionGetFieldDof(section, a, f, &fdof);CHKERRQ(ierr);
           ierr = PetscSectionSetFieldConstraintIndices(section, a, f, indices);CHKERRQ(ierr);
         }
       }
@@ -3264,7 +3268,7 @@ static PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section)
           numConst += fcdof;
           foff     += fdof;
         }
-        if (cdof != numConst) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_LIB, "Total number of field constraints %D should be %D", numConst, cdof);
+        if (cdof != numConst) {ierr = PetscSectionSetConstraintDof(section, p, numConst);CHKERRQ(ierr);}
       } else {
         for (d = 0; d < cdof; ++d) indices[d] = d;
       }
