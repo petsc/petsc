@@ -18,7 +18,9 @@ PetscErrorCode PetscParseLayerYAML(yaml_parser_t *parser,int *lvl)
   PetscFunctionBegin;
   ierr = PetscSNPrintf(option,PETSC_MAX_PATH_LEN,"%s"," ");CHKERRQ(ierr);
   do {
-    yaml_parser_parse(parser,&event);
+    if(!yaml_parser_parse(parser,&event)){
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_LIB,"YAML parse error (for instance, improper indentation)");
+    }
     /* Parse value either as a new leaf in the mapping */
     /*  or as a leaf value (one of them, in case it's a sequence) */
     switch (event.type) {
@@ -131,7 +133,9 @@ extern PetscErrorCode PetscOptionsInsertFileYAML(MPI_Comm comm,const char file[]
     ierr = PetscMalloc1(yamlLength+1,&optionsStr);CHKERRQ(ierr);
     ierr = MPI_Bcast(optionsStr,yamlLength+1,MPI_UNSIGNED_CHAR,0,comm);CHKERRQ(ierr);
   }
-  yaml_parser_initialize(&parser);
+  if(!yaml_parser_initialize(&parser)){
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_LIB,"YAML parser initialization error");
+  }
   yaml_parser_set_input_string(&parser,optionsStr,(size_t) yamlLength);
   ierr = PetscParseLayerYAML(&parser,&lvl);
   yaml_parser_delete(&parser);
