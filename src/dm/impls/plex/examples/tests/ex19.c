@@ -97,7 +97,7 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
   ierr = PetscSectionDestroy(&msec);CHKERRQ(ierr);
 
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(mdm, metric);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(mdm, metric);CHKERRQ(ierr);
   ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
   ierr = VecGetArray(*metric, &met);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
@@ -130,8 +130,8 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
       SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "metOpt = 0, 1 or 2, cannot be %d", user->metOpt);
     }
     /* Only set the diagonal */
-    ierr = DMPlexPointGlobalRef(mdm, p, met, &pmet);CHKERRQ(ierr);
-    if (pmet) {for (d = 0; d < dim; ++d) pmet[d*(dim+1)] = lambda[d];}
+    ierr = DMPlexPointLocalRef(mdm, p, met, &pmet);CHKERRQ(ierr);
+    for (d = 0; d < dim; ++d) pmet[d*(dim+1)] = lambda[d];
   }
   ierr = VecRestoreArray(*metric, &met);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
