@@ -8,7 +8,7 @@
 
   Input Parameters:
 + dm - The DM object
-. vertexMetric - The metric to which the mesh is adapted, defined vertex-wise.
+. vertexMetric - The metric to which the mesh is adapted, defined vertex-wise in a LOCAL vector
 . remeshBd - Flag to allow boundary changes
 - bdLabelName - Label name for boundary tags which are preserved in dmNew, or NULL. Should not be "_boundary_".
 
@@ -147,13 +147,13 @@ PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabel
 #ifdef PETSC_HAVE_PRAGMATIC
   switch (dim) {
   case 2:
-#if 0
+#if NEW_INTERFACE
     pragmatic_2d_mpi_init(&numVertices, &numCells, cells, x, y, l2g, numLocVertices, comm);break;
 #else
     pragmatic_2d_init(&numVertices, &numCells, cells, x, y);break;
 #endif
   case 3:
-#if 0
+#if NEW_INTERFACE
     pragmatic_3d_mpi_init(&numVertices, &numCells, cells, x, y, z, l2g, numLocVertices, comm);break;
 #else
     pragmatic_3d_init(&numVertices, &numCells, cells, x, y, z);break;
@@ -184,7 +184,11 @@ PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabel
   for (v = 0; v < numVerticesNew; ++v) {for (d = 0; d < dim; ++d) coordsNew[v*dim+d] = xNew[d][v];}
   ierr = PetscMalloc1(numCellsNew*(dim+1), &cellsNew);CHKERRQ(ierr);
   pragmatic_get_elements(cellsNew);
+#if NEW_INTERFACE
+  ierr = DMPlexCreateFromCellListParallel(comm, dim, numCellsNew, numVerticesNew, numCornersNew, PETSC_TRUE, cellsNew, dim, coordsNew, NULL, dmNew);CHKERRQ(ierr);
+#else
   ierr = DMPlexCreateFromCellList(comm, dim, numCellsNew, numVerticesNew, numCornersNew, PETSC_TRUE, cellsNew, dim, coordsNew, dmNew);CHKERRQ(ierr);
+#endif
   /* Read out boundary label */
   pragmatic_get_boundaryTags(&bdTags);
   ierr = DMCreateLabel(*dmNew, bdLabel ? bdLabelName : bdName);CHKERRQ(ierr);
