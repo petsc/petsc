@@ -23,7 +23,7 @@ PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabel
 {
   MPI_Comm           comm;
   const char        *bdName = "_boundary_";
-  DM                 udm, cdm;
+  DM                 odm = dm, udm, cdm;
   DMLabel            bdLabel = NULL, bdLabelFull;
   IS                 bdIS, globalVertexNum;
   PetscSection       coordSection;
@@ -66,6 +66,9 @@ PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabel
       if (!bdLabel) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Label \"%s\" does not exist in DM", bdLabelName);
     }
   }
+  /* Add overlap for Pragmatic */
+  ierr = DMPlexDistributeOverlap(odm, 1, NULL, &dm);CHKERRQ(ierr);
+  if (!dm) {dm = odm; ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);}
   /* Get mesh information */
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
@@ -138,6 +141,8 @@ PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabel
   ierr = VecGetArrayRead(vertexMetric, &met);CHKERRQ(ierr);
   for (v = 0; v < (vEnd-vStart)*PetscSqr(dim); ++v) metric[v] = PetscRealPart(met[v]);
   ierr = VecRestoreArrayRead(vertexMetric, &met);CHKERRQ(ierr);
+  /* Destroy overlap mesh */
+  ierr = DMDestroy(&dm);CHKERRQ(ierr);
   /* Create new mesh */
 #ifdef PETSC_HAVE_PRAGMATIC
   switch (dim) {
