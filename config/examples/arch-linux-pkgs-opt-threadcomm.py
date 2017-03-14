@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 configure_options = [
+  '--prefix=petsc-install',
   '--with-debugging=0',
   '--download-mpich=1',
   '--download-fblaslapack=1',

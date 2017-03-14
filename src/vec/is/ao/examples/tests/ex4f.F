@@ -2,9 +2,9 @@
 !    Test AO with on IS with 0 entries - Fortran version of ex4.c
 !
       program main
-      implicit none
-#include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscao.h>
+      use petscao
+      implicit none
 
       PetscErrorCode ierr
       AO             ao

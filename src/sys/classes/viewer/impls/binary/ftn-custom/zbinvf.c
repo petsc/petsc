@@ -18,7 +18,7 @@ PETSC_EXTERN void PETSC_STDCALL petscviewerfilesetmode_(PetscViewer *viewer,Pets
   *ierr = PetscViewerFileSetMode(v,*type);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscviewerbinaryopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len),PetscFileMode *type,
+PETSC_EXTERN void PETSC_STDCALL petscviewerbinaryopen_(MPI_Comm *comm,char* name PETSC_MIXED_LEN(len),PetscFileMode *type,
                                           PetscViewer *binv,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *c1;

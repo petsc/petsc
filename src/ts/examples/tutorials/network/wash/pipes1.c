@@ -6,8 +6,6 @@
 
 #include "wash.h"
 
-#undef __FUNCT__
-#define __FUNCT__ "WASHIFunction"
 PetscErrorCode WASHIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void* ctx)
 {
   PetscErrorCode ierr;
@@ -141,8 +139,6 @@ PetscErrorCode WASHIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void* ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "WASHSetInitialSolution"
 PetscErrorCode WASHSetInitialSolution(DM networkdm,Vec X,Wash wash)
 {
   PetscErrorCode ierr;
@@ -236,8 +232,6 @@ PetscErrorCode WASHSetInitialSolution(DM networkdm,Vec X,Wash wash)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSDMNetworkMonitor"
 PetscErrorCode TSDMNetworkMonitor(TS ts, PetscInt step, PetscReal t, Vec x, void *context)
 {
   PetscErrorCode     ierr;
@@ -249,8 +243,6 @@ PetscErrorCode TSDMNetworkMonitor(TS ts, PetscInt step, PetscReal t, Vec x, void
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PipesView"
 PetscErrorCode PipesView(Vec X,DM networkdm,Wash wash)
 {
   PetscErrorCode       ierr;
@@ -340,8 +332,6 @@ PetscErrorCode PipesView(Vec X,DM networkdm,Wash wash)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "WashNetworkCleanUp"
 PetscErrorCode WashNetworkCleanUp(Wash wash,int *edgelist)
 {
   PetscErrorCode ierr;
@@ -356,8 +346,6 @@ PetscErrorCode WashNetworkCleanUp(Wash wash,int *edgelist)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "WashNetworkCreate"
 PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr,int **elist)
 {
   PetscErrorCode ierr;
@@ -388,7 +376,7 @@ PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr
     ierr = PetscPrintf(PETSC_COMM_SELF,"Setup pipesCase %D\n",pipesCase);CHKERRQ(ierr);
   }
   nnodes = 6;
-  ierr = PetscOptionsGetInt(NULL,PETSC_NULL, "-npipenodes", &nnodes, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL, "-npipenodes", &nnodes, NULL);CHKERRQ(ierr);
 
   /* Set global number of pipes, edges, and junctions */
   /*-------------------------------------------------*/
@@ -399,7 +387,7 @@ PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr
     v0 --E0--> v1--E1--> v2 --E2-->v3
     ================================  */
     npipes = 3;
-    ierr = PetscOptionsGetInt(NULL,PETSC_NULL, "-npipes", &npipes, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL, "-npipes", &npipes, NULL);CHKERRQ(ierr);
     wash->nedge   = npipes;
     wash->nvertex = npipes + 1;
     
@@ -547,8 +535,6 @@ PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char ** argv)
 {
   PetscErrorCode    ierr;
@@ -589,7 +575,7 @@ int main(int argc,char ** argv)
 
   /* Set global number of pipes, edges, and vertices */
   pipesCase = 2;
-  ierr = PetscOptionsGetInt(NULL,PETSC_NULL, "-case", &pipesCase, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL, "-case", &pipesCase, NULL);CHKERRQ(ierr);
 
   ierr = WashNetworkCreate(PETSC_COMM_WORLD,pipesCase,&wash,&edgelist);CHKERRQ(ierr);
   numEdges    = wash->nedge;
@@ -724,7 +710,7 @@ int main(int argc,char ** argv)
   ierr = TSSetInitialTimeStep(ts,0.0,0.1);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
   if (size == 1) {
-    ierr = TSMonitorSet(ts, TSDMNetworkMonitor, monitor, PETSC_NULL);CHKERRQ(ierr);
+    ierr = TSMonitorSet(ts, TSDMNetworkMonitor, monitor, NULL);CHKERRQ(ierr);
   }
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 

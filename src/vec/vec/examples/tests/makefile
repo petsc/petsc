@@ -118,10 +118,6 @@ ex25: ex25.o chkopts
 	-${CLINKER} -o ex25 ex25.o  ${PETSC_VEC_LIB}
 	${RM} -f ex25.o
 
-ex26: ex26.o chkopts
-	-${CLINKER} -o ex26 ex26.o  ${PETSC_VEC_LIB}
-	${RM} -f ex26.o
-
 ex27: ex27.o chkopts
 	-${CLINKER} -o ex27 ex27.o  ${PETSC_VEC_LIB}
 	${RM} -f ex27.o
@@ -352,7 +348,7 @@ runex19f:
 runex20f:
 	-@${MPIEXEC} -n 1 ./ex20f > ex20_1.tmp 2>&1;\
 	   if (${DIFF} output/ex20f_1.out ex20_1.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex20_1, diffs above\n=========================================\n"; fi;\
+	   else printf "${PWD}\nPossible problem with ex20f_1, diffs above\n=========================================\n"; fi;\
 	   ${RM} -f ex20_1.tmp vector.dat
 runex21:
 	-@${MPIEXEC} -n 1 ./ex21 > ex21_1.tmp 2>&1;\
@@ -384,11 +380,6 @@ runex25:
 	   if (${DIFF} output/ex25_1.out ex25_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex25_1, diffs above\n=========================================\n"; fi;\
 	   ${RM} -f ex25_1.tmp
-runex26:
-	-@${MPIEXEC} -n 4 ./ex26 > ex26_1.tmp 2>&1;\
-	   if (${DIFF} output/ex26_1.out ex26_1.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex26_1, diffs above\n=========================================\n"; fi;\
-	   ${RM} -f ex26_1.tmp
 runex28:
 	-@${MPIEXEC} -n 3 ./ex28
 runex28_2:
@@ -554,7 +545,7 @@ TESTEXAMPLES_C		    = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc 
                               ex46.PETSc runex46 runex46_2 runex46_3 runex46_mpiio ex46.rm
 TESTEXAMPLES_C_X	    = ex10.PETSc runex10 ex10.rm ex22.PETSc runex22 ex22.rm ex23.PETSc runex23 ex23.rm \
                               ex24.PETSc runex24 ex24.rm ex28.PETSc runex28 runex28_2 ex28.rm ex33.PETSc runex33 ex33.rm
-TESTEXAMPLES_FORTRAN	    = ex17f.PETSc runex17f ex17f.rm ex19f.PETSc ex19f.rm ex20f.PETSc ex20f.rm ex30f.PETSc \
+TESTEXAMPLES_FORTRAN	    = ex17f.PETSc runex17f ex17f.rm ex19f.PETSc ex19f.rm ex20f.PETSc runex20f ex20f.rm ex30f.PETSc \
                               runex30f ex30f.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex32f.PETSc runex32f ex32f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI = ex19f.PETSc runex19f ex19f.rm

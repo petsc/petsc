@@ -66,8 +66,6 @@ extern PetscErrorCode MyComputeFunction(SNES,Vec,Vec,void*);
 extern PetscErrorCode MyComputeJacobian(SNES,Vec,Mat,Mat,void*);
 extern PetscErrorCode NonlinearGS(SNES,Vec);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   SNES           snes;                                 /* nonlinear solver */
@@ -146,8 +144,6 @@ int main(int argc,char **argv)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "MyComputeFunction"
 PetscErrorCode MyComputeFunction(SNES snes,Vec x,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
@@ -169,8 +165,6 @@ PetscErrorCode MyComputeFunction(SNES snes,Vec x,Vec F,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MyComputeJacobian"
 PetscErrorCode MyComputeJacobian(SNES snes,Vec x,Mat J,Mat Jp,void *ctx)
 {
   PetscErrorCode ierr;
@@ -182,8 +176,6 @@ PetscErrorCode MyComputeJacobian(SNES snes,Vec x,Mat J,Mat Jp,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormMatrix"
 PetscErrorCode FormMatrix(DM da,Mat jac)
 {
   PetscErrorCode ierr;
@@ -251,8 +243,6 @@ PetscErrorCode FormMatrix(DM da,Mat jac)
 
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "NonlinearGS"
 /*
       Applies some sweeps on nonlinear Gauss-Seidel on each process
 

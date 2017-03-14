@@ -28,8 +28,6 @@
 /*    PROGRAM SUBROUTINE -                                       */
 /*       FNROOT.                                                 */
 /*****************************************************************/
-#undef __FUNCT__
-#define __FUNCT__ "SPARSEPACKfn1wd"
 PetscErrorCode SPARSEPACKfn1wd(PetscInt *root,const PetscInt *inxadj,const PetscInt *adjncy,
                                PetscInt *mask, PetscInt *nsep, PetscInt *sep, PetscInt *nlvl, PetscInt *
                                xls, PetscInt *ls)

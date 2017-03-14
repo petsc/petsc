@@ -29,11 +29,9 @@ typedef struct Edge {
   struct Edge   *next;
 } Edge;
 
-#undef __FUNCT__
-#define __FUNCT__ "distance"
-PetscScalar distance(PetscScalar x1, PetscScalar x2, PetscScalar y1, PetscScalar y2)
+PetscReal distance(PetscReal x1, PetscReal x2, PetscReal y1, PetscReal y2)
 {
-  return PetscSqrtScalar(PetscPowScalar(x2-x1,2.0) + PetscPowScalar(y2-y1,2.0));
+  return PetscSqrtReal(PetscPowReal(x2-x1,2.0) + PetscPowReal(y2-y1,2.0));
 }
 
 /* 
@@ -41,8 +39,6 @@ PetscScalar distance(PetscScalar x1, PetscScalar x2, PetscScalar y1, PetscScalar
   Routing of Multipoint Connections, Bernard M. Waxman. 1988
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "random_network"
 PetscErrorCode random_network(PetscInt nvertex,PetscInt *pnbranch,Node **pnode,Branch **pbranch,int **pedgelist,PetscInt seed)
 {
   PetscErrorCode ierr;
@@ -50,7 +46,7 @@ PetscErrorCode random_network(PetscInt nvertex,PetscInt *pnbranch,Node **pnode,B
   int            *edgelist;
   PetscInt       nbat, ncurr, fr, to;
   PetscReal      *x, *y, value, xmax = 10.0; /* generate points in square */
-  PetscScalar    maxdist = 0.0, dist, alpha, beta, prob;
+  PetscReal    maxdist = 0.0, dist, alpha, beta, prob;
   PetscRandom    rnd;
   Branch         *branch;
   Node           *node;
@@ -73,8 +69,8 @@ PetscErrorCode random_network(PetscInt nvertex,PetscInt *pnbranch,Node **pnode,B
 
   ierr = PetscRandomSetInterval(rnd,0.0,xmax);CHKERRQ(ierr);
   for (i=0; i<nvertex; i++) {
-    ierr = PetscRandomGetValue(rnd,&x[i]);CHKERRQ(ierr);
-    ierr = PetscRandomGetValue(rnd,&y[i]);CHKERRQ(ierr);
+    ierr = PetscRandomGetValueReal(rnd,&x[i]);CHKERRQ(ierr);
+    ierr = PetscRandomGetValueReal(rnd,&y[i]);CHKERRQ(ierr);
   }
 
   /* find maximum distance */
@@ -91,7 +87,7 @@ PetscErrorCode random_network(PetscInt nvertex,PetscInt *pnbranch,Node **pnode,B
       if (j != i) {
         dist = distance(x[i],x[j],y[i],y[j]);
         prob = beta*PetscExpScalar(-dist/(maxdist*alpha));
-        ierr = PetscRandomGetValue(rnd,&value);CHKERRQ(ierr);
+        ierr = PetscRandomGetValueReal(rnd,&value);CHKERRQ(ierr);
         if (value <= prob) {
           ierr = PetscMalloc1(1,&nnew);CHKERRQ(ierr);
           if (head == NULL) {
@@ -144,13 +140,13 @@ PetscErrorCode random_network(PetscInt nvertex,PetscInt *pnbranch,Node **pnode,B
   
   /* Chose random node as ground voltage */
   ierr = PetscRandomSetInterval(rnd,0.0,nvertex);CHKERRQ(ierr);
-  ierr = PetscRandomGetValue(rnd,&value);CHKERRQ(ierr);
+  ierr = PetscRandomGetValueReal(rnd,&value);CHKERRQ(ierr);
   node[(int)value].gr = PETSC_TRUE;
   
   /* Create random current and battery injectionsa */
   for (i=0; i<ncurr; i++) {
     ierr = PetscRandomSetInterval(rnd,0.0,nvertex);CHKERRQ(ierr);
-    ierr = PetscRandomGetValue(rnd,&value);CHKERRQ(ierr);
+    ierr = PetscRandomGetValueReal(rnd,&value);CHKERRQ(ierr);
     fr   = edgelist[(int)value*2];
     to   = edgelist[(int)value*2 + 1];
     node[fr].inj += 1.0;
@@ -159,7 +155,7 @@ PetscErrorCode random_network(PetscInt nvertex,PetscInt *pnbranch,Node **pnode,B
 
   for (i=0; i<nbat; i++) {
     ierr = PetscRandomSetInterval(rnd,0.0,nedges);CHKERRQ(ierr);
-    ierr = PetscRandomGetValue(rnd,&value);CHKERRQ(ierr);
+    ierr = PetscRandomGetValueReal(rnd,&value);CHKERRQ(ierr);
     branch[(int)value].bat += 1.0;
   }
 
@@ -174,8 +170,6 @@ PetscErrorCode random_network(PetscInt nvertex,PetscInt *pnbranch,Node **pnode,B
   PetscFunctionReturn(ierr);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormOperator"
 PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
 {
   PetscErrorCode    ierr;
@@ -281,8 +275,6 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char ** argv)
 {
   PetscErrorCode    ierr;
@@ -293,7 +285,7 @@ int main(int argc,char ** argv)
   Vec               x, b;
   Mat               A;
   KSP               ksp;
-  int               *edgelist;
+  int               *edgelist = NULL;
   PetscInt          componentkey[2];
   Node              *node;
   Branch            *branch;
@@ -305,7 +297,7 @@ int main(int argc,char ** argv)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,PETSC_NULL,"-seed",&seed,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-seed",&seed,NULL);CHKERRQ(ierr);
 
   ierr = PetscLogStageRegister("Network Creation", &stage[0]);CHKERRQ(ierr);
   ierr = PetscLogStageRegister("DMNetwork data structures", &stage[1]);CHKERRQ(ierr);
@@ -315,7 +307,7 @@ int main(int argc,char ** argv)
   /* "read" data only for processor 0 */
   if (!rank) {
     nnode = 100;
-    ierr = PetscOptionsGetInt(PETSC_NULL,PETSC_NULL,"-n",&nnode,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-n",&nnode,NULL);CHKERRQ(ierr);
     ierr = random_network(nnode, &nbranch, &node, &branch, &edgelist, seed);CHKERRQ(ierr);
   }
   ierr = PetscLogStagePop();CHKERRQ(ierr);
@@ -336,13 +328,13 @@ int main(int argc,char ** argv)
   if (!rank) {
     ierr = DMNetworkGetEdgeRange(networkdm,&eStart,&eEnd);CHKERRQ(ierr);
     for (i = eStart; i < eEnd; i++) {
-      ierr = DMNetworkAddComponent(networkdm,i,componentkey[0],&branch[i-eStart]);CHKERRQ(ierr);
+      ierr = DMNetworkAddComponent(networkdm,i,componentkey[1],&branch[i-eStart]);CHKERRQ(ierr);
       ierr = DMNetworkAddNumVariables(networkdm,i,1);CHKERRQ(ierr);
     }
 
     ierr = DMNetworkGetVertexRange(networkdm,&vStart,&vEnd);CHKERRQ(ierr);
     for (i = vStart; i < vEnd; i++) {
-      ierr = DMNetworkAddComponent(networkdm,i,componentkey[1],&node[i-vStart]);CHKERRQ(ierr);
+      ierr = DMNetworkAddComponent(networkdm,i,componentkey[0],&node[i-vStart]);CHKERRQ(ierr);
       /* Add number of variables */
       ierr = DMNetworkAddNumVariables(networkdm,i,1);CHKERRQ(ierr);
     }
@@ -358,6 +350,7 @@ int main(int argc,char ** argv)
     ierr = DMDestroy(&networkdm);CHKERRQ(ierr);
     networkdm = distnetworkdm;
   }
+  ierr = DMNetworkAssembleGraphStructures(networkdm);CHKERRQ(ierr);
 
   /* We don't use these data structures anymore since they have been copied to networkdm */
   if (!rank) {

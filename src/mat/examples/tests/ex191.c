@@ -2,8 +2,6 @@ static char help[] = "Tests MatLoad() for dense matrix with uneven dimensions se
 
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            A;

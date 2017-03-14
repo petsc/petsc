@@ -39,9 +39,7 @@ typedef struct {
 } AppCtx;
 
 /* Event check */
-#undef __FUNCT__
-#define __FUNCT__ "PetscEventFunction"
-PetscErrorCode PetscEventFunction(TS ts,PetscReal t,Vec X,PetscScalar *fvalue,void *ctx)
+PetscErrorCode EventFunction(TS ts,PetscReal t,Vec X,PetscScalar *fvalue,void *ctx)
 {
   AppCtx        *user=(AppCtx*)ctx;
 
@@ -54,8 +52,6 @@ PetscErrorCode PetscEventFunction(TS ts,PetscReal t,Vec X,PetscScalar *fvalue,vo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PostEventFunction"
 PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],PetscReal t,Vec X,PetscBool forwardsolve,void* ctx)
 {
   AppCtx *user=(AppCtx*)ctx;
@@ -67,8 +63,6 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "IFunction"
 /*
      Defines the ODE passed to the ODE solver
 */
@@ -94,8 +88,6 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *c
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "IJacobian"
 /*
      Defines the Jacobian of the ODE passed to the ODE solver. See TSSetIJacobian() for the meaning of a and the Jacobian.
 */
@@ -127,8 +119,6 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   TS             ts;            /* ODE integrator */
@@ -229,7 +219,7 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetDuration(ts,100000,35.0);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,0.0,.01);CHKERRQ(ierr);
+  ierr = TSSetInitialTimeStep(ts,0.0,.1);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   direction[0] = direction[1] = 1;

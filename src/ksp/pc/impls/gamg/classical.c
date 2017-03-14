@@ -10,8 +10,6 @@ typedef struct {
   PetscInt  nsmooths;         /* number of jacobi smoothings on the prolongator */
 } PC_GAMG_Classical;
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGClassicalSetType"
 /*@C
    PCGAMGClassicalSetType - Sets the type of classical interpolation to use
 
@@ -37,8 +35,6 @@ PetscErrorCode PCGAMGClassicalSetType(PC pc, PCGAMGClassicalType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGClassicalGetType"
 /*@C
    PCGAMGClassicalGetType - Gets the type of classical interpolation to use
 
@@ -64,8 +60,6 @@ PetscErrorCode PCGAMGClassicalGetType(PC pc, PCGAMGClassicalType *type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGClassicalSetType_GAMG"
 static PetscErrorCode PCGAMGClassicalSetType_GAMG(PC pc, PCGAMGClassicalType type)
 {
   PetscErrorCode    ierr;
@@ -78,8 +72,6 @@ static PetscErrorCode PCGAMGClassicalSetType_GAMG(PC pc, PCGAMGClassicalType typ
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGClassicalGetType_GAMG"
 static PetscErrorCode PCGAMGClassicalGetType_GAMG(PC pc, PCGAMGClassicalType *type)
 {
   PC_MG             *mg          = (PC_MG*)pc->data;
@@ -91,8 +83,6 @@ static PetscErrorCode PCGAMGClassicalGetType_GAMG(PC pc, PCGAMGClassicalType *ty
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGGraph_Classical"
 PetscErrorCode PCGAMGGraph_Classical(PC pc,Mat A,Mat *G)
 {
   PetscInt          s,f,n,idx,lidx,gidx;
@@ -138,7 +128,7 @@ PetscErrorCode PCGAMGGraph_Classical(PC pc,Mat A,Mat *G)
     gidx = 0;
     /* create the local and global sparsity patterns */
     for (c = 0; c < ncols; c++) {
-      if (PetscRealPart(-rval[c]) > gamg->threshold*PetscRealPart(Amax[r-s]) || rcol[c] == r) {
+      if (PetscRealPart(-rval[c]) > gamg->threshold[0]*PetscRealPart(Amax[r-s]) || rcol[c] == r) {
         if (rcol[c] < f && rcol[c] >= s) {
           lidx++;
         } else {
@@ -163,7 +153,7 @@ PetscErrorCode PCGAMGGraph_Classical(PC pc,Mat A,Mat *G)
     idx = 0;
     for (c = 0; c < ncols; c++) {
       /* classical strength of connection */
-      if (PetscRealPart(-rval[c]) > gamg->threshold*PetscRealPart(Amax[r-s]) || rcol[c] == r) {
+      if (PetscRealPart(-rval[c]) > gamg->threshold[0]*PetscRealPart(Amax[r-s]) || rcol[c] == r) {
         gcol[idx] = rcol[c];
         gval[idx] = rval[c];
         idx++;
@@ -181,8 +171,6 @@ PetscErrorCode PCGAMGGraph_Classical(PC pc,Mat A,Mat *G)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGCoarsen_Classical"
 PetscErrorCode PCGAMGCoarsen_Classical(PC pc,Mat *G,PetscCoarsenData **agg_lists)
 {
   PetscErrorCode   ierr;
@@ -203,8 +191,6 @@ PetscErrorCode PCGAMGCoarsen_Classical(PC pc,Mat *G,PetscCoarsenData **agg_lists
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGProlongator_Classical_Direct"
 PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, Mat G, PetscCoarsenData *agg_lists,Mat *P)
 {
   PetscErrorCode    ierr;
@@ -305,7 +291,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, Mat G, PetscCoar
       ierr = MatGetRow(lA,i,&ncols,&rcol,&rval);CHKERRQ(ierr);
       for (j = 0;j < ncols;j++) {
         col = rcol[j];
-        if (lcid[col] >= 0 && (PetscRealPart(rval[j]) > gamg->threshold*Amax_pos[i] || PetscRealPart(-rval[j]) > gamg->threshold*Amax_neg[i])) {
+        if (lcid[col] >= 0 && (PetscRealPart(rval[j]) > gamg->threshold[0]*Amax_pos[i] || PetscRealPart(-rval[j]) > gamg->threshold[0]*Amax_neg[i])) {
           lsparse[i] += 1;
         }
       }
@@ -315,7 +301,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, Mat G, PetscCoar
         ierr = MatGetRow(gA,i,&ncols,&rcol,&rval);CHKERRQ(ierr);
         for (j = 0; j < ncols; j++) {
           col = rcol[j];
-          if (gcid[col] >= 0 && (PetscRealPart(rval[j]) > gamg->threshold*Amax_pos[i] || PetscRealPart(-rval[j]) > gamg->threshold*Amax_neg[i])) {
+          if (gcid[col] >= 0 && (PetscRealPart(rval[j]) > gamg->threshold[0]*Amax_pos[i] || PetscRealPart(-rval[j]) > gamg->threshold[0]*Amax_neg[i])) {
             gsparse[i] += 1;
           }
         }
@@ -351,7 +337,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, Mat G, PetscCoar
       ierr = MatGetRow(lA,i,&ncols,&rcol,&rval);CHKERRQ(ierr);
       for (j = 0; j < ncols; j++) {
         col = rcol[j];
-        if (lcid[col] >= 0 && (PetscRealPart(rval[j]) > gamg->threshold*Amax_pos[i] || PetscRealPart(-rval[j]) > gamg->threshold*Amax_neg[i])) {
+        if (lcid[col] >= 0 && (PetscRealPart(rval[j]) > gamg->threshold[0]*Amax_pos[i] || PetscRealPart(-rval[j]) > gamg->threshold[0]*Amax_neg[i])) {
           if (PetscRealPart(rval[j]) > 0.) {
             g_pos += rval[j];
           } else {
@@ -375,7 +361,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, Mat G, PetscCoar
         ierr = MatGetRow(gA,i,&ncols,&rcol,&rval);CHKERRQ(ierr);
         for (j = 0; j < ncols; j++) {
           col = rcol[j];
-          if (gcid[col] >= 0 && (PetscRealPart(rval[j]) > gamg->threshold*Amax_pos[i] || PetscRealPart(-rval[j]) > gamg->threshold*Amax_neg[i])) {
+          if (gcid[col] >= 0 && (PetscRealPart(rval[j]) > gamg->threshold[0]*Amax_pos[i] || PetscRealPart(-rval[j]) > gamg->threshold[0]*Amax_neg[i])) {
             if (PetscRealPart(rval[j]) > 0.) {
               g_pos += rval[j];
             } else {
@@ -411,7 +397,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, Mat G, PetscCoar
       idx = 0;
       for (j = 0;j < ncols;j++) {
         col = rcol[j];
-        if (lcid[col] >= 0 && (PetscRealPart(rval[j]) > gamg->threshold*Amax_pos[i] || PetscRealPart(-rval[j]) > gamg->threshold*Amax_neg[i])) {
+        if (lcid[col] >= 0 && (PetscRealPart(rval[j]) > gamg->threshold[0]*Amax_pos[i] || PetscRealPart(-rval[j]) > gamg->threshold[0]*Amax_neg[i])) {
           row_f = i + fs;
           row_c = lcid[col];
           /* set the values for on-processor ones */
@@ -433,7 +419,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, Mat G, PetscCoar
         ierr = MatGetRow(gA,i,&ncols,&rcol,&rval);CHKERRQ(ierr);
         for (j = 0; j < ncols; j++) {
           col = rcol[j];
-          if (gcid[col] >= 0 && (PetscRealPart(rval[j]) > gamg->threshold*Amax_pos[i] || PetscRealPart(-rval[j]) > gamg->threshold*Amax_neg[i])) {
+          if (gcid[col] >= 0 && (PetscRealPart(rval[j]) > gamg->threshold[0]*Amax_pos[i] || PetscRealPart(-rval[j]) > gamg->threshold[0]*Amax_neg[i])) {
             row_f = i + fs;
             row_c = gcid[col];
             /* set the values for on-processor ones */
@@ -469,8 +455,6 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, Mat G, PetscCoar
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGTruncateProlongator_Private"
 PetscErrorCode PCGAMGTruncateProlongator_Private(PC pc,Mat *P)
 {
   PetscInt          j,i,ps,pf,pn,pcs,pcf,pcn,idx,cmax;
@@ -589,8 +573,6 @@ PetscErrorCode PCGAMGTruncateProlongator_Private(PC pc,Mat *P)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGProlongator_Classical_Standard"
 PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, Mat A, Mat G, PetscCoarsenData *agg_lists,Mat *P)
 {
   PetscErrorCode    ierr;
@@ -622,7 +604,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, Mat A, Mat G, PetscCo
     ierr = MatIncreaseOverlap(A,1,&lis,2);CHKERRQ(ierr);
     ierr = ISSort(lis);CHKERRQ(ierr);
     /* get the local part of A */
-    ierr = MatGetSubMatrices(A,1,&lis,&lis,MAT_INITIAL_MATRIX,&lAs);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrices(A,1,&lis,&lis,MAT_INITIAL_MATRIX,&lAs);CHKERRQ(ierr);
     lA = lAs[0];
     /* build an SF out of it */
     ierr = ISGetLocalSize(lis,&nl);CHKERRQ(ierr);
@@ -845,8 +827,6 @@ PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, Mat A, Mat G, PetscCo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGOptProlongator_Classical_Jacobi"
 PetscErrorCode PCGAMGOptProlongator_Classical_Jacobi(PC pc,Mat A,Mat *P)
 {
 
@@ -902,8 +882,6 @@ PetscErrorCode PCGAMGOptProlongator_Classical_Jacobi(PC pc,Mat A,Mat *P)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGProlongator_Classical"
 PetscErrorCode PCGAMGProlongator_Classical(PC pc, Mat A, Mat G, PetscCoarsenData *agg_lists,Mat *P)
 {
   PetscErrorCode    ierr;
@@ -919,8 +897,6 @@ PetscErrorCode PCGAMGProlongator_Classical(PC pc, Mat A, Mat G, PetscCoarsenData
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGDestroy_Classical"
 PetscErrorCode PCGAMGDestroy_Classical(PC pc)
 {
   PetscErrorCode ierr;
@@ -934,8 +910,6 @@ PetscErrorCode PCGAMGDestroy_Classical(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGSetFromOptions_Classical"
 PetscErrorCode PCGAMGSetFromOptions_Classical(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_MG             *mg          = (PC_MG*)pc->data;
@@ -957,8 +931,6 @@ PetscErrorCode PCGAMGSetFromOptions_Classical(PetscOptionItems *PetscOptionsObje
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGSetData_Classical"
 PetscErrorCode PCGAMGSetData_Classical(PC pc, Mat A)
 {
   PC_MG          *mg      = (PC_MG*)pc->data;
@@ -974,8 +946,6 @@ PetscErrorCode PCGAMGSetData_Classical(PC pc, Mat A)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGClassicalFinalizePackage"
 PetscErrorCode PCGAMGClassicalFinalizePackage(void)
 {
   PetscErrorCode ierr;
@@ -986,8 +956,6 @@ PetscErrorCode PCGAMGClassicalFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGClassicalInitializePackage"
 PetscErrorCode PCGAMGClassicalInitializePackage(void)
 {
   PetscErrorCode ierr;
@@ -1005,8 +973,6 @@ PetscErrorCode PCGAMGClassicalInitializePackage(void)
    PCCreateGAMG_Classical
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCCreateGAMG_Classical"
 PetscErrorCode  PCCreateGAMG_Classical(PC pc)
 {
   PetscErrorCode ierr;

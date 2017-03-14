@@ -122,8 +122,6 @@ PetscErrorCode trigDer(PetscInt dim, PetscReal time, const PetscReal coords[], c
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ProcessOptions"
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscErrorCode ierr;
@@ -174,8 +172,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TransformCoordinates"
 static PetscErrorCode TransformCoordinates(DM dm, AppCtx *user)
 {
   PetscSection   coordSection;
@@ -242,8 +238,6 @@ static PetscErrorCode TransformCoordinates(DM dm, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateMesh"
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscInt       dim             = user->dim;
@@ -324,8 +318,6 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "simple_mass"
 static void simple_mass(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                         const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                         const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -338,8 +330,6 @@ static void simple_mass(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 }
 
 /* < \nabla v, 1/2(\nabla u + {\nabla u}^T) > */
-#undef __FUNCT__
-#define __FUNCT__ "symmetric_gradient_inner_product"
 static void symmetric_gradient_inner_product(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
@@ -364,8 +354,6 @@ static void symmetric_gradient_inner_product(PetscInt dim, PetscInt Nf, PetscInt
   }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetupSection"
 static PetscErrorCode SetupSection(DM dm, AppCtx *user)
 {
   PetscBool      isPlex;
@@ -544,8 +532,6 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestFEJacobian"
 static PetscErrorCode TestFEJacobian(DM dm, AppCtx *user)
 {
   PetscBool      isPlex;
@@ -607,8 +593,6 @@ static PetscErrorCode TestFEJacobian(DM dm, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestInjector"
 static PetscErrorCode TestInjector(DM dm, AppCtx *user)
 {
   DM             refTree;
@@ -631,8 +615,6 @@ static PetscErrorCode TestInjector(DM dm, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestFVGrad"
 static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
 {
   MPI_Comm          comm;
@@ -756,8 +738,6 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeError"
 static PetscErrorCode ComputeError(DM dm, PetscErrorCode (**exactFuncs)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *),
                                    PetscErrorCode (**exactFuncDers)(PetscInt, PetscReal, const PetscReal[], const PetscReal[], PetscInt, PetscScalar *, void *),
                                    void **exactCtxs, PetscReal *error, PetscReal *errorDer, AppCtx *user)
@@ -777,8 +757,6 @@ static PetscErrorCode ComputeError(DM dm, PetscErrorCode (**exactFuncs)(PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CheckFunctions"
 static PetscErrorCode CheckFunctions(DM dm, PetscInt order, AppCtx *user)
 {
   PetscErrorCode (*exactFuncs[1]) (PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
@@ -826,8 +804,6 @@ static PetscErrorCode CheckFunctions(DM dm, PetscInt order, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CheckInterpolation"
 static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscInt order, AppCtx *user)
 {
   PetscErrorCode (*exactFuncs[1]) (PetscInt, PetscReal, const PetscReal x[], PetscInt, PetscScalar *u, void *ctx);
@@ -908,8 +884,6 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CheckConvergence"
 static PetscErrorCode CheckConvergence(DM dm, PetscInt Nr, AppCtx *user)
 {
   DM               odm = dm, rdm = NULL, cdm = NULL;
@@ -980,8 +954,6 @@ static PetscErrorCode CheckConvergence(DM dm, PetscInt Nr, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   DM             dm;

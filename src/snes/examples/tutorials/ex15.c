@@ -97,8 +97,6 @@ PetscErrorCode PreCheckDestroy(PreCheck*);
 PetscErrorCode PreCheckFunction(SNESLineSearch,Vec,Vec,PetscBool*,void*);
 PetscErrorCode PreCheckSetFromOptions(PreCheck);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   SNES                snes;                    /* nonlinear solver */
@@ -279,8 +277,6 @@ int main(int argc,char **argv)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormInitialGuess"
 /*
    FormInitialGuess - Forms initial approximation.
 
@@ -367,8 +363,6 @@ static PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormRHS"
 /*
    FormRHS - Forms constant RHS for the problem.
 
@@ -424,8 +418,6 @@ PETSC_STATIC_INLINE PetscScalar deta(const AppCtx *ctx,PetscReal x,PetscReal y,P
 
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionLocal"
 /*
    FormFunctionLocal - Evaluates nonlinear function, F(x).
  */
@@ -482,8 +474,6 @@ static PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionPicardLocal"
 /*
     This is the opposite sign of the part of FormFunctionLocal that excludes the A(x) x part of the operation,
     that is FormFunction applies A(x) x - b(x) while this applies b(x) because for Picard we think of it as solving A(x) x = b(x)
@@ -514,8 +504,6 @@ static PetscErrorCode FormFunctionPicardLocal(DMDALocalInfo *info,PetscScalar **
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobianLocal"
 /*
    FormJacobianLocal - Evaluates Jacobian matrix.
 */
@@ -676,8 +664,6 @@ static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat 
 /***********************************************************
  * PreCheck implementation
  ***********************************************************/
-#undef __FUNCT__
-#define __FUNCT__ "PreCheckSetFromOptions"
 PetscErrorCode PreCheckSetFromOptions(PreCheck precheck)
 {
   PetscErrorCode ierr;
@@ -695,8 +681,6 @@ PetscErrorCode PreCheckSetFromOptions(PreCheck precheck)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PreCheckFunction"
 /*
   Compare the direction of the current and previous step, modify the current step accordingly
 */
@@ -749,8 +733,6 @@ PetscErrorCode PreCheckFunction(SNESLineSearch linesearch,Vec X,Vec Y,PetscBool 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PreCheckDestroy"
 PetscErrorCode PreCheckDestroy(PreCheck *precheck)
 {
   PetscErrorCode ierr;
@@ -763,8 +745,6 @@ PetscErrorCode PreCheckDestroy(PreCheck *precheck)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PreCheckCreate"
 PetscErrorCode PreCheckCreate(MPI_Comm comm,PreCheck *precheck)
 {
   PetscErrorCode ierr;
@@ -777,8 +757,6 @@ PetscErrorCode PreCheckCreate(MPI_Comm comm,PreCheck *precheck)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "NonlinearGS"
 /*
       Applies some sweeps on nonlinear Gauss-Seidel on each process
 

@@ -12,6 +12,8 @@ configure_options = [
   '--with-debugging=0',
   '--with-visibility=0',
 
+  '--prefix=petsc-install',
+
   #'-download-fblaslapack=1',
   '--download-mpich=1',
   '--download-cmake=1',

@@ -3,8 +3,6 @@
 
 static PetscBool AOPackageInitialized = PETSC_FALSE;
 
-#undef __FUNCT__
-#define __FUNCT__ "AOFinalizePackage"
 /*@C
   AOFinalizePackage - This function finalizes everything in the AO package. It is called
   from PetscFinalize().
@@ -25,8 +23,6 @@ PetscErrorCode  AOFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AOInitializePackage"
 /*@C
   AOInitializePackage - This function initializes everything in the AO package. It is called
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to AOCreate().

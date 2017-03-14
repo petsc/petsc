@@ -3,8 +3,6 @@ static char help[] = "Demonstrates PETSc error handlers.\n";
 
 #include <petscsys.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateError"
 int CreateError(int n)
 {
   PetscErrorCode ierr;
@@ -13,8 +11,6 @@ int CreateError(int n)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
@@ -27,3 +23,13 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+
+
+/*TEST
+
+ # Testing errors so only look for errors
+   test:
+      filter: egrep "(PETSC ERROR)" | egrep "(main|CreateError|Error Created)" | cut -f1,2,3,4,5,6 -d" "
+
+
+TEST*/

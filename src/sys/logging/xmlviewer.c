@@ -14,8 +14,6 @@
 
 static int XMLSectionDepth            = 0;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerXMLStartSection"
 PetscErrorCode PetscViewerXMLStartSection(PetscViewer viewer, const char *name, const char *desc)
 {
   PetscErrorCode ierr;
@@ -31,8 +29,6 @@ PetscErrorCode PetscViewerXMLStartSection(PetscViewer viewer, const char *name, 
 }
 
 /* Initialize a viewer to XML, and initialize the XMLDepth static parameter */
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerInitASCII_XML"
 PetscErrorCode PetscViewerInitASCII_XML(PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -50,8 +46,6 @@ PetscErrorCode PetscViewerInitASCII_XML(PetscViewer viewer)
 }
 
 /* Initialize a viewer to XML, and initialize the XMLDepth static parameter */
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFinalASCII_XML"
 PetscErrorCode PetscViewerFinalASCII_XML(PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -61,8 +55,6 @@ PetscErrorCode PetscViewerFinalASCII_XML(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerXMLEndSection"
 PetscErrorCode PetscViewerXMLEndSection(PetscViewer viewer, const char *name)
 {
   PetscErrorCode ierr;
@@ -74,8 +66,6 @@ PetscErrorCode PetscViewerXMLEndSection(PetscViewer viewer, const char *name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerXMLPutString"
 PetscErrorCode PetscViewerXMLPutString(PetscViewer viewer, const char *name, const char *desc, const char *value)
 {
   PetscErrorCode ierr;
@@ -89,8 +79,6 @@ PetscErrorCode PetscViewerXMLPutString(PetscViewer viewer, const char *name, con
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerXMLPutInt"
 PetscErrorCode PetscViewerXMLPutInt(PetscViewer viewer, const char *name, const char *desc, int value)
 {
   PetscErrorCode ierr;
@@ -104,8 +92,6 @@ PetscErrorCode PetscViewerXMLPutInt(PetscViewer viewer, const char *name, const 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerXMLPutDouble"
 PetscErrorCode PetscViewerXMLPutDouble(PetscViewer viewer, const char *name, const char *desc, PetscLogDouble value, const char *format)
 {
   PetscErrorCode ierr;

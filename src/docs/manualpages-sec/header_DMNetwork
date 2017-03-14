@@ -1,0 +1,10 @@
+<HTML>
+<HEAD>
+<TITLE>DMNetwork Manual Pages</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+
+<H2> DMNetwork <A HREF="PETSC_DIRsrc/dm/impls/network/examples/tutorials/index.html">Examples</A></H2>
+
+The DMNetwork class encapsulates a graph topology, and is based on DMPLEX. It is designed to handle very large scales graphs, such as those that arise in power system or wireless communication modeling.
+<P>

@@ -3,8 +3,6 @@ static char help[] = "Tests DMDA ghost coordinates\n\n";
 #include <petscdm.h>
 #include <petscdmda.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "CompareGhostedCoords"
 static PetscErrorCode CompareGhostedCoords(Vec gc1,Vec gc2)
 {
   PetscErrorCode ierr;
@@ -21,8 +19,6 @@ static PetscErrorCode CompareGhostedCoords(Vec gc1,Vec gc2)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestQ2Q1DA"
 static PetscErrorCode TestQ2Q1DA(void)
 {
   DM             Q2_da,Q1_da,cda;
@@ -66,8 +62,6 @@ static PetscErrorCode TestQ2Q1DA(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;

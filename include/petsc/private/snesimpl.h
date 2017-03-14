@@ -224,8 +224,6 @@ typedef struct {
   PetscReal norm_first;          /* function norm from the beginning of the first iteration. */
 } SNESKSPEW;
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLogConvergenceHistory"
 PETSC_STATIC_INLINE PetscErrorCode SNESLogConvergenceHistory(SNES snes,PetscReal res,PetscInt its)
 {
   PetscErrorCode ierr;

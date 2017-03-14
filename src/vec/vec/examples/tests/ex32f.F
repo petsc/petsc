@@ -3,11 +3,9 @@
 !  Tests PescOffsetFortran()
 !  duplicated
       program main
-       implicit none
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscis.h>
 #include <petsc/finclude/petscvec.h>
+      use petscvec
+       implicit none
 
       PetscErrorCode ierr
       PetscInt  n

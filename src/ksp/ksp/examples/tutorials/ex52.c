@@ -9,8 +9,6 @@ Input parameters include:\n\
 
 #include <petscksp.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Vec            x,b,u;    /* approx solution, RHS, exact solution */

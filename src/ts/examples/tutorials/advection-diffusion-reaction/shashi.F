@@ -1,33 +1,10 @@
 
- 
+
       program main
+#include <petsc/finclude/petscs.h>
+      use petsc
       implicit none
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!                    Include files
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!
-!  The following include statements are generally used in SNES Fortran
-!  programs:
-!     petscsys.h       - base PETSc routines
-!     petscvec.h    - vectors
-!     petscmat.h    - matrices
-!     petscksp.h    - Krylov subspace methods
-!     petscpc.h     - preconditioners
-!     petscsnes.h   - SNES interface
-!  Other include statements may be needed if using additional PETSc
-!  routines in a Fortran program, e.g.,
-!     petscviewer.h - viewers
-!     petscis.h     - index sets
-!
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscksp.h>
-#include <petsc/finclude/petscpc.h>
-#include <petsc/finclude/petscsnes.h>
-#include <petsc/finclude/petscvec.h90>
-!     
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -120,12 +97,11 @@
 
 !  Set function evaluation routine and vector
 
-      call SNESSetFunction(snes,r,FormFunction,PETSC_NULL_OBJECT,ierr)
+      call SNESSetFunction(snes,r,FormFunction,0,ierr)
 
 !  Set Jacobian matrix data structure and Jacobian evaluation routine
 
-      call SNESSetJacobian(snes,J,J,FormJacobian,PETSC_NULL_OBJECT,     &
-     &     ierr)
+      call SNESSetJacobian(snes,J,J,FormJacobian,0,ierr)
 
       call VecDuplicate(x,lb,ierr)
       call VecDuplicate(x,ub,ierr)
@@ -138,7 +114,7 @@
 
       call SNESGetLineSearch(snes,ls,ierr)
       call SNESLineSearchSetPostCheck(ls,ShashiPostCheck,                 &
-     ,                                PETSC_NULL_OBJECT,ierr)
+     ,                                0,ierr)
       call SNESSetType(snes,SNESVINEWTONRSLS,ierr)
 
       call SNESSetFromOptions(snes,ierr)
@@ -149,7 +125,7 @@
       call ShashiInitialGuess(xx)
       call VecRestoreArrayF90(x,xx,ierr)
 
-      call SNESSolve(snes,PETSC_NULL_OBJECT,x,ierr)
+      call SNESSolve(snes,PETSC_NULL_VEC,x,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Free work space.  All PETSc objects should be destroyed when they

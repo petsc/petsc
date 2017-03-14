@@ -20,8 +20,6 @@
 M*/
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetObjective"
 /*@C
    SNESSetObjective - Sets the objective function minimized by some of the SNES linesearch methods.
 
@@ -55,8 +53,6 @@ PetscErrorCode  SNESSetObjective(SNES snes,PetscErrorCode (*obj)(SNES,Vec,PetscR
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetObjective"
 /*@C
    SNESGetObjective - Returns the objective function.
 
@@ -87,8 +83,6 @@ PetscErrorCode SNESGetObjective(SNES snes,PetscErrorCode (**obj)(SNES,Vec,PetscR
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESComputeObjective"
 /*@C
    SNESComputeObjective - Computes the objective.
 
@@ -128,8 +122,6 @@ PetscErrorCode SNESComputeObjective(SNES snes,Vec X,PetscReal *ob)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESObjectiveComputeFunctionDefaultFD"
 /*@C
    SNESObjectiveComputeFunctionDefaultFD - Computes the gradient of a user provided objective
 

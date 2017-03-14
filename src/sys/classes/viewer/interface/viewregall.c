@@ -15,8 +15,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_VTK(PetscViewer);
 
 PetscBool PetscViewerRegisterAllCalled;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerRegisterAll"
 /*@C
   PetscViewerRegisterAll - Registers all of the graphics methods in the PetscViewer package.
 

@@ -1,0 +1,38 @@
+
+static char help[] = "Tests retrieving unused PETSc options.\n\n";
+
+#include <petscoptions.h>
+
+
+int main(int argc,char **argv)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,N,M;
+  char           **names,**values;
+  PetscBool      set;
+
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+
+  ierr = PetscOptionsGetInt(NULL,NULL,"-get_an_integer",&M,&set);CHKERRQ(ierr);
+  if (set) { ierr = PetscPrintf(PETSC_COMM_WORLD,"Option used: name:-get_an_integer value: %D\n",M);CHKERRQ(ierr); }
+  ierr = PetscOptionsLeftGet(NULL,&N,&names,&values);CHKERRQ(ierr);
+  for (i=0; i<N; i++) {
+    if (values[i]) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Option left: name:-%s value: %s\n",names[i],values[i]);CHKERRQ(ierr);
+    } else {
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Option left: name:-%s (no value)\n",names[i]);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscOptionsLeftRestore(NULL,&N,&names,&values);CHKERRQ(ierr);
+
+  ierr = PetscFinalize();CHKERRQ(ierr);
+  return 0;
+}
+
+/*TEST
+
+   test:
+      args: -unused_petsc_option_1 -unused_petsc_option_2 -get_an_integer 10 -options_left no
+      filter: grep -v malloc_dump |grep -v options_left |grep -v nox
+
+TEST*/

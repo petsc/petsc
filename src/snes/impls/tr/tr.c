@@ -10,8 +10,6 @@ typedef struct {
    This convergence test determines if the two norm of the
    solution lies outside the trust region, if so it halts.
 */
-#undef __FUNCT__
-#define __FUNCT__ "SNES_TR_KSPConverged_Private"
 PetscErrorCode SNES_TR_KSPConverged_Private(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *cctx)
 {
   SNES_TR_KSPConverged_Ctx *ctx = (SNES_TR_KSPConverged_Ctx*)cctx;
@@ -36,8 +34,6 @@ PetscErrorCode SNES_TR_KSPConverged_Private(KSP ksp,PetscInt n,PetscReal rnorm,K
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNES_TR_KSPConverged_Destroy"
 PetscErrorCode SNES_TR_KSPConverged_Destroy(void *cctx)
 {
   SNES_TR_KSPConverged_Ctx *ctx = (SNES_TR_KSPConverged_Ctx*)cctx;
@@ -50,8 +46,6 @@ PetscErrorCode SNES_TR_KSPConverged_Destroy(void *cctx)
 }
 
 /* ---------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "SNES_TR_Converged_Private"
 /*
    SNES_TR_Converged_Private -test convergence JUST for
    the trust region tolerance.
@@ -81,8 +75,6 @@ static PetscErrorCode SNES_TR_Converged_Private(SNES snes,PetscInt it,PetscReal 
 
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "SNESSolve_NEWTONTR"
 static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
 {
   SNES_NEWTONTR       *neP = (SNES_NEWTONTR*)snes->data;
@@ -234,8 +226,6 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetUp_NEWTONTR"
 static PetscErrorCode SNESSetUp_NEWTONTR(SNES snes)
 {
   PetscErrorCode ierr;
@@ -246,8 +236,6 @@ static PetscErrorCode SNESSetUp_NEWTONTR(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESReset_NEWTONTR"
 PetscErrorCode SNESReset_NEWTONTR(SNES snes)
 {
 
@@ -255,8 +243,6 @@ PetscErrorCode SNESReset_NEWTONTR(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESDestroy_NEWTONTR"
 static PetscErrorCode SNESDestroy_NEWTONTR(SNES snes)
 {
   PetscErrorCode ierr;
@@ -268,8 +254,6 @@ static PetscErrorCode SNESDestroy_NEWTONTR(SNES snes)
 }
 /*------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetFromOptions_NEWTONTR"
 static PetscErrorCode SNESSetFromOptions_NEWTONTR(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   SNES_NEWTONTR  *ctx = (SNES_NEWTONTR*)snes->data;
@@ -289,8 +273,6 @@ static PetscErrorCode SNESSetFromOptions_NEWTONTR(PetscOptionItems *PetscOptions
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESView_NEWTONTR"
 static PetscErrorCode SNESView_NEWTONTR(SNES snes,PetscViewer viewer)
 {
   SNES_NEWTONTR  *tr = (SNES_NEWTONTR*)snes->data;
@@ -328,8 +310,6 @@ static PetscErrorCode SNESView_NEWTONTR(SNES snes,PetscViewer viewer)
 .seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESSetTrustRegionTolerance()
 
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "SNESCreate_NEWTONTR"
 PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONTR(SNES snes)
 {
   SNES_NEWTONTR  *neP;

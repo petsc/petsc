@@ -21,8 +21,6 @@
 #if defined(PETSC_HAVE_SYS_TIMES_H)
 
 #include <sys/times.h>
-#undef __FUNCT__
-#define __FUNCT__ "PetscGetCPUTime"
 PetscErrorCode  PetscGetCPUTime(PetscLogDouble *t)
 {
   struct tms temp;
@@ -37,8 +35,6 @@ PetscErrorCode  PetscGetCPUTime(PetscLogDouble *t)
 
 #include <time.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscGetCPUTime"
 PetscErrorCode  PetscGetCPUTime(PetscLogDouble *t)
 {
   PetscFunctionBegin;
@@ -51,8 +47,6 @@ PetscErrorCode  PetscGetCPUTime(PetscLogDouble *t)
 #include <sys/time.h>
 #include <sys/resource.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscGetCPUTime"
 /*@
     PetscGetCPUTime - Returns the CPU time in seconds used by the process.
 

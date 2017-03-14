@@ -1,8 +1,6 @@
 #include <petsc/private/tsimpl.h>     /*I "petscts.h" I*/
 #include <petsc/private/dmimpl.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "DMTSDestroy"
 static PetscErrorCode DMTSDestroy(DMTS *kdm)
 {
   PetscErrorCode ierr;
@@ -16,8 +14,6 @@ static PetscErrorCode DMTSDestroy(DMTS *kdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMTSLoad"
 PetscErrorCode DMTSLoad(DMTS kdm,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -38,8 +34,6 @@ PetscErrorCode DMTSLoad(DMTS kdm,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMTSView"
 PetscErrorCode DMTSView(DMTS kdm,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -103,8 +97,6 @@ PetscErrorCode DMTSView(DMTS kdm,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMTSCreate"
 static PetscErrorCode DMTSCreate(MPI_Comm comm,DMTS *kdm)
 {
   PetscErrorCode ierr;
@@ -115,8 +107,6 @@ static PetscErrorCode DMTSCreate(MPI_Comm comm,DMTS *kdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCoarsenHook_DMTS"
 /* Attaches the DMTS to the coarse level.
  * Under what conditions should we copy versus duplicate?
  */
@@ -129,8 +119,6 @@ static PetscErrorCode DMCoarsenHook_DMTS(DM dm,DM dmc,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRestrictHook_DMTS"
 /* This could restrict auxiliary information to the coarse level.
  */
 static PetscErrorCode DMRestrictHook_DMTS(DM dm,Mat Restrict,Vec rscale,Mat Inject,DM dmc,void *ctx)
@@ -140,8 +128,6 @@ static PetscErrorCode DMRestrictHook_DMTS(DM dm,Mat Restrict,Vec rscale,Mat Inje
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSubDomainHook_DMTS"
 static PetscErrorCode DMSubDomainHook_DMTS(DM dm,DM subdm,void *ctx)
 {
   PetscErrorCode ierr;
@@ -151,8 +137,6 @@ static PetscErrorCode DMSubDomainHook_DMTS(DM dm,DM subdm,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSubDomainRestrictHook_DMTS"
 /* This could restrict auxiliary information to the coarse level.
  */
 static PetscErrorCode DMSubDomainRestrictHook_DMTS(DM dm,VecScatter gscat,VecScatter lscat,DM subdm,void *ctx)
@@ -161,8 +145,6 @@ static PetscErrorCode DMSubDomainRestrictHook_DMTS(DM dm,VecScatter gscat,VecSca
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMTSCopy"
 /*@C
    DMTSCopy - copies the information in a DMTS to another DMTS
 
@@ -214,8 +196,6 @@ PetscErrorCode DMTSCopy(DMTS kdm,DMTS nkdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetDMTS"
 /*@C
    DMGetDMTS - get read-only private DMTS context from a DM
 
@@ -251,8 +231,6 @@ PetscErrorCode DMGetDMTS(DM dm,DMTS *tsdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetDMTSWrite"
 /*@C
    DMGetDMTSWrite - get write access to private DMTS context from a DM
 
@@ -289,8 +267,6 @@ PetscErrorCode DMGetDMTSWrite(DM dm,DMTS *tsdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCopyDMTS"
 /*@C
    DMCopyDMTS - copies a DM context to a new DM
 
@@ -322,8 +298,6 @@ PetscErrorCode DMCopyDMTS(DM dmsrc,DM dmdest)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMTSSetIFunction"
 /*@C
    DMTSSetIFunction - set TS implicit function evaluation function
 
@@ -356,8 +330,6 @@ PetscErrorCode DMTSSetIFunction(DM dm,TSIFunction func,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMTSGetIFunction"
 /*@C
    DMTSGetIFunction - get TS implicit residual evaluation function
 
@@ -391,8 +363,6 @@ PetscErrorCode DMTSGetIFunction(DM dm,TSIFunction *func,void **ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMTSSetI2Function"
 /*@C
    DMTSSetI2Function - set TS implicit function evaluation function for 2nd order systems
 
@@ -424,8 +394,6 @@ PetscErrorCode DMTSSetI2Function(DM dm,TSI2Function fun,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMTSGetI2Function"
 /*@C
    DMTSGetI2Function - get TS implicit residual evaluation function for 2nd order systems
 
@@ -459,8 +427,6 @@ PetscErrorCode DMTSGetI2Function(DM dm,TSI2Function *fun,void **ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMTSSetI2Jacobian"
 /*@C
    DMTSSetI2Jacobian - set TS implicit Jacobian evaluation function for 2nd order systems
 
@@ -492,8 +458,6 @@ PetscErrorCode DMTSSetI2Jacobian(DM dm,TSI2Jacobian jac,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMTSGetI2Jacobian"
 /*@C
    DMTSGetI2Jacobian - get TS implicit Jacobian evaluation function for 2nd order systems
 
@@ -527,8 +491,6 @@ PetscErrorCode DMTSGetI2Jacobian(DM dm,TSI2Jacobian *jac,void **ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMTSSetRHSFunction"
 /*@C
    DMTSSetRHSFunction - set TS explicit residual evaluation function
 
@@ -561,8 +523,6 @@ PetscErrorCode DMTSSetRHSFunction(DM dm,TSRHSFunction func,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMTSGetSolutionFunction"
 /*@C
    DMTSGetSolutionFunction - gets the TS solution evaluation function
 
@@ -592,8 +552,6 @@ PetscErrorCode DMTSGetSolutionFunction(DM dm,TSSolutionFunction *func,void **ctx
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMTSSetSolutionFunction"
 /*@C
    DMTSSetSolutionFunction - set TS solution evaluation function
 
@@ -626,8 +584,6 @@ PetscErrorCode DMTSSetSolutionFunction(DM dm,TSSolutionFunction func,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMTSSetForcingFunction"
 /*@C
    DMTSSetForcingFunction - set TS forcing function evaluation function
 
@@ -661,8 +617,6 @@ PetscErrorCode DMTSSetForcingFunction(DM dm,TSForcingFunction f,void *ctx)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMTSGetForcingFunction"
 /*@C
    DMTSGetForcingFunction - get TS forcing function evaluation function
 
@@ -697,8 +651,6 @@ PetscErrorCode DMTSGetForcingFunction(DM dm,TSForcingFunction *f,void **ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMTSGetRHSFunction"
 /*@C
    DMTSGetRHSFunction - get TS explicit residual evaluation function
 
@@ -732,8 +684,6 @@ PetscErrorCode DMTSGetRHSFunction(DM dm,TSRHSFunction *func,void **ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMTSSetIJacobian"
 /*@C
    DMTSSetIJacobian - set TS Jacobian evaluation function
 
@@ -766,8 +716,6 @@ PetscErrorCode DMTSSetIJacobian(DM dm,TSIJacobian func,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMTSGetIJacobian"
 /*@C
    DMTSGetIJacobian - get TS Jacobian evaluation function
 
@@ -803,8 +751,6 @@ PetscErrorCode DMTSGetIJacobian(DM dm,TSIJacobian *func,void **ctx)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMTSSetRHSJacobian"
 /*@C
    DMTSSetRHSJacobian - set TS Jacobian evaluation function
 
@@ -837,8 +783,6 @@ PetscErrorCode DMTSSetRHSJacobian(DM dm,TSRHSJacobian func,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMTSGetRHSJacobian"
 /*@C
    DMTSGetRHSJacobian - get TS Jacobian evaluation function
 
@@ -873,8 +817,6 @@ PetscErrorCode DMTSGetRHSJacobian(DM dm,TSRHSJacobian *func,void **ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMTSSetIFunctionSerialize"
 /*@C
    DMTSSetIFunctionSerialize - sets functions used to view and load a IFunction context
 
@@ -902,8 +844,6 @@ PetscErrorCode DMTSSetIFunctionSerialize(DM dm,PetscErrorCode (*view)(void*,Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMTSSetIJacobianSerialize"
 /*@C
    DMTSSetIJacobianSerialize - sets functions used to view and load a IJacobian context
 

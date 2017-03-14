@@ -2,8 +2,6 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h>   /*I "petscmat.h" I*/
 #include <../src/mat/impls/aij/seq/seqviennacl/viennaclmatimpl.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMPIAIJSetPreallocation_MPIAIJViennaCL"
 PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJViennaCL(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
   Mat_MPIAIJ *b = (Mat_MPIAIJ*)B->data;
@@ -29,8 +27,6 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJViennaCL(Mat B,PetscInt d_nz,con
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateVecs_MPIAIJViennaCL"
 PetscErrorCode  MatCreateVecs_MPIAIJViennaCL(Mat mat,Vec *right,Vec *left)
 {
   PetscErrorCode ierr;
@@ -56,8 +52,6 @@ PetscErrorCode  MatCreateVecs_MPIAIJViennaCL(Mat mat,Vec *right,Vec *left)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_MPIAIJViennaCL"
 PetscErrorCode MatDestroy_MPIAIJViennaCL(Mat A)
 {
   PetscErrorCode ierr;
@@ -67,8 +61,6 @@ PetscErrorCode MatDestroy_MPIAIJViennaCL(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_MPIAIJViennaCL"
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJViennaCL(Mat A)
 {
   PetscErrorCode ierr;
@@ -126,8 +118,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJViennaCL(Mat A)
 
 .seealso: MatCreate(), MatCreateAIJ(), MatCreateAIJCUSP(), MatSetValues(), MatSeqAIJSetColumnIndices(), MatCreateSeqAIJWithArrays(), MatCreateAIJ(), MATMPIAIJVIENNACL, MATAIJVIENNACL
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateAIJViennaCL"
 PetscErrorCode  MatCreateAIJViennaCL(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[],Mat *A)
 {
   PetscErrorCode ierr;

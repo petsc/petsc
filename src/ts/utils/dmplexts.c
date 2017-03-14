@@ -4,8 +4,6 @@
 #include <petscds.h>
 #include <petscfv.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "DMTSConvertPlex"
 static PetscErrorCode DMTSConvertPlex(DM dm, DM *plex, PetscBool copy)
 {
   PetscBool      isPlex;
@@ -41,8 +39,6 @@ static PetscErrorCode DMTSConvertPlex(DM dm, DM *plex, PetscBool copy)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexTSGetGeometryFVM"
 /*@
   DMPlexTSGetGeometryFVM - Return precomputed geometric data
 
@@ -67,8 +63,6 @@ PetscErrorCode DMPlexTSGetGeometryFVM(DM dm, Vec *facegeom, Vec *cellgeom, Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexTSGetGradientDM"
 /*@C
   DMPlexTSGetGradientDM - Return gradient data layout
 
@@ -92,8 +86,6 @@ PetscErrorCode DMPlexTSGetGradientDM(DM dm, PetscFV fv, DM *dmGrad)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexTSComputeRHSFunctionFVM"
 /*@
   DMPlexTSComputeRHSFunctionFVM - Form the local forcing F from the local input X using pointwise functions specified by the user
 
@@ -132,8 +124,6 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Ve
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexTSComputeBoundary"
 /*@
   DMPlexTSComputeBoundary - Insert the essential boundary values for the local input X and/or its time derivative X_t using pointwise functions specified by the user
 
@@ -178,8 +168,6 @@ PetscErrorCode DMPlexTSComputeBoundary(DM dm, PetscReal time, Vec locX, Vec locX
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexTSComputeIFunctionFEM"
 /*@
   DMPlexTSComputeIFunctionFEM - Form the local residual F from the local input X using pointwise functions specified by the user
 
@@ -213,8 +201,6 @@ PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexTSComputeIJacobianFEM"
 /*@
   DMPlexTSComputeIJacobianFEM - Form the local Jacobian J from the local input X using pointwise functions specified by the user
 
@@ -249,8 +235,6 @@ PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMTSCheckFromOptions"
 PetscErrorCode DMTSCheckFromOptions(TS ts, Vec u, PetscErrorCode (**exactFuncs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx), void **ctxs)
 {
   DM             dm;

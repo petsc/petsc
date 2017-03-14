@@ -13,8 +13,6 @@ extern PetscErrorCode DMCreateColoring_DA_3d_MPIAIJ(DM,ISColoringType,ISColoring
 */
 #define SetInRange(i,m) ((i < 0) ? m+i : ((i >= m) ? i-m : i))
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetBlockFills_Private"
 static PetscErrorCode DMDASetBlockFills_Private(const PetscInt *dfill,PetscInt w,PetscInt **rfill)
 {
   PetscErrorCode ierr;
@@ -50,8 +48,6 @@ static PetscErrorCode DMDASetBlockFills_Private(const PetscInt *dfill,PetscInt w
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetBlockFills"
 /*@
     DMDASetBlockFills - Sets the fill pattern in each block for a multi-component problem
     of the matrix returned by DMCreateMatrix().
@@ -111,8 +107,6 @@ PetscErrorCode  DMDASetBlockFills(DM da,const PetscInt *dfill,const PetscInt *of
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateColoring_DA"
 PetscErrorCode  DMCreateColoring_DA(DM da,ISColoringType ctype,ISColoring *coloring)
 {
   PetscErrorCode   ierr;
@@ -197,8 +191,6 @@ PetscErrorCode  DMCreateColoring_DA(DM da,ISColoringType ctype,ISColoring *color
 
 /* ---------------------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateColoring_DA_2d_MPIAIJ"
 PetscErrorCode DMCreateColoring_DA_2d_MPIAIJ(DM da,ISColoringType ctype,ISColoring *coloring)
 {
   PetscErrorCode   ierr;
@@ -273,8 +265,6 @@ PetscErrorCode DMCreateColoring_DA_2d_MPIAIJ(DM da,ISColoringType ctype,ISColori
 
 /* ---------------------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateColoring_DA_3d_MPIAIJ"
 PetscErrorCode DMCreateColoring_DA_3d_MPIAIJ(DM da,ISColoringType ctype,ISColoring *coloring)
 {
   PetscErrorCode   ierr;
@@ -349,8 +339,6 @@ PetscErrorCode DMCreateColoring_DA_3d_MPIAIJ(DM da,ISColoringType ctype,ISColori
 
 /* ---------------------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateColoring_DA_1d_MPIAIJ"
 PetscErrorCode DMCreateColoring_DA_1d_MPIAIJ(DM da,ISColoringType ctype,ISColoring *coloring)
 {
   PetscErrorCode   ierr;
@@ -427,8 +415,6 @@ PetscErrorCode DMCreateColoring_DA_1d_MPIAIJ(DM da,ISColoringType ctype,ISColori
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateColoring_DA_2d_5pt_MPIAIJ"
 PetscErrorCode DMCreateColoring_DA_2d_5pt_MPIAIJ(DM da,ISColoringType ctype,ISColoring *coloring)
 {
   PetscErrorCode   ierr;
@@ -501,8 +487,6 @@ extern PetscErrorCode DMCreateMatrix_DA_3d_MPIBAIJ(DM,Mat);
 extern PetscErrorCode DMCreateMatrix_DA_2d_MPISBAIJ(DM,Mat);
 extern PetscErrorCode DMCreateMatrix_DA_3d_MPISBAIJ(DM,Mat);
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetupDM"
 /*@C
    MatSetupDM - Sets the DMDA that is to be used by the HYPRE_StructMatrix PETSc matrix
 
@@ -526,8 +510,6 @@ PetscErrorCode MatSetupDM(Mat mat,DM da)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatView_MPI_DA"
 PetscErrorCode  MatView_MPI_DA(Mat A,PetscViewer viewer)
 {
   DM                da;
@@ -557,7 +539,7 @@ PetscErrorCode  MatView_MPI_DA(Mat A,PetscViewer viewer)
   ierr = ISCreateGeneral(comm,rend-rstart,petsc,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
 
   /* call viewer on natural ordering */
-  ierr = MatGetSubMatrix(A,is,is,MAT_INITIAL_MATRIX,&Anatural);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix(A,is,is,MAT_INITIAL_MATRIX,&Anatural);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   ierr = PetscObjectGetOptionsPrefix((PetscObject)A,&prefix);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)Anatural,prefix);CHKERRQ(ierr);
@@ -567,8 +549,6 @@ PetscErrorCode  MatView_MPI_DA(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLoad_MPI_DA"
 PetscErrorCode  MatLoad_MPI_DA(Mat A,PetscViewer viewer)
 {
   DM             da;
@@ -601,15 +581,13 @@ PetscErrorCode  MatLoad_MPI_DA(Mat A,PetscViewer viewer)
   ierr = ISCreateGeneral(comm,rend-rstart,app,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
 
   /* Do permutation and replace header */
-  ierr = MatGetSubMatrix(Anatural,is,is,MAT_INITIAL_MATRIX,&Aapp);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix(Anatural,is,is,MAT_INITIAL_MATRIX,&Aapp);CHKERRQ(ierr);
   ierr = MatHeaderReplace(A,&Aapp);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   ierr = MatDestroy(&Anatural);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateMatrix_DA"
 PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
 {
   PetscErrorCode ierr;
@@ -792,18 +770,17 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
 }
 
 /* ---------------------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateMatrix_DA_2d_MPIAIJ"
 PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da,Mat J)
 {
   PetscErrorCode         ierr;
-  PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny,m,n,dim,s,*cols = NULL,k,nc,*rows = NULL,col,cnt,l,p;
+  PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny,m,n,dim,s,*cols = NULL,k,nc,*rows = NULL,col,cnt,l,p,M,N;
   PetscInt               lstart,lend,pstart,pend,*dnz,*onz;
   MPI_Comm               comm;
   PetscScalar            *values;
   DMBoundaryType         bx,by;
   ISLocalToGlobalMapping ltog;
   DMDAStencilType        st;
+  PetscBool              removedups = PETSC_FALSE;
 
   PetscFunctionBegin;
   /*
@@ -811,8 +788,14 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da,Mat J)
          col - number of colors needed in one direction for single component problem
 
   */
-  ierr = DMDAGetInfo(da,&dim,&m,&n,0,0,0,0,&nc,&s,&bx,&by,0,&st);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,&m,&n,&M,&N,0,0,&nc,&s,&bx,&by,0,&st);CHKERRQ(ierr);
   col  = 2*s + 1;
+  /*
+       With one processor in periodic domains in a skinny dimension the code will label nonzero columns multiple times
+       because of "wrapping" around the end of the domain hitting an entry already counted in the other direction.
+  */
+  if (M == 1 && 2*s >= m) removedups = PETSC_TRUE;
+  if (N == 1 && 2*s >= n) removedups = PETSC_TRUE;
   ierr = DMDAGetCorners(da,&xs,&ys,0,&nx,&ny,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&gxs,&gys,0,&gnx,&gny,0);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
@@ -845,7 +828,11 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da,Mat J)
         }
         rows[k] = k + nc*(slot);
       }
-      ierr = MatPreallocateSetLocal(ltog,nc,rows,ltog,cnt,cols,dnz,onz);CHKERRQ(ierr);
+      if (removedups) {
+        ierr = MatPreallocateSetLocalRemoveDups(ltog,nc,rows,ltog,cnt,cols,dnz,onz);CHKERRQ(ierr);
+      } else {
+        ierr = MatPreallocateSetLocal(ltog,nc,rows,ltog,cnt,cols,dnz,onz);CHKERRQ(ierr);
+      }
     }
   }
   ierr = MatSetBlockSize(J,nc);CHKERRQ(ierr);
@@ -896,13 +883,11 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da,Mat J)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateMatrix_DA_2d_MPIAIJ_Fill"
 PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ_Fill(DM da,Mat J)
 {
   PetscErrorCode         ierr;
   PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;
-  PetscInt               m,n,dim,s,*cols,k,nc,row,col,cnt,maxcnt = 0,l,p;
+  PetscInt               m,n,dim,s,*cols,k,nc,row,col,cnt,maxcnt = 0,l,p,M,N;
   PetscInt               lstart,lend,pstart,pend,*dnz,*onz;
   DM_DA                  *dd = (DM_DA*)da->data;
   PetscInt               ifill_col,*ofill = dd->ofill, *dfill = dd->dfill;
@@ -911,6 +896,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ_Fill(DM da,Mat J)
   DMBoundaryType         bx,by;
   ISLocalToGlobalMapping ltog;
   DMDAStencilType        st;
+  PetscBool              removedups = PETSC_FALSE;
 
   PetscFunctionBegin;
   /*
@@ -918,8 +904,14 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ_Fill(DM da,Mat J)
          col - number of colors needed in one direction for single component problem
 
   */
-  ierr = DMDAGetInfo(da,&dim,&m,&n,0,0,0,0,&nc,&s,&bx,&by,0,&st);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,&m,&n,&M,&N,0,0,&nc,&s,&bx,&by,0,&st);CHKERRQ(ierr);
   col  = 2*s + 1;
+  /*
+       With one processor in periodic domains in a skinny dimension the code will label nonzero columns multiple times
+       because of "wrapping" around the end of the domain hitting an entry already counted in the other direction.
+  */
+  if (M == 1 && 2*s >= m) removedups = PETSC_TRUE;
+  if (N == 1 && 2*s >= n) removedups = PETSC_TRUE;
   ierr = DMDAGetCorners(da,&xs,&ys,0,&nx,&ny,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&gxs,&gys,0,&gnx,&gny,0);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
@@ -960,7 +952,11 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ_Fill(DM da,Mat J)
         }
         row    = k + nc*(slot);
         maxcnt = PetscMax(maxcnt,cnt);
-        ierr   = MatPreallocateSetLocal(ltog,1,&row,ltog,cnt,cols,dnz,onz);CHKERRQ(ierr);
+        if (removedups) {
+          ierr   = MatPreallocateSetLocalRemoveDups(ltog,1,&row,ltog,cnt,cols,dnz,onz);CHKERRQ(ierr);
+        } else {
+          ierr   = MatPreallocateSetLocal(ltog,1,&row,ltog,cnt,cols,dnz,onz);CHKERRQ(ierr);
+        }
       }
     }
   }
@@ -1020,19 +1016,18 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ_Fill(DM da,Mat J)
 
 /* ---------------------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateMatrix_DA_3d_MPIAIJ"
 PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da,Mat J)
 {
   PetscErrorCode         ierr;
   PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;
   PetscInt               m,n,dim,s,*cols = NULL,k,nc,*rows = NULL,col,cnt,l,p,*dnz = NULL,*onz = NULL;
-  PetscInt               istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk;
+  PetscInt               istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk,M,N,P;
   MPI_Comm               comm;
   PetscScalar            *values;
   DMBoundaryType         bx,by,bz;
   ISLocalToGlobalMapping ltog;
   DMDAStencilType        st;
+  PetscBool              removedups = PETSC_FALSE;
 
   PetscFunctionBegin;
   /*
@@ -1040,8 +1035,16 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da,Mat J)
          col - number of colors needed in one direction for single component problem
 
   */
-  ierr = DMDAGetInfo(da,&dim,&m,&n,&p,0,0,0,&nc,&s,&bx,&by,&bz,&st);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,&m,&n,&p,&M,&N,&P,&nc,&s,&bx,&by,&bz,&st);CHKERRQ(ierr);
   col  = 2*s + 1;
+
+  /*
+       With one processor in periodic domains in a skinny dimension the code will label nonzero columns multiple times
+       because of "wrapping" around the end of the domain hitting an entry already counted in the other direction.
+  */
+  if (M == 1 && 2*s >= m) removedups = PETSC_TRUE;
+  if (N == 1 && 2*s >= n) removedups = PETSC_TRUE;
+  if (P == 1 && 2*s >= p) removedups = PETSC_TRUE;
 
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&nx,&ny,&nz);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gnx,&gny,&gnz);CHKERRQ(ierr);
@@ -1078,7 +1081,11 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da,Mat J)
           }
           rows[l] = l + nc*(slot);
         }
-        ierr = MatPreallocateSetLocal(ltog,nc,rows,ltog,cnt,cols,dnz,onz);CHKERRQ(ierr);
+        if (removedups) {
+          ierr = MatPreallocateSetLocalRemoveDups(ltog,nc,rows,ltog,cnt,cols,dnz,onz);CHKERRQ(ierr);
+        } else {
+          ierr = MatPreallocateSetLocal(ltog,nc,rows,ltog,cnt,cols,dnz,onz);CHKERRQ(ierr);
+        }
       }
     }
   }
@@ -1135,8 +1142,6 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da,Mat J)
 
 /* ---------------------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateMatrix_DA_1d_MPIAIJ_Fill"
 PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
 {
   PetscErrorCode         ierr;
@@ -1165,7 +1170,6 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
   ierr = MatSetBlockSize(J,nc);CHKERRQ(ierr);
   ierr = PetscCalloc2(nx*nc,&cols,nx*nc,&ocols);CHKERRQ(ierr);
 
-  if (nx < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Need at least two grid points per process");
   /*
         note should be smaller for first and last process with no periodic
         does not handle dfill
@@ -1295,8 +1299,6 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
 
 /* ---------------------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateMatrix_DA_1d_MPIAIJ"
 PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM da,Mat J)
 {
   PetscErrorCode         ierr;
@@ -1357,8 +1359,6 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM da,Mat J)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateMatrix_DA_2d_MPIBAIJ"
 PetscErrorCode DMCreateMatrix_DA_2d_MPIBAIJ(DM da,Mat J)
 {
   PetscErrorCode         ierr;
@@ -1449,8 +1449,6 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIBAIJ(DM da,Mat J)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateMatrix_DA_3d_MPIBAIJ"
 PetscErrorCode DMCreateMatrix_DA_3d_MPIBAIJ(DM da,Mat J)
 {
   PetscErrorCode         ierr;
@@ -1557,8 +1555,6 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIBAIJ(DM da,Mat J)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "L2GFilterUpperTriangular"
 /*
   This helper is for of SBAIJ preallocation, to discard the lower-triangular values which are difficult to
   identify in the local ordering with periodic domain.
@@ -1578,8 +1574,6 @@ static PetscErrorCode L2GFilterUpperTriangular(ISLocalToGlobalMapping ltog,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateMatrix_DA_2d_MPISBAIJ"
 PetscErrorCode DMCreateMatrix_DA_2d_MPISBAIJ(DM da,Mat J)
 {
   PetscErrorCode         ierr;
@@ -1674,8 +1668,6 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPISBAIJ(DM da,Mat J)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateMatrix_DA_3d_MPISBAIJ"
 PetscErrorCode DMCreateMatrix_DA_3d_MPISBAIJ(DM da,Mat J)
 {
   PetscErrorCode         ierr;
@@ -1786,14 +1778,12 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPISBAIJ(DM da,Mat J)
 
 /* ---------------------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateMatrix_DA_3d_MPIAIJ_Fill"
 PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ_Fill(DM da,Mat J)
 {
   PetscErrorCode         ierr;
   PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;
   PetscInt               m,n,dim,s,*cols,k,nc,row,col,cnt, maxcnt = 0,l,p,*dnz,*onz;
-  PetscInt               istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk;
+  PetscInt               istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk,M,N,P;
   DM_DA                  *dd = (DM_DA*)da->data;
   PetscInt               ifill_col,*dfill = dd->dfill,*ofill = dd->ofill;
   MPI_Comm               comm;
@@ -1801,6 +1791,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ_Fill(DM da,Mat J)
   DMBoundaryType         bx,by,bz;
   ISLocalToGlobalMapping ltog;
   DMDAStencilType        st;
+  PetscBool              removedups = PETSC_FALSE;
 
   PetscFunctionBegin;
   /*
@@ -1808,7 +1799,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ_Fill(DM da,Mat J)
          col - number of colors needed in one direction for single component problem
 
   */
-  ierr = DMDAGetInfo(da,&dim,&m,&n,&p,0,0,0,&nc,&s,&bx,&by,&bz,&st);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,&m,&n,&p,&M,&N,&P,&nc,&s,&bx,&by,&bz,&st);CHKERRQ(ierr);
   col  = 2*s + 1;
   if (bx == DM_BOUNDARY_PERIODIC && (m % col)) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
                  by 2*stencil_width + 1\n");
@@ -1816,6 +1807,14 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ_Fill(DM da,Mat J)
                  by 2*stencil_width + 1\n");
   if (bz == DM_BOUNDARY_PERIODIC && (p % col)) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Z is divisible\n\
                  by 2*stencil_width + 1\n");
+
+  /*
+       With one processor in periodic domains in a skinny dimension the code will label nonzero columns multiple times
+       because of "wrapping" around the end of the domain hitting an entry already counted in the other direction.
+  */
+  if (M == 1 && 2*s >= m) removedups = PETSC_TRUE;
+  if (N == 1 && 2*s >= n) removedups = PETSC_TRUE;
+  if (P == 1 && 2*s >= p) removedups = PETSC_TRUE;
 
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&nx,&ny,&nz);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gnx,&gny,&gnz);CHKERRQ(ierr);
@@ -1861,7 +1860,11 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ_Fill(DM da,Mat J)
           }
           row  = l + nc*(slot);
           maxcnt = PetscMax(maxcnt,cnt);
-          ierr = MatPreallocateSetLocal(ltog,1,&row,ltog,cnt,cols,dnz,onz);CHKERRQ(ierr);
+          if (removedups) {
+            ierr = MatPreallocateSetLocalRemoveDups(ltog,1,&row,ltog,cnt,cols,dnz,onz);CHKERRQ(ierr);
+          } else {
+            ierr = MatPreallocateSetLocal(ltog,1,&row,ltog,cnt,cols,dnz,onz);CHKERRQ(ierr);
+          }
         }
       }
     }

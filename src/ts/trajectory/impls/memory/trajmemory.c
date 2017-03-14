@@ -63,8 +63,6 @@ typedef struct _TJScheduler {
   DiskStack     diskstack;
 } TJScheduler;
 
-#undef __FUNCT__
-#define __FUNCT__ "TurnForwardWithStepsize"
 static PetscErrorCode TurnForwardWithStepsize(TS ts,PetscReal nextstepsize)
 {
     PetscReal      stepsize;
@@ -78,8 +76,6 @@ static PetscErrorCode TurnForwardWithStepsize(TS ts,PetscReal nextstepsize)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TurnForward"
 static PetscErrorCode TurnForward(TS ts)
 {
   PetscReal      stepsize;
@@ -92,8 +88,6 @@ static PetscErrorCode TurnForward(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TurnBackward"
 static PetscErrorCode TurnBackward(TS ts)
 {
   PetscReal      stepsize;
@@ -106,8 +100,6 @@ static PetscErrorCode TurnBackward(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "StackCreate"
 static PetscErrorCode StackCreate(Stack *stack,PetscInt size,PetscInt ny)
 {
   PetscErrorCode ierr;
@@ -120,8 +112,6 @@ static PetscErrorCode StackCreate(Stack *stack,PetscInt size,PetscInt ny)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "StackDestroy"
 static PetscErrorCode StackDestroy(Stack *stack)
 {
   PetscInt       i;
@@ -141,8 +131,6 @@ static PetscErrorCode StackDestroy(Stack *stack)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "StackResize"
 static PetscErrorCode StackResize(Stack *stack,PetscInt newsize)
 {
   StackElement   *newcontainer;
@@ -160,8 +148,6 @@ static PetscErrorCode StackResize(Stack *stack,PetscInt newsize)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "StackPush"
 static PetscErrorCode StackPush(Stack *stack,StackElement e)
 {
   PetscFunctionBegin;
@@ -170,8 +156,6 @@ static PetscErrorCode StackPush(Stack *stack,StackElement e)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "StackPop"
 static PetscErrorCode StackPop(Stack *stack,StackElement *e)
 {
   PetscFunctionBegin;
@@ -180,8 +164,6 @@ static PetscErrorCode StackPop(Stack *stack,StackElement *e)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "StackTop"
 static PetscErrorCode StackTop(Stack *stack,StackElement *e)
 {
   PetscFunctionBegin;
@@ -190,8 +172,6 @@ static PetscErrorCode StackTop(Stack *stack,StackElement *e)
 }
 
 #ifdef PETSC_HAVE_REVOLVE
-#undef __FUNCT__
-#define __FUNCT__ "StackFind"
 static PetscErrorCode StackFind(Stack *stack,StackElement *e,PetscInt index)
 {
   PetscFunctionBegin;
@@ -200,8 +180,6 @@ static PetscErrorCode StackFind(Stack *stack,StackElement *e,PetscInt index)
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "OutputBIN"
 static PetscErrorCode OutputBIN(const char *filename,PetscViewer *viewer)
 {
   PetscErrorCode ierr;
@@ -214,8 +192,6 @@ static PetscErrorCode OutputBIN(const char *filename,PetscViewer *viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "WriteToDisk"
 static PetscErrorCode WriteToDisk(PetscInt stepnum,PetscReal time,PetscReal timeprev,Vec X,Vec *Y,PetscInt numY,PetscBool solution_only,PetscViewer viewer)
 {
   PetscInt       i;
@@ -232,8 +208,6 @@ static PetscErrorCode WriteToDisk(PetscInt stepnum,PetscReal time,PetscReal time
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ReadFromDisk"
 static PetscErrorCode ReadFromDisk(PetscInt *stepnum,PetscReal *time,PetscReal *timeprev,Vec X,Vec *Y,PetscInt numY,PetscBool solution_only,PetscViewer viewer)
 {
   PetscInt       i;
@@ -250,13 +224,11 @@ static PetscErrorCode ReadFromDisk(PetscInt *stepnum,PetscReal *time,PetscReal *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "StackDumpAll"
 static PetscErrorCode StackDumpAll(TSTrajectory tj,TS ts,Stack *stack,PetscInt id)
 {
   Vec            *Y;
   PetscInt       i;
-  StackElement   e;
+  StackElement   e = NULL;
   PetscViewer    viewer;
   char           filename[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
@@ -302,8 +274,6 @@ static PetscErrorCode StackDumpAll(TSTrajectory tj,TS ts,Stack *stack,PetscInt i
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "StackLoadAll"
 static PetscErrorCode StackLoadAll(TSTrajectory tj,TS ts,Stack *stack,PetscInt id)
 {
   Vec            *Y;
@@ -349,8 +319,6 @@ static PetscErrorCode StackLoadAll(TSTrajectory tj,TS ts,Stack *stack,PetscInt i
 }
 
 #ifdef PETSC_HAVE_REVOLVE
-#undef __FUNCT__
-#define __FUNCT__ "StackLoadLast"
 static PetscErrorCode StackLoadLast(TSTrajectory tj,TS ts,Stack *stack,PetscInt id)
 {
   Vec            *Y;
@@ -400,8 +368,6 @@ static PetscErrorCode StackLoadLast(TSTrajectory tj,TS ts,Stack *stack,PetscInt 
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "DumpSingle"
 static PetscErrorCode DumpSingle(TSTrajectory tj,TS ts,Stack *stack,PetscInt id)
 {
   Vec            *Y;
@@ -438,8 +404,6 @@ static PetscErrorCode DumpSingle(TSTrajectory tj,TS ts,Stack *stack,PetscInt id)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "LoadSingle"
 static PetscErrorCode LoadSingle(TSTrajectory tj,TS ts,Stack *stack,PetscInt id)
 {
   Vec            *Y;
@@ -466,8 +430,6 @@ static PetscErrorCode LoadSingle(TSTrajectory tj,TS ts,Stack *stack,PetscInt id)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ElementCreate"
 static PetscErrorCode ElementCreate(TS ts,Stack *stack,StackElement *e,PetscInt stepnum,PetscReal time,Vec X)
 {
   Vec            *Y;
@@ -498,8 +460,6 @@ static PetscErrorCode ElementCreate(TS ts,Stack *stack,StackElement *e,PetscInt 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ElementDestroy"
 static PetscErrorCode ElementDestroy(Stack *stack,StackElement e)
 {
   PetscErrorCode ierr;
@@ -513,8 +473,6 @@ static PetscErrorCode ElementDestroy(Stack *stack,StackElement e)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "UpdateTS"
 static PetscErrorCode UpdateTS(TS ts,Stack *stack,StackElement e)
 {
   Vec            *Y;
@@ -535,8 +493,6 @@ static PetscErrorCode UpdateTS(TS ts,Stack *stack,StackElement e)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ReCompute"
 static PetscErrorCode ReCompute(TS ts,TJScheduler *tjsch,PetscInt stepnumbegin,PetscInt stepnumend)
 {
   Stack          *stack = &tjsch->stack;
@@ -567,8 +523,6 @@ static PetscErrorCode ReCompute(TS ts,TJScheduler *tjsch,PetscInt stepnumbegin,P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TopLevelStore"
 static PetscErrorCode TopLevelStore(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscInt stepnum,PetscInt localstepnum,PetscInt laststridesize,PetscBool *done)
 {
   Stack          *stack = &tjsch->stack;
@@ -614,8 +568,6 @@ static PetscErrorCode TopLevelStore(TSTrajectory tj,TS ts,TJScheduler *tjsch,Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetTrajN"
 static PetscErrorCode SetTrajN(TS ts,TJScheduler *tjsch,PetscInt stepnum,PetscReal time,Vec X)
 {
   Stack          *stack = &tjsch->stack;
@@ -654,8 +606,6 @@ static PetscErrorCode SetTrajN(TS ts,TJScheduler *tjsch,PetscInt stepnum,PetscRe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GetTrajN"
 static PetscErrorCode GetTrajN(TS ts,TJScheduler *tjsch,PetscInt stepnum)
 {
   Stack          *stack = &tjsch->stack;
@@ -680,8 +630,6 @@ static PetscErrorCode GetTrajN(TS ts,TJScheduler *tjsch,PetscInt stepnum)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetTrajTLNR"
 static PetscErrorCode SetTrajTLNR(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscInt stepnum,PetscReal time,Vec X)
 {
   Stack          *stack = &tjsch->stack;
@@ -712,8 +660,6 @@ static PetscErrorCode SetTrajTLNR(TSTrajectory tj,TS ts,TJScheduler *tjsch,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GetTrajTLNR"
 static PetscErrorCode GetTrajTLNR(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscInt stepnum)
 {
   Stack          *stack = &tjsch->stack;
@@ -783,8 +729,6 @@ static PetscErrorCode GetTrajTLNR(TSTrajectory tj,TS ts,TJScheduler *tjsch,Petsc
 }
 
 #ifdef PETSC_HAVE_REVOLVE
-#undef __FUNCT__
-#define __FUNCT__ "printwhattodo"
 static PetscErrorCode printwhattodo(PetscViewer viewer,PetscInt whattodo,RevolveCTX *rctx,PetscInt shift)
 {
   PetscErrorCode ierr;
@@ -821,8 +765,6 @@ static PetscErrorCode printwhattodo(PetscViewer viewer,PetscInt whattodo,Revolve
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "printwhattodo2"
 static PetscErrorCode printwhattodo2(PetscViewer viewer,PetscInt whattodo,RevolveCTX *rctx,PetscInt shift)
 {
   PetscErrorCode ierr;
@@ -859,8 +801,6 @@ static PetscErrorCode printwhattodo2(PetscViewer viewer,PetscInt whattodo,Revolv
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "InitRevolve"
 static PetscErrorCode InitRevolve(PetscInt fine,PetscInt snaps,RevolveCTX *rctx)
 {
   PetscFunctionBegin;
@@ -875,8 +815,6 @@ static PetscErrorCode InitRevolve(PetscInt fine,PetscInt snaps,RevolveCTX *rctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FastForwardRevolve"
 static PetscErrorCode FastForwardRevolve(RevolveCTX *rctx)
 {
   PetscInt whattodo;
@@ -889,8 +827,6 @@ static PetscErrorCode FastForwardRevolve(RevolveCTX *rctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ApplyRevolve"
 static PetscErrorCode ApplyRevolve(PetscViewer viewer,SchedulerType stype,RevolveCTX *rctx,PetscInt total_steps,PetscInt stepnum,PetscInt localstepnum,PetscBool toplevel,PetscInt *store)
 {
   PetscErrorCode ierr;
@@ -957,8 +893,6 @@ static PetscErrorCode ApplyRevolve(PetscViewer viewer,SchedulerType stype,Revolv
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetTrajROF"
 static PetscErrorCode SetTrajROF(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscInt stepnum,PetscReal time,Vec X)
 {
   Stack          *stack = &tjsch->stack;
@@ -978,8 +912,6 @@ static PetscErrorCode SetTrajROF(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GetTrajROF"
 static PetscErrorCode GetTrajROF(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscInt stepnum)
 {
   Stack          *stack = &tjsch->stack;
@@ -1024,8 +956,6 @@ static PetscErrorCode GetTrajROF(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetTrajRON"
 static PetscErrorCode SetTrajRON(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscInt stepnum,PetscReal time,Vec X)
 {
   Stack          *stack = &tjsch->stack;
@@ -1063,8 +993,6 @@ static PetscErrorCode SetTrajRON(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GetTrajRON"
 static PetscErrorCode GetTrajRON(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscInt stepnum)
 {
   Stack          *stack = &tjsch->stack;
@@ -1110,8 +1038,6 @@ static PetscErrorCode GetTrajRON(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetTrajTLR"
 static PetscErrorCode SetTrajTLR(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscInt stepnum,PetscReal time,Vec X)
 {
   Stack          *stack = &tjsch->stack;
@@ -1155,8 +1081,6 @@ static PetscErrorCode SetTrajTLR(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GetTrajTLR"
 static PetscErrorCode GetTrajTLR(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscInt stepnum)
 {
   Stack          *stack = &tjsch->stack;
@@ -1261,8 +1185,6 @@ static PetscErrorCode GetTrajTLR(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetTrajTLTR"
 static PetscErrorCode SetTrajTLTR(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscInt stepnum,PetscReal time,Vec X)
 {
   Stack          *stack = &tjsch->stack;
@@ -1313,8 +1235,6 @@ static PetscErrorCode SetTrajTLTR(TSTrajectory tj,TS ts,TJScheduler *tjsch,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GetTrajTLTR"
 static PetscErrorCode GetTrajTLTR(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscInt stepnum)
 {
   Stack          *stack = &tjsch->stack;
@@ -1473,8 +1393,6 @@ static PetscErrorCode GetTrajTLTR(TSTrajectory tj,TS ts,TJScheduler *tjsch,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetTrajRMS"
 static PetscErrorCode SetTrajRMS(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscInt stepnum,PetscReal time,Vec X)
 {
   Stack          *stack = &tjsch->stack;
@@ -1496,8 +1414,6 @@ static PetscErrorCode SetTrajRMS(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GetTrajRMS"
 static PetscErrorCode GetTrajRMS(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscInt stepnum)
 {
   Stack          *stack = &tjsch->stack;
@@ -1558,8 +1474,6 @@ static PetscErrorCode GetTrajRMS(TSTrajectory tj,TS ts,TJScheduler *tjsch,PetscI
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "TSTrajectorySet_Memory"
 static PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal time,Vec X)
 {
   TJScheduler *tjsch = (TJScheduler*)tj->data;
@@ -1601,8 +1515,6 @@ static PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt step
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSTrajectoryGet_Memory"
 static PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal *t)
 {
   TJScheduler *tjsch = (TJScheduler*)tj->data;
@@ -1641,8 +1553,6 @@ static PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj,TS ts,PetscInt step
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSTrajectorySetStride_Memory"
 PETSC_UNUSED static PetscErrorCode TSTrajectorySetStride_Memory(TSTrajectory tj,PetscInt stride)
 {
   TJScheduler *tjsch = (TJScheduler*)tj->data;
@@ -1652,8 +1562,6 @@ PETSC_UNUSED static PetscErrorCode TSTrajectorySetStride_Memory(TSTrajectory tj,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSTrajectorySetMaxCpsRAM_Memory"
 PETSC_UNUSED static PetscErrorCode TSTrajectorySetMaxCpsRAM_Memory(TSTrajectory tj,PetscInt max_cps_ram)
 {
   TJScheduler *tjsch = (TJScheduler*)tj->data;
@@ -1663,8 +1571,6 @@ PETSC_UNUSED static PetscErrorCode TSTrajectorySetMaxCpsRAM_Memory(TSTrajectory 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSTrajectorySetMaxCpsDisk_Memory"
 PETSC_UNUSED static PetscErrorCode TSTrajectorySetMaxCpsDisk_Memory(TSTrajectory tj,PetscInt max_cps_disk)
 {
   TJScheduler *tjsch = (TJScheduler*)tj->data;
@@ -1675,8 +1581,6 @@ PETSC_UNUSED static PetscErrorCode TSTrajectorySetMaxCpsDisk_Memory(TSTrajectory
 }
 
 #ifdef PETSC_HAVE_REVOLVE
-#undef __FUNCT__
-#define __FUNCT__ "TSTrajectorySetRevolveOnline"
 PETSC_UNUSED static PetscErrorCode TSTrajectorySetRevolveOnline(TSTrajectory tj,PetscBool use_online)
 {
   TJScheduler *tjsch = (TJScheduler*)tj->data;
@@ -1687,8 +1591,6 @@ PETSC_UNUSED static PetscErrorCode TSTrajectorySetRevolveOnline(TSTrajectory tj,
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "TSTrajectorySetSaveStack"
 PETSC_UNUSED static PetscErrorCode TSTrajectorySetSaveStack(TSTrajectory tj,PetscBool save_stack)
 {
   TJScheduler *tjsch = (TJScheduler*)tj->data;
@@ -1698,8 +1600,6 @@ PETSC_UNUSED static PetscErrorCode TSTrajectorySetSaveStack(TSTrajectory tj,Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSTrajectorySetSolutionOnly"
 PETSC_UNUSED static PetscErrorCode TSTrajectorySetSolutionOnly(TSTrajectory tj,PetscBool solution_only)
 {
   TJScheduler *tjsch = (TJScheduler*)tj->data;
@@ -1710,8 +1610,6 @@ PETSC_UNUSED static PetscErrorCode TSTrajectorySetSolutionOnly(TSTrajectory tj,P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSTrajectorySetFromOptions_Memory"
 static PetscErrorCode TSTrajectorySetFromOptions_Memory(PetscOptionItems *PetscOptionsObject,TSTrajectory tj)
 {
   TJScheduler    *tjsch = (TJScheduler*)tj->data;
@@ -1733,8 +1631,6 @@ static PetscErrorCode TSTrajectorySetFromOptions_Memory(PetscOptionItems *PetscO
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSTrajectorySetUp_Memory"
 static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
 {
   TJScheduler    *tjsch = (TJScheduler*)tj->data;
@@ -1834,8 +1730,6 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSTrajectoryDestroy_Memory"
 static PetscErrorCode TSTrajectoryDestroy_Memory(TSTrajectory tj)
 {
   TJScheduler    *tjsch = (TJScheduler*)tj->data;
@@ -1870,8 +1764,6 @@ static PetscErrorCode TSTrajectoryDestroy_Memory(TSTrajectory tj)
 .seealso:  TSTrajectoryCreate(), TS, TSTrajectorySetType()
 
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "TSTrajectoryCreate_Memory"
 PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Memory(TSTrajectory tj,TS ts)
 {
   TJScheduler    *tjsch;

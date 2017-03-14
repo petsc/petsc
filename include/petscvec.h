@@ -168,7 +168,7 @@ PETSC_EXTERN const char *const NormTypes[];
 M*/
 
 /*MC
-     NORM_2 - the two norm, ||v|| = sqrt(sum_i (v_i)^2) (vectors only)
+     NORM_2 - the two norm, ||v|| = sqrt(sum_i |v_i|^2) (vectors only)
 
    Level: beginner
 
@@ -178,7 +178,7 @@ M*/
 M*/
 
 /*MC
-     NORM_FROBENIUS - ||A|| = sqrt(sum_ij (A_ij)^2), same as NORM_2 for vectors
+     NORM_FROBENIUS - ||A|| = sqrt(sum_ij |A_ij|^2), same as NORM_2 for vectors
 
    Level: beginner
 
@@ -585,6 +585,98 @@ PETSC_EXTERN PetscErrorCode VecSetValuesSection(Vec, PetscSection, PetscInt, Pet
 PETSC_EXTERN PetscErrorCode PetscSectionVecNorm(PetscSection, PetscSection, Vec, NormType, PetscReal []);
 
 PETSC_EXTERN PetscErrorCode PetscSFCreateFromZero(MPI_Comm,Vec,PetscSF*);
+
+/*S
+  VecTagger - Object used to manage the tagging of a subset of indices based on the values of a vector.  The
+              motivating application is the selection of cells for refinement or coarsening based on vector containing
+              the values in an error indicator metric.
+
+  Level: advanced
+S*/
+typedef struct _p_VecTagger *VecTagger;
+
+/*J
+  VecTaggerType - String with the name of a VecTagger type
+
+  Level: advanced
+J*/
+typedef const char* VecTaggerType;
+/* tag where the vector values are in a box of explicitly defined values */
+#define VECTAGGERABSOLUTE   "absolute"
+/* tag where the vector values are in a box of values relative to the set of all values in the vector */
+#define VECTAGGERRELATIVE   "relative"
+/* tag where the vector values are in a relative range of the *cumulative distribution* of values in the vector */
+#define VECTAGGERCDF        "cdf"
+/* tag a vector as the union of other tags */
+#define VECTAGGEROR         "or"
+/* tag a vector as the intersection of other tags */
+#define VECTAGGERAND        "and"
+
+PETSC_EXTERN PetscClassId VEC_TAGGER_CLASSID;
+PETSC_EXTERN PetscFunctionList VecTaggerList;
+PETSC_EXTERN PetscErrorCode VecTaggerSetType(VecTagger,VecTaggerType);
+PETSC_EXTERN PetscErrorCode VecTaggerGetType(VecTagger,VecTaggerType *);
+PETSC_EXTERN PetscErrorCode VecTaggerRegister(const char[],PetscErrorCode (*) (VecTagger));
+
+PETSC_EXTERN PetscErrorCode VecTaggerCreate(MPI_Comm,VecTagger *);
+PETSC_EXTERN PetscErrorCode VecTaggerSetBlockSize(VecTagger,PetscInt);
+PETSC_EXTERN PetscErrorCode VecTaggerGetBlockSize(VecTagger,PetscInt*);
+PETSC_EXTERN PetscErrorCode VecTaggerSetType(VecTagger,VecTaggerType);
+PETSC_EXTERN PetscErrorCode VecTaggerGetType(VecTagger,VecTaggerType *);
+PETSC_EXTERN PetscErrorCode VecTaggerSetInvert(VecTagger,PetscBool);
+PETSC_EXTERN PetscErrorCode VecTaggerGetInvert(VecTagger,PetscBool*);
+PETSC_EXTERN PetscErrorCode VecTaggerSetFromOptions(VecTagger);
+PETSC_EXTERN PetscErrorCode VecTaggerSetUp(VecTagger);
+PETSC_EXTERN PetscErrorCode VecTaggerView(VecTagger,PetscViewer);
+PETSC_EXTERN PetscErrorCode VecTaggerComputeIS(VecTagger,Vec,IS *);
+PETSC_EXTERN PetscErrorCode VecTaggerDestroy(VecTagger *);
+
+/*S
+   VecTaggerBox - A box range used to tag values.  For real scalars, this is just a closed interval; for complex scalars, the box is the closed region in the complex plane
+   such that real(min) <= real(z) <= real(max) and imag(min) <= imag(z) <= imag(max).  INF is an acceptable endpoint.
+
+   Level: beginner
+
+.seealso: VecTaggerComputeIntervals()
+S*/
+typedef struct {
+  PetscScalar min;
+  PetscScalar max;
+} VecTaggerBox;
+PETSC_EXTERN PetscErrorCode VecTaggerComputeBoxes(VecTagger,Vec,PetscInt *,VecTaggerBox **);
+
+
+PETSC_EXTERN PetscErrorCode VecTaggerAbsoluteSetBox(VecTagger,VecTaggerBox *);
+PETSC_EXTERN PetscErrorCode VecTaggerAbsoluteGetBox(VecTagger,const VecTaggerBox **);
+
+PETSC_EXTERN PetscErrorCode VecTaggerRelativeSetBox(VecTagger,VecTaggerBox *);
+PETSC_EXTERN PetscErrorCode VecTaggerRelativeGetBox(VecTagger,const VecTaggerBox **);
+
+PETSC_EXTERN PetscErrorCode VecTaggerCDFSetBox(VecTagger,VecTaggerBox *);
+PETSC_EXTERN PetscErrorCode VecTaggerCDFGetBox(VecTagger,const VecTaggerBox **);
+
+/*E
+  VecTaggerCDFMethod - Determines what method is used to compute absolute values from cumulative distribution values (e.g., what value is the preimage of .95 in the cdf).  Relevant only in parallel: in serial it is directly computed.
+
+  Level: advanced
+.seealso: VecTaggerCDFSetMethod(), VecTaggerCDFMethods
+E*/
+typedef enum {VECTAGGER_CDF_GATHER,VECTAGGER_CDF_ITERATIVE,VECTAGGER_CDF_NUM_METHODS} VecTaggerCDFMethod;
+PETSC_EXTERN const char *const VecTaggerCDFMethods[];
+
+PETSC_EXTERN PetscErrorCode VecTaggerCDFSetMethod(VecTagger,VecTaggerCDFMethod);
+PETSC_EXTERN PetscErrorCode VecTaggerCDFGetMethod(VecTagger,VecTaggerCDFMethod*);
+PETSC_EXTERN PetscErrorCode VecTaggerCDFIterativeSetTolerances(VecTagger,PetscInt,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode VecTaggerCDFIterativeGetTolerances(VecTagger,PetscInt*,PetscReal*,PetscReal*);
+
+PETSC_EXTERN PetscErrorCode VecTaggerOrSetSubs(VecTagger,PetscInt,VecTagger*,PetscCopyMode);
+PETSC_EXTERN PetscErrorCode VecTaggerOrGetSubs(VecTagger,PetscInt*,VecTagger**);
+
+PETSC_EXTERN PetscErrorCode VecTaggerAndSetSubs(VecTagger,PetscInt,VecTagger*,PetscCopyMode);
+PETSC_EXTERN PetscErrorCode VecTaggerAndGetSubs(VecTagger,PetscInt*,VecTagger**);
+
+PETSC_EXTERN PetscErrorCode VecTaggerInitializePackage(void);
+PETSC_EXTERN PetscErrorCode VecTaggerFinalizePackage(void);
 
 #endif
 

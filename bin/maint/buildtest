@@ -6,12 +6,9 @@
 #
 # Example usage: ${PETSC_DIR}/bin/maint/buildtest solaris
 #                ./bin/maint/buildtest solaris
-#                ./bin/maint/buildtest 
 #
 set day=`date | cut -f1 -d" "`
-#
-# on cygwin - tcsh gives funky paths - so reset it to normal bash one so 'chkpetsc_dir' doesn't complain
-set nPETSC_DIR=`pwd | sed s~/cygdrive/h~~`
+set nPETSC_DIR=`pwd`
 if ( ! -f ${nPETSC_DIR}/include/petscsys.h ) then
   set maintdir=`dirname $0`
   set nPETSC_DIR=`dirname $maintdir`
@@ -32,7 +29,8 @@ endif
 if (${#argv} > 0) then 
   set ARCH=${1}
 else
-  set ARCH=`${nPETSC_DIR}/bin/configarch`
+  echo "ARCH not specified to buildtest"
+  exit
 endif
 if (${#argv} > 1) then 
   set CONFIGURE_ARGS="${argv[2-]}"
@@ -52,16 +50,26 @@ echo "Cleaning throughly at $nPETSC_DIR" >>& build.log
 # externalpackages can be a git repo - so one has to explicitly remove them
 rm -rf ./${ARCH}
 echo "Currently building git branch:" `git describe --contains --all HEAD` >>& build.log
-git log -1 >>& build.log
+git log --oneline -1 >>& build.log
 
-setenv PETSC_DIR $nPETSC_DIR
+set PETSC_DIR=$nPETSC_DIR
 set PETSC_ARCH=${ARCH}
 set CONFIGURE='yes'
 set CONFIGURE_FILE=$PETSC_ARCH
+
+# check for cygwin/windows build - and use TMP=PETSC_DIR/tmp for win32fe
+if ( -f /usr/bin/cygcheck.exe ) then
+  setenv TMP ${PETSC_DIR}/tmp
+  mkdir -p $TMP
+endif
+
+# Run initialization script
+if ( -f ./config/examples/${CONFIGURE_FILE}.csh ) then
+  source ./config/examples/${CONFIGURE_FILE}.csh
 endif
 
 # Run Configure
-./config/examples/${CONFIGURE_FILE}.py --with-no-output -PETSC_ARCH=$PETSC_ARCH -PETSC_DIR=$nPETSC_DIR ${CONFIGURE_ARGS} >>& build.log
+./config/examples/${CONFIGURE_FILE}.py --with-no-output PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR ${CONFIGURE_ARGS} >>& build.log
 set err=$?
 echo '****************************************************' >>& build.log
 if ( $err ) exit
@@ -86,32 +94,6 @@ else
   #set ANALYZER_PCC="PCC=/nfs2/petsc/soft/linux-Ubuntu_12.04-x86_64/clang-3.8.0/libexec/ccc-analyzer"
   set ANALYZER_PCC=P`scan-build env |grep ^CC=`
 endif
-set GCOV=`grep PETSC_USE_GCOV $nPETSC_DIR/$PETSC_ARCH/include/petscconf.h`
-
-if ( "${GCOV}" != "" ) then
-  make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR  all-legacy test >>& build.log
-  set err=$?
-else
-  $ANALYZER make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR  all test >>& build.log
-  set err=$?
-endif
-echo '****************************************************' >>& build.log
-echo "Finished Build on $MACH $PETSC_ARCH `date`" >>& build.log
-if ( $err && ( ! -f ${PETSC_ARCH}/lib/petsc/conf/petsc4py.errorflg )) exit
-#
-if ( "${ANALYZER}" != "" ) then
-  mv analyzer-results-dir/* analyzer-src-results
-endif
-
-#
-# Run examples
-#
-grep PETSC_WITH_BATCH ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables > /dev/null
-if ( $? ) then
-  set TESTMODE='testexamples'
-else
-  set TESTMODE='buildexamples'
-endif
 #
 # check if PETSC_ARCH has name valgrind - if so enable valgrind runs
 #
@@ -122,15 +104,66 @@ else
   set VALGRIND=`echo MPIEXEC="${PETSC_DIR}/bin/petscmpiexec -valgrind"`
   setenv PETSCVALGRIND_OPTIONS "--suppressions=${PETSC_DIR}/bin/maint/petsc-val.supp"
 endif
+#
+#check gcov
+set GCOV=`grep PETSC_USE_GCOV $nPETSC_DIR/$PETSC_ARCH/include/petscconf.h`
+if ( "${GCOV}" != "" ) then
+  set BUILDTARGET="all-legacy"
+else
+  set BUILDTARGET="all"
+endif
+#
+# check for prefix install
+set  PREFIXDIR=`grep PREFIXDIR $nPETSC_DIR/$PETSC_ARCH/lib/petsc/conf/petscvariables | cut -d ' ' -f 3`
+if ( "${PREFIXDIR}" != "" ) then
+  set INSTALLTARGET="install"
+else
+  set INSTALLTARGET=""
+endif
+#
+# do build/install
+${ANALYZER} make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR  ${BUILDTARGET} ${INSTALLTARGET} >>& build.log
+set err=$?
+echo '****************************************************' >>& build.log
+echo "Finished Build on $MACH $PETSC_ARCH `date`" >>& build.log
+if ( $err && ( ! -f ${PETSC_ARCH}/lib/petsc/conf/petsc4py.errorflg )) exit
+#
+# change PETSC_DIR/PETSC_ARCH for prefix install
+if ( "${PREFIXDIR}" != "" ) then
+  set PETSC_DIR="${PREFIXDIR}"
+  set PETSC_ARCH=""
+endif
+#
+# do test
+make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR test >>& build.log
+set err=$?
+echo '****************************************************' >>& build.log
+echo "Finished Test on $MACH $PETSC_ARCH `date`" >>& build.log
+if ( $err ) exit
+#
+# check analyzer
+if ( "${ANALYZER}" != "" ) then
+  mv analyzer-results-dir/* analyzer-src-results
+endif
+#
+# Run examples
+#
+grep PETSC_WITH_BATCH ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables > /dev/null
+if ( $? ) then
+  set TESTMODE='testexamples'
+else
+  set TESTMODE='buildexamples'
+endif
+#
 rm -f examples.log
 echo "Build on $MACH $PETSC_ARCH TESTMODE=$TESTMODE ${VALGRIND} ${ANALYZER_PCC} `date` " > examples.log
-git log -1 >>& examples.log
+git log --oneline -1 >>& examples.log
 if ( "${BUILDER}" == "yes" ) then
-  env PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR ./config/builder2.py regression >>& examples.log
+  env PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR ./config/builder2.py regression >>& examples.log
 else
-  $ANALYZER make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR alltests TESTMODE=$TESTMODE "${VALGRIND}" ${ANALYZER_PCC} |& grep -v 'up to date' >>& examples.log
+  $ANALYZER make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR alltests V=0 TESTMODE=$TESTMODE "${VALGRIND}" ${ANALYZER_PCC} |& grep -v 'up to date' >>& examples.log
 endif
-echo '******************************************************' >>& $nPETSC_DIR/examples.log
+echo '******************************************************' >>& examples.log
 
 if ( "${ANALYZER}" != "" ) then
   mv analyzer-results-dir/* analyzer-ex-results
@@ -138,10 +171,10 @@ endif
 
 if ( "${GCOV}" != "" ) then
   rm -f gcov.log
-  make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR gcov  >& gcov.log
+  make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR gcov  >& gcov.log
 endif
 
-echo "Finished Build on $MACH $PETSC_ARCH `date`" >>& $nPETSC_DIR/examples.log
-echo 'X******************************************************X' >>& $nPETSC_DIR/examples.log
+echo "Finished Build on $MACH $PETSC_ARCH `date`" >>& examples.log
+echo 'X******************************************************X' >>& examples.log
 
 

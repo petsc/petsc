@@ -4,8 +4,6 @@
 PetscFunctionList PetscRandomList              = NULL;
 PetscBool         PetscRandomRegisterAllCalled = PETSC_FALSE;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscRandomSetType"
 /*@C
   PetscRandomSetType - Builds a context for generating particular type of random numbers.
 
@@ -54,8 +52,6 @@ PetscErrorCode  PetscRandomSetType(PetscRandom rnd, PetscRandomType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscRandomGetType"
 /*@C
   PetscRandomGetType - Gets the type name (as a string) from the PetscRandom.
 
@@ -81,8 +77,6 @@ PetscErrorCode  PetscRandomGetType(PetscRandom rnd, PetscRandomType *type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscRandomRegister"
 /*@C
   PetscRandomRegister -  Adds a new PetscRandom component implementation
 
@@ -139,8 +133,6 @@ PETSC_EXTERN PetscErrorCode PetscRandomCreate_Sprng(PetscRandom);
 #endif
 PETSC_EXTERN PetscErrorCode PetscRandomCreate_Rander48(PetscRandom);
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscRandomRegisterAll"
 /*@C
   PetscRandomRegisterAll - Registers all of the components in the PetscRandom package.
 

@@ -30,8 +30,6 @@ static const char citation[] =
 "  year      = {2016}\n"
 "}\n";
 
-#undef __FUNCT__
-#define __FUNCT__ "_DMDADetermineRankFromGlobalIJK"
 PetscErrorCode _DMDADetermineRankFromGlobalIJK(PetscInt dim,PetscInt i,PetscInt j,PetscInt k,
                                                PetscInt Mp,PetscInt Np,PetscInt Pp,
                                                PetscInt start_i[],PetscInt start_j[],PetscInt start_k[],
@@ -41,6 +39,10 @@ PetscErrorCode _DMDADetermineRankFromGlobalIJK(PetscInt dim,PetscInt i,PetscInt 
   PetscInt pi,pj,pk,n;
 
   PetscFunctionBegin;
+  *rank_re = -1;
+  if (_pi) *_pi = -1;
+  if (_pj) *_pj = -1;
+  if (_pk) *_pk = -1;
   pi = pj = pk = -1;
   if (_pi) {
     for (n=0; n<Mp; n++) {
@@ -89,8 +91,6 @@ PetscErrorCode _DMDADetermineRankFromGlobalIJK(PetscInt dim,PetscInt i,PetscInt 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "_DMDADetermineGlobalS0"
 PetscErrorCode _DMDADetermineGlobalS0(PetscInt dim,PetscMPIInt rank_re,PetscInt Mp_re,PetscInt Np_re,PetscInt Pp_re,
                                       PetscInt range_i_re[],PetscInt range_j_re[],PetscInt range_k_re[],PetscInt *s0)
 {
@@ -134,8 +134,6 @@ PetscErrorCode _DMDADetermineGlobalS0(PetscInt dim,PetscMPIInt rank_re,PetscInt 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeSetUp_dmda_repart_coors2d"
 PetscErrorCode PCTelescopeSetUp_dmda_repart_coors2d(PetscSubcomm psubcomm,DM dm,DM subdm)
 {
   PetscErrorCode ierr;
@@ -232,8 +230,6 @@ PetscErrorCode PCTelescopeSetUp_dmda_repart_coors2d(PetscSubcomm psubcomm,DM dm,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeSetUp_dmda_repart_coors3d"
 PetscErrorCode PCTelescopeSetUp_dmda_repart_coors3d(PetscSubcomm psubcomm,DM dm,DM subdm)
 {
   PetscErrorCode ierr;
@@ -338,8 +334,6 @@ PetscErrorCode PCTelescopeSetUp_dmda_repart_coors3d(PetscSubcomm psubcomm,DM dm,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeSetUp_dmda_repart_coors"
 PetscErrorCode PCTelescopeSetUp_dmda_repart_coors(PC pc,PC_Telescope sred,PC_Telescope_DMDACtx *ctx)
 {
   PetscInt       dim;
@@ -372,8 +366,6 @@ PetscErrorCode PCTelescopeSetUp_dmda_repart_coors(PC pc,PC_Telescope sred,PC_Tel
 }
 
 /* setup repartitioned dm */
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeSetUp_dmda_repart"
 PetscErrorCode PCTelescopeSetUp_dmda_repart(PC pc,PC_Telescope sred,PC_Telescope_DMDACtx *ctx)
 {
   PetscErrorCode  ierr;
@@ -515,8 +507,6 @@ PetscErrorCode PCTelescopeSetUp_dmda_repart(PC pc,PC_Telescope sred,PC_Telescope
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeSetUp_dmda_permutation_3d"
 PetscErrorCode PCTelescopeSetUp_dmda_permutation_3d(PC pc,PC_Telescope sred,PC_Telescope_DMDACtx *ctx)
 {
   PetscErrorCode ierr;
@@ -592,8 +582,6 @@ PetscErrorCode PCTelescopeSetUp_dmda_permutation_3d(PC pc,PC_Telescope sred,PC_T
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeSetUp_dmda_permutation_2d"
 PetscErrorCode PCTelescopeSetUp_dmda_permutation_2d(PC pc,PC_Telescope sred,PC_Telescope_DMDACtx *ctx)
 {
   PetscErrorCode ierr;
@@ -664,8 +652,6 @@ PetscErrorCode PCTelescopeSetUp_dmda_permutation_2d(PC pc,PC_Telescope sred,PC_T
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeSetUp_dmda_scatters"
 PetscErrorCode PCTelescopeSetUp_dmda_scatters(PC pc,PC_Telescope sred,PC_Telescope_DMDACtx *ctx)
 {
   PetscErrorCode ierr;
@@ -712,8 +698,6 @@ PetscErrorCode PCTelescopeSetUp_dmda_scatters(PC pc,PC_Telescope sred,PC_Telesco
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeSetUp_dmda"
 PetscErrorCode PCTelescopeSetUp_dmda(PC pc,PC_Telescope sred)
 {
   PC_Telescope_DMDACtx *ctx;
@@ -746,8 +730,6 @@ PetscErrorCode PCTelescopeSetUp_dmda(PC pc,PC_Telescope sred)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeMatCreate_dmda_dmactivefalse"
 PetscErrorCode PCTelescopeMatCreate_dmda_dmactivefalse(PC pc,PC_Telescope sred,MatReuse reuse,Mat *A)
 {
   PetscErrorCode ierr;
@@ -774,7 +756,7 @@ PetscErrorCode PCTelescopeMatCreate_dmda_dmactivefalse(PC pc,PC_Telescope sred,M
   isrow = sred->isin;
   ierr = ISCreateStride(comm,nc,0,1,&iscol);CHKERRQ(ierr);
 
-  ierr = MatGetSubMatrices(Bperm,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&_Blocal);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(Bperm,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&_Blocal);CHKERRQ(ierr);
   Blocal = *_Blocal;
   Bred = NULL;
   if (isActiveRank(sred->psubcomm)) {
@@ -793,8 +775,6 @@ PetscErrorCode PCTelescopeMatCreate_dmda_dmactivefalse(PC pc,PC_Telescope sred,M
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeMatCreate_dmda"
 PetscErrorCode PCTelescopeMatCreate_dmda(PC pc,PC_Telescope sred,MatReuse reuse,Mat *A)
 {
   PetscErrorCode ierr;
@@ -830,8 +810,6 @@ PetscErrorCode PCTelescopeMatCreate_dmda(PC pc,PC_Telescope sred,MatReuse reuse,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeSubNullSpaceCreate_dmda_Telescope"
 PetscErrorCode PCTelescopeSubNullSpaceCreate_dmda_Telescope(PC pc,PC_Telescope sred,MatNullSpace nullspace,MatNullSpace *sub_nullspace)
 {
   PetscErrorCode   ierr;
@@ -893,8 +871,6 @@ PetscErrorCode PCTelescopeSubNullSpaceCreate_dmda_Telescope(PC pc,PC_Telescope s
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeMatNullSpaceCreate_dmda"
 PetscErrorCode PCTelescopeMatNullSpaceCreate_dmda(PC pc,PC_Telescope sred,Mat sub_mat)
 {
   PetscErrorCode   ierr;
@@ -931,8 +907,6 @@ PetscErrorCode PCTelescopeMatNullSpaceCreate_dmda(PC pc,PC_Telescope sred,Mat su
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_Telescope_dmda"
 PetscErrorCode PCApply_Telescope_dmda(PC pc,Vec x,Vec y)
 {
   PC_Telescope      sred = (PC_Telescope)pc->data;
@@ -1000,8 +974,6 @@ PetscErrorCode PCApply_Telescope_dmda(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApplyRichardson_Telescope_dmda"
 PetscErrorCode PCApplyRichardson_Telescope_dmda(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscBool zeroguess,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
   PC_Telescope      sred = (PC_Telescope)pc->data;
@@ -1063,8 +1035,6 @@ PetscErrorCode PCApplyRichardson_Telescope_dmda(PC pc,Vec x,Vec y,Vec w,PetscRea
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCReset_Telescope_dmda"
 PetscErrorCode PCReset_Telescope_dmda(PC pc)
 {
   PetscErrorCode       ierr;
@@ -1085,8 +1055,6 @@ PetscErrorCode PCReset_Telescope_dmda(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMView_DMDAShort_3d"
 PetscErrorCode DMView_DMDAShort_3d(DM dm,PetscViewer v)
 {
   PetscInt       M,N,P,m,n,p,ndof,nsw;
@@ -1106,8 +1074,6 @@ PetscErrorCode DMView_DMDAShort_3d(DM dm,PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMView_DMDAShort_2d"
 PetscErrorCode DMView_DMDAShort_2d(DM dm,PetscViewer v)
 {
   PetscInt       M,N,m,n,ndof,nsw;
@@ -1127,8 +1093,6 @@ PetscErrorCode DMView_DMDAShort_2d(DM dm,PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMView_DMDAShort"
 PetscErrorCode DMView_DMDAShort(DM dm,PetscViewer v)
 {
   PetscErrorCode ierr;

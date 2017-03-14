@@ -11,8 +11,6 @@
 ! cfl is passed as a parameter
 !
 !=============================================================================
-#undef __FUNCT__
-#define __FUNCT__ "FILLA"
       subroutine FILLA(nnodes,nedge,evec,                               &
      &                 nsface,isface,fxn,fyn,fzn,sxn,syn,szn,           &
      &                 nsnode,nvnode,nfnode,isnode,ivnode,ifnode,       &
@@ -852,11 +850,9 @@
 !
 !
 
-#undef __FUNCT__
-#define __FUNCT__ "CHK_ERR"
       subroutine CHK_ERR(irank, ierr, irow, icol)
       implicit none
-#include <petsc/finclude/petscsysdef.h>
+#include <petsc/finclude/petscsys.h>
       integer irank,ierr,irow,icol
       if (ierr .gt. 0) then
        write(*,*) 'On processor ',irank, ': Non-zero entry in row ',     &

@@ -15,8 +15,6 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetSymbolicTranspose_SeqAIJ"
 PetscErrorCode MatGetSymbolicTranspose_SeqAIJ(Mat A,PetscInt *Ati[],PetscInt *Atj[])
 {
   PetscErrorCode ierr;
@@ -70,8 +68,6 @@ PetscErrorCode MatGetSymbolicTranspose_SeqAIJ(Mat A,PetscInt *Ati[],PetscInt *At
   MatGetSymbolicTransposeReduced_SeqAIJ() - Get symbolic matrix structure of submatrix A[rstart:rend,:],
      modified from MatGetSymbolicTranspose_SeqAIJ()
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatGetSymbolicTransposeReduced_SeqAIJ"
 PetscErrorCode MatGetSymbolicTransposeReduced_SeqAIJ(Mat A,PetscInt rstart,PetscInt rend,PetscInt *Ati[],PetscInt *Atj[])
 {
   PetscErrorCode ierr;
@@ -122,8 +118,6 @@ PetscErrorCode MatGetSymbolicTransposeReduced_SeqAIJ(Mat A,PetscInt rstart,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatTranspose_SeqAIJ_FAST"
 PetscErrorCode MatTranspose_SeqAIJ_FAST(Mat A,MatReuse reuse,Mat *B)
 {
   PetscErrorCode ierr;
@@ -137,7 +131,7 @@ PetscErrorCode MatTranspose_SeqAIJ_FAST(Mat A,MatReuse reuse,Mat *B)
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(MAT_Transpose_SeqAIJ,A,0,0,0);CHKERRQ(ierr);
 
-  if (reuse == MAT_INITIAL_MATRIX || *B == A) {
+  if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_INPLACE_MATRIX) {
     /* Allocate space for symbolic transpose info and work array */
     ierr = PetscCalloc1(an+1,&ati);CHKERRQ(ierr);
     ierr = PetscMalloc1(ai[am],&atj);CHKERRQ(ierr);
@@ -184,7 +178,7 @@ PetscErrorCode MatTranspose_SeqAIJ_FAST(Mat A,MatReuse reuse,Mat *B)
     at->nonew   = 0;
   }
 
-  if (reuse == MAT_INITIAL_MATRIX || *B != A) {
+  if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_REUSE_MATRIX) {
     *B = At;
   } else {
     ierr = MatHeaderMerge(A,&At);CHKERRQ(ierr);
@@ -193,8 +187,6 @@ PetscErrorCode MatTranspose_SeqAIJ_FAST(Mat A,MatReuse reuse,Mat *B)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatRestoreSymbolicTranspose_SeqAIJ"
 PetscErrorCode MatRestoreSymbolicTranspose_SeqAIJ(Mat A,PetscInt *ati[],PetscInt *atj[])
 {
   PetscErrorCode ierr;

@@ -1,8 +1,0 @@
-#if !defined(__PETSCKSPDEF_H90)
-#define __PETSCKSPDEF_H90
-#if defined(PETSC_USE_FORTRAN_DATATYPES)
-      type KSP
-        PetscFortranAddr:: v
-      end type KSP
-#endif
-#endif

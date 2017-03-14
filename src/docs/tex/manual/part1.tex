@@ -52,79 +52,109 @@ of algorithms.  The PETSc infrastructure creates a
 foundation for building large-scale applications.
 
 It is useful to consider the interrelationships among different
-pieces of PETSc.  Figure \ref{fig_1} is a diagram of some
-of these pieces; Figure \ref{fig_2} presents
-several of the individual parts in more detail.
-These figures illustrate the library's hierarchical organization,
+pieces of PETSc.  Figure \ref{fig_library} is a diagram of some
+of these pieces.
+The figure illustrates the library's hierarchical organization,
 which enables users to employ the level of abstraction that is most
 appropriate for a particular problem.
-\begin{figure}[hbt]
-\centerline{ \includegraphics{petscwww}}
-\caption{Organization of the PETSc Libraries}
-\label{fig_1}
-\end{figure}
 
 \begin{figure}[hbt]
 \centering
 \begin{tikzpicture}[xscale=0.7,yscale=0.8] 
   \tikzstyle{interface}=[fill=black!5,font=\sffamily\bfseries]
   \tikzstyle{implem}=[font=\sffamily\small,text badly centered]
+  \tikzstyle{ext}=[font=\sffamily\small]
   \tikzstyle{every node}=[transform shape]
   \def\levsep{1.85} % separation of levels
+  \def\spacer{0.5}
+  \def\block{5.25}
   \def\hint{0.6} % height interface
   \def\himp{1} % height implementation
-  \node[above,text centered,font=\sffamily\bfseries\Large] at (5.25,5*\levsep) {PETSc};
-  \draw[interface] (0,\himp) rectangle node {Vec (Vectors)} +(5.7,\hint);
-  \draw[implem] (0,0) rectangle node {Standard} ++(2.2,1) ++(0,-1)
-                      rectangle node {CUDA} ++(1.5,1) ++(0,-1)
-                      rectangle node {ViennaCL} ++(2.0,1);
-  \draw[interface] (6,\himp) rectangle node {IS (Index Sets)} +(4.5,\hint);
-  \draw[implem] (6,0) rectangle node {General} ++(1.5,1) ++(0,-1) 
-                rectangle node {Block} ++(1.5,1) ++(0,-1)
-                rectangle node {Stride} ++(1.5,1);
-  \draw[interface] (0,\levsep+\himp) rectangle node {Mat (Operators)} +(10.5,\hint);
-  \draw[implem] (0,\levsep) rectangle node[text width=2.5cm] {Compressed Sparse Row} ++(2.3,1) ++(0,-1) 
-                rectangle node[text width=1.3cm] {Block CSR} ++(1.5,1) ++(0,-1) 
-                rectangle node[text width=2.3cm] {Symmetric Block CSR} ++(2.2,1) ++(0,-1) 
-                rectangle node {Dense} ++(1.3,1) ++(0,-1) 
-                rectangle node {CUSPARSE} ++(1.9,1) ++(0,-1) 
-                rectangle node {\dots} ++(1.3,1);
-  \draw[interface] (0,2*\levsep+\himp) rectangle node {PC (Preconditioners)} +(10.5,\hint);
-  \draw[implem] (0,2*\levsep) rectangle node[text width=1.7cm] {Additive Schwarz} ++(1.9,1) ++(0,-1) 
-                rectangle node[text width=1.7cm] {Block Jacobi} ++(1.9,1) ++(0,-1) 
-                rectangle node {Jacobi} ++(1.5,1) ++(0,-1) 
-                rectangle node {ILU} ++(1.3,1) ++(0,-1) 
-                rectangle node {ICC} ++(1.3,1) ++(0,-1) 
-                rectangle node {LU} ++(1.3,1) ++(0,-1) 
-                rectangle node {\dots} ++(1.3,1);
-  \draw[interface] (11,2*\levsep+\himp) rectangle node {DM (Domain Management)} +(10.5,\hint);
-  \draw[implem] (11,2*\levsep) rectangle node[text width=1.7cm] {Distributed Array} ++(1.9,1) ++(0,-1) 
-                rectangle node {\dots} ++(1.3,1);
-  \draw[interface] (0,3*\levsep+\himp) rectangle node {KSP (Krylov Subspace Methods)} +(10.5,\hint);
-  \draw[implem] (0,3*\levsep) rectangle node {GMRES} ++(1.3,1) ++(0,-1) 
-                rectangle node {CG} ++(0.7,1) ++(0,-1) 
-                rectangle node {CGS} ++(0.9,1) ++(0,-1) 
-                rectangle node {Bi-CGStab} ++(1.7,1) ++(0,-1) 
-                rectangle node {TFQMR} ++(1.4,1) ++(0,-1) 
-                rectangle node {Richardson} ++(1.7,1) ++(0,-1) 
-                rectangle node {Chebyshev} ++(1.7,1) ++(0,-1) 
-                rectangle node {\dots} ++(1.1,1);
-  \draw[interface] (0,4*\levsep+\himp) rectangle node {SNES (Nonlin. Solvers)} +(4.2,\hint);
-  \draw[implem] (0,4*\levsep) rectangle node[text width=1.2cm] {Line Search} ++(1.5,1) ++(0,-1) 
-                rectangle node[text width=1.2cm] {Trust Region} ++(1.5,1) ++(0,-1) 
-                rectangle node {\dots} ++(1.2,1);
-  \draw[interface] (4.5,4*\levsep+\himp) rectangle node {TS (Time Steppers)} +(6,\hint);
-  \draw[implem] (4.5,4*\levsep) rectangle node {Euler} ++(1.1,1) ++(0,-1) 
-                rectangle node[text width=1.5cm] {Backward Euler} ++(1.7,1) ++(0,-1) 
-                rectangle node[text width=1.8cm] {RK} ++(1.0,1) ++(0,-1) 
-                rectangle node[text width=1.8cm] {BDF} ++(1.1,1) ++(0,-1) 
-                rectangle node {\dots} ++(1.1,1);
-  \draw[interface] (11,4*\levsep+\himp) rectangle node {TAO (Optimization)} +(4.2,\hint);
-  \draw[implem] (11,4*\levsep) rectangle node[text width=1.2cm] {Newton} ++(1.5,1) ++(0,-1) 
-                rectangle node {\dots} ++(1.2,1);
+  \draw[thick,->](-\spacer,0) -- (-\spacer,6*\levsep-\spacer) node[rotate=90,anchor=north,xshift=-150,yshift=20] {Increasing Level of Abstraction};
+  \draw[ext] (0                 ,-\levsep) rectangle node {BLAS/LAPACK} +(\block,\hint);
+  \draw[ext] (\block+\spacer    ,-\levsep) rectangle node {MPI}         +(\block,\hint);
+  \draw[ext] (2*\block+2*\spacer,-\levsep) rectangle node {\dots}         +(\block,\hint);
+  \draw[thick] (0,-\spacer) -- (3*\block+2*\spacer,-\spacer);
+  \draw[interface] (0,\himp) rectangle node {Vec (Vectors)} +(2*\block+\spacer,\hint);
+  \draw[implem] (0,0) rectangle node {Standard} ++(0.5*\block-0.25*\spacer,1) ++(0,-1)
+                      rectangle node {CUDA} ++(0.5*\block-0.25*\spacer,1) ++(0,-1)
+                      rectangle node {CUSP} ++(0.5*\block-0.25*\spacer,1) ++(0,-1)
+                      rectangle node {ViennaCL} ++(0.5*\block-0.25*\spacer,1) ++(0,-1)
+                      rectangle node {\dots} ++(2*\spacer,1);
+  \draw[interface] (2*\block+2*\spacer,\himp) rectangle node {IS (Index Sets)} +(\block,\hint);
+  \draw[implem] (2*\block+2*\spacer,0) rectangle node {General} ++(0.33*\block,1) ++(0,-1) 
+                rectangle node {Block} ++(0.33*\block,1) ++(0,-1)
+                rectangle node {Stride} ++(0.34*\block,1);
+  \draw[interface] (0,\levsep+\himp) rectangle node {Mat (Operators)} +(3*\block+2*\spacer,\hint);
+  \draw[implem] (0,\levsep) rectangle node[text width=2.5cm] {Compressed Sparse Row} ++(0.5*\block,1) ++(0,-1) 
+                rectangle node[text width=1.3cm] {Block CSR} ++(0.3*\block,1) ++(0,-1) 
+                rectangle node[text width=2.3cm] {Symmetric Block CSR} ++(0.5*\block,1) ++(0,-1) 
+                rectangle node {Dense} ++(0.25*\block,1) ++(0,-1) 
+                rectangle node {CUSPARSE} ++(0.4*\block,1) ++(0,-1) 
+                rectangle node {CUSP} ++(0.3*\block,1) ++(0,-1) 
+                rectangle node {ViennaCL} ++(0.3*\block,1) ++(0,-1) 
+                rectangle node {FFT} ++(0.2*\block,1) ++(0,-1) 
+                rectangle node {Shell} ++(0.25*\block,1) ++(0,-1) 
+                rectangle node {\dots} ++(2*\spacer,1) ++(0,-1);
+  \draw[interface] (0,2*\levsep+\himp) rectangle node {PC (Preconditioners)} +(3*\block+2*\spacer,\hint);
+  \draw[implem] (0,2*\levsep) rectangle node[text width=1.7cm] {Additive Schwarz} ++(0.4*\block,1) ++(0,-1) 
+                rectangle node[text width=1.7cm] {Block Jacobi} ++(0.25*\block,1) ++(0,-1) 
+                rectangle node {Jacobi} ++(0.3*\block,1) ++(0,-1) 
+                rectangle node {ICC} ++(0.25*\block,1) ++(0,-1) 
+                rectangle node {ILU} ++(0.25*\block,1) ++(0,-1) 
+                rectangle node {LU} ++(0.25*\block,1) ++(0,-1) 
+                rectangle node {SOR} ++(0.25*\block,1) ++(0,-1) 
+                rectangle node {MG} ++(0.25*\block,1) ++(0,-1) 
+                rectangle node {AMG} ++(0.25*\block,1) ++(0,-1) 
+                rectangle node {BDDC} ++(0.3*\block,1) ++(0,-1) 
+                rectangle node {Shell} ++(0.25*\block,1) ++(0,-1) 
+                rectangle node {\dots} ++(2*\spacer,1);
+  \draw[interface] (0,3*\levsep+\himp) rectangle node {KSP (Krylov Subspace Methods)} +(3*\block+2*\spacer,\hint);
+  \draw[implem] (0,3*\levsep) rectangle node {GMRES} ++(0.3*\block,1) ++(0,-1) 
+                rectangle node {Richardson} ++(0.4*\block,1) ++(0,-1) 
+                rectangle node {CG} ++(0.2*\block,1) ++(0,-1) 
+                rectangle node {CGS} ++(0.2*\block,1) ++(0,-1) 
+                rectangle node {Bi-CGStab} ++((0.35*\block,1) ++(0,-1) 
+                rectangle node {TFQMR} ++(0.3*\block,1) ++(0,-1) 
+                rectangle node {MINRES} ++(0.3*\block,1) ++(0,-1) 
+                rectangle node {GCR} ++(0.25*\block,1) ++(0,-1) 
+                rectangle node {Chebyshev} ++(0.35*\block,1) ++(0,-1) 
+                rectangle node[text width=1.8cm] {Pipelined CG} ++(0.35*\block,1) ++(0,-1) 
+                rectangle node {\dots} ++(2*\spacer,1);
+  \draw[interface] (0,4*\levsep+\himp) rectangle node {SNES (Nonlinear Solvers)} +(2*\block+\spacer,\hint);
+  \draw[implem] (0,4*\levsep) rectangle node[text width=1.8cm] {Newton Line Search} ++(0.35*\block,1) ++(0,-1) 
+                rectangle node[text width=2cm] {Newton Trust Region} ++(0.45*\block,1) ++(0,-1) 
+                rectangle node {FAS} ++(0.2*\block,1) ++(0,-1) 
+                rectangle node {NGMRES} ++(0.35*\block,1) ++(0,-1) 
+                rectangle node {NASM} ++(0.35*\block-\spacer,1) ++(0,-1) 
+                rectangle node {ASPIN} ++(0.3*\block,1) ++(0,-1) 
+                rectangle node {\dots} ++(2*\spacer,1);
+  \draw[interface] (2*\block+2*\spacer,4*\levsep+\himp) rectangle node {TAO (Optimization)} +(\block,\hint);
+  \draw[implem] (2*\block+2*\spacer,4*\levsep) rectangle node[text width=1.2cm] {Newton} ++(0.5*\block-\spacer,1) ++(0,-1) 
+                rectangle node[text width=1.4cm] {Levenberg-Marquardt} ++(0.5*\block-\spacer,1) ++(0,-1)
+                rectangle node {\dots} ++(2*\spacer,1);
+  \draw[interface] (0,5*\levsep+\himp) rectangle node {TS (Time Steppers)} +(2*\block+\spacer,\hint);
+  \draw[implem] (0,5*\levsep) rectangle node {Euler} ++(0.2*\block,1) ++(0,-1) 
+                rectangle node[text width=1.5cm] {Backward Euler} ++(0.35*\block,1) ++(0,-1) 
+                rectangle node[text width=1.8cm] {RK} ++(0.2*\block,1) ++(0,-1) 
+                rectangle node[text width=1.8cm] {BDF} ++(0.2*\block,1) ++(0,-1) 
+                rectangle node[text width=1.8cm] {SSP} ++(0.2*\block,1) ++(0,-1) 
+                rectangle node[text width=1.8cm] {ARKIMEX} ++(0.45*\block-\spacer,1) ++(0,-1) 
+                rectangle node[text width=1.8cm] {Rosenbrock-W} ++(0.4*\block,1) ++(0,-1) 
+                rectangle node {\dots} ++(2*\spacer,1);
+  \draw[interface] (2*\block+2*\spacer,5*\levsep+\himp) rectangle node {DM (Domain Management)} +(\block,\hint);
+  \draw[implem] (2*\block+2*\spacer,5*\levsep) rectangle node[text width=1.7cm] {Distributed Array} ++(0.5*\block-\spacer,1) ++(0,-1) 
+                rectangle node[text width=1.7cm] {Plex (Unstructured)} ++(0.5*\block-\spacer,1) ++(0,-1)
+                rectangle node {\dots} ++(2*\spacer,1);
+  \draw[thick] (0,6*\levsep) -- (3*\block+2*\spacer,6*\levsep);
+  \node[above,text centered,font=\sffamily\bfseries\Large] at (1.5*\block+1.5*\spacer,6*\levsep) {PETSc};
+  \draw[ext] (0,6*\levsep+2*\spacer) rectangle node {Application Codes} +(\block,\hint);
+  \draw[ext] (\block+\spacer,6*\levsep+2*\spacer) rectangle node {Higher-Level Libraries} +(\block,\hint);
+  \draw[ext] (2*\block+2*\spacer,6*\levsep+2*\spacer) rectangle node {\dots} +(\block,\hint);
 \end{tikzpicture}
-\caption{\label{fig_2}Numerical libraries of PETSc}
+\caption{\label{fig_library}Numerical libraries of PETSc}
 \end{figure}
+
 
 \section{Suggested Reading}
 
@@ -268,6 +298,86 @@ running any PETSc program with the option \trl{-help}.
 \item \trl{-options_file} \trl{filename} - read options from a file
 \end{tightitemize}
 See Section \ref{sec_debugging} for more information on debugging PETSc programs.
+
+%-----------------------------------------------------------------------------
+
+\section{Running PETSc Tests}
+\label{sec_runningtests}
+
+As discussed in Section~\ref{sec_running}, 
+the users should set \trl{PETSC_DIR} and \trl{PETSC_ARCH} before running
+the tests.
+
+To run the tests, the general invocation is:
+\begin{bashlisting}
+   make test PETSC_ARCH=<PETSC_ARCH>
+\end{bashlisting}
+The test reporting system classifies them according to the Test Anywhere
+Protocal (TAP): See \url{https://testanything.org/tap-specification.html}
+In brief, the categories are
+\begin{tightitemize}
+\item ok
+  \subitem test pass
+\item not ok
+  \subitem test failed
+\item not ok \#SKIP
+  \subitem Test was skipped, usually because build requirements were not
+  met (for example, an external solver library was required, but not
+  compiled against it).
+\item ok \#TODO
+  \subitem The test is under development by the developers
+\end{tightitemize}
+
+The tests are a series of shell scripts, generated by information
+contained within the test source file, that are invoked by the makefile
+system.  The tests are run in 
+\trl{${PETSC_DIR}/${PETSC_ARCH}/tests}
+with the same directory as the source tree underneath 
+(See ~\ref{sec_directory}).  
+A label is used to denote where it can be found within the source tree.
+For example, test \trl{vec_vec_tutorials_runex6} denotes the shell
+script:
+\begin{bashlisting}
+    ${PETSC_DIR}/${PETSC_ARCH}/tests/src/vec/vec/examples/tutorials/runex6.sh 
+\end{bashlisting}
+These shell scripts can be run independently in those directories, and
+take arguments to show the commands run, change arguments, etc.  Use the
+\trl{-h} option to the shell script to see these options.
+
+Often, you want to run only a subset of tests.  Our makefiles use
+\trl{gmake}'s wildcard syntax.  In this syntax, \trl{%} is a wild
+card character and is passed in using the \trl{search} argument.
+Two wildcard characters cannot be used in a search, so the
+\trl{searchin} argument is used to provide the equivalent of
+\trl{%pattern%} search.
+Finally, the default examples have default arguments, and we often wish
+to test examples with various arguments.  We use the \trl{argsearch}
+argument for those search.  Like \trl{searchin}, it does not use
+wildcards, but rather whether the string is within the arguments.
+
+Some examples are:
+\begin{bashlisting}
+      make -f gmakefile search='ts\%' testsearch  # Run all ts examples
+\end{bashlisting}
+\begin{bashlisting}
+      make -f gmakefile searchin='tutorials' testsearch  # Run all tutorials
+\end{bashlisting}
+\begin{bashlisting}
+      make -f gmakefile argsearch='cuda' testsearch  # Run examples with cuda in arguments
+\end{bashlisting}
+
+Finally, it is useful before invoking the tests to see what targets will
+be run.  The \trl{echo_testsearch} is useful for this:
+\begin{bashlisting}
+      make -f gmakefile argsearch='cuda' echo_testsearch
+\end{bashlisting}
+Finally, to see all of the test targets, this command can be used:
+\begin{bashlisting}
+      make -f gmakefile echo_test
+\end{bashlisting}
+To learn more about the test system details, one can look at the
+Developer's Guide.
+
 
 %-----------------------------------------------------------------------------
 \section{Writing PETSc Programs}
@@ -741,7 +851,7 @@ When citing PETSc in a publication please cite the following:
    Author = "Satish Balay and Shrirang Abhyankar and Mark~F. Adams and Jed Brown
    and Peter Brune and Kris Buschelman and Lisandro Dalcin and Victor Eijkhout
    and Dinesh Kaushik and Matthew~G. Knepley and Lois Curfman McInnes 
-   and William~D. Gropp and Karl Rupp and Barry~F. Smith and Stefano Zampini 
+   and William~D. Gropp and Karl Rupp and Patrick Sanan and Barry~F. Smith and Stefano Zampini 
    and Hong Zhang and Hong Zhang",
    Title       = "PETSc Users Manual",
    Number      = "ANL-95/11 - Revision 3.7",
@@ -762,6 +872,7 @@ When citing PETSc in a publication please cite the following:
 %---------------------------------------------------------------------
 
 \section{Directory Structure}
+\label{sec_directory}
 
 We conclude this introduction with an overview of the
 organization of the PETSc software.

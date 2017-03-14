@@ -11,41 +11,64 @@ static char help[] = "Read in a mesh and test whether it is valid\n\n";
 typedef struct {
   PetscBool interpolate;                  /* Generate intermediate mesh elements */
   char      filename[PETSC_MAX_PATH_LEN]; /* Mesh filename */
+  PetscInt  dim;
+  PetscErrorCode (**bcFuncs)(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
 } AppCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "ProcessOptions"
+static PetscErrorCode zero(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+{
+  PetscInt i;
+  for (i = 0; i < dim; ++i) u[i] = 0.0;
+  return 0;
+}
+
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  options->interpolate = PETSC_FALSE;
+  options->interpolate = PETSC_TRUE;
   options->filename[0] = '\0';
+  options->dim         = 2;
+  options->bcFuncs     = NULL;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex2.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-filename", "The mesh file", "ex2.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dim", "The dimension of problem used for non-file mesh", "ex2.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateMesh"
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
+  size_t         len;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMPlexCreateFromFile(comm, user->filename, user->interpolate, dm);CHKERRQ(ierr);
+  ierr = PetscStrlen(user->filename, &len);CHKERRQ(ierr);
+  if (!len) {
+    DMLabel  label;
+    PetscInt id = 1;
+
+    ierr = DMPlexCreateBoxMesh(comm, user->dim, 2, user->interpolate, dm);CHKERRQ(ierr);
+    /* Mark boundary and set BC */
+    ierr = DMCreateLabel(*dm, "boundary");CHKERRQ(ierr);
+    ierr = DMGetLabel(*dm, "boundary", &label);CHKERRQ(ierr);
+    ierr = DMPlexMarkBoundaryFaces(*dm, label);CHKERRQ(ierr);
+    ierr = DMPlexLabelComplete(*dm, label);CHKERRQ(ierr);
+    ierr = PetscMalloc1(1, &user->bcFuncs);CHKERRQ(ierr);
+    user->bcFuncs[0] = zero;
+    ierr = DMAddBoundary(*dm, DM_BC_ESSENTIAL, "wall", "boundary", 0, 0, NULL, (void (*)()) user->bcFuncs[0], 1, &id, user);CHKERRQ(ierr);
+  } else {
+    ierr = DMPlexCreateFromFile(comm, user->filename, user->interpolate, dm);CHKERRQ(ierr);
+  }
   ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CheckMeshTopology"
 static PetscErrorCode CheckMeshTopology(DM dm)
 {
   PetscInt       dim, coneSize, cStart;
@@ -63,8 +86,6 @@ static PetscErrorCode CheckMeshTopology(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CheckMeshGeometry"
 static PetscErrorCode CheckMeshGeometry(DM dm)
 {
   PetscInt       dim, coneSize, cStart, cEnd, c;
@@ -84,8 +105,6 @@ static PetscErrorCode CheckMeshGeometry(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   DM             dm;
@@ -98,6 +117,7 @@ int main(int argc, char **argv)
   ierr = CheckMeshTopology(dm);CHKERRQ(ierr);
   ierr = CheckMeshGeometry(dm);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  ierr = PetscFree(user.bcFuncs);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }

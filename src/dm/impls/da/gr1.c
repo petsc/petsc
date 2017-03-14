@@ -5,8 +5,6 @@
 
 #include <petsc/private/dmdaimpl.h>      /*I  "petscdmda.h"   I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetUniformCoordinates"
 /*@
     DMDASetUniformCoordinates - Sets a DMDA coordinates to be a uniform grid
 
@@ -169,8 +167,6 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASelectFields"
 /*
     Allows a user to select a subset of the fields to be drawn by VecView() when the vector comes from a DMDA
 */
@@ -219,8 +215,6 @@ found:  displayfields[ndisplayfields++] = j;
 
 #include <petscdraw.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "VecView_MPI_Draw_DA1d"
 PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
 {
   DM                da;

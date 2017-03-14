@@ -8,8 +8,6 @@
 #define REFERENCE_AVE  2
 #define REFERENCE_MEAN 3
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchDestroy_Armijo"
 static PetscErrorCode TaoLineSearchDestroy_Armijo(TaoLineSearch ls)
 {
   TaoLineSearch_ARMIJO *armP = (TaoLineSearch_ARMIJO *)ls->data;
@@ -23,8 +21,6 @@ static PetscErrorCode TaoLineSearchDestroy_Armijo(TaoLineSearch ls)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchReset_Armijo"
 static PetscErrorCode TaoLineSearchReset_Armijo(TaoLineSearch ls)
 {
   TaoLineSearch_ARMIJO *armP = (TaoLineSearch_ARMIJO *)ls->data;
@@ -36,8 +32,6 @@ static PetscErrorCode TaoLineSearchReset_Armijo(TaoLineSearch ls)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchSetFromOptions_Armijo"
 static PetscErrorCode TaoLineSearchSetFromOptions_Armijo(PetscOptionItems *PetscOptionsObject,TaoLineSearch ls)
 {
   TaoLineSearch_ARMIJO *armP = (TaoLineSearch_ARMIJO *)ls->data;
@@ -57,8 +51,6 @@ static PetscErrorCode TaoLineSearchSetFromOptions_Armijo(PetscOptionItems *Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchView_Armijo"
 static PetscErrorCode TaoLineSearchView_Armijo(TaoLineSearch ls, PetscViewer pv)
 {
   TaoLineSearch_ARMIJO *armP = (TaoLineSearch_ARMIJO *)ls->data;
@@ -82,8 +74,6 @@ static PetscErrorCode TaoLineSearchView_Armijo(TaoLineSearch ls, PetscViewer pv)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchApply_Armijo"
 /* @ TaoApply_Armijo - This routine performs a linesearch. It
    backtracks until the (nonmonotone) Armijo conditions are satisfied.
 
@@ -290,8 +280,6 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchCreate_Armijo"
 PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_Armijo(TaoLineSearch ls)
 {
   TaoLineSearch_ARMIJO *armP;

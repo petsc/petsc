@@ -10,7 +10,7 @@
 ! -----------------------------------------------------------------------
 
       program main
-#include <petsc/finclude/petscsysdef.h>
+#include <petsc/finclude/petscsys.h>
       use petscsys
       implicit none
 
@@ -61,3 +61,10 @@
 
       call  MPI_Finalize(ierr)
       end
+
+!
+!/*TEST
+!
+!   test:
+!
+!TEST*/

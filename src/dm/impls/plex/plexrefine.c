@@ -1,8 +1,6 @@
 #include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 #include <petscsf.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "GetDepthStart_Private"
 PETSC_STATIC_INLINE PetscErrorCode GetDepthStart_Private(PetscInt depth, PetscInt depthSize[], PetscInt *cStart, PetscInt *fStart, PetscInt *eStart, PetscInt *vStart)
 {
   PetscFunctionBegin;
@@ -13,8 +11,6 @@ PETSC_STATIC_INLINE PetscErrorCode GetDepthStart_Private(PetscInt depth, PetscIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GetDepthEnd_Private"
 PETSC_STATIC_INLINE PetscErrorCode GetDepthEnd_Private(PetscInt depth, PetscInt depthSize[], PetscInt *cEnd, PetscInt *fEnd, PetscInt *eEnd, PetscInt *vEnd)
 {
   PetscFunctionBegin;
@@ -25,8 +21,6 @@ PETSC_STATIC_INLINE PetscErrorCode GetDepthEnd_Private(PetscInt depth, PetscInt 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CellRefinerGetAffineTransforms_Internal"
 /* Gets the affine map from the original cell to each subcell */
 PetscErrorCode CellRefinerGetAffineTransforms_Internal(CellRefiner refiner, PetscInt *numSubcells, PetscReal *v0[], PetscReal *jac[], PetscReal *invjac[])
 {
@@ -124,8 +118,6 @@ PetscErrorCode CellRefinerGetAffineTransforms_Internal(CellRefiner refiner, Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CellRefinerRestoreAffineTransforms_Internal"
 PetscErrorCode CellRefinerRestoreAffineTransforms_Internal(CellRefiner refiner, PetscInt *numSubcells, PetscReal *v0[], PetscReal *jac[], PetscReal *invjac[])
 {
   PetscErrorCode ierr;
@@ -135,8 +127,6 @@ PetscErrorCode CellRefinerRestoreAffineTransforms_Internal(CellRefiner refiner, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CellRefinerInCellTest_Internal"
 /* Should this be here or in the DualSpace somehow? */
 PetscErrorCode CellRefinerInCellTest_Internal(CellRefiner refiner, const PetscReal point[], PetscBool *inside)
 {
@@ -163,8 +153,6 @@ PetscErrorCode CellRefinerInCellTest_Internal(CellRefiner refiner, const PetscRe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CellRefinerGetSizes"
 static PetscErrorCode CellRefinerGetSizes(CellRefiner refiner, DM dm, PetscInt depthSize[])
 {
   PetscInt       cStart, cEnd, cMax, vStart, vEnd, vMax, fStart, fEnd, fMax, eStart, eEnd, eMax;
@@ -301,8 +289,6 @@ PETSC_STATIC_INLINE PetscInt GetQuadSubfaceInverse_Static(PetscInt o, PetscInt s
   return (o < 0 ? 4-(o+s) : 4+s-o)%4;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CellRefinerSetConeSizes"
 static PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscInt depthSize[], DM rdm)
 {
   PetscInt       depth, cStart, cStartNew, cEnd, cMax, c, vStart, vStartNew, vEnd, vMax, v, fStart, fStartNew, fEnd, fMax, f, eStart, eStartNew, eEnd, eMax, e, r;
@@ -1123,8 +1109,6 @@ static PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CellRefinerSetCones"
 static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSize[], DM rdm)
 {
   const PetscInt *faces, cellInd[4] = {0, 1, 2, 3};
@@ -5481,8 +5465,6 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CellRefinerSetCoordinates"
 static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, PetscInt depthSize[], DM rdm)
 {
   PetscSection   coordSection, coordSectionNew;
@@ -5627,8 +5609,6 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateProcessSF"
 /*@
   DMPlexCreateProcessSF - Create an SF which just has process connectivity
 
@@ -5654,7 +5634,7 @@ PetscErrorCode DMPlexCreateProcessSF(DM dm, PetscSF sfPoint, IS *processRanks, P
   PetscInt          *localPointsNew;
   PetscSFNode       *remotePointsNew;
   PetscInt          *ranks, *ranksNew;
-  PetscMPIInt        numProcs;
+  PetscMPIInt        size;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -5662,7 +5642,7 @@ PetscErrorCode DMPlexCreateProcessSF(DM dm, PetscSF sfPoint, IS *processRanks, P
   PetscValidHeaderSpecific(sfPoint, PETSCSF_CLASSID, 2);
   if (processRanks) {PetscValidPointer(processRanks, 3);}
   if (sfProcess)    {PetscValidPointer(sfProcess, 4);}
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &numProcs);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
   ierr = PetscMalloc1(numLeaves, &ranks);CHKERRQ(ierr);
   for (l = 0; l < numLeaves; ++l) {
@@ -5685,13 +5665,11 @@ PetscErrorCode DMPlexCreateProcessSF(DM dm, PetscSF sfPoint, IS *processRanks, P
     ierr = PetscSFCreate(PetscObjectComm((PetscObject)dm), sfProcess);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) *sfProcess, "Process SF");CHKERRQ(ierr);
     ierr = PetscSFSetFromOptions(*sfProcess);CHKERRQ(ierr);
-    ierr = PetscSFSetGraph(*sfProcess, numProcs, numLeaves, localPointsNew, PETSC_OWN_POINTER, remotePointsNew, PETSC_OWN_POINTER);CHKERRQ(ierr);
+    ierr = PetscSFSetGraph(*sfProcess, size, numLeaves, localPointsNew, PETSC_OWN_POINTER, remotePointsNew, PETSC_OWN_POINTER);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CellRefinerCreateSF"
 static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt depthSize[], DM rdm)
 {
   PetscSF            sf, sfNew, sfProcess;
@@ -6210,8 +6188,6 @@ static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt d
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CellRefinerCreateLabels"
 static PetscErrorCode CellRefinerCreateLabels(CellRefiner refiner, DM dm, PetscInt depthSize[], DM rdm)
 {
   PetscInt       numLabels, l;
@@ -6648,8 +6624,6 @@ static PetscErrorCode CellRefinerCreateLabels(CellRefiner refiner, DM dm, PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexRefineUniform_Internal"
 /* This will only work for interpolated meshes */
 PetscErrorCode DMPlexRefineUniform_Internal(DM dm, CellRefiner cellRefiner, DM *dmRefined)
 {
@@ -6692,8 +6666,6 @@ PetscErrorCode DMPlexRefineUniform_Internal(DM dm, CellRefiner cellRefiner, DM *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateCoarsePointIS"
 /*@
   DMPlexCreateCoarsePointIS - Creates an IS covering the coarse DM chart with the fine points as data
 
@@ -6745,8 +6717,6 @@ PetscErrorCode DMPlexCreateCoarsePointIS(DM dm, IS *fpointIS)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexSetRefinementUniform"
 /*@
   DMPlexSetRefinementUniform - Set the flag for uniform refinement
 
@@ -6768,8 +6738,6 @@ PetscErrorCode DMPlexSetRefinementUniform(DM dm, PetscBool refinementUniform)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetRefinementUniform"
 /*@
   DMPlexGetRefinementUniform - Retrieve the flag for uniform refinement
 
@@ -6794,8 +6762,6 @@ PetscErrorCode DMPlexGetRefinementUniform(DM dm, PetscBool *refinementUniform)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexSetRefinementLimit"
 /*@
   DMPlexSetRefinementLimit - Set the maximum cell volume for refinement
 
@@ -6817,8 +6783,6 @@ PetscErrorCode DMPlexSetRefinementLimit(DM dm, PetscReal refinementLimit)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetRefinementLimit"
 /*@
   DMPlexGetRefinementLimit - Retrieve the maximum cell volume for refinement
 
@@ -6844,8 +6808,6 @@ PetscErrorCode DMPlexGetRefinementLimit(DM dm, PetscReal *refinementLimit)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexSetRefinementFunction"
 /*@
   DMPlexSetRefinementFunction - Set the function giving the maximum cell volume for refinement
 
@@ -6871,8 +6833,6 @@ PetscErrorCode DMPlexSetRefinementFunction(DM dm, PetscErrorCode (*refinementFun
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetRefinementFunction"
 /*@
   DMPlexGetRefinementFunction - Get the function giving the maximum cell volume for refinement
 
@@ -6901,8 +6861,6 @@ PetscErrorCode DMPlexGetRefinementFunction(DM dm, PetscErrorCode (**refinementFu
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetCellRefiner_Internal"
 PetscErrorCode DMPlexGetCellRefiner_Internal(DM dm, CellRefiner *cellRefiner)
 {
   PetscInt       dim, cStart, cEnd, coneSize, cMax, fMax;

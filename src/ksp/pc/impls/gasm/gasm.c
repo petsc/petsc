@@ -36,8 +36,6 @@ typedef struct {
   Vec         pcx,pcy;
 } PC_GASM;
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGASMComputeGlobalSubdomainNumbering_Private"
 static PetscErrorCode  PCGASMComputeGlobalSubdomainNumbering_Private(PC pc,PetscInt **numbering,PetscInt **permutation)
 {
   PC_GASM        *osm = (PC_GASM*)pc->data;
@@ -53,8 +51,6 @@ static PetscErrorCode  PCGASMComputeGlobalSubdomainNumbering_Private(PC pc,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGASMSubdomainView_Private"
 static PetscErrorCode  PCGASMSubdomainView_Private(PC pc, PetscInt i, PetscViewer viewer)
 {
   PC_GASM        *osm = (PC_GASM*)pc->data;
@@ -119,8 +115,6 @@ static PetscErrorCode  PCGASMSubdomainView_Private(PC pc, PetscInt i, PetscViewe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGASMPrintSubdomains"
 static PetscErrorCode  PCGASMPrintSubdomains(PC pc)
 {
   PC_GASM        *osm = (PC_GASM*)pc->data;
@@ -166,8 +160,6 @@ static PetscErrorCode  PCGASMPrintSubdomains(PC pc)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PCView_GASM"
 static PetscErrorCode PCView_GASM(PC pc,PetscViewer viewer)
 {
   PC_GASM        *osm = (PC_GASM*)pc->data;
@@ -264,8 +256,6 @@ static PetscErrorCode PCView_GASM(PC pc,PetscViewer viewer)
 PETSC_INTERN PetscErrorCode  PCGASMCreateLocalSubdomains(Mat A, PetscInt nloc, IS *iis[]);
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGASMSetHierarchicalPartitioning"
 
 PetscErrorCode PCGASMSetHierarchicalPartitioning(PC pc)
 {
@@ -307,7 +297,7 @@ PetscErrorCode PCGASMSetHierarchicalPartitioning(PC pc)
    ierr = VecCreateMPI(comm,fromrows_localsize,PETSC_DETERMINE,&(osm->pcx));CHKERRQ(ierr);
    ierr = VecDuplicate(osm->pcx,&(osm->pcy));CHKERRQ(ierr);
    ierr = VecScatterCreate(osm->pcx,NULL,outervec,fromrows,&(osm->pctoouter));CHKERRQ(ierr);
-   ierr = MatGetSubMatrix(pc->pmat,fromrows,fromrows,MAT_INITIAL_MATRIX,&(osm->permutationP));CHKERRQ(ierr);
+   ierr = MatCreateSubMatrix(pc->pmat,fromrows,fromrows,MAT_INITIAL_MATRIX,&(osm->permutationP));CHKERRQ(ierr);
    ierr = PetscObjectReference((PetscObject)fromrows);CHKERRQ(ierr);
    osm->permutationIS = fromrows;
    osm->pcmat =  pc->pmat;
@@ -322,8 +312,6 @@ PetscErrorCode PCGASMSetHierarchicalPartitioning(PC pc)
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_GASM"
 static PetscErrorCode PCSetUp_GASM(PC pc)
 {
   PC_GASM        *osm = (PC_GASM*)pc->data;
@@ -589,7 +577,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
       scall = MAT_INITIAL_MATRIX;
     }
     if(osm->permutationIS){
-      ierr = MatGetSubMatrix(pc->pmat,osm->permutationIS,osm->permutationIS,scall,&osm->permutationP);CHKERRQ(ierr);
+      ierr = MatCreateSubMatrix(pc->pmat,osm->permutationIS,osm->permutationIS,scall,&osm->permutationP);CHKERRQ(ierr);
       ierr = PetscObjectReference((PetscObject)osm->permutationP);CHKERRQ(ierr);
       osm->pcmat = pc->pmat;
       pc->pmat   = osm->permutationP;
@@ -602,9 +590,9 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
      Extract out the submatrices.
   */
   if (size > 1) {
-    ierr = MatGetSubMatricesMPI(pc->pmat,osm->n,osm->ois,osm->ois,scall,&osm->pmat);CHKERRQ(ierr);
+    ierr = MatCreateSubMatricesMPI(pc->pmat,osm->n,osm->ois,osm->ois,scall,&osm->pmat);CHKERRQ(ierr);
   } else {
-    ierr = MatGetSubMatrices(pc->pmat,osm->n,osm->ois,osm->ois,scall,&osm->pmat);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrices(pc->pmat,osm->n,osm->ois,osm->ois,scall,&osm->pmat);CHKERRQ(ierr);
   }
   if (scall == MAT_INITIAL_MATRIX) {
     ierr = PetscObjectGetOptionsPrefix((PetscObject)pc->pmat,&pprefix);CHKERRQ(ierr);
@@ -635,8 +623,6 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUpOnBlocks_GASM"
 static PetscErrorCode PCSetUpOnBlocks_GASM(PC pc)
 {
   PC_GASM        *osm = (PC_GASM*)pc->data;
@@ -650,8 +636,6 @@ static PetscErrorCode PCSetUpOnBlocks_GASM(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_GASM"
 static PetscErrorCode PCApply_GASM(PC pc,Vec xin,Vec yout)
 {
   PC_GASM        *osm = (PC_GASM*)pc->data;
@@ -707,8 +691,6 @@ static PetscErrorCode PCApply_GASM(PC pc,Vec xin,Vec yout)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApplyTranspose_GASM"
 static PetscErrorCode PCApplyTranspose_GASM(PC pc,Vec xin,Vec yout)
 {
   PC_GASM        *osm = (PC_GASM*)pc->data;
@@ -766,8 +748,6 @@ static PetscErrorCode PCApplyTranspose_GASM(PC pc,Vec xin,Vec yout)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCReset_GASM"
 static PetscErrorCode PCReset_GASM(PC pc)
 {
   PC_GASM        *osm = (PC_GASM*)pc->data;
@@ -782,7 +762,14 @@ static PetscErrorCode PCReset_GASM(PC pc)
   }
   if (osm->pmat) {
     if (osm->n > 0) {
-      ierr = MatDestroyMatrices(osm->n,&osm->pmat);CHKERRQ(ierr);
+      PetscMPIInt size;
+      ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
+      if (size > 1) {
+        /* osm->pmat is created by MatCreateSubMatricesMPI(), cannot use MatDestroySubMatrices() */
+        ierr = MatDestroyMatrices(osm->n,&osm->pmat);CHKERRQ(ierr);
+      } else {
+        ierr = MatDestroySubMatrices(osm->n,&osm->pmat);CHKERRQ(ierr);
+      }
     }
   }
   if (osm->x) {
@@ -822,8 +809,6 @@ static PetscErrorCode PCReset_GASM(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_GASM"
 static PetscErrorCode PCDestroy_GASM(PC pc)
 {
   PC_GASM        *osm = (PC_GASM*)pc->data;
@@ -846,8 +831,6 @@ static PetscErrorCode PCDestroy_GASM(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_GASM"
 static PetscErrorCode PCSetFromOptions_GASM(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_GASM        *osm = (PC_GASM*)pc->data;
@@ -883,8 +866,6 @@ static PetscErrorCode PCSetFromOptions_GASM(PetscOptionItems *PetscOptionsObject
 
 /*------------------------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGASMSetTotalSubdomains"
 /*@
     PCGASMSetTotalSubdomains - sets the total number of subdomains to use across the
                                communicator.
@@ -925,8 +906,6 @@ PetscErrorCode  PCGASMSetTotalSubdomains(PC pc,PetscInt N)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGASMSetSubdomains_GASM"
 static PetscErrorCode  PCGASMSetSubdomains_GASM(PC pc,PetscInt n,IS iis[],IS ois[])
 {
   PC_GASM         *osm = (PC_GASM*)pc->data;
@@ -963,7 +942,7 @@ static PetscErrorCode  PCGASMSetSubdomains_GASM(PC pc,PetscInt n,IS iis[],IS ois
       osm->iis[i] = iis[i];
     }
     if (!ois) {
-      osm->ois = PETSC_NULL;
+      osm->ois = NULL;
       /* if user does not provide outer indices, we will create the corresponding outer indices using  osm->overlap =1 in PCSetUp_GASM */
     }
   }
@@ -997,8 +976,6 @@ static PetscErrorCode  PCGASMSetSubdomains_GASM(PC pc,PetscInt n,IS iis[],IS ois
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGASMSetOverlap_GASM"
 static PetscErrorCode  PCGASMSetOverlap_GASM(PC pc,PetscInt ovl)
 {
   PC_GASM *osm = (PC_GASM*)pc->data;
@@ -1010,8 +987,6 @@ static PetscErrorCode  PCGASMSetOverlap_GASM(PC pc,PetscInt ovl)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGASMSetType_GASM"
 static PetscErrorCode  PCGASMSetType_GASM(PC pc,PCGASMType type)
 {
   PC_GASM *osm = (PC_GASM*)pc->data;
@@ -1022,8 +997,6 @@ static PetscErrorCode  PCGASMSetType_GASM(PC pc,PCGASMType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGASMSetSortIndices_GASM"
 static PetscErrorCode  PCGASMSetSortIndices_GASM(PC pc,PetscBool doSort)
 {
   PC_GASM *osm = (PC_GASM*)pc->data;
@@ -1033,8 +1006,6 @@ static PetscErrorCode  PCGASMSetSortIndices_GASM(PC pc,PetscBool doSort)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGASMGetSubKSP_GASM"
 /*
    FIXME: This routine might need to be modified now that multiple ranks per subdomain are allowed.
         In particular, it would upset the global subdomain number calculation.
@@ -1061,8 +1032,6 @@ static PetscErrorCode  PCGASMGetSubKSP_GASM(PC pc,PetscInt *n,PetscInt *first,KS
   PetscFunctionReturn(0);
 } /* PCGASMGetSubKSP_GASM() */
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGASMSetSubdomains"
 /*@C
     PCGASMSetSubdomains - Sets the subdomains for this processor
     for the additive Schwarz preconditioner.
@@ -1111,8 +1080,6 @@ PetscErrorCode  PCGASMSetSubdomains(PC pc,PetscInt n,IS iis[],IS ois[])
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGASMSetOverlap"
 /*@
     PCGASMSetOverlap - Sets the overlap between a pair of subdomains for the
     additive Schwarz preconditioner.  Either all or no processors in the
@@ -1163,8 +1130,6 @@ PetscErrorCode  PCGASMSetOverlap(PC pc,PetscInt ovl)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGASMSetType"
 /*@
     PCGASMSetType - Sets the type of restriction and interpolation used
     for local problems in the additive Schwarz method.
@@ -1202,8 +1167,6 @@ PetscErrorCode  PCGASMSetType(PC pc,PCGASMType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGASMSetSortIndices"
 /*@
     PCGASMSetSortIndices - Determines whether subdomain indices are sorted.
 
@@ -1231,8 +1194,6 @@ PetscErrorCode  PCGASMSetSortIndices(PC pc,PetscBool doSort)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGASMGetSubKSP"
 /*@C
    PCGASMGetSubKSP - Gets the local KSP contexts for all blocks on
    this processor.
@@ -1316,8 +1277,6 @@ PetscErrorCode  PCGASMGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KS
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_GASM"
 PETSC_EXTERN PetscErrorCode PCCreate_GASM(PC pc)
 {
   PetscErrorCode ierr;
@@ -1372,8 +1331,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_GASM(PC pc)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGASMCreateLocalSubdomains"
 PetscErrorCode  PCGASMCreateLocalSubdomains(Mat A, PetscInt nloc, IS *iis[])
 {
   MatPartitioning mpart;
@@ -1522,8 +1479,6 @@ PetscErrorCode  PCGASMCreateLocalSubdomains(Mat A, PetscInt nloc, IS *iis[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGASMCreateStraddlingSubdomains"
 PETSC_INTERN PetscErrorCode  PCGASMCreateStraddlingSubdomains(Mat A,PetscInt N,PetscInt *n,IS *iis[])
 {
   PetscErrorCode  ierr;
@@ -1535,8 +1490,6 @@ PETSC_INTERN PetscErrorCode  PCGASMCreateStraddlingSubdomains(Mat A,PetscInt N,P
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGASMCreateSubdomains"
 /*@C
    PCGASMCreateSubdomains - Creates n index sets defining n nonoverlapping subdomains for the additive
    Schwarz preconditioner for a any problem based on its matrix.
@@ -1584,8 +1537,6 @@ PetscErrorCode  PCGASMCreateSubdomains(Mat A,PetscInt N,PetscInt *n,IS *iis[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGASMDestroySubdomains"
 /*@C
    PCGASMDestroySubdomains - Destroys the index sets created with
    PCGASMCreateSubdomains() or PCGASMCreateSubdomains2D. Should be
@@ -1669,8 +1620,6 @@ PetscErrorCode  PCGASMDestroySubdomains(PetscInt n,IS **iis,IS **ois)
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGASMCreateSubdomains2D"
 /*@
    PCGASMCreateSubdomains2D - Creates the index sets for the overlapping Schwarz
    preconditioner for a two-dimensional problem on a regular grid.
@@ -1848,8 +1797,6 @@ PetscErrorCode  PCGASMCreateSubdomains2D(PC pc,PetscInt M,PetscInt N,PetscInt Md
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGASMGetSubdomains"
 /*@C
     PCGASMGetSubdomains - Gets the subdomains supported on this processor
     for the additive Schwarz preconditioner.
@@ -1904,8 +1851,6 @@ PetscErrorCode  PCGASMGetSubdomains(PC pc,PetscInt *n,IS *iis[],IS *ois[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGASMGetSubmatrices"
 /*@C
     PCGASMGetSubmatrices - Gets the local submatrices (for this processor
     only) for the additive Schwarz preconditioner.
@@ -1947,8 +1892,6 @@ PetscErrorCode  PCGASMGetSubmatrices(PC pc,PetscInt *n,Mat *mat[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGASMSetUseDMSubdomains"
 /*@
     PCGASMSetUseDMSubdomains - Indicates whether to use DMCreateDomainDecomposition() to define the subdomains, whenever possible.
     Logically Collective
@@ -1991,8 +1934,6 @@ PetscErrorCode  PCGASMSetUseDMSubdomains(PC pc,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGASMGetUseDMSubdomains"
 /*@
     PCGASMGetUseDMSubdomains - Returns flag indicating whether to use DMCreateDomainDecomposition() to define the subdomains, whenever possible.
     Not Collective

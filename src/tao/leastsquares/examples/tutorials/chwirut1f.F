@@ -21,8 +21,6 @@
 !
 ! ----------------------------------------------------------------------
 !
-      implicit none
-
 #include "chwirut1f.h"
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -36,16 +34,14 @@
       Vec              f       ! vector of functions
       Tao        tao     ! Tao context
       PetscInt         nhist
-      integer          size,rank    ! number of processes running
+      PetscMPIInt  size,rank    ! number of processes running
       PetscReal      zero
       PetscReal      hist(100) ! objective value history
       PetscReal      resid(100)! residual history
       PetscReal      cnorm(100)! cnorm history
-      PetscReal      lits(100) ! #ksp history
+      PetscInt      lits(100)   ! #ksp history
+      PetscInt oh
       TaoConvergedReason reason
-
-
-
 
 !  Note: Any user-defined Fortran routines (such as FormGradient)
 !  MUST be declared as external.
@@ -67,7 +63,7 @@
          if (rank .eq. 0) then
             write(6,*) 'This is a uniprocessor example only!'
          endif
-         SETERRQ(PETSC_COMM_SELF,1,' ',ierr)
+         SETERRQ(PETSC_COMM_SELF,1,' ')
       endif
 
 !  Initialize problem parameters
@@ -90,7 +86,7 @@
 !  Set routines for function, gradient, and hessian evaluation
 
       call TaoSetSeparableObjectiveRoutine(tao,f,                       &
-     &      FormFunction,PETSC_NULL_OBJECT,ierr)
+     &      FormFunction,0,ierr)
       CHKERRQ(ierr)
 
 !  Optional: Set initial guess
@@ -103,8 +99,9 @@
 !  Check for TAO command line options
       call TaoSetFromOptions(tao,ierr)
       CHKERRQ(ierr)
+      oh = 100
       call TaoSetConvergenceHistory(tao,hist,resid,cnorm,lits,          &
-     &     100,PETSC_TRUE,ierr)
+     &     oh,PETSC_TRUE,ierr)
       CHKERRQ(ierr)
 !  SOLVE THE APPLICATION
       call TaoSolve(tao,ierr)
@@ -142,9 +139,6 @@
 !  f - function vector
 
       subroutine FormFunction(tao, x, f, dummy, ierr)
-      implicit none
-
-! n,alpha defined in chwirut1f.h
 #include "chwirut1f.h"
 
       Tao        tao
@@ -189,15 +183,9 @@
       return
       end
 
-
-
-
-
       subroutine FormStartingPoint(x)
-      implicit none
-
-! n,alpha defined in chwirut1f.h
 #include "chwirut1f.h"
+
       Vec             x
       PetscReal       x_v(0:1)
       PetscOffset     x_i
@@ -211,12 +199,9 @@
       return
       end
 
-
       subroutine InitializeData()
-      implicit none
-
-! n,alpha defined in chwirut1f.h
 #include "chwirut1f.h"
+
       integer i
       i=0
       y(i) =    92.9000;  t(i) =  0.5000; i=i+1

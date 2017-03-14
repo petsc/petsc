@@ -50,7 +50,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-xsdk-defaults', nargs.ArgBool(None, 0, 'Set the following as defaults for the xSDK standard: --enable-debug=1, --enable-shared=1, --with-precision=double, --with-index-size=32, locate blas/lapack automatically'))
     help.addArgument('PETSc', '-known-has-attribute-aligned=<bool>',nargs.ArgBool(None, None, 'Indicates __attribute((aligned(16)) directive works (the usual test will be skipped)'))
     help.addArgument('PETSc','-with-viewfromoptions=<bool>',      nargs.ArgBool(None, 1,'Support XXXSetFromOptions() calls, for calls with many small solvers turn this off'))
-
+    help.addArgument('PETSc', '-with-display=<x11display>',       nargs.Arg(None, '', 'Specifiy DISPLAY env variable for use with matlab test)'))
     return
 
   def registerPythonFile(self,filename,directory):
@@ -191,7 +191,7 @@ class Configure(config.base.Configure):
 
     fd.write('Cflags: '+self.allincludes+'\n')
 
-    plibs = self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),' -lpetsc'])
+    plibs = self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'), self.petsclib])
     if self.framework.argDB['prefix']:
       fd.write('Libs: '+plibs.replace(os.path.join(self.petscdir.dir,self.arch.arch),self.installdir.dir)+'\n')
     else:
@@ -254,6 +254,7 @@ prepend-path PATH %s
     # And sometimes we need a C++ compiler even when PETSc is built with C
     if hasattr(self.compilers, 'CXX'):
       self.setCompilers.pushLanguage('Cxx')
+      self.addDefine('HAVE_CXX','1')
       self.addMakeMacro('CXX_FLAGS',self.setCompilers.getCompilerFlags())
       self.setCompilers.popLanguage()
 
@@ -379,10 +380,10 @@ prepend-path PATH %s
         self.addMakeMacro(i.PACKAGE.replace('-','_')+'_INCLUDE',self.headers.toStringNoDupes(i.include))
     self.packagelibs = libs
     if self.framework.argDB['with-single-library']:
-      self.alllibs = self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),' -lpetsc']+libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs)+' '+self.compilers.LIBS
-      self.addMakeMacro('PETSC_WITH_EXTERNAL_LIB',self.alllibs)
+      self.petsclib = '-lpetsc'
     else:
-      self.alllibs = self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),'-lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys']+libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs)+' '+self.compilers.LIBS
+      self.petsclib = '-lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys'
+    self.alllibs = self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'), self.petsclib]+libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs)+' '+self.compilers.LIBS
     self.PETSC_EXTERNAL_LIB_BASIC = self.libraries.toStringNoDupes(libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs)+' '+self.compilers.LIBS
     if self.framework.argDB['prefix'] and self.setCompilers.CSharedLinkerFlag not in ['-L']:
       lib_basic = self.PETSC_EXTERNAL_LIB_BASIC.replace(self.setCompilers.CSharedLinkerFlag+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),self.setCompilers.CSharedLinkerFlag+os.path.join(self.installdir.dir,'lib'))
@@ -409,6 +410,7 @@ prepend-path PATH %s
       self.addMakeMacro('PETSC_KSP_LIB_BASIC','-lpetsc')
       self.addMakeMacro('PETSC_TS_LIB_BASIC','-lpetsc')
       self.addMakeMacro('PETSC_TAO_LIB_BASIC','-lpetsc')
+      self.addMakeMacro('PETSC_WITH_EXTERNAL_LIB',self.alllibs)
       self.addDefine('USE_SINGLE_LIBRARY', '1')
       if self.sharedlibraries.useShared:
         self.addMakeMacro('PETSC_SYS_LIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
@@ -437,6 +439,10 @@ prepend-path PATH %s
 
     if not os.path.exists(os.path.join(self.petscdir.dir,self.arch.arch,'lib')):
       os.makedirs(os.path.join(self.petscdir.dir,self.arch.arch,'lib'))
+
+# add a makefile endtry for display
+    if self.framework.argDB['with-display']:
+      self.addMakeMacro('DISPLAY',self.framework.argDB['with-display'])
 
     # add a makefile entry for configure options
     self.addMakeMacro('CONFIGURE_OPTIONS', self.framework.getOptionsString(['configModules', 'optionsModule']).replace('\"','\\"'))
@@ -483,11 +489,7 @@ prepend-path PATH %s
       self.setCompilers.pushLanguage('FC')
       fd.write('\"Using Fortran linker: %s\\n\"\n' % (escape(self.setCompilers.getLinker())))
       self.setCompilers.popLanguage()
-    if self.framework.argDB['with-single-library']:
-      petsclib = '-lpetsc'
-    else:
-      petsclib = '-lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys'
-    fd.write('\"Using libraries: %s%s -L%s %s %s\\n\"\n' % (escape(self.setCompilers.CSharedLinkerFlag), escape(os.path.join(self.petscdir.dir, self.arch.arch, 'lib')), escape(os.path.join(self.petscdir.dir, self.arch.arch, 'lib')), escape(petsclib), escape(self.PETSC_EXTERNAL_LIB_BASIC)))
+    fd.write('\"Using libraries: %s%s -L%s %s %s\\n\"\n' % (escape(self.setCompilers.CSharedLinkerFlag), escape(os.path.join(self.petscdir.dir, self.arch.arch, 'lib')), escape(os.path.join(self.petscdir.dir, self.arch.arch, 'lib')), escape(self.petsclib), escape(self.PETSC_EXTERNAL_LIB_BASIC)))
     fd.write('\"-----------------------------------------\\n\";\n')
     fd.close()
     return
@@ -802,12 +804,9 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
     self.popLanguage()
 
   def configureFunctionName(self):
-    '''Sees if the compiler supports __func__ or a variant.  Falls back
-    on __FUNCT__ which PETSc source defines, but most users do not, thus
-    stack traces through user code are better when the compiler's
-    variant is used.'''
+    '''Sees if the compiler supports __func__ or a variant.'''
     def getFunctionName(lang):
-      name = '__FUNCT__'
+      name = '"unknown"'
       self.pushLanguage(lang)
       if self.checkLink('', "if (__func__[0] != 'm') return 1;"):
         name = '__func__'
@@ -820,8 +819,6 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
     self.addDefine('FUNCTION_NAME_C', getFunctionName('C'))
     if hasattr(self.compilers, 'CXX'):
       self.addDefine('FUNCTION_NAME_CXX', getFunctionName('Cxx'))
-    else:
-      self.addDefine('FUNCTION_NAME_CXX', '__FUNCT__')
 
   def configureIntptrt(self):
     '''Determine what to use for uintptr_t'''
@@ -924,6 +921,7 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
       self.addDefine('HAVE_O_BINARY',1)
 
     if self.compilers.CC.find('win32fe') >= 0:
+      self.addDefine('HAVE_WINDOWS_COMPILERS',1)
       self.addDefine('PATH_SEPARATOR','\';\'')
       self.addDefine('DIR_SEPARATOR','\'\\\\\'')
       self.addDefine('REPLACE_DIR_SEPARATOR','\'/\'')

@@ -3,8 +3,6 @@
 #include <petscviewersaws.h>
 #include <petscsys.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectSAWsTakeAccess"
 /*@C
    PetscObjectSAWsTakeAccess - Take access of the data fields that have been published to SAWs so they may be changed locally
 
@@ -31,10 +29,8 @@ PetscErrorCode  PetscObjectSAWsTakeAccess(PetscObject obj)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectSAWsGrantAccess"
 /*@C
-   PetscObjectSAWsGrantAccess - Grants access of the data fields that have been published to SAWs to the memory snooper to change
+   PetscObjectSAWsGrantAccess - Grants access of the data fields that have been published to SAWs to change
 
    Collective on PetscObject
 
@@ -59,12 +55,10 @@ PetscErrorCode  PetscObjectSAWsGrantAccess(PetscObject obj)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSAWsBlock"
 /*@C
-   PetscSAWsBlock - Blocks on SAWs until a client unblocks
+   PetscSAWsBlock - Blocks on SAWs until a client (person using the web browser) unblocks
 
-   Not Collective 
+   Not Collective
 
    Level: advanced
 
@@ -91,8 +85,6 @@ PetscErrorCode  PetscSAWsBlock(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectSAWsBlock"
 /*@C
    PetscObjectSAWsBlock - Blocks the object if PetscObjectSAWsSetBlock() has been called
 
@@ -123,8 +115,6 @@ PetscErrorCode  PetscObjectSAWsBlock(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectSAWsSetBlock"
 /*@C
    PetscObjectSAWsSetBlock - Sets whether an object will block at PetscObjectSAWsBlock()
 
@@ -151,8 +141,6 @@ PetscErrorCode  PetscObjectSAWsSetBlock(PetscObject obj,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectSAWsViewOff"
 PetscErrorCode PetscObjectSAWsViewOff(PetscObject obj)
 {
   char           dir[1024];

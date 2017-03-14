@@ -2,8 +2,6 @@
 #include <petsc/private/kspimpl.h>              /*I  "petscksp.h"   I*/
 #include <petscdraw.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPMonitorLGResidualNormCreate"
 /*@C
    KSPMonitorLGResidualNormCreate - Creates a line graph context for use with
    KSP to monitor convergence of preconditioned residual norms.
@@ -52,8 +50,6 @@ PetscErrorCode  KSPMonitorLGResidualNormCreate(MPI_Comm comm,const char host[],c
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPMonitorLGResidualNorm"
 PetscErrorCode  KSPMonitorLGResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,void *ctx)
 {
   PetscDrawLG    lg = (PetscDrawLG) ctx;
@@ -75,8 +71,6 @@ PetscErrorCode  KSPMonitorLGResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,void
 }
 
 extern PetscErrorCode  KSPMonitorRange_Private(KSP,PetscInt,PetscReal*);
-#undef __FUNCT__
-#define __FUNCT__ "KSPMonitorLGRange"
 PetscErrorCode  KSPMonitorLGRange(KSP ksp,PetscInt n,PetscReal rnorm,void *monctx)
 {
   PetscDrawLG      lg;
@@ -147,8 +141,6 @@ PetscErrorCode  KSPMonitorLGRange(KSP ksp,PetscInt n,PetscReal rnorm,void *monct
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPMonitorLGTrueResidualNormCreate"
 /*@C
    KSPMonitorLGTrueResidualNormCreate - Creates a line graph context for use with
    KSP to monitor convergence of true residual norms (as opposed to
@@ -200,8 +192,6 @@ PetscErrorCode  KSPMonitorLGTrueResidualNormCreate(MPI_Comm comm,const char host
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPMonitorLGTrueResidualNorm"
 PetscErrorCode  KSPMonitorLGTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,void *ctx)
 {
   PetscDrawLG    lg = (PetscDrawLG) ctx;

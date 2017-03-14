@@ -1,8 +1,6 @@
 
 #include <petsc/private/kspimpl.h>   /*I "petscksp.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPInitialResidual"
 /*@
    KSPInitialResidual - Computes the residual. Either b - A*C*u = b - A*x with right
      preconditioning or C*(b - A*x) with left preconditioning; that later
@@ -75,8 +73,6 @@ PetscErrorCode  KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Ve
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPUnwindPreconditioner"
 /*@
    KSPUnwindPreconditioner - Unwinds the preconditioning in the solution. That is,
      takes solution to the preconditioned problem and gets the solution to the

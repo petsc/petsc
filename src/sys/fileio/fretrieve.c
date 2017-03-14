@@ -20,8 +20,6 @@
 #include <sys/systeminfo.h>
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "Petsc_DelTmpShared"
 /*
    Private routine to delete tmp/shared storage
 
@@ -40,8 +38,6 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelTmpShared(MPI_Comm comm,PetscMPIInt key
   PetscFunctionReturn(MPI_SUCCESS);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscGetTmp"
 /*@C
    PetscGetTmp - Gets the name of the tmp directory
 
@@ -84,8 +80,6 @@ PetscErrorCode  PetscGetTmp(MPI_Comm comm,char dir[],size_t len)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSharedTmp"
 /*@C
    PetscSharedTmp - Determines if all processors in a communicator share a
          /tmp or have different ones.
@@ -212,8 +206,6 @@ PetscErrorCode  PetscSharedTmp(MPI_Comm comm,PetscBool  *shared)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSharedWorkingDirectory"
 /*@C
    PetscSharedWorkingDirectory - Determines if all processors in a communicator share a
          working directory or have different ones.
@@ -330,8 +322,6 @@ PetscErrorCode  PetscSharedWorkingDirectory(MPI_Comm comm,PetscBool  *shared)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFileRetrieve"
 /*@C
     PetscFileRetrieve - Obtains a library from a URL or compressed
         and copies into local disk space as uncompressed.

@@ -136,17 +136,20 @@ class Configure(config.base.Configure):
 
   def checkRestrict(self,language):
     '''Check for the C/CXX restrict keyword'''
-    # Try the official restrict keyword, then gcc's __restrict__, then
-    # SGI's __restrict.  __restrict has slightly different semantics than
-    # restrict (it's a bit stronger, in that __restrict pointers can't
-    # overlap even with non __restrict pointers), but I think it should be
-    # okay under the circumstances where restrict is normally used.
+    # Try keywords equivalent to C99 restrict.  Note that many C
+    # compilers require special cflags, such as -std=c99 or -restrict to
+    # recognize the "restrict" keyword and it is not always practical to
+    # expect that every user provides matching options.  Meanwhile,
+    # compilers like Intel and MSVC (reportedly) support __restrict
+    # without special options.  Glibc uses __restrict, presumably for
+    # this reason.  Note that __restrict is not standardized while
+    # "restrict" is, but implementation realities favor __restrict.
     if config.setCompilers.Configure.isPGI(self.setCompilers.CC, self.log):
       self.addDefine(language.upper()+'_RESTRICT', ' ')
       self.logPrint('PGI restrict word is broken cannot handle [restrict] '+str(language)+' restrict keyword', 4, 'compilers')
       return
     self.pushLanguage(language)
-    for kw in ['restrict', ' __restrict__', '__restrict']:
+    for kw in ['__restrict', ' __restrict__', 'restrict']:
       if self.checkCompile('', 'float * '+kw+' x;'):
         if language.lower() == 'c':
           self.cRestrict = kw
@@ -245,8 +248,6 @@ class Configure(config.base.Configure):
         if m:
           if not arg in lflags:
             if arg == '-lkernel32':
-              continue
-            elif arg == '-lm':
               continue
             else:
               lflags.append(arg)
@@ -507,8 +508,6 @@ class Configure(config.base.Configure):
         if m:
           if not arg in lflags:
             if arg == '-lkernel32':
-              continue
-            elif arg == '-lm':
               continue
             else:
               lflags.append(arg)
@@ -906,8 +905,6 @@ class Configure(config.base.Configure):
           if not arg in lflags:
             if arg == '-lkernel32':
               continue
-            elif arg == '-lm':
-              pass
             elif arg == '-lgfortranbegin':
               fmainlibs.append(arg)
               continue
@@ -919,8 +916,6 @@ class Configure(config.base.Configure):
             self.logPrint('Found library: '+arg, 4, 'compilers')
             if arg in self.clibs:
               self.logPrint('Library already in C list so skipping in Fortran')
-            elif arg in self.cxxlibs:
-              self.logPrint('Library already in Cxx list so skipping in Fortran')
             else:
               flibs.append(arg)
           else:
@@ -1159,7 +1154,19 @@ class Configure(config.base.Configure):
   def checkFortran2003(self):
     '''Determine whether the Fortran compiler handles F2003'''
     self.pushLanguage('FC')
-    if self.fortranIsF90 and self.checkLink(body = '''
+    if self.fortranIsF90 and self.checkLink(includes = '''
+      module Base_module
+        type, public :: base_type
+           integer :: A
+         contains
+           procedure, public :: Print => BasePrint
+        end type base_type
+      contains
+        subroutine BasePrint(this)
+          class(base_type) :: this
+        end subroutine BasePrint
+      end module Base_module
+    ''',body = '''
       use,intrinsic :: iso_c_binding
       Type(C_Ptr),Dimension(:),Pointer :: CArray
       character(kind=c_char),pointer   :: nullc => null()

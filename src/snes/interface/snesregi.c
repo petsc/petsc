@@ -39,8 +39,6 @@ const char *const *const SNESFunctionTypes = SNESFunctionTypes_Shifted + 1;
 */
 extern PetscBool SNESRegisterAllCalled;
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESRegisterAll"
 /*@C
    SNESRegisterAll - Registers all of the nonlinear solver methods in the SNES package.
 

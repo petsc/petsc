@@ -19,6 +19,7 @@ asterix*/*
 linux*/*
 darwin*/*
 arch-*/*
+petsc-install/*
 batch-test
 c_test
 RDict.db
@@ -29,6 +30,7 @@ conf/petscvariables
 configure.log*
 externalpackages/*
 ftn-auto
+ftn-auto-interfaces
 lib/*
 make_log_*
 test_log_*

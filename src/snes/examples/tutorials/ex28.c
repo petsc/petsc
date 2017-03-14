@@ -35,8 +35,6 @@ struct _UserCtx {
   Vec      Uloc,Kloc;
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionLocal_U"
 static PetscErrorCode FormFunctionLocal_U(User user,DMDALocalInfo *info,const PetscScalar u[],const PetscScalar k[],PetscScalar f[])
 {
   PetscReal hx = 1./info->mx;
@@ -51,8 +49,6 @@ static PetscErrorCode FormFunctionLocal_U(User user,DMDALocalInfo *info,const Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionLocal_K"
 static PetscErrorCode FormFunctionLocal_K(User user,DMDALocalInfo *info,const PetscScalar u[],const PetscScalar k[],PetscScalar f[])
 {
   PetscReal hx = 1./info->mx;
@@ -70,8 +66,6 @@ static PetscErrorCode FormFunctionLocal_K(User user,DMDALocalInfo *info,const Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunction_All"
 static PetscErrorCode FormFunction_All(SNES snes,Vec X,Vec F,void *ctx)
 {
   User           user = (User)ctx;
@@ -130,8 +124,6 @@ static PetscErrorCode FormFunction_All(SNES snes,Vec X,Vec F,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobianLocal_U"
 static PetscErrorCode FormJacobianLocal_U(User user,DMDALocalInfo *info,const PetscScalar u[],const PetscScalar k[],Mat Buu)
 {
   PetscReal      hx = 1./info->mx;
@@ -154,8 +146,6 @@ static PetscErrorCode FormJacobianLocal_U(User user,DMDALocalInfo *info,const Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobianLocal_K"
 static PetscErrorCode FormJacobianLocal_K(User user,DMDALocalInfo *info,const PetscScalar u[],const PetscScalar k[],Mat Bkk)
 {
   PetscReal      hx = 1./info->mx;
@@ -171,8 +161,6 @@ static PetscErrorCode FormJacobianLocal_K(User user,DMDALocalInfo *info,const Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobianLocal_UK"
 static PetscErrorCode FormJacobianLocal_UK(User user,DMDALocalInfo *info,DMDALocalInfo *infok,const PetscScalar u[],const PetscScalar k[],Mat Buk)
 {
   PetscReal      hx = 1./info->mx;
@@ -193,8 +181,6 @@ static PetscErrorCode FormJacobianLocal_UK(User user,DMDALocalInfo *info,DMDALoc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobianLocal_KU"
 static PetscErrorCode FormJacobianLocal_KU(User user,DMDALocalInfo *info,DMDALocalInfo *infok,const PetscScalar u[],const PetscScalar k[],Mat Bku)
 {
   PetscErrorCode ierr;
@@ -228,8 +214,6 @@ static PetscErrorCode FormJacobianLocal_KU(User user,DMDALocalInfo *info,DMDALoc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobian_All"
 static PetscErrorCode FormJacobian_All(SNES snes,Vec X,Mat J,Mat B,void *ctx)
 {
   User           user = (User)ctx;
@@ -310,8 +294,6 @@ static PetscErrorCode FormJacobian_All(SNES snes,Vec X,Mat J,Mat B,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormInitial_Coupled"
 static PetscErrorCode FormInitial_Coupled(User user,Vec X)
 {
   PetscErrorCode ierr;
@@ -338,8 +320,6 @@ static PetscErrorCode FormInitial_Coupled(User user,Vec X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char *argv[])
 {
   PetscErrorCode ierr;

@@ -5,8 +5,6 @@ static PetscErrorCode LCLComputeAugmentedLagrangianAndGradient(TaoLineSearch,Vec
 static PetscErrorCode LCLScatter(TAO_LCL*,Vec,Vec,Vec);
 static PetscErrorCode LCLGather(TAO_LCL*,Vec,Vec,Vec);
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoDestroy_LCL"
 static PetscErrorCode TaoDestroy_LCL(Tao tao)
 {
   TAO_LCL        *lclP = (TAO_LCL*)tao->data;
@@ -62,8 +60,6 @@ static PetscErrorCode TaoDestroy_LCL(Tao tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetFromOptions_LCL"
 static PetscErrorCode TaoSetFromOptions_LCL(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   TAO_LCL        *lclP = (TAO_LCL*)tao->data;
@@ -89,15 +85,11 @@ static PetscErrorCode TaoSetFromOptions_LCL(PetscOptionItems *PetscOptionsObject
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoView_LCL"
 static PetscErrorCode TaoView_LCL(Tao tao, PetscViewer viewer)
 {
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetup_LCL"
 static PetscErrorCode TaoSetup_LCL(Tao tao)
 {
   TAO_LCL        *lclP = (TAO_LCL*)tao->data;
@@ -178,8 +170,6 @@ static PetscErrorCode TaoSetup_LCL(Tao tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSolve_LCL"
 static PetscErrorCode TaoSolve_LCL(Tao tao)
 {
   TAO_LCL                      *lclP = (TAO_LCL*)tao->data;
@@ -590,8 +580,6 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
 
   Level: beginner
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoCreate_LCL"
 PETSC_EXTERN PetscErrorCode TaoCreate_LCL(Tao tao)
 {
   TAO_LCL        *lclP;
@@ -630,8 +618,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_LCL(Tao tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "LCLComputeLagrangianAndGradient"
 static PetscErrorCode LCLComputeLagrangianAndGradient(TaoLineSearch ls, Vec X, PetscReal *f, Vec G, void *ptr)
 {
   Tao            tao = (Tao)ptr;
@@ -680,8 +666,6 @@ static PetscErrorCode LCLComputeLagrangianAndGradient(TaoLineSearch ls, Vec X, P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "LCLComputeAugmentedLagrangianAndGradient"
 static PetscErrorCode LCLComputeAugmentedLagrangianAndGradient(TaoLineSearch ls, Vec X, PetscReal *f, Vec G, void *ptr)
 {
   Tao            tao = (Tao)ptr;
@@ -724,8 +708,6 @@ static PetscErrorCode LCLComputeAugmentedLagrangianAndGradient(TaoLineSearch ls,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "LCLGather"
 PetscErrorCode LCLGather(TAO_LCL *lclP, Vec u, Vec v, Vec x)
 {
   PetscErrorCode ierr;
@@ -737,8 +719,6 @@ PetscErrorCode LCLGather(TAO_LCL *lclP, Vec u, Vec v, Vec x)
   PetscFunctionReturn(0);
 
 }
-#undef __FUNCT__
-#define __FUNCT__ "LCLScatter"
 PetscErrorCode LCLScatter(TAO_LCL *lclP, Vec x, Vec u, Vec v)
 {
   PetscErrorCode ierr;

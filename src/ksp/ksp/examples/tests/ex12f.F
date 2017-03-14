@@ -1,13 +1,9 @@
 !
       program main
-       implicit none
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscpc.h>
 #include <petsc/finclude/petscksp.h>
-#include <petsc/finclude/petscviewer.h>
+      use petscksp
+      implicit none
+
 !
 !  This example is the Fortran version of ex6.c.  The program reads a PETSc matrix
 !  and vector from a file and solves a linear system.  Input arguments are:
@@ -17,7 +13,8 @@
       PetscErrorCode  ierr
       PetscInt its,m,n,mlocal,nlocal
       PetscBool  flg
-      PetscScalar      norm,none
+      PetscScalar      none
+      PetscReal        norm
       Vec              x,b,u
       Mat              A
       character*(128)  f
@@ -33,8 +30,8 @@
       endif
 
 ! Read in matrix and RHS
-      call PetscOptionsGetString(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,&
-     &                           '-f',f,flg,ierr)
+      call PetscOptionsGetString(PETSC_NULL_OPTIONS,                    &
+     &        PETSC_NULL_CHARACTER,'-f',f,flg,ierr)
       call PetscViewerBinaryOpen(PETSC_COMM_WORLD,f,FILE_MODE_READ,     &
      &     fd,ierr)
 

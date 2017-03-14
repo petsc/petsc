@@ -11,8 +11,6 @@ static char help[] = "Tests MatPermute() in parallel.\n\n";
  */
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   const struct {PetscInt i,j; PetscScalar v;} entries[] = {{0,3,1.},{1,2,2.},{2,1,3.},{2,5,4.},{3,0,5.},{3,6,6.},{4,1,7.},{4,4,8.}};

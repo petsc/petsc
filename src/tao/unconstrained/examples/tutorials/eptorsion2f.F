@@ -35,9 +35,10 @@
 !
 ! ----------------------------------------------------------------------
 
-      implicit none
 #include "eptorsion2f.h"
-
+#if defined(PETSC_USING_F90) && !defined(PETSC_USE_FORTRANKIND)
+      external PETSC_NULL_FUNCTION
+#endif
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -77,11 +78,11 @@
       Ny = PETSC_DECIDE
 
 !     Check for any command line arguments that might override defaults
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,    &
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,    &
      &                        '-mx',mx,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,    &
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,    &
      &                        '-my',my,flg,ierr)
-      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,   &
+      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,   &
      &                         '-par',param,flg,ierr)
 
 
@@ -110,22 +111,22 @@
 !     Set routines for function and gradient evaluation
 
       call TaoSetObjectiveAndGradientRoutine(tao,                       &
-     &     FormFunctionGradient,PETSC_NULL_OBJECT,ierr)
+     &     FormFunctionGradient,0,ierr)
       call TaoSetHessianRoutine(tao,H,H,ComputeHessian,                 &
-     &     PETSC_NULL_OBJECT,ierr)
+     &     0,ierr)
 
 !     Set initial guess
       call FormInitialGuess(x,ierr)
       call TaoSetInitialVector(tao,x,ierr)
 
-      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,   &
+      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,   &
      &                         '-testmonitor',flg,ierr)
       if (flg) then
          call TaoSetMonitor(tao,Monitor,dummy,PETSC_NULL_FUNCTION,      &
      &        ierr)
       endif
 
-      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,  &
+      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,  &
      &                         '-testconvergence',flg, ierr)
       if (flg) then
          call TaoSetConvergenceTest(tao,ConvergenceTest,dummy,          &
@@ -167,9 +168,6 @@
 !   ierr - error code
 !
       subroutine FormInitialGuess(X,ierr)
-      implicit none
-
-! mx, my are defined in eptorsion2f.h
 #include "eptorsion2f.h"
 
 !  Input/output variables:
@@ -233,9 +231,6 @@
 !  input vector data as an array over the local mesh.
 !
       subroutine FormFunctionGradient(tao,X,f,G,dummy,ierr)
-      implicit none
-
-! dm, mx, my, param, localX declared in eptorsion2f.h
 #include "eptorsion2f.h"
 
 !  Input/output variables:
@@ -406,12 +401,9 @@
       return
       end
 
-
-
-
       subroutine ComputeHessian(tao, X, H, Hpre, dummy, ierr)
-      implicit none
 #include "eptorsion2f.h"
+
       Tao       tao
       Vec             X
       Mat             H,Hpre
@@ -493,8 +485,8 @@
 
 
       subroutine Monitor(tao, dummy, ierr)
-      implicit none
 #include "eptorsion2f.h"
+
       Tao tao
       PetscInt dummy
       PetscErrorCode ierr
@@ -516,8 +508,8 @@
       end
 
       subroutine ConvergenceTest(tao, dummy, ierr)
-      implicit none
 #include "eptorsion2f.h"
+
       Tao tao
       PetscInt dummy
       PetscErrorCode ierr

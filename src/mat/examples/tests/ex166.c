@@ -12,8 +12,6 @@ static char help[] = "Tests MatPermute() for a square matrix in parallel.\n\n";
    - seqsbaij: permutation not supported for this MATTYPE
 
  */
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   const struct {PetscInt i,j; PetscScalar v;} entries[] = {{0,3,1.},{1,2,2.},{2,1,3.},{2,4,4.},{3,0,5.},{3,3,6.},{4,1,7.},{4,4,8.}};

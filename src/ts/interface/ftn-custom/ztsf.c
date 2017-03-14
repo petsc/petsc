@@ -1,7 +1,7 @@
 #include <petsc/private/fortranimpl.h>
 #include <petscts.h>
 #include <petscviewer.h>
-#include <../src/sys/f90-src/f90impl.h>
+#include <petsc/private/f90impl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define tsmonitorlgsettransform_             TSMONITORLGSETTRANSFORM
@@ -288,14 +288,14 @@ PETSC_EXTERN void PETSC_STDCALL tsview_(TS *ts,PetscViewer *viewer, PetscErrorCo
   *ierr = TSView(*ts,v);
 }
 
-PETSC_EXTERN void PETSC_STDCALL tssetoptionsprefix_(TS *ts,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL tssetoptionsprefix_(TS *ts,char* prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
   FIXCHAR(prefix,len,t);
   *ierr = TSSetOptionsPrefix(*ts,t);
   FREECHAR(prefix,t);
 }
-PETSC_EXTERN void PETSC_STDCALL tsgetoptionsprefix_(TS *ts,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL tsgetoptionsprefix_(TS *ts,char* prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   const char *tname;
 
@@ -303,7 +303,7 @@ PETSC_EXTERN void PETSC_STDCALL tsgetoptionsprefix_(TS *ts,CHAR prefix PETSC_MIX
   *ierr = PetscStrncpy(prefix,tname,len);
   FIXRETURNCHAR(PETSC_TRUE,prefix,len);
 }
-PETSC_EXTERN void PETSC_STDCALL tsappendoptionsprefix_(TS *ts,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL tsappendoptionsprefix_(TS *ts,char* prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
   FIXCHAR(prefix,len,t);

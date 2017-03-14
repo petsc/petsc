@@ -5,8 +5,6 @@
 #include <petsc/private/drawimpl.h>  /*I "petscdraw.h" I*/
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawIndicatorFunction"
 /*@C
    PetscDrawIndicatorFunction - Draws an indicator function (where a relationship is true) on a PetscDraw
 
@@ -49,8 +47,6 @@ PetscErrorCode PetscDrawIndicatorFunction(PetscDraw draw,PetscReal xmin,PetscRea
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawCoordinateToPixel"
 /*@C
    PetscDrawCoordinateToPixel - given a coordinate in a PetscDraw returns the pixel location
 
@@ -77,8 +73,6 @@ PetscErrorCode PetscDrawCoordinateToPixel(PetscDraw draw,PetscReal x,PetscReal y
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawPixelToCoordinate"
 /*@C
    PetscDrawPixelToCoordinate - given a pixel in a PetscDraw returns the coordinate
 
@@ -105,8 +99,6 @@ PetscErrorCode PetscDrawPixelToCoordinate(PetscDraw draw,int i,int j,PetscReal *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawRectangle"
 /*@
    PetscDrawRectangle - PetscDraws a rectangle  onto a drawable.
 
@@ -122,6 +114,9 @@ PetscErrorCode PetscDrawPixelToCoordinate(PetscDraw draw,int i,int j,PetscReal *
    Concepts: drawing^rectangle
    Concepts: graphics^rectangle
    Concepts: rectangle
+
+.seealso: PetscDrawLine(), PetscDrawRectangle(), PetscDrawTriangle(), PetscDrawEllipse(),
+          PetscDrawMarker(), PetscDrawPoint(), PetscDrawString(), PetscDrawPoint(), PetscDrawArrow()
 
 @*/
 PetscErrorCode  PetscDrawRectangle(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int c1,int c2,int c3,int c4)

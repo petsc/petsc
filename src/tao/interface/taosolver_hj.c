@@ -1,7 +1,5 @@
 #include <petsc/private/taoimpl.h> /*I "petsctao.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetHessianRoutine"
 /*@C
    TaoSetHessianRoutine - Sets the function to compute the Hessian as well as the location to store the matrix.
 
@@ -60,8 +58,6 @@ PetscErrorCode TaoSetHessianRoutine(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*f
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoComputeHessian"
 /*@C
    TaoComputeHessian - Computes the Hessian matrix that has been
    set with TaoSetHessianRoutine().
@@ -108,8 +104,6 @@ PetscErrorCode TaoComputeHessian(Tao tao, Vec X, Mat H, Mat Hpre)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoComputeJacobian"
 /*@C
    TaoComputeJacobian - Computes the Jacobian matrix that has been
    set with TaoSetJacobianRoutine().
@@ -156,8 +150,6 @@ PetscErrorCode TaoComputeJacobian(Tao tao, Vec X, Mat J, Mat Jpre)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoComputeJacobianState"
 /*@C
    TaoComputeJacobianState - Computes the Jacobian matrix that has been
    set with TaoSetJacobianStateRoutine().
@@ -204,8 +196,6 @@ PetscErrorCode TaoComputeJacobianState(Tao tao, Vec X, Mat J, Mat Jpre, Mat Jinv
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoComputeJacobianDesign"
 /*@C
    TaoComputeJacobianDesign - Computes the Jacobian matrix that has been
    set with TaoSetJacobianDesignRoutine().
@@ -251,8 +241,6 @@ PetscErrorCode TaoComputeJacobianDesign(Tao tao, Vec X, Mat J)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetJacobianRoutine"
 /*@C
    TaoSetJacobianRoutine - Sets the function to compute the Jacobian as well as the location to store the matrix.
 
@@ -310,8 +298,6 @@ PetscErrorCode TaoSetJacobianRoutine(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetJacobianStateRoutine"
 /*@C
    TaoSetJacobianStateRoutine - Sets the function to compute the Jacobian
    (and its inverse) of the constraint function with respect to the state variables.
@@ -382,8 +368,6 @@ PetscErrorCode TaoSetJacobianStateRoutine(Tao tao, Mat J, Mat Jpre, Mat Jinv, Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetJacobianDesignRoutine"
 /*@C
    TaoSetJacobianDesignRoutine - Sets the function to compute the Jacobian of
    the constraint function with respect to the design variables.  Used only for
@@ -442,8 +426,6 @@ PetscErrorCode TaoSetJacobianDesignRoutine(Tao tao, Mat J, PetscErrorCode (*func
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetStateDesignIS"
 /*@
    TaoSetStateDesignIS - Indicate to the Tao which variables in the
    solution vector are state variables and which are design.  Only applies to
@@ -474,8 +456,6 @@ PetscErrorCode TaoSetStateDesignIS(Tao tao, IS s_is, IS d_is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoComputeJacobianEquality"
 /*@C
    TaoComputeJacobianEquality - Computes the Jacobian matrix that has been
    set with TaoSetJacobianEqualityRoutine().
@@ -518,8 +498,6 @@ PetscErrorCode TaoComputeJacobianEquality(Tao tao, Vec X, Mat J, Mat Jpre)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoComputeJacobianInequality"
 /*@C
    TaoComputeJacobianInequality - Computes the Jacobian matrix that has been
    set with TaoSetJacobianInequalityRoutine().
@@ -562,8 +540,6 @@ PetscErrorCode TaoComputeJacobianInequality(Tao tao, Vec X, Mat J, Mat Jpre)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetJacobianEqualityRoutine"
 /*@C
    TaoSetJacobianEqualityRoutine - Sets the function to compute the Jacobian
    (and its inverse) of the constraint function with respect to the equality variables.
@@ -624,8 +600,6 @@ PetscErrorCode TaoSetJacobianEqualityRoutine(Tao tao, Mat J, Mat Jpre, PetscErro
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetJacobianInequalityRoutine"
 /*@C
    TaoSetJacobianInequalityRoutine - Sets the function to compute the Jacobian
    (and its inverse) of the constraint function with respect to the inequality variables.

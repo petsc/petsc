@@ -18,8 +18,6 @@ T*/
 */
 #include <petscksp.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Vec            x, b, u;      /* approx solution, RHS, exact solution */
@@ -31,7 +29,7 @@ int main(int argc,char **args)
   PetscInt       i,n = 10,col[3],its;
   PetscMPIInt    size;
   PetscScalar    one = 1.0,value[3];
-  PetscBool      nonzeroguess = PETSC_FALSE;
+  PetscBool      nonzeroguess = PETSC_FALSE,changepcside = PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -103,6 +101,17 @@ int main(int argc,char **args)
      also serves as the preconditioning matrix.
   */
   ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
+
+  /*
+     Test if you can change the KSP side and type after they have been previously set
+  */
+  ierr = PetscOptionsGetBool(NULL,NULL,"-change_pc_side",&changepcside,NULL);CHKERRQ(ierr);
+  if (changepcside) {
+    ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+    ierr = PetscOptionsInsertString(NULL,"-ksp_norm_type unpreconditioned -ksp_pc_side right");CHKERRQ(ierr);
+    ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+    ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+  }
 
   /*
      Set linear solver defaults for this problem (optional).

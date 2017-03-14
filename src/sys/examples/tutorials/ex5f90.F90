@@ -1,7 +1,11 @@
 #define PETSC_USE_FORTRAN_MODULES 1
-#include <petsc/finclude/petscsysdef.h>
-#include <petsc/finclude/petscbagdef.h>
-#include <petsc/finclude/petscviewerdef.h>
+!/*T
+!   requires: define(PETSC_USING_F2003) define(PETSC_USING_FREEFORM)
+!T*/
+
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscbag.h>
+#include <petsc/finclude/petscviewer.h>
 
       module Bag_data_module
 !     Data structure used to contain information about the problem
@@ -120,3 +124,11 @@
 
       call PetscFinalize(ierr)
       end program ex5f90
+
+!
+!/*TEST
+!
+!   test:
+!      args: -pbag_rarray 4,5,88
+!
+!TEST*/

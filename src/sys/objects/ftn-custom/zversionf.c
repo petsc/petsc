@@ -16,9 +16,7 @@
 extern "C" {
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ ""
-PETSC_EXTERN void PETSC_STDCALL  petscgetversion_(CHAR version PETSC_MIXED_LEN(len1),int *ierr PETSC_END_LEN(len1))
+PETSC_EXTERN void PETSC_STDCALL  petscgetversion_(char* version PETSC_MIXED_LEN(len1),int *ierr PETSC_END_LEN(len1))
 {
   *ierr = PetscGetVersion(version,len1);
   FIXRETURNCHAR(PETSC_TRUE,version,len1);

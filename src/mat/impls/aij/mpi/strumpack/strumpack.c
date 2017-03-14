@@ -2,8 +2,6 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <StrumpackSparseSolver.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetDiagonal_STRUMPACK"
 static PetscErrorCode MatGetDiagonal_STRUMPACK(Mat A,Vec v)
 {
   PetscFunctionBegin;
@@ -11,8 +9,6 @@ static PetscErrorCode MatGetDiagonal_STRUMPACK(Mat A,Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_STRUMPACK"
 static PetscErrorCode MatDestroy_STRUMPACK(Mat A)
 {
   STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver*)A->spptr;
@@ -39,8 +35,6 @@ static PetscErrorCode MatDestroy_STRUMPACK(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSTRUMPACKSetHSSRelCompTol_STRUMPACK"
 static PetscErrorCode MatSTRUMPACKSetHSSRelCompTol_STRUMPACK(Mat F,PetscReal rctol)
 {
   STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver*)F->spptr;
@@ -50,8 +44,6 @@ static PetscErrorCode MatSTRUMPACKSetHSSRelCompTol_STRUMPACK(Mat F,PetscReal rct
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSTRUMPACKSetHSSRelCompTol"
 /*@
   MatSTRUMPACKSetHSSRelCompTol - Set STRUMPACK relative tolerance for HSS compression
    Logically Collective on Mat
@@ -81,8 +73,6 @@ PetscErrorCode MatSTRUMPACKSetHSSRelCompTol(Mat F,PetscReal rctol)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSTRUMPACKSetHSSMinSize_STRUMPACK"
 static PetscErrorCode MatSTRUMPACKSetHSSMinSize_STRUMPACK(Mat F,PetscInt hssminsize)
 {
   STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver*)F->spptr;
@@ -92,8 +82,6 @@ static PetscErrorCode MatSTRUMPACKSetHSSMinSize_STRUMPACK(Mat F,PetscInt hssmins
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSTRUMPACKSetHSSMinSize"
 /*@
   MatSTRUMPACKSetHSSMinSize - Set STRUMPACK minimum dense matrix size for low-rank approximation
    Logically Collective on Mat
@@ -123,8 +111,6 @@ PetscErrorCode MatSTRUMPACKSetHSSMinSize(Mat F,PetscInt hssminsize)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSTRUMPACKSetColPerm_STRUMPACK"
 static PetscErrorCode MatSTRUMPACKSetColPerm_STRUMPACK(Mat F,PetscBool cperm)
 {
   STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver*)F->spptr;
@@ -134,8 +120,6 @@ static PetscErrorCode MatSTRUMPACKSetColPerm_STRUMPACK(Mat F,PetscBool cperm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSTRUMPACKSetColPerm"
 /*@
   MatSTRUMPACKSetColPerm - Set whether STRUMPACK should try to permute the columns of the matrix in order to get a nonzero diagonal
    Logically Collective on Mat
@@ -165,8 +149,6 @@ PetscErrorCode MatSTRUMPACKSetColPerm(Mat F,PetscBool cperm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolve_STRUMPACK"
 static PetscErrorCode MatSolve_STRUMPACK(Mat A,Vec b_mpi,Vec x)
 {
   STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver*)A->spptr;
@@ -191,8 +173,6 @@ static PetscErrorCode MatSolve_STRUMPACK(Mat A,Vec b_mpi,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMatSolve_STRUMPACK"
 static PetscErrorCode MatMatSolve_STRUMPACK(Mat A,Mat B_mpi,Mat X)
 {
   PetscErrorCode   ierr;
@@ -207,8 +187,6 @@ static PetscErrorCode MatMatSolve_STRUMPACK(Mat A,Mat B_mpi,Mat X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFactorInfo_STRUMPACK"
 static PetscErrorCode MatFactorInfo_STRUMPACK(Mat A,PetscViewer viewer)
 {
   PetscErrorCode  ierr;
@@ -220,8 +198,6 @@ static PetscErrorCode MatFactorInfo_STRUMPACK(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatView_STRUMPACK"
 static PetscErrorCode MatView_STRUMPACK(Mat A,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
@@ -239,8 +215,6 @@ static PetscErrorCode MatView_STRUMPACK(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLUFactorNumeric_STRUMPACK"
 static PetscErrorCode MatLUFactorNumeric_STRUMPACK(Mat F,Mat A,const MatFactorInfo *info)
 {
   STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver*)F->spptr;
@@ -276,8 +250,6 @@ static PetscErrorCode MatLUFactorNumeric_STRUMPACK(Mat F,Mat A,const MatFactorIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLUFactorSymbolic_STRUMPACK"
 static PetscErrorCode MatLUFactorSymbolic_STRUMPACK(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   PetscFunctionBegin;
@@ -287,8 +259,6 @@ static PetscErrorCode MatLUFactorSymbolic_STRUMPACK(Mat F,Mat A,IS r,IS c,const 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFactorGetSolverPackage_aij_strumpack"
 static PetscErrorCode MatFactorGetSolverPackage_aij_strumpack(Mat A,const MatSolverPackage *type)
 {
   PetscFunctionBegin;
@@ -323,8 +293,6 @@ static PetscErrorCode MatFactorGetSolverPackage_aij_strumpack(Mat A,const MatSol
 
 .seealso: PCLU, PCILU, MATSOLVERSUPERLU_DIST, MATSOLVERMUMPS, PCFactorSetMatSolverPackage(), MatSolverPackage
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "MatGetFactor_aij_strumpack"
 static PetscErrorCode MatGetFactor_aij_strumpack(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat                    B;
@@ -422,8 +390,6 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A,MatFactorType ftype,Mat *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolverPackageRegister_STRUMPACK"
 PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_STRUMPACK(void)
 {
   PetscErrorCode ierr;

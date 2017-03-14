@@ -2,8 +2,6 @@ static char help[] = "Test ViennaCL Matrix Conversions";
 
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   PetscErrorCode ierr;

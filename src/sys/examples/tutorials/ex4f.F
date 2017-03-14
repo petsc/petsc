@@ -10,8 +10,9 @@
 ! -----------------------------------------------------------------------
 
       program main
-      implicit none
 #include <petsc/finclude/petscsys.h>
+      use petscsys
+      implicit none
       PetscErrorCode ierr
       PetscMPIInt    rank, size
 
@@ -62,3 +63,13 @@
 
       call  MPI_Finalize(ierr)
       end
+
+!
+!/*TEST
+!
+!   test:
+!      nsize: 5
+!      filter: sort -b
+!      filter_output: sort -b
+!
+!TEST*/

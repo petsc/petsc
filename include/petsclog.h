@@ -198,8 +198,6 @@ PETSC_EXTERN PetscStageLog petsc_stageLog;
 #define PETSC_FLOPS_PER_OP 1.0
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogFlops"
 PETSC_STATIC_INLINE PetscErrorCode PetscLogFlops(PetscLogDouble n)
 {
   PetscFunctionBegin;
@@ -517,9 +515,5 @@ do {\
 /* some vars for logging */
 PETSC_EXTERN PetscBool PetscPreLoadingUsed;       /* true if we are or have done preloading */
 PETSC_EXTERN PetscBool PetscPreLoadingOn;         /* true if we are currently in a preloading calculation */
-
-/* Reset __FUNCT__ in case the user does not define it themselves */
-#undef __FUNCT__
-#define __FUNCT__ "User provided function"
 
 #endif

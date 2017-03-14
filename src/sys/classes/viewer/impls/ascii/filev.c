@@ -3,8 +3,6 @@
 
 #define QUEUESTRINGSIZE 8192
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFileClose_ASCII"
 static PetscErrorCode PetscViewerFileClose_ASCII(PetscViewer viewer)
 {
   PetscErrorCode    ierr;
@@ -38,8 +36,6 @@ static PetscErrorCode PetscViewerFileClose_ASCII(PetscViewer viewer)
 }
 
 /* ----------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerDestroy_ASCII"
 PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
 {
   PetscErrorCode    ierr;
@@ -80,8 +76,6 @@ PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerDestroy_ASCII_SubViewer"
 PetscErrorCode PetscViewerDestroy_ASCII_SubViewer(PetscViewer viewer)
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII*)viewer->data;
@@ -92,8 +86,6 @@ PetscErrorCode PetscViewerDestroy_ASCII_SubViewer(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFlush_ASCII"
 PetscErrorCode PetscViewerFlush_ASCII(PetscViewer viewer)
 {
   PetscErrorCode    ierr;
@@ -176,8 +168,6 @@ PetscErrorCode PetscViewerFlush_ASCII(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerASCIIGetPointer"
 /*@C
     PetscViewerASCIIGetPointer - Extracts the file pointer from an ASCII PetscViewer.
 
@@ -206,8 +196,6 @@ PetscErrorCode  PetscViewerASCIIGetPointer(PetscViewer viewer,FILE **fd)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFileGetMode_ASCII"
 PetscErrorCode  PetscViewerFileGetMode_ASCII(PetscViewer viewer, PetscFileMode *mode)
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII*)viewer->data;
@@ -217,8 +205,6 @@ PetscErrorCode  PetscViewerFileGetMode_ASCII(PetscViewer viewer, PetscFileMode *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFileSetMode_ASCII"
 PetscErrorCode  PetscViewerFileSetMode_ASCII(PetscViewer viewer, PetscFileMode mode)
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII*)viewer->data;
@@ -234,8 +220,6 @@ PetscErrorCode  PetscViewerFileSetMode_ASCII(PetscViewer viewer, PetscFileMode m
 */
 extern FILE *petsc_history;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerASCIISetTab"
 /*@
     PetscViewerASCIISetTab - Causes PetscViewer to tab in a number of times
 
@@ -270,8 +254,6 @@ PetscErrorCode  PetscViewerASCIISetTab(PetscViewer viewer,PetscInt tabs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerASCIIGetTab"
 /*@
     PetscViewerASCIIGetTab - Return the number of tabs used by PetscViewer.
 
@@ -307,8 +289,6 @@ PetscErrorCode  PetscViewerASCIIGetTab(PetscViewer viewer,PetscInt *tabs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerASCIIAddTab"
 /*@
     PetscViewerASCIIAddTab - Add to the number of times an ASCII viewer tabs before printing
 
@@ -343,8 +323,6 @@ PetscErrorCode  PetscViewerASCIIAddTab(PetscViewer viewer,PetscInt tabs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerASCIISubtractTab"
 /*@
     PetscViewerASCIISubtractTab - Subtracts from the number of times an ASCII viewer tabs before printing
 
@@ -379,8 +357,6 @@ PetscErrorCode  PetscViewerASCIISubtractTab(PetscViewer viewer,PetscInt tabs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerASCIIPushSynchronized"
 /*@C
     PetscViewerASCIIPushSynchronized - Allows calls to PetscViewerASCIISynchronizedPrintf() for this viewer
 
@@ -411,8 +387,6 @@ PetscErrorCode  PetscViewerASCIIPushSynchronized(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerASCIIPopSynchronized"
 /*@C
     PetscViewerASCIIPopSynchronized - Undoes most recent PetscViewerASCIIPushSynchronized() for this viewer
 
@@ -446,8 +420,6 @@ PetscErrorCode  PetscViewerASCIIPopSynchronized(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerASCIIPushTab"
 /*@
     PetscViewerASCIIPushTab - Adds one more tab to the amount that PetscViewerASCIIPrintf()
      lines are tabbed.
@@ -482,8 +454,6 @@ PetscErrorCode  PetscViewerASCIIPushTab(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerASCIIPopTab"
 /*@
     PetscViewerASCIIPopTab - Removes one tab from the amount that PetscViewerASCIIPrintf()
      lines are tabbed.
@@ -521,8 +491,6 @@ PetscErrorCode  PetscViewerASCIIPopTab(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerASCIIUseTabs"
 /*@
     PetscViewerASCIIUseTabs - Turns on or off the use of tabs with the ASCII PetscViewer
 
@@ -566,8 +534,6 @@ PetscErrorCode  PetscViewerASCIIUseTabs(PetscViewer viewer,PetscBool flg)
 /* ----------------------------------------------------------------------- */
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerASCIIPrintf"
 /*@C
     PetscViewerASCIIPrintf - Prints to a file, only from the first
     processor in the PetscViewer
@@ -659,8 +625,6 @@ PetscErrorCode  PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],..
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFileSetName"
 /*@C
      PetscViewerFileSetName - Sets the name of the file the PetscViewer uses.
 
@@ -687,8 +651,6 @@ PetscErrorCode  PetscViewerFileSetName(PetscViewer viewer,const char name[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFileGetName"
 /*@C
      PetscViewerFileGetName - Gets the name of the file the PetscViewer uses.
 
@@ -715,8 +677,6 @@ PetscErrorCode  PetscViewerFileGetName(PetscViewer viewer,const char **name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFileGetName_ASCII"
 PetscErrorCode  PetscViewerFileGetName_ASCII(PetscViewer viewer,const char **name)
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII*)viewer->data;
@@ -726,8 +686,6 @@ PetscErrorCode  PetscViewerFileGetName_ASCII(PetscViewer viewer,const char **nam
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFileSetName_ASCII"
 PetscErrorCode  PetscViewerFileSetName_ASCII(PetscViewer viewer,const char name[])
 {
   PetscErrorCode    ierr;
@@ -801,8 +759,6 @@ PetscErrorCode  PetscViewerFileSetName_ASCII(PetscViewer viewer,const char name[
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerGetSubViewer_ASCII"
 PetscErrorCode PetscViewerGetSubViewer_ASCII(PetscViewer viewer,MPI_Comm subcomm,PetscViewer *outviewer)
 {
   PetscMPIInt       rank;
@@ -830,8 +786,6 @@ PetscErrorCode PetscViewerGetSubViewer_ASCII(PetscViewer viewer,MPI_Comm subcomm
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerRestoreSubViewer_ASCII"
 PetscErrorCode PetscViewerRestoreSubViewer_ASCII(PetscViewer viewer,MPI_Comm comm,PetscViewer *outviewer)
 {
   PetscErrorCode    ierr;
@@ -847,8 +801,6 @@ PetscErrorCode PetscViewerRestoreSubViewer_ASCII(PetscViewer viewer,MPI_Comm com
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerView_ASCII"
 PetscErrorCode  PetscViewerView_ASCII(PetscViewer v,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
@@ -869,9 +821,9 @@ PetscErrorCode  PetscViewerView_ASCII(PetscViewer v,PetscViewer viewer)
            PetscViewerMatlabOpen(), VecView(), DMView(), PetscViewerMatlabPutArray(), PETSCVIEWERBINARY, PETSCVIEWERMATLAB,
            PetscViewerFileSetName(), PetscViewerFileSetMode(), PetscViewerFormat, PetscViewerType, PetscViewerSetType()
 
+  Level: beginner
+
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerCreate_ASCII"
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_ASCII(PetscViewer viewer)
 {
   PetscViewer_ASCII *vascii;
@@ -906,8 +858,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ASCII(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerASCIISynchronizedPrintf"
 /*@C
     PetscViewerASCIISynchronizedPrintf - Prints synchronized output to the specified file from
     several processors.  Output of the first processor is followed by that of the
@@ -1022,8 +972,6 @@ PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerASCIIRead"
 /*@C
    PetscViewerASCIIRead - Reads from am ASCII file
 

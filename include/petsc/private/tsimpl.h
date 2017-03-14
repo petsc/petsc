@@ -317,6 +317,7 @@ struct _n_TSEvent {
     PetscInt  **eventidx; /* Local indices of the events in the event list */
   } recorder;
   PetscInt  recsize; /* Size of recorder stack */
+  PetscInt  refct; /* reference count */
 };
 
 PETSC_EXTERN PetscErrorCode TSEventInitialize(TSEvent,TS,PetscReal,Vec);
@@ -348,6 +349,22 @@ struct _n_TSMonitorLGCtx {
 struct _n_TSMonitorEnvelopeCtx {
   Vec max,min;
 };
+
+/*
+    Checks if the user provide a TSSetIFunction() but an explicit method is called; generate an error in that case
+*/
+PETSC_STATIC_INLINE PetscErrorCode TSCheckImplicitTerm(TS ts)
+{
+  TSIFunction      ifunction;
+  DM               dm;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr = DMTSGetIFunction(dm,&ifunction,NULL);CHKERRQ(ierr);
+  if (ifunction) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_INCOMP,"You are attempting to use an explicit ODE integrator but provided an implicit function definition with TSSetIFunction()");
+  PetscFunctionReturn(0);
+}
 
 PETSC_EXTERN PetscLogEvent TSTrajectory_Set, TSTrajectory_Get, TSTrajectory_DiskWrite, TSTrajectory_DiskRead;
 

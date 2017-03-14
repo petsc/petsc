@@ -14,8 +14,6 @@ const char *const TSConvergedReasons_Shifted[] = {
   "TSConvergedReason","TS_",0};
 const char *const*TSConvergedReasons = TSConvergedReasons_Shifted + 2;
 
-#undef  __FUNCT__
-#define __FUNCT__ "TSCreate"
 /*@C
   TSCreate - This function creates an empty timestepper. The problem type can then be set with TSSetProblemType() and the
        type of solver can then be set with TSSetType().
@@ -57,6 +55,7 @@ PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts)
   t->time_step         = 0.1;
   t->max_time          = 5.0;
   t->steprollback      = PETSC_FALSE;
+  t->steprestart       = PETSC_FALSE;
   t->steps             = 0;
   t->max_steps         = 5000;
   t->ksp_its           = 0;

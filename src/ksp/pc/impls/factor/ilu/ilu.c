@@ -4,8 +4,6 @@
 */
 #include <../src/ksp/pc/impls/factor/ilu/ilu.h>     /*I "petscpc.h"  I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFactorReorderForNonzeroDiagonal_ILU"
 PetscErrorCode  PCFactorReorderForNonzeroDiagonal_ILU(PC pc,PetscReal z)
 {
   PC_ILU *ilu = (PC_ILU*)pc->data;
@@ -17,8 +15,6 @@ PetscErrorCode  PCFactorReorderForNonzeroDiagonal_ILU(PC pc,PetscReal z)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCReset_ILU"
 PetscErrorCode PCReset_ILU(PC pc)
 {
   PC_ILU         *ilu = (PC_ILU*)pc->data;
@@ -31,8 +27,6 @@ PetscErrorCode PCReset_ILU(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFactorSetDropTolerance_ILU"
 PetscErrorCode  PCFactorSetDropTolerance_ILU(PC pc,PetscReal dt,PetscReal dtcol,PetscInt dtcount)
 {
   PC_ILU *ilu = (PC_ILU*)pc->data;
@@ -48,8 +42,6 @@ PetscErrorCode  PCFactorSetDropTolerance_ILU(PC pc,PetscReal dt,PetscReal dtcol,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_ILU"
 static PetscErrorCode PCSetFromOptions_ILU(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
@@ -78,8 +70,6 @@ static PetscErrorCode PCSetFromOptions_ILU(PetscOptionItems *PetscOptionsObject,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCView_ILU"
 static PetscErrorCode PCView_ILU(PC pc,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -89,8 +79,6 @@ static PetscErrorCode PCView_ILU(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_ILU"
 static PetscErrorCode PCSetUp_ILU(PC pc)
 {
   PetscErrorCode         ierr;
@@ -201,8 +189,6 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_ILU"
 static PetscErrorCode PCDestroy_ILU(PC pc)
 {
   PC_ILU         *ilu = (PC_ILU*)pc->data;
@@ -216,8 +202,6 @@ static PetscErrorCode PCDestroy_ILU(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_ILU"
 static PetscErrorCode PCApply_ILU(PC pc,Vec x,Vec y)
 {
   PC_ILU         *ilu = (PC_ILU*)pc->data;
@@ -228,8 +212,6 @@ static PetscErrorCode PCApply_ILU(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApplyTranspose_ILU"
 static PetscErrorCode PCApplyTranspose_ILU(PC pc,Vec x,Vec y)
 {
   PC_ILU         *ilu = (PC_ILU*)pc->data;
@@ -240,8 +222,6 @@ static PetscErrorCode PCApplyTranspose_ILU(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApplySymmetricLeft_ILU"
 static PetscErrorCode PCApplySymmetricLeft_ILU(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
@@ -252,8 +232,6 @@ static PetscErrorCode PCApplySymmetricLeft_ILU(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApplySymmetricRight_ILU"
 static PetscErrorCode PCApplySymmetricRight_ILU(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
@@ -313,8 +291,6 @@ static PetscErrorCode PCApplySymmetricRight_ILU(PC pc,Vec x,Vec y)
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_ILU"
 PETSC_EXTERN PetscErrorCode PCCreate_ILU(PC pc)
 {
   PetscErrorCode ierr;

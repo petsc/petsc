@@ -10,8 +10,6 @@ typedef struct {
   Mat       L;             /* keep a copy to reuse when obtained with L = A10*A01 */
 } PC_LSC;
 
-#undef __FUNCT__
-#define __FUNCT__ "PCLSCAllocate_Private"
 static PetscErrorCode PCLSCAllocate_Private(PC pc)
 {
   PC_LSC         *lsc = (PC_LSC*)pc->data;
@@ -36,8 +34,6 @@ static PetscErrorCode PCLSCAllocate_Private(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_LSC"
 static PetscErrorCode PCSetUp_LSC(PC pc)
 {
   PC_LSC         *lsc = (PC_LSC*)pc->data;
@@ -70,8 +66,6 @@ static PetscErrorCode PCSetUp_LSC(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_LSC"
 static PetscErrorCode PCApply_LSC(PC pc,Vec x,Vec y)
 {
   PC_LSC         *lsc = (PC_LSC*)pc->data;
@@ -94,8 +88,6 @@ static PetscErrorCode PCApply_LSC(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCReset_LSC"
 static PetscErrorCode PCReset_LSC(PC pc)
 {
   PC_LSC         *lsc = (PC_LSC*)pc->data;
@@ -111,8 +103,6 @@ static PetscErrorCode PCReset_LSC(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_LSC"
 static PetscErrorCode PCDestroy_LSC(PC pc)
 {
   PetscErrorCode ierr;
@@ -123,8 +113,6 @@ static PetscErrorCode PCDestroy_LSC(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_LSC"
 static PetscErrorCode PCSetFromOptions_LSC(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_LSC         *lsc = (PC_LSC*)pc->data;
@@ -139,8 +127,6 @@ static PetscErrorCode PCSetFromOptions_LSC(PetscOptionItems *PetscOptionsObject,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCView_LSC"
 static PetscErrorCode PCView_LSC(PC pc,PetscViewer viewer)
 {
   PC_LSC         *jac = (PC_LSC*)pc->data;
@@ -221,8 +207,6 @@ static PetscErrorCode PCView_LSC(PC pc,PetscViewer viewer)
            MatCreateSchurComplement()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_LSC"
 PETSC_EXTERN PetscErrorCode PCCreate_LSC(PC pc)
 {
   PC_LSC         *lsc;

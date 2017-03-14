@@ -1,0 +1,74 @@
+
+      Interface
+        Subroutine DMPlexGetCellFields(m,s,e,x,xt,a,u,ut,v,ierr)
+          use petscdmdef
+          PetscInt  s, e
+          Vec  x, xt, a
+          PetscScalar, pointer :: u(:)
+          PetscScalar, pointer :: ut(:)
+          PetscScalar, pointer :: v(:)
+          PetscErrorCode ierr
+          DM m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexRestoreCellFields(m,s,e,x,xt,a,u,ut,v,ierr)
+          use petscdmdef
+          PetscInt  s, e
+          Vec  x, xt, a
+          PetscScalar, pointer :: u(:)
+          PetscScalar, pointer :: ut(:)
+          PetscScalar, pointer :: v(:)
+          PetscErrorCode ierr
+          DM m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexGetFaceFields(m,s,e,x,xt,f,c,g,uL,uR,ierr)
+          use petscdmdef
+          PetscInt  s, e
+          Vec  x, xt, f, c, g
+          PetscScalar, pointer :: uL(:)
+          PetscScalar, pointer :: uR(:)
+          PetscErrorCode ierr
+          DM m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexRestoreFaceFields(m,s,e,x,xt,f,c,g,uL,uR,ierr)
+          use petscdmdef
+          PetscInt  s, e
+          Vec  x, xt, f, c, g
+          PetscScalar, pointer :: uL(:)
+          PetscScalar, pointer :: uR(:)
+          PetscErrorCode ierr
+          DM m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexGetFaceGeometry(m,s,e,f,c,g,v,ierr)
+          use petscdmdef
+          PetscInt  s, e
+          Vec  f, c
+          PetscScalar, pointer :: g(:)
+          PetscScalar, pointer :: v(:)
+          PetscErrorCode ierr
+          DM m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexRestoreFaceGeometry(m,s,e,f,c,g,v,ierr)
+          use petscdmdef
+          PetscInt  s, e
+          Vec  f, c
+          PetscScalar, pointer :: g(:)
+          PetscScalar, pointer :: v(:)
+          PetscErrorCode ierr
+          DM m
+        End Subroutine
+      End Interface

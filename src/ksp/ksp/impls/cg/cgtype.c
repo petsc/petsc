@@ -1,8 +1,6 @@
 
 #include <../src/ksp/ksp/impls/cg/cgimpl.h>       /*I "petscksp.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPCGSetType"
 /*@
     KSPCGSetType - Sets the variant of the conjugate gradient method to
     use for solving a linear system with a complex coefficient matrix.
@@ -39,8 +37,6 @@ PetscErrorCode  KSPCGSetType(KSP ksp,KSPCGType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPCGUseSingleReduction"
 /*@
     KSPCGUseSingleReduction - Merge the two inner products needed in CG into a single MPI_Allreduce() call.
 
@@ -76,8 +72,6 @@ PetscErrorCode  KSPCGUseSingleReduction(KSP ksp,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPCGSetRadius"
 /*@
     KSPCGSetRadius - Sets the radius of the trust region.
 
@@ -103,8 +97,6 @@ PetscErrorCode  KSPCGSetRadius(KSP ksp, PetscReal radius)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPCGGetNormD"
 /*@
     KSPCGGetNormD - Got norm of the direction.
 
@@ -128,8 +120,6 @@ PetscErrorCode  KSPCGGetNormD(KSP ksp, PetscReal *norm_d)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPCGGetObjFcn"
 /*@
     KSPCGGetObjFcn - Get objective function value.
 

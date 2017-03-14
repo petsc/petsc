@@ -25,8 +25,6 @@ typedef struct {
   SNESQNRestartType restart_type;         /* determine the frequency and type of restart conditions */
 } SNES_QN;
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESQNApply_Broyden"
 PetscErrorCode SNESQNApply_Broyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Vec D)
 {
   PetscErrorCode     ierr;
@@ -110,8 +108,6 @@ PetscErrorCode SNESQNApply_Broyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Ve
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESQNApply_BadBroyden"
 PetscErrorCode SNESQNApply_BadBroyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Vec D,Vec Dold)
 {
   PetscErrorCode ierr;
@@ -170,8 +166,6 @@ PetscErrorCode SNESQNApply_BadBroyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESQNApply_LBFGS"
 PetscErrorCode SNESQNApply_LBFGS(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Vec D,Vec Dold)
 {
   PetscErrorCode ierr;
@@ -280,8 +274,6 @@ PetscErrorCode SNESQNApply_LBFGS(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Vec 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSolve_QN"
 static PetscErrorCode SNESSolve_QN(SNES snes)
 {
   PetscErrorCode       ierr;
@@ -505,8 +497,6 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetUp_QN"
 static PetscErrorCode SNESSetUp_QN(SNES snes)
 {
   SNES_QN        *qn = (SNES_QN*)snes->data;
@@ -551,8 +541,6 @@ static PetscErrorCode SNESSetUp_QN(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESReset_QN"
 static PetscErrorCode SNESReset_QN(SNES snes)
 {
   PetscErrorCode ierr;
@@ -575,8 +563,6 @@ static PetscErrorCode SNESReset_QN(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESDestroy_QN"
 static PetscErrorCode SNESDestroy_QN(SNES snes)
 {
   PetscErrorCode ierr;
@@ -588,8 +574,6 @@ static PetscErrorCode SNESDestroy_QN(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetFromOptions_QN"
 static PetscErrorCode SNESSetFromOptions_QN(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
 
@@ -632,8 +616,6 @@ static PetscErrorCode SNESSetFromOptions_QN(PetscOptionItems *PetscOptionsObject
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESView_QN"
 static PetscErrorCode SNESView_QN(SNES snes, PetscViewer viewer)
 {
   SNES_QN        *qn    = (SNES_QN*)snes->data;
@@ -652,8 +634,6 @@ static PetscErrorCode SNESView_QN(SNES snes, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESQNSetRestartType"
 /*@
     SNESQNSetRestartType - Sets the restart type for SNESQN.
 
@@ -686,8 +666,6 @@ PetscErrorCode SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESQNSetScaleType"
 /*@
     SNESQNSetScaleType - Sets the scaling type for the inner inverse Jacobian in SNESQN.
 
@@ -724,8 +702,6 @@ PetscErrorCode SNESQNSetScaleType(SNES snes, SNESQNScaleType stype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESQNSetScaleType_QN"
 PetscErrorCode SNESQNSetScaleType_QN(SNES snes, SNESQNScaleType stype)
 {
   SNES_QN *qn = (SNES_QN*)snes->data;
@@ -735,8 +711,6 @@ PetscErrorCode SNESQNSetScaleType_QN(SNES snes, SNESQNScaleType stype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESQNSetRestartType_QN"
 PetscErrorCode SNESQNSetRestartType_QN(SNES snes, SNESQNRestartType rtype)
 {
   SNES_QN *qn = (SNES_QN*)snes->data;
@@ -746,8 +720,6 @@ PetscErrorCode SNESQNSetRestartType_QN(SNES snes, SNESQNRestartType rtype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESQNSetType"
 /*@
     SNESQNSetType - Sets the quasi-Newton variant to be used in SNESQN.
 
@@ -780,8 +752,6 @@ PetscErrorCode SNESQNSetType(SNES snes, SNESQNType qtype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESQNSetType_QN"
 PetscErrorCode SNESQNSetType_QN(SNES snes, SNESQNType qtype)
 {
   SNES_QN *qn = (SNES_QN*)snes->data;
@@ -831,8 +801,6 @@ PetscErrorCode SNESQNSetType_QN(SNES snes, SNESQNType qtype)
 .seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNEWTONTR
 
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "SNESCreate_QN"
 PETSC_EXTERN PetscErrorCode SNESCreate_QN(SNES snes)
 {
   PetscErrorCode ierr;

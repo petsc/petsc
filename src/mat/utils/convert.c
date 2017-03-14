@@ -1,8 +1,6 @@
 
 #include <petsc/private/matimpl.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatConvert_Basic"
 /*
   MatConvert_Basic - Converts from any input format to another format. For
   parallel formats, the new matrix distribution is determined by PETSc.

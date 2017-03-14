@@ -62,7 +62,7 @@ PETSC_EXTERN void PETSC_STDCALL petsclogview_(PetscViewer *viewer,PetscErrorCode
 #endif
 }
 
-PETSC_EXTERN void PETSC_STDCALL petsclogdump_(CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL petsclogdump_(char* name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
 #if defined(PETSC_USE_LOG)
   char *t1;
@@ -71,7 +71,7 @@ PETSC_EXTERN void PETSC_STDCALL petsclogdump_(CHAR name PETSC_MIXED_LEN(len),Pet
   FREECHAR(name,t1);
 #endif
 }
-PETSC_EXTERN void PETSC_STDCALL petsclogeventregister_(CHAR string PETSC_MIXED_LEN(len),PetscClassId *classid,PetscLogEvent *e,PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL petsclogeventregister_(char* string PETSC_MIXED_LEN(len),PetscClassId *classid,PetscLogEvent *e,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
 #if defined(PETSC_USE_LOG)
   char *t1;
@@ -80,7 +80,7 @@ PETSC_EXTERN void PETSC_STDCALL petsclogeventregister_(CHAR string PETSC_MIXED_L
   FREECHAR(string,t1);
 #endif
 }
-PETSC_EXTERN void PETSC_STDCALL petscclassidregister_(CHAR string PETSC_MIXED_LEN(len),PetscClassId *e,PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL petscclassidregister_(char* string PETSC_MIXED_LEN(len),PetscClassId *e,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
 #if defined(PETSC_USE_LOG)
   char *t1;
@@ -126,7 +126,7 @@ PETSC_EXTERN void PETSC_STDCALL petsclogstagepop_(PetscErrorCode *ierr)
 #endif
 }
 
-PETSC_EXTERN void PETSC_STDCALL petsclogstageregister_(CHAR sname PETSC_MIXED_LEN(len),PetscLogStage *stage,PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL petsclogstageregister_(char* sname PETSC_MIXED_LEN(len),PetscLogStage *stage,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
 #if defined(PETSC_USE_LOG)
   char *t;
@@ -153,7 +153,7 @@ PETSC_EXTERN void PETSC_STDCALL petscgetflops_(PetscLogDouble *d,PetscErrorCode 
 #endif
 }
 
-PETSC_EXTERN void PETSC_STDCALL petsclogstagegetid_(CHAR sname PETSC_MIXED_LEN(len),PetscLogStage *stage, int *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL petsclogstagegetid_(char* sname PETSC_MIXED_LEN(len),PetscLogStage *stage, int *ierr PETSC_END_LEN(len))
 {
 #if defined(PETSC_USE_LOG)
   char *t;

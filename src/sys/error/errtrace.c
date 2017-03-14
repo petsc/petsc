@@ -6,8 +6,6 @@
 #include <unistd.h>
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscIgnoreErrorHandler"
 /*@C
    PetscIgnoreErrorHandler - Ignores the error, allows program to continue as if error did not occure
 
@@ -16,7 +14,6 @@
    Input Parameters:
 +  comm - communicator over which error occurred
 .  line - the line number of the error (indicated by __LINE__)
-.  func - the function where error is detected (indicated by __FUNCT__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  mess - an error text string, usually just printed to the screen
 .  n - the generic error number
@@ -54,8 +51,6 @@ static char      arch[128],hostname[128],username[128],pname[PETSC_MAX_PATH_LEN]
 static PetscBool PetscErrorPrintfInitializeCalled = PETSC_FALSE;
 static char      version[256];
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscErrorPrintfInitialize"
 /*
    Initializes arch, hostname, username,date so that system calls do NOT need
    to be made during the error handler.
@@ -81,15 +76,11 @@ PetscErrorCode  PetscErrorPrintfInitialize()
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscErrorPrintfNone"
 PetscErrorCode  PetscErrorPrintfNone(const char format[],...)
 {
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscErrorPrintfDefault"
 PetscErrorCode  PetscErrorPrintfDefault(const char format[],...)
 {
   va_list          Argp;
@@ -147,8 +138,6 @@ static void PetscErrorPrintfNormal(void)
 
 extern PetscErrorCode  PetscOptionsViewError(void);
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscTraceBackErrorHandler"
 /*@C
 
    PetscTraceBackErrorHandler - Default error handler routine that generates
@@ -159,7 +148,6 @@ extern PetscErrorCode  PetscOptionsViewError(void);
    Input Parameters:
 +  comm - communicator over which error occurred
 .  line - the line number of the error (indicated by __LINE__)
-.  func - the function where error is detected (indicated by __FUNCT__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  mess - an error text string, usually just printed to the screen
 .  n - the generic error number
@@ -195,7 +183,7 @@ PetscErrorCode  PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fu
   if (comm != PETSC_COMM_SELF) MPI_Comm_rank(comm,&rank);
 
   if (!rank) {
-    PetscBool  ismain,isunknown;
+    PetscBool  ismain;
     static int cnt = 1;
 
     if (p == PETSC_ERROR_INITIAL) {
@@ -231,8 +219,7 @@ PetscErrorCode  PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fu
     /* print line of stack trace */
     (*PetscErrorPrintf)("#%d %s() line %d in %s\n",cnt++,fun,line,file);
     PetscStrncmp(fun,"main",4,&ismain);
-    PetscStrncmp(fun,"unknown",7,&isunknown);
-    if (ismain || isunknown) {
+    if (ismain) {
       PetscOptionsViewError();
       PetscErrorPrintfHilight();
       (*PetscErrorPrintf)("----------------End of Error Message -------send entire error message to petsc-maint@mcs.anl.gov----------\n");

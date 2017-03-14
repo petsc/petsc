@@ -24,6 +24,7 @@ class Configure(config.package.GNUPackage):
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
+    self.petscclone = framework.require('PETSc.options.petscclone', None)
     return
 
   def formGNUConfigureArgs(self):
@@ -46,16 +47,17 @@ class Configure(config.package.GNUPackage):
     self.checkDownload()
 
   def configure(self):
-    if (self.framework.clArgDB.has_key('with-sowing') and not self.argDB['with-sowing']) or \
-          (self.framework.clArgDB.has_key('download-sowing') and not self.argDB['download-sowing']):
-      self.logPrint("Not checking sowing on user request\n")
+    if (self.framework.clArgDB.has_key('with-sowing') and not self.argDB['with-sowing']):
+      if hasattr(self.compilers, 'FC') and self.petscclone.isClone:
+        raise RuntimeError('Cannot use --with-sowing=0 if using Fortran and git repository for PETSc')
+      self.logPrint("Not checking sowing on user request of --with-sowing=0\n")
       return
 
     if self.framework.batchBodies:
       self.logPrint('In --with-batch mode with outstanding batch tests to be made; hence skipping sowing for this configure')
       return
 
-    if (self.petscclone.isClone and hasattr(self.compilers, 'FC')) or self.framework.clArgDB.has_key('download-sowing'):
+    if (self.petscclone.isClone and hasattr(self.compilers, 'FC')) or (self.framework.clArgDB.has_key('download-sowing') and self.argDB['download-sowing']):
       self.logPrint('PETSc clone, checking for Sowing \n')
       self.getExecutable('pdflatex', getFullPath = 1)
 

@@ -8,8 +8,6 @@ typedef struct {
 } PC_KSP;
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PCKSPCreateKSP_KSP"
 static PetscErrorCode  PCKSPCreateKSP_KSP(PC pc)
 {
   PetscErrorCode ierr;
@@ -26,8 +24,6 @@ static PetscErrorCode  PCKSPCreateKSP_KSP(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_KSP"
 static PetscErrorCode PCApply_KSP(PC pc,Vec x,Vec y)
 {
   PetscErrorCode     ierr;
@@ -46,8 +42,6 @@ static PetscErrorCode PCApply_KSP(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApplyTranspose_KSP"
 static PetscErrorCode PCApplyTranspose_KSP(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
@@ -61,8 +55,6 @@ static PetscErrorCode PCApplyTranspose_KSP(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_KSP"
 static PetscErrorCode PCSetUp_KSP(PC pc)
 {
   PetscErrorCode ierr;
@@ -81,8 +73,6 @@ static PetscErrorCode PCSetUp_KSP(PC pc)
 }
 
 /* Default destroy, if it has never been setup */
-#undef __FUNCT__
-#define __FUNCT__ "PCReset_KSP"
 static PetscErrorCode PCReset_KSP(PC pc)
 {
   PC_KSP         *jac = (PC_KSP*)pc->data;
@@ -93,8 +83,6 @@ static PetscErrorCode PCReset_KSP(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_KSP"
 static PetscErrorCode PCDestroy_KSP(PC pc)
 {
   PC_KSP         *jac = (PC_KSP*)pc->data;
@@ -107,8 +95,6 @@ static PetscErrorCode PCDestroy_KSP(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCView_KSP"
 static PetscErrorCode PCView_KSP(PC pc,PetscViewer viewer)
 {
   PC_KSP         *jac = (PC_KSP*)pc->data;
@@ -134,8 +120,6 @@ static PetscErrorCode PCView_KSP(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCKSPGetKSP_KSP"
 static PetscErrorCode  PCKSPGetKSP_KSP(PC pc,KSP *ksp)
 {
   PC_KSP         *jac = (PC_KSP*)pc->data;
@@ -147,8 +131,6 @@ static PetscErrorCode  PCKSPGetKSP_KSP(PC pc,KSP *ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCKSPGetKSP"
 /*@
    PCKSPGetKSP - Gets the KSP context for a KSP PC.
 
@@ -178,6 +160,20 @@ PetscErrorCode  PCKSPGetKSP(PC pc,KSP *ksp)
   PetscValidPointer(ksp,2);
   *ksp = NULL;
   ierr = PetscTryMethod(pc,"PCKSPGetKSP_C",(PC,KSP*),(pc,ksp));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCSetFromOptions_KSP(PetscOptionItems *PetscOptionsObject,PC pc)
+{
+  PC_KSP         *jac = (PC_KSP*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsHead(PetscOptionsObject,"PC KSP options");CHKERRQ(ierr);
+  if (jac->ksp) {
+    ierr = KSPSetFromOptions(jac->ksp);CHKERRQ(ierr);
+   }
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -213,8 +209,6 @@ PetscErrorCode  PCKSPGetKSP(PC pc,KSP *ksp)
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_KSP"
 PETSC_EXTERN PetscErrorCode PCCreate_KSP(PC pc)
 {
   PetscErrorCode ierr;
@@ -228,7 +222,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_KSP(PC pc)
   pc->ops->setup           = PCSetUp_KSP;
   pc->ops->reset           = PCReset_KSP;
   pc->ops->destroy         = PCDestroy_KSP;
-  pc->ops->setfromoptions  = 0;
+  pc->ops->setfromoptions  = PCSetFromOptions_KSP;
   pc->ops->view            = PCView_KSP;
   pc->ops->applyrichardson = 0;
 

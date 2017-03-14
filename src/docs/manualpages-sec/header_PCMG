@@ -1,0 +1,11 @@
+<HTML>
+<HEAD>
+<TITLE>PCMG Manual Pages</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+
+<H2> PCMG <A HREF="PETSC_DIRsrc/ksp/ksp/examples/tutorials/index.html">Examples</A></H2>
+
+The PCMG class encapsulates a linear multigrid solver.
+
+<P>

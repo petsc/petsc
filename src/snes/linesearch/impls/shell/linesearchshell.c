@@ -7,8 +7,6 @@ typedef struct {
   void                   *ctx;
 } SNESLineSearch_Shell;
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchShellSetUserFunc"
 /*@C
    SNESLineSearchShellSetUserFunc - Sets the user function for the SNESLineSearch Shell implementation.
 
@@ -69,8 +67,6 @@ PetscErrorCode SNESLineSearchShellSetUserFunc(SNESLineSearch linesearch, SNESLin
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchShellGetUserFunc"
 /*@C
    SNESLineSearchShellGetUserFunc - Gets the user function and context for the shell implementation.
 
@@ -108,8 +104,6 @@ PetscErrorCode SNESLineSearchShellGetUserFunc(SNESLineSearch linesearch, SNESLin
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchApply_Shell"
 static PetscErrorCode  SNESLineSearchApply_Shell(SNESLineSearch linesearch)
 {
   SNESLineSearch_Shell *shell = (SNESLineSearch_Shell*)linesearch->data;
@@ -123,8 +117,6 @@ static PetscErrorCode  SNESLineSearchApply_Shell(SNESLineSearch linesearch)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchDestroy_Shell"
 static PetscErrorCode  SNESLineSearchDestroy_Shell(SNESLineSearch linesearch)
 {
   SNESLineSearch_Shell *shell = (SNESLineSearch_Shell*)linesearch->data;
@@ -135,8 +127,6 @@ static PetscErrorCode  SNESLineSearchDestroy_Shell(SNESLineSearch linesearch)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchCreate_Shell"
 /*MC
 
 SNESLINESEARCHSHELL - Provides context for a user-provided line search routine.

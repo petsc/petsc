@@ -7,8 +7,6 @@ static char help[] = "Reads a matrix from PETSc binary file. Use for view or inv
  */
 
 #include <petscmat.h>
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat               A,Asp;

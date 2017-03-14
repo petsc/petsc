@@ -1,8 +1,8 @@
 !
-!
-
 !     Trying to provide as little support for fortran code in petsc as needed
-
+!
+#include "mpiunifdef.h"
+!
 !     External objects outside of MPI calls
        integer MPI_COMM_WORLD
        parameter (MPI_COMM_WORLD = 2)

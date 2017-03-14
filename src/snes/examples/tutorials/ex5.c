@@ -85,8 +85,6 @@ extern PetscErrorCode FormFunctionMatlab(SNES,Vec,Vec,void*);
 #endif
 extern PetscErrorCode NonlinearGS(SNES,Vec,Vec,void*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   SNES           snes;                         /* nonlinear solver */
@@ -234,8 +232,6 @@ int main(int argc,char **argv)
   return ierr;
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormInitialGuess"
 /*
    FormInitialGuess - Forms initial approximation.
 
@@ -300,8 +296,6 @@ PetscErrorCode FormInitialGuess(DM da,AppCtx *user,Vec X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormExactSolution1"
 /*
   FormExactSolution1 - Forms initial approximation.
 
@@ -340,8 +334,6 @@ PetscErrorCode FormExactSolution1(DM da, AppCtx *user, Vec U)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormExactSolution2"
 /*
   FormExactSolution2 - Forms initial approximation.
 
@@ -380,8 +372,6 @@ PetscErrorCode FormExactSolution2(DM da, AppCtx *user, Vec U)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormExactSolution3"
 /*
   FormExactSolution3 - Forms initial approximation.
 
@@ -426,8 +416,6 @@ PetscErrorCode FormExactSolution3(DM da, AppCtx *user, Vec U)
 }
 /* ------------------------------------------------------------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "FormExactSolution4"
 /*
   FormExactSolution4 - Forms initial approximation.
 
@@ -470,8 +458,6 @@ PetscErrorCode FormExactSolution4(DM da, AppCtx *user, Vec U)
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionLocal"
 /*
    FormFunctionLocal - Evaluates nonlinear function, F(x) on local process patch
 
@@ -520,8 +506,6 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionLocalMMS1"
 /* ---------------------------------------------------------------------------------
  FormFunctionLocalMMS1 - Evaluates nonlinear function, F(x) on local process patch 
 
@@ -588,8 +572,6 @@ PetscErrorCode FormFunctionLocalMMS1(DMDALocalInfo *info,PetscScalar **vx,PetscS
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionLocalMMS2"
 /* ---------------------------------------------------------------------------------
  FormFunctionLocalMMS2 - Evaluates nonlinear function, F(x) on local process patch 
 
@@ -656,8 +638,6 @@ PetscErrorCode FormFunctionLocalMMS2(DMDALocalInfo *info,PetscScalar **vx,PetscS
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionLocalMMS3"
 /* ---------------------------------------------------------------------------------
  FormFunctionLocalMMS3 - Evaluates nonlinear function, F(x) on local process patch 
 
@@ -726,8 +706,6 @@ PetscErrorCode FormFunctionLocalMMS3(DMDALocalInfo *info,PetscScalar **vx,PetscS
 
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionLocalMMS4"
 /* ---------------------------------------------------------------------------------
  FormFunctionLocalMMS4 - Evaluates nonlinear function, F(x) on local process patch
 
@@ -794,8 +772,6 @@ PetscErrorCode FormFunctionLocalMMS4(DMDALocalInfo *info,PetscScalar **vx,PetscS
 
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormObjectiveLocal"
 /* FormObjectiveLocal - Evaluates nonlinear function, F(x) on local process patch */
 PetscErrorCode FormObjectiveLocal(DMDALocalInfo *info,PetscScalar **x,PetscReal *obj,AppCtx *user)
 {
@@ -847,8 +823,6 @@ PetscErrorCode FormObjectiveLocal(DMDALocalInfo *info,PetscScalar **x,PetscReal 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobianLocal"
 /*
    FormJacobianLocal - Evaluates Jacobian matrix on local process patch
 */
@@ -940,8 +914,6 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,Mat
 }
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionMatlab"
 PetscErrorCode FormFunctionMatlab(SNES snes,Vec X,Vec F,void *ptr)
 {
   AppCtx         *user = (AppCtx*)ptr;
@@ -989,8 +961,6 @@ PetscErrorCode FormFunctionMatlab(SNES snes,Vec X,Vec F,void *ptr)
 #endif
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "NonlinearGS"
 /*
       Applies some sweeps on nonlinear Gauss-Seidel on each process
 

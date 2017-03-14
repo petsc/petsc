@@ -12,10 +12,11 @@ typedef struct {
                           We expose a blocked ordering to the user because that is what all other PETSc infrastructure uses.
                           With the blocked ordering when the number of processes do not evenly divide the vector size,
                           we still need to be able to convert from PETSc/blocked ordering to VC/VR ordering. */
-  El::Grid                                     *grid;
-  El::DistMatrix<PetscElemScalar>              *emat;
-  El::DistMatrix<PetscInt,El::VC,El::STAR> *pivot; /* pivot vector representing the pivot matrix P in PA = LU */
-  PetscBool roworiented;               /* if true, row oriented input (default) */
+  El::Grid                         *grid;
+  El::DistMatrix<PetscElemScalar>  *emat;
+  PetscInt                         pivoting;     /* 0: no pivoting; 1: partial pivoting; 2: full pivoting */
+  El::DistPermutation              *P,*Q;
+  PetscBool                        roworiented;  /* if true, row oriented input (default) */
 } Mat_Elemental;
 
 typedef struct {

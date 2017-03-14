@@ -12,15 +12,13 @@ static PetscErrorCode MaybeLogStagePush(PetscLogStage stage) { return log_stages
 static PetscErrorCode MaybeLogStagePop() { return log_stages ? PetscLogStagePop() : 0; }
 PetscErrorCode elem_3d_elast_v_25(PetscScalar *);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            Amat;
   PetscErrorCode ierr;
   PetscInt       m,nn,M,Istart,Iend,i,j,k,ii,jj,kk,ic,ne=4,id;
   PetscReal      x,y,z,h,*coords,soft_alpha=1.e-3;
-  PetscBool      two_solves=PETSC_FALSE,test_nonzero_cols=PETSC_FALSE,use_nearnullspace=PETSC_FALSE;
+  PetscBool      two_solves=PETSC_FALSE,test_nonzero_cols=PETSC_FALSE,use_nearnullspace=PETSC_FALSE,test_late_bs=PETSC_FALSE;
   Vec            xx,bb;
   KSP            ksp;
   MPI_Comm       comm;
@@ -44,6 +42,7 @@ int main(int argc,char **args)
     ierr = PetscOptionsBool("-two_solves","solve additional variant of the problem","",two_solves,&two_solves,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-test_nonzero_cols","nonzero test","",test_nonzero_cols,&test_nonzero_cols,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-use_mat_nearnullspace","MatNearNullSpace API test","",use_nearnullspace,&use_nearnullspace,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-test_late_bs","","",test_late_bs,&test_late_bs,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -76,7 +75,7 @@ int main(int argc,char **args)
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
   {
-    /* configureation */
+    /* configuration */
     const PetscInt NP = (PetscInt)(PetscPowReal((PetscReal)npe,1./3.) + .5);
     const PetscInt ipx = mype%NP, ipy = (mype%(NP*NP))/NP, ipz = mype/(NP*NP);
     const PetscInt Ni0 = ipx*(nn/NP), Nj0 = ipy*(nn/NP), Nk0 = ipz*(nn/NP);
@@ -109,7 +108,9 @@ int main(int argc,char **args)
     /* create stiffness matrix */
     ierr = MatCreate(comm,&Amat);CHKERRQ(ierr);
     ierr = MatSetSizes(Amat,m,m,M,M);CHKERRQ(ierr);
-    ierr = MatSetBlockSize(Amat,3);CHKERRQ(ierr);
+    if (!test_late_bs) {
+      ierr = MatSetBlockSize(Amat,3);CHKERRQ(ierr);
+    }
     ierr = MatSetType(Amat,MATAIJ);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(Amat,0,d_nnz);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(Amat,0,d_nnz,0,o_nnz);CHKERRQ(ierr);
@@ -123,7 +124,9 @@ int main(int argc,char **args)
     /* Generate vectors */
     ierr = VecCreate(comm,&xx);CHKERRQ(ierr);
     ierr = VecSetSizes(xx,m,M);CHKERRQ(ierr);
-    ierr = VecSetBlockSize(xx,3);CHKERRQ(ierr);
+    if (!test_late_bs) {
+      ierr = VecSetBlockSize(xx,3);CHKERRQ(ierr);
+    }
     ierr = VecSetFromOptions(xx);CHKERRQ(ierr);
     ierr = VecDuplicate(xx,&bb);CHKERRQ(ierr);
     ierr = VecSet(bb,.0);CHKERRQ(ierr);
@@ -184,7 +187,7 @@ int main(int argc,char **args)
             /* radius */
             PetscReal radius = PetscSqrtReal((x-.5+h/2)*(x-.5+h/2)+(y-.5+h/2)*(y-.5+h/2)+(z-.5+h/2)*(z-.5+h/2));
             PetscReal alpha = 1.0;
-            PetscInt  jx,ix,idx[8];
+            PetscInt  jx,ix,idx[8],idx3[24];
             idx[0] = id;
             idx[1] = id+1;
             idx[2] = id+NN+1;
@@ -220,15 +223,27 @@ int main(int argc,char **args)
               for (jx=0;jx<24;jx++) DD[ix][jx] = alpha*DD1[ix][jx];
             }
             if (k>0) {
-              ierr = MatSetValuesBlocked(Amat,8,idx,8,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
-              ierr = VecSetValuesBlocked(bb,8,idx,(const PetscScalar*)vv,ADD_VALUES);CHKERRQ(ierr);
+              if (!test_late_bs) {
+                ierr = MatSetValuesBlocked(Amat,8,idx,8,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
+                ierr = VecSetValuesBlocked(bb,8,idx,(const PetscScalar*)vv,ADD_VALUES);CHKERRQ(ierr);
+              } else {
+                for (ix=0; ix<8; ix++) { idx3[3*ix] = 3*idx[ix]; idx3[3*ix+1] = 3*idx[ix]+1; idx3[3*ix+2] = 3*idx[ix]+2; }
+                ierr = MatSetValues(Amat,24,idx3,24,idx3,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
+                ierr = VecSetValues(bb,24,idx3,(const PetscScalar*)vv,ADD_VALUES);CHKERRQ(ierr);
+              }
             } else {
               /* a BC */
               for (ix=0;ix<24;ix++) {
                 for (jx=0;jx<24;jx++) DD[ix][jx] = alpha*DD2[ix][jx];
               }
-              ierr = MatSetValuesBlocked(Amat,8,idx,8,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
-              ierr = VecSetValuesBlocked(bb,8,idx,(const PetscScalar*)v2,ADD_VALUES);CHKERRQ(ierr);
+              if (!test_late_bs) {
+                ierr = MatSetValuesBlocked(Amat,8,idx,8,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
+                ierr = VecSetValuesBlocked(bb,8,idx,(const PetscScalar*)v2,ADD_VALUES);CHKERRQ(ierr);
+              } else {
+                for (ix=0; ix<8; ix++) { idx3[3*ix] = 3*idx[ix]; idx3[3*ix+1] = 3*idx[ix]+1; idx3[3*ix+2] = 3*idx[ix]+2; }
+                ierr = MatSetValues(Amat,24,idx3,24,idx3,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
+                ierr = VecSetValues(bb,24,idx3,(const PetscScalar*)v2,ADD_VALUES);CHKERRQ(ierr);
+              }
             }
           }
         }
@@ -239,6 +254,12 @@ int main(int argc,char **args)
     ierr = MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = VecAssemblyBegin(bb);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(bb);CHKERRQ(ierr);
+  }
+
+  if (test_late_bs) {
+    ierr = VecSetBlockSize(xx,3);CHKERRQ(ierr);
+    ierr = VecSetBlockSize(bb,3);CHKERRQ(ierr);
+    ierr = MatSetBlockSize(Amat,3);CHKERRQ(ierr);
   }
 
   if (!PETSC_TRUE) {
@@ -332,7 +353,7 @@ int main(int argc,char **args)
     ierr = VecAXPY(bb, -1.0, res);CHKERRQ(ierr);
     ierr = VecDestroy(&res);CHKERRQ(ierr);
     ierr = VecNorm(bb, NORM_2, &norm);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"[%d]%s |b-Ax|/|b|=%e, |b|=%e, emax=%e\n",0,__FUNCT__,(double)(norm/norm2),(double)norm2,(double)emax);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d]%s |b-Ax|/|b|=%e, |b|=%e, emax=%e\n",0,PETSC_FUNCTION_NAME,(double)(norm/norm2),(double)norm2,(double)emax);CHKERRQ(ierr);
   }
 
   /* Free work space */
@@ -347,8 +368,6 @@ int main(int argc,char **args)
 }
 
 /* Data was previously provided in the file data/elem_3d_elast_v_25.tx */
-#undef __FUNCT__
-#define __FUNCT__ "elem_3d_elast_v_25"
 PetscErrorCode elem_3d_elast_v_25(PetscScalar *dd)
 {
   PetscErrorCode ierr;

@@ -1,8 +1,6 @@
 #include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 #include <../src/sys/utils/hash.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetFaces_Internal"
 /*
   DMPlexGetFaces_Internal - Gets groups of vertices that correspond to faces for the given cell
 */
@@ -21,8 +19,6 @@ PetscErrorCode DMPlexGetFaces_Internal(DM dm, PetscInt dim, PetscInt p, PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexRestoreFaces_Internal"
 /*
   DMPlexRestoreFaces_Internal - Restores the array
 */
@@ -35,8 +31,6 @@ PetscErrorCode DMPlexRestoreFaces_Internal(DM dm, PetscInt dim, PetscInt p, Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexGetRawFaces_Internal"
 /*
   DMPlexGetRawFaces_Internal - Gets groups of vertices that correspond to faces for the given cone
 */
@@ -140,8 +134,6 @@ PetscErrorCode DMPlexGetRawFaces_Internal(DM dm, PetscInt dim, PetscInt coneSize
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexInterpolateFaces_Internal"
 /* This interpolates faces for cells at some stratum */
 static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth, DM idm)
 {
@@ -305,12 +297,10 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexInterpolatePointSF"
 /* This interpolates the PointSF in parallel following local interpolation */
 static PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF, PetscInt depth)
 {
-  PetscMPIInt        numProcs, rank;
+  PetscMPIInt        size, rank;
   PetscInt           p, c, d, dof, offset;
   PetscInt           numLeaves, numRoots, candidatesSize, candidatesRemoteSize;
   const PetscInt    *localPoints;
@@ -323,10 +313,11 @@ static PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF, PetscInt 
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &numProcs);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(pointSF, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
-  if (numProcs < 2 || numRoots < 0) PetscFunctionReturn(0);
+  if (size < 2 || numRoots < 0) PetscFunctionReturn(0);
+  ierr = PetscLogEventBegin(DMPLEX_InterpolateSF,dm,0,0,0);CHKERRQ(ierr);
   /* Build hashes of points in the SF for efficient lookup */
   PetscHashICreate(leafhash);
   PetscHashIJCreate(&roothash);
@@ -485,11 +476,10 @@ static PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF, PetscInt 
   ierr = PetscFree(candidates);CHKERRQ(ierr);
   ierr = PetscFree(candidatesRemote);CHKERRQ(ierr);
   ierr = PetscFree(claims);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(DMPLEX_InterpolateSF,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexInterpolate"
 /*@C
   DMPlexInterpolate - Take in a cell-vertex mesh and return one with all intermediate faces, edges, etc.
 
@@ -541,8 +531,6 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCopyCoordinates"
 /*@
   DMPlexCopyCoordinates - Copy coordinates from one mesh to another with the same vertices
 
@@ -614,8 +602,6 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexUninterpolate"
 /*@
   DMPlexUninterpolate - Take in a mesh with all intermediate faces, edges, etc. and return a cell-vertex mesh
 

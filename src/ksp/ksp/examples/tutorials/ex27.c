@@ -17,8 +17,6 @@ T*/
 #include <petscksp.h>
 
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   KSP            ksp;             /* linear solver context */

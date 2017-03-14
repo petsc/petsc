@@ -3,8 +3,6 @@
 
 static PetscInt petsc_checkpointer_intensity = 1;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscCheckPointerSetIntensity"
 /*@
    PetscCheckPointerSetIntensity - An intense pointer check registers a signal handler and attempts to dereference to
    confirm whether the address is valid.  An intensity of 0 never uses signal handlers, 1 uses them when not in a "hot"

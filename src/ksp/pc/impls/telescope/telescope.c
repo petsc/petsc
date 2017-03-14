@@ -50,8 +50,6 @@ PetscBool isActiveRank(PetscSubcomm scomm)
   else { return PETSC_FALSE; }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "private_PCTelescopeGetSubDM"
 DM private_PCTelescopeGetSubDM(PC_Telescope sred)
 {
   DM subdm = NULL;
@@ -70,8 +68,6 @@ DM private_PCTelescopeGetSubDM(PC_Telescope sred)
   return(subdm);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeSetUp_default"
 PetscErrorCode PCTelescopeSetUp_default(PC pc,PC_Telescope sred)
 {
   PetscErrorCode ierr;
@@ -132,8 +128,6 @@ PetscErrorCode PCTelescopeSetUp_default(PC pc,PC_Telescope sred)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeMatCreate_default"
 PetscErrorCode PCTelescopeMatCreate_default(PC pc,PC_Telescope sred,MatReuse reuse,Mat *A)
 {
   PetscErrorCode ierr;
@@ -151,7 +145,7 @@ PetscErrorCode PCTelescopeMatCreate_default(PC pc,PC_Telescope sred,MatReuse reu
   ierr = MatGetSize(B,&nr,&nc);CHKERRQ(ierr);
   isrow = sred->isin;
   ierr = ISCreateStride(comm,nc,0,1,&iscol);CHKERRQ(ierr);
-  ierr = MatGetSubMatrices(B,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&_Blocal);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(B,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&_Blocal);CHKERRQ(ierr);
   Blocal = *_Blocal;
   ierr = PetscFree(_Blocal);CHKERRQ(ierr);
   Bred = NULL;
@@ -169,8 +163,6 @@ PetscErrorCode PCTelescopeMatCreate_default(PC pc,PC_Telescope sred,MatReuse reu
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeSubNullSpaceCreate_Telescope"
 static PetscErrorCode PCTelescopeSubNullSpaceCreate_Telescope(PC pc,PC_Telescope sred,MatNullSpace nullspace,MatNullSpace *sub_nullspace)
 {
   PetscErrorCode   ierr;
@@ -224,8 +216,6 @@ static PetscErrorCode PCTelescopeSubNullSpaceCreate_Telescope(PC pc,PC_Telescope
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeMatNullSpaceCreate_default"
 static PetscErrorCode PCTelescopeMatNullSpaceCreate_default(PC pc,PC_Telescope sred,Mat sub_mat)
 {
   PetscErrorCode   ierr;
@@ -264,8 +254,6 @@ static PetscErrorCode PCTelescopeMatNullSpaceCreate_default(PC pc,PC_Telescope s
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCView_Telescope"
 static PetscErrorCode PCView_Telescope(PC pc,PetscViewer viewer)
 {
   PC_Telescope     sred = (PC_Telescope)pc->data;
@@ -335,8 +323,6 @@ static PetscErrorCode PCView_Telescope(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_Telescope"
 static PetscErrorCode PCSetUp_Telescope(PC pc)
 {
   PC_Telescope      sred = (PC_Telescope)pc->data;
@@ -456,8 +442,6 @@ static PetscErrorCode PCSetUp_Telescope(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_Telescope"
 static PetscErrorCode PCApply_Telescope(PC pc,Vec x,Vec y)
 {
   PC_Telescope      sred = (PC_Telescope)pc->data;
@@ -513,8 +497,6 @@ static PetscErrorCode PCApply_Telescope(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApplyRichardson_Telescope"
 static PetscErrorCode PCApplyRichardson_Telescope(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscBool zeroguess,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
   PC_Telescope      sred = (PC_Telescope)pc->data;
@@ -569,8 +551,6 @@ static PetscErrorCode PCApplyRichardson_Telescope(PC pc,Vec x,Vec y,Vec w,PetscR
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCReset_Telescope"
 static PetscErrorCode PCReset_Telescope(PC pc)
 {
   PC_Telescope   sred = (PC_Telescope)pc->data;
@@ -589,8 +569,6 @@ static PetscErrorCode PCReset_Telescope(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_Telescope"
 static PetscErrorCode PCDestroy_Telescope(PC pc)
 {
   PC_Telescope     sred = (PC_Telescope)pc->data;
@@ -605,8 +583,6 @@ static PetscErrorCode PCDestroy_Telescope(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_Telescope"
 static PetscErrorCode PCSetFromOptions_Telescope(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_Telescope     sred = (PC_Telescope)pc->data;
@@ -634,8 +610,6 @@ static PetscErrorCode PCSetFromOptions_Telescope(PetscOptionItems *PetscOptionsO
 
 /* PC simplementation specific API's */
 
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeGetKSP_Telescope"
 static PetscErrorCode PCTelescopeGetKSP_Telescope(PC pc,KSP *ksp)
 {
   PC_Telescope red = (PC_Telescope)pc->data;
@@ -644,8 +618,6 @@ static PetscErrorCode PCTelescopeGetKSP_Telescope(PC pc,KSP *ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeGetSubcommType_Telescope"
 static PetscErrorCode PCTelescopeGetSubcommType_Telescope(PC pc,PetscSubcommType *subcommtype)
 {
   PC_Telescope red = (PC_Telescope)pc->data;
@@ -654,8 +626,6 @@ static PetscErrorCode PCTelescopeGetSubcommType_Telescope(PC pc,PetscSubcommType
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeSetSubcommType_Telescope"
 static PetscErrorCode PCTelescopeSetSubcommType_Telescope(PC pc,PetscSubcommType subcommtype)
 {
   PC_Telescope     red = (PC_Telescope)pc->data;
@@ -666,8 +636,6 @@ static PetscErrorCode PCTelescopeSetSubcommType_Telescope(PC pc,PetscSubcommType
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeGetReductionFactor_Telescope"
 static PetscErrorCode PCTelescopeGetReductionFactor_Telescope(PC pc,PetscInt *fact)
 {
   PC_Telescope red = (PC_Telescope)pc->data;
@@ -676,8 +644,6 @@ static PetscErrorCode PCTelescopeGetReductionFactor_Telescope(PC pc,PetscInt *fa
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeSetReductionFactor_Telescope"
 static PetscErrorCode PCTelescopeSetReductionFactor_Telescope(PC pc,PetscInt fact)
 {
   PC_Telescope     red = (PC_Telescope)pc->data;
@@ -692,8 +658,6 @@ static PetscErrorCode PCTelescopeSetReductionFactor_Telescope(PC pc,PetscInt fac
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeGetIgnoreDM_Telescope"
 static PetscErrorCode PCTelescopeGetIgnoreDM_Telescope(PC pc,PetscBool *v)
 {
   PC_Telescope red = (PC_Telescope)pc->data;
@@ -702,8 +666,6 @@ static PetscErrorCode PCTelescopeGetIgnoreDM_Telescope(PC pc,PetscBool *v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeSetIgnoreDM_Telescope"
 static PetscErrorCode PCTelescopeSetIgnoreDM_Telescope(PC pc,PetscBool v)
 {
   PC_Telescope red = (PC_Telescope)pc->data;
@@ -712,8 +674,6 @@ static PetscErrorCode PCTelescopeSetIgnoreDM_Telescope(PC pc,PetscBool v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeGetIgnoreKSPComputeOperators_Telescope"
 static PetscErrorCode PCTelescopeGetIgnoreKSPComputeOperators_Telescope(PC pc,PetscBool *v)
 {
   PC_Telescope red = (PC_Telescope)pc->data;
@@ -722,8 +682,6 @@ static PetscErrorCode PCTelescopeGetIgnoreKSPComputeOperators_Telescope(PC pc,Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeSetIgnoreKSPComputeOperators_Telescope"
 static PetscErrorCode PCTelescopeSetIgnoreKSPComputeOperators_Telescope(PC pc,PetscBool v)
 {
   PC_Telescope red = (PC_Telescope)pc->data;
@@ -732,8 +690,6 @@ static PetscErrorCode PCTelescopeSetIgnoreKSPComputeOperators_Telescope(PC pc,Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeGetDM_Telescope"
 static PetscErrorCode PCTelescopeGetDM_Telescope(PC pc,DM *dm)
 {
   PC_Telescope red = (PC_Telescope)pc->data;
@@ -742,8 +698,6 @@ static PetscErrorCode PCTelescopeGetDM_Telescope(PC pc,DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeGetKSP"
 /*@
  PCTelescopeGetKSP - Gets the KSP created by the telescoping PC.
 
@@ -767,8 +721,6 @@ PetscErrorCode PCTelescopeGetKSP(PC pc,KSP *subksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeGetReductionFactor"
 /*@
  PCTelescopeGetReductionFactor - Gets the factor by which the original number of processes has been reduced by.
 
@@ -792,8 +744,6 @@ PetscErrorCode PCTelescopeGetReductionFactor(PC pc,PetscInt *fact)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeSetReductionFactor"
 /*@
  PCTelescopeSetReductionFactor - Sets the factor by which the original number of processes has been reduced by.
 
@@ -817,8 +767,6 @@ PetscErrorCode PCTelescopeSetReductionFactor(PC pc,PetscInt fact)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeGetIgnoreDM"
 /*@
  PCTelescopeGetIgnoreDM - Get the flag indicating if any DM attached to the PC will be used.
 
@@ -842,8 +790,6 @@ PetscErrorCode PCTelescopeGetIgnoreDM(PC pc,PetscBool *v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeSetIgnoreDM"
 /*@
  PCTelescopeSetIgnoreDM - Set a flag to ignore any DM attached to the PC.
 
@@ -867,8 +813,6 @@ PetscErrorCode PCTelescopeSetIgnoreDM(PC pc,PetscBool v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeGetIgnoreKSPComputeOperators"
 /*@
  PCTelescopeGetIgnoreKSPComputeOperators - Get the flag indicating if KSPComputeOperators will be used.
 
@@ -892,8 +836,6 @@ PetscErrorCode PCTelescopeGetIgnoreKSPComputeOperators(PC pc,PetscBool *v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeSetIgnoreKSPComputeOperators"
 /*@
  PCTelescopeSetIgnoreKSPComputeOperators - Set a flag to ignore KSPComputeOperators.
 
@@ -917,8 +859,6 @@ PetscErrorCode PCTelescopeSetIgnoreKSPComputeOperators(PC pc,PetscBool v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeGetDM"
 /*@
  PCTelescopeGetDM - Get the re-partitioned DM attached to the sub KSP.
 
@@ -942,8 +882,6 @@ PetscErrorCode PCTelescopeGetDM(PC pc,DM *subdm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeSetSubcommType"
 /*@
  PCTelescopeSetSubcommType - set subcommunicator type (interlaced or contiguous)
 
@@ -967,8 +905,6 @@ PetscErrorCode PCTelescopeSetSubcommType(PC pc, PetscSubcommType subcommtype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCTelescopeGetSubcommType"
 /*@
  PCTelescopeGetSubcommType - Get the subcommunicator type (interlaced or contiguous)
 
@@ -1040,7 +976,7 @@ PetscErrorCode PCTelescopeGetSubcommType(PC pc, PetscSubcommType *subcommtype)
    By default, B' is defined by simply fusing rows from different MPI processes
 
    When a DMDA is attached to the parent preconditioner, B' is defined by: (i) performing a symmetric permutation of B
-   into the ordering defined by the DMDA on c', (ii) extracting the local chunks via MatGetSubMatrices(), (iii) fusing the
+   into the ordering defined by the DMDA on c', (ii) extracting the local chunks via MatCreateSubMatrices(), (iii) fusing the
    locally (sequential) matrices defined on the ranks common to c and c' into B' using MatCreateMPIMatConcatenateSeqMat()
 
    Limitations/improvements include the following.
@@ -1082,8 +1018,6 @@ PetscErrorCode PCTelescopeGetSubcommType(PC pc, PetscSubcommType *subcommtype)
 
 .seealso:  PCTelescopeGetKSP(), PCTelescopeGetDM(), PCTelescopeGetReductionFactor(), PCTelescopeSetReductionFactor(), PCTelescopeGetIgnoreDM(), PCTelescopeSetIgnoreDM(), PCREDUNDANT
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_Telescope"
 PETSC_EXTERN PetscErrorCode PCCreate_Telescope(PC pc)
 {
   PetscErrorCode       ierr;

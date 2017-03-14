@@ -16,8 +16,8 @@
 
 const char *const MatCUSPStorageFormats[] = {"CSR","DIA","ELL","MatCUSPStorageFormat","MAT_CUSP_",0};
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCUSPSetStream"
+PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_petsc(Mat,MatFactorType,Mat*);
+
 PetscErrorCode MatCUSPSetStream(Mat A,const cudaStream_t stream)
 {
   Mat_SeqAIJCUSP *cuspstruct = (Mat_SeqAIJCUSP*)A->spptr;
@@ -27,8 +27,6 @@ PetscErrorCode MatCUSPSetStream(Mat A,const cudaStream_t stream)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCUSPSetFormat_SeqAIJCUSP"
 PetscErrorCode MatCUSPSetFormat_SeqAIJCUSP(Mat A,MatCUSPFormatOperation op,MatCUSPStorageFormat format)
 {
   Mat_SeqAIJCUSP *cuspMat = (Mat_SeqAIJCUSP*)A->spptr;
@@ -65,8 +63,6 @@ PetscErrorCode MatCUSPSetFormat_SeqAIJCUSP(Mat A,MatCUSPFormatOperation op,MatCU
 
 .seealso: MatCUSPStorageFormat, MatCUSPFormatOperation
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "MatCUSPSetFormat"
 PetscErrorCode MatCUSPSetFormat(Mat A,MatCUSPFormatOperation op,MatCUSPStorageFormat format)
 {
   PetscErrorCode ierr;
@@ -77,8 +73,6 @@ PetscErrorCode MatCUSPSetFormat(Mat A,MatCUSPFormatOperation op,MatCUSPStorageFo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetFromOptions_SeqAIJCUSP"
 PetscErrorCode MatSetFromOptions_SeqAIJCUSP(PetscOptionItems *PetscOptionsObject,Mat A)
 {
   Mat_SeqAIJCUSP       *cuspMat = (Mat_SeqAIJCUSP*)A->spptr;
@@ -104,9 +98,6 @@ PetscErrorCode MatSetFromOptions_SeqAIJCUSP(PetscOptionItems *PetscOptionsObject
 
 }
 
-
-#undef __FUNCT__
-#define __FUNCT__ "MatCUSPCopyToGPU"
 PetscErrorCode MatCUSPCopyToGPU(Mat A)
 {
 
@@ -207,8 +198,6 @@ PetscErrorCode MatCUSPCopyToGPU(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCUSPCopyFromGPU"
 PetscErrorCode MatCUSPCopyFromGPU(Mat A, CUSPMATRIX *Agpu)
 {
   Mat_SeqAIJCUSP *cuspstruct = (Mat_SeqAIJCUSP*) A->spptr;
@@ -279,8 +268,6 @@ PetscErrorCode MatCUSPCopyFromGPU(Mat A, CUSPMATRIX *Agpu)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateVecs_SeqAIJCUSP"
 PetscErrorCode MatCreateVecs_SeqAIJCUSP(Mat mat, Vec *right, Vec *left)
 {
   PetscErrorCode ierr;
@@ -305,8 +292,6 @@ PetscErrorCode MatCreateVecs_SeqAIJCUSP(Mat mat, Vec *right, Vec *left)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_SeqAIJCUSP"
 PetscErrorCode MatMult_SeqAIJCUSP(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ       *a = (Mat_SeqAIJ*)A->data;
@@ -372,8 +357,6 @@ struct VecCUSPPlusEquals
   }
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultAdd_SeqAIJCUSP"
 PetscErrorCode MatMultAdd_SeqAIJCUSP(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -443,8 +426,6 @@ PetscErrorCode MatMultAdd_SeqAIJCUSP(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd_SeqAIJCUSP"
 PetscErrorCode MatAssemblyEnd_SeqAIJCUSP(Mat A,MatAssemblyType mode)
 {
   PetscErrorCode ierr;
@@ -459,8 +440,6 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCUSP(Mat A,MatAssemblyType mode)
 }
 
 /* --------------------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateSeqAIJCUSP"
 /*@
    MatCreateSeqAIJCUSP - Creates a sparse matrix in AIJ (compressed row) format
    (the default parallel PETSc format).  This matrix will ultimately pushed down
@@ -522,8 +501,6 @@ PetscErrorCode  MatCreateSeqAIJCUSP(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_SeqAIJCUSP"
 PetscErrorCode MatDestroy_SeqAIJCUSP(Mat A)
 {
   PetscErrorCode ierr;
@@ -555,8 +532,6 @@ PetscErrorCode MatDestroy_SeqAIJCUSP(Mat A)
 
 extern PetscErrorCode MatSetValuesBatch_SeqAIJCUSP(Mat, PetscInt, PetscInt, PetscInt*,const PetscScalar*);
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_SeqAIJCUSP"
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSP(Mat B)
 {
   PetscErrorCode ierr;
@@ -608,4 +583,15 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSP(Mat B)
 
 .seealso: MatCreateSeqAIJCUSP(), MATAIJCUSP, MatCreateAIJCUSP(), MatCUSPSetFormat(), MatCUSPStorageFormat, MatCUSPFormatOperation
 M*/
+PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_CUSP(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJCUSP,    MAT_FACTOR_LU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJCUSP,    MAT_FACTOR_CHOLESKY,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJCUSP,    MAT_FACTOR_ILU,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERPETSC, MATSEQAIJCUSP,    MAT_FACTOR_ICC,MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 

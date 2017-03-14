@@ -28,25 +28,20 @@
 
 PETSC_EXTERN void PETSC_STDCALL kspbuildsolution_(KSP *ksp,Vec *v,Vec *V, int *ierr)
 {
-  Vec vp = 0;
-  CHKFORTRANNULLOBJECT(v);
+  CHKFORTRANNULLOBJECTDEREFERENCE(v);
   CHKFORTRANNULLOBJECT(V);
-  if (v) vp = *v;
-  *ierr = KSPBuildSolution(*ksp,vp,V);
+  *ierr = KSPBuildSolution(*ksp,*v,V);
 }
 
 PETSC_EXTERN void PETSC_STDCALL kspbuildresidual_(KSP *ksp,Vec *t,Vec *v,Vec *V, int *ierr)
 {
-  Vec tp = 0,vp = 0;
-  CHKFORTRANNULLOBJECT(t);
-  CHKFORTRANNULLOBJECT(v);
+  CHKFORTRANNULLOBJECTDEREFERENCE(t);
+  CHKFORTRANNULLOBJECTDEREFERENCE(v);
   CHKFORTRANNULLOBJECT(V);
-  if (t) tp = *t;
-  if (v) vp = *v;
-  *ierr = KSPBuildResidual(*ksp,tp,vp,V);
+  *ierr = KSPBuildResidual(*ksp,*t,*v,V);
 }
 
-PETSC_EXTERN void PETSC_STDCALL kspgetoptionsprefix_(KSP *ksp,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL kspgetoptionsprefix_(KSP *ksp,char* prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   const char *tname;
 
@@ -54,7 +49,7 @@ PETSC_EXTERN void PETSC_STDCALL kspgetoptionsprefix_(KSP *ksp,CHAR prefix PETSC_
   *ierr = PetscStrncpy(prefix,tname,len); if (*ierr) return;
   FIXRETURNCHAR(PETSC_TRUE,prefix,len);
 }
-PETSC_EXTERN void PETSC_STDCALL kspappendoptionsprefix_(KSP *ksp,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL kspappendoptionsprefix_(KSP *ksp,char* prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 
@@ -63,7 +58,7 @@ PETSC_EXTERN void PETSC_STDCALL kspappendoptionsprefix_(KSP *ksp,CHAR prefix PET
   FREECHAR(prefix,t);
 }
 
-PETSC_EXTERN void PETSC_STDCALL kspsetoptionsprefix_(KSP *ksp,CHAR prefix PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL kspsetoptionsprefix_(KSP *ksp,char* prefix PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 

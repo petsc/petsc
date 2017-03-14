@@ -18,8 +18,6 @@
 /* Logging support */
 PetscClassId PETSC_RANDOM_CLASSID;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscRandomDestroy"
 /*@
    PetscRandomDestroy - Destroys a context that has been formed by
    PetscRandomCreate().
@@ -49,8 +47,6 @@ PetscErrorCode  PetscRandomDestroy(PetscRandom *r)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscRandomGetSeed"
 /*@C
    PetscRandomGetSeed - Gets the random seed.
 
@@ -79,8 +75,6 @@ PetscErrorCode  PetscRandomGetSeed(PetscRandom r,unsigned long *seed)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscRandomSetSeed"
 /*@C
    PetscRandomSetSeed - Sets the random seed. You MUST call PetscRandomSeed() after this call to have the new seed used.
 
@@ -115,8 +109,6 @@ PetscErrorCode  PetscRandomSetSeed(PetscRandom r,unsigned long seed)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "PetscRandomSetTypeFromOptions_Private"
 /*
   PetscRandomSetTypeFromOptions_Private - Sets the type of random generator from user options. Defaults to type PETSCRAND48 or PETSCRAND.
 
@@ -154,8 +146,6 @@ static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscOptionItems *Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscRandomSetFromOptions"
 /*@
   PetscRandomSetFromOptions - Configures the random number generator from the options database.
 
@@ -220,8 +210,6 @@ PetscErrorCode  PetscRandomSetFromOptions(PetscRandom rnd)
 #if defined(PETSC_HAVE_SAWS)
 #include <petscviewersaws.h>
 #endif
-#undef __FUNCT__
-#define __FUNCT__ "PetscRandomView"
 /*@C
    PetscRandomView - Views a random number generator object.
 
@@ -293,8 +281,6 @@ PetscErrorCode  PetscRandomView(PetscRandom rnd,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscRandomCreate"
 /*@
    PetscRandomCreate - Creates a context for generating random numbers,
    and initializes the random-number generator.
@@ -363,8 +349,6 @@ PetscErrorCode  PetscRandomCreate(MPI_Comm comm,PetscRandom *r)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscRandomSeed"
 /*@
    PetscRandomSeed - Seed the generator.
 

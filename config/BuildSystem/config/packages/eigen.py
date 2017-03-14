@@ -10,6 +10,7 @@ class Configure(config.package.CMakePackage):
     self.liblist           = [[]]
     self.cxx               = 1
     self.includedir        = os.path.join('include', 'eigen3')
+    self.useddirectly      = 0
     return
 
   def setupDependencies(self, framework):

@@ -8,7 +8,7 @@
 #define vecgettype_               vecgettype
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL vecsettype_(Vec *x,CHAR type_name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL vecsettype_(Vec *x,char* type_name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 
@@ -17,7 +17,7 @@ PETSC_EXTERN void PETSC_STDCALL vecsettype_(Vec *x,CHAR type_name PETSC_MIXED_LE
   FREECHAR(type_name,t);
 }
 
-PETSC_EXTERN void PETSC_STDCALL vecgettype_(Vec *vv,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL vecgettype_(Vec *vv,char* name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   const char *tname;
 

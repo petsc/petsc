@@ -1,8 +1,6 @@
 
 #include <petsc/private/matimpl.h>  /*I   "petscmat.h"  I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultEqual"
 /*@
    MatMultEqual - Compares matrix-vector products of two matrices.
 
@@ -67,8 +65,6 @@ PetscErrorCode MatMultEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultAddEqual"
 /*@
    MatMultAddEqual - Compares matrix-vector products of two matrices.
 
@@ -134,8 +130,6 @@ PetscErrorCode  MatMultAddEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultTransposeEqual"
 /*@
    MatMultTransposeEqual - Compares matrix-vector products of two matrices.
 
@@ -198,8 +192,6 @@ PetscErrorCode  MatMultTransposeEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultTransposeAddEqual"
 /*@
    MatMultTransposeAddEqual - Compares matrix-vector products of two matrices.
 
@@ -265,8 +257,6 @@ PetscErrorCode  MatMultTransposeAddEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMatMultEqual"
 /*@
    MatMatMultEqual - Test A*B*x = C*x for n random vector x 
 
@@ -335,8 +325,6 @@ PetscErrorCode MatMatMultEqual(Mat A,Mat B,Mat C,PetscInt n,PetscBool *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatTransposeMatMultEqual"
 /*@
    MatTransposeMatMultEqual - Test A^T*B*x = C*x for n random vector x 
 

@@ -8,8 +8,6 @@ static char help[] = "Tests DMSwarm\n\n";
 /* 
  Checks for variable blocksize
 */
-#undef __FUNCT__
-#define __FUNCT__ "ex2_1"
 PetscErrorCode ex2_1(void)
 {
   DM dms;
@@ -75,8 +73,6 @@ PetscErrorCode ex2_1(void)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;

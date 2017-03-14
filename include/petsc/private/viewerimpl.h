@@ -19,6 +19,8 @@ struct _PetscViewerOps {
    PetscErrorCode (*setup)(PetscViewer);
 };
 
+#define PETSCVIEWERGETVIEWEROFFPUSHESMAX 25
+
 #define PETSCVIEWERFORMATPUSHESMAX 25
 /*
    Defines the viewer data structure.

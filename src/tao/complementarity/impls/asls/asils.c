@@ -53,8 +53,6 @@
 */
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetUp_ASILS"
 static PetscErrorCode TaoSetUp_ASILS(Tao tao)
 {
   TAO_SSLS       *asls = (TAO_SSLS *)tao->data;
@@ -81,8 +79,6 @@ static PetscErrorCode TaoSetUp_ASILS(Tao tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Tao_ASLS_FunctionGradient"
 static PetscErrorCode Tao_ASLS_FunctionGradient(TaoLineSearch ls, Vec X, PetscReal *fcn,  Vec G, void *ptr)
 {
   Tao            tao = (Tao)ptr;
@@ -104,8 +100,6 @@ static PetscErrorCode Tao_ASLS_FunctionGradient(TaoLineSearch ls, Vec X, PetscRe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoDestroy_ASILS"
 static PetscErrorCode TaoDestroy_ASILS(Tao tao)
 {
   TAO_SSLS       *ssls = (TAO_SSLS *)tao->data;
@@ -131,8 +125,6 @@ static PetscErrorCode TaoDestroy_ASILS(Tao tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSolve_ASILS"
 static PetscErrorCode TaoSolve_ASILS(Tao tao)
 {
   TAO_SSLS                     *asls = (TAO_SSLS *)tao->data;
@@ -291,8 +283,6 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
 
   Level: beginner 
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoCreate_ASILS"
 PETSC_EXTERN PetscErrorCode TaoCreate_ASILS(Tao tao)
 {
   TAO_SSLS       *asls;

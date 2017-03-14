@@ -5,10 +5,16 @@
 #    6 - C examples that don't work with complex numbers, require PETSc matrices
 #    8 - Fortran .F examples that don't work with complex numbers
 #   13 - Examples that should only be compiled.
-#   17 - requires PYTHON or wget and Unix (uses urlget) and popen()
+#   17 - requires or PYTHON wget and Unix (uses urlget) and popen()
 
 testexamples_C: ${TESTEXAMPLES_C}
 	-@ if test ${PRINT_PROGRESS}foo = debugtestfoo -a -n "${TESTEXAMPLES_C}"; then printf "Running examples in `pwd`:\n ${TESTEXAMPLES_C}\n"; fi
+testexamples_PFLOTRAN: ${TESTEXAMPLES_PFLOTRAN}
+	-@ if test ${PRINT_PROGRESS}foo = debugtestfoo -a -n "${TESTEXAMPLES_PFLOTRAN}"; then printf "Running examples in `pwd`:\n ${TESTEXAMPLES_PFLOTRAN}\n"; fi
+testexamples_ALQUIMIA: ${TESTEXAMPLES_ALQUIMIA}
+	-@ if test ${PRINT_PROGRESS}foo = debugtestfoo -a -n "${TESTEXAMPLES_ALQUIMIA}"; then printf "Running examples in `pwd`:\n ${TESTEXAMPLES_ALQUIMIA}\n"; fi
+testexamples_C_Python: ${TESTEXAMPLES_C_PYTHON}
+	-@ if test ${PRINT_PROGRESS}foo = debugtestfoo -a -n "${TESTEXAMPLES_C_PYTHON}"; then printf "Running examples in `pwd`:\n ${TESTEXAMPLES_C_PYTHON}\n"; fi
 testexamples_C_Info: ${TESTEXAMPLES_C_INFO}
 	-@ if test ${PRINT_PROGRESS}foo = debugtestfoo -a -n "${TESTEXAMPLES_C_INFO}"; then printf "Running examples in `pwd`:\n ${TESTEXAMPLES_C_INFO}\n"; fi
 testexamples_C_NotSingle: ${TESTEXAMPLES_C_NOTSINGLE}
@@ -103,6 +109,10 @@ testexamples_PARMETIS_DATAFILESPATH: ${TESTEXAMPLES_PARMETIS_DATAFILESPATH}
 	-@ if test ${PRINT_PROGRESS}foo = debugtestfoo -a -n "${TESTEXAMPLES_PARMETIS_DATAFILESPATH}"; then printf "Running examples in `pwd`:\n ${TESTEXAMPLES_PARMETIS_DATAFILESPATH}\n"; fi
 testexamples_ELEMENTAL: ${TESTEXAMPLES_ELEMENTAL}
 	-@ if test ${PRINT_PROGRESS}foo = debugtestfoo -a -n "${TESTEXAMPLES_ELEMENTAL}"; then printf "Running examples in `pwd`:\n ${TESTEXAMPLES_ELEMENTAL}\n"; fi
+testexamples_ELEMENTAL_DATAFILESPATH: ${TESTEXAMPLES_ELEMENTAL_DATAFILESPATH}
+	-@ if test ${PRINT_PROGRESS}foo = debugtestfoo -a -n "${TESTEXAMPLES_ELEMENTAL_DATAFILESPATH}"; then printf "Running examples in `pwd`:\n ${TESTEXAMPLES_ELEMENTAL_DATAFILESPATH}\n"; fi
+testexamples_ELEMENTAL_COMPLEX_DATAFILESPATH: ${TESTEXAMPLES_ELEMENTAL_COMPLEX_DATAFILESPATH}
+	-@ if test ${PRINT_PROGRESS}foo = debugtestfoo -a -n "${TESTEXAMPLES_ELEMENTAL_COMPLEX_DATAFILESPATH}"; then printf "Running examples in `pwd`:\n ${TESTEXAMPLES_ELEMENTAL_COMPLEX}\n"; fi
 testexamples_SUNDIALS: ${TESTEXAMPLES_SUNDIALS}
 	-@ if test ${PRINT_PROGRESS}foo = debugtestfoo -a -n "${TESTEXAMPLES_SUNDIALS}"; then printf "Running examples in `pwd`:\n ${TESTEXAMPLES_SUNDIALS}\n"; fi
 testexamples_SUITESPARSE: ${TESTEXAMPLES_SUITESPARSE}
@@ -127,6 +137,8 @@ testexamples_CHOMBO_DATAFILESPATH: ${TESTEXAMPLES_CHOMBO_DATAFILESPATH}
 	-@ if test ${PRINT_PROGRESS}foo = debugtestfoo -a -n "${TESTEXAMPLES_CHOMBO_DATAFILESPATH}"; then printf "Running examples in `pwd`:\n ${TESTEXAMPLES_CHOMBO_DATAFILESPATH}\n"; fi
 testexamples_HDF5: ${TESTEXAMPLES_HDF5}
 	-@ if test ${PRINT_PROGRESS}foo = debugtestfoo -a -n "${TESTEXAMPLES_HDF5}"; then printf "Running examples in `pwd`:\n ${TESTEXAMPLES_HDF5}\n"; fi
+testexamples_TRIANGLE_HDF5: ${TESTEXAMPLES_TRIANGLE_HDF5}
+	-@ if test ${PRINT_PROGRESS}foo = debugtestfoo -a -n "${TESTEXAMPLES_TRIANGLE_HDF5}"; then printf "Running examples in `pwd`:\n ${TESTEXAMPLES_TRIANGLE_HDF5}\n"; fi
 testexamples_CHACO: ${TESTEXAMPLES_CHACO}
 	-@ if test ${PRINT_PROGRESS}foo = debugtestfoo -a -n "${TESTEXAMPLES_CHACO}"; then printf "Running examples in `pwd`:\n ${TESTEXAMPLES_CHACO}\n"; fi
 testexamples_CHOMBO: ${TESTEXAMPLES_CHOMBO}
@@ -338,20 +350,31 @@ ALLTESTS_PRINT_PROGRESS = no
 ALLTESTS_CHECK_FAILURES = no
 
 alltests:
-	-@${RM} ${PETSC_ARCH}/lib/petsc/conf/alltests.log alltests.log
-	-@ln -s ${PETSC_ARCH}/lib/petsc/conf/alltests.log alltests.log
-	-@${OMAKE} alltest DIFF=${PETSC_DIR}/bin/petscdiff PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} MPIEXEC="${MPIEXEC}" DATAFILESPATH=${DATAFILESPATH} 2>&1 | tee ${PETSC_ARCH}/lib/petsc/conf/alltests.log
-	@if [ x${ALLTESTS_CHECK_FAILURES} = xyes -a ${PETSC_PRECISION} != single ]; then \
-            cat alltests.log | sed -e '1d' -e '$$d' | \
+	-@${RM} -rf ${PETSC_ARCH}/lib/petsc/conf/alltests.log alltests.log
+	-@if [ x${PETSC_ARCH} != x -a -d "${PETSC_ARCH}" ]; then \
+            ln -s ${PETSC_ARCH}/lib/petsc/conf/alltests.log alltests.log ;\
+            ALLTESTSLOG=${PETSC_ARCH}/lib/petsc/conf/alltests.log ;\
+          else \
+            ALLTESTSLOG=alltests.log ;\
+          fi; \
+          ${OMAKE} allgtest alltest PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} MPIEXEC="${MPIEXEC}" DATAFILESPATH=${DATAFILESPATH} 2>&1 | tee $${ALLTESTSLOG};\
+          if [ x${ALLTESTS_CHECK_FAILURES} = xyes -a ${PETSC_PRECISION} != single ]; then \
+            cat $${ALLTESTSLOG} | sed -e '1d' -e '$$d' | \
             grep -v '^[\*]\{7,7\} Testing: ${TESTMODE}_[a-zA-Z0-9_]* [\*]\{7,7\}$$' | \
             grep -v '^[\.]*$$' | wc -l | grep '^[ ]*0$$' > /dev/null; \
-        fi;
+          fi;
+
+allgtest-tap:
+	-@cd ${PETSC_DIR}; ${OMAKE} -f gmakefile -j ${MAKE_NP} test V=0
+
+allgtest:
+	-@cd ${PETSC_DIR}; ${OMAKE} -k -f gmakefile -j ${MAKE_NP} test V=0 | egrep -v '^(ok [^#]*(# SKIP|$$)|[A-Za-z][A-Za-z0-9_-]*.(c|F|cxx|F90)$$)'
 
 alltest:
 	-@date
 	-@for i in ${TEST_RUNS} ; do \
           echo "******* Testing: ${TESTMODE}_$$i *******"; \
-	  ${OMAKE} PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=${TESTMODE}_$$i MPIEXEC="${MPIEXEC}" PRINT_PROGRESS=${ALLTESTS_PRINT_PROGRESS} tree ; \
+	  ${OMAKE} PATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PATH}" DIFF=${PETSC_DIR}/bin/petscdiff PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=${TESTMODE}_$$i MPIEXEC="${MPIEXEC}" PRINT_PROGRESS=${ALLTESTS_PRINT_PROGRESS} tree ; \
 	  if [ ${ALLTESTS_PRINT_PROGRESS}foo = dotfoo ] ; then printf "\n"; fi; \
 	done
 	-@date
@@ -373,6 +396,6 @@ palltests:
 
 
 tests_DATAFILESPATH:
-	make ACTION=testexamples_DATAFILESPATH tree DATAFILESPATH=${DATAFILESPATH}
+	${OMAKE} ACTION=testexamples_DATAFILESPATH tree DATAFILESPATH=${DATAFILESPATH}
 
 

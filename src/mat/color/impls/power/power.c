@@ -1,7 +1,5 @@
 #include <petsc/private/matimpl.h>      /*I "petscmat.h"  I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringApply_Power"
 static PetscErrorCode MatColoringApply_Power(MatColoring mc,ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
@@ -36,8 +34,6 @@ static PetscErrorCode MatColoringApply_Power(MatColoring mc,ISColoring *iscolori
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringCreate_Power"
 /*MC
   MATCOLORINGPOWER - Take the matrix's nth power, then do one-coloring on it.
 

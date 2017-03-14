@@ -3,8 +3,6 @@ static char help[] = "Tests solving linear system on 0 by 0 matrix.\n\n";
 
 #include <petscksp.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            C;

@@ -7081,7 +7081,16 @@ year = {2010}
   publisher = {Springer-Verlag},
   year      = {2012}
 }
-
+@incollection{Kirby12,
+  author    = {Robert C. Kirby},
+  title     = {{FIAT}: Numerical Construction of Finite Element Basis Functions},
+  editors   = {A. Logg and K.A. Mardal and G. N. Wells},
+  booktitle = {Automated solutions of differential equations by the finite element method},
+  series    = {Lecture Notes in Computational Science and Engineering},
+  volume    = {84},
+  publisher = {Springer-Verlag},
+  year      = {2012}
+}
 @article{BrownConveryHotesKnepleyPetropolous1993,
   author  = {Robert W. Brown and Mary Convery and Scott Hotes and Matthew G. Knepley and Labros Petropolous},
   title   = {Closed strings with low harmonics and kinks},
@@ -7264,26 +7273,41 @@ year = {2010}
   title   = {Generalising the mean spherical approximation as a multiscale, nonlinear boundary condition at the solute-solvent interface},
   author  = {Amirhossein Molavi Tabrizi and Matthew G. Knepley and Jaydeep P. Bardhan},
   journal = {Molecular Physics},
+  volume  = {114},
+  number  = {16-17},
+  pages   = {2558--2567},
   doi     = {10.1080/00268976.2016.1198503},
   url     = {http://www.tandfonline.com/doi/full/10.1080/00268976.2016.1198503},
-  eprint  = {http://dx.doi.org/10.1080/00268976.2016.1198503},
   year    = {2016}
 }
 
-@article{TabriziGoossensKnepleyBardhan2016,
-  title   = {Predicting solvation thermodynamics with dielectric continuum theory and a solvation-layer interface condition {(SLIC)}},
-  author  = {Amirhossein Molavi Tabrizi and Spencer Goossens and Matthew G. Knepley and Jaydeep P. Bardhan},
-  journal = {Journal of Physical Chemistry Letters},
-  note    = {submitted},
-  year    = {2016}
+@article{TabriziGoossensKnepleyBardhan2017,
+  title   = {Predicting Solvation Free Energies and Thermodynamics in Polar Solvents and Mixtures Using a Solvation-Layer Interface Condition},
+  author  = {Amirhossein Molavi Tabrizi and Spencer Goossens and Ali Mehdizadeh Rahimi and Matthew G. Knepley and Jaydeep P. Bardhan},
+  journal = {Journal of Chemical Physics},
+  volume  = {146},
+  number  = {9},
+  pages   = {094103},
+  url     = {http://scitation.aip.org/content/aip/journal/jcp/146/9/10.1063/1.4977037},
+  eprint  = {https://arxiv.org/abs/1611.02150},
+  doi     = {10.1063/1.4977037},
+  year    = {2017}
 }
 
-@article{TabriziGoossensCooperKnepleyBardhan2016,
+@article{TabriziGoossensCooperKnepleyBardhan2017,
   title   = {Extending the Solvation-Layer Interface Condition {(SLIC)} Continum Electrostatic Model to Linearized Poisson–Boltzmann Solvent},
   author  = {Amirhossein Molavi Tabrizi and Spencer Goossens and Christopher D. Cooper and Matthew G. Knepley and Jaydeep P. Bardhan},
   journal = {Journal of Chemical Theory and Computation},
   note    = {submitted},
-  year    = {2016}
+  year    = {2017}
+}
+
+@article{GoossensTabriziRahimiKnepleyBardhan2017,
+  title   = {Predicting Solvation Free Energies in Mixtures of Polar Solvents Using a Solvation-Layer Interface Condition},
+  author  = {Spencer Goossens and Amirhossein Molavi Tabrizi and Ali Mehdizadeh Rahimi and Matthew G. Knepley and Jaydeep P. Bardhan},
+  journal = {Journal of Chemical Physics},
+  note    = {submitted},
+  year    = {2017}
 }
 
 @inproceedings{McClanahan2011,
@@ -7633,14 +7657,13 @@ part I: Theory},
   year={2006}
 }
 @article{draganescu2008optimal,
-  title={Optimal order multilevel preconditioners for regularized ill-posed problems},
-  author={Draganescu, A. and Dupont, T.F.},
-  journal={Mathematics of Computation},
-  volume={77},
-  number={264},
-  pages={2001--2038},
-  year={2008},
-  publisher={Washington, DC: National Academy of Sciences-National Research Council,[1960?-}
+  title   = {Optimal order multilevel preconditioners for regularized ill-posed problems},
+  author  = {Andrei Dr{\u{a}}g{\u{a}}nescu and Todd F. Dupont},
+  journal = {Mathematics of Computation},
+  volume  = {77},
+  number  = {264},
+  pages   = {2001--2038},
+  year    = {2008},
 }
 @article{bastian1998additive,
   title={Additive and multiplicative multi-grid---a comparison},
@@ -8675,8 +8698,10 @@ year = {2009}
   title   = {A review of steric interactions of ions: Why some theories succeed and others fail to acount for ion size},
   author  = {Dirk Gillespie},
   journal = {Microfluidics and Nanofluidics},
-  note    = {in press},
-  year    = {2014}
+  volume  = {18},
+  number  = {5-6},
+  pages   = {717--738},
+  year    = {2015}
 }
 @article{GillespieValiskoBoda05,
   author  = {Dirk Gillespie and Monica Valisk\'{o} and Dezs\H{o} Boda},
@@ -9292,7 +9317,7 @@ year = {2009}
   organization = {IEEE}
 }
 @article{IsaacPetraStadlerGhattas2015,
-  title   = {Scalable and efficient algorithms for the propagation of uncertainty from data through inference to prediction for large-scale problems, with application to flow of the Antarctic ice sheet},
+  title   = {Scalable and efficient algorithms for the propagation of uncertainty from data through inference to prediction for large-scale problems, with application to flow of the {Antarctic} ice sheet},
   author  = {Tobin Isaac and Noemi Petra and Georg Stadler and Omar Ghattas},
   journal = {Journal of Computational Physics},
   volume  = {296},
@@ -9316,7 +9341,7 @@ year = {2009}
   year    = {2015}
 }
 @inproceedings{RudiMalossiIsaacStadlerGurnisStaarIneichenBekasCurioniGhattas2015,
-  title     = {An extreme-scale implicit solver for complex PDEs: highly heterogeneous flow in earth's mantle},
+  title     = {An extreme-scale implicit solver for complex {PDEs}: highly heterogeneous flow in earth's mantle},
   author    = {Johann Rudi and A Cristiano I Malossi and Tobin Isaac and Georg Stadler and Michael Gurnis and Peter WJ Staar and Yves Ineichen and Costas Bekas and Alessandro Curioni and Omar Ghattas},
   booktitle = {Proceedings of the International Conference for High Performance Computing, Networking, Storage and Analysis},
   pages     = {5},
@@ -9905,3 +9930,516 @@ year = {2009}
   volume =       "12",
   pages =        "617--629",
 }
+
+@article{Roth2010,
+  title   = {Fundamental measure theory for hard-sphere mixtures: a review},
+  author  = {Roland Roth},
+  journal = {J. Phys. Cond. Mat.},
+  volume  = 22,
+  pages   = {063102},
+  year    = 2010
+}
+
+@article{Wu2008,
+  title   = {Density functional theory for liquid structure and thermodynamics},
+  author  = {J. Z. Wu},
+  journal = {Struct. Bond.},
+  doi     = {DOI:10.1007/430_2008_3},
+  year    = 2008
+}
+
+@article{Goel2008,
+  title   = {Molecular solvent model of cylindrical electric double layers: a systematic study by {Monte Carlo} simulations and density functional theory},
+  author  = {T. Goel and C. N. Patra and S. K. Ghosh and T. Mukherjee},
+  journal = {J. Chem. Phys.},
+  volume  = {129},
+  pages   = {154707},
+  year    = {2008}
+}
+@article{MarchXiaoYuBiros2015,
+  title   = {{ASKIT:} An efficient, parallel library for high-dimensional kernel summations},
+  author  = {William B March and Bo Xiao and Chenhan D Yu and George Biros},
+  journal = {SIAM Journal on Scientific Computing (to appear)},
+  year    = {2015}
+}
+@inproceedings{YangDuraiswamiGumerovDavis2003,
+  title     = {Improved fast gauss transform and efficient kernel density estimation},
+  author    = {Changjiang Yang and Ramani Duraiswami and Nail A Gumerov and Larry Davis},
+  booktitle = {Proceedings of the Ninth IEEE International Conference on Computer Vision},
+  pages     = {664--671},
+  year      = {2003},
+  organization = {IEEE}
+}
+@article{FornbergLarssonFlyer2011,
+  title   = {Stable computations with Gaussian radial basis functions},
+  author  = {Bengt Fornberg and Elisabeth Larsson and Natasha Flyer},
+  journal = {SIAM Journal on Scientific Computing},
+  volume  = {33},
+  number  = {2},
+  pages   = {869--892},
+  year    = {2011},
+  publisher = {SIAM}
+}
+@inproceedings{SrinivasanQiDuraiswami2010,
+  title     = {GPUML: Graphical processors for speeding up kernel machines},
+  author    = {Balaji Vasan Srinivasan and H Qi and Ramani Duraiswami},
+  booktitle = {SIAM Conf. on Data Mining. Workshop on High Performance Analytics-Algorithms, Implementations, and Applications},
+  year      = {2010}
+}
+@article{JadamecBillen2010,
+  title   = {Reconciling surface plate motions with rapid three-dimensional mantle flow around a slab edge},
+  author  = {Margarete A Jadamec and Magali I Billen},
+  journal = {Nature},
+  volume  = {465},
+  number  = {7296},
+  pages   = {338--341},
+  year    = {2010}
+}
+@article{JadamecBillen2012,
+  title   = {The role of rheology and slab shape on rapid mantle flow: Three-dimensional numerical models of the Alaska slab edge},
+  author  = {Margarete A Jadamec and Magali I Billen},
+  journal = {Journal of Geophysical Research: Solid Earth},
+  volume  = {117},
+  number  = {B2},
+  year    = {2012}
+}
+@article{Jadamec2015,
+  title   = {Slab-driven Mantle Weakening and Rapid Mantle Flow},
+  author  = {Margarete A Jadamec},
+  journal = {Subduction Dynamics: From Mantle Flow to Mega Disasters},
+  volume  = {211},
+  pages   = {135},
+  year    = {2015}
+}
+@article{DuranceJadamecFalloonNicholls2012,
+  title   = {Magmagenesis within the {H}unter {R}idge {R}ift {Z}one resolved from olivine-hosted melt inclusions and geochemical modelling with insights from geodynamic models},
+  author  = {Patricia MJ Durance and Margarete A Jadamec and TJ Falloon and IA Nicholls},
+  journal = {Australian Journal of Earth Sciences},
+  volume  = {59},
+  number  = {6},
+  pages   = {913--931},
+  year    = {2012}
+}
+@article{SharplesMoresiJadamecRevote2015,
+  title   = {Styles of rifting and fault spacing in numerical models of crustal extension},
+  author  = {Wendy Sharples and Louis N Moresi and Margarete A Jadamec and Jerico Revote},
+  journal = {Journal of Geophysical Research: Solid Earth},
+  volume  = {120},
+  number  = {6},
+  pages   = {4379--4404},
+  year    = {2015}
+}
+@article{SharplesMoresiVelicJadamecMay2016,
+  title   = {Simulating faults and plate boundaries with a transversely isotropic plasticity model},
+  author  = {Wendy Sharples and Louis N Moresi and Mirko Velic and Margarete A Jadamec and Dave A May},
+  journal = {Physics of the Earth and Planetary Interiors},
+  volume  = {252},
+  pages   = {77--90},
+  year    = {2016}
+}
+@article{HaynieJadamec2017,
+  title   = {Tectonic drivers of the {Wrangell}-block forearc sliver: Insights from 3D geodynamic models},
+  author  = {Kirstie L Haynie and Margarete A Jadamec},
+  journal = {Tectonics},
+  note    = {in review},
+  year    = {2017}
+}
+@article{CammaranoRomanowiczStixrudeLithgowBertelloniXu2009,
+  title   = {Inferring the thermochemical structure of the upper mantle from seismic data},
+  author  = {Fabio Cammarano and Barbara Romanowicz and Lars Stixrude and Carolina Lithgow-Bertelloni and Wenbo Xu},
+  journal = {Geophysical Journal International},
+  volume  = {179},
+  number  = {2},
+  pages   = {1169--1185},
+  year    = {2009}
+}
+@article{Zhong2006,
+  title   = {Constraints on thermochemical convection of the mantle from plume heat flux, plume excess temperature, and upper mantle temperature},
+  author  = {Shijie Zhong},
+  journal = {Journal of Geophysical Research: Solid Earth},
+  volume  = {111},
+  number  = {B4},
+  year    = {2006},
+}
+@article{BillenHirth2007,
+  title   = {Rheologic controls on slab dynamics},
+  author  = {Magali I Billen and Greg Hirth},
+  journal = {Geochemistry, Geophysics, Geosystems},
+  volume  = {8},
+  number  = {8},
+  year    = {2007}
+}
+@article{HirthKohlstedt2003,
+  title   = {Rheology of the upper mantle and the mantle wedge: A view from the experimentalists},
+  author  = {Greg Hirth and David Kohlstedt},
+  journal = {Inside the subduction Factory},
+  pages   = {83--105},
+  year    = {2003}
+}
+@article{LongSilver2008,
+  title   = {The subduction zone flow field from seismic anisotropy: A global view},
+  author  = {Maureen D Long and Paul G Silver},
+  journal = {science},
+  volume  = {319},
+  number  = {5861},
+  pages   = {315--318},
+  year    = {2008},
+}
+@article{KaratoWu1993,
+  title   = {Rheology of the upper mantle: A synthesis},
+  author  = {Shun-ichiro Karato and Patrick Wu},
+  journal = {Science},
+  volume  = {260},
+  number  = {5109},
+  pages   = {771--778},
+  year    = {1993}
+}
+@article{long2013mantle,
+  title={Mantle flow in subduction systems: The mantle wedge flow field and implications for wedge processes},
+  author={Long, Maureen D and Wirth, Erin A},
+  journal={Journal of Geophysical Research: Solid Earth},
+  volume={118},
+  number={2},
+  pages={583--606},
+  year={2013},
+  publisher={Wiley Online Library}
+}
+@article{hoernle2008arc,
+  title={Arc-parallel flow in the mantle wedge beneath Costa Rica and Nicaragua},
+  author={Hoernle, Kaj and Abt, David L and Fischer, Karen M and Nichols, Holly and Hauff, Folkmar and Abers, Geoffrey A and van den Bogaard, Paul and Heydolph, Ken and Alvarado, Guillermo and Protti, Marino and others},
+  journal={Nature},
+  volume={451},
+  number={7182},
+  pages={1094--1097},
+  year={2008},
+  publisher={Nature Publishing Group}
+}
+@article{Savage1999,
+  title   = {Seismic anisotropy and mantle deformation: what have we learned from shear wave splitting?},
+  author  = {MK Savage},
+  journal = {Reviews of Geophysics},
+  volume  = {37},
+  number  = {1},
+  pages   = {65--106},
+  year    = {1999}
+}
+@inproceedings{AkcelikBirosDraganescuHillGhattasWaanders2005,
+  title     = {Dynamic data-driven inversion for terascale simulations: Real-time identification of airborne contaminants},
+  author    = {Volkan Ak{\c{c}}elik and George Biros and Andrei Draganescu and Judith Hill and Omar Ghattas and Bart Van Bloemen Waanders},
+  booktitle = {Proceedings of the 2005 ACM/IEEE conference on Supercomputing},
+  pages     = {43},
+  year      = {2005},
+  organization={IEEE Computer Society}
+}
+@article{DraganescuSoane2013,
+  title   = {Multigrid solution of a distributed optimal control problem constrained by the {Stokes} equations},
+  author  = {Andrei Dr{\u{a}}g{\u{a}}nescu and Ana Maria Soane},
+  journal = {Applied Mathematics and Computation},
+  volume  = {219},
+  number  = {10},
+  pages   = {5622--5634},
+  year    = {2013}
+}
+@article{KausMuhlhausMay2010,
+  title   = {A stabilization algorithm for geodynamic numerical simulations with a free surface},
+  author  = {Boris JP Kaus and Hans M{\"u}hlhaus and Dave A May},
+  journal = {Physics of the Earth and Planetary Interiors},
+  volume  = {181},
+  number  = {1},
+  pages   = {12--20},
+  year    = {2010},
+}
+@article{ZhongGurnis1995,
+  title   = {Mantle convection with plates and mobile, faulted plate margins},
+  author  = {Shijie Zhong and Michael Gurnis},
+  journal = {Science},
+  volume  = {267},
+  number  = {5199},
+  pages   = {838},
+  year    = {1995},
+}
+@article{StuderBobinChahidMousaviCandesDahan2012,
+  title   = {Compressive fluorescence microscopy for biological and hyperspectral imaging},
+  author  = {Vincent Studer and J{\'e}rome Bobin and Makhlad Chahid and Hamed Shams Mousavi and Emmanuel Candes and Maxime Dahan},
+  journal = {Proceedings of the National Academy of Sciences},
+  volume  = {109},
+  number  = {26},
+  pages   = {E1679--E1687},
+  year    = {2012},
+}
+@article{BorsukHigdonStowReckhow2001,
+  title   = {A {Bayesian} hierarchical model to predict benthic oxygen demand from organic matter loading in estuaries and coastal zones},
+  author  = {Mark E Borsuk and David Higdon and Craig A Stow and Kenneth H Reckhow},
+  journal = {Ecological Modelling},
+  volume  = {143},
+  number  = {3},
+  pages   = {165--181},
+  year    = {2001},
+}
+@article{LiebermanWillcox2012,
+  title   = {Goal-oriented inference: Approach, linear theory, and application to advection diffusion},
+  author  = {Chad Lieberman and Karen Willcox},
+  journal = {SIAM Journal on Scientific Computing},
+  volume  = {34},
+  number  = {4},
+  pages   = {A1880--A1904},
+  year    = {2012},
+}
+@article{ChaillatBiros2012,
+  title   = {{FaIMS}: A fast algorithm for the inverse medium problem with multiple frequencies and multiple sources for the scalar {Helmholtz} equation},
+  author  = {St{\'e}phanie Chaillat and George Biros},
+  journal = {Journal of Computational Physics},
+  volume  = {231},
+  number  = {12},
+  pages   = {4403--4421},
+  year    = {2012},
+}
+@article{FarhatTezaurDjellouli2002,
+  title   = {On the solution of three-dimensional inverse obstacle acoustic scattering problems by a regularized {Newton} method},
+  author  = {Charbel Farhat and Radek Tezaur and Rabia Djellouli},
+  journal = {Inverse problems},
+  volume  = {18},
+  number  = {5},
+  pages   = {1229},
+  year    = {2002}
+}
+@article{OrozcoGhattas1992,
+  title   = {Massively parallel aerodynamic shape optimization},
+  author  = {Orozco, Carlos E and Ghattas, ON},
+  journal = {Computing Systems in Engineering},
+  volume  = {3},
+  number  = {1-4},
+  pages   = {311--320},
+  year    = {1992},
+}
+@article{ReutherAlonsoRimlingerJameson1999,
+  title   = {Aerodynamic shape optimization of supersonic aircraft configurations via an adjoint formulation on distributed memory parallel computers},
+  author  = {James Reuther and Juan Jose Alonso and Mark J Rimlinger and Antony Jameson},
+  journal = {Computers \& fluids},
+  volume  = {28},
+  number  = {4},
+  pages   = {675--700},
+  year    = {1999},
+}
+@article{RudiStadlerGhattas2016,
+  title   = {Weighted {BFBT} Preconditioner for {Stokes} Flow Problems with Highly Heterogeneous Viscosity},
+  author  = {Johan Rudi and Georg Stadler and Omar Ghattas},
+  journal = {ArXiv e-prints},
+  archivePrefix = {arXiv},
+  primaryClass  = {math.NA},
+  eprint  = {1607.03936},
+  month   = {jul},
+  year    = {2016}
+}
+@article{BorziKunisch2006,
+  title   = {A globalization strategy for the multigrid solution of elliptic optimal control problems},
+  author  = {Borzi, A and Kunisch, K},
+  journal = {Optimisation Methods and Software},
+  volume  = {21},
+  number  = {3},
+  pages   = {445--459},
+  year    = {2006}
+}
+@article{Nash2000,
+  title   = {A multigrid approach to discretized optimization problems},
+  author  = {Stephen G Nash},
+  journal = {Optimization Methods and Software},
+  volume  = {14},
+  number  = {1-2},
+  pages   = {99--116},
+  year    = {2000}
+}
+@article{Jameson1983,
+  title   = {Solution of the Euler equations for two dimensional transonic flow by a multigrid method},
+  author  = {Antony Jameson},
+  journal = {Applied mathematics and computation},
+  volume  = {13},
+  number  = {3-4},
+  pages   = {327--355},
+  year    = {1983},
+}
+@article{Billen2008,
+  title   = {Modeling the dynamics of subducting slabs},
+  author  = {Magali I Billen},
+  journal = {Annu. Rev. Earth Planet. Sci.},
+  volume  = {36},
+  pages   = {325--356},
+  year    = {2008}
+}
+@article{Gerya2011,
+  title   = {Future directions in subduction modeling},
+  author  = {Taras Gerya},
+  journal = {Journal of Geodynamics},
+  volume  = {52},
+  number  = {5},
+  pages   = {344--378},
+  year    = {2011}
+}
+@article{Tackley2000,
+  title   = {Mantle convection and plate tectonics: Toward an integrated physical and chemical theory},
+  author  = {Paul J Tackley},
+  journal = {Science},
+  volume  = {288},
+  number  = {5473},
+  pages   = {2002--2007},
+  year    = {2000}
+}
+@article{CaseyDewey1984,
+  title   = {Initiation of subduction zones along transform and accreting plate boundaries, triple-junction evolution, and forearc spreading centres—implications for ophiolitic geology and obduction},
+  author  = {JF Casey and JF Dewey},
+  journal = {Geological Society, London, Special Publications},
+  volume  = {13},
+  number  = {1},
+  pages   = {269--290},
+  year    = {1984}
+}
+@article{DoughertyClayton2014,
+  title   = {Seismicity and structure in central {Mexico}: Evidence for a possible slab tear in the {South Cocos} plate},
+  author  = {Sara L Dougherty and Robert W Clayton},
+  journal = {Journal of Geophysical Research: Solid Earth},
+  volume  = {119},
+  number  = {4},
+  pages   = {3424--3447},
+  year    = {2014}
+}
+@article{SyracuseMaceiraPrietoZhangAmmon2016,
+  title   = {Multiple plates subducting beneath Colombia, as illuminated by seismicity and velocity from the joint inversion of seismic and gravity data},
+  author  = {Ellen M Syracuse and Monica Maceira and German A Prieto and Haijiang Zhang and Charles J Ammon},
+  journal = {Earth and Planetary Science Letters},
+  volume  = {444},
+  pages   = {139--149},
+  year    = {2016}
+}
+@article{BowerGurnisFlament2015,
+  title   = {Assimilating lithosphere and slab history in 4-D Earth models},
+  author  = {Dan J Bower and Michael Gurnis and Nicolas Flament},
+  journal = {Physics of the Earth and Planetary Interiors},
+  volume  = {238},
+  pages   = {8--22},
+  year    = {2015}
+}
+@book{Ciarlet1976,
+  title  = {Numerical analysis of the finite element method},
+  author = {Philippe G Ciarlet},
+  volume = {59},
+  year   = {1976},
+  publisher = {Presses de l'Universit{\'e} de Montr{\'e}al}
+}
+@inproceedings{LiuMellorCrummey2013,
+  title     = {A data-centric profiler for parallel programs},
+  author    = {Xu Liu and John Mellor-Crummey},
+  booktitle = {2013 SC-International Conference for High Performance Computing, Networking, Storage and Analysis (SC)},
+  pages     = {1--12},
+  year      = {2013},
+  organization = {IEEE}
+}
+@incollection{ErnstGander2012,
+  title     = {Why it is difficult to solve Helmholtz problems with classical iterative methods},
+  author    = {Oliver G Ernst and Martin J Gander},
+  booktitle = {Numerical analysis of multiscale problems},
+  pages     = {325--363},
+  url       = {http://www.mathe.tu-freiberg.de/~ernst/PubArchive/helmholtzDurham.pdf},
+  year      = {2012}
+}
+@article{WarburtonKarniadakis1999,
+  title   = {A discontinuous Galerkin method for the viscous {MHD} equations},
+  author  = {Timothy C Warburton and George E Karniadakis},
+  journal = {Journal of Computational Physics},
+  volume  = {152},
+  number  = {2},
+  pages   = {608--641},
+  year    = {1999}
+}
+@article{SalahSoulaimaniHabashi2001,
+  title   = {A finite element method for magnetohydrodynamics},
+  author  = {Nizar Ben Salah and Azzeddine Soulaimani and Wagdi G Habashi},
+  journal = {Computer Methods in Applied Mechanics and Engineering},
+  volume  = {43},
+  number  = {190},
+  pages   = {5867--5892},
+  year    = {2001}
+}
+@article{NesliturkTezerSezgin2005,
+  title   = {The finite element method for {MHD} flow at high {Hartmann} numbers},
+  author  = {Ali I Nesliturk and M Tezer-Sezgin},
+  journal = {Computer methods in applied mechanics and engineering},
+  volume  = {194},
+  number  = {9},
+  pages   = {1201--1224},
+  year    = {2005}
+}
+@article{StrakSchellart2016,
+  title   = {Control of Slab Width on Subduction-Induced Upper Mantle Flow and Associated Upwellings: Insights from Analog Models},
+  author  = {Vincent Strak and Wouter P Schellart},
+  journal = {Journal of Geophysical Research: Solid Earth},
+  year    = {2016}
+}
+@incollection{Griebel2006,
+  title     = {Sparse Grids for Higher Dimensional Problems},
+  author    = {Michael Griebel},
+  booktitle = {Foundations of Computational Mathematics},
+  editor    = {Luis M. Pardo and Allan Pinkus and Endre Suli and Michael J. Todd},
+  pages     = {106--161},
+  doi       = {10.1017/CBO9780511721571.004},
+  url       = {https://www.cambridge.org/core/books/foundations-of-computational-mathematics-santander-2005/sparse-grids-for-higher-dimensional-problems/C6E91FFE07DF5F6C069B80805B216B50},
+  month     = {June},
+  day       = {29},
+  year      = {2006}
+}
+
+@inbook{KirbyLoggRognesTerrel2012,
+  title     = {Common and unusual finite elements},
+  author    = {Robert C. Kirby and Anders Logg and Marie E. Rognes and Andy R. Terrel},
+  editor    = {Anders Logg and Kent-Andre Mardal and Garth Wells},
+  booktitle = {Automated Solution of Differential Equations by the Finite Element Method: The FEniCS Book},
+  publisher = {Springer Berlin Heidelberg},
+  address   = {Berlin, Heidelberg},
+  pages     = {95--119},
+  isbn      = {978-3-642-23099-8},
+  doi       = {10.1007/978-3-642-23099-8_3},
+  url       = {http://dx.doi.org/10.1007/978-3-642-23099-8_3},
+  year      = {2012},
+}
+@Inbook{KirbyMardal2012,
+  author    = {Robert C. Kirby and Kent-Andre Mardal},
+  title     = {Constructing general reference finite elements},
+  editor    = {Anders Logg and Kent-Andre Mardal and Garth Wells},
+  booktitle = {Automated Solution of Differential Equations by the Finite Element Method: The FEniCS Book},
+  publisher = {Springer Berlin Heidelberg},
+  address   = {Berlin, Heidelberg},
+  pages     = {121--132},
+  isbn      = {978-3-642-23099-8},
+  doi       = {10.1007/978-3-642-23099-8_4},
+  url       = {http://dx.doi.org/10.1007/978-3-642-23099-8_4},
+  year      = {2012},
+}
+@book{Wriggers2008,
+  title     = {Nonlinear finite element methods},
+  author    = {Peter Wriggers},
+  publisher = {Springer Science \& Business Media},
+  year      = {2008}
+}
+@book{ZienkiewiczTaylor1977,
+  title     = {The finite element method},
+  author    = {Zienkiewicz, Olgierd Cecil and Taylor, Robert Leroy and Taylor, Robert Lee},
+  publisher = {McGraw-hill London},
+  volume    = {3},
+  year      = {1977}
+}
+@article{RognesKirbyLogg2009,
+  title   = {Efficient assembly of {H(div)} and {H(curl)} conforming finite elements},
+  author  = {Marie E Rognes and Robert C Kirby and Anders Logg},
+  journal = {SIAM Journal on Scientific Computing},
+  volume  = {31},
+  number  = {6},
+  pages   = {4130--4151},
+  year    = {2009},
+}
+
+@BOOK{Kelley03,
+      AUTHOR="C. T. Kelley",
+      TITLE="Solving Nonlinear Equations with Newton's Method",
+      YEAR="2003",
+      PUBLISHER="SIAM",
+      address="Philadelphia"
+      }

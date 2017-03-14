@@ -6,8 +6,6 @@
 PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
 
 #if defined(PETSC_HAVE_HDF5)
-#undef __FUNCT__
-#define __FUNCT__ "DMSequenceView_HDF5"
 static PetscErrorCode DMSequenceView_HDF5(DM dm, const char *seqname, PetscInt seqnum, PetscScalar value, PetscViewer viewer)
 {
   Vec            stamp;
@@ -38,9 +36,7 @@ static PetscErrorCode DMSequenceView_HDF5(DM dm, const char *seqname, PetscInt s
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSequenceLoad_HDF5"
-PetscErrorCode DMSequenceLoad_HDF5(DM dm, const char *seqname, PetscInt seqnum, PetscScalar *value, PetscViewer viewer)
+PetscErrorCode DMSequenceLoad_HDF5_Internal(DM dm, const char *seqname, PetscInt seqnum, PetscScalar *value, PetscViewer viewer)
 {
   Vec            stamp;
   PetscMPIInt    rank;
@@ -71,9 +67,7 @@ PetscErrorCode DMSequenceLoad_HDF5(DM dm, const char *seqname, PetscInt seqnum, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecView_Plex_Local_HDF5"
-PetscErrorCode VecView_Plex_Local_HDF5(Vec v, PetscViewer viewer)
+PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec v, PetscViewer viewer)
 {
   DM                      dm;
   DM                      dmBC;
@@ -148,9 +142,7 @@ PetscErrorCode VecView_Plex_Local_HDF5(Vec v, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecView_Plex_HDF5"
-PetscErrorCode VecView_Plex_HDF5(Vec v, PetscViewer viewer)
+PetscErrorCode VecView_Plex_HDF5_Internal(Vec v, PetscViewer viewer)
 {
   DM             dm;
   Vec            locv;
@@ -173,9 +165,7 @@ PetscErrorCode VecView_Plex_HDF5(Vec v, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecView_Plex_HDF5_Native"
-PetscErrorCode VecView_Plex_HDF5_Native(Vec v, PetscViewer viewer)
+PetscErrorCode VecView_Plex_HDF5_Native_Internal(Vec v, PetscViewer viewer)
 {
   PetscBool      isseq;
   PetscErrorCode ierr;
@@ -189,9 +179,7 @@ PetscErrorCode VecView_Plex_HDF5_Native(Vec v, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecLoad_Plex_HDF5"
-PetscErrorCode VecLoad_Plex_HDF5(Vec v, PetscViewer viewer)
+PetscErrorCode VecLoad_Plex_HDF5_Internal(Vec v, PetscViewer viewer)
 {
   DM             dm;
   Vec            locv;
@@ -215,9 +203,7 @@ PetscErrorCode VecLoad_Plex_HDF5(Vec v, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecLoad_Plex_HDF5_Native"
-PetscErrorCode VecLoad_Plex_HDF5_Native(Vec v, PetscViewer viewer)
+PetscErrorCode VecLoad_Plex_HDF5_Native_Internal(Vec v, PetscViewer viewer)
 {
   DM             dm;
   PetscInt       seqnum;
@@ -233,8 +219,6 @@ PetscErrorCode VecLoad_Plex_HDF5_Native(Vec v, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexWriteTopology_HDF5_Static"
 static PetscErrorCode DMPlexWriteTopology_HDF5_Static(DM dm, IS globalPointNumbers, PetscViewer viewer)
 {
   IS              orderIS, conesIS, cellsIS, orntsIS;
@@ -299,8 +283,6 @@ static PetscErrorCode DMPlexWriteTopology_HDF5_Static(DM dm, IS globalPointNumbe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexWriteTopology_Vertices_HDF5_Static"
 static PetscErrorCode DMPlexWriteTopology_Vertices_HDF5_Static(DM dm, DMLabel label, PetscInt labelId, PetscViewer viewer)
 {
   IS              cellIS, globalVertexNumbers;
@@ -316,9 +298,8 @@ static PetscErrorCode DMPlexWriteTopology_Vertices_HDF5_Static(DM dm, DMLabel la
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cMax, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
   if (cMax >= 0) cEnd = PetscMin(cEnd, cMax);
-  if (depth == 1) PetscFunctionReturn(0);
   for (cell = cStart; cell < cEnd; ++cell) {
     PetscInt *closure = NULL;
     PetscInt  closureSize, v, Nc = 0;
@@ -392,8 +373,6 @@ static PetscErrorCode DMPlexWriteTopology_Vertices_HDF5_Static(DM dm, DMLabel la
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexWriteCoordinates_HDF5_Static"
 static PetscErrorCode DMPlexWriteCoordinates_HDF5_Static(DM dm, PetscViewer viewer)
 {
   DM             cdm;
@@ -426,8 +405,6 @@ static PetscErrorCode DMPlexWriteCoordinates_HDF5_Static(DM dm, PetscViewer view
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexWriteCoordinates_Vertices_HDF5_Static"
 static PetscErrorCode DMPlexWriteCoordinates_Vertices_HDF5_Static(DM dm, PetscViewer viewer)
 {
   Vec              coordinates, newcoords;
@@ -437,6 +414,7 @@ static PetscErrorCode DMPlexWriteCoordinates_Vertices_HDF5_Static(DM dm, PetscVi
   const DMBoundaryType *bd;
   PetscReal        lengthScale;
   PetscInt         vStart, vEnd, v, bs, coordSize, dof, off, d;
+  PetscBool        localized;
   hid_t            fileId, groupId;
   PetscErrorCode   ierr;
 
@@ -446,7 +424,8 @@ static PetscErrorCode DMPlexWriteCoordinates_Vertices_HDF5_Static(DM dm, PetscVi
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = VecGetBlockSize(coordinates, &bs);CHKERRQ(ierr);
   ierr = VecGetLocalSize(coordinates, &coordSize);CHKERRQ(ierr);
-  if (coordSize == (vEnd - vStart)*bs) PetscFunctionReturn(0);
+  ierr = DMGetCoordinatesLocalized(dm,&localized);CHKERRQ(ierr);
+  if (localized == PETSC_FALSE) PetscFunctionReturn(0);
   ierr = DMGetPeriodicity(dm, NULL, &L, &bd);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &cSection);CHKERRQ(ierr);
   ierr = VecCreate(PetscObjectComm((PetscObject) coordinates), &newcoords);CHKERRQ(ierr);
@@ -499,10 +478,8 @@ static PetscErrorCode DMPlexWriteCoordinates_Vertices_HDF5_Static(DM dm, PetscVi
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexView_HDF5"
 /* We only write cells and vertices. Does this screw up parallel reading? */
-PetscErrorCode DMPlexView_HDF5(DM dm, PetscViewer viewer)
+PetscErrorCode DMPlexView_HDF5_Internal(DM dm, PetscViewer viewer)
 {
   DMLabel           label   = NULL;
   PetscInt          labelId = 0;
@@ -644,12 +621,10 @@ static herr_t ReadLabelHDF5_Static(hid_t g_id, const char *name, const H5L_info_
   return err;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexLoad_HDF5"
 /* The first version will read everything onto proc 0, letting the user distribute
    The next will create a naive partition, and then rebalance after reading
 */
-PetscErrorCode DMPlexLoad_HDF5(DM dm, PetscViewer viewer)
+PetscErrorCode DMPlexLoad_HDF5_Internal(DM dm, PetscViewer viewer)
 {
   LabelCtx        ctx;
   PetscSection    coordSection;

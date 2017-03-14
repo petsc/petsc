@@ -41,8 +41,6 @@ typedef struct {
 } GridCtx;
 extern int FormJacobian_Grid(GridCtx*,Mat*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
@@ -107,8 +105,6 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobian_Grid"
 int FormJacobian_Grid(GridCtx *grid,Mat *J)
 {
   Mat                    jac = *J;

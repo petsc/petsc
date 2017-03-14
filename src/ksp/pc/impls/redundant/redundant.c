@@ -19,8 +19,6 @@ typedef struct {
   MatFactorShiftType shifttype;
 } PC_Redundant;
 
-#undef __FUNCT__
-#define __FUNCT__ "PCFactorSetShiftType_Redundant"
 PetscErrorCode  PCFactorSetShiftType_Redundant(PC pc,MatFactorShiftType shifttype)
 {
   PC_Redundant   *red = (PC_Redundant*)pc->data;
@@ -38,8 +36,6 @@ PetscErrorCode  PCFactorSetShiftType_Redundant(PC pc,MatFactorShiftType shifttyp
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCView_Redundant"
 static PetscErrorCode PCView_Redundant(PC pc,PetscViewer viewer)
 {
   PC_Redundant   *red = (PC_Redundant*)pc->data;
@@ -69,8 +65,6 @@ static PetscErrorCode PCView_Redundant(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_Redundant"
 static PetscErrorCode PCSetUp_Redundant(PC pc)
 {
   PC_Redundant   *red = (PC_Redundant*)pc->data;
@@ -185,8 +179,6 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_Redundant"
 static PetscErrorCode PCApply_Redundant(PC pc,Vec x,Vec y)
 {
   PC_Redundant   *red = (PC_Redundant*)pc->data;
@@ -224,8 +216,6 @@ static PetscErrorCode PCApply_Redundant(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApplyTranspose_Redundant"
 static PetscErrorCode PCApplyTranspose_Redundant(PC pc,Vec x,Vec y)
 {
   PC_Redundant   *red = (PC_Redundant*)pc->data;
@@ -263,8 +253,6 @@ static PetscErrorCode PCApplyTranspose_Redundant(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCReset_Redundant"
 static PetscErrorCode PCReset_Redundant(PC pc)
 {
   PC_Redundant   *red = (PC_Redundant*)pc->data;
@@ -284,8 +272,6 @@ static PetscErrorCode PCReset_Redundant(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_Redundant"
 static PetscErrorCode PCDestroy_Redundant(PC pc)
 {
   PC_Redundant   *red = (PC_Redundant*)pc->data;
@@ -299,8 +285,6 @@ static PetscErrorCode PCDestroy_Redundant(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_Redundant"
 static PetscErrorCode PCSetFromOptions_Redundant(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
@@ -313,8 +297,6 @@ static PetscErrorCode PCSetFromOptions_Redundant(PetscOptionItems *PetscOptionsO
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCRedundantSetNumber_Redundant"
 static PetscErrorCode PCRedundantSetNumber_Redundant(PC pc,PetscInt nreds)
 {
   PC_Redundant *red = (PC_Redundant*)pc->data;
@@ -324,8 +306,6 @@ static PetscErrorCode PCRedundantSetNumber_Redundant(PC pc,PetscInt nreds)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCRedundantSetNumber"
 /*@
    PCRedundantSetNumber - Sets the number of redundant preconditioner contexts.
 
@@ -351,8 +331,6 @@ PetscErrorCode PCRedundantSetNumber(PC pc,PetscInt nredundant)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCRedundantSetScatter_Redundant"
 static PetscErrorCode PCRedundantSetScatter_Redundant(PC pc,VecScatter in,VecScatter out)
 {
   PC_Redundant   *red = (PC_Redundant*)pc->data;
@@ -370,8 +348,6 @@ static PetscErrorCode PCRedundantSetScatter_Redundant(PC pc,VecScatter in,VecSca
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCRedundantSetScatter"
 /*@
    PCRedundantSetScatter - Sets the scatter used to copy values into the
      redundant local solve and the scatter to move them back into the global
@@ -400,8 +376,6 @@ PetscErrorCode PCRedundantSetScatter(PC pc,VecScatter in,VecScatter out)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCRedundantGetKSP_Redundant"
 static PetscErrorCode PCRedundantGetKSP_Redundant(PC pc,KSP *innerksp)
 {
   PetscErrorCode ierr;
@@ -443,8 +417,6 @@ static PetscErrorCode PCRedundantGetKSP_Redundant(PC pc,KSP *innerksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCRedundantGetKSP"
 /*@
    PCRedundantGetKSP - Gets the less parallel KSP created by the redundant PC.
 
@@ -471,8 +443,6 @@ PetscErrorCode PCRedundantGetKSP(PC pc,KSP *innerksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCRedundantGetOperators_Redundant"
 static PetscErrorCode PCRedundantGetOperators_Redundant(PC pc,Mat *mat,Mat *pmat)
 {
   PC_Redundant *red = (PC_Redundant*)pc->data;
@@ -483,8 +453,6 @@ static PetscErrorCode PCRedundantGetOperators_Redundant(PC pc,Mat *mat,Mat *pmat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCRedundantGetOperators"
 /*@
    PCRedundantGetOperators - gets the sequential matrix and preconditioner matrix
 
@@ -535,8 +503,6 @@ PetscErrorCode PCRedundantGetOperators(PC pc,Mat *mat,Mat *pmat)
            PCRedundantGetKSP(), PCRedundantGetOperators(), PCRedundantSetNumber()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_Redundant"
 PETSC_EXTERN PetscErrorCode PCCreate_Redundant(PC pc)
 {
   PetscErrorCode ierr;

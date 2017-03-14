@@ -1,8 +1,6 @@
 
 #include <../src/ksp/ksp/impls/gmres/gmresimpl.h>       /*I  "petscksp.h"  I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGMRESSetOrthogonalization"
 /*@C
    KSPGMRESSetOrthogonalization - Sets the orthogonalization routine used by GMRES and FGMRES.
 
@@ -48,8 +46,6 @@ PetscErrorCode  KSPGMRESSetOrthogonalization(KSP ksp,PetscErrorCode (*fcn)(KSP,P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGMRESGetOrthogonalization"
 /*@C
    KSPGMRESGetOrthogonalization - Gets the orthogonalization routine used by GMRES and FGMRES.
 

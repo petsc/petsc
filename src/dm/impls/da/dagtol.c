@@ -5,8 +5,6 @@
 
 #include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGlobalToLocalBegin_DA"
 PetscErrorCode  DMGlobalToLocalBegin_DA(DM da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
@@ -21,8 +19,6 @@ PetscErrorCode  DMGlobalToLocalBegin_DA(DM da,Vec g,InsertMode mode,Vec l)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGlobalToLocalEnd_DA"
 PetscErrorCode  DMGlobalToLocalEnd_DA(DM da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
@@ -36,8 +32,6 @@ PetscErrorCode  DMGlobalToLocalEnd_DA(DM da,Vec g,InsertMode mode,Vec l)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLocalToGlobalBegin_DA"
 PetscErrorCode  DMLocalToGlobalBegin_DA(DM da,Vec l,InsertMode mode,Vec g)
 {
   PetscErrorCode ierr;
@@ -50,16 +44,14 @@ PetscErrorCode  DMLocalToGlobalBegin_DA(DM da,Vec l,InsertMode mode,Vec g)
   if (mode == ADD_VALUES) {
     ierr = VecScatterBegin(dd->gtol,l,g,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   } else if (mode == INSERT_VALUES) {
-    if (dd->bx != DM_BOUNDARY_GHOSTED && dd->bx != DM_BOUNDARY_NONE && dd->s > 0 && dd->m == 1) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Available only for boundary none or with parallism in x direction");
-    if (dd->bx != DM_BOUNDARY_GHOSTED && dd->by != DM_BOUNDARY_NONE && dd->s > 0 && dd->n == 1) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Available only for boundary none or with parallism in y direction");
-    if (dd->bx != DM_BOUNDARY_GHOSTED && dd->bz != DM_BOUNDARY_NONE && dd->s > 0 && dd->p == 1) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Available only for boundary none or with parallism in z direction");
+    if (dd->bx != DM_BOUNDARY_GHOSTED && dd->bx != DM_BOUNDARY_NONE && dd->s > 0 && dd->m == 1) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Available only for boundary none or with parallelism in x direction");
+    if (dd->bx != DM_BOUNDARY_GHOSTED && dd->by != DM_BOUNDARY_NONE && dd->s > 0 && dd->n == 1) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Available only for boundary none or with parallelism in y direction");
+    if (dd->bx != DM_BOUNDARY_GHOSTED && dd->bz != DM_BOUNDARY_NONE && dd->s > 0 && dd->p == 1) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Available only for boundary none or with parallelism in z direction");
     ierr = VecScatterBegin(dd->gtol,l,g,INSERT_VALUES,SCATTER_REVERSE_LOCAL);CHKERRQ(ierr);
   } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not yet implemented");
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLocalToGlobalEnd_DA"
 PetscErrorCode  DMLocalToGlobalEnd_DA(DM da,Vec l,InsertMode mode,Vec g)
 {
   PetscErrorCode ierr;
@@ -78,8 +70,6 @@ PetscErrorCode  DMLocalToGlobalEnd_DA(DM da,Vec l,InsertMode mode,Vec g)
 }
 
 extern PetscErrorCode DMDAGetNatural_Private(DM,PetscInt*,IS*);
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGlobalToNatural_Create"
 /*
    DMDAGlobalToNatural_Create - Create the global to natural scatter object
 
@@ -125,8 +115,6 @@ PetscErrorCode DMDAGlobalToNatural_Create(DM da)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGlobalToNaturalBegin"
 /*@
    DMDAGlobalToNaturalBegin - Maps values from the global vector to a global vector
    in the "natural" grid ordering. Must be followed by
@@ -175,8 +163,6 @@ PetscErrorCode  DMDAGlobalToNaturalBegin(DM da,Vec g,InsertMode mode,Vec l)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGlobalToNaturalEnd"
 /*@
    DMDAGlobalToNaturalEnd - Maps values from the global vector to a global vector
    in the natural ordering. Must be preceeded by DMDAGlobalToNaturalBegin().
@@ -218,8 +204,6 @@ PetscErrorCode  DMDAGlobalToNaturalEnd(DM da,Vec g,InsertMode mode,Vec l)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDANaturalToGlobalBegin"
 /*@
    DMDANaturalToGlobalBegin - Maps values from a global vector in the "natural" ordering
    to a global vector in the PETSc DMDA grid ordering. Must be followed by
@@ -266,8 +250,6 @@ PetscErrorCode  DMDANaturalToGlobalBegin(DM da,Vec g,InsertMode mode,Vec l)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDANaturalToGlobalEnd"
 /*@
    DMDANaturalToGlobalEnd - Maps values from the natural ordering global vector
    to a global vector in the PETSc DMDA ordering. Must be preceeded by DMDANaturalToGlobalBegin().

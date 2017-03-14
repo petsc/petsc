@@ -5,8 +5,6 @@
   generated below just for these routines.
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSequentialPhaseBegin_Private"
 PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm comm,int ng)
 {
   PetscErrorCode ierr;
@@ -27,8 +25,6 @@ PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm comm,int ng)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSequentialPhaseEnd_Private"
 PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm comm,int ng)
 {
   PetscErrorCode ierr;
@@ -57,8 +53,6 @@ PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm comm,int ng)
 */
 static int Petsc_Seq_keyval = MPI_KEYVAL_INVALID;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSequentialPhaseBegin"
 /*@
    PetscSequentialPhaseBegin - Begins a sequential section of code.
 
@@ -118,8 +112,6 @@ PetscErrorCode  PetscSequentialPhaseBegin(MPI_Comm comm,int ng)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSequentialPhaseEnd"
 /*@
    PetscSequentialPhaseEnd - Ends a sequential section of code.
 

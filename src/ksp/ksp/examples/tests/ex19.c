@@ -50,8 +50,6 @@ extern int FormJacobian_Grid(AppCtx*,GridCtx*,Mat*);
 /*
       Mm_ratio - ration of grid lines between fine and coarse grids.
 */
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   AppCtx         user;
@@ -169,8 +167,6 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobian_Grid"
 int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Mat *J)
 {
   Mat                    jac = *J;

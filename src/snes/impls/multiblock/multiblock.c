@@ -23,8 +23,6 @@ typedef struct {
   BlockDesc       blocks;        /* Linked list of block descriptors */
 } SNES_Multiblock;
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESReset_Multiblock"
 PetscErrorCode SNESReset_Multiblock(SNES snes)
 {
   SNES_Multiblock *mb    = (SNES_Multiblock*) snes->data;
@@ -53,8 +51,6 @@ PetscErrorCode SNESReset_Multiblock(SNES snes)
 
   Application Interface Routine: SNESDestroy()
 */
-#undef __FUNCT__
-#define __FUNCT__ "SNESDestroy_Multiblock"
 PetscErrorCode SNESDestroy_Multiblock(SNES snes)
 {
   SNES_Multiblock *mb    = (SNES_Multiblock*) snes->data;
@@ -75,8 +71,6 @@ PetscErrorCode SNESDestroy_Multiblock(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMultiblockSetFieldsRuntime_Private"
 /* Precondition: blocksize is set to a meaningful value */
 static PetscErrorCode SNESMultiblockSetFieldsRuntime_Private(SNES snes)
 {
@@ -108,8 +102,6 @@ static PetscErrorCode SNESMultiblockSetFieldsRuntime_Private(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMultiblockSetDefaults"
 static PetscErrorCode SNESMultiblockSetDefaults(SNES snes)
 {
   SNES_Multiblock *mb    = (SNES_Multiblock*) snes->data;
@@ -206,8 +198,6 @@ static PetscErrorCode SNESMultiblockSetDefaults(SNES snes)
 
    Application Interface Routine: SNESSetUp()
 */
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetUp_Multiblock"
 PetscErrorCode SNESSetUp_Multiblock(SNES snes)
 {
   SNES_Multiblock *mb = (SNES_Multiblock*) snes->data;
@@ -260,12 +250,12 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
   if (!jac->pmat) {
     ierr = PetscMalloc1(nsplit,&jac->pmat);CHKERRQ(ierr);
     for (i=0; i<nsplit; i++) {
-      ierr  = MatGetSubMatrix(pc->pmat,ilink->is,ilink->is,MAT_INITIAL_MATRIX,&jac->pmat[i]);CHKERRQ(ierr);
+      ierr  = MatCreateSubMatrix(pc->pmat,ilink->is,ilink->is,MAT_INITIAL_MATRIX,&jac->pmat[i]);CHKERRQ(ierr);
       ilink = ilink->next;
     }
   } else {
     for (i=0; i<nsplit; i++) {
-      ierr  = MatGetSubMatrix(pc->pmat,ilink->is,ilink->is,MAT_REUSE_MATRIX,&jac->pmat[i]);CHKERRQ(ierr);
+      ierr  = MatCreateSubMatrix(pc->pmat,ilink->is,ilink->is,MAT_REUSE_MATRIX,&jac->pmat[i]);CHKERRQ(ierr);
       ilink = ilink->next;
     }
   }
@@ -274,12 +264,12 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
     if (!jac->mat) {
       ierr = PetscMalloc1(nsplit,&jac->mat);CHKERRQ(ierr);
       for (i=0; i<nsplit; i++) {
-        ierr  = MatGetSubMatrix(pc->mat,ilink->is,ilink->is,MAT_INITIAL_MATRIX,&jac->mat[i]);CHKERRQ(ierr);
+        ierr  = MatCreateSubMatrix(pc->mat,ilink->is,ilink->is,MAT_INITIAL_MATRIX,&jac->mat[i]);CHKERRQ(ierr);
         ilink = ilink->next;
       }
     } else {
       for (i=0; i<nsplit; i++) {
-        if (jac->mat[i]) {ierr = MatGetSubMatrix(pc->mat,ilink->is,ilink->is,MAT_REUSE_MATRIX,&jac->mat[i]);CHKERRQ(ierr);}
+        if (jac->mat[i]) {ierr = MatCreateSubMatrix(pc->mat,ilink->is,ilink->is,MAT_REUSE_MATRIX,&jac->mat[i]);CHKERRQ(ierr);}
         ilink = ilink->next;
       }
     }
@@ -293,12 +283,12 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
     if (!jac->Afield) {
       ierr = PetscMalloc1(nsplit,&jac->Afield);CHKERRQ(ierr);
       for (i=0; i<nsplit; i++) {
-        ierr  = MatGetSubMatrix(pc->mat,ilink->is,NULL,MAT_INITIAL_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
+        ierr  = MatCreateSubMatrix(pc->mat,ilink->is,NULL,MAT_INITIAL_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
         ilink = ilink->next;
       }
     } else {
       for (i=0; i<nsplit; i++) {
-        ierr  = MatGetSubMatrix(pc->mat,ilink->is,NULL,MAT_REUSE_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
+        ierr  = MatCreateSubMatrix(pc->mat,ilink->is,NULL,MAT_REUSE_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
         ilink = ilink->next;
       }
     }
@@ -318,11 +308,11 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
     if (jac->schur) {
       ilink = jac->head;
       ierr  = ISComplement(ilink->is,rstart,rend,&ccis);CHKERRQ(ierr);
-      ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->B);CHKERRQ(ierr);
+      ierr  = MatCreateSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->B);CHKERRQ(ierr);
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       ilink = ilink->next;
       ierr  = ISComplement(ilink->is,rstart,rend,&ccis);CHKERRQ(ierr);
-      ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->C);CHKERRQ(ierr);
+      ierr  = MatCreateSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->C);CHKERRQ(ierr);
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       ierr  = MatSchurComplementUpdateSubMatrices(jac->schur,jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->pmat[1]);CHKERRQ(ierr);
       ierr  = KSPSetOperators(jac->kspschur,jac->schur,FieldSplitSchurPre(jac),pc->flag);CHKERRQ(ierr);
@@ -334,11 +324,11 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
       /* extract the A01 and A10 matrices */
       ilink = jac->head;
       ierr  = ISComplement(ilink->is,rstart,rend,&ccis);CHKERRQ(ierr);
-      ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->B);CHKERRQ(ierr);
+      ierr  = MatCreateSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->B);CHKERRQ(ierr);
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       ilink = ilink->next;
       ierr  = ISComplement(ilink->is,rstart,rend,&ccis);CHKERRQ(ierr);
-      ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
+      ierr  = MatCreateSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       /* Use mat[0] (diagonal block of the real matrix) preconditioned by pmat[0] */
       ierr = MatCreateSchurComplement(jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->mat[1],&jac->schur);CHKERRQ(ierr);
@@ -413,8 +403,6 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
 
   Application Interface Routine: SNESSetFromOptions()
 */
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetFromOptions_Multiblock"
 static PetscErrorCode SNESSetFromOptions_Multiblock(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   SNES_Multiblock *mb = (SNES_Multiblock*) snes->data;
@@ -450,8 +438,6 @@ static PetscErrorCode SNESSetFromOptions_Multiblock(PetscOptionItems *PetscOptio
 
   Application Interface Routine: SNESView()
 */
-#undef __FUNCT__
-#define __FUNCT__ "SNESView_Multiblock"
 static PetscErrorCode SNESView_Multiblock(SNES snes, PetscViewer viewer)
 {
   SNES_Multiblock *mb    = (SNES_Multiblock*) snes->data;
@@ -501,8 +487,6 @@ static PetscErrorCode SNESView_Multiblock(SNES snes, PetscViewer viewer)
 
   Application Interface Routine: SNESSolve()
 */
-#undef __FUNCT__
-#define __FUNCT__ "SNESSolve_Multiblock"
 PetscErrorCode SNESSolve_Multiblock(SNES snes)
 {
   SNES_Multiblock *mb = (SNES_Multiblock*) snes->data;
@@ -601,8 +585,6 @@ PetscErrorCode SNESSolve_Multiblock(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMultiblockSetFields_Default"
 PetscErrorCode SNESMultiblockSetFields_Default(SNES snes, const char name[], PetscInt n, const PetscInt fields[])
 {
   SNES_Multiblock *mb = (SNES_Multiblock*) snes->data;
@@ -657,8 +639,6 @@ PetscErrorCode SNESMultiblockSetFields_Default(SNES snes, const char name[], Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMultiblockSetIS_Default"
 PetscErrorCode SNESMultiblockSetIS_Default(SNES snes, const char name[], IS is)
 {
   SNES_Multiblock *mb = (SNES_Multiblock*) snes->data;
@@ -707,8 +687,6 @@ PetscErrorCode SNESMultiblockSetIS_Default(SNES snes, const char name[], IS is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMultiblockSetBlockSize_Default"
 PetscErrorCode  SNESMultiblockSetBlockSize_Default(SNES snes, PetscInt bs)
 {
   SNES_Multiblock *mb = (SNES_Multiblock*) snes->data;
@@ -720,8 +698,6 @@ PetscErrorCode  SNESMultiblockSetBlockSize_Default(SNES snes, PetscInt bs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMultiblockGetSubSNES_Default"
 PetscErrorCode SNESMultiblockGetSubSNES_Default(SNES snes, PetscInt *n, SNES **subsnes)
 {
   SNES_Multiblock *mb    = (SNES_Multiblock*) snes->data;
@@ -741,8 +717,6 @@ PetscErrorCode SNESMultiblockGetSubSNES_Default(SNES snes, PetscInt *n, SNES **s
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMultiblockSetType_Default"
 PetscErrorCode  SNESMultiblockSetType_Default(SNES snes, PCCompositeType type)
 {
   SNES_Multiblock *mb = (SNES_Multiblock*) snes->data;
@@ -770,8 +744,6 @@ PetscErrorCode  SNESMultiblockSetType_Default(SNES snes, PCCompositeType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMultiblockSetFields"
 /*@
   SNESMultiblockSetFields - Sets the fields for one particular block in the solver
 
@@ -811,8 +783,6 @@ PetscErrorCode SNESMultiblockSetFields(SNES snes, const char name[], PetscInt n,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMultiblockSetIS"
 /*@
   SNESMultiblockSetIS - Sets the global row indices for the block
 
@@ -845,8 +815,6 @@ PetscErrorCode SNESMultiblockSetIS(SNES snes, const char name[], IS is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMultiblockSetType"
 /*@
   SNESMultiblockSetType - Sets the type of block combination.
 
@@ -874,8 +842,6 @@ PetscErrorCode SNESMultiblockSetType(SNES snes, PCCompositeType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMultiblockSetBlockSize"
 /*@
   SNESMultiblockSetBlockSize - Sets the block size for structured mesh block division. If not set the matrix block size is used.
 
@@ -900,8 +866,6 @@ PetscErrorCode SNESMultiblockSetBlockSize(SNES snes, PetscInt bs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMultiblockGetSubSNES"
 /*@C
   SNESMultiblockGetSubSNES - Gets the SNES contexts for all blocks
 
@@ -943,8 +907,6 @@ PetscErrorCode SNESMultiblockGetSubSNES(SNES snes, PetscInt *n, SNES *subsnes[])
 
 .seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNEWTONTR, SNESNRICHARDSON
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "SNESCreate_Multiblock"
 PETSC_EXTERN PetscErrorCode SNESCreate_Multiblock(SNES snes)
 {
   SNES_Multiblock *mb;

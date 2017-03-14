@@ -4,8 +4,6 @@ static char help[] = "Tests MatTranspose() and MatEqual() for MPIAIJ matrices.\n
 #include <petscmat.h>
 
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   Mat            A,B;

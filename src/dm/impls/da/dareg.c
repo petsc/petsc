@@ -5,8 +5,6 @@ extern PetscErrorCode  DMSetUp_DA_1D(DM);
 extern PetscErrorCode  DMSetUp_DA_2D(DM);
 extern PetscErrorCode  DMSetUp_DA_3D(DM);
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetUp_DA"
 PetscErrorCode  DMSetUp_DA(DM da)
 {
   PetscErrorCode ierr;

@@ -65,8 +65,6 @@ typedef struct {
   PetscBool useabs;              /* use the absolute values of the diagonal entries */
 } PC_Jacobi;
 
-#undef __FUNCT__
-#define __FUNCT__ "PCJacobiSetType_Jacobi"
 static PetscErrorCode  PCJacobiSetType_Jacobi(PC pc,PCJacobiType type)
 {
   PC_Jacobi *j = (PC_Jacobi*)pc->data;
@@ -82,8 +80,6 @@ static PetscErrorCode  PCJacobiSetType_Jacobi(PC pc,PCJacobiType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCJacobiGetType_Jacobi"
 static PetscErrorCode  PCJacobiGetType_Jacobi(PC pc,PCJacobiType *type)
 {
   PC_Jacobi *j = (PC_Jacobi*)pc->data;
@@ -99,8 +95,6 @@ static PetscErrorCode  PCJacobiGetType_Jacobi(PC pc,PCJacobiType *type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCJacobiSetUseAbs_Jacobi"
 static PetscErrorCode  PCJacobiSetUseAbs_Jacobi(PC pc,PetscBool flg)
 {
   PC_Jacobi *j = (PC_Jacobi*)pc->data;
@@ -110,8 +104,6 @@ static PetscErrorCode  PCJacobiSetUseAbs_Jacobi(PC pc,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCJacobiGetUseAbs_Jacobi"
 static PetscErrorCode  PCJacobiGetUseAbs_Jacobi(PC pc,PetscBool *flg)
 {
   PC_Jacobi *j = (PC_Jacobi*)pc->data;
@@ -135,8 +127,6 @@ static PetscErrorCode  PCJacobiGetUseAbs_Jacobi(PC pc,PetscBool *flg)
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_Jacobi"
 static PetscErrorCode PCSetUp_Jacobi(PC pc)
 {
   PC_Jacobi      *jac = (PC_Jacobi*)pc->data;
@@ -226,8 +216,6 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
    Input Parameter:
 .  pc - the preconditioner context
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_Jacobi_Symmetric"
 static PetscErrorCode PCSetUp_Jacobi_Symmetric(PC pc)
 {
   PetscErrorCode ierr;
@@ -248,8 +236,6 @@ static PetscErrorCode PCSetUp_Jacobi_Symmetric(PC pc)
    Input Parameter:
 .  pc - the preconditioner context
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_Jacobi_NonSymmetric"
 static PetscErrorCode PCSetUp_Jacobi_NonSymmetric(PC pc)
 {
   PetscErrorCode ierr;
@@ -274,8 +260,6 @@ static PetscErrorCode PCSetUp_Jacobi_NonSymmetric(PC pc)
 
    Application Interface Routine: PCApply()
  */
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_Jacobi"
 static PetscErrorCode PCApply_Jacobi(PC pc,Vec x,Vec y)
 {
   PC_Jacobi      *jac = (PC_Jacobi*)pc->data;
@@ -302,8 +286,6 @@ static PetscErrorCode PCApply_Jacobi(PC pc,Vec x,Vec y)
 
    Application Interface Routines: PCApplySymmetricLeft(), PCApplySymmetricRight()
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCApplySymmetricLeftOrRight_Jacobi"
 static PetscErrorCode PCApplySymmetricLeftOrRight_Jacobi(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
@@ -317,8 +299,6 @@ static PetscErrorCode PCApplySymmetricLeftOrRight_Jacobi(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "PCReset_Jacobi"
 static PetscErrorCode PCReset_Jacobi(PC pc)
 {
   PC_Jacobi      *jac = (PC_Jacobi*)pc->data;
@@ -339,8 +319,6 @@ static PetscErrorCode PCReset_Jacobi(PC pc)
 
    Application Interface Routine: PCDestroy()
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_Jacobi"
 static PetscErrorCode PCDestroy_Jacobi(PC pc)
 {
   PetscErrorCode ierr;
@@ -355,8 +333,6 @@ static PetscErrorCode PCDestroy_Jacobi(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_Jacobi"
 static PetscErrorCode PCSetFromOptions_Jacobi(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_Jacobi      *jac = (PC_Jacobi*)pc->data;
@@ -410,8 +386,6 @@ static PetscErrorCode PCSetFromOptions_Jacobi(PetscOptionItems *PetscOptionsObje
            PCJacobiSetType(), PCJacobiSetUseAbs(), PCJacobiGetUseAbs(), PCPBJACOBI
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_Jacobi"
 PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC pc)
 {
   PC_Jacobi      *jac;
@@ -460,8 +434,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCJacobiSetUseAbs"
 /*@
    PCJacobiSetUseAbs - Causes the Jacobi preconditioner to use the
       absolute values of the digonal divisors in the preconditioner
@@ -494,8 +466,6 @@ PetscErrorCode  PCJacobiSetUseAbs(PC pc,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCJacobiGetUseAbs"
 /*@
    PCJacobiGetUseAbs - Determines if the Jacobi preconditioner uses the
       absolute values of the digonal divisors in the preconditioner
@@ -528,8 +498,6 @@ PetscErrorCode  PCJacobiGetUseAbs(PC pc,PetscBool *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCJacobiSetType"
 /*@
    PCJacobiSetType - Causes the Jacobi preconditioner to use either the diagonal, the maximum entry in each row,
       of the sum of rows entries for the diagonal preconditioner
@@ -559,8 +527,6 @@ PetscErrorCode  PCJacobiSetType(PC pc,PCJacobiType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCJacobiGetType"
 /*@
    PCJacobiGetType - Gets how the diagonal matrix is produced for the preconditioner
 

@@ -12,8 +12,6 @@
 #include <string.h>
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMemcmp"
 /*@
    PetscMemcmp - Compares two byte streams in memory.
 
@@ -46,8 +44,6 @@ PetscErrorCode  PetscMemcmp(const void *str1,const void *str2,size_t len,PetscBo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMemmove"
 /*@
    PetscMemmove - Copies n bytes, beginning at location b, to the space
    beginning at location a. Copying  between regions that overlap will

@@ -28,8 +28,6 @@ struct _Problem {
 /*
       Stiff 3-variable system from chemical reactions, due to Robertson (1966), problem ROBER in Hairer&Wanner, ODE 2, 1996
 */
-#undef __FUNCT__
-#define __FUNCT__ "RoberFunction"
 static PetscErrorCode RoberFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
 {
   PetscErrorCode    ierr;
@@ -49,8 +47,6 @@ static PetscErrorCode RoberFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "RoberJacobian"
 static PetscErrorCode RoberJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode    ierr;
@@ -77,8 +73,6 @@ static PetscErrorCode RoberJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "RoberSolution"
 static PetscErrorCode RoberSolution(PetscReal t,Vec X,void *ctx)
 {
   PetscErrorCode ierr;
@@ -94,8 +88,6 @@ static PetscErrorCode RoberSolution(PetscReal t,Vec X,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "RoberCreate"
 static PetscErrorCode RoberCreate(Problem p)
 {
 
@@ -117,8 +109,6 @@ typedef struct {
   PetscReal lambda;
 } CECtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "CEDestroy"
 static PetscErrorCode CEDestroy(Problem p)
 {
   PetscErrorCode ierr;
@@ -128,8 +118,6 @@ static PetscErrorCode CEDestroy(Problem p)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CEFunction"
 static PetscErrorCode CEFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
 {
   PetscErrorCode    ierr;
@@ -151,8 +139,6 @@ static PetscErrorCode CEFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ct
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CEJacobian"
 static PetscErrorCode CEJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat B,void *ctx)
 {
   PetscReal         l = ((CECtx*)ctx)->lambda;
@@ -178,8 +164,6 @@ static PetscErrorCode CEJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Ma
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CESolution"
 static PetscErrorCode CESolution(PetscReal t,Vec X,void *ctx)
 {
   PetscReal      l = ((CECtx*)ctx)->lambda;
@@ -193,8 +177,6 @@ static PetscErrorCode CESolution(PetscReal t,Vec X,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CECreate"
 static PetscErrorCode CECreate(Problem p)
 {
   PetscErrorCode ierr;
@@ -224,8 +206,6 @@ static PetscErrorCode CECreate(Problem p)
 /*
 *  Stiff 3-variable oscillatory system from chemical reactions. problem OREGO in Hairer&Wanner
 */
-#undef __FUNCT__
-#define __FUNCT__ "OregoFunction"
 static PetscErrorCode OregoFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
 {
   PetscErrorCode    ierr;
@@ -245,8 +225,6 @@ static PetscErrorCode OregoFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "OregoJacobian"
 static PetscErrorCode OregoJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode    ierr;
@@ -279,8 +257,6 @@ static PetscErrorCode OregoJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "OregoSolution"
 static PetscErrorCode OregoSolution(PetscReal t,Vec X,void *ctx)
 {
   PetscErrorCode ierr;
@@ -296,8 +272,6 @@ static PetscErrorCode OregoSolution(PetscReal t,Vec X,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "OregoCreate"
 static PetscErrorCode OregoCreate(Problem p)
 {
 
@@ -321,8 +295,6 @@ typedef struct {
   Vec      x;
 } MonitorCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "MonitorError"
 static PetscErrorCode MonitorError(TS ts,PetscInt step,PetscReal t,Vec x,void *ctx)
 {
   PetscErrorCode ierr;
@@ -345,8 +317,6 @@ static PetscErrorCode MonitorError(TS ts,PetscInt step,PetscReal t,Vec x,void *c
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscFunctionList plist = NULL;

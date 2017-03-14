@@ -13,8 +13,6 @@ static struct {
   PetscFortranCallbackId lj;
 } _cb;
 
-#undef __FUNCT__
-#define __FUNCT__ "sourlj"
 static PetscErrorCode sourlj(DM dm, Vec X, Mat J, Mat P, void *ptr)
 {
   PetscErrorCode ierr;
@@ -37,8 +35,6 @@ PETSC_EXTERN void PETSC_STDCALL dmsnessetjacobianlocal_(DM *dm, void (PETSC_STDC
   *ierr = DMSNESSetJacobianLocal(*dm, sourlj, NULL);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "sourlf"
 static PetscErrorCode sourlf(DM dm, Vec X, Vec F, void *ptr)
 {
   PetscErrorCode ierr;

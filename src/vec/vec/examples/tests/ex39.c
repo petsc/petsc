@@ -11,8 +11,6 @@ static char help[] = "This example is intended for showing how subvectors can\n\
    that F gets updated as a result of sharing the pointers.
  */
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode    ierr;

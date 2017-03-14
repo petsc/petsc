@@ -216,6 +216,7 @@ PETSC_EXTERN PetscErrorCode KSPGCRSetModifyPC(KSP,PetscErrorCode (*)(KSP,PetscIn
 PETSC_EXTERN PetscErrorCode KSPFETIDPGetInnerBDDC(KSP,PC*);
 PETSC_EXTERN PetscErrorCode KSPFETIDPSetInnerBDDC(KSP,PC);
 PETSC_EXTERN PetscErrorCode KSPFETIDPGetInnerKSP(KSP,KSP*);
+PETSC_EXTERN PetscErrorCode KSPFETIDPSetPressureOperators(KSP,Mat,Mat);
 /*E
     KSPGMRESCGSRefinementType - How the classical (unmodified) Gram-Schmidt is performed.
 
@@ -685,7 +686,7 @@ PETSC_EXTERN PetscErrorCode DMKSPSetComputeInitialGuess(DM,PetscErrorCode(*)(KSP
 PETSC_EXTERN PetscErrorCode DMKSPGetComputeInitialGuess(DM,PetscErrorCode(**)(KSP,Vec,void*),void*);
 
 PETSC_EXTERN PetscErrorCode DMGlobalToLocalSolve(DM,Vec,Vec);
-PETSC_EXTERN PetscErrorCode DMProjectField(DM, Vec,
+PETSC_EXTERN PetscErrorCode DMProjectField(DM, PetscReal, Vec,
                                            void (**)(PetscInt, PetscInt, PetscInt,
                                                      const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                      const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],

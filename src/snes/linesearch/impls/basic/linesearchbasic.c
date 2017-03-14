@@ -1,8 +1,6 @@
 #include <petsc/private/linesearchimpl.h>
 #include <petsc/private/snesimpl.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchApply_Basic"
 static PetscErrorCode  SNESLineSearchApply_Basic(SNESLineSearch linesearch)
 {
   PetscBool      changed_y, changed_w;
@@ -67,8 +65,6 @@ static PetscErrorCode  SNESLineSearchApply_Basic(SNESLineSearch linesearch)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchCreate_Basic"
 /*MC
    SNESLINESEARCHBASIC - This line search implementation is not a line
    search at all; it simply uses the full step.  Thus, this routine is intended
@@ -76,8 +72,8 @@ static PetscErrorCode  SNESLineSearchApply_Basic(SNESLineSearch linesearch)
    well-behaved problems.
 
    Options Database Keys:
-+   -snes_linesearch_damping <damping> search vector is scaled by this amount, default is 1.0
--   -snes_linesearch_norms <flag> whether to compute norms or not, default is true
++   -snes_linesearch_damping <damping> - search vector is scaled by this amount, default is 1.0
+-   -snes_linesearch_norms <flag> - whether to compute norms or not, default is true (SNESLineSearchSetComputeNorms())
 
    Notes:
    For methods with ill-scaled updates (SNESNRICHARDSON, SNESNCG), a small
@@ -88,7 +84,7 @@ static PetscErrorCode  SNESLineSearchApply_Basic(SNESLineSearch linesearch)
 
 .keywords: SNES, SNESLineSearch, damping
 
-.seealso: SNESLineSearchCreate(), SNESLineSearchSetType()
+.seealso: SNESLineSearchCreate(), SNESLineSearchSetType(), SNESLineSearchSetDamping(), SNESLineSearchSetComputeNorms()
 M*/
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_Basic(SNESLineSearch linesearch)
 {

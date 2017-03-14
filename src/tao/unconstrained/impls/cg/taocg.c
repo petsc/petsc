@@ -10,8 +10,6 @@
 
  static const char *CG_Table[64] = {"fr", "pr", "prp", "hs", "dy"};
 
- #undef __FUNCT__
- #define __FUNCT__ "TaoSolve_CG"
  static PetscErrorCode TaoSolve_CG(Tao tao)
  {
    TAO_CG                       *cgP = (TAO_CG*)tao->data;
@@ -193,8 +191,6 @@
    PetscFunctionReturn(0);
  }
 
- #undef __FUNCT__
- #define __FUNCT__ "TaoSetUp_CG"
  static PetscErrorCode TaoSetUp_CG(Tao tao)
  {
    TAO_CG         *cgP = (TAO_CG*)tao->data;
@@ -208,8 +204,6 @@
     PetscFunctionReturn(0);
  }
 
- #undef __FUNCT__
- #define __FUNCT__ "TaoDestroy_CG"
  static PetscErrorCode TaoDestroy_CG(Tao tao)
  {
    TAO_CG         *cgP = (TAO_CG*) tao->data;
@@ -225,8 +219,6 @@
    PetscFunctionReturn(0);
  }
 
- #undef __FUNCT__
- #define __FUNCT__ "TaoSetFromOptions_CG"
 static PetscErrorCode TaoSetFromOptions_CG(PetscOptionItems *PetscOptionsObject,Tao tao)
  {
     TAO_CG         *cgP = (TAO_CG*)tao->data;
@@ -243,8 +235,6 @@ static PetscErrorCode TaoSetFromOptions_CG(PetscOptionItems *PetscOptionsObject,
    PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoView_CG"
 static PetscErrorCode TaoView_CG(Tao tao, PetscViewer viewer)
 {
   PetscBool      isascii;
@@ -284,8 +274,6 @@ nonlinear conjugate gradient solver for nonlinear optimization.
 M*/
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoCreate_CG"
 PETSC_EXTERN PetscErrorCode TaoCreate_CG(Tao tao)
 {
   TAO_CG         *cgP;

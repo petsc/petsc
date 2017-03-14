@@ -1,8 +1,6 @@
 #include <petsc/private/dmdaimpl.h>
 #include <../src/sys/classes/viewer/impls/vtk/vtkvimpl.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVTKWriteAll_VTS"
 static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
 {
 #if defined(PETSC_USE_REAL_SINGLE)
@@ -228,8 +226,6 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVTKWriteAll_VTR"
 static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
 {
 #if defined(PETSC_USE_REAL_SINGLE)
@@ -454,8 +450,6 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVTKWriteAll"
 /*@C
    DMDAVTKWriteAll - Write a file containing all the fields that have been provided to the viewer
 

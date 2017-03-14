@@ -3,10 +3,9 @@
 !   "Scatters from a parallel vector to a sequential vector.  In
 !  this case each local vector is as long as the entire parallel vector.
 !
-      implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscis.h>
 #include <petsc/finclude/petscvec.h>
+      use petscvec
+      implicit none
 
       PetscErrorCode ierr
       PetscMPIInt  size,rank

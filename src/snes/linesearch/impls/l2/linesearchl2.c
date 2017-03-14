@@ -1,8 +1,6 @@
 #include <petsc/private/linesearchimpl.h>
 #include <petscsnes.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchApply_L2"
 static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
 {
 
@@ -158,8 +156,6 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchCreate_L2"
 /*MC
    SNESLINESEARCHL2 - Secant search in the L2 norm of the function or the objective function, if it is provided with SNESSetObjective().
 

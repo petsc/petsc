@@ -7,8 +7,6 @@ typedef struct {
   PetscBool symmetric;
 } MC_Greedy;
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringDestroy_Greedy"
 static PetscErrorCode MatColoringDestroy_Greedy(MatColoring mc)
 {
   PetscErrorCode ierr;
@@ -18,8 +16,6 @@ static PetscErrorCode MatColoringDestroy_Greedy(MatColoring mc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GreedyColoringLocalDistanceOne_Private"
 static PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc,PetscReal *wts,PetscInt *lperm,ISColoringValue *colors)
 {
   PetscInt        i,j,k,s,e,n,no,nd,nd_global,n_global,idx,ncols,maxcolors,masksize,ccol,*mask;
@@ -190,8 +186,6 @@ static PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc,Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GreedyColoringLocalDistanceTwo_Private"
 static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc,PetscReal *wts,PetscInt *lperm,ISColoringValue *colors)
 {
   MC_Greedy       *gr = (MC_Greedy *) mc->data;
@@ -553,8 +547,6 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc,Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringApply_Greedy"
 static PetscErrorCode MatColoringApply_Greedy(MatColoring mc,ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
@@ -595,8 +587,6 @@ static PetscErrorCode MatColoringApply_Greedy(MatColoring mc,ISColoring *iscolor
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringSetFromOptions_Greedy"
 static PetscErrorCode MatColoringSetFromOptions_Greedy(PetscOptionItems *PetscOptionsObject, MatColoring mc)
 {
   MC_Greedy     *gr = (MC_Greedy *) mc->data;
@@ -609,8 +599,6 @@ static PetscErrorCode MatColoringSetFromOptions_Greedy(PetscOptionItems *PetscOp
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringCreate_Greedy"
 /*MC
   MATCOLORINGGREEDY - Greedy-with-conflict correction based Matrix Coloring for distance 1 and 2.
 

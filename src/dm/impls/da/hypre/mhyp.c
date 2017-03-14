@@ -7,283 +7,6 @@
 #include <petscdmda.h>                /*I "petscdmda.h" I*/
 #include <../src/dm/impls/da/hypre/mhyp.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatHYPRE_IJMatrixPreallocate"
-PetscErrorCode MatHYPRE_IJMatrixPreallocate(Mat A_d, Mat A_o,HYPRE_IJMatrix ij)
-{
-  PetscErrorCode ierr;
-  PetscInt       i,n_d,n_o;
-  const PetscInt *ia_d,*ia_o;
-  PetscBool      done_d=PETSC_FALSE,done_o=PETSC_FALSE;
-  PetscInt       *nnz_d=NULL,*nnz_o=NULL;
-
-  PetscFunctionBegin;
-  if (A_d) { /* determine number of nonzero entries in local diagonal part */
-    ierr = MatGetRowIJ(A_d,0,PETSC_FALSE,PETSC_FALSE,&n_d,&ia_d,NULL,&done_d);CHKERRQ(ierr);
-    if (done_d) {
-      ierr = PetscMalloc1(n_d,&nnz_d);CHKERRQ(ierr);
-      for (i=0; i<n_d; i++) {
-        nnz_d[i] = ia_d[i+1] - ia_d[i];
-      }
-    }
-    ierr = MatRestoreRowIJ(A_d,0,PETSC_FALSE,PETSC_FALSE,NULL,&ia_d,NULL,&done_d);CHKERRQ(ierr);
-  }
-  if (A_o) { /* determine number of nonzero entries in local off-diagonal part */
-    ierr = MatGetRowIJ(A_o,0,PETSC_FALSE,PETSC_FALSE,&n_o,&ia_o,NULL,&done_o);CHKERRQ(ierr);
-    if (done_o) {
-      ierr = PetscMalloc1(n_o,&nnz_o);CHKERRQ(ierr);
-      for (i=0; i<n_o; i++) {
-        nnz_o[i] = ia_o[i+1] - ia_o[i];
-      }
-    }
-    ierr = MatRestoreRowIJ(A_o,0,PETSC_FALSE,PETSC_FALSE,&n_o,&ia_o,NULL,&done_o);CHKERRQ(ierr);
-  }
-  if (done_d) {    /* set number of nonzeros in HYPRE IJ matrix */
-    if (!done_o) { /* only diagonal part */
-      ierr = PetscMalloc1(n_d,&nnz_o);CHKERRQ(ierr);
-      for (i=0; i<n_d; i++) {
-        nnz_o[i] = 0;
-      }
-    }
-    PetscStackCallStandard(HYPRE_IJMatrixSetDiagOffdSizes,(ij,(HYPRE_Int *)nnz_d,(HYPRE_Int *)nnz_o));
-    ierr = PetscFree(nnz_d);CHKERRQ(ierr);
-    ierr = PetscFree(nnz_o);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatHYPRE_IJMatrixCreate"
-PetscErrorCode MatHYPRE_IJMatrixCreate(Mat A,HYPRE_IJMatrix *ij)
-{
-  PetscErrorCode ierr;
-  PetscInt       rstart,rend,cstart,cend;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  PetscValidType(A,1);
-  PetscValidPointer(ij,2);
-  ierr   = MatSetUp(A);CHKERRQ(ierr);
-  rstart = A->rmap->rstart;
-  rend   = A->rmap->rend;
-  cstart = A->cmap->rstart;
-  cend   = A->cmap->rend;
-  PetscStackCallStandard(HYPRE_IJMatrixCreate,(PetscObjectComm((PetscObject)A),rstart,rend-1,cstart,cend-1,ij));
-  PetscStackCallStandard(HYPRE_IJMatrixSetObjectType,(*ij,HYPRE_PARCSR));
-  {
-    PetscBool      same;
-    Mat            A_d,A_o;
-    const PetscInt *colmap;
-    ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&same);CHKERRQ(ierr);
-    if (same) {
-      ierr = MatMPIAIJGetSeqAIJ(A,&A_d,&A_o,&colmap);CHKERRQ(ierr);
-      ierr = MatHYPRE_IJMatrixPreallocate(A_d,A_o,*ij);CHKERRQ(ierr);
-      PetscFunctionReturn(0);
-    }
-    ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIBAIJ,&same);CHKERRQ(ierr);
-    if (same) {
-      ierr = MatMPIBAIJGetSeqBAIJ(A,&A_d,&A_o,&colmap);CHKERRQ(ierr);
-      ierr = MatHYPRE_IJMatrixPreallocate(A_d,A_o,*ij);CHKERRQ(ierr);
-      PetscFunctionReturn(0);
-    }
-    ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&same);CHKERRQ(ierr);
-    if (same) {
-      ierr = MatHYPRE_IJMatrixPreallocate(A,NULL,*ij);CHKERRQ(ierr);
-      PetscFunctionReturn(0);
-    }
-    ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQBAIJ,&same);CHKERRQ(ierr);
-    if (same) {
-      ierr = MatHYPRE_IJMatrixPreallocate(A,NULL,*ij);CHKERRQ(ierr);
-      PetscFunctionReturn(0);
-    }
-  }
-  PetscFunctionReturn(0);
-}
-
-extern PetscErrorCode MatHYPRE_IJMatrixFastCopy_MPIAIJ(Mat,HYPRE_IJMatrix);
-extern PetscErrorCode MatHYPRE_IJMatrixFastCopy_SeqAIJ(Mat,HYPRE_IJMatrix);
-/*
-    Copies the data over (column indices, numerical values) to hypre matrix
-*/
-
-#undef __FUNCT__
-#define __FUNCT__ "MatHYPRE_IJMatrixCopy"
-PetscErrorCode MatHYPRE_IJMatrixCopy(Mat A,HYPRE_IJMatrix ij)
-{
-  PetscErrorCode    ierr;
-  PetscInt          i,rstart,rend,ncols,nr,nc;
-  const PetscScalar *values;
-  const PetscInt    *cols;
-  PetscBool         flg;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&flg);CHKERRQ(ierr);
-  ierr = MatGetSize(A,&nr,&nc);CHKERRQ(ierr);
-  if (flg && nr == nc) {
-    ierr = MatHYPRE_IJMatrixFastCopy_MPIAIJ(A,ij);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
-  ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = MatHYPRE_IJMatrixFastCopy_SeqAIJ(A,ij);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
-
-  ierr = PetscLogEventBegin(MAT_Convert,A,0,0,0);CHKERRQ(ierr);
-  PetscStackCallStandard(HYPRE_IJMatrixInitialize,(ij));
-  ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
-  for (i=rstart; i<rend; i++) {
-    ierr = MatGetRow(A,i,&ncols,&cols,&values);CHKERRQ(ierr);
-    PetscStackCallStandard(HYPRE_IJMatrixSetValues,(ij,1,(HYPRE_Int *)&ncols,(HYPRE_Int *)&i,(HYPRE_Int *)cols,values));
-    ierr = MatRestoreRow(A,i,&ncols,&cols,&values);CHKERRQ(ierr);
-  }
-  PetscStackCallStandard(HYPRE_IJMatrixAssemble,(ij));
-  ierr = PetscLogEventEnd(MAT_Convert,A,0,0,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*
-    This copies the CSR format directly from the PETSc data structure to the hypre
-    data structure without calls to MatGetRow() or hypre's set values.
-
-*/
-#include <_hypre_IJ_mv.h>
-#include <HYPRE_IJ_mv.h>
-#include <../src/mat/impls/aij/mpi/mpiaij.h>
-
-#undef __FUNCT__
-#define __FUNCT__ "MatHYPRE_IJMatrixFastCopy_SeqAIJ"
-PetscErrorCode MatHYPRE_IJMatrixFastCopy_SeqAIJ(Mat A,HYPRE_IJMatrix ij)
-{
-  PetscErrorCode ierr;
-  Mat_SeqAIJ     *pdiag = (Mat_SeqAIJ*)A->data;
-
-  hypre_ParCSRMatrix    *par_matrix;
-  hypre_AuxParCSRMatrix *aux_matrix;
-  hypre_CSRMatrix       *hdiag;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  PetscValidType(A,1);
-  PetscValidPointer(ij,2);
-
-  ierr = PetscLogEventBegin(MAT_Convert,A,0,0,0);CHKERRQ(ierr);
-  PetscStackCallStandard(HYPRE_IJMatrixInitialize,(ij));
-  par_matrix = (hypre_ParCSRMatrix*)hypre_IJMatrixObject(ij);
-  aux_matrix = (hypre_AuxParCSRMatrix*)hypre_IJMatrixTranslator(ij);
-  hdiag      = hypre_ParCSRMatrixDiag(par_matrix);
-
-  /*
-       this is the Hack part where we monkey directly with the hypre datastructures
-  */
-  ierr = PetscMemcpy(hdiag->i,pdiag->i,(A->rmap->n + 1)*sizeof(PetscInt));
-  ierr = PetscMemcpy(hdiag->j,pdiag->j,pdiag->nz*sizeof(PetscInt));
-  ierr = PetscMemcpy(hdiag->data,pdiag->a,pdiag->nz*sizeof(PetscScalar));
-
-  hypre_AuxParCSRMatrixNeedAux(aux_matrix) = 0;
-  PetscStackCallStandard(HYPRE_IJMatrixAssemble,(ij));
-  ierr = PetscLogEventEnd(MAT_Convert,A,0,0,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatHYPRE_IJMatrixFastCopy_MPIAIJ"
-PetscErrorCode MatHYPRE_IJMatrixFastCopy_MPIAIJ(Mat A,HYPRE_IJMatrix ij)
-{
-  PetscErrorCode ierr;
-  Mat_MPIAIJ     *pA = (Mat_MPIAIJ*)A->data;
-  Mat_SeqAIJ     *pdiag,*poffd;
-  PetscInt       i,*garray = pA->garray,*jj,cstart,*pjj;
-
-  hypre_ParCSRMatrix    *par_matrix;
-  hypre_AuxParCSRMatrix *aux_matrix;
-  hypre_CSRMatrix       *hdiag,*hoffd;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  PetscValidType(A,1);
-  PetscValidPointer(ij,2);
-  pdiag = (Mat_SeqAIJ*) pA->A->data;
-  poffd = (Mat_SeqAIJ*) pA->B->data;
-  /* cstart is only valid for square MPIAIJ layed out in the usual way */
-  ierr = MatGetOwnershipRange(A,&cstart,NULL);CHKERRQ(ierr);
-
-  ierr = PetscLogEventBegin(MAT_Convert,A,0,0,0);CHKERRQ(ierr);
-  PetscStackCallStandard(HYPRE_IJMatrixInitialize,(ij));
-  par_matrix = (hypre_ParCSRMatrix*)hypre_IJMatrixObject(ij);
-  aux_matrix = (hypre_AuxParCSRMatrix*)hypre_IJMatrixTranslator(ij);
-  hdiag      = hypre_ParCSRMatrixDiag(par_matrix);
-  hoffd      = hypre_ParCSRMatrixOffd(par_matrix);
-
-  /*
-       this is the Hack part where we monkey directly with the hypre datastructures
-  */
-  ierr = PetscMemcpy(hdiag->i,pdiag->i,(pA->A->rmap->n + 1)*sizeof(PetscInt));
-  /* need to shift the diag column indices (hdiag->j) back to global numbering since hypre is expecting this */
-  jj  = (PetscInt*)hdiag->j;
-  pjj = (PetscInt*)pdiag->j;
-  for (i=0; i<pdiag->nz; i++) jj[i] = cstart + pjj[i];
-  ierr = PetscMemcpy(hdiag->data,pdiag->a,pdiag->nz*sizeof(PetscScalar));
-  ierr = PetscMemcpy(hoffd->i,poffd->i,(pA->A->rmap->n + 1)*sizeof(PetscInt));
-  /* need to move the offd column indices (hoffd->j) back to global numbering since hypre is expecting this
-     If we hacked a hypre a bit more we might be able to avoid this step */
-  jj  = (PetscInt*) hoffd->j;
-  pjj = (PetscInt*) poffd->j;
-  for (i=0; i<poffd->nz; i++) jj[i] = garray[pjj[i]];
-  ierr = PetscMemcpy(hoffd->data,poffd->a,poffd->nz*sizeof(PetscScalar));
-
-  hypre_AuxParCSRMatrixNeedAux(aux_matrix) = 0;
-  PetscStackCallStandard(HYPRE_IJMatrixAssemble,(ij));
-  ierr = PetscLogEventEnd(MAT_Convert,A,0,0,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*
-    Does NOT copy the data over, instead uses DIRECTLY the pointers from the PETSc MPIAIJ format
-
-    This is UNFINISHED and does NOT work! The problem is that hypre puts the diagonal entry first
-    which will corrupt the PETSc data structure if we did this. Need a work around to this problem.
-*/
-#include <_hypre_IJ_mv.h>
-#include <HYPRE_IJ_mv.h>
-
-#undef __FUNCT__
-#define __FUNCT__ "MatHYPRE_IJMatrixLink"
-PetscErrorCode MatHYPRE_IJMatrixLink(Mat A,HYPRE_IJMatrix *ij)
-{
-  PetscErrorCode        ierr;
-  PetscInt              rstart,rend,cstart,cend;
-  PetscBool             flg;
-  hypre_AuxParCSRMatrix *aux_matrix;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  PetscValidType(A,1);
-  PetscValidPointer(ij,2);
-  ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Can only use with PETSc MPIAIJ matrices");
-  ierr = MatSetUp(A);CHKERRQ(ierr);
-
-  ierr   = PetscLogEventBegin(MAT_Convert,A,0,0,0);CHKERRQ(ierr);
-  rstart = A->rmap->rstart;
-  rend   = A->rmap->rend;
-  cstart = A->cmap->rstart;
-  cend   = A->cmap->rend;
-  PetscStackCallStandard(HYPRE_IJMatrixCreate,(PetscObjectComm((PetscObject)A),rstart,rend-1,cstart,cend-1,ij));
-  PetscStackCallStandard(HYPRE_IJMatrixSetObjectType,(*ij,HYPRE_PARCSR));
-
-  PetscStackCallStandard(HYPRE_IJMatrixInitialize,(*ij));
-  PetscStackCall("hypre_IJMatrixTranslator",aux_matrix = (hypre_AuxParCSRMatrix*)hypre_IJMatrixTranslator(*ij));
-
-  hypre_AuxParCSRMatrixNeedAux(aux_matrix) = 0;
-
-  /* this is the Hack part where we monkey directly with the hypre datastructures */
-
-  PetscStackCallStandard(HYPRE_IJMatrixAssemble,(*ij));
-  ierr = PetscLogEventEnd(MAT_Convert,A,0,0,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 /* -----------------------------------------------------------------------------------------------------------------*/
 
 /*MC
@@ -301,8 +24,6 @@ PetscErrorCode MatHYPRE_IJMatrixLink(Mat A,HYPRE_IJMatrix *ij)
 M*/
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetValuesLocal_HYPREStruct_3d"
 PetscErrorCode  MatSetValuesLocal_HYPREStruct_3d(Mat mat,PetscInt nrow,const PetscInt irow[],PetscInt ncol,const PetscInt icol[],const PetscScalar y[],InsertMode addv)
 {
   PetscErrorCode    ierr;
@@ -345,8 +66,6 @@ PetscErrorCode  MatSetValuesLocal_HYPREStruct_3d(Mat mat,PetscInt nrow,const Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatZeroRowsLocal_HYPREStruct_3d"
 PetscErrorCode  MatZeroRowsLocal_HYPREStruct_3d(Mat mat,PetscInt nrow,const PetscInt irow[],PetscScalar d,Vec x,Vec b)
 {
   PetscErrorCode  ierr;
@@ -369,8 +88,6 @@ PetscErrorCode  MatZeroRowsLocal_HYPREStruct_3d(Mat mat,PetscInt nrow,const Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatZeroEntries_HYPREStruct_3d"
 PetscErrorCode MatZeroEntries_HYPREStruct_3d(Mat mat)
 {
   PetscErrorCode  ierr;
@@ -384,8 +101,6 @@ PetscErrorCode MatZeroEntries_HYPREStruct_3d(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetupDM_HYPREStruct"
 static PetscErrorCode  MatSetupDM_HYPREStruct(Mat mat,DM da)
 {
   PetscErrorCode         ierr;
@@ -494,8 +209,6 @@ static PetscErrorCode  MatSetupDM_HYPREStruct(Mat mat,DM da)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_HYPREStruct"
 PetscErrorCode MatMult_HYPREStruct(Mat A,Vec x,Vec y)
 {
   PetscErrorCode  ierr;
@@ -525,8 +238,6 @@ PetscErrorCode MatMult_HYPREStruct(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd_HYPREStruct"
 PetscErrorCode MatAssemblyEnd_HYPREStruct(Mat mat,MatAssemblyType mode)
 {
   Mat_HYPREStruct *ex = (Mat_HYPREStruct*) mat->data;
@@ -538,8 +249,6 @@ PetscErrorCode MatAssemblyEnd_HYPREStruct(Mat mat,MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatZeroEntries_HYPREStruct"
 PetscErrorCode MatZeroEntries_HYPREStruct(Mat mat)
 {
   PetscFunctionBegin;
@@ -548,8 +257,6 @@ PetscErrorCode MatZeroEntries_HYPREStruct(Mat mat)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_HYPREStruct"
 PetscErrorCode MatDestroy_HYPREStruct(Mat mat)
 {
   Mat_HYPREStruct *ex = (Mat_HYPREStruct*) mat->data;
@@ -563,8 +270,6 @@ PetscErrorCode MatDestroy_HYPREStruct(Mat mat)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_HYPREStruct"
 PETSC_EXTERN PetscErrorCode MatCreate_HYPREStruct(Mat B)
 {
   Mat_HYPREStruct *ex;
@@ -608,8 +313,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPREStruct(Mat B)
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetValuesLocal_HYPRESStruct_3d"
 PetscErrorCode  MatSetValuesLocal_HYPRESStruct_3d(Mat mat,PetscInt nrow,const PetscInt irow[],PetscInt ncol,const PetscInt icol[],const PetscScalar y[],InsertMode addv)
 {
   PetscErrorCode    ierr;
@@ -721,8 +424,6 @@ PetscErrorCode  MatSetValuesLocal_HYPRESStruct_3d(Mat mat,PetscInt nrow,const Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatZeroRowsLocal_HYPRESStruct_3d"
 PetscErrorCode  MatZeroRowsLocal_HYPRESStruct_3d(Mat mat,PetscInt nrow,const PetscInt irow[],PetscScalar d,Vec x,Vec b)
 {
   PetscErrorCode   ierr;
@@ -784,8 +485,6 @@ PetscErrorCode  MatZeroRowsLocal_HYPRESStruct_3d(Mat mat,PetscInt nrow,const Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatZeroEntries_HYPRESStruct_3d"
 PetscErrorCode MatZeroEntries_HYPRESStruct_3d(Mat mat)
 {
   PetscErrorCode   ierr;
@@ -820,8 +519,6 @@ PetscErrorCode MatZeroEntries_HYPRESStruct_3d(Mat mat)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetupDM_HYPRESStruct"
 static PetscErrorCode  MatSetupDM_HYPRESStruct(Mat mat,DM da)
 {
   PetscErrorCode         ierr;
@@ -978,8 +675,6 @@ static PetscErrorCode  MatSetupDM_HYPRESStruct(Mat mat,DM da)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_HYPRESStruct"
 PetscErrorCode MatMult_HYPRESStruct(Mat A,Vec x,Vec y)
 {
   PetscErrorCode   ierr;
@@ -1054,8 +749,6 @@ PetscErrorCode MatMult_HYPRESStruct(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd_HYPRESStruct"
 PetscErrorCode MatAssemblyEnd_HYPRESStruct(Mat mat,MatAssemblyType mode)
 {
   Mat_HYPRESStruct *ex = (Mat_HYPRESStruct*) mat->data;
@@ -1066,8 +759,6 @@ PetscErrorCode MatAssemblyEnd_HYPRESStruct(Mat mat,MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatZeroEntries_HYPRESStruct"
 PetscErrorCode MatZeroEntries_HYPRESStruct(Mat mat)
 {
   PetscFunctionBegin;
@@ -1076,8 +767,6 @@ PetscErrorCode MatZeroEntries_HYPRESStruct(Mat mat)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_HYPRESStruct"
 PetscErrorCode MatDestroy_HYPRESStruct(Mat mat)
 {
   Mat_HYPRESStruct *ex = (Mat_HYPRESStruct*) mat->data;
@@ -1091,8 +780,6 @@ PetscErrorCode MatDestroy_HYPRESStruct(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_HYPRESStruct"
 PETSC_EXTERN PetscErrorCode MatCreate_HYPRESStruct(Mat B)
 {
   Mat_HYPRESStruct *ex;

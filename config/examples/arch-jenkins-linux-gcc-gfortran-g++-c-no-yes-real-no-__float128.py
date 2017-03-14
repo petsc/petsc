@@ -14,7 +14,7 @@ if __name__ == '__main__':
     '--with-scalar-type=real',
     '--with-64-bit-indices=no',
     '--with-precision=__float128',
-    '--with-blas-lapack-lib=[/home/sarich/software/quadf2cblaslapack/libf2clapack.a,/home/sarich/software/quadf2cblaslapack/libf2cblas.a]',
+    '--with-blaslapack-lib=[/home/sarich/software/quadf2cblaslapack/libf2clapack.a,/home/sarich/software/quadf2cblaslapack/libf2cblas.a]',
     '--with-sowing=1',
     '--with-sowing-dir=/home/petsc/soft/linux-Ubuntu_12.04-x86_64/sowing-1.1.17-p1'
     ]

@@ -21,8 +21,6 @@
    . a_selected - IS of selected vertices, includes 'ghost' nodes at end with natural local indices
    . a_locals_llist - array of list of nodes rooted at selected nodes
 */
-#undef __FUNCT__
-#define __FUNCT__ "maxIndSetAgg"
 PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscCoarsenData **a_locals_llist)
 {
   PetscErrorCode   ierr;
@@ -263,8 +261,6 @@ typedef struct {
 /*
    MIS coarsen, simple greedy.
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatCoarsenApply_MIS"
 static PetscErrorCode MatCoarsenApply_MIS(MatCoarsen coarse)
 {
   /* MatCoarsen_MIS *MIS = (MatCoarsen_MIS*)coarse->; */
@@ -288,8 +284,6 @@ static PetscErrorCode MatCoarsenApply_MIS(MatCoarsen coarse)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCoarsenView_MIS"
 PetscErrorCode MatCoarsenView_MIS(MatCoarsen coarse,PetscViewer viewer)
 {
   /* MatCoarsen_MIS *MIS = (MatCoarsen_MIS*)coarse->; */
@@ -310,8 +304,6 @@ PetscErrorCode MatCoarsenView_MIS(MatCoarsen coarse,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCoarsenDestroy_MIS"
 PetscErrorCode MatCoarsenDestroy_MIS(MatCoarsen coarse)
 {
   MatCoarsen_MIS *MIS = (MatCoarsen_MIS*)coarse->subctx;
@@ -342,8 +334,6 @@ PetscErrorCode MatCoarsenDestroy_MIS(MatCoarsen coarse)
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCoarsenCreate_MIS"
 PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MIS(MatCoarsen coarse)
 {
   PetscErrorCode ierr;

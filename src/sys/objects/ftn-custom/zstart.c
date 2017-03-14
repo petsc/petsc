@@ -90,9 +90,23 @@ extern cublasHandle_t cublasv2handle;
   contained any _.
 */
 #if defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
-#undef mpi_init_
 #define mpi_init_             mpi_init__
 #endif
+
+#if defined(PETSC_HAVE_MPIUNI)
+#if defined(mpi_init_)
+#undef mpi_init_
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define mpi_init_             PETSC_MPI_INIT
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define mpi_init_             petsc_mpi_init
+#elif defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
+#define mpi_init_             petsc_mpi_init__
+#endif
+#else    /* mpi_init_ */
+#define mpi_init_             petsc_mpi_init_
+#endif   /* mpi_init_ */
+#endif   /* PETSC_HAVE_MPIUNI */
 
 PETSC_EXTERN void PETSC_STDCALL mpi_init_(int*);
 PETSC_EXTERN void PETSC_STDCALL petscgetcommoncomm_(PetscMPIInt*);
@@ -126,13 +140,13 @@ PETSC_EXTERN void PXFGETARG(int*,_fcd,int*,int*);
 #endif
 #endif
 
-#if (defined(PETSC_HAVE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128)
+#if (defined(PETSC_HAVE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128) || defined(PETSC_USE_REAL___FP16)
 extern MPI_Op MPIU_SUM;
 
 PETSC_EXTERN void MPIAPI PetscSum_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
 
 #endif
-#if defined(PETSC_USE_REAL___FLOAT128)
+#if defined(PETSC_USE_REAL___FLOAT128) || defined(PETSC_USE_REAL___FP16)
 
 PETSC_EXTERN void MPIAPI PetscSum_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
 PETSC_EXTERN void MPIAPI PetscMax_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
@@ -250,7 +264,7 @@ extern PetscErrorCode  PetscInitializeSAWs(const char[]);
       Since this is called from Fortran it does not return error codes
 
 */
-static void petscinitialize_internal(CHAR filename, PetscInt len, PetscBool readarguments, PetscErrorCode *ierr)
+static void petscinitialize_internal(char* filename, PetscInt len, PetscBool readarguments, PetscErrorCode *ierr)
 {
   int            j,i;
 #if defined (PETSC_USE_NARGS)
@@ -294,7 +308,7 @@ static void petscinitialize_internal(CHAR filename, PetscInt len, PetscBool read
   getarg_(&i,name,256);
 #endif
   /* Eliminate spaces at the end of the string */
-  for (j=sizeof(name)-1; j>=0; j--) {
+  for (j=sizeof(name)-2; j>=0; j--) {
     if (name[j] != ' ') {
       name[j+1] = 0;
       break;
@@ -311,12 +325,7 @@ static void petscinitialize_internal(CHAR filename, PetscInt len, PetscBool read
     PetscMPIInt mierr;
 
     if (f_petsc_comm_world) {(*PetscErrorPrintf)("You cannot set PETSC_COMM_WORLD if you have not initialized MPI first\n");return;}
-    /* MPI requires calling Fortran mpi_init() if main program is Fortran */
-#if defined(PETSC_HAVE_MPIUNI) && !defined(MPIUNI_FORTRAN_BINDING)
-    mierr = MPI_Init((int*)0, (char***)0);
-#else
     mpi_init_(&mierr);
-#endif
     if (mierr) {
       *ierr = mierr;
       (*PetscErrorPrintf)("PetscInitialize: Calling Fortran MPI_Init()\n");
@@ -388,6 +397,17 @@ static void petscinitialize_internal(CHAR filename, PetscInt len, PetscBool read
   *ierr = MPI_Type_commit(&MPIU___COMPLEX128);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types\n");return;}
 #endif
+  *ierr = MPI_Op_create(PetscSum_Local,1,&MPIU_SUM);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops\n");return;}
+  *ierr = MPI_Op_create(PetscMax_Local,1,&MPIU_MAX);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops\n");return;}
+  *ierr = MPI_Op_create(PetscMin_Local,1,&MPIU_MIN);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops\n");return;}
+#elif defined(PETSC_USE_REAL___FP16)
+  *ierr = MPI_Type_contiguous(2,MPI_CHAR,&MPIU___FP16);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types\n");return;}
+  *ierr = MPI_Type_commit(&MPIU___FP16);
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types\n");return;}
   *ierr = MPI_Op_create(PetscSum_Local,1,&MPIU_SUM);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops\n");return;}
   *ierr = MPI_Op_create(PetscMax_Local,1,&MPIU_MAX);
@@ -483,7 +503,7 @@ static void petscinitialize_internal(CHAR filename, PetscInt len, PetscBool read
 #endif
 }
 
-PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL petscinitialize_(char* filename PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   petscinitialize_internal(filename, len, PETSC_TRUE, ierr);
 }

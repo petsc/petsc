@@ -15,8 +15,6 @@ typedef struct {
 /*
        All processors have the same data so processor 1 prints it
 */
-#undef __FUNCT__
-#define __FUNCT__ "AOView_MemoryScalable"
 PetscErrorCode AOView_MemoryScalable(AO ao,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
@@ -73,8 +71,6 @@ PetscErrorCode AOView_MemoryScalable(AO ao,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AODestroy_MemoryScalable"
 PetscErrorCode AODestroy_MemoryScalable(AO ao)
 {
   AO_MemoryScalable *aomems = (AO_MemoryScalable*)ao->data;
@@ -97,8 +93,6 @@ PetscErrorCode AODestroy_MemoryScalable(AO ao)
    Output Parameter:
 .   ia - the mapped interges
  */
-#undef __FUNCT__
-#define __FUNCT__ "AOMap_MemoryScalable_private"
 PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,PetscInt *maploc)
 {
   PetscErrorCode    ierr;
@@ -245,8 +239,6 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AOPetscToApplication_MemoryScalable"
 PetscErrorCode AOPetscToApplication_MemoryScalable(AO ao,PetscInt n,PetscInt *ia)
 {
   PetscErrorCode    ierr;
@@ -258,8 +250,6 @@ PetscErrorCode AOPetscToApplication_MemoryScalable(AO ao,PetscInt n,PetscInt *ia
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AOApplicationToPetsc_MemoryScalable"
 PetscErrorCode AOApplicationToPetsc_MemoryScalable(AO ao,PetscInt n,PetscInt *ia)
 {
   PetscErrorCode    ierr;
@@ -282,8 +272,6 @@ static struct _AOOps AOOps_MemoryScalable = {
   0
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "AOCreateMemoryScalable_private"
 PetscErrorCode  AOCreateMemoryScalable_private(MPI_Comm comm,PetscInt napp,const PetscInt from_array[],const PetscInt to_array[],AO ao, PetscInt *aomap_loc)
 {
   PetscErrorCode    ierr;
@@ -403,8 +391,6 @@ PetscErrorCode  AOCreateMemoryScalable_private(MPI_Comm comm,PetscInt napp,const
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AOCreate_MemoryScalable"
 PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao)
 {
   PetscErrorCode    ierr;
@@ -485,8 +471,6 @@ PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AOCreateMemoryScalable"
 /*@C
    AOCreateMemoryScalable - Creates a memory scalable application ordering using two integer arrays.
 
@@ -533,8 +517,6 @@ PetscErrorCode AOCreateMemoryScalable(MPI_Comm comm,PetscInt napp,const PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AOCreateMemoryScalableIS"
 /*@C
    AOCreateMemoryScalableIS - Creates a memory scalable application ordering using two index sets.
 

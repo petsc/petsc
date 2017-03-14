@@ -9,8 +9,6 @@ typedef struct {
   Vec       Alpha,r;
 } KSP_TSIRM;
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_TSIRM"
 static PetscErrorCode KSPSetUp_TSIRM(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -39,8 +37,6 @@ static PetscErrorCode KSPSetUp_TSIRM(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_TSIRM"
 PetscErrorCode KSPSolve_TSIRM(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -130,8 +126,6 @@ PetscErrorCode KSPSolve_TSIRM(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetFromOptions_TSIRM"
 PetscErrorCode KSPSetFromOptions_TSIRM(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
@@ -147,8 +141,6 @@ PetscErrorCode KSPSetFromOptions_TSIRM(PetscOptionItems *PetscOptionsObject,KSP 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPDestroy_TSIRM"
 PetscErrorCode KSPDestroy_TSIRM(KSP ksp)
 {
   KSP_TSIRM       *tsirm = (KSP_TSIRM*)ksp->data;
@@ -198,8 +190,6 @@ PetscErrorCode KSPDestroy_TSIRM(KSP ksp)
            KSPGMRESCGSRefinementType, KSPGMRESSetCGSRefinementType(), KSPGMRESGetCGSRefinementType(), KSPGMRESMonitorKrylov(), KSPSetPCSide()
 
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_TSIRM"
 PETSC_EXTERN PetscErrorCode KSPCreate_TSIRM(KSP ksp)
 {
   PetscErrorCode ierr;

@@ -10,7 +10,7 @@ class Configure(config.package.Package):
     self.includes         = ['CH_config.H']
     self.downloadonWindows= 0
     self.hastestsdatafiles= 1
-    self.downloaddirname   = 'petsc-pkg-chombo-3.2'
+    self.downloaddirnames  = ['petsc-pkg-chombo-3.2']
     return
 
   def setupHelp(self, help):

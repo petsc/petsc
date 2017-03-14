@@ -2,8 +2,6 @@ static char help[] = "Tests the use of MatTranspose_Nest\n";
 
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "TestInitialMatrix"
 PetscErrorCode TestInitialMatrix(void)
 {
   const PetscInt  nr = 2,nc = 3;
@@ -76,8 +74,6 @@ PetscErrorCode TestInitialMatrix(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestReuseMatrix"
 PetscErrorCode TestReuseMatrix(void)
 {
   const PetscInt  n = 2;
@@ -105,7 +101,7 @@ PetscErrorCode TestReuseMatrix(void)
       ierr = MatView(block[i][j], PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
   }
-  ierr = MatTranspose(A,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
+  ierr = MatTranspose(A,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
   ierr = MatView(A, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatNestGetSubMats(A, NULL, NULL, &block);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
@@ -122,8 +118,6 @@ PetscErrorCode TestReuseMatrix(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   PetscErrorCode      ierr;

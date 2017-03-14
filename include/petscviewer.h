@@ -125,6 +125,9 @@ PETSC_EXTERN PetscErrorCode PetscViewerPopFormat(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerGetFormat(PetscViewer,PetscViewerFormat*);
 PETSC_EXTERN PetscErrorCode PetscViewerFlush(PetscViewer);
 
+PETSC_EXTERN PetscErrorCode PetscOptionsPushGetViewerOff(PetscBool);
+PETSC_EXTERN PetscErrorCode PetscOptionsPopGetViewerOff();
+PETSC_EXTERN PetscErrorCode PetscOptionsGetViewerOff(PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscOptionsGetViewer(MPI_Comm,const char[],const char[],PetscViewer*,PetscViewerFormat*,PetscBool*);
 #define PetscOptionsViewer(a,b,c,d,e,f) PetscOptionsViewer_Private(PetscOptionsObject,a,b,c,d,e,f);
 PETSC_EXTERN PetscErrorCode PetscOptionsViewer_Private(PetscOptionItems*,const char[],const char[],const char[],PetscViewer*,PetscViewerFormat *,PetscBool *);
@@ -326,9 +329,5 @@ typedef struct _n_PetscViewers* PetscViewers;
 PETSC_EXTERN PetscErrorCode PetscViewersCreate(MPI_Comm,PetscViewers*);
 PETSC_EXTERN PetscErrorCode PetscViewersDestroy(PetscViewers*);
 PETSC_EXTERN PetscErrorCode PetscViewersGetViewer(PetscViewers,PetscInt,PetscViewer*);
-
-/* Reset __FUNCT__ in case the user does not define it themselves */
-#undef __FUNCT__
-#define __FUNCT__ "User provided function"
 
 #endif

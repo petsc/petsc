@@ -165,12 +165,9 @@ def check(args):
   # Fortran test
   if not len(args.files):
     if hasattr(maker.configInfo.compilers, 'FC'):
-      if maker.configInfo.fortrancpp.fortranDatatypes:
-        examples.append(os.path.join(maker.petscDir, 'src', 'snes', 'examples', 'tutorials', 'ex5f90t.F'))
-      elif maker.configInfo.compilers.fortranIsF90:
-        examples.append(os.path.join(maker.petscDir, 'src', 'snes', 'examples', 'tutorials', 'ex5f90.F'))
-      else:
-        examples.append(os.path.join(maker.petscDir, 'src', 'snes', 'examples', 'tutorials', 'ex5f.F'))
+      examples.append(os.path.join(maker.petscDir, 'src', 'snes', 'examples', 'tutorials', 'ex5f90t.F'))
+      examples.append(os.path.join(maker.petscDir, 'src', 'snes', 'examples', 'tutorials', 'ex5f90.F'))
+      examples.append(os.path.join(maker.petscDir, 'src', 'snes', 'examples', 'tutorials', 'ex5f.F'))
   for ex in examples:
     ret = checkSingleRun(maker, ex, args.replace, extraArgs)
     if ret: break

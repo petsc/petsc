@@ -9,8 +9,6 @@ PETSC_EXTERN PetscErrorCode PetscDrawMovieCheckFormat(const char *[]);
 static PetscErrorCode PetscDrawSave_SAWs(PetscDraw);
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSetSave"
 /*@C
    PetscDrawSetSave - Saves images produced in a PetscDraw into a file
 
@@ -79,8 +77,6 @@ PetscErrorCode  PetscDrawSetSave(PetscDraw draw,const char filename[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSetSaveMovie"
 /*@C
    PetscDrawSetSaveMovie - Saves a movie produced from a PetscDraw into a file
 
@@ -120,8 +116,6 @@ PetscErrorCode  PetscDrawSetSaveMovie(PetscDraw draw,const char movieext[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSetSaveFinalImage"
 /*@C
    PetscDrawSetSaveFinalImage - Saves the final image produced in a PetscDraw into a file
 
@@ -167,8 +161,6 @@ PetscErrorCode  PetscDrawSetSaveFinalImage(PetscDraw draw,const char filename[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSave"
 /*@
    PetscDrawSave - Saves a drawn image
 
@@ -238,8 +230,6 @@ finally:
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSaveMovie"
 /*@
    PetscDrawSaveMovie - Saves a movie from previously saved images
 
@@ -293,8 +283,6 @@ struct _P_PetscImageList {
 
 static PetscImageList SAWs_images = NULL;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscImageListDestroy"
 static PetscErrorCode PetscImageListDestroy(void)
 {
   PetscErrorCode ierr;
@@ -311,8 +299,6 @@ static PetscErrorCode PetscImageListDestroy(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscImageListAdd"
 static PetscErrorCode PetscImageListAdd(const char filename[],const char ext[],PetscInt count)
 {
   PetscErrorCode  ierr;
@@ -347,8 +333,6 @@ static PetscErrorCode PetscImageListAdd(const char filename[],const char ext[],P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSave_SAWs"
 static PetscErrorCode PetscDrawSave_SAWs(PetscDraw draw)
 {
   PetscImageList image;

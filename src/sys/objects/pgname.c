@@ -1,8 +1,6 @@
 
 #include <petsc/private/petscimpl.h>        /*I    "petscsys.h"   I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectGetName"
 /*@C
    PetscObjectGetName - Gets a string name associated with a PETSc object.
 

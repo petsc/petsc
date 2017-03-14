@@ -2,8 +2,6 @@
 #include <petscsys.h>        /*I  "petscsys.h"  I*/
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscGatherNumberOfMessages"
 /*@C
   PetscGatherNumberOfMessages -  Computes the number of messages a node expects to receive
 
@@ -63,8 +61,6 @@ PetscErrorCode  PetscGatherNumberOfMessages(MPI_Comm comm,const PetscMPIInt ifla
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscGatherMessageLengths"
 /*@C
   PetscGatherMessageLengths - Computes info about messages that a MPI-node will receive,
   including (from-id,length) pairs for each message.
@@ -136,8 +132,6 @@ PetscErrorCode  PetscGatherMessageLengths(MPI_Comm comm,PetscMPIInt nsends,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscGatherMessageLengths2"
 /*@C
   PetscGatherMessageLengths2 - Computes info about messages that a MPI-node will receive,
   including (from-id,length) pairs for each message. Same functionality as PetscGatherMessageLengths()
@@ -181,7 +175,7 @@ PetscErrorCode  PetscGatherMessageLengths2(MPI_Comm comm,PetscMPIInt nsends,Pets
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = PetscCommGetNewTag(comm,&tag);CHKERRQ(ierr);
 
-  /* cannot use PetscMalloc5() because r_waits and s_waits must be contiquous for the call to MPI_Waitall() */
+  /* cannot use PetscMalloc5() because r_waits and s_waits must be contiguous for the call to MPI_Waitall() */
   ierr = PetscMalloc4(nrecvs+nsends,&r_waits,2*nrecvs,&buf_r,2*nsends,&buf_s,nrecvs+nsends,&w_status);CHKERRQ(ierr);
   s_waits = r_waits + nrecvs;
 
@@ -228,8 +222,6 @@ PetscErrorCode  PetscGatherMessageLengths2(MPI_Comm comm,PetscMPIInt nsends,Pets
   And post Irecvs on these buffers using node info from onodes
 
  */
-#undef __FUNCT__
-#define __FUNCT__ "PetscPostIrecvInt"
 PetscErrorCode  PetscPostIrecvInt(MPI_Comm comm,PetscMPIInt tag,PetscMPIInt nrecvs,const PetscMPIInt onodes[],const PetscMPIInt olengths[],PetscInt ***rbuf,MPI_Request **r_waits)
 {
   PetscErrorCode ierr;
@@ -256,8 +248,6 @@ PetscErrorCode  PetscPostIrecvInt(MPI_Comm comm,PetscMPIInt tag,PetscMPIInt nrec
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscPostIrecvScalar"
 PetscErrorCode  PetscPostIrecvScalar(MPI_Comm comm,PetscMPIInt tag,PetscMPIInt nrecvs,const PetscMPIInt onodes[],const PetscMPIInt olengths[],PetscScalar ***rbuf,MPI_Request **r_waits)
 {
   PetscErrorCode ierr;

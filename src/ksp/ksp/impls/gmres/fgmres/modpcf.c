@@ -1,8 +1,6 @@
 
 #include <petsc/private/kspimpl.h>  /*I "petscksp.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPFGMRESSetModifyPC"
 /*@C
    KSPFGMRESSetModifyPC - Sets the routine used by FGMRES to modify the preconditioner.
 
@@ -52,8 +50,6 @@ PetscErrorCode  KSPFGMRESSetModifyPC(KSP ksp,PetscErrorCode (*fcn)(KSP,PetscInt,
 
 /* The following are different routines used to modify the preconditioner */
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPFGMRESModifyPCNoChange"
 /*@
 
   KSPFGMRESModifyPCNoChange - this is the default used by fgmres - it doesn't change the preconditioner.
@@ -81,8 +77,6 @@ PetscErrorCode  KSPFGMRESModifyPCNoChange(KSP ksp,PetscInt total_its,PetscInt lo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPFGMRESModifyPCKSP"
 /*@
 
  KSPFGMRESModifyPCKSP - modifies the attributes of the

@@ -7,8 +7,6 @@ static char help[] = "Tests binary I/O of vectors and illustrates the use of use
   the same program.  This example is intended only to demonstrate
   both input and output. */
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   PetscErrorCode ierr;

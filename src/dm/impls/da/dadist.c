@@ -5,8 +5,6 @@
 
 #include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "VecDuplicate_MPI_DA"
 PetscErrorCode  VecDuplicate_MPI_DA(Vec g,Vec *gg)
 {
   PetscErrorCode ierr;
@@ -22,8 +20,6 @@ PetscErrorCode  VecDuplicate_MPI_DA(Vec g,Vec *gg)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateGlobalVector_DA"
 PetscErrorCode  DMCreateGlobalVector_DA(DM da,Vec *g)
 {
   PetscErrorCode ierr;
@@ -50,8 +46,6 @@ PetscErrorCode  DMCreateGlobalVector_DA(DM da,Vec *g)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDACreateNaturalVector"
 /*@
    DMDACreateNaturalVector - Creates a parallel PETSc vector that
    will hold vector values in the natural numbering, rather than in

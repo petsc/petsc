@@ -1,0 +1,10 @@
+<HTML>
+<HEAD>
+<TITLE>DMSWARM Manual Pages</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+
+<H2> DMSWARM <A HREF="PETSC_DIRsrc/dm/impls/swarm/examples/tutorials/index.html">Examples</A></H2>
+
+The DMSWARM class encapsulates a particle cloud, with interfaces for particle data, movement, and interface with meshes.
+<P>

@@ -19,8 +19,6 @@ typedef struct {
   PetscInt  maxbounces;
 } AppCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "Event"
 static PetscErrorCode Event(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,void *ctx)
 {
   AppCtx            *app = (AppCtx*)ctx;
@@ -41,8 +39,6 @@ static PetscErrorCode Event(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,void *ct
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PostEvent"
 static PetscErrorCode PostEvent(TS ts,PetscInt nevents,PetscInt event_list[],PetscReal t,Vec U,PetscBool forwardsolve,void* ctx)
 {
   AppCtx         *app = (AppCtx*)ctx;
@@ -70,8 +66,6 @@ static PetscErrorCode PostEvent(TS ts,PetscInt nevents,PetscInt event_list[],Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "I2Function"
 static PetscErrorCode I2Function(TS ts,PetscReal t,Vec U,Vec V,Vec A,Vec F,void *ctx)
 {
   AppCtx            *app = (AppCtx*)ctx;
@@ -94,8 +88,6 @@ static PetscErrorCode I2Function(TS ts,PetscReal t,Vec U,Vec V,Vec A,Vec F,void 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "I2Jacobian"
 static PetscErrorCode I2Jacobian(TS ts,PetscReal t,Vec U,Vec V,Vec A,PetscReal shiftV,PetscReal shiftA,Mat J,Mat P,void *ctx)
 {
   AppCtx            *app = (AppCtx*)ctx;
@@ -124,8 +116,6 @@ static PetscErrorCode I2Jacobian(TS ts,PetscReal t,Vec U,Vec V,Vec A,PetscReal s
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   TS             ts;            /* ODE integrator */

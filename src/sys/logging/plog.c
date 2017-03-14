@@ -95,8 +95,6 @@ PetscLogDouble   petsc_tracetime             = 0.0;
 static PetscBool PetscLogInitializeCalled = PETSC_FALSE;
 
 /*---------------------------------------------- General Functions --------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogDestroy"
 /*@C
   PetscLogDestroy - Destroys the object and event logging data and resets the global counters.
 
@@ -168,8 +166,6 @@ PetscErrorCode  PetscLogDestroy(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogSet"
 /*@C
   PetscLogSet - Sets the logging functions called at the beginning and ending of every event.
 
@@ -192,14 +188,7 @@ PetscErrorCode  PetscLogSet(PetscErrorCode (*b)(PetscLogEvent, int, PetscObject,
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_PAPI)
-#include <papi.h>
-int PAPIEventSet = PAPI_NULL;
-#endif
-
 /*------------------------------------------- Initialization Functions ----------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogInitialize"
 /*
     The data structures for logging are always created even if no logging is turned on. This is so events etc can
   be registered in the code before the actually logging is turned on.
@@ -229,14 +218,6 @@ PetscErrorCode  PetscLogInitialize(void)
   /* Setup default logging structures */
   ierr = PetscStageLogCreate(&petsc_stageLog);CHKERRQ(ierr);
   ierr = PetscStageLogRegister(petsc_stageLog, "Main Stage", &stage);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_PAPI)
-  ierr = PAPI_library_init(PAPI_VER_CURRENT);
-  if (ierr != PAPI_VER_CURRENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot initialize PAPI");
-  ierr = PAPI_query_event(PAPI_FP_INS);CHKERRQ(ierr);
-  ierr = PAPI_create_eventset(&PAPIEventSet);CHKERRQ(ierr);
-  ierr = PAPI_add_event(PAPIEventSet,PAPI_FP_INS);CHKERRQ(ierr);
-  ierr = PAPI_start(PAPIEventSet);CHKERRQ(ierr);
-#endif
 
   /* All processors sync here for more consistent logging */
   ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
@@ -245,8 +226,6 @@ PetscErrorCode  PetscLogInitialize(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogDefaultBegin"
 /*@C
   PetscLogDefaultBegin - Turns on logging of objects and events. This logs flop
   rates and object creation and should not slow programs down too much.
@@ -285,8 +264,6 @@ PetscErrorCode  PetscLogDefaultBegin(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogAllBegin"
 /*@C
   PetscLogAllBegin - Turns on extensive logging of objects and events. Logs
   all events. This creates large log files and slows the program down.
@@ -324,8 +301,6 @@ PetscErrorCode  PetscLogAllBegin(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogTraceBegin"
 /*@
   PetscLogTraceBegin - Activates trace logging.  Every time a PETSc event
   begins or ends, the event name is printed.
@@ -361,8 +336,6 @@ PetscErrorCode  PetscLogTraceBegin(FILE *file)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogActions"
 /*@
   PetscLogActions - Determines whether actions are logged for the graphical viewer.
 
@@ -389,8 +362,6 @@ PetscErrorCode  PetscLogActions(PetscBool flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogObjects"
 /*@
   PetscLogObjects - Determines whether objects are logged for the graphical viewer.
 
@@ -418,8 +389,6 @@ PetscErrorCode  PetscLogObjects(PetscBool flag)
 }
 
 /*------------------------------------------------ Stage Functions --------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogStageRegister"
 /*@C
   PetscLogStageRegister - Attaches a charactor string name to a logging stage.
 
@@ -454,8 +423,6 @@ PetscErrorCode  PetscLogStageRegister(const char sname[],PetscLogStage *stage)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogStagePush"
 /*@C
   PetscLogStagePush - This function pushes a stage on the stack.
 
@@ -498,8 +465,6 @@ PetscErrorCode  PetscLogStagePush(PetscLogStage stage)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogStagePop"
 /*@C
   PetscLogStagePop - This function pops a stage from the stack.
 
@@ -539,8 +504,6 @@ PetscErrorCode  PetscLogStagePop(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogStageSetActive"
 /*@
   PetscLogStageSetActive - Determines stage activity for PetscLogEventBegin() and PetscLogEventEnd().
 
@@ -565,8 +528,6 @@ PetscErrorCode  PetscLogStageSetActive(PetscLogStage stage, PetscBool isActive)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogStageGetActive"
 /*@
   PetscLogStageGetActive - Returns stage activity for PetscLogEventBegin() and PetscLogEventEnd().
 
@@ -593,8 +554,6 @@ PetscErrorCode  PetscLogStageGetActive(PetscLogStage stage, PetscBool  *isActive
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogStageSetVisible"
 /*@
   PetscLogStageSetVisible - Determines stage visibility in PetscLogView()
 
@@ -619,8 +578,6 @@ PetscErrorCode  PetscLogStageSetVisible(PetscLogStage stage, PetscBool isVisible
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogStageGetVisible"
 /*@
   PetscLogStageGetVisible - Returns stage visibility in PetscLogView()
 
@@ -647,8 +604,6 @@ PetscErrorCode  PetscLogStageGetVisible(PetscLogStage stage, PetscBool  *isVisib
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogStageGetId"
 /*@C
   PetscLogStageGetId - Returns the stage id when given the stage name.
 
@@ -676,8 +631,6 @@ PetscErrorCode  PetscLogStageGetId(const char name[], PetscLogStage *stage)
 }
 
 /*------------------------------------------------ Event Functions --------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogEventRegister"
 /*@C
   PetscLogEventRegister - Registers an event name for logging operations in an application code.
 
@@ -731,7 +684,6 @@ PetscErrorCode  PetscLogStageGetId(const char name[], PetscLogStage *stage)
 
 .keywords: log, event, register
 .seealso: PetscLogEventBegin(), PetscLogEventEnd(), PetscLogFlops(),
-          PetscLogEventMPEActivate(), PetscLogEventMPEDeactivate(),
           PetscLogEventActivate(), PetscLogEventDeactivate(), PetscClassIdRegister()
 @*/
 PetscErrorCode  PetscLogEventRegister(const char name[],PetscClassId classid,PetscLogEvent *event)
@@ -753,8 +705,6 @@ PetscErrorCode  PetscLogEventRegister(const char name[],PetscClassId classid,Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogEventActivate"
 /*@
   PetscLogEventActivate - Indicates that a particular event should be logged.
 
@@ -778,7 +728,7 @@ PetscErrorCode  PetscLogEventRegister(const char name[],PetscClassId classid,Pet
   Level: advanced
 
 .keywords: log, event, activate
-.seealso: PetscLogEventMPEDeactivate(),PetscLogEventMPEActivate(),PlogEventDeactivate()
+.seealso: PlogEventDeactivate()
 @*/
 PetscErrorCode  PetscLogEventActivate(PetscLogEvent event)
 {
@@ -793,8 +743,6 @@ PetscErrorCode  PetscLogEventActivate(PetscLogEvent event)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogEventDeactivate"
 /*@
   PetscLogEventDeactivate - Indicates that a particular event should not be logged.
 
@@ -818,7 +766,7 @@ PetscErrorCode  PetscLogEventActivate(PetscLogEvent event)
   Level: advanced
 
 .keywords: log, event, deactivate
-.seealso: PetscLogEventMPEDeactivate(),PetscLogEventMPEActivate(),PlogEventActivate()
+.seealso: PlogEventActivate()
 @*/
 PetscErrorCode  PetscLogEventDeactivate(PetscLogEvent event)
 {
@@ -833,8 +781,6 @@ PetscErrorCode  PetscLogEventDeactivate(PetscLogEvent event)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogEventSetActiveAll"
 /*@
   PetscLogEventSetActiveAll - Sets the event activity in every stage.
 
@@ -847,7 +793,7 @@ PetscErrorCode  PetscLogEventDeactivate(PetscLogEvent event)
   Level: advanced
 
 .keywords: log, event, activate
-.seealso: PetscLogEventMPEDeactivate(),PetscLogEventMPEActivate(),PlogEventActivate(),PlogEventDeactivate()
+.seealso: PlogEventActivate(),PlogEventDeactivate()
 @*/
 PetscErrorCode  PetscLogEventSetActiveAll(PetscLogEvent event, PetscBool isActive)
 {
@@ -867,8 +813,6 @@ PetscErrorCode  PetscLogEventSetActiveAll(PetscLogEvent event, PetscBool isActiv
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogEventActivateClass"
 /*@
   PetscLogEventActivateClass - Activates event logging for a PETSc object class.
 
@@ -895,8 +839,6 @@ PetscErrorCode  PetscLogEventActivateClass(PetscClassId classid)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogEventDeactivateClass"
 /*@
   PetscLogEventDeactivateClass - Deactivates event logging for a PETSc object class.
 
@@ -1077,8 +1019,6 @@ M*/
 .keywords: log, event, begin, barrier
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogEventGetId"
 /*@C
   PetscLogEventGetId - Returns the event id when given the event name.
 
@@ -1107,8 +1047,6 @@ PetscErrorCode  PetscLogEventGetId(const char name[], PetscLogEvent *event)
 
 
 /*------------------------------------------------ Output Functions -------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogDump"
 /*@C
   PetscLogDump - Dumps logs of objects to a file. This file is intended to
   be read by bin/petscview. This program no longer exists.
@@ -1162,7 +1100,7 @@ PetscErrorCode  PetscLogDump(const char sname[])
   ierr = PetscFOpen(PETSC_COMM_WORLD, fname, "w", &fd);CHKERRQ(ierr);
   if ((!rank) && (!fd)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN, "Cannot open file: %s", fname);
   /* Output totals */
-  ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Total Flops %14e %16.8e\n", petsc_TotalFlops, _TotalTime);CHKERRQ(ierr);
+  ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Total Flop %14e %16.8e\n", petsc_TotalFlops, _TotalTime);CHKERRQ(ierr);
   ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Clock Resolution %g\n", 0.0);CHKERRQ(ierr);
   /* Output actions */
   if (petsc_logActions) {
@@ -1205,8 +1143,6 @@ PetscErrorCode  PetscLogDump(const char sname[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogView_Detailed"
 /*
   PetscLogView_Detailed - Each process prints the times for its own events
 
@@ -1228,9 +1164,9 @@ PetscErrorCode  PetscLogView_Detailed(PetscViewer viewer)
   numRed = petsc_allreduce_ct + petsc_gather_ct + petsc_scatter_ct;
   /* Get the total elapsed time */
   PetscTime(&locTotalTime);  locTotalTime -= petsc_BaseTime;
-  ierr = PetscViewerASCIIPrintf(viewer,"numProcs   = %d\n",size);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"size   = %d\n",size);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"LocalTimes = {}\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"LocalFlops = {}\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"LocalFlop = {}\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"LocalMessageLens = {}\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"LocalMessages = {}\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"LocalReductions = {}\n");CHKERRQ(ierr);
@@ -1249,7 +1185,7 @@ PetscErrorCode  PetscLogView_Detailed(PetscViewer viewer)
   }
   ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"LocalTimes[%d] = %g\n",rank,locTotalTime);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"LocalFlops[%d] = %g\n",rank,petsc_TotalFlops);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"LocalFlop[%d] = %g\n",rank,petsc_TotalFlops);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"LocalMessageLens[%d] = %g\n",rank,(petsc_irecv_len + petsc_isend_len + petsc_recv_len + petsc_send_len));CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"LocalMessages[%d] = %g\n",rank,(petsc_irecv_ct + petsc_isend_ct + petsc_recv_ct + petsc_send_ct));CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"LocalReductions[%d] = %g\n",rank,numRed);CHKERRQ(ierr);
@@ -1258,14 +1194,14 @@ PetscErrorCode  PetscLogView_Detailed(PetscViewer viewer)
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"LocalMemory[%d] = %g\n",rank,maxMem);CHKERRQ(ierr);
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   for (stage=0; stage<numStages; stage++) {
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Stages[\"%s\"][\"summary\"][%d] = {\"time\" : %g, \"numMessages\" : %g, \"messageLength\" : %g, \"numReductions\" : %g, \"flops\" : %g}\n",
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Stages[\"%s\"][\"summary\"][%d] = {\"time\" : %g, \"numMessages\" : %g, \"messageLength\" : %g, \"numReductions\" : %g, \"flop\" : %g}\n",
                                               stageLog->stageInfo[stage].name,rank,
                                               stageLog->stageInfo[stage].perfInfo.time,stageLog->stageInfo[stage].perfInfo.numMessages,stageLog->stageInfo[stage].perfInfo.messageLength,
                                               stageLog->stageInfo[stage].perfInfo.numReductions,stageLog->stageInfo[stage].perfInfo.flops);CHKERRQ(ierr);
     ierr = MPIU_Allreduce(&stageLog->stageInfo[stage].eventLog->numEvents, &numEvents, 1, MPI_INT, MPI_MAX, comm);CHKERRQ(ierr);
     for (event = 0; event < numEvents; event++) {
       eventInfo = stageLog->stageInfo[stage].eventLog->eventInfo;
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Stages[\"%s\"][\"%s\"][%d] = {\"count\" : %D, \"time\" : %g, \"numMessages\" : %g, \"messageLength\" : %g, \"numReductions\" : %g, \"flops\" : %g}\n",stageLog->stageInfo[stage].name,stageLog->eventLog->eventInfo[event].name,rank,
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Stages[\"%s\"][\"%s\"][%d] = {\"count\" : %D, \"time\" : %g, \"numMessages\" : %g, \"messageLength\" : %g, \"numReductions\" : %g, \"flop\" : %g}\n",stageLog->stageInfo[stage].name,stageLog->eventLog->eventInfo[event].name,rank,
                                                 eventInfo[event].count, eventInfo[event].time,eventInfo[event].numMessages, eventInfo[event].messageLength,
                                                 eventInfo[event].numReductions,eventInfo[event].flops);CHKERRQ(ierr);
     }
@@ -1275,8 +1211,6 @@ PetscErrorCode  PetscLogView_Detailed(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogViewWarnDebugging"
 static PetscErrorCode PetscLogViewWarnDebugging(MPI_Comm comm,FILE *fd)
 {
 #if defined(PETSC_USE_DEBUG)
@@ -1300,8 +1234,6 @@ static PetscErrorCode PetscLogViewWarnDebugging(MPI_Comm comm,FILE *fd)
 #endif
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogView_Default"
 PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
 {
   FILE               *fd;
@@ -1387,7 +1319,7 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
   avg  = (tot)/((PetscLogDouble) size);
   if (min != 0.0) ratio = max/min;
   else ratio = 0.0;
-  ierr = PetscFPrintf(comm, fd, "Flops:                %5.3e   %10.5f   %5.3e  %5.3e\n", max, ratio, avg, tot);CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "Flop:                 %5.3e   %10.5f   %5.3e  %5.3e\n", max, ratio, avg, tot);CHKERRQ(ierr);
   TotalFlops = tot;
   /*   Flops/sec -- Must talk to Barry here */
   if (locTotalTime != 0.0) flops = petsc_TotalFlops/locTotalTime;
@@ -1398,7 +1330,7 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
   avg  = (tot)/((PetscLogDouble) size);
   if (min != 0.0) ratio = max/min;
   else ratio = 0.0;
-  ierr = PetscFPrintf(comm, fd, "Flops/sec:            %5.3e   %10.5f   %5.3e  %5.3e\n", max, ratio, avg, tot);CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "Flop/sec:            %5.3e   %10.5f   %5.3e  %5.3e\n", max, ratio, avg, tot);CHKERRQ(ierr);
   /*   Memory */
   ierr = PetscMallocGetMaximumUsage(&mem);CHKERRQ(ierr);
   if (mem > 0.0) {
@@ -1440,8 +1372,8 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
   ierr = PetscFPrintf(comm, fd, "MPI Reductions:       %5.3e   %10.5f\n", max, ratio);CHKERRQ(ierr);
   numReductions = red; /* wrong because uses count from process zero */
   ierr = PetscFPrintf(comm, fd, "\nFlop counting convention: 1 flop = 1 real number operation of type (multiply/divide/add/subtract)\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "                            e.g., VecAXPY() for real vectors of length N --> 2N flops\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "                            and VecAXPY() for complex vectors of length N --> 8N flops\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "                            e.g., VecAXPY() for real vectors of length N --> 2N flop\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "                            and VecAXPY() for complex vectors of length N --> 8N flop\n");CHKERRQ(ierr);
 
   /* Get total number of stages --
        Currently, a single processor can register more stages than another, but stages must all be registered in order.
@@ -1469,7 +1401,7 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
     ierr = MPIU_Allreduce(localStageVisible, stageVisible, numStages, MPIU_BOOL, MPI_LAND, comm);CHKERRQ(ierr);
     for (stage = 0; stage < numStages; stage++) {
       if (stageUsed[stage]) {
-        ierr = PetscFPrintf(comm, fd, "\nSummary of Stages:   ----- Time ------  ----- Flops -----  --- Messages ---  -- Message Lengths --  -- Reductions --\n");CHKERRQ(ierr);
+        ierr = PetscFPrintf(comm, fd, "\nSummary of Stages:   ----- Time ------  ----- Flop -----  --- Messages ---  -- Message Lengths --  -- Reductions --\n");CHKERRQ(ierr);
         ierr = PetscFPrintf(comm, fd, "                        Avg     %%Total     Avg     %%Total   counts   %%Total     Avg         %%Total   counts   %%Total \n");CHKERRQ(ierr);
         break;
       }
@@ -1510,23 +1442,23 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
   ierr = PetscFPrintf(comm, fd, "See the 'Profiling' chapter of the users' manual for details on interpreting output.\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "Phase summary info:\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "   Count: number of times phase was executed\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "   Time and Flops: Max - maximum over all processors\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "   Time and Flop: Max - maximum over all processors\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "                   Ratio - ratio of maximum to minimum over all processors\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "   Mess: number of messages sent\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "   Avg. len: average message length (bytes)\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "   Reduct: number of global reductions\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "   Global: entire computation\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "   Stage: stages of a computation. Set stages with PetscLogStagePush() and PetscLogStagePop().\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "      %%T - percent time in this phase         %%F - percent flops in this phase\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "      %%T - percent time in this phase         %%F - percent flop in this phase\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "      %%M - percent messages in this phase     %%L - percent message lengths in this phase\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "      %%R - percent reductions in this phase\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "   Total Mflop/s: 10e-6 * (sum of flops over all processors)/(max time over all processors)\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "   Total Mflop/s: 10e-6 * (sum of flop over all processors)/(max time over all processors)\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "------------------------------------------------------------------------------------------------------------------------\n");CHKERRQ(ierr);
 
   ierr = PetscLogViewWarnDebugging(comm,fd);CHKERRQ(ierr);
 
   /* Report events */
-  ierr = PetscFPrintf(comm, fd,"Event                Count      Time (sec)     Flops                             --- Global ---  --- Stage ---   Total\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd,"Event                Count      Time (sec)     Flop                             --- Global ---  --- Stage ---   Total\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd,"                   Max Ratio  Max     Ratio   Max  Ratio  Mess   Avg len Reduct  %%T %%F %%M %%L %%R  %%T %%F %%M %%L %%R Mflop/s\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,"------------------------------------------------------------------------------------------------------------------------\n");CHKERRQ(ierr);
 
@@ -1601,7 +1533,7 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
         ierr = PetscFPrintf(comm, fd, "WARNING!!! Minimum time %g over all processors for %s is negative! This happens\n on some machines whose times cannot handle too rapid calls.!\n artificially changing minimum to zero.\n",mint,name);
         mint = 0;
       }
-      if (minf < 0.0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Minimum flops %g over all processors for %s is negative! Not possible!",minf,name);
+      if (minf < 0.0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Minimum flop %g over all processors for %s is negative! Not possible!",minf,name);
       totm *= 0.5; totml *= 0.5; totr /= size;
 
       if (maxCt != 0) {
@@ -1736,8 +1668,6 @@ PetscErrorCode  PetscLogView_Default(PetscViewer viewer)
 
 PetscErrorCode  PetscLogView_Nested(PetscViewer);
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogView"
 /*@C
   PetscLogView - Prints a summary of the logging.
 
@@ -1802,8 +1732,6 @@ PetscErrorCode  PetscLogView(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogViewFromOptions"
 /*@C
   PetscLogViewFromOptions - Processes command line options to determine if/how a PetscLog is to be viewed. 
 
@@ -1835,8 +1763,6 @@ PetscErrorCode PetscLogViewFromOptions(void)
 
 
 /*----------------------------------------------- Counter Functions -------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "PetscGetFlops"
 /*@C
    PetscGetFlops - Returns the number of flops used on this processor
    since the program began.
@@ -1864,8 +1790,6 @@ PetscErrorCode  PetscGetFlops(PetscLogDouble *flops)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogObjectState"
 PetscErrorCode  PetscLogObjectState(PetscObject obj, const char format[], ...)
 {
   PetscErrorCode ierr;
@@ -2019,8 +1943,6 @@ M*/
 
 #else /* end of -DPETSC_USE_LOG section */
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogObjectState"
 PetscErrorCode  PetscLogObjectState(PetscObject obj, const char format[], ...)
 {
   PetscFunctionBegin;
@@ -2033,8 +1955,6 @@ PetscErrorCode  PetscLogObjectState(PetscObject obj, const char format[], ...)
 PetscClassId PETSC_LARGEST_CLASSID = PETSC_SMALLEST_CLASSID;
 PetscClassId PETSC_OBJECT_CLASSID  = 0;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscClassIdRegister"
 /*@C
   PetscClassIdRegister - Registers a new class name for objects and logging operations in an application code.
 
@@ -2079,8 +1999,6 @@ PetscBool PetscBeganMPE = PETSC_FALSE;
 PETSC_INTERN PetscErrorCode PetscLogEventBeginMPE(PetscLogEvent,int,PetscObject,PetscObject,PetscObject,PetscObject);
 PETSC_INTERN PetscErrorCode PetscLogEventEndMPE(PetscLogEvent,int,PetscObject,PetscObject,PetscObject,PetscObject);
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogMPEBegin"
 /*@C
    PetscLogMPEBegin - Turns on MPE logging of events. This creates large log files
    and slows the program down.
@@ -2121,8 +2039,6 @@ PetscErrorCode  PetscLogMPEBegin(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogMPEDump"
 /*@C
    PetscLogMPEDump - Dumps the MPE logging info to file for later use with Jumpshot.
 
@@ -2195,8 +2111,6 @@ static const char *PetscLogMPERGBColors[PETSC_RGB_COLORS_MAX] = {
   "OliveDrab:      "
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogMPEGetRGBColor"
 /*@C
   PetscLogMPEGetRGBColor - This routine returns a rgb color useable with PetscLogEventRegister()
 

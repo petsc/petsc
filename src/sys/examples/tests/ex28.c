@@ -5,8 +5,6 @@ static char help[] = "Tests PetscAtan2Real\n";
 #include <petscviewer.h>
 #include <petscmath.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
 
@@ -25,3 +23,10 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+   
+   test:
+
+TEST*/

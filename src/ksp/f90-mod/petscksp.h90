@@ -1,0 +1,11 @@
+
+      interface
+        subroutine KSPSolve(a,b,c,z)
+          use petsckspdef
+          KSP a ! KSP
+          Vec b ! Vec
+          Vec c ! Vec
+          integer z
+        end subroutine
+      end interface
+

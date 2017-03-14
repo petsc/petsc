@@ -4,8 +4,6 @@
 */
 #include <petsc/private/petscimpl.h>  /*I   "petscsys.h"    I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectGetType"
 /*@C
    PetscObjectGetType - Gets the object type of any PetscObject.
 
@@ -32,8 +30,6 @@ PetscErrorCode  PetscObjectGetType(PetscObject obj, const char *type[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectSetType"
 /*@C
    PetscObjectSetType - Sets the object type of any PetscObject.
 

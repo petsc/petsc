@@ -6,8 +6,6 @@ static char help[] = "Tests the parallel case for MatIncreaseOverlap(). Input ar
 
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   PetscErrorCode ierr;

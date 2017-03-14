@@ -460,7 +460,7 @@ numbering scheme back to the global PETSc numbering can be handled with the
 
 If one is given a list of block indices in a global numbering, the routine
 \begin{lstlisting}
-ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping ctx,ISGlobalToLocalMappingType type,PetscInt nin,PetscInt idxin[],PetscInt *nout,PetscInt idxout[]);
+ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping ctx,ISGlobalToLocalMappingMode type,PetscInt nin,PetscInt idxin[],PetscInt *nout,PetscInt idxout[]);
 \end{lstlisting}
 \sindex{global to local mapping} will provide
 a new list of indices in the local numbering. Again, negative values in
@@ -2271,6 +2271,7 @@ KSPSetNormType(KSP ksp,KSP_NORM_UNPRECONDITIONED);
   \ Generalized Conjugate Residual                          & \lstinline|KSPGCR|        & \trl{gcr}        \\
   \ Pipelined Conjugate Residual                            & \lstinline|KSPPIPECR|     & \trl{pipecr}     \\
   \ Pipelined, Flexible Conjugate Residual                  & \lstinline|KSPPIPEGCR|    & \trl{pipegcr}    \\
+  FETI-DP                                                   & \lstinline|KSPFETIDP|     & \trl{fetidp}     \\
   Conjugate Gradient Squared \cite{so:89}                   & \lstinline|KSPCGS|        & \trl{cgs}        \\
   Transpose-Free Quasi-Minimal Residual (1) \cite{f:93}     & \lstinline|KSPTFQMR|      & \trl{tfqmr}      \\
   Transpose-Free Quasi-Minimal Residual (2)                 & \lstinline|KSPTCQMR|      & \trl{tcqmr}      \\
@@ -2291,6 +2292,11 @@ Note: the bi-conjugate gradient method requires application of both the matrix a
 its transpose plus the preconditioner and its transpose. Currently not all matrices
 and preconditioners provide this support and thus the \lstinline{KSPBICG} cannot always
 be used. \sindex{Bi-conjugate gradient}
+
+Note: PETSc implements the FETI-DP (Finite Element Tearing and Interconnecting
+Dual-Primal) method as a KSP since it recasts the original problem into a contstrained
+minimization one with Lagrange multipliers. The only matrix type supported is
+\lstinline{MATIS}.
 
 \subsection{Convergence Tests}
 \label{section_convergencetests}
@@ -2868,10 +2874,11 @@ If poor convergence rates are observed using the smoothed version one can test u
 AMG methods requires knowledge of the number of degrees of
 freedom per vertex, the default is one (a scalar problem).
 Vector problems like elasticity should set the block size of the matrix appropriately with \trl{-mat_block_size bs}  or \lstinline{MatSetBlockSize(mat,bs)}.
+Equations must be ordered in ``vertex-major'' ordering (e.g., $x_1,y_1,z_1,x_2,y_2,...$).
 
 Smoothed aggregation requires an explicit representation of the (near) null space of the operator for optimal performance.
-One can provide this with \lstinline{MatSetNearNullSpace()}.
-The one vector is the default, for each variable given by the block size (e.g., the translational rigid  body modes).
+One can provide an orthonormal set of null space vectors with \lstinline{MatSetNearNullSpace()}.
+The vector of all ones is the default, for each variable given by the block size (e.g., the translational rigid  body modes).
 For elasticity, where rotational rigid body modes are required to complete the near null space you can use \lstinline{MatNullSpaceCreateRigidBody()} to create the null space vectors and then \lstinline{MatSetNearNullSpace()}.
 
 There are several options to provide parameters to the coarsening algorithm and parallel data layout.
@@ -3019,13 +3026,6 @@ associated with \lstinline{PCBDDC} by using the command line switch \trl{-pc_bdd
 The latter can be requested by specifying the number of requested level at command line (\trl{-pc_bddc_levels}) or by using \lstinline{PCBDDCSetLevels()}.
 An additional parameter (see \lstinline{PCBDDCSetCoarseningRatio()}) controls the number of subdomains that will be generated at the next level;
 the larger the coarsening ratio, the lower the number of coarser subdomains.
-
-PETSc currently provides an experimental interface to the FETI-DP method, which is the dual method of BDDC. Users interested in 
-experimenting with FETI-DP should use \break\lstinline{PCBDDCCreateFETIDPOperators()} in order access
-the \lstinline{Mat} and \lstinline{PC} objects needed by the FETI-DP method. The latter call should be performed after having called \lstinline{PCSetUp()} on the \lstinline{PCBDDC} object.
-\lstinline{PCBDDCMatFETIDPGetRHS()} maps the original right-hand side to a suitable right-hand side for the FETI-DP solver.
-The physical solution can be recovered by using \lstinline{PCBDDCMatFETIDPGetSolution()}.
-A stand-alone class for FETI-DP will be provided in future releases.
 
 For further details, see the example \href{http://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/ex59.c}{\trl{${PETSC_DIR}/src/ksp/ksp/examples/tutorials/ex59.c}} and the online documentation for \lstinline{PCBDDC}.
 
@@ -3971,13 +3971,13 @@ Line search Newton                               & \lstinline|SNESNEWTONLS|    &
   FAS                                            & \lstinline|SNESFAS|         & \trl{fas}         & --                             \\
   Nonlinear ASM                                  & \lstinline|SNESNASM|        & \trl{nasm}        & --                             \\
   ASPIN                                          & \lstinline|SNESASPIN|       & \trl{aspin}       & \lstinline|SNESLINESEARCHBT|   \\
-  Nonlinear Gauss-Seidel                         & \lstinline|SNESGS|          & \trl{ngs}         & --                             \\
+  Nonlinear Gauss-Seidel                         & \lstinline|SNESNGS|         & \trl{ngs}         & --                             \\
   Anderson Mixing                                & \lstinline|SNESANDERSON|    & \trl{anderson}    & --                             \\
   Newton with constraints (1)                    & \lstinline|SNESVINEWTONRSLS|& \trl{vinewtonrsls}& \lstinline|SNESLINESEARCHBT|   \\
   Newton with constraints (2)                    & \lstinline|SNESVINEWTONSSLS|& \trl{vinewtonssls}& \lstinline|SNESLINESEARCHBT|   \\
   Multi-stage Smoothers                          & \lstinline|SNESMS|          & \trl{ms}          & --                             \\
   Composite                                      & \lstinline|SNESCOMPOSITE|   & \trl{composite}   & --                             \\
-  KSP only (linear solver)                       & \lstinline|SNESKSPONLY|     & \trl{ksponly}     & --                             \\
+  \lstinline|KSP| only (linear solver)           & \lstinline|SNESKSPONLY|     & \trl{ksponly}     & --                             \\
   Python Shell                                   & \lstinline|SNESPYTHON|      & \trl{python}      & --                             \\
   Shell                                          & \lstinline|SNESSHELL|       & \trl{shell}       & --                             \\
 \hline
@@ -4023,7 +4023,7 @@ SNESLineSearchSetOrder(SNESLineSearch ls, PetscInt order);
 for instance, 2 for quadratic or 3 for cubic. Sometimes, it may not be necessary to monitor the progress of the
 nonlinear iteration.  In this case, \trl{-snes_linesearch_norms} or
 \begin{lstlisting}
-SNESLineSearchSetNorms(SNESLineSearch ls,PetscBool norms);
+SNESLineSearchSetComputeNorms(SNESLineSearch ls,PetscBool norms);
 \end{lstlisting}
 may be used to turn off function, step, and solution norm computation at the end of the linesearch.
 
@@ -4487,26 +4487,23 @@ and application-provided preconditioners.  If
  listed in Figure~\ref{fig_snesexample2}, is run with the options \trl{-snes_mf} and \trl{-user_precond} then it uses a matrix-free application of the matrix-vector multiple and a user provided matrix free Jacobian.
 
 \begin{center}
-\begin{table}[H]
-\begin{tabular}{|c|l|l|} \hline
-& & \\
+\begin{table}
+\begin{tabular}{ccc}
 {\bf Matrix Use} & {\bf Conventional Matrix Formats}                & {\bf Matrix-Free Versions}\\
-& & \\ \hline
-& & \\
+\hline
 Jacobian         & Create matrix with \lstinline|MatCreate()|. $^*$ & Create matrix with \lstinline|MatCreateShell()|.\\
-                 & Assemble matrix with user-defined                & Use \lstinline|MatShellSetOperation()| to set\\
-Matrix           & routine. $ ^\dagger $                            & various matrix actions.\\
-                 &                                                  & Or use \lstinline|MatCreateMFFD()| or \lstinline|MatCreateSNESMF()|.\\
-& & \\ \hline
-& & \\
+Matrix           & Assemble matrix with user-defined                & Use \lstinline|MatShellSetOperation()| to set\\
+                 & routine. $ ^\dagger $                            & various matrix actions, or use\\
+                 &                                                  & \lstinline|MatCreateMFFD()| or \lstinline|MatCreateSNESMF()|.\\
+\hline
 Preconditioning  & Create matrix with \lstinline|MatCreate()|. $^*$ & Use \lstinline|SNESGetKSP()| and \lstinline|KSPGetPC()| \\
 Matrix           & Assemble matrix with user-defined                & to access the \lstinline|PC|, then use\\
-                 & routine. $ ^\dagger $                            & \lstinline|PCSetType(pc,PCSHELL)|;\\
+                 & routine. $ ^\dagger $                            & \lstinline|PCSetType(pc,PCSHELL)|\\
                  &                                                  & followed by \lstinline|PCShellSetApply()|. \\
 
-& & \\ \hline
+\hline
+& & \\
 \end{tabular}
-
 \medskip
 $^*$ Use either the generic \lstinline|MatCreate()| or a format-specific variant
    such as \lstinline|MatCreateAIJ()|.\\
@@ -4852,52 +4849,35 @@ or the command line option \\
 \findex{-ts_type} \sindex{Euler}
 \sindex{backward Euler}
 
-A list of available methods is given in Table \ref{tab:TSPET}.
+A list of available methods is given in Table \ref{tab_TSPET}.
 
 %
 \begin{table}
-\caption{Time integration schemes.}
 \centering
-%{   \scriptsize
-%\tiny
-\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|}
-\hline
+\begin{tabular}{cccccccccccc}
 {\bf TS Name}&{\bf Reference}&{\bf Class}& {\bf Type}&{\bf Order}\\
 \hline
 euler&forward Euler&one-step&explicit&1\\
-\hline
 ssp&multistage SSP \cite{Ketcheson_2008}&Runge-Kutta&explicit&$\le$ 4\\
-\hline
 rk*&multistage&Runge-Kutta&explicit&$\ge$ 1\\
-\hline
 beuler&backward Euler&one-step&implicit&1\\
-\hline
 cn&Crank-Nicolson&one-step&implicit&2\\
-\hline
 theta*&theta-method&one-step&implicit&$\le$2\\
-\hline
 alpha&alpha-method \cite{Jansen_2000}&one-step&implicit&2\\
-\hline
 gl&general linear
 \cite{Butcher_2007}&multistep-multistage&implicit& $\le$ 3\\
-\hline
 eimex&extrapolated IMEX \cite{Constantinescu_A2010a}&one-step&$\ge
 1$, adaptive&\\
-\hline
-arkimex&  see Tab.\ \ref{tab:IMEX:RK:PETSc}& IMEX Runge-Kutta & IMEX& $1-5$\\
-\hline
-rosw& see Tab.\ \ref{tab:IMEX:RosW:PETSc} &Rosenbrock-W &linearly
-implicit&$1-4$\\ \hline
-glee& see Tab.\ \ref{tab:IMEX:GLEE:PETSc} &GL with global
+arkimex&  see Tab.\ \ref{tab_IMEX_RK_PETSc}& IMEX Runge-Kutta & IMEX& $1-5$\\
+rosw& see Tab.\ \ref{tab_IMEX_RosW_PETSc} &Rosenbrock-W &linearly
+implicit&$1-4$\\
+glee& see Tab.\ \ref{tab_IMEX_GLEE_PETSc} &GL with global
 error&explicit and implicit&$1-3$\\
 \hline
 \end{tabular}%}
-\label{tab:TSPET}
+\caption{Time integration schemes.}
+\label{tab_TSPET}
 \end{table}
-%
-
-
-
 
 \noindent Set the initial time and timestep with the command
 \begin{lstlisting}
@@ -4923,7 +4903,8 @@ and determines the behavior near the final time with
 \begin{lstlisting}
 TSSetExactFinalTime(TS ts,TSExactFinalTimeOption eftopt);
 \end{lstlisting}
-where \lstinline{eftopt} is one of \lstinline{TS_EXACTFINALTIME_STEPOVER},\lstinline{TS_EXACTFINALTIME_INTERPOLATE},or \lstinline{TS_EXACTFINALTIME_MATCHSTEP}.
+where \lstinline{eftopt} is one of \lstinline{TS_EXACTFINALTIME_STEPOVER},\lstinline{TS_EXACTFINALTIME_INTERPOLATE}, or\break
+\lstinline{TS_EXACTFINALTIME_MATCHSTEP}.
 One performs the requested number of time steps with
 \begin{lstlisting}
 TSSolve(TS ts,Vec U);
@@ -4969,14 +4950,28 @@ or
 An IMEX problem representation can be made
 implicit by setting \lstinline{TSARKIMEXSetFullyImplicit()}.
 
-Some use-case examples for \lstinline{TSARKIMEX} are listed in Table \ref{tab:DE:forms} and a
+Some use-case examples for \lstinline{TSARKIMEX} are listed in Table \ref{tab_DE_forms} and a
 list of methods with a summary of their properties is given in
-Table \ref{tab:IMEX:RK:PETSc}.
+Table \ref{tab_IMEX_RK_PETSc}.
 
 %
 \begin{table}
 \centering
-\caption{\label{tab:DE:forms}In PETSc the DAEs and ODEs are formulated
+\begin{tabular}{lp{1.7in}p{2.8in}}
+\hline
+$\dot{y}=g(t,y)$ & nonstiff ODE & $F(t,y,\dot{y}) = \dot{y}$,
+$G(t,y)=g(t,y)$\\
+$\dot{y}=f(t,y)$ & stiff ODE & $F(t,y,\dot{y}) =  \dot{y}-f(t,y)$,
+$G(t,y)=0$\\
+$M \dot{y}=f(t,y)$ & stiff ODE with mass matrix& $F(t,y,\dot{y}) = M \dot{y}-f(t,y)$,
+$G(t,y)=0$\\
+$M \dot{y} = g(t,y)$& nonstiff ODE with mass matrix&$F(t,y,\dot{y}) = \dot{y}, G(t,y) = M^{-1} g(t,y)$\\
+$\dot{y}=g(t,y)+f(t,y)$ & stiff-nonstiff ODE & $F(t,y,\dot{y}) = \dot{y}-f(t,y)$, $G(t,y)=g(t,y)$\\
+$M\dot{y}=g(t,y)+f(t,y)$ & stiff-nonstiff ODE with mass matrix & $F(t,y,\dot{y}) = M \dot{y}-f(t,y)$, $G(t,y)=M^{-1}g(t,y)$\\
+  $f(t,y,\dot{y})=0$       & implicit ODE/DAE                  & $F(t,y,\dot{y}) = f(t,y,\dot{y})$, $G(t,y) = 0$; the user needs to set \lstinline|TSSetEquationType()| to \lstinline|TS_EQ_IMPLICIT| or higher\\
+\hline
+\end{tabular}
+\caption{\label{tab_DE_forms}In PETSc, DAEs and ODEs are formulated
 as $F(t,y,\dot{y})=G(t,y)$, where $F()$ is meant to be integrated
 implicitly and $G()$ explicitly. An IMEX formulation such as
 $M\dot{y}=g(t,y)+f(t,y)$ requires the user to provide $M^{-1} g(t,y)$ or
@@ -4984,131 +4979,88 @@ solve  $g(t,y) - M x=0$ in place of $G(t,u)$. General cases such as
 $F(t,y,\dot{y})=G(t,y)$ are
 not amenable to IMEX Runge-Kutta, but can be solved by using fully implicit methods.}
 
-\begin{tabular}{|l|p{1.7in}|p{2.8in}|}
-\hline
-$\dot{y}=g(t,y)$ & nonstiff ODE & $F(t,y,\dot{y}) = \dot{y}$,
-$G(t,y)=g(t,y)$\\
-\hline
-$\dot{y}=f(t,y)$ & stiff ODE & $F(t,y,\dot{y}) =  \dot{y}-f(t,y)$,
-$G(t,y)=0$\\
-\hline
-$M \dot{y}=f(t,y)$ & stiff ODE w/ mass matrix& $F(t,y,\dot{y}) = M \dot{y}-f(t,y)$,
-$G(t,y)=0$\\
-\hline
-$M \dot{y} = g(t,y)$& nonstiff ODE w/ mass matrix&$F(t,y,\dot{y}) = \dot{y}, G(t,y) = M^{-1} g(t,y)$\\
-\hline
-$\dot{y}=g(t,y)+f(t,y)$ & stiff-nonstiff ODE & $F(t,y,\dot{y}) = \dot{y}-f(t,y)$, $G(t,y)=g(t,y)$\\
-\hline
-$M\dot{y}=g(t,y)+f(t,y)$ & stiff-nonstiff ODE w/ mass matrix & $F(t,y,\dot{y}) = M \dot{y}-f(t,y)$, $G(t,y)=M^{-1}g(t,y)$\\
-\hline
-  $f(t,y,\dot{y})=0$       & implicit ODE/DAE                  & $F(t,y,\dot{y}) = f(t,y,\dot{y})$, $G(t,y) = 0$; the user needs to set \lstinline|TSSetEquationType()| to \lstinline|TS_EQ_IMPLICIT| or higher\\
-\hline
-\end{tabular}
 \end{table}
 
 \begin{table}
 \centering
-\caption{\label{tab:IMEX:RK:PETSc} List of the  currently available
+\begin{tabular}{cccccccccccc}
+\hline
+{\bf Name}&{\bf Reference} &{\bf Stages} &{\bf Order}&{\bf IM}     &{\bf SA}&{\bf Embed.}&{\bf Dense}& {\bf Remarks}\\
+ &  &{\bf (IM)}   &{\bf (stage)}& {\bf Stab.}&&      &{\bf Output}&\\
+\hline
+a2&based on CN&2(1)&2(2)&A-Stable&yes&yes(1)&yes(2)&\\
+l2&SSP2(2,2,2)\cite{Pareschi_2005}
+&2(2)&2(1)&L-Stable&yes&yes(1)&yes(2)&SSP, SDIRK\\
+ars122&ARS122,
+\cite{Ascher_1997}&2(1)&3(1)&A-Stable&yes&yes(1)&yes(2)&\\
+2c&\cite{Giraldo_2013}&3(2)&2(2)&L-Stable&yes&yes(1)&yes(2)&SDIRK\\
+2d&\cite{Giraldo_2013}&3(2)&2(2)&L-Stable&yes&yes(1)&yes(2)&SDIRK\\
+2e&\cite{Giraldo_2013}&3(2)&2(2)&L-Stable&yes&yes(1)&yes(2)&SDIRK\\
+prssp2&PRS(3,3,2)
+\cite{Pareschi_2005}&3(3)&3(1)&L-Stable&yes&no&no&SSP, nonSDIRK\\
+3&\cite{Kennedy_2003}&4(3)&3(2)&L-Stable&yes&yes(2)&yes(2)&SDIRK\\
+bpr3&\cite{Boscarino_TR2011}&5(4)&3(2)&L-Stable&yes&no&no&SDIRK, DAE-1\\
+ars443&\cite{Ascher_1997}&5(4)&3(1)&L-Stable&yes&no&no&SDIRK\\
+4&\cite{Kennedy_2003}&6(5)&4(2)&L-Stable&yes&yes(3)&yes(2,3)&SDIRK\\
+5&\cite{Kennedy_2003}&8(7)&5(2)&L-Stable&yes&yes(4)&yes(3)&SDIRK\\
+\hline
+\end{tabular}
+\caption{\label{tab_IMEX_RK_PETSc} List of the  currently available
 IMEX Runge-Kutta schemes.  For each method we listed the \texttt{-ts\_arkimex\_type}
   name, the reference, the
   total number
   of stages/implicit stages, the order/stage-order,
   the implicit stability properties, stiff accuracy (SA), the
   existence of an embedded scheme, and dense output.}
-\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|}
-\hline
-{\bf Name}&{\bf Reference} &{\bf Stages} &{\bf Order}&{\bf IM}     &{\bf SA}&{\bf Embed.}&{\bf Dense}& {\bf Remarks}\\
- &  &{\bf (IM)}   &{\bf (stage)}& {\bf Stab.}&&      &{\bf Output}&\\
-\hline
-a2&based on CN&2(1)&2(2)&A-Stable&yes&yes(1)&yes(2)&\\
-\hline
-l2&SSP2(2,2,2)\cite{Pareschi_2005}
-&2(2)&2(1)&L-Stable&yes&yes(1)&yes(2)&SSP, SDIRK\\
-\hline
-ars122&ARS122,
-\cite{Ascher_1997}&2(1)&3(1)&A-Stable&yes&yes(1)&yes(2)&\\
-\hline
-2c&\cite{Giraldo_2013}&3(2)&2(2)&L-Stable&yes&yes(1)&yes(2)&SDIRK\\
-\hline
-2d&\cite{Giraldo_2013}&3(2)&2(2)&L-Stable&yes&yes(1)&yes(2)&SDIRK\\
-\hline
-2e&\cite{Giraldo_2013}&3(2)&2(2)&L-Stable&yes&yes(1)&yes(2)&SDIRK\\
-\hline
-prssp2&PRS(3,3,2)
-\cite{Pareschi_2005}&3(3)&3(1)&L-Stable&yes&no&no&SSP, nonSDIRK\\
-\hline
-3&\cite{Kennedy_2003}&4(3)&3(2)&L-Stable&yes&yes(2)&yes(2)&SDIRK\\
-\hline
-bpr3&\cite{Boscarino_TR2011}&5(4)&3(2)&L-Stable&yes&no&no&SDIRK, DAE-1\\
-\hline
-ars443&\cite{Ascher_1997}&5(4)&3(1)&L-Stable&yes&no&no&SDIRK\\
-\hline
-4&\cite{Kennedy_2003}&6(5)&4(2)&L-Stable&yes&yes(3)&yes(2,3)&SDIRK\\
-\hline
-5&\cite{Kennedy_2003}&8(7)&5(2)&L-Stable&yes&yes(4)&yes(3)&SDIRK\\
-\hline
-\end{tabular}
 \end{table}
 %
 
 ROSW are linearized implicit Runge-Kutta methods known as Rosenbrock
 W-methods. They can accommodate inexact Jacobian matrices in their
 formulation. A series of methods are available in PETSc listed in
-Table \ref{tab:IMEX:RosW:PETSc}.
+Table \ref{tab_IMEX_RosW_PETSc}.
 
 %
 \begin{table}
 \centering
-\caption{\label{tab:IMEX:RosW:PETSc}List
+{\scriptsize
+\begin{tabular}{ccccccccccccccc}
+{\bf TS} &{\bf Reference}& {\bf Stages} &{\bf Order}&{\bf IM}     &{\bf SA}&{\bf Embed.}&{\bf Dense}&{\bf -W}&{\bf PDAE} &{\bf Remarks}\\
+Name &  &(IM)   &(stage)&Stab.&&      &Output&&&\\
+\hline
+theta1& classical&
+1(1)&1(1)&L-Stable&-&-&-&-&-&-\\
+theta2& classical&
+1(1)&2(2)&A-Stable&-&-&-&-&-&-\\
+2m             &Zoltan&
+2(2)&2(1)&L-Stable&No&Yes(1)&Yes(2)&Yes&No&SSP\\
+2p             &Zoltan&
+2(2)&2(1)&L-Stable&No&Yes(1)&Yes(2)&Yes&No&SSP\\
+ra3pw          &\cite{Rang_2005}&
+3(3)&3(1)&A-Stable&No&Yes&Yes(2)&No&Yes(3)&-\\
+ra34pw2        &\cite{Rang_2005}&
+4(4)&3(1)&L-Stable&Yes&Yes&Yes(3)&Yes&Yes(3)&-\\
+rodas3         &\cite{Sandu_1997}&
+4(4)&3(1)&L-Stable&Yes&Yes&No&No&Yes&-\\
+sandu3         &\cite{Sandu_1997}&
+3(3)&3(1)&L-Stable&Yes&Yes&Yes(2)&No&No&-\\
+assp3p3s1c &unpublished&
+3(2)&3(1)&A-Stable&No&Yes&Yes(2)&Yes&No&SSP\\
+lassp3p4s2c&unpublished&
+4(3)&3(1)&L-Stable&No&Yes&Yes(3)&Yes&No&SSP\\
+lassp3p4s2c&unpublished&
+4(3)&3(1)&L-Stable&No&Yes&Yes(3)&Yes&No&SSP\\
+ark3       &unpublished&
+4(3)&3(1)&L-Stable&No&Yes&Yes(3)&Yes&No&IMEX-RK\\
+\hline
+\end{tabular}}
+\caption{\label{tab_IMEX_RosW_PETSc}List
 of the currently available Rosenbrock W-schemes. For each method we listed the reference, the total number
   of stages and implicit stages, the scheme order and stage-order,
   the implicit stability properties, stiff accuracy (SA), the
   existence of an embedded scheme, dense output, the capacity to use
   inexact Jacobian matrices (-W), and high order integration of differential
   algebraic equations (PDAE).}
-{\scriptsize
-\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
-\hline
-{\bf TS} &{\bf Reference}& {\bf Stages} &{\bf Order}&{\bf IM}     &{\bf SA}&{\bf Embed.}&{\bf Dense}&{\bf -W}&{\bf PDAE} &{\bf Remarks}\\
-Name &  &(IM)   &(stage)&Stab.&&      &Output&&&\\
-\hline
-theta1& classical&
-1(1)&1(1)&L-Stable&-&-&-&-&-&-\\
-\hline
-theta2& classical&
-1(1)&2(2)&A-Stable&-&-&-&-&-&-\\
-\hline
-2m             &Zoltan&
-2(2)&2(1)&L-Stable&No&Yes(1)&Yes(2)&Yes&No&SSP\\
-\hline
-2p             &Zoltan&
-2(2)&2(1)&L-Stable&No&Yes(1)&Yes(2)&Yes&No&SSP\\
-\hline
-ra3pw          &\cite{Rang_2005}&
-3(3)&3(1)&A-Stable&No&Yes&Yes(2)&No&Yes(3)&-\\
-\hline
-ra34pw2        &\cite{Rang_2005}&
-4(4)&3(1)&L-Stable&Yes&Yes&Yes(3)&Yes&Yes(3)&-\\
-\hline
-rodas3         &\cite{Sandu_1997}&
-4(4)&3(1)&L-Stable&Yes&Yes&No&No&Yes&-\\
-\hline
-sandu3         &\cite{Sandu_1997}&
-3(3)&3(1)&L-Stable&Yes&Yes&Yes(2)&No&No&-\\
-\hline
-assp3p3s1c &unpublished&
-3(2)&3(1)&A-Stable&No&Yes&Yes(2)&Yes&No&SSP\\
-\hline
-lassp3p4s2c&unpublished&
-4(3)&3(1)&L-Stable&No&Yes&Yes(3)&Yes&No&SSP\\
-\hline
-lassp3p4s2c&unpublished&
-4(3)&3(1)&L-Stable&No&Yes&Yes(3)&Yes&No&SSP\\
-\hline
-ark3       &unpublished&
-4(3)&3(1)&L-Stable&No&Yes&Yes(3)&Yes&No&IMEX-RK\\
-\hline
-\end{tabular}}
 \end{table}
 %
 \subsubsection{GLEE methods} In this section, we describe explicit and
@@ -5139,7 +5091,7 @@ S_{error}[0]*\varepsilon + S_\text{error}[1]*y$, where $y_\text{aux}$ is the 2nd
 component of the working vector $Y$. 
 \end{itemize}
 %%%%%%%
-The methods can be described in two mathematically equivalentl forms:
+The methods can be described in two mathematically equivalent forms:
 propagate two components (``$y\tilde{y}$ form'') and propagating the
 solution and its estimated error (``$y\varepsilon$ form''). The
 two forms are not explicitly specified in \lstinline{TSGLEE}; rather, the specific values
@@ -5185,42 +5137,29 @@ y)_{n+1} - (\tilde{y} - y)_n]$.
 %
 \begin{table}
 \centering
-\caption{
-\label{tab:IMEX:GLEE:PETSc}
-List
-of the currently available GL schemes with global error estimation
-introduced in \cite{Constantinescu_TR2016b}.}
-\begin{tabular}{|c|c|c|c|c|c|c|}
-\hline
+\begin{tabular}{ccccccc}
 {\bf TS} &{\bf Reference}& {\bf IM/EX} &{\bf (p,r,s)}&{\bf $\gamma$}
 &{\bf Form}&{\bf Notes}\\
 \hline
-  \lstinline|TSGLEEi1|     &\trl{BE1}    &IM&1,3,2& 0.5&$y\varepsilon$&Based on backward Euler\\
-\hline
-  \lstinline|TSGLEE23|     &\trl{23}     &EX&2,3,2&   0&$y\varepsilon$&\\
-\hline
-  \lstinline|TSGLEE24|     &\trl{24}     &EX&2,4,2&   0&  $y\tilde{y}$&\\
-\hline
-  \lstinline|TSGLEE25I|    &\trl{25i}    &EX&2,5,2&   0&  $y\tilde{y}$&\\
-\hline
-  \lstinline|TSGLEE35|     &\trl{35}     &EX&3,5,2&	  0&  $y\tilde{y}$&\\
-\hline
-  \lstinline|TSGLEEEXRK2A| &\trl{exrk2a} &EX&2,6,2&0.25&$y\varepsilon$&\\
-\hline
-  \lstinline|TSGLEERK32G1| &\trl{rk32g1} &EX&3,8,2&	 0 &$y\varepsilon$&\\
-\hline
-  \lstinline|TSGLEERK285EX|  &\trl{rk285ex}&EX&2,9,2&0.25&$y\varepsilon$&\\
+\lstinline|TSGLEEi1|       &\trl{BE1}    &IM&1,3,2& 0.5&$y\varepsilon$&Based on backward Euler\\
+\lstinline|TSGLEE23|       &\trl{23}     &EX&2,3,2&   0&$y\varepsilon$&\\
+\lstinline|TSGLEE24|       &\trl{24}     &EX&2,4,2&   0&$y\tilde{y}$  &\\
+\lstinline|TSGLEE25I|      &\trl{25i}    &EX&2,5,2&   0&$y\tilde{y}$  &\\
+\lstinline|TSGLEE35|       &\trl{35}     &EX&3,5,2&   0&$y\tilde{y}$  &\\
+\lstinline|TSGLEEEXRK2A|   &\trl{exrk2a} &EX&2,6,2&0.25&$y\varepsilon$&\\
+\lstinline|TSGLEERK32G1|   &\trl{rk32g1} &EX&3,8,2&  0 &$y\varepsilon$&\\
+\lstinline|TSGLEERK285EX|  &\trl{rk285ex}&EX&2,9,2&0.25&$y\varepsilon$&\\
 \hline
 \end{tabular}
+\caption{
+\label{tab_IMEX_GLEE_PETSc}
+List
+of the currently available GL schemes with global error estimation
+introduced in \cite{Constantinescu_TR2016b}.}
 \end{table}
-%
 
 \section{Using fully implicit methods}
-Either provide the Jacobian of $F() $ (and $G()$ if $G()$ is provided) or use a \lstinline{DM} that provides a coloring so the Jacobian can be computed efficiently via finite differences.
-
-{\bf Theta methods}
-
-{\bf GL methods}
+To use a fully implicit method like \lstinline{TSTHETA} or \lstinline{TSGL}, either provide the Jacobian of $F() $ (and $G()$ if $G()$ is provided) or use a \lstinline{DM} that provides a coloring so the Jacobian can be computed efficiently via finite differences.
 
 \section{Using the Explicit Runge-Kutta timestepper with variable timesteps}
 The explicit Euler and Runge-Kutta methods require the ODE be in the form
@@ -5295,19 +5234,15 @@ Most of the time stepping methods avaialable in PETSc have an error
 estimation and error control mechanism. This mechanism is implemented by changing the
 step size in order to maintain user specified absolute and relative
 tolerances. The PETSc object responsible with error control is
-\lstinline{TSAdapt}. The available \lstinline{TSAdapt} types are listed in Table \ref{tab:adaptors}.
+\lstinline{TSAdapt}. The available \lstinline{TSAdapt} types are listed in Table \ref{tab_adaptors}.
 \begin{table}[tb]
 \centering
-  \caption{\texttt{TSAdapt}: available adaptors.\label{tab:adaptors}}
-\begin{tabular}{|l|c|p{5cm}|}
-\hline
+\begin{tabular}{lcp{5cm}}
 ID & Name & Notes\\
 \hline
 \lstinline|TSADAPTNONE| & \trl{none}    & no adaptivity\\
-\hline
 \lstinline|TSADAPTBASIC|& \trl{basic}   & the default
 adaptor \\
-\hline
 \lstinline|TSADAPTGLEE| & \trl{glee}   & extension of the basic adaptor to treat $\TolA$
 and $\TolR$ as separate criteria. It can also control global erorrs
 if the integrator (e.g., \lstinline|TSGLEE|) provides this information \\
@@ -5315,6 +5250,7 @@ if the integrator (e.g., \lstinline|TSGLEE|) provides this information \\
 %  \lstinline|TSADAPTCFL|  & \trl{cfl}&\\
 \hline
 \end{tabular}
+\caption{\texttt{TSAdapt}: available adaptors.\label{tab_adaptors}}
 \end{table}
 
 When using \lstinline{TSADAPTBASIC} (the default), the user typically provides a
@@ -5403,13 +5339,24 @@ The event monitoring functionality is only available with PETSc's implicit time-
 
 %\section{Debugging ODE solvers}
 
+\section{Using TChem from PETSc}
+\label{sec_tchem}
+
+\url{https://bitbucket.org/jedbrown/tchem} is a package originally developed at Sandia National Laboratory that can read in
+\url{https://en.wikipedia.org/wiki/CHEMKIN} data files and compute the right hand side function and its Jacobian for the ODE reaction system.
+To utilize the PETSc ODE solvers for these systems first install PETSc with the additional {\tt ./configure} 
+ option {\tt --download-tchem}. We currently provide two examples of its use; one for single cell reaction and one for an ``artificial''
+one dimensional problem with periodic boundary conditions and diffusion of all species. The examples self explanatory and are {\tt \$PETSC\_DIR/src/ts/examples/tutorials/extchem.c and exchemfield.c.
+
+
 \section{Using Sundials from PETSc}
 \label{sec_sundials}
 
-Sundials is a parallel ODE solver developed by Hindmarsh et al. at LLNL.
-The \lstinline{TS} library provides an interface to use the CVODE component of
-Sundials directly from PETSc.  (To configure PETSc to use Sundials, see
-the installation guide, \trl{docs/installation/index.htm}.)
+Sundials is a parallel ODE solver developed by Hindmarsh et al. at
+LLNL.  The \lstinline{TS} library provides an interface to use the
+CVODE component of Sundials directly from PETSc.  (To configure PETSc
+to use Sundials, see the installation
+guide, \trl{docs/installation/index.htm}.)
 
 To use the Sundials integrators, call
 \begin{lstlisting}
@@ -6142,27 +6089,12 @@ for(v=Start; v  < End; v++) {
 \label{ch_fortran}
 
 Most of the functionality of PETSc can be obtained by people who
-program purely in Fortran 77 or Fortran 90.
-The PETSc Fortran interface works with both F77 and F90 compilers.
-
-Since Fortran77 does not provide type checking of routine input/output
-parameters, we find that many errors encountered within PETSc Fortran
-programs result from accidentally using incorrect calling sequences.
-Such mistakes are immediately detected during compilation when using
-C/C++.  Thus, using a mixture of C/C++ and Fortran often works well
-for programmers who wish to employ Fortran for the core numerical
-routines within their applications.  In particular, one can
-effectively write PETSc driver routines in C/C++, thereby preserving
-flexibility within the program, and still use Fortran when desired for
-underlying numerical computations. With Fortran 90 compilers we now
-can provide some type checking from Fortran.
+program purely in Fortran.
 
 \section{C vs. Fortran Interfaces}
 
 Only a few differences exist between the C and Fortran PETSc
-interfaces, all of which are due to Fortran 77 syntax limitations.
-Since PETSc is primarily written in C, the FORTRAN 90
-dynamic allocation is not easily accessible.
+interfaces, are due to Fortran syntax differences.
 All Fortran routines have the same names as the corresponding C
 versions, and PETSc command line options are fully supported. The
 routine arguments follow the usual Fortran conventions; the user need
@@ -6179,33 +6111,20 @@ The Fortran include files for PETSc are located in the directory
 \trl{${PETSC_DIR}/include/petsc/finclude} and should be used via statements
 such as the following:
 \begin{lstlisting}
-#include "petsc/finclude/includefile.h"
+#include <petsc/finclude/petscXXX.h>
 \end{lstlisting}
-Since one must be very careful to include each file no more than once
-in a Fortran routine, application programmers must manually include
-each file needed for the various PETSc libraries within their
-program.  This approach differs from the PETSc C/C++ interface, where
-the user need only include the highest level file, for example, \trl{
-petscsnes.h}, which then automatically includes all of the required lower
-level files.  As shown in the examples of Section
-\ref{sec_fortran-examples}, in Fortran one must explicitly list {\em
-each} of the include files. One must employ
-the Fortran file suffix \trl{.F}
-rather than \trl{.f}.  This convention enables use of the CPP
-preprocessor, which allows the use of the \lstinline{#include} statements
-that define PETSc objects and variables. (Familiarity with the CPP
-preprocessor is not needed for writing PETSc Fortran code; one can simply
-begin by copying a PETSc Fortran example and its corresponding
-makefile.)
-
-For some of the Fortran 90 functionality of PETSc and type checking
-of PETSc function calls you can use
+for example,
 \begin{lstlisting}
-#include "petsc/finclude/includefile.h"
-#include "petsc/finclude/includefile.h90"
+#include <petsc/finclude/petscksp.h>
 \end{lstlisting}
-See the manual page UsingFortran for how you can use PETSc Fortran
-module files in your code.
+You must also use the appropriate Fortran module which is done with
+\begin{lstlisting}
+use petscXXX
+\end{lstlisting}
+for example,
+\begin{lstlisting}
+use petscksp
+\end{lstlisting}
 
 \subsection{Error Checking}
 \label{sec_fortran_errors}
@@ -6217,8 +6136,8 @@ code is set to be nonzero if an error has been detected; otherwise, it
 is zero.  For example, the Fortran and C variants of \lstinline{KSPSolve()} are
 given, respectively, below, where \lstinline{ierr} denotes the error variable:
 \begin{lstlisting}
-call KSPSolve(KSP ksp,Vec b,Vec x,PetscErrorCode ierr) ! Fortran
-ierr = KSPSolve(KSP ksp,Vec b,Vec x);                  /* C */
+call KSPSolve(ksp,b,x,ierr) ! Fortran
+ierr = KSPSolve(ksp,b,x);   /* C */
 \end{lstlisting}
 
 Fortran programmers
@@ -6240,70 +6159,6 @@ if (ierr .ne. 0) then
    return
 end if
 \end{lstlisting}
-
-The most common reason for crashing PETSc Fortran code is forgetting the
-final \lstinline{ierr} argument.
-
-\subsection{Array Arguments}
-\label{sec_fortranarrays}
-
-Since Fortran 77 does not allow arrays to be returned in routine
-arguments, all PETSc routines that return arrays, such as
-\lstinline{VecGetArray()}, \lstinline{MatDenseGetArray()},
-and \lstinline{ISGetIndices()},
-are defined slightly differently in Fortran than in C.
-Instead of returning the array itself, these routines
-accept as input a user-specified array of dimension one and return an
-integer index to the actual array used for data storage within PETSc.
-The Fortran interface for several routines is as follows:
-\begin{lstlisting}
-double precision xx_v(1), aa_v(1)
-PetscErrorCode ierr
-integer          ss_v(1), dd_v(1), nloc
-PetscOffset      ss_i, xx_i, aa_i, dd_i
-Vec x
-Mat A
-IS  s
-DM  d 
-
-call VecGetArray(x,xx_v,xx_i,ierr)
-call MatDenseGetArray(A,aa_v,aa_i,ierr)
-call ISGetIndices(s,ss_v,ss_i,ierr)
-\end{lstlisting}
-
-To access array elements directly, both the user-specified array and
-the integer index {\em must} then be used together.
-For example, the following Fortran program fragment illustrates
-directly setting the values of a vector array instead of using \lstinline{VecSetValues()}.  Note the (optional) use of the preprocessor
-\lstinline{#define} statement to enable array manipulations in the conventional
-Fortran manner.
-\begin{lstlisting}
-#define xx_a(ib)  xx_v(xx_i + (ib))
-
-   double precision xx_v(1)
-   PetscOffset      xx_i
-   PetscErrorCode ierr
-   integer          i, n
-   Vec              x
-   call VecGetArray(x,xx_v,xx_i,ierr)
-   call VecGetLocalSize(x,n,ierr)
-   do 10, i=1,n
-     xx_a(i) = 3*i + 1
-10 continue
-   call VecRestoreArray(x,xx_v,xx_i,ierr)
-\end{lstlisting}
-Figure \ref{fig_vec2-Fortran} contains an example of using \lstinline{VecGetArray()}
-within a Fortran routine.
-
-Since in this case the array is accessed directly from Fortran,
-indexing begins with 1, not 0 (unless the array is declared as \lstinline{xx_v(0:1)}).
-This is different from the use of \lstinline{VecSetValues()}
-where, indexing always starts with 0.
-
-{\em Note}: If using \lstinline{VecGetArray()}, \lstinline{MatDenseGetArray()}, or \lstinline{ISGetIndices()},
-from Fortran, the user {\em must not} compile the Fortran code with options
-to check for ``array entries out of bounds'' (e.g., on the IBM RS/6000 this
-is done with the \trl{-C} compiler option, so never use the \trl{-C} option with this).
 
 \subsection{Calling Fortran Routines from C (and C Routines from Fortran)}
 
@@ -6336,7 +6191,7 @@ dabsc_( &n,x,y); /* call the Fortran function */
 
 \subsection{Passing Null Pointers}
 
-In several PETSc C functions, one has the option of passing a 0 (null)
+In several PETSc C functions, one has the option of passing a NULL (0)
 argument (for example, the fifth argument of \lstinline{MatCreateSeqAIJ()}).
 From Fortran, users {\em must} pass \lstinline{PETSC_NULL_XXX} to indicate a
 null argument (where \lstinline{XXX} is \lstinline{INTEGER}, \lstinline{DOUBLE}, \lstinline{CHARACTER},
@@ -6348,8 +6203,8 @@ that the C convention of passing NULL (or 0) {\em cannot}
 be used.  For example, when no options prefix is desired in the
 routine \lstinline{PetscOptionsGetInt()}, one must use the following command in
 Fortran:
-\begin{lstlisting}
-call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-name',N,flg,ierr)
+\begin{lstlisting}[breakatwhitespace=false]
+call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,PETSC_NULL_CHARACTER,'-name',N,flg,ierr)
 \end{lstlisting}
 
 This Fortran requirement is inconsistent with C, where the
@@ -6359,7 +6214,7 @@ user can employ \lstinline{NULL} for all null arguments.
 \label{sec_fortvecd}
 
 The Fortran interface to \lstinline{VecDuplicateVecs()} differs slightly
-from the C/C++ variant because Fortran does not allow arrays to be
+from the C/C++ variant because Fortran does not allow conventional arrays to be
 returned in routine arguments.  To create \lstinline{n} vectors of the same
 format as an existing vector, the user must declare a vector array,
 \lstinline{v_new} of size \lstinline{n}.  Then, after \lstinline{VecDuplicateVecs()} has
@@ -6369,8 +6224,8 @@ destroy them by calling \lstinline{VecDestroyVecs()}.
 For example, the following code fragment
 duplicates \lstinline{v_old} to form two new vectors, \lstinline{v_new(1)} and \lstinline{v_new(2)}.
 \begin{lstlisting}
-Vec     v_old, v_new(2)
-integer ierr
+Vec          v_old, v_new(2)
+PetscInt     ierr
 PetscScalar  alpha
 ....
 call VecDuplicateVecs(v_old,2,v_new,ierr)
@@ -6405,11 +6260,11 @@ Figure \ref{fig_make1} shows a sample makefile that can be used for
 PETSc programs.  In this makefile, one can compile and run a debugging version
 of the Fortran program \trl{ex3.F} with the actions \trl{make}  \trl{ex3} and
 \trl{make} \trl{runex3}, respectively. The compilation command is restated below:
-\begin{lstlisting}
+\begin{makelisting}
 ex3: ex3.o 
        -${FLINKER}} -o ex3 ex3.o ${PETSC_LIB}
         ${RM} ex3.o
-\end{lstlisting}
+\end{makelisting}
 
 \subsection{Routines with Different Fortran Interfaces}
 \label{sec_fortran_exceptions}
@@ -6436,9 +6291,7 @@ PetscViewerStringOpen(), PetscViewerStringSPrintf()
 PetscOptionsGetStringArray()
 \end{lstlisting}
 
-\subsection{Fortran90}
-
-PETSc includes limited support for direct use of Fortran90 pointers.
+PETSc includes some support for direct use of Fortran90 pointers.
 Current routines include:
 \begin{lstlisting}
 VecGetArrayF90(), VecRestoreArrayF90()
@@ -6449,7 +6302,8 @@ MatDenseGetArrayF90(), MatDenseRestoreArrayF90()
 ISGetIndicesF90(), ISRestoreIndicesF90()
 \end{lstlisting}
 See the manual pages for details and pointers to example programs.  To
-use the routines \lstinline{VecGetArrayF90()}, \lstinline{VecRestoreArrayF90()}, \lstinline{VecGetArrayReadF90()}, \lstinline{VecRestoreArrayReadF90()},
+use the
+routines \lstinline{VecGetArrayF90()}, \lstinline{VecRestoreArrayF90()}, \lstinline{VecGetArrayReadF90()}, \lstinline{VecRestoreArrayReadF90()},
 \lstinline{VecDuplicateVecsF90()}, and \lstinline{VecDestroyVecsF90()}, one must
 use the Fortran90 vector include file,
 \begin{lstlisting}
@@ -6458,7 +6312,7 @@ use the Fortran90 vector include file,
 Analogous include files for other libraries are \trl{petscdm.h90},
 \trl{petscmat.h90}, and \trl{petscis.h90}.
 
-\section{Sample Fortran77 Programs}
+\section{Sample Fortran Programs}
 \label{sec_fortran-examples}
 
 Sample programs that illustrate the PETSc interface for Fortran
@@ -6496,13 +6350,77 @@ since PETSc usage within the two languages differs only slightly.
 \label{fig_SNES-Fortran}
 \end{figure}
 
+\subsection{Array Arguments}
+\label{sec_fortranarrays}
+
+This material is no longer relevent since one should use \lstinline{VecGetArrayF90()} and the other routines that utilize Fortran pointers, instead of the code below, but it is included for historical reasons and because many of the Fortran examples still utilize the old approach.
+
+Since Fortran 77 does not allow arrays to be returned in routine
+arguments, all PETSc routines that return arrays, such as
+\lstinline{VecGetArray()}, \lstinline{MatDenseGetArray()},
+and \lstinline{ISGetIndices()},
+are defined slightly differently in Fortran than in C.
+Instead of returning the array itself, these routines
+accept as input a user-specified array of dimension one and return an
+integer index to the actual array used for data storage within PETSc.
+The Fortran interface for several routines is as follows:
+\begin{lstlisting}
+PetscScalar    xx_v(1), aa_v(1)
+PetscErrorCode ierr
+PetscInt       ss_v(1), dd_v(1), nloc
+PetscOffset    ss_i, xx_i, aa_i, dd_i
+Vec            x
+Mat            A
+IS             s
+DM             d 
+
+call VecGetArray(x,xx_v,xx_i,ierr)
+call MatDenseGetArray(A,aa_v,aa_i,ierr)
+call ISGetIndices(s,ss_v,ss_i,ierr)
+\end{lstlisting}
+
+To access array elements directly, both the user-specified array and
+the integer index {\em must} then be used together.
+For example, the following Fortran program fragment illustrates
+directly setting the values of a vector array instead of using \lstinline{VecSetValues()}.  Note the (optional) use of the preprocessor
+\lstinline{#define} statement to enable array manipulations in the conventional
+Fortran manner.
+\begin{lstlisting}
+#define xx_a(ib)  xx_v(xx_i + (ib))
+
+   double precision xx_v(1)
+   PetscOffset      xx_i
+   PetscErrorCode   ierr
+   PetscInt         i, n
+   Vec              x
+   call VecGetArray(x,xx_v,xx_i,ierr)
+   call VecGetLocalSize(x,n,ierr)
+   do 10, i=1,n
+     xx_a(i) = 3*i + 1
+10 continue
+   call VecRestoreArray(x,xx_v,xx_i,ierr)
+\end{lstlisting}
+Figure \ref{fig_vec2-Fortran} contains an example of using \lstinline{VecGetArray()}
+within a Fortran routine.
+
+Since in this case the array is accessed directly from Fortran,
+indexing begins with 1, not 0 (unless the array is declared as \lstinline{xx_v(0:1)}).
+This is different from the use of \lstinline{VecSetValues()}
+where, indexing always starts with 0.
+
+{\em Note}: If using \lstinline{VecGetArray()}, \lstinline{MatDenseGetArray()}, or \lstinline{ISGetIndices()},
+from Fortran, the user {\em must not} compile the Fortran code with options
+to check for ``array entries out of bounds'' (e.g., on the IBM RS/6000 this
+is done with the \trl{-C} compiler option, so never use the \trl{-C} option with this).
+
+
 %------------------------------------------------------------------
 \cleardoublepage
 \chapter{Using MATLAB with PETSc}
 \label{ch_matlab}\sindex{MATLAB}
 
 There are three basic ways to use MATLAB with PETSc: 
-\begin{enumerate}
+\begin{tightenumerate}
   \item (Section \ref{sec_matlabdump}) dumping files to be read into MATLAB,
   \item (Section \ref{sec_matlabsocket}) automatically sending data from a running PETSc program
 to a MATLAB process where you may interactively type MATLAB commands (or run
@@ -6510,13 +6428,16 @@ scripts), and
 \item (Section \ref{sec_matlabengine}) automatically sending data back and forth between PETSc and
 MATLAB where MATLAB commands are issued not interactively but from a script or
 the PETSc program (this uses the MATLAB Engine).
-\end{enumerate}
+\end{tightenumerate}
 
 \section{Dumping Data for MATLAB}
 \label{sec_matlabdump}
-One can dump PETSc matrices and vectors to the screen (and thus save in a file via
-\trl{> filename.m}) in an ASCII format that MATLAB can read in directly. This is done with the
-command line options \trl{-vec_view ::ascii_matlab} or \trl{-mat_view ::ascii_matlab}. This causes the PETSc program
+\subsection{Dumping ASCII MATLAB data}
+One can dump PETSc matrices and vectors to the screen in an ASCII format that MATLAB can read in directly. This is done with the
+command line options \trl{-vec_view ::ascii_matlab} or \trl{-mat_view ::ascii_matlab}. 
+To write a a file, use \trl{-vec_view :filename.m:ascii_matlab} or \trl{-mat_view :filename.m:ascii_matlab}.
+
+This causes the PETSc program
 to print the vectors and matrices every time \lstinline{VecAssemblyEnd()} or \lstinline{MatAssemblyEnd()} are called. \findex{-vec_view ::ascii_matlab} \findex{-mat_view ::ascii_matlab} 
 To provide finer control
 over when and what vectors and matrices are dumped one can use the \lstinline{VecView()} and
@@ -6534,33 +6455,51 @@ PetscObjectSetName((PetscObject)A,"name");
 \end{lstlisting}\sindex{PetscObjectSetName()}
 If no name is specified, the object is given a default name using \lstinline{PetscObjectName()}.
 
-One can also read PETSc binary files directly into MATLAB via the scripts available in \lstinline{$PETSC_DIR/share/matlab}.
-This requires less disk space.
+\subsection{Dumping Binary Data for MATLAB}
+One can also read PETSc binary files (see Section \ref{sec_viewers}) directly into MATLAB via the scripts available in \lstinline{$PETSC_DIR/share/matlab}.
+This requires less disk space and is recommended for all but the smallest data sizes.
+One can also use
+\begin{lstlisting}
+PetscViewerPushFormat(viewer,PETSC_VIEWER_BINARY_MATLAB} 
+\end{lstlisting}
+to dump both a PETSc binary file and a corresponding \trl{.info} file which 
+\lstinline{PetscReadBinaryMatlab.m} will use to format the binary file in more complex cases, such as using a \lstinline{DMDA}. 
+For an example, see \href{http://www.mcs.anl.gov/petsc/petsc-current/src/dm/examples/tutorials/ex7.c.html}{\trl{${PETSC_DIR}/src/dm/examples/tutorials/ex7.c}}.
+In MATLAB (R2015b), one may then generate a useful structure. For example:
+\begin{outputlisting}[\normalsize\ttfamily]
+setenv('PETSC_DIR','~/petsc');
+setenv('PETSC_ARCH','arch-darwin-double-debug');
+addpath('~/petsc/share/petsc/matlab');
+gridData=PetscReadBinaryMatlab('output_file');
+\end{outputlisting}
 
-\section{Sending Data to Interactive Running MATLAB Session}
+\section{Sending Data to an Interactive MATLAB Session}
 \label{sec_matlabsocket}
 
 One creates a viewer to MATLAB via
 \begin{lstlisting}
 PetscViewerSocketOpen(MPI_Comm,char *machine,int port,PetscViewer *v);
 \end{lstlisting}
-(port is usually set to \lstinline{PETSC_DEFAULT}; use \lstinline{NULL} for the machine if the
+(\lstinline{port} is usually set to \lstinline{PETSC_DEFAULT}; use \lstinline{NULL} for the machine if the
 MATLAB interactive session is running on the same machine as the PETSc program)
 and then sends matrices or vectors via
 \begin{lstlisting}
 VecView(Vec A,v);
 MatView(Mat B,v);
 \end{lstlisting}
-One can also send arrays or integer arrays via \lstinline{PetscIntView()}, \lstinline{PetscRealView()} and \break\lstinline{PetscScalarView()}.
+See Section \ref{sec_viewers} for more on PETSc viewers.
 One may start the MATLAB program manually or use the PETSc command
-\break \lstinline{PetscStartMATLAB(MPI_Comm,char *machine,char *script,FILE **fp)}; where machine and script may be \lstinline{NULL}.
-
-To receive the objects in MATLAB you must first make sure that \trl{${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/matlab}
-is in your MATLAB path. Use \lstinline{p = sopen;} (or \lstinline{p = sopen(portnum)} if you provided a port number in
-your call to \lstinline{PetscViewerSocketOpen()}), then \lstinline{a = PetscBinaryRead(p);} returns the object you have passed from PETSc.
-\lstinline{PetscBinaryRead()} may be called any number of times. Each call should correspond on the PETSc side with
-viewing a single vector or matrix. You many call \lstinline{sclose()} to close the connection from MATLAB.
+\lstinline{PetscStartMatlab(MPI_Comm,char *machine,char *script,FILE **fp)}; where \lstinline{machine} and \lstinline{script} may be \lstinline{NULL}.
 It is also possible to start your PETSc program from MATLAB via \lstinline{launch()}.
+
+To receive the objects in MATLAB, make sure that \trl{${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/matlab} and \trl{${PETSC_DIR}/share/petsc/matlab}
+are in the MATLAB path. Use \break\lstinline{p = PetscOpenSocket();} (or \lstinline{p = PetscOpenSocket(portnum)} if you provided a port number in
+your call to \lstinline{PetscViewerSocketOpen()}), and then \lstinline{a = PetscBinaryRead(p);} returns the object passed from PETSc.
+\lstinline{PetscBinaryRead()} may be called any number of times. Each call should correspond on the PETSc side with
+viewing a single vector or matrix. \lstinline{close()} closes the connection from MATLAB.
+On the PETSc side, one should destroy the viewer object with \lstinline{PetscViewerDestroy()}. 
+
+For an example, which includes sending data back to PETSc, see \href{http://www.mcs.anl.gov/petsc/petsc-current/src/vec/vec/examples/tutorials/ex42.c.html}{\trl{${PETSC_DIR}/src/vec/vec/examples/tutorials/ex42.c}} and the associated \trl{.m} file.
 
 \section{Using the MATLAB Compute Engine}
 \label{sec_matlabengine}
@@ -6577,9 +6516,9 @@ PetscMatlabEnginePut(PetscMatlabEngine e,PetscObject obj);
 One can get objects
 via
 \begin{lstlisting}
-PetscMatlabEngineGet(PetscMatlabEngine e,PetscObject obj);.
+PetscMatlabEngineGet(PetscMatlabEngine e,PetscObject obj); 
 \end{lstlisting}
-Similarly one can send arrays via
+Similarly, one can send arrays via
 \begin{lstlisting}
 PetscMatlabEnginePutArray(PetscMatlabEngine e,int m,int n,PetscScalar *array,char *name);
 \end{lstlisting}
@@ -6588,7 +6527,7 @@ and get them back via
 PetscMatlabEngineGetArray(PetscMatlabEngine e,int m,int n,PetscScalar *array,char *name);
 \end{lstlisting}
 One cannot use MATLAB
-interactively in this mode but you can send MATLAB commands via
+interactively in this mode but one can send MATLAB commands via
 \begin{lstlisting}
 PetscMatlabEngineEvaluate(PetscMatlabEngine,"format",...);
 \end{lstlisting}
@@ -6597,7 +6536,7 @@ For example,
 \begin{lstlisting}
 PetscMatlabEngineEvaluate(PetscMatlabEngine,"x = \%g *y + z;",avalue);
 \end{lstlisting}
-The name of each PETSc variable passed to Matlab may be set with
+The name of each PETSc variable passed to MATLAB may be set with
 \begin{lstlisting}
 PetscObjectSetName((PetscObject)A,"name");
 \end{lstlisting}
@@ -6656,7 +6595,7 @@ activated at runtime.  The profiling options include the following:
  As discussed in Section~\ref{sec_mpelogs},
 additional profiling can be done with MPE.
 
-\subsection{Interpreting {\tt -log\_summary} Output: The Basics}
+\subsection{Interpreting {\tt -log\_view} Output: The Basics}
 \label{sec_ploginfo}
 
 As shown in Figure~\ref{fig_exprof} (in Part I), the option
@@ -6675,7 +6614,7 @@ For the purpose of PETSc floating point operation counting, we define
 one {\em flop} as one operation of any of the following types:
 multiplication, division, addition, or subtraction.  For example, one
 \lstinline{VecAXPY()} operation, which computes $y = \alpha x + y$ for
-vectors of length $N$, requires $2N$ flops (consisting of $N$
+vectors of length $N$, requires $2N$ flop (consisting of $N$
 additions and $N$ multiplications).  Bear in mind that flop rates
 present only a limited view of performance, since memory loads and stores are
 the real performance barrier.
@@ -6684,7 +6623,7 @@ For simplicity, the remainder of this discussion focuses on
 interpreting profile data for the \lstinline{KSP} library,
 which provides the linear solvers at the heart of the
 PETSc package.  Recall the hierarchical organization of the PETSc
-library, as shown in Figure~\ref{fig_1}.  Each \lstinline{KSP} solver
+library, as shown in Figure~\ref{fig_library}.  Each \lstinline{KSP} solver
 is composed of a \lstinline{PC} (preconditioner) and a \lstinline{KSP} (Krylov
 subspace) part, which are in turn built on top of the \lstinline{Mat}
 (matrix) and \lstinline{Vec} (vector) modules.  Thus, operations in the
@@ -6751,7 +6690,7 @@ implementation (e.g., which operations are performed when using GMRES
 and ILU, as described above), so that interpreting the \trl{-log_view}
 data should be relatively straightforward.
 
-\subsection{Interpreting {\tt -log\_summary} Output: Parallel Performance}
+\subsection{Interpreting {\tt -log\_view} Output: Parallel Performance}
 \label{sec_parperformance}
 
 We next discuss performance summaries for parallel programs,
@@ -6793,13 +6732,13 @@ ex10 on a rs6000 named p039 with 4 processors, by mcinnes Wed Jul 24 16:30:22 19
                          Max         Min        Avg        Total
 Time (sec):           3.289e+01      1.0   3.288e+01
 Objects:              1.130e+02      1.0   1.130e+02
-Flops:                2.195e+08      1.0   2.187e+08   8.749e+08
-Flops/sec:            6.673e+06      1.0               2.660e+07
+Flop:                 2.195e+08      1.0   2.187e+08   8.749e+08
+Flop/sec:             6.673e+06      1.0               2.660e+07
 MPI Messages:         2.205e+02      1.4   1.928e+02   7.710e+02
 MPI Message Lengths:  7.862e+06      2.5   5.098e+06   2.039e+07
 MPI Reductions:       1.850e+02      1.0
 
-Summary of Stages:  ---- Time ------  ----- Flops -------  -- Messages -- -- Message-lengths -- Reductions -
+Summary of Stages:  ---- Time ------  ----- Flop  -------  -- Messages -- -- Message-lengths -- Reductions -
                       Avg      %Total    Avg     %Total   counts   %Total    avg      %Total   counts  %Total
  0:  Load System 0: 1.191e+00    3.6% 3.980e+06   0.5%  3.80e+01    4.9%  6.102e+04   0.3%  1.80e+01   9.7%
  1:    KSPSetup 0:  6.328e-01    2.5% 1.479e+04   0.0%  0.00e+00    0.0%  0.000e+00   0.0%  0.00e+00   0.0%
@@ -6837,10 +6776,10 @@ processes, as well as the ratio of maximum to minimum times and flop
 rates for all processes.  A ratio of approximately 1 indicates that
 computations within a given phase are well balanced among the
 processes; as the ratio increases, the balance becomes increasingly
-poor.  Also, the total computational rate (in units of MFlops/sec) is
+poor.  Also, the total computational rate (in units of MFlop/sec) is
 given for each phase in the final column of the phase summary table.
 \[
-   {\rm Total\: Mflop/sec} \:=\: 10^{-6} * ({\rm sum\; of\; flops\; over\; all\; processors})/({\rm max\; time\; over\; all\; processors})
+   {\rm Total\: Mflop/sec} \:=\: 10^{-6} * ({\rm sum\; of\; flop\; over\; all\; processors})/({\rm max\; time\; over\; all\; processors})
 \]
 {\em Note}: Total computational rates $<$ 1 MFlop are listed as 0 in this column
 of the phase summary table.
@@ -6857,19 +6796,19 @@ mpiexec -n 4 ./ex10 -f0 medium -f1 arco6 -ksp_gmres_classicalgramschmidt -log_vi
 
 Phase summary info:
    Count: number of times phase was executed
-   Time and Flops/sec: Max - maximum over all processors
+   Time and Flop/sec: Max - maximum over all processors
                        Ratio - ratio of maximum to minimum over all processors
    Mess: number of messages sent
    Avg. len: average message length
    Reduct: number of global reductions
    Global: entire computation
    Stage: optional user-defined stages of a computation. Set stages with PLogStagePush() and PLogStagePop().
-      %T - percent time in this phase         %F - percent flops in this phase
+      %T - percent time in this phase         %F - percent flop in this phase
       %M - percent messages in this phase     %L - percent message lengths in this phase
       %R - percent reductions in this phase
-   Total Mflop/s: 10^6 * (sum of flops over all processors)/(max time over all processors)
+   Total Mflop/s: 10^6 * (sum of flop over all processors)/(max time over all processors)
 ------------------------------------------------------------------------------------------------------------------------
-Phase              Count      Time (sec)       Flops/sec                          --- Global ---  --- Stage ---   Total
+Phase              Count      Time (sec)       Flop/sec                           --- Global ---  --- Stage ---   Total
                             Max    Ratio      Max    Ratio  Mess  Avg len  Reduct %T %F %M %L %R  %T %F %M %L %R Mflop/s
 ------------------------------------------------------------------------------------------------------------------------
 ...
@@ -6919,7 +6858,7 @@ operations, as given by the routines \lstinline{VecScatterBegin()} and \lstinlin
 %matrix-vector products are given in \cite{petsc-mpi-paper}.)
 
 The final data presented are the percentages of the various statistics
-(time (\trl{%T}), flops/sec (\trl{%F}), messages(\trl{%M}), average message length (\trl{%L}),
+(time (\trl{%T}), flop/sec (\trl{%F}), messages(\trl{%M}), average message length (\trl{%L}),
 and reductions (\trl{%R})) for each event relative to the total computation and to any
 user-defined stages (discussed in Section~\ref{sec_profstages}).
 These statistics can aid in optimizing performance, since they indicate the sections of code that
@@ -6938,32 +6877,10 @@ The option \findex{-log_mpe}
 -log_mpe [logfile]
 \end{lstlisting}
 creates a logfile of events appropriate for viewing with {\em Jumpshot}.
-The user can either use the default logging file, \trl{mpe.log}, or
-specify an optional name via \trl{logfile}.
-
-
-By default, not all PETSc events are logged with MPE. For example,
-since \lstinline{MatSetValues()} may be called thousands of times in a program,
-by default its calls are not logged with MPE. To activate MPE logging of
-a particular event, one should use the command
-\begin{lstlisting}
-PetscLogEventMPEActivate(int event);
-\end{lstlisting}
-To deactivate logging of an event for MPE, one should use
-\begin{lstlisting}
-PetscLogEventMPEDeactivate(int event);
-\end{lstlisting}
-The \lstinline{event} may be either a predefined PETSc event (as listed in
-the file \trl{${PETSC_DIR}/include/petsclog.h}) or one obtained with
-\lstinline{PetscLogEventRegister()} (as described in
-Section~\ref{sec_profileuser}).  These routines may be called as many
-times as desired in an application program, so that one could restrict
-MPE event logging only to certain code segments.
-
-To see what events are logged by default, the user can view the source code; see
-the files \trl{src/plot/src/plogmpe.c} and \trl{include/petsclog.h}.  A simple program and
-GUI interface to see the events that are predefined and their definition is
-being developed.
+The user can either use the default logging file or
+specify a name via \trl{logfile}.
+Events can be deactivated as described in Section 
+\ref{sec_deactivate}.
 
 The user can also log MPI events.  To do this, simply consider the
 PETSc application as any MPI application, and follow the MPI
@@ -6982,22 +6899,25 @@ The basic steps involved in logging a
 user-defined portion of code, called an {\em event}, are shown in the
 code fragment below:
 \begin{lstlisting}
-#include <petsclog.h>
-int USER_EVENT;
-PetscLogEventRegister("User event name",0, &USER_EVENT);
+PetscLogEvent  USER_EVENT;
+PetscClassId   classid;
+PetscLogDouble user_event_flops;
+
+PetscClassIdRegister("class name",&classid);
+PetscLogEventRegister("User event name",classid,&USER_EVENT);
 PetscLogEventBegin(USER_EVENT,0,0,0,0);
-/* application code segment to monitor */
-PetscLogFlops(number of flops for this code segment);
+/* code segment to monitor */
+PetscLogFlops(user_event_flops);
 PetscLogEventEnd(USER_EVENT,0,0,0,0);
 \end{lstlisting}
 
 One must register the event by calling \lstinline{PetscLogEventRegister()}, which assigns a unique integer to identify the
 event for profiling purposes:
 \begin{lstlisting}
-PetscLogEventRegister(const char string[],PetscLogEvent *e);
+PetscLogEventRegister(const char string[],PetscClassId classid,PetscLogEvent *e);
 \end{lstlisting}
 Here \lstinline{string} is a user-defined event name, and \lstinline{color} is an
-optional user-defined event color (for use with {\em Jumpshot} logging);
+optional user-defined event color (for use with {\em Jumpshot} logging; see Section \ref{sec_mpelog});\findex{-log_mpe}
 one should see the manual page for details.  The argument returned in \lstinline{e} should then
 be passed to the \lstinline{PetscLogEventBegin()} and \lstinline{PetscLogEventEnd()}
 routines.
@@ -7017,7 +6937,7 @@ specified event.
 The user can log the number of floating-point operations
 for this segment of code by calling
 \begin{lstlisting}
-PetscLogFlops(number of flops for this code segment);
+PetscLogFlops(number of flop for this code segment);
 \end{lstlisting}
 between the calls to \lstinline{PetscLogEventBegin()} and \lstinline{PetscLogEventEnd()}.
 This value will automatically be added to the global flop counter for the
@@ -7115,9 +7035,6 @@ the memory limitations of Tcl/Tk.  Thus, one should generally use
 \trl{-log_all} when running programs with a relatively small
 number of events or when disabling some of the events that occur many
 times in a code (e.g., \lstinline{VecSetValues()}, \lstinline{MatSetValues()}).
-
-Section~\ref{sec_mpelogs} gives information on the restriction of events
-in MPE logging.
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -7570,8 +7487,8 @@ spaces.  Note that the option values cannot
 have intervening spaces either, and tab characters cannot be used
 between the option names and values.
 The user can employ any naming convention.  For uniformity throughout
-PETSc, we employ the format \trl{-package_option} (for instance,
-\trl{-ksp_type} and \trl{-mat_view ::info}).
+PETSc, we employ the format \trl{-[prefix_]package_option} (for instance,
+\trl{-ksp_type}, \trl{-mat_view ::info}, or \trl{-mg_levels_ksp_type}).
 
 Users can specify an alias for any option name (to avoid typing the
 sometimes lengthy default name) by adding an alias to the
@@ -7586,6 +7503,16 @@ alias -kspt -ksp_type
 alias -sd -start_in_debugger
 \end{lstlisting}
 Comments can be placed in the \trl{.petscrc} file by using \lstinline{#} in the first column of a line.
+
+\subsection{Options Prefixes}
+Options prefixes allow specific objects to be controlled from the options database.
+For instance, \lstinline{PCMG} gives prefixes to its nested \lstinline{KSP} objects;
+one may control the coarse grid solver by adding the \trl{mg_coarse} prefix, for example 
+\trl{-mg_coarse_ksp_type preonly}.
+One may also use \break \lstinline{KSPSetOptionsPrefix()},\lstinline{DMSetOptionsPrefix()}
+, \lstinline{SNESSetOptionsPrefix()}, \lstinline{TSSetOptionsPrefix()}, and similar 
+functions to assign custom prefixes, useful for applications with multiple or nested 
+solvers.
 
 \subsection{User-Defined PetscOptions}
 
@@ -7641,21 +7568,21 @@ XXXView(XXX obj,PetscViewer viewer);
 \end{lstlisting}
 Here \lstinline{obj} is any PETSc object of type
 \lstinline{XXX},  where \lstinline{XXX}
-is \lstinline{Ma}t, \lstinline{Vec}, \lstinline{SNES}, etc. There are several
-predefined viewers:
+is \lstinline{Mat}, \lstinline{Vec}, \lstinline{SNES}, etc. There are several
+predefined viewers.
 \begin{itemize}
-\item Passing in a zero for the viewer causes the object to be printed
-      to the screen; this is most useful when viewing an object in
-      a debugger.
+  \item Passing in a zero (\lstinline{0}) for the viewer causes the object to be printed
+      to the screen; this is useful when viewing an object in
+      a debugger but should be avoided in source code.
     \item \lstinline{PETSC_VIEWER_STDOUT_SELF} and
       \lstinline{PETSC_VIEWER_STDOUT_WORLD}
-      cause the object to be printed to the screen.
-
+      causes the object to be printed to the screen.
     \item \lstinline{PETSC_VIEWER_DRAW_SELF}
       \lstinline{PETSC_VIEWER_DRAW_WORLD} causes the
-      object to be drawn in a default X window.
+      object to be drawn in a default X window. 
 \item Passing in a viewer obtained by
       \lstinline{PetscViewerDrawOpen()} causes the object to be displayed graphically.
+      See Section \ref{sec_graphics} for more on PETSc's graphics support.
 \item To save an object to a file in ASCII format, the user creates
       the viewer object with the command
       \lstinline{PetscViewerASCIIOpen(MPI_Comm comm, char* file, PetscViewer *viewer)}.
@@ -7665,20 +7592,12 @@ predefined viewers:
       \lstinline{PETSC_VIEWER_STDOUT_WORLD} (for a parallel communicator).
 \item To save an object to a file in binary format, the user creates
       the viewer object with the command
-      \lstinline{PetscViewerBinaryOpen(MPI_Comm) comm,char* file,PetscViewerBinaryType type, PetscViewer *viewer)}. Details of binary
+      \lstinline{PetscViewerBinaryOpen(MPI_Comm comm,char* file,PetscViewerBinaryType type, PetscViewer *viewer)}. Details of binary
       I/O are discussed below.
 \item Vector and matrix objects can be passed to a running MATLAB process
       with a viewer created by
-\begin{lstlisting}
-PetscViewerSocketOpen(MPI_Comm comm,char *machine,int port,PetscViewer *viewer).
-\end{lstlisting}
-      On the MATLAB side, one must first run \lstinline{v = sreader(int port)}
-      and then \break\lstinline{A = PetscBinaryRead(v)} to obtain the matrix or vector. Once all
-      objects have been received, the port can be closed from the MATLAB end
-      with \lstinline{close(v)}. On the PETSc side, one should destroy
-      the viewer object with  \break\lstinline{PetscViewerDestroy()}. 
-      The corresponding MATLAB \trl{mex}
-      files are located in \trl{${PETSC_DIR}/src/sys/classes/viewer/impls/socket/matlab}.
+    \lstinline{PetscViewerSocketOpen(MPI_Comm comm,char *machine,int port,PetscViewer *viewer)}.
+    For more, see Section \ref{sec_matlabsocket}.
 \end{itemize}
 
 The user can control the format of ASCII printed objects with viewers
@@ -7688,8 +7607,8 @@ PetscViewerPushFormat(PetscViewer viewer,PetscViewerFormat format);
 \end{lstlisting}
 \findex{PETSC_VIEWER_DEFAULT} \findex{PETSC_VIEWER_ASCII_MATLAB}
 \findex{PETSC_VIEWER_ASCII_IMPL}
-Possible formats include
-\lstinline{PETSC_VIEWER_DEFAULT}, \break\lstinline{PETSC_VIEWER_ASCII_MATLAB}, and
+Formats include
+\lstinline{PETSC_VIEWER_DEFAULT}, \lstinline{PETSC_VIEWER_ASCII_MATLAB}, and
 \lstinline{PETSC_VIEWER_ASCII_IMPL}.  The implementation-specific format,
 \lstinline{PETSC_VIEWER_ASCII_IMPL}, displays the object in the most natural way
 for a particular implementation.
@@ -7730,13 +7649,52 @@ read into a block oriented data structure (for example,
 \lstinline{s1,s2,s3,...} indicates
 which (block) diagonals in the matrix have nonzero values.
 
+\subsection{Viewing From Options}
+\label{sec_viewfromoptions}
+Command-line options provide a particularly convenient way to view PETSc objects.
+All options of the form \trl{-xxx_view} accept colon(\trl{:})-separated compound arguments which
+specify a viewer type, format, and/or destination (e.g. file name or socket) if appropriate.
+For example, to quickly export a binary file containing a matrix, one may use
+\trl{-mat_view binary:matrix.out}, 
+or to output to a MATLAB-compatible ASCII file, one may use
+\trl{-mat_view ascii:matrix.m:ascii_matlab}.
+See the \lstinline{PetscOptionsGetViewer()} man page for full details,
+as well as the \lstinline{XXXViewFromOptions()} man pages (for instance, \lstinline{PetscDrawSetFromOptions()})
+for many other convenient command-line options.
+
+\section{Using SAWs with PETSc} \label{sec_saws}
+\sindex{saws}
+The Scientific Application Web server, 
+SAWs\footnote{\href{https://bitbucket.org/saws/saws/wiki/Home}{\trl{https://bitbucket.org/saws/saws/wiki/Home}}},
+allows one to monitor running PETSc applications from a browser.
+\trl{./configure} PETSc with the additional option \trl{--download-saws}. 
+Options to use SAWs include
+\begin{tightitemize}
+  \item\trl{-saws_options} - allows setting values in the PETSc options database via the browser (works only on one process).
+  \item\trl{-stack_view saws} - allows monitoring the current stack frame that PETSc is in; refresh to see the new location.
+  \item\trl{-snes_monitor_saws, -ksp_monitor_saws} - monitor the solvers' iterations from the web browser.
+\end{tightitemize}
+For each of these you need to point your browser to \trl{http://hostname:8080}, for example \trl{http://localhost:8080}.
+Options that control behavior of SAWs include
+\begin{tightitemize}
+  \item\trl{-saws_log filename} - log all SAWs actions in a file.
+  \item\trl{-saws_https certfile} - use HTTPS instead of HTTP with a certificate.
+  \item\trl{-saws_port_auto_select} - have SAWs pick a port number instead of using 8080.
+  \item\trl{-saws_port port} - use \trl{port} instead of 8080.
+  \item\trl{-saws_root rootdirectory} - local directory to which the SAWs browser will have read access.
+  \item\trl{-saws_local} - use the local file system to obtain the SAWS javascript files (they much be in \trl{rootdirectory/js}).
+\end{tightitemize}
+Also see the manual pages for \lstinline{PetscSAWsBlock}, \lstinline{PetscObjectSAWsTakeAccess},
+\lstinline{PetscObjectSAWsGrantAccess}, \lstinline{PetscObjectSAWsSetBlock}, \lstinline{PetscStackSAWsGrantAccess}
+\lstinline{PetscStackSAWsTakeAccess}, \lstinline{KSPMonitorSAWs}, and \lstinline{SNESMonitorSAWs}.
+
 \section{Debugging} \sindex{debugging} \label{sec_debugging}
 
 PETSc programs may be debugged using one of the two options below.
 \begin{itemize}
-\item \trl{-start_in_debugger} \trl{[noxterm,dbx,xxgdb]} \trl{[-display name]}
+\item \trl{-start_in_debugger} \trl{[noxterm,dbx,xxgdb,xdb,xldb,lldb]} \trl{[-display name]}
      - start all processes in debugger
-\item \trl{-on_error_attach_debugger} \trl{[noxterm,dbx,xxgdb]}
+\item \trl{-on_error_attach_debugger} \trl{[noxterm,dbx,xxgdb,xdb,xldb,lldb]}
       \trl{[-display name]} - start debugger only on encountering an error
 \end{itemize}
 Note that, in general, debugging MPI programs cannot be done in the usual
@@ -7745,10 +7703,10 @@ set up the MPI communication and remote processes).
 
 By default the GNU debugger \trl{gdb} is used when \trl{-start_in_debugger}
 or \trl{-on_error_attach_debugger} is specified. \sindex{debugging}
-To employ either {\em xxgdb} or the common UNIX debugger {\em dbx}, one uses
+To employ either \trl{xxgdb} or the common UNIX debugger \trl{dbx}, one uses
 command line options as indicated above. On HP-UX machines the debugger
 \trl{xdb} should be used instead of \trl{dbx}; on RS/6000 machines the
-{\em xldb} debugger is supported as well. 
+\trl{xldb} debugger is supported as well. 
 On OS X systems with XCode tools, \trl{lldb} is available.
 By  default, the debugger will be started in a new xterm (to enable
 running separate debuggers on each process), unless the option
@@ -7858,15 +7816,13 @@ and codes, any error will by default generate a clean traceback of
 the location \findex{SETERRQ()} \findex{CHKERRQ()}
 of the error.
 
-Note that the macro \lstinline{__FUNCT__} is used to keep track of
+Note that the macro \lstinline{PETSC_FUNCTION_NAME} is used to keep track of
 routine names during error tracebacks.  Users need not worry about this
 macro in their application codes; however, users can take advantage of this feature
 if desired by setting this macro before each user-defined routine
 that may call \lstinline{SETERRQ()}, \lstinline{CHKERRQ()}.
 A simple example of usage is given below.
 \begin{lstlisting}
-#undef __FUNCT__  
-#define __FUNCT__ "MyRoutine1"
 PetscErrorCode MyRoutine1() { 
     /* Declarations Here */
     PetscFunctionBeginUser;
@@ -7875,9 +7831,7 @@ PetscErrorCode MyRoutine1() {
 }
 \end{lstlisting}
 
-% -----------------------------------------------------------------------------
-\section{
- Numbers} \sindex{complex numbers} \label{sec_complex}
+\section{Numbers} \sindex{complex numbers} \label{sec_complex}
 
 PETSc supports the use of complex numbers in application programs
 written in C, C++, and Fortran.  To do so, we employ either the C99 \lstinline{complex} type or the C++ versions of
@@ -7889,16 +7843,6 @@ the user should run ./configure with the additional option \trl{--with-scalar-ty
 The file \href{https://www.mcs.anl.gov/petsc/documentation/installation.html}{\trl{${PETSC_DIR}/src/docs/website/documentation/installation.html}}
 provides detailed instructions for installing PETSc. 
 You can use \trl{--with-clanguage=c} (the default) to use the C99 complex numbers or \trl{--with-clanguage=c++} to use the C++ complex type. 
-
-We recommend using optimized Fortran kernels for some key numerical
-routines with complex numbers (such as matrix-vector products, vector
-norms, etc.) instead of the default C/C++ routines.  This can be done with the \trl{./configure}  option \trl{--with-fortran-kernels=generic}.
-This implementation exploits the
-maturity of Fortran compilers while retaining the identical user
-interface.  For example, on rs6000 machines, the base single-node
-performance when using the Fortran kernels is 4-5 times faster than
-the default C++ code.
-
 
 Recall that each variant of the PETSc libraries is stored in a
 different directory, given by
@@ -7919,195 +7863,6 @@ solves a linear system with a complex
 coefficient matrix.  Its Fortran counterpart is
 \href{http://www.mcs.anl.gov/petsc/petsc-current/src/ksp/ksp/examples/tutorials/ex11f.F.html}{\trl{${PETSC_DIR}/src/ksp/ksp/examples/tutorials/ex11f.F}}.
 
-\section{Emacs Users} \sindex{Emacs} \label{sec_emacs}
-
-\sindex{Emacs} \sindex{etags, in Emacs}
-If users develop application codes  using Emacs (which we
-highly recommend), the \trl{etags} feature can be used to search PETSc
-files quickly and efficiently.  To use this feature, one should
-first check if the file,
-\trl{${PETSC_DIR}/TAGS} exists.  If this file is
-not present, it should be generated by
-running \trl{make} \trl{alletags} from the PETSc home directory.
-Once the file exists, from
-Emacs the user should issue
-the command
-\begin{lstlisting}
-M-x visit-tags-table
-\end{lstlisting}
- where ``\trl{M}''
-denotes the Emacs Meta key, and enter the
-name of the \trl{TAGS} file. Then the command ``\trl{M-.}'' will cause Emacs
-to find the file and line number where a desired PETSc function
-is defined.  Any string in any of the PETSc files can be found with the
-command ``\trl{M-x} \trl{tags-search}''. To find repeated occurrences,
-one can simply use ``\trl{M-,}'' to find the next occurrence.
-
-An alternative which provides reverse lookups (e.g. find all call sites for a given function) and is somewhat more amenable to managing many projects is GNU Global, available from \href{https://www.gnu.org/software/global/}{\trl{https://www.gnu.org/s/global/}}.
-Tags for PETSc and all external packages can be generated by running the command
-\begin{bashlisting}
-find $PETSC_DIR/{include,src,tutorials,$PETSC_ARCH/include} any/other/paths \
-   -regex '.*\.\(cc\|hh\|cpp\|C\|hpp\|c\|h\|cu\)$' \
-   | grep -v ftn-auto | gtags -f -
-\end{bashlisting}
-from your home directory or wherever you keep source code.
-If you are making large changes, it is useful to either set this up to run as a cron job or to make a convenient alias so that refreshing is easy.
-Then add the following to \trl{~/.emacs} to enable gtags and replace the plain etags bindings.
-\begin{bashlisting}
-(when (require 'gtags)
-  (global-set-key "\C-cf" 'gtags-find-file)
-  (global-set-key "\M-." 'gtags-find-tag)
-  (define-key gtags-mode-map (kbd "C-c r") 'gtags-find-rtag))
-(add-hook 'c-mode-common-hook
-          '(lambda () (gtags-mode t))) ; Or add to existing hook
-\end{bashlisting}
-
-\section{Vi and Vim Users} \sindex{Vi} \sindex{Vim} \sindex{tags, in Vi/Vim}
-
-If users develop application codes  using Vi or Vim the \trl{tags} feature can be used to search PETSc
-files quickly and efficiently.  To use this feature, one should
-first check if the file,
-\trl{${PETSC_DIR}/CTAGS} exists.  If this file is
-not present, it should be generated by
-running \trl{make} \trl{alletags} from the PETSc home directory.
-Once the file exists, from
-Vi/Vim the user should issue
-the command
-\begin{lstlisting}
-:set tags=CTAGS
-\end{lstlisting}
-from the \trl{PETSC_DIR} directory and enter the
-name of the \trl{CTAGS} file. Then the command ``tag functionname'' will cause Vi/Vim
-to find the file and line number where a desired PETSc function
-is defined.  See, for example, \href{http://www.yolinux.com/TUTORIALS/LinuxTutorialAdvanced_vi.html}{\trl{http://www.yolinux.com/TUTORIALS/LinuxTutorialAdvanced_vi.html}} for additional Vi/Vim options that allow searches etc.
-It is also possible to use GNU Global with Vim; see the description for Emacs above.
-
-\section{Eclipse Users} \sindex{eclipse}
-If you are interested in developing code that uses PETSc from Eclipse or developing PETSc in Eclipse and have knowledge of how to do indexing and build libraries in Eclipse please contact us at \href{mailto:petsc-dev@mcs.anl.gov}{\trl{petsc-dev@mcs.anl.gov}}.
-
-To allow an Eclipse code to compile with the PETSc include files and link with the PETSc libraries someone has suggested
-To do this, click on your managed C project with the right sided mouse button, select
-
-Properties $\rightarrow$ C/C++ Build $\rightarrow$ Settings
-
-Then you get a new window with on the right hand side the various setting options.
-
-Select Includes, and add the required PETSc paths. In my case I have added
-\begin{bashlisting}
-${PETSC_DIR}/include
-${PETSC_DIR}/${PETSC_ARCH}/include
-\end{bashlisting}
-
-Then select "Libraries" under the header Linker
-and you should set the Library search path:
-\begin{bashlisting}
-${PETSC_DIR}/${PETSC_ARCH}/lib
-\end{bashlisting}
-
-and then the libraries, in my case:
-\begin{bashlisting}
-m, petsc, stdc++, mpichxx, mpich, lapack, blas, gfortran, dl, rt,gcc_s, pthread, X11
-\end{bashlisting}
-
-To make PETSc an Eclipse package
-\begin{itemize}
-\item Install the Mercurial plugin for Eclipse and then import the PETSc repository to Eclipse.
-\item elected New$\rightarrow$Convert to C/C++ project and selected shared library. After this point you can perform searches in the code.
-\end{itemize}
-
-  A PETSc user has provided the following steps to build an Eclipse index for PETSc that can be used with their own code without compiling PETSc source into their project.
-\begin{itemize}
-\item In the user project source directory, create a symlink to the petsc/src directory.
-\item Refresh the project explorer in Eclipse, so the new symlink is followed.
-\item Right-click on the project in the project explorer, and choose "Index $\rightarrow$ Rebuild". The index should now be build.
-\item Right-click on the PETSc symlink in the project explorer, and choose "Exclude from build..." to make sure Eclipse does not try to compile PETSc with the project.
-\end{itemize}
-
-\section{Qt Creator} \sindex{Qt Creator}
- Qt Creator is developed as a part of Qt SDK for cross-platform GUI programming using \texttt{C++} and thus has excellent support for application developing using \texttt{C/C++}. This information was provided by Mohammad Mirzadeh.
-
-\begin{enumerate}
-\item Qt Creator supports automated and cross-platform \texttt{qmake} and \texttt{Cmake} build systems. What this means, is that, starting from a handful set of options, Qt Creator is able to generate makefiles that are used to compile and run your application package on Linux, Windows and Mac systems.
-\item Qt Creator makes the task of linking PETSc library to your application package easy.
-\item Qt Creator has visual debugger and supports both GNU's GDB and Microsoft's CDB (on Windows).
-\item Qt Creator (as of version 2.3) has interface to memory profiling software such as valgrind.
-\item Qt Creator has built-in auto-completion and function look-up. This feature of editor, makes it possible for the user to easily browse inside huge packages like PETSc and easily find relevant functions and objects.
-\item Qt Creator has inline error/warning messages. This feature of the editor greatly reduces programming bugs by informing the user of potential error/warning as the code is being written and even before the compile step.
-\item Qt Creator is an excellent environment for doing GUI programming using Qt framework. This means you can easily generate a nice GUI for you application package as well!
-\end{enumerate}
-
-Qt Creator is a part of Qt SDK, currently being developed by Nokia Inc. It is available under GPL v3, LGPL v2 and a commercial license and may be obtained, either as a part of Qt SDK or as an stand-alone software, via \url{http://qt.nokia.com/downloads/}.
-
-\section*{How to create a project?}
-Upon installation, all you really need to do to port your software package to Qt Creator is to build a \texttt{.pro} file. A \texttt{.pro} file is simply a configuration file that tells Qt Creator about all build/compile options and locations of source file. One may start with a blank \texttt{.pro} file and fill in the configuration options as needed:
-
-\begin{lstlisting}
-
-TARGET = name_of_your_app
-
-APP_DIR    = /home/path/to/your/app
-PETSC_DIR  = /home/path/to/your/petsc
-PETSC_ARCH = linux-gnu-cxx-debug
-PETSC_BINS = $$PETSC_DIR/$$PETSC_ARCH/bin
-
-INCLUDEPATH += $$APP_DIR/include \
-               $$PETSC_DIR/include \
-               $$PETSC_DIR/$$PETSC_ARCH/include
-
-LIBS += -L/path/to/petsc/libs -l_all_needed_petsc_libs
-
-QMAKE_CC  = $$PETSC_BINS/mpicc
-QMAKE_CXX = $$PETSC_BINS/mpicxx
-
-QMAKE_CFLAGS   += -O3
-QMAKE_CXXFLAGS += -O3
-QMAKE_LFLAGS   += -O3
-
-SOURCES += \
-	$$APP_DIR/src/source1.cpp \
-	$$APP_DIR/src/source2.cpp \
-	$$APP_DIR/src/main.cpp
-HEADERS += \
-	$$APP_DIR/src/source1.h \
-	$$APP_DIR/src/source2.h
-OTHER_FILES += \
-	$$APP_DIR/src/some_file.cpp \
-	$$APP_DIR/dir/another_file.xyz
-
-\end{lstlisting}
-
-In this example, there are different keywords used. These include:
-\begin{itemize}
-\item \lstinline{TARGET}: This defines the name of your application executable. You can choose it however you like.
-\item \lstinline{INCLUDEPATH}: This is used in the compile time to point to all the needed include files. Essentially it is used as a \texttt{ -I \$\$INCLUDEPATH} flag for the compiler. This should include all your application-specific header files and those related to PETSc which may be found via \texttt{make getincludedirs}.
-\item \lstinline{LIBS}: This defines all needed external libraries to link with your application. To get PETSc's linking libraries do \texttt{make getlinklibs}.
-\item \lstinline{QMAKE_CC} and \lstinline{QMAKE_CXX}: These define which \texttt{C/C++} compilers to choose for your application.
-\item \lstinline{QMAKE_CFLAGS}, \lstinline{QMAKE_CXXFLAGS} and \lstinline{QMAKE_LFLAGS}: These set the corresponding compile and linking flags.
-\item \lstinline{SOURCES}: This sets all the source files that need to be compiled.
-\item \lstinline{HEADERS}: This sets all the header files that are needed for your application. Note that since header files are merely included in the source files, they are not compiled. As a result this is an optional flag and is simply included to allow users to easily access the header files in their application (or even PETSc header files).
-\item \lstinline{OTHER_FILES}: This can be used to virtually include any other file (source, header or any other extension) just as a way to make accessing to auxiliary files easier. They could be anything from a text file to a PETSc source file. Note that none of the source files placed here are compiled.
-\end{itemize}
-
-Note that there are many more options available that one can feed into the \texttt{.pro} file. For more information, one should follow \url{http://doc.qt.nokia.com/latest/qmake-variable-reference.html}. Once the \texttt{.pro} file is generated, the user can simply open it via Qt Creator. Upon opening, generally one has the option to create two different build options, debug and release, and switch between the two easily at any time. For more information on how to use the Qt Creator interface, and other more advanced aspects of this IDE, one may refer to \url{http://doc.qt.nokia.com/qtcreator-snapshot/index.html}
-
-\section{Developers Studio Users} \sindex{developers studio}
-
-To use PETSc from MS Visual Studio, one would have to compile a PETSc example with its corresponding makefile and then transcribe all compiler and linker options used in this build into a Visual Studio project file, in the appropriate format in Visual Studio project settings. 
-
-\section{XCode Users (The Apple GUI Development System} \sindex{xcode}
-\subsection{Mac OS X}
-
-Follow the instructions in \trl{$PETSC_DIR/systems/Apple/OSX/bin/makeall} to build the PETSc framework and documentation suitable for use in XCode.
-
-You can then use the PETSc framework in \trl{$PETSC_DIR/arch-osx/PETSc.framework} in the usual manner for Apple frameworks, see the examples in \trl{$PETSC_DIR/systems/Apple/OSX/examples}.  When working in XCode, things like function name completion should work for all PETSc functions as well as MPI functions. You must also link against the Apple \trl{Accelerate.framework}.
-
-\subsection{iPhone/iPad iOS}
-
-Follow the instructions in \trl{$PETSC_DIR/systems/Apple/ios/bin/iosbuilder.py} to build the PETSc library for use on the iPhone/iPad.
-
-You can then use the PETSc static library in \trl{$PETSC_DIR/arch-osx/libPETSc.a} in the usual manner for Apple libraries inside your iOS XCode projects; see the examples in \trl{$PETSC_DIR/systems/Apple/iOS/examples}.  You must also link against the Apple \trl{Accelerate.framework}.
-
-
 \section{Parallel Communication}
 
 When used in a message-passing environment, all communication \sindex{MPI}
@@ -8116,28 +7871,31 @@ PETSc is done through MPI, the message-passing interface standard
 \cite{MPI-final}.  Any file that includes \trl{petscsys.h} (or any other
 PETSc include file) can freely use any MPI routine.
 
-% ---------------------------------------------------------------
 \section{Graphics}
+\label{sec_graphics}
 \sindex{graphics}
 
-Th PETSc graphics library is not intended to compete with
+The PETSc graphics library is not intended to compete with
 high-quality graphics packages.  Instead, it is intended to be
 easy to use interactively with PETSc programs. We urge users
 to generate their publication-quality graphics using a
 professional graphics package. If a user wants to hook
-certain packages in PETSc, he or she should send a message to
-\href{mailto:petsc-maint@mcs.anl.gov}{\trl{petsc-maint@mcs.anl.gov}}, and we will see whether it is reasonable
-to try to provide direct interfaces.
+certain packages into PETSc, he or she should send a message to
+\href{mailto:petsc-maint@mcs.anl.gov}{\trl{petsc-maint@mcs.anl.gov}};
+we will see whether it is reasonable to try to provide direct interfaces.
 
 \subsection{Windows as PetscViewers}
-For drawing predefined PETSc objects such as matrices and vectors, one must
+For drawing predefined PETSc objects such as matrices and vectors, one may
 first create a viewer using the
 command
 \begin{lstlisting}
 PetscViewerDrawOpen(MPI_Comm comm,char *display,char *title,int x,int y,int w,int h,PetscViewer *viewer);
 \end{lstlisting}
 This viewer may be passed to any of the \lstinline{XXXView()} routines.
-To draw into the viewer, one must obtain the \lstinline{PetscDraw} object with the
+Alternately, one may use command-line options to quickly specify viewer formats, 
+including \lstinline{PetscDraw}-based ones; see Section \ref{sec_viewfromoptions}.
+
+To draw directly into the viewer, one must obtain the \lstinline{PetscDraw} object with the
 command
 \begin{lstlisting}
 PetscViewerDrawGetDraw(PetscViewer viewer,PetscDraw *draw);
@@ -8150,26 +7908,30 @@ Predefined viewers, \lstinline{PETSC_VIEWER_DRAW_WORLD}
 and \lstinline{PETSC_VIEWER_DRAW_SELF}, may be used at any time. Their initial
 use will cause the appropriate window to be created.
 
+Implementations using OpenGL, TikZ, and other formats may be selected with
+\lstinline{PetscDrawSetType()}.
+PETSc can also produce movies; see \lstinline{PetscDrawSetSaveMovie()}, and
+note that command-line options can also be convenient; see the \lstinline{PetscDrawSetFromOptions()} man page.
+
 \medskip
 By default, PETSc drawing tools employ a private colormap,
 which remedies the problem of poor color choices for contour plots due
-to an external program's mangling of the colormap (e.g, Netscape tends
-to do this).
-Unfortunately, this causes flashing of colors as the mouse is moved
+to an external program's mangling of the colormap.
+Unfortunately, this may cause flashing of colors as the mouse is moved
 between the PETSc windows and other windows.  Alternatively, a shared
 colormap can be used via the option \trl{-draw_x_shared_colormap}.
 
 \subsection{Simple PetscDrawing}
 
-One can open a window that is not associated with a viewer directly
+With the default format, one can open a window that is not associated with a viewer directly
 under the X11 Window System or OpenGL with the
 command \sindex{X windows} \sindex{OpenGL}
 \begin{lstlisting}
 PetscDrawCreate(MPI_Comm comm,char *display,char *title,int x,int y,int w,int h,PetscDraw *win);
 PetscDrawSetFromOptions(win);
 \end{lstlisting}
-All drawing routines are done relative to the windows coordinate system
-and viewport. By default the drawing coordinates are from \trl{(0,0)} to
+All drawing routines are performed relative to the window's coordinate system
+and viewport. By default, the drawing coordinates are from \trl{(0,0)} to
 \trl{(1,1)}, where \trl{(0,0)} indicates the lower left corner of the
 window. The application program can change the window coordinates with the
 command  \sindex{coordinates}
@@ -8312,22 +8074,235 @@ The two functions used are \lstinline{KSPMonitorLGResidualNorm()}
 and \break\lstinline{KSPMonitorLGResidualNormCreate()}. These
 can easily be modified to serve specialized needs.
 
-
 \subsection{Disabling Graphics at Compile Time}
 
 \sindex{graphics, disabling}
 To disable all X-window-based graphics, run \trl{./configure} with the
 additional option \trl{--with-x=0}
 
+\section{Emacs Users} \sindex{Emacs} \label{sec_emacs}
+
+\sindex{Emacs} \sindex{etags, in Emacs}
+If users develop application codes  using Emacs (which we
+highly recommend), the \trl{etags} feature can be used to search PETSc
+files quickly and efficiently.  To use this feature, one should
+first check if the file,
+\trl{${PETSC_DIR}/TAGS} exists.  If this file is
+not present, it should be generated by
+running \trl{make} \trl{alletags} from the PETSc home directory.
+Once the file exists, from
+Emacs the user should issue
+the command
+\begin{lstlisting}
+M-x visit-tags-table
+\end{lstlisting}
+ where ``\trl{M}''
+denotes the Emacs Meta key, and enter the
+name of the \trl{TAGS} file. Then the command ``\trl{M-.}'' will cause Emacs
+to find the file and line number where a desired PETSc function
+is defined.  Any string in any of the PETSc files can be found with the
+command ``\trl{M-x} \trl{tags-search}''. To find repeated occurrences,
+one can simply use ``\trl{M-,}'' to find the next occurrence.
+
+An alternative which provides reverse lookups (e.g. find all call sites for a given function) and is somewhat more amenable to managing many projects is GNU Global, available from \href{https://www.gnu.org/software/global/}{\trl{https://www.gnu.org/s/global/}}.
+Tags for PETSc and all external packages can be generated by running the command
+\begin{bashlisting}
+find $PETSC_DIR/{include,src,tutorials,$PETSC_ARCH/include} any/other/paths \
+   -regex '.*\.\(cc\|hh\|cpp\|C\|hpp\|c\|h\|cu\)$' \
+   | grep -v ftn-auto | gtags -f -
+\end{bashlisting}
+from your home directory or wherever you keep source code.
+If you are making large changes, it is useful to either set this up to run as a cron job or to make a convenient alias so that refreshing is easy.
+Then add the following to \trl{~/.emacs} to enable gtags and replace the plain etags bindings.
+\begin{bashlisting}
+(when (require 'gtags)
+  (global-set-key "\C-cf" 'gtags-find-file)
+  (global-set-key "\M-." 'gtags-find-tag)
+  (define-key gtags-mode-map (kbd "C-c r") 'gtags-find-rtag))
+(add-hook 'c-mode-common-hook
+          '(lambda () (gtags-mode t))) ; Or add to existing hook
+\end{bashlisting}
+
+\section{Vi and Vim Users} \sindex{Vi} \sindex{Vim} \sindex{tags, in Vi/Vim}
+
+If users develop application codes  using Vi or Vim the \trl{tags} feature can be used to search PETSc
+files quickly and efficiently.  To use this feature, one should
+first check if the file,
+\trl{${PETSC_DIR}/CTAGS} exists.  If this file is
+not present, it should be generated by
+running \trl{make} \trl{alletags} from the PETSc home directory.
+Once the file exists, from
+Vi/Vim the user should issue
+the command
+\begin{lstlisting}
+:set tags=CTAGS
+\end{lstlisting}
+from the \trl{PETSC_DIR} directory and enter the
+name of the \trl{CTAGS} file. Then the command ``tag functionname'' will cause Vi/Vim
+to find the file and line number where a desired PETSc function
+is defined.  See, for example, \href{http://www.yolinux.com/TUTORIALS/LinuxTutorialAdvanced_vi.html}{\trl{http://www.yolinux.com/TUTORIALS/LinuxTutorialAdvanced_vi.html}} for additional Vi/Vim options that allow searches etc.
+It is also possible to use GNU Global with Vim; see the description for Emacs above.
+
+\section{Eclipse Users} \sindex{eclipse}
+If you are interested in developing code that uses PETSc from Eclipse or developing PETSc in Eclipse and have knowledge of how to do indexing and build libraries in Eclipse, please contact us at \href{mailto:petsc-dev@mcs.anl.gov}{\trl{petsc-dev@mcs.anl.gov}}.
+
+One way to index and build PETSc in Eclipse is as follows.
+\begin{enumerate}
+  \item Open ``File$\rightarrow$Import$\rightarrow$Git$\rightarrow$Projects from Git''.
+  In the next two panels, you can either add your existing local repository or download PETSc from Bitbucket by providing the URL.
+  Most Eclipse distributions come with Git support. If not, install the EGit plugin. When importing the project, select the wizard ``Import as general project''.
+  \item Right-click on the project (or the ``File'' menu on top) and select ``New $\rightarrow$ Convert to a C/C++ Project (Adds C/C++ Nature)''.
+  In the setting window, choose ``C Project'' and specify the project type as ``Shared Library''.
+  \item Right-click on the C project and open the ``Properties'' panel. Under ``C/C++ Build $\rightarrow$ Builder Settings'',
+  set the Build directory to \trl{PETSC_DIR} and make sure ``Generate Makefiles automatically'' is unselected.
+  Under the section ``C/C++ General$\rightarrow$Paths and Symbols'', add the PETSc paths to ``Includes''.
+  \begin{bashlisting}
+  ${PETSC_DIR}/include
+  ${PETSC_DIR}/${PETSC_ARCH}/include
+  \end{bashlisting}
+  Under the section ``C/C++ General$\rightarrow$index'', choose ``Use active build configuration''.
+  \item Configure PETSc normally outside Eclipse to generate a makefile and then build the project in Eclipse. The source code will be parsed by Eclipse.
+\end{enumerate}
+
+If you launch Eclipse from the Dock on Mac OS X, \trl{.bashrc} will not be loaded (a known OS X behavior, for security reasons).
+This will be a problem if you set the environment variables \trl{PETSC_DIR} and \trl{PETSC_ARCH} in \trl{.bashrc}.
+A solution which involves replacing the executable can be found at
+\href{http://stackoverflow.com/questions/829749}
+{\trl{http://stackoverflow.com/questions/829749}}.
+Alternatively, you can add \trl{PETSC_DIR} and \trl{PETSC_ARCH} manually under ``Properties $\rightarrow$ C/C++ Build $\rightarrow$ Environment''.
+
+To allow an Eclipse code to compile with the PETSc include files and link with the PETSc libraries, a PETSc user has suggested the following.
+\begin{enumerate}
+  \item Right-click on your C project and select ``Properties $\rightarrow$ C/C++ Build $\rightarrow$ Settings''
+\item A new window on the righthand side appears with various settings options.
+Select ``Includes'' and add the required PETSc paths,
+\begin{bashlisting}
+${PETSC_DIR}/include
+${PETSC_DIR}/${PETSC_ARCH}/include
+\end{bashlisting}
+\item Select ``Libraries'' under the header Linker
+and set the library search path:
+\begin{bashlisting}
+${PETSC_DIR}/${PETSC_ARCH}/lib
+\end{bashlisting}
+and the libraries, for example
+\begin{bashlisting}
+m, petsc, stdc++, mpichxx, mpich, lapack, blas, gfortran, dl, rt,gcc_s, pthread, X11
+\end{bashlisting}
+\end{enumerate}
+Another PETSc user has provided the following steps to build an Eclipse index for PETSc that can be used with their own code, without compiling PETSc source into their project.
+\begin{enumerate}
+\item In the user project source directory, create a symlink to the PETSC \trl{src/} directory.
+\item Refresh the project explorer in Eclipse, so the new symlink is followed.
+\item Right-click on the project in the project explorer, and choose ``Index $\rightarrow$ Rebuild''. The index should now be built.
+\item Right-click on the PETSc symlink in the project explorer, and choose ``Exclude from build...'' to make sure Eclipse does not try to compile PETSc with the project.
+\end{enumerate}
+For further examples of using Eclipse with a PETSc-based application, see the documentation for LaMEM\footnote{\trl{doc/} at \url{https://bitbucket.org/bkaus/lamem}}.
+
+\section{Qt Creator Users} \sindex{Qt Creator}
+This information was provided by Mohammad Mirzadeh.
+The Qt Creator IDE is part of the Qt SDK, developed for cross-platform GUI programming using C++. 
+It is available under GPL v3, LGPL v2 and a commercial license and may be obtained, either as a 
+part of Qt SDK or as an stand-alone software, via \url{http://qt.nokia.com/downloads/}.
+It supports automatic makefile generation using cross-platform \trl{qmake} and \trl{cmake}
+build systems as well as allowing one to import projects based on existing, possibly hand-written, makefiles.
+Qt Creator has a visual debugger using GDB and LLDB (on Linux and OS X) or Microsoft's
+CDB (on Windows) as backends. It also has an interface to Valgrind's ``memcheck'' and ``callgrind''
+tools to detect memory leaks and profile code. It has built-in support for a variety of version
+control systems including git, mercurial, and subversion. Finally, Qt Creator comes fully equipped with
+auto-completion, function look-up, and code refactoring tools. This enables one to easily browse source
+files, find relevant functions, and refactor them across an entire project.
+
+\subsection*{Creating a Project}
+When using Qt Creator with \trl{qmake}, one needs a \trl{.pro} file. This configuration file
+tells Qt Creator about all build/compile options and locations of source files. One may start with
+a blank \trl{.pro} file and fill in configuration options as needed. For example:
+\begin{lstlisting}
+# The name of the application executable
+TARGET = ex1
+
+# There are two ways to add PETSc functionality
+# 1-Manual: Set all include path and libs required by PETSc
+PETSC_INCLUDE = path/to/petsc_includes # e.g. obtained via running `make getincludedirs'
+PETSC_LIBS = path/to/petsc_libs # e.g. obtained via running `make getlinklibs'
+
+INCLUDEPATH += $$PETSC_INCLUDES
+LIBS += $$PETSC_LIBS
+
+# 2-Automatic: Use the PKGCONFIG funtionality
+# NOTE: PETSc.pc must be in the pkgconfig path. You might need to adjust PKG_CONFIG_PATH
+CONFIG += link_pkgconfig
+PKGCONFIG += PETSc
+
+# Set appropriate compiler and its flags
+QMAKE_CC = path/to/mpicc
+QMAKE_CXX = path/to/mpicxx # if this is a cpp project
+QMAKE_LINK = path/to/mpicxx # if this is a cpp project
+
+QMAKE_CFLAGS   += -O3 # add extra flags here
+QMAKE_CXXFLAGS += -O3
+QMAKE_LFLAGS   += -O3
+
+# Add all files that must be compiled
+SOURCES += ex1.c source1.c source2.cpp
+
+HEADERS += source1.h source2.h
+
+# OTHER_FILES are ignored during compilation but will be shown in file panel in Qt Creator
+OTHER_FILES += \
+	path/to/resource_file \
+	path/to/another_file
+\end{lstlisting}
+
+In this example, keywords include:
+\begin{tightitemize}
+\item \lstinline{TARGET}: The name of the application executable.
+\item \lstinline{INCLUDEPATH}: Used at compile time to point to required include files. Essentially, it is used as an \trl{ -I \$\$INCLUDEPATH} flag for the compiler. This should include all application-specific header files and those related to PETSc (which may be found via \trl{make getincludedirs}).
+\item \lstinline{LIBS}: Defines all required external libraries to link with the application. To get PETSc's linking libraries, use \trl{make getlinklibs}.
+\item \lstinline{CONFIG}: Configuration options to be used by \trl{qmake}. Here, the option \lstinline{link_pkgconfig} instructs \trl{qmake} to internally 
+  use \lstinline{pkgconfig} to resolve \lstinline{INCLUDEPATH} and \lstinline{LIBS} variables.
+\item \lstinline{PKGCONFIG}: Name of the configuration file (the \trl{.pc} file -- here \trl{PETSc.pc}) to be passed to \trl{pkgconfig}. Note that for this functionality to work, \trl{PETSc.pc} must be in path which might require adjusting the \lstinline{PKG_CONFIG_PATH} enviroment variable. 
+  For more information see \url{http://doc.qt.io/qtcreator/creator-build-settings.html#build-environment}.
+\item \lstinline{QMAKE_CC} and \lstinline{QMAKE_CXX}: Define which C/C++ compilers use.
+\item \lstinline{QMAKE_LINK}: Defines the proper linker to be used. Relevant if compiling C++ projects.
+\item \lstinline{QMAKE_CFLAGS}, \lstinline{QMAKE_CXXFLAGS} and \lstinline{QMAKE_LFLAGS}: Set the corresponding compile and linking flags.
+\item \lstinline{SOURCES}: Source files to be compiled.
+\item \lstinline{HEADERS}: Header files required by the application. 
+\item \lstinline{OTHER_FILES}: Other files to include (source, header, or any other extension). Note that none of the source files placed here are compiled.
+\end{tightitemize}
+
+More options can be included in a \trl{.pro} file; see \url{http://doc.qt.io/qt-5/qmake-project-files.html}. 
+Once the \trl{.pro} file is generated, the user can simply open it via Qt Creator. 
+Upon opening, one has the option to create two different build options, debug and release, and switch between the two. 
+For more information on using the Qt Creator interface and other more advanced aspects of the IDE, refer to \url{https://www.qt.io/ide/}
+
+\section{Visual Studio Users} \sindex{visual studio}
+
+To use PETSc from MS Visual Studio, one would have to compile a PETSc example with its corresponding makefile and then transcribe all compiler and linker options used in this build into a Visual Studio project file, in the appropriate format in Visual Studio project settings. 
+
+\section{XCode Users (The Apple GUI Development System)} \sindex{xcode}
+\subsection{Mac OS X}
+
+Follow the instructions in \trl{$PETSC_DIR/systems/Apple/OSX/bin/makeall} to build the PETSc framework and documentation suitable for use in XCode.
+
+You can then use the PETSc framework in \trl{$PETSC_DIR/arch-osx/PETSc.framework} in the usual manner for Apple frameworks.
+See the examples in \trl{$PETSC_DIR/systems/Apple/OSX/examples}.  When working in XCode, things like function name completion should work for all PETSc functions as well as MPI functions. You must also link against the Apple \trl{Accelerate.framework}.
+
+\subsection{iPhone/iPad iOS}
+
+Follow the instructions in \trl{$PETSC_DIR/systems/Apple/iOS/bin/iosbuilder.py} to build the PETSc library for use on the iPhone/iPad.
+
+You can then use the PETSc static library in \trl{$PETSC_DIR/arch-osx/libPETSc.a} in the usual manner for Apple libraries inside your iOS XCode projects; see the examples in \trl{$PETSC_DIR/systems/Apple/iOS/examples}.  You must also link against the Apple \trl{Accelerate.framework}.
+
 %----------------------------------------------------------------------
 \cleardoublepage
 \chapter{Makefiles}
 \label{ch_makefiles}
 
-This chapter describes the design of the PETSc makefiles, which are the
-key to managing our code portability across a wide variety of UNIX and Windows systems.
+This chapter describes the design of the PETSc makefiles, which are
+key to managing code portability across a wide variety of UNIX and Windows systems.
 
-\section{Our Makefile System}
+\section{Makefile System}
 
 To make a program named \trl{ex1}, one may use the command
 \begin{bashlisting}
@@ -8336,34 +8311,33 @@ make PETSC_ARCH=arch ex1
 which will compile the
 example and automatically link the appropriate libraries.  The
 architecture, \trl{arch}, is one of \trl{solaris, rs6000, IRIX,
-hpux,arch-darwin-double-debug}, etc. Note 
-that when using command line options with make (as illustrated above),
-one must {\em not} place spaces on either side of the ``='' signs.
-The variable
-\trl{PETSC_ARCH} can also be set as environmental
-variables.  Although PETSc is written in C, it can be compiled with a
+hpux, arch-darwin-double-debug}, etc., as determined during the PETSc configuration process.
+Note that when using command line options with \trl{make} (as illustrated above),
+one must {\em not} place spaces on either side of the ``\trl{=}'' signs.
+The variable \trl{PETSC_ARCH} can also be set as environment
+variable.  Although PETSc is written in C, it can be compiled with a
 C++ compiler.  For many C++ users this may be the preferred route. To compile
 with the C++ compiler, one should use the ./configure option \trl{--with-clanguage=c++}. \sindex{C++}
 
 \subsection{Makefile Commands} \label{sec_common}
 
 The directory 
-\trl{${PETSC_DIR}/conf}
+\trl{${PETSC_DIR}/lib/petsc/conf}
 contains virtually all
 makefile commands and customizations to enable portability across
 different architectures.  Most makefile commands for maintaining the
 PETSc system are defined in the file 
-\trl{${PETSC_DIR}/conf}
+\trl{${PETSC_DIR}/lib/petsc/conf/rules}
 These commands, which process all appropriate files within the
 directory of execution, include
 \begin{itemize}
-\item \trl{lib} - Updates the PETSc libraries based on the source code
+\item \trl{lib} - Update the PETSc libraries based on the source code
       in the directory.
-\item \trl{libfast} - Updates the libraries faster.  Since
+\item \trl{libfast} - Update the libraries faster.  Since
       \trl{libfast} recompiles all source files in the directory at once,
       rather than individually, this command saves time when many files
       must be compiled.
-\item \trl{clean} - Removes garbage files.
+\item \trl{clean} - Remove garbage files.
 \end{itemize}
 
 The \trl{tree} command enables the user to execute a particular action
@@ -8390,20 +8364,19 @@ two makefiles:
 \end{itemize}
 These files are generated automatically when you run \trl{./configure}.
 
-The architecture independent makefiles, are located in
-\trl{${PETSC_DIR}/lib/petsc/conf}
-makefiles get included from here.
+These are included by the architecture-independent makefiles located in
+\trl{${PETSC_DIR}/lib/petsc/conf}.
 
 \section{PETSc Flags}
 \label{sec_makeflags}
 
 PETSc has several flags that determine how the source code will be
-compiled.  The default flags for particular versions are specified by
-the variable \trl{PETSCFLAGS} within the base files of \trl{${PETSC_DIR}/${PETSC_ARCH}/conf},
-discussed in Section ~\ref{sec_custom}.  The flags include
+compiled.  The default flags for particular versions are specified in
+\trl{${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h}.
+The flags include
 \begin{itemize}
 \item \trl{PETSC_USE_DEBUG} - The PETSc debugging options are activated. We
-      recommend always using this. \findex{PETSC_USE_DEBUG}
+      recommend always using this except when doing performance analysis or production runs. \findex{PETSC_USE_DEBUG}
 \item \trl{PETSC_USE_COMPLEX} - The version with scalars represented
       as complex numbers is used. \findex{PETSC_USE_COMPLEX}
 \item \trl{PETSC_USE_LOG} - Various monitoring statistics on floating-point operations,
@@ -8414,14 +8387,14 @@ discussed in Section ~\ref{sec_custom}.  The flags include
 
 Maintaining portable PETSc makefiles is very simple.
 
-A first example is a ``minimum'' makefile for maintaining
+A first example, shown in Figure \ref{fig_make1}, is a ``minimum'' makefile for maintaining
 a single program that uses the PETSc libraries.
-The most important line in this makefile is the line starting with \trl{include}:
+The most important lines in this makefile are the lines starting with \trl{include}:
 \begin{makelisting}
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 \end{makelisting}
-This line includes other makefiles that provide the needed definitions
+These lines includes other makefiles that provide the needed definitions
 and rules for the particular base PETSc installation (specified by
 \trl{PETSC_DIR}) and architecture (specified by
 \trl{PETSC_ARCH}).  (See \ref{sec_running} for information on
@@ -8450,9 +8423,10 @@ within the makefile.
 \label{fig_make1}
 \end{figure}
 
-For users who wish to manage the compile process themselves
-and {\bf not} use the rules PETSc uses for compiling programs
-include variables instead of base. That is, use something like
+Users who wish to manage the compile process themselves
+and {\emph not} use the rules PETSc uses for compiling programs
+should only include \trl{variables}. That is, use something like
+the makefile shown in Figure \ref{fig_make1var}.
 
 \begin{figure}[H]
 \begin{makelisting}
@@ -8468,15 +8442,19 @@ include variables instead of base. That is, use something like
 \caption{Sample PETSc Makefile that does {\bf not} use PETSc's rules for compiling}
 \label{fig_make1var}
 \end{figure}
+
 The variables \trl{PETSC_CC_INCLUDES}, \trl{PETSC_FC_INCLUDES}
-and \trl{PETSC_LIB} are defined by the included \lstinline{petsc/conf/variables} file.
+and \trl{PETSC_LIB} are defined by the included \trl{${PETSC_DIR}/lib/petsc/conf/variables} file.
 
 If you do not wish to include any PETSc makefiles in your makefile,
-you can use the commands (run in the PETSc root directory) to get the information
-needed by your makefile: make getlinklibs getincludedirs getpetscflags.
+you can use the following commands in the PETSc root directory to get the information
+needed by your makefile: 
+\begin{bashlisting}
+make getlinklibs getincludedirs getpetscflags
+\end{bashlisting}
 All the libraries listed need to be linked into your executable and the
-include directories and flags need to be passed to the compiler usually
-this is done with \lstinline{CFLAGS=<list of -I and other flags>} and
+include directories and flags need to be passed to the compiler.
+Usually this is done with \lstinline{CFLAGS=<list of -I and other flags>} and
 \lstinline{FFLAGS=<list of -I and other flags>} in your makefile.
 
 \findex{PETSC_LIB} \findex{PETSC_LIB}
@@ -8523,24 +8501,13 @@ controls the generation of several example programs.
         -@${MPIEXEC} ex3 -v -log_view
    runex4:
         -@${MPIEXEC} -n 4 ./ex4 -trdump
-
-   RUNEXAMPLES_1 = runex1 runex2
-   RUNEXAMPLES_2 = runex4
-   RUNEXAMPLES_3 = runex3
-   EXAMPLESC     = ex1.c ex2.c ex4.c
-   EXAMPLESF     = ex3.F
-   EXAMPLES_1    = ex1 ex2
-   EXAMPLES_2    = ex4
-   EXAMPLES_3    = ex3
-
-   include ${PETSC_DIR}/lib/petsc/conf/test
 \end{makelisting}
 \caption{Sample PETSc Makefile for Several Example Programs}
 \label{fig_make2}
 \end{figure}
 
-Again, the most important line in this makefile is the \lstinline{include}
-line that includes the files defining all of the macro variables.
+Again, the most important lines in this makefile are the \lstinline{include}
+lines that include the files defining all of the macro variables.
 Some additional variables that can be used in the makefile are defined
 as follows:
 \begin{tightitemize}
@@ -8551,21 +8518,8 @@ as follows:
 \item \lstinline{CLINKER, FLINKER} the C and Fortran linkers.
 \item \lstinline{RM} the remove command for deleting files.
 \end{tightitemize}
-Note that the PETSc example programs are divided into several
-categories, which currently include:
-\begin{tightitemize}
-\item \lstinline{EXAMPLES_1} basic C suite used in installation tests
-\item \lstinline{EXAMPLES_2} additional C suite including graphics
-\item \lstinline{EXAMPLES_3} basic Fortran .F suite
-\item \lstinline{EXAMPLES_4} subset of 1 and 2 that runs on only a single process
-\item \lstinline{EXAMPLES_5} examples that require complex numbers
-\item \lstinline{EXAMPLES_6} C examples that do not work with complex numbers
-\item \lstinline{EXAMPLES_8} Fortran \trl{.F} examples that do not work with complex numbers
-\item \lstinline{EXAMPLES_9} uniprocess version of 3
-\item \lstinline{EXAMPLES_10} Fortran \trl{.F} examples that require complex numbers
-\end{tightitemize}
 
-We next list in Figure \ref{fig_make3} a makefile that maintains a PETSc
+Figure \ref{fig_make3} contains a makefile that maintains a PETSc
 library.  Although most users do not need to understand or deal with such
 makefiles, they are also easily used.
 \begin{figure}[H]
@@ -8603,7 +8557,6 @@ the following:
 \item Each makefile can maintain at most one archive library.
 \end{itemize}
 
-
 %------------------------------------------------------------------
 
 \cleardoublepage
@@ -8620,7 +8573,7 @@ we recommend skipping this chapter during an initial reading.
 
 One can extract a (parallel) submatrix from a given (parallel) using
 \begin{lstlisting}
-MatGetSubMatrix(Mat A,IS rows,IS cols,MatReuse call,Mat *B);
+MatCreateSubMatrix(Mat A,IS rows,IS cols,MatReuse call,Mat *B);
 \end{lstlisting}
 This extracts the \lstinline{rows} and \lstinline{col}umns of the matrix \lstinline{A} into \lstinline{B}. If
 call is  \lstinline{MAT_INITIAL_MATRIX} \findex{MAT_INITIAL_MATRIX} it will create the matrix

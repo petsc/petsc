@@ -6,8 +6,6 @@ Input parameters include\n\
 #include <petscmat.h>
 
 #undef WRITEFILE
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            A,P,C,R,RAP;
@@ -61,7 +59,7 @@ int main(int argc,char **args)
   ierr = MatAXPY(RAP,-1.0,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
  
   ierr = MatNorm(RAP,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
-  if (norm > 1.e-14) printf("norm(PtAP - RAP)= %g\n",norm);
+  if (norm > 1.e-14) {ierr = PetscPrintf(PETSC_COMM_SELF,"norm(PtAP - RAP)= %g\n",norm);CHKERRQ(ierr);}
  
   ierr = MatDestroy(&R);CHKERRQ(ierr);
   ierr = MatDestroy(&RAP);CHKERRQ(ierr);

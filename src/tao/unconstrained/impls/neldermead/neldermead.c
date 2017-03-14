@@ -3,8 +3,6 @@
 
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "NelderMeadSort"
 static PetscErrorCode NelderMeadSort(TAO_NelderMead *nm)
 {
   PetscReal *values = nm->f_values;
@@ -27,8 +25,6 @@ static PetscErrorCode NelderMeadSort(TAO_NelderMead *nm)
 
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "NelderMeadReplace"
 static PetscErrorCode NelderMeadReplace(TAO_NelderMead *nm, PetscInt index, Vec Xmu, PetscReal f)
 {
   PetscErrorCode ierr;
@@ -47,8 +43,6 @@ static PetscErrorCode NelderMeadReplace(TAO_NelderMead *nm, PetscInt index, Vec 
 }
 
 /* ---------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetUp_NM"
 static PetscErrorCode TaoSetUp_NM(Tao tao)
 {
   PetscErrorCode ierr;
@@ -73,8 +67,6 @@ static PetscErrorCode TaoSetUp_NM(Tao tao)
 }
 
 /* ---------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "TaoDestroy_NM"
 static PetscErrorCode TaoDestroy_NM(Tao tao)
 {
   TAO_NelderMead *nm = (TAO_NelderMead*)tao->data;
@@ -96,8 +88,6 @@ static PetscErrorCode TaoDestroy_NM(Tao tao)
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetFromOptions_NM"
 static PetscErrorCode TaoSetFromOptions_NM(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   TAO_NelderMead *nm = (TAO_NelderMead*)tao->data;
@@ -115,8 +105,6 @@ static PetscErrorCode TaoSetFromOptions_NM(PetscOptionItems *PetscOptionsObject,
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoView_NM"
 static PetscErrorCode TaoView_NM(Tao tao,PetscViewer viewer)
 {
   TAO_NelderMead *nm = (TAO_NelderMead*)tao->data;
@@ -138,8 +126,6 @@ static PetscErrorCode TaoView_NM(Tao tao,PetscViewer viewer)
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoSolve_NM"
 static PetscErrorCode TaoSolve_NM(Tao tao)
 {
   PetscErrorCode     ierr;
@@ -265,8 +251,6 @@ static PetscErrorCode TaoSolve_NM(Tao tao)
  Level: beginner
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoCreate_NM"
 PETSC_EXTERN PetscErrorCode TaoCreate_NM(Tao tao)
 {
   TAO_NelderMead *nm;

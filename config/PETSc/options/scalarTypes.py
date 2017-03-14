@@ -20,7 +20,8 @@ class Configure(config.base.Configure):
 
   def setupHelp(self, help):
     import nargs
-    help.addArgument('PETSc', '-with-precision=<single,double,__float128>', nargs.Arg(None, 'double', 'Specify numerical precision'))
+    #  Dec 2016, the __fp16 type is only available with GNU compilers on ARM systems
+    help.addArgument('PETSc', '-with-precision=<__fp16,single,double,__float128>', nargs.Arg(None, 'double', 'Specify numerical precision'))
     help.addArgument('PETSc', '-with-scalar-type=<real or complex>', nargs.Arg(None, 'real', 'Specify real or complex numbers'))
     return
 
@@ -76,7 +77,14 @@ class Configure(config.base.Configure):
   def configurePrecision(self):
     '''Set the default real number precision for PETSc objects'''
     self.precision = self.framework.argDB['with-precision'].lower()
-    if self.precision == 'single':
+    if self.precision == '__fp16':  # supported by gcc trunk
+      if self.scalartype == 'complex':
+        raise RuntimeError('__fp16 can only be used with real numbers, not complex')
+      if hasattr(self.compilers, 'FC'):
+        raise RuntimeError('__fp16 can only be used with C compiler, not Fortran')
+      self.addDefine('USE_REAL___FP16', '1')
+      self.addMakeMacro('PETSC_SCALAR_SIZE', '16')
+    elif self.precision == 'single':
       self.addDefine('USE_REAL_SINGLE', '1')
       self.addMakeMacro('PETSC_SCALAR_SIZE', '32')
     elif self.precision == 'double':

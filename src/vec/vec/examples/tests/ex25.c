@@ -4,8 +4,6 @@ this case processor zero is as long as the entire parallel vector; rest are zero
 
 #include <petscvec.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;

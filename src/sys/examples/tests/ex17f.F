@@ -4,6 +4,8 @@
 !
        program main
 #include <petsc/finclude/petscsys.h>
+       use petscsys
+       implicit none
 
       PetscErrorCode ierr
       PetscMPIInt rank
@@ -36,3 +38,11 @@
 
       call PetscFinalize(ierr)
       end
+
+!
+!/*TEST
+!
+!   test:
+!      nsize: 3
+!
+!TEST*/

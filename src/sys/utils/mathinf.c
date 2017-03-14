@@ -12,7 +12,7 @@
 
      Level: beginner
 @*/
-#if defined(PETSC_USE_REAL___FLOAT128)
+#if defined(PETSC_USE_REAL___FLOAT128) || defined(PETSC_USE_REAL___FP16)
 PetscBool PetscIsNormalReal(PetscReal a)
 {
   return PETSC_TRUE;

@@ -4,8 +4,6 @@
 PetscFunctionList VecList              = NULL;
 PetscBool         VecRegisterAllCalled = PETSC_FALSE;
 
-#undef __FUNCT__
-#define __FUNCT__ "VecSetType"
 /*@C
   VecSetType - Builds a vector, for a particular vector implementation.
 
@@ -55,8 +53,6 @@ PetscErrorCode  VecSetType(Vec vec, VecType method)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecGetType"
 /*@C
   VecGetType - Gets the vector type name (as a string) from the Vec.
 
@@ -88,8 +84,6 @@ PetscErrorCode  VecGetType(Vec vec, VecType *type)
 
 /*--------------------------------------------------------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "VecRegister"
 /*@C
   VecRegister -  Adds a new vector component implementation
 

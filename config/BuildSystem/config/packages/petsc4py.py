@@ -3,12 +3,14 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit         = '8483e1d'  #master+
-    self.download          = ['git://https://bitbucket.org/petsc/petsc4py','https://bitbucket.org/petsc/petsc4py/get/'+self.gitcommit+'.tar.gz']
-    self.functions         = []
-    self.includes          = []
+    self.gitcommit              = '325db39'  #master+
+    self.download               = ['git://https://bitbucket.org/petsc/petsc4py','https://bitbucket.org/petsc/petsc4py/get/'+self.gitcommit+'.tar.gz']
+    self.functions              = []
+    self.includes               = []
     self.skippackagewithoptions = 1
-    self.downloaddirname   = 'petsc-petsc4py'
+    self.useddirectly           = 0
+    self.linkedbypetsc          = 0
+    self.downloaddirnames       = ['petsc-petsc4py','petsc4py']
     return
 
   def setupDependencies(self, framework):
@@ -47,6 +49,7 @@ class Configure(config.package.Package):
     else:
        newuser = ''
 
+    self.addMakeMacro('PETSC4PY','yes')
     self.addMakeRule('petsc4pybuild','', \
                        ['@echo "*** Building petsc4py ***"',\
                           '@${RM} -f ${PETSC_ARCH}/lib/petsc/conf/petsc4py.errorflg',\

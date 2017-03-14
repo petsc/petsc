@@ -42,8 +42,6 @@ extern PetscErrorCode FormIFunction(TS,PetscReal,Vec,Vec,Vec,void*);
 extern PetscErrorCode FormIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
 extern PetscErrorCode FormInitialSolution(Vec,void*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   TS             ts;                   /* nonlinear solver */
@@ -157,8 +155,6 @@ int main(int argc,char **argv)
 /*
   FormIFunction = Udot - RHSFunction
 */
-#undef __FUNCT__
-#define __FUNCT__ "FormIFunction"
 PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
@@ -249,8 +245,6 @@ PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx)
   FormIJacobian() - Compute IJacobian = dF/dU + a dF/dUdot
   This routine is not used with option '-use_coloring'
 */
-#undef __FUNCT__
-#define __FUNCT__ "FormIJacobian"
 PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat J,Mat Jpre,void *ctx)
 {
   PetscErrorCode ierr;
@@ -311,8 +305,6 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat J,
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormInitialSolution"
 PetscErrorCode FormInitialSolution(Vec U,void *ptr)
 {
   AppCtx         *user=(AppCtx*)ptr;

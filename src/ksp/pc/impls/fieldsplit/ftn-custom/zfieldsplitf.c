@@ -23,7 +23,7 @@ PETSC_EXTERN void PETSC_STDCALL pcfieldsplitgetsubksp_(PC *pc,PetscInt *n_local,
   *ierr = PetscFree(tksp);
 }
 
-PETSC_EXTERN void PETSC_STDCALL  pcfieldsplitsetis_(PC *pc, CHAR splitname PETSC_MIXED_LEN(len),IS *is, PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL  pcfieldsplitsetis_(PC *pc, char* splitname PETSC_MIXED_LEN(len),IS *is, PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
   FIXCHAR(splitname,len,t);

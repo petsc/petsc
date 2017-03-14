@@ -35,8 +35,6 @@ const char *const MPChacoEigenTypes[] = {"LANCZOS","RQI","MPChacoEigenType","MP_
 extern PetscErrorCode  MatMFFDInitializePackage(void);
 extern PetscErrorCode  MatSolverPackageDestroy(void);
 static PetscBool MatPackageInitialized = PETSC_FALSE;
-#undef __FUNCT__
-#define __FUNCT__ "MatFinalizePackage"
 /*@C
   MatFinalizePackage - This function destroys everything in the Petsc interface to the Mat package. It is
   called from PetscFinalize().
@@ -79,8 +77,14 @@ PetscErrorCode  MatFinalizePackage(void)
 #if defined(PETSC_HAVE_MUMPS)
 PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_MUMPS(void);
 #endif
+#if defined(PETSC_HAVE_CUSP)
+PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_CUSP(void);
+#endif
 #if defined(PETSC_HAVE_VECCUDA)
 PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_CUSPARSE(void);
+#endif
+#if defined(PETSC_HAVE_VIENNACL)
+PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_ViennaCL(void);
 #endif
 #if defined(PETSC_HAVE_ELEMENTAL)
 PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Elemental(void);
@@ -88,7 +92,7 @@ PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Elemental(void);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Matlab(void);
 #endif
-#if defined(PETSC_HAVE_PETSC_HAVE_ESSL) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE) && !defined(PETSC_USE_REAL___FLOAT128)
+#if defined(PETSC_HAVE_PETSC_HAVE_ESSL)
 PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Essl(void);
 #endif
 #if defined(PETSC_HAVE_SUPERLU)
@@ -103,8 +107,8 @@ PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Pastix(void);
 #if defined(PETSC_HAVE_SUPERLU_DIST)
 PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_SuperLU_DIST(void);
 #endif
-#if defined(PETSC_HAVE_CLIQUE)
-PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Clique(void);
+#if defined(PETSC_HAVE_ELEMENTAL)
+PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_SparseElemental(void);
 #endif
 #if defined(PETSC_HAVE_MKL_PARDISO)
 PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_MKL_Pardiso(void);
@@ -125,8 +129,6 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_petsc(Mat,MatFactorType,Mat*);
 PETSC_INTERN PetscErrorCode MatGetFactor_seqdense_petsc(Mat,MatFactorType,Mat*);
 PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_bas(Mat,MatFactorType,Mat*);
 
-#undef __FUNCT__
-#define __FUNCT__ "MatInitializePackage"
 /*@C
   MatInitializePackage - This function initializes everything in the Mat package. It is called
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to MatCreate()
@@ -198,8 +200,8 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = PetscLogEventRegister("MatGetValues",     MAT_CLASSID,&MAT_GetValues);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatGetRow",        MAT_CLASSID,&MAT_GetRow);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatGetRowIJ",      MAT_CLASSID,&MAT_GetRowIJ);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatGetSubMatrice", MAT_CLASSID,&MAT_GetSubMatrices);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatGetSubMatrix",  MAT_CLASSID,&MAT_GetSubMatrix);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatCreateSubMats", MAT_CLASSID,&MAT_CreateSubMats);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatCreateSubMat",  MAT_CLASSID,&MAT_CreateSubMat);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatGetOrdering",   MAT_CLASSID,&MAT_GetOrdering);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatIncreaseOvrlp", MAT_CLASSID,&MAT_IncreaseOverlap);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatPartitioning",  MAT_PARTITIONING_CLASSID,&MAT_Partitioning);CHKERRQ(ierr);
@@ -326,8 +328,14 @@ PetscErrorCode  MatInitializePackage(void)
 #if defined(PETSC_HAVE_MUMPS)
   ierr = MatSolverPackageRegister_MUMPS();CHKERRQ(ierr);
 #endif
+#if defined(PETSC_HAVE_CUSP)
+  ierr = MatSolverPackageRegister_CUSP();CHKERRQ(ierr);
+#endif
 #if defined(PETSC_HAVE_VECCUDA)
   ierr = MatSolverPackageRegister_CUSPARSE();CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_VIENNACL)
+  ierr = MatSolverPackageRegister_ViennaCL();CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_ELEMENTAL)
   ierr = MatSolverPackageRegister_Elemental();CHKERRQ(ierr);
@@ -335,7 +343,7 @@ PetscErrorCode  MatInitializePackage(void)
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   ierr = MatSolverPackageRegister_Matlab();CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_PETSC_HAVE_ESSL) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE) && !defined(PETSC_USE_REAL___FLOAT128)
+#if defined(PETSC_HAVE_PETSC_HAVE_ESSL)
   ierr = MatSolverPackageRegister_Essl();CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_SUPERLU)
@@ -350,8 +358,8 @@ PetscErrorCode  MatInitializePackage(void)
 #if defined(PETSC_HAVE_SUPERLU_DIST)
   ierr = MatSolverPackageRegister_SuperLU_DIST();CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_CLIQUE)
-  ierr = MatSolverPackageRegister_Clique();CHKERRQ(ierr);
+#if defined(PETSC_HAVE_ELEMENTAL)
+  ierr = MatSolverPackageRegister_SparseElemental();CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_MKL_PARDISO)
   ierr = MatSolverPackageRegister_MKL_Pardiso();CHKERRQ(ierr);
@@ -365,8 +373,8 @@ PetscErrorCode  MatInitializePackage(void)
 #if defined(PETSC_HAVE_LUSOL)
   ierr = MatSolverPackageRegister_Lusol();CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_CLIQUE)
-  ierr = MatSolverPackageRegister_Clique();CHKERRQ(ierr);
+#if defined(PETSC_HAVE_ELEMENTAL)
+  ierr = MatSolverPackageRegister_SparseElemental();CHKERRQ(ierr);
 #endif
 
   ierr = PetscRegisterFinalize(MatFinalizePackage);CHKERRQ(ierr);
@@ -374,8 +382,6 @@ PetscErrorCode  MatInitializePackage(void)
 }
 
 #if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
-#undef __FUNCT__
-#define __FUNCT__ "PetscDLLibraryRegister_petscmat"
 /*
   PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.
 

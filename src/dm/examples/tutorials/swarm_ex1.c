@@ -8,8 +8,6 @@ static char help[] = "Tests DMSwarm\n\n";
 PetscErrorCode DMSwarmCollect_General(DM dm,PetscErrorCode (*collect)(DM,void*,PetscInt*,PetscInt**),size_t ctx_size,void *ctx,PetscInt *globalsize);
 PetscErrorCode DMSwarmCollect_DMDABoundingBox(DM dm,PetscInt *globalsize);
 
-#undef __FUNCT__
-#define __FUNCT__ "ex1_1"
 PetscErrorCode ex1_1(void)
 {
   DM dms;
@@ -102,8 +100,6 @@ PetscErrorCode ex1_1(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ex1_2"
 PetscErrorCode ex1_2(void)
 {
   DM dms;
@@ -194,8 +190,6 @@ PetscErrorCode ex1_2(void)
 /*
  splot "c-rank0.gp","c-rank1.gp","c-rank2.gp","c-rank3.gp"
 */
-#undef __FUNCT__
-#define __FUNCT__ "ex1_3"
 PetscErrorCode ex1_3(void)
 {
   DM dms;
@@ -318,8 +312,6 @@ typedef struct {
   PetscReal radius;
 } CollectZoneCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "collect_zone"
 PetscErrorCode collect_zone(DM dm,void *ctx,PetscInt *nfound,PetscInt **foundlist)
 {
   CollectZoneCtx *zone = (CollectZoneCtx*)ctx;
@@ -371,8 +363,6 @@ PetscErrorCode collect_zone(DM dm,void *ctx,PetscInt *nfound,PetscInt **foundlis
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ex1_4"
 PetscErrorCode ex1_4(void)
 {
   DM dms;
@@ -528,8 +518,6 @@ PetscErrorCode ex1_4(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;

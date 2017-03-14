@@ -3,8 +3,6 @@ static char help[] = "Tests string options with spaces";
 
 #include <petscsys.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
@@ -21,3 +19,10 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+
+TEST*/

@@ -42,8 +42,6 @@ static void Exact(PetscReal t,
   if (vt) *vt = v;
 }
 
-#undef  __FUNCT__
-#define __FUNCT__ "Solution"
 PetscErrorCode Solution(TS ts,PetscReal t,Vec X,void *ctx)
 {
   UserParams     *user = (UserParams*)ctx;
@@ -59,8 +57,6 @@ PetscErrorCode Solution(TS ts,PetscReal t,Vec X,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef  __FUNCT__
-#define __FUNCT__ "Residual1"
 PetscErrorCode Residual1(TS ts,PetscReal t,Vec U,Vec A,Vec R,void *ctx)
 {
   UserParams        *user = (UserParams*)ctx;
@@ -84,8 +80,6 @@ PetscErrorCode Residual1(TS ts,PetscReal t,Vec U,Vec A,Vec R,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef  __FUNCT__
-#define __FUNCT__ "Tangent1"
 PetscErrorCode Tangent1(TS ts,PetscReal t,Vec U,Vec A,PetscReal shiftA,Mat J,Mat P,void *ctx)
 {
   UserParams     *user = (UserParams*)ctx;
@@ -107,8 +101,6 @@ PetscErrorCode Tangent1(TS ts,PetscReal t,Vec U,Vec A,PetscReal shiftA,Mat J,Mat
   PetscFunctionReturn(0);
 }
 
-#undef  __FUNCT__
-#define __FUNCT__ "Residual2"
 PetscErrorCode Residual2(TS ts,PetscReal t,Vec U,Vec V,Vec A,Vec R,void *ctx)
 {
   UserParams         *user = (UserParams*)ctx;
@@ -134,8 +126,6 @@ PetscErrorCode Residual2(TS ts,PetscReal t,Vec U,Vec V,Vec A,Vec R,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef  __FUNCT__
-#define __FUNCT__ "Tangent2"
 PetscErrorCode Tangent2(TS ts,PetscReal t,Vec U,Vec V,Vec A,PetscReal shiftV,PetscReal shiftA,Mat J,Mat P,void *ctx)
 {
   UserParams     *user = (UserParams*)ctx;
@@ -157,8 +147,6 @@ PetscErrorCode Tangent2(TS ts,PetscReal t,Vec U,Vec V,Vec A,PetscReal shiftV,Pet
   PetscFunctionReturn(0);
 }
 
-#undef  __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char *argv[])
 {
   PetscMPIInt    size;

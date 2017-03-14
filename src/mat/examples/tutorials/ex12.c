@@ -1,5 +1,5 @@
 
-static char help[] = "Reads a PETSc matrix and vector from a file appends the vector the matrix\n\n";
+static char help[] = "Reads a PETSc matrix and vector from a file; expands the matrix with the vector\n\n";
 
 /*T
    Concepts: Mat^ordering a matrix - loading a binary matrix and vector;
@@ -17,26 +17,30 @@ T*/
      petscis.h     - index sets            petscviewer.h - viewers
 */
 #include <petscmat.h>
-#include <../src/mat/impls/aij/seq/aij.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PadMatrix"
+/*
+
+   Adds a new column and row to the vector (the last) containing the vector
+*/
 PetscErrorCode PadMatrix(Mat A,Vec v,PetscScalar c,Mat *B)
 {
-  PetscErrorCode ierr;
-  PetscInt       n    = A->rmap->n,i,*cnt,*indices;
-  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)A->data;
-  PetscScalar    *vv;
+  PetscErrorCode    ierr;
+  PetscInt          n,i,*cnt,*indices,nc;
+  const PetscInt    *aj;
+  const PetscScalar *vv,*aa;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(v,&vv);CHKERRQ(ierr);
+  ierr = MatGetSize(A,&n,NULL);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(v,&vv);CHKERRQ(ierr);
   ierr = PetscMalloc1(n,&indices);CHKERRQ(ierr);
   for (i=0; i<n; i++) indices[i] = i;
 
   /* determine number of nonzeros per row in the new matrix */
   ierr = PetscMalloc1(n+1,&cnt);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    cnt[i] = aij->i[i+1] - aij->i[i] + (vv[i] != 0.0);
+    ierr = MatGetRow(A,i,&nc,NULL,NULL);CHKERRQ(ierr);
+    cnt[i] = nc + (vv[i] != 0.0);
+    ierr = MatRestoreRow(A,i,&nc,NULL,NULL);CHKERRQ(ierr);
   }
   cnt[n] = 1;
   for (i=0; i<n; i++) {
@@ -47,7 +51,9 @@ PetscErrorCode PadMatrix(Mat A,Vec v,PetscScalar c,Mat *B)
 
   /* copy over the matrix entries from the matrix and then the vector */
   for (i=0; i<n; i++) {
-    ierr = MatSetValues(*B,1,&i,aij->i[i+1] - aij->i[i],aij->j + aij->i[i],aij->a + aij->i[i],INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatGetRow(A,i,&nc,&aj,&aa);CHKERRQ(ierr);
+    ierr = MatSetValues(*B,1,&i,nc,aj,aa,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatRestoreRow(A,i,&nc,&aj,&aa);CHKERRQ(ierr);
   }
   ierr = MatSetValues(*B,1,&n,n,indices,vv,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatSetValues(*B,n,indices,1,&n,vv,INSERT_VALUES);CHKERRQ(ierr);
@@ -55,15 +61,13 @@ PetscErrorCode PadMatrix(Mat A,Vec v,PetscScalar c,Mat *B)
 
   ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = VecRestoreArray(v,&vv);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(v,&vv);CHKERRQ(ierr);
   ierr = PetscFree(cnt);CHKERRQ(ierr);
   ierr = PetscFree(indices);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            A,B;
@@ -93,6 +97,8 @@ int main(int argc,char **args)
   ierr = MatView(B,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = VecDestroy(&v);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return ierr;

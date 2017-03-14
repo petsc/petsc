@@ -18,8 +18,6 @@ Solver loop to update \tau:
   TauCoarse = Rcoarse - Rcoarse_restricted
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPatchZoom"
 /*
   DMPatchZoom - Create a version of the coarse patch (identified by rank) with halo on communicator commz
 
@@ -159,8 +157,6 @@ PetscErrorCode DMPatchZoom(DM dm, Vec X, MatStencil lower, MatStencil upper, MPI
 
 typedef enum {PATCH_COMM_TYPE_WORLD = 0, PATCH_COMM_TYPE_SELF = 1} PatchCommType;
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPatchSolve"
 PetscErrorCode DMPatchSolve(DM dm)
 {
   MPI_Comm       comm;
@@ -283,8 +279,6 @@ PetscErrorCode DMPatchSolve(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPatchView_Ascii"
 PetscErrorCode DMPatchView_Ascii(DM dm, PetscViewer viewer)
 {
   DM_Patch          *mesh = (DM_Patch*) dm->data;
@@ -304,8 +298,6 @@ PetscErrorCode DMPatchView_Ascii(DM dm, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMView_Patch"
 PetscErrorCode DMView_Patch(DM dm, PetscViewer viewer)
 {
   PetscBool      iascii, isbinary;
@@ -326,8 +318,6 @@ PetscErrorCode DMView_Patch(DM dm, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDestroy_Patch"
 PetscErrorCode DMDestroy_Patch(DM dm)
 {
   DM_Patch       *mesh = (DM_Patch*) dm->data;
@@ -341,8 +331,6 @@ PetscErrorCode DMDestroy_Patch(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetUp_Patch"
 PetscErrorCode DMSetUp_Patch(DM dm)
 {
   DM_Patch       *mesh = (DM_Patch*) dm->data;
@@ -354,8 +342,6 @@ PetscErrorCode DMSetUp_Patch(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateGlobalVector_Patch"
 PetscErrorCode DMCreateGlobalVector_Patch(DM dm, Vec *g)
 {
   DM_Patch       *mesh = (DM_Patch*) dm->data;
@@ -367,8 +353,6 @@ PetscErrorCode DMCreateGlobalVector_Patch(DM dm, Vec *g)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateLocalVector_Patch"
 PetscErrorCode DMCreateLocalVector_Patch(DM dm, Vec *l)
 {
   DM_Patch       *mesh = (DM_Patch*) dm->data;
@@ -380,15 +364,11 @@ PetscErrorCode DMCreateLocalVector_Patch(DM dm, Vec *l)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateSubDM_Patch"
 PetscErrorCode DMCreateSubDM_Patch(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm)
 {
   SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Tell me to code this");
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPatchGetCoarse"
 PetscErrorCode DMPatchGetCoarse(DM dm, DM *dmCoarse)
 {
   DM_Patch *mesh = (DM_Patch*) dm->data;
@@ -399,8 +379,6 @@ PetscErrorCode DMPatchGetCoarse(DM dm, DM *dmCoarse)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPatchGetPatchSize"
 PetscErrorCode DMPatchGetPatchSize(DM dm, MatStencil *patchSize)
 {
   DM_Patch *mesh = (DM_Patch*) dm->data;
@@ -412,8 +390,6 @@ PetscErrorCode DMPatchGetPatchSize(DM dm, MatStencil *patchSize)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPatchSetPatchSize"
 PetscErrorCode DMPatchSetPatchSize(DM dm, MatStencil patchSize)
 {
   DM_Patch *mesh = (DM_Patch*) dm->data;
@@ -424,8 +400,6 @@ PetscErrorCode DMPatchSetPatchSize(DM dm, MatStencil patchSize)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPatchGetCommSize"
 PetscErrorCode DMPatchGetCommSize(DM dm, MatStencil *commSize)
 {
   DM_Patch *mesh = (DM_Patch*) dm->data;
@@ -437,8 +411,6 @@ PetscErrorCode DMPatchGetCommSize(DM dm, MatStencil *commSize)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPatchSetCommSize"
 PetscErrorCode DMPatchSetCommSize(DM dm, MatStencil commSize)
 {
   DM_Patch *mesh = (DM_Patch*) dm->data;

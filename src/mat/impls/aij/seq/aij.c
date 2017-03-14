@@ -10,8 +10,6 @@
 #include <petscbt.h>
 #include <petsc/private/kernels/blocktranspose.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetColumnNorms_SeqAIJ"
 PetscErrorCode MatGetColumnNorms_SeqAIJ(Mat A,NormType type,PetscReal *norms)
 {
   PetscErrorCode ierr;
@@ -41,8 +39,6 @@ PetscErrorCode MatGetColumnNorms_SeqAIJ(Mat A,NormType type,PetscReal *norms)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFindOffBlockDiagonalEntries_SeqAIJ"
 PetscErrorCode MatFindOffBlockDiagonalEntries_SeqAIJ(Mat A,IS *is)
 {
   Mat_SeqAIJ      *a  = (Mat_SeqAIJ*)A->data;
@@ -69,14 +65,12 @@ PetscErrorCode MatFindOffBlockDiagonalEntries_SeqAIJ(Mat A,IS *is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFindZeroDiagonals_SeqAIJ_Private"
 PetscErrorCode MatFindZeroDiagonals_SeqAIJ_Private(Mat A,PetscInt *nrows,PetscInt **zrows)
 {
   Mat_SeqAIJ      *a  = (Mat_SeqAIJ*)A->data;
   const MatScalar *aa = a->a;
   PetscInt        i,m=A->rmap->n,cnt = 0;
-  const PetscInt  *jj = a->j,*diag;
+  const PetscInt  *ii = a->i,*jj = a->j,*diag;
   PetscInt        *rows;
   PetscErrorCode  ierr;
 
@@ -84,14 +78,14 @@ PetscErrorCode MatFindZeroDiagonals_SeqAIJ_Private(Mat A,PetscInt *nrows,PetscIn
   ierr = MatMarkDiagonal_SeqAIJ(A);CHKERRQ(ierr);
   diag = a->diag;
   for (i=0; i<m; i++) {
-    if ((jj[diag[i]] != i) || (aa[diag[i]] == 0.0)) {
+    if ((diag[i] >= ii[i+1]) || (jj[diag[i]] != i) || (aa[diag[i]] == 0.0)) {
       cnt++;
     }
   }
   ierr = PetscMalloc1(cnt,&rows);CHKERRQ(ierr);
   cnt  = 0;
   for (i=0; i<m; i++) {
-    if ((jj[diag[i]] != i) || (aa[diag[i]] == 0.0)) {
+    if ((diag[i] >= ii[i+1]) || (jj[diag[i]] != i) || (aa[diag[i]] == 0.0)) {
       rows[cnt++] = i;
     }
   }
@@ -100,8 +94,6 @@ PetscErrorCode MatFindZeroDiagonals_SeqAIJ_Private(Mat A,PetscInt *nrows,PetscIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFindZeroDiagonals_SeqAIJ"
 PetscErrorCode MatFindZeroDiagonals_SeqAIJ(Mat A,IS *zrows)
 {
   PetscInt       nrows,*rows;
@@ -114,8 +106,6 @@ PetscErrorCode MatFindZeroDiagonals_SeqAIJ(Mat A,IS *zrows)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFindNonzeroRows_SeqAIJ"
 PetscErrorCode MatFindNonzeroRows_SeqAIJ(Mat A,IS *keptrows)
 {
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
@@ -159,8 +149,6 @@ ok1:;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDiagonalSet_SeqAIJ"
 PetscErrorCode  MatDiagonalSet_SeqAIJ(Mat Y,Vec D,InsertMode is)
 {
   PetscErrorCode    ierr;
@@ -195,8 +183,6 @@ PetscErrorCode  MatDiagonalSet_SeqAIJ(Mat Y,Vec D,InsertMode is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetRowIJ_SeqAIJ"
 PetscErrorCode MatGetRowIJ_SeqAIJ(Mat A,PetscInt oshift,PetscBool symmetric,PetscBool inodecompressed,PetscInt *m,const PetscInt *ia[],const PetscInt *ja[],PetscBool  *done)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -229,8 +215,6 @@ PetscErrorCode MatGetRowIJ_SeqAIJ(Mat A,PetscInt oshift,PetscBool symmetric,Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatRestoreRowIJ_SeqAIJ"
 PetscErrorCode MatRestoreRowIJ_SeqAIJ(Mat A,PetscInt oshift,PetscBool symmetric,PetscBool inodecompressed,PetscInt *n,const PetscInt *ia[],const PetscInt *ja[],PetscBool  *done)
 {
   PetscErrorCode ierr;
@@ -244,8 +228,6 @@ PetscErrorCode MatRestoreRowIJ_SeqAIJ(Mat A,PetscInt oshift,PetscBool symmetric,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetColumnIJ_SeqAIJ"
 PetscErrorCode MatGetColumnIJ_SeqAIJ(Mat A,PetscInt oshift,PetscBool symmetric,PetscBool inodecompressed,PetscInt *nn,const PetscInt *ia[],const PetscInt *ja[],PetscBool  *done)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -286,8 +268,6 @@ PetscErrorCode MatGetColumnIJ_SeqAIJ(Mat A,PetscInt oshift,PetscBool symmetric,P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatRestoreColumnIJ_SeqAIJ"
 PetscErrorCode MatRestoreColumnIJ_SeqAIJ(Mat A,PetscInt oshift,PetscBool symmetric,PetscBool inodecompressed,PetscInt *n,const PetscInt *ia[],const PetscInt *ja[],PetscBool  *done)
 {
   PetscErrorCode ierr;
@@ -305,8 +285,6 @@ PetscErrorCode MatRestoreColumnIJ_SeqAIJ(Mat A,PetscInt oshift,PetscBool symmetr
  MatGetColumnIJ_SeqAIJ() and MatRestoreColumnIJ_SeqAIJ() by adding an output
  spidx[], index of a->a, to be used in MatTransposeColoringCreate_SeqAIJ() and MatFDColoringCreate_SeqXAIJ()
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatGetColumnIJ_SeqAIJ_Color"
 PetscErrorCode MatGetColumnIJ_SeqAIJ_Color(Mat A,PetscInt oshift,PetscBool symmetric,PetscBool inodecompressed,PetscInt *nn,const PetscInt *ia[],const PetscInt *ja[],PetscInt *spidx[],PetscBool  *done)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -347,8 +325,6 @@ PetscErrorCode MatGetColumnIJ_SeqAIJ_Color(Mat A,PetscInt oshift,PetscBool symme
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatRestoreColumnIJ_SeqAIJ_Color"
 PetscErrorCode MatRestoreColumnIJ_SeqAIJ_Color(Mat A,PetscInt oshift,PetscBool symmetric,PetscBool inodecompressed,PetscInt *n,const PetscInt *ia[],const PetscInt *ja[],PetscInt *spidx[],PetscBool  *done)
 {
   PetscErrorCode ierr;
@@ -359,8 +335,6 @@ PetscErrorCode MatRestoreColumnIJ_SeqAIJ_Color(Mat A,PetscInt oshift,PetscBool s
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetValuesRow_SeqAIJ"
 PetscErrorCode MatSetValuesRow_SeqAIJ(Mat A,PetscInt row,const PetscScalar v[])
 {
   Mat_SeqAIJ     *a  = (Mat_SeqAIJ*)A->data;
@@ -385,8 +359,6 @@ PetscErrorCode MatSetValuesRow_SeqAIJ(Mat A,PetscInt row,const PetscScalar v[])
 */
 
 #include <petsc/private/isimpl.h>
-#undef __FUNCT__
-#define __FUNCT__ "MatSeqAIJSetValuesLocalFast"
 PetscErrorCode MatSeqAIJSetValuesLocalFast(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode is)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -425,8 +397,6 @@ PetscErrorCode MatSeqAIJSetValuesLocalFast(Mat A,PetscInt m,const PetscInt im[],
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetValues_SeqAIJ"
 PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode is)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -501,8 +471,6 @@ noinsert:;
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetValues_SeqAIJ"
 PetscErrorCode MatGetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],PetscScalar v[])
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
@@ -542,8 +510,6 @@ finished:;
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatView_SeqAIJ_Binary"
 PetscErrorCode MatView_SeqAIJ_Binary(Mat A,PetscViewer viewer)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -583,8 +549,6 @@ PetscErrorCode MatView_SeqAIJ_Binary(Mat A,PetscViewer viewer)
 
 extern PetscErrorCode MatSeqAIJFactorInfo_Matlab(Mat,PetscViewer);
 
-#undef __FUNCT__
-#define __FUNCT__ "MatView_SeqAIJ_ASCII"
 PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -594,6 +558,8 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
   PetscViewerFormat format;
 
   PetscFunctionBegin;
+  if (!a->a) PetscFunctionReturn(0);
+
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   if (format == PETSC_VIEWER_ASCII_MATLAB) {
     PetscInt nofinalvalue = 0;
@@ -840,8 +806,6 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
 }
 
 #include <petscdraw.h>
-#undef __FUNCT__
-#define __FUNCT__ "MatView_SeqAIJ_Draw_Zoom"
 PetscErrorCode MatView_SeqAIJ_Draw_Zoom(PetscDraw draw,void *Aa)
 {
   Mat               A  = (Mat) Aa;
@@ -923,8 +887,6 @@ PetscErrorCode MatView_SeqAIJ_Draw_Zoom(PetscDraw draw,void *Aa)
 }
 
 #include <petscdraw.h>
-#undef __FUNCT__
-#define __FUNCT__ "MatView_SeqAIJ_Draw"
 PetscErrorCode MatView_SeqAIJ_Draw(Mat A,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -947,8 +909,6 @@ PetscErrorCode MatView_SeqAIJ_Draw(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatView_SeqAIJ"
 PetscErrorCode MatView_SeqAIJ(Mat A,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -969,8 +929,6 @@ PetscErrorCode MatView_SeqAIJ(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd_SeqAIJ"
 PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -1029,8 +987,6 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatRealPart_SeqAIJ"
 PetscErrorCode MatRealPart_SeqAIJ(Mat A)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -1044,8 +1000,6 @@ PetscErrorCode MatRealPart_SeqAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatImaginaryPart_SeqAIJ"
 PetscErrorCode MatImaginaryPart_SeqAIJ(Mat A)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -1059,8 +1013,6 @@ PetscErrorCode MatImaginaryPart_SeqAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatZeroEntries_SeqAIJ"
 PetscErrorCode MatZeroEntries_SeqAIJ(Mat A)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -1072,8 +1024,6 @@ PetscErrorCode MatZeroEntries_SeqAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_SeqAIJ"
 PetscErrorCode MatDestroy_SeqAIJ(Mat A)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -1110,6 +1060,10 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
 #if defined(PETSC_HAVE_ELEMENTAL)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqaij_elemental_C",NULL);CHKERRQ(ierr);
 #endif
+#if defined(PETSC_HAVE_HYPRE)
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqaij_hypre_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMatMatMult_transpose_seqaij_seqaij_C",NULL);CHKERRQ(ierr);
+#endif
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqaij_seqdense_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatIsTranspose_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqAIJSetPreallocation_C",NULL);CHKERRQ(ierr);
@@ -1118,8 +1072,6 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetOption_SeqAIJ"
 PetscErrorCode MatSetOption_SeqAIJ(Mat A,MatOption op,PetscBool flg)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -1163,6 +1115,9 @@ PetscErrorCode MatSetOption_SeqAIJ(Mat A,MatOption op,PetscBool flg)
   case MAT_USE_INODES:
     /* Not an error because MatSetOption_SeqAIJ_Inode handles this one */
     break;
+  case MAT_SUBMAT_SINGLEIS:
+    A->submat_singleis = flg;
+    break;
   default:
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"unknown option %d",op);
   }
@@ -1170,8 +1125,6 @@ PetscErrorCode MatSetOption_SeqAIJ(Mat A,MatOption op,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetDiagonal_SeqAIJ"
 PetscErrorCode MatGetDiagonal_SeqAIJ(Mat A,Vec v)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -1208,8 +1161,6 @@ PetscErrorCode MatGetDiagonal_SeqAIJ(Mat A,Vec v)
 }
 
 #include <../src/mat/impls/aij/seq/ftn-kernels/fmult.h>
-#undef __FUNCT__
-#define __FUNCT__ "MatMultTransposeAdd_SeqAIJ"
 PetscErrorCode MatMultTransposeAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -1259,8 +1210,6 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultTranspose_SeqAIJ"
 PetscErrorCode MatMultTranspose_SeqAIJ(Mat A,Vec xx,Vec yy)
 {
   PetscErrorCode ierr;
@@ -1273,8 +1222,6 @@ PetscErrorCode MatMultTranspose_SeqAIJ(Mat A,Vec xx,Vec yy)
 
 #include <../src/mat/impls/aij/seq/ftn-kernels/fmult.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_SeqAIJ"
 PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -1332,8 +1279,6 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultMax_SeqAIJ"
 PetscErrorCode MatMultMax_SeqAIJ(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -1386,8 +1331,6 @@ PetscErrorCode MatMultMax_SeqAIJ(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMultAddMax_SeqAIJ"
 PetscErrorCode MatMultAddMax_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -1436,8 +1379,6 @@ PetscErrorCode MatMultAddMax_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 }
 
 #include <../src/mat/impls/aij/seq/ftn-kernels/fmultadd.h>
-#undef __FUNCT__
-#define __FUNCT__ "MatMultAdd_SeqAIJ"
 PetscErrorCode MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -1501,8 +1442,6 @@ PetscErrorCode MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 /*
      Adds diagonal pointers to sparse matrix structure.
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatMarkDiagonal_SeqAIJ"
 PetscErrorCode MatMarkDiagonal_SeqAIJ(Mat A)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -1529,8 +1468,6 @@ PetscErrorCode MatMarkDiagonal_SeqAIJ(Mat A)
 /*
      Checks for missing diagonals
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatMissingDiagonal_SeqAIJ"
 PetscErrorCode MatMissingDiagonal_SeqAIJ(Mat A,PetscBool  *missing,PetscInt *d)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
@@ -1556,8 +1493,6 @@ PetscErrorCode MatMissingDiagonal_SeqAIJ(Mat A,PetscBool  *missing,PetscInt *d)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatInvertDiagonal_SeqAIJ"
 /*
    Negative shift indicates do not generate an error if there is a zero diagonal, just invert it anyways
 */
@@ -1607,8 +1542,6 @@ PetscErrorCode  MatInvertDiagonal_SeqAIJ(Mat A,PetscScalar omega,PetscScalar fsh
 }
 
 #include <../src/mat/impls/aij/seq/ftn-kernels/frelax.h>
-#undef __FUNCT__
-#define __FUNCT__ "MatSOR_SeqAIJ"
 PetscErrorCode MatSOR_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -1779,8 +1712,6 @@ PetscErrorCode MatSOR_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscR
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetInfo_SeqAIJ"
 PetscErrorCode MatGetInfo_SeqAIJ(Mat A,MatInfoType flag,MatInfo *info)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
@@ -1805,16 +1736,14 @@ PetscErrorCode MatGetInfo_SeqAIJ(Mat A,MatInfoType flag,MatInfo *info)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatZeroRows_SeqAIJ"
 PetscErrorCode MatZeroRows_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
-  PetscInt          i,m = A->rmap->n - 1,d = 0;
+  PetscInt          i,m = A->rmap->n - 1;
   PetscErrorCode    ierr;
   const PetscScalar *xx;
   PetscScalar       *bb;
-  PetscBool         missing;
+  PetscInt          d = 0;
 
   PetscFunctionBegin;
   if (x && b) {
@@ -1834,8 +1763,10 @@ PetscErrorCode MatZeroRows_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
       ierr = PetscMemzero(&a->a[a->i[rows[i]]],a->ilen[rows[i]]*sizeof(PetscScalar));CHKERRQ(ierr);
     }
     if (diag != 0.0) {
-      ierr = MatMissingDiagonal_SeqAIJ(A,&missing,&d);CHKERRQ(ierr);
-      if (missing) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry in row %D",d);
+      for (i=0; i<N; i++) {
+        d = rows[i];
+        if (a->diag[d] >= a->i[d+1]) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry in the zeroed row %D",d);
+      }
       for (i=0; i<N; i++) {
         a->a[a->diag[rows[i]]] = diag;
       }
@@ -1864,8 +1795,6 @@ PetscErrorCode MatZeroRows_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatZeroRowsColumns_SeqAIJ"
 PetscErrorCode MatZeroRowsColumns_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
@@ -1905,17 +1834,23 @@ PetscErrorCode MatZeroRowsColumns_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],
   ierr = PetscFree(zeroed);CHKERRQ(ierr);
   if (diag != 0.0) {
     ierr = MatMissingDiagonal_SeqAIJ(A,&missing,&d);CHKERRQ(ierr);
-    if (missing) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry in row %D",d);
-    for (i=0; i<N; i++) {
-      a->a[a->diag[rows[i]]] = diag;
+    if (missing) {
+      if (a->nonew) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry in row %D",d);
+      else {
+        for (i=0; i<N; i++) {
+          ierr = MatSetValues_SeqAIJ(A,1,&rows[i],1,&rows[i],&diag,INSERT_VALUES);CHKERRQ(ierr);
+        }
+      }
+    } else {
+      for (i=0; i<N; i++) {
+        a->a[a->diag[rows[i]]] = diag;
+      }
     }
   }
   ierr = MatAssemblyEnd_SeqAIJ(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetRow_SeqAIJ"
 PetscErrorCode MatGetRow_SeqAIJ(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,PetscScalar **v)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
@@ -1935,16 +1870,12 @@ PetscErrorCode MatGetRow_SeqAIJ(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,P
 }
 
 /* remove this function? */
-#undef __FUNCT__
-#define __FUNCT__ "MatRestoreRow_SeqAIJ"
 PetscErrorCode MatRestoreRow_SeqAIJ(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,PetscScalar **v)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatNorm_SeqAIJ"
 PetscErrorCode MatNorm_SeqAIJ(Mat A,NormType type,PetscReal *nrm)
 {
   Mat_SeqAIJ     *a  = (Mat_SeqAIJ*)A->data;
@@ -1955,10 +1886,15 @@ PetscErrorCode MatNorm_SeqAIJ(Mat A,NormType type,PetscReal *nrm)
 
   PetscFunctionBegin;
   if (type == NORM_FROBENIUS) {
+#if defined(PETSC_USE_REAL___FP16)
+    PetscBLASInt one = 1,nz = a->nz;
+    *nrm = BLASnrm2_(&nz,v,&one);
+#else
     for (i=0; i<a->nz; i++) {
       sum += PetscRealPart(PetscConj(*v)*(*v)); v++;
     }
     *nrm = PetscSqrtReal(sum);
+#endif
     ierr = PetscLogFlops(2*a->nz);CHKERRQ(ierr);
   } else if (type == NORM_1) {
     PetscReal *tmp;
@@ -1989,8 +1925,6 @@ PetscErrorCode MatNorm_SeqAIJ(Mat A,NormType type,PetscReal *nrm)
 }
 
 /* Merged from MatGetSymbolicTranspose_SeqAIJ() - replace MatGetSymbolicTranspose_SeqAIJ()? */
-#undef __FUNCT__
-#define __FUNCT__ "MatTransposeSymbolic_SeqAIJ"
 PetscErrorCode MatTransposeSymbolic_SeqAIJ(Mat A,Mat *B)
 {
   PetscErrorCode ierr;
@@ -2035,8 +1969,6 @@ PetscErrorCode MatTransposeSymbolic_SeqAIJ(Mat A,Mat *B)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatTranspose_SeqAIJ"
 PetscErrorCode MatTranspose_SeqAIJ(Mat A,MatReuse reuse,Mat *B)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -2046,9 +1978,9 @@ PetscErrorCode MatTranspose_SeqAIJ(Mat A,MatReuse reuse,Mat *B)
   MatScalar      *array = a->a;
 
   PetscFunctionBegin;
-  if (reuse == MAT_REUSE_MATRIX && A == *B && m != A->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Square matrix only for in-place");
+  if (reuse == MAT_INPLACE_MATRIX && m != A->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Square matrix only for in-place");
 
-  if (reuse == MAT_INITIAL_MATRIX || *B == A) {
+  if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_INPLACE_MATRIX) {
     ierr = PetscCalloc1(1+A->cmap->n,&col);CHKERRQ(ierr);
 
     for (i=0; i<ai[m]; i++) col[aj[i]] += 1;
@@ -2071,7 +2003,7 @@ PetscErrorCode MatTranspose_SeqAIJ(Mat A,MatReuse reuse,Mat *B)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  if (reuse == MAT_INITIAL_MATRIX || *B != A) {
+  if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_REUSE_MATRIX) {
     *B = C;
   } else {
     ierr = MatHeaderMerge(A,&C);CHKERRQ(ierr);
@@ -2079,8 +2011,6 @@ PetscErrorCode MatTranspose_SeqAIJ(Mat A,MatReuse reuse,Mat *B)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatIsTranspose_SeqAIJ"
 PetscErrorCode  MatIsTranspose_SeqAIJ(Mat A,Mat B,PetscReal tol,PetscBool  *f)
 {
   Mat_SeqAIJ     *aij = (Mat_SeqAIJ*) A->data,*bij = (Mat_SeqAIJ*) B->data;
@@ -2129,8 +2059,6 @@ done:
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatIsHermitianTranspose_SeqAIJ"
 PetscErrorCode  MatIsHermitianTranspose_SeqAIJ(Mat A,Mat B,PetscReal tol,PetscBool  *f)
 {
   Mat_SeqAIJ     *aij = (Mat_SeqAIJ*) A->data,*bij = (Mat_SeqAIJ*) B->data;
@@ -2179,8 +2107,6 @@ done:
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatIsSymmetric_SeqAIJ"
 PetscErrorCode MatIsSymmetric_SeqAIJ(Mat A,PetscReal tol,PetscBool  *f)
 {
   PetscErrorCode ierr;
@@ -2190,8 +2116,6 @@ PetscErrorCode MatIsSymmetric_SeqAIJ(Mat A,PetscReal tol,PetscBool  *f)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatIsHermitian_SeqAIJ"
 PetscErrorCode MatIsHermitian_SeqAIJ(Mat A,PetscReal tol,PetscBool  *f)
 {
   PetscErrorCode ierr;
@@ -2201,8 +2125,6 @@ PetscErrorCode MatIsHermitian_SeqAIJ(Mat A,PetscReal tol,PetscBool  *f)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDiagonalScale_SeqAIJ"
 PetscErrorCode MatDiagonalScale_SeqAIJ(Mat A,Vec ll,Vec rr)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -2240,9 +2162,7 @@ PetscErrorCode MatDiagonalScale_SeqAIJ(Mat A,Vec ll,Vec rr)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetSubMatrix_SeqAIJ"
-PetscErrorCode MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,PetscInt csize,MatReuse scall,Mat *B)
+PetscErrorCode MatCreateSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,PetscInt csize,MatReuse scall,Mat *B)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data,*c;
   PetscErrorCode ierr;
@@ -2397,7 +2317,7 @@ PetscErrorCode MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,PetscInt csize,Mat
       mat_j = c->j + mat_i;
       mat_a = c->a + mat_i;
       ilen  = c->ilen[i];
-      ierr  = PetscSortIntWithMatScalarArray(ilen,mat_j,mat_a);CHKERRQ(ierr);
+      ierr  = PetscSortIntWithScalarArray(ilen,mat_j,mat_a);CHKERRQ(ierr);
     }
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -2408,8 +2328,6 @@ PetscErrorCode MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,PetscInt csize,Mat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetMultiProcBlock_SeqAIJ"
 PetscErrorCode  MatGetMultiProcBlock_SeqAIJ(Mat mat,MPI_Comm subComm,MatReuse scall,Mat *subMat)
 {
   PetscErrorCode ierr;
@@ -2429,8 +2347,6 @@ PetscErrorCode  MatGetMultiProcBlock_SeqAIJ(Mat mat,MPI_Comm subComm,MatReuse sc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatILUFactor_SeqAIJ"
 PetscErrorCode MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,const MatFactorInfo *info)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)inA->data;
@@ -2478,8 +2394,6 @@ PetscErrorCode MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,const MatFactorInfo *in
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatScale_SeqAIJ"
 PetscErrorCode MatScale_SeqAIJ(Mat inA,PetscScalar alpha)
 {
   Mat_SeqAIJ     *a     = (Mat_SeqAIJ*)inA->data;
@@ -2495,26 +2409,81 @@ PetscErrorCode MatScale_SeqAIJ(Mat inA,PetscScalar alpha)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetSubMatrices_SeqAIJ"
-PetscErrorCode MatGetSubMatrices_SeqAIJ(Mat A,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *B[])
+PetscErrorCode MatDestroySubMatrices_Private(Mat_SubSppt *submatj)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  if (!submatj->id) { /* delete data that are linked only to submats[id=0] */
+    ierr = PetscFree4(submatj->sbuf1,submatj->ptr,submatj->tmp,submatj->ctr);CHKERRQ(ierr);
+
+    for (i=0; i<submatj->nrqr; ++i) {
+      ierr = PetscFree(submatj->sbuf2[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree3(submatj->sbuf2,submatj->req_size,submatj->req_source1);CHKERRQ(ierr);
+
+    if (submatj->rbuf1) {
+      ierr = PetscFree(submatj->rbuf1[0]);CHKERRQ(ierr);
+      ierr = PetscFree(submatj->rbuf1);CHKERRQ(ierr);
+    }
+
+    for (i=0; i<submatj->nrqs; ++i) {
+      ierr = PetscFree(submatj->rbuf3[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree3(submatj->req_source2,submatj->rbuf2,submatj->rbuf3);CHKERRQ(ierr);
+    ierr = PetscFree(submatj->pa);CHKERRQ(ierr);
+  }
+
+#if defined(PETSC_USE_CTABLE)
+  ierr = PetscTableDestroy((PetscTable*)&submatj->rmap);CHKERRQ(ierr);
+  if (submatj->cmap_loc) {ierr = PetscFree(submatj->cmap_loc);CHKERRQ(ierr);}
+  ierr = PetscFree(submatj->rmap_loc);CHKERRQ(ierr);
+#else
+  ierr = PetscFree(submatj->rmap);CHKERRQ(ierr);
+#endif
+
+  if (!submatj->allcolumns) {
+#if defined(PETSC_USE_CTABLE)
+    ierr = PetscTableDestroy((PetscTable*)&submatj->cmap);CHKERRQ(ierr);
+#else
+    ierr = PetscFree(submatj->cmap);CHKERRQ(ierr);
+#endif
+  }
+  ierr = PetscFree(submatj->row2proc);CHKERRQ(ierr);
+
+  ierr = PetscFree(submatj);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatDestroy_SeqAIJ_Submatrices(Mat C)
+{
+  PetscErrorCode ierr;
+  Mat_SeqAIJ     *c = (Mat_SeqAIJ*)C->data;
+  Mat_SubSppt    *submatj = c->submatis1;
+
+  PetscFunctionBegin;
+  ierr = submatj->destroy(C);CHKERRQ(ierr);
+  ierr = MatDestroySubMatrices_Private(submatj);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatCreateSubMatrices_SeqAIJ(Mat A,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *B[])
 {
   PetscErrorCode ierr;
   PetscInt       i;
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
-    ierr = PetscMalloc1(n+1,B);CHKERRQ(ierr);
+    ierr = PetscCalloc1(n+1,B);CHKERRQ(ierr);
   }
 
   for (i=0; i<n; i++) {
-    ierr = MatGetSubMatrix_SeqAIJ(A,irow[i],icol[i],PETSC_DECIDE,scall,&(*B)[i]);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix_SeqAIJ(A,irow[i],icol[i],PETSC_DECIDE,scall,&(*B)[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatIncreaseOverlap_SeqAIJ"
 PetscErrorCode MatIncreaseOverlap_SeqAIJ(Mat A,PetscInt is_max,IS is[],PetscInt ov)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -2571,8 +2540,6 @@ PetscErrorCode MatIncreaseOverlap_SeqAIJ(Mat A,PetscInt is_max,IS is[],PetscInt 
 }
 
 /* -------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "MatPermute_SeqAIJ"
 PetscErrorCode MatPermute_SeqAIJ(Mat A,IS rowp,IS colp,Mat *B)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -2620,8 +2587,6 @@ PetscErrorCode MatPermute_SeqAIJ(Mat A,IS rowp,IS colp,Mat *B)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCopy_SeqAIJ"
 PetscErrorCode MatCopy_SeqAIJ(Mat A,Mat B,MatStructure str)
 {
   PetscErrorCode ierr;
@@ -2640,8 +2605,6 @@ PetscErrorCode MatCopy_SeqAIJ(Mat A,Mat B,MatStructure str)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetUp_SeqAIJ"
 PetscErrorCode MatSetUp_SeqAIJ(Mat A)
 {
   PetscErrorCode ierr;
@@ -2651,8 +2614,6 @@ PetscErrorCode MatSetUp_SeqAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSeqAIJGetArray_SeqAIJ"
 PetscErrorCode MatSeqAIJGetArray_SeqAIJ(Mat A,PetscScalar *array[])
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
@@ -2662,8 +2623,6 @@ PetscErrorCode MatSeqAIJGetArray_SeqAIJ(Mat A,PetscScalar *array[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSeqAIJRestoreArray_SeqAIJ"
 PetscErrorCode MatSeqAIJRestoreArray_SeqAIJ(Mat A,PetscScalar *array[])
 {
   PetscFunctionBegin;
@@ -2674,8 +2633,6 @@ PetscErrorCode MatSeqAIJRestoreArray_SeqAIJ(Mat A,PetscScalar *array[])
    Computes the number of nonzeros per row needed for preallocation when X and Y
    have different nonzero structure.
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatAXPYGetPreallocation_SeqX_private"
 PetscErrorCode MatAXPYGetPreallocation_SeqX_private(PetscInt m,const PetscInt *xi,const PetscInt *xj,const PetscInt *yi,const PetscInt *yj,PetscInt *nnz)
 {
   PetscInt       i,j,k,nzx,nzy;
@@ -2697,8 +2654,6 @@ PetscErrorCode MatAXPYGetPreallocation_SeqX_private(PetscInt m,const PetscInt *x
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAXPYGetPreallocation_SeqAIJ"
 PetscErrorCode MatAXPYGetPreallocation_SeqAIJ(Mat Y,Mat X,PetscInt *nnz)
 {
   PetscInt       m = Y->rmap->N;
@@ -2712,8 +2667,6 @@ PetscErrorCode MatAXPYGetPreallocation_SeqAIJ(Mat Y,Mat X,PetscInt *nnz)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAXPY_SeqAIJ"
 PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
   PetscErrorCode ierr;
@@ -2747,8 +2700,6 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatConjugate_SeqAIJ"
 PetscErrorCode  MatConjugate_SeqAIJ(Mat mat)
 {
 #if defined(PETSC_USE_COMPLEX)
@@ -2766,8 +2717,6 @@ PetscErrorCode  MatConjugate_SeqAIJ(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetRowMaxAbs_SeqAIJ"
 PetscErrorCode MatGetRowMaxAbs_SeqAIJ(Mat A,Vec v,PetscInt idx[])
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -2800,8 +2749,6 @@ PetscErrorCode MatGetRowMaxAbs_SeqAIJ(Mat A,Vec v,PetscInt idx[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetRowMax_SeqAIJ"
 PetscErrorCode MatGetRowMax_SeqAIJ(Mat A,Vec v,PetscInt idx[])
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -2845,8 +2792,6 @@ PetscErrorCode MatGetRowMax_SeqAIJ(Mat A,Vec v,PetscInt idx[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetRowMinAbs_SeqAIJ"
 PetscErrorCode MatGetRowMinAbs_SeqAIJ(Mat A,Vec v,PetscInt idx[])
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -2892,8 +2837,6 @@ PetscErrorCode MatGetRowMinAbs_SeqAIJ(Mat A,Vec v,PetscInt idx[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetRowMin_SeqAIJ"
 PetscErrorCode MatGetRowMin_SeqAIJ(Mat A,Vec v,PetscInt idx[])
 {
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
@@ -2941,8 +2884,6 @@ PetscErrorCode MatGetRowMin_SeqAIJ(Mat A,Vec v,PetscInt idx[])
 #include <petscblaslapack.h>
 #include <petsc/private/kernels/blockinvert.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatInvertBlockDiagonal_SeqAIJ"
 PetscErrorCode MatInvertBlockDiagonal_SeqAIJ(Mat A,const PetscScalar **values)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*) A->data;
@@ -3059,8 +3000,6 @@ PetscErrorCode MatInvertBlockDiagonal_SeqAIJ(Mat A,const PetscScalar **values)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetRandom_SeqAIJ"
 static PetscErrorCode  MatSetRandom_SeqAIJ(Mat x,PetscRandom rctx)
 {
   PetscErrorCode ierr;
@@ -3084,8 +3023,6 @@ static PetscErrorCode  MatSetRandom_SeqAIJ(Mat x,PetscRandom rctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatShift_SeqAIJ"
 PetscErrorCode MatShift_SeqAIJ(Mat Y,PetscScalar a)
 {
   PetscErrorCode ierr;
@@ -3140,7 +3077,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqAIJ,
                                         MatILUFactor_SeqAIJ,
                                         0,
                                 /* 39*/ MatAXPY_SeqAIJ,
-                                        MatGetSubMatrices_SeqAIJ,
+                                        MatCreateSubMatrices_SeqAIJ,
                                         MatIncreaseOverlap_SeqAIJ,
                                         MatGetValues_SeqAIJ,
                                         MatCopy_SeqAIJ,
@@ -3247,8 +3184,6 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqAIJ,
                                  /*144*/MatCreateMPIMatConcatenateSeqMat_SeqAIJ
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSeqAIJSetColumnIndices_SeqAIJ"
 PetscErrorCode  MatSeqAIJSetColumnIndices_SeqAIJ(Mat mat,PetscInt *indices)
 {
   Mat_SeqAIJ *aij = (Mat_SeqAIJ*)mat->data;
@@ -3267,8 +3202,6 @@ PetscErrorCode  MatSeqAIJSetColumnIndices_SeqAIJ(Mat mat,PetscInt *indices)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSeqAIJSetColumnIndices"
 /*@
     MatSeqAIJSetColumnIndices - Set the column indices for all the rows
        in the matrix.
@@ -3305,8 +3238,6 @@ PetscErrorCode  MatSeqAIJSetColumnIndices(Mat mat,PetscInt *indices)
 
 /* ----------------------------------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatStoreValues_SeqAIJ"
 PetscErrorCode  MatStoreValues_SeqAIJ(Mat mat)
 {
   Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)mat->data;
@@ -3327,8 +3258,6 @@ PetscErrorCode  MatStoreValues_SeqAIJ(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatStoreValues"
 /*@
     MatStoreValues - Stashes a copy of the matrix values; this allows, for
        example, reuse of the linear part of a Jacobian, while recomputing the
@@ -3388,8 +3317,6 @@ PetscErrorCode  MatStoreValues(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatRetrieveValues_SeqAIJ"
 PetscErrorCode  MatRetrieveValues_SeqAIJ(Mat mat)
 {
   Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)mat->data;
@@ -3404,8 +3331,6 @@ PetscErrorCode  MatRetrieveValues_SeqAIJ(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatRetrieveValues"
 /*@
     MatRetrieveValues - Retrieves the copy of the matrix values; this allows, for
        example, reuse of the linear part of a Jacobian, while recomputing the
@@ -3414,7 +3339,7 @@ PetscErrorCode  MatRetrieveValues_SeqAIJ(Mat mat)
    Collect on Mat
 
   Input Parameters:
-.  mat - the matrix (currently on AIJ matrices support this option)
+.  mat - the matrix (currently only AIJ matrices support this option)
 
   Level: advanced
 
@@ -3435,8 +3360,6 @@ PetscErrorCode  MatRetrieveValues(Mat mat)
 
 
 /* --------------------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateSeqAIJ"
 /*@C
    MatCreateSeqAIJ - Creates a sparse matrix in AIJ (compressed row) format
    (the default parallel PETSc format).  For good matrix assembly performance
@@ -3500,8 +3423,6 @@ PetscErrorCode  MatCreateSeqAIJ(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt nz,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSeqAIJSetPreallocation"
 /*@C
    MatSeqAIJSetPreallocation - For good matrix assembly performance
    the user should preallocate the matrix storage by setting the parameter nz
@@ -3565,8 +3486,6 @@ PetscErrorCode  MatSeqAIJSetPreallocation(Mat B,PetscInt nz,const PetscInt nnz[]
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSeqAIJSetPreallocation_SeqAIJ"
 PetscErrorCode  MatSeqAIJSetPreallocation_SeqAIJ(Mat B,PetscInt nz,const PetscInt *nnz)
 {
   Mat_SeqAIJ     *b;
@@ -3637,11 +3556,11 @@ PetscErrorCode  MatSeqAIJSetPreallocation_SeqAIJ(Mat B,PetscInt nz,const PetscIn
   if (realalloc) {
     ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   }
+  B->was_assembled = PETSC_FALSE;
+  B->assembled     = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
-#undef  __FUNCT__
-#define __FUNCT__  "MatSeqAIJSetPreallocationCSR"
 /*@
    MatSeqAIJSetPreallocationCSR - Allocates memory for a sparse sequential matrix in AIJ format.
 
@@ -3670,8 +3589,6 @@ PetscErrorCode MatSeqAIJSetPreallocationCSR(Mat B,const PetscInt i[],const Petsc
   PetscFunctionReturn(0);
 }
 
-#undef  __FUNCT__
-#define __FUNCT__  "MatSeqAIJSetPreallocationCSR_SeqAIJ"
 PetscErrorCode  MatSeqAIJSetPreallocationCSR_SeqAIJ(Mat B,const PetscInt Ii[],const PetscInt J[],const PetscScalar v[])
 {
   PetscInt       i;
@@ -3722,8 +3639,6 @@ PetscErrorCode  MatSeqAIJSetPreallocationCSR_SeqAIJ(Mat B,const PetscInt Ii[],co
 #include <../src/mat/impls/dense/seq/dense.h>
 #include <petsc/private/kernels/petscaxpy.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMatMultNumeric_SeqDense_SeqAIJ"
 /*
     Computes (B'*A')' since computing B*A directly is untenable
 
@@ -3768,8 +3683,6 @@ PetscErrorCode MatMatMultNumeric_SeqDense_SeqAIJ(Mat A,Mat B,Mat C)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMatMultSymbolic_SeqDense_SeqAIJ"
 PetscErrorCode MatMatMultSymbolic_SeqDense_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
@@ -3791,8 +3704,6 @@ PetscErrorCode MatMatMultSymbolic_SeqDense_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat
 }
 
 /* ----------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "MatMatMult_SeqDense_SeqAIJ"
 PETSC_INTERN PetscErrorCode MatMatMult_SeqDense_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
@@ -3863,6 +3774,10 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat,MatType,MatReuse,Mat
 #if defined(PETSC_HAVE_ELEMENTAL)
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_Elemental(Mat,MatType,MatReuse,Mat*);
 #endif
+#if defined(PETSC_HAVE_HYPRE)
+PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat A,MatType,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatMatMatMult_Transpose_AIJ_AIJ(Mat,Mat,Mat,MatReuse,PetscReal,Mat*);
+#endif
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqDense(Mat,MatType,MatReuse,Mat*);
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
@@ -3871,10 +3786,8 @@ PETSC_EXTERN PetscErrorCode  MatlabEngineGet_SeqAIJ(PetscObject,void*);
 #endif
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSeqAIJGetArray"
 /*@C
-   MatSeqAIJGetArray - gives access to the array where the data for a SeqSeqAIJ matrix is stored
+   MatSeqAIJGetArray - gives access to the array where the data for a MATSEQAIJ matrix is stored
 
    Not Collective
 
@@ -3897,8 +3810,6 @@ PetscErrorCode  MatSeqAIJGetArray(Mat A,PetscScalar **array)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSeqAIJGetMaxRowNonzeros"
 /*@C
    MatSeqAIJGetMaxRowNonzeros - returns the maximum number of nonzeros in any row
 
@@ -3923,8 +3834,6 @@ PetscErrorCode  MatSeqAIJGetMaxRowNonzeros(Mat A,PetscInt *nz)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSeqAIJRestoreArray"
 /*@C
    MatSeqAIJRestoreArray - returns access to the array where the data for a MATSEQAIJ matrix is stored obtained by MatSeqAIJGetArray()
 
@@ -3947,8 +3856,6 @@ PetscErrorCode  MatSeqAIJRestoreArray(Mat A,PetscScalar **array)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_SeqAIJ"
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat B)
 {
   Mat_SeqAIJ     *b;
@@ -4004,6 +3911,10 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat B)
 #if defined(PETSC_HAVE_ELEMENTAL)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_elemental_C",MatConvert_SeqAIJ_Elemental);CHKERRQ(ierr);
 #endif
+#if defined(PETSC_HAVE_HYPRE)
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_hypre_C",MatConvert_AIJ_HYPRE);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMatMult_transpose_seqaij_seqaij_C",MatMatMatMult_Transpose_AIJ_AIJ);CHKERRQ(ierr);
+#endif
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_seqdense_C",MatConvert_SeqAIJ_SeqDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatIsTranspose_C",MatIsTranspose_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatIsHermitianTranspose_C",MatIsTranspose_SeqAIJ);CHKERRQ(ierr);
@@ -4018,8 +3929,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat B)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDuplicateNoCreate_SeqAIJ"
 /*
     Given a matrix generated with MatGetFactor() duplicates all the information in A into B
 */
@@ -4112,8 +4021,6 @@ PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat C,Mat A,MatDuplicateOption cpvalu
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDuplicate_SeqAIJ"
 PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
 {
   PetscErrorCode ierr;
@@ -4129,8 +4036,6 @@ PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLoad_SeqAIJ"
 PetscErrorCode MatLoad_SeqAIJ(Mat newMat, PetscViewer viewer)
 {
   Mat_SeqAIJ     *a;
@@ -4201,8 +4106,6 @@ PetscErrorCode MatLoad_SeqAIJ(Mat newMat, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatEqual_SeqAIJ"
 PetscErrorCode MatEqual_SeqAIJ(Mat A,Mat B,PetscBool * flg)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data,*b = (Mat_SeqAIJ*)B->data;
@@ -4240,8 +4143,6 @@ PetscErrorCode MatEqual_SeqAIJ(Mat A,Mat B,PetscBool * flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateSeqAIJWithArrays"
 /*@
      MatCreateSeqAIJWithArrays - Creates an sequential AIJ matrix using matrix elements (in CSR format)
               provided by the user.
@@ -4285,7 +4186,7 @@ $        v =  {1,2,3,4,5,6}  [size = 6]
 .seealso: MatCreate(), MatCreateAIJ(), MatCreateSeqAIJ(), MatCreateMPIAIJWithArrays(), MatMPIAIJSetPreallocationCSR()
 
 @*/
-PetscErrorCode  MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt *i,PetscInt *j,PetscScalar *a,Mat *mat)
+PetscErrorCode  MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt i[],PetscInt j[],PetscScalar a[],Mat *mat)
 {
   PetscErrorCode ierr;
   PetscInt       ii;
@@ -4333,8 +4234,6 @@ PetscErrorCode  MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pe
   ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateSeqAIJFromTriple"
 /*@C
      MatCreateSeqAIJFromTriple - Creates an sequential AIJ matrix using matrix elements (in COO format)
               provided by the user.
@@ -4375,7 +4274,7 @@ PetscErrorCode  MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pe
 .seealso: MatCreate(), MatCreateAIJ(), MatCreateSeqAIJ(), MatCreateSeqAIJWithArrays(), MatMPIAIJSetPreallocationCSR()
 
 @*/
-PetscErrorCode  MatCreateSeqAIJFromTriple(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt *i,PetscInt *j,PetscScalar *a,Mat *mat,PetscInt nz,PetscBool idx)
+PetscErrorCode  MatCreateSeqAIJFromTriple(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt i[],PetscInt j[],PetscScalar a[],Mat *mat,PetscInt nz,PetscBool idx)
 {
   PetscErrorCode ierr;
   PetscInt       ii, *nnz, one = 1,row,col;
@@ -4406,8 +4305,6 @@ PetscErrorCode  MatCreateSeqAIJFromTriple(MPI_Comm comm,PetscInt m,PetscInt n,Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSeqAIJInvalidateDiagonal"
 PetscErrorCode MatSeqAIJInvalidateDiagonal(Mat A)
 {
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data;
@@ -4421,14 +4318,18 @@ PetscErrorCode MatSeqAIJInvalidateDiagonal(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateMPIMatConcatenateSeqMat_SeqAIJ"
 PetscErrorCode MatCreateMPIMatConcatenateSeqMat_SeqAIJ(MPI_Comm comm,Mat inmat,PetscInt n,MatReuse scall,Mat *outmat)
 {
   PetscErrorCode ierr;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MatCreateMPIMatConcatenateSeqMat_MPIAIJ(comm,inmat,n,scall,outmat);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size == 1 && scall == MAT_REUSE_MATRIX) {
+    ierr = MatCopy(inmat,*outmat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  } else {
+    ierr = MatCreateMPIMatConcatenateSeqMat_MPIAIJ(comm,inmat,n,scall,outmat);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -4438,8 +4339,6 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat_SeqAIJ(MPI_Comm comm,Mat inmat,P
  of [0,m), colemb is in [0,n).
  If pattern == DIFFERENT_NONZERO_PATTERN, C is preallocated according to A.
  */
-#undef __FUNCT__
-#define __FUNCT__ "MatSetSeqMat_SeqAIJ"
 PetscErrorCode MatSetSeqMat_SeqAIJ(Mat C,IS rowemb,IS colemb,MatStructure pattern,Mat B)
 {
   /* If making this function public, change the error returned in this function away from _PLIB. */
@@ -4529,8 +4428,6 @@ PetscErrorCode MatSetSeqMat_SeqAIJ(Mat C,IS rowemb,IS colemb,MatStructure patter
 #undef SETERRQ3
 #define SETERRQ3(comm,ierr,b,c,d,e) CHKERRABORT(comm,ierr)
 
-#undef __FUNCT__
-#define __FUNCT__ "matsetvaluesseqaij_"
 PETSC_EXTERN void PETSC_STDCALL matsetvaluesseqaij_(Mat *AA,PetscInt *mm,const PetscInt im[],PetscInt *nn,const PetscInt in[],const PetscScalar v[],InsertMode *isis, PetscErrorCode *_ierr)
 {
   Mat            A  = *AA;

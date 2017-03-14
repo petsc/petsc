@@ -1,8 +1,0 @@
-#if !defined(__PETSCVIEWERDEF_H90)
-#define __PETSCVIEWERDEF_H90
-#if defined(PETSC_USE_FORTRAN_DATATYPES)
-      type PetscViewer
-        PetscFortranAddr:: v
-      end type PetscViewer
-#endif
-#endif

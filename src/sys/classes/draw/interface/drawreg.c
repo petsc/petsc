@@ -13,8 +13,6 @@
 */
 PetscFunctionList PetscDrawList = 0;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawView"
 /*@C
    PetscDrawView - Prints the PetscDraw data structure.
 
@@ -92,8 +90,6 @@ PetscErrorCode  PetscDrawView(PetscDraw indraw,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawCreate"
 /*@C
    PetscDrawCreate - Creates a graphics context.
 
@@ -115,7 +111,17 @@ PetscErrorCode  PetscDrawView(PetscDraw indraw,PetscViewer viewer)
    Concepts: graphics^creating context
    Concepts: drawing^creating context
 
-.seealso: PetscDrawSetFromOptions(), PetscDrawDestroy(), PetscDrawSetType()
+.seealso: PetscDrawSetType(), PetscDrawSetFromOptions(), PetscDrawDestroy(), PetscDrawSetType(), PetscDrawLGCreate(), PetscDrawSPCreate(),
+          PetscDrawViewPortsCreate(), PetscDrawViewPortsSet(), PetscDrawAxisCreate(), PetscDrawHGCreate(), PetscDrawBarCreate(),
+          PetscViewerDrawGetDraw(), PetscDrawSetFromOptions(), PetscDrawSetSave(), PetscDrawSetSaveMovie(), PetscDrawSetSaveFinalImage(),
+          PetscDrawOpenX(), PetscDrawOpenImage(), PetscDrawIsNull(), PetscDrawGetPopup(), PetscDrawCheckResizedWindow(), PetscDrawResizeWindow(),
+          PetscDrawGetWindowSize(), PetscDrawLine(), PetscDrawArrow(), PetscDrawLineSetWidth(), PetscDrawLineGetWidth(), PetscDrawMarker(),
+          PetscDrawPoint(), PetscDrawRectangle(), PetscDrawTriangle(), PetscDrawEllipse(), PetscDrawString(), PetscDrawStringCentered(),
+          PetscDrawStringBoxed(), PetscDrawStringBoxedSize(), PetscDrawStringVertical(), PetscDrawSetViewPort(), PetscDrawGetViewPort(),
+          PetscDrawSplitViewPort(), PetscDrawSetTitle(), PetscDrawAppendTitle(), PetscDrawGetTitle(), PetscDrawSetPause(), PetscDrawGetPause(),
+          PetscDrawPause(), PetscDrawSetDoubleBuffer(), PetscDrawClear(), PetscDrawFlush(), PetscDrawGetSingleton(), PetscDrawGetMouseButton(),
+          PetscDrawZoom(), PetscDrawGetBoundingBox()
+
 @*/
 PetscErrorCode  PetscDrawCreate(MPI_Comm comm,const char display[],const char title[],int x,int y,int w,int h,PetscDraw *indraw)
 {
@@ -168,8 +174,6 @@ PetscErrorCode  PetscDrawCreate(MPI_Comm comm,const char display[],const char ti
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSetType"
 /*@C
    PetscDrawSetType - Builds graphics object for a particular implementation
 
@@ -182,19 +186,19 @@ PetscErrorCode  PetscDrawCreate(MPI_Comm comm,const char display[],const char ti
    Options Database Command:
 .  -draw_type  <type> - Sets the type; use -help for a list of available methods (for instance, x)
 
-   See PetscDrawSetFromOptions for additional options database keys
+   See PetscDrawSetFromOptions() for additional options database keys
 
    Level: intermediate
 
    Notes:
    See "petsc/include/petscdraw.h" for available methods (for instance,
-   PETSC_DRAW_X)
+   PETSC_DRAW_X, PETSC_DRAW_TIKZ or PETSC_DRAW_IMAGE)
 
    Concepts: drawing^X windows
    Concepts: X windows^graphics
    Concepts: drawing^Microsoft Windows
 
-.seealso: PetscDrawSetFromOptions(), PetscDrawCreate(), PetscDrawDestroy()
+.seealso: PetscDrawSetFromOptions(), PetscDrawCreate(), PetscDrawDestroy(), PetscDrawType
 @*/
 PetscErrorCode  PetscDrawSetType(PetscDraw draw,PetscDrawType type)
 {
@@ -242,8 +246,6 @@ PetscErrorCode  PetscDrawSetType(PetscDraw draw,PetscDrawType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawGetType"
 /*@C
    PetscDrawGetType - Gets the PetscDraw type as a string from the PetscDraw object.
 
@@ -257,6 +259,8 @@ PetscErrorCode  PetscDrawSetType(PetscDraw draw,PetscDrawType type)
 
    Level: advanced
 
+.seealso: PetscDrawSetType(), PetscDrawType
+
 @*/
 PetscErrorCode  PetscDrawGetType(PetscDraw draw,PetscDrawType *type)
 {
@@ -267,8 +271,6 @@ PetscErrorCode  PetscDrawGetType(PetscDraw draw,PetscDrawType *type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawRegister"
 /*@C
    PetscDrawRegister - Adds a method to the graphics package.
 
@@ -296,7 +298,7 @@ $     -draw_type my_draw_type
    Concepts: graphics^registering new draw classes
    Concepts: PetscDraw^registering new draw classes
 
-.seealso: PetscDrawRegisterAll(), PetscDrawRegisterDestroy()
+.seealso: PetscDrawRegisterAll(), PetscDrawRegisterDestroy(), PetscDrawType, PetscDrawSetType()
 @*/
 PetscErrorCode  PetscDrawRegister(const char *sname,PetscErrorCode (*function)(PetscDraw))
 {
@@ -307,8 +309,6 @@ PetscErrorCode  PetscDrawRegister(const char *sname,PetscErrorCode (*function)(P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSetOptionsPrefix"
 /*@C
    PetscDrawSetOptionsPrefix - Sets the prefix used for searching for all
    PetscDraw options in the database.
@@ -323,7 +323,7 @@ PetscErrorCode  PetscDrawRegister(const char *sname,PetscErrorCode (*function)(P
 
 .keywords: PetscDraw, set, options, prefix, database
 
-.seealso: PetscDrawSetFromOptions()
+.seealso: PetscDrawSetFromOptions(), PetscDrawCreate()
 @*/
 PetscErrorCode  PetscDrawSetOptionsPrefix(PetscDraw draw,const char prefix[])
 {
@@ -335,8 +335,6 @@ PetscErrorCode  PetscDrawSetOptionsPrefix(PetscDraw draw,const char prefix[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSetFromOptions"
 /*@
    PetscDrawSetFromOptions - Sets the graphics type from the options database.
       Defaults to a PETSc X windows graphics.
@@ -365,7 +363,7 @@ PetscErrorCode  PetscDrawSetOptionsPrefix(PetscDraw draw,const char prefix[])
    Concepts: drawing^setting options
    Concepts: graphics^setting options
 
-.seealso: PetscDrawCreate(), PetscDrawSetType(), PetscDrawSetSave(), PetscDrawSetSaveFinalImage()
+.seealso: PetscDrawCreate(), PetscDrawSetType(), PetscDrawSetSave(), PetscDrawSetSaveFinalImage(), PetscDrawPause(), PetscDrawSetPause()
 
 @*/
 PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
@@ -416,14 +414,14 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
     ierr = PetscSNPrintf(movieext,sizeof(movieext),"%s",draw->savemovieext?draw->savemovieext:"");CHKERRQ(ierr);
     ierr = PetscOptionsString("-draw_save","Save graphics to image file","PetscDrawSetSave",filename,filename,sizeof(filename),&image);CHKERRQ(ierr);
     ierr = PetscOptionsString("-draw_save_movie","Make a movie from saved images","PetscDrawSetSaveMovie",movieext,movieext,sizeof(movieext),&movie);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-draw_save_movie_fps","Set frames per second in saved movie",__FUNCT__,draw->savemoviefps,&draw->savemoviefps,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-draw_save_single_file","Each new image replaces previous image in file",__FUNCT__,draw->savesinglefile,&draw->savesinglefile,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-draw_save_movie_fps","Set frames per second in saved movie",PETSC_FUNCTION_NAME,draw->savemoviefps,&draw->savemoviefps,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-draw_save_single_file","Each new image replaces previous image in file",PETSC_FUNCTION_NAME,draw->savesinglefile,&draw->savesinglefile,NULL);CHKERRQ(ierr);
     if (image) {ierr = PetscDrawSetSave(draw,filename);CHKERRQ(ierr);}
     if (movie) {ierr = PetscDrawSetSaveMovie(draw,movieext);CHKERRQ(ierr);}
     ierr = PetscOptionsString("-draw_save_final_image","Save final graphics to image file","PetscDrawSetSaveFinalImage",filename,filename,sizeof(filename),&image);CHKERRQ(ierr);
     if (image) {ierr = PetscDrawSetSaveFinalImage(draw,filename);CHKERRQ(ierr);}
-    ierr = PetscOptionsBool("-draw_save_on_clear","Save graphics to file on each clear",__FUNCT__,draw->saveonclear,&draw->saveonclear,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-draw_save_on_flush","Save graphics to file on each flush",__FUNCT__,draw->saveonflush,&draw->saveonflush,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-draw_save_on_clear","Save graphics to file on each clear",PETSC_FUNCTION_NAME,draw->saveonclear,&draw->saveonclear,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-draw_save_on_flush","Save graphics to file on each flush",PETSC_FUNCTION_NAME,draw->saveonflush,&draw->saveonflush,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsReal("-draw_pause","Amount of time that program pauses after plots","PetscDrawSetPause",draw->pause,&draw->pause,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-draw_marker_type","Type of marker to use on plots","PetscDrawSetMarkerType",PetscDrawMarkerTypes,(PetscEnum)draw->markertype,(PetscEnum *)&draw->markertype,NULL);CHKERRQ(ierr);

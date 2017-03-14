@@ -88,8 +88,6 @@ typedef struct {
 
 PetscErrorCode FormInitialSolution(TS,Vec,AppCtx*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   AppCtx            user;             /* user-defined work context */
@@ -179,8 +177,6 @@ int main(int argc,char **argv)
 /* ------------------------------------------------------------------- */
 
 
-#undef __FUNCT__
-#define __FUNCT__ "FormInitialSolution"
 /*
    FormInitialSolution - Forms initial approximation.
 
@@ -240,8 +236,6 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,AppCtx *user)
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormIFunctionLocal"
 PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info,PetscReal ptime,Field **x,Field **xdot,Field **f,void *ptr)
 {
   AppCtx         *user = (AppCtx*)ptr;

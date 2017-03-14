@@ -5,15 +5,13 @@ a real generalized symmetric-definite eigenproblem \n\
  A*x = lambda*x \n\
 Input parameters include\n\
   -f <input_file> : file to load\n\
-e.g. ./ex116 -f /home/petsc/datafiles/matrices/small  \n\n";
+e.g. ./ex116 -f $DATAFILESPATH/matrices/small  \n\n";
 
 #include <petscmat.h>
 #include <petscblaslapack.h>
 
 extern PetscErrorCode CkEigenSolutions(PetscInt,Mat,PetscInt,PetscInt,PetscReal*,Vec*,PetscReal*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 PetscInt main(PetscInt argc,char **args)
 {
   Mat            A,A_dense;
@@ -25,7 +23,8 @@ PetscInt main(PetscInt argc,char **args)
   PetscBool      isSymmetric;
   PetscScalar    *arrayA,*evecs_array,*work,*evals;
   PetscMPIInt    size;
-  PetscInt       m,n,i,nevs,il,iu,cklvl=2;
+  PetscInt       m,n,i,cklvl=2;
+  PetscBLASInt   nevs,il,iu,in;
   PetscReal      vl,vu,abstol=1.e-8;
   PetscBLASInt   *iwork,*ifail,lwork,lierr,bn;
   PetscReal      tols[2];
@@ -54,8 +53,8 @@ PetscInt main(PetscInt argc,char **args)
   ierr = PetscOptionsHasName(NULL,NULL, "-check_symmetry", &flg);CHKERRQ(ierr);
   if (flg) {
     Mat Trans;
-    ierr = MatTranspose(A,MAT_INITIAL_MATRIX, &Trans);
-    ierr = MatEqual(A, Trans, &isSymmetric);
+    ierr = MatTranspose(A,MAT_INITIAL_MATRIX, &Trans);CHKERRQ(ierr);
+    ierr = MatEqual(A, Trans, &isSymmetric);CHKERRQ(ierr);
     if (!isSymmetric) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"A must be symmetric");
     ierr = MatDestroy(&Trans);CHKERRQ(ierr);
   }
@@ -72,7 +71,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = MatDenseGetArray(A_dense,&arrayA);CHKERRQ(ierr);
 
   if (!TestSYEVX) { /* test syev() */
-    printf(" LAPACKsyev: compute all %D eigensolutions...\n",m);
+    ierr = PetscPrintf(PETSC_COMM_SELF," LAPACKsyev: compute all %D eigensolutions...\n",m);CHKERRQ(ierr);
     LAPACKsyev_("V","U",&bn,arrayA,&bn,evals,work,&lwork,&lierr);
     evecs_array = arrayA;
     ierr        = PetscBLASIntCast(m,&nevs);CHKERRQ(ierr);
@@ -81,14 +80,15 @@ PetscInt main(PetscInt argc,char **args)
   } else { /* test syevx()  */
     il   = 1;
     ierr = PetscBLASIntCast(0.2*m,&iu);CHKERRQ(ierr);
-    printf(" LAPACKsyevx: compute %D to %D-th eigensolutions...\n",il,iu);
+    ierr = PetscBLASIntCast(n,&in);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF," LAPACKsyevx: compute %d to %d-th eigensolutions...\n",il,iu);CHKERRQ(ierr);
     ierr  = PetscMalloc1(m*n+1,&evecs_array);CHKERRQ(ierr);
     ierr  = PetscMalloc1(6*n+1,&iwork);CHKERRQ(ierr);
     ifail = iwork + 5*n;
 
     /* in the case "I", vl and vu are not referenced */
     vl = 0.0; vu = 8.0;
-    LAPACKsyevx_("V","I","U",&bn,arrayA,&bn,&vl,&vu,&il,&iu,&abstol,&nevs,evals,evecs_array,&n,work,&lwork,iwork,ifail,&lierr);
+    LAPACKsyevx_("V","I","U",&bn,arrayA,&bn,&vl,&vu,&il,&iu,&abstol,&nevs,evals,evecs_array,&in,work,&lwork,iwork,ifail,&lierr);
     ierr = PetscFree(iwork);CHKERRQ(ierr);
   }
   ierr = MatDenseRestoreArray(A_dense,&arrayA);CHKERRQ(ierr);
@@ -97,8 +97,8 @@ PetscInt main(PetscInt argc,char **args)
   /* View eigenvalues */
   ierr = PetscOptionsHasName(NULL,NULL, "-eig_view", &flg);CHKERRQ(ierr);
   if (flg) {
-    printf(" %D evals: \n",nevs);
-    for (i=0; i<nevs; i++) printf("%D  %g\n",i+il,(double)evals[i]);
+    ierr = PetscPrintf(PETSC_COMM_SELF," %D evals: \n",nevs);CHKERRQ(ierr);
+    for (i=0; i<nevs; i++) {ierr = PetscPrintf(PETSC_COMM_SELF,"%D  %g\n",i+il,(double)evals[i]);CHKERRQ(ierr);}
   }
 
   /* Check residuals and orthogonality */
@@ -127,7 +127,7 @@ PetscInt main(PetscInt argc,char **args)
     /* Convert aij matrix to MatSeqDense for LAPACK */
     PetscScalar  *arrayU,*arrayVT,*arrayErr,alpha=1.0,beta=-1.0;
     Mat          Err;
-    PetscBLASInt minMN,maxMN;
+    PetscBLASInt minMN,maxMN,im,in;
     PetscInt     j;
     PetscReal    norm;
 
@@ -148,14 +148,16 @@ PetscInt main(PetscInt argc,char **args)
     ierr = MatDenseGetArray(A_dense,&arrayA);CHKERRQ(ierr);
     ierr = PetscMemcpy(arrayErr,arrayA,sizeof(PetscScalar)*m*minMN);CHKERRQ(ierr);
 
+    ierr = PetscBLASIntCast(m,&im);CHKERRQ(ierr);
+    ierr = PetscBLASIntCast(n,&in);CHKERRQ(ierr);
     /* Compute A = U*SIGMA*VT */
-    LAPACKgesvd_("S","S",&m,&n,arrayA,&m,evals,arrayU,&minMN,arrayVT,&minMN,work,&lwork,&lierr);
+    LAPACKgesvd_("S","S",&im,&in,arrayA,&im,evals,arrayU,&minMN,arrayVT,&minMN,work,&lwork,&lierr);
     ierr = MatDenseRestoreArray(A_dense,&arrayA);CHKERRQ(ierr);
     if (!lierr) {
-      printf(" 1st 10 of %d singular values: \n",minMN);
-      for (i=0; i<10; i++) printf("%D  %g\n",i,(double)evals[i]);
+      ierr = PetscPrintf(PETSC_COMM_SELF," 1st 10 of %d singular values: \n",minMN);CHKERRQ(ierr);
+      for (i=0; i<10; i++) {ierr = PetscPrintf(PETSC_COMM_SELF,"%D  %g\n",i,(double)evals[i]);CHKERRQ(ierr);}
     } else {
-      printf("LAPACKgesvd_ fails!");
+      ierr = PetscPrintf(PETSC_COMM_SELF,"LAPACKgesvd_ fails!");CHKERRQ(ierr);
     }
 
     /* Check Err = (U*Sigma*V^T - A) using BLASgemm() */
@@ -164,11 +166,9 @@ PetscInt main(PetscInt argc,char **args)
       for (i=0; i<m; i++) arrayU[j*m+i] *= evals[j];
     }
     /* Err = U*VT - A = alpha*U*VT + beta*Err */
-    BLASgemm_("N","N",&m,&minMN,&minMN,&alpha,arrayU,&m,arrayVT,&minMN,&beta,arrayErr,&m);
-    /*printf(" Err:\n");*/
-    /*ierr = MatView(Err,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);*/
+    BLASgemm_("N","N",&im,&minMN,&minMN,&alpha,arrayU,&im,arrayVT,&minMN,&beta,arrayErr,&im);
     ierr = MatNorm(Err,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
-    printf(" || U*Sigma*VT - A || = %g\n",(double)norm);
+    ierr = PetscPrintf(PETSC_COMM_SELF," || U*Sigma*VT - A || = %g\n",(double)norm);CHKERRQ(ierr);
 
     ierr = PetscFree4(arrayU,arrayVT,arrayErr,work);CHKERRQ(ierr);
     ierr = PetscFree(evals);CHKERRQ(ierr);
@@ -194,9 +194,6 @@ PetscInt main(PetscInt argc,char **args)
      tols[0]    - reporting tol_res: || A * evec[i] - eval[i]*evec[i] ||
      tols[1]    - reporting tol_orth: evec[i]^T*evec[j] - delta_ij
 */
-#undef DEBUG_CkEigenSolutions
-#undef __FUNCT__
-#define __FUNCT__ "CkEigenSolutions"
 PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,PetscReal *eval,Vec *evec,PetscReal *tols)
 {
   PetscInt  ierr,i,j,nev;
@@ -208,55 +205,51 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
   if (nev <= 0) PetscFunctionReturn(0);
 
   /*ierr = VecView(evec[0],PETSC_VIEWER_STDOUT_WORLD);*/
-  ierr = VecDuplicate(evec[0],&vt1);
-  ierr = VecDuplicate(evec[0],&vt2);
+  ierr = VecDuplicate(evec[0],&vt1);CHKERRQ(ierr);
+  ierr = VecDuplicate(evec[0],&vt2);CHKERRQ(ierr);
 
   switch (cklvl) {
   case 2:
     dot_max = 0.0;
     for (i = il; i<iu; i++) {
-      ierr = VecCopy(evec[i], vt1);
+      ierr = VecCopy(evec[i], vt1);CHKERRQ(ierr);
       for (j=il; j<iu; j++) {
-        ierr = VecDot(evec[j],vt1,&dot);
+        ierr = VecDot(evec[j],vt1,&dot);CHKERRQ(ierr);
         if (j == i) {
           dot = PetscAbsScalar(dot - 1.0);
         } else {
           dot = PetscAbsScalar(dot);
         }
         if (dot > dot_max) dot_max = dot;
-#if defined(DEBUG_CkEigenSolutions)
         if (dot > tols[1]) {
-          ierr = VecNorm(evec[i],NORM_INFINITY,&norm);
-          ierr = PetscPrintf(PETSC_COMM_SELF,"|delta(%D,%D)|: %g, norm: %g\n",i,j,(double)dot,(double)norm);
+          ierr = VecNorm(evec[i],NORM_INFINITY,&norm);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_SELF,"|delta(%D,%D)|: %g, norm: %g\n",i,j,(double)dot,(double)norm);CHKERRQ(ierr);
         }
-#endif
       }
     }
-    ierr = PetscPrintf(PETSC_COMM_SELF,"    max|(x_j^T*x_i) - delta_ji|: %g\n",(double)dot_max);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"    max|(x_j^T*x_i) - delta_ji|: %g\n",(double)dot_max);CHKERRQ(ierr);
 
   case 1:
     norm_max = 0.0;
     for (i = il; i< iu; i++) {
-      ierr = MatMult(A, evec[i], vt1);
-      ierr = VecCopy(evec[i], vt2);
+      ierr = MatMult(A, evec[i], vt1);CHKERRQ(ierr);
+      ierr = VecCopy(evec[i], vt2);CHKERRQ(ierr);
       tmp  = -eval[i];
-      ierr = VecAXPY(vt1,tmp,vt2);
-      ierr = VecNorm(vt1, NORM_INFINITY, &norm);
+      ierr = VecAXPY(vt1,tmp,vt2);CHKERRQ(ierr);
+      ierr = VecNorm(vt1, NORM_INFINITY, &norm);CHKERRQ(ierr);
       norm = PetscAbsScalar(norm);
       if (norm > norm_max) norm_max = norm;
-#if defined(DEBUG_CkEigenSolutions)
       /* sniff, and bark if necessary */
       if (norm > tols[0]) {
-        printf("  residual violation: %D, resi: %g\n",i, norm);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"  residual violation: %D, resi: %g\n",i, norm);CHKERRQ(ierr);
       }
-#endif
     }
-    ierr = PetscPrintf(PETSC_COMM_SELF,"    max_resi:                    %g\n", (double)norm_max);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"    max_resi:                    %g\n", (double)norm_max);CHKERRQ(ierr);
     break;
   default:
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: cklvl=%D is not supported \n",cklvl);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: cklvl=%D is not supported \n",cklvl);CHKERRQ(ierr);
   }
-  ierr = VecDestroy(&vt2);
-  ierr = VecDestroy(&vt1);
+  ierr = VecDestroy(&vt2);CHKERRQ(ierr);
+  ierr = VecDestroy(&vt1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

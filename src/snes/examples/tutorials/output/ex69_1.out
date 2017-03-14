@@ -16,12 +16,6 @@ L_2 Error: [6.60367e-05, 0.0104876]
 L_2 Residual: 0.00859623
 Linear L_2 Residual: 0.00859623
   0 SNES Function norm 0.0669208 
-Mat Object: 1 MPI processes
-  type: seqaij
-  rows=25, cols=25
-  total: nonzeros=625, allocated nonzeros=625
-  total number of mallocs used during MatSetValues calls =0
-    using I-node routines: found 5 nodes, limit used is 5
     0 KSP Residual norm 0.634265 
     1 KSP Residual norm < 1.e-11
   Linear solve converged due to CONVERGED_RTOL iterations 1
@@ -52,6 +46,7 @@ SNES Object: 1 MPI processes
   PC Object: 1 MPI processes
     type: fieldsplit
       FieldSplit with Schur preconditioner, factorization FULL
+      using Amat (not Pmat) as operator for blocks
       Preconditioner for the Schur complement formed from the exact Schur complement
       Split info:
       Split number 0 Defined by IS
@@ -79,7 +74,13 @@ SNES Object: 1 MPI processes
                   total: nonzeros=3926, allocated nonzeros=3926
                   total number of mallocs used during MatSetValues calls =0
                     using I-node routines: found 62 nodes, limit used is 5
-          linear system matrix = precond matrix:
+          linear system matrix followed by preconditioner matrix:
+          Mat Object: 1 MPI processes
+            type: seqaij
+            rows=126, cols=126
+            total: nonzeros=2192, allocated nonzeros=2192
+            total number of mallocs used during MatSetValues calls =0
+              using I-node routines: found 76 nodes, limit used is 5
           Mat Object: (fieldsplit_velocity_) 1 MPI processes
             type: seqaij
             rows=126, cols=126
@@ -106,7 +107,7 @@ SNES Object: 1 MPI processes
               has attached null space
               Schur complement A11 - A10 inv(A00) A01
               A11
-                Mat Object: (fieldsplit_pressure_) 1 MPI processes
+                Mat Object: 1 MPI processes
                   type: seqaij
                   rows=25, cols=25
                   total: nonzeros=137, allocated nonzeros=137
@@ -143,7 +144,13 @@ SNES Object: 1 MPI processes
                           total: nonzeros=3926, allocated nonzeros=3926
                           total number of mallocs used during MatSetValues calls =0
                             using I-node routines: found 62 nodes, limit used is 5
-                  linear system matrix = precond matrix:
+                  linear system matrix followed by preconditioner matrix:
+                  Mat Object: 1 MPI processes
+                    type: seqaij
+                    rows=126, cols=126
+                    total: nonzeros=2192, allocated nonzeros=2192
+                    total number of mallocs used during MatSetValues calls =0
+                      using I-node routines: found 76 nodes, limit used is 5
                   Mat Object: (fieldsplit_velocity_) 1 MPI processes
                     type: seqaij
                     rows=126, cols=126
@@ -163,13 +170,19 @@ SNES Object: 1 MPI processes
             total: nonzeros=625, allocated nonzeros=625
             total number of mallocs used during MatSetValues calls =0
               using I-node routines: found 5 nodes, limit used is 5
-    linear system matrix = precond matrix:
+    linear system matrix followed by preconditioner matrix:
     Mat Object: 1 MPI processes
       type: seqaij
       rows=151, cols=151
       total: nonzeros=3437, allocated nonzeros=3437
       total number of mallocs used during MatSetValues calls =0
         has attached null space
+        using I-node routines: found 80 nodes, limit used is 5
+    Mat Object: 1 MPI processes
+      type: seqaij
+      rows=151, cols=151
+      total: nonzeros=3437, allocated nonzeros=3437
+      total number of mallocs used during MatSetValues calls =0
         using I-node routines: found 80 nodes, limit used is 5
 Number of SNES iterations = 1
 L_2 Error: 0.00627 [7.89e-05, 0.00627]

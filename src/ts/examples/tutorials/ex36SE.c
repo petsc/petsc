@@ -21,8 +21,6 @@ F*/
 FILE *gfilepointer_data,*gfilepointer_info;
 
 /* Defines the source  */
-/*#undef __FUNCT__
-#define __FUNCT__ "Ue"
 PetscErrorCode Ue(PetscScalar t,PetscScalar *U)
 {
   PetscFunctionBegin;
@@ -30,8 +28,6 @@ PetscErrorCode Ue(PetscScalar t,PetscScalar *U)
   PetscFunctionReturn(0);
   }*/
 
-#undef __FUNCT__
-#define __FUNCT__ "IFunctionSemiExplicit"
 /*
      Defines the DAE passed to the time solver
 */
@@ -59,8 +55,6 @@ static PetscErrorCode IFunctionSemiExplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,Vec
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "IJacobianSemiExplicit"
 /*
      Defines the Jacobian of the ODE passed to the ODE solver. See TSSetIJacobian() for the meaning of a and the Jacobian.
 */
@@ -110,8 +104,6 @@ static PetscErrorCode IJacobianSemiExplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   TS             ts;            /* ODE integrator */
@@ -137,7 +129,7 @@ int main(int argc,char **argv)
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
-  ierr = MatCreateVecs(A,&Y,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&Y,NULL);CHKERRQ(ierr);
 
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
   y[0] = -3.0;
@@ -156,8 +148,8 @@ int main(int argc,char **argv)
   ierr = TSSetEquationType(ts,TS_EQ_DAE_IMPLICIT_INDEX1);CHKERRQ(ierr);
   ierr = TSARKIMEXSetFullyImplicit(ts,PETSC_TRUE);CHKERRQ(ierr);
   /*ierr = TSSetType(ts,TSROSW);CHKERRQ(ierr);*/
-  ierr = TSSetIFunction(ts,PETSC_NULL,IFunctionSemiExplicit,PETSC_NULL);CHKERRQ(ierr);
-  ierr = TSSetIJacobian(ts,A,A,IJacobianSemiExplicit,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,NULL,IFunctionSemiExplicit,NULL);CHKERRQ(ierr);
+  ierr = TSSetIJacobian(ts,A,A,IJacobianSemiExplicit,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions

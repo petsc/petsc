@@ -5,8 +5,6 @@ typedef struct {
   PetscReal alpha;        /* sufficient decrease parameter */
 } SNESLineSearch_BT;
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchBTSetAlpha"
 /*@
    SNESLineSearchBTSetAlpha - Sets the descent parameter, alpha, in the BT linesearch variant.
 
@@ -30,8 +28,6 @@ PetscErrorCode SNESLineSearchBTSetAlpha(SNESLineSearch linesearch, PetscReal alp
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchBTGetAlpha"
 /*@
    SNESLineSearchBTGetAlpha - Gets the descent parameter, alpha, in the BT linesearch variant.
 
@@ -56,8 +52,6 @@ PetscErrorCode SNESLineSearchBTGetAlpha(SNESLineSearch linesearch, PetscReal *al
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchApply_BT"
 static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
 {
   PetscBool         changed_y,changed_w;
@@ -387,8 +381,6 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchView_BT"
 PetscErrorCode SNESLineSearchView_BT(SNESLineSearch linesearch, PetscViewer viewer)
 {
   PetscErrorCode    ierr;
@@ -410,8 +402,6 @@ PetscErrorCode SNESLineSearchView_BT(SNESLineSearch linesearch, PetscViewer view
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchDestroy_BT"
 static PetscErrorCode SNESLineSearchDestroy_BT(SNESLineSearch linesearch)
 {
   PetscErrorCode ierr;
@@ -422,8 +412,6 @@ static PetscErrorCode SNESLineSearchDestroy_BT(SNESLineSearch linesearch)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchSetFromOptions_BT"
 static PetscErrorCode SNESLineSearchSetFromOptions_BT(PetscOptionItems *PetscOptionsObject,SNESLineSearch linesearch)
 {
 
@@ -438,8 +426,6 @@ static PetscErrorCode SNESLineSearchSetFromOptions_BT(PetscOptionItems *PetscOpt
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchCreate_BT"
 /*MC
    SNESLINESEARCHBT - Backtracking line search.
 

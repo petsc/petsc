@@ -5,8 +5,6 @@ const char *const SNESFASTypes[] = {"MULTIPLICATIVE","ADDITIVE","FULL","KASKADE"
 
 extern PetscErrorCode SNESFASGalerkinDefaultFunction(SNES,Vec,Vec,void*);
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESReset_FAS"
 static PetscErrorCode SNESReset_FAS(SNES snes)
 {
   PetscErrorCode ierr  = 0;
@@ -27,8 +25,6 @@ static PetscErrorCode SNESReset_FAS(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESDestroy_FAS"
 static PetscErrorCode SNESDestroy_FAS(SNES snes)
 {
   SNES_FAS       * fas = (SNES_FAS*)snes->data;
@@ -44,8 +40,6 @@ static PetscErrorCode SNESDestroy_FAS(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetUp_FAS"
 static PetscErrorCode SNESSetUp_FAS(SNES snes)
 {
   SNES_FAS       *fas = (SNES_FAS*) snes->data;
@@ -215,8 +209,6 @@ static PetscErrorCode SNESSetUp_FAS(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetFromOptions_FAS"
 static PetscErrorCode SNESSetFromOptions_FAS(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   SNES_FAS       *fas   = (SNES_FAS*) snes->data;
@@ -315,8 +307,6 @@ static PetscErrorCode SNESSetFromOptions_FAS(PetscOptionItems *PetscOptionsObjec
 }
 
 #include <petscdraw.h>
-#undef __FUNCT__
-#define __FUNCT__ "SNESView_FAS"
 static PetscErrorCode SNESView_FAS(SNES snes, PetscViewer viewer)
 {
   SNES_FAS       *fas = (SNES_FAS*) snes->data;
@@ -398,8 +388,6 @@ static PetscErrorCode SNESView_FAS(SNES snes, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASDownSmooth_Private"
 /*
 Defines the action of the downsmoother
  */
@@ -436,8 +424,6 @@ static PetscErrorCode SNESFASDownSmooth_Private(SNES snes, Vec B, Vec X, Vec F, 
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASUpSmooth_Private"
 /*
 Defines the action of the upsmoother
  */
@@ -471,8 +457,6 @@ static PetscErrorCode SNESFASUpSmooth_Private(SNES snes, Vec B, Vec X, Vec F, Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASCreateCoarseVec"
 /*@
    SNESFASCreateCoarseVec - create Vec corresponding to a state vector on one level coarser than current level
 
@@ -502,8 +486,6 @@ PetscErrorCode SNESFASCreateCoarseVec(SNES snes,Vec *Xcoarse)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASRestrict"
 /*@
    SNESFASRestrict - restrict a Vec to the next coarser level
 
@@ -538,8 +520,6 @@ PetscErrorCode SNESFASRestrict(SNES fine,Vec Xfine,Vec Xcoarse)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASCoarseCorrection"
 /*
 
 Performs the FAS coarse correction as:
@@ -608,8 +588,6 @@ PetscErrorCode SNESFASCoarseCorrection(SNES snes, Vec X, Vec F, Vec X_new)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASCycle_Additive"
 /*
 
 The additive cycle looks like:
@@ -702,8 +680,6 @@ static PetscErrorCode SNESFASCycle_Additive(SNES snes, Vec X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASCycle_Multiplicative"
 /*
 
 Defines the FAS cycle as:
@@ -738,8 +714,6 @@ static PetscErrorCode SNESFASCycle_Multiplicative(SNES snes, Vec X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASCycleSetupPhase_Full"
 static PetscErrorCode SNESFASCycleSetupPhase_Full(SNES snes)
 {
   SNES           next;
@@ -756,8 +730,6 @@ static PetscErrorCode SNESFASCycleSetupPhase_Full(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASCycle_Full"
 static PetscErrorCode SNESFASCycle_Full(SNES snes, Vec X)
 {
   PetscErrorCode ierr;
@@ -806,8 +778,6 @@ static PetscErrorCode SNESFASCycle_Full(SNES snes, Vec X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESFASCycle_Kaskade"
 static PetscErrorCode SNESFASCycle_Kaskade(SNES snes, Vec X)
 {
   PetscErrorCode ierr;
@@ -836,8 +806,6 @@ const char SNESCitation[] = "@techreport{pbmkbsxt2012,\n"
                             "  number = {ANL/MCS-P2010-0112},\n"
                             "  institution = {Argonne National Laboratory}\n}\n";
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSolve_FAS"
 static PetscErrorCode SNESSolve_FAS(SNES snes)
 {
   PetscErrorCode ierr;
@@ -969,8 +937,6 @@ Level: beginner
 .seealso: PCMG, SNESCreate(), SNES, SNESSetType(), SNESType (for list of available types)
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESCreate_FAS"
 PETSC_EXTERN PetscErrorCode SNESCreate_FAS(SNES snes)
 {
   SNES_FAS       *fas;

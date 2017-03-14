@@ -3,8 +3,6 @@ static char help[] = "Tests SeqBAIJ point block Jacobi for different block sizes
 
 #include <petscksp.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Vec            x,b,u;

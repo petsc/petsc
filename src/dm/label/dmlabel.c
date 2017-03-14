@@ -3,8 +3,6 @@
 #include <petsc/private/isimpl.h>        /*I      "petscis.h"        I*/
 #include <petscsf.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLabelCreate"
 /*@C
   DMLabelCreate - Create a DMLabel object, which is a multimap
 
@@ -41,8 +39,6 @@ PetscErrorCode DMLabelCreate(const char name[], DMLabel *label)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLabelMakeValid_Private"
 /*
   DMLabelMakeValid_Private - Transfer stratum data from the hash format to the sorted list format
 
@@ -91,8 +87,6 @@ static PetscErrorCode DMLabelMakeValid_Private(DMLabel label, PetscInt v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLabelMakeAllValid_Private"
 /*
   DMLabelMakeAllValid_Private - Transfer all strata from the hash format to the sorted list format
 
@@ -118,8 +112,6 @@ static PetscErrorCode DMLabelMakeAllValid_Private(DMLabel label)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLabelMakeInvalid_Private"
 /*
   DMLabelMakeInvalid_Private - Transfer stratum data from the sorted list format to the hash format
 
@@ -153,8 +145,6 @@ static PetscErrorCode DMLabelMakeInvalid_Private(DMLabel label, PetscInt v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLabelGetState"
 PetscErrorCode DMLabelGetState(DMLabel label, PetscObjectState *state)
 {
   PetscFunctionBegin;
@@ -163,8 +153,6 @@ PetscErrorCode DMLabelGetState(DMLabel label, PetscObjectState *state)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLabelAddStratum"
 PetscErrorCode DMLabelAddStratum(DMLabel label, PetscInt value)
 {
   PetscInt    v, *tmpV, *tmpS;
@@ -210,8 +198,6 @@ PetscErrorCode DMLabelAddStratum(DMLabel label, PetscInt value)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLabelGetName"
 /*@C
   DMLabelGetName - Return the name of a DMLabel object
 
@@ -233,8 +219,6 @@ PetscErrorCode DMLabelGetName(DMLabel label, const char **name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLabelView_Ascii"
 static PetscErrorCode DMLabelView_Ascii(DMLabel label, PetscViewer viewer)
 {
   PetscInt       v;
@@ -264,8 +248,6 @@ static PetscErrorCode DMLabelView_Ascii(DMLabel label, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLabelView"
 /*@C
   DMLabelView - View the label
 
@@ -292,8 +274,6 @@ PetscErrorCode DMLabelView(DMLabel label, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLabelDestroy"
 PetscErrorCode DMLabelDestroy(DMLabel *label)
 {
   PetscInt       v;
@@ -317,8 +297,6 @@ PetscErrorCode DMLabelDestroy(DMLabel *label)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLabelDuplicate"
 PetscErrorCode DMLabelDuplicate(DMLabel label, DMLabel *labelnew)
 {
   PetscInt       v;
@@ -354,8 +332,6 @@ PetscErrorCode DMLabelDuplicate(DMLabel label, DMLabel *labelnew)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLabelCreateIndex"
 /* This can be hooked into SetValue(),  ClearValue(), etc. for updating */
 PetscErrorCode DMLabelCreateIndex(DMLabel label, PetscInt pStart, PetscInt pEnd)
 {
@@ -385,8 +361,6 @@ PetscErrorCode DMLabelCreateIndex(DMLabel label, PetscInt pStart, PetscInt pEnd)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLabelDestroyIndex"
 PetscErrorCode DMLabelDestroyIndex(DMLabel label)
 {
   PetscErrorCode ierr;
@@ -398,8 +372,6 @@ PetscErrorCode DMLabelDestroyIndex(DMLabel label)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLabelHasValue"
 /*@
   DMLabelHasValue - Determine whether a label assigns the value to any point
 
@@ -427,8 +399,6 @@ PetscErrorCode DMLabelHasValue(DMLabel label, PetscInt value, PetscBool *contain
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLabelHasPoint"
 /*@
   DMLabelHasPoint - Determine whether a label assigns a value to a point
 
@@ -460,8 +430,6 @@ PetscErrorCode DMLabelHasPoint(DMLabel label, PetscInt point, PetscBool *contain
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLabelStratumHasPoint"
 /*@
   DMLabelStratumHasPoint - Return true if the stratum contains a point
 
@@ -509,8 +477,6 @@ PetscErrorCode DMLabelStratumHasPoint(DMLabel label, PetscInt value, PetscInt po
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLabelGetDefaultValue"
 /*
   DMLabelGetDefaultValue - Get the default value returned by DMLabelGetValue() if a point has not been explicitly given a value.
   When a label is created, it is initialized to -1.
@@ -532,8 +498,6 @@ PetscErrorCode DMLabelGetDefaultValue(DMLabel label, PetscInt *defaultValue)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLabelSetDefaultValue"
 /*
   DMLabelSetDefaultValue - Set the default value returned by DMLabelGetValue() if a point has not been explicitly given a value.
   When a label is created, it is initialized to -1.
@@ -555,8 +519,6 @@ PetscErrorCode DMLabelSetDefaultValue(DMLabel label, PetscInt defaultValue)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLabelGetValue"
 /*@
   DMLabelGetValue - Return the value a label assigns to a point, or the label's default value (which is initially -1, and can be changed with DMLabelSetDefaultValue())
 
@@ -601,8 +563,6 @@ PetscErrorCode DMLabelGetValue(DMLabel label, PetscInt point, PetscInt *value)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLabelSetValue"
 /*@
   DMLabelSetValue - Set the value a label assigns to a point.  If the value is the same as the label's default value (which is initially -1, and can be changed with DMLabelSetDefaultValue() to somethingg different), then this function will do nothing.
 
@@ -635,8 +595,6 @@ PetscErrorCode DMLabelSetValue(DMLabel label, PetscInt point, PetscInt value)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLabelClearValue"
 /*@
   DMLabelClearValue - Clear the value a label assigns to a point
 
@@ -671,8 +629,6 @@ PetscErrorCode DMLabelClearValue(DMLabel label, PetscInt point, PetscInt value)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLabelInsertIS"
 /*@
   DMLabelInsertIS - Set all points in the IS to a value
 
@@ -700,8 +656,6 @@ PetscErrorCode DMLabelInsertIS(DMLabel label, IS is, PetscInt value)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLabelGetNumValues"
 PetscErrorCode DMLabelGetNumValues(DMLabel label, PetscInt *numValues)
 {
   PetscFunctionBegin;
@@ -710,8 +664,6 @@ PetscErrorCode DMLabelGetNumValues(DMLabel label, PetscInt *numValues)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLabelGetValueIS"
 PetscErrorCode DMLabelGetValueIS(DMLabel label, IS *values)
 {
   PetscErrorCode ierr;
@@ -722,8 +674,6 @@ PetscErrorCode DMLabelGetValueIS(DMLabel label, IS *values)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLabelHasStratum"
 PetscErrorCode DMLabelHasStratum(DMLabel label, PetscInt value, PetscBool *exists)
 {
   PetscInt v;
@@ -740,8 +690,6 @@ PetscErrorCode DMLabelHasStratum(DMLabel label, PetscInt value, PetscBool *exist
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLabelGetStratumSize"
 PetscErrorCode DMLabelGetStratumSize(DMLabel label, PetscInt value, PetscInt *size)
 {
   PetscInt       v;
@@ -760,8 +708,6 @@ PetscErrorCode DMLabelGetStratumSize(DMLabel label, PetscInt value, PetscInt *si
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLabelGetStratumBounds"
 PetscErrorCode DMLabelGetStratumBounds(DMLabel label, PetscInt value, PetscInt *start, PetscInt *end)
 {
   PetscInt       v;
@@ -784,8 +730,6 @@ PetscErrorCode DMLabelGetStratumBounds(DMLabel label, PetscInt value, PetscInt *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLabelGetStratumIS"
 PetscErrorCode DMLabelGetStratumIS(DMLabel label, PetscInt value, IS *points)
 {
   PetscInt       v;
@@ -807,8 +751,6 @@ PetscErrorCode DMLabelGetStratumIS(DMLabel label, PetscInt value, IS *points)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLabelSetStratumIS"
 PetscErrorCode DMLabelSetStratumIS(DMLabel label, PetscInt value, IS is)
 {
   PetscInt       v, numStrata;
@@ -844,8 +786,6 @@ PetscErrorCode DMLabelSetStratumIS(DMLabel label, PetscInt value, IS is)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLabelClearStratum"
 PetscErrorCode DMLabelClearStratum(DMLabel label, PetscInt value)
 {
   PetscInt       v;
@@ -880,8 +820,6 @@ PetscErrorCode DMLabelClearStratum(DMLabel label, PetscInt value)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLabelFilter"
 PetscErrorCode DMLabelFilter(DMLabel label, PetscInt start, PetscInt end)
 {
   PetscInt       v;
@@ -925,8 +863,6 @@ PetscErrorCode DMLabelFilter(DMLabel label, PetscInt start, PetscInt end)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLabelPermute"
 PetscErrorCode DMLabelPermute(DMLabel label, IS permutation, DMLabel *labelNew)
 {
   const PetscInt *perm;
@@ -966,8 +902,6 @@ PetscErrorCode DMLabelPermute(DMLabel label, IS permutation, DMLabel *labelNew)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLabelDistribute_Internal"
 PetscErrorCode DMLabelDistribute_Internal(DMLabel label, PetscSF sf, PetscSection *leafSection, PetscInt **leafStrata)
 {
   MPI_Comm       comm;
@@ -1033,8 +967,6 @@ PetscErrorCode DMLabelDistribute_Internal(DMLabel label, PetscSF sf, PetscSectio
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLabelDistribute"
 PetscErrorCode DMLabelDistribute(DMLabel label, PetscSF sf, DMLabel *labelNew)
 {
   MPI_Comm       comm;
@@ -1124,8 +1056,6 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSF sf, DMLabel *labelNew)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLabelGather"
 /*@
   DMLabelGather - Gather all label values from leafs into roots
 
@@ -1154,13 +1084,13 @@ PetscErrorCode DMLabelGather(DMLabel label, PetscSF sf, DMLabel *labelNew)
   char          *name;
   PetscInt       nameSize;
   size_t         len = 0;
-  PetscMPIInt    rank, numProcs;
+  PetscMPIInt    rank, size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)sf, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   /* Bcast name */
   if (!rank) {ierr = PetscStrlen(label->name, &len);CHKERRQ(ierr);}
   nameSize = len;
@@ -1206,8 +1136,6 @@ PetscErrorCode DMLabelGather(DMLabel label, PetscSF sf, DMLabel *labelNew)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLabelConvertToSection"
 PetscErrorCode DMLabelConvertToSection(DMLabel label, PetscSection *section, IS *is)
 {
   IS              vIS;
@@ -1255,8 +1183,6 @@ PetscErrorCode DMLabelConvertToSection(DMLabel label, PetscSection *section, IS 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionCreateGlobalSectionLabel"
 /*@C
   PetscSectionCreateGlobalSectionLabel - Create a section describing the global field layout using
   the local section and an SF describing the section point overlap.
@@ -1353,8 +1279,6 @@ typedef struct _n_PetscSectionSym_Label
   PetscInt          numStrata; /* numStrata is only increasing, functions as a state */
 } PetscSectionSym_Label;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionSymLabelReset"
 static PetscErrorCode PetscSectionSymLabelReset(PetscSectionSym sym)
 {
   PetscInt              i, j;
@@ -1386,8 +1310,6 @@ static PetscErrorCode PetscSectionSymLabelReset(PetscSectionSym sym)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionSymDestroy_Label"
 static PetscErrorCode PetscSectionSymDestroy_Label(PetscSectionSym sym)
 {
   PetscErrorCode ierr;
@@ -1398,8 +1320,6 @@ static PetscErrorCode PetscSectionSymDestroy_Label(PetscSectionSym sym)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionSymView_Label"
 static PetscErrorCode PetscSectionSymView_Label(PetscSectionSym sym, PetscViewer viewer)
 {
   PetscSectionSym_Label *sl = (PetscSectionSym_Label *) sym->data;
@@ -1478,8 +1398,6 @@ static PetscErrorCode PetscSectionSymView_Label(PetscSectionSym sym, PetscViewer
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionSymLabelSetLabel"
 /*@
   PetscSectionSymLabelSetLabel - set the label whose strata will define the points that receive symmetries
 
@@ -1516,8 +1434,6 @@ PetscErrorCode PetscSectionSymLabelSetLabel(PetscSectionSym sym, DMLabel label)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionSymLabelSetStratum"
 /*@C
   PetscSectionSymLabelSetStratum - set the symmetries for the orientations of a stratum
 
@@ -1589,8 +1505,6 @@ PetscErrorCode PetscSectionSymLabelSetStratum(PetscSectionSym sym, PetscInt stra
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionSymGetPoints_Label"
 static PetscErrorCode PetscSectionSymGetPoints_Label(PetscSectionSym sym, PetscSection section, PetscInt numPoints, const PetscInt *points, const PetscInt **perms, const PetscScalar **rots)
 {
   PetscInt              i, j, numStrata;
@@ -1626,8 +1540,6 @@ static PetscErrorCode PetscSectionSymGetPoints_Label(PetscSectionSym sym, PetscS
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionSymCreate_Label"
 PetscErrorCode PetscSectionSymCreate_Label(PetscSectionSym sym)
 {
   PetscSectionSym_Label *sl;
@@ -1642,8 +1554,6 @@ PetscErrorCode PetscSectionSymCreate_Label(PetscSectionSym sym)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionSymCreateLabel"
 /*@
   PetscSectionSymCreateLabel - Create a section symmetry that assigns one symmetry to each stratum of a label
 

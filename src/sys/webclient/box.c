@@ -70,8 +70,6 @@ static PetscErrorCode PetscBoxStartWebServer_Private(void)
 #include <unistd.h>
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscBoxAuthorize"
 /*@C
      PetscBoxAuthorize - Get authorization and refresh token for accessing Box drive from PETSc
 
@@ -159,8 +157,6 @@ PetscErrorCode PetscBoxAuthorize(MPI_Comm comm,char access_token[],char refresh_
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscBoxRefresh"
 /*@C
      PetscBoxRefresh - Get a new authorization token for accessing Box drive from PETSc from a refresh token
 
@@ -238,8 +234,6 @@ PetscErrorCode PetscBoxRefresh(MPI_Comm comm,const char refresh_token[],char acc
 
 #include <sys/stat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscBoxUpload"
 /*@C
      PetscBoxUpload - Loads a file to the Box Drive
 

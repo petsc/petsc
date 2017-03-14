@@ -19,20 +19,13 @@
 !   snes/examples/tutorials/ex5.c[ex5f.F] where the problem is described
 !   and solved using the method of Newton alone.
 !
-!   Include "petscts.h"    to use the PETSc timestepping routines,
-!           "petscsys.h" for basic PETSc operation,
-!           "petscmat.h"   for matrix operations,
-!           "petscpc.h"    for preconditions, and
-!           "petscvec.h"   for vector operations.
 !
 !23456789012345678901234567890123456789012345678901234567890123456789012
       program main
-      implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscpc.h>
 #include <petsc/finclude/petscts.h>
+      use petscts
+      implicit none
+
 !
 !  Create an application context to contain data needed by the
 !  application-provided call-back routines, FormJacobian() and
@@ -52,7 +45,7 @@
       TS                ts
       Vec               x,r
       Mat               J
-      PetscInt           its,N,i1000
+      PetscInt           its,N,i1000,itmp
       PetscBool  flg
       PetscErrorCode      ierr
       PetscReal  param_max,param_min,dt
@@ -76,11 +69,13 @@
 !
 !     Allow user to set the grid dimensions and nonlinearity parameter at run-time
 !
-      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,                    &
-     &                         '-mx',user(lmx),flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,            &
-     &                        '-my',user(lmy),flg,ierr)
-      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,           &
+      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,                    &
+     &     '-mx',user(lmx),flg,ierr)
+      itmp = 4
+      call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,            &
+     &                        '-my',itmp,flg,ierr)
+      user(lmy) = itmp
+      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,           &
      &                        '-param',user(param),flg,ierr)
       if (user(param) .ge. param_max .or.                               &
      &                                user(param) .le. param_min) then
@@ -91,7 +86,7 @@
       else
         dt = .5/user(lmy)
       endif
-      call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,       &
+      call PetscOptionsGetReal(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,       &
      &                         '-dt',dt,flg,ierr)
       N          = int(user(lmx)*user(lmy))
 
@@ -131,7 +126,7 @@
 !    is the application context used by the call-back functions.
 !
 
-      call TSSetRHSFunction(ts,PETSC_NULL_OBJECT,FormFunction,user,ierr)
+      call TSSetRHSFunction(ts,PETSC_NULL_VEC,FormFunction,user,ierr)
 
 !
 !     Set the Jacobian matrix and the function used to compute
@@ -207,12 +202,9 @@
 !  --------------------  Form initial approximation -----------------
 !
       subroutine FormInitialGuess(X,user,ierr)
+      use petscts
       implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscpc.h>
-#include <petsc/finclude/petscts.h>
+
       Vec              X
       PetscReal user(3)
       PetscInt  i,j,row,mx,my
@@ -255,12 +247,9 @@
 !  --------------------  Evaluate Function F(x) ---------------------
 !
       subroutine FormFunction(ts,t,X,F,user,ierr)
+      use petscts
       implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscpc.h>
-#include <petsc/finclude/petscts.h>
+
       TS       ts
       PetscReal  t
       Vec               X,F
@@ -318,12 +307,9 @@
 !  --------------------  Evaluate Jacobian of F(x) --------------------
 !
       subroutine FormJacobian(ts,ctime,X,JJ,B,user,ierr)
+      use petscts
       implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscpc.h>
-#include <petsc/finclude/petscts.h>
+
       TS               ts
       Vec              X
       Mat              JJ,B

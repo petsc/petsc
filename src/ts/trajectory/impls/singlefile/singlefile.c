@@ -5,8 +5,6 @@ typedef struct {
   PetscViewer viewer;
 } TSTrajectory_Singlefile;
 
-#undef __FUNCT__
-#define __FUNCT__ "TSTrajectorySet_Singlefile"
 static PetscErrorCode TSTrajectorySet_Singlefile(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal time,Vec X)
 {
   TSTrajectory_Singlefile *sf = (TSTrajectory_Singlefile*)tj->data;
@@ -26,8 +24,6 @@ static PetscErrorCode TSTrajectorySet_Singlefile(TSTrajectory tj,TS ts,PetscInt 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSTrajectoryDestroy_Singlefile"
 static PetscErrorCode TSTrajectoryDestroy_Singlefile(TSTrajectory tj)
 {
   PetscErrorCode          ierr;
@@ -47,8 +43,6 @@ static PetscErrorCode TSTrajectoryDestroy_Singlefile(TSTrajectory tj)
 .seealso:  TSTrajectoryCreate(), TS, TSTrajectorySetType()
 
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "TSTrajectoryCreate_Singlefile"
 PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Singlefile(TSTrajectory tj,TS ts)
 {
   PetscErrorCode          ierr;

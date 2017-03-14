@@ -111,7 +111,7 @@ PETSC_EXTERN void PETSC_STDCALL taolinesearchsetobjectiveandgtsroutine_(TaoLineS
     }
 }
 
-PETSC_EXTERN void PETSC_STDCALL taolinesearchsettype_(TaoLineSearch *ls, CHAR type_name PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL taolinesearchsettype_(TaoLineSearch *ls, char* type_name PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
 
 {
     char *t;
@@ -129,7 +129,7 @@ PETSC_EXTERN void PETSC_STDCALL taolinesearchview_(TaoLineSearch *ls, PetscViewe
     *ierr = TaoLineSearchView(*ls,v);
 }
 
-PETSC_EXTERN void PETSC_STDCALL taolinesearchgetoptionsprefix_(TaoLineSearch *ls, CHAR prefix PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL taolinesearchgetoptionsprefix_(TaoLineSearch *ls, char* prefix PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   const char *name;
   *ierr = TaoLineSearchGetOptionsPrefix(*ls,&name);
@@ -138,7 +138,7 @@ PETSC_EXTERN void PETSC_STDCALL taolinesearchgetoptionsprefix_(TaoLineSearch *ls
 
 }
 
-PETSC_EXTERN void PETSC_STDCALL taolinesearchappendoptionsprefix_(TaoLineSearch *ls, CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL taolinesearchappendoptionsprefix_(TaoLineSearch *ls, char* prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *name;
   FIXCHAR(prefix,len,name);
@@ -146,7 +146,7 @@ PETSC_EXTERN void PETSC_STDCALL taolinesearchappendoptionsprefix_(TaoLineSearch 
   FREECHAR(prefix,name);
 }
 
-PETSC_EXTERN void PETSC_STDCALL taolinesearchsetoptionsprefix_(TaoLineSearch *ls, CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL taolinesearchsetoptionsprefix_(TaoLineSearch *ls, char* prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
   FIXCHAR(prefix,len,t);
@@ -154,7 +154,7 @@ PETSC_EXTERN void PETSC_STDCALL taolinesearchsetoptionsprefix_(TaoLineSearch *ls
   FREECHAR(prefix,t);
 }
 
-PETSC_EXTERN void PETSC_STDCALL taolinesearchgettype_(TaoLineSearch *ls, CHAR name PETSC_MIXED_LEN(len), PetscErrorCode *ierr  PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL taolinesearchgettype_(TaoLineSearch *ls, char* name PETSC_MIXED_LEN(len), PetscErrorCode *ierr  PETSC_END_LEN(len))
 {
   const char *tname;
   *ierr = TaoLineSearchGetType(*ls,&tname);

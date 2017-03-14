@@ -29,8 +29,6 @@ int petsc_geo_mg_compare(const void *a, const void *b)
    Input Parameter:
    .  pc - the preconditioner context
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCSetCoordinates_GEO"
 PetscErrorCode PCSetCoordinates_GEO(PC pc, PetscInt ndm, PetscInt a_nloc, PetscReal *coords)
 {
   PC_MG          *mg      = (PC_MG*)pc->data;
@@ -80,8 +78,6 @@ PetscErrorCode PCSetCoordinates_GEO(PC pc, PetscInt ndm, PetscInt a_nloc, PetscR
   Input Parameter:
    . pc -
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCSetData_GEO"
 PetscErrorCode PCSetData_GEO(PC pc, Mat m)
 {
   PetscFunctionBegin;
@@ -95,8 +91,6 @@ PetscErrorCode PCSetData_GEO(PC pc, Mat m)
   Input Parameter:
    . pc -
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_GEO"
 PetscErrorCode PCSetFromOptions_GEO(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
@@ -135,8 +129,6 @@ PetscErrorCode PCSetFromOptions_GEO(PetscOptionItems *PetscOptionsObject,PC pc)
    . a_Prol - prolongation operator
    . a_worst_best - measure of worst missed fine vertex, 0 is no misses
 */
-#undef __FUNCT__
-#define __FUNCT__ "triangulateAndFormProl"
 static PetscErrorCode triangulateAndFormProl(IS selected_2,PetscInt data_stride,PetscReal coords[],PetscInt nselected_1,const PetscInt clid_lid_1[],const PetscCoarsenData *agg_lists_1,
                                              const PetscInt crsGID[],PetscInt bs,Mat a_Prol,PetscReal *a_worst_best)
 {
@@ -435,8 +427,6 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2,PetscInt data_stride,
    . a_Gmat_2 - graph that is squared of 'Gmat_1'
    . a_crsGID[a_selected_2.size()] - map of global IDs of coarse grid nodes
 */
-#undef __FUNCT__
-#define __FUNCT__ "getGIDsOnSquareGraph"
 static PetscErrorCode getGIDsOnSquareGraph(PetscInt nselected_1,const PetscInt clid_lid_1[],const Mat Gmat1,IS *a_selected_2,Mat *a_Gmat_2,PetscInt **a_crsGID)
 {
   PetscErrorCode ierr;
@@ -538,14 +528,12 @@ static PetscErrorCode getGIDsOnSquareGraph(PetscInt nselected_1,const PetscInt c
   Output Parameter:
    . a_Gmat
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGGraph_GEO"
 PetscErrorCode PCGAMGGraph_GEO(PC pc,Mat Amat,Mat *a_Gmat)
 {
   PetscErrorCode  ierr;
   PC_MG           *mg      = (PC_MG*)pc->data;
   PC_GAMG         *pc_gamg = (PC_GAMG*)mg->innerctx;
-  const PetscReal vfilter  = pc_gamg->threshold;
+  const PetscReal vfilter  = pc_gamg->threshold[0];
   MPI_Comm        comm;
   Mat             Gmat;
   PetscBool       set,flg,symm;
@@ -575,8 +563,6 @@ PetscErrorCode PCGAMGGraph_GEO(PC pc,Mat Amat,Mat *a_Gmat)
   Output Parameter:
    . a_llist_parent - linked list from selected indices for data locality only
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGCoarsen_GEO"
 PetscErrorCode PCGAMGCoarsen_GEO(PC a_pc,Mat *a_Gmat,PetscCoarsenData **a_llist_parent)
 {
   PetscErrorCode ierr;
@@ -666,8 +652,6 @@ PetscErrorCode PCGAMGCoarsen_GEO(PC a_pc,Mat *a_Gmat,PetscCoarsenData **a_llist_
  Output Parameter:
  . a_P_out - prolongation operator to the next level
  */
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGProlongator_GEO"
 PetscErrorCode PCGAMGProlongator_GEO(PC pc,Mat Amat,Mat Gmat,PetscCoarsenData *agg_lists,Mat *a_P_out)
 {
   PC_MG          *mg      = (PC_MG*)pc->data;
@@ -797,8 +781,6 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,Mat Amat,Mat Gmat,PetscCoarsenData *a
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_GAMG_GEO"
 static PetscErrorCode PCDestroy_GAMG_GEO(PC pc)
 {
   PetscErrorCode ierr;
@@ -815,8 +797,6 @@ static PetscErrorCode PCDestroy_GAMG_GEO(PC pc)
   Input Parameter:
    . pc -
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCCreateGAMG_GEO"
 PetscErrorCode  PCCreateGAMG_GEO(PC pc)
 {
   PetscErrorCode ierr;

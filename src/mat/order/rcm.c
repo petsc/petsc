@@ -38,8 +38,6 @@
 /*       DEGREE.                                                */
 /*                                                              */
 /****************************************************************/
-#undef __FUNCT__
-#define __FUNCT__ "SPARSEPACKrcm"
 PetscErrorCode SPARSEPACKrcm(const PetscInt *root,const PetscInt *xadj,const PetscInt *adjncy,PetscInt *mask, PetscInt *perm, PetscInt *ccsize, PetscInt *deg)
 {
   /* System generated locals */

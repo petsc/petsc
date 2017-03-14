@@ -64,8 +64,6 @@ static PetscErrorCode FormInitialSolution(TS,Vec,void*);
 
 #define TCCHKERRQ(ierr) do {if (ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in TChem library, return code %d",ierr);} while (0)
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   TS                ts;         /* time integrator */
@@ -208,8 +206,6 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormRHSFunction"
 static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 {
   User              user = (User)ptr;
@@ -231,8 +227,6 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormRHSJacobian"
 static PetscErrorCode FormRHSJacobian(TS ts,PetscReal t,Vec X,Mat Amat,Mat Pmat,void *ptr)
 {
   User              user = (User)ptr;
@@ -251,7 +245,7 @@ static PetscErrorCode FormRHSJacobian(TS ts,PetscReal t,Vec X,Mat Amat,Mat Pmat,
   for (i=0; i<M; i++) user->Jdense[0 + i*M] /= user->Tini; /* Non-dimensionalize first row */
   for (i=0; i<M; i++) user->rows[i] = i;
   ierr = MatSetOption(Pmat,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = MatSetOption(Pmat,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
+  /* ierr = MatSetOption(Pmat,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE);CHKERRQ(ierr); */
   ierr = MatZeroEntries(Pmat);CHKERRQ(ierr);
   ierr = MatSetValues(Pmat,M,user->rows,M,user->rows,user->Jdense,INSERT_VALUES);CHKERRQ(ierr);
 
@@ -264,8 +258,6 @@ static PetscErrorCode FormRHSJacobian(TS ts,PetscReal t,Vec X,Mat Amat,Mat Pmat,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormInitialSolution"
 PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
 {
   PetscScalar    *x;
@@ -298,8 +290,6 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MassFractionToMoleFraction"
 /*
    Converts the input vector which is in mass fractions (used by tchem) to mole fractions
 */
@@ -320,8 +310,6 @@ PetscErrorCode MassFractionToMoleFraction(User user,Vec massf,Vec *molef)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MoleFractionToMassFraction"
 /*
    Converts the input vector which is in mole fractions to mass fractions (used by tchem)
 */
@@ -342,8 +330,6 @@ PetscErrorCode MoleFractionToMassFraction(User user,Vec molef,Vec *massf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PrintSpecies"
 /*
    Prints out each species with its name
 */

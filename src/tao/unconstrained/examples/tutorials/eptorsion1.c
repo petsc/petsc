@@ -75,8 +75,6 @@ PetscErrorCode HessianProduct(void*,Vec,Vec);
 PetscErrorCode MatrixFreeHessian(Tao,Vec,Mat,Mat,void*);
 PetscErrorCode FormFunctionGradient(Tao,Vec,PetscReal *,Vec,void *);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 PetscErrorCode main(int argc,char **argv)
 {
   PetscErrorCode     ierr;                /* used to check for functions returning nonzeros */
@@ -158,8 +156,6 @@ PetscErrorCode main(int argc,char **argv)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormInitialGuess"
 /*
     FormInitialGuess - Computes an initial approximation to the solution.
 
@@ -192,8 +188,6 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionGradient"
 /*
    FormFunctionGradient - Evaluates the function and corresponding gradient.
 
@@ -216,8 +210,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *f,Vec G,void *ptr)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormFunction"
 /*
    FormFunction - Evaluates the function, f(X).
 
@@ -288,8 +280,6 @@ PetscErrorCode FormFunction(Tao tao,Vec X,PetscReal *f,void *ptr)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormGradient"
 /*
     FormGradient - Evaluates the gradient, G(X).
 
@@ -384,8 +374,6 @@ PetscErrorCode FormGradient(Tao tao,Vec X,Vec G,void *ptr)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormHessian"
 /*
    FormHessian - Forms the Hessian matrix.
 
@@ -447,8 +435,6 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H,Mat Hpre, void *ptr)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "MatrixFreeHessian"
 /*
    MatrixFreeHessian - Sets a pointer for use in computing Hessian-vector
    products.
@@ -473,8 +459,6 @@ PetscErrorCode MatrixFreeHessian(Tao tao,Vec X,Mat H,Mat PrecH, void *ptr)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "HessianProductMat"
 /*
    HessianProductMat - Computes the matrix-vector product
    y = mat*svec.
@@ -497,8 +481,6 @@ PetscErrorCode HessianProductMat(Mat mat,Vec svec,Vec y)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "HessianProduct"
 /*
    Hessian Product - Computes the matrix-vector product:
    y = f''(x)*svec.

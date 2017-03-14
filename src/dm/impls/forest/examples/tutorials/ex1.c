@@ -3,8 +3,6 @@ static char help[] = "Create and view a forest mesh\n\n";
 #include <petscdmforest.h>
 #include <petscoptions.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   DM             dm;

@@ -1,9 +1,9 @@
       program main
+#include <petsc/finclude/petscis.h>
+      use petscis
       implicit none
-!
-#include <petsc/finclude/petsc.h90>
-!
-      PetscSection   section
+
+      type(tPetscSection)   section
       PetscInt       pStart, pEnd, p,three
       PetscErrorCode ierr
 

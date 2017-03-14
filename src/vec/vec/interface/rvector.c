@@ -6,12 +6,6 @@
 #include <petsc/private/vecimpl.h>       /*I  "petscvec.h"   I*/
 static PetscInt VecGetSubVectorSavedStateId = -1;
 
-#define PetscCheckSameSizeVec(x,y) \
-  if ((x)->map->N != (y)->map->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths %d != %d", (x)->map->N, (y)->map->N); \
-  if ((x)->map->n != (y)->map->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths %d != %d", (x)->map->n, (y)->map->n);
-
-#undef __FUNCT__
-#define __FUNCT__ "VecValidValues"
 PETSC_EXTERN PetscErrorCode VecValidValues(Vec vec,PetscInt argnum,PetscBool begin)
 {
 #if defined(PETSC_USE_DEBUG)
@@ -24,6 +18,8 @@ PETSC_EXTERN PetscErrorCode VecValidValues(Vec vec,PetscInt argnum,PetscBool beg
   if ((vec->petscnative || vec->ops->getarray) && (vec->valid_GPU_array == PETSC_CUSP_CPU || vec->valid_GPU_array == PETSC_CUSP_BOTH)) {
 #elif defined(PETSC_HAVE_VECCUDA)
   if ((vec->petscnative || vec->ops->getarray) && (vec->valid_GPU_array == PETSC_CUDA_CPU || vec->valid_GPU_array == PETSC_CUDA_BOTH)) {
+#elif defined(PETSC_HAVE_VIENNACL)
+  if ((vec->petscnative || vec->ops->getarray) && (vec->valid_GPU_array == PETSC_VIENNACL_CPU || vec->valid_GPU_array == PETSC_VIENNACL_BOTH)) {
 #else
   if (vec->petscnative || vec->ops->getarray) {
 #endif
@@ -44,8 +40,6 @@ PETSC_EXTERN PetscErrorCode VecValidValues(Vec vec,PetscInt argnum,PetscBool beg
 #endif
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecMaxPointwiseDivide"
 /*@
    VecMaxPointwiseDivide - Computes the maximum of the componentwise division max = max_i abs(x_i/y_i).
 
@@ -75,14 +69,11 @@ PetscErrorCode  VecMaxPointwiseDivide(Vec x,Vec y,PetscReal *max)
   PetscValidType(x,1);
   PetscValidType(y,2);
   PetscCheckSameTypeAndComm(x,1,y,2);
-  PetscCheckSameSizeVec(x,y);
-
+  VecCheckSameSize(x,1,y,2);
   ierr = (*x->ops->maxpointwisedivide)(x,y,max);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecDot"
 /*@
    VecDot - Computes the vector dot product.
 
@@ -128,7 +119,7 @@ PetscErrorCode  VecDot(Vec x,Vec y,PetscScalar *val)
   PetscValidType(x,1);
   PetscValidType(y,2);
   PetscCheckSameTypeAndComm(x,1,y,2);
-  PetscCheckSameSizeVec(x,y);
+  VecCheckSameSize(x,1,y,1);
 
   ierr = PetscLogEventBarrierBegin(VEC_DotBarrier,x,y,0,0,PetscObjectComm((PetscObject)x));CHKERRQ(ierr);
   ierr = (*x->ops->dot)(x,y,val);CHKERRQ(ierr);
@@ -136,8 +127,6 @@ PetscErrorCode  VecDot(Vec x,Vec y,PetscScalar *val)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecDotRealPart"
 /*@
    VecDotRealPart - Computes the real part of the vector dot product.
 
@@ -182,8 +171,6 @@ PetscErrorCode  VecDotRealPart(Vec x,Vec y,PetscReal *val)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecNorm"
 /*@
    VecNorm  - Computes the vector norm.
 
@@ -200,7 +187,7 @@ PetscErrorCode  VecDotRealPart(Vec x,Vec y,PetscReal *val)
 
    Notes:
 $     NORM_1 denotes sum_i |x_i|
-$     NORM_2 denotes sqrt(sum_i (x_i)^2)
+$     NORM_2 denotes sqrt(sum_i |x_i|^2)
 $     NORM_INFINITY denotes max_i |x_i|
 
       For complex numbers NORM_1 will return the traditional 1 norm of the 2 norm of the complex numbers; that is the 1
@@ -231,7 +218,6 @@ PetscErrorCode  VecNorm(Vec x,NormType type,PetscReal *val)
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidRealPointer(val,3);
   PetscValidType(x,1);
-  if (((PetscObject)x)->precision != sizeof(PetscReal)) SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_SUP,"Wrong precision of input argument");
 
   /*
    * Cached data?
@@ -250,8 +236,6 @@ PetscErrorCode  VecNorm(Vec x,NormType type,PetscReal *val)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecNormAvailable"
 /*@
    VecNormAvailable  - Returns the vector norm if it is already known.
 
@@ -307,8 +291,6 @@ PetscErrorCode  VecNormAvailable(Vec x,NormType type,PetscBool  *available,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecNormalize"
 /*@
    VecNormalize - Normalizes a vector by 2-norm.
 
@@ -348,8 +330,6 @@ PetscErrorCode  VecNormalize(Vec x,PetscReal *val)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecMax"
 /*@C
    VecMax - Determines the maximum vector component and its location.
 
@@ -387,8 +367,6 @@ PetscErrorCode  VecMax(Vec x,PetscInt *p,PetscReal *val)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecMin"
 /*@C
    VecMin - Determines the minimum vector component and its location.
 
@@ -427,8 +405,6 @@ PetscErrorCode  VecMin(Vec x,PetscInt *p,PetscReal *val)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecTDot"
 /*@
    VecTDot - Computes an indefinite vector dot product. That is, this
    routine does NOT use the complex conjugate.
@@ -469,7 +445,7 @@ PetscErrorCode  VecTDot(Vec x,Vec y,PetscScalar *val)
   PetscValidType(x,1);
   PetscValidType(y,2);
   PetscCheckSameTypeAndComm(x,1,y,2);
-  PetscCheckSameSizeVec(x,y);
+  VecCheckSameSize(x,1,y,2);
 
   ierr = PetscLogEventBegin(VEC_TDot,x,y,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->tdot)(x,y,val);CHKERRQ(ierr);
@@ -477,8 +453,6 @@ PetscErrorCode  VecTDot(Vec x,Vec y,PetscScalar *val)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecScale"
 /*@
    VecScale - Scales a vector.
 
@@ -531,8 +505,6 @@ PetscErrorCode  VecScale(Vec x, PetscScalar alpha)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecSet"
 /*@
    VecSet - Sets all components of a vector to a single scalar value.
 
@@ -599,8 +571,6 @@ PetscErrorCode  VecSet(Vec x,PetscScalar alpha)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecAXPY"
 /*@
    VecAXPY - Computes y = alpha x + y.
 
@@ -632,7 +602,7 @@ PetscErrorCode  VecAXPY(Vec y,PetscScalar alpha,Vec x)
   PetscValidType(x,3);
   PetscValidType(y,1);
   PetscCheckSameTypeAndComm(x,3,y,1);
-  PetscCheckSameSizeVec(x,y);
+  VecCheckSameSize(x,1,y,3);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_IDN,"x and y cannot be the same vector");
   PetscValidLogicalCollectiveScalar(y,alpha,2);
   VecLocked(y,1);
@@ -646,8 +616,6 @@ PetscErrorCode  VecAXPY(Vec y,PetscScalar alpha,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecAXPBY"
 /*@
    VecAXPBY - Computes y = alpha x + beta y.
 
@@ -679,7 +647,7 @@ PetscErrorCode  VecAXPBY(Vec y,PetscScalar alpha,PetscScalar beta,Vec x)
   PetscValidType(x,4);
   PetscValidType(y,1);
   PetscCheckSameTypeAndComm(x,4,y,1);
-  PetscCheckSameSizeVec(x,y);
+  VecCheckSameSize(x,1,y,4);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_IDN,"x and y cannot be the same vector");
   PetscValidLogicalCollectiveScalar(y,alpha,2);
   PetscValidLogicalCollectiveScalar(y,beta,3);
@@ -691,8 +659,6 @@ PetscErrorCode  VecAXPBY(Vec y,PetscScalar alpha,PetscScalar beta,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecAXPBYPCZ"
 /*@
    VecAXPBYPCZ - Computes z = alpha x + beta y + gamma z
 
@@ -729,8 +695,8 @@ PetscErrorCode  VecAXPBYPCZ(Vec z,PetscScalar alpha,PetscScalar beta,PetscScalar
   PetscValidType(z,1);
   PetscCheckSameTypeAndComm(x,5,y,6);
   PetscCheckSameTypeAndComm(x,5,z,1);
-  PetscCheckSameSizeVec(x,y);
-  PetscCheckSameSizeVec(x,z);
+  VecCheckSameSize(x,1,y,5);
+  VecCheckSameSize(x,1,z,6);
   if (x == y || x == z) SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_IDN,"x, y, and z must be different vectors");
   if (y == z) SETERRQ(PetscObjectComm((PetscObject)y),PETSC_ERR_ARG_IDN,"x, y, and z must be different vectors");
   PetscValidLogicalCollectiveScalar(z,alpha,2);
@@ -744,8 +710,6 @@ PetscErrorCode  VecAXPBYPCZ(Vec z,PetscScalar alpha,PetscScalar beta,PetscScalar
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecAYPX"
 /*@
    VecAYPX - Computes y = x + alpha y.
 
@@ -776,6 +740,8 @@ PetscErrorCode  VecAYPX(Vec y,PetscScalar alpha,Vec x)
   PetscValidHeaderSpecific(y,VEC_CLASSID,1);
   PetscValidType(x,3);
   PetscValidType(y,1);
+  PetscCheckSameTypeAndComm(x,3,y,1);
+  VecCheckSameSize(x,1,y,3);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   PetscValidLogicalCollectiveScalar(y,alpha,2);
 
@@ -787,8 +753,6 @@ PetscErrorCode  VecAYPX(Vec y,PetscScalar alpha,Vec x)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecWAXPY"
 /*@
    VecWAXPY - Computes w = alpha x + y.
 
@@ -823,8 +787,8 @@ PetscErrorCode  VecWAXPY(Vec w,PetscScalar alpha,Vec x,Vec y)
   PetscValidType(y,4);
   PetscCheckSameTypeAndComm(x,3,y,4);
   PetscCheckSameTypeAndComm(y,4,w,1);
-  PetscCheckSameSizeVec(x,y);
-  PetscCheckSameSizeVec(x,w);
+  VecCheckSameSize(x,3,y,4);
+  VecCheckSameSize(x,3,w,1);
   if (w == y) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Result vector w cannot be same as input vector y, suggest VecAXPY()");
   if (w == x) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Result vector w cannot be same as input vector x, suggest VecAYPX()");
   PetscValidLogicalCollectiveScalar(y,alpha,2);
@@ -837,9 +801,7 @@ PetscErrorCode  VecWAXPY(Vec w,PetscScalar alpha,Vec x,Vec y)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecSetValues"
-/*@
+/*@C
    VecSetValues - Inserts or adds values into certain locations of a vector.
 
    Not Collective
@@ -895,8 +857,6 @@ PetscErrorCode  VecSetValues(Vec x,PetscInt ni,const PetscInt ix[],const PetscSc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecGetValues"
 /*@
    VecGetValues - Gets values from certain locations of a vector. Currently
           can only get values on the same processor
@@ -944,9 +904,7 @@ PetscErrorCode  VecGetValues(Vec x,PetscInt ni,const PetscInt ix[],PetscScalar y
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecSetValuesBlocked"
-/*@
+/*@C
    VecSetValuesBlocked - Inserts or adds blocks of values into certain locations of a vector.
 
    Not Collective
@@ -1002,9 +960,7 @@ PetscErrorCode  VecSetValuesBlocked(Vec x,PetscInt ni,const PetscInt ix[],const 
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecSetValuesLocal"
-/*@
+/*@C
    VecSetValuesLocal - Inserts or adds values into certain locations of a vector,
    using a local ordering of the nodes.
 
@@ -1069,8 +1025,6 @@ PetscErrorCode  VecSetValuesLocal(Vec x,PetscInt ni,const PetscInt ix[],const Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecSetValuesBlockedLocal"
 /*@
    VecSetValuesBlockedLocal - Inserts or adds values into certain locations of a vector,
    using a local ordering of the nodes.
@@ -1132,8 +1086,6 @@ PetscErrorCode  VecSetValuesBlockedLocal(Vec x,PetscInt ni,const PetscInt ix[],c
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecMTDot"
 /*@
    VecMTDot - Computes indefinite vector multiple dot products.
    That is, it does NOT use the complex conjugate.
@@ -1176,7 +1128,7 @@ PetscErrorCode  VecMTDot(Vec x,PetscInt nv,const Vec y[],PetscScalar val[])
   PetscValidType(x,2);
   PetscValidType(*y,3);
   PetscCheckSameTypeAndComm(x,2,*y,3);
-  PetscCheckSameSizeVec(x,*y);
+  VecCheckSameSize(x,1,*y,3);
 
   ierr = PetscLogEventBegin(VEC_MTDot,x,*y,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->mtdot)(x,nv,y,val);CHKERRQ(ierr);
@@ -1184,8 +1136,6 @@ PetscErrorCode  VecMTDot(Vec x,PetscInt nv,const Vec y[],PetscScalar val[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecMDot"
 /*@
    VecMDot - Computes vector multiple dot products.
 
@@ -1229,7 +1179,7 @@ PetscErrorCode  VecMDot(Vec x,PetscInt nv,const Vec y[],PetscScalar val[])
   PetscValidType(x,2);
   PetscValidType(*y,3);
   PetscCheckSameTypeAndComm(x,2,*y,3);
-  PetscCheckSameSizeVec(x,*y);
+  VecCheckSameSize(x,1,*y,3);
 
   ierr = PetscLogEventBarrierBegin(VEC_MDotBarrier,x,*y,0,0,PetscObjectComm((PetscObject)x));CHKERRQ(ierr);
   ierr = (*x->ops->mdot)(x,nv,y,val);CHKERRQ(ierr);
@@ -1237,8 +1187,6 @@ PetscErrorCode  VecMDot(Vec x,PetscInt nv,const Vec y[],PetscScalar val[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecMAXPY"
 /*@
    VecMAXPY - Computes y = y + sum alpha[j] x[j]
 
@@ -1273,7 +1221,7 @@ PetscErrorCode  VecMAXPY(Vec y,PetscInt nv,const PetscScalar alpha[],Vec x[])
   PetscValidType(y,1);
   PetscValidType(*x,4);
   PetscCheckSameTypeAndComm(y,1,*x,4);
-  PetscCheckSameSizeVec(y,*x);
+  VecCheckSameSize(y,1,*x,4);
   for (i=0; i<nv; i++) PetscValidLogicalCollectiveScalar(y,alpha[i],3);
 
   ierr = PetscLogEventBegin(VEC_MAXPY,*x,y,0,0);CHKERRQ(ierr);
@@ -1283,8 +1231,6 @@ PetscErrorCode  VecMAXPY(Vec y,PetscInt nv,const PetscScalar alpha[],Vec x[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecGetSubVector"
 /*@
    VecGetSubVector - Gets a vector representing part of another vector
 
@@ -1305,7 +1251,7 @@ PetscErrorCode  VecMAXPY(Vec y,PetscInt nv,const PetscScalar alpha[],Vec x[])
    This function may return a subvector without making a copy, therefore it is not safe to use the original vector while
    modifying the subvector.  Other non-overlapping subvectors can still be obtained from X using this function.
 
-.seealso: MatGetSubMatrix()
+.seealso: MatCreateSubMatrix()
 @*/
 PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
 {
@@ -1378,8 +1324,6 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecRestoreSubVector"
 /*@
    VecRestoreSubVector - Restores a subvector extracted using VecGetSubVector()
 
@@ -1454,20 +1398,15 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
 
 .seealso: VecRestoreLocalVectorRead(), VecGetLocalVector(), VecGetArrayRead(), VecGetArray()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "VecGetLocalVectorRead"
 PetscErrorCode VecGetLocalVectorRead(Vec v,Vec w)
 {
   PetscErrorCode ierr;
   PetscScalar    *a;
-  PetscInt       m1,m2;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidHeaderSpecific(w,VEC_CLASSID,2);
-  ierr = VecGetLocalSize(v,&m1);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(w,&m2);CHKERRQ(ierr);
-  if (m1 != m2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vectors of different local sizes.");
+  VecCheckSameLocalSize(v,1,w,2);
   if (v->ops->getlocalvectorread) {
     ierr = (*v->ops->getlocalvectorread)(v,w);CHKERRQ(ierr);
   } else {
@@ -1491,8 +1430,6 @@ PetscErrorCode VecGetLocalVectorRead(Vec v,Vec w)
 
 .seealso: VecGetLocalVectorRead(), VecGetLocalVector(), VecGetArrayRead(), VecGetArray()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "VecRestoreLocalVectorRead"
 PetscErrorCode VecRestoreLocalVectorRead(Vec v,Vec w)
 {
   PetscErrorCode ierr;
@@ -1524,7 +1461,7 @@ PetscErrorCode VecRestoreLocalVectorRead(Vec v,Vec w)
 .  w - Upon exit this contains the local vector.
 
    Level: beginner
-   
+
    Notes:
    This function is similar to VecGetArray() which maps the local
    portion into a raw pointer.  VecGetLocalVector() is usually about as
@@ -1538,20 +1475,15 @@ PetscErrorCode VecRestoreLocalVectorRead(Vec v,Vec w)
 
 .seealso: VecRestoreLocalVector(), VecGetLocalVectorRead(), VecGetArrayRead(), VecGetArray()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "VecGetLocalVector"
 PetscErrorCode VecGetLocalVector(Vec v,Vec w)
 {
   PetscErrorCode ierr;
   PetscScalar    *a;
-  PetscInt       m1,m2;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidHeaderSpecific(w,VEC_CLASSID,2);
-  ierr = VecGetLocalSize(v,&m1);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(w,&m2);CHKERRQ(ierr);
-  if (m1 != m2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vectors of different local sizes.");
+  VecCheckSameLocalSize(v,1,w,2);
   if (v->ops->getlocalvector) {
     ierr = (*v->ops->getlocalvector)(v,w);CHKERRQ(ierr);
   } else {
@@ -1575,8 +1507,6 @@ PetscErrorCode VecGetLocalVector(Vec v,Vec w)
 
 .seealso: VecGetLocalVector(), VecGetLocalVectorRead(), VecRestoreLocalVectorRead(), LocalVectorRead(), VecGetArrayRead(), VecGetArray()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "VecRestoreLocalVector"
 PetscErrorCode VecRestoreLocalVector(Vec v,Vec w)
 {
   PetscErrorCode ierr;
@@ -1595,14 +1525,12 @@ PetscErrorCode VecRestoreLocalVector(Vec v,Vec w)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecGetArray"
 /*@C
    VecGetArray - Returns a pointer to a contiguous array that contains this
    processor's portion of the vector data. For the standard PETSc
    vectors, VecGetArray() returns a pointer to the local data array and
    does not use any copies. If the underlying vector data is not stored
-   in a contiquous array this routine will copy the data to a contiquous
+   in a contiguous array this routine will copy the data to a contiguous
    array and return a pointer to that. You MUST call VecRestoreArray()
    when you no longer need access to the array.
 
@@ -1655,6 +1583,8 @@ PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
 #elif defined(PETSC_HAVE_VIENNACL)
     if (x->valid_GPU_array == PETSC_VIENNACL_GPU) {
       ierr = VecViennaCLCopyFromGPU(x);CHKERRQ(ierr);
+    } else if (x->valid_GPU_array == PETSC_VIENNACL_UNALLOCATED) {
+      ierr = VecViennaCLAllocateCheckHost(x); CHKERRQ(ierr);
     }
 #elif defined(PETSC_HAVE_VECCUDA)
     if (x->valid_GPU_array == PETSC_CUDA_GPU) {
@@ -1670,8 +1600,6 @@ PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecGetArrayRead"
 /*@C
    VecGetArrayRead - Get read-only pointer to contiguous array containing this processor's portion of the vector data.
 
@@ -1725,8 +1653,6 @@ PetscErrorCode VecGetArrayRead(Vec x,const PetscScalar **a)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecGetArrays"
 /*@C
    VecGetArrays - Returns a pointer to the arrays in a set of vectors
    that were created by a call to VecDuplicateVecs().  You MUST call
@@ -1767,8 +1693,6 @@ PetscErrorCode  VecGetArrays(const Vec x[],PetscInt n,PetscScalar **a[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecRestoreArrays"
 /*@C
    VecRestoreArrays - Restores a group of vectors after VecGetArrays()
    has been called.
@@ -1811,8 +1735,6 @@ PetscErrorCode  VecRestoreArrays(const Vec x[],PetscInt n,PetscScalar **a[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecRestoreArray"
 /*@C
    VecRestoreArray - Restores a vector after VecGetArray() has been called.
 
@@ -1876,8 +1798,6 @@ PetscErrorCode VecRestoreArray(Vec x,PetscScalar **a)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecRestoreArrayRead"
 /*@C
    VecRestoreArrayRead - Restore array obtained with VecGetArrayRead()
 
@@ -1910,8 +1830,6 @@ PetscErrorCode VecRestoreArrayRead(Vec x,const PetscScalar **a)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecPlaceArray"
 /*@
    VecPlaceArray - Allows one to replace the array in a vector with an
    array provided by the user. This is useful to avoid copying an array
@@ -1946,8 +1864,6 @@ PetscErrorCode  VecPlaceArray(Vec vec,const PetscScalar array[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecReplaceArray"
 /*@C
    VecReplaceArray - Allows one to replace the array in a vector with an
    array provided by the user. This is useful to avoid copying an array
@@ -2193,8 +2109,6 @@ M*/
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "VecGetArray2d"
 /*@C
    VecGetArray2d - Returns a pointer to a 2d contiguous array that contains this
    processor's portion of the vector data.  You MUST call VecRestoreArray2d()
@@ -2248,8 +2162,6 @@ PetscErrorCode  VecGetArray2d(Vec x,PetscInt m,PetscInt n,PetscInt mstart,PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecRestoreArray2d"
 /*@C
    VecRestoreArray2d - Restores a vector after VecGetArray2d() has been called.
 
@@ -2292,8 +2204,6 @@ PetscErrorCode  VecRestoreArray2d(Vec x,PetscInt m,PetscInt n,PetscInt mstart,Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecGetArray1d"
 /*@C
    VecGetArray1d - Returns a pointer to a 1d contiguous array that contains this
    processor's portion of the vector data.  You MUST call VecRestoreArray1d()
@@ -2338,8 +2248,6 @@ PetscErrorCode  VecGetArray1d(Vec x,PetscInt m,PetscInt mstart,PetscScalar *a[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecRestoreArray1d"
 /*@C
    VecRestoreArray1d - Restores a vector after VecGetArray1d() has been called.
 
@@ -2379,8 +2287,6 @@ PetscErrorCode  VecRestoreArray1d(Vec x,PetscInt m,PetscInt mstart,PetscScalar *
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecGetArray3d"
 /*@C
    VecGetArray3d - Returns a pointer to a 3d contiguous array that contains this
    processor's portion of the vector data.  You MUST call VecRestoreArray3d()
@@ -2441,8 +2347,6 @@ PetscErrorCode  VecGetArray3d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt ms
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecRestoreArray3d"
 /*@C
    VecRestoreArray3d - Restores a vector after VecGetArray3d() has been called.
 
@@ -2487,8 +2391,6 @@ PetscErrorCode  VecRestoreArray3d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecGetArray4d"
 /*@C
    VecGetArray4d - Returns a pointer to a 4d contiguous array that contains this
    processor's portion of the vector data.  You MUST call VecRestoreArray4d()
@@ -2555,8 +2457,6 @@ PetscErrorCode  VecGetArray4d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt q,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecRestoreArray4d"
 /*@C
    VecRestoreArray4d - Restores a vector after VecGetArray3d() has been called.
 
@@ -2603,8 +2503,6 @@ PetscErrorCode  VecRestoreArray4d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscIn
   PetscFunctionReturn(0);
 }
 
- #undef __FUNCT__
-#define __FUNCT__ "VecGetArray2dRead"
 /*@C
    VecGetArray2dRead - Returns a pointer to a 2d contiguous array that contains this
    processor's portion of the vector data.  You MUST call VecRestoreArray2dRead()
@@ -2658,8 +2556,6 @@ PetscErrorCode  VecGetArray2dRead(Vec x,PetscInt m,PetscInt n,PetscInt mstart,Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecRestoreArray2dRead"
 /*@C
    VecRestoreArray2dRead - Restores a vector after VecGetArray2dRead() has been called.
 
@@ -2702,8 +2598,6 @@ PetscErrorCode  VecRestoreArray2dRead(Vec x,PetscInt m,PetscInt n,PetscInt mstar
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecGetArray1dRead"
 /*@C
    VecGetArray1dRead - Returns a pointer to a 1d contiguous array that contains this
    processor's portion of the vector data.  You MUST call VecRestoreArray1dRead()
@@ -2748,8 +2642,6 @@ PetscErrorCode  VecGetArray1dRead(Vec x,PetscInt m,PetscInt mstart,PetscScalar *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecRestoreArray1dRead"
 /*@C
    VecRestoreArray1dRead - Restores a vector after VecGetArray1dRead() has been called.
 
@@ -2789,8 +2681,6 @@ PetscErrorCode  VecRestoreArray1dRead(Vec x,PetscInt m,PetscInt mstart,PetscScal
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecGetArray3dRead"
 /*@C
    VecGetArray3dRead - Returns a pointer to a 3d contiguous array that contains this
    processor's portion of the vector data.  You MUST call VecRestoreArray3dRead()
@@ -2852,8 +2742,6 @@ PetscErrorCode  VecGetArray3dRead(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecRestoreArray3dRead"
 /*@C
    VecRestoreArray3dRead - Restores a vector after VecGetArray3dRead() has been called.
 
@@ -2898,8 +2786,6 @@ PetscErrorCode  VecRestoreArray3dRead(Vec x,PetscInt m,PetscInt n,PetscInt p,Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecGetArray4dRead"
 /*@C
    VecGetArray4dRead - Returns a pointer to a 4d contiguous array that contains this
    processor's portion of the vector data.  You MUST call VecRestoreArray4dRead()
@@ -2967,8 +2853,6 @@ PetscErrorCode  VecGetArray4dRead(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecRestoreArray4dRead"
 /*@C
    VecRestoreArray4dRead - Restores a vector after VecGetArray3d() has been called.
 
@@ -3017,8 +2901,6 @@ PetscErrorCode  VecRestoreArray4dRead(Vec x,PetscInt m,PetscInt n,PetscInt p,Pet
 
 #if defined(PETSC_USE_DEBUG)
 
-#undef __FUNCT__
-#define __FUNCT__ "VecLockGet"
 /*@
    VecLockGet  - Gets the current lock status of a vector
 
@@ -3044,8 +2926,6 @@ PetscErrorCode VecLockGet(Vec x,PetscInt *state)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecLockPush"
 /*@
    VecLockPush  - Lock a vector from writing
 
@@ -3072,8 +2952,6 @@ PetscErrorCode VecLockPush(Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecLockPop"
 /*@
    VecLockPop  - Unlock a vector from writing
 

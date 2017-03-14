@@ -3,10 +3,11 @@ ALL: lib
 CFLAGS    =
 FFLAGS    =
 CPPFLAGS  =
-SOURCEC	  = plog.c 	xmllogevent.c 	xmlviewer.c
+SOURCEC	  = plog.c xmllogevent.c xmlviewer.c
 SOURCEF	  =
-SOURCEH	  = ../../../include/petsc/private/logimpl.h ../../../include/petsclog.h xmllogevent.h 	 	xmlviewer.h
-MANSEC	  = Profiling
+SOURCEH	  = ../../../include/petsc/private/logimpl.h ../../../include/petsclog.h xmllogevent.h xmlviewer.h
+MANSEC	  = Sys
+SUBMANSEC = Profiling
 LIBBASE	  = libpetscsys
 DIRS	  = utils examples
 LOCDIR	  = src/sys/logging/

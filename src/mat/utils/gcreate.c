@@ -1,8 +1,15 @@
 
 #include <petsc/private/matimpl.h>       /*I "petscmat.h"  I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatShift_Basic"
+PETSC_INTERN PetscErrorCode MatSetBlockSizes_Default(Mat mat,PetscInt rbs, PetscInt cbs)
+{
+  PetscFunctionBegin;
+  if (!mat->preallocated) PetscFunctionReturn(0);
+  if (mat->rmap->bs > 0 && mat->rmap->bs != rbs) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot change row block size %D to %D\n",mat->rmap->bs,rbs);
+  if (mat->cmap->bs > 0 && mat->cmap->bs != cbs) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot change column block size %D to %D\n",mat->cmap->bs,cbs);
+  PetscFunctionReturn(0);
+}
+
 PETSC_INTERN PetscErrorCode MatShift_Basic(Mat Y,PetscScalar a)
 {
   PetscErrorCode ierr;
@@ -23,8 +30,6 @@ PETSC_INTERN PetscErrorCode MatShift_Basic(Mat Y,PetscScalar a)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate"
 /*@
    MatCreate - Creates a matrix where the type is determined
    from either a call to MatSetType() or from the options database
@@ -91,8 +96,6 @@ PetscErrorCode  MatCreate(MPI_Comm comm,Mat *A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetErrorIfFailure"
 /*@
    MatSetErrorIfFailure - Causes Mat to generate an error, for example a zero pivot, is detected.
 
@@ -117,8 +120,6 @@ PetscErrorCode  MatSetErrorIfFailure(Mat mat,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetSizes"
 /*@
   MatSetSizes - Sets the local and global sizes, and checks to determine compatibility
 
@@ -168,8 +169,6 @@ PetscErrorCode  MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetFromOptions"
 /*@
    MatSetFromOptions - Creates a matrix where the type is determined
    from the options database. Generates a parallel MPI matrix if the
@@ -253,9 +252,7 @@ PetscErrorCode  MatSetFromOptions(Mat B)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatXAIJSetPreallocation"
-/*@
+/*@C
    MatXAIJSetPreallocation - set preallocation for serial and parallel AIJ, BAIJ, and SBAIJ matrices and their unassembled versions.
 
    Collective on Mat
@@ -324,8 +321,6 @@ PetscErrorCode MatXAIJSetPreallocation(Mat A,PetscInt bs,const PetscInt dnnz[],c
 
         This is somewhat different from MatHeaderReplace() it would be nice to merge the code
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatHeaderMerge"
 PetscErrorCode MatHeaderMerge(Mat A,Mat *C)
 {
   PetscErrorCode ierr;
@@ -385,8 +380,6 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat *C)
 
         Used in DM hence is declared PETSC_EXTERN
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatHeaderReplace"
 PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A,Mat *C)
 {
   PetscErrorCode   ierr;

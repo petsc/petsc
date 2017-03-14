@@ -41,8 +41,6 @@ typedef struct {
   BCType    bcType;
 } UserContext;
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   KSP            ksp;
@@ -86,8 +84,6 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeRHS"
 PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
 {
   UserContext    *user = (UserContext*)ctx;
@@ -126,8 +122,6 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeRho"
 PetscErrorCode ComputeRho(PetscInt i, PetscInt j, PetscInt mx, PetscInt my, PetscReal centerRho, PetscReal *rho)
 {
   PetscFunctionBeginUser;
@@ -139,8 +133,6 @@ PetscErrorCode ComputeRho(PetscInt i, PetscInt j, PetscInt mx, PetscInt my, Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeMatrix"
 PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,void *ctx)
 {
   UserContext    *user = (UserContext*)ctx;

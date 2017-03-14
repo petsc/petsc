@@ -1,8 +1,6 @@
 #include <petsc/private/matimpl.h>      /*I "petscmat.h"  I*/
 #include <petscsf.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringCreateBipartiteGraph"
 PETSC_EXTERN PetscErrorCode MatColoringCreateBipartiteGraph(MatColoring mc,PetscSF *etoc,PetscSF *etor)
 {
   PetscErrorCode    ierr;

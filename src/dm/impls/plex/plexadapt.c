@@ -3,8 +3,6 @@
 #include <pragmatic/cpragmatic.h>
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexRemesh_Internal"
 /*
   DMPlexRemesh_Internal - Generates a new mesh conforming to a metric field.
 
@@ -223,8 +221,6 @@ PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabel
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexAdapt"
 /*@
   DMPlexAdapt - Generates a mesh adapted to the specified metric field using the pragmatic library.
 

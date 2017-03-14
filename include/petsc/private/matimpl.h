@@ -77,7 +77,7 @@ struct _MatOps {
   PetscErrorCode (*iccfactor)(Mat,IS,const MatFactorInfo*);
   /*39*/
   PetscErrorCode (*axpy)(Mat,PetscScalar,Mat,MatStructure);
-  PetscErrorCode (*getsubmatrices)(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
+  PetscErrorCode (*createsubmatrices)(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
   PetscErrorCode (*increaseoverlap)(Mat,PetscInt,IS[],PetscInt);
   PetscErrorCode (*getvalues)(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],PetscScalar []);
   PetscErrorCode (*copy)(Mat,Mat,MatStructure);
@@ -100,7 +100,7 @@ struct _MatOps {
   PetscErrorCode (*permute)(Mat,IS,IS,Mat*);
   PetscErrorCode (*setvaluesblocked)(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
   /*59*/
-  PetscErrorCode (*getsubmatrix)(Mat,IS,IS,MatReuse,Mat*);
+  PetscErrorCode (*createsubmatrix)(Mat,IS,IS,MatReuse,Mat*);
   PetscErrorCode (*destroy)(Mat);
   PetscErrorCode (*view)(Mat,PetscViewer);
   PetscErrorCode (*convertfrom)(Mat, MatType,MatReuse,Mat*);
@@ -115,7 +115,7 @@ struct _MatOps {
   PetscErrorCode (*getrowmaxabs)(Mat,Vec,PetscInt[]);
   PetscErrorCode (*getrowminabs)(Mat,Vec,PetscInt[]);
   PetscErrorCode (*convert)(Mat, MatType,MatReuse,Mat*);
-  PetscErrorCode (*dummy72)(void);
+  PetscErrorCode (*hasoperation)(Mat,MatOperation,PetscBool*);
   PetscErrorCode (*placeholder_73)(Mat,void*);
   /*74*/
   PetscErrorCode (*setvaluesadifor)(Mat,PetscInt,void*);
@@ -182,7 +182,7 @@ struct _MatOps {
   PetscErrorCode (*getcolumnnorms)(Mat,NormType,PetscReal*);
   PetscErrorCode (*invertblockdiagonal)(Mat,const PetscScalar**);
   PetscErrorCode (*placeholder_127)(Mat,Vec,Vec,Vec);
-  PetscErrorCode (*getsubmatricesmpi)(Mat,PetscInt,const IS[], const IS[], MatReuse, Mat**);
+  PetscErrorCode (*createsubmatricesmpi)(Mat,PetscInt,const IS[], const IS[], MatReuse, Mat**);
   /*129*/
   PetscErrorCode (*setvaluesbatch)(Mat,PetscInt,PetscInt,PetscInt*,const PetscScalar*);
   PetscErrorCode (*transposematmult)(Mat,Mat,MatReuse,PetscReal,Mat*);
@@ -390,6 +390,7 @@ struct _p_Mat {
   PetscBool              symmetric_eternal;
   PetscBool              nooffprocentries,nooffproczerorows;
   PetscBool              subsetoffprocentries;
+  PetscBool              submat_singleis; /* for efficient PCSetUP_ASM() */
 #if defined(PETSC_HAVE_CUSP)
   PetscCUSPFlag          valid_GPU_matrix; /* flag pointing to the matrix on the gpu*/
 #elif defined(PETSC_HAVE_VIENNACL)
@@ -597,11 +598,37 @@ typedef struct {
   PetscScalar    pv;  /* pivot of the active row */
 } FactorShiftCtx;
 
+/*
+ Used by MatCreateSubMatrices_MPIXAIJ_Local()
+*/
+#include <petscctable.h>
+typedef struct { /* used by MatCreateSubMatrices_MPIAIJ_SingleIS_Local() and MatCreateSubMatrices_MPIAIJ_Local */
+  PetscInt   id;   /* index of submats, only submats[0] is responsible for deleting some arrays below */
+  PetscInt   nrqs,nrqr;
+  PetscInt   **rbuf1,**rbuf2,**rbuf3,**sbuf1,**sbuf2;
+  PetscInt   **ptr;
+  PetscInt   *tmp;
+  PetscInt   *ctr;
+  PetscInt   *pa; /* proc array */
+  PetscInt   *req_size,*req_source1,*req_source2;
+  PetscBool  allcolumns,allrows;
+  PetscBool  singleis;
+  PetscInt   *row2proc; /* row to proc map */
+  PetscInt   nstages;
+#if defined(PETSC_USE_CTABLE)
+  PetscTable cmap,rmap;
+  PetscInt   *cmap_loc,*rmap_loc;
+#else
+  PetscInt   *cmap,*rmap;
+#endif
+
+  PetscErrorCode (*destroy)(Mat);
+} Mat_SubSppt;
+
 PETSC_EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
 PETSC_INTERN PetscErrorCode MatShift_Basic(Mat,PetscScalar);
+PETSC_INTERN PetscErrorCode MatSetBlockSizes_Default(Mat,PetscInt,PetscInt);
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPivotCheck_nz"
 PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_nz(Mat mat,const MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row)
 {
   PetscReal _rs   = sctx->rs;
@@ -620,8 +647,6 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_nz(Mat mat,const MatFactorInfo 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPivotCheck_pd"
 PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_pd(Mat mat,const MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row)
 {
   PetscReal _rs   = sctx->rs;
@@ -645,8 +670,6 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_pd(Mat mat,const MatFactorInfo 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPivotCheck_inblocks"
 PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_inblocks(Mat mat,const MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row)
 {
   PetscReal _zero = info->zeropivot;
@@ -661,8 +684,6 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_inblocks(Mat mat,const MatFacto
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPivotCheck_none"
 PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_none(Mat fact,Mat mat,const MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row)
 {
   PetscReal      _zero = info->zeropivot;
@@ -681,8 +702,6 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_none(Mat fact,Mat mat,const Mat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPivotCheck"
 PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFactorInfo *info,FactorShiftCtx *sctx,PetscInt row)
 {
   PetscErrorCode ierr;
@@ -1219,8 +1238,6 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck(Mat fact,Mat mat,const MatFacto
 
 /* -------------------------------------------------------------------------------------------------------*/
 #include <petscbt.h>
-#undef __FUNCT__
-#define __FUNCT__ "PetscLLCondensedCreate"
 /*
   Create and initialize a condensed linked list -
     same as PetscLLCreate(), but uses a scalable array 'lnk' with size of max number of entries, not O(N).
@@ -1273,8 +1290,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate(PetscInt nlnk_max,Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLLCondensedAddSorted"
 /*
   Add a SORTED ascending index set into a sorted linked list. See PetscLLCondensedCreate() for detailed description.
   Input Parameters:
@@ -1315,8 +1330,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedAddSorted(PetscInt nidx,const
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLLCondensedClean"
 PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedClean(PetscInt lnk_max,PetscInt nidx,PetscInt *indices,PetscInt lnk[],PetscBT bt)
 {
   PetscErrorCode ierr;
@@ -1336,8 +1349,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedClean(PetscInt lnk_max,PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLLCondensedView"
 PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedView(PetscInt *lnk)
 {
   PetscErrorCode ierr;
@@ -1351,8 +1362,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedView(PetscInt *lnk)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLLCondensedDestroy"
 /*
   Free memories used by the list
 */
@@ -1367,8 +1376,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedDestroy(PetscInt *lnk,PetscBT
 }
 
 /* -------------------------------------------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "PetscLLCondensedCreate_Scalable"
 /*
  Same as PetscLLCondensedCreate(), but does not use non-scalable O(lnk_max) bitarray
   Input Parameters:
@@ -1391,8 +1398,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate_Scalable(PetscInt nlnk
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLLCondensedAddSorted_Scalable"
 PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedAddSorted_Scalable(PetscInt nidx,const PetscInt indices[],PetscInt lnk[])
 {
   PetscInt _k,_entry,_location,_next,_lnkdata,_nlnk,_newnode;
@@ -1420,8 +1425,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedAddSorted_Scalable(PetscInt n
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLLCondensedClean_Scalable"
 PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedClean_Scalable(PetscInt nidx,PetscInt *indices,PetscInt *lnk)
 {
   PetscInt _k,_next,_nlnk;
@@ -1436,8 +1439,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedClean_Scalable(PetscInt nidx,
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLLCondensedDestroy_Scalable"
 PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedDestroy_Scalable(PetscInt *lnk)
 {
   return PetscFree(lnk);
@@ -1464,8 +1465,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedDestroy_Scalable(PetscInt *ln
       lnk[8]    next valid link (this is the same as lnk[0] but without the decreases)
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLLCondensedCreate_fast"
 PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate_fast(PetscInt nlnk_max,PetscInt **lnk)
 {
   PetscErrorCode ierr;
@@ -1504,7 +1503,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedAddSorted_fast(PetscInt nidx,
     /* entry is right after previous list */
     if (entry == lnk[prev]+lnk[prev+1]) {
       lnk[prev+1]++;
-      if (lnk[next] == entry+1) { /* combine two contiquous strings */
+      if (lnk[next] == entry+1) { /* combine two contiguous strings */
         lnk[prev+1] += lnk[next+1];
         lnk[prev+2]  = lnk[next+2];
         next         = lnk[next+2];
@@ -1524,7 +1523,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedAddSorted_fast(PetscInt nidx,
     lnk[prev+2]    = 3*((lnk[8]++)+3);      /* connect previous node to the new node */
     prev           = lnk[prev+2];
     lnk[prev]      = entry;        /* set value of the new node */
-    lnk[prev+1]    = 1;             /* number of values in contiquous string is one to start */
+    lnk[prev+1]    = 1;             /* number of values in contiguous string is one to start */
     lnk[prev+2]    = next;          /* connect new node to next node */
     lnk[0]++;
   }
@@ -1573,19 +1572,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedDestroy_fast(PetscInt *lnk)
   return PetscFree(lnk);
 }
 
-/* alias PetscSortIntWithScalarArray while MatScalar == PetscScalar */
-PETSC_STATIC_INLINE PetscErrorCode PetscSortIntWithMatScalarArray(PetscInt n,PetscInt *idx,PetscScalar *val)
-{
-#if !defined(PETSC_USE_REAL_MAT_SINGLE)
-  return PetscSortIntWithScalarArray(n,idx,val);
-#else
-  {
-    MatScalar mtmp;
-    return PetscSortIntWithDataArray(n,idx,val,sizeof(MatScalar),&mtmp);
-  }
-#endif
-}
-
 /* this is extern because it is used in MatFDColoringUseDM() which is in the DM library */
 PETSC_EXTERN PetscErrorCode MatFDColoringApply_AIJ(Mat,MatFDColoring,Vec,void*);
 
@@ -1594,9 +1580,9 @@ PETSC_EXTERN PetscLogEvent MAT_MultTransposeConstrained, MAT_MultTransposeAdd, M
 PETSC_EXTERN PetscLogEvent MAT_SolveTransposeAdd, MAT_SOR, MAT_ForwardSolve, MAT_BackwardSolve, MAT_LUFactor, MAT_LUFactorSymbolic;
 PETSC_EXTERN PetscLogEvent MAT_LUFactorNumeric, MAT_CholeskyFactor, MAT_CholeskyFactorSymbolic, MAT_CholeskyFactorNumeric, MAT_ILUFactor;
 PETSC_EXTERN PetscLogEvent MAT_ILUFactorSymbolic, MAT_ICCFactorSymbolic, MAT_Copy, MAT_Convert, MAT_Scale, MAT_AssemblyBegin;
-PETSC_EXTERN PetscLogEvent MAT_AssemblyEnd, MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetRowIJ, MAT_GetSubMatrices, MAT_GetColoring, MAT_GetOrdering, MAT_RedundantMat;
+PETSC_EXTERN PetscLogEvent MAT_AssemblyEnd, MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetRowIJ, MAT_CreateSubMats, MAT_GetColoring, MAT_GetOrdering, MAT_RedundantMat;
 PETSC_EXTERN PetscLogEvent MAT_IncreaseOverlap, MAT_Partitioning, MAT_Coarsen, MAT_ZeroEntries, MAT_Load, MAT_View, MAT_AXPY, MAT_FDColoringCreate, MAT_TransposeColoringCreate;
-PETSC_EXTERN PetscLogEvent MAT_FDColoringSetUp, MAT_FDColoringApply, MAT_Transpose, MAT_FDColoringFunction,MAT_GetSubMatrix;
+PETSC_EXTERN PetscLogEvent MAT_FDColoringSetUp, MAT_FDColoringApply, MAT_Transpose, MAT_FDColoringFunction,MAT_CreateSubMat;
 PETSC_EXTERN PetscLogEvent MAT_MatMult, MAT_MatSolve,MAT_MatMultSymbolic, MAT_MatMultNumeric,MAT_Getlocalmatcondensed,MAT_GetBrowsOfAcols,MAT_GetBrowsOfAocols;
 PETSC_EXTERN PetscLogEvent MAT_PtAP, MAT_PtAPSymbolic, MAT_PtAPNumeric,MAT_Seqstompinum,MAT_Seqstompisym,MAT_Seqstompi,MAT_Getlocalmat;
 PETSC_EXTERN PetscLogEvent MAT_RARt, MAT_RARtSymbolic, MAT_RARtNumeric;

@@ -1,8 +1,11 @@
 !
-!  Simple PETSc Program written in Fortran 77.
+!  Simple PETSc Program written in Fortran
 !
        program main
 #include <petsc/finclude/petscsys.h>
+       use petscsys
+       implicit none
+
        PetscErrorCode  ierr
        PetscMPIInt     rank
        character*(80) arch
@@ -13,10 +16,19 @@
        endif
 
        call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
-       print*, 'Greetings from', rank
+       print*, 'Greetings from rank', rank
 
        call PetscGetArchType(arch,ierr)
-       print*, 'Machine type ',arch
+       write(6,100) arch
+ 100   format (' PETSC_ARCH ',A)
 
        call PetscFinalize(ierr)
        end
+
+!
+!/*TEST
+!
+!   test:
+!   filter: sed "s/ ${PETSC_ARCH}//g"
+!
+!TEST*/

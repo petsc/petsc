@@ -14,8 +14,6 @@ typedef struct {
   PetscInt  square_graph;
 } PC_GAMG_AGG;
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGSetNSmooths"
 /*@
    PCGAMGSetNSmooths - Set number of smoothing steps (1 is typical)
 
@@ -43,8 +41,6 @@ PetscErrorCode PCGAMGSetNSmooths(PC pc, PetscInt n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGSetNSmooths_AGG"
 static PetscErrorCode PCGAMGSetNSmooths_AGG(PC pc, PetscInt n)
 {
   PC_MG       *mg          = (PC_MG*)pc->data;
@@ -56,8 +52,6 @@ static PetscErrorCode PCGAMGSetNSmooths_AGG(PC pc, PetscInt n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGSetSymGraph"
 /*@
    PCGAMGSetSymGraph - Symmetrize the graph before computing the aggregation. Some algorithms require the graph be symmetric
 
@@ -86,8 +80,6 @@ PetscErrorCode PCGAMGSetSymGraph(PC pc, PetscBool n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGSetSymGraph_AGG"
 static PetscErrorCode PCGAMGSetSymGraph_AGG(PC pc, PetscBool n)
 {
   PC_MG       *mg          = (PC_MG*)pc->data;
@@ -99,8 +91,6 @@ static PetscErrorCode PCGAMGSetSymGraph_AGG(PC pc, PetscBool n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGSetSquareGraph"
 /*@
    PCGAMGSetSquareGraph -  Square the graph, ie. compute A'*A before aggregating it
 
@@ -129,8 +119,6 @@ PetscErrorCode PCGAMGSetSquareGraph(PC pc, PetscInt n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGSetSquareGraph_AGG"
 static PetscErrorCode PCGAMGSetSquareGraph_AGG(PC pc, PetscInt n)
 {
   PC_MG       *mg          = (PC_MG*)pc->data;
@@ -142,8 +130,6 @@ static PetscErrorCode PCGAMGSetSquareGraph_AGG(PC pc, PetscInt n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_GAMG_AGG"
 static PetscErrorCode PCSetFromOptions_GAMG_AGG(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
@@ -163,8 +149,6 @@ static PetscErrorCode PCSetFromOptions_GAMG_AGG(PetscOptionItems *PetscOptionsOb
 }
 
 /* -------------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_GAMG_AGG"
 static PetscErrorCode PCDestroy_GAMG_AGG(PC pc)
 {
   PetscErrorCode ierr;
@@ -189,8 +173,6 @@ static PetscErrorCode PCDestroy_GAMG_AGG(PC pc)
    . coords - [a_nloc][ndm] - interleaved coordinate data: {x_0, y_0, z_0, x_1, y_1, ...}
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetCoordinates_AGG"
 static PetscErrorCode PCSetCoordinates_AGG(PC pc, PetscInt ndm, PetscInt a_nloc, PetscReal *coords)
 {
   PC_MG          *mg      = (PC_MG*)pc->data;
@@ -274,9 +256,7 @@ static const NState REMOVED =-3;
    Input/Output Parameter:
    . aggs_2 - linked list of aggs with gids)
 */
-#undef __FUNCT__
-#define __FUNCT__ "smoothAggs"
-static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2)
+static PetscErrorCode smoothAggs(PC pc,Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2)
 {
   PetscErrorCode ierr;
   PetscBool      isMPI;
@@ -435,7 +415,7 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
               SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"found node %d times???",hav);
             }
           } else {            /* I'm stealing this local, owned by a ghost */
-            if (sgid != -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Have un-symmetric graph (apparently). Use '-pc_gamg_sym_graph true' to symetrize the graph or '-pc_gamg_threshold -1.0' if the matrix is structurally symmetric.");
+            if (sgid != -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Have un-symmetric graph (apparently). Use '-%spc_gamg_sym_graph true' to symetrize the graph or '-%spc_gamg_threshold -1' if the matrix is structurally symmetric.",((PetscObject)pc)->prefix,((PetscObject)pc)->prefix);
             ierr = PetscCDAppendID(aggs_2, lid, lidj+my0);CHKERRQ(ierr);
           }
         }
@@ -605,8 +585,6 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
    . pc -
    . a_A - matrix to get (near) null space out of.
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCSetData_AGG"
 static PetscErrorCode PCSetData_AGG(PC pc, Mat a_A)
 {
   PetscErrorCode ierr;
@@ -684,8 +662,6 @@ static PetscErrorCode PCSetData_AGG(PC pc, Mat a_A)
    . a_data_out - in with fine grid data (w/ghosts), out with coarse grid data
    . a_Prol - prolongation operator
 */
-#undef __FUNCT__
-#define __FUNCT__ "formProl0"
 static PetscErrorCode formProl0(PetscCoarsenData *agg_llists,PetscInt bs,PetscInt nSAvec,PetscInt my0crs,PetscInt data_stride,PetscReal data_in[],const PetscInt flid_fgid[],PetscReal **a_data_out,Mat a_Prol)
 {
   PetscErrorCode  ierr;
@@ -845,7 +821,7 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists,PetscInt bs,PetscIn
 /* ierr = MPIU_Allreduce(&ndone, &ii, 1, MPIU_INT, MPIU_SUM, comm); */
 /* MatGetSize(a_Prol, &kk, &jj); */
 /* ierr = MPIU_Allreduce(&minsz, &jj, 1, MPIU_INT, MPIU_MIN, comm); */
-/* PetscPrintf(comm," **** [%d]%s %d total done, %d nodes (%d local done), min agg. size = %d\n",rank,__FUNCT__,ii,kk/bs,ndone,jj); */
+/* PetscPrintf(comm," **** [%d]%s %d total done, %d nodes (%d local done), min agg. size = %d\n",rank,PETSC_FUNCTION_NAME,ii,kk/bs,ndone,jj); */
 
 #if defined(OUT_AGGS)
   if (llev==1) fclose(file);
@@ -854,8 +830,6 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists,PetscInt bs,PetscIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCView_GAMG_AGG"
 static PetscErrorCode PCView_GAMG_AGG(PC pc,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -881,14 +855,12 @@ static PetscErrorCode PCView_GAMG_AGG(PC pc,PetscViewer viewer)
   Output Parameter:
    . a_Gmat -
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGGraph_AGG"
 static PetscErrorCode PCGAMGGraph_AGG(PC pc,Mat Amat,Mat *a_Gmat)
 {
   PetscErrorCode            ierr;
   PC_MG                     *mg          = (PC_MG*)pc->data;
   PC_GAMG                   *pc_gamg     = (PC_GAMG*)mg->innerctx;
-  const PetscReal           vfilter      = pc_gamg->threshold;
+  const PetscReal           vfilter      = pc_gamg->threshold[pc_gamg->current_level];
   PC_GAMG_AGG               *pc_gamg_agg = (PC_GAMG_AGG*)pc_gamg->subctx;
   Mat                       Gmat;
   MPI_Comm                  comm;
@@ -921,8 +893,6 @@ static PetscErrorCode PCGAMGGraph_AGG(PC pc,Mat Amat,Mat *a_Gmat)
   Output Parameter:
    . agg_lists - list of aggregates
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGCoarsen_AGG"
 static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **agg_lists)
 {
   PetscErrorCode ierr;
@@ -997,7 +967,7 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **
   /* smooth aggs */
   if (Gmat2 != Gmat1) {
     const PetscCoarsenData *llist = *agg_lists;
-    ierr     = smoothAggs(Gmat2, Gmat1, *agg_lists);CHKERRQ(ierr);
+    ierr     = smoothAggs(a_pc,Gmat2, Gmat1, *agg_lists);CHKERRQ(ierr);
     ierr     = MatDestroy(&Gmat1);CHKERRQ(ierr);
     *a_Gmat1 = Gmat2; /* output */
     ierr     = PetscCDGetMat(llist, &mat);CHKERRQ(ierr);
@@ -1027,8 +997,6 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **
  Output Parameter:
  . a_P_out - prolongation operator to the next level
  */
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGProlongator_AGG"
 static PetscErrorCode PCGAMGProlongator_AGG(PC pc,Mat Amat,Mat Gmat,PetscCoarsenData *agg_lists,Mat *a_P_out)
 {
   PC_MG          *mg       = (PC_MG*)pc->data;
@@ -1170,8 +1138,6 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc,Mat Amat,Mat Gmat,PetscCoarsen
  In/Output Parameter:
    . a_P - prolongation operator to the next level
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGOptProlongator_AGG"
 static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
 {
   PetscErrorCode ierr;
@@ -1264,8 +1230,6 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
   Input Parameter:
    . pc -
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCCreateGAMG_AGG"
 PetscErrorCode  PCCreateGAMG_AGG(PC pc)
 {
   PetscErrorCode ierr;

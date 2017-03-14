@@ -69,8 +69,6 @@ typedef struct {
 
 static  AppCtx *globalUser;
 
-#undef __FUNCT__
-#define __FUNCT__ "ProcessOptions"
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   const char    *velocityDist[4]  = {"zero", "constant", "harmonic", "shear"};
@@ -118,8 +116,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ProcessMonitorOptions"
 static PetscErrorCode ProcessMonitorOptions(MPI_Comm comm, AppCtx *options)
 {
   Functional     func;
@@ -157,8 +153,6 @@ static PetscErrorCode ProcessMonitorOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FunctionalRegister"
 static PetscErrorCode FunctionalRegister(Functional *functionalRegistry, const char name[], PetscInt *offset, FunctionalFunc func, void *ctx)
 {
   Functional    *ptr, f;
@@ -178,8 +172,6 @@ static PetscErrorCode FunctionalRegister(Functional *functionalRegistry, const c
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FunctionalDestroy"
 static PetscErrorCode FunctionalDestroy(Functional *link)
 {
   Functional     next, l;
@@ -586,8 +578,6 @@ static PetscErrorCode tilted_phi_coupled_2d(PetscInt dim, PetscReal time, const 
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "advect_inflow"
 static PetscErrorCode advect_inflow(PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx)
 {
   AppCtx *user = (AppCtx *) ctx;
@@ -597,8 +587,6 @@ static PetscErrorCode advect_inflow(PetscReal time, const PetscReal *c, const Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "advect_outflow"
 static PetscErrorCode advect_outflow(PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx)
 {
   AppCtx *user = (AppCtx *) ctx;
@@ -608,8 +596,6 @@ static PetscErrorCode advect_outflow(PetscReal time, const PetscReal *c, const P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ExactSolution"
 static PetscErrorCode ExactSolution(DM dm, PetscReal time, const PetscReal *x, PetscScalar *u, void *ctx)
 {
   AppCtx        *user = (AppCtx *) ctx;
@@ -634,8 +620,6 @@ static PetscErrorCode ExactSolution(DM dm, PetscReal time, const PetscReal *x, P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Functional_Error"
 static PetscErrorCode Functional_Error(DM dm, PetscReal time, const PetscScalar *x, const PetscScalar *y, PetscReal *f, void *ctx)
 {
   AppCtx        *user = (AppCtx *) ctx;
@@ -648,8 +632,6 @@ static PetscErrorCode Functional_Error(DM dm, PetscReal time, const PetscScalar 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateMesh"
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   DM              distributedMesh = NULL;
@@ -686,8 +668,6 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetupBC"
 static PetscErrorCode SetupBC(DM dm, AppCtx *user)
 {
   PetscDS        prob;
@@ -766,8 +746,6 @@ static PetscErrorCode SetupBC(DM dm, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetupProblem"
 static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
 {
   PetscDS        prob;
@@ -817,8 +795,6 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetupDiscretization"
 static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 {
   DM              cdm = dm;
@@ -865,8 +841,6 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateDM"
 static PetscErrorCode CreateDM(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscErrorCode ierr;
@@ -893,8 +867,6 @@ static PetscErrorCode CreateDM(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetInitialConditionFVM"
 static PetscErrorCode SetInitialConditionFVM(DM dm, Vec X, PetscInt field, PetscErrorCode (*func)(PetscInt, const PetscReal [], PetscInt, PetscScalar *, void *), void *ctx)
 {
   PetscDS            prob;
@@ -928,8 +900,6 @@ static PetscErrorCode SetInitialConditionFVM(DM dm, Vec X, PetscInt field, Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MonitorFunctionals"
 static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time, Vec X, void *ctx)
 {
   AppCtx            *user   = (AppCtx *) ctx;
@@ -1098,8 +1068,6 @@ static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   MPI_Comm       comm;

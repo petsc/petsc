@@ -4,8 +4,6 @@
 */
 #include <petscsys.h>  /*I   "petscsys.h"    I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDataTypeToMPIDataType"
 /*@C
      PetscDataTypeToMPIDataType - Converts the PETSc name of a datatype to its MPI name.
 
@@ -44,13 +42,13 @@ PetscErrorCode  PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype *mty
   else if (ptype == PETSC_BIT_LOGICAL) *mtype = MPI_BYTE;
 #if defined(PETSC_USE_REAL___FLOAT128)
   else if (ptype == PETSC___FLOAT128)  *mtype = MPIU___FLOAT128;
+#elif defined(PETSC_USE_REAL___FP16)
+  else if (ptype == PETSC___FP16)  *mtype = MPIU___FP16;
 #endif
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown PETSc datatype");
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMPIDataTypeToPetscDataType"
 /*@C
      PetscMPIDataTypeToPetscDataType Finds the PETSc name of a datatype from its MPI name
 
@@ -87,6 +85,8 @@ PetscErrorCode  PetscMPIDataTypeToPetscDataType(MPI_Datatype mtype,PetscDataType
   else if (mtype == MPI_CHAR)        *ptype = PETSC_CHAR;
 #if defined(PETSC_USE_REAL___FLOAT128)
   else if (mtype == MPIU___FLOAT128) *ptype = PETSC___FLOAT128;
+#elif defined(PETSC_USE_REAL___FP16)
+  else if (mtype == MPIU___FP16) *ptype = PETSC___FP16;
 #endif
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled MPI datatype");
   PetscFunctionReturn(0);
@@ -101,12 +101,14 @@ typedef enum {PETSC_INT_SIZE         = sizeof(PetscInt),
               PETSC_CHAR_SIZE        = sizeof(char),
               PETSC_BIT_LOGICAL_SIZE = sizeof(char),
               PETSC_ENUM_SIZE        = sizeof(PetscBool),
-              PETSC_BOOL_SIZE        = sizeof(PetscBool),
-              PETSC___FLOAT128_SIZE  = sizeof(long double)
+              PETSC_BOOL_SIZE        = sizeof(PetscBool)
+#if defined(PETSC_USE_REAL___FLOAT128)
+              ,PETSC___FLOAT128_SIZE  = sizeof(__float128)
+#elif defined(PETSC_USE_REAL___FP16)
+              ,PETSC___FP16_SIZE      = sizeof(__fp16)
+#endif
              } PetscDataTypeSize;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDataTypeGetSize"
 /*@C
      PetscDataTypeGetSize - Gets the size (in bytes) of a PETSc datatype
 
@@ -142,13 +144,15 @@ PetscErrorCode  PetscDataTypeGetSize(PetscDataType ptype,size_t *size)
   else if (ptype == PETSC_ENUM)        *size = PETSC_ENUM_SIZE;
   else if (ptype == PETSC_BIT_LOGICAL) *size = PETSC_BIT_LOGICAL_SIZE;
   else if (ptype == PETSC_BOOL)        *size = PETSC_BOOL_SIZE;
+#if defined(PETSC_USE_REAL___FLOAT128)
   else if (ptype == PETSC___FLOAT128)  *size = PETSC___FLOAT128_SIZE;
+#elif defined(PETSC_USE_REAL___FP16)
+  else if (ptype == PETSC___FP16)      *size = PETSC___FP16_SIZE;
+#endif
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown PETSc datatype");
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDataTypeFromString"
 /*@
      PetscDataTypeFromString - Gets the enum value of a PETSc datatype represented as a string
 

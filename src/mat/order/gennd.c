@@ -4,8 +4,6 @@
 #include <petscsys.h>
 #include <petsc/private/matorderimpl.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "SPARSEPACKrevrse"
 PetscErrorCode SPARSEPACKrevrse(const PetscInt *n,PetscInt *perm)
 {
   /* System generated locals */
@@ -55,8 +53,6 @@ PetscErrorCode SPARSEPACKrevrse(const PetscInt *n,PetscInt *perm)
 /*       FNDSEP, REVRSE.*/
 /*****************************************************************/
 
-#undef __FUNCT__
-#define __FUNCT__ "SPARSEPACKgennd"
 PetscErrorCode SPARSEPACKgennd(const PetscInt *neqns,const PetscInt *xadj,const PetscInt *adjncy,PetscInt *mask,PetscInt *perm,PetscInt *xls,PetscInt *ls)
 {
   /* System generated locals */

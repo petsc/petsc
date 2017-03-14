@@ -17,8 +17,6 @@ struct SH {
 static struct SH *sh       = 0;
 static PetscBool SignalSet = PETSC_FALSE;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSignalHandler_Private"
 /*
     PetscSignalHandler_Private - This is the signal handler called by the system. This calls
              any signal handler set by PETSc or the application code.
@@ -51,8 +49,6 @@ static void PetscSignalHandler_Private(int sig)
   if (ierr) MPI_Abort(PETSC_COMM_WORLD,0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSignalHandlerDefault"
 /*@
    PetscSignalHandlerDefault - Default signal handler.
 
@@ -166,8 +162,6 @@ PetscErrorCode  PetscSignalHandlerDefault(int sig,void *ptr)
 #define PETSC_SIGNAL_CAST
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscPushSignalHandler"
 /*@C
    PetscPushSignalHandler - Catches the usual fatal errors and
    calls a user-provided routine.
@@ -316,8 +310,6 @@ PetscErrorCode  PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscPopSignalHandler"
 /*@
    PetscPopSignalHandler - Removes the most last signal handler that was pushed.
        If no signal handlers are left on the stack it will remove the PETSc signal handler.
@@ -334,7 +326,8 @@ PetscErrorCode  PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void
 @*/
 PetscErrorCode  PetscPopSignalHandler(void)
 {
-  struct SH *tmp;
+  struct SH      *tmp;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!sh) PetscFunctionReturn(0);
@@ -342,7 +335,7 @@ PetscErrorCode  PetscPopSignalHandler(void)
 
   tmp = sh;
   sh  = sh->previous;
-  PetscFreeVoid(tmp);
+  ierr = PetscFree(tmp);CHKERRQ(ierr);
   if (!sh || !sh->handler) {
 #if !defined(PETSC_MISSING_SIGALRM)
     /* signal(SIGALRM, 0); */

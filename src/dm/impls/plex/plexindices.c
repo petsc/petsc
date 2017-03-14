@@ -1,7 +1,5 @@
 #include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexCreateClosureIndex"
 /*@
   DMPlexCreateClosureIndex - Calculate an index for the given PetscSection for the closure operation on the DM
 

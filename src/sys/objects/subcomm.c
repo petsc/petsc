@@ -10,8 +10,6 @@ const char *const PetscSubcommTypes[] = {"GENERAL","CONTIGUOUS","INTERLACED","Pe
 extern PetscErrorCode PetscSubcommCreate_contiguous(PetscSubcomm);
 extern PetscErrorCode PetscSubcommCreate_interlaced(PetscSubcomm);
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSubcommSetFromOptions"
 /*@C
    PetscSubcommSetFromOptions - Allows setting options from a PetscSubcomm
 
@@ -61,8 +59,6 @@ PetscErrorCode PetscSubcommSetFromOptions(PetscSubcomm psubcomm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSubcommSetOptionsPrefix"
 /*@C
   PetscSubcommSetOptionsPrefix - Sets the prefix used for searching for all
   PetscSubcomm items in the options database.
@@ -91,10 +87,8 @@ PetscErrorCode PetscSubcommSetOptionsPrefix(PetscSubcomm psubcomm,const char pre
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSubcommView"
 /*@C
-   PetsSubcommcView - Views a PetscSubcomm of values as either ASCII text or a binary file
+   PetscSubcommView - Views a PetscSubcomm of values as either ASCII text or a binary file
 
    Collective on PetscSubcomm
 
@@ -131,8 +125,6 @@ PetscErrorCode PetscSubcommView(PetscSubcomm psubcomm,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSubcommSetNumber"
 /*@C
   PetscSubcommSetNumber - Set total number of subcommunicators.
 
@@ -164,8 +156,6 @@ PetscErrorCode  PetscSubcommSetNumber(PetscSubcomm psubcomm,PetscInt nsubcomm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSubcommSetType"
 /*@C
   PetscSubcommSetType - Set type of subcommunicators.
 
@@ -197,8 +187,6 @@ PetscErrorCode  PetscSubcommSetType(PetscSubcomm psubcomm,PetscSubcommType subco
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSubcommSetTypeGeneral"
 /*@C
   PetscSubcommSetTypeGeneral - Set a PetscSubcomm from user's specifications
 
@@ -268,8 +256,6 @@ PetscErrorCode PetscSubcommSetTypeGeneral(PetscSubcomm psubcomm,PetscMPIInt colo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSubcommDestroy"
 /*@C
   PetscSubcommDestroy - Destroys a PetscSubcomm object
 
@@ -296,8 +282,6 @@ PetscErrorCode  PetscSubcommDestroy(PetscSubcomm *psubcomm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSubcommCreate"
 /*@C
   PetscSubcommCreate - Create a PetscSubcomm context.
 
@@ -337,8 +321,6 @@ PetscErrorCode  PetscSubcommCreate(MPI_Comm comm,PetscSubcomm *psubcomm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSubcommCreate_contiguous"
 PetscErrorCode PetscSubcommCreate_contiguous(PetscSubcomm psubcomm)
 {
   PetscErrorCode ierr;
@@ -386,8 +368,6 @@ PetscErrorCode PetscSubcommCreate_contiguous(PetscSubcomm psubcomm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSubcommCreate_interlaced"
 /*
    Note:
    In PCREDUNDANT, to avoid data scattering from subcomm back to original comm, we create subcommunicators

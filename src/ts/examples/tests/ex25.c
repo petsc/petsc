@@ -43,8 +43,6 @@ static PetscErrorCode FormIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*
 static PetscErrorCode FormInitialSolution(TS,Vec,void*);
 static int Brusselator(int,char**,PetscInt);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscInt       cycle;
@@ -59,8 +57,6 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Brusselator"
 PetscErrorCode Brusselator(int argc,char **argv,PetscInt cycle)
 {
   TS                ts;         /* nonlinear solver */
@@ -163,8 +159,6 @@ PetscErrorCode Brusselator(int argc,char **argv,PetscInt cycle)
   return ierr;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormIFunction"
 static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ptr)
 {
   User           user = (User)ptr;
@@ -218,8 +212,6 @@ static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormRHSFunction"
 static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 {
   User           user = (User)ptr;
@@ -256,8 +248,6 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 /*
   IJacobian - Compute IJacobian = dF/dU + a dF/dUdot
 */
-#undef __FUNCT__
-#define __FUNCT__ "FormIJacobian"
 PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat J,Mat Jpre,void *ptr)
 {
   User           user = (User)ptr;
@@ -305,8 +295,6 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat J,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormInitialSolution"
 PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
 {
   User           user = (User)ctx;

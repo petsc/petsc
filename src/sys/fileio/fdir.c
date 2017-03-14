@@ -10,8 +10,6 @@
 #include <stdint.h>
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscPathJoin"
 PetscErrorCode PetscPathJoin(const char dname[],const char fname[],size_t n,char fullname[])
 {
   PetscErrorCode ierr;
@@ -26,8 +24,6 @@ PetscErrorCode PetscPathJoin(const char dname[],const char fname[],size_t n,char
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMkdir"
 PetscErrorCode PetscMkdir(const char dir[])
 {
   int err;
@@ -41,8 +37,6 @@ PetscErrorCode PetscMkdir(const char dir[])
      PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscRMTree"
 #if defined(PETSC_HAVE_DIRECT_H)
 PetscErrorCode PetscRMTree(const char dir[])
 {

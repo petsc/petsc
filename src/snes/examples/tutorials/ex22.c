@@ -71,8 +71,6 @@ char matrix_free_options[] = "-mat_mffd_compute_normu no \
 
 extern PetscErrorCode DMCreateMatrix_MF(DM,Mat*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
@@ -139,8 +137,6 @@ typedef struct {
   PetscScalar lambda;
 } ULambda;
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeFunction"
 /*
       Evaluates FU = Gradiant(L(w,u,lambda))
 
@@ -204,8 +200,6 @@ PetscErrorCode ComputeFunction(SNES snes,Vec U,Vec FU,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "u_solution"
 /*
     Computes the exact solution
 */
@@ -218,8 +212,6 @@ PetscErrorCode u_solution(void *dummy,PetscInt n,const PetscScalar *x,PetscScala
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ExactSolution"
 PetscErrorCode ExactSolution(DM packer,Vec U)
 {
   PF             pf;
@@ -248,8 +240,6 @@ PetscErrorCode ExactSolution(DM packer,Vec U)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Monitor"
 PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal rnorm,void *dummy)
 {
   UserCtx        *user;
@@ -289,8 +279,6 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal rnorm,void *dummy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateMatrix_MF"
 PetscErrorCode DMCreateMatrix_MF(DM packer,Mat *A)
 {
   PetscErrorCode ierr;
@@ -306,8 +294,6 @@ PetscErrorCode DMCreateMatrix_MF(DM packer,Mat *A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeJacobian_MF"
 PetscErrorCode ComputeJacobian_MF(SNES snes,Vec x,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode ierr;

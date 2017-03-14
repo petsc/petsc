@@ -58,8 +58,6 @@ typedef struct {
   This can be substituted by an external parser.
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "read_data"
 PetscErrorCode read_data(PetscInt *pnnode,PetscInt *pnbranch,Node **pnode,Branch **pbranch,int **pedgelist)
 {
   PetscErrorCode    ierr;
@@ -144,8 +142,6 @@ PetscErrorCode read_data(PetscInt *pnnode,PetscInt *pnbranch,Node **pnode,Branch
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormOperator"
 PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
 {
   PetscErrorCode    ierr;
@@ -251,8 +247,6 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char ** argv)
 {
   PetscErrorCode    ierr;
@@ -262,7 +256,7 @@ int main(int argc,char ** argv)
   Vec               x, b;
   Mat               A;
   KSP               ksp;
-  int               *edgelist;
+  int               *edgelist = NULL;
   PetscInt          componentkey[2];
   Node              *node;
   Branch            *branch;
@@ -291,13 +285,13 @@ int main(int argc,char ** argv)
   if (!rank) {
     ierr = DMNetworkGetEdgeRange(networkdm,&eStart,&eEnd);CHKERRQ(ierr);
     for (i = eStart; i < eEnd; i++) {
-      ierr = DMNetworkAddComponent(networkdm,i,componentkey[0],&branch[i-eStart]);CHKERRQ(ierr);
+      ierr = DMNetworkAddComponent(networkdm,i,componentkey[1],&branch[i-eStart]);CHKERRQ(ierr);
       ierr = DMNetworkAddNumVariables(networkdm,i,1);CHKERRQ(ierr);
     }
 
     ierr = DMNetworkGetVertexRange(networkdm,&vStart,&vEnd);CHKERRQ(ierr);
     for (i = vStart; i < vEnd; i++) {
-      ierr = DMNetworkAddComponent(networkdm,i,componentkey[1],&node[i-vStart]);CHKERRQ(ierr);
+      ierr = DMNetworkAddComponent(networkdm,i,componentkey[0],&node[i-vStart]);CHKERRQ(ierr);
       /* Add number of variables */
       ierr = DMNetworkAddNumVariables(networkdm,i,1);CHKERRQ(ierr);
     }

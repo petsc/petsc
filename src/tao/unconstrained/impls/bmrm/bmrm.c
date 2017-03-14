@@ -17,8 +17,6 @@ static PetscErrorCode solve(TAO_DF*);
    Regularizer assumed to be L2 norm = lambda*0.5*W'W ()
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "make_grad_node"
 static PetscErrorCode make_grad_node(Vec X, Vec_Chain **p)
 {
   PetscErrorCode ierr;
@@ -31,8 +29,6 @@ static PetscErrorCode make_grad_node(Vec X, Vec_Chain **p)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "destroy_grad_list"
 static PetscErrorCode destroy_grad_list(Vec_Chain *head)
 {
   PetscErrorCode ierr;
@@ -50,8 +46,6 @@ static PetscErrorCode destroy_grad_list(Vec_Chain *head)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSolve_BMRM"
 static PetscErrorCode TaoSolve_BMRM(Tao tao)
 {
   PetscErrorCode     ierr;
@@ -200,8 +194,6 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
 
 /* ---------------------------------------------------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetup_BMRM"
 static PetscErrorCode TaoSetup_BMRM(Tao tao)
 {
 
@@ -216,8 +208,6 @@ static PetscErrorCode TaoSetup_BMRM(Tao tao)
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoDestroy_BMRM"
 static PetscErrorCode TaoDestroy_BMRM(Tao tao)
 {
   PetscErrorCode ierr;
@@ -227,8 +217,6 @@ static PetscErrorCode TaoDestroy_BMRM(Tao tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetFromOptions_BMRM"
 static PetscErrorCode TaoSetFromOptions_BMRM(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   PetscErrorCode ierr;
@@ -242,8 +230,6 @@ static PetscErrorCode TaoSetFromOptions_BMRM(PetscOptionItems *PetscOptionsObjec
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TaoView_BMRM"
 static PetscErrorCode TaoView_BMRM(Tao tao, PetscViewer viewer)
 {
   PetscBool      isascii;
@@ -268,8 +254,6 @@ static PetscErrorCode TaoView_BMRM(Tao tao, PetscViewer viewer)
   Level: beginner
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoCreate_BMRM"
 PETSC_EXTERN PetscErrorCode TaoCreate_BMRM(Tao tao)
 {
   TAO_BMRM       *bmrm;
@@ -295,8 +279,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BMRM(Tao tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "init_df_solver"
 PetscErrorCode init_df_solver(TAO_DF *df)
 {
   PetscInt       i, n = INCRE_DIM;
@@ -338,8 +320,6 @@ PetscErrorCode init_df_solver(TAO_DF *df)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ensure_df_space"
 PetscErrorCode ensure_df_space(PetscInt dim, TAO_DF *df)
 {
   PetscErrorCode ierr;
@@ -433,8 +413,6 @@ PetscErrorCode ensure_df_space(PetscInt dim, TAO_DF *df)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "destroy_df_solver"
 PetscErrorCode destroy_df_solver(TAO_DF *df)
 {
   PetscErrorCode ierr;
@@ -468,8 +446,6 @@ PetscErrorCode destroy_df_solver(TAO_DF *df)
 }
 
 /* Piecewise linear monotone target function for the Dai-Fletcher projector */
-#undef __FUNCT__
-#define __FUNCT__ "phi"
 PetscReal phi(PetscReal *x,PetscInt n,PetscReal lambda,PetscReal *a,PetscReal b,PetscReal *c,PetscReal *l,PetscReal *u)
 {
   PetscReal r = 0.0;
@@ -492,8 +468,6 @@ PetscReal phi(PetscReal *x,PetscInt n,PetscReal lambda,PetscReal *a,PetscReal b,
  *
  *  \param c The point to be projected onto feasible set
  */
-#undef __FUNCT__
-#define __FUNCT__ "project"
 PetscInt project(PetscInt n,PetscReal *a,PetscReal b,PetscReal *c,PetscReal *l,PetscReal *u,PetscReal *x,PetscReal *lam_ext,TAO_DF *df)
 {
   PetscReal      lambda, lambdal, lambdau, dlambda, lambda_new;
@@ -627,8 +601,6 @@ PetscInt project(PetscInt n,PetscReal *a,PetscReal b,PetscReal *c,PetscReal *l,P
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "solve"
 PetscErrorCode solve(TAO_DF *df)
 {
   PetscErrorCode ierr;

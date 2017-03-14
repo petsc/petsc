@@ -14,8 +14,6 @@ typedef struct {
   PetscInt  numGroups;         /* If greater than 1, use grouping in test */
 } AppCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(AppCtx *options)
 {
   PetscInt       len;
@@ -55,8 +53,6 @@ PetscErrorCode ProcessOptions(AppCtx *options)
   PetscFunctionReturn(0);
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "CleanupContext"
 PetscErrorCode CleanupContext(AppCtx *user)
 {
   PetscErrorCode ierr;
@@ -67,8 +63,6 @@ PetscErrorCode CleanupContext(AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateTestMesh"
 /* This mesh comes from~\cite{saad2003}, Fig. 2.10, p. 70. */
 PetscErrorCode CreateTestMesh(MPI_Comm comm, DM *dm, AppCtx *options)
 {
@@ -84,8 +78,6 @@ PetscErrorCode CreateTestMesh(MPI_Comm comm, DM *dm, AppCtx *options)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestReordering"
 PetscErrorCode TestReordering(DM dm, AppCtx *user)
 {
   DM              pdm;
@@ -115,8 +107,6 @@ PetscErrorCode TestReordering(DM dm, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateGroupLabel"
 PetscErrorCode CreateGroupLabel(DM dm, PetscInt numGroups, DMLabel *label, AppCtx *options)
 {
   const PetscInt groupA[10] = {15, 3, 13, 12, 2, 10, 7, 6, 0, 4};
@@ -133,8 +123,6 @@ PetscErrorCode CreateGroupLabel(DM dm, PetscInt numGroups, DMLabel *label, AppCt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestReorderingByGroup"
 PetscErrorCode TestReorderingByGroup(DM dm, AppCtx *user)
 {
   DM              pdm;
@@ -161,8 +149,6 @@ PetscErrorCode TestReorderingByGroup(DM dm, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   DM             dm;

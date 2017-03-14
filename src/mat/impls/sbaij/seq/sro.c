@@ -30,8 +30,6 @@ C    STORED IN ROW J (AND THUS M(I,J) IS NOT STORED).
              nonzero A_(perm(i),iperm(k)) will be stored in the upper triangle.
              Note: matrix A is not permuted by this function!
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatReorderingSeqSBAIJ"
 PetscErrorCode  MatReorderingSeqSBAIJ(Mat A,IS perm)
 {
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;

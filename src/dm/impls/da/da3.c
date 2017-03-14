@@ -7,8 +7,6 @@
 #include <petsc/private/dmdaimpl.h>     /*I   "petscdmda.h"    I*/
 
 #include <petscdraw.h>
-#undef __FUNCT__
-#define __FUNCT__ "DMView_DA_3d"
 static PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -171,8 +169,6 @@ static PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSetUp_DA_3D"
 PetscErrorCode  DMSetUp_DA_3D(DM da)
 {
   DM_DA            *dd          = (DM_DA*)da->data;
@@ -1365,8 +1361,6 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDACreate3d"
 /*@C
    DMDACreate3d - Creates an object that will manage the communication of three-dimensional
    regular array data that is distributed across some processors.

@@ -4,7 +4,7 @@ import os
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.functions         = ['SSLv23_method']
+    self.functions         = ['SSL_version']
     self.includes          = ['openssl/ssl.h']
     self.liblist           = [['libssl.a','libcrypto.a']]
     self.lookforbydefault  = 1
@@ -21,7 +21,7 @@ class Configure(config.package.Package):
 
   def getSearchDirectories(self):
     '''macOS no longer provides openssl include files. On macOS brew puts them in the second location listed here'''
-    return ['',os.path.join('/usr','local','opt','openssl')]
+    return ['',os.path.join('/usr','local','opt','openssl@1.1'),os.path.join('/usr','local','opt','openssl')]
 
   def configureLibrary(self):
     if 'with-ios' in self.argDB and self.argDB['with-ios']: 

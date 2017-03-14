@@ -9,13 +9,21 @@
 #include <petscbt.h>
 #include <petsctime.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPtAP_SeqAIJ_SeqAIJ"
+#if defined(PETSC_HAVE_HYPRE)
+PETSC_INTERN PetscErrorCode MatPtAPSymbolic_AIJ_AIJ_wHYPRE(Mat,Mat,PetscReal,Mat*);
+#endif
+
 PETSC_INTERN PetscErrorCode MatPtAP_SeqAIJ_SeqAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
+#if !defined(PETSC_HAVE_HYPRE)
   const char     *algTypes[2] = {"scalable","nonscalable"};
-  PetscInt       alg=0; /* set default algorithm */
+  PetscInt       nalg = 2;
+#else
+  const char     *algTypes[3] = {"scalable","nonscalable","hypre"};
+  PetscInt       nalg = 3;
+#endif
+  PetscInt       alg = 0; /* set default algorithm */
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
@@ -23,15 +31,21 @@ PETSC_INTERN PetscErrorCode MatPtAP_SeqAIJ_SeqAIJ(Mat A,Mat P,MatReuse scall,Pet
      Alg 'scalable' determines which implementations to be used:
        "nonscalable": do dense axpy in MatPtAPNumeric() - fastest, but requires storage of struct A*P;
        "scalable":    do two sparse axpy in MatPtAPNumeric() - might slow, does not store structure of A*P. 
+       "hypre":    use boomerAMGBuildCoarseOperator.
      */
     ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
-    ierr = PetscOptionsEList("-matptap_via","Algorithmic approach","MatPtAP",algTypes,2,algTypes[0],&alg,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-matptap_via","Algorithmic approach","MatPtAP",algTypes,nalg,algTypes[0],&alg,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
     switch (alg) {
     case 1:
       ierr = MatPtAPSymbolic_SeqAIJ_SeqAIJ_DenseAxpy(A,P,fill,C);CHKERRQ(ierr);
       break;
+#if defined(PETSC_HAVE_HYPRE)
+    case 2:
+      ierr = MatPtAPSymbolic_AIJ_AIJ_wHYPRE(A,P,fill,C);CHKERRQ(ierr);
+      break;
+#endif
     default:
       ierr = MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(A,P,fill,C);CHKERRQ(ierr);
       break;
@@ -44,8 +58,6 @@ PETSC_INTERN PetscErrorCode MatPtAP_SeqAIJ_SeqAIJ(Mat A,Mat P,MatReuse scall,Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_SeqAIJ_PtAP"
 PetscErrorCode MatDestroy_SeqAIJ_PtAP(Mat A)
 {
   PetscErrorCode ierr;
@@ -61,8 +73,6 @@ PetscErrorCode MatDestroy_SeqAIJ_PtAP(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy"
 PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat P,PetscReal fill,Mat *C)
 {
   PetscErrorCode     ierr;
@@ -189,8 +199,6 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat P,PetscReal fi
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy"
 PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat P,Mat C)
 {
   PetscErrorCode ierr;
@@ -271,8 +279,6 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat P,Mat C)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPtAPSymbolic_SeqAIJ_SeqAIJ_DenseAxpy"
 PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_DenseAxpy(Mat A,Mat P,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
@@ -328,8 +334,6 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_DenseAxpy(Mat A,Mat P,PetscReal fil
 }
 
 /* #define PROFILE_MatPtAPNumeric */
-#undef __FUNCT__
-#define __FUNCT__ "MatPtAPNumeric_SeqAIJ_SeqAIJ"
 PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
 {
   PetscErrorCode    ierr;

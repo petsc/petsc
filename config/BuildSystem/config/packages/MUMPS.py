@@ -3,9 +3,9 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit        = 'MUMPS_5.0.1-p1.tar.gz'
+    self.gitcommit        = 'MUMPS_5.0.2-p2.tar.gz'
     self.download         = ['git://https://bitbucket.org/petsc/pkg-mumps.git',
-                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/MUMPS_5.0.1-p1.tar.gz']
+                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/MUMPS_5.0.2-p2.tar.gz']
     self.liblist          = [['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a'],
                             ['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a','libpthread.a'],
                             ['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a','libmpiseq.a'],
@@ -51,8 +51,6 @@ class Configure(config.package.Package):
     if self.argDB['with-mumps-serial']:
       if not self.mpi.usingMPIUni:
         raise RuntimeError('Serial MUMPS version is only compatible with MPIUni\nReconfigure using --with-mpi=0')
-      elif self.mpi.usingMPIUniFortranBinding:
-        raise RuntimeError('Serial MUMPS version is incompatible with the MPIUni Fortran bindings\nReconfigure using --with-mpiuni-fortran-binding=0')
     return
 
   def Install(self):

@@ -1,6 +1,10 @@
 
 
-#include "petsc/finclude/petscdef.h"
+!/*T
+!   requires: define(PETSC_USING_F2003) define(PETSC_USING_FREEFORM)
+!T*/
+
+#include "petsc/finclude/petsc.h"
       use petsc
       implicit none
 
@@ -23,7 +27,7 @@
 
       write(*,20) list1(1)
 20    format(A99)
-      call PetscOptionsGetEnum(PETSC_NULL_OBJECT,'joe_','-jeff',list1,opt,set,ierr);CHKERRQ(ierr)
+      call PetscOptionsGetEnum(PETSC_NULL_OPTIONS,'joe_','-jeff',list1,opt,set,ierr);CHKERRQ(ierr)
       write(*,*) 'opt is ', opt
       write(*,*) 'set is ', set
 
@@ -33,3 +37,11 @@
 
 
 
+
+!
+!/*TEST
+!
+!   test:
+!      args: -joe_jeff b456
+!
+!TEST*/

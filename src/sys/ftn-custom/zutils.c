@@ -27,7 +27,6 @@ M*/
 */
 char *PETSC_NULL_CHARACTER_Fortran = 0;
 void *PETSC_NULL_INTEGER_Fortran   = 0;
-void *PETSC_NULL_OBJECT_Fortran    = 0;
 void *PETSC_NULL_SCALAR_Fortran    = 0;
 void *PETSC_NULL_DOUBLE_Fortran    = 0;
 void *PETSC_NULL_REAL_Fortran      = 0;

@@ -34,8 +34,6 @@ extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
 extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat,Mat,void*);
 extern PetscErrorCode PostStep(TS);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
@@ -219,8 +217,6 @@ PetscReal f_ini(PetscReal x,PetscReal y)
   return f;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Initial"
 PetscErrorCode Initial(Vec global,void *ctx)
 {
   Data           *data = (Data*)ctx;
@@ -255,8 +251,6 @@ PetscErrorCode Initial(Vec global,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Monitor"
 PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
 {
   VecScatter        scatter;
@@ -302,8 +296,6 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "RHSJacobian"
 PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec x,Mat A,Mat BB,void *ptr)
 {
   Data           *data = (Data*)ptr;
@@ -389,8 +381,6 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec x,Mat A,Mat BB,void *ptr)
 }
 
 /* globalout = -a*(u_x+u_y) + epsilon*(u_xx+u_yy) */
-#undef __FUNCT__
-#define __FUNCT__ "RHSFunction"
 PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ctx)
 {
   Data              *data = (Data*)ctx;
@@ -485,8 +475,6 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PostStep"
 PetscErrorCode PostStep(TS ts)
 {
   PetscErrorCode ierr;

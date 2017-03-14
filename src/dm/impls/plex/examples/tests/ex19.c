@@ -13,8 +13,6 @@ typedef struct {
   PetscReal hmax, hmin;                  /* Max and min sizes prescribed by the metric */
 } AppCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "ProcessOptions"
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscErrorCode ierr;
@@ -41,8 +39,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateMesh"
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user)
 {
   PetscBool      flag;
@@ -70,8 +66,6 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeMetric"
 static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
 {
   DM                 cdm, mdm;
@@ -145,8 +139,6 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main (int argc, char * argv[]) {
   AppCtx         user;                 /* user-defined work context */
   MPI_Comm       comm;

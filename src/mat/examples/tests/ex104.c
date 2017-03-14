@@ -6,8 +6,6 @@ static char help[] = "Test MatMatMult(), MatTranspose(), MatTransposeMatMult() f
 
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   Mat            A,B,C,D;

@@ -8,8 +8,6 @@ typedef struct {
   char        ok[3];
 } Unit;
 
-#undef __FUNCT__
-#define __FUNCT__ "MakeDatatype"
 static PetscErrorCode MakeDatatype(MPI_Datatype *dtype)
 {
   PetscErrorCode ierr;
@@ -50,8 +48,6 @@ struct FCtx {
   PetscSegBuffer seg;
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "FSend"
 static PetscErrorCode FSend(MPI_Comm comm,const PetscMPIInt tag[],PetscMPIInt tonum,PetscMPIInt rank,void *todata,MPI_Request req[],void *ctx)
 {
   struct FCtx *fctx = (struct FCtx*)ctx;
@@ -65,8 +61,6 @@ static PetscErrorCode FSend(MPI_Comm comm,const PetscMPIInt tag[],PetscMPIInt to
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FRecv"
 static PetscErrorCode FRecv(MPI_Comm comm,const PetscMPIInt tag[],PetscMPIInt rank,void *fromdata,MPI_Request req[],void *ctx)
 {
   struct FCtx *fctx = (struct FCtx*)ctx;
@@ -84,8 +78,6 @@ static PetscErrorCode FRecv(MPI_Comm comm,const PetscMPIInt tag[],PetscMPIInt ra
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
@@ -180,3 +172,37 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+
+
+/*TEST
+
+   test:
+      nsize: 4
+      args: -verbose -build_twosided allreduce
+
+   test:
+      suffix: f
+      nsize: 4
+      args: -verbose -build_twosided_f -build_twosided allreduce
+      output_file: output/ex8_1.out
+
+   test:
+      suffix: f_ibarrier
+      nsize: 4
+      args: -verbose -build_twosided_f -build_twosided ibarrier
+      output_file: output/ex8_1.out
+
+   test:
+      suffix: ibarrier
+      nsize: 4
+      args: -verbose -build_twosided ibarrier
+      output_file: output/ex8_1.out
+
+   test:
+      suffix: redscatter
+      requires: mpi_reduce_scatter_block
+      nsize: 4
+      args: -verbose -build_twosided redscatter
+      output_file: output/ex8_1.out
+
+TEST*/

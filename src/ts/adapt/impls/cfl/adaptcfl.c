@@ -5,8 +5,6 @@ typedef struct {
   PetscBool always_accept;
 } TSAdapt_CFL;
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptChoose_CFL"
 static PetscErrorCode TSAdaptChoose_CFL(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,PetscReal *next_h,PetscBool *accept,PetscReal *wlte,PetscReal *wltea,PetscReal *wlter)
 {
   TSAdapt_CFL     *cfl = (TSAdapt_CFL*)adapt->data;
@@ -45,8 +43,6 @@ static PetscErrorCode TSAdaptChoose_CFL(TSAdapt adapt,TS ts,PetscReal h,PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptDestroy_CFL"
 static PetscErrorCode TSAdaptDestroy_CFL(TSAdapt adapt)
 {
   PetscErrorCode ierr;
@@ -56,8 +52,6 @@ static PetscErrorCode TSAdaptDestroy_CFL(TSAdapt adapt)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptSetFromOptions_CFL"
 static PetscErrorCode TSAdaptSetFromOptions_CFL(PetscOptionItems *PetscOptionsObject,TSAdapt adapt)
 {
   TSAdapt_CFL    *cfl = (TSAdapt_CFL*)adapt->data;
@@ -75,8 +69,6 @@ static PetscErrorCode TSAdaptSetFromOptions_CFL(PetscOptionItems *PetscOptionsOb
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptCreate_CFL"
 /*MC
    TSADAPTCFL - CFL adaptive controller for time stepping
 

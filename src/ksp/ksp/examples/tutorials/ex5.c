@@ -22,8 +22,6 @@ T*/
 */
 #include <petscksp.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   KSP            ksp;              /* linear solver context */
@@ -36,7 +34,7 @@ int main(int argc,char **args)
   PetscInt       i,j,m = 3,n = 2,its;
   PetscMPIInt    size,rank;
   PetscBool      mat_nonsymmetric = PETSC_FALSE;
-  PetscBool      testnewC         = PETSC_FALSE;
+  PetscBool      testnewC = PETSC_FALSE,testscaledMat=PETSC_FALSE;
 #if defined(PETSC_USE_LOG)
   PetscLogStage stages[2];
 #endif
@@ -51,6 +49,8 @@ int main(int argc,char **args)
      Set flag if we are doing a nonsymmetric problem; the default is symmetric.
   */
   ierr = PetscOptionsGetBool(NULL,NULL,"-mat_nonsym",&mat_nonsymmetric,NULL);CHKERRQ(ierr);
+
+  ierr = PetscOptionsGetBool(NULL,NULL,"-test_scaledMat",&testscaledMat,NULL);CHKERRQ(ierr);
 
   /*
      Register two stages for separate profiling of the two linear solves.
@@ -201,7 +201,9 @@ int main(int argc,char **args)
   ierr = VecAXPY(x,none,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its);CHKERRQ(ierr);
+  if (!testscaledMat || norm > 1.e-7) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its);CHKERRQ(ierr);
+  }
 
   /* -------------- Stage 1: Solve Second System ---------------------- */
   /*
@@ -246,6 +248,35 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
+  if (testscaledMat) {
+    PetscRandom    rctx;
+
+    /* Scale a(0,0) and a(M-1,M-1) */
+    if (!rank) {
+      v = 6.0*0.00001; Ii = 0; J = 0;
+      ierr = MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
+    } else if (rank == size -1) {
+      v = 6.0*0.00001; Ii = m*n-1; J = m*n-1;
+      ierr = MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
+    }
+    ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+    /* Compute a new right-hand-side vector */
+    ierr = VecDestroy(&u);CHKERRQ(ierr);
+    ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
+    ierr = VecSetSizes(u,PETSC_DECIDE,m*n);CHKERRQ(ierr);
+    ierr = VecSetFromOptions(u);CHKERRQ(ierr);
+
+    
+    ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
+    ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
+    ierr = VecSetRandom(u,rctx);CHKERRQ(ierr);
+    ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
+    ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(u);CHKERRQ(ierr);
+  }
+
   ierr = PetscOptionsGetBool(NULL,NULL,"-test_newMat",&testnewC,NULL);CHKERRQ(ierr);
   if (testnewC) {
     /*
@@ -258,9 +289,7 @@ int main(int argc,char **args)
     ierr = MatDuplicate(Ctmp,MAT_COPY_VALUES,&C);CHKERRQ(ierr);
     ierr = MatDestroy(&Ctmp);CHKERRQ(ierr);
   }
-  /*
-     Compute another right-hand-side vector
-  */
+
   ierr = MatMult(C,u,b);CHKERRQ(ierr);
 
   /*
@@ -281,7 +310,9 @@ int main(int argc,char **args)
   ierr = VecAXPY(x,none,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its);CHKERRQ(ierr);
+  if (!testscaledMat || norm > 1.e-7) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its);CHKERRQ(ierr);
+  }
 
   /*
      Free work space.  All PETSc objects should be destroyed when they

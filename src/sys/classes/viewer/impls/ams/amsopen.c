@@ -2,8 +2,6 @@
 #include <petsc/private/viewerimpl.h>   /*I  "petscsys.h"  */
 #include <petscviewersaws.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerSAWsOpen"
 /*@C
     PetscViewerSAWsOpen - Opens an SAWs PetscViewer.
 
@@ -48,8 +46,6 @@ PetscErrorCode PetscViewerSAWsOpen(MPI_Comm comm,PetscViewer *lab)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectViewSAWs"
 /*@C
    PetscObjectViewSAWs - View the base portion of any object with an SAWs viewer
 

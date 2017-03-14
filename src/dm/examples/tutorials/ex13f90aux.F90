@@ -6,6 +6,7 @@ contains
   !
   subroutine get_boundary_cond(b_x,b_y,b_z)
 #include <petsc/finclude/petscdm.h>
+    use petscdm
     DMBoundaryType,intent(inout) :: b_x,b_y,b_z
     
     ! Here you may set the BC types you want
@@ -64,11 +65,7 @@ contains
   ! 1 to the (local) imax. 
   !
   subroutine petsc_to_local(da,vec,array,f,dof,stw)
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscdmda.h>
-#include <petsc/finclude/petscvec.h90>
-#include <petsc/finclude/petscdmda.h90>
+    use petscdmda
     DM                                                            :: da
     Vec,intent(in)                                                :: vec
     PetscReal, pointer                                            :: array(:,:,:,:)
@@ -87,11 +84,7 @@ contains
     f(:,:,:,:) = array(:,:,:,:)
   end subroutine transform_petsc_us
   subroutine local_to_petsc(da,vec,array,f,dof,stw)
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscdmda.h>
-#include <petsc/finclude/petscvec.h90>
-#include <petsc/finclude/petscdmda.h90>
+    use petscdmda
     DM                                                    :: da
     Vec,intent(inout)                                     :: vec
     PetscReal, pointer                                    :: array(:,:,:,:)

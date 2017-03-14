@@ -4,8 +4,6 @@ static char help[] = "Test AO with on IS with 0 entries - contributed by Ethan C
 #include <petscsys.h>
 #include <petscao.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;

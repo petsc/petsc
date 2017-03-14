@@ -7,8 +7,6 @@ static char help[] = "testing SeqDense matrices with an LDA (leading dimension o
  */
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   Mat            A,A11,A12,A21,A22;

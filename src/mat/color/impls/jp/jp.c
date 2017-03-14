@@ -9,8 +9,6 @@ typedef struct {
   PetscBool local;
 } MC_JP;
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringDestroy_JP"
 static PetscErrorCode MatColoringDestroy_JP(MatColoring mc)
 {
   PetscErrorCode ierr;
@@ -20,8 +18,6 @@ static PetscErrorCode MatColoringDestroy_JP(MatColoring mc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringSetFromOptions_JP"
 static PetscErrorCode MatColoringSetFromOptions_JP(PetscOptionItems *PetscOptionsObject,MatColoring mc)
 {
   PetscErrorCode ierr;
@@ -34,8 +30,6 @@ static PetscErrorCode MatColoringSetFromOptions_JP(PetscOptionItems *PetscOption
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MCJPGreatestWeight_Private"
 static PetscErrorCode MCJPGreatestWeight_Private(MatColoring mc,const PetscReal *weights,PetscReal *maxweights)
 {
   MC_JP          *jp = (MC_JP*)mc->data;
@@ -139,8 +133,6 @@ static PetscErrorCode MCJPGreatestWeight_Private(MatColoring mc,const PetscReal 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MCJPInitialLocalColor_Private"
 static PetscErrorCode MCJPInitialLocalColor_Private(MatColoring mc,PetscInt *lperm,ISColoringValue *colors)
 {
   PetscInt       j,i,s,e,n,bidx,cidx,idx,dist,distance=mc->dist;
@@ -284,8 +276,6 @@ static PetscErrorCode MCJPInitialLocalColor_Private(MatColoring mc,PetscInt *lpe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MCJPMinColor_Private"
 static PetscErrorCode MCJPMinColor_Private(MatColoring mc,ISColoringValue maxcolor,const ISColoringValue *colors,ISColoringValue *mincolors)
 {
   MC_JP          *jp = (MC_JP*)mc->data;
@@ -421,8 +411,6 @@ static PetscErrorCode MCJPMinColor_Private(MatColoring mc,ISColoringValue maxcol
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringApply_JP"
 static PetscErrorCode MatColoringApply_JP(MatColoring mc,ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
@@ -503,8 +491,6 @@ static PetscErrorCode MatColoringApply_JP(MatColoring mc,ISColoring *iscoloring)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringCreate_JP"
 /*MC
   MATCOLORINGJP - Parallel Jones-Plassmann Coloring
 

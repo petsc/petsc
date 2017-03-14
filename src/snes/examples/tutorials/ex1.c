@@ -34,8 +34,6 @@ extern PetscErrorCode FormFunction1(SNES,Vec,Vec,void*);
 extern PetscErrorCode FormJacobian2(SNES,Vec,Mat,Mat,void*);
 extern PetscErrorCode FormFunction2(SNES,Vec,Vec,void*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   SNES           snes;         /* nonlinear solver context */
@@ -154,8 +152,6 @@ int main(int argc,char **argv)
   return ierr;
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormFunction1"
 /*
    FormFunction1 - Evaluates nonlinear function, F(x).
 
@@ -193,8 +189,6 @@ PetscErrorCode FormFunction1(SNES snes,Vec x,Vec f,void *ctx)
   return 0;
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobian1"
 /*
    FormJacobian1 - Evaluates Jacobian matrix.
 
@@ -247,8 +241,6 @@ PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormFunction2"
 PetscErrorCode FormFunction2(SNES snes,Vec x,Vec f,void *dummy)
 {
   PetscErrorCode    ierr;
@@ -279,8 +271,6 @@ PetscErrorCode FormFunction2(SNES snes,Vec x,Vec f,void *dummy)
   return 0;
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobian2"
 PetscErrorCode FormJacobian2(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
 {
   const PetscScalar *xx;

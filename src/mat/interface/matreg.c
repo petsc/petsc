@@ -11,8 +11,6 @@ PetscBool MatRegisterAllCalled = PETSC_FALSE;
 */
 PetscFunctionList MatList = 0;
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetType"
 /*@C
    MatSetType - Builds matrix object for a particular matrix type
 
@@ -95,8 +93,6 @@ PetscErrorCode  MatSetType(Mat mat, MatType matype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetType"
 /*@C
    MatGetType - Gets the matrix type as a string from the matrix object.
 
@@ -124,8 +120,6 @@ PetscErrorCode  MatGetType(Mat mat,MatType *type)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatRegister"
 /*@C
   MatRegister -  - Adds a new matrix type
 
@@ -168,8 +162,6 @@ PetscErrorCode  MatRegister(const char sname[],PetscErrorCode (*function)(Mat))
 
 MatBaseName MatBaseNameList = 0;
 
-#undef __FUNCT__
-#define __FUNCT__ "MatRegisterBaseName"
 /*@C
       MatRegisterBaseName - Registers a name that can be used for either a sequential or its corresponding parallel matrix type.
 

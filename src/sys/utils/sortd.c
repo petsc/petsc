@@ -9,8 +9,6 @@
 
 #define SWAP(a,b,t) {t=a;a=b;b=t;}
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSortReal_Private"
 /* A simple version of quicksort; taken from Kernighan and Ritchie, page 87 */
 static PetscErrorCode PetscSortReal_Private(PetscReal *v,PetscInt right)
 {
@@ -36,8 +34,6 @@ static PetscErrorCode PetscSortReal_Private(PetscReal *v,PetscInt right)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSortReal"
 /*@
    PetscSortReal - Sorts an array of doubles in place in increasing order.
 
@@ -74,8 +70,6 @@ PetscErrorCode  PetscSortReal(PetscInt n,PetscReal v[])
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSortRemoveDupsReal"
 /*@
    PetscSortRemoveDupsReal - Sorts an array of doubles in place in increasing order removes all duplicate entries
 
@@ -110,8 +104,6 @@ PetscErrorCode  PetscSortRemoveDupsReal(PetscInt *n,PetscReal v[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSortSplit"
 /*@
    PetscSortSplit - Quick-sort split of an array of PetscScalars in place.
 
@@ -175,8 +167,6 @@ PetscErrorCode  PetscSortSplit(PetscInt ncut,PetscInt n,PetscScalar a[],PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSortSplitReal"
 /*@
    PetscSortSplitReal - Quick-sort split of an array of PetscReals in place.
 

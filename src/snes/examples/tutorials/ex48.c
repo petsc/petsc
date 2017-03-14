@@ -79,6 +79,7 @@ There are two compile-time options:
      && !defined PETSC_USE_COMPLEX             \
      && !defined PETSC_USE_REAL_SINGLE         \
      && !defined PETSC_USE_REAL___FLOAT128     \
+     && !defined PETSC_USE_REAL___FP16         \
      && defined __SSE2__
 #define USE_SSE2_KERNELS 1
 #else
@@ -388,8 +389,6 @@ static void PRangeClear(PRange *p)
   p->cmax = p->max = -1e100;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PRangeMinMax"
 static PetscErrorCode PRangeMinMax(PRange *p,PetscReal min,PetscReal max)
 {
 
@@ -401,8 +400,6 @@ static PetscErrorCode PRangeMinMax(PRange *p,PetscReal min,PetscReal max)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "THIDestroy"
 static PetscErrorCode THIDestroy(THI *thi)
 {
   PetscErrorCode ierr;
@@ -416,8 +413,6 @@ static PetscErrorCode THIDestroy(THI *thi)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "THICreate"
 static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
 {
   static PetscBool registered = PETSC_FALSE;
@@ -560,8 +555,6 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "THIInitializePrm"
 static PetscErrorCode THIInitializePrm(THI thi,DM da2prm,Vec prm)
 {
   PrmNode        **p;
@@ -582,8 +575,6 @@ static PetscErrorCode THIInitializePrm(THI thi,DM da2prm,Vec prm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "THISetUpDM"
 static PetscErrorCode THISetUpDM(THI thi,DM dm)
 {
   PetscErrorCode  ierr;
@@ -625,8 +616,6 @@ static PetscErrorCode THISetUpDM(THI thi,DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCoarsenHook_THI"
 static PetscErrorCode DMCoarsenHook_THI(DM dmf,DM dmc,void *ctx)
 {
   THI            thi = (THI)ctx;
@@ -642,8 +631,6 @@ static PetscErrorCode DMCoarsenHook_THI(DM dmf,DM dmc,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRefineHook_THI"
 static PetscErrorCode DMRefineHook_THI(DM dmc,DM dmf,void *ctx)
 {
   THI            thi = (THI)ctx;
@@ -658,8 +645,6 @@ static PetscErrorCode DMRefineHook_THI(DM dmc,DM dmf,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "THIDAGetPrm"
 static PetscErrorCode THIDAGetPrm(DM da,PrmNode ***prm)
 {
   PetscErrorCode ierr;
@@ -675,8 +660,6 @@ static PetscErrorCode THIDAGetPrm(DM da,PrmNode ***prm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "THIDARestorePrm"
 static PetscErrorCode THIDARestorePrm(DM da,PrmNode ***prm)
 {
   PetscErrorCode ierr;
@@ -692,8 +675,6 @@ static PetscErrorCode THIDARestorePrm(DM da,PrmNode ***prm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "THIInitial"
 static PetscErrorCode THIInitial(SNES snes,Vec X,void *ctx)
 {
   THI            thi;
@@ -771,8 +752,6 @@ static void PointwiseNonlinearity2D(THI thi,Node n[],PetscReal phi[],PetscReal d
   THIViscosity(thi,PetscRealPart(gam),eta,deta);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "THIFunctionLocal"
 static PetscErrorCode THIFunctionLocal(DMDALocalInfo *info,Node ***x,Node ***f,THI thi)
 {
   PetscInt       xs,ys,xm,ym,zm,i,j,k,q,l;
@@ -878,8 +857,6 @@ static PetscErrorCode THIFunctionLocal(DMDALocalInfo *info,Node ***x,Node ***f,T
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "THIMatrixStatistics"
 static PetscErrorCode THIMatrixStatistics(THI thi,Mat B,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -900,8 +877,6 @@ static PetscErrorCode THIMatrixStatistics(THI thi,Mat B,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "THISurfaceStatistics"
 static PetscErrorCode THISurfaceStatistics(DM da,Vec X,PetscReal *min,PetscReal *max,PetscReal *mean)
 {
   PetscErrorCode ierr;
@@ -931,8 +906,6 @@ static PetscErrorCode THISurfaceStatistics(DM da,Vec X,PetscReal *min,PetscReal 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "THISolveStatistics"
 static PetscErrorCode THISolveStatistics(THI thi,SNES snes,PetscInt coarsened,const char name[])
 {
   MPI_Comm       comm;
@@ -995,8 +968,6 @@ static PetscErrorCode THISolveStatistics(THI thi,SNES snes,PetscInt coarsened,co
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "THIJacobianLocal_2D"
 static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo *info,Node **x,Mat J,Mat B,THI thi)
 {
   PetscInt       xs,ys,xm,ym,i,j,q,l,ll;
@@ -1071,8 +1042,6 @@ static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo *info,Node **x,Mat J,Mat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "THIJacobianLocal_3D"
 static PetscErrorCode THIJacobianLocal_3D(DMDALocalInfo *info,Node ***x,Mat B,THI thi,THIAssemblyMode amode)
 {
   PetscInt       xs,ys,xm,ym,zm,i,j,k,q,l,ll;
@@ -1271,8 +1240,6 @@ static PetscErrorCode THIJacobianLocal_3D(DMDALocalInfo *info,Node ***x,Mat B,TH
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "THIJacobianLocal_3D_Full"
 static PetscErrorCode THIJacobianLocal_3D_Full(DMDALocalInfo *info,Node ***x,Mat A,Mat B,THI thi)
 {
   PetscErrorCode ierr;
@@ -1282,8 +1249,6 @@ static PetscErrorCode THIJacobianLocal_3D_Full(DMDALocalInfo *info,Node ***x,Mat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "THIJacobianLocal_3D_Tridiagonal"
 static PetscErrorCode THIJacobianLocal_3D_Tridiagonal(DMDALocalInfo *info,Node ***x,Mat A,Mat B,THI thi)
 {
   PetscErrorCode ierr;
@@ -1293,8 +1258,6 @@ static PetscErrorCode THIJacobianLocal_3D_Tridiagonal(DMDALocalInfo *info,Node *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRefineHierarchy_THI"
 static PetscErrorCode DMRefineHierarchy_THI(DM dac0,PetscInt nlevels,DM hierarchy[])
 {
   PetscErrorCode  ierr;
@@ -1334,8 +1297,6 @@ static PetscErrorCode DMRefineHierarchy_THI(DM dac0,PetscInt nlevels,DM hierarch
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateInterpolation_DA_THI"
 static PetscErrorCode DMCreateInterpolation_DA_THI(DM dac,DM daf,Mat *A,Vec *scale)
 {
   PetscErrorCode ierr;
@@ -1382,8 +1343,6 @@ static PetscErrorCode DMCreateInterpolation_DA_THI(DM dac,DM daf,Mat *A,Vec *sca
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateMatrix_THI_Tridiagonal"
 static PetscErrorCode DMCreateMatrix_THI_Tridiagonal(DM da,Mat *J)
 {
   PetscErrorCode         ierr;
@@ -1413,8 +1372,6 @@ static PetscErrorCode DMCreateMatrix_THI_Tridiagonal(DM da,Mat *J)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "THIDAVecView_VTK_XML"
 static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM da,Vec X,const char filename[])
 {
   const PetscInt    dof   = 2;
@@ -1504,8 +1461,6 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM da,Vec X,const char filena
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char *argv[])
 {
   MPI_Comm       comm;

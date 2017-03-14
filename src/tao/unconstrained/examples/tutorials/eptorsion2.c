@@ -74,8 +74,6 @@ PetscErrorCode FormFunctionGradient(Tao,Vec,PetscReal*,Vec,void*);
 PetscErrorCode FormHessian(Tao,Vec,Mat,Mat,void*);
 
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
     PetscErrorCode     ierr;
@@ -160,8 +158,6 @@ int main(int argc, char **argv)
 
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormInitialGuess"
 /*
     FormInitialGuess - Computes an initial approximation to the solution.
 
@@ -202,8 +198,6 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
 
 
 /* ------------------------------------------------------------------ */
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionGradient"
 /*
    FormFunctionGradient - Evaluates the function and corresponding gradient.
 
@@ -345,8 +339,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *f,Vec G,void *ptr){
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "FormHessian"
 PetscErrorCode FormHessian(Tao tao, Vec X, Mat A, Mat Hpre, void*ctx)
 {
   AppCtx         *user= (AppCtx*) ctx;

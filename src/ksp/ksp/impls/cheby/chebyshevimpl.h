@@ -8,7 +8,8 @@
 #include <petsc/private/kspimpl.h>
 
 typedef struct {
-  PetscReal        emin,emax;    /* store user provided estimates of extreme eigenvalues */
+  PetscReal        emin,emax;    /* store user provided estimates of extreme eigenvalues or computed with kspest and transformed with tform[] */
+  PetscReal        emin_computed,emax_computed; /* eigenvalues as computed by kspest, if computed */
   KSP              kspest;       /* KSP used to estimate eigenvalues */
   PetscReal        tform[4];     /* transform from Krylov estimates to Chebyshev bounds */
   PetscInt         eststeps;     /* number of kspest steps in KSP used to estimate eigenvalues */

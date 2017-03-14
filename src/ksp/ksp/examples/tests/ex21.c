@@ -3,8 +3,6 @@ static const char help[] = "Tests MatGetSchurComplement\n";
 #include <petscksp.h>
 
 
-#undef __FUNCT__
-#define __FUNCT__ "Create"
 PetscErrorCode Create(MPI_Comm comm,Mat *inA,IS *is0,IS *is1)
 {
   PetscErrorCode ierr;
@@ -83,8 +81,6 @@ PetscErrorCode Create(MPI_Comm comm,Mat *inA,IS *is0,IS *is1)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Destroy"
 PetscErrorCode Destroy(Mat *A,IS *is0,IS *is1)
 {
   PetscErrorCode ierr;
@@ -96,8 +92,6 @@ PetscErrorCode Destroy(Mat *A,IS *is0,IS *is1)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char *argv[])
 {
   PetscErrorCode ierr;

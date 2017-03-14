@@ -26,7 +26,7 @@ ex4: ex4.o   chkopts
 
 #-------------------------------------------------------------------------------
 runex1:
-	-@${MPIEXEC} -n 1 ./ex1 -degrees 1,2,3,4,5 -points 0,.2.-.5,.8,.9,1 -interval -.5,1 > ex1_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex1 -degrees 1,2,3,4,5 -points 0,.2,-.5,.8,.9,1 -interval -.5,1 > ex1_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex1_1.out ex1_1.tmp || printf "${PWD}\nPossible problem with ex1_1, diffs above\n==========================================\n"; \
 	   ${RM} -f ex1_1.tmp
 

@@ -1,8 +1,6 @@
 
 #include <petsc/private/pcimpl.h>   /*I "petscpc.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_Mat"
 static PetscErrorCode PCApply_Mat(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
@@ -12,8 +10,6 @@ static PetscErrorCode PCApply_Mat(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApplyTranspose_Mat"
 static PetscErrorCode PCApplyTranspose_Mat(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
@@ -23,8 +19,6 @@ static PetscErrorCode PCApplyTranspose_Mat(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_Mat"
 static PetscErrorCode PCDestroy_Mat(PC pc)
 {
   PetscFunctionBegin;
@@ -45,8 +39,6 @@ static PetscErrorCode PCDestroy_Mat(PC pc)
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_Mat"
 PETSC_EXTERN PetscErrorCode PCCreate_Mat(PC pc)
 {
   PetscFunctionBegin;

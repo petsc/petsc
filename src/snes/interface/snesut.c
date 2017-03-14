@@ -3,8 +3,6 @@
 #include <petscdm.h>
 #include <petscblaslapack.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMonitorSolution"
 /*@C
    SNESMonitorSolution - Monitors progress of the SNES solvers by calling
    VecView() for the approximate solution at each iteration.
@@ -16,6 +14,9 @@
 .  its - iteration number
 .  fgnorm - 2-norm of residual
 -  dummy -  a viewer
+
+   Options Database Keys:
+.  -snes_monitor_solution [ascii binary draw][:filename][:viewer format] - plots solution at each iteration
 
    Level: intermediate
 
@@ -38,8 +39,6 @@ PetscErrorCode  SNESMonitorSolution(SNES snes,PetscInt its,PetscReal fgnorm,Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMonitorResidual"
 /*@C
    SNESMonitorResidual - Monitors progress of the SNES solvers by calling
    VecView() for the residual at each iteration.
@@ -51,6 +50,9 @@ PetscErrorCode  SNESMonitorSolution(SNES snes,PetscInt its,PetscReal fgnorm,Pets
 .  its - iteration number
 .  fgnorm - 2-norm of residual
 -  dummy -  a viewer
+
+   Options Database Keys:
+.  -snes_monitor_residual [ascii binary draw][:filename][:viewer format] - plots residual (not its norm) at each iteration
 
    Level: intermediate
 
@@ -73,8 +75,6 @@ PetscErrorCode  SNESMonitorResidual(SNES snes,PetscInt its,PetscReal fgnorm,Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMonitorSolutionUpdate"
 /*@C
    SNESMonitorSolutionUpdate - Monitors progress of the SNES solvers by calling
    VecView() for the UPDATE to the solution at each iteration.
@@ -86,6 +86,9 @@ PetscErrorCode  SNESMonitorResidual(SNES snes,PetscInt its,PetscReal fgnorm,Pets
 .  its - iteration number
 .  fgnorm - 2-norm of residual
 -  dummy - a viewer
+
+   Options Database Keys:
+.  -snes_monitor_solution_update [ascii binary draw][:filename][:viewer format] - plots update to solution at each iteration
 
    Level: intermediate
 
@@ -108,8 +111,6 @@ PetscErrorCode  SNESMonitorSolutionUpdate(SNES snes,PetscInt its,PetscReal fgnor
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPMonitorSNES"
 /*@C
    KSPMonitorSNES - Print the residual norm of the nonlinear function at each iteration of the linear iterative solver.
 
@@ -158,8 +159,6 @@ PetscErrorCode  KSPMonitorSNES(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
 
 #include <petscdraw.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPMonitorSNESLGResidualNormCreate"
 /*@C
    KSPMonitorSNESLGResidualNormCreate - Creates a line graph context for use with
    KSP to monitor convergence of preconditioned residual norms.
@@ -212,8 +211,6 @@ PetscErrorCode  KSPMonitorSNESLGResidualNormCreate(MPI_Comm comm,const char host
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPMonitorSNESLGResidualNorm"
 PetscErrorCode  KSPMonitorSNESLGResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,PetscObject *objs)
 {
   SNES           snes = (SNES) objs[0];
@@ -246,8 +243,6 @@ PetscErrorCode  KSPMonitorSNESLGResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPMonitorSNESLGResidualNormDestroy"
 /*@
    KSPMonitorSNESLGResidualNormDestroy - Destroys a line graph context that was created
    with KSPMonitorSNESLGResidualNormCreate().
@@ -274,8 +269,6 @@ PetscErrorCode  KSPMonitorSNESLGResidualNormDestroy(PetscObject **objs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMonitorDefault"
 /*@C
    SNESMonitorDefault - Monitors progress of the SNES solvers (default).
 
@@ -311,8 +304,6 @@ PetscErrorCode  SNESMonitorDefault(SNES snes,PetscInt its,PetscReal fgnorm,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMonitorJacUpdateSpectrum"
 PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes,PetscInt it,PetscReal fnorm,PetscViewerAndFormat *vf)
 {
 #if defined(PETSC_MISSING_LAPACK_GEEV)
@@ -375,8 +366,6 @@ PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes,PetscInt it,PetscReal fnor
 
 PETSC_INTERN PetscErrorCode  SNESMonitorRange_Private(SNES,PetscInt,PetscReal*);
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMonitorRange_Private"
 PetscErrorCode  SNESMonitorRange_Private(SNES snes,PetscInt it,PetscReal *per)
 {
   PetscErrorCode ierr;
@@ -401,8 +390,6 @@ PetscErrorCode  SNESMonitorRange_Private(SNES snes,PetscInt it,PetscReal *per)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMonitorRange"
 /*@C
    SNESMonitorRange - Prints the percentage of residual elements that are more then 10 percent of the maximum value.
 
@@ -446,8 +433,6 @@ PetscErrorCode  SNESMonitorRange(SNES snes,PetscInt it,PetscReal rnorm,PetscView
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMonitorRatio"
 /*@C
    SNESMonitorRatio - Monitors progress of the SNES solvers by printing the ratio
    of residual norm at each iteration to the previous.
@@ -489,8 +474,6 @@ PetscErrorCode  SNESMonitorRatio(SNES snes,PetscInt its,PetscReal fgnorm,PetscVi
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMonitorRatioSetUp"
 /*@C
    SNESMonitorRatioSetUp - Insures the SNES object is saving its history since this monitor needs access to it
 
@@ -520,8 +503,6 @@ PetscErrorCode  SNESMonitorRatioSetUp(SNES snes,PetscViewerAndFormat *vf)
 }
 
 /* ---------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "SNESMonitorDefaultShort"
 /*
      Default (short) SNES Monitor, same as SNESMonitorDefault() except
   it prints fewer digits of the residual as the residual gets smaller.
@@ -550,8 +531,6 @@ PetscErrorCode  SNESMonitorDefaultShort(SNES snes,PetscInt its,PetscReal fgnorm,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESMonitorDefaultField"
 /*@C
   SNESMonitorDefaultField - Monitors progress of the SNES solvers, separated into fields.
 
@@ -610,8 +589,6 @@ PetscErrorCode SNESMonitorDefaultField(SNES snes, PetscInt its, PetscReal fgnorm
   PetscFunctionReturn(0);
 }
 /* ---------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "SNESConvergedDefault"
 /*@C
    SNESConvergedDefault - Convergence test of the solvers for
    systems of nonlinear equations (default).
@@ -682,7 +659,7 @@ PetscErrorCode  SNESConvergedDefault(SNES snes,PetscInt it,PetscReal xnorm,Petsc
     } else if (snorm < snes->stol*xnorm) {
       ierr    = PetscInfo3(snes,"Converged due to small update length: %14.12e < %14.12e * %14.12e\n",(double)snorm,(double)snes->stol,(double)xnorm);CHKERRQ(ierr);
       *reason = SNES_CONVERGED_SNORM_RELATIVE;
-    } else if (fnorm > snes->divtol*snes->rnorm0) {
+    } else if (snes->divtol > 0 && (fnorm > snes->divtol*snes->rnorm0)) {
       ierr    = PetscInfo3(snes,"Diverged due to increase in function norm: %14.12e > %14.12e * %14.12e\n",(double)fnorm,(double)snes->divtol,(double)snes->rnorm0);CHKERRQ(ierr);
       *reason = SNES_DIVERGED_DTOL;
     }
@@ -691,8 +668,6 @@ PetscErrorCode  SNESConvergedDefault(SNES snes,PetscInt it,PetscReal xnorm,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESConvergedSkip"
 /*@C
    SNESConvergedSkip - Convergence test for SNES that NEVER returns as
    converged, UNLESS the maximum number of iteration have been reached.
@@ -738,8 +713,6 @@ PetscErrorCode  SNESConvergedSkip(SNES snes,PetscInt it,PetscReal xnorm,PetscRea
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetWorkVecs"
 /*@C
   SNESSetWorkVecs - Gets a number of work vectors.
 

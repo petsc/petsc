@@ -202,8 +202,6 @@ PetscErrorCode linear_p_3d(PetscInt dim, PetscReal time, const PetscReal x[], Pe
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   const char    *bcTypes[2]  = {"neumann", "dirichlet"};
@@ -251,23 +249,21 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMVecViewLocal"
 PetscErrorCode DMVecViewLocal(DM dm, Vec v, PetscViewer viewer)
 {
   Vec            lv;
   PetscInt       p;
-  PetscMPIInt    rank, numProcs;
+  PetscMPIInt    rank, size;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm), &numProcs);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &lv);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(dm, v, INSERT_VALUES, lv);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm, v, INSERT_VALUES, lv);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Local function\n");CHKERRQ(ierr);
-  for (p = 0; p < numProcs; ++p) {
+  for (p = 0; p < size; ++p) {
     if (p == rank) {ierr = VecView(lv, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
     ierr = PetscBarrier((PetscObject) dm);CHKERRQ(ierr);
   }
@@ -275,8 +271,6 @@ PetscErrorCode DMVecViewLocal(DM dm, Vec v, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateMesh"
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscInt       dim             = user->dim;
@@ -318,29 +312,29 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       const PetscInt  *points = NULL;
       PetscPartitioner part;
       PetscInt         cEnd;
-      PetscMPIInt      rank, numProcs;
+      PetscMPIInt      rank, size;
 
       ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-      ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
+      ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
       ierr = DMPlexGetHeightStratum(*dm, 0, NULL, &cEnd);CHKERRQ(ierr);
       if (!rank) {
-        if (dim == 2 && user->simplex && numProcs == 2 && cEnd == 8) {
+        if (dim == 2 && user->simplex && size == 2 && cEnd == 8) {
            sizes = triSizes_n2; points = triPoints_n2;
-        } else if (dim == 2 && user->simplex && numProcs == 3 && cEnd == 8) {
+        } else if (dim == 2 && user->simplex && size == 3 && cEnd == 8) {
           sizes = triSizes_n3; points = triPoints_n3;
-        } else if (dim == 2 && user->simplex && numProcs == 5 && cEnd == 8) {
+        } else if (dim == 2 && user->simplex && size == 5 && cEnd == 8) {
           sizes = triSizes_n5; points = triPoints_n5;
-        } else if (dim == 2 && user->simplex && numProcs == 2 && cEnd == 16) {
+        } else if (dim == 2 && user->simplex && size == 2 && cEnd == 16) {
            sizes = triSizes_ref_n2; points = triPoints_ref_n2;
-        } else if (dim == 2 && user->simplex && numProcs == 3 && cEnd == 16) {
+        } else if (dim == 2 && user->simplex && size == 3 && cEnd == 16) {
           sizes = triSizes_ref_n3; points = triPoints_ref_n3;
-        } else if (dim == 2 && user->simplex && numProcs == 5 && cEnd == 16) {
+        } else if (dim == 2 && user->simplex && size == 5 && cEnd == 16) {
           sizes = triSizes_ref_n5; points = triPoints_ref_n5;
         } else SETERRQ(comm, PETSC_ERR_ARG_WRONG, "No stored partition matching run parameters");
       }
       ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
       ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
-      ierr = PetscPartitionerShellSetPartition(part, numProcs, sizes, points);CHKERRQ(ierr);
+      ierr = PetscPartitionerShellSetPartition(part, size, sizes, points);CHKERRQ(ierr);
     }
     /* Distribute mesh over processes */
     ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
@@ -355,8 +349,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetupProblem"
 PetscErrorCode SetupProblem(DM dm, AppCtx *user)
 {
   PetscDS        prob;
@@ -384,8 +376,6 @@ PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetupDiscretization"
 PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 {
   DM              cdm   = dm;
@@ -418,8 +408,6 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreatePressureNullSpace"
 PetscErrorCode CreatePressureNullSpace(DM dm, AppCtx *user, Vec *v, MatNullSpace *nullSpace)
 {
   Vec              vec;
@@ -453,8 +441,6 @@ PetscErrorCode CreatePressureNullSpace(DM dm, AppCtx *user, Vec *v, MatNullSpace
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   SNES           snes;                 /* nonlinear solver */

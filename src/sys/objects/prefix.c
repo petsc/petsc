@@ -4,8 +4,6 @@
 */
 #include <petsc/private/petscimpl.h>  /*I   "petscsys.h"    I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectSetOptions"
 /*@C
    PetscObjectSetOptions - Sets the options database used by the object
 
@@ -19,7 +17,8 @@
 
   Level: advanced
 
-.seealso: PetscOptionsCreate(), PetscOptionsDestroy()
+.seealso: PetscOptionsCreate(), PetscOptionsDestroy(), PetscObjectSetOptionsPrefix(), PetscObjectAppendOptionsPrefix(), PetscObjectPrependOptionsPrefix(),
+          PetscObjectGetOptionsPrefix()
 
 @*/
 PetscErrorCode  PetscObjectSetOptions(PetscObject obj,PetscOptions options)
@@ -30,9 +29,7 @@ PetscErrorCode  PetscObjectSetOptions(PetscObject obj,PetscOptions options)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectSetOptionsPrefix"
-/*
+/*@C
    PetscObjectSetOptionsPrefix - Sets the prefix used for searching for all
    options of PetscObjectType in the database.
 
@@ -49,7 +46,10 @@ PetscErrorCode  PetscObjectSetOptions(PetscObject obj,PetscOptions options)
 
    Concepts: prefix^setting
 
-*/
+.seealso: PetscOptionsCreate(), PetscOptionsDestroy(), PetscObjectAppendOptionsPrefix(), PetscObjectPrependOptionsPrefix(),
+          PetscObjectGetOptionsPrefix(), TSSetOptionsPrefix(), SNESSetOptionsPrefix(), KSPSetOptionsPrefix()
+
+@*/
 PetscErrorCode  PetscObjectSetOptionsPrefix(PetscObject obj,const char prefix[])
 {
   PetscErrorCode ierr;
@@ -68,9 +68,7 @@ PetscErrorCode  PetscObjectSetOptionsPrefix(PetscObject obj,const char prefix[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectAppendOptionsPrefix"
-/*
+/*@C
    PetscObjectAppendOptionsPrefix - Sets the prefix used for searching for all
    options of PetscObjectType in the database.
 
@@ -85,7 +83,10 @@ PetscErrorCode  PetscObjectSetOptionsPrefix(PetscObject obj,const char prefix[])
 
    Concepts: prefix^setting
 
-*/
+.seealso: PetscOptionsCreate(), PetscOptionsDestroy(), PetscObjectSetOptionsPrefix(), PetscObjectPrependOptionsPrefix(),
+          PetscObjectGetOptionsPrefix(), TSAppendOptionsPrefix(), SNESAppendOptionsPrefix(), KSPAppendOptionsPrefix()
+
+@*/
 PetscErrorCode  PetscObjectAppendOptionsPrefix(PetscObject obj,const char prefix[])
 {
   char           *buf = obj->prefix;
@@ -110,9 +111,7 @@ PetscErrorCode  PetscObjectAppendOptionsPrefix(PetscObject obj,const char prefix
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectGetOptionsPrefix"
-/*
+/*@C
    PetscObjectGetOptionsPrefix - Gets the prefix of the PetscObject.
 
    Input Parameters:
@@ -123,7 +122,10 @@ PetscErrorCode  PetscObjectAppendOptionsPrefix(PetscObject obj,const char prefix
 
    Concepts: prefix^getting
 
-*/
+.seealso: PetscOptionsCreate(), PetscOptionsDestroy(), PetscObjectSetOptionsPrefix(), PetscObjectAppendOptionsPrefix(), PetscObjectPrependOptionsPrefix(),
+          TSGetOptionsPrefix(), SNESGetOptionsPrefix(), KSPGetOptionsPrefix()
+
+@*/
 PetscErrorCode  PetscObjectGetOptionsPrefix(PetscObject obj,const char *prefix[])
 {
   PetscFunctionBegin;
@@ -133,9 +135,7 @@ PetscErrorCode  PetscObjectGetOptionsPrefix(PetscObject obj,const char *prefix[]
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectPrependOptionsPrefix"
-/*
+/*@C
    PetscObjectPrependOptionsPrefix - Sets the prefix used for searching for all
    options of PetscObjectType in the database.
 
@@ -150,7 +150,10 @@ PetscErrorCode  PetscObjectGetOptionsPrefix(PetscObject obj,const char *prefix[]
 
    Concepts: prefix^setting
 
-*/
+.seealso: PetscOptionsCreate(), PetscOptionsDestroy(), PetscObjectSetOptionsPrefix(), PetscObjectAppendOptionsPrefix(),
+          PetscObjectGetOptionsPrefix(), TSPrependOptionsPrefix(), SNESPrependOptionsPrefix(), KSPPrependOptionsPrefix()
+
+@*/
 PetscErrorCode  PetscObjectPrependOptionsPrefix(PetscObject obj,const char prefix[])
 {
   char           *buf;

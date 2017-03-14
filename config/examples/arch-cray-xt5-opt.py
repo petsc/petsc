@@ -23,7 +23,7 @@ configure_options = [
 
   '--with-mpiexec=/usr/common/acts/PETSc/3.0.0/bin/mpiexec.aprun',
   '--with-x=0',
-  '--with-blas-lapack-lib=-L/opt/acml/4.3.0/pgi64/lib -lacml -lacml_mv',
+  '--with-blaslapack-lib=-L/opt/acml/4.3.0/pgi64/lib -lacml -lacml_mv',
   ]
 
 if __name__ == '__main__':

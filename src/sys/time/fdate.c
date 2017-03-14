@@ -15,8 +15,6 @@ PETSC_EXTERN int gettimeofday(struct timeval*,struct timezone*);
   additional system errors during the call to get the date.
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "PetscGetDate"
 /*@C
     PetscGetDate - Gets the current date.
 

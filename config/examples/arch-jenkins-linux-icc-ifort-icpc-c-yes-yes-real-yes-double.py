@@ -14,7 +14,7 @@ if __name__ == '__main__':
     '--with-scalar-type=real',
     '--with-64-bit-indices=yes',
     '--with-precision=double',
-    '--with-blas-lapack-dir=/soft/com/packages/intel/13/update5/mkl',
+    '--with-blaslapack-dir=/soft/com/packages/intel/13/update5/mkl',
     '--with-sowing=1',
     '--with-sowing-dir=/home/petsc/soft/linux-Ubuntu_12.04-x86_64/sowing-1.1.17-p1'
     ]

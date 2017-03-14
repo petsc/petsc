@@ -1,8 +1,6 @@
 
 #include <../src/sys/classes/draw/utils/lgimpl.h>  /*I   "petscdraw.h"  I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawLGAddCommonPoint"
 /*@
    PetscDrawLGAddCommonPoint - Adds another point to each of the line graphs. All the points share
       the same new X coordinate.  The new point must have an X coordinate larger than the old points.
@@ -11,14 +9,17 @@
 
    Input Parameters:
 +  lg - the LineGraph data structure
-.   x - the common x coordiante point
+.   x - the common x coordinate point
 -   y - the new y coordinate point for each curve.
 
    Level: intermediate
 
+   Note: You must call PetscDrawLGDraw() to display any added points
+         Call PetscDrawLGReset() to remove all points
+
    Concepts: line graph^adding points
 
-.seealso: PetscDrawLGAddPoints(), PetscDrawLGAddPoint()
+.seealso: PetscDrawLGCreate(), PetscDrawLGAddPoints(), PetscDrawLGAddPoint(), PetscDrawLGReset(), PetscDrawLGDraw()
 @*/
 PetscErrorCode  PetscDrawLGAddCommonPoint(PetscDrawLG lg,const PetscReal x,const PetscReal *y)
 {
@@ -52,8 +53,6 @@ PetscErrorCode  PetscDrawLGAddCommonPoint(PetscDrawLG lg,const PetscReal x,const
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawLGAddPoint"
 /*@
    PetscDrawLGAddPoint - Adds another point to each of the line graphs.
    The new point must have an X coordinate larger than the old points.
@@ -65,11 +64,14 @@ PetscErrorCode  PetscDrawLGAddCommonPoint(PetscDrawLG lg,const PetscReal x,const
 -  x, y - the points to two arrays containing the new x and y
           point for each curve.
 
+   Note: You must call PetscDrawLGDraw() to display any added points
+         Call PetscDrawLGReset() to remove all points
+
    Level: intermediate
 
    Concepts: line graph^adding points
 
-.seealso: PetscDrawLGAddPoints(), PetscDrawLGAddCommonPoint()
+.seealso: PetscDrawLGCreate(), PetscDrawLGAddPoints(), PetscDrawLGAddCommonPoint(), PetscDrawLGReset(), PetscDrawLGDraw()
 @*/
 PetscErrorCode  PetscDrawLGAddPoint(PetscDrawLG lg,const PetscReal *x,const PetscReal *y)
 {
@@ -109,8 +111,6 @@ PetscErrorCode  PetscDrawLGAddPoint(PetscDrawLG lg,const PetscReal *x,const Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawLGAddPoints"
 /*@C
    PetscDrawLGAddPoints - Adds several points to each of the line graphs.
    The new points must have an X coordinate larger than the old points.
@@ -125,10 +125,12 @@ PetscErrorCode  PetscDrawLGAddPoint(PetscDrawLG lg,const PetscReal *x,const Pets
 
    Level: intermediate
 
+   Note: You must call PetscDrawLGDraw() to display any added points
+         Call PetscDrawLGReset() to remove all points
 
    Concepts: line graph^adding points
 
-.seealso: PetscDrawLGAddPoint()
+.seealso: PetscDrawLGCreate(), PetscDrawLGAddPoint(), PetscDrawLGAddCommonPoint(), PetscDrawLGReset(), PetscDrawLGDraw()
 @*/
 PetscErrorCode  PetscDrawLGAddPoints(PetscDrawLG lg,PetscInt n,PetscReal **xx,PetscReal **yy)
 {

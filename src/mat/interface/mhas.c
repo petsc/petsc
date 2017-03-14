@@ -1,8 +1,6 @@
 
 #include <petsc/private/matimpl.h>        /*I "petscmat.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatHasOperation"
 /*@
     MatHasOperation - Determines whether the given matrix supports the particular
     operation.
@@ -34,20 +32,25 @@ PetscErrorCode  MatHasOperation(Mat mat,MatOperation op,PetscBool  *has)
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
   PetscValidPointer(has,3);
-  if (((void**)mat->ops)[op]) *has =  PETSC_TRUE;
-  else {
-    if (op == MATOP_GET_SUBMATRIX) {
-      PetscErrorCode ierr;
-      PetscMPIInt    size;
+  if (mat->ops->hasoperation) {
+    PetscErrorCode ierr;
+    ierr = (*mat->ops->hasoperation)(mat,op,has);CHKERRQ(ierr);
+  } else {
+    if (((void**)mat->ops)[op]) *has =  PETSC_TRUE;
+    else {
+      if (op == MATOP_CREATE_SUBMATRIX) {
+        PetscErrorCode ierr;
+        PetscMPIInt    size;
 
-      ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRQ(ierr);
-      if (size == 1) {
-        ierr = MatHasOperation(mat,MATOP_GET_SUBMATRICES,has);CHKERRQ(ierr);
+        ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRQ(ierr);
+        if (size == 1) {
+          ierr = MatHasOperation(mat,MATOP_CREATE_SUBMATRICES,has);CHKERRQ(ierr);
+        } else {
+          *has = PETSC_FALSE;
+        }
       } else {
         *has = PETSC_FALSE;
       }
-    } else {
-      *has = PETSC_FALSE;
     }
   }
   PetscFunctionReturn(0);

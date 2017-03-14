@@ -36,7 +36,6 @@ PETSC_EXTERN void PETSC_STDCALL petscoffsetfortran_(PetscScalar *x,PetscScalar *
 */
 static char FIXCHARSTRING[1024];
 
-#define CHAR char*
 #define FIXCHARNOMALLOC(a,n,b) \
 {\
   if (a == PETSC_NULL_CHARACTER_Fortran) { \
@@ -51,7 +50,7 @@ static char FIXCHARSTRING[1024];
   } \
 }
 
-PETSC_EXTERN void PETSC_STDCALL chkmemfortran_(int *line,CHAR file PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL chkmemfortran_(int *line,char* file PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *c1;
 

@@ -1,7 +1,5 @@
 
 #include <../src/ksp/ksp/impls/lcd/lcdimpl.h>
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_LCD"
 
 PetscErrorCode KSPSetUp_LCD(KSP ksp)
 {
@@ -30,8 +28,6 @@ PetscErrorCode KSPSetUp_LCD(KSP ksp)
 .     its - number of iterations used
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_LCD"
 PetscErrorCode  KSPSolve_LCD(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -121,8 +117,6 @@ PetscErrorCode  KSPSolve_LCD(KSP ksp)
        KSPDestroy_LCD - Frees all memory space used by the Krylov method
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "KSPReset_LCD"
 PetscErrorCode KSPReset_LCD(KSP ksp)
 {
   KSP_LCD        *lcd = (KSP_LCD*)ksp->data;
@@ -135,8 +129,6 @@ PetscErrorCode KSPReset_LCD(KSP ksp)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPDestroy_LCD"
 PetscErrorCode KSPDestroy_LCD(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -155,8 +147,6 @@ PetscErrorCode KSPDestroy_LCD(KSP ksp)
       flags that information should be printed here.
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "KSPView_LCD"
 PetscErrorCode KSPView_LCD(KSP ksp,PetscViewer viewer)
 {
 
@@ -177,8 +167,6 @@ PetscErrorCode KSPView_LCD(KSP ksp,PetscViewer viewer)
     KSPSetFromOptions_LCD - Checks the options database for options related to the
                             LCD method.
 */
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetFromOptions_LCD"
 PetscErrorCode KSPSetFromOptions_LCD(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
@@ -230,8 +218,6 @@ PetscErrorCode KSPSetFromOptions_LCD(PetscOptionItems *PetscOptionsObject,KSP ks
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_LCD"
 PETSC_EXTERN PetscErrorCode KSPCreate_LCD(KSP ksp)
 {
   PetscErrorCode ierr;

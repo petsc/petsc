@@ -1,6 +1,6 @@
       program main              !   Solves the linear system  J x = f
-#include <petsc/finclude/petscdef.h>
-      use petscksp; use petscdm
+#include <petsc/finclude/petsc.h>
+      use petscksp
       implicit none
       Vec x,f
       Mat J
@@ -41,7 +41,7 @@
       end
 
       subroutine  ComputeRHS(da,x,ierr)
-      use petscdm; use petscdmda
+      use petscdmda
       implicit none
       DM da
       Vec x
@@ -64,6 +64,7 @@
       
       subroutine ComputeMatrix(da,J,ierr)
       use petscdm
+      use petscmat
       implicit none
       Mat J
       DM da

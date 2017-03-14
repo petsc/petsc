@@ -8,8 +8,6 @@ static char help[] = "Read in a Symmetric matrix in MatrixMarket format (only th
     -fin <filename> : input file   \n\
     -fout <filename> : output file \n\n";
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            A;
@@ -46,7 +44,7 @@ int main(int argc,char **args)
 
   /* The first non-comment line has the matrix dimensions */
   sscanf(buf,"%d %d %d\n",&m,&n,&nnz);
-  ierr = PetscPrintf (PETSC_COMM_SELF,"m = %d, n = %d, nnz = %d\n",m,n,nnz);
+  ierr = PetscPrintf (PETSC_COMM_SELF,"m = %d, n = %d, nnz = %d\n",m,n,nnz);CHKERRQ(ierr);
 
   /* reseve memory for matrices */
   ierr = PetscMalloc4(nnz,&row,nnz,&col,nnz,&val,m,&rownz);CHKERRQ(ierr);
@@ -91,6 +89,6 @@ int main(int argc,char **args)
   ierr = PetscFree4(row,col,val,rownz);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;
+  return ierr;
 }
 

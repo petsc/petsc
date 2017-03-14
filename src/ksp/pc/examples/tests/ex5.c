@@ -25,8 +25,6 @@ PetscErrorCode  CalculateError(Vec,Vec,Vec,PetscReal*);
 PetscErrorCode  CalculateSolution(PetscInt,Vec*);
 PetscErrorCode  amult(Mat,Vec,Vec);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int Argc,char **Args)
 {
   PetscInt       x_mesh = 15,levels = 3,cycles = 1,use_jacobi = 0;
@@ -173,8 +171,6 @@ int main(int Argc,char **Args)
 }
 
 /* --------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "residual"
 PetscErrorCode residual(Mat mat,Vec bb,Vec xx,Vec rr)
 {
   PetscInt          i,n1;
@@ -196,8 +192,6 @@ PetscErrorCode residual(Mat mat,Vec bb,Vec xx,Vec rr)
   ierr = VecRestoreArray(rr,&r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "amult"
 PetscErrorCode amult(Mat mat,Vec xx,Vec yy)
 {
   PetscInt          i,n1;
@@ -218,8 +212,6 @@ PetscErrorCode amult(Mat mat,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "gauss_seidel"
 PetscErrorCode gauss_seidel(PC pc,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal abstol,PetscReal dtol,PetscInt m,PetscBool guesszero,PetscInt *its,PCRichardsonConvergedReason *reason)
 {
   PetscInt          i,n1;
@@ -245,8 +237,6 @@ PetscErrorCode gauss_seidel(PC pc,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal a
   PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "jacobi"
 PetscErrorCode jacobi(PC pc,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal abstol,PetscReal dtol,PetscInt m,PetscBool guesszero,PetscInt *its,PCRichardsonConvergedReason *reason)
 {
   PetscInt          i,n,n1;
@@ -277,8 +267,6 @@ PetscErrorCode jacobi(PC pc,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal abstol,
    We know for this application that yy  and zz are the same
 */
 /* --------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "interpolate"
 PetscErrorCode interpolate(Mat mat,Vec xx,Vec yy,Vec zz)
 {
   PetscInt          i,n,N,i2;
@@ -302,8 +290,6 @@ PetscErrorCode interpolate(Mat mat,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "restrct"
 PetscErrorCode restrct(Mat mat,Vec rr,Vec bb)
 {
   PetscInt          i,n,N,i2;
@@ -326,8 +312,6 @@ PetscErrorCode restrct(Mat mat,Vec rr,Vec bb)
   PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "Create1dLaplacian"
 PetscErrorCode Create1dLaplacian(PetscInt n,Mat *mat)
 {
   PetscScalar    mone = -1.0,two = 2.0;
@@ -350,8 +334,6 @@ PetscErrorCode Create1dLaplacian(PetscInt n,Mat *mat)
   PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "CalculateRhs"
 PetscErrorCode CalculateRhs(Vec u)
 {
   PetscErrorCode ierr;
@@ -369,8 +351,6 @@ PetscErrorCode CalculateRhs(Vec u)
   PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "CalculateSolution"
 PetscErrorCode CalculateSolution(PetscInt n,Vec *solution)
 {
   PetscErrorCode ierr;
@@ -388,8 +368,6 @@ PetscErrorCode CalculateSolution(PetscInt n,Vec *solution)
   PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "CalculateError"
 PetscErrorCode CalculateError(Vec solution,Vec u,Vec r,PetscReal *e)
 {
   PetscErrorCode ierr;

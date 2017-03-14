@@ -10,8 +10,6 @@ typedef struct {
   PetscInt  size;         /* The number of set values */
 } AppCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscErrorCode ierr;
@@ -32,8 +30,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestSetup"
 PetscErrorCode TestSetup(DMLabel label, AppCtx *user)
 {
   PetscRandom    r;
@@ -64,8 +60,6 @@ PetscErrorCode TestSetup(DMLabel label, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestLookup"
 PetscErrorCode TestLookup(DMLabel label, AppCtx *user)
 {
   const PetscInt pStart = user->pStart;
@@ -88,8 +82,6 @@ PetscErrorCode TestLookup(DMLabel label, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestClear"
 PetscErrorCode TestClear(DMLabel label, AppCtx *user)
 {
   PetscInt       pStart = user->pStart, pEnd = user->pEnd, p;
@@ -114,8 +106,6 @@ PetscErrorCode TestClear(DMLabel label, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   DMLabel        label;

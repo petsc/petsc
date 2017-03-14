@@ -1,8 +1,6 @@
 
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>   /*I  "petscvec.h"   I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "VecGhostStateSync_Private"
 /*
   This is used in VecGhostGetLocalForm and VecGhostRestoreLocalForm to ensure
   that the state is updated if either vector has changed since the last time
@@ -31,8 +29,6 @@ static PetscErrorCode VecGhostStateSync_Private(Vec g,Vec l)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "VecGhostGetLocalForm"
 /*@
     VecGhostGetLocalForm - Obtains the local ghosted representation of
     a parallel vector (obtained with VecCreateGhost(), VecCreateGhostWithArray()
@@ -99,8 +95,6 @@ PetscErrorCode  VecGhostGetLocalForm(Vec g,Vec *l)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecGhostIsLocalForm"
 /*@
     VecGhostIsLocalForm - Checks if a given vector is the local form of a global vector
 
@@ -141,8 +135,6 @@ PetscErrorCode VecGhostIsLocalForm(Vec g,Vec l,PetscBool *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecGhostRestoreLocalForm"
 /*@
     VecGhostRestoreLocalForm - Restores the local ghosted representation of
     a parallel vector obtained with VecGhostGetLocalForm().
@@ -174,8 +166,6 @@ PetscErrorCode  VecGhostRestoreLocalForm(Vec g,Vec *l)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecGhostUpdateBegin"
 /*@
    VecGhostUpdateBegin - Begins the vector scatter to update the vector from
    local representation to global or global representation to local.
@@ -240,8 +230,6 @@ PetscErrorCode  VecGhostUpdateBegin(Vec g,InsertMode insertmode,ScatterMode scat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecGhostUpdateEnd"
 /*@
    VecGhostUpdateEnd - End the vector scatter to update the vector from
    local representation to global or global representation to local.

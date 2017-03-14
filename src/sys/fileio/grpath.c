@@ -15,8 +15,6 @@
 #include <sys/systeminfo.h>
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscGetRealPath"
 /*@C
    PetscGetRealPath - Get the path without symbolic links etc. and in absolute form.
 

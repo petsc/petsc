@@ -15,8 +15,6 @@ typedef struct {
   Vec         work;
 } PC_Redistribute;
 
-#undef __FUNCT__
-#define __FUNCT__ "PCView_Redistribute"
 static PetscErrorCode PCView_Redistribute(PC pc,PetscViewer viewer)
 {
   PC_Redistribute *red = (PC_Redistribute*)pc->data;
@@ -40,8 +38,6 @@ static PetscErrorCode PCView_Redistribute(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_Redistribute"
 static PetscErrorCode PCSetUp_Redistribute(PC pc)
 {
   PC_Redistribute   *red = (PC_Redistribute*)pc->data;
@@ -65,7 +61,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
   PetscFunctionBegin;
   if (pc->setupcalled) {
     ierr = KSPGetOperators(red->ksp,NULL,&tmat);CHKERRQ(ierr);
-    ierr = MatGetSubMatrix(pc->pmat,red->is,red->is,MAT_REUSE_MATRIX,&tmat);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix(pc->pmat,red->is,red->is,MAT_REUSE_MATRIX,&tmat);CHKERRQ(ierr);
     ierr = KSPSetOperators(red->ksp,tmat,tmat);CHKERRQ(ierr);
   } else {
     PetscInt NN;
@@ -200,7 +196,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     ierr = MatCreateVecs(pc->pmat,&tvec,NULL);CHKERRQ(ierr);
     ierr = VecScatterCreate(tvec,red->is,red->b,NULL,&red->scatter);CHKERRQ(ierr);
     ierr = VecDestroy(&tvec);CHKERRQ(ierr);
-    ierr = MatGetSubMatrix(pc->pmat,red->is,red->is,MAT_INITIAL_MATRIX,&tmat);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix(pc->pmat,red->is,red->is,MAT_INITIAL_MATRIX,&tmat);CHKERRQ(ierr);
     ierr = KSPSetOperators(red->ksp,tmat,tmat);CHKERRQ(ierr);
     ierr = MatDestroy(&tmat);CHKERRQ(ierr);
   }
@@ -218,8 +214,6 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_Redistribute"
 static PetscErrorCode PCApply_Redistribute(PC pc,Vec b,Vec x)
 {
   PC_Redistribute   *red = (PC_Redistribute*)pc->data;
@@ -253,8 +247,6 @@ static PetscErrorCode PCApply_Redistribute(PC pc,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_Redistribute"
 static PetscErrorCode PCDestroy_Redistribute(PC pc)
 {
   PC_Redistribute *red = (PC_Redistribute*)pc->data;
@@ -273,8 +265,6 @@ static PetscErrorCode PCDestroy_Redistribute(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_Redistribute"
 static PetscErrorCode PCSetFromOptions_Redistribute(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode  ierr;
@@ -285,8 +275,6 @@ static PetscErrorCode PCSetFromOptions_Redistribute(PetscOptionItems *PetscOptio
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCRedistributeGetKSP"
 /*@
    PCRedistributeGetKSP - Gets the KSP created by the PCREDISTRIBUTE
 
@@ -333,8 +321,6 @@ PetscErrorCode  PCRedistributeGetKSP(PC pc,KSP *innerksp)
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PCRedistributeGetKSP()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_Redistribute"
 PETSC_EXTERN PetscErrorCode PCCreate_Redistribute(PC pc)
 {
   PetscErrorCode  ierr;

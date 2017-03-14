@@ -18,8 +18,6 @@
  */
 static PetscErrorCode  KSPAGMRESRoddecGivens(PetscReal*, PetscReal*, PetscReal*, PetscInt);
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPAGMRESRoddecInitNeighboor"
 PetscErrorCode KSPAGMRESRoddecInitNeighboor(KSP ksp)
 {
   MPI_Comm       comm;
@@ -55,8 +53,6 @@ PetscErrorCode KSPAGMRESRoddecInitNeighboor(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPAGMRESRoddecGivens"
 static PetscErrorCode  KSPAGMRESRoddecGivens(PetscReal * c, PetscReal * s, PetscReal * r, PetscInt make_r)
 {
   PetscReal a, b, t;
@@ -117,8 +113,6 @@ static PetscErrorCode  KSPAGMRESRoddecGivens(PetscReal * c, PetscReal * s, Petsc
  *  - agmres->tloc : scalar factors of the elementary reflectors.
 
  */
-#undef __FUNCT__
-#define __FUNCT__ "KSPAGMRESRoddec"
 PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
 {
   KSP_AGMRES     *agmres = (KSP_AGMRES*) ksp->data;
@@ -244,8 +238,6 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
  *  Output :
  *   - Out : Petsc vector (distributed as the basis vectors)
  */
-#undef __FUNCT__
-#define __FUNCT__ "KSPAGMRESRodvec"
 PetscErrorCode KSPAGMRESRodvec(KSP ksp, PetscInt nvec, PetscScalar *In, Vec Out)
 {
   KSP_AGMRES     *agmres  = (KSP_AGMRES*) ksp->data;

@@ -32,8 +32,6 @@ typedef enum {READ=1, WRITE=2, READ_WRITE=3} AccessMode;
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_SVD"
 static PetscErrorCode PCSetUp_SVD(PC pc)
 {
 #if defined(PETSC_MISSING_LAPACK_GESVD)
@@ -64,7 +62,11 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
     ierr = MatDuplicate(jac->A,MAT_DO_NOT_COPY_VALUES,&jac->U);CHKERRQ(ierr);
     ierr = MatDuplicate(jac->A,MAT_DO_NOT_COPY_VALUES,&jac->Vt);CHKERRQ(ierr);
   }
-  ierr  = MatGetSize(pc->pmat,&n,NULL);CHKERRQ(ierr);
+  ierr  = MatGetSize(jac->A,&n,NULL);CHKERRQ(ierr);
+  if (!n) {
+    ierr = PetscInfo(pc,"Matrix has zero rows, skipping svd\n");CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   ierr  = PetscBLASIntCast(n,&nb);CHKERRQ(ierr);
   lwork = 5*nb;
   ierr  = PetscMalloc1(lwork,&work);CHKERRQ(ierr);
@@ -90,7 +92,7 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
     PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("A","A",&nb,&nb,a,&nb,dd,u,&nb,v,&nb,work,&lwork,rwork,&lierr));
     if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"gesv() error %d",lierr);
     ierr = PetscFree(rwork);CHKERRQ(ierr);
-    for (i=0; i<nb; i++) d[i] = dd[i];
+    for (i=0; i<n; i++) d[i] = dd[i];
     ierr = PetscFree(dd);CHKERRQ(ierr);
     ierr = PetscFPTrapPop();CHKERRQ(ierr);
   }
@@ -145,8 +147,6 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
 #endif
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSVDGetVec"
 static PetscErrorCode PCSVDGetVec(PC pc,PCSide side,AccessMode amode,Vec x,Vec *xred)
 {
   PC_SVD         *jac = (PC_SVD*)pc->data;
@@ -184,8 +184,6 @@ static PetscErrorCode PCSVDGetVec(PC pc,PCSide side,AccessMode amode,Vec x,Vec *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSVDRestoreVec"
 static PetscErrorCode PCSVDRestoreVec(PC pc,PCSide side,AccessMode amode,Vec x,Vec *xred)
 {
   PC_SVD         *jac = (PC_SVD*)pc->data;
@@ -226,8 +224,6 @@ static PetscErrorCode PCSVDRestoreVec(PC pc,PCSide side,AccessMode amode,Vec x,V
 
    Application Interface Routine: PCApply()
  */
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_SVD"
 static PetscErrorCode PCApply_SVD(PC pc,Vec x,Vec y)
 {
   PC_SVD         *jac = (PC_SVD*)pc->data;
@@ -253,8 +249,6 @@ static PetscErrorCode PCApply_SVD(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApplyTranspose_SVD"
 static PetscErrorCode PCApplyTranspose_SVD(PC pc,Vec x,Vec y)
 {
   PC_SVD         *jac = (PC_SVD*)pc->data;
@@ -280,8 +274,6 @@ static PetscErrorCode PCApplyTranspose_SVD(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCReset_SVD"
 static PetscErrorCode PCReset_SVD(PC pc)
 {
   PC_SVD         *jac = (PC_SVD*)pc->data;
@@ -310,8 +302,6 @@ static PetscErrorCode PCReset_SVD(PC pc)
 
    Application Interface Routine: PCDestroy()
 */
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_SVD"
 static PetscErrorCode PCDestroy_SVD(PC pc)
 {
   PC_SVD         *jac = (PC_SVD*)pc->data;
@@ -324,8 +314,6 @@ static PetscErrorCode PCDestroy_SVD(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_SVD"
 static PetscErrorCode PCSetFromOptions_SVD(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
@@ -348,8 +336,6 @@ static PetscErrorCode PCSetFromOptions_SVD(PetscOptionItems *PetscOptionsObject,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCView_SVD"
 static PetscErrorCode PCView_SVD(PC pc,PetscViewer viewer)
 {
   PC_SVD         *svd = (PC_SVD*)pc->data;
@@ -394,8 +380,6 @@ static PetscErrorCode PCView_SVD(PC pc,PetscViewer viewer)
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_SVD"
 PETSC_EXTERN PetscErrorCode PCCreate_SVD(PC pc)
 {
   PC_SVD         *jac;

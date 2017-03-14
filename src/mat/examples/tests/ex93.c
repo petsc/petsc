@@ -4,8 +4,6 @@ static char help[] = "Test MatMatMult() and MatPtAP() for AIJ matrices.\n\n";
 
 extern PetscErrorCode testPTAPRectangular(void);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   Mat            A,B,C,D;
@@ -16,8 +14,12 @@ int main(int argc,char **argv)
   PetscReal      fill=4;
   PetscReal      norm;
   PetscMPIInt    size,rank;
+  PetscBool      test_hypre=PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+#if defined(PETSC_HAVE_HYPRE)
+  ierr = PetscOptionsGetBool(NULL,NULL,"-test_hypre",&test_hypre,NULL);CHKERRQ(ierr);
+#endif
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
@@ -39,6 +41,7 @@ int main(int argc,char **argv)
 
   /* Test MatMatMult() */
   ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);      /* B = A^T */
+  ierr = MatSetOptionsPrefix(B,"B_");CHKERRQ(ierr);
   ierr = MatMatMult(B,A,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr); /* C = B*A */
   ierr = MatMatMultNumeric(B,A,C);CHKERRQ(ierr);                   /* recompute C=B*A */
   ierr = MatMatMult(B,A,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);   /* recompute C=B*A */
@@ -77,22 +80,24 @@ int main(int argc,char **argv)
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n");CHKERRQ(ierr);
 
-  ierr = MatPtAPSymbolic(A,B,fill,&D);CHKERRQ(ierr);
-  ierr = MatPtAPNumeric(A,B,D);CHKERRQ(ierr);
-  ierr = MatSetOptionsPrefix(D,"D=BtAB_");CHKERRQ(ierr);
-  ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n");CHKERRQ(ierr);
+  if (!test_hypre) {
+    ierr = MatPtAPSymbolic(A,B,fill,&D);CHKERRQ(ierr);
+    ierr = MatPtAPNumeric(A,B,D);CHKERRQ(ierr);
+    ierr = MatSetOptionsPrefix(D,"D=BtAB_");CHKERRQ(ierr);
+    ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n");CHKERRQ(ierr);
 
-  /* Repeat numeric product to test reuse of the previous symbolic product */
-  ierr = MatPtAPNumeric(A,B,D);CHKERRQ(ierr);
-  ierr = MatAXPY(D,none,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatNorm(D,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
-  if (norm > 1.e-15) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error in symbolic/numeric MatPtAP: %g\n",norm);CHKERRQ(ierr);
+    /* Repeat numeric product to test reuse of the previous symbolic product */
+    ierr = MatPtAPNumeric(A,B,D);CHKERRQ(ierr);
+    ierr = MatAXPY(D,none,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatNorm(D,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
+    if (norm > 1.e-15) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Error in symbolic/numeric MatPtAP: %g\n",norm);CHKERRQ(ierr);
+    }
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
+    ierr = MatDestroy(&C);CHKERRQ(ierr);
+    ierr = MatDestroy(&D);CHKERRQ(ierr);
   }
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
-  ierr = MatDestroy(&D);CHKERRQ(ierr);
 
   if (size == 1) {
     /* A test contributed by Tobias Neckel <neckel@in.tum.de> */
@@ -121,8 +126,6 @@ int main(int argc,char **argv)
 
 /* a test contributed by Tobias Neckel <neckel@in.tum.de>, 02 Jul 2008 */
 #define PETSc_CHKERRQ CHKERRQ
-#undef __FUNCT__
-#define __FUNCT__ "testPTAPRectangular"
 PetscErrorCode testPTAPRectangular(void)
 {
 

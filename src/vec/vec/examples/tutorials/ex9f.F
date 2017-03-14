@@ -15,17 +15,9 @@
 !T*/
 
       program main
-      implicit none
-
-!
-!  The following include statements are required for Fortran programs
-!  that use PETSc vectors:
-!     petscsys.h       - base PETSc routines
-!     petscvec.h    - vectors
-!
-
-#include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
+      use petscvec
+      implicit none
 
       PetscMPIInt rank,size
       PetscInt nlocal,nghost,ifrom(2)
@@ -47,7 +39,7 @@
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
 
       if (size .ne. 2) then
-       SETERRQ(PETSC_COMM_SELF,1,'Must run with two processors',ierr)
+       SETERRQ(PETSC_COMM_SELF,1,'Must run with two processors')
       endif
 
 !
@@ -83,7 +75,7 @@
 !     the local vector (lx) and the global vector (gx) share the same
 !     array for storing vector values.
 
-      call PetscOptionsHasName(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,   &
+      call PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,   &
      &                         '-allocate',flag,ierr)
       if (flag) then
         call VecCreateGhostWithArray(PETSC_COMM_WORLD,nlocal,            &

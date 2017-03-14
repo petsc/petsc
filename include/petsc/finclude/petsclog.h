@@ -1,2 +1,2 @@
 !
-#include "petsc/finclude/petsclogdef.h"
+!  No includes needed for logging

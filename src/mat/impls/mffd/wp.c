@@ -45,8 +45,6 @@ typedef struct {
   PetscBool computenormU;
 } MatMFFD_WP;
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDCompute_WP"
 /*
      MatMFFDCompute_WP - Standard PETSc code for
    computing h with matrix-free finite differences.
@@ -85,8 +83,6 @@ static PetscErrorCode MatMFFDCompute_WP(MatMFFD ctx,Vec U,Vec a,PetscScalar *h,P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDView_WP"
 /*
    MatMFFDView_WP - Prints information about this particular
      method for computing h. Note that this does not print the general
@@ -116,8 +112,6 @@ static PetscErrorCode MatMFFDView_WP(MatMFFD ctx,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDSetFromOptions_WP"
 /*
    MatMFFDSetFromOptions_WP - Looks in the options database for
      any options appropriate for this method
@@ -138,8 +132,6 @@ static PetscErrorCode MatMFFDSetFromOptions_WP(PetscOptionItems *PetscOptionsObj
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDDestroy_WP"
 /*
    MatMFFDDestroy_WP - Frees the space allocated by
        MatCreateMFFD_WP().
@@ -159,8 +151,6 @@ static PetscErrorCode MatMFFDDestroy_WP(MatMFFD ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDWPSetComputeNormU_P"
 PetscErrorCode  MatMFFDWPSetComputeNormU_P(Mat mat,PetscBool flag)
 {
   MatMFFD    ctx   = (MatMFFD)mat->data;
@@ -171,8 +161,6 @@ PetscErrorCode  MatMFFDWPSetComputeNormU_P(Mat mat,PetscBool flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDWPSetComputeNormU"
 /*@
     MatMFFDWPSetComputeNormU - Sets whether it computes the ||U|| used by the WP
              PETSc routine for computing h. With any Krylov solver this need only
@@ -205,8 +193,6 @@ PetscErrorCode  MatMFFDWPSetComputeNormU(Mat A,PetscBool flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateMFFD_WP"
 /*
      MatCreateMFFD_WP - Standard PETSc code for
    computing h with matrix-free finite differences.

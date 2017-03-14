@@ -3,9 +3,10 @@
 !   This program demonstrates use of PETSc dense matrices.
 !
       program main
-
 #include <petsc/finclude/petscsys.h>
-
+      use petscsys
+      implicit none
+      
       PetscErrorCode ierr
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
@@ -36,10 +37,9 @@
 !  location.)
 !
       subroutine Demo1()
-
-#include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscviewer.h>
+      use petscmat
+      implicit none
 
       Mat         A
       PetscInt   n,m
@@ -89,10 +89,9 @@
 !  matrix storage.
 !
       subroutine Demo2()
-
-#include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscviewer.h>
+      use petscmat
+      implicit none
 
       PetscInt   n,m
       PetscErrorCode ierr

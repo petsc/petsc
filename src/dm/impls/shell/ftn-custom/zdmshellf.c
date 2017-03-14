@@ -34,64 +34,46 @@ static struct {
   PetscFortranCallbackId localtolocalend;
 } _cb;
 
-#undef __FUNCT__
-#define __FUNCT__ "ourcreatematrix"
 static PetscErrorCode ourcreatematrix(DM dm,Mat *A)
 {
   PetscObjectUseFortranCallbackSubType(dm,_cb.creatematrix,(DM*,Mat*,PetscErrorCode*),(&dm,A,&ierr));
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ourcreateglobalvector"
 static PetscErrorCode ourcreateglobalvector(DM dm,Vec *v)
 {
   PetscObjectUseFortranCallbackSubType(dm,_cb.createglobalvector,(DM*,Vec*,PetscErrorCode*),(&dm,v,&ierr));
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ourcreatelocalvector"
 static PetscErrorCode ourcreatelocalvector(DM dm,Vec *v)
 {
   PetscObjectUseFortranCallbackSubType(dm,_cb.createlocalvector,(DM*,Vec*,PetscErrorCode*),(&dm,v,&ierr));
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ourglobaltolocalbegin"
 static PetscErrorCode ourglobaltolocalbegin(DM dm,Vec g,InsertMode mode,Vec l)
 {
   PetscObjectUseFortranCallbackSubType(dm,_cb.globaltolocalbegin,(DM*,Vec*,InsertMode*,Vec*,PetscErrorCode*),(&dm,&g,&mode,&l,&ierr));
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ourglobaltolocalend"
 static PetscErrorCode ourglobaltolocalend(DM dm,Vec g,InsertMode mode,Vec l)
 {
   PetscObjectUseFortranCallbackSubType(dm,_cb.globaltolocalend,(DM*,Vec*,InsertMode*,Vec*,PetscErrorCode*),(&dm,&g,&mode,&l,&ierr));
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ourlocaltoglobalbegin"
 static PetscErrorCode ourlocaltoglobalbegin(DM dm,Vec l,InsertMode mode,Vec g)
 {
   PetscObjectUseFortranCallbackSubType(dm,_cb.localtoglobalbegin,(DM*,Vec*,InsertMode*,Vec*,PetscErrorCode*),(&dm,&l,&mode,&g,&ierr));
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ourlocaltoglobalend"
 static PetscErrorCode ourlocaltoglobalend(DM dm,Vec l,InsertMode mode,Vec g)
 {
   PetscObjectUseFortranCallbackSubType(dm,_cb.localtoglobalend,(DM*,Vec*,InsertMode*,Vec*,PetscErrorCode*),(&dm,&l,&mode,&g,&ierr));
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ourlocaltolocalbegin"
 static PetscErrorCode ourlocaltolocalbegin(DM dm,Vec g,InsertMode mode,Vec l)
 {
   PetscObjectUseFortranCallbackSubType(dm,_cb.localtolocalbegin,(DM*,Vec*,InsertMode*,Vec*,PetscErrorCode*),(&dm,&g,&mode,&l,&ierr));
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ourlocaltolocalend"
 static PetscErrorCode ourlocaltolocalend(DM dm,Vec g,InsertMode mode,Vec l)
 {
   PetscObjectUseFortranCallbackSubType(dm,_cb.localtolocalend,(DM*,Vec*,InsertMode*,Vec*,PetscErrorCode*),(&dm,&g,&mode,&l,&ierr));

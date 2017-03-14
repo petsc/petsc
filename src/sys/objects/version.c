@@ -24,8 +24,6 @@ $    src/docs/website/index.html.
 
 @*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscGetVersion"
 PetscErrorCode PetscGetVersion(char version[], size_t len)
 {
   PetscErrorCode ierr;
@@ -39,8 +37,6 @@ PetscErrorCode PetscGetVersion(char version[], size_t len)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscGetVersionNumber"
 /*@C
     PetscGetVersionNumber - Gets the PETSc version information from the library
 

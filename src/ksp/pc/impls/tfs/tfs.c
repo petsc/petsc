@@ -13,8 +13,6 @@ typedef struct {
   PetscInt nd;
 } PC_TFS;
 
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_TFS"
 PetscErrorCode PCDestroy_TFS(PC pc)
 {
   PC_TFS         *tfs = (PC_TFS*)pc->data;
@@ -35,8 +33,6 @@ PetscErrorCode PCDestroy_TFS(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_TFS_XXT"
 static PetscErrorCode PCApply_TFS_XXT(PC pc,Vec x,Vec y)
 {
   PC_TFS            *tfs = (PC_TFS*)pc->data;
@@ -53,8 +49,6 @@ static PetscErrorCode PCApply_TFS_XXT(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_TFS_XYT"
 static PetscErrorCode PCApply_TFS_XYT(PC pc,Vec x,Vec y)
 {
   PC_TFS            *tfs = (PC_TFS*)pc->data;
@@ -71,8 +65,6 @@ static PetscErrorCode PCApply_TFS_XYT(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCTFSLocalMult_TFS"
 static PetscErrorCode PCTFSLocalMult_TFS(PC pc,PetscScalar *xin,PetscScalar *xout)
 {
   PC_TFS         *tfs = (PC_TFS*)pc->data;
@@ -92,8 +84,6 @@ static PetscErrorCode PCTFSLocalMult_TFS(PC pc,PetscScalar *xin,PetscScalar *xou
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_TFS"
 static PetscErrorCode PCSetUp_TFS(PC pc)
 {
   PC_TFS         *tfs = (PC_TFS*)pc->data;
@@ -143,23 +133,17 @@ static PetscErrorCode PCSetUp_TFS(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_TFS"
 static PetscErrorCode PCSetFromOptions_TFS(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "PCView_TFS"
 static PetscErrorCode PCView_TFS(PC pc,PetscViewer viewer)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_TFS"
 /*MC
      PCTFS - A parallel direct solver intended for problems with very few unknowns (like the
          coarse grid in multigrid).

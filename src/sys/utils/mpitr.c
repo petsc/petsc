@@ -8,8 +8,6 @@
 
 #if defined(PETSC_USE_LOG) && !defined(__MPIUNI_H)
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMPIDump"
 /*@C
    PetscMPIDump - Dumps a listing of incomplete MPI operations, such as sends that
    have never been received, etc.
@@ -61,8 +59,6 @@ PetscErrorCode  PetscMPIDump(FILE *fd)
 
 #else
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMPIDump"
 PetscErrorCode  PetscMPIDump(FILE *fd)
 {
   PetscFunctionBegin;

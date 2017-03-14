@@ -65,8 +65,6 @@ static Colormap          gColormap = 0;
 static PetscDrawXiPixVal gCmapping[256];
 static unsigned char     gCpalette[256][3];
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSetUpColormap_Shared"
 PetscErrorCode PetscDrawSetUpColormap_Shared(Display *display,int screen,Visual *visual,Colormap colormap)
 {
   int            i,k,ncolors = 256-PETSC_DRAW_BASIC_COLORS;
@@ -119,8 +117,6 @@ PetscErrorCode PetscDrawSetUpColormap_Shared(Display *display,int screen,Visual 
 static PetscBool cmap_pixvalues_used[256];
 static int       cmap_base = 0;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSetUpColormap_Private"
 PetscErrorCode PetscDrawSetUpColormap_Private(Display *display,int screen,Visual *visual,Colormap colormap)
 {
   int            found,i,k,ncolors = 256-PETSC_DRAW_BASIC_COLORS;
@@ -194,8 +190,6 @@ PetscErrorCode PetscDrawSetUpColormap_Private(Display *display,int screen,Visual
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSetUpColormap_X"
 PetscErrorCode PetscDrawSetUpColormap_X(Display *display,int screen,Visual *visual,Colormap colormap)
 {
   PetscErrorCode ierr;
@@ -226,8 +220,6 @@ PetscErrorCode PetscDrawSetUpColormap_X(Display *display,int screen,Visual *visu
 
 PETSC_INTERN PetscErrorCode PetscDrawSetColormap_X(PetscDraw_X*,Colormap);
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSetColormap_X"
 PetscErrorCode PetscDrawSetColormap_X(PetscDraw_X *XiWin,Colormap colormap)
 {
   PetscBool      fast = PETSC_FALSE;
@@ -248,8 +240,6 @@ PetscErrorCode PetscDrawSetColormap_X(PetscDraw_X *XiWin,Colormap colormap)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawXiColormap"
 PetscErrorCode PetscDrawXiColormap(PetscDraw_X *XiWin)
 { return PetscDrawSetColormap_X(XiWin,(Colormap)0); }
 
@@ -272,8 +262,6 @@ PetscErrorCode PetscDrawXiColormap(PetscDraw_X *XiWin)
         GrayScale
         StaticGray
  */
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawXiSetVisualClass"
 PetscErrorCode PetscDrawXiSetVisualClass(PetscDraw_X *XiWin)
 {
   XVisualInfo vinfo;
@@ -291,8 +279,6 @@ PetscErrorCode PetscDrawXiSetVisualClass(PetscDraw_X *XiWin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawXiSetColormap"
 PetscErrorCode PetscDrawXiSetColormap(PetscDraw_X *XiWin)
 {
   PetscFunctionBegin;
@@ -303,8 +289,6 @@ PetscErrorCode PetscDrawXiSetColormap(PetscDraw_X *XiWin)
 /*
    Get RGB color entries out of the X colormap
 */
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawXiGetPalette"
 PetscErrorCode PetscDrawXiGetPalette(PetscDraw_X *XiWin,unsigned char palette[256][3])
 {
   int    k;

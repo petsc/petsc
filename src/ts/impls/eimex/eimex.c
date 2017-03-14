@@ -31,8 +31,6 @@ static PetscInt Map(PetscInt i, PetscInt j, PetscInt s)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TSEvaluateStep_EIMEX"
 static PetscErrorCode TSEvaluateStep_EIMEX(TS ts,PetscInt order,Vec X,PetscBool *done)
 {
   TS_EIMEX        *ext = (TS_EIMEX*)ts->data;
@@ -44,8 +42,6 @@ static PetscErrorCode TSEvaluateStep_EIMEX(TS ts,PetscInt order,Vec X,PetscBool 
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TSStage_EIMEX"
 static PetscErrorCode TSStage_EIMEX(TS ts,PetscInt istage)
 {
   TS_EIMEX        *ext = (TS_EIMEX*)ts->data;
@@ -79,8 +75,6 @@ static PetscErrorCode TSStage_EIMEX(TS ts,PetscInt istage)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TSStep_EIMEX"
 static PetscErrorCode TSStep_EIMEX(TS ts)
 {
   TS_EIMEX        *ext = (TS_EIMEX*)ts->data;
@@ -161,8 +155,6 @@ static PetscErrorCode TSStep_EIMEX(TS ts)
 }
 
 /* cubic Hermit spline */
-#undef __FUNCT__
-#define __FUNCT__ "TSInterpolate_EIMEX"
 static PetscErrorCode TSInterpolate_EIMEX(TS ts,PetscReal itime,Vec X)
 {
   TS_EIMEX       *ext = (TS_EIMEX*)ts->data;
@@ -190,8 +182,6 @@ static PetscErrorCode TSInterpolate_EIMEX(TS ts,PetscReal itime,Vec X)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TSReset_EIMEX"
 static PetscErrorCode TSReset_EIMEX(TS ts)
 {
   TS_EIMEX        *ext = (TS_EIMEX*)ts->data;
@@ -211,8 +201,6 @@ static PetscErrorCode TSReset_EIMEX(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSDestroy_EIMEX"
 static PetscErrorCode TSDestroy_EIMEX(TS ts)
 {
   PetscErrorCode  ierr;
@@ -228,8 +216,6 @@ static PetscErrorCode TSDestroy_EIMEX(TS ts)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TSEIMEXGetVecs"
 static PetscErrorCode TSEIMEXGetVecs(TS ts,DM dm,Vec *Z,Vec *Ydot,Vec *YdotI, Vec *YdotRHS)
 {
   TS_EIMEX       *ext = (TS_EIMEX*)ts->data;
@@ -260,8 +246,6 @@ static PetscErrorCode TSEIMEXGetVecs(TS ts,DM dm,Vec *Z,Vec *Ydot,Vec *YdotI, Ve
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TSEIMEXRestoreVecs"
 static PetscErrorCode TSEIMEXRestoreVecs(TS ts,DM dm,Vec *Z,Vec *Ydot,Vec *YdotI,Vec *YdotRHS)
 {
   PetscErrorCode ierr;
@@ -297,8 +281,6 @@ static PetscErrorCode TSEIMEXRestoreVecs(TS ts,DM dm,Vec *Z,Vec *Ydot,Vec *YdotI
   In the case of Backward Euler, Fn = (U-U0)/h-g(t1,U))
   Since FormIFunction calculates G = ydot - g(t,y), ydot will be set to (U-U0)/h
 */
-#undef __FUNCT__
-#define __FUNCT__ "SNESTSFormFunction_EIMEX"
 static PetscErrorCode SNESTSFormFunction_EIMEX(SNES snes,Vec X,Vec G,TS ts)
 {
   TS_EIMEX        *ext = (TS_EIMEX*)ts->data;
@@ -326,8 +308,6 @@ static PetscErrorCode SNESTSFormFunction_EIMEX(SNES snes,Vec X,Vec G,TS ts)
 /*
  This defined the Jacobian matrix for SNES. Jn = (I/h-g'(t,y))
  */
-#undef __FUNCT__
-#define __FUNCT__ "SNESTSFormJacobian_EIMEX"
 static PetscErrorCode SNESTSFormJacobian_EIMEX(SNES snes,Vec X,Mat A,Mat B,TS ts)
 {
   TS_EIMEX        *ext = (TS_EIMEX*)ts->data;
@@ -347,8 +327,6 @@ static PetscErrorCode SNESTSFormJacobian_EIMEX(SNES snes,Vec X,Mat A,Mat B,TS ts
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCoarsenHook_TSEIMEX"
 static PetscErrorCode DMCoarsenHook_TSEIMEX(DM fine,DM coarse,void *ctx)
 {
 
@@ -356,8 +334,6 @@ static PetscErrorCode DMCoarsenHook_TSEIMEX(DM fine,DM coarse,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRestrictHook_TSEIMEX"
 static PetscErrorCode DMRestrictHook_TSEIMEX(DM fine,Mat restrct,Vec rscale,Mat inject,DM coarse,void *ctx)
 {
   TS ts = (TS)ctx;
@@ -375,8 +351,6 @@ static PetscErrorCode DMRestrictHook_TSEIMEX(DM fine,Mat restrct,Vec rscale,Mat 
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TSSetUp_EIMEX"
 static PetscErrorCode TSSetUp_EIMEX(TS ts)
 {
   TS_EIMEX       *ext = (TS_EIMEX*)ts->data;
@@ -416,8 +390,6 @@ static PetscErrorCode TSSetUp_EIMEX(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSSetFromOptions_EIMEX"
 static PetscErrorCode TSSetFromOptions_EIMEX(PetscOptionItems *PetscOptionsObject,TS ts)
 {
   TS_EIMEX       *ext = (TS_EIMEX*)ts->data;
@@ -445,8 +417,6 @@ static PetscErrorCode TSSetFromOptions_EIMEX(PetscOptionItems *PetscOptionsObjec
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSView_EIMEX"
 static PetscErrorCode TSView_EIMEX(TS ts,PetscViewer viewer)
 {
   /*  TS_EIMEX         *ext = (TS_EIMEX*)ts->data; */
@@ -463,8 +433,6 @@ static PetscErrorCode TSView_EIMEX(TS ts,PetscViewer viewer)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TSEIMEXSetMaxRows"
 /*@C
   TSEIMEXSetMaxRows - Set the maximum number of rows for EIMEX schemes
 
@@ -488,8 +456,6 @@ PetscErrorCode TSEIMEXSetMaxRows(TS ts, PetscInt nrows)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TSEIMEXSetRowCol"
 /*@C
   TSEIMEXSetRowCol - Set the type index in the T table for the return value
 
@@ -513,8 +479,6 @@ PetscErrorCode TSEIMEXSetRowCol(TS ts, PetscInt row, PetscInt col)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TSEIMEXSetOrdAdapt"
 /*@C
   TSEIMEXSetOrdAdapt - Set the order adaptativity
 
@@ -538,8 +502,6 @@ PetscErrorCode TSEIMEXSetOrdAdapt(TS ts, PetscBool flg)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TSEIMEXSetMaxRows_EIMEX"
 static PetscErrorCode TSEIMEXSetMaxRows_EIMEX(TS ts,PetscInt nrows)
 {
   TS_EIMEX *ext = (TS_EIMEX*)ts->data;
@@ -555,8 +517,6 @@ static PetscErrorCode TSEIMEXSetMaxRows_EIMEX(TS ts,PetscInt nrows)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSEIMEXSetRowCol_EIMEX"
 static PetscErrorCode TSEIMEXSetRowCol_EIMEX(TS ts,PetscInt row,PetscInt col)
 {
   TS_EIMEX *ext = (TS_EIMEX*)ts->data;
@@ -571,8 +531,6 @@ static PetscErrorCode TSEIMEXSetRowCol_EIMEX(TS ts,PetscInt row,PetscInt col)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSEIMEXSetOrdAdapt_EIMEX"
 static PetscErrorCode TSEIMEXSetOrdAdapt_EIMEX(TS ts,PetscBool flg)
 {
   TS_EIMEX *ext = (TS_EIMEX*)ts->data;
@@ -618,8 +576,6 @@ Computing, 31 (2010), pp. 4452-4477.
 .seealso:  TSCreate(), TS, TSSetType(), TSEIMEXSetMaxRows(), TSEIMEXSetRowCol(), TSEIMEXSetOrdAdapt()
 
  M*/
-#undef __FUNCT__
-#define __FUNCT__ "TSCreate_EIMEX"
 PETSC_EXTERN PetscErrorCode TSCreate_EIMEX(TS ts)
 {
   TS_EIMEX       *ext;

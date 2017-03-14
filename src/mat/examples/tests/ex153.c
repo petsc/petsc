@@ -1,8 +1,6 @@
 static char help[]="This program illustrates the use of PETSc-fftw interface for sequential real DFT\n";
 #include <petscmat.h>
 #include <fftw3-mpi.h>
-#undef __FUNCT__
-#define __FUNCT__ "main"
 PetscInt main(PetscInt argc,char **args)
 {
   PetscErrorCode ierr;

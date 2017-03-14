@@ -10,6 +10,7 @@
 !  Concepts: SNES^parallel Bratu example
 !  Concepts: DMDA^using distributed arrays;
 !  Processors: n
+!  TODO: Need to update to latest API
 !T*/
 !
 !  --------------------------------------------------------------------------
@@ -36,10 +37,10 @@
 !
 
       module f90module
-#include <petsc/finclude/petscdmdef.h>
+#include <petsc/finclude/petscdm.h>
       use petscdmdef
       type userctx
-        type(DM) da
+        type(tDM) da
         PetscInt xs,xe,xm,gxs,gxe,gxm
         PetscInt ys,ye,ym,gys,gye,gym
         PetscInt mx,my
@@ -70,18 +71,18 @@
 !  the local vector data via VecGetArrayF90() and VecRestoreArrayF90().
 !
       subroutine FormFunction(snesIn,X,F,user,ierr)
-#include <petsc/finclude/petscsnesdef.h>
+#include <petsc/finclude/petscsnes.h>
       use petscsnes
 
 !  Input/output variables:
-      type(SNES)     snesIn
-      type(Vec)      X,F
+      type(tSNES)     snesIn
+      type(tVec)      X,F
       PetscErrorCode ierr
       type (userctx) user
 
 !  Declarations for use with local arrays:
       PetscScalar,pointer :: lx_v(:),lf_v(:)
-      type(Vec)              localX
+      type(tVec)              localX
 
 !  Scatter ghost points to local vector, using the 2-step process
 !     DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
@@ -125,10 +126,10 @@
 
       Interface SNESSetApplicationContext
         Subroutine SNESSetApplicationContext(snesIn,ctx,ierr)
-#include <petsc/finclude/petscsnesdef.h>
+#include <petsc/finclude/petscsnes.h>
         use petscsnes
         use f90module
-          type(SNES)    snesIn
+          type(tSNES)    snesIn
           type(userctx) ctx
           PetscErrorCode ierr
         End Subroutine
@@ -136,10 +137,10 @@
 
       Interface SNESGetApplicationContext
         Subroutine SNESGetApplicationContext(snesIn,ctx,ierr)
-#include <petsc/finclude/petscsnesdef.h>
+#include <petsc/finclude/petscsnes.h>
         use petscsnes
         use f90module
-          type(SNES)     snesIn
+          type(tSNES)     snesIn
           type(userctx), pointer :: ctx
           PetscErrorCode ierr
         End Subroutine
@@ -147,8 +148,8 @@
       end module f90moduleinterfaces
 
       program main
-#include <petsc/finclude/petscdmdef.h>
-#include <petsc/finclude/petscsnesdef.h>
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscsnes.h>
       use petscdmda
       use petscdm
       use petscsnes
@@ -167,9 +168,9 @@
 !     Nx, Ny      - number of preocessors in x- and y- directions
 !     matrix_free - flag - 1 indicates matrix-free version
 !
-      type(SNES)       mysnes
-      type(Vec)        x,r
-      type(Mat)        J
+      type(tSNES)       mysnes
+      type(tVec)        x,r
+      type(tMat)        J
       PetscErrorCode   ierr
       PetscInt         its
       PetscBool        flg,matrix_free,set
@@ -177,7 +178,7 @@
       PetscReal lambda_max,lambda_min
       type(userctx)    user
       type(userctx), pointer:: puser
-      type(PetscOptions) :: options
+      type(tPetscOptions) :: options
 
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
 !  MUST be declared as external.
@@ -203,7 +204,7 @@
       call PetscOptionsGetReal(options,PETSC_NULL_CHARACTER,'-par',user%lambda,flg,ierr);CHKERRQ(ierr)
       if (user%lambda .ge. lambda_max .or. user%lambda .le. lambda_min) then
          if (user%rank .eq. 0) write(6,*) 'Lambda is out of range'
-         SETERRQ(PETSC_COMM_SELF,1,' ',ierr)
+         SETERRQ(PETSC_COMM_SELF,1,' ')
       endif
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -308,7 +309,7 @@
 !  this vector to zero by calling VecSet().
 
       call FormInitialGuess(mysnes,x,ierr);CHKERRQ(ierr)
-      call SNESSolve(mysnes,PETSC_NULL_OBJECT,x,ierr);CHKERRQ(ierr)
+      call SNESSolve(mysnes,PETSC_NULL_VEC,x,ierr);CHKERRQ(ierr)
       call SNESGetIterationNumber(mysnes,its,ierr);CHKERRQ(ierr)
       if (user%rank .eq. 0) then
          write(6,100) its
@@ -347,14 +348,14 @@
 !  the local vector data via VecGetArrayF90() and VecRestoreArrayF90().
 !
       subroutine FormInitialGuess(mysnes,X,ierr)
-#include <petsc/finclude/petscsnesdef.h>
+#include <petsc/finclude/petscsnes.h>
       use petscsnes
       use f90module
       use f90moduleinterfaces
 !  Input/output variables:
-      type(SNES)     mysnes
+      type(tSNES)     mysnes
       type(userctx), pointer:: puser
-      type(Vec)      X
+      type(tVec)      X
       PetscErrorCode ierr
 
 !  Declarations for use with local arrays:
@@ -399,7 +400,7 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine InitialGuessLocal(user,x,ierr)
-#include <petsc/finclude/petscsysdef.h>
+#include <petsc/finclude/petscsys.h>
       use petscsys
       use f90module
 !  Input/output variables:
@@ -416,17 +417,17 @@
 
       ierr   = 0
       one    = 1.0
-      hx     = one/(dble(user%mx-1))
-      hy     = one/(dble(user%my-1))
+      hx     = one/(PetscIntToReal(user%mx-1))
+      hy     = one/(PetscIntToReal(user%my-1))
       temp1  = user%lambda/(user%lambda + one)
 
       do 20 j=user%ys,user%ye
-         temp = dble(min(j-1,user%my-j))*hy
+         temp = PetscIntToReal(min(j-1,user%my-j))*hy
          do 10 i=user%xs,user%xe
             if (i .eq. 1 .or. j .eq. 1 .or. i .eq. user%mx .or. j .eq. user%my) then
               x(i,j) = 0.0
             else
-              x(i,j) = temp1 * sqrt(min(dble(min(i-1,user%mx-i)*hx),dble(temp)))
+              x(i,j) = temp1 * sqrt(min(PetscIntToReal(min(i-1,user%mx-i)*hx),PetscIntToReal(temp)))
             endif
  10      continue
  20   continue
@@ -450,7 +451,7 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine FormFunctionLocal(x,f,user,ierr)
-#include <petsc/finclude/petscsysdef.h>
+#include <petsc/finclude/petscsys.h>
       use petscsys
       use f90module
 !  Input/output variables:
@@ -466,8 +467,8 @@
 
       one    = 1.0
       two    = 2.0
-      hx     = one/dble(user%mx-1)
-      hy     = one/dble(user%my-1)
+      hx     = one/PetscIntToReal(user%mx-1)
+      hy     = one/PetscIntToReal(user%my-1)
       sc     = hx*hy*user%lambda
       hxdhy  = hx/hy
       hydhx  = hy/hx
@@ -536,19 +537,19 @@
 !  used in this example.
 !
       subroutine FormJacobian(mysnes,X,jac,jac_prec,user,ierr)
-#include <petsc/finclude/petscsnesdef.h>
+#include <petsc/finclude/petscsnes.h>
       use petscsnes
       use f90module
 !  Input/output variables:
-      type(SNES)     mysnes
-      type(Vec)      X
-      type(Mat)      jac,jac_prec
+      type(tSNES)     mysnes
+      type(tVec)      X
+      type(tMat)      jac,jac_prec
       type(userctx)  user
       PetscErrorCode ierr
 
 !  Declarations for use with local arrays:
       PetscScalar,pointer :: lx_v(:)
-      type(Vec)      localX
+      type(tVec)      localX
 
 !  Scatter ghost points to local vector, using the 2-step process
 !     DMGlobalToLocalBegin(), DMGlobalToLocalEnd()
@@ -624,13 +625,13 @@
 !  used in this example.
 !
       subroutine FormJacobianLocal(x,jac_prec,user,ierr)
-#include <petsc/finclude/petscmatdef.h>
+#include <petsc/finclude/petscmat.h>
       use petscmat
       use f90module
 !  Input/output variables:
       type (userctx) user
       PetscScalar    x(user%gxs:user%gxe,user%gys:user%gye)
-      type(Mat)      jac_prec
+      type(tMat)      jac_prec
       PetscErrorCode ierr
 
 !  Local variables:
@@ -644,8 +645,8 @@
       ifive  = 5
       one    = 1.0
       two    = 2.0
-      hx     = one/dble(user%mx-1)
-      hy     = one/dble(user%my-1)
+      hx     = one/PetscIntToReal(user%mx-1)
+      hy     = one/PetscIntToReal(user%my-1)
       sc     = hx*hy
       hxdhy  = hx/hy
       hydhx  = hy/hx

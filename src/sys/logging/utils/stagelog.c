@@ -9,8 +9,6 @@
 
 PetscStageLog petsc_stageLog = 0;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLogGetStageLog"
 /*@C
   PetscLogGetStageLog - This function returns the default stage logging object.
 
@@ -38,8 +36,6 @@ PetscErrorCode PetscLogGetStageLog(PetscStageLog *stageLog)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscStageLogGetCurrent"
 /*@C
   PetscStageLogGetCurrent - This function returns the stage from the top of the stack.
 
@@ -79,8 +75,6 @@ PetscErrorCode  PetscStageLogGetCurrent(PetscStageLog stageLog, int *stage)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscStageLogGetEventPerfLog"
 /*@C
   PetscStageLogGetEventPerfLog - This function returns the PetscEventPerfLog for the given stage.
 
@@ -109,8 +103,6 @@ PetscErrorCode  PetscStageLogGetEventPerfLog(PetscStageLog stageLog, int stage, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscStageInfoDestroy"
 /*@C
   PetscStageInfoDestroy - This destroys a PetscStageInfo object.
 
@@ -135,8 +127,6 @@ PetscErrorCode  PetscStageInfoDestroy(PetscStageInfo *stageInfo)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscStageLogDestroy"
 /*@C
   PetscStageLogDestroy - This destroys a PetscStageLog object.
 
@@ -168,8 +158,6 @@ PetscErrorCode  PetscStageLogDestroy(PetscStageLog stageLog)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscStageLogRegister"
 /*@C
   PetscStageLogRegister - Registers a stage name for logging operations in an application code.
 
@@ -232,8 +220,6 @@ PetscErrorCode  PetscStageLogRegister(PetscStageLog stageLog, const char sname[]
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscStageLogPush"
 /*@C
   PetscStageLogPush - This function pushes a stage on the stack.
 
@@ -308,8 +294,6 @@ PetscErrorCode  PetscStageLogPush(PetscStageLog stageLog, int stage)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscStageLogPop"
 /*@C
   PetscStageLogPop - This function pops a stage from the stack.
 
@@ -374,8 +358,6 @@ PetscErrorCode  PetscStageLogPop(PetscStageLog stageLog)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscStageLogGetClassRegLog"
 /*@C
   PetscStageLogGetClassRegLog - This function returns the PetscClassRegLog for the given stage.
 
@@ -400,8 +382,6 @@ PetscErrorCode  PetscStageLogGetClassRegLog(PetscStageLog stageLog, PetscClassRe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscStageLogGetEventRegLog"
 /*@C
   PetscStageLogGetEventRegLog - This function returns the PetscEventRegLog.
 
@@ -426,8 +406,6 @@ PetscErrorCode  PetscStageLogGetEventRegLog(PetscStageLog stageLog, PetscEventRe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscStageLogGetClassPerfLog"
 /*@C
   PetscStageLogGetClassPerfLog - This function returns the PetscClassPerfLog for the given stage.
 
@@ -455,8 +433,6 @@ PetscErrorCode  PetscStageLogGetClassPerfLog(PetscStageLog stageLog, int stage, 
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscStageLogSetActive"
 /*@C
   PetscStageLogSetActive - This function determines whether events will be logged during this state.
 
@@ -480,8 +456,6 @@ PetscErrorCode  PetscStageLogSetActive(PetscStageLog stageLog, int stage, PetscB
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscStageLogGetActive"
 /*@C
   PetscStageLogGetActive - This function returns whether events will be logged suring this stage.
 
@@ -508,8 +482,6 @@ PetscErrorCode  PetscStageLogGetActive(PetscStageLog stageLog, int stage, PetscB
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscStageLogSetVisible"
 /*@C
   PetscStageLogSetVisible - This function determines whether a stage is printed during PetscLogView()
 
@@ -536,8 +508,6 @@ PetscErrorCode  PetscStageLogSetVisible(PetscStageLog stageLog, int stage, Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscStageLogGetVisible"
 /*@C
   PetscStageLogGetVisible - This function returns whether a stage is printed during PetscLogView()
 
@@ -567,8 +537,6 @@ PetscErrorCode  PetscStageLogGetVisible(PetscStageLog stageLog, int stage, Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscStageLogGetStage"
 /*@C
   PetscStageLogGetStage - This function returns the stage id given the stage name.
 
@@ -598,14 +566,14 @@ PetscErrorCode  PetscStageLogGetStage(PetscStageLog stageLog, const char name[],
   *stage = -1;
   for (s = 0; s < stageLog->numStages; s++) {
     ierr = PetscStrcasecmp(stageLog->stageInfo[s].name, name, &match);CHKERRQ(ierr);
-    *stage = s;
-    if (match) break;
+    if (match) {
+      *stage = s;
+      break;
+    }
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscStageLogCreate"
 /*@C
   PetscStageLogCreate - This creates a PetscStageLog object.
 

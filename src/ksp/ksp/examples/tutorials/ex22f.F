@@ -10,23 +10,11 @@
 !   This uses multigrid to solve the linear system
 
       program main
+#include <petsc/finclude/petscksp.h>
+      use petscdmda
+      use petscksp
       implicit none
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!                    Include files
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!
-!     petscsys.h  - base PETSc routines      petscvec.h - vectors
-!     petscmat.h - matrices
-!     petscksp.h    - Krylov subspace methods  petscpc.h  - preconditioners
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscpc.h>
-#include <petsc/finclude/petscksp.h>
-#include <petsc/finclude/petscdm.h>
-#include <petsc/finclude/petscdmda.h>
       PetscErrorCode   ierr
       DM               da
       KSP              ksp
@@ -52,9 +40,8 @@
       call KSPSetComputeOperators(ksp,ComputeMatrix,ctx,ierr)
 
       call KSPSetFromOptions(ksp,ierr)
-      call KSPSolve(ksp,PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,ierr)
+      call KSPSolve(ksp,PETSC_NULL_VEC,PETSC_NULL_VEC,ierr)
       call KSPGetSolution(ksp,x,ierr)
-!      call VecView(x,PETSC_NULL_OBJECT,ierr)
       call KSPDestroy(ksp,ierr)
       call DMDestroy(da,ierr)
       call PetscFinalize(ierr)
@@ -62,12 +49,8 @@
       end
 
       subroutine ComputeRHS(ksp,b,ctx,ierr)
+      use petscksp
       implicit none
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscdm.h>
-#include <petsc/finclude/petscdmda.h>
 
       PetscErrorCode  ierr
       PetscInt mx,my,mz
@@ -92,13 +75,8 @@
 
 
       subroutine ComputeMatrix(ksp,JJ,jac,ctx,ierr)
+      use petscksp
       implicit none
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscmat.h>
-#include <petsc/finclude/petscdm.h>
-#include <petsc/finclude/petscdmda.h>
 
       Mat          jac,JJ
       PetscErrorCode    ierr

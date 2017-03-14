@@ -1,7 +1,5 @@
 #include <petsc/private/tsimpl.h> /*I  "petscts.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "TSEventInitialize"
 /*
   TSEventInitialize - Initializes TSEvent for TSSolve
 */
@@ -17,13 +15,9 @@ PetscErrorCode TSEventInitialize(TSEvent event,TS ts,PetscReal t,Vec U)
   event->ptime_prev = t;
   event->iterctr = 0;
   ierr = (*event->eventhandler)(ts,t,U,event->fvalue_prev,event->ctx);CHKERRQ(ierr);
-  /* Initialize the event recorder */
-  event->recorder.ctr = 0;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSEventDestroy"
 PetscErrorCode TSEventDestroy(TSEvent *event)
 {
   PetscErrorCode ierr;
@@ -32,6 +26,8 @@ PetscErrorCode TSEventDestroy(TSEvent *event)
   PetscFunctionBegin;
   PetscValidPointer(event,1);
   if (!*event) PetscFunctionReturn(0);
+  if (--(*event)->refct > 0) {*event = 0; PetscFunctionReturn(0);}
+
   ierr = PetscFree((*event)->fvalue);CHKERRQ(ierr);
   ierr = PetscFree((*event)->fvalue_prev);CHKERRQ(ierr);
   ierr = PetscFree((*event)->fvalue_right);CHKERRQ(ierr);
@@ -55,8 +51,6 @@ PetscErrorCode TSEventDestroy(TSEvent *event)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSSetEventTolerances"
 /*@
    TSSetEventTolerances - Set tolerances for event zero crossings when using event handler
 
@@ -100,8 +94,6 @@ PetscErrorCode TSSetEventTolerances(TS ts,PetscReal tol,PetscReal vtol[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSSetEventHandler"
 /*@C
    TSSetEventHandler - Sets a monitoring function used for detecting events
 
@@ -164,8 +156,10 @@ PetscErrorCode TSSetEventHandler(TS ts,PetscInt nevents,PetscInt direction[],Pet
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidIntPointer(direction,2);
-  PetscValidIntPointer(terminate,3);
+  if(nevents) {
+    PetscValidIntPointer(direction,2);
+    PetscValidIntPointer(terminate,3);
+  }
 
   ierr = PetscNewLog(ts,&event);CHKERRQ(ierr);
   ierr = PetscMalloc1(nevents,&event->fvalue);CHKERRQ(ierr);
@@ -204,17 +198,18 @@ PetscErrorCode TSSetEventHandler(TS ts,PetscInt nevents,PetscInt direction[],Pet
   for (i=0; i < event->recsize; i++) {
     ierr = PetscMalloc1(event->nevents,&event->recorder.eventidx[i]);CHKERRQ(ierr);
   }
+  /* Initialize the event recorder */
+  event->recorder.ctr = 0;
 
   for (i=0; i < event->nevents; i++) event->vtol[i] = tol;
   if (flg) {ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,"stdout",&event->monitor);CHKERRQ(ierr);}
 
   ierr = TSEventDestroy(&ts->event);CHKERRQ(ierr);
   ts->event = event;
+  ts->event->refct = 1;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSEventRecorderResize"
 /*
   TSEventRecorderResize - Resizes (2X) the event recorder arrays whenever the recording limit (event->recsize)
                           is reached.
@@ -271,8 +266,6 @@ static PetscErrorCode TSEventRecorderResize(TSEvent event)
 /*
    Helper rutine to handle user postenvents and recording
 */
-#undef __FUNCT__
-#define __FUNCT__ "TSPostEvent"
 static PetscErrorCode TSPostEvent(TS ts,PetscReal t,Vec U)
 {
   PetscErrorCode ierr;
@@ -341,8 +334,6 @@ PETSC_STATIC_INLINE PetscReal TSEventComputeStepSize(PetscReal tleft,PetscReal t
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TSEventHandler"
 PetscErrorCode TSEventHandler(TS ts)
 {
   PetscErrorCode ierr;
@@ -499,8 +490,6 @@ PetscErrorCode TSEventHandler(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdjointEventHandler"
 PetscErrorCode TSAdjointEventHandler(TS ts)
 {
   PetscErrorCode ierr;

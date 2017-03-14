@@ -13,8 +13,6 @@
 */
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectGetNewTag"
 /*@C
     PetscObjectGetNewTag - Gets a unique new tag from a PETSc object. All
     processors that share the object MUST call this routine EXACTLY the same
@@ -47,8 +45,6 @@ PetscErrorCode  PetscObjectGetNewTag(PetscObject obj,PetscMPIInt *tag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscCommGetNewTag"
 /*@
     PetscCommGetNewTag - Gets a unique new tag from a PETSc communicator. All
     processors that share the communicator MUST call this routine EXACTLY the same
@@ -100,8 +96,6 @@ PetscErrorCode  PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscCommDuplicate"
 /*@C
   PetscCommDuplicate - Duplicates the communicator only if it is not already a PETSc communicator.
 
@@ -192,8 +186,6 @@ PetscErrorCode  PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPII
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscCommDestroy"
 /*@C
    PetscCommDestroy - Frees communicator.  Use in conjunction with PetscCommDuplicate().
 
@@ -249,8 +241,6 @@ PetscErrorCode  PetscCommDestroy(MPI_Comm *comm)
   PetscFunctionReturn(0);
 }
 
-#undef  __FUNCT__
-#define __FUNCT__ "PetscObjectsListGetGlobalNumbering"
 /*@C
     PetscObjectsListGetGlobalNumbering - computes a global numbering
     of PetscObjects living on subcommunicators of a given communicator.

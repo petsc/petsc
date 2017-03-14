@@ -57,8 +57,10 @@
       end module assert_mod
 
       program tpetsc
+#include <petsc/finclude/petsc.h>
       use assert_mod
       use omp_module
+      use petsc
       implicit none
 !     ----------------------------
 !     test concurrent petsc solver
@@ -69,8 +71,6 @@
       real(8), parameter :: tol = 1.0d-6
 
       integer, dimension(MAXTHREADS) :: ibeg,iend
-
-#include <petsc/finclude/petsc.h90>
 
 !$   integer, external :: omp_get_num_threads
 
@@ -208,8 +208,8 @@
            ii = ilist(ip)
            jj = jlist(ip)
            aij = alist(ip)
-           call MatSetValues(col_f_mat,1,ii,1,jj,aij,INSERT_VALUES,ierr)
-           call assert(ierr.eq.0,'matsetvalues return ierr',ierr)
+           call MatSetValue(col_f_mat,ii,jj,aij,INSERT_VALUES,ierr)
+           call assert(ierr.eq.0,'matsetvalue return ierr',ierr)
          enddo
          call MatAssemblyBegin(col_f_mat,MAT_FINAL_ASSEMBLY,ierr)
          call assert(ierr.eq.0,'matassemblybegin return ierr',ierr)

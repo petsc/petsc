@@ -12,8 +12,6 @@ struct _n_PetscObjectList {
   PetscObjectList next;
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectListRemoveReference"
 /*@C
      PetscObjectListRemoveReference - Calls PetscObjectDereference() on an object in the list immediately but keeps a pointer to the object in the list.
 
@@ -54,8 +52,6 @@ PetscErrorCode  PetscObjectListRemoveReference(PetscObjectList *fl,const char na
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectListAdd"
 /*@C
      PetscObjectListAdd - Adds a new object to an PetscObjectList
 
@@ -135,8 +131,6 @@ PetscErrorCode  PetscObjectListAdd(PetscObjectList *fl,const char name[],PetscOb
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectListDestroy"
 /*@C
     PetscObjectListDestroy - Destroy a list of objects
 
@@ -167,8 +161,6 @@ PetscErrorCode  PetscObjectListDestroy(PetscObjectList *ifl)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectListFind"
 /*@C
     PetscObjectListFind - givn a name, find the matching object
 
@@ -207,8 +199,6 @@ PetscErrorCode  PetscObjectListFind(PetscObjectList fl,const char name[],PetscOb
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectListReverseFind"
 /*@C
     PetscObjectListReverseFind - given a object, find the matching name if it exists
 
@@ -245,8 +235,6 @@ PetscErrorCode  PetscObjectListReverseFind(PetscObjectList fl,PetscObject obj,ch
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectListDuplicate"
 /*@C
     PetscObjectListDuplicate - Creates a new list from a give object list.
 

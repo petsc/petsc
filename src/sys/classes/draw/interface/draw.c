@@ -8,8 +8,6 @@
 PetscClassId PETSC_DRAW_CLASSID;
 
 static PetscBool PetscDrawPackageInitialized = PETSC_FALSE;
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawFinalizePackage"
 /*@C
   PetscDrawFinalizePackage - This function destroys everything in the Petsc interface to the Draw package. It is
   called from PetscFinalize().
@@ -30,8 +28,6 @@ PetscErrorCode  PetscDrawFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawInitializePackage"
 /*@C
   PetscInitializeDrawPackage - This function initializes everything in the PetscDraw package. It is called
   from PetscDLLibraryRegister() when using dynamic libraries, and on the call to PetscInitialize()
@@ -81,8 +77,6 @@ PetscErrorCode  PetscDrawInitializePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawResizeWindow"
 /*@
    PetscDrawResizeWindow - Allows one to resize a window from a program.
 
@@ -110,8 +104,6 @@ PetscErrorCode  PetscDrawResizeWindow(PetscDraw draw,int w,int h)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawGetWindowSize"
 /*@
    PetscDrawGetWindowSize - Gets the size of the window.
 
@@ -138,8 +130,6 @@ PetscErrorCode  PetscDrawGetWindowSize(PetscDraw draw,int *w,int *h)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawCheckResizedWindow"
 /*@
    PetscDrawCheckResizedWindow - Checks if the user has resized the window.
 
@@ -165,8 +155,6 @@ PetscErrorCode  PetscDrawCheckResizedWindow(PetscDraw draw)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawGetTitle"
 /*@C
    PetscDrawGetTitle - Gets pointer to title of a PetscDraw context.
 
@@ -191,8 +179,6 @@ PetscErrorCode  PetscDrawGetTitle(PetscDraw draw,char **title)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSetTitle"
 /*@C
    PetscDrawSetTitle - Sets the title of a PetscDraw context.
 
@@ -229,8 +215,6 @@ PetscErrorCode  PetscDrawSetTitle(PetscDraw draw,const char title[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawAppendTitle"
 /*@C
    PetscDrawAppendTitle - Appends to the title of a PetscDraw context.
 
@@ -276,8 +260,6 @@ PetscErrorCode  PetscDrawAppendTitle(PetscDraw draw,const char title[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawDestroy_Private"
 static PetscErrorCode PetscDrawDestroy_Private(PetscDraw draw)
 {
   PetscErrorCode ierr;
@@ -294,8 +276,6 @@ static PetscErrorCode PetscDrawDestroy_Private(PetscDraw draw)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawDestroy"
 /*@
    PetscDrawDestroy - Deletes a draw context.
 
@@ -342,8 +322,6 @@ PetscErrorCode  PetscDrawDestroy(PetscDraw *draw)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawGetPopup"
 /*@
    PetscDrawGetPopup - Creates a popup window associated with a PetscDraw window.
 
@@ -356,6 +334,8 @@ PetscErrorCode  PetscDrawDestroy(PetscDraw *draw)
 .  popup - the new popup window
 
    Level: advanced
+
+.seealso: PetscDrawScalePopup(), PetscDrawCreate()
 
 @*/
 PetscErrorCode  PetscDrawGetPopup(PetscDraw draw,PetscDraw *popup)
@@ -378,8 +358,6 @@ PetscErrorCode  PetscDrawGetPopup(PetscDraw draw,PetscDraw *popup)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSetDisplay"
 /*@
   PetscDrawSetDisplay - Sets the display where a PetscDraw object will be displayed
 
@@ -388,6 +366,8 @@ PetscErrorCode  PetscDrawGetPopup(PetscDraw draw,PetscDraw *popup)
 - display - the X windows display
 
   Level: advanced
+
+.seealso: PetscDrawCreate()
 
 @*/
 PetscErrorCode  PetscDrawSetDisplay(PetscDraw draw,const char display[])
@@ -401,8 +381,6 @@ PetscErrorCode  PetscDrawSetDisplay(PetscDraw draw,const char display[])
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawSetDoubleBuffer"
 /*@
    PetscDrawSetDoubleBuffer - Sets a window to be double buffered.
 
@@ -430,8 +408,6 @@ PetscErrorCode  PetscDrawSetDoubleBuffer(PetscDraw draw)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawGetSingleton"
 /*@C
    PetscDrawGetSingleton - Gain access to a PetscDraw object as if it were owned
         by the one process.
@@ -470,8 +446,6 @@ PetscErrorCode  PetscDrawGetSingleton(PetscDraw draw,PetscDraw *sdraw)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawRestoreSingleton"
 /*@C
    PetscDrawRestoreSingleton - Remove access to a PetscDraw object as if it were owned
         by the one process.

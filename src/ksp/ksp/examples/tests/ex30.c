@@ -27,8 +27,6 @@ T*/
 
 #include <petscksp.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   KSP            ksp;
@@ -225,7 +223,7 @@ int main(int argc,char **args)
     ierr = PetscFree(count);CHKERRQ(ierr);
     ierr = ISDestroy(&nis);CHKERRQ(ierr);
     ierr = ISSort(is);CHKERRQ(ierr);
-    ierr = MatGetSubMatrix(A,is,is,MAT_INITIAL_MATRIX,&BB);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix(A,is,is,MAT_INITIAL_MATRIX,&BB);CHKERRQ(ierr);
 
     /* need to move the vector also */
     ierr = ISDestroy(&is);CHKERRQ(ierr);

@@ -1,8 +1,6 @@
 #include <petscsys.h>
 #include <petscblaslapack.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "estsv"
 static PetscErrorCode estsv(PetscInt n, PetscReal *r, PetscInt ldr, PetscReal *svmin, PetscReal *z)
 {
   PetscBLASInt blas1=1, blasn=n, blasnmi, blasj, blasldr = ldr;
@@ -217,8 +215,6 @@ c     Brett M. Averick, Richard Carter, and Jorge J. More'
 c
 c     ***********
 */
-#undef __FUNCT__
-#define __FUNCT__ "gqt"
 PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
                    PetscReal delta, PetscReal rtol, PetscReal atol,
                    PetscInt itmax, PetscReal *retpar, PetscReal *retf,

@@ -4,8 +4,6 @@ users should employ the KSP interface instead of using PC directly.\n\n";
 
 #include <petscksp.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            mat;          /* matrix */

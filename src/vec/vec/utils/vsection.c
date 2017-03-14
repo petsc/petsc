@@ -4,8 +4,6 @@
 #include <petsc/private/isimpl.h>   /*I  "petscvec.h"   I*/
 #include <petsc/private/vecimpl.h>   /*I  "petscvec.h"   I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionVecView_ASCII"
 PetscErrorCode PetscSectionVecView_ASCII(PetscSection s, Vec v, PetscViewer viewer)
 {
   PetscScalar    *array;
@@ -67,8 +65,6 @@ PetscErrorCode PetscSectionVecView_ASCII(PetscSection s, Vec v, PetscViewer view
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionVecView"
 PetscErrorCode PetscSectionVecView(PetscSection s, Vec v, PetscViewer viewer)
 {
   PetscBool      isascii;
@@ -98,8 +94,6 @@ PetscErrorCode PetscSectionVecView(PetscSection s, Vec v, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecGetValuesSection"
 PetscErrorCode VecGetValuesSection(Vec v, PetscSection s, PetscInt point, PetscScalar **values)
 {
   PetscScalar    *baseArray;
@@ -113,8 +107,6 @@ PetscErrorCode VecGetValuesSection(Vec v, PetscSection s, PetscInt point, PetscS
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecSetValuesSection"
 /*@C
   VecSetValuesSection - Sets all the values associated with a given point, according to the section, in the given Vec
 
@@ -225,8 +217,6 @@ PetscErrorCode VecSetValuesSection(Vec v, PetscSection s, PetscInt point, PetscS
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetField_Internal"
 PetscErrorCode PetscSectionGetField_Internal(PetscSection section, PetscSection sectionGlobal, Vec v, PetscInt field, PetscInt pStart, PetscInt pEnd, IS *is, Vec *subv)
 {
   PetscInt      *subIndices;
@@ -266,8 +256,6 @@ PetscErrorCode PetscSectionGetField_Internal(PetscSection section, PetscSection 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionRestoreField_Internal"
 PetscErrorCode PetscSectionRestoreField_Internal(PetscSection section, PetscSection sectionGlobal, Vec v, PetscInt field, PetscInt pStart, PetscInt pEnd, IS *is, Vec *subv)
 {
   PetscErrorCode ierr;
@@ -278,8 +266,6 @@ PetscErrorCode PetscSectionRestoreField_Internal(PetscSection section, PetscSect
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionVecNorm"
 /*@C
   PetscSectionVecNorm - Computes the vector norm, separated into field components.
 

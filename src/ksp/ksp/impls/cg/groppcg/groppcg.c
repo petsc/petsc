@@ -6,8 +6,6 @@
  This is called once, usually automatically by KSPSolve() or KSPSetUp()
  but can be called directly by KSPSetUp()
 */
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_GROPPCG"
 static PetscErrorCode KSPSetUp_GROPPCG(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -24,8 +22,6 @@ static PetscErrorCode KSPSetUp_GROPPCG(KSP ksp)
  .     ksp - the Krylov space object that was set to use conjugate gradient, by, for
              example, KSPCreate(MPI_Comm,KSP *ksp); KSPSetType(ksp,KSPCG);
 */
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_GROPPCG"
 static PetscErrorCode  KSPSolve_GROPPCG(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -170,8 +166,6 @@ static PetscErrorCode  KSPSolve_GROPPCG(KSP ksp)
 .seealso: KSPCreate(), KSPSetType(), KSPPIPECG, KSPPIPECR, KSPPGMRES, KSPCG, KSPCGUseSingleReduction()
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_GROPPCG"
 PETSC_EXTERN PetscErrorCode KSPCreate_GROPPCG(KSP ksp)
 {
   PetscErrorCode ierr;

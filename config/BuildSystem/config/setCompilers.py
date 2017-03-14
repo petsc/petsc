@@ -503,6 +503,10 @@ class Configure(config.base.Configure):
       self.usedMPICompilers = 0
       raise RuntimeError('MPI compiler wrappers in '+self.argDB['with-mpi-dir']+'/bin do not work. See http://www.mcs.anl.gov/petsc/documentation/faq.html#mpi-compilers')
     else:
+      if self.useMPICompilers() and 'with-mpi-dir' in self.argDB:
+      # if it gets here these means that self.argDB['with-mpi-dir']/bin does not exist so we should not search for MPI compilers
+      # that is we are turning off the self.useMPICompilers()
+        self.argDB['with-mpi-compilers'] = 0
       if self.useMPICompilers():
         self.usedMPICompilers = 1
         if Configure.isGNU('mpicc', self.log) and self.argDB['with-gnu-compilers']:
@@ -661,7 +665,7 @@ class Configure(config.base.Configure):
       yield self.argDB['CUDAPP']
     else:
       if hasattr(self, 'CUDAC'):
-        yield self.CUDAC+' -arch=sm_20 -E'
+        yield self.CUDAC+' -arch=sm_30 -E'
     return
 
   def checkCUDAPreprocessor(self):
@@ -1584,7 +1588,7 @@ if (dlclose(handle)) {
             for cplr in cplrs:
               mpicplr = os.path.join(self.argDB['with-mpi-dir'], 'bin', cplr)
               if os.path.exists(mpicplr):
-                msg = '--'+opt+'='+self.argDB[opt]+' is specified with --with-mpi-dir='+self.argDB['with-mpi-dir']+'. However '+mpicplr+' exists and should be the prefered compiler! Suggest not specifying --'+opt+' option so that configure can use '+ mpicplr +' instead.'
+                msg = '--'+opt+'='+self.argDB[opt]+' is specified with --with-mpi-dir='+self.argDB['with-mpi-dir']+'. However '+mpicplr+' exists and should be the preferred compiler! Suggest not specifying --'+opt+' option so that configure can use '+ mpicplr +' instead.'
                 raise RuntimeError(msg)
     return
 

@@ -17,8 +17,6 @@ typedef struct {
   PetscBool     testShape;                    /* Test the cell shape quality */
 } AppCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscErrorCode ierr;
@@ -50,8 +48,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateMesh"
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscInt       dim             = user->dim;
@@ -67,13 +63,13 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscInt       quadPoints[4]   = {2, 3, 0, 1};
   const PetscInt cells[3]        = {2, 2, 2};
   size_t         len;
-  PetscMPIInt    rank, numProcs;
+  PetscMPIInt    rank, size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
   if (len)              {ierr = DMPlexCreateFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);}
   else if (cellSimplex) {ierr = DMPlexCreateBoxMesh(comm, dim, dim == 2 ? 2 : 1, interpolate, dm);CHKERRQ(ierr);}
@@ -88,17 +84,17 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       PetscPartitioner part;
 
       if (!rank) {
-        if (dim == 2 && cellSimplex && numProcs == 2) {
+        if (dim == 2 && cellSimplex && size == 2) {
            sizes = triSizes_n2; points = triPoints_n2;
-        } else if (dim == 2 && cellSimplex && numProcs == 8) {
+        } else if (dim == 2 && cellSimplex && size == 8) {
           sizes = triSizes_n8; points = triPoints_n8;
-        } else if (dim == 2 && !cellSimplex && numProcs == 2) {
+        } else if (dim == 2 && !cellSimplex && size == 2) {
           sizes = quadSizes; points = quadPoints;
         }
       }
       ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
       ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
-      ierr = PetscPartitionerShellSetPartition(part, numProcs, sizes, points);CHKERRQ(ierr);
+      ierr = PetscPartitionerShellSetPartition(part, size, sizes, points);CHKERRQ(ierr);
     }
     /* Distribute mesh over processes */
     ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
@@ -156,8 +152,6 @@ static void ex1_stats_reduce(void *a, void *b, int * len, MPI_Datatype *datatype
   }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestCellShape"
 static PetscErrorCode TestCellShape(DM dm)
 {
   PetscMPIInt    rank;
@@ -233,8 +227,6 @@ static PetscErrorCode TestCellShape(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   AppCtx         user;                 /* user-defined work context */

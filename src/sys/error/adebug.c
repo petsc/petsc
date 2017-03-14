@@ -15,8 +15,6 @@ static char      PetscDebugger[PETSC_MAX_PATH_LEN];
 static char      DebugTerminal[PETSC_MAX_PATH_LEN];
 static PetscBool Xterm = PETSC_TRUE;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSetDebugTerminal"
 /*@C
    PetscSetDebugTerminal - Sets the terminal to use (instead of xterm) for debugging.
 
@@ -54,8 +52,6 @@ PetscErrorCode  PetscSetDebugTerminal(const char terminal[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSetDebugger"
 /*@C
    PetscSetDebugger - Sets options associated with the debugger.
 
@@ -92,8 +88,6 @@ PetscErrorCode  PetscSetDebugger(const char debugger[],PetscBool xterm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSetDefaultDebugger"
 /*@C
     PetscSetDefaultDebugger - Causes PETSc to use its default  debugger.
 
@@ -123,8 +117,6 @@ PetscErrorCode  PetscSetDefaultDebugger(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscCheckDebugger_Private"
 static PetscErrorCode PetscCheckDebugger_Private(const char defaultDbg[], const char string[], const char *debugger[])
 {
   PetscBool      exists;
@@ -141,8 +133,6 @@ static PetscErrorCode PetscCheckDebugger_Private(const char defaultDbg[], const 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSetDebuggerFromString"
 /*@C
     PetscSetDebuggerFromString - Set the complete path for the
        debugger for PETSc to use.
@@ -184,8 +174,6 @@ PetscErrorCode  PetscSetDebuggerFromString(const char *string)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscAttachDebugger"
 /*@
    PetscAttachDebugger - Attaches the debugger to the running process.
 
@@ -404,8 +392,6 @@ PetscErrorCode  PetscAttachDebugger(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscAttachDebuggerErrorHandler"
 /*@C
    PetscAttachDebuggerErrorHandler - Error handler that attaches
    a debugger to a running process when an error is detected.
@@ -416,7 +402,6 @@ PetscErrorCode  PetscAttachDebugger(void)
    Input Parameters:
 +  comm - communicator over which error occurred
 .  line - the line number of the error (indicated by __LINE__)
-.  fun - function where error occured (indicated by __FUNCT__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  message - an error text string, usually just printed to the screen
 .  number - the generic error number
@@ -467,8 +452,6 @@ PetscErrorCode  PetscAttachDebuggerErrorHandler(MPI_Comm comm,int line,const cha
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscStopForDebugger"
 /*@C
    PetscStopForDebugger - Prints a message to the screen indicating how to
          attach to the process with the debugger and then waits for the

@@ -1,8 +1,8 @@
       program main
+#include <petsc/finclude/petscdmplex.h>
+      use petscdmplex
       implicit none
-!
-#include <petsc/finclude/petsc.h90>
-!
+
       DM dm
       PetscInt, target, dimension(3) :: EC
       PetscInt, target, dimension(2) :: VE

@@ -35,8 +35,9 @@
   PetscScalar       *solve_work;      /* work space used in MatSolve */                    \
   IS                row, col, icol;   /* index sets, used for reorderings */ \
   PetscBool         pivotinblocks;    /* pivot inside factorization of each diagonal block */ \
-  Mat               parent             /* set if this matrix was formed with MatDuplicate(...,MAT_SHARE_NONZERO_PATTERN,....);
-                                         means that this shares some data structures with the parent including diag, ilen, imax, i, j */
+  Mat               parent;           /* set if this matrix was formed with MatDuplicate(...,MAT_SHARE_NONZERO_PATTERN,....); \
+                                         means that this shares some data structures with the parent including diag, ilen, imax, i, j */\
+  Mat_SubSppt       *submatis1         /* used by MatCreateSubMatrices_MPIXAIJ_Local */
 
 typedef struct {
   MatTransposeColoring matcoloring;
@@ -115,20 +116,18 @@ typedef struct {
   PetscBool   ibdiagvalid;                    /* inverses of block diagonals are valid. */
   PetscScalar fshift,omega;                   /* last used omega and fshift */
 
-  ISColoring coloring;                        /* set with MatADSetColoring() used by MatADSetValues() */
+  ISColoring  coloring;                       /* set with MatADSetColoring() used by MatADSetValues() */
 
-  PetscScalar       *matmult_abdense;    /* used by MatMatMult() */
-  Mat_PtAP          *ptap;               /* used by MatPtAP() */
-  Mat_MatMatMatMult *matmatmatmult;      /* used by MatMatMatMult() */
-  Mat_RARt          *rart;               /* used by MatRARt() */
-  Mat_MatMatTransMult *abt;              /* used by MatMatTransposeMult() */
+  PetscScalar         *matmult_abdense;    /* used by MatMatMult() */
+  Mat_PtAP            *ptap;               /* used by MatPtAP() */
+  Mat_MatMatMatMult   *matmatmatmult;      /* used by MatMatMatMult() */
+  Mat_RARt            *rart;               /* used by MatRARt() */
+  Mat_MatMatTransMult *abt;                /* used by MatMatTransposeMult() */
 } Mat_SeqAIJ;
 
 /*
   Frees the a, i, and j arrays from the XAIJ (AIJ, BAIJ, and SBAIJ) matrix types
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatSeqXAIJFreeAIJ"
 PETSC_STATIC_INLINE PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscInt **j,PetscInt **i)
 {
   PetscErrorCode ierr;
@@ -316,6 +315,9 @@ PETSC_INTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat_SeqAIJ(MPI_Comm,Mat
 PETSC_INTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPIAIJ(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
 
 PETSC_INTERN PetscErrorCode MatSetSeqMat_SeqAIJ(Mat,IS,IS,MatStructure,Mat);
+PETSC_INTERN PetscErrorCode MatDestroySubMatrices_Private(Mat_SubSppt*);
+PETSC_INTERN PetscErrorCode MatDestroy_SeqAIJ_Submatrices(Mat);
+PETSC_INTERN PetscErrorCode MatDestroy_Dummy_Submatrices(Mat);
 
 /*
     PetscSparseDenseMinusDot - The inner kernel of triangular solves and Gauss-Siedel smoothing. \sum_i xv[i] * r[xi[i]] for CSR storage

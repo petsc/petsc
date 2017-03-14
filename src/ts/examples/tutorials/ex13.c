@@ -27,8 +27,6 @@ extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
 extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat,Mat,void*);
 extern PetscErrorCode FormInitialSolution(DM,Vec,void*);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   TS             ts;                   /* nonlinear solver */
@@ -106,8 +104,6 @@ int main(int argc,char **argv)
   return ierr;
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "RHSFunction"
 /*
    RHSFunction - Evaluates nonlinear function, F(u).
 
@@ -176,8 +172,6 @@ PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
 }
 
 /* --------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "RHSJacobian"
 /*
    RHSJacobian - User-provided routine to compute the Jacobian of
    the nonlinear right-hand-side function of the ODE.
@@ -234,8 +228,6 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat J,Mat Jpre,void *ctx)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormInitialSolution"
 PetscErrorCode FormInitialSolution(DM da,Vec U,void* ptr)
 {
   AppCtx         *user=(AppCtx*)ptr;

@@ -12,8 +12,6 @@ PETSC_EXTERN PetscErrorCode TSAdaptCreate_None(TSAdapt);
 PETSC_EXTERN PetscErrorCode TSAdaptCreate_Basic(TSAdapt);
 PETSC_EXTERN PetscErrorCode TSAdaptCreate_CFL(TSAdapt);
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptRegister"
 /*@C
    TSAdaptRegister -  adds a TSAdapt implementation
 
@@ -51,8 +49,6 @@ PetscErrorCode  TSAdaptRegister(const char sname[],PetscErrorCode (*function)(TS
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptRegisterAll"
 /*@C
   TSAdaptRegisterAll - Registers all of the adaptivity schemes in TSAdapt
 
@@ -78,8 +74,6 @@ PetscErrorCode  TSAdaptRegisterAll(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptFinalizePackage"
 /*@C
   TSAdaptFinalizePackage - This function destroys everything in the TS package. It is
   called from PetscFinalize().
@@ -100,8 +94,6 @@ PetscErrorCode  TSAdaptFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptInitializePackage"
 /*@C
   TSAdaptInitializePackage - This function initializes everything in the TSAdapt package. It is
   called from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to
@@ -125,8 +117,6 @@ PetscErrorCode  TSAdaptInitializePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptSetType"
 /*@C
   TSAdaptSetType - sets the approach used for the error adapter, currently there is only TSADAPTBASIC and TSADAPTNONE
 
@@ -163,8 +153,6 @@ PetscErrorCode  TSAdaptSetType(TSAdapt adapt,TSAdaptType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptSetOptionsPrefix"
 PetscErrorCode  TSAdaptSetOptionsPrefix(TSAdapt adapt,const char prefix[])
 {
   PetscErrorCode ierr;
@@ -175,8 +163,6 @@ PetscErrorCode  TSAdaptSetOptionsPrefix(TSAdapt adapt,const char prefix[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptLoad"
 /*@C
   TSAdaptLoad - Loads a TSAdapt that has been stored in binary  with TSAdaptView().
 
@@ -224,8 +210,6 @@ PetscErrorCode  TSAdaptLoad(TSAdapt adapt,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptView"
 PetscErrorCode  TSAdaptView(TSAdapt adapt,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -258,8 +242,6 @@ PetscErrorCode  TSAdaptView(TSAdapt adapt,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptReset"
 /*@
    TSAdaptReset - Resets a TSAdapt context.
 
@@ -282,8 +264,6 @@ PetscErrorCode  TSAdaptReset(TSAdapt adapt)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptDestroy"
 PetscErrorCode  TSAdaptDestroy(TSAdapt *adapt)
 {
   PetscErrorCode ierr;
@@ -301,8 +281,6 @@ PetscErrorCode  TSAdaptDestroy(TSAdapt *adapt)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptSetMonitor"
 /*@
    TSAdaptSetMonitor - Monitor the choices made by the adaptive controller
 
@@ -331,8 +309,6 @@ PetscErrorCode TSAdaptSetMonitor(TSAdapt adapt,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptSetCheckStage"
 /*@C
    TSAdaptSetCheckStage - set a callback to check convergence for a stage
 
@@ -362,8 +338,6 @@ PetscErrorCode TSAdaptSetCheckStage(TSAdapt adapt,PetscErrorCode (*func)(TSAdapt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptSetStepLimits"
 /*@
    TSAdaptSetStepLimits - Set minimum and maximum step sizes to be considered by the controller
 
@@ -401,8 +375,6 @@ PetscErrorCode TSAdaptSetStepLimits(TSAdapt adapt,PetscReal hmin,PetscReal hmax)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptSetFromOptions"
 /*
    TSAdaptSetFromOptions - Sets various TSAdapt parameters from user options.
 
@@ -412,14 +384,18 @@ PetscErrorCode TSAdaptSetStepLimits(TSAdapt adapt,PetscReal hmin,PetscReal hmax)
 .  adapt - the TSAdapt context
 
    Options Database Keys:
-.  -ts_adapt_type <type> - basic
++  -ts_adapt_type <type> - basic
+.  -ts_adapt_dt_min <min> - minimum timestep to use
+.  -ts_adapt_dt_max <max> - maximum timestep to use
+.  -ts_adapt_scale_solve_failed <scale> - scale timestep by this factor if a solve fails
+-  -ts_adapt_wnormtype <2 or infinity> - type of norm for computing error estimates
 
    Level: advanced
 
    Notes:
    This function is automatically called by TSSetFromOptions()
 
-.keywords: TS, TSGetAdapt(), TSAdaptSetType()
+.keywords: TS, TSGetAdapt(), TSAdaptSetType(), TSAdaptSetStepLimits()
 
 .seealso: TSGetType()
 */
@@ -434,8 +410,7 @@ PetscErrorCode  TSAdaptSetFromOptions(PetscOptionItems *PetscOptionsObject,TSAda
   /* This should use PetscOptionsBegin() if/when this becomes an object used outside of TS, but currently this
    * function can only be called from inside TSSetFromOptions()  */
   ierr = PetscOptionsHead(PetscOptionsObject,"TS Adaptivity options");CHKERRQ(ierr);
-  ierr = PetscOptionsFList("-ts_adapt_type","Algorithm to use for adaptivity","TSAdaptSetType",TSAdaptList,
-                          ((PetscObject)adapt)->type_name ? ((PetscObject)adapt)->type_name : type,type,sizeof(type),&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-ts_adapt_type","Algorithm to use for adaptivity","TSAdaptSetType",TSAdaptList,((PetscObject)adapt)->type_name ? ((PetscObject)adapt)->type_name : type,type,sizeof(type),&flg);CHKERRQ(ierr);
   if (flg || !((PetscObject)adapt)->type_name) {
     ierr = TSAdaptSetType(adapt,type);CHKERRQ(ierr);
   }
@@ -451,8 +426,6 @@ PetscErrorCode  TSAdaptSetFromOptions(PetscOptionItems *PetscOptionsObject,TSAda
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptCandidatesClear"
 /*@
    TSAdaptCandidatesClear - clear any previously set candidate schemes
 
@@ -475,8 +448,6 @@ PetscErrorCode TSAdaptCandidatesClear(TSAdapt adapt)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptCandidateAdd"
 /*@C
    TSAdaptCandidateAdd - add a candidate scheme for the adaptive controller to select from
 
@@ -521,8 +492,6 @@ PetscErrorCode TSAdaptCandidateAdd(TSAdapt adapt,const char name[],PetscInt orde
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptCandidatesGet"
 /*@C
    TSAdaptCandidatesGet - Get the list of candidate orders of accuracy and cost
 
@@ -557,8 +526,6 @@ PetscErrorCode TSAdaptCandidatesGet(TSAdapt adapt,PetscInt *n,const PetscInt **o
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptChoose"
 /*@C
    TSAdaptChoose - choose which method and step size to use for the next step
 
@@ -633,8 +600,6 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptCheckStage"
 /*@
    TSAdaptCheckStage - checks whether to accept a stage, (e.g. reject and change time step size if nonlinear solve fails)
 
@@ -697,8 +662,6 @@ PetscErrorCode TSAdaptCheckStage(TSAdapt adapt,TS ts,PetscReal t,Vec Y,PetscBool
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptCreate"
 /*@
   TSAdaptCreate - create an adaptive controller context for time stepping
 

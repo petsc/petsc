@@ -942,7 +942,7 @@ int GetLocalOrdering(GRID *grid)
   if (!flg) {
     ierr = PetscSortIntWithPermutation(nedgeLoc,tmp,eperm);CHKERRQ(ierr);
   }
-  ierr = PetscMallocValidate(__LINE__,__FUNCT__,__FILE__);CHKERRQ(ierr);
+  ierr = PetscMallocValidate(__LINE__,PETSC_FUNCTION_NAME,__FILE__);CHKERRQ(ierr);
   k = 0;
   for (i = 0; i < nedgeLoc; i++) {
 #if defined(INTERLACING)
@@ -2477,8 +2477,6 @@ int ReadRestartFile(GRID *grid)
 /*                                                                           */
 /*===========================================================================*/
 EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "f77CLINK"
 void f77CLINK(CINFO  *p1,CRUNGE *p2,CGMCOM *p3,CREFGEOM *p4)
 {
   c_info    = p1;
@@ -2700,8 +2698,6 @@ int set_up_grid(GRID *grid)
 /* Write memory locations and other information for the fine grid            */
 /*                                                                           */
 /*===========================================================================*/
-#undef __FUNCT__
-#define __FUNCT__ "write_fine_grid"
 int write_fine_grid(GRID *grid)
 {
   FILE *output;

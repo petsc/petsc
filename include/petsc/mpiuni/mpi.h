@@ -224,7 +224,10 @@ typedef int    MPI_Offset;
 #define MPI_SHORT_INT        (13 << 16 | (sizeof(short) + sizeof(int)))
 #define MPI_2INT             (14 << 16 | (2* sizeof(int)))
 
-#if defined(PETSC_USE_REAL___FLOAT128)
+#if defined(PETSC_USE_REAL___FP16)
+extern MPI_Datatype MPIU___FP16;
+#define MPI_sizeof(datatype) ((datatype == MPIU___FP16) ? 2*sizeof(char) : (datatype) & 0xff)
+#elif defined(PETSC_USE_REAL___FLOAT128)
 extern MPI_Datatype MPIU___FLOAT128;
 #define MPI_sizeof(datatype) ((datatype == MPIU___FLOAT128) ? 2*sizeof(double) : (datatype) & 0xff)
 #else
@@ -279,9 +282,8 @@ typedef void  (MPI_User_function)(void*, void *, int *, MPI_Datatype *);
   For C functions below (that get compiled into petsc library) - we map
   the 'MPI' functions to use 'Petsc_MPI' namespace.
 
-  However we cannot do such maping for fortran MPIUNI functions. One
-  can use the configure option --with-mpiuni-fortran-binding=0 to
-  prevent compiling MPIUNI fortran interface.
+  With fortran we use similar mapping - thus requiring the use of
+  c-preprocessor with mpif.h
 */
 #define MPI_Abort         Petsc_MPI_Abort
 #define MPI_Attr_get      Petsc_MPI_Attr_get

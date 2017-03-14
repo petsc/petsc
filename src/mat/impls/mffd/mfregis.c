@@ -4,8 +4,6 @@
 PETSC_EXTERN PetscErrorCode MatCreateMFFD_DS(MatMFFD);
 PETSC_EXTERN PetscErrorCode MatCreateMFFD_WP(MatMFFD);
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDRegisterAll"
 /*@C
   MatMFFDRegisterAll - Registers all of the compute-h in the MatMFFD package.
 

@@ -16,8 +16,6 @@ typedef struct {
   PetscBool     spoutput;  /* write data in single precision even if PETSc is compiled with double precision PetscReal */
 } PetscViewer_HDF5;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerSetFromOptions_HDF5"
 static PetscErrorCode PetscViewerSetFromOptions_HDF5(PetscOptionItems *PetscOptionsObject,PetscViewer v)
 {
   PetscErrorCode   ierr;
@@ -31,8 +29,6 @@ static PetscErrorCode PetscViewerSetFromOptions_HDF5(PetscOptionItems *PetscOpti
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFileClose_HDF5"
 static PetscErrorCode PetscViewerFileClose_HDF5(PetscViewer viewer)
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*)viewer->data;
@@ -44,8 +40,6 @@ static PetscErrorCode PetscViewerFileClose_HDF5(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerDestroy_HDF5"
 PetscErrorCode PetscViewerDestroy_HDF5(PetscViewer viewer)
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
@@ -67,8 +61,6 @@ PetscErrorCode PetscViewerDestroy_HDF5(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFileSetMode_HDF5"
 PetscErrorCode  PetscViewerFileSetMode_HDF5(PetscViewer viewer, PetscFileMode type)
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
@@ -79,8 +71,6 @@ PetscErrorCode  PetscViewerFileSetMode_HDF5(PetscViewer viewer, PetscFileMode ty
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerHDF5SetBaseDimension2_HDF5"
 PetscErrorCode  PetscViewerHDF5SetBaseDimension2_HDF5(PetscViewer viewer, PetscBool flg)
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
@@ -90,8 +80,6 @@ PetscErrorCode  PetscViewerHDF5SetBaseDimension2_HDF5(PetscViewer viewer, PetscB
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerHDF5SetBaseDimension2"
 /*@
      PetscViewerHDF5SetBaseDimension2 - Vectors of 1 dimension (i.e. bs/dof is 1) will be saved in the HDF5 file with a
        dimension of 2.
@@ -124,8 +112,6 @@ PetscErrorCode PetscViewerHDF5SetBaseDimension2(PetscViewer viewer,PetscBool flg
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerHDF5GetBaseDimension2"
 /*@
      PetscViewerHDF5GetBaseDimension2 - Vectors of 1 dimension (i.e. bs/dof is 1) will be saved in the HDF5 file with a
        dimension of 2.
@@ -156,8 +142,6 @@ PetscErrorCode PetscViewerHDF5GetBaseDimension2(PetscViewer viewer,PetscBool *fl
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerHDF5SetSPOutput_HDF5"
 PetscErrorCode  PetscViewerHDF5SetSPOutput_HDF5(PetscViewer viewer, PetscBool flg)
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
@@ -167,8 +151,6 @@ PetscErrorCode  PetscViewerHDF5SetSPOutput_HDF5(PetscViewer viewer, PetscBool fl
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerHDF5SetSPOutput"
 /*@
      PetscViewerHDF5SetSPOutput - Data is written to disk in single precision even if PETSc is
        compiled with double precision PetscReal.
@@ -202,8 +184,6 @@ PetscErrorCode PetscViewerHDF5SetSPOutput(PetscViewer viewer,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerHDF5GetSPOutput"
 /*@
      PetscViewerHDF5GetSPOutput - Data is written to disk in single precision even if PETSc is
        compiled with double precision PetscReal.
@@ -235,8 +215,6 @@ PetscErrorCode PetscViewerHDF5GetSPOutput(PetscViewer viewer,PetscBool *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFileSetName_HDF5"
 PetscErrorCode  PetscViewerFileSetName_HDF5(PetscViewer viewer, const char name[])
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
@@ -274,8 +252,6 @@ PetscErrorCode  PetscViewerFileSetName_HDF5(PetscViewer viewer, const char name[
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerFileGetName_HDF5"
 static PetscErrorCode PetscViewerFileGetName_HDF5(PetscViewer viewer,const char **name)
 {
   PetscViewer_HDF5 *vhdf5 = (PetscViewer_HDF5*)viewer->data;
@@ -294,10 +270,9 @@ static PetscErrorCode PetscViewerFileGetName_HDF5(PetscViewer viewer,const char 
            PetscViewerMatlabOpen(), VecView(), DMView(), PetscViewerMatlabPutArray(), PETSCVIEWERASCII, PETSCVIEWERMATLAB,
            PetscViewerFileSetName(), PetscViewerFileSetMode(), PetscViewerFormat, PetscViewerType, PetscViewerSetType()
 
+  Level: beginner
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerCreate_HDF5"
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer v)
 {
   PetscViewer_HDF5 *hdf5;
@@ -323,8 +298,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerHDF5Open"
 /*@C
    PetscViewerHDF5Open - Opens a file for HDF5 input/output.
 
@@ -369,8 +342,6 @@ PetscErrorCode  PetscViewerHDF5Open(MPI_Comm comm, const char name[], PetscFileM
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerHDF5GetFileId"
 /*@C
   PetscViewerHDF5GetFileId - Retrieve the file id, this file ID then can be used in direct HDF5 calls
 
@@ -396,8 +367,6 @@ PetscErrorCode  PetscViewerHDF5GetFileId(PetscViewer viewer, hid_t *file_id)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerHDF5PushGroup"
 /*@C
   PetscViewerHDF5PushGroup - Set the current HDF5 group for output
 
@@ -428,8 +397,6 @@ PetscErrorCode  PetscViewerHDF5PushGroup(PetscViewer viewer, const char *name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerHDF5PopGroup"
 /*@
   PetscViewerHDF5PopGroup - Return the current HDF5 group for output to the previous value
 
@@ -458,8 +425,6 @@ PetscErrorCode  PetscViewerHDF5PopGroup(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerHDF5GetGroup"
 /*@C
   PetscViewerHDF5GetGroup - Get the current HDF5 group for output. If none has been assigned, returns NULL.
 
@@ -487,8 +452,6 @@ PetscErrorCode  PetscViewerHDF5GetGroup(PetscViewer viewer, const char **name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerHDF5IncrementTimestep"
 /*@
   PetscViewerHDF5IncrementTimestep - Increments the current timestep for the HDF5 output. Fields are stacked in time.
 
@@ -511,8 +474,6 @@ PetscErrorCode PetscViewerHDF5IncrementTimestep(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerHDF5SetTimestep"
 /*@
   PetscViewerHDF5SetTimestep - Set the current timestep for the HDF5 output. Fields are stacked in time. A timestep
   of -1 disables blocking with timesteps.
@@ -537,8 +498,6 @@ PetscErrorCode  PetscViewerHDF5SetTimestep(PetscViewer viewer, PetscInt timestep
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerHDF5GetTimestep"
 /*@
   PetscViewerHDF5GetTimestep - Get the current timestep for the HDF5 output. Fields are stacked in time.
 
@@ -565,8 +524,6 @@ PetscErrorCode  PetscViewerHDF5GetTimestep(PetscViewer viewer, PetscInt *timeste
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDataTypeToHDF5DataType"
 /*@C
   PetscDataTypeToHDF5DataType - Converts the PETSc name of a datatype to its HDF5 name.
 
@@ -604,8 +561,6 @@ PetscErrorCode PetscDataTypeToHDF5DataType(PetscDataType ptype, hid_t *htype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscHDF5DataTypeToPetscDataType"
 /*@C
   PetscHDF5DataTypeToPetscDataType - Finds the PETSc name of a datatype from its HDF5 name
 
@@ -641,8 +596,6 @@ PetscErrorCode PetscHDF5DataTypeToPetscDataType(hid_t htype, PetscDataType *ptyp
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerHDF5WriteAttribute"
 /*@C
  PetscViewerHDF5WriteAttribute - Write a scalar attribute
 
@@ -690,8 +643,6 @@ PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char pare
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerHDF5ReadAttribute"
 /*@C
  PetscViewerHDF5ReadAttribute - Read a scalar attribute
 
@@ -734,8 +685,6 @@ PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char paren
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerHDF5HasObject"
 static PetscErrorCode PetscViewerHDF5HasObject(PetscViewer viewer, const char name[], H5O_type_t otype, PetscBool *has)
 {
   hid_t          h5;
@@ -759,8 +708,6 @@ static PetscErrorCode PetscViewerHDF5HasObject(PetscViewer viewer, const char na
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerHDF5HasAttribute"
 /*@C
  PetscViewerHDF5HasAttribute - Check whether a scalar attribute exists
 
@@ -815,8 +762,6 @@ PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer viewer, const char parent
 */
 static int Petsc_Viewer_HDF5_keyval = MPI_KEYVAL_INVALID;
 
-#undef __FUNCT__
-#define __FUNCT__ "PETSC_VIEWER_HDF5_"
 /*@C
   PETSC_VIEWER_HDF5_ - Creates an HDF5 PetscViewer shared by all processors in a communicator.
 

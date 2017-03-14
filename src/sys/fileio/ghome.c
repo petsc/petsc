@@ -4,8 +4,6 @@
 */
 #include <petscsys.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscGetHomeDirectory"
 /*@C
    PetscGetHomeDirectory - Returns home directory name.
 
@@ -39,8 +37,6 @@ PetscErrorCode  PetscGetHomeDirectory(char dir[],size_t maxlen)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFixFilename"
 /*@C
     PetscFixFilename - Fixes a file name so that it is correct for both Unix and
     Windows by using the correct / or \ to separate directories.

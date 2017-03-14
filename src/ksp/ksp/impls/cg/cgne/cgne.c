@@ -8,8 +8,6 @@
 extern PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP,PetscReal*,PetscReal*);
 extern PetscErrorCode KSPComputeEigenvalues_CG(KSP,PetscInt,PetscReal*,PetscReal*,PetscInt*);
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPCGSetType_CGNE"
 static PetscErrorCode  KSPCGSetType_CGNE(KSP ksp,KSPCGType type)
 {
   KSP_CG *cg = (KSP_CG*)ksp->data;
@@ -24,8 +22,6 @@ static PetscErrorCode  KSPCGSetType_CGNE(KSP ksp,KSPCGType type)
 
      IDENTICAL TO THE CG ONE EXCEPT for one extra work vector!
 */
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_CGNE"
 static PetscErrorCode KSPSetUp_CGNE(KSP ksp)
 {
   KSP_CG         *cgP = (KSP_CG*)ksp->data;
@@ -63,8 +59,6 @@ static PetscErrorCode KSPSetUp_CGNE(KSP ksp)
     Virtually identical to the KSPSolve_CG, it should definitely reuse the same code.
 
 */
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_CGNE"
 static PetscErrorCode  KSPSolve_CGNE(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -240,8 +234,6 @@ static PetscErrorCode  KSPSolve_CGNE(KSP ksp)
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_CGNE"
 PETSC_EXTERN PetscErrorCode KSPCreate_CGNE(KSP ksp)
 {
   PetscErrorCode ierr;

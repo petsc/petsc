@@ -2,8 +2,6 @@ static char help[] = "Tests ISLocate().\n\n";
 
 #include <petscis.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "TestGeneral"
 static PetscErrorCode TestGeneral(void)
 {
   MPI_Comm       comm = PETSC_COMM_SELF;
@@ -27,8 +25,6 @@ static PetscErrorCode TestGeneral(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestBlock"
 static PetscErrorCode TestBlock(void)
 {
   MPI_Comm       comm = PETSC_COMM_SELF;
@@ -52,8 +48,6 @@ static PetscErrorCode TestBlock(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestStride"
 static PetscErrorCode TestStride(void)
 {
   MPI_Comm       comm = PETSC_COMM_SELF;
@@ -74,8 +68,6 @@ static PetscErrorCode TestStride(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;

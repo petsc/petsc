@@ -12,8 +12,6 @@ typedef struct {
   PetscReal  fshift;
 } PC_SOR;
 
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_SOR"
 static PetscErrorCode PCDestroy_SOR(PC pc)
 {
   PetscErrorCode ierr;
@@ -23,8 +21,6 @@ static PetscErrorCode PCDestroy_SOR(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_SOR"
 static PetscErrorCode PCApply_SOR(PC pc,Vec x,Vec y)
 {
   PC_SOR         *jac = (PC_SOR*)pc->data;
@@ -39,8 +35,23 @@ static PetscErrorCode PCApply_SOR(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApplyRichardson_SOR"
+static PetscErrorCode PCApplyTranspose_SOR(PC pc,Vec x,Vec y)
+{
+  PC_SOR         *jac = (PC_SOR*)pc->data;
+  PetscErrorCode ierr;
+  PetscInt       flag = jac->sym | SOR_ZERO_INITIAL_GUESS;
+  PetscReal      fshift;
+  PetscBool      set,sym;
+
+  PetscFunctionBegin;
+  ierr = MatIsSymmetricKnown(pc->pmat,&set,&sym);CHKERRQ(ierr);
+  if (!set || !sym || (jac->sym != SOR_SYMMETRIC_SWEEP && jac->sym != SOR_LOCAL_SYMMETRIC_SWEEP)) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Can only apply transpose of SOR if matrix is symmetric and sweep is symmetric");
+  fshift = (jac->fshift ? jac->fshift : pc->erroriffailure ? 0.0 : -1.0);
+  ierr = MatSOR(pc->pmat,x,jac->omega,(MatSORType)flag,fshift,jac->its,jac->lits,y);CHKERRQ(ierr);
+  ierr = MatFactorGetError(pc->pmat,(MatFactorError*)&pc->failedreason);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscBool guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
   PC_SOR         *jac = (PC_SOR*)pc->data;
@@ -59,8 +70,6 @@ static PetscErrorCode PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,PetscReal rt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_SOR"
 PetscErrorCode PCSetFromOptions_SOR(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_SOR         *jac = (PC_SOR*)pc->data;
@@ -89,8 +98,6 @@ PetscErrorCode PCSetFromOptions_SOR(PetscOptionItems *PetscOptionsObject,PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCView_SOR"
 PetscErrorCode PCView_SOR(PC pc,PetscViewer viewer)
 {
   PC_SOR         *jac = (PC_SOR*)pc->data;
@@ -120,8 +127,6 @@ PetscErrorCode PCView_SOR(PC pc,PetscViewer viewer)
 
 
 /* ------------------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "PCSORSetSymmetric_SOR"
 static PetscErrorCode  PCSORSetSymmetric_SOR(PC pc,MatSORType flag)
 {
   PC_SOR *jac = (PC_SOR*)pc->data;
@@ -131,8 +136,6 @@ static PetscErrorCode  PCSORSetSymmetric_SOR(PC pc,MatSORType flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSORSetOmega_SOR"
 static PetscErrorCode  PCSORSetOmega_SOR(PC pc,PetscReal omega)
 {
   PC_SOR *jac = (PC_SOR*)pc->data;
@@ -143,8 +146,6 @@ static PetscErrorCode  PCSORSetOmega_SOR(PC pc,PetscReal omega)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSORSetIterations_SOR"
 static PetscErrorCode  PCSORSetIterations_SOR(PC pc,PetscInt its,PetscInt lits)
 {
   PC_SOR *jac = (PC_SOR*)pc->data;
@@ -155,8 +156,6 @@ static PetscErrorCode  PCSORSetIterations_SOR(PC pc,PetscInt its,PetscInt lits)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSORGetSymmetric_SOR"
 static PetscErrorCode  PCSORGetSymmetric_SOR(PC pc,MatSORType *flag)
 {
   PC_SOR *jac = (PC_SOR*)pc->data;
@@ -166,8 +165,6 @@ static PetscErrorCode  PCSORGetSymmetric_SOR(PC pc,MatSORType *flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSORGetOmega_SOR"
 static PetscErrorCode  PCSORGetOmega_SOR(PC pc,PetscReal *omega)
 {
   PC_SOR *jac = (PC_SOR*)pc->data;
@@ -177,8 +174,6 @@ static PetscErrorCode  PCSORGetOmega_SOR(PC pc,PetscReal *omega)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSORGetIterations_SOR"
 static PetscErrorCode  PCSORGetIterations_SOR(PC pc,PetscInt *its,PetscInt *lits)
 {
   PC_SOR *jac = (PC_SOR*)pc->data;
@@ -190,8 +185,6 @@ static PetscErrorCode  PCSORGetIterations_SOR(PC pc,PetscInt *its,PetscInt *lits
 }
 
 /* ------------------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "PCSORGetSymmetric"
 /*@
    PCSORGetSymmetric - Gets the form the SOR preconditioner is using;   backward, or forward relaxation.  The local variants perform SOR on
    each processor.  By default forward relaxation is used.
@@ -240,8 +233,6 @@ PetscErrorCode  PCSORGetSymmetric(PC pc,MatSORType *flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSORGetOmega"
 /*@
    PCSORGetOmega - Gets the SOR relaxation coefficient, omega
    (where omega = 1.0 by default).
@@ -273,8 +264,6 @@ PetscErrorCode  PCSORGetOmega(PC pc,PetscReal *omega)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSORGetIterations"
 /*@
    PCSORGetIterations - Gets the number of inner iterations to
    be used by the SOR preconditioner. The default is 1.
@@ -310,8 +299,6 @@ PetscErrorCode  PCSORGetIterations(PC pc,PetscInt *its,PetscInt *lits)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSORSetSymmetric"
 /*@
    PCSORSetSymmetric - Sets the SOR preconditioner to use symmetric (SSOR),
    backward, or forward relaxation.  The local variants perform SOR on
@@ -360,8 +347,6 @@ PetscErrorCode  PCSORSetSymmetric(PC pc,MatSORType flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSORSetOmega"
 /*@
    PCSORSetOmega - Sets the SOR relaxation coefficient, omega
    (where omega = 1.0 by default).
@@ -392,8 +377,6 @@ PetscErrorCode  PCSORSetOmega(PC pc,PetscReal omega)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSORSetIterations"
 /*@
    PCSORSetIterations - Sets the number of inner iterations to
    be used by the SOR preconditioner. The default is 1.
@@ -465,8 +448,6 @@ PetscErrorCode  PCSORSetIterations(PC pc,PetscInt its,PetscInt lits)
            PCSORSetIterations(), PCSORSetSymmetric(), PCSORSetOmega(), PCEISENSTAT
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_SOR"
 PETSC_EXTERN PetscErrorCode PCCreate_SOR(PC pc)
 {
   PetscErrorCode ierr;
@@ -476,6 +457,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_SOR(PC pc)
   ierr = PetscNewLog(pc,&jac);CHKERRQ(ierr);
 
   pc->ops->apply           = PCApply_SOR;
+  pc->ops->applytranspose  = PCApplyTranspose_SOR;
   pc->ops->applyrichardson = PCApplyRichardson_SOR;
   pc->ops->setfromoptions  = PCSetFromOptions_SOR;
   pc->ops->setup           = 0;

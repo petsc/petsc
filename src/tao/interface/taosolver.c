@@ -10,8 +10,6 @@ PetscLogEvent Tao_Solve, Tao_ObjectiveEval, Tao_GradientEval, Tao_ObjGradientEva
 
 const char *TaoSubSetTypes[] = {  "subvec","mask","matrixfree","TaoSubSetType","TAO_SUBSET_",0};
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoCreate"
 /*@
   TaoCreate - Creates a TAO solver
 
@@ -158,8 +156,6 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSolve"
 /*@
   TaoSolve - Solves an optimization problem min F(x) s.t. l <= x <= u
 
@@ -218,8 +214,6 @@ PetscErrorCode TaoSolve(Tao tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetUp"
 /*@
   TaoSetUp - Sets up the internal data structures for the later use
   of a Tao solver
@@ -255,8 +249,6 @@ PetscErrorCode TaoSetUp(Tao tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoDestroy"
 /*@
   TaoDestroy - Destroys the TAO context that was created with
   TaoCreate()
@@ -339,8 +331,6 @@ PetscErrorCode TaoDestroy(Tao *tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetFromOptions"
 /*@
   TaoSetFromOptions - Sets various Tao parameters from user
   options.
@@ -511,8 +501,6 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoView"
 /*@C
   TaoView - Prints information about the Tao
 
@@ -684,8 +672,6 @@ PetscErrorCode TaoView(Tao tao, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetTolerances"
 /*@
   TaoSetTolerances - Sets parameters used in TAO convergence tests
 
@@ -751,8 +737,6 @@ PetscErrorCode TaoSetTolerances(Tao tao, PetscReal gatol, PetscReal grtol, Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetConstraintTolerances"
 /*@
   TaoSetConstraintTolerances - Sets constraint tolerance parameters used in TAO  convergence tests
 
@@ -802,8 +786,6 @@ PetscErrorCode TaoSetConstraintTolerances(Tao tao, PetscReal catol, PetscReal cr
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoGetConstraintTolerances"
 /*@
   TaoGetConstraintTolerances - Gets constraint tolerance parameters used in TAO  convergence tests
 
@@ -830,8 +812,6 @@ PetscErrorCode TaoGetConstraintTolerances(Tao tao, PetscReal *catol, PetscReal *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetFunctionLowerBound"
 /*@
    TaoSetFunctionLowerBound - Sets a bound on the solution objective value.
    When an approximate solution with an objective value below this number
@@ -859,8 +839,6 @@ PetscErrorCode TaoSetFunctionLowerBound(Tao tao,PetscReal fmin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoGetFunctionLowerBound"
 /*@
    TaoGetFunctionLowerBound - Gets the bound on the solution objective value.
    When an approximate solution with an objective value below this number
@@ -886,8 +864,6 @@ PetscErrorCode TaoGetFunctionLowerBound(Tao tao,PetscReal *fmin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetMaximumFunctionEvaluations"
 /*@
    TaoSetMaximumFunctionEvaluations - Sets a maximum number of
    function evaluations.
@@ -915,8 +891,6 @@ PetscErrorCode TaoSetMaximumFunctionEvaluations(Tao tao,PetscInt nfcn)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoGetMaximumFunctionEvaluations"
 /*@
    TaoGetMaximumFunctionEvaluations - Sets a maximum number of
    function evaluations.
@@ -942,8 +916,6 @@ PetscErrorCode TaoGetMaximumFunctionEvaluations(Tao tao,PetscInt *nfcn)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoGetCurrentFunctionEvaluations"
 /*@
    TaoGetCurrentFunctionEvaluations - Get current number of
    function evaluations.
@@ -969,8 +941,6 @@ PetscErrorCode TaoGetCurrentFunctionEvaluations(Tao tao,PetscInt *nfuncs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetMaximumIterations"
 /*@
    TaoSetMaximumIterations - Sets a maximum number of iterates.
 
@@ -996,8 +966,6 @@ PetscErrorCode TaoSetMaximumIterations(Tao tao,PetscInt maxits)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoGetMaximumIterations"
 /*@
    TaoGetMaximumIterations - Sets a maximum number of iterates.
 
@@ -1021,8 +989,6 @@ PetscErrorCode TaoGetMaximumIterations(Tao tao,PetscInt *maxits)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetInitialTrustRegionRadius"
 /*@
    TaoSetInitialTrustRegionRadius - Sets the initial trust region radius.
 
@@ -1048,8 +1014,6 @@ PetscErrorCode TaoSetInitialTrustRegionRadius(Tao tao, PetscReal radius)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoGetInitialTrustRegionRadius"
 /*@
    TaoGetInitialTrustRegionRadius - Sets the initial trust region radius.
 
@@ -1073,8 +1037,6 @@ PetscErrorCode TaoGetInitialTrustRegionRadius(Tao tao, PetscReal *radius)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoGetCurrentTrustRegionRadius"
 /*@
    TaoGetCurrentTrustRegionRadius - Gets the current trust region radius.
 
@@ -1098,8 +1060,6 @@ PetscErrorCode TaoGetCurrentTrustRegionRadius(Tao tao, PetscReal *radius)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoGetTolerances"
 /*@
   TaoGetTolerances - gets the current values of tolerances
 
@@ -1129,8 +1089,6 @@ PetscErrorCode TaoGetTolerances(Tao tao, PetscReal *gatol, PetscReal *grtol, Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoGetKSP"
 /*@
   TaoGetKSP - Gets the linear solver used by the optimization solver.
   Application writers should use TaoGetKSP if they need direct access
@@ -1154,8 +1112,6 @@ PetscErrorCode TaoGetKSP(Tao tao, KSP *ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoGetLinearSolveIterations"
 /*@
    TaoGetLinearSolveIterations - Gets the total number of linear iterations
    used by the TAO solver
@@ -1186,8 +1142,6 @@ PetscErrorCode  TaoGetLinearSolveIterations(Tao tao,PetscInt *lits)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoGetLineSearch"
 /*@
   TaoGetLineSearch - Gets the line search used by the optimization solver.
   Application writers should use TaoGetLineSearch if they need direct access
@@ -1211,8 +1165,6 @@ PetscErrorCode TaoGetLineSearch(Tao tao, TaoLineSearch *ls)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoAddLineSearchCounts"
 /*@
   TaoAddLineSearchCounts - Adds the number of function evaluations spent
   in the line search to the running total.
@@ -1245,8 +1197,6 @@ PetscErrorCode TaoAddLineSearchCounts(Tao tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoGetSolutionVector"
 /*@
   TaoGetSolutionVector - Returns the vector with the current TAO solution
 
@@ -1270,8 +1220,6 @@ PetscErrorCode TaoGetSolutionVector(Tao tao, Vec *X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoGetGradientVector"
 /*@
   TaoGetGradientVector - Returns the vector with the current TAO gradient
 
@@ -1293,8 +1241,6 @@ PetscErrorCode TaoGetGradientVector(Tao tao, Vec *G)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoResetStatistics"
 /*@
    TaoResetStatistics - Initialize the statistics used by TAO for all of the solvers.
    These statistics include the iteration number, residual norms, and convergence status.
@@ -1331,8 +1277,6 @@ PetscErrorCode TaoResetStatistics(Tao tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetConvergenceTest"
 /*@C
   TaoSetConvergenceTest - Sets the function that is to be used to test
   for convergence o fthe iterative minimization solution.  The new convergence
@@ -1368,8 +1312,6 @@ PetscErrorCode TaoSetConvergenceTest(Tao tao, PetscErrorCode (*conv)(Tao,void*),
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetMonitor"
 /*@C
    TaoSetMonitor - Sets an ADDITIONAL function that is to be used at every
    iteration of the solver to display the iteration's
@@ -1435,8 +1377,6 @@ PetscErrorCode TaoSetMonitor(Tao tao, PetscErrorCode (*func)(Tao, void*), void *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoCancelMonitors"
 /*@
    TaoCancelMonitors - Clears all the monitor functions for a Tao object.
 
@@ -1473,8 +1413,6 @@ PetscErrorCode TaoCancelMonitors(Tao tao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoDefaultMonitor"
 /*@
    TaoDefaultMonitor - Default routine for monitoring progress of the
    Tao solvers (default).  This monitor prints the function value and gradient
@@ -1516,8 +1454,6 @@ PetscErrorCode TaoDefaultMonitor(Tao tao, void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoDefaultSMonitor"
 /*@
    TaoDefaultSMonitor - Default routine for monitoring progress of the
    solver. Same as TaoDefaultMonitor() except
@@ -1566,8 +1502,6 @@ PetscErrorCode TaoDefaultSMonitor(Tao tao, void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoDefaultCMonitor"
 /*@
    TaoDefaultCMonitor - same as TaoDefaultMonitor() except
    it prints the norm of the constraints function. It can be turned on
@@ -1605,8 +1539,6 @@ PetscErrorCode TaoDefaultCMonitor(Tao tao, void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSolutionMonitor"
 /*@C
    TaoSolutionMonitor - Views the solution at each iteration
    It can be turned on from the command line using the
@@ -1636,8 +1568,6 @@ PetscErrorCode TaoSolutionMonitor(Tao tao, void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoGradientMonitor"
 /*@C
    TaoGradientMonitor - Views the gradient at each iteration
    It can be turned on from the command line using the
@@ -1667,8 +1597,6 @@ PetscErrorCode TaoGradientMonitor(Tao tao, void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoStepDirectionMonitor"
 /*@C
    TaoStepDirectionMonitor - Views the gradient at each iteration
    It can be turned on from the command line using the
@@ -1698,8 +1626,6 @@ PetscErrorCode TaoStepDirectionMonitor(Tao tao, void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoDrawSolutionMonitor"
 /*@C
    TaoDrawSolutionMonitor - Plots the solution at each iteration
    It can be turned on from the command line using the
@@ -1729,8 +1655,6 @@ PetscErrorCode TaoDrawSolutionMonitor(Tao tao, void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoDrawGradientMonitor"
 /*@C
    TaoDrawGradientMonitor - Plots the gradient at each iteration
    It can be turned on from the command line using the
@@ -1760,8 +1684,6 @@ PetscErrorCode TaoDrawGradientMonitor(Tao tao, void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoDrawStepMonitor"
 /*@C
    TaoDrawStepMonitor - Plots the step direction at each iteration
    It can be turned on from the command line using the
@@ -1790,8 +1712,6 @@ PetscErrorCode TaoDrawStepMonitor(Tao tao, void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSeparableObjectiveMonitor"
 /*@C
    TaoSeparableObjectiveMonitor - Views the separable objective function at each iteration
    It can be turned on from the command line using the
@@ -1821,8 +1741,6 @@ PetscErrorCode TaoSeparableObjectiveMonitor(Tao tao, void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoDefaultConvergenceTest"
 /*@
    TaoDefaultConvergenceTest - Determines whether the solver should continue iterating
    or terminate.
@@ -1899,8 +1817,6 @@ PetscErrorCode TaoDefaultConvergenceTest(Tao tao,void *dummy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetOptionsPrefix"
 /*@C
    TaoSetOptionsPrefix - Sets the prefix used for searching for all
    TAO options in the database.
@@ -1950,8 +1866,6 @@ PetscErrorCode TaoSetOptionsPrefix(Tao tao, const char p[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoAppendOptionsPrefix"
 /*@C
    TaoAppendOptionsPrefix - Appends to the prefix used for searching for all
    TAO options in the database.
@@ -1987,8 +1901,6 @@ PetscErrorCode TaoAppendOptionsPrefix(Tao tao, const char p[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoGetOptionsPrefix"
 /*@C
   TaoGetOptionsPrefix - Gets the prefix used for searching for all
   TAO options in the database
@@ -2013,8 +1925,6 @@ PetscErrorCode TaoGetOptionsPrefix(Tao tao, const char *p[])
    return PetscObjectGetOptionsPrefix((PetscObject)tao,p);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetType"
 /*@C
    TaoSetType - Sets the method for the unconstrained minimization solver.
 
@@ -2082,8 +1992,6 @@ PetscErrorCode TaoSetType(Tao tao, const TaoType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoRegister"
 /*MC
    TaoRegister - Adds a method to the TAO package for unconstrained minimization.
 
@@ -2122,8 +2030,6 @@ PetscErrorCode TaoRegister(const char sname[], PetscErrorCode (*func)(Tao))
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoRegisterDestroy"
 /*@C
    TaoRegisterDestroy - Frees the list of minimization solvers that were
    registered by TaoRegisterDynamic().
@@ -2143,8 +2049,6 @@ PetscErrorCode TaoRegisterDestroy(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoGetIterationNumber"
 /*@
    TaoGetIterationNumber - Gets the number of Tao iterations completed
    at this time.
@@ -2176,8 +2080,6 @@ PetscErrorCode  TaoGetIterationNumber(Tao tao,PetscInt *iter)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetIterationNumber"
 /*@
    TaoSetIterationNumber - Sets the current iteration number.
 
@@ -2205,8 +2107,6 @@ PetscErrorCode  TaoSetIterationNumber(Tao tao,PetscInt iter)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoGetTotalIterationNumber"
 /*@
    TaoGetTotalIterationNumber - Gets the total number of Tao iterations
    completed. This number keeps accumulating if multiple solves
@@ -2239,8 +2139,6 @@ PetscErrorCode  TaoGetTotalIterationNumber(Tao tao,PetscInt *iter)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetTotalIterationNumber"
 /*@
    TaoSetTotalIterationNumber - Sets the current total iteration number.
 
@@ -2268,8 +2166,6 @@ PetscErrorCode  TaoSetTotalIterationNumber(Tao tao,PetscInt iter)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetConvergedReason"
 /*@
   TaoSetConvergedReason - Sets the termination flag on a Tao object
 
@@ -2302,8 +2198,6 @@ PetscErrorCode TaoSetConvergedReason(Tao tao, TaoConvergedReason reason)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoGetConvergedReason"
 /*@
    TaoGetConvergedReason - Gets the reason the Tao iteration was stopped.
 
@@ -2353,8 +2247,6 @@ PetscErrorCode TaoGetConvergedReason(Tao tao, TaoConvergedReason *reason)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoGetSolutionStatus"
 /*@
   TaoGetSolutionStatus - Get the current iterate, objective value,
   residual, infeasibility, and termination
@@ -2394,8 +2286,6 @@ PetscErrorCode TaoGetSolutionStatus(Tao tao, PetscInt *its, PetscReal *f, PetscR
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoGetType"
 /*@C
    TaoGetType - Gets the current Tao algorithm.
 
@@ -2419,8 +2309,6 @@ PetscErrorCode TaoGetType(Tao tao, const TaoType *type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoMonitor"
 /*@C
   TaoMonitor - Monitor the solver and the current solution.  This
   routine will record the iteration number and residual statistics,
@@ -2472,8 +2360,6 @@ PetscErrorCode TaoMonitor(Tao tao, PetscInt its, PetscReal f, PetscReal res, Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetConvergenceHistory"
 /*@
    TaoSetConvergenceHistory - Sets the array used to hold the convergence history.
 
@@ -2508,7 +2394,7 @@ PetscErrorCode TaoMonitor(Tao tao, PetscInt its, PetscReal f, PetscReal res, Pet
 .seealso: TaoGetConvergenceHistory()
 
 @*/
-PetscErrorCode TaoSetConvergenceHistory(Tao tao, PetscReal *obj, PetscReal *resid, PetscReal *cnorm, PetscInt *lits, PetscInt na,PetscBool reset)
+PetscErrorCode TaoSetConvergenceHistory(Tao tao, PetscReal obj[], PetscReal resid[], PetscReal cnorm[], PetscInt lits[], PetscInt na,PetscBool reset)
 {
   PetscErrorCode ierr;
 
@@ -2538,8 +2424,6 @@ PetscErrorCode TaoSetConvergenceHistory(Tao tao, PetscReal *obj, PetscReal *resi
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoGetConvergenceHistory"
 /*@C
    TaoGetConvergenceHistory - Gets the arrays used to hold the convergence history.
 
@@ -2582,8 +2466,6 @@ PetscErrorCode TaoGetConvergenceHistory(Tao tao, PetscReal **obj, PetscReal **re
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetApplicationContext"
 /*@
    TaoSetApplicationContext - Sets the optional user-defined context for
    a solver.
@@ -2606,8 +2488,6 @@ PetscErrorCode  TaoSetApplicationContext(Tao tao,void *usrP)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoGetApplicationContext"
 /*@
    TaoGetApplicationContext - Gets the user-defined context for a
    TAO solvers.
@@ -2632,8 +2512,6 @@ PetscErrorCode  TaoGetApplicationContext(Tao tao,void *usrP)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoSetGradientNorm"
 /*@
    TaoSetGradientNorm - Sets the matrix used to define the inner product that measures the size of the gradient.
 
@@ -2665,8 +2543,6 @@ PetscErrorCode  TaoSetGradientNorm(Tao tao, Mat M)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoGetGradientNorm"
 /*@
    TaoGetGradientNorm - Returns the matrix used to define the inner product for measuring the size of the gradient.
 
@@ -2690,8 +2566,6 @@ PetscErrorCode  TaoGetGradientNorm(Tao tao, Mat *M)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoGradientNorm"
 /*c
    TaoGradientNorm - Compute the norm with respect to the inner product the user has set.
 

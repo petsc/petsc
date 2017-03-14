@@ -20,13 +20,16 @@ program main
 !
 !     Contributed by Aasmund Ervik (asmunder at pvv.org)
 !
+!/*T
+!   requires: !complex
+!   depends:  ex13f90aux.F90
+!T*/
+
+
   use ex13f90aux
-  implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
 #include <petsc/finclude/petscdmda.h>
-#include <petsc/finclude/petscvec.h90>
-#include <petsc/finclude/petscdmda.h90>
+  use petscdmda
+
   PetscErrorCode   ierr
   PetscMPIInt      rank,size
   MPI_Comm         comm

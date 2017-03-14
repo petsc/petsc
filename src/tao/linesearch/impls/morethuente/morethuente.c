@@ -9,8 +9,6 @@
 
 static PetscErrorCode Tao_mcstep(TaoLineSearch ls,PetscReal *stx,PetscReal *fx,PetscReal *dx,PetscReal *sty,PetscReal *fy,PetscReal *dy,PetscReal *stp,PetscReal *fp,PetscReal *dp);
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchDestroy_MT"
 static PetscErrorCode TaoLineSearchDestroy_MT(TaoLineSearch ls)
 {
   PetscErrorCode   ierr;
@@ -27,8 +25,6 @@ static PetscErrorCode TaoLineSearchDestroy_MT(TaoLineSearch ls)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchSetFromOptions_MT"
 static PetscErrorCode TaoLineSearchSetFromOptions_MT(PetscOptionItems *PetscOptionsObject,TaoLineSearch ls)
 {
   PetscFunctionBegin;
@@ -37,8 +33,6 @@ static PetscErrorCode TaoLineSearchSetFromOptions_MT(PetscOptionItems *PetscOpti
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchApply_MT"
 /* @ TaoApply_LineSearch - This routine takes step length of 1.0.
 
    Input Parameters:
@@ -292,8 +286,6 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchCreate_MT"
 PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_MT(TaoLineSearch ls)
 {
   PetscErrorCode   ierr;
@@ -376,8 +368,6 @@ PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_MT(TaoLineSearch ls)
 
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "Tao_mcstep"
 static PetscErrorCode Tao_mcstep(TaoLineSearch ls,PetscReal *stx,PetscReal *fx,PetscReal *dx,PetscReal *sty,PetscReal *fy,PetscReal *dy,PetscReal *stp,PetscReal *fp,PetscReal *dp)
 {
   TaoLineSearch_MT *mtP = (TaoLineSearch_MT *) ls->data;

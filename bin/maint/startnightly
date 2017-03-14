@@ -27,6 +27,6 @@ foreach TEST ($*)
   endif
   echo "Starting: $SSH $USR@$MACH $DASHN $LOC/bin/maint/buildtest $CONF"
   $SSH $USR@$MACH $DASHN "cd $LOC; $LOC/bin/maint/buildtest $CONF" &
-  sleep 120 # perhaps ease the nfs load
+  sleep 90 # perhaps ease the nfs load
 end
 wait

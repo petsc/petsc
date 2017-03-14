@@ -97,8 +97,6 @@ typedef struct {
   PetscBool      CleanUpKLU;
 } Mat_KLU;
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_KLU"
 static PetscErrorCode MatDestroy_KLU(Mat A)
 {
   PetscErrorCode ierr;
@@ -114,8 +112,6 @@ static PetscErrorCode MatDestroy_KLU(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolveTranspose_KLU"
 static PetscErrorCode MatSolveTranspose_KLU(Mat A,Vec b,Vec x)
 {
   Mat_KLU       *lu = (Mat_KLU*)A->data;
@@ -134,8 +130,6 @@ static PetscErrorCode MatSolveTranspose_KLU(Mat A,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSolve_KLU"
 static PetscErrorCode MatSolve_KLU(Mat A,Vec b,Vec x)
 {
   Mat_KLU       *lu = (Mat_KLU*)A->data;
@@ -159,8 +153,6 @@ static PetscErrorCode MatSolve_KLU(Mat A,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLUFactorNumeric_KLU"
 static PetscErrorCode MatLUFactorNumeric_KLU(Mat F,Mat A,const MatFactorInfo *info)
 {
   Mat_KLU        *lu = (Mat_KLU*)(F)->data;
@@ -185,8 +177,6 @@ static PetscErrorCode MatLUFactorNumeric_KLU(Mat F,Mat A,const MatFactorInfo *in
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatLUFactorSymbolic_KLU"
 static PetscErrorCode MatLUFactorSymbolic_KLU(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   Mat_SeqAIJ     *a  = (Mat_SeqAIJ*)A->data;
@@ -222,8 +212,6 @@ static PetscErrorCode MatLUFactorSymbolic_KLU(Mat F,Mat A,IS r,IS c,const MatFac
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFactorInfo_KLU"
 static PetscErrorCode MatFactorInfo_KLU(Mat A,PetscViewer viewer)
 {
   Mat_KLU       *lu= (Mat_KLU*)A->data;
@@ -255,8 +243,6 @@ static PetscErrorCode MatFactorInfo_KLU(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatView_KLU"
 static PetscErrorCode MatView_KLU(Mat A,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
@@ -274,8 +260,6 @@ static PetscErrorCode MatView_KLU(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFactorGetSolverPackage_seqaij_klu"
 PetscErrorCode MatFactorGetSolverPackage_seqaij_klu(Mat A,const MatSolverPackage *type)
 {
   PetscFunctionBegin;
@@ -307,8 +291,6 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_klu(Mat A,const MatSolverPackage
 .seealso: PCLU, MATSOLVERUMFPACK, MATSOLVERCHOLMOD, PCFactorSetMatSolverPackage(), MatSolverPackage
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetFactor_seqaij_klu"
 PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;

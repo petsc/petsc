@@ -29,8 +29,6 @@ typedef struct {
    Uses a hierarchical partitioning strategy to partition the matrix in parallel.
    Use this interface to make the partitioner consistent with others
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningApply_Hierarchical"
 static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS *partitioning)
 {
   MatPartitioning_Hierarchical *hpart  = (MatPartitioning_Hierarchical*)part->data;
@@ -147,8 +145,6 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningHierarchical_ReassembleFineparts"
 PetscErrorCode MatPartitioningHierarchical_ReassembleFineparts(Mat adj, IS fineparts, ISLocalToGlobalMapping mapping, IS *sfineparts)
 {
   PetscInt            *local_indices, *global_indices,*owners,*sfineparts_indices,localsize,i;
@@ -163,7 +159,7 @@ PetscErrorCode MatPartitioningHierarchical_ReassembleFineparts(Mat adj, IS finep
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)adj,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = MatGetLayouts(adj,&rmap,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetLayouts(adj,&rmap,NULL);CHKERRQ(ierr);
   ierr = ISGetLocalSize(fineparts,&localsize);CHKERRQ(ierr);
   ierr = PetscCalloc2(localsize,&global_indices,localsize,&local_indices);CHKERRQ(ierr);
   for(i=0; i<localsize; i++){
@@ -188,7 +184,7 @@ PetscErrorCode MatPartitioningHierarchical_ReassembleFineparts(Mat adj, IS finep
   ierr = PetscSFSetType(sf,PETSCSFBASIC);CHKERRQ(ierr);
   /* not sure how to add prefix to sf */
   ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
-  ierr = PetscSFSetGraph(sf,localsize,localsize,PETSC_NULL,PETSC_OWN_POINTER,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(sf,localsize,localsize,NULL,PETSC_OWN_POINTER,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
   ierr = PetscSFReduceBegin(sf,MPIU_INT,fineparts_indices,sfineparts_indices,MPIU_REPLACE);CHKERRQ(ierr);
   ierr = PetscSFReduceEnd(sf,MPIU_INT,fineparts_indices,sfineparts_indices,MPIU_REPLACE);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
@@ -200,8 +196,6 @@ PetscErrorCode MatPartitioningHierarchical_ReassembleFineparts(Mat adj, IS finep
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningHierarchical_AssembleSubdomain"
 PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat adj,IS destination,Mat *sadj, ISLocalToGlobalMapping *mapping)
 {
   IS              irows,icols;
@@ -221,15 +215,13 @@ PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat adj,IS destinat
   ierr = ISGetIndices(irows,&irows_indices);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreate(comm,1,irows_ln,irows_indices,PETSC_COPY_VALUES,mapping);CHKERRQ(ierr);
   ierr = ISRestoreIndices(irows,&irows_indices);CHKERRQ(ierr);
-  ierr = MatGetSubMatrices(adj,1,&irows,&icols,MAT_INITIAL_MATRIX,&sadj);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(adj,1,&irows,&icols,MAT_INITIAL_MATRIX,&sadj);CHKERRQ(ierr);
   ierr = ISDestroy(&irows);CHKERRQ(ierr);
   ierr = ISDestroy(&icols);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningHierarchical_DetermineDestination"
 PetscErrorCode MatPartitioningHierarchical_DetermineDestination(MatPartitioning part, IS partitioning, PetscInt pstart, PetscInt pend, IS *destination)
 {
   MPI_Comm            comm;
@@ -259,8 +251,6 @@ PetscErrorCode MatPartitioningHierarchical_DetermineDestination(MatPartitioning 
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningView_Hierarchical"
 PetscErrorCode MatPartitioningView_Hierarchical(MatPartitioning part,PetscViewer viewer)
 {
   MatPartitioning_Hierarchical *hpart = (MatPartitioning_Hierarchical*)part->data;
@@ -281,8 +271,6 @@ PetscErrorCode MatPartitioningView_Hierarchical(MatPartitioning part,PetscViewer
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningHierarchicalGetFineparts"
 PetscErrorCode MatPartitioningHierarchicalGetFineparts(MatPartitioning part,IS *fineparts)
 {
   MatPartitioning_Hierarchical *hpart = (MatPartitioning_Hierarchical*)part->data;
@@ -294,8 +282,6 @@ PetscErrorCode MatPartitioningHierarchicalGetFineparts(MatPartitioning part,IS *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningHierarchicalGetCoarseparts"
 PetscErrorCode MatPartitioningHierarchicalGetCoarseparts(MatPartitioning part,IS *coarseparts)
 {
   MatPartitioning_Hierarchical *hpart = (MatPartitioning_Hierarchical*)part->data;
@@ -307,8 +293,6 @@ PetscErrorCode MatPartitioningHierarchicalGetCoarseparts(MatPartitioning part,IS
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningHierarchicalSetNcoarseparts"
 PetscErrorCode MatPartitioningHierarchicalSetNcoarseparts(MatPartitioning part, PetscInt Ncoarseparts)
 {
   MatPartitioning_Hierarchical *hpart = (MatPartitioning_Hierarchical*)part->data;
@@ -318,8 +302,6 @@ PetscErrorCode MatPartitioningHierarchicalSetNcoarseparts(MatPartitioning part, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningHierarchicalSetNfineparts"
 PetscErrorCode MatPartitioningHierarchicalSetNfineparts(MatPartitioning part, PetscInt Nfineparts)
 {
   MatPartitioning_Hierarchical *hpart = (MatPartitioning_Hierarchical*)part->data;
@@ -329,8 +311,6 @@ PetscErrorCode MatPartitioningHierarchicalSetNfineparts(MatPartitioning part, Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningSetFromOptions_Hierarchical"
 PetscErrorCode MatPartitioningSetFromOptions_Hierarchical(PetscOptionItems *PetscOptionsObject,MatPartitioning part)
 {
   MatPartitioning_Hierarchical *hpart = (MatPartitioning_Hierarchical*)part->data;
@@ -340,25 +320,23 @@ PetscErrorCode MatPartitioningSetFromOptions_Hierarchical(PetscOptionItems *Pets
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Set hierarchical partitioning options");CHKERRQ(ierr);
-  ierr = PetscOptionsString("-mat_partitioning_hierarchical_coarseparttype","coarse part type",PETSC_NULL,PETSC_NULL,value,1024,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-mat_partitioning_hierarchical_coarseparttype","coarse part type",NULL,NULL,value,1024,&flag);CHKERRQ(ierr);
   if(flag){
    ierr = PetscCalloc1(1024,&hpart->coarseparttype);CHKERRQ(ierr);
    ierr = PetscStrcpy(hpart->coarseparttype,value);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsString("-mat_partitioning_hierarchical_fineparttype","fine part type",PETSC_NULL,PETSC_NULL,value,1024,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-mat_partitioning_hierarchical_fineparttype","fine part type",NULL,NULL,value,1024,&flag);CHKERRQ(ierr);
   if(flag){
     ierr = PetscCalloc1(1024,&hpart->fineparttype);CHKERRQ(ierr);
     ierr = PetscStrcpy(hpart->fineparttype,value);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsInt("-mat_partitioning_hierarchical_Ncoarseparts","number of coarse parts",PETSC_NULL,0,&hpart->Ncoarseparts,&flag);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_partitioning_hierarchical_Nfineparts","number of fine parts",PETSC_NULL,1,&hpart->Nfineparts,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_partitioning_hierarchical_Ncoarseparts","number of coarse parts",NULL,0,&hpart->Ncoarseparts,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_partitioning_hierarchical_Nfineparts","number of fine parts",NULL,1,&hpart->Nfineparts,&flag);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningDestroy_Hierarchical"
 PetscErrorCode MatPartitioningDestroy_Hierarchical(MatPartitioning part)
 {
   MatPartitioning_Hierarchical *hpart = (MatPartitioning_Hierarchical*)part->data;
@@ -392,8 +370,6 @@ PetscErrorCode MatPartitioningDestroy_Hierarchical(MatPartitioning part)
 
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningCreate_Hierarchical"
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Hierarchical(MatPartitioning part)
 {
   PetscErrorCode                ierr;

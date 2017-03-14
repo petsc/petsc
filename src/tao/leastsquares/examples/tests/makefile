@@ -41,22 +41,6 @@ runchwirut1_4:
 	${DIFF} output/chwirut1_4.out chwirut1_4.tmp || printf '${PWD}\nPossible problem with chwirut1_4 stdout, diffs above \n=====================================\n';\
 	${RM} -f chwirut1_4.tmp
 
-runchwirut2:
-	-@${MPIEXEC} -n 2 ./chwirut2 -tao_smonitor -tao_max_it 100 -tao_type pounders > chwirut2_1.tmp 2>&1;\
-	${DIFF} output/chwirut2_1.out chwirut2_1.tmp || printf '${PWD}\nPossible problem with chwirut2_1 stdout, diffs above \n=====================================\n';\
-	${RM} -f chwirut2_1.tmp
-
-runchwirut2_2:
-	-@${MPIEXEC} -n 2 ./chwirut2 -tao_smonitor -tao_max_it 100 -wtype 1 -tao_type pounders > chwirut2_2.tmp 2>&1;\
-        ${DIFF} output/chwirut2_2.out chwirut2_2.tmp || printf '${PWD}\nPossible problem with chwirut2_2 stdout, diffs above \n=====================================\n';\
-	${RM} -f chwirut2_2.tmp
-
-runchwirut2_3:
-	-@${MPIEXEC} -n 2 ./chwirut2 -tao_smonitor -tao_max_it 100 -wtype 2 -tao_type pounders > chwirut2_3.tmp 2>&1;\
-        ${DIFF} output/chwirut2_3.out chwirut2_3.tmp || printf '${PWD}\nPossible problem with chwirut2_3 stdout, diffs above \n=====================================\n';\
-	${RM} -f chwirut2_3.tmp
-
-
 
 TESTEXAMPLES_C             = chwirut1.PETSc runchwirut1 chwirut1.rm
 # 			     chwirut2.PETSc runchwirut2 chwirut2.rm

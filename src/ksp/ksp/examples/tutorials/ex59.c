@@ -64,8 +64,6 @@ typedef struct {
 } GLLData;
 
 
-#undef __FUNCT__
-#define __FUNCT__ "BuildCSRGraph"
 static PetscErrorCode BuildCSRGraph(DomainData dd, PetscInt **xadj, PetscInt **adjncy)
 {
   PetscErrorCode ierr;
@@ -78,24 +76,24 @@ static PetscErrorCode BuildCSRGraph(DomainData dd, PetscInt **xadj, PetscInt **a
   count_adj=0;
   for (k=0; k<dd.zm_l; k++) {
     internal_node = PETSC_TRUE;
-    kstart_csr    =1;
-    kend_csr      =dd.zm_l-1;
+    kstart_csr    = k>0 ? k-1 : k;
+    kend_csr      = k<dd.zm_l-1 ? k+2 : k+1;
     if (k == 0 || k == dd.zm_l-1) {
       internal_node = PETSC_FALSE;
       kstart_csr    = k;
       kend_csr      = k+1;
     }
     for (j=0; j<dd.ym_l; j++) {
-      jstart_csr=1;
-      jend_csr  =dd.ym_l-1;
+      jstart_csr = j>0 ? j-1 : j;
+      jend_csr   = j<dd.ym_l-1 ? j+2 : j+1;
       if (j == 0 || j == dd.ym_l-1) {
         internal_node = PETSC_FALSE;
         jstart_csr    = j;
         jend_csr      = j+1;
       }
       for (i=0; i<dd.xm_l; i++) {
-        istart_csr = 1;
-        iend_csr   = dd.xm_l-1;
+        istart_csr = i>0 ? i-1 : i;
+        iend_csr   = i<dd.xm_l-1 ? i+2 : i+1;
         if (i == 0 || i == dd.xm_l-1) {
           internal_node = PETSC_FALSE;
           istart_csr    = i;
@@ -126,24 +124,24 @@ static PetscErrorCode BuildCSRGraph(DomainData dd, PetscInt **xadj, PetscInt **a
   count_adj=0;
   for (k=0; k<dd.zm_l; k++) {
     internal_node = PETSC_TRUE;
-    kstart_csr    = 1;
-    kend_csr      = dd.zm_l-1;
+    kstart_csr    = k>0 ? k-1 : k;
+    kend_csr      = k<dd.zm_l-1 ? k+2 : k+1;
     if (k == 0 || k == dd.zm_l-1) {
       internal_node = PETSC_FALSE;
       kstart_csr    = k;
       kend_csr      = k+1;
     }
     for (j=0; j<dd.ym_l; j++) {
-      jstart_csr = 1;
-      jend_csr   = dd.ym_l-1;
+      jstart_csr = j>0 ? j-1 : j;
+      jend_csr   = j<dd.ym_l-1 ? j+2 : j+1;
       if (j == 0 || j == dd.ym_l-1) {
         internal_node = PETSC_FALSE;
         jstart_csr    = j;
         jend_csr      = j+1;
       }
       for (i=0; i<dd.xm_l; i++) {
-        istart_csr = 1;
-        iend_csr   = dd.xm_l-1;
+        istart_csr = i>0 ? i-1 : i;
+        iend_csr   = i<dd.xm_l-1 ? i+2 : i+1;
         if (i == 0 || i == dd.xm_l-1) {
           internal_node = PETSC_FALSE;
           istart_csr    = i;
@@ -179,8 +177,6 @@ static PetscErrorCode BuildCSRGraph(DomainData dd, PetscInt **xadj, PetscInt **a
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeSpecialBoundaryIndices"
 static PetscErrorCode ComputeSpecialBoundaryIndices(DomainData dd,IS *dirichlet,IS *neumann)
 {
   PetscErrorCode ierr;
@@ -292,8 +288,6 @@ static PetscErrorCode ComputeSpecialBoundaryIndices(DomainData dd,IS *dirichlet,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeMapping"
 static PetscErrorCode ComputeMapping(DomainData dd,ISLocalToGlobalMapping *isg2lmap)
 {
   PetscErrorCode         ierr;
@@ -339,8 +333,6 @@ static PetscErrorCode ComputeMapping(DomainData dd,ISLocalToGlobalMapping *isg2l
   *isg2lmap = temp_isg2lmap;
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "ComputeSubdomainMatrix"
 static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat *local_mat)
 {
   PetscErrorCode ierr;
@@ -372,7 +364,7 @@ static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat
       }
     }
     ierr = ISCreateGeneral(PETSC_COMM_SELF,ii,indexg,PETSC_COPY_VALUES,&submatIS);CHKERRQ(ierr);
-    ierr = MatGetSubMatrix(glldata.elem_mat,submatIS,submatIS,MAT_INITIAL_MATRIX,&elem_mat_DBC);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix(glldata.elem_mat,submatIS,submatIS,MAT_INITIAL_MATRIX,&elem_mat_DBC);CHKERRQ(ierr);
     ierr = ISDestroy(&submatIS);CHKERRQ(ierr);
   }
 
@@ -394,6 +386,7 @@ static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat
 
   ierr = MatSeqAIJSetPreallocation(temp_local_mat,i,NULL);CHKERRQ(ierr);      /* very overestimated */
   ierr = MatSeqSBAIJSetPreallocation(temp_local_mat,1,i,NULL);CHKERRQ(ierr);      /* very overestimated */
+  ierr = MatSeqBAIJSetPreallocation(temp_local_mat,1,i,NULL);CHKERRQ(ierr);      /* very overestimated */
   ierr = MatSetOption(temp_local_mat,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE);CHKERRQ(ierr);
 
   yloc = dd.p+1;
@@ -457,7 +450,6 @@ static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat
     ierr = VecSet(lvec,1.0);CHKERRQ(ierr);
     ierr = MatMult(temp_local_mat,lvec,rvec);CHKERRQ(ierr);
     ierr = VecNorm(rvec,NORM_INFINITY,&norm);CHKERRQ(ierr);
-    printf("Test null space of local mat % 1.14e\n",norm);
     ierr = VecDestroy(&lvec);CHKERRQ(ierr);
     ierr = VecDestroy(&rvec);CHKERRQ(ierr);
   }
@@ -467,8 +459,6 @@ static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GLLStuffs"
 static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
 {
   PetscErrorCode ierr;
@@ -643,7 +633,6 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
     ierr = VecSet(lvec,1.0);CHKERRQ(ierr);
     ierr = MatMult(glldata->elem_mat,lvec,rvec);CHKERRQ(ierr);
     ierr = VecNorm(rvec,NORM_INFINITY,&norm);CHKERRQ(ierr);
-    printf("Test null space of elem mat % 1.14e\n",norm);
     ierr = VecDestroy(&lvec);CHKERRQ(ierr);
     ierr = VecDestroy(&rvec);CHKERRQ(ierr);
   }
@@ -651,8 +640,6 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DomainDecomposition"
 static PetscErrorCode DomainDecomposition(DomainData *dd)
 {
   PetscMPIInt rank;
@@ -723,8 +710,6 @@ static PetscErrorCode DomainDecomposition(DomainData *dd)
   }
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "ComputeMatrix"
 static PetscErrorCode ComputeMatrix(DomainData dd, Mat *A)
 {
   PetscErrorCode         ierr;
@@ -777,7 +762,6 @@ static PetscErrorCode ComputeMatrix(DomainData dd, Mat *A)
     ierr = VecSet(lvec,1.0);CHKERRQ(ierr);
     ierr = MatMult(temp_A,lvec,rvec);CHKERRQ(ierr);
     ierr = VecNorm(rvec,NORM_INFINITY,&norm);CHKERRQ(ierr);
-    printf("Test null space of global mat % 1.14e\n",norm);
     ierr = VecDestroy(&lvec);CHKERRQ(ierr);
     ierr = VecDestroy(&rvec);CHKERRQ(ierr);
   }
@@ -795,8 +779,6 @@ static PetscErrorCode ComputeMatrix(DomainData dd, Mat *A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeKSPFETIDP"
 static PetscErrorCode ComputeKSPFETIDP(DomainData dd, KSP ksp_bddc, KSP *ksp_fetidp)
 {
   PetscErrorCode ierr;
@@ -809,7 +791,7 @@ static PetscErrorCode ComputeKSPFETIDP(DomainData dd, KSP ksp_bddc, KSP *ksp_fet
     PC  D;
     Mat F;
 
-    ierr = PCBDDCCreateFETIDPOperators(pc,PETSC_TRUE,&F,&D);CHKERRQ(ierr);
+    ierr = PCBDDCCreateFETIDPOperators(pc,PETSC_TRUE,NULL,&F,&D);CHKERRQ(ierr);
     ierr = KSPCreate(PetscObjectComm((PetscObject)F),&temp_ksp);CHKERRQ(ierr);
     ierr = KSPSetOperators(temp_ksp,F,F);CHKERRQ(ierr);
     ierr = KSPSetType(temp_ksp,KSPCG);CHKERRQ(ierr);
@@ -838,15 +820,13 @@ static PetscErrorCode ComputeKSPFETIDP(DomainData dd, KSP ksp_bddc, KSP *ksp_fet
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeKSPBDDC"
 static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP *ksp)
 {
   PetscErrorCode ierr;
   KSP            temp_ksp;
   PC             pc;
-  IS             dirichletIS=0,neumannIS=0,*bddc_dofs_splitting;
-  PetscInt       localsize,*xadj=NULL,*adjncy=NULL;
+  IS             primals,dirichletIS=0,neumannIS=0,*bddc_dofs_splitting;
+  PetscInt       vidx[8],localsize,*xadj=NULL,*adjncy=NULL;
   MatNullSpace   near_null_space;
 
   PetscFunctionBeginUser;
@@ -884,7 +864,7 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP *ksp)
   ierr = PetscFree(bddc_dofs_splitting);CHKERRQ(ierr);
 
   /* Primal constraints implemented by using a near null space attached to A -> now it passes in only the constants
-    (which in practice is not needed since, by default, PCBDDC build the primal space using constants for quadrature formulas */
+    (which in practice is not needed since by default PCBDDC builds the primal space using constants for quadrature formulas */
 #if 0
   Vec vecs[2];
   PetscRandom rctx;
@@ -905,6 +885,19 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP *ksp)
   /* CSR graph of subdomain dofs */
   ierr = BuildCSRGraph(dd,&xadj,&adjncy);CHKERRQ(ierr);
   ierr = PCBDDCSetLocalAdjacencyGraph(pc,localsize,xadj,adjncy,PETSC_OWN_POINTER);CHKERRQ(ierr);
+
+  /* Prescribe user-defined primal vertices: in this case we use the 8 corners in 3D (for 2D and 1D, the indices are duplicated) */
+  vidx[0] = 0*dd.xm_l+0;
+  vidx[1] = 0*dd.xm_l+dd.xm_l-1;
+  vidx[2] = (dd.ym_l-1)*dd.xm_l+0;
+  vidx[3] = (dd.ym_l-1)*dd.xm_l+dd.xm_l-1;
+  vidx[4] = (dd.zm_l-1)*dd.xm_l*dd.ym_l+0*dd.xm_l+0;
+  vidx[5] = (dd.zm_l-1)*dd.xm_l*dd.ym_l+0*dd.xm_l+dd.xm_l-1;
+  vidx[6] = (dd.zm_l-1)*dd.xm_l*dd.ym_l+(dd.ym_l-1)*dd.xm_l+0;
+  vidx[7] = (dd.zm_l-1)*dd.xm_l*dd.ym_l+(dd.ym_l-1)*dd.xm_l+dd.xm_l-1;
+  ierr = ISCreateGeneral(dd.gcomm,8,vidx,PETSC_COPY_VALUES,&primals);CHKERRQ(ierr);
+  ierr = PCBDDCSetPrimalVerticesLocalIS(pc,primals);CHKERRQ(ierr);
+  ierr = ISDestroy(&primals);CHKERRQ(ierr);
 
   /* Neumann/Dirichlet indices on the global boundary */
   if (dd.DBC_zerorows) {
@@ -945,8 +938,6 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP *ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "InitializeDomainData"
 static PetscErrorCode InitializeDomainData(DomainData *dd)
 {
   PetscErrorCode ierr;
@@ -957,8 +948,6 @@ static PetscErrorCode InitializeDomainData(DomainData *dd)
   dd->gcomm = PETSC_COMM_WORLD;
   ierr      = MPI_Comm_size(dd->gcomm,&sizes);CHKERRQ(ierr);
   ierr      = MPI_Comm_rank(dd->gcomm,&rank);CHKERRQ(ierr);
-  /* test data passed in */
-  if (sizes<2) SETERRQ(dd->gcomm,PETSC_ERR_USER,"This is not a uniprocessor test");
   /* Get informations from command line */
   /* Processors/subdomains per dimension */
   /* Default is 1d problem */
@@ -1016,8 +1005,6 @@ static PetscErrorCode InitializeDomainData(DomainData *dd)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   PetscErrorCode     ierr;

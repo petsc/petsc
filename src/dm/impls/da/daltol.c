@@ -5,8 +5,6 @@
 
 #include <petsc/private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLocalToLocalCreate_DA"
 /*
    DMLocalToLocalCreate_DA - Creates the local to local scatter
 
@@ -67,8 +65,6 @@ PetscErrorCode  DMLocalToLocalCreate_DA(DM da)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLocalToLocalBegin_DA"
 /*
    DMLocalToLocalBegin_DA - Maps from a local vector (including ghost points
    that contain irrelevant values) to another local vector where the ghost
@@ -105,8 +101,6 @@ PetscErrorCode  DMLocalToLocalBegin_DA(DM da,Vec g,InsertMode mode,Vec l)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMLocalToLocalEnd_DA"
 /*
    DMLocalToLocalEnd_DA - Maps from a local vector (including ghost points
    that contain irrelevant values) to another local vector where the ghost

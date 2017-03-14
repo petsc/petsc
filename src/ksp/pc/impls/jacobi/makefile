@@ -1,15 +1,16 @@
 
 ALL: lib
 
-CFLAGS   =
-FFLAGS   =
-SOURCEC  = jacobi.c
-SOURCEF  =
-SOURCEH  =
-LIBBASE  = libpetscksp
-DIRS     =
-MANSEC   = PC
-LOCDIR   = src/ksp/pc/impls/jacobi/
+CFLAGS    =
+FFLAGS    =
+SOURCEC   = jacobi.c
+SOURCEF   =
+SOURCEH   =
+LIBBASE   = libpetscksp
+DIRS      =
+MANSEC    = KSP
+SUBMANSEC = PC
+LOCDIR    = src/ksp/pc/impls/jacobi/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

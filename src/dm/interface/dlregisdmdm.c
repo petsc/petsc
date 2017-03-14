@@ -7,8 +7,6 @@
 #include <petsc/private/petscfvimpl.h>
 
 static PetscBool DMPackageInitialized = PETSC_FALSE;
-#undef __FUNCT__
-#define __FUNCT__ "DMFinalizePackage"
 /*@C
   DMFinalizePackage - This function finalizes everything in the DM package. It is called
   from PetscFinalize().
@@ -35,8 +33,6 @@ PetscErrorCode  DMFinalizePackage(void)
 PETSC_EXTERN PetscErrorCode MatCreate_HYPREStruct(Mat);
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "DMInitializePackage"
 /*@C
   DMInitializePackage - This function initializes everything in the DM package. It is called
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to AOCreate()
@@ -90,6 +86,7 @@ PetscErrorCode  DMInitializePackage(void)
   ierr = PetscLogEventRegister("DMPlexDistribOL",        DM_CLASSID,&DMPLEX_DistributeOverlap);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexDistField",        DM_CLASSID,&DMPLEX_DistributeField);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexDistData",         DM_CLASSID,&DMPLEX_DistributeData);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexInterpSF",         DM_CLASSID,&DMPLEX_InterpolateSF);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexGToNBegin",        DM_CLASSID,&DMPLEX_GlobalToNaturalBegin);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexGToNEnd",          DM_CLASSID,&DMPLEX_GlobalToNaturalEnd);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexNToGBegin",        DM_CLASSID,&DMPLEX_NaturalToGlobalBegin);CHKERRQ(ierr);
@@ -124,8 +121,6 @@ PetscErrorCode  DMInitializePackage(void)
 #include <petscfe.h>
 
 static PetscBool PetscFEPackageInitialized = PETSC_FALSE;
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEFinalizePackage"
 /*@C
   PetscFEFinalizePackage - This function finalizes everything in the PetscFE package. It is called
   from PetscFinalize().
@@ -150,8 +145,6 @@ PetscErrorCode PetscFEFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFEInitializePackage"
 /*@C
   PetscFEInitializePackage - This function initializes everything in the FE package. It is called
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to PetscSpaceCreate()
@@ -201,8 +194,6 @@ PetscErrorCode PetscFEInitializePackage(void)
 #include <petscfv.h>
 
 static PetscBool PetscFVPackageInitialized = PETSC_FALSE;
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVFinalizePackage"
 /*@C
   PetscFVFinalizePackage - This function finalizes everything in the PetscFV package. It is called
   from PetscFinalize().
@@ -225,8 +216,6 @@ PetscErrorCode PetscFVFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFVInitializePackage"
 /*@C
   PetscFVInitializePackage - This function initializes everything in the FV package. It is called
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to PetscFVCreate()
@@ -277,8 +266,6 @@ PetscErrorCode PetscFVInitializePackage(void)
 #include <petscds.h>
 
 static PetscBool PetscDSPackageInitialized = PETSC_FALSE;
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSFinalizePackage"
 /*@C
   PetscDSFinalizePackage - This function finalizes everything in the PetscDS package. It is called
   from PetscFinalize().
@@ -299,8 +286,6 @@ PetscErrorCode PetscDSFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDSInitializePackage"
 /*@C
   PetscDSInitializePackage - This function initializes everything in the DS package. It is called
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to PetscDSCreate()
@@ -345,8 +330,6 @@ PetscErrorCode PetscDSInitializePackage(void)
 }
 
 #if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
-#undef __FUNCT__
-#define __FUNCT__ "PetscDLLibraryRegister_petscdm"
 /*
   PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.
 

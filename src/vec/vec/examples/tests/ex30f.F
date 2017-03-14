@@ -3,11 +3,9 @@
 !  Tests parallel to parallel scatter where a to from index are
 !  duplicated
       program main
-      implicit none
-
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscis.h>
 #include <petsc/finclude/petscvec.h>
+      use petscvec
+      implicit none
 
       PetscErrorCode ierr
       PetscInt  nlocal, n, row

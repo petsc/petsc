@@ -11,8 +11,6 @@ typedef struct _projectConstraintsCtx
 }
 projectConstraintsCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "MatMult_GlobalToLocalNormal"
 PetscErrorCode MatMult_GlobalToLocalNormal(Mat CtC, Vec x, Vec y)
 {
   DM                    dm;
@@ -35,8 +33,6 @@ PetscErrorCode MatMult_GlobalToLocalNormal(Mat CtC, Vec x, Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGlobalToLocalSolve_project1"
 static PetscErrorCode DMGlobalToLocalSolve_project1 (PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx)
 {
   PetscInt f;
@@ -48,8 +44,6 @@ static PetscErrorCode DMGlobalToLocalSolve_project1 (PetscInt dim, PetscReal tim
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGlobalToLocalSolve"
 /*@
   DMGlobalToLocalSolve - Solve for the global vector that is mapped to a given local vector by DMGlobalToLocalBegin()/DMGlobalToLocalEnd() with mode
   = INSERT_VALUES.  It is assumed that the sum of all the local vector sizes is greater than or equal to the global vector size, so the solution is
@@ -168,13 +162,12 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMProjectField"
 /*@C
   DMProjectField - This projects the given function of the fields into the function space provided.
 
   Input Parameters:
 + dm      - The DM
+. time    - The time
 . U       - The input field vector
 . funcs   - The functions to evaluate, one per field
 - mode    - The insertion mode for values
@@ -186,7 +179,7 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
 
 .seealso: DMProjectFunction(), DMComputeL2Diff()
 @*/
-PetscErrorCode DMProjectField(DM dm, Vec U,
+PetscErrorCode DMProjectField(DM dm, PetscReal time, Vec U,
                               void (**funcs)(PetscInt, PetscInt, PetscInt,
                                              const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                              const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -199,10 +192,12 @@ PetscErrorCode DMProjectField(DM dm, Vec U,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dm, &localU);CHKERRQ(ierr);
+  /* We currently check whether locU == locX to see if we need to apply BC */
+  if (U != X) {ierr = DMGetLocalVector(dm, &localU);CHKERRQ(ierr);}
+  else        {localU = localX;}
   ierr = DMGlobalToLocalBegin(dm, U, INSERT_VALUES, localU);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm, U, INSERT_VALUES, localU);CHKERRQ(ierr);
-  ierr = DMProjectFieldLocal(dm, localU, funcs, mode, localX);CHKERRQ(ierr);
+  ierr = DMProjectFieldLocal(dm, time, localU, funcs, mode, localX);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(dm, localX, mode, X);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(dm, localX, mode, X);CHKERRQ(ierr);
   if (mode == INSERT_VALUES || mode == INSERT_ALL_VALUES || mode == INSERT_BC_VALUES) {
@@ -214,7 +209,7 @@ PetscErrorCode DMProjectField(DM dm, Vec U,
     }
   }
   ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm, &localU);CHKERRQ(ierr);
+  if (U != X) {ierr = DMRestoreLocalVector(dm, &localU);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

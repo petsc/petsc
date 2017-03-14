@@ -4,7 +4,7 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit         = 'v1.0.2'
+    self.gitcommit         = 'xsdk-0.2.0-rc1'
     self.download          = ['https://github.com/LBL-EESA/alquimia-dev/archive/'+self.gitcommit+'.tar.gz','git://https://github.com/LBL-EESA/alquimia-dev.git']
     self.functions         = []
     self.includes          = []
@@ -13,6 +13,7 @@ class Configure(config.package.CMakePackage):
     self.cxx               = 1    # 1 means requires C++
     self.linkedbypetsc     = 0
     self.makerulename      = 'alquimia'    # make on the alquimia directory tries to build executables that will fail so force only building the libraries
+    self.useddirectly      = 0
     return
 
   def setupDependencies(self, framework):
@@ -24,12 +25,12 @@ class Configure(config.package.CMakePackage):
     self.deps          = [self.mpi, self.hdf5, self.pflotran]
     return
 
-  # the install is delayed until postProcess() since Alquimia requires PETSc 
+  # the install is delayed until postProcess() since alquima install requires PETSc to be installed before alquima can be built.
   def Install(self):
     return self.installDir
 
   def configureLibrary(self):
-    ''' Just assume the downloaded library will work'''
+    ''' Since alquimia cannot be built until after PETSc is compiled we need to just assume the downloaded library will work'''
     if self.framework.clArgDB.has_key('with-alquimia'):
       raise RuntimeError('Alquimia does not support --with-alquimia; only --download-alquimia')
     if self.framework.clArgDB.has_key('with-alquimia-dir'):
@@ -78,6 +79,7 @@ class Configure(config.package.CMakePackage):
     return args
 
   def postProcess(self):
+    # since we know that pflotran was built before alquimia we know that self.compilePETSc() has already run and installed PETSc
     #alquimia cmake requires PETSc environmental variables
     os.environ['PETSC_DIR']  = self.petscdir.dir
     os.environ['PETSC_ARCH'] = self.arch

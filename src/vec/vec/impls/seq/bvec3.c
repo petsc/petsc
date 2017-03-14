@@ -20,8 +20,6 @@ extern PetscErrorCode VecCreate_Seq_Private(Vec,const float*);
 extern PetscErrorCode VecCreate_Seq_Private(Vec,const double*);
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "VecCreate_Seq"
 PETSC_EXTERN PetscErrorCode VecCreate_Seq(Vec V)
 {
   Vec_Seq        *s;

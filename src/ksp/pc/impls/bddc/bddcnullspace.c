@@ -1,8 +1,6 @@
 #include <../src/ksp/pc/impls/bddc/bddc.h>
 #include <../src/ksp/pc/impls/bddc/bddcprivate.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCApplyNullSpaceCorrectionPC"
 static PetscErrorCode PCBDDCApplyNullSpaceCorrectionPC(PC pc,Vec x,Vec y)
 {
   NullSpaceCorrection_ctx pc_ctx;
@@ -27,8 +25,6 @@ static PetscErrorCode PCBDDCApplyNullSpaceCorrectionPC(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCDestroyNullSpaceCorrectionPC"
 static PetscErrorCode PCBDDCDestroyNullSpaceCorrectionPC(PC pc)
 {
   NullSpaceCorrection_ctx pc_ctx;
@@ -48,8 +44,6 @@ static PetscErrorCode PCBDDCDestroyNullSpaceCorrectionPC(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCNullSpaceAssembleCorrection"
 PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBool needscaling)
 {
   PC_BDDC                  *pcbddc = (PC_BDDC*)pc->data;
@@ -215,8 +209,6 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCNullSpaceCheckCorrection"
 PetscErrorCode PCBDDCNullSpaceCheckCorrection(PC pc, PetscBool isdir)
 {
   PC_BDDC                  *pcbddc = (PC_BDDC*)pc->data;

@@ -14,14 +14,14 @@ codes.\n\n";
    Processors: n
 T*/
 
+
+
 /*
   Include "petscsys.h" so that we can use PETSc profiling routines.
 */
 #include <petscsys.h>
 #include <petscviewer.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
@@ -74,3 +74,10 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+
+
+/*TEST
+
+   test:
+
+TEST*/

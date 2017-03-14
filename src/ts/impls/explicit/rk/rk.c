@@ -112,8 +112,6 @@ M*/
 .seealso: TSRK
 M*/
 
-#undef __FUNCT__
-#define __FUNCT__ "TSRKRegisterAll"
 /*@C
   TSRKRegisterAll - Registers all of the Runge-Kutta explicit methods in TSRK
 
@@ -145,7 +143,7 @@ PetscErrorCode TSRKRegisterAll(void)
                     {1.0,0.0}},
       b[2]        = {0.5,0.5},
       bembed[2]   = {1.0,0};
-    ierr = TSRKRegister(TSRK2A,2,2,&A[0][0],b,NULL,bembed,2,b);CHKERRQ(ierr);
+    ierr = TSRKRegister(TSRK2A,2,2,&A[0][0],b,NULL,bembed,1,b);CHKERRQ(ierr);
   }
   {
     const PetscReal
@@ -153,7 +151,7 @@ PetscErrorCode TSRKRegisterAll(void)
                  {2.0/3.0,0,0},
                  {-1.0/3.0,1.0,0}},
       b[3]    = {0.25,0.5,0.25};
-    ierr = TSRKRegister(TSRK3,3,3,&A[0][0],b,NULL,NULL,3,b);CHKERRQ(ierr);
+    ierr = TSRKRegister(TSRK3,3,3,&A[0][0],b,NULL,NULL,1,b);CHKERRQ(ierr);
   }
   {
     const PetscReal
@@ -163,7 +161,7 @@ PetscErrorCode TSRKRegisterAll(void)
                  {2.0/9.0,1.0/3.0,4.0/9.0,0}},
       b[4]    = {2.0/9.0,1.0/3.0,4.0/9.0,0},
       bembed[4] = {7.0/24.0,1.0/4.0,1.0/3.0,1.0/8.0};
-    ierr = TSRKRegister(TSRK3BS,3,4,&A[0][0],b,NULL,bembed,3,b);CHKERRQ(ierr);
+    ierr = TSRKRegister(TSRK3BS,3,4,&A[0][0],b,NULL,bembed,1,b);CHKERRQ(ierr);
   }
   {
     const PetscReal
@@ -172,7 +170,7 @@ PetscErrorCode TSRKRegisterAll(void)
                  {0,0.5,0,0},
                  {0,0,1.0,0}},
       b[4]    = {1.0/6.0,1.0/3.0,1.0/3.0,1.0/6.0};
-    ierr = TSRKRegister(TSRK4,4,4,&A[0][0],b,NULL,NULL,4,b);CHKERRQ(ierr);
+    ierr = TSRKRegister(TSRK4,4,4,&A[0][0],b,NULL,NULL,1,b);CHKERRQ(ierr);
   }
   {
     const PetscReal
@@ -184,7 +182,7 @@ PetscErrorCode TSRKRegisterAll(void)
                    {-8.0/27.0,2.0,-3544.0/2565.0,1859.0/4104.0,-11.0/40.0,0}},
       b[6]      = {16.0/135.0,0,6656.0/12825.0,28561.0/56430.0,-9.0/50.0,2.0/55.0},
       bembed[6] = {25.0/216.0,0,1408.0/2565.0,2197.0/4104.0,-1.0/5.0,0};
-    ierr = TSRKRegister(TSRK5F,5,6,&A[0][0],b,NULL,bembed,5,b);CHKERRQ(ierr);
+    ierr = TSRKRegister(TSRK5F,5,6,&A[0][0],b,NULL,bembed,1,b);CHKERRQ(ierr);
   }
   {
     const PetscReal
@@ -197,13 +195,11 @@ PetscErrorCode TSRKRegisterAll(void)
                    {35.0/384.0,0,500.0/1113.0,125.0/192.0,-2187.0/6784.0,11.0/84.0,0}},
       b[7]      = {35.0/384.0,0,500.0/1113.0,125.0/192.0,-2187.0/6784.0,11.0/84.0,0},
       bembed[7] = {5179.0/57600.0,0,7571.0/16695.0,393.0/640.0,-92097.0/339200.0,187.0/2100.0,1.0/40.0};
-    ierr = TSRKRegister(TSRK5DP,5,7,&A[0][0],b,NULL,bembed,5,b);CHKERRQ(ierr);
+    ierr = TSRKRegister(TSRK5DP,5,7,&A[0][0],b,NULL,bembed,1,b);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSRKRegisterDestroy"
 /*@C
    TSRKRegisterDestroy - Frees the list of schemes that were registered by TSRKRegister().
 
@@ -233,8 +229,6 @@ PetscErrorCode TSRKRegisterDestroy(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSRKInitializePackage"
 /*@C
   TSRKInitializePackage - This function initializes everything in the TSRK package. It is called
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to TSCreate_RK()
@@ -257,8 +251,6 @@ PetscErrorCode TSRKInitializePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSRKFinalizePackage"
 /*@C
   TSRKFinalizePackage - This function destroys everything in the TSRK package. It is
   called from PetscFinalize().
@@ -278,8 +270,6 @@ PetscErrorCode TSRKFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSRKRegister"
 /*@C
    TSRKRegister - register an RK scheme by providing the entries in the Butcher tableau and optionally embedded approximations and interpolation
 
@@ -342,8 +332,6 @@ PetscErrorCode TSRKRegister(TSRKType name,PetscInt order,PetscInt s,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSEvaluateStep_RK"
 /*
  The step completion formula is
 
@@ -407,8 +395,6 @@ unavailable:
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSForwardCostIntegral_RK"
 static PetscErrorCode TSForwardCostIntegral_RK(TS ts)
 {
   TS_RK           *rk = (TS_RK*)ts->data;
@@ -430,8 +416,6 @@ static PetscErrorCode TSForwardCostIntegral_RK(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdjointCostIntegral_RK"
 static PetscErrorCode TSAdjointCostIntegral_RK(TS ts)
 {
   TS_RK           *rk = (TS_RK*)ts->data;
@@ -451,8 +435,6 @@ static PetscErrorCode TSAdjointCostIntegral_RK(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSRollBack_RK"
 static PetscErrorCode TSRollBack_RK(TS ts)
 {
   TS_RK           *rk = (TS_RK*)ts->data;
@@ -479,8 +461,6 @@ static PetscErrorCode TSRollBack_RK(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSStep_RK"
 static PetscErrorCode TSStep_RK(TS ts)
 {
   TS_RK           *rk   = (TS_RK*)ts->data;
@@ -497,7 +477,6 @@ static PetscErrorCode TSStep_RK(TS ts)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-
   rk->status = TS_STEP_INCOMPLETE;
   while (!ts->reason && rk->status != TS_STEP_COMPLETE) {
     PetscReal t = ts->ptime;
@@ -548,8 +527,6 @@ static PetscErrorCode TSStep_RK(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdjointSetUp_RK"
 static PetscErrorCode TSAdjointSetUp_RK(TS ts)
 {
   TS_RK         *rk  = (TS_RK*)ts->data;
@@ -567,8 +544,6 @@ static PetscErrorCode TSAdjointSetUp_RK(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSAdjointStep_RK"
 static PetscErrorCode TSAdjointStep_RK(TS ts)
 {
   TS_RK           *rk   = (TS_RK*)ts->data;
@@ -634,8 +609,6 @@ static PetscErrorCode TSAdjointStep_RK(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSInterpolate_RK"
 static PetscErrorCode TSInterpolate_RK(TS ts,PetscReal itime,Vec X)
 {
   TS_RK           *rk = (TS_RK*)ts->data;
@@ -678,8 +651,6 @@ static PetscErrorCode TSInterpolate_RK(TS ts,PetscReal itime,Vec X)
 
 /*------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "TSRKTableauReset"
 static PetscErrorCode TSRKTableauReset(TS ts)
 {
   TS_RK          *rk = (TS_RK*)ts->data;
@@ -696,8 +667,6 @@ static PetscErrorCode TSRKTableauReset(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSReset_RK"
 static PetscErrorCode TSReset_RK(TS ts)
 {
   TS_RK         *rk = (TS_RK*)ts->data;
@@ -710,8 +679,6 @@ static PetscErrorCode TSReset_RK(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSDestroy_RK"
 static PetscErrorCode TSDestroy_RK(TS ts)
 {
   PetscErrorCode ierr;
@@ -725,16 +692,12 @@ static PetscErrorCode TSDestroy_RK(TS ts)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCoarsenHook_TSRK"
 static PetscErrorCode DMCoarsenHook_TSRK(DM fine,DM coarse,void *ctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMRestrictHook_TSRK"
 static PetscErrorCode DMRestrictHook_TSRK(DM fine,Mat restrct,Vec rscale,Mat inject,DM coarse,void *ctx)
 {
   PetscFunctionBegin;
@@ -742,16 +705,12 @@ static PetscErrorCode DMRestrictHook_TSRK(DM fine,Mat restrct,Vec rscale,Mat inj
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSubDomainHook_TSRK"
 static PetscErrorCode DMSubDomainHook_TSRK(DM dm,DM subdm,void *ctx)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSubDomainRestrictHook_TSRK"
 static PetscErrorCode DMSubDomainRestrictHook_TSRK(DM dm,VecScatter gscat,VecScatter lscat,DM subdm,void *ctx)
 {
 
@@ -759,8 +718,6 @@ static PetscErrorCode DMSubDomainRestrictHook_TSRK(DM dm,VecScatter gscat,VecSca
   PetscFunctionReturn(0);
 }
 /*
-#undef __FUNCT__
-#define __FUNCT__ "RKSetAdjCoe"
 static PetscErrorCode RKSetAdjCoe(RKTableau tab)
 {
   PetscReal *A,*b;
@@ -786,8 +743,6 @@ static PetscErrorCode RKSetAdjCoe(RKTableau tab)
 }
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "TSRKTableauSetUp"
 static PetscErrorCode TSRKTableauSetUp(TS ts)
 {
   TS_RK         *rk  = (TS_RK*)ts->data;
@@ -802,8 +757,6 @@ static PetscErrorCode TSRKTableauSetUp(TS ts)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TSSetUp_RK"
 static PetscErrorCode TSSetUp_RK(TS ts)
 {
   TS_RK         *rk = (TS_RK*)ts->data;
@@ -811,6 +764,7 @@ static PetscErrorCode TSSetUp_RK(TS ts)
   DM             dm;
 
   PetscFunctionBegin;
+  ierr = TSCheckImplicitTerm(ts);CHKERRQ(ierr);
   ierr = TSRKTableauSetUp(ts);CHKERRQ(ierr);
   if (!rk->VecCostIntegral0 && ts->vec_costintegral && ts->costintegralfwd) { /* back up cost integral */
     ierr = VecDuplicate(ts->vec_costintegral,&rk->VecCostIntegral0);CHKERRQ(ierr);
@@ -826,8 +780,6 @@ static PetscErrorCode TSSetUp_RK(TS ts)
 
 /*------------------------------------------------------------*/
 
-#undef __FUNCT__
-#define __FUNCT__ "TSSetFromOptions_RK"
 static PetscErrorCode TSSetFromOptions_RK(PetscOptionItems *PetscOptionsObject,TS ts)
 {
   TS_RK         *rk = (TS_RK*)ts->data;
@@ -851,8 +803,6 @@ static PetscErrorCode TSSetFromOptions_RK(PetscOptionItems *PetscOptionsObject,T
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFormatRealArray"
 static PetscErrorCode PetscFormatRealArray(char buf[],size_t len,const char *fmt,PetscInt n,const PetscReal x[])
 {
   PetscErrorCode ierr;
@@ -872,8 +822,6 @@ static PetscErrorCode PetscFormatRealArray(char buf[],size_t len,const char *fmt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSView_RK"
 static PetscErrorCode TSView_RK(TS ts,PetscViewer viewer)
 {
   TS_RK          *rk = (TS_RK*)ts->data;
@@ -896,8 +844,6 @@ static PetscErrorCode TSView_RK(TS ts,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSLoad_RK"
 static PetscErrorCode TSLoad_RK(TS ts,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -909,8 +855,6 @@ static PetscErrorCode TSLoad_RK(TS ts,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSRKSetType"
 /*@C
   TSRKSetType - Set the type of RK scheme
 
@@ -934,8 +878,6 @@ PetscErrorCode TSRKSetType(TS ts,TSRKType rktype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSRKGetType"
 /*@C
   TSRKGetType - Get the type of RK scheme
 
@@ -961,8 +903,6 @@ PetscErrorCode TSRKGetType(TS ts,TSRKType *rktype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSRKGetType_RK"
 static PetscErrorCode TSRKGetType_RK(TS ts,TSRKType *rktype)
 {
   TS_RK *rk = (TS_RK*)ts->data;
@@ -971,8 +911,6 @@ static PetscErrorCode TSRKGetType_RK(TS ts,TSRKType *rktype)
   *rktype = rk->tableau->name;
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "TSRKSetType_RK"
 static PetscErrorCode TSRKSetType_RK(TS ts,TSRKType rktype)
 {
   TS_RK          *rk = (TS_RK*)ts->data;
@@ -998,8 +936,6 @@ static PetscErrorCode TSRKSetType_RK(TS ts,TSRKType rktype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSGetStages_RK"
 static PetscErrorCode  TSGetStages_RK(TS ts,PetscInt *ns,Vec **Y)
 {
   TS_RK          *rk = (TS_RK*)ts->data;
@@ -1027,8 +963,6 @@ static PetscErrorCode  TSGetStages_RK(TS ts,PetscInt *ns,Vec **Y)
            TSRK4, TSRK5, TSRKPRSSP2, TSRKBPR3, TSRKType, TSRKRegister()
 
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "TSCreate_RK"
 PETSC_EXTERN PetscErrorCode TSCreate_RK(TS ts)
 {
   TS_RK          *rk;

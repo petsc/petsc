@@ -52,15 +52,14 @@ class Configure(config.base.Configure):
         rjobs.append('Cxx')
       if self.x.found:
         jobs.append('C_X')
-      if hasattr(self.compilers, 'FC') and self.fortrancpp.fortranDatatypes:
-        if self.compilers.fortranIsF90FreeForm:
-          jobs.append('F90_DataTypes')
-      elif hasattr(self.compilers, 'FC'):
+      if hasattr(self.compilers, 'FC'):
         jobs.append('Fortran')
         if not self.scalartypes.precision == 'single':
           jobs.append('Fortran_NotSingle')
         if self.compilers.fortranIsF90FreeForm and self.compilers.fortranIsF90:
           rjobs.append('F90')
+          if self.datafilespath.datafilespath and self.scalartypes.precision == 'double' and self.indextypes.integerSize == 32:
+            jobs.append('F90_DataTypes')
           if self.libraryOptions.useThreadSafety:
             jobs.append('F90_Threadsafety')
           if not self.scalartypes.precision == 'single':
@@ -81,7 +80,7 @@ class Configure(config.base.Configure):
         rjobs.append('C_Complex')
         if self.datafilespath.datafilespath and self.scalartypes.precision == 'double' and self.indextypes.integerSize == 32:
           for j in self.framework.packages:
-            if j.PACKAGE in ['SUPERLU_DIST']:
+            if j.PACKAGE in ['SUPERLU_DIST','ELEMENTAL']:
                 ejobs.append(j.PACKAGE+'_COMPLEX_DATAFILESPATH')
       else:
         rjobs.append('C_NoComplex')
@@ -111,11 +110,15 @@ class Configure(config.base.Configure):
             for j in self.framework.packages:
               if j.PACKAGE == 'HDF5':
                 ejobs.append('MOAB_HDF5')
+          if i.PACKAGE == 'TRIANGLE':
+            for j in self.framework.packages:
+              if j.PACKAGE == 'HDF5':
+                ejobs.append('TRIANGLE_HDF5')
       else:
         for i in self.framework.packages:
           if i.PACKAGE in ['FFTW','SUPERLU_DIST']:
             jobs.append(i.PACKAGE+ '_COMPLEX')
-          elif i.PACKAGE in ['STRUMPACK']:
+          elif i.PACKAGE in ['STRUMPACK','ELEMENTAL']:
             jobs.append(i.PACKAGE)
       if hasattr(self.compilers, 'CUDAC'):
         if self.veccuda.defines.has_key('HAVE_VECCUDA'):

@@ -7,8 +7,6 @@
 */
 #include <petsc/private/logimpl.h> /*I    "petscsys.h"   I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscIntStackDestroy"
 /*@C
   PetscIntStackDestroy - This function destroys a stack.
 
@@ -32,8 +30,6 @@ PetscErrorCode PetscIntStackDestroy(PetscIntStack stack)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscIntStackEmpty"
 /*@C
   PetscIntStackEmpty - This function determines whether any items have been pushed.
 
@@ -59,8 +55,6 @@ PetscErrorCode PetscIntStackEmpty(PetscIntStack stack, PetscBool  *empty)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscIntStackTop"
 /*@C
   PetscIntStackTop - This function returns the top of the stack.
 
@@ -85,8 +79,6 @@ PetscErrorCode PetscIntStackTop(PetscIntStack stack, int *top)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscIntStackPush"
 /*@C
   PetscIntStackPush - This function pushes an integer on the stack.
 
@@ -120,8 +112,6 @@ PetscErrorCode PetscIntStackPush(PetscIntStack stack, int item)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscIntStackPop"
 /*@C
   PetscIntStackPop - This function pops an integer from the stack.
 
@@ -147,8 +137,6 @@ PetscErrorCode PetscIntStackPop(PetscIntStack stack, int *item)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscIntStackCreate"
 /*@C
   PetscIntStackCreate - This function creates a stack.
 

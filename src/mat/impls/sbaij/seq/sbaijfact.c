@@ -4,8 +4,6 @@
 #include <petsc/private/kernels/blockinvert.h>
 #include <petscis.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "MatGetInertia_SeqSBAIJ"
 PetscErrorCode MatGetInertia_SeqSBAIJ(Mat F,PetscInt *nneg,PetscInt *nzero,PetscInt *npos)
 {
   Mat_SeqSBAIJ *fact=(Mat_SeqSBAIJ*)F->data;
@@ -32,8 +30,6 @@ PetscErrorCode MatGetInertia_SeqSBAIJ(Mat F,PetscInt *nneg,PetscInt *nzero,Petsc
   Symbolic U^T*D*U factorization for SBAIJ format. Modified from SSF of YSMP.
   Use Modified Sparse Row (MSR) storage for u and ju. See page 85, "Iterative Methods ..." by Saad.
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatCholeskyFactorSymbolic_SeqSBAIJ_MSR"
 PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat F,Mat A,IS perm,const MatFactorInfo *info)
 {
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data,*b;
@@ -210,8 +206,6 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat F,Mat A,IS perm,const 
 */
 #include <petscbt.h>
 #include <../src/mat/utils/freespace.h>
-#undef __FUNCT__
-#define __FUNCT__ "MatCholeskyFactorSymbolic_SeqSBAIJ"
 PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const MatFactorInfo *info)
 {
   Mat_SeqSBAIJ       *a = (Mat_SeqSBAIJ*)A->data;
@@ -378,8 +372,6 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const M
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCholeskyFactorSymbolic_SeqSBAIJ_inplace"
 PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_inplace(Mat fact,Mat A,IS perm,const MatFactorInfo *info)
 {
   Mat_SeqSBAIJ       *a = (Mat_SeqSBAIJ*)A->data;
@@ -555,8 +547,6 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_inplace(Mat fact,Mat A,IS perm
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCholeskyFactorNumeric_SeqSBAIJ_N"
 PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N(Mat C,Mat A,const MatFactorInfo *info)
 {
   Mat_SeqSBAIJ   *a   = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ*)C->data;
@@ -726,8 +716,6 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N(Mat C,Mat A,const MatFactorIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering"
 PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering(Mat C,Mat A,const MatFactorInfo *info)
 {
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ*)C->data;
@@ -855,8 +843,6 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering(Mat C,Mat A,c
     Numeric U^T*D*U factorization for SBAIJ format. Modified from SNF of YSMP.
     Version for blocks 2 by 2.
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatCholeskyFactorNumeric_SeqSBAIJ_2"
 PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat C,Mat A,const MatFactorInfo *info)
 {
   Mat_SeqSBAIJ   *a   = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ*)C->data;
@@ -1032,8 +1018,6 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat C,Mat A,const MatFactorIn
 /*
       Version for when blocks are 2 by 2 Using natural ordering
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering"
 PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering(Mat C,Mat A,const MatFactorInfo *info)
 {
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ*)C->data;
@@ -1172,8 +1156,6 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering(Mat C,Mat A,c
     Numeric U^T*D*U factorization for SBAIJ format.
     Version for blocks are 1 by 1.
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatCholeskyFactorNumeric_SeqSBAIJ_1_inplace"
 PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_inplace(Mat C,Mat A,const MatFactorInfo *info)
 {
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data,*b=(Mat_SeqSBAIJ*)C->data;
@@ -1321,8 +1303,6 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_inplace(Mat C,Mat A,const Mat
   Version for when blocks are 1 by 1 Using natural ordering under new datastructure
   Modified from MatCholeskyFactorNumeric_SeqAIJ()
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering"
 PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat B,Mat A,const MatFactorInfo *info)
 {
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
@@ -1465,8 +1445,6 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat B,Mat A,c
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering_inplace"
 PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering_inplace(Mat C,Mat A,const MatFactorInfo *info)
 {
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data,*b=(Mat_SeqSBAIJ*)C->data;
@@ -1602,8 +1580,6 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering_inplace(Mat C
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCholeskyFactor_SeqSBAIJ"
 PetscErrorCode MatCholeskyFactor_SeqSBAIJ(Mat A,IS perm,const MatFactorInfo *info)
 {
   PetscErrorCode ierr;

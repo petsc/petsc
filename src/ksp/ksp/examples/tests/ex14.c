@@ -77,8 +77,6 @@ typedef struct {
 extern PetscErrorCode ComputeFunction(AppCtx*,Vec,Vec),FormInitialGuess(AppCtx*,Vec);
 extern PetscErrorCode ComputeJacobian(AppCtx*,Vec,Mat);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   /* -------------- Data to define application problem ---------------- */
@@ -283,8 +281,6 @@ int main(int argc,char **argv)
   return ierr;
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormInitialGuess"
 /*
    FormInitialGuess - Forms initial approximation.
 
@@ -346,8 +342,6 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   return 0;
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "ComputeFunction"
 /*
    ComputeFunction - Evaluates nonlinear function, F(x).
 
@@ -418,8 +412,6 @@ PetscErrorCode ComputeFunction(AppCtx *user,Vec X,Vec F)
   return 0;
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "ComputeJacobian"
 /*
    ComputeJacobian - Evaluates Jacobian matrix.
 

@@ -8,8 +8,6 @@ static char help[] = "Tests PetscTreeProcess()";
                     1         4
                     5
 */
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
@@ -38,6 +36,7 @@ int main(int argc,char **argv)
       ierr = PetscPrintf(PETSC_COMM_WORLD," %D ",Column[i]);CHKERRQ(ierr);
     }
   }
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n");CHKERRQ(ierr);
   ierr = PetscFree(Level);CHKERRQ(ierr);
   ierr = PetscFree(Levelcnt);CHKERRQ(ierr);
   ierr = PetscFree(Idbylevel);CHKERRQ(ierr);
@@ -45,3 +44,10 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+
+/*TEST
+
+   test:
+
+TEST*/

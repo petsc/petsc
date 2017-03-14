@@ -7,8 +7,6 @@
     This routine is shared by SeqAIJ and SeqBAIJ matrices,
     since it operators only on the nonzero structure of the elements or blocks.
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatFDColoringCreate_SeqXAIJ"
 PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
   PetscErrorCode ierr;
@@ -56,8 +54,6 @@ PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDCo
 .  color - the coloring context
 -  nz - number of local non-zeros in mat
 */
-#undef __FUNCT__
-#define __FUNCT__ "MatFDColoringSetUpBlocked_AIJ_Private"
 PetscErrorCode MatFDColoringSetUpBlocked_AIJ_Private(Mat mat,MatFDColoring c,PetscInt nz)
 {
   PetscErrorCode ierr;
@@ -168,8 +164,6 @@ PetscErrorCode MatFDColoringSetUpBlocked_AIJ_Private(Mat mat,MatFDColoring c,Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatFDColoringSetUp_SeqXAIJ"
 PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
   PetscErrorCode ierr;

@@ -13,8 +13,6 @@
 */
 #include <petscsys.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscLINPACKgefa"
 PETSC_INTERN PetscErrorCode PetscLINPACKgefa(MatScalar *a,PetscInt n,PetscInt *ipvt,PetscBool allowzeropivot,PetscBool *zeropivotdetected)
 {
   PetscInt  i__2,i__3,kp1,nm1,j,k,l,ll,kn,knp1,jn1;

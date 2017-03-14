@@ -43,7 +43,7 @@ runex1f:
 	   ${RM} -f ex1f_1.tmp
 
 runex1py:
-	-@${MPIEXEC} -n 1 python ./ex1.py -ksp_monitor_short -ksp_view > ex1py_1.tmp 2>&1;   \
+	-@PYTHONPATH=${PETSC_DIR}/${PETSC_ARCH}/lib:${PYTHONPATH} ${MPIEXEC} -n 1 python ./ex1.py -ksp_monitor_short -ksp_view > ex1py_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex1py_1.out ex1py_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex1py_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex1py_1.tmp example1.py[co]

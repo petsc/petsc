@@ -4,8 +4,6 @@
 */
 #include <petsc/private/drawimpl.h>  /*I "petscdraw.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawGetMouseButton"
 /*@
     PetscDrawGetMouseButton - Returns location of mouse and which button was
     pressed. Waits for button to be pressed.

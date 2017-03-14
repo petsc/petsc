@@ -3,8 +3,6 @@
 */
 #include <petsc/private/drawimpl.h>  /*I "petscdraw.h" I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawString"
 /*@C
    PetscDrawString - PetscDraws text onto a drawable.
 
@@ -21,7 +19,9 @@
    Concepts: drawing^string
    Concepts: string^drawing
 
-.seealso: PetscDrawStringVertical(), PetscDrawStringCentered(), PetscDrawStringBoxed()
+.seealso: PetscDrawStringVertical(), PetscDrawStringCentered(), PetscDrawStringBoxed(), PetscDrawStringBoxedSize(), PetscDrawStringSetSize(),
+          PetscDrawStringGetSize(), PetscDrawLine(), PetscDrawRectangle(), PetscDrawTriangle(), PetscDrawEllipse(),
+          PetscDrawMarker(), PetscDrawPoint()
 
 @*/
 PetscErrorCode  PetscDrawString(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,const char text[])
@@ -36,8 +36,6 @@ PetscErrorCode  PetscDrawString(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawStringVertical"
 /*@C
    PetscDrawStringVertical - PetscDraws text onto a drawable.
 
@@ -53,7 +51,8 @@ PetscErrorCode  PetscDrawString(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,
 
    Concepts: string^drawing vertical
 
-.seealso: PetscDrawString()
+.seealso: PetscDrawString(), PetscDrawStringCentered(), PetscDrawStringBoxed(), PetscDrawStringBoxedSize(), PetscDrawStringSetSize(),
+          PetscDrawStringGetSize()
 
 @*/
 PetscErrorCode  PetscDrawStringVertical(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,const char text[])
@@ -78,8 +77,6 @@ PetscErrorCode  PetscDrawStringVertical(PetscDraw draw,PetscReal xl,PetscReal yl
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawStringCentered"
 /*@C
    PetscDrawStringCentered - PetscDraws text onto a drawable centered at a point
 
@@ -97,7 +94,8 @@ PetscErrorCode  PetscDrawStringVertical(PetscDraw draw,PetscReal xl,PetscReal yl
    Concepts: drawing^string
    Concepts: string^drawing
 
-.seealso: PetscDrawStringVertical(), PetscDrawString(), PetscDrawStringBoxed()
+.seealso: PetscDrawStringVertical(), PetscDrawString(), PetscDrawStringBoxed(), PetscDrawStringBoxedSize(), PetscDrawStringSetSize(),
+          PetscDrawStringGetSize()
 
 @*/
 PetscErrorCode  PetscDrawStringCentered(PetscDraw draw,PetscReal xc,PetscReal yl,int cl,const char text[])
@@ -117,8 +115,6 @@ PetscErrorCode  PetscDrawStringCentered(PetscDraw draw,PetscReal xc,PetscReal yl
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawStringBoxed"
 /*@C
    PetscDrawStringBoxed - Draws a string with a box around it
 
@@ -140,7 +136,8 @@ PetscErrorCode  PetscDrawStringCentered(PetscDraw draw,PetscReal xc,PetscReal yl
    Concepts: drawing^string
    Concepts: string^drawing
 
-.seealso: PetscDrawStringVertical(), PetscDrawStringBoxedSize(), PetscDrawString(), PetscDrawStringCentered()
+.seealso: PetscDrawStringVertical(), PetscDrawString(), PetscDrawStringCentered(), PetscDrawStringBoxedSize(), PetscDrawStringSetSize(),
+          PetscDrawStringGetSize()
 
 @*/
 PetscErrorCode  PetscDrawStringBoxed(PetscDraw draw,PetscReal sxl,PetscReal syl,int sc,int bc,const char text[],PetscReal *w,PetscReal *h)
@@ -194,8 +191,6 @@ PetscErrorCode  PetscDrawStringBoxed(PetscDraw draw,PetscReal sxl,PetscReal syl,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawStringSetSize"
 /*@
    PetscDrawStringSetSize - Sets the size for character text.
 
@@ -213,7 +208,8 @@ PetscErrorCode  PetscDrawStringBoxed(PetscDraw draw,PetscReal sxl,PetscReal syl,
 
    Concepts: string^drawing size
 
-.seealso: PetscDrawString(), PetscDrawStringVertical(), PetscDrawStringGetSize()
+.seealso: PetscDrawStringVertical(), PetscDrawString(), PetscDrawStringCentered(), PetscDrawStringBoxedSize(), PetscDrawStringBoxed(),
+          PetscDrawStringGetSize()
 
 @*/
 PetscErrorCode  PetscDrawStringSetSize(PetscDraw draw,PetscReal width,PetscReal height)
@@ -228,8 +224,6 @@ PetscErrorCode  PetscDrawStringSetSize(PetscDraw draw,PetscReal width,PetscReal 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscDrawStringGetSize"
 /*@
    PetscDrawStringGetSize - Gets the size for character text.  The width is
    relative to the user coordinates of the window.
@@ -245,7 +239,8 @@ PetscErrorCode  PetscDrawStringSetSize(PetscDraw draw,PetscReal width,PetscReal 
 
    Concepts: string^drawing size
 
-.seealso: PetscDrawString(), PetscDrawStringVertical(), PetscDrawStringSetSize()
+.seealso: PetscDrawStringVertical(), PetscDrawString(), PetscDrawStringCentered(), PetscDrawStringBoxedSize(), PetscDrawStringBoxed(),
+          PetscDrawStringSetSize()
 
 @*/
 PetscErrorCode  PetscDrawStringGetSize(PetscDraw draw,PetscReal *width,PetscReal *height)

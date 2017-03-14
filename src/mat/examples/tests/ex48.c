@@ -3,8 +3,6 @@ static char help[] = "Tests the vatious routines in MatSeqBAIJ format.\n";
 
 #include <petscmat.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat            A,B,Fact;
@@ -38,7 +36,7 @@ int main(int argc,char **args)
   for (row=0; row<M; row++) {
     for (i=0; i<25*bs; i++) {
       ierr = PetscRandomGetValue(rdm,&rval);CHKERRQ(ierr);
-      col  = (PetscInt)(PetscRealPart(rval)*M);
+      col  = PetscMin(M-1,(PetscInt)(PetscRealPart(rval)*M));
       ierr = MatSetValues(A,1,&row,1,&col,&rval,INSERT_VALUES);CHKERRQ(ierr);
       ierr = MatSetValues(B,1,&row,1,&col,&rval,INSERT_VALUES);CHKERRQ(ierr);
     }
@@ -47,16 +45,16 @@ int main(int argc,char **args)
   /* Now set blocks of values */
   for (i=0; i<20*bs; i++) {
     ierr     = PetscRandomGetValue(rdm,&rval);CHKERRQ(ierr);
-    cols[0]  = (PetscInt)(PetscRealPart(rval)*M);
+    cols[0]  = PetscMin(M-1,(PetscInt)(PetscRealPart(rval)*M));
     vals1[0] = rval;
     ierr     = PetscRandomGetValue(rdm,&rval);CHKERRQ(ierr);
-    cols[1]  = (PetscInt)(PetscRealPart(rval)*M);
+    cols[1]  = PetscMin(M-1,(PetscInt)(PetscRealPart(rval)*M));
     vals1[1] = rval;
     ierr     = PetscRandomGetValue(rdm,&rval);CHKERRQ(ierr);
-    rows[0]  = (PetscInt)(PetscRealPart(rval)*M);
+    rows[0]  = PetscMin(M-1,(PetscInt)(PetscRealPart(rval)*M));
     vals1[2] = rval;
     ierr     = PetscRandomGetValue(rdm,&rval);CHKERRQ(ierr);
-    rows[1]  = (PetscInt)(PetscRealPart(rval)*M);
+    rows[1]  = PetscMin(M-1,(PetscInt)(PetscRealPart(rval)*M));
     vals1[3] = rval;
     ierr     = MatSetValues(A,2,rows,2,cols,vals1,INSERT_VALUES);CHKERRQ(ierr);
     ierr     = MatSetValues(B,2,rows,2,cols,vals1,INSERT_VALUES);CHKERRQ(ierr);
@@ -93,19 +91,19 @@ int main(int argc,char **args)
   ierr = MatShift(B,rval);CHKERRQ(ierr);
 
   /* Test MatTranspose() */
-  ierr = MatTranspose(A,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
-  ierr = MatTranspose(B,MAT_REUSE_MATRIX,&B);CHKERRQ(ierr);
+  ierr = MatTranspose(A,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
+  ierr = MatTranspose(B,MAT_INPLACE_MATRIX,&B);CHKERRQ(ierr);
 
   /* Now do MatGetValues()  */
   for (i=0; i<30; i++) {
     ierr    = PetscRandomGetValue(rdm,&rval);CHKERRQ(ierr);
-    cols[0] = (PetscInt)(PetscRealPart(rval)*M);
+    cols[0] = PetscMin(M-1,(PetscInt)(PetscRealPart(rval)*M));
     ierr    = PetscRandomGetValue(rdm,&rval);CHKERRQ(ierr);
-    cols[1] = (PetscInt)(PetscRealPart(rval)*M);
+    cols[1] = PetscMin(M-1,(PetscInt)(PetscRealPart(rval)*M));
     ierr    = PetscRandomGetValue(rdm,&rval);CHKERRQ(ierr);
-    rows[0] = (PetscInt)(PetscRealPart(rval)*M);
+    rows[0] = PetscMin(M-1,(PetscInt)(PetscRealPart(rval)*M));
     ierr    = PetscRandomGetValue(rdm,&rval);CHKERRQ(ierr);
-    rows[1] = (PetscInt)(PetscRealPart(rval)*M);
+    rows[1] = PetscMin(M-1,(PetscInt)(PetscRealPart(rval)*M));
     ierr    = MatGetValues(A,2,rows,2,cols,vals1);CHKERRQ(ierr);
     ierr    = MatGetValues(B,2,rows,2,cols,vals2);CHKERRQ(ierr);
     ierr    = PetscMemcmp(vals1,vals2,4*sizeof(PetscScalar),&flg);CHKERRQ(ierr);
