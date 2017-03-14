@@ -38,7 +38,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-uninterpolate", "Uninterpolate the mesh at the end", "ex4.c", options->uninterpolate, &options->uninterpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
-};
+}
 
 /* Two segments
 
@@ -66,7 +66,7 @@ PetscErrorCode CreateSimplex_1D(MPI_Comm comm, DM *dm)
 
     ierr = DMPlexCreateFromDAG(*dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
   } else {
-    PetscInt numPoints[2] = {0, 0, 0};
+    PetscInt numPoints[2] = {0, 0};
 
     ierr = DMPlexCreateFromDAG(*dm, depth, numPoints, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
   }
@@ -637,8 +637,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   }
   if (user->testPartition && size > 1) {
     PetscPartitioner part;
-    const PetscInt  *sizes  = NULL;
-    const PetscInt  *points = NULL;
+    PetscInt  *sizes  = NULL;
+    PetscInt  *points = NULL;
 
     if (!rank) {
       if (dim == 2 && cellSimplex && !cellHybrid && size == 2) {
@@ -818,3 +818,151 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+  # 2D Simplex 0-3
+  test:
+    suffix: 0
+    args: -dim 2 -cell_hybrid 0 -dm_view ::ascii_info_detail
+  test:
+    suffix: 1
+    args: -dim 2 -cell_hybrid 0 -num_refinements 1 -dm_view ::ascii_info_detail
+  test:
+    suffix: 2
+    nsize: 2
+    args: -dim 2 -cell_hybrid 0 -dm_view ::ascii_info_detail
+  test:
+    suffix: 3
+    nsize: 2
+    args: -dim 2 -cell_hybrid 0 -num_refinements 1 -dm_view ::ascii_info_detail
+
+  # 2D Hybrid Simplex 4-7
+  test:
+    suffix: 4
+    args: -dim 2 -dm_view ::ascii_info_detail
+  test:
+    suffix: 5
+    args: -dim 2 -num_refinements 1 -dm_view ::ascii_info_detail
+  test:
+    suffix: 6
+    nsize: 2
+    args: -dim 2 -dm_view ::ascii_info_detail
+  test:
+    suffix: 7
+    nsize: 2
+    args: -dim 2 -num_refinements 1 -dm_view ::ascii_info_detail
+
+  # 3D Simplex 8-11
+  test:
+    suffix: 8
+    args: -dim 3 -cell_hybrid 0 -num_refinements 1 -dm_view ::ascii_info_detail
+  test:
+    suffix: 9
+    nsize: 2
+    args: -dim 3 -cell_hybrid 0 -num_refinements 1 -dm_view ::ascii_info_detail
+  test:
+    suffix: 10
+    args: -dim 3 -cell_hybrid 0 -test_num 1 -num_refinements 1 -dm_view ::ascii_info_detail
+  test:
+    suffix: 11
+    nsize: 2
+    args: -dim 3 -cell_hybrid 0 -test_num 1 -num_refinements 1 -dm_view ::ascii_info_detail
+
+  # 2D Quad 12-13
+  test:
+    suffix: 12
+    args: -dim 2 -cell_simplex 0 -cell_hybrid 0 -num_refinements 1 -dm_view ::ascii_info_detail
+  test:
+    suffix: 13
+    nsize: 2
+    args: -dim 2 -cell_simplex 0 -cell_hybrid 0 -num_refinements 1 -dm_view ::ascii_info_detail
+
+  # 3D Hex 14-15
+  test:
+    suffix: 14
+    args: -dim 3 -cell_simplex 0 -cell_hybrid 0 -num_refinements 1 -dm_view ::ascii_info_detail
+  test:
+    suffix: 15
+    nsize: 2
+    args: -dim 3 -cell_simplex 0 -cell_hybrid 0 -num_refinements 1 -dm_view ::ascii_info_detail
+
+  # 3D Hybrid Simplex 16-19
+  test:
+    suffix: 16
+    args: -dim 3 -num_refinements 1 -dm_view ::ascii_info_detail
+  test:
+    suffix: 17
+    nsize: 2
+    args: -dim 3 -num_refinements 1 -dm_view ::ascii_info_detail
+  test:
+    suffix: 18
+    args: -dim 3 -test_num 1 -num_refinements 1 -dm_view ::ascii_info_detail
+  test:
+    suffix: 19
+    nsize: 2
+    args: -dim 3 -test_num 1 -num_refinements 1 -dm_view ::ascii_info_detail
+
+  # 3D Hybrid Hex 20-23
+  test:
+    suffix: 20
+    args: -dim 3 -cell_simplex 0 -num_refinements 1 -dm_view ::ascii_info_detail
+  test:
+    suffix: 21
+    nsize: 2
+    args: -dim 3 -cell_simplex 0 -num_refinements 1 -dm_view ::ascii_info_detail
+  test:
+    suffix: 22
+    args: -dim 3 -cell_simplex 0 -test_num 1 -num_refinements 1 -dm_view ::ascii_info_detail
+  test:
+    suffix: 23
+    nsize: 2
+    args: -dim 3 -cell_simplex 0 -test_num 1 -num_refinements 1 -dm_view ::ascii_info_detail
+
+  # 2D Hybrid Simplex 24-24
+  test:
+    suffix: 24
+    args: -dim 2 -test_num 1 -num_refinements 1 -dm_view ::ascii_info_detail
+
+  # 3D Multiple Refinement 25-26
+  test:
+    suffix: 25
+    args: -dim 3 -cell_hybrid 0 -test_num 2 -num_refinements 2 -dm_view ::ascii_info_detail
+  test:
+    suffix: 26
+    args: -dim 3 -cell_simplex 0 -cell_hybrid 0 -test_num 1 -num_refinements 2 -dm_view ::ascii_info_detail
+
+  # 2D Hybrid Quad 27-28
+  test:
+    suffix: 27
+    args: -dim 2 -cell_simplex 0 -num_refinements 1 -dm_view ::ascii_info_detail
+  test:
+    suffix: 28
+    nsize: 2
+    args: -dim 2 -cell_simplex 0 -num_refinements 1 -dm_view ::ascii_info_detail
+
+  # 1D Simplex 29-31
+  test:
+    suffix: 29
+    args: -dim 1 -cell_hybrid 0 -dm_view ::ascii_info_detail
+  test:
+    suffix: 30
+    args: -dim 1 -cell_hybrid 0 -num_refinements 1 -dm_view ::ascii_info_detail
+  test:
+    suffix: 31
+    args: -dim 1 -cell_hybrid 0 -num_refinements 5 -dm_view ::ascii_info_detail
+
+  # 2D Simplex 32-34
+  test:
+    suffix: 32
+    args: -dim 2 -cell_hybrid 0 -num_refinements 1 -uninterpolate -dm_view ::ascii_info_detail
+  test:
+    suffix: 33
+    nsize: 2
+    args: -dim 2 -cell_hybrid 0 -num_refinements 1 -uninterpolate -dm_view ::ascii_info_detail
+  test:
+    suffix: 34
+    nsize: 2
+    args: -dim 2 -cell_hybrid 0 -num_refinements 3 -uninterpolate -dm_view ::ascii_info_detail
+
+TEST*/

@@ -100,3 +100,16 @@
 
       call PetscFinalize(ierr)
       end program DMPlexTestField
+
+!/*TEST
+!
+!  test:
+!    suffix: 0
+!    requires: triangle
+!
+!  test:
+!    suffix: 1
+!    requires: ctetgen
+!    args: -dim 3
+!
+!TEST*/

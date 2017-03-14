@@ -7,8 +7,8 @@ DM_0x84000000_0 in 2 dimensions:
 Labels:
   ghost: 0 strata of sizes ()
   vtk: 1 strata of sizes (9)
-  Face Sets: 2 strata of sizes (3, 3)
   marker: 1 strata of sizes (12)
+  Face Sets: 2 strata of sizes (3, 3)
   depth: 3 strata of sizes (12, 21, 15)
   0  time        0  |x| (       0,        1) |x|_1 (       0,        1)         Error [           0,           0] int            0
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
@@ -51,6 +51,7 @@ TS Object: 1 MPI processes
   total number of nonlinear solve failures=0
   total number of linear solver iterations=0
   total number of rejected steps=0
+  using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
     Version = 1
   SNES Object: 1 MPI processes
     type: newtonls

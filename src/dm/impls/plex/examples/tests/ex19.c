@@ -144,7 +144,6 @@ int main (int argc, char * argv[]) {
   MPI_Comm       comm;
   DM             dma;
   Vec            metric;
-  PetscViewer    viewer;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
@@ -166,3 +165,24 @@ int main (int argc, char * argv[]) {
   PetscFinalize();
   return 0;
 }
+
+/*TEST
+
+  test:
+    suffix: 0
+    requires: pragmatic
+    args: -dim 2 -nbrVerEdge 5 -dm_plex_separate_marker 0 -met 2 -init_dm_view -adapt_dm_view
+  test:
+    suffix: 1
+    requires: pragmatic
+    args: -dim 2 -nbrVerEdge 5 -dm_plex_separate_marker 1 -bdLabel marker -met 2 -init_dm_view -adapt_dm_view
+  test:
+    suffix: 2
+    requires: pragmatic
+    args: -dim 3 -nbrVerEdge 5 -met 2 -init_dm_view -adapt_dm_view
+  test:
+    suffix: 3
+    requires: pragmatic
+    args: -dim 3 -nbrVerEdge 5 -bdLabel marker -met 2 -init_dm_view -adapt_dm_view
+
+TEST*/
