@@ -78,15 +78,18 @@ PetscErrorCode PetscParseLayerYAML(yaml_parser_t *parser,int *lvl)
 .   file - name of file
 -   require - if PETSC_TRUE will generate an error if the file does not exist
 
-
   Only a small subset of the YAML standard is implemented. Sequences and alias
   are NOT supported.
   The algorithm recursively parses the yaml file, pushing and popping prefixes
   and inserting key + values pairs using PetscOptionsInsertString.
 
-  Inspired by  http://stackoverflow.com/a/621451
+  PETSc will generate an error condition that stops the program if a YAML error
+  is detected, hence the user should check that the YAML file is valid before 
+  supplying it, for instance at http://www.yamllint.com/ .
 
-  Level: developer
+  Inspired by http://stackoverflow.com/a/621451
+
+  Level: intermediate
 
 .seealso: PetscOptionsSetValue(), PetscOptionsView(), PetscOptionsHasName(), PetscOptionsGetInt(),
           PetscOptionsGetReal(), PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsBool(),
