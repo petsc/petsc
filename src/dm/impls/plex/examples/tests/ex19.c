@@ -184,5 +184,10 @@ int main (int argc, char * argv[]) {
     suffix: 3
     requires: pragmatic
     args: -dim 3 -nbrVerEdge 5 -bdLabel marker -met 2 -init_dm_view -adapt_dm_view
+  test:
+    suffix: 4
+    requires: pragmatic
+    nsize: 4
+    args: -dim 2 -nbrVerEdge 3 -dm_plex_separate_marker 0 -met 2 -init_dm_view -adapt_dm_view
 
 TEST*/
