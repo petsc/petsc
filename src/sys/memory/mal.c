@@ -42,6 +42,7 @@ PetscErrorCode  PetscMallocAlign(size_t mem,int line,const char func[],const cha
     /*
       malloc space for two extra chunks and shift ptr 1 + enough to get it PetscScalar aligned
     */
+    int *ptr = (int*)malloc(mem + 2*PETSC_MEMALIGN);
     if (ptr) {
       int shift    = (int)(((PETSC_UINTPTR_T) ptr) % PETSC_MEMALIGN);
       shift        = (2*PETSC_MEMALIGN - shift)/sizeof(int);
