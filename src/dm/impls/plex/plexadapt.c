@@ -147,17 +147,9 @@ PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabel
 #ifdef PETSC_HAVE_PRAGMATIC
   switch (dim) {
   case 2:
-#if NEW_INTERFACE
-    pragmatic_2d_mpi_init(&numVertices, &numCells, cells, x, y, l2g, numLocVertices, comm);break;
-#else
-    pragmatic_2d_init(&numVertices, &numCells, cells, x, y);break;
-#endif
+    pragmatic_2d_mpi_init(&numVertices, &numCells, cells, x, y, l2gv, numLocVertices, comm);break;
   case 3:
-#if NEW_INTERFACE
-    pragmatic_3d_mpi_init(&numVertices, &numCells, cells, x, y, z, l2g, numLocVertices, comm);break;
-#else
-    pragmatic_3d_init(&numVertices, &numCells, cells, x, y, z);break;
-#endif
+    pragmatic_3d_mpi_init(&numVertices, &numCells, cells, x, y, z, l2gv, numLocVertices, comm);break;
   default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No Pragmatic adaptation defined for dimension %d", dim);
   }
   pragmatic_set_boundary(&numBdFaces, bdFaces, bdFaceIds);
@@ -184,11 +176,7 @@ PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabel
   for (v = 0; v < numVerticesNew; ++v) {for (d = 0; d < dim; ++d) coordsNew[v*dim+d] = xNew[d][v];}
   ierr = PetscMalloc1(numCellsNew*(dim+1), &cellsNew);CHKERRQ(ierr);
   pragmatic_get_elements(cellsNew);
-#if NEW_INTERFACE
   ierr = DMPlexCreateFromCellListParallel(comm, dim, numCellsNew, numVerticesNew, numCornersNew, PETSC_TRUE, cellsNew, dim, coordsNew, NULL, dmNew);CHKERRQ(ierr);
-#else
-  ierr = DMPlexCreateFromCellList(comm, dim, numCellsNew, numVerticesNew, numCornersNew, PETSC_TRUE, cellsNew, dim, coordsNew, dmNew);CHKERRQ(ierr);
-#endif
   /* Read out boundary label */
   pragmatic_get_boundaryTags(&bdTags);
   ierr = DMCreateLabel(*dmNew, bdLabel ? bdLabelName : bdName);CHKERRQ(ierr);
