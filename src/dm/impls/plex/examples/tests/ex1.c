@@ -339,7 +339,8 @@ int main(int argc, char **argv)
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/tut21.cgns -interpolate 1 -dm_view
   test:
     suffix: cgns_1
-    requires: cgns broken
+    requires: cgns
+    TODO: broken
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/StaticMixer.cgns -interpolate 1 -dm_view
 
   # Gmsh mesh reader tests
@@ -390,7 +391,8 @@ int main(int argc, char **argv)
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_5tets_ascii.cas -interpolate 1 -dm_view
   test:
     suffix: fluent_3
-    requires: broken !complex !quad
+    requires: !complex !quad
+    TODO: broken
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_5tets.cas -interpolate 1 -dm_view
 
   # Med mesh reader tests, including parallel file reads

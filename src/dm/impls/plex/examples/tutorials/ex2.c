@@ -127,11 +127,13 @@ int main(int argc, char **argv)
   # CGNS meshes 0-1
   test:
     suffix: 0
-    requires: CGNS broken
+    requires: cgns
+    TODO: broken
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/tut21.cgns -interpolate 1
   test:
     suffix: 1
-    requires: CGNS broken
+    requires: cgns
+    TODO: broken
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/grid_c.cgns -interpolate 1
   # Gmsh meshes 2-4
   test:
