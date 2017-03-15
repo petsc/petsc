@@ -27,14 +27,14 @@ int main(int argc,char **argv)
       suffix: 1
       requires: yaml
       args: -f petsc.yml
-      filter:  grep -v saws_port_auto_select
+      filter:  grep -v saws_port_auto_select |grep -v malloc_dump | grep -v display
       localrunfiles: petsc.yml
 
    test:
       suffix: 2
       requires: yaml
       filter:  grep -v saws_port_auto_select
-      args: -options_file_yaml petsc.yml
+      args: -options_file_yaml petsc.yml |grep -v malloc_dump | grep -v display
       localrunfiles: petsc.yml
 
 TEST*/

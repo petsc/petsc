@@ -9,11 +9,11 @@ typedef struct {
   VecScatter  lrestrict,rprolong;
   Mat         A;
   PetscScalar scale;
-} Mat_SubMatrix;
+} Mat_SubVirtual;
 
 static PetscErrorCode PreScaleLeft(Mat N,Vec x,Vec *xx)
 {
-  Mat_SubMatrix  *Na = (Mat_SubMatrix*)N->data;
+  Mat_SubVirtual *Na = (Mat_SubVirtual*)N->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -31,7 +31,7 @@ static PetscErrorCode PreScaleLeft(Mat N,Vec x,Vec *xx)
 
 static PetscErrorCode PreScaleRight(Mat N,Vec x,Vec *xx)
 {
-  Mat_SubMatrix  *Na = (Mat_SubMatrix*)N->data;
+  Mat_SubVirtual *Na = (Mat_SubVirtual*)N->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -49,7 +49,7 @@ static PetscErrorCode PreScaleRight(Mat N,Vec x,Vec *xx)
 
 static PetscErrorCode PostScaleLeft(Mat N,Vec x)
 {
-  Mat_SubMatrix  *Na = (Mat_SubMatrix*)N->data;
+  Mat_SubVirtual *Na = (Mat_SubVirtual*)N->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -61,7 +61,7 @@ static PetscErrorCode PostScaleLeft(Mat N,Vec x)
 
 static PetscErrorCode PostScaleRight(Mat N,Vec x)
 {
-  Mat_SubMatrix  *Na = (Mat_SubMatrix*)N->data;
+  Mat_SubVirtual *Na = (Mat_SubVirtual*)N->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -73,7 +73,7 @@ static PetscErrorCode PostScaleRight(Mat N,Vec x)
 
 static PetscErrorCode MatScale_SubMatrix(Mat N,PetscScalar scale)
 {
-  Mat_SubMatrix *Na = (Mat_SubMatrix*)N->data;
+  Mat_SubVirtual *Na = (Mat_SubVirtual*)N->data;
 
   PetscFunctionBegin;
   Na->scale *= scale;
@@ -82,7 +82,7 @@ static PetscErrorCode MatScale_SubMatrix(Mat N,PetscScalar scale)
 
 static PetscErrorCode MatDiagonalScale_SubMatrix(Mat N,Vec left,Vec right)
 {
-  Mat_SubMatrix  *Na = (Mat_SubMatrix*)N->data;
+  Mat_SubVirtual *Na = (Mat_SubVirtual*)N->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -107,7 +107,7 @@ static PetscErrorCode MatDiagonalScale_SubMatrix(Mat N,Vec left,Vec right)
 
 static PetscErrorCode MatMult_SubMatrix(Mat N,Vec x,Vec y)
 {
-  Mat_SubMatrix  *Na = (Mat_SubMatrix*)N->data;
+  Mat_SubVirtual *Na = (Mat_SubVirtual*)N->data;
   Vec            xx  = 0;
   PetscErrorCode ierr;
 
@@ -126,7 +126,7 @@ static PetscErrorCode MatMult_SubMatrix(Mat N,Vec x,Vec y)
 
 static PetscErrorCode MatMultAdd_SubMatrix(Mat N,Vec v1,Vec v2,Vec v3)
 {
-  Mat_SubMatrix  *Na = (Mat_SubMatrix*)N->data;
+  Mat_SubVirtual *Na = (Mat_SubVirtual*)N->data;
   Vec            xx  = 0;
   PetscErrorCode ierr;
 
@@ -158,7 +158,7 @@ static PetscErrorCode MatMultAdd_SubMatrix(Mat N,Vec v1,Vec v2,Vec v3)
 
 static PetscErrorCode MatMultTranspose_SubMatrix(Mat N,Vec x,Vec y)
 {
-  Mat_SubMatrix  *Na = (Mat_SubMatrix*)N->data;
+  Mat_SubVirtual *Na = (Mat_SubVirtual*)N->data;
   Vec            xx  = 0;
   PetscErrorCode ierr;
 
@@ -177,7 +177,7 @@ static PetscErrorCode MatMultTranspose_SubMatrix(Mat N,Vec x,Vec y)
 
 static PetscErrorCode MatMultTransposeAdd_SubMatrix(Mat N,Vec v1,Vec v2,Vec v3)
 {
-  Mat_SubMatrix  *Na = (Mat_SubMatrix*)N->data;
+  Mat_SubVirtual *Na = (Mat_SubVirtual*)N->data;
   Vec            xx  = 0;
   PetscErrorCode ierr;
 
@@ -209,7 +209,7 @@ static PetscErrorCode MatMultTransposeAdd_SubMatrix(Mat N,Vec v1,Vec v2,Vec v3)
 
 static PetscErrorCode MatDestroy_SubMatrix(Mat N)
 {
-  Mat_SubMatrix  *Na = (Mat_SubMatrix*)N->data;
+  Mat_SubVirtual *Na = (Mat_SubVirtual*)N->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -229,7 +229,7 @@ static PetscErrorCode MatDestroy_SubMatrix(Mat N)
 }
 
 /*@
-   MatCreateSubMatrix - Creates a composite matrix that acts as a submatrix
+   MatCreateSubMatrixVirtual - Creates a virtual matrix that acts as a submatrix
 
    Collective on Mat
 
@@ -244,16 +244,16 @@ static PetscErrorCode MatDestroy_SubMatrix(Mat N)
    Level: developer
 
    Notes:
-   Most will use MatGetSubMatrix which provides a more efficient representation if it is available.
+   Most will use MatCreateSubMatrix which provides a more efficient representation if it is available.
 
-.seealso: MatGetSubMatrix(), MatSubMatrixUpdate()
+.seealso: MatCreateSubMatrix(), MatSubMatrixVirtualUpdate()
 @*/
-PetscErrorCode  MatCreateSubMatrix(Mat A,IS isrow,IS iscol,Mat *newmat)
+PetscErrorCode MatCreateSubMatrixVirtual(Mat A,IS isrow,IS iscol,Mat *newmat)
 {
   Vec            left,right;
   PetscInt       m,n;
   Mat            N;
-  Mat_SubMatrix  *Na;
+  Mat_SubVirtual *Na;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -313,7 +313,7 @@ PetscErrorCode  MatCreateSubMatrix(Mat A,IS isrow,IS iscol,Mat *newmat)
 
 
 /*@
-   MatSubMatrixUpdate - Updates a submatrix
+   MatSubMatrixVirtualUpdate - Updates a submatrix
 
    Collective on Mat
 
@@ -326,15 +326,15 @@ PetscErrorCode  MatCreateSubMatrix(Mat A,IS isrow,IS iscol,Mat *newmat)
    Level: developer
 
    Notes:
-   Most will use MatGetSubMatrix which provides a more efficient representation if it is available.
+   Most will use MatCreateSubMatrix which provides a more efficient representation if it is available.
 
-.seealso: MatGetSubMatrix(), MatCreateSubMatrix()
+.seealso: MatCreateSubMatrixVirtual()
 @*/
-PetscErrorCode  MatSubMatrixUpdate(Mat N,Mat A,IS isrow,IS iscol)
+PetscErrorCode  MatSubMatrixVirtualUpdate(Mat N,Mat A,IS isrow,IS iscol)
 {
   PetscErrorCode ierr;
   PetscBool      flg;
-  Mat_SubMatrix  *Na;
+  Mat_SubVirtual *Na;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(N,MAT_CLASSID,1);
@@ -344,7 +344,7 @@ PetscErrorCode  MatSubMatrixUpdate(Mat N,Mat A,IS isrow,IS iscol)
   ierr = PetscObjectTypeCompare((PetscObject)N,MATSUBMATRIX,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix has wrong type");
 
-  Na   = (Mat_SubMatrix*)N->data;
+  Na   = (Mat_SubVirtual*)N->data;
   ierr = ISEqual(isrow,Na->isrow,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot update submatrix with different row indices");
   ierr = ISEqual(iscol,Na->iscol,&flg);CHKERRQ(ierr);

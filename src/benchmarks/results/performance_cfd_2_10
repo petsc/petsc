@@ -1,5 +1,5 @@
 
-mpiexec -np 1 ex10 -f0 ~/datafiles/matrices/medium -f1 ~/datafiles/matrices/cfd.2.10 -pc_type ilu -ksp_gmres_unmodifiedgramschmidt -optionsleft -matload_type seqbaij -matload_ignore_info -matload_block_size 5 -log_summary
+mpiexec -np 1 ex10 -f0 ~/datafiles/matrices/medium -f1 ~/datafiles/matrices/cfd.2.10 -pc_type ilu -ksp_gmres_unmodifiedgramschmidt -optionsleft -matload_type seqbaij -matload_ignore_info -matload_block_size 5 -log_view
 
 ************************************************************************************************************************
 ex10 on a rs6000 named quad001 with 1 processor, by petsc Wed May 20 13:43:00 1998(SP2 with Power2 Superchip, 2 memory cards)
@@ -391,7 +391,7 @@ PCApply               10 1.0  9.8202e-01   1.0  8.30e+07    1.0 0.0e+00 0.0e+00 
 ./ex10 on a linux named bengal with 1 processor, by kaushik Tue May 14 19:20:51 2002 (1 GHz McKinley at NCSA, 3MB full speed L3 cache)
 Using Petsc Version 2.1.2, Patch 10, Released May 14, 2002
 vmirun -np 1 "./ex10 -f0 ~/matrices/medium -f1 ~/matrices/cfd.2.10 -pc_type ilu -ksp_gmres_unmodifiedgramschmidt -optionsleft \
--mat_baij -matload_ignore_info -matload_block_size 5 -log_summary > out.1"
+-mat_baij -matload_ignore_info -matload_block_size 5 -log_view > out.1"
 ------------------------------------------------------------------------------------------------------------------------
 
 --- Event Stage 2: SLESSetUp

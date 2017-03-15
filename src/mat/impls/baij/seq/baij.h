@@ -50,8 +50,8 @@ PETSC_INTERN PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat,Mat,IS,IS,co
 PETSC_INTERN PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat,Mat,IS,IS,const MatFactorInfo*);
 PETSC_INTERN PetscErrorCode MatLUFactor_SeqBAIJ(Mat,IS,IS,const MatFactorInfo*);
 PETSC_INTERN PetscErrorCode MatIncreaseOverlap_SeqBAIJ(Mat,PetscInt,IS*,PetscInt);
-PETSC_INTERN PetscErrorCode MatGetSubMatrix_SeqBAIJ(Mat,IS,IS,MatReuse,Mat*);
-PETSC_INTERN PetscErrorCode MatGetSubMatrices_SeqBAIJ(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat*[]);
+PETSC_INTERN PetscErrorCode MatCreateSubMatrix_SeqBAIJ(Mat,IS,IS,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatCreateSubMatrices_SeqBAIJ(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat*[]);
 PETSC_INTERN PetscErrorCode MatMultTranspose_SeqBAIJ(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMultHermitianTranspose_SeqBAIJ(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMultTransposeAdd_SeqBAIJ(Mat,Vec,Vec,Vec);
@@ -205,6 +205,7 @@ PETSC_INTERN PetscErrorCode MatMult_SeqBAIJ_4(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMult_SeqBAIJ_5(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMult_SeqBAIJ_6(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMult_SeqBAIJ_7(Mat,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatMult_SeqBAIJ_11(Mat,Vec,Vec);
 
 PETSC_INTERN PetscErrorCode MatMult_SeqBAIJ_15_ver1(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMult_SeqBAIJ_15_ver2(Mat,Vec,Vec);
@@ -220,6 +221,7 @@ PETSC_INTERN PetscErrorCode MatMultAdd_SeqBAIJ_4(Mat,Vec,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMultAdd_SeqBAIJ_5(Mat,Vec,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMultAdd_SeqBAIJ_6(Mat,Vec,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMultAdd_SeqBAIJ_7(Mat,Vec,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatMultAdd_SeqBAIJ_11(Mat,Vec,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMultAdd_SeqBAIJ_N(Mat,Vec,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatLoad_SeqBAIJ(Mat,PetscViewer);
 PETSC_INTERN PetscErrorCode MatSeqBAIJSetNumericFactorization_inplace(Mat,PetscBool);
@@ -240,6 +242,8 @@ PETSC_INTERN PetscErrorCode MatSetValuesBlocked_SeqBAIJ(Mat,PetscInt,const Petsc
 PETSC_INTERN PetscErrorCode MatGetRow_SeqBAIJ(Mat,PetscInt,PetscInt*,PetscInt*[],PetscScalar*[]);
 PETSC_INTERN PetscErrorCode MatRestoreRow_SeqBAIJ(Mat,PetscInt,PetscInt*,PetscInt*[],PetscScalar*[]);
 PETSC_INTERN PetscErrorCode MatZeroRows_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscScalar,Vec,Vec);
+
+PETSC_INTERN PetscErrorCode MatDestroy_SeqBAIJ_Submatrices(Mat);
 
 /*
   PetscKernel_A_gets_A_times_B_2: A = A * B with size bs=2

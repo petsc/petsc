@@ -10,9 +10,26 @@
           function isnotequal(A,B)
             use petscisdefdummy
             logical isnotequal
-            type(tIs), intent(in) :: A,B
+            type(tIS), intent(in) :: A,B
+          end function
+          function petscsfnotequal(A,B)
+            use petscisdefdummy
+            logical petscsfnotequal
+            type(tPetscSF), intent(in) :: A,B
           end function
         end interface operator (.ne.)
+        interface operator(.eq.)
+          function isequals(A,B)
+            use petscisdefdummy
+            logical isequals
+            type(tIS), intent(in) :: A,B
+          end function
+          function petscsfequals(A,B)
+            use petscisdefdummy
+            logical petscsfequals
+            type(tPetscSF), intent(in) :: A,B
+          end function
+        end interface operator (.eq.)
         end module
 
         function isnotequal(A,B)
@@ -20,6 +37,27 @@
           logical isnotequal
           type(tIS), intent(in) :: A,B
           isnotequal = (A%v .ne. B%v)
+        end function
+
+        function isequals(A,B)
+          use petscisdefdummy
+          logical isequals
+          type(tIS), intent(in) :: A,B
+          isequals = (A%v .eq. B%v)
+        end function
+
+        function petscsfnotequal(A,B)
+          use petscisdefdummy
+          logical petscsfnotequal
+          type(tPetscSF), intent(in) :: A,B
+          petscsfnotequal = (A%v .ne. B%v)
+        end function
+
+        function petscsfequals(A,B)
+          use petscisdefdummy
+          logical petscsfequals
+          type(tPetscSF), intent(in) :: A,B
+          petscsfequals = (A%v .eq. B%v)
         end function
 
         module  petscaodef
@@ -54,6 +92,11 @@
             logical vecequals
             type(tVec), intent(in) :: A,B
           end function
+          function vecscatterequals(A,B)
+            use petscvecdefdummy
+            logical vecscatterequals
+            type(tVecScatter), intent(in) :: A,B
+          end function
         end interface operator (.eq.)
         end module
 
@@ -76,6 +119,13 @@
           logical vecscatternotequal
           type(tVecScatter), intent(in) :: A,B
           vecscatternotequal = (A%v .ne. B%v)
+        end function
+
+        function vecscatterequals(A,B)
+          use petscvecdefdummy
+          logical vecscatterequals
+          type(tVecScatter), intent(in) :: A,B
+          vecscatterequals = (A%v .eq. B%v)
         end function
 
         module petscis

@@ -14,6 +14,13 @@
             type(tDM), intent(in) :: A,B
           end function
         end interface operator (.ne.)
+        interface operator(.eq.)
+          function dmequals(A,B)
+            use petscdmdefdummy
+            logical dmequals
+            type(tDM), intent(in) :: A,B
+          end function
+        end interface operator (.eq.)
         end module
 
         function dmnotequal(A,B)
@@ -21,6 +28,13 @@
           logical dmnotequal
           type(tDM), intent(in) :: A,B
           dmnotequal = (A%v .ne. B%v)
+        end function
+
+        function dmequals(A,B)
+          use petscdmdefdummy
+          logical dmequals
+          type(tDM), intent(in) :: A,B
+          dmequals = (A%v .eq. B%v)
         end function
 
         module petscdmdadef

@@ -383,4 +383,26 @@ PETSC_EXTERN PetscErrorCode PetscSectionRestoreField_Internal(PetscSection, Pets
   if ((x)->map->N != (y)->map->N) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths parameter # %d %D != paramter # %d %D", ar1,(x)->map->N, ar2,(y)->map->N); \
   if ((x)->map->n != (y)->map->n) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths parameter # %d %D != parameter # %d %D", ar1,(x)->map->n, ar2,(y)->map->n);
 
+typedef struct _VecTaggerOps *VecTaggerOps;
+struct _VecTaggerOps {
+  PetscErrorCode (*create) (VecTagger);
+  PetscErrorCode (*destroy) (VecTagger);
+  PetscErrorCode (*setfromoptions) (PetscOptionItems*,VecTagger);
+  PetscErrorCode (*setup) (VecTagger);
+  PetscErrorCode (*view) (VecTagger,PetscViewer);
+  PetscErrorCode (*computeboxes) (VecTagger,Vec,PetscInt *,VecTaggerBox **);
+  PetscErrorCode (*computeis) (VecTagger,Vec,IS *);
+};
+struct _p_VecTagger {
+  PETSCHEADER(struct _VecTaggerOps);
+  void      *data;
+  PetscInt  blocksize;
+  PetscBool invert;
+  PetscBool setupcalled;
+};
+
+PETSC_EXTERN PetscBool      VecTaggerRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode VecTaggerRegisterAll(void);
+PETSC_EXTERN PetscErrorCode VecTaggerComputeIS_FromBoxes(VecTagger,Vec,IS*);
+
 #endif

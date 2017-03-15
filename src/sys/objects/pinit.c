@@ -665,7 +665,7 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
 .  -log [filename] - Logs basic profiline information  See PetscLogDump().
 -  -log_mpe [filename] - Creates a logfile viewable by the utility Jumpshot (in MPICH distribution)
 
-    Only one of -log_trace, -log_view, -log_summary, -log_all, -log, or -log_mpe may be used at a time
+    Only one of -log_trace, -log_view, -log_view, -log_all, -log, or -log_mpe may be used at a time
 
    Options Database Keys for SAWs:
 +  -saws_port <portnumber> - port number to publish SAWs data, default is 8080

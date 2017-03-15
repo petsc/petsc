@@ -230,7 +230,7 @@ PetscErrorCode  PetscStageLogRegister(PetscStageLog stageLog, const char sname[]
 - stage - The stage to log
 
   Database Options:
-. -log_summary - Activates logging
+. -log_view - Activates logging
 
   Usage:
   If the option -log_sumary is used to run the program containing the
@@ -493,7 +493,7 @@ PetscErrorCode  PetscStageLogGetActive(PetscStageLog stageLog, int stage, PetscB
 - isVisible - The visibility flag, PETSC_TRUE for printing, otherwise PETSC_FALSE (default is PETSC_TRUE)
 
   Database Options:
-. -log_summary - Activates log summary
+. -log_view - Activates log summary
 
   Level: developer
 
@@ -521,7 +521,7 @@ PetscErrorCode  PetscStageLogSetVisible(PetscStageLog stageLog, int stage, Petsc
 . isVisible - The visibility flag, PETSC_TRUE for printing, otherwise PETSC_FALSE (default is PETSC_TRUE)
 
   Database Options:
-. -log_summary - Activates log summary
+. -log_view - Activates log summary
 
   Level: developer
 
@@ -566,8 +566,10 @@ PetscErrorCode  PetscStageLogGetStage(PetscStageLog stageLog, const char name[],
   *stage = -1;
   for (s = 0; s < stageLog->numStages; s++) {
     ierr = PetscStrcasecmp(stageLog->stageInfo[s].name, name, &match);CHKERRQ(ierr);
-    *stage = s;
-    if (match) break;
+    if (match) {
+      *stage = s;
+      break;
+    }
   }
   PetscFunctionReturn(0);
 }

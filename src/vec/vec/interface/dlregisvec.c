@@ -5,7 +5,9 @@
 #include <petscsf.h>
 #include <petscao.h>
 
-static PetscBool ISPackageInitialized = PETSC_FALSE;
+static PetscBool         ISPackageInitialized = PETSC_FALSE;
+extern PetscFunctionList ISLocalToGlobalMappingList;
+
 /*@C
   ISFinalizePackage - This function destroys everything in the IS package. It is
   called from PetscFinalize().
@@ -21,6 +23,7 @@ PetscErrorCode  ISFinalizePackage(void)
 
   PetscFunctionBegin;
   ierr = PetscFunctionListDestroy(&ISList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&ISLocalToGlobalMappingList);CHKERRQ(ierr);
   ierr = PetscFunctionListDestroy(&PetscSectionSymList);CHKERRQ(ierr);
   ISPackageInitialized = PETSC_FALSE;
   ISRegisterAllCalled  = PETSC_FALSE;
@@ -49,6 +52,7 @@ PetscErrorCode  ISInitializePackage(void)
   ISPackageInitialized = PETSC_TRUE;
   /* Register Constructors */
   ierr = ISRegisterAll();CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingRegisterAll();CHKERRQ(ierr);
   /* Register Classes */
   ierr = PetscClassIdRegister("Index Set",&IS_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("IS L to G Mapping",&IS_LTOGM_CLASSID);CHKERRQ(ierr);

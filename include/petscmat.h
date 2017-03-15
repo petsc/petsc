@@ -81,6 +81,7 @@ typedef const char* MatType;
 #define MATLOCALREF        "localref"
 #define MATNEST            "nest"
 #define MATPREALLOCATOR    "preallocator"
+#define MATDUMMY           "dummy"
 
 /*J
     MatSolverPackage - String with the name of a PETSc matrix solver type.
@@ -142,7 +143,7 @@ PETSC_EXTERN PetscClassId MAT_NULLSPACE_CLASSID;
 PETSC_EXTERN PetscClassId MATMFFD_CLASSID;
 
 /*E
-    MatReuse - Indicates if matrices obtained from a previous call to MatGetSubMatrices(), MatGetSubMatrix(), MatConvert() or several other functions
+    MatReuse - Indicates if matrices obtained from a previous call to MatCreateSubMatrices(), MatCreateSubMatrix(), MatConvert() or several other functions
      are to be reused to store the new matrix values.
 
 $  MAT_INITIAL_MATRIX - create a new matrix
@@ -154,19 +155,19 @@ $  MAT_IGNORE_MATRIX - do not create a new matrix or reuse a give matrix, just i
 
    Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
 
-.seealso: MatGetSubMatrices(), MatGetSubMatrix(), MatDestroyMatrices(), MatConvert()
+.seealso: MatCreateSubMatrices(), MatCreateSubMatrix(), MatDestroyMatrices(), MatConvert()
 E*/
 typedef enum {MAT_INITIAL_MATRIX,MAT_REUSE_MATRIX,MAT_IGNORE_MATRIX,MAT_INPLACE_MATRIX} MatReuse;
 
 /*E
-    MatGetSubMatrixOption - Indicates if matrices obtained from a call to MatGetSubMatrices()
+    MatCreateSubMatrixOption - Indicates if matrices obtained from a call to MatCreateSubMatrices()
      include the matrix values. Currently it is only used by MatGetSeqNonzerostructure().
 
     Level: beginner
 
 .seealso: MatGetSeqNonzerostructure()
 E*/
-typedef enum {MAT_DO_NOT_GET_VALUES,MAT_GET_VALUES} MatGetSubMatrixOption;
+typedef enum {MAT_DO_NOT_GET_VALUES,MAT_GET_VALUES} MatCreateSubMatrixOption;
 
 PETSC_EXTERN PetscErrorCode MatInitializePackage(void);
 
@@ -242,8 +243,8 @@ PETSC_EXTERN PetscErrorCode MatCreateSeqCUFFT(MPI_Comm,PetscInt,const PetscInt[]
 PETSC_EXTERN PetscErrorCode MatCreateTranspose(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatTransposeGetMat(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateHermitianTranspose(Mat,Mat*);
-PETSC_EXTERN PetscErrorCode MatCreateSubMatrix(Mat,IS,IS,Mat*);
-PETSC_EXTERN PetscErrorCode MatSubMatrixUpdate(Mat,Mat,IS,IS);
+PETSC_EXTERN PetscErrorCode MatCreateSubMatrixVirtual(Mat,IS,IS,Mat*);
+PETSC_EXTERN PetscErrorCode MatSubMatrixVirtualUpdate(Mat,Mat,IS,IS);
 PETSC_EXTERN PetscErrorCode MatCreateLocalRef(Mat,IS,IS,Mat*);
 
 #if defined(PETSC_HAVE_HYPRE)
@@ -493,10 +494,11 @@ PETSC_EXTERN PetscErrorCode MatGetOwnershipRangeColumn(Mat,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatGetOwnershipRangesColumn(Mat,const PetscInt**);
 PETSC_EXTERN PetscErrorCode MatGetOwnershipIS(Mat,IS*,IS*);
 
-PETSC_EXTERN PetscErrorCode MatGetSubMatrices(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
-PETSC_EXTERN PetscErrorCode MatGetSubMatricesMPI(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
+PETSC_EXTERN PetscErrorCode MatCreateSubMatrices(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
+PETSC_EXTERN PetscErrorCode MatCreateSubMatricesMPI(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
 PETSC_EXTERN PetscErrorCode MatDestroyMatrices(PetscInt,Mat *[]);
-PETSC_EXTERN PetscErrorCode MatGetSubMatrix(Mat,IS,IS,MatReuse,Mat *);
+PETSC_EXTERN PetscErrorCode MatDestroySubMatrices(PetscInt,Mat *[]);
+PETSC_EXTERN PetscErrorCode MatCreateSubMatrix(Mat,IS,IS,MatReuse,Mat *);
 PETSC_EXTERN PetscErrorCode MatGetLocalSubMatrix(Mat,IS,IS,Mat*);
 PETSC_EXTERN PetscErrorCode MatRestoreLocalSubMatrix(Mat,IS,IS,Mat*);
 PETSC_EXTERN PetscErrorCode MatGetSeqNonzeroStructure(Mat,Mat*);
@@ -1394,7 +1396,7 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_ILUFACTOR=37,
                MATOP_ICCFACTOR=38,
                MATOP_AXPY=39,
-               MATOP_GET_SUBMATRICES=40,
+               MATOP_CREATE_SUBMATRICES=40,
                MATOP_INCREASE_OVERLAP=41,
                MATOP_GET_VALUES=42,
                MATOP_COPY=43,
@@ -1413,7 +1415,7 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_SET_UNFACTORED=56,
                MATOP_PERMUTE=57,
                MATOP_SET_VALUES_BLOCKED=58,
-               MATOP_GET_SUBMATRIX=59,
+               MATOP_CREATE_SUBMATRIX=59,
                MATOP_DESTROY=60,
                MATOP_VIEW=61,
                MATOP_CONVERT_FROM=62,

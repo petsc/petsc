@@ -3,11 +3,13 @@ static char help[] = "Run C version of TetGen to construct and refine a mesh\n\n
 #include <petscdmplex.h>
 
 typedef enum {BOX, CYLINDER} DomainShape;
+enum {STAGE_LOAD, STAGE_DISTRIBUTE, STAGE_REFINE, STAGE_OVERLAP};
 
 typedef struct {
   DM            dm;                /* REQUIRED in order to use SNES evaluation functions */
   PetscInt      debug;             /* The debugging level */
   PetscLogEvent createMeshEvent;
+  PetscLogStage stages[4];
   /* Domain and mesh definition */
   PetscInt      dim;                          /* The topological mesh dimension */
   PetscBool     interpolate;                  /* Generate intermediate mesh elements */
@@ -66,7 +68,11 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-test_shape", "Report cell shape qualities (Jacobian condition numbers)", "ex1.c", options->testShape, &options->testShape, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
-  ierr = PetscLogEventRegister("CreateMesh",          DM_CLASSID,   &options->createMeshEvent);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("CreateMesh", DM_CLASSID, &options->createMeshEvent);CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("MeshLoad",       &options->stages[STAGE_LOAD]);CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("MeshDistribute", &options->stages[STAGE_DISTRIBUTE]);CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("MeshRefine",     &options->stages[STAGE_REFINE]);CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("MeshOverlap",    &options->stages[STAGE_OVERLAP]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 };
 
@@ -104,6 +110,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
+  ierr = PetscLogStagePush(user->stages[STAGE_LOAD]);CHKERRQ(ierr);
   if (len)              {
     ierr = DMPlexCreateFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
   } else {
@@ -121,6 +128,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     default: SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Unknown domain shape %D", user->domainShape);
     }
   }
+  ierr = PetscLogStagePop();CHKERRQ(ierr);
   {
     DM refinedMesh     = NULL;
     DM distributedMesh = NULL;
@@ -155,12 +163,15 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       ierr = PetscPartitionerShellSetPartition(part, size, sizes, points);CHKERRQ(ierr);
     }
     /* Distribute mesh over processes */
+    ierr = PetscLogStagePush(user->stages[STAGE_DISTRIBUTE]);CHKERRQ(ierr);
     ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
     if (distributedMesh) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = distributedMesh;
     }
+    ierr = PetscLogStagePop();CHKERRQ(ierr);
     /* Refine mesh using a volume constraint */
+    ierr = PetscLogStagePush(user->stages[STAGE_REFINE]);CHKERRQ(ierr);
     ierr = DMPlexSetRefinementUniform(*dm, PETSC_FALSE);CHKERRQ(ierr);
     ierr = DMPlexSetRefinementLimit(*dm, refinementLimit);CHKERRQ(ierr);
     ierr = DMRefine(*dm, comm, &refinedMesh);CHKERRQ(ierr);
@@ -168,17 +179,22 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = refinedMesh;
     }
+    ierr = PetscLogStagePop();CHKERRQ(ierr);
   }
+  ierr = PetscLogStagePush(user->stages[STAGE_REFINE]);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  ierr = PetscLogStagePop();CHKERRQ(ierr);
   if (user->overlap) {
     DM overlapMesh = NULL;
     /* Add the level-1 overlap to refined mesh */
+    ierr = PetscLogStagePush(user->stages[STAGE_OVERLAP]);CHKERRQ(ierr);
     ierr = DMPlexDistributeOverlap(*dm, 1, NULL, &overlapMesh);CHKERRQ(ierr);
     if (overlapMesh) {
       ierr = DMView(overlapMesh, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm = overlapMesh;
     }
+    ierr = PetscLogStagePop();CHKERRQ(ierr);
   }
   ierr = PetscObjectSetName((PetscObject) *dm, "Simplicial Mesh");CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);

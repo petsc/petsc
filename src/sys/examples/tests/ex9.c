@@ -7,7 +7,7 @@ int main(int argc,char **args)
 {
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&args,NULL,help);
+  ierr = PetscInitialize(&argc,&args,NULL,help);if (ierr) return ierr;
   ierr = PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);CHKERRQ(ierr);
   ierr = PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);CHKERRQ(ierr);
   ierr = PetscFinalize();

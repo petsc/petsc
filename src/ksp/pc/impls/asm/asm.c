@@ -236,7 +236,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
 
       ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
       if (outwork.max == 1 && outwork.sum == size) {
-        /* osm->n_local_true = 1 on all processes, set this option may enable use of optimized MatGetSubMatrices() implementation */
+        /* osm->n_local_true = 1 on all processes, set this option may enable use of optimized MatCreateSubMatrices() implementation */
         ierr = MatSetOption(pc->pmat,MAT_SUBMAT_SINGLEIS,PETSC_TRUE);CHKERRQ(ierr);
       } 
     }
@@ -323,7 +323,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
   /*
      Extract out the submatrices
   */
-  ierr = MatGetSubMatrices(pc->pmat,osm->n_local_true,osm->is,osm->is,scall,&osm->pmat);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(pc->pmat,osm->n_local_true,osm->is,osm->is,scall,&osm->pmat);CHKERRQ(ierr);
   if (scall == MAT_INITIAL_MATRIX) {
     ierr = PetscObjectGetOptionsPrefix((PetscObject)pc->pmat,&pprefix);CHKERRQ(ierr);
     for (i=0; i<osm->n_local_true; i++) {
@@ -413,7 +413,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
 
     ierr = PetscMalloc1(osm->n_local_true, &cis);CHKERRQ(ierr);
     for (c = 0; c < osm->n_local_true; ++c) cis[c] = osm->lis;
-    ierr = MatGetSubMatrices(pc->pmat, osm->n_local_true, osm->is, cis, scall, &osm->lmats);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrices(pc->pmat, osm->n_local_true, osm->is, cis, scall, &osm->lmats);CHKERRQ(ierr);
     ierr = PetscFree(cis);CHKERRQ(ierr);
   }
 
@@ -604,7 +604,7 @@ static PetscErrorCode PCReset_ASM(PC pc)
   }
   if (osm->pmat) {
     if (osm->n_local_true > 0) {
-      ierr = MatDestroyMatrices(osm->n_local_true,&osm->pmat);CHKERRQ(ierr);
+      ierr = MatDestroySubMatrices(osm->n_local_true,&osm->pmat);CHKERRQ(ierr);
     }
   }
   if (osm->restriction) {

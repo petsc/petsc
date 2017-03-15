@@ -586,7 +586,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
     ierr = MatISGetMPIXAIJ(T,MAT_INITIAL_MATRIX,&TA);CHKERRQ(ierr);
     ierr = MatDestroy(&T);CHKERRQ(ierr);
     ierr = ISCreateGeneral(comm,n_local_lambda,l2g_indices,PETSC_USE_POINTER,&is);CHKERRQ(ierr);
-    ierr = MatGetSubMatrices(TA,1,&is,&is,MAT_INITIAL_MATRIX,&pT);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrices(TA,1,&is,&is,MAT_INITIAL_MATRIX,&pT);CHKERRQ(ierr);
     ierr = MatDestroy(&TA);CHKERRQ(ierr);
     ierr = ISDestroy(&is);CHKERRQ(ierr);
     BD2  = pT[0];
@@ -755,9 +755,9 @@ PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat fetimat, FETIDPPC_ctx fetidppc_ctx
       */
       ierr = ISGetLocalSize(pcis->is_B_local,&nb);CHKERRQ(ierr);
       ierr = ISCreateStride(PetscObjectComm((PetscObject)pcis->A_II),nb,0,1,&aB);CHKERRQ(ierr);
-      ierr = MatGetSubMatrix(pcis->A_II,iP,iP,MAT_INITIAL_MATRIX,&A_II);CHKERRQ(ierr);
-      ierr = MatGetSubMatrix(pcis->A_IB,iP,aB,MAT_INITIAL_MATRIX,&A_IB);CHKERRQ(ierr);
-      ierr = MatGetSubMatrix(pcis->A_BI,aB,iP,MAT_INITIAL_MATRIX,&A_BI);CHKERRQ(ierr);
+      ierr = MatCreateSubMatrix(pcis->A_II,iP,iP,MAT_INITIAL_MATRIX,&A_II);CHKERRQ(ierr);
+      ierr = MatCreateSubMatrix(pcis->A_IB,iP,aB,MAT_INITIAL_MATRIX,&A_IB);CHKERRQ(ierr);
+      ierr = MatCreateSubMatrix(pcis->A_BI,aB,iP,MAT_INITIAL_MATRIX,&A_BI);CHKERRQ(ierr);
       ierr = MatCreateSchurComplement(A_II,A_II,A_IB,A_BI,pcis->A_BB,&fetidppc_ctx->S_j);CHKERRQ(ierr);
 
       /* propagate settings of solver */

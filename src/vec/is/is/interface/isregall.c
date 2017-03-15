@@ -12,7 +12,7 @@ PETSC_EXTERN PetscErrorCode ISCreate_Block(IS);
   Level: advanced
 
 .keywords: IS, register, all
-.seealso:  ISRegister(), ISRegisterDestroy()
+.seealso:  ISRegister()
 @*/
 PetscErrorCode  ISRegisterAll(void)
 {

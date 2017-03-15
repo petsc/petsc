@@ -37,7 +37,7 @@
   PetscBool         pivotinblocks;    /* pivot inside factorization of each diagonal block */ \
   Mat               parent;           /* set if this matrix was formed with MatDuplicate(...,MAT_SHARE_NONZERO_PATTERN,....); \
                                          means that this shares some data structures with the parent including diag, ilen, imax, i, j */\
-  Mat_SubMat       *submatis1         /* used by MatGetSubMatrices_MPIXAIJ_Local */
+  Mat_SubSppt       *submatis1         /* used by MatCreateSubMatrices_MPIXAIJ_Local */
 
 typedef struct {
   MatTransposeColoring matcoloring;
@@ -315,6 +315,9 @@ PETSC_INTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat_SeqAIJ(MPI_Comm,Mat
 PETSC_INTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPIAIJ(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
 
 PETSC_INTERN PetscErrorCode MatSetSeqMat_SeqAIJ(Mat,IS,IS,MatStructure,Mat);
+PETSC_INTERN PetscErrorCode MatDestroySubMatrices_Private(Mat_SubSppt*);
+PETSC_INTERN PetscErrorCode MatDestroy_SeqAIJ_Submatrices(Mat);
+PETSC_INTERN PetscErrorCode MatDestroy_Dummy_Submatrices(Mat);
 
 /*
     PetscSparseDenseMinusDot - The inner kernel of triangular solves and Gauss-Siedel smoothing. \sum_i xv[i] * r[xi[i]] for CSR storage

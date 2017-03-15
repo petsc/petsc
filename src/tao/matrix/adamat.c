@@ -212,7 +212,7 @@ static PetscErrorCode MatGetDiagonal_ADA(Mat mat,Vec v)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatGetSubMatrix_ADA(Mat mat,IS isrow,IS iscol,MatReuse cll, Mat *newmat)
+static PetscErrorCode MatCreateSubMatrix_ADA(Mat mat,IS isrow,IS iscol,MatReuse cll, Mat *newmat)
 {
   PetscErrorCode    ierr;
   PetscInt          low,high;
@@ -229,7 +229,7 @@ static PetscErrorCode MatGetSubMatrix_ADA(Mat mat,IS isrow,IS iscol,MatReuse cll
 
   ierr = MatGetOwnershipRange(ctx->A,&low,&high);CHKERRQ(ierr);
   ierr = ISCreateStride(PetscObjectComm((PetscObject)mat),high-low,low,1,&ISrow);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(ctx->A,ISrow,iscol,cll,&Atemp);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix(ctx->A,ISrow,iscol,cll,&Atemp);CHKERRQ(ierr);
   ierr = ISDestroy(&ISrow);CHKERRQ(ierr);
 
   if (ctx->D1){
@@ -262,17 +262,17 @@ static PetscErrorCode MatGetSubMatrix_ADA(Mat mat,IS isrow,IS iscol,MatReuse cll
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatGetSubMatrices_ADA(Mat A,PetscInt n, IS *irow,IS *icol,MatReuse scall,Mat **B)
+static PetscErrorCode MatCreateSubMatrices_ADA(Mat A,PetscInt n, IS *irow,IS *icol,MatReuse scall,Mat **B)
 {
   PetscErrorCode ierr;
   PetscInt       i;
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
-    ierr = PetscMalloc1(n+1,B );CHKERRQ(ierr);
+    ierr = PetscCalloc1(n+1,B );CHKERRQ(ierr);
   }
   for ( i=0; i<n; i++ ) {
-    ierr = MatGetSubMatrix_ADA(A,irow[i],icol[i],scall,&(*B)[i]);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix_ADA(A,irow[i],icol[i],scall,&(*B)[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -445,10 +445,10 @@ PetscErrorCode MatCreateADA(Mat mat,Vec d1, Vec d2, Mat *J)
   ierr = MatShellSetOperation(*J,MATOP_SCALE,(void(*)(void))MatScale_ADA);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_TRANSPOSE,(void(*)(void))MatTranspose_ADA);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_GET_DIAGONAL,(void(*)(void))MatGetDiagonal_ADA);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MATOP_GET_SUBMATRICES,(void(*)(void))MatGetSubMatrices_ADA);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_CREATE_SUBMATRICES,(void(*)(void))MatCreateSubMatrices_ADA);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_NORM,(void(*)(void))MatNorm_ADA);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_DUPLICATE,(void(*)(void))MatDuplicate_ADA);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MATOP_GET_SUBMATRIX,(void(*)(void))MatGetSubMatrix_ADA);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_CREATE_SUBMATRIX,(void(*)(void))MatCreateSubMatrix_ADA);CHKERRQ(ierr);
 
   ierr = PetscLogObjectParent((PetscObject)(*J),(PetscObject)ctx->W);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)(*J));CHKERRQ(ierr);

@@ -9,6 +9,7 @@ and matrices.
 
 #include <petscis.h>
 #include <petsc/private/petscimpl.h>
+#include <../src/sys/utils/hash.h>
 
 PETSC_EXTERN PetscBool ISRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode ISRegisterAll(void);
@@ -49,20 +50,27 @@ struct _p_IS {
 
 extern PetscErrorCode ISLoad_Default(IS, PetscViewer);
 
+struct _ISLocalToGlobalMappingOps {
+  PetscErrorCode (*globaltolocalmappingsetup)(ISLocalToGlobalMapping);
+  PetscErrorCode (*globaltolocalmappingapply)(ISLocalToGlobalMapping,ISGlobalToLocalMappingMode,PetscInt,const PetscInt[],PetscInt*,PetscInt[]);
+  PetscErrorCode (*globaltolocalmappingapplyblock)(ISLocalToGlobalMapping,ISGlobalToLocalMappingMode,PetscInt,const PetscInt[],PetscInt*,PetscInt[]);
+  PetscErrorCode (*destroy)(ISLocalToGlobalMapping);
+};
+
 struct _p_ISLocalToGlobalMapping{
-  PETSCHEADER(int);
-  PetscInt  n;                  /* number of local indices */
-  PetscInt  bs;                 /* blocksize; there is one index per block */
-  PetscInt  *indices;           /* global index of each local index */
-  PetscInt  globalstart;        /* first global referenced in indices */
-  PetscInt  globalend;          /* last + 1 global referenced in indices */
-  PetscInt  *globals;           /* local index for each global index between start and end */
-  PetscBool info_cached;        /* reuse GetInfo */
-  PetscBool info_free;
-  PetscInt  info_nproc;
-  PetscInt  *info_procs;
-  PetscInt  *info_numprocs;
-  PetscInt  **info_indices;
+  PETSCHEADER(struct _ISLocalToGlobalMappingOps);
+  PetscInt     n;               /* number of local indices */
+  PetscInt     bs;              /* blocksize; there is one index per block */
+  PetscInt    *indices;         /* global index of each local index */
+  PetscInt     globalstart;     /* first global referenced in indices */
+  PetscInt     globalend;       /* last + 1 global referenced in indices */
+  PetscBool    info_cached;     /* reuse GetInfo */
+  PetscBool    info_free;
+  PetscInt     info_nproc;
+  PetscInt    *info_procs;
+  PetscInt    *info_numprocs;
+  PetscInt   **info_indices;
+  void        *data;            /* type specific data is stored here */
 };
 
 struct _n_ISColoring {

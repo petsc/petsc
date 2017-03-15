@@ -535,7 +535,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
         }
       } else {
         const char *prefix;
-        ierr = MatGetSubMatrix(pc->pmat,ilink->is,ilink->is_col,MAT_INITIAL_MATRIX,&jac->pmat[i]);CHKERRQ(ierr);
+        ierr = MatCreateSubMatrix(pc->pmat,ilink->is,ilink->is_col,MAT_INITIAL_MATRIX,&jac->pmat[i]);CHKERRQ(ierr);
         ierr = KSPGetOptionsPrefix(ilink->ksp,&prefix);CHKERRQ(ierr);
         ierr = MatSetOptionsPrefix(jac->pmat[i],prefix);CHKERRQ(ierr);
         ierr = MatViewFromOptions(jac->pmat[i],NULL,"-mat_view");CHKERRQ(ierr);
@@ -559,7 +559,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       /* Check for preconditioning matrix attached to IS */
       ierr = PetscObjectQuery((PetscObject) ilink->is, "pmat", (PetscObject*) &pmat);CHKERRQ(ierr);
       if (!pmat) {
-        ierr = MatGetSubMatrix(pc->pmat,ilink->is,ilink->is_col,MAT_REUSE_MATRIX,&jac->pmat[i]);CHKERRQ(ierr);
+        ierr = MatCreateSubMatrix(pc->pmat,ilink->is,ilink->is_col,MAT_REUSE_MATRIX,&jac->pmat[i]);CHKERRQ(ierr);
       }
       ilink = ilink->next;
     }
@@ -569,12 +569,12 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     if (!jac->mat) {
       ierr = PetscMalloc1(nsplit,&jac->mat);CHKERRQ(ierr);
       for (i=0; i<nsplit; i++) {
-        ierr  = MatGetSubMatrix(pc->mat,ilink->is,ilink->is_col,MAT_INITIAL_MATRIX,&jac->mat[i]);CHKERRQ(ierr);
+        ierr  = MatCreateSubMatrix(pc->mat,ilink->is,ilink->is_col,MAT_INITIAL_MATRIX,&jac->mat[i]);CHKERRQ(ierr);
         ilink = ilink->next;
       }
     } else {
       for (i=0; i<nsplit; i++) {
-        if (jac->mat[i]) {ierr = MatGetSubMatrix(pc->mat,ilink->is,ilink->is_col,MAT_REUSE_MATRIX,&jac->mat[i]);CHKERRQ(ierr);}
+        if (jac->mat[i]) {ierr = MatCreateSubMatrix(pc->mat,ilink->is,ilink->is_col,MAT_REUSE_MATRIX,&jac->mat[i]);CHKERRQ(ierr);}
         ilink = ilink->next;
       }
     }
@@ -603,15 +603,15 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       if (!jac->Afield) {
         ierr = PetscCalloc1(nsplit,&jac->Afield);CHKERRQ(ierr);
         if (jac->offdiag_use_amat) {
-          ierr  = MatGetSubMatrix(pc->mat,ilink->next->is,ilink->is,MAT_INITIAL_MATRIX,&jac->Afield[1]);CHKERRQ(ierr);
+          ierr  = MatCreateSubMatrix(pc->mat,ilink->next->is,ilink->is,MAT_INITIAL_MATRIX,&jac->Afield[1]);CHKERRQ(ierr);
         } else {
-          ierr  = MatGetSubMatrix(pc->pmat,ilink->next->is,ilink->is,MAT_INITIAL_MATRIX,&jac->Afield[1]);CHKERRQ(ierr);
+          ierr  = MatCreateSubMatrix(pc->pmat,ilink->next->is,ilink->is,MAT_INITIAL_MATRIX,&jac->Afield[1]);CHKERRQ(ierr);
         }
       } else {
         if (jac->offdiag_use_amat) {
-          ierr  = MatGetSubMatrix(pc->mat,ilink->next->is,ilink->is,MAT_REUSE_MATRIX,&jac->Afield[1]);CHKERRQ(ierr);
+          ierr  = MatCreateSubMatrix(pc->mat,ilink->next->is,ilink->is,MAT_REUSE_MATRIX,&jac->Afield[1]);CHKERRQ(ierr);
         } else {
-          ierr  = MatGetSubMatrix(pc->pmat,ilink->next->is,ilink->is,MAT_REUSE_MATRIX,&jac->Afield[1]);CHKERRQ(ierr);
+          ierr  = MatCreateSubMatrix(pc->pmat,ilink->next->is,ilink->is,MAT_REUSE_MATRIX,&jac->Afield[1]);CHKERRQ(ierr);
         }
       }
     } else {
@@ -619,18 +619,18 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
         ierr = PetscMalloc1(nsplit,&jac->Afield);CHKERRQ(ierr);
         for (i=0; i<nsplit; i++) {
           if (jac->offdiag_use_amat) {
-            ierr  = MatGetSubMatrix(pc->mat,ilink->is,NULL,MAT_INITIAL_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
+            ierr  = MatCreateSubMatrix(pc->mat,ilink->is,NULL,MAT_INITIAL_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
           } else {
-            ierr  = MatGetSubMatrix(pc->pmat,ilink->is,NULL,MAT_INITIAL_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
+            ierr  = MatCreateSubMatrix(pc->pmat,ilink->is,NULL,MAT_INITIAL_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
           }
           ilink = ilink->next;
         }
       } else {
         for (i=0; i<nsplit; i++) {
           if (jac->offdiag_use_amat) {
-            ierr  = MatGetSubMatrix(pc->mat,ilink->is,NULL,MAT_REUSE_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
+            ierr  = MatCreateSubMatrix(pc->mat,ilink->is,NULL,MAT_REUSE_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
           } else {
-            ierr  = MatGetSubMatrix(pc->pmat,ilink->is,NULL,MAT_REUSE_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
+            ierr  = MatCreateSubMatrix(pc->pmat,ilink->is,NULL,MAT_REUSE_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
           }
           ilink = ilink->next;
         }
@@ -657,17 +657,17 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ilink = jac->head;
       ierr  = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
       if (jac->offdiag_use_amat) {
-	ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->B);CHKERRQ(ierr);
+	ierr  = MatCreateSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->B);CHKERRQ(ierr);
       } else {
-	ierr  = MatGetSubMatrix(pc->pmat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->B);CHKERRQ(ierr);
+	ierr  = MatCreateSubMatrix(pc->pmat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->B);CHKERRQ(ierr);
       }
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       ilink = ilink->next;
       ierr  = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
       if (jac->offdiag_use_amat) {
-	ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->C);CHKERRQ(ierr);
+	ierr  = MatCreateSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->C);CHKERRQ(ierr);
       } else {
-	ierr  = MatGetSubMatrix(pc->pmat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->C);CHKERRQ(ierr);
+	ierr  = MatCreateSubMatrix(pc->pmat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->C);CHKERRQ(ierr);
       }
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       ierr  = MatSchurComplementUpdateSubMatrices(jac->schur,jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->mat[1]);CHKERRQ(ierr);
@@ -693,17 +693,17 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ilink = jac->head;
       ierr  = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
       if (jac->offdiag_use_amat) {
-	ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->B);CHKERRQ(ierr);
+	ierr  = MatCreateSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->B);CHKERRQ(ierr);
       } else {
-	ierr  = MatGetSubMatrix(pc->pmat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->B);CHKERRQ(ierr);
+	ierr  = MatCreateSubMatrix(pc->pmat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->B);CHKERRQ(ierr);
       }
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       ilink = ilink->next;
       ierr  = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
       if (jac->offdiag_use_amat) {
-	ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
+	ierr  = MatCreateSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
       } else {
-	ierr  = MatGetSubMatrix(pc->pmat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
+	ierr  = MatCreateSubMatrix(pc->pmat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
       }
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
 

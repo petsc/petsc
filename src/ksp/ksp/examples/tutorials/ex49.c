@@ -1302,7 +1302,7 @@ static PetscErrorCode DMDABCApplySymmetricCompression(DM elas_da,Mat A,Vec f,IS 
   ierr = VecScale(f,-1.0);CHKERRQ(ierr);
 
   /* get new matrix */
-  ierr = MatGetSubMatrix(A,is,is,MAT_INITIAL_MATRIX,AA);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix(A,is,is,MAT_INITIAL_MATRIX,AA);CHKERRQ(ierr);
   /* get new vector */
   ierr = MatCreateVecs(*AA,NULL,ff);CHKERRQ(ierr);
 

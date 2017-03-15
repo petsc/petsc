@@ -247,6 +247,12 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,Mat C)
   PetscInt       nextb;
 
   PetscFunctionBegin;
+  if (!ca) { /* first call of MatMatMultNumeric_SeqAIJ_SeqAIJ, allocate ca and matmult_abdense */
+    ierr      = PetscMalloc1(ci[cm]+1,&ca);CHKERRQ(ierr);
+    c->a      = ca;
+    c->free_a = PETSC_TRUE;
+  } 
+
   /* clean old values in C */
   ierr = PetscMemzero(ca,ci[cm]*sizeof(MatScalar));CHKERRQ(ierr);
   /* Traverse A row-wise. */
