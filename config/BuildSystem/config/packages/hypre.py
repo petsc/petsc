@@ -4,7 +4,7 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.gitcommit = 'xsdk-0.2.0-rc1'
+    self.gitcommit = 'xsdk-0.2.0-rc2'
     self.download  = ['git://https://github.com/LLNL/hypre','https://github.com/LLNL/hypre/archive/'+self.gitcommit+'.tar.gz']
     self.functions = ['HYPRE_IJMatrixCreate']
     self.includes  = ['HYPRE.h']

@@ -424,7 +424,19 @@ PETSC_STATIC_INLINE PetscComplex PetscCMPLX(PetscReal x, PetscReal y)
 #elif defined(PETSC_USE_REAL_DOUBLE) && defined(CMPLX)
   return CMPLX(x,y);
 #else
-  return x + y * PETSC_i;
+  { /* In both C99 and C11 (ISO/IEC 9899, Section 6.2.5),
+
+       "For each floating type there is a corresponding real type, which is always a real floating
+       type. For real floating types, it is the same type. For complex types, it is the type given
+       by deleting the keyword _Complex from the type name."
+
+       So type punning should be portable. */
+    union { PetscComplex z; PetscReal f[2]; } uz;
+
+    uz.f[0] = x;
+    uz.f[1] = y;
+    return uz.z;
+  }
 #endif
 #endif
 }

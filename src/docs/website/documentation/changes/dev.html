@@ -128,7 +128,8 @@
         <li>Rename MatGetSubMatrices() to MatCreateSubMatrices(). </li>
         <li>Rename MatGetSubMatricesMPI() to MatCreateSubMatricesMPI(). </li>
         <li>Rename MatGetSubMatrix() to MatCreateSubMatrix(). </li>
-        <li>Rename MatGetSubMatrixOption to MatCreateSubMatrixOption. </li>
+        <li>Rename MatGetSubMatrixOption() to MatCreateSubMatrixOption(). </li>
+        <li>MatSetOption(mat,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE) no longer applies to zero values set or added to the matrix diagonal, they are now not ignored and are included in the matrix nonzero structure. This is useful for Jacobians passed to TS. </li>
       </ul>
       <h4>PC:</h4>
       <ul>

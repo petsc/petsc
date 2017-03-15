@@ -1,7 +1,7 @@
 
 static char help[] = "Augmenting PETSc profiling by add events.\n\
 Run this program with one of the\n\
-following options to generate logging information:  -log, -log_summary,\n\
+following options to generate logging information:  -log, -log_view,\n\
 -log_all.  The PETSc routines automatically log event times and flops,\n\
 so this monitoring is intended solely for users to employ in application\n\
 codes.\n\n";
