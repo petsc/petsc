@@ -1687,9 +1687,9 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = MatDestroy(&pcis->A_IB);CHKERRQ(ierr);
     ierr = MatDestroy(&pcis->A_BI);CHKERRQ(ierr);
     ierr = MatDestroy(&pcis->A_BB);CHKERRQ(ierr);
-    ierr = MatGetSubMatrix(pcbddc->local_mat,pcis->is_B_local,pcis->is_B_local,MAT_INITIAL_MATRIX,&pcis->A_BB);CHKERRQ(ierr);
-    ierr = MatGetSubMatrix(pcbddc->local_mat,pcis->is_I_local,pcis->is_B_local,MAT_INITIAL_MATRIX,&pcis->A_IB);CHKERRQ(ierr);
-    ierr = MatGetSubMatrix(pcbddc->local_mat,pcis->is_B_local,pcis->is_I_local,MAT_INITIAL_MATRIX,&pcis->A_BI);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix(pcbddc->local_mat,pcis->is_B_local,pcis->is_B_local,MAT_INITIAL_MATRIX,&pcis->A_BB);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix(pcbddc->local_mat,pcis->is_I_local,pcis->is_B_local,MAT_INITIAL_MATRIX,&pcis->A_IB);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix(pcbddc->local_mat,pcis->is_B_local,pcis->is_I_local,MAT_INITIAL_MATRIX,&pcis->A_BI);CHKERRQ(ierr);
     /* set flag in pcis to not reuse submatrices during PCISCreate */
     pcis->reusesubmatrices = PETSC_FALSE;
   } else if (!pcbddc->user_ChangeOfBasisMatrix && !pcbddc->benign_change) {
@@ -1707,15 +1707,15 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     PetscBool issym;
     ierr = MatIsSymmetric(lA,PETSC_SMALL,&issym);CHKERRQ(ierr);
     if (issym) {
-      ierr = MatGetSubMatrix(lA,lP,pcis->is_I_local,MAT_INITIAL_MATRIX,&B_BI);CHKERRQ(ierr);
-      ierr = MatGetSubMatrix(lA,lP,pcis->is_B_local,MAT_INITIAL_MATRIX,&B_BB);CHKERRQ(ierr);
+      ierr = MatCreateSubMatrix(lA,lP,pcis->is_I_local,MAT_INITIAL_MATRIX,&B_BI);CHKERRQ(ierr);
+      ierr = MatCreateSubMatrix(lA,lP,pcis->is_B_local,MAT_INITIAL_MATRIX,&B_BB);CHKERRQ(ierr);
       ierr = MatCreateTranspose(B_BI,&Bt_BI);CHKERRQ(ierr);
       ierr = MatCreateTranspose(B_BB,&Bt_BB);CHKERRQ(ierr);
     } else {
-      ierr = MatGetSubMatrix(lA,lP,pcis->is_I_local,MAT_INITIAL_MATRIX,&B_BI);CHKERRQ(ierr);
-      ierr = MatGetSubMatrix(lA,lP,pcis->is_B_local,MAT_INITIAL_MATRIX,&B_BB);CHKERRQ(ierr);
-      ierr = MatGetSubMatrix(lA,pcis->is_I_local,lP,MAT_INITIAL_MATRIX,&Bt_BI);CHKERRQ(ierr);
-      ierr = MatGetSubMatrix(lA,pcis->is_B_local,lP,MAT_INITIAL_MATRIX,&Bt_BB);CHKERRQ(ierr);
+      ierr = MatCreateSubMatrix(lA,lP,pcis->is_I_local,MAT_INITIAL_MATRIX,&B_BI);CHKERRQ(ierr);
+      ierr = MatCreateSubMatrix(lA,lP,pcis->is_B_local,MAT_INITIAL_MATRIX,&B_BB);CHKERRQ(ierr);
+      ierr = MatCreateSubMatrix(lA,pcis->is_I_local,lP,MAT_INITIAL_MATRIX,&Bt_BI);CHKERRQ(ierr);
+      ierr = MatCreateSubMatrix(lA,pcis->is_B_local,lP,MAT_INITIAL_MATRIX,&Bt_BB);CHKERRQ(ierr);
     }
     ierr = PetscObjectCompose((PetscObject)pc,"__KSPFETIDP_B_BI",(PetscObject)B_BI);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)pc,"__KSPFETIDP_B_BB",(PetscObject)B_BB);CHKERRQ(ierr);

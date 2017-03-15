@@ -125,7 +125,7 @@ int main(int argc,char **args)
   /* get new global number of each old global number */
   ierr = ISPartitioningToNumbering(is,&isn);CHKERRQ(ierr);
   ierr = ISBuildTwoSided(is,NULL,&isrows);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(A,isrows,isrows,MAT_INITIAL_MATRIX,&perA);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix(A,isrows,isrows,MAT_INITIAL_MATRIX,&perA);CHKERRQ(ierr);
   ierr = MatCreateVecs(perA,&b,NULL);CHKERRQ(ierr);
   ierr = VecSetFromOptions(b);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&u);CHKERRQ(ierr);

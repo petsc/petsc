@@ -188,7 +188,7 @@ PetscErrorCode  KSPComputeRitz(KSP ksp,PetscBool ritz,PetscBool small,PetscInt *
 
    Notes:
    KSPSetUpOnBlocks() is a routine that the user can optinally call for
-   more precise profiling (via -log_summary) of the setup phase for these
+   more precise profiling (via -log_view) of the setup phase for these
    block preconditioners.  If the user does not call KSPSetUpOnBlocks(),
    it will automatically be called from within KSPSolve().
 
@@ -297,7 +297,7 @@ PetscErrorCode KSPSetUp(KSP ksp)
   if (!((PetscObject)ksp)->type_name) {
     ierr = KSPSetType(ksp,KSPGMRES);CHKERRQ(ierr);
   }
-  ierr = KSPSetUpNorms_Private(ksp,&ksp->normtype,&ksp->pc_side);CHKERRQ(ierr);
+  ierr = KSPSetUpNorms_Private(ksp,PETSC_TRUE,&ksp->normtype,&ksp->pc_side);CHKERRQ(ierr);
 
   if (ksp->dmActive && !ksp->setupstage) {
     /* first time in so build matrix and vector data structures using DM */
@@ -325,7 +325,6 @@ PetscErrorCode KSPSetUp(KSP ksp)
       if (kdm->ops->computeoperators) {
         ierr = KSPGetOperators(ksp,&A,&B);CHKERRQ(ierr);
         ierr = (*kdm->ops->computeoperators)(ksp,A,B,kdm->operatorsctx);CHKERRQ(ierr);
-        ierr = KSPSetOperators(ksp,A,B);CHKERRQ(ierr);
       } else SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"You called KSPSetDM() but did not use DMKSPSetComputeOperators() or KSPSetDMActive(ksp,PETSC_FALSE);");
     }
   }
@@ -1084,7 +1083,7 @@ PetscErrorCode  KSPGetPCSide(KSP ksp,PCSide *side)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidPointer(side,2);
-  ierr  = KSPSetUpNorms_Private(ksp,&ksp->normtype,&ksp->pc_side);CHKERRQ(ierr);
+  ierr  = KSPSetUpNorms_Private(ksp,PETSC_TRUE,&ksp->normtype,&ksp->pc_side);CHKERRQ(ierr);
   *side = ksp->pc_side;
   PetscFunctionReturn(0);
 }

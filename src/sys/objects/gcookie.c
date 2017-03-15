@@ -4,7 +4,7 @@
 */
 #include <petsc/private/petscimpl.h>  /*I   "petscsys.h"    I*/
 
-/*@C
+/*@
    PetscObjectGetClassId - Gets the classid for any PetscObject
 
    Not Collective

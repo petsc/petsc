@@ -25,6 +25,11 @@
             logical matequals
             type(tMat), intent(in) :: A,B
           end function
+          function matfdcoloringequals(A,B)
+            use petscmatdefdummy
+            logical matfdcoloringequals
+            type(tMatFDColoring), intent(in) :: A,B
+          end function
         end interface operator (.eq.)
         end module
 
@@ -46,8 +51,15 @@
           use petscmatdefdummy
           logical matfdcoloringnotequal
           type(tMatFDColoring), intent(in) :: A,B
-           matfdcoloringnotequal = (A%v .ne. B%v)
-         end function
+          matfdcoloringnotequal = (A%v .ne. B%v)
+        end function
+
+        function matfdcoloringequals(A,B)
+          use petscmatdefdummy
+          logical matfdcoloringequals
+          type(tMatFDColoring), intent(in) :: A,B
+          matfdcoloringequals = (A%v .eq. B%v)
+        end function
 
         module petscmat
         use petscmatdef

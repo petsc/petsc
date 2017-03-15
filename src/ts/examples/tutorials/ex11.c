@@ -1447,18 +1447,20 @@ static PetscErrorCode initializeTS(DM dm, User user, TS *ts)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, PetscReal refineTol, PetscReal coarsenTol, User user, TS *tsNew, Vec *solNew)
+static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, VecTagger refineTag, VecTagger coarsenTag, User user, TS *tsNew, Vec *solNew)
 {
   DM                dm, gradDM, plex, cellDM, adaptedDM = NULL;
   Vec               cellGeom, faceGeom;
   PetscBool         isForest, computeGradient;
-  Vec               grad, locGrad, locX;
-  PetscInt          cStart, cEnd, cEndInterior, c, dim;
+  Vec               grad, locGrad, locX, errVec;
+  PetscInt          cStart, cEnd, cEndInterior, c, dim, nRefine, nCoarsen;
   PetscReal         minMaxInd[2] = {PETSC_MAX_REAL, PETSC_MIN_REAL}, minMaxIndGlobal[2], minInd, maxInd, time;
+  PetscScalar       *errArray;
   const PetscScalar *pointVals;
   const PetscScalar *pointGrads;
   const PetscScalar *pointGeom;
   DMLabel           adaptLabel = NULL;
+  IS                refineIS, coarsenIS;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -1488,6 +1490,9 @@ static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, PetscReal r
   ierr = VecGetArrayRead(locX,&pointVals);CHKERRQ(ierr);
   ierr = VecGetDM(cellGeom,&cellDM);CHKERRQ(ierr);
   ierr = DMLabelCreate("adapt",&adaptLabel);CHKERRQ(ierr);
+  ierr = VecCreateMPI(PetscObjectComm((PetscObject)plex),cEnd-cStart,PETSC_DETERMINE,&errVec);CHKERRQ(ierr);
+  ierr = VecSetUp(errVec);CHKERRQ(ierr);
+  ierr = VecGetArray(errVec,&errArray);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; c++) {
     PetscReal             errInd = 0.;
     const PetscScalar     *pointGrad;
@@ -1499,31 +1504,36 @@ static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, PetscReal r
     ierr = DMPlexPointLocalRead(plex,c,pointVals,&pointVal);CHKERRQ(ierr);
 
     ierr = (user->model->errorIndicator)(dim,cg->volume,user->model->physics->dof,pointVal,pointGrad,&errInd,user->model->errorCtx);CHKERRQ(ierr);
+    errArray[c-cStart] = errInd;
     minMaxInd[0] = PetscMin(minMaxInd[0],errInd);
     minMaxInd[1] = PetscMax(minMaxInd[1],errInd);
-    if (errInd > refineTol)  {ierr = DMLabelSetValue(adaptLabel,c,DM_ADAPT_REFINE);CHKERRQ(ierr);}
-    if (errInd < coarsenTol) {ierr = DMLabelSetValue(adaptLabel,c,DM_ADAPT_COARSEN);CHKERRQ(ierr);}
   }
+  ierr = VecRestoreArray(errVec,&errArray);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(locX,&pointVals);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(cellGeom,&pointGeom);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(locGrad,&pointGrads);CHKERRQ(ierr);
   ierr = VecDestroy(&locGrad);CHKERRQ(ierr);
   ierr = VecDestroy(&locX);CHKERRQ(ierr);
   ierr = DMDestroy(&plex);CHKERRQ(ierr);
+
+  ierr = VecTaggerComputeIS(refineTag,errVec,&refineIS);CHKERRQ(ierr);
+  ierr = VecTaggerComputeIS(coarsenTag,errVec,&coarsenIS);CHKERRQ(ierr);
+  ierr = ISGetSize(refineIS,&nRefine);CHKERRQ(ierr);
+  ierr = ISGetSize(coarsenIS,&nCoarsen);CHKERRQ(ierr);
+  if (nRefine) {ierr = DMLabelSetStratumIS(adaptLabel,DM_ADAPT_REFINE,refineIS);CHKERRQ(ierr);}
+  if (nCoarsen) {ierr = DMLabelSetStratumIS(adaptLabel,DM_ADAPT_COARSEN,coarsenIS);CHKERRQ(ierr);}
+  ierr = ISDestroy(&coarsenIS);CHKERRQ(ierr);
+  ierr = ISDestroy(&refineIS);CHKERRQ(ierr);
+  ierr = VecDestroy(&errVec);CHKERRQ(ierr);
+
   ierr = PetscFVSetComputeGradients(fvm,computeGradient);CHKERRQ(ierr);
   minMaxInd[1] = -minMaxInd[1];
   ierr = MPI_Allreduce(minMaxInd,minMaxIndGlobal,2,MPIU_REAL,MPI_MIN,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
   minInd = minMaxIndGlobal[0];
   maxInd = -minMaxIndGlobal[1];
   ierr = PetscInfo2(ts, "error indicator range (%E, %E)\n", minInd, maxInd);CHKERRQ(ierr);
-  if (maxInd > refineTol || minInd < coarsenTol) { /* at least one cell is over the refinement threshold */
+  if (nRefine || nCoarsen) { /* at least one cell is over the refinement threshold */
     ierr = DMAdaptLabel(dm,adaptLabel,&adaptedDM);CHKERRQ(ierr);
-  }
-  else if (maxInd < coarsenTol) { /* all cells are under the coarsening threshold */
-    ierr = DMCoarsen(dm,PetscObjectComm((PetscObject)dm),&adaptedDM);CHKERRQ(ierr);
-  }
-  else if (minInd > refineTol) { /* all cells are over the refinement threshold */
-    ierr = DMRefine(dm,PetscObjectComm((PetscObject)dm),&adaptedDM);CHKERRQ(ierr);
   }
   ierr = DMLabelDestroy(&adaptLabel);CHKERRQ(ierr);
   if (adaptedDM) {
@@ -1562,10 +1572,10 @@ int main(int argc, char **argv)
   Vec               X;
   PetscViewer       viewer;
   PetscBool         vtkCellGeom, splitFaces, useAMR, viewInitial;
-  PetscReal         refineTol, coarsenTol;
-  PetscInt          overlap, targetCells, adaptInterval;
+  PetscInt          overlap, adaptInterval;
   char              filename[PETSC_MAX_PATH_LEN] = "sevenside.exo";
   char              physname[256]  = "advect";
+  VecTagger         refineTag = NULL, coarsenTag = NULL;
   PetscErrorCode    ierr;
 
   ierr = PetscInitialize(&argc, &argv, (char*) 0, help);CHKERRQ(ierr);
@@ -1579,9 +1589,6 @@ int main(int argc, char **argv)
   mod->comm     = comm;
   useAMR        = PETSC_FALSE;
   viewInitial   = PETSC_FALSE;
-  refineTol     = PETSC_MAX_REAL;
-  coarsenTol    = 0.;
-  targetCells   = 0;
   adaptInterval = 1;
 
   /* Register physical models to be available on the command line */
@@ -1603,13 +1610,33 @@ int main(int argc, char **argv)
     vtkCellGeom = PETSC_FALSE;
     ierr = PetscOptionsBool("-ufv_vtk_cellgeom","Write cell geometry (for debugging)","",vtkCellGeom,&vtkCellGeom,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-ufv_use_amr","use local adaptive mesh refinement","",useAMR,&useAMR,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-ufv_refine_tol","tolerance for refining cells in AMR","",refineTol,&refineTol,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-ufv_coarsen_tol","tolerance for coarsening cells in AMR","",coarsenTol,&coarsenTol,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-ufv_target_cells","target number of cells in AMR","",targetCells,&targetCells,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-ufv_view_initial_refinement","View initial conditions refinement history","",viewInitial,&viewInitial,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-ufv_adapt_interval","time steps between AMR","",adaptInterval,&adaptInterval,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
+  if (useAMR) {
+    VecTaggerBox refineBox, coarsenBox;
+
+    refineBox.min  = refineBox.max  = PETSC_MAX_REAL;
+    coarsenBox.min = coarsenBox.max = PETSC_MIN_REAL;
+
+    ierr = VecTaggerCreate(comm,&refineTag);CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject)refineTag,"refine_");CHKERRQ(ierr);
+    ierr = VecTaggerSetType(refineTag,VECTAGGERABSOLUTE);CHKERRQ(ierr);
+    ierr = VecTaggerAbsoluteSetBox(refineTag,&refineBox);CHKERRQ(ierr);
+    ierr = VecTaggerSetFromOptions(refineTag);CHKERRQ(ierr);
+    ierr = VecTaggerSetUp(refineTag);CHKERRQ(ierr);
+    ierr = PetscObjectViewFromOptions((PetscObject)refineTag,NULL,"-tag_view");CHKERRQ(ierr);
+
+    ierr = VecTaggerCreate(comm,&coarsenTag);CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject)coarsenTag,"coarsen_");CHKERRQ(ierr);
+    ierr = VecTaggerSetType(coarsenTag,VECTAGGERABSOLUTE);CHKERRQ(ierr);
+    ierr = VecTaggerAbsoluteSetBox(coarsenTag,&coarsenBox);CHKERRQ(ierr);
+    ierr = VecTaggerSetFromOptions(coarsenTag);CHKERRQ(ierr);
+    ierr = VecTaggerSetUp(coarsenTag);CHKERRQ(ierr);
+    ierr = PetscObjectViewFromOptions((PetscObject)coarsenTag,NULL,"-tag_view");CHKERRQ(ierr);
+  }
 
   ierr = PetscOptionsBegin(comm,NULL,"Unstructured Finite Volume Physics Options","");CHKERRQ(ierr);
   {
@@ -1776,6 +1803,7 @@ int main(int argc, char **argv)
   ierr = PetscObjectSetName((PetscObject) X, "solution");CHKERRQ(ierr);
   ierr = SetInitialCondition(dm, X, user);CHKERRQ(ierr);
   if (useAMR) {
+
     /* use no limiting when reconstructing gradients for adaptivity */
     ierr = PetscFVGetLimiter(fvm, &limiter);CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject)limiter);CHKERRQ(ierr);
@@ -1784,9 +1812,7 @@ int main(int argc, char **argv)
     ierr = PetscLimiterSetType(noneLimiter,PETSCLIMITERNONE);CHKERRQ(ierr);
 
     ierr = PetscFVSetLimiter(fvm,noneLimiter);CHKERRQ(ierr);
-    if (targetCells > 0) {
-      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"AMR with target cell count not implemented yet.");
-    } else {
+    {
       PetscInt adaptIter;
 
       for (adaptIter = 0;;adaptIter++) {
@@ -1822,7 +1848,7 @@ int main(int argc, char **argv)
 
         ierr = PetscMemoryGetCurrentUsage(&bytes);CHKERRQ(ierr);
         ierr = PetscInfo2(ts, "refinement loop %D: memory used %g\n", adaptIter, bytes);CHKERRQ(ierr);
-        ierr = adaptToleranceFVM(fvm, ts, X, refineTol, coarsenTol, user, &tsNew, NULL);CHKERRQ(ierr);
+        ierr = adaptToleranceFVM(fvm, ts, X, refineTag, coarsenTag, user, &tsNew, NULL);CHKERRQ(ierr);
         if (!tsNew) {
           break;
         } else {
@@ -1887,12 +1913,7 @@ int main(int argc, char **argv)
       ierr = PetscMemoryGetCurrentUsage(&bytes);CHKERRQ(ierr);
       ierr = PetscInfo2(ts, "AMR time step loop %D: memory used %g\n", adaptIter, bytes);CHKERRQ(ierr);
       ierr = PetscFVSetLimiter(fvm,noneLimiter);CHKERRQ(ierr);
-      if (targetCells > 0) {
-        SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"AMR with target cell count not implemented yet.");
-      }
-      else {
-        ierr = adaptToleranceFVM(fvm,ts,X,refineTol,coarsenTol,user,&tsNew,&solNew);CHKERRQ(ierr);
-      }
+      ierr = adaptToleranceFVM(fvm,ts,X,refineTag,coarsenTag,user,&tsNew,&solNew);CHKERRQ(ierr);
       ierr = PetscFVSetLimiter(fvm,limiter);CHKERRQ(ierr);
       if (tsNew) {
         ierr = PetscInfo(ts, "AMR used\n");CHKERRQ(ierr);
@@ -1925,6 +1946,8 @@ int main(int argc, char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %D steps\n",TSConvergedReasons[reason],(double)ftime,nsteps);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
 
+  ierr = VecTaggerDestroy(&refineTag);CHKERRQ(ierr);
+  ierr = VecTaggerDestroy(&coarsenTag);CHKERRQ(ierr);
   ierr = PetscFunctionListDestroy(&PhysicsList);CHKERRQ(ierr);
   ierr = FunctionalLinkDestroy(&user->model->functionalRegistry);CHKERRQ(ierr);
   ierr = PetscFree(user->model->functionalMonitored);CHKERRQ(ierr);

@@ -40,5 +40,5 @@ if __name__ == '__main__':
   num   = int(sys.argv[1])
   time  = int(sys.argv[2]) # in seconds
   procs = int(sys.argv[3])
-  #args  = ['-da_grid_x 800', '-da_grid_y 800', '-log_summary',  '-log_summary_python']
+  #args  = ['-da_grid_x 800', '-da_grid_y 800', '-log_view',  '-log_summary_python']
   generateBatchScript(num, procs, time, *sys.argv[4:])

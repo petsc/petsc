@@ -433,7 +433,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
     }
   }
 
-  ierr = KSPSetUpNorms_Private(ksp,&normtype,&pcside);CHKERRQ(ierr);
+  ierr = KSPSetUpNorms_Private(ksp,PETSC_FALSE,&normtype,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-ksp_norm_type","KSP Norm type","KSPSetNormType",KSPNormTypes,(PetscEnum)normtype,(PetscEnum*)&normtype,&flg);CHKERRQ(ierr);
   if (flg) { ierr = KSPSetNormType(ksp,normtype);CHKERRQ(ierr); }
 
@@ -554,7 +554,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
 #endif
 
   /* -----------------------------------------------------------------------*/
-  ierr = KSPSetUpNorms_Private(ksp,&normtype,&pcside);CHKERRQ(ierr);
+  ierr = KSPSetUpNorms_Private(ksp,PETSC_FALSE,NULL,&pcside);CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-ksp_pc_side","KSP preconditioner side","KSPSetPCSide",PCSides,(PetscEnum)pcside,(PetscEnum*)&pcside,&flg);CHKERRQ(ierr);
   if (flg) {ierr = KSPSetPCSide(ksp,pcside);CHKERRQ(ierr);}
 

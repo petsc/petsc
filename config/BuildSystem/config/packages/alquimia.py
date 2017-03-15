@@ -4,10 +4,8 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-#    self.gitcommit         = 'v1.0.2'
-    self.gitcommit         = 'master'
-    self.download          = ['git://https://github.com/ghammond86/alquimia-dev']
-#    self.download          = ['https://github.com/LBL-EESA/alquimia-dev/archive/'+self.gitcommit+'.tar.gz','git://https://github.com/LBL-EESA/alquimia-dev.git']
+    self.gitcommit         = 'xsdk-0.2.0-rc1'
+    self.download          = ['https://github.com/LBL-EESA/alquimia-dev/archive/'+self.gitcommit+'.tar.gz','git://https://github.com/LBL-EESA/alquimia-dev.git']
     self.functions         = []
     self.includes          = []
     self.hastests          = 1

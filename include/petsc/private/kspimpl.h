@@ -154,7 +154,7 @@ PETSC_STATIC_INLINE PetscErrorCode KSPLogResidualHistory(KSP ksp,PetscReal norm)
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode KSPSetUpNorms_Private(KSP,KSPNormType*,PCSide*);
+PETSC_INTERN PetscErrorCode KSPSetUpNorms_Private(KSP,PetscBool,KSPNormType*,PCSide*);
 
 PETSC_INTERN PetscErrorCode KSPPlotEigenContours_Private(KSP,PetscInt,const PetscReal*,const PetscReal*);
 

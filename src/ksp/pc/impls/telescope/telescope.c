@@ -145,7 +145,7 @@ PetscErrorCode PCTelescopeMatCreate_default(PC pc,PC_Telescope sred,MatReuse reu
   ierr = MatGetSize(B,&nr,&nc);CHKERRQ(ierr);
   isrow = sred->isin;
   ierr = ISCreateStride(comm,nc,0,1,&iscol);CHKERRQ(ierr);
-  ierr = MatGetSubMatrices(B,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&_Blocal);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(B,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&_Blocal);CHKERRQ(ierr);
   Blocal = *_Blocal;
   ierr = PetscFree(_Blocal);CHKERRQ(ierr);
   Bred = NULL;
@@ -976,7 +976,7 @@ PetscErrorCode PCTelescopeGetSubcommType(PC pc, PetscSubcommType *subcommtype)
    By default, B' is defined by simply fusing rows from different MPI processes
 
    When a DMDA is attached to the parent preconditioner, B' is defined by: (i) performing a symmetric permutation of B
-   into the ordering defined by the DMDA on c', (ii) extracting the local chunks via MatGetSubMatrices(), (iii) fusing the
+   into the ordering defined by the DMDA on c', (ii) extracting the local chunks via MatCreateSubMatrices(), (iii) fusing the
    locally (sequential) matrices defined on the ranks common to c and c' into B' using MatCreateMPIMatConcatenateSeqMat()
 
    Limitations/improvements include the following.

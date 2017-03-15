@@ -58,7 +58,7 @@ PetscErrorCode MatColoringGetDegrees(Mat G,PetscInt distance,PetscInt *degrees)
   ierr = ISCreateStride(PetscObjectComm((PetscObject)G),n,s,1,&ris);CHKERRQ(ierr);
   ierr = MatIncreaseOverlap(G,1,&ris,distance);CHKERRQ(ierr);
   ierr = ISSort(ris);CHKERRQ(ierr);
-  ierr = MatGetSubMatrices(G,1,&ris,&ris,MAT_INITIAL_MATRIX,&lGs);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(G,1,&ris,&ris,MAT_INITIAL_MATRIX,&lGs);CHKERRQ(ierr);
   lG = lGs[0];
   ierr = PetscObjectTypeCompare((PetscObject)lG,MATSEQAIJ,&isSEQAIJ);CHKERRQ(ierr);
   if (!isSEQAIJ) SETERRQ(PetscObjectComm((PetscObject)G),PETSC_ERR_SUP,"Requires an MPI/SEQAIJ Matrix");
@@ -166,7 +166,7 @@ PetscErrorCode MatColoringCreateSmallestLastWeights(MatColoring mc,PetscReal *we
   ierr = ISCreateStride(PetscObjectComm((PetscObject)G),n,s,1,&ris);CHKERRQ(ierr);
   ierr = MatIncreaseOverlap(G,1,&ris,distance+1);CHKERRQ(ierr);
   ierr = ISSort(ris);CHKERRQ(ierr);
-  ierr = MatGetSubMatrices(G,1,&ris,&ris,MAT_INITIAL_MATRIX,&lGs);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(G,1,&ris,&ris,MAT_INITIAL_MATRIX,&lGs);CHKERRQ(ierr);
   lG = lGs[0];
   ierr = PetscObjectTypeCompare((PetscObject)lG,MATSEQAIJ,&isSEQAIJ);CHKERRQ(ierr);
   if (!isSEQAIJ) SETERRQ(PetscObjectComm((PetscObject)G),PETSC_ERR_ARG_WRONGSTATE,"Requires an MPI/SEQAIJ Matrix");

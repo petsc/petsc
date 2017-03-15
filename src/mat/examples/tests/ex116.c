@@ -205,8 +205,8 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
   if (nev <= 0) PetscFunctionReturn(0);
 
   /*ierr = VecView(evec[0],PETSC_VIEWER_STDOUT_WORLD);*/
-  ierr = VecDuplicate(evec[0],&vt1);
-  ierr = VecDuplicate(evec[0],&vt2);
+  ierr = VecDuplicate(evec[0],&vt1);CHKERRQ(ierr);
+  ierr = VecDuplicate(evec[0],&vt2);CHKERRQ(ierr);
 
   switch (cklvl) {
   case 2:

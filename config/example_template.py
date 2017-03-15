@@ -4,7 +4,6 @@ header="""#!/usr/bin/env bash
 
 # PATH for DLLs on windows
 PATH="$PATH":@PETSC_LIB_DIR@
-mpiexec='@MPIEXEC@'
 exec='@EXEC@'
 testname='@TESTNAME@'
 label='@LABEL@'
@@ -13,10 +12,14 @@ wPETSC_DIR='@WPETSC_DIR@'
 petsc_dir='@PETSC_DIR@'
 args='@ARGS@'
 
+mpiexec=${PETSCMPIEXEC:-"@MPIEXEC@"}
+diffexec=${PETSCDIFF:-"${petsc_dir}/bin/petscdiff"}
+
 . "${petsc_dir}/config/petsc_harness.sh"
 
 # The diff flags come from script arguments
-diff_exe="${petsc_dir}/bin/petscdiff ${diff_flags}"
+diff_exe="${diffexec} ${diff_flags}"
+mpiexec="${mpiexec} ${mpiexec_flags}"
 
 """
 

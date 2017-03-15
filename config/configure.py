@@ -138,8 +138,8 @@ def chksynonyms():
     if name.find('download-ideas=') >= 0 or name.endswith('download-ideas'):
       downloadideas = 1
 
-    if name.find('with-blas-lapack-dir=') >= 0:
-      sys.argv[l] = name.replace('with-blas-lapack-dir','with-blaslapack-dir')
+    if name.find('with-blas-lapack') >= 0:
+      sys.argv[l] = name.replace('with-blas-lapack','with-blaslapack')
 
     if name.find('with-debug=') >= 0 or name.endswith('with-debug'):
       if name.find('=') == -1:

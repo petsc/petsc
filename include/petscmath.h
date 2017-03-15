@@ -405,7 +405,43 @@ typedef enum { PETSC_SCALAR_DOUBLE,PETSC_SCALAR_SINGLE, PETSC_SCALAR_LONG_DOUBLE
 #if defined(PETSC_HAVE_COMPLEX)
 /* PETSC_i is the imaginary number, i */
 PETSC_EXTERN PetscComplex PETSC_i;
+
+/* Try to do the right thing for complex number construction: see
+
+  http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1464.htm
+
+  for details
+*/
+PETSC_STATIC_INLINE PetscComplex PetscCMPLX(PetscReal x, PetscReal y)
+{
+#if   defined(__cplusplus)
+  return PetscComplex(x,y);
+#elif defined(_Imaginary_I)
+  return x + y * _Imaginary_I;
+#else
+#if   defined(PETSC_USE_REAL_SINGLE) && defined(CMPLXF)
+  return CMPLXF(x,y);
+#elif defined(PETSC_USE_REAL_DOUBLE) && defined(CMPLX)
+  return CMPLX(x,y);
+#else
+  { /* In both C99 and C11 (ISO/IEC 9899, Section 6.2.5),
+
+       "For each floating type there is a corresponding real type, which is always a real floating
+       type. For real floating types, it is the same type. For complex types, it is the type given
+       by deleting the keyword _Complex from the type name."
+
+       So type punning should be portable. */
+    union { PetscComplex z; PetscReal f[2]; } uz;
+
+    uz.f[0] = x;
+    uz.f[1] = y;
+    return uz.z;
+  }
 #endif
+#endif
+}
+#endif
+
 
 /*MC
    PetscMin - Returns minimum of two numbers

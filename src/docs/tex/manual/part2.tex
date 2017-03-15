@@ -460,7 +460,7 @@ numbering scheme back to the global PETSc numbering can be handled with the
 
 If one is given a list of block indices in a global numbering, the routine
 \begin{lstlisting}
-ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping ctx,ISGlobalToLocalMappingType type,PetscInt nin,PetscInt idxin[],PetscInt *nout,PetscInt idxout[]);
+ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping ctx,ISGlobalToLocalMappingMode type,PetscInt nin,PetscInt idxin[],PetscInt *nout,PetscInt idxout[]);
 \end{lstlisting}
 \sindex{global to local mapping} will provide
 a new list of indices in the local numbering. Again, negative values in
@@ -5339,13 +5339,24 @@ The event monitoring functionality is only available with PETSc's implicit time-
 
 %\section{Debugging ODE solvers}
 
+\section{Using TChem from PETSc}
+\label{sec_tchem}
+
+\url{https://bitbucket.org/jedbrown/tchem} is a package originally developed at Sandia National Laboratory that can read in
+\url{https://en.wikipedia.org/wiki/CHEMKIN} data files and compute the right hand side function and its Jacobian for the ODE reaction system.
+To utilize the PETSc ODE solvers for these systems first install PETSc with the additional {\tt ./configure} 
+ option {\tt --download-tchem}. We currently provide two examples of its use; one for single cell reaction and one for an ``artificial''
+one dimensional problem with periodic boundary conditions and diffusion of all species. The examples self explanatory and are {\tt \$PETSC\_DIR/src/ts/examples/tutorials/extchem.c and exchemfield.c.
+
+
 \section{Using Sundials from PETSc}
 \label{sec_sundials}
 
-Sundials is a parallel ODE solver developed by Hindmarsh et al. at LLNL.
-The \lstinline{TS} library provides an interface to use the CVODE component of
-Sundials directly from PETSc.  (To configure PETSc to use Sundials, see
-the installation guide, \trl{docs/installation/index.htm}.)
+Sundials is a parallel ODE solver developed by Hindmarsh et al. at
+LLNL.  The \lstinline{TS} library provides an interface to use the
+CVODE component of Sundials directly from PETSc.  (To configure PETSc
+to use Sundials, see the installation
+guide, \trl{docs/installation/index.htm}.)
 
 To use the Sundials integrators, call
 \begin{lstlisting}
@@ -6603,7 +6614,7 @@ For the purpose of PETSc floating point operation counting, we define
 one {\em flop} as one operation of any of the following types:
 multiplication, division, addition, or subtraction.  For example, one
 \lstinline{VecAXPY()} operation, which computes $y = \alpha x + y$ for
-vectors of length $N$, requires $2N$ flops (consisting of $N$
+vectors of length $N$, requires $2N$ flop (consisting of $N$
 additions and $N$ multiplications).  Bear in mind that flop rates
 present only a limited view of performance, since memory loads and stores are
 the real performance barrier.
@@ -6721,13 +6732,13 @@ ex10 on a rs6000 named p039 with 4 processors, by mcinnes Wed Jul 24 16:30:22 19
                          Max         Min        Avg        Total
 Time (sec):           3.289e+01      1.0   3.288e+01
 Objects:              1.130e+02      1.0   1.130e+02
-Flops:                2.195e+08      1.0   2.187e+08   8.749e+08
-Flops/sec:            6.673e+06      1.0               2.660e+07
+Flop:                 2.195e+08      1.0   2.187e+08   8.749e+08
+Flop/sec:             6.673e+06      1.0               2.660e+07
 MPI Messages:         2.205e+02      1.4   1.928e+02   7.710e+02
 MPI Message Lengths:  7.862e+06      2.5   5.098e+06   2.039e+07
 MPI Reductions:       1.850e+02      1.0
 
-Summary of Stages:  ---- Time ------  ----- Flops -------  -- Messages -- -- Message-lengths -- Reductions -
+Summary of Stages:  ---- Time ------  ----- Flop  -------  -- Messages -- -- Message-lengths -- Reductions -
                       Avg      %Total    Avg     %Total   counts   %Total    avg      %Total   counts  %Total
  0:  Load System 0: 1.191e+00    3.6% 3.980e+06   0.5%  3.80e+01    4.9%  6.102e+04   0.3%  1.80e+01   9.7%
  1:    KSPSetup 0:  6.328e-01    2.5% 1.479e+04   0.0%  0.00e+00    0.0%  0.000e+00   0.0%  0.00e+00   0.0%
@@ -6765,10 +6776,10 @@ processes, as well as the ratio of maximum to minimum times and flop
 rates for all processes.  A ratio of approximately 1 indicates that
 computations within a given phase are well balanced among the
 processes; as the ratio increases, the balance becomes increasingly
-poor.  Also, the total computational rate (in units of MFlops/sec) is
+poor.  Also, the total computational rate (in units of MFlop/sec) is
 given for each phase in the final column of the phase summary table.
 \[
-   {\rm Total\: Mflop/sec} \:=\: 10^{-6} * ({\rm sum\; of\; flops\; over\; all\; processors})/({\rm max\; time\; over\; all\; processors})
+   {\rm Total\: Mflop/sec} \:=\: 10^{-6} * ({\rm sum\; of\; flop\; over\; all\; processors})/({\rm max\; time\; over\; all\; processors})
 \]
 {\em Note}: Total computational rates $<$ 1 MFlop are listed as 0 in this column
 of the phase summary table.
@@ -6785,19 +6796,19 @@ mpiexec -n 4 ./ex10 -f0 medium -f1 arco6 -ksp_gmres_classicalgramschmidt -log_vi
 
 Phase summary info:
    Count: number of times phase was executed
-   Time and Flops/sec: Max - maximum over all processors
+   Time and Flop/sec: Max - maximum over all processors
                        Ratio - ratio of maximum to minimum over all processors
    Mess: number of messages sent
    Avg. len: average message length
    Reduct: number of global reductions
    Global: entire computation
    Stage: optional user-defined stages of a computation. Set stages with PLogStagePush() and PLogStagePop().
-      %T - percent time in this phase         %F - percent flops in this phase
+      %T - percent time in this phase         %F - percent flop in this phase
       %M - percent messages in this phase     %L - percent message lengths in this phase
       %R - percent reductions in this phase
-   Total Mflop/s: 10^6 * (sum of flops over all processors)/(max time over all processors)
+   Total Mflop/s: 10^6 * (sum of flop over all processors)/(max time over all processors)
 ------------------------------------------------------------------------------------------------------------------------
-Phase              Count      Time (sec)       Flops/sec                          --- Global ---  --- Stage ---   Total
+Phase              Count      Time (sec)       Flop/sec                           --- Global ---  --- Stage ---   Total
                             Max    Ratio      Max    Ratio  Mess  Avg len  Reduct %T %F %M %L %R  %T %F %M %L %R Mflop/s
 ------------------------------------------------------------------------------------------------------------------------
 ...
@@ -6847,7 +6858,7 @@ operations, as given by the routines \lstinline{VecScatterBegin()} and \lstinlin
 %matrix-vector products are given in \cite{petsc-mpi-paper}.)
 
 The final data presented are the percentages of the various statistics
-(time (\trl{%T}), flops/sec (\trl{%F}), messages(\trl{%M}), average message length (\trl{%L}),
+(time (\trl{%T}), flop/sec (\trl{%F}), messages(\trl{%M}), average message length (\trl{%L}),
 and reductions (\trl{%R})) for each event relative to the total computation and to any
 user-defined stages (discussed in Section~\ref{sec_profstages}).
 These statistics can aid in optimizing performance, since they indicate the sections of code that
@@ -6926,7 +6937,7 @@ specified event.
 The user can log the number of floating-point operations
 for this segment of code by calling
 \begin{lstlisting}
-PetscLogFlops(number of flops for this code segment);
+PetscLogFlops(number of flop for this code segment);
 \end{lstlisting}
 between the calls to \lstinline{PetscLogEventBegin()} and \lstinline{PetscLogEventEnd()}.
 This value will automatically be added to the global flop counter for the
@@ -7833,16 +7844,6 @@ The file \href{https://www.mcs.anl.gov/petsc/documentation/installation.html}{\t
 provides detailed instructions for installing PETSc. 
 You can use \trl{--with-clanguage=c} (the default) to use the C99 complex numbers or \trl{--with-clanguage=c++} to use the C++ complex type. 
 
-We recommend using optimized Fortran kernels for some key numerical
-routines with complex numbers (such as matrix-vector products, vector
-norms, etc.) instead of the default C/C++ routines.  This can be done with the \trl{./configure}  option \trl{--with-fortran-kernels=generic}.
-This implementation exploits the
-maturity of Fortran compilers while retaining the identical user
-interface.  For example, on rs6000 machines, the base single-node
-performance when using the Fortran kernels is 4-5 times faster than
-the default C++ code.
-
-
 Recall that each variant of the PETSc libraries is stored in a
 different directory, given by
 \trl{${PETSC_DIR}/lib/${PETSC_ARCH}}
@@ -8572,7 +8573,7 @@ we recommend skipping this chapter during an initial reading.
 
 One can extract a (parallel) submatrix from a given (parallel) using
 \begin{lstlisting}
-MatGetSubMatrix(Mat A,IS rows,IS cols,MatReuse call,Mat *B);
+MatCreateSubMatrix(Mat A,IS rows,IS cols,MatReuse call,Mat *B);
 \end{lstlisting}
 This extracts the \lstinline{rows} and \lstinline{col}umns of the matrix \lstinline{A} into \lstinline{B}. If
 call is  \lstinline{MAT_INITIAL_MATRIX} \findex{MAT_INITIAL_MATRIX} it will create the matrix

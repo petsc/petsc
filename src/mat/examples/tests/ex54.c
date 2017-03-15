@@ -1,5 +1,5 @@
 
-static char help[] = "Tests MatIncreaseOverlap(), MatGetSubMatrices() for parallel AIJ and BAIJ formats.\n";
+static char help[] = "Tests MatIncreaseOverlap(), MatCreateSubMatrices() for parallel AIJ and BAIJ formats.\n";
 
 #include <petscmat.h>
 
@@ -113,16 +113,8 @@ int main(int argc,char **args)
     ierr = ISSort(is2[i]);CHKERRQ(ierr);
   }
 
-  if (!nd) { /* MatGetSubMatrices(....,MAT_REUSE_MATRIX,...) requires ismax>0. 
-              Set nd=1 with zero-length is1 and is2 instead */
-    nd = 1;
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,0,idx,PETSC_COPY_VALUES,is1);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,0,idx,PETSC_COPY_VALUES,is2);CHKERRQ(ierr);
-  }
-
-  ierr = MatGetSubMatrices(B,nd,is2,is2,MAT_INITIAL_MATRIX,&submatB);CHKERRQ(ierr);
-  ierr = MatGetSubMatrices(A,nd,is1,is1,MAT_INITIAL_MATRIX,&submatA);CHKERRQ(ierr);
-
+  ierr = MatCreateSubMatrices(B,nd,is2,is2,MAT_INITIAL_MATRIX,&submatB);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(A,nd,is1,is1,MAT_INITIAL_MATRIX,&submatA);CHKERRQ(ierr);
 
   /* Test MatMult() */
   for (i=0; i<nd; i++) {
@@ -146,9 +138,9 @@ int main(int argc,char **args)
     ierr = VecDestroy(&s2);CHKERRQ(ierr);
   }
 
-  /* Now test MatGetSubmatrices with MAT_REUSE_MATRIX option */
-  ierr = MatGetSubMatrices(A,nd,is1,is1,MAT_REUSE_MATRIX,&submatA);CHKERRQ(ierr);
-  ierr = MatGetSubMatrices(B,nd,is2,is2,MAT_REUSE_MATRIX,&submatB);CHKERRQ(ierr);
+  /* Now test MatCreateSubmatrices with MAT_REUSE_MATRIX option */
+  ierr = MatCreateSubMatrices(A,nd,is1,is1,MAT_REUSE_MATRIX,&submatA);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(B,nd,is2,is2,MAT_REUSE_MATRIX,&submatB);CHKERRQ(ierr);
 
   /* Test MatMult() */
   for (i=0; i<nd; i++) {
@@ -176,9 +168,10 @@ int main(int argc,char **args)
   for (i=0; i<nd; ++i) {
     ierr = ISDestroy(&is1[i]);CHKERRQ(ierr);
     ierr = ISDestroy(&is2[i]);CHKERRQ(ierr);
-    ierr = MatDestroy(&submatA[i]);CHKERRQ(ierr);
-    ierr = MatDestroy(&submatB[i]);CHKERRQ(ierr);
   }
+  ierr = MatDestroySubMatrices(nd,&submatA);CHKERRQ(ierr);
+  ierr = MatDestroySubMatrices(nd,&submatB);CHKERRQ(ierr);
+
   ierr = PetscFree(is1);CHKERRQ(ierr);
   ierr = PetscFree(is2);CHKERRQ(ierr);
   ierr = PetscFree(idx);CHKERRQ(ierr);
@@ -187,8 +180,6 @@ int main(int argc,char **args)
   ierr = PetscFree(vals);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = PetscFree(submatA);CHKERRQ(ierr);
-  ierr = PetscFree(submatB);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;

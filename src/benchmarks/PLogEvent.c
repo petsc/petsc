@@ -46,8 +46,8 @@ int main(int argc,char **argv)
   if (flg) fprintf(stderr,"-log ");
   ierr = PetscOptionsHasName(NULL,"-log_all",&flg);CHKERRQ(ierr);
   if (flg) fprintf(stderr,"-log_all ");
-  ierr = PetscOptionsHasName(NULL,"-log_summary",&flg);CHKERRQ(ierr);
-  if (flg) fprintf(stderr,"-log_summary ");
+  ierr = PetscOptionsHasName(NULL,"-log_view",&flg);CHKERRQ(ierr);
+  if (flg) fprintf(stderr,"-log_view ");
   ierr = PetscOptionsHasName(NULL,"-log_mpe",&flg);CHKERRQ(ierr);
   if (flg) fprintf(stderr,"-log_mpe ");
 

@@ -300,6 +300,105 @@ PetscErrorCode ISExpand(IS is1,IS is2,IS *isout)
 }
 
 /*@
+   ISIntersect - Computes the union of two index sets, by concatenating 2 lists, sorting,
+   and finding duplicates.
+
+   Collective on IS
+
+   Input Parameter:
++  is1 - first index set
+-  is2 - second index set
+
+   Output Parameters:
+.  isout - the sorted intersection of is1 and is2
+
+   Notes:
+   Negative values are removed from the lists. This requires O(min(is1,is2))
+   memory and O(max(is1,is2)log(max(is1,is2))) work
+
+   The IS's do not need to be sorted.
+
+   Level: intermediate
+
+.seealso: ISDestroy(), ISView(), ISDifference(), ISSum(), ISExpand()
+
+   Concepts: index sets^intersection
+   Concepts: IS^intersection
+
+@*/
+PetscErrorCode ISIntersect(IS is1,IS is2,IS *isout)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,n1,n2,nout,*iout;
+  const PetscInt *i1,*i2;
+  IS             is1sorted = NULL, is2sorted = NULL;
+  PetscBool      sorted;
+  MPI_Comm       comm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is1,IS_CLASSID,1);
+  PetscValidHeaderSpecific(is2,IS_CLASSID,2);
+  PetscValidPointer(isout,3);
+
+  ierr = ISGetLocalSize(is1,&n1);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(is2,&n2);CHKERRQ(ierr);
+  if (n1 < n2) {
+    IS tempis = is1;
+    int ntemp = n1;
+
+    is1 = is2;
+    is2 = tempis;
+    n1  = n2;
+    n2  = ntemp;
+  }
+  ierr = ISSorted(is1,&sorted);CHKERRQ(ierr);
+  if (!sorted) {
+    ierr = ISDuplicate(is1,&is1sorted);CHKERRQ(ierr);
+    ierr = ISSort(is1sorted);CHKERRQ(ierr);
+    ierr = ISGetIndices(is1sorted,&i1);CHKERRQ(ierr);
+  } else {
+    is1sorted = is1;
+    ierr = PetscObjectReference((PetscObject)is1);CHKERRQ(ierr);
+    ierr = ISGetIndices(is1,&i1);CHKERRQ(ierr);
+  }
+  ierr = ISSorted(is2,&sorted);CHKERRQ(ierr);
+  if (!sorted) {
+    ierr = ISDuplicate(is2,&is2sorted);CHKERRQ(ierr);
+    ierr = ISSort(is2sorted);CHKERRQ(ierr);
+    ierr = ISGetIndices(is2sorted,&i2);CHKERRQ(ierr);
+  } else {
+    is2sorted = is2;
+    ierr = PetscObjectReference((PetscObject)is2);CHKERRQ(ierr);
+    ierr = ISGetIndices(is2,&i2);CHKERRQ(ierr);
+  }
+
+  ierr = PetscMalloc1(n2,&iout);CHKERRQ(ierr);
+
+  for (i = 0, nout = 0; i < n2; i++) {
+    PetscInt key = i2[i];
+    PetscInt loc;
+
+    ierr = ISLocate(is1sorted,key,&loc);CHKERRQ(ierr);
+    if (loc >= 0) {
+      if (!nout || iout[nout-1] < key) {
+        iout[nout++] = key;
+      }
+    }
+  }
+  ierr = PetscRealloc(sizeof (PetscInt) * (size_t) nout,&iout);CHKERRQ(ierr);
+
+  /* create the new IS containing the sum */
+  ierr = PetscObjectGetComm((PetscObject)is1,&comm);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm,nout,iout,PETSC_OWN_POINTER,isout);CHKERRQ(ierr);
+
+  ierr = ISRestoreIndices(is2sorted,&i2);CHKERRQ(ierr);
+  ierr = ISDestroy(&is2sorted);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(is1sorted,&i1);CHKERRQ(ierr);
+  ierr = ISDestroy(&is1sorted);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
    ISConcatenate - Forms a new IS by locally concatenating the indices from an IS list without reordering.
 
 
@@ -586,7 +685,7 @@ PetscErrorCode ISEmbed(IS a, IS b, PetscBool drop, IS *c)
 {
   PetscErrorCode             ierr;
   ISLocalToGlobalMapping     ltog;
-  ISGlobalToLocalMappingType gtoltype = IS_GTOLM_DROP;
+  ISGlobalToLocalMappingMode gtoltype = IS_GTOLM_DROP;
   PetscInt                   alen, clen, *cindices, *cindices2;
   const PetscInt             *aindices;
 

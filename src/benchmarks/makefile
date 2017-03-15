@@ -80,7 +80,7 @@ runtest:
 	-@echo "PLogEventBegin and PLogEventEnd together with options"
 	-@echo "------------------------------------------------"
 	-@${MPIEXEC} -n 1 ./PLogEvent              > /dev/null
-	-@${MPIEXEC} -n 1 ./PLogEvent -log_summary > /dev/null
+	-@${MPIEXEC} -n 1 ./PLogEvent -log_view > /dev/null
 	-@${MPIEXEC} -n 1 ./PLogEvent -log_mpe     > /dev/null
 	-@echo " "
 	-@echo "PetscMalloc and PetscFree together  with options"

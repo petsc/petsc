@@ -503,6 +503,10 @@ class Configure(config.base.Configure):
       self.usedMPICompilers = 0
       raise RuntimeError('MPI compiler wrappers in '+self.argDB['with-mpi-dir']+'/bin do not work. See http://www.mcs.anl.gov/petsc/documentation/faq.html#mpi-compilers')
     else:
+      if self.useMPICompilers() and 'with-mpi-dir' in self.argDB:
+      # if it gets here these means that self.argDB['with-mpi-dir']/bin does not exist so we should not search for MPI compilers
+      # that is we are turning off the self.useMPICompilers()
+        self.argDB['with-mpi-compilers'] = 0
       if self.useMPICompilers():
         self.usedMPICompilers = 1
         if Configure.isGNU('mpicc', self.log) and self.argDB['with-gnu-compilers']:

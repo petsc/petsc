@@ -430,7 +430,7 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
       } else {
         value = v[k + l*m];
       }
-      if ((value == 0.0 && ignorezeroentries) && (is == ADD_VALUES)) continue;
+      if ((value == 0.0 && ignorezeroentries) && (is == ADD_VALUES) && row != col) continue;
 
       if (col <= lastcol) low = 0;
       else high = nrow;
@@ -449,7 +449,7 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
           goto noinsert;
         }
       }
-      if (value == 0.0 && ignorezeroentries) goto noinsert;
+      if (value == 0.0 && ignorezeroentries && row != col) goto noinsert;
       if (nonew == 1) goto noinsert;
       if (nonew == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at (%D,%D) in the matrix",row,col);
       MatSeqXAIJReallocateAIJ(A,A->rmap->n,1,nrow,row,col,rmax,aa,ai,aj,rp,ap,imax,nonew,MatScalar);
@@ -558,6 +558,8 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
   PetscViewerFormat format;
 
   PetscFunctionBegin;
+  if (!a->a) PetscFunctionReturn(0);
+
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   if (format == PETSC_VIEWER_ASCII_MATLAB) {
     PetscInt nofinalvalue = 0;
@@ -2160,7 +2162,7 @@ PetscErrorCode MatDiagonalScale_SeqAIJ(Mat A,Vec ll,Vec rr)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,PetscInt csize,MatReuse scall,Mat *B)
+PetscErrorCode MatCreateSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,PetscInt csize,MatReuse scall,Mat *B)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data,*c;
   PetscErrorCode ierr;
@@ -2407,18 +2409,77 @@ PetscErrorCode MatScale_SeqAIJ(Mat inA,PetscScalar alpha)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatGetSubMatrices_SeqAIJ(Mat A,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *B[])
+PetscErrorCode MatDestroySubMatrices_Private(Mat_SubSppt *submatj)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  if (!submatj->id) { /* delete data that are linked only to submats[id=0] */
+    ierr = PetscFree4(submatj->sbuf1,submatj->ptr,submatj->tmp,submatj->ctr);CHKERRQ(ierr);
+
+    for (i=0; i<submatj->nrqr; ++i) {
+      ierr = PetscFree(submatj->sbuf2[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree3(submatj->sbuf2,submatj->req_size,submatj->req_source1);CHKERRQ(ierr);
+
+    if (submatj->rbuf1) {
+      ierr = PetscFree(submatj->rbuf1[0]);CHKERRQ(ierr);
+      ierr = PetscFree(submatj->rbuf1);CHKERRQ(ierr);
+    }
+
+    for (i=0; i<submatj->nrqs; ++i) {
+      ierr = PetscFree(submatj->rbuf3[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree3(submatj->req_source2,submatj->rbuf2,submatj->rbuf3);CHKERRQ(ierr);
+    ierr = PetscFree(submatj->pa);CHKERRQ(ierr);
+  }
+
+#if defined(PETSC_USE_CTABLE)
+  ierr = PetscTableDestroy((PetscTable*)&submatj->rmap);CHKERRQ(ierr);
+  if (submatj->cmap_loc) {ierr = PetscFree(submatj->cmap_loc);CHKERRQ(ierr);}
+  ierr = PetscFree(submatj->rmap_loc);CHKERRQ(ierr);
+#else
+  ierr = PetscFree(submatj->rmap);CHKERRQ(ierr);
+#endif
+
+  if (!submatj->allcolumns) {
+#if defined(PETSC_USE_CTABLE)
+    ierr = PetscTableDestroy((PetscTable*)&submatj->cmap);CHKERRQ(ierr);
+#else
+    ierr = PetscFree(submatj->cmap);CHKERRQ(ierr);
+#endif
+  }
+  ierr = PetscFree(submatj->row2proc);CHKERRQ(ierr);
+
+  ierr = PetscFree(submatj);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatDestroy_SeqAIJ_Submatrices(Mat C)
+{
+  PetscErrorCode ierr;
+  Mat_SeqAIJ     *c = (Mat_SeqAIJ*)C->data;
+  Mat_SubSppt    *submatj = c->submatis1;
+
+  PetscFunctionBegin;
+  ierr = submatj->destroy(C);CHKERRQ(ierr);
+  ierr = MatDestroySubMatrices_Private(submatj);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatCreateSubMatrices_SeqAIJ(Mat A,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *B[])
 {
   PetscErrorCode ierr;
   PetscInt       i;
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
-    ierr = PetscMalloc1(n+1,B);CHKERRQ(ierr);
+    ierr = PetscCalloc1(n+1,B);CHKERRQ(ierr);
   }
 
   for (i=0; i<n; i++) {
-    ierr = MatGetSubMatrix_SeqAIJ(A,irow[i],icol[i],PETSC_DECIDE,scall,&(*B)[i]);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix_SeqAIJ(A,irow[i],icol[i],PETSC_DECIDE,scall,&(*B)[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -3016,7 +3077,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqAIJ,
                                         MatILUFactor_SeqAIJ,
                                         0,
                                 /* 39*/ MatAXPY_SeqAIJ,
-                                        MatGetSubMatrices_SeqAIJ,
+                                        MatCreateSubMatrices_SeqAIJ,
                                         MatIncreaseOverlap_SeqAIJ,
                                         MatGetValues_SeqAIJ,
                                         MatCopy_SeqAIJ,

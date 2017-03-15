@@ -148,8 +148,8 @@ PetscErrorCode port_lsd_bfbt(void)
     Mat         A11,A22;
 
     /* grab matrices and create the compatable u,p vectors */
-    ierr = MatGetSubMatrix(A,isu,isu,MAT_INITIAL_MATRIX,&A11);CHKERRQ(ierr);
-    ierr = MatGetSubMatrix(A,isp,isp,MAT_INITIAL_MATRIX,&A22);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix(A,isu,isu,MAT_INITIAL_MATRIX,&A11);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix(A,isp,isp,MAT_INITIAL_MATRIX,&A22);CHKERRQ(ierr);
 
     ierr = MatCreateVecs(A11,&uvec,NULL);CHKERRQ(ierr);
     ierr = MatCreateVecs(A22,&pvec,NULL);CHKERRQ(ierr);

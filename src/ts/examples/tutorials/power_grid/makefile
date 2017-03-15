@@ -104,12 +104,7 @@ runex2f:
 	  ${RM} -f ex2_1.tmp
 
 runex3:
-	-@${MPIEXEC} -n 1 ./ex3 -nox -ts_type ssp -ts_dt 0.0005  > ex3_1.tmp 2>&1;	  \
-	   ${DIFF} output/ex3_1.out ex3_1.tmp || printf "${PWD}\nPossible problem with ex3_1, diffs above\n=========================================\n"; \
-	   ${RM} -f ex3_1.tmp
-
-runex3_2:
-	-@${MPIEXEC} -n 1 ./ex3 -nox -ts_type rk -ts_dt 0.0005  > ex3_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex3 -nox  > ex3_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex3_1.out ex3_1.tmp || printf "${PWD}\nPossible problem with ex3_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex3_1.tmp
 

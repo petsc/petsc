@@ -231,25 +231,25 @@
   </div>
   <li> Run on 4 processors with the default linear solver and profile the run
     <pre>
-     mpiexec -n 4 ./ex19 -da_refine 6 -log_summary     <a href="http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/output/ex19_tut_4.out.html">[Expected output]</a>
+     mpiexec -n 4 ./ex19 -da_refine 6 -log_view     <a href="http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/output/ex19_tut_4.out.html">[Expected output]</a>
     </pre>
     Search for the line beginning with SNESSolve, the fourth column gives the time for the nonlinear solve.
   </li>
   <li> Run on 4 processors with the geometric multigrid linear solver and profile the run
     <pre>
-     mpiexec -n 4 ./ex19 -da_refine 6 -log_summary -pc_type mg     <a href="http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/output/ex19_tut_5.out.html">[Expected output]</a>
+     mpiexec -n 4 ./ex19 -da_refine 6 -log_view -pc_type mg     <a href="http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/output/ex19_tut_5.out.html">[Expected output]</a>
     </pre>
     Compare the runtime for SNESSolve to the case with the default solver
   </li>
   <li> Run on 16 processors with the default linear solver and profile the run
     <pre>
-     mpiexec -n 16 ./ex19 -da_refine 6 -log_summary     <a href="http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/output/ex19_tut_6.out.html">[Expected output]</a>
+     mpiexec -n 16 ./ex19 -da_refine 6 -log_view     <a href="http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/output/ex19_tut_6.out.html">[Expected output]</a>
     </pre>
     Compare the runtime for SNESSolve to the 4 processor case with the default solver, what is the speedup?
   </li>
   <li> Run on 16 processors with the geometric multigrid linear solver and profile the run
     <pre>
-     mpiexec -n 16 ./ex19 -da_refine 6 -log_summary -pc_type mg     <a href="http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/output/ex19_tut_7.out.html">[Expected output]</a>
+     mpiexec -n 16 ./ex19 -da_refine 6 -log_view -pc_type mg     <a href="http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/output/ex19_tut_7.out.html">[Expected output]</a>
     </pre>
     Compare the runtime for the SNESSolve to the 4 processor case with multigrid, what is the speedup? 
     Why is the speedup for multigrid lower than the speedup for the default solver? 

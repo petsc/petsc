@@ -1,7 +1,7 @@
 
 static char help[] = "Tests the use of interface functions for MATIS matrices.\n\
 This example tests: MatZeroRows(), MatZeroRowsLocal(), MatView(), MatDuplicate(),\n\
-MatCopy(), MatGetSubMatrix(), MatGetLocalSubMatrix(), MatAXPY(), MatShift()\n\
+MatCopy(), MatCreateSubMatrix(), MatGetLocalSubMatrix(), MatAXPY(), MatShift()\n\
 MatDiagonalSet(), MatTranspose() and MatISGetMPIXAIJ(). It also tests some\n\
 conversion routines.\n";
 
@@ -228,8 +228,8 @@ int main(int argc,char **args)
   ierr = MatDestroy(&T);CHKERRQ(ierr);
   ierr = MatDestroy(&A2);CHKERRQ(ierr);
 
-  /* test MatGetSubMatrix */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatGetSubMatrix\n");CHKERRQ(ierr);
+  /* test MatCreateSubMatrix */
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatCreateSubMatrix\n");CHKERRQ(ierr);
   if (!rank) {
     ierr = ISCreateStride(PETSC_COMM_WORLD,1,1,1,&is);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_WORLD,2,0,1,&is2);CHKERRQ(ierr);
@@ -243,18 +243,18 @@ int main(int argc,char **args)
     ierr = ISCreateStride(PETSC_COMM_WORLD,0,0,1,&is);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_WORLD,0,0,1,&is2);CHKERRQ(ierr);
   }
-  ierr = MatGetSubMatrix(A,is,is,MAT_INITIAL_MATRIX,&A2);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(B,is,is,MAT_INITIAL_MATRIX,&B2);CHKERRQ(ierr);
-  ierr = CheckMat(A2,B2,PETSC_FALSE,"first MatGetSubMatrix");CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix(A,is,is,MAT_INITIAL_MATRIX,&A2);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix(B,is,is,MAT_INITIAL_MATRIX,&B2);CHKERRQ(ierr);
+  ierr = CheckMat(A2,B2,PETSC_FALSE,"first MatCreateSubMatrix");CHKERRQ(ierr);
 
-  ierr = MatGetSubMatrix(A,is,is,MAT_REUSE_MATRIX,&A2);CHKERRQ(ierr);
-  ierr = CheckMat(A2,B2,PETSC_FALSE,"reuse MatGetSubMatrix");CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix(A,is,is,MAT_REUSE_MATRIX,&A2);CHKERRQ(ierr);
+  ierr = CheckMat(A2,B2,PETSC_FALSE,"reuse MatCreateSubMatrix");CHKERRQ(ierr);
   ierr = MatDestroy(&A2);CHKERRQ(ierr);
   ierr = MatDestroy(&B2);CHKERRQ(ierr);
 
-  ierr = MatGetSubMatrix(A,is,is2,MAT_INITIAL_MATRIX,&A2);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(B,is,is2,MAT_INITIAL_MATRIX,&B2);CHKERRQ(ierr);
-  ierr = CheckMat(A2,B2,PETSC_FALSE,"second MatGetSubMatrix");CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix(A,is,is2,MAT_INITIAL_MATRIX,&A2);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix(B,is,is2,MAT_INITIAL_MATRIX,&B2);CHKERRQ(ierr);
+  ierr = CheckMat(A2,B2,PETSC_FALSE,"second MatCreateSubMatrix");CHKERRQ(ierr);
   ierr = MatDestroy(&A2);CHKERRQ(ierr);
   ierr = MatDestroy(&B2);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
