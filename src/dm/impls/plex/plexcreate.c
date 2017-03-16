@@ -1011,6 +1011,35 @@ PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const PetscIn
   PetscFunctionReturn(0);
 }
 
+/*@C
+  DMPlexSetOptionsPrefix - Sets the prefix used for searching for all DM options in the database.
+
+  Logically Collective on DM
+
+  Input Parameters:
++ dm - the DM context
+- prefix - the prefix to prepend to all option names
+
+  Notes:
+  A hyphen (-) must NOT be given at the beginning of the prefix name.
+  The first character of all runtime options is AUTOMATICALLY the hyphen.
+
+  Level: advanced
+
+.seealso: SNESSetFromOptions()
+@*/
+PetscErrorCode DMPlexSetOptionsPrefix(DM dm, const char prefix[])
+{
+  DM_Plex       *mesh = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject) dm, prefix);CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject) mesh->partitioner, prefix);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* External function declarations here */
 extern PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling);
 extern PetscErrorCode DMCreateInjection_Plex(DM dmCoarse, DM dmFine, Mat *mat);
