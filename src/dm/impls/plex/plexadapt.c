@@ -49,6 +49,7 @@ PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabel
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
+  /* Check for FEM adjacency flags */
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(vertexMetric, VEC_CLASSID, 2);
   PetscValidCharPointer(bdLabelName, 3);
@@ -67,8 +68,13 @@ PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabel
     }
   }
   /* Add overlap for Pragmatic */
-  ierr = DMPlexDistributeOverlap(odm, 1, NULL, &dm);CHKERRQ(ierr);
-  if (!dm) {dm = odm; ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);}
+#if 0
+  /* Check for overlap by looking for cell in the SF */
+  if (!overlapped) {
+    ierr = DMPlexDistributeOverlap(odm, 1, NULL, &dm);CHKERRQ(ierr);
+    if (!dm) {dm = odm; ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);}
+  }
+#endif
   /* Get mesh information */
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
@@ -141,8 +147,10 @@ PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabel
   ierr = VecGetArrayRead(vertexMetric, &met);CHKERRQ(ierr);
   for (v = 0; v < (vEnd-vStart)*PetscSqr(dim); ++v) metric[v] = PetscRealPart(met[v]);
   ierr = VecRestoreArrayRead(vertexMetric, &met);CHKERRQ(ierr);
+#if 0
   /* Destroy overlap mesh */
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
+#endif
   /* Create new mesh */
 #ifdef PETSC_HAVE_PRAGMATIC
   switch (dim) {
