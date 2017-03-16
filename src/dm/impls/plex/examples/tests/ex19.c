@@ -125,6 +125,8 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
       lambda[0] = lbd;
       lambda[1] = lmax;
       lambda[2] = lmax;
+      lambda[0] = pcoords[0];
+      lambda[1] = pcoords[1];
       break;
     default:
       SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "metOpt = 0, 1 or 2, cannot be %d", user->metOpt);
@@ -142,7 +144,7 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
 int main (int argc, char * argv[]) {
   AppCtx         user;                 /* user-defined work context */
   MPI_Comm       comm;
-  DM             dma;
+  DM             dma, odm;
   Vec            metric;
   PetscErrorCode ierr;
 
@@ -154,6 +156,10 @@ int main (int argc, char * argv[]) {
   ierr = PetscObjectSetName((PetscObject) user.dm, "DMinit");CHKERRQ(ierr);
   ierr = DMViewFromOptions(user.dm, NULL, "-init_dm_view");CHKERRQ(ierr);
 
+  odm  = user.dm;
+  ierr = DMPlexDistributeOverlap(odm, 1, NULL, &user.dm);CHKERRQ(ierr);
+  if (!user.dm) {user.dm = odm;}
+  else          {ierr = DMDestroy(&odm);CHKERRQ(ierr);}
   ierr = ComputeMetric(user.dm, &user, &metric);CHKERRQ(ierr);
   ierr = DMPlexAdapt(user.dm, metric, user.bdLabel, &dma);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) dma, "DMadapt");CHKERRQ(ierr);
