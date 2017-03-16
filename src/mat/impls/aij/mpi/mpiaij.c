@@ -4497,6 +4497,13 @@ PetscErrorCode  MatGetBrowsOfAoCols_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscInt *
   ierr = PetscLogEventBegin(MAT_GetBrowsOfAocols,A,B,0,0);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
+  if (size == 1) {
+    startsj_s = NULL;
+    bufa_ptr  = NULL;
+    B_oth     = NULL;
+    PetscFunctionReturn(0);
+  }
+
   gen_to   = (VecScatter_MPI_General*)ctx->todata;
   gen_from = (VecScatter_MPI_General*)ctx->fromdata;
   nrecvs   = gen_from->n;

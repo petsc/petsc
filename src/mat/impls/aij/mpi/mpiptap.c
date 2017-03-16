@@ -544,7 +544,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   PetscInt            *owners_co,*coi,*coj;    /* i and j array of (p->B)^T*A*P - used in the communication */
   PetscMPIInt         *len_r,*id_r;    /* array of length of comm->size, store send/recv matrix values */
   PetscInt            *api,*apj,*Jptr,apnz,*prmap=p->garray,con,j,ap_rmax=0,Crmax,*aj,*ai,*pi;
-  Mat_SeqAIJ          *p_loc,*p_oth,*ad=(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data,*c_loc,*c_oth;
+  Mat_SeqAIJ          *p_loc,*p_oth=NULL,*ad=(Mat_SeqAIJ*)(a->A)->data,*ao=NULL,*c_loc,*c_oth;
   PetscScalar         *apv;
   PetscTable          ta;
 #if defined(PETSC_HAVE_HYPRE)
@@ -610,6 +610,10 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
+  if (size > 1) {
+    ao = (Mat_SeqAIJ*)(a->B)->data;
+  }
+
   /* create symbolic parallel matrix Cmpi */
   ierr = MatCreate(comm,&Cmpi);CHKERRQ(ierr);
   ierr = MatSetType(Cmpi,MATMPIAIJ);CHKERRQ(ierr);
@@ -637,7 +641,9 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   /* (1) compute symbolic AP = A_loc*P = Ad*P_loc + Ao*P_oth (api,apj) */
   /* ----------------------------------------------------------------- */
   p_loc  = (Mat_SeqAIJ*)(ptap->P_loc)->data;
-  p_oth  = (Mat_SeqAIJ*)(ptap->P_oth)->data;
+  if (ptap->P_oth) {
+    p_oth  = (Mat_SeqAIJ*)(ptap->P_oth)->data;
+  }
 
   /* create and initialize a linked list */
   ierr = PetscTableCreate(pn,pN,&ta);CHKERRQ(ierr); /* for compute AP_loc and Cmpi */
@@ -649,7 +655,11 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = PetscLLCondensedCreate(Crmax,pN,&lnk,&lnkbt);CHKERRQ(ierr); 
 
   /* Initial FreeSpace size is fill*(nnz(A) + nnz(P)) */
-  ierr = PetscFreeSpaceGet(PetscRealIntMultTruncate(fill,PetscIntSumTruncate(ad->i[am],PetscIntSumTruncate(ao->i[am],p_loc->i[pm]))),&free_space);CHKERRQ(ierr);
+  if (ao) {
+    ierr = PetscFreeSpaceGet(PetscRealIntMultTruncate(fill,PetscIntSumTruncate(ad->i[am],PetscIntSumTruncate(ao->i[am],p_loc->i[pm]))),&free_space);CHKERRQ(ierr);
+  } else {
+    ierr = PetscFreeSpaceGet(PetscRealIntMultTruncate(fill,PetscIntSumTruncate(ad->i[am],p_loc->i[pm])),&free_space);CHKERRQ(ierr);
+  }
   current_space = free_space;
   nspacedouble  = 0;
 
@@ -668,17 +678,19 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
       ierr = PetscLLCondensedAddSorted(pnz,Jptr,lnk,lnkbt);CHKERRQ(ierr);
     }
     /* off-diagonal portion: Ao[i,:]*P */
-    ai = ao->i; pi = p_oth->i;
-    nzi = ai[i+1] - ai[i];
-    aj  = ao->j + ai[i];
-    for (j=0; j<nzi; j++) {
-      row  = aj[j];
-      pnz  = pi[row+1] - pi[row];
-      Jptr = p_oth->j + pi[row];
-      ierr = PetscLLCondensedAddSorted(pnz,Jptr,lnk,lnkbt);CHKERRQ(ierr);
+    if (ao) {
+      ai = ao->i; pi = p_oth->i;
+      nzi = ai[i+1] - ai[i];
+      aj  = ao->j + ai[i];
+      for (j=0; j<nzi; j++) {
+        row  = aj[j];
+        pnz  = pi[row+1] - pi[row];
+        Jptr = p_oth->j + pi[row];
+        ierr = PetscLLCondensedAddSorted(pnz,Jptr,lnk,lnkbt);CHKERRQ(ierr);
+      }
     }
     apnz     = lnk[0];
-    api[i+1] = api[i] + apnz;  
+    api[i+1] = api[i] + apnz;
     if (ap_rmax < apnz) ap_rmax = apnz;
 
     /* if free space is not available, double the total space in the list */
@@ -704,7 +716,11 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,am,pN,api,apj,apv,&ptap->AP_loc);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_INFO)
-  apfill = (PetscReal)api[am]/(ad->i[am]+ao->i[am]+p_loc->i[pm]+1);
+  if (ao) {
+    apfill = (PetscReal)api[am]/(ad->i[am]+ao->i[am]+p_loc->i[pm]+1);
+  } else {
+    apfill = (PetscReal)api[am]/(ad->i[am]+p_loc->i[pm]+1);
+  }
   ptap->AP_loc->info.mallocs           = nspacedouble;
   ptap->AP_loc->info.fill_ratio_given  = fill;
   ptap->AP_loc->info.fill_ratio_needed = apfill;
