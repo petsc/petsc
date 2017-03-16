@@ -140,6 +140,33 @@ PetscErrorCode  TSTrajectorySetVariableNames(TSTrajectory ctx,const char * const
 }
 
 /*@C
+   TSTrjactorySetTransform - Solution vector will be transformed by provided function before being saved to disk
+
+   Collective on TSLGCtx
+
+   Input Parameters:
++  tj - the TSTrajectory context
+.  transform - the transform function
+.  destroy - function to destroy the optional context
+-  ctx - optional context used by transform function
+
+   Level: intermediate
+
+.keywords: TSTrajectory,  vector, monitor, view
+
+.seealso:  TSTrajectorySetVariableNames(), TSTrajectory, TSMonitorLGSetTransform()
+@*/
+PetscErrorCode  TSTrajectorySetTransform(TSTrajectory tj,PetscErrorCode (*transform)(void*,Vec,Vec*),PetscErrorCode (*destroy)(void*),void *tctx)
+{
+  PetscFunctionBegin;
+  tj->transform        = transform;
+  tj->transformdestroy = destroy;
+  tj->transformctx     = tctx;
+  PetscFunctionReturn(0);
+}
+
+
+/*@C
   TSTrajectoryCreate - This function creates an empty trajectory object used to store the time dependent solution of an ODE/DAE
 
   Collective on MPI_Comm
@@ -273,6 +300,7 @@ PetscErrorCode  TSTrajectoryDestroy(TSTrajectory *tj)
   PetscValidHeaderSpecific((*tj),TSTRAJECTORY_CLASSID,1);
   if (--((PetscObject)(*tj))->refct > 0) {*tj = 0; PetscFunctionReturn(0);}
 
+  if ((*tj)->transformdestroy) {ierr = (*(*tj)->transformdestroy)((*tj)->transformctx);}
   if ((*tj)->ops->destroy) {ierr = (*(*tj)->ops->destroy)((*tj));CHKERRQ(ierr);}
   ierr = PetscViewerDestroy(&(*tj)->monitor);CHKERRQ(ierr);
   ierr = PetscStrArrayDestroy(&(*tj)->names);CHKERRQ(ierr);

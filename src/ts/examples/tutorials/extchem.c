@@ -156,6 +156,7 @@ int main(int argc,char **argv)
   ierr = TSGetTrajectory(ts,&tj);CHKERRQ(ierr);
   if (tj) {
     ierr = TSTrajectorySetVariableNames(tj,(const char * const *)user.snames);CHKERRQ(ierr);
+    ierr = TSTrajectorySetTransform(tj,(PetscErrorCode (*)(void*,Vec,Vec*))MassFractionToMoleFraction,NULL,&user);CHKERRQ(ierr);
   }
 
 

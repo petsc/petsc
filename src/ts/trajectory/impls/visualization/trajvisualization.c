@@ -39,14 +39,28 @@ static PetscErrorCode TSTrajectorySet_Visualization(TSTrajectory tj,TS ts,PetscI
     }
     ierr = PetscSNPrintf(filename,sizeof(filename),"Visualization-data/SA-%06d.bin",stepnum);CHKERRQ(ierr);
     ierr = OutputBIN(comm,filename,&viewer);CHKERRQ(ierr);
-    ierr = VecView(X,viewer);CHKERRQ(ierr);
+    if (!tj->transform) {
+      ierr = VecView(X,viewer);CHKERRQ(ierr);
+    } else {
+      Vec XX;
+      ierr = (*tj->transform)(tj->transformctx,X,&XX);CHKERRQ(ierr);
+      ierr = VecView(XX,viewer);CHKERRQ(ierr);
+      ierr = VecDestroy(&XX);
+    }
     ierr = PetscViewerBinaryWrite(viewer,&time,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   ierr = PetscSNPrintf(filename,sizeof(filename),"Visualization-data/SA-%06d.bin",stepnum);CHKERRQ(ierr);
   ierr = OutputBIN(comm,filename,&viewer);CHKERRQ(ierr);
-  ierr = VecView(X,viewer);CHKERRQ(ierr);
+  if (!tj->transform) {
+    ierr = VecView(X,viewer);CHKERRQ(ierr);
+  } else {
+    Vec XX;
+    ierr = (*tj->transform)(tj->transformctx,X,&XX);CHKERRQ(ierr);
+    ierr = VecView(XX,viewer);CHKERRQ(ierr);
+    ierr = VecDestroy(&XX);
+  }
   ierr = PetscViewerBinaryWrite(viewer,&time,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
 
   ierr = TSGetPrevTime(ts,&tprev);CHKERRQ(ierr);
