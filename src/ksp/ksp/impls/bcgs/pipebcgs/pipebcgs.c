@@ -255,9 +255,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEBCGS(KSP ksp)
   ksp->ops->reset          = KSPReset_BCGS;
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->setfromoptions = KSPSetFromOptions_BCGS;
-  ksp->pc_side             = PC_RIGHT;  /* set default PC side */
 
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
