@@ -651,6 +651,9 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, DM dm, PetscSect
     ierr = ISCreateGeneral(PetscObjectComm((PetscObject) part), cEnd-cStart, points, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
+  /* Obvious cheating, but I cannot think of a better way to do this. The DMSetFromOptions() has refinement in it,
+     so we cannot call it and have it feed down to the partitioner before partitioning */
+  ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
   if (part->height == 0) {
     PetscInt numVertices;
     PetscInt *start     = NULL;
