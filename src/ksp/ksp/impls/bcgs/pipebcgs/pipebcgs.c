@@ -20,9 +20,9 @@ static PetscErrorCode  KSPSolve_PIPEBCGS(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i;
-  PetscScalar    rho,rhoold,alpha,beta,omega;
+  PetscScalar    rho,rhoold,alpha,beta,omega,d1,d2,d3;
   Vec            X,B,S,R,RP,Y,Q,P2,Q2,R2,S2,W,Z,W2,Z2,T,V;
-  PetscReal      dp    = 0.0,d1,d2,d3;
+  PetscReal      dp    = 0.0;
   KSP_BCGS       *bcgs = (KSP_BCGS*)ksp->data;
   PC             pc;
 
