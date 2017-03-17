@@ -1027,7 +1027,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
     Vec            v_mpi,b_seq,x_seq;
     VecScatter     scat_rhs,scat_sol;
 
-    if (mumps->size > 1) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Parallel Schur complements not yet supported from PETSc\n");
+    if (mumps->size > 1 && mumps->id.ICNTL(19)) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Parallel Schur complements not yet supported from PETSc\n");
 
     /* create x_seq to hold local solution */
     isol_loc_save = mumps->id.isol_loc; /* save it for MatSovle() */
