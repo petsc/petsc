@@ -1605,6 +1605,10 @@ static PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping
   ierr = VecScatterDestroy(&is->rctx);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&is->cctx);CHKERRQ(ierr);
   ierr = MatDestroy(&is->A);CHKERRQ(ierr);
+  if (is->csf != is->sf) {
+    ierr = PetscSFDestroy(&is->csf);CHKERRQ(ierr);
+    ierr = PetscFree2(is->csf_rootdata,is->csf_leafdata);CHKERRQ(ierr);
+  }
   ierr = PetscSFDestroy(&is->sf);CHKERRQ(ierr);
   ierr = PetscFree2(is->sf_rootdata,is->sf_leafdata);CHKERRQ(ierr);
 
@@ -1687,10 +1691,15 @@ static PetscErrorCode MatSetValues_IS(Mat mat, PetscInt m,const PetscInt *rows, 
   /* count negative indices (should be the same as before) */
   for (i=0;i<m;i++) if (rows_l[i] < 0) zm--;
   for (i=0;i<n;i++) if (cols_l[i] < 0) zn--;
-  if (zm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Some of the row indices can not be mapped! Maybe you should not use MATIS");
-  if (zn) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Some of the column indices can not be mapped! Maybe you should not use MATIS");
+  /* disable check when usesetlocal is true */
+  if (!is->usesetlocal && zm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Some of the row indices can not be mapped! Maybe you should not use MATIS");
+  if (!is->usesetlocal && zn) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Some of the column indices can not be mapped! Maybe you should not use MATIS");
 #endif
-  ierr = MatSetValues(is->A,m,rows_l,n,cols_l,values,addv);CHKERRQ(ierr);
+  if (is->usesetlocal) {
+    ierr = MatSetValuesLocal(is->A,m,rows_l,n,cols_l,values,addv);CHKERRQ(ierr);
+  } else {
+    ierr = MatSetValues(is->A,m,rows_l,n,cols_l,values,addv);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1729,7 +1738,11 @@ static PetscErrorCode MatSetValuesLocal_IS(Mat A,PetscInt m,const PetscInt *rows
   Mat_IS         *is = (Mat_IS*)A->data;
 
   PetscFunctionBegin;
-  ierr = MatSetValues(is->A,m,rows,n,cols,values,addv);CHKERRQ(ierr);
+  if (is->usesetlocal) {
+    ierr = MatSetValuesLocal(is->A,m,rows,n,cols,values,addv);CHKERRQ(ierr);
+  } else {
+    ierr = MatSetValues(is->A,m,rows,n,cols,values,addv);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1855,6 +1868,50 @@ static PetscErrorCode MatAssemblyEnd_IS(Mat A,MatAssemblyType type)
 
   PetscFunctionBegin;
   ierr = MatAssemblyEnd(is->A,type);CHKERRQ(ierr);
+  /* fix for local empty rows/cols */
+  if (is->locempty && type == MAT_FINAL_ASSEMBLY) {
+    Mat                    newlA;
+    ISLocalToGlobalMapping l2g;
+    IS                     tis;
+    const PetscScalar      *v;
+    PetscInt               i,n,cf,*loce,*locf;
+    PetscBool              sym;
+
+    ierr = MatGetRowMaxAbs(is->A,is->y,NULL);CHKERRQ(ierr);
+    ierr = MatIsSymmetric(is->A,PETSC_SMALL,&sym);CHKERRQ(ierr);
+    if (!sym) SETERRQ(PetscObjectComm((PetscObject)is->A),PETSC_ERR_SUP,"Not yet implemented for unsymmetric case");
+    ierr = VecGetLocalSize(is->y,&n);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&loce);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&locf);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(is->y,&v);CHKERRQ(ierr);
+    for (i=0,cf=0;i<n;i++) {
+      if (v[i] == 0.0) {
+        loce[i] = -1;
+      } else {
+        loce[i]    = cf;
+        locf[cf++] = i;
+      }
+    }
+    ierr = VecRestoreArrayRead(is->y,&v);CHKERRQ(ierr);
+    /* extract valid submatrix */
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)is->A),cf,locf,PETSC_USE_POINTER,&tis);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix(is->A,tis,tis,MAT_INITIAL_MATRIX,&newlA);CHKERRQ(ierr);
+    ierr = ISDestroy(&tis);CHKERRQ(ierr);
+    /* attach local l2g map for successive calls of MatSetValues */
+    ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)is->A),1,n,loce,PETSC_OWN_POINTER,&l2g);CHKERRQ(ierr);
+    ierr = MatSetLocalToGlobalMapping(newlA,l2g,l2g);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingDestroy(&l2g);CHKERRQ(ierr);
+    /* flag MatSetValues */
+    is->usesetlocal = PETSC_TRUE;
+    /* attach new global l2g map */
+    ierr = ISLocalToGlobalMappingApply(A->rmap->mapping,cf,locf,locf);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)A),1,cf,locf,PETSC_OWN_POINTER,&l2g);CHKERRQ(ierr);
+    ierr = MatSetLocalToGlobalMapping(A,l2g,l2g);CHKERRQ(ierr);
+    ierr = MatISSetLocalMat(A,newlA);CHKERRQ(ierr);
+    ierr = MatDestroy(&newlA);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingDestroy(&l2g);CHKERRQ(ierr);
+  }
+  is->locempty = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -2094,6 +2151,19 @@ static PetscErrorCode MatGetLocalSubMatrix_IS(Mat A,IS row,IS col,Mat *submat)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatSetFromOptions_IS(PetscOptionItems *PetscOptionsObject, Mat A)
+{
+  Mat_IS         *a = (Mat_IS*)A->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsHead(PetscOptionsObject,"MATIS options");CHKERRQ(ierr);
+  ierr = PetscObjectOptionsBegin((PetscObject)A);
+  ierr = PetscOptionsBool("-matis_fixempty","Fix local matrices in case of empty local rows/columns",NULL,a->locempty,&a->locempty,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@
     MatCreateIS - Creates a "process" unassembled matrix, assembled on each
        process but not across processes.
@@ -2228,6 +2298,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
   A->ops->transpose               = MatTranspose_IS;
   A->ops->getinfo                 = MatGetInfo_IS;
   A->ops->diagonalscale           = MatDiagonalScale_IS;
+  A->ops->setfromoptions          = MatSetFromOptions_IS;
 
   /* special MATIS functions */
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISGetLocalMat_C",MatISGetLocalMat_IS);CHKERRQ(ierr);
