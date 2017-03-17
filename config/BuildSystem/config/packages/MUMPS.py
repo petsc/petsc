@@ -29,6 +29,7 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
+    self.flibs        = framework.require('config.packages.flibs',self)
     self.blasLapack   = framework.require('config.packages.BlasLapack',self)
     self.mpi          = framework.require('config.packages.MPI',self)
     self.metis        = framework.require('config.packages.metis',self)
@@ -36,10 +37,10 @@ class Configure(config.package.Package):
     self.ptscotch     = framework.require('config.packages.PTScotch',self)
     self.scalapack    = framework.require('config.packages.scalapack',self)
     if self.argDB['with-mumps-serial']:
-      self.deps       = [self.blasLapack]
+      self.deps       = [self.blasLapack,self.flibs]
       self.odeps      = [self.metis]
     else:
-      self.deps       = [self.scalapack,self.mpi,self.blasLapack]
+      self.deps       = [self.scalapack,self.mpi,self.blasLapack,self.flibs]
       self.odeps      = [self.metis,self.parmetis,self.ptscotch]
     return
 

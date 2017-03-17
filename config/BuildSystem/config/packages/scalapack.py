@@ -17,20 +17,11 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
+    self.flibs      = framework.require('config.packages.flibs',self)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
     self.mpi        = framework.require('config.packages.MPI',self)
-    self.deps       = [self.mpi, self.blasLapack]
+    self.deps       = [self.mpi, self.blasLapack, self.flibs]
     return
-
-  # this code should be removed and a proper dependency on flibs should be somehow added to setupDependencies()
-  def generateLibList(self,dir):
-    '''scalapack can require -lgfortran when using f2cblaslapack'''
-    alllibs = config.package.Package.generateLibList(self,dir)
-    for a in alllibs[:]:
-      b=a[:]
-      b.extend(self.compilers.flibs)
-      alllibs.append(b)
-    return alllibs
 
   def Install(self):
     import os

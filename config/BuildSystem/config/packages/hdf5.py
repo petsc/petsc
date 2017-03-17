@@ -12,28 +12,17 @@ class Configure(config.package.GNUPackage):
     self.functions = ['H5T_init']
     self.includes  = ['hdf5.h']
     self.liblist   = [['libhdf5_hl.a', 'libhdf5.a']]
-    self.needsMath = 1
-    self.needsCompression = 0
     self.complex          = 1
     self.hastests         = 1
     return
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
-    self.mpi  = framework.require('config.packages.MPI',self)
-    self.deps = [self.mpi]
+    self.mpi            = framework.require('config.packages.MPI',self)
+    self.mathlib        = framework.require('config.packages.mathlib',self)
+    self.zlib           = framework.require('config.packages.zlib',self)
+    self.deps           = [self.mpi,self.mathlib,self.zlib]
     return
-
-  def generateLibList(self, framework):
-    '''First try library list without compression libraries (zlib) then try with'''
-    list = []
-    for l in self.liblist:
-      list.append(l)
-    if self.libraries.compression:
-      for l in self.liblist:
-        list.append(l + self.libraries.compression)
-    self.liblist = list
-    return config.package.Package.generateLibList(self,framework)
 
   def formGNUConfigureArgs(self):
     ''' Add HDF5 specific --enable-parallel flag and enable Fortran if available '''
@@ -45,6 +34,8 @@ class Configure(config.package.GNUPackage):
       args.append('--enable-fortran')
       args.append('F9X="'+self.setCompilers.getCompiler()+'"')
       self.setCompilers.popLanguage()
+    args.append('CPPFLAGS="'+self.headers.toStringNoDupes(self.zlib.include)+'"')
+    args.append('LIBS="'+self.libraries.toStringNoDupes(self.zlib.lib+self.mathlib.lib)+'"')
     return args
 
   def configureLibrary(self):

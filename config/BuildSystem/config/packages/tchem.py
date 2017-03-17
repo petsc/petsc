@@ -8,12 +8,13 @@ class Configure(config.package.Package):
     self.functions         = ['TC_getSrc']
     self.includes          = ['TC_interface.h']
     self.liblist           = [['libtchem.a']]
-    self.needsMath         = 1
     return
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     self.compilerFlags = framework.require('config.compilerFlags', self)
+    self.mathlib       = framework.require('config.packages.mathlib',self)
+    self.deps          = [self.mathlib]
     return
 
   def Install(self):
