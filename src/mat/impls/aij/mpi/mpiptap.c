@@ -948,7 +948,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   PetscErrorCode    ierr;
   Mat_MPIAIJ        *a=(Mat_MPIAIJ*)A->data,*p=(Mat_MPIAIJ*)P->data,*c=(Mat_MPIAIJ*)C->data;
   Mat_SeqAIJ        *ad=(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data;
-  Mat_SeqAIJ        *ap,*p_loc,*p_oth,*c_seq;
+  Mat_SeqAIJ        *ap,*p_loc,*p_oth=NULL,*c_seq;
   Mat_PtAPMPI       *ptap = c->ptap;
   Mat               AP_loc,C_loc,C_oth;
   PetscInt          i,rstart,rend,cm,ncols,row;
@@ -994,7 +994,9 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   /* ---------------------------------------------- */
   /* get data from symbolic products */
   p_loc = (Mat_SeqAIJ*)(ptap->P_loc)->data;
-  p_oth = (Mat_SeqAIJ*)(ptap->P_oth)->data;
+  if (ptap->P_oth) {
+    p_oth = (Mat_SeqAIJ*)(ptap->P_oth)->data;
+  }
   apa   = ptap->apa;
   api   = ap->i;
   apj   = ap->j;
