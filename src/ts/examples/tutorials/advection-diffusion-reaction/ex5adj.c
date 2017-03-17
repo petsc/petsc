@@ -59,7 +59,6 @@ int main(int argc,char **argv)
   DM             da;
   AppCtx         appctx;
   Vec            lambda[1];
-  PetscScalar    *x_ptr;
   PetscBool      forwardonly=PETSC_FALSE,implicitform=PETSC_TRUE;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
