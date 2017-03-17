@@ -1141,6 +1141,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FETIDP(KSP ksp)
   ksp->ops->setfromoptions               = KSPSetFromOptions_FETIDP;
   ksp->ops->buildsolution                = KSPBuildSolution_FETIDP;
   ksp->ops->buildresidual                = KSPBuildResidualDefault;
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1);CHKERRQ(ierr);
   /* create the inner KSP for the Lagrange multipliers */
   ierr = KSPCreate(PetscObjectComm((PetscObject)ksp),&fetidp->innerksp);CHKERRQ(ierr);
   ierr = KSPGetPC(fetidp->innerksp,&pc);CHKERRQ(ierr);
