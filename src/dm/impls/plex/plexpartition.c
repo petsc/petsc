@@ -760,7 +760,7 @@ static PetscErrorCode PetscPartitionerPartition_Shell(PetscPartitioner part, DM 
     PetscInt   *sizes, *points, v;
 
     ierr = PetscRandomCreate(PETSC_COMM_SELF, &r);CHKERRQ(ierr);
-    ierr = PetscRandomSetInterval(r, 0.0, (PetscScalar) (nparts+1));CHKERRQ(ierr);
+    ierr = PetscRandomSetInterval(r, 0.0, (PetscScalar) nparts);CHKERRQ(ierr);
     ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
     ierr = PetscCalloc2(nparts, &sizes, numVertices, &points);CHKERRQ(ierr);
     for (v = 0; v < numVertices; ++v) {
@@ -776,6 +776,7 @@ static PetscErrorCode PetscPartitionerPartition_Shell(PetscPartitioner part, DM 
     ierr = PetscPartitionerShellSetPartition(part, nparts, sizes, points);CHKERRQ(ierr);
     ierr = PetscFree2(sizes, points);CHKERRQ(ierr);
   }
+  if (!p->section) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Shell partitioner information not provided. Please call PetscPartitionerShellSetPartition()");
   ierr = PetscSectionGetChart(p->section, NULL, &np);CHKERRQ(ierr);
   if (nparts != np) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of requested partitions %d != configured partitions %d", nparts, np);
   ierr = ISGetLocalSize(p->partition, &np);CHKERRQ(ierr);
@@ -846,8 +847,8 @@ PetscErrorCode PetscPartitionerShellSetPartition(PetscPartitioner part, PetscInt
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  if (sizes) {PetscValidPointer(sizes, 3);}
-  if (sizes) {PetscValidPointer(points, 4);}
+  if (sizes)  {PetscValidPointer(sizes, 3);}
+  if (points) {PetscValidPointer(points, 4);}
   ierr = PetscSectionDestroy(&p->section);CHKERRQ(ierr);
   ierr = ISDestroy(&p->partition);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject) part), &p->section);CHKERRQ(ierr);
@@ -1427,7 +1428,7 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
       PetscStackPush("ParMETIS_V3_PartKway");
       ierr = ParMETIS_V3_PartKway(vtxdist, xadj, adjncy, vwgt, adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgeCut, assignment, &comm);
       PetscStackPop;
-      if (ierr != METIS_OK) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in ParMETIS_V3_PartKway()");
+      if (ierr != METIS_OK) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error %d in ParMETIS_V3_PartKway()", ierr);
     }
   }
   /* Convert to PetscSection+IS */
