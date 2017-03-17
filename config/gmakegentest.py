@@ -560,6 +560,7 @@ class generateExamples(Petsc):
             if isNull:
               testDict['SKIP'].append("not "+requirement+" required")
               continue
+            continue  # Success
           elif not isNull:
             testDict['SKIP'].append(requirement+" required")
             continue
@@ -570,6 +571,7 @@ class generateExamples(Petsc):
               if isNull:
                 testDict['SKIP'].append("not int32 required")
                 continue
+              continue  # Success
             elif not isNull:
               testDict['SKIP'].append("int32 required")
               continue
@@ -578,6 +580,7 @@ class generateExamples(Petsc):
               if isNull:
                 testDict['SKIP'].append("NOT int64 required")
                 continue
+              continue  # Success
             elif not isNull:
               testDict['SKIP'].append("int64 required")
               continue
@@ -592,9 +595,10 @@ class generateExamples(Petsc):
             if isNull:
               testDict['SKIP'].append("Null requirement not met: "+requirement)
               continue
-            elif isNull:
-              testDict['SKIP'].append("Required: "+requirement)
-              continue
+            continue  # Success
+          elif not isNull:
+            testDict['SKIP'].append("Required: "+requirement)
+            continue
 
         # Rest should be packages that we can just get from conf
         if requirement == "complex":
@@ -605,6 +609,7 @@ class generateExamples(Petsc):
           if isNull:
             testDict['SKIP'].append("Not "+petscconfvar+" requirement not met")
             continue
+          continue  # Success
         elif not isNull:
           if debug: print "requirement not found: ", requirement
           testDict['SKIP'].append(petscconfvar+" requirement not met")
