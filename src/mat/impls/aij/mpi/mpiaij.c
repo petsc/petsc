@@ -4500,7 +4500,7 @@ PetscErrorCode  MatGetBrowsOfAoCols_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscInt *
   if (size == 1) {
     startsj_s = NULL;
     bufa_ptr  = NULL;
-    B_oth     = NULL;
+    *B_oth    = NULL;
     PetscFunctionReturn(0);
   }
 
