@@ -8588,7 +8588,6 @@ PetscErrorCode MatIsStructurallySymmetric(Mat A,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatStashGetInfo_Private(MatStash*,PetscInt*,PetscInt*);
 /*@
    MatStashGetInfo - Gets how many values are currently in the matrix stash, i.e. need
        to be communicated to other processors during the MatAssemblyBegin/End() process

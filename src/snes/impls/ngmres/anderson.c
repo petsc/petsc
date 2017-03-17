@@ -5,8 +5,6 @@ extern PetscErrorCode SNESReset_NGMRES(SNES);
 extern PetscErrorCode SNESSetUp_NGMRES(SNES);
 extern PetscErrorCode SNESView_NGMRES(SNES,PetscViewer);
 
-PETSC_EXTERN const char *const SNESNGMRESRestartTypes[];
-
 static PetscErrorCode SNESSetFromOptions_Anderson(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   SNES_NGMRES    *ngmres = (SNES_NGMRES*) snes->data;

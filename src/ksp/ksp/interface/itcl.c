@@ -6,8 +6,6 @@
 #include <petsc/private/kspimpl.h>  /*I "petscksp.h" I*/
 #include <petscdraw.h>
 
-extern PetscBool KSPRegisterAllCalled;
-
 /*@C
    KSPSetOptionsPrefix - Sets the prefix used for searching for all
    KSP options in the database.

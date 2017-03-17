@@ -3742,7 +3742,6 @@ PetscErrorCode MatFileSplit(Mat A,char *outfile)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatDestroy_MPIAIJ(Mat);
 PetscErrorCode  MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
 {
   PetscErrorCode      ierr;
@@ -3892,8 +3891,6 @@ PetscErrorCode  MatCreateMPIAIJSumSeqAIJNumeric(Mat seqmat,Mat mpimat)
   ierr = PetscLogEventEnd(MAT_Seqstompinum,seqmat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-extern PetscErrorCode  MatDestroy_MPIAIJ_SeqsToMPI(Mat);
 
 PetscErrorCode  MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n,Mat *mpimat)
 {

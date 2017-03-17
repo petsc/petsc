@@ -84,6 +84,7 @@ PetscErrorCode FETIDPPCView(PC,PetscViewer);
 PetscErrorCode PCBDDCDestroyFETIDPPC(PC);
 PetscErrorCode FETIDPMatMult(Mat,Vec,Vec);
 PetscErrorCode FETIDPMatMultTranspose(Mat,Vec,Vec);
+
 PetscErrorCode PCBDDCDestroyFETIDPMat(Mat);
 
 /* interface to SubSchurs */

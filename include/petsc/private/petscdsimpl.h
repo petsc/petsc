@@ -16,7 +16,7 @@ struct _n_DSBoundary {
   PetscInt    field;
   PetscInt    numcomps;
   PetscInt   *comps;
-  void      (*func)();
+  void      (*func)(void);
   PetscInt    numids;
   PetscInt   *ids;
   void       *ctx;
