@@ -165,18 +165,18 @@ PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabel
   pragmatic_adapt(remeshBd ? 1 : 0);
   ierr = PetscFree(l2gv);CHKERRQ(ierr);
   /* Read out mesh */
-  pragmatic_get_info(&numVerticesNew, &numCellsNew);
+  pragmatic_get_info_mpi(&numVerticesNew, &numCellsNew);
   ierr = PetscMalloc1(numVerticesNew*dim, &coordsNew);CHKERRQ(ierr);
   switch (dim) {
   case 2:
     numCornersNew = 3;
     ierr = PetscMalloc2(numVerticesNew, &xNew[0], numVerticesNew, &xNew[1]);CHKERRQ(ierr);
-    pragmatic_get_coords_2d(xNew[0], xNew[1]);
+    pragmatic_get_coords_2d_mpi(xNew[0], xNew[1]);
     break;
   case 3:
     numCornersNew = 4;
     ierr = PetscMalloc3(numVerticesNew, &xNew[0], numVerticesNew, &xNew[1], numVerticesNew, &xNew[2]);CHKERRQ(ierr);
-    pragmatic_get_coords_3d(xNew[0], xNew[1], xNew[2]);
+    pragmatic_get_coords_3d_mpi(xNew[0], xNew[1], xNew[2]);
     break;
   default:
     SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No Pragmatic adaptation defined for dimension %d", dim);
@@ -195,18 +195,15 @@ PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabel
   for (c = cStart; c < cEnd; ++c) {
     /* Only for simplicial meshes */
     coff = (c-cStart)*(dim+1);
+    /* d is the local cell number of the vertex opposite to the face we are marking */
     for (d = 0; d < dim+1; ++d) {
       if (bdTags[coff+d]) {
-        const PetscInt *faces;
-        PetscInt        numFaces, vertices[3], p;
+        const PetscInt  perm[4][4] = {{-1, -1, -1, -1}, {-1, -1, -1, -1}, {1, 2, 0, -1}, {3, 2, 1, 0}}; /* perm[d] = face opposite */
+        const PetscInt *cone;
 
-        /* Mark face opposite to this vertex */
-        for (p = 0, v = 0; p < dim+1; ++p) if (p != d) {vertices[v] = cellsNew[coff+p] + vStart; ++v;}
-        ierr = DMPlexGetFullJoin(*dmNew, dim, vertices, &numFaces, &faces);CHKERRQ(ierr);
-        if (numFaces != 1) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cannot find boundary face in new cell %D for vertex %D(%D) with tag %D", c, cellsNew[coff+d], d, bdTags[coff+d]);
-        if (faces[0] < fStart || faces[0] >= fEnd) SETERRQ5(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Boundary point %D in new cell %D for vertex %D(%D) with tag %D is not a face", faces[0], c, cellsNew[coff+d], d, bdTags[coff+d]);
-        ierr = DMLabelSetValue(bdLabelNew, faces[0], bdTags[coff+d]);CHKERRQ(ierr);
-        ierr = DMPlexRestoreJoin(*dmNew, dim, vertices, &numFaces, &faces);CHKERRQ(ierr);
+        /* Mark face opposite to this vertex: This pattern is specified in DMPlexGetRawFaces_Internal() */
+        ierr = DMPlexGetCone(*dmNew, c, &cone);CHKERRQ(ierr);
+        ierr = DMLabelSetValue(bdLabelNew, cone[perm[dim][d]], bdTags[coff+d]);CHKERRQ(ierr);
       }
     }
   }
