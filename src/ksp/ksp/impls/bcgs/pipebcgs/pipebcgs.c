@@ -5,8 +5,6 @@
 */
 #include <../src/ksp/ksp/impls/bcgs/bcgsimpl.h>       /*I  "petscksp.h"  I*/
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_PIPEBCGS"
 static PetscErrorCode KSPSetUp_PIPEBCGS(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -18,8 +16,6 @@ static PetscErrorCode KSPSetUp_PIPEBCGS(KSP ksp)
 
 /* Only need a few hacks from KSPSolve_BCGS */
 #include <petsc/private/pcimpl.h>            /*I "petscksp.h" I*/
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_PIPEBCGS"
 static PetscErrorCode  KSPSolve_PIPEBCGS(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -244,8 +240,6 @@ static PetscErrorCode  KSPSolve_PIPEBCGS(KSP ksp)
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPFBCGS, KSPFBCGSL, KSPSetPCSide()
 M*/
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_PIPEBCGS"
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPEBCGS(KSP ksp)
 {
   PetscErrorCode ierr;
