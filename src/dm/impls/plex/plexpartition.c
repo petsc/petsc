@@ -1500,11 +1500,13 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_ParMetis(PetscPartitioner par
 @*/
 PetscErrorCode DMPlexGetPartitioner(DM dm, PetscPartitioner *part)
 {
-  DM_Plex *mesh = (DM_Plex *) dm->data;
+  DM_Plex       *mesh = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(part, 2);
+  ierr = PetscPartitionerSetTypeFromOptions_Internal(mesh->partitioner);CHKERRQ(ierr);
   *part = mesh->partitioner;
   PetscFunctionReturn(0);
 }
