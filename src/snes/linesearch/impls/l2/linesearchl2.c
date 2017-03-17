@@ -47,46 +47,61 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
 
   for (i = 0; i < max_its; i++) {
 
-    ierr = VecCopy(X, W);CHKERRQ(ierr);
-    ierr = VecAXPY(W, -lambda_mid, Y);CHKERRQ(ierr);
-    if (linesearch->ops->viproject) {
-      ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
-    }
-    if (!objective) {
-      /* compute the norm at the midpoint */
-      ierr = (*linesearch->ops->snesfunc)(snes, W, F);CHKERRQ(ierr);
-      if (linesearch->ops->vinorm) {
-        fnrm_mid = gnorm;
-        ierr     = (*linesearch->ops->vinorm)(snes, F, W, &fnrm_mid);CHKERRQ(ierr);
-      } else {
-        ierr = VecNorm(F,NORM_2,&fnrm_mid);CHKERRQ(ierr);
-      }
-
-      /* compute the norm at the new endpoit */
+    while (PETSC_TRUE) {
       ierr = VecCopy(X, W);CHKERRQ(ierr);
-      ierr = VecAXPY(W, -lambda, Y);CHKERRQ(ierr);
+      ierr = VecAXPY(W, -lambda_mid, Y);CHKERRQ(ierr);
       if (linesearch->ops->viproject) {
         ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
       }
-      ierr = (*linesearch->ops->snesfunc)(snes, W, F);CHKERRQ(ierr);
-      if (linesearch->ops->vinorm) {
-        fnrm = gnorm;
-        ierr = (*linesearch->ops->vinorm)(snes, F, W, &fnrm);CHKERRQ(ierr);
-      } else {
-        ierr = VecNorm(F,NORM_2,&fnrm);CHKERRQ(ierr);
-      }
-      fnrm_mid = fnrm_mid*fnrm_mid;
-      fnrm = fnrm*fnrm;
-    } else {
-      /* compute the objective at the midpoint */
-      ierr = VecCopy(X, W);CHKERRQ(ierr);
-      ierr = VecAXPY(W, -lambda_mid, Y);CHKERRQ(ierr);
-      ierr = SNESComputeObjective(snes,W,&fnrm_mid);CHKERRQ(ierr);
+      if (!objective) {
+        /* compute the norm at the midpoint */
+        ierr = (*linesearch->ops->snesfunc)(snes, W, F);CHKERRQ(ierr);
+        if (linesearch->ops->vinorm) {
+          fnrm_mid = gnorm;
+          ierr     = (*linesearch->ops->vinorm)(snes, F, W, &fnrm_mid);CHKERRQ(ierr);
+        } else {
+          ierr = VecNorm(F,NORM_2,&fnrm_mid);CHKERRQ(ierr);
+        }
 
-      /* compute the objective at the new endpoint */
-      ierr = VecCopy(X, W);CHKERRQ(ierr);
-      ierr = VecAXPY(W, -lambda, Y);CHKERRQ(ierr);
-      ierr = SNESComputeObjective(snes,W,&fnrm);CHKERRQ(ierr);
+        /* compute the norm at the new endpoit */
+        ierr = VecCopy(X, W);CHKERRQ(ierr);
+        ierr = VecAXPY(W, -lambda, Y);CHKERRQ(ierr);
+        if (linesearch->ops->viproject) {
+          ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
+        }
+        ierr = (*linesearch->ops->snesfunc)(snes, W, F);CHKERRQ(ierr);
+        if (linesearch->ops->vinorm) {
+          fnrm = gnorm;
+          ierr = (*linesearch->ops->vinorm)(snes, F, W, &fnrm);CHKERRQ(ierr);
+        } else {
+          ierr = VecNorm(F,NORM_2,&fnrm);CHKERRQ(ierr);
+        }
+        fnrm_mid = fnrm_mid*fnrm_mid;
+        fnrm = fnrm*fnrm;
+      } else {
+        /* compute the objective at the midpoint */
+        ierr = VecCopy(X, W);CHKERRQ(ierr);
+        ierr = VecAXPY(W, -lambda_mid, Y);CHKERRQ(ierr);
+        ierr = SNESComputeObjective(snes,W,&fnrm_mid);CHKERRQ(ierr);
+
+        /* compute the objective at the new endpoint */
+        ierr = VecCopy(X, W);CHKERRQ(ierr);
+        ierr = VecAXPY(W, -lambda, Y);CHKERRQ(ierr);
+        ierr = SNESComputeObjective(snes,W,&fnrm);CHKERRQ(ierr);
+      }
+      if (!PetscIsInfOrNanReal(fnrm)) break;
+      if (monitor) {
+        ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(monitor,"    Line search: objective function at lambdas = %g is Inf or Nan, cutting lambda\n",(double)lambda);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
+      }
+      if (lambda <= steptol) {
+        ierr = SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_REDUCT);CHKERRQ(ierr);
+        PetscFunctionReturn(0);
+      }
+      maxstep = .95*lambda; /* forbid the search from ever going back to the "failed" length that generates Nan or Inf */
+      lambda  = .5*(lambda + lambda_old);
+      lambda_mid = .5*(lambda + lambda_old);
     }
 
     delLambda   = lambda - lambda_old;
