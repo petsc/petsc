@@ -344,24 +344,6 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
             y[i*3+2] = 0;
           }
         }
-        if (localized) {
-          PetscInt cnt = 0;
-          if (!y) {
-            PetscInt off;
-
-            ierr = PetscMalloc1(piece.nvertices*3,&y);CHKERRQ(ierr);
-            ierr = PetscSectionGetOffset(coordSection, cStart, &off);CHKERRQ(ierr);
-            ierr = PetscMemcpy(y,x+off,piece.nvertices*3*sizeof(PetscScalar));CHKERRQ(ierr);
-          }
-          for (c=cStart; c<cEnd; c++) {
-            PetscInt dof, off;
-
-            ierr = PetscSectionGetDof(coordSection, c, &dof);CHKERRQ(ierr);
-            ierr = PetscSectionGetOffset(coordSection, c, &off);CHKERRQ(ierr);
-            cnt += dof/dimEmbed;
-          }
-          if (cnt != piece.nvertices) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Count does not match %D != %D",cnt,piece.nvertices);
-        }
         nsend = piece.nvertices*3;
         ierr  = TransferWrite(viewer,fp,r,0,y ? y : x,buffer,nsend,PETSC_SCALAR,tag);CHKERRQ(ierr);
         ierr  = PetscFree(y);CHKERRQ(ierr);
