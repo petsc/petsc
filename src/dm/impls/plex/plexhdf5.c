@@ -426,7 +426,7 @@ static PetscErrorCode DMPlexWriteCoordinates_Vertices_HDF5_Static(DM dm, PetscVi
   ierr = VecGetLocalSize(coordinates, &coordSize);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocalized(dm,&localized);CHKERRQ(ierr);
   if (localized == PETSC_FALSE) PetscFunctionReturn(0);
-  ierr = DMGetPeriodicity(dm, NULL, &L, &bd);CHKERRQ(ierr);
+  ierr = DMGetPeriodicity(dm, NULL, NULL, &L, &bd);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &cSection);CHKERRQ(ierr);
   ierr = VecCreate(PetscObjectComm((PetscObject) coordinates), &newcoords);CHKERRQ(ierr);
   coordSize = 0;

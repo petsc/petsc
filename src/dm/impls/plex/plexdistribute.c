@@ -1052,6 +1052,7 @@ static PetscErrorCode DMPlexDistributeCoordinates(DM dm, PetscSF migrationSF, DM
   PetscSection     originalCoordSection, newCoordSection;
   Vec              originalCoordinates, newCoordinates;
   PetscInt         bs;
+  PetscBool        isper;
   const char      *name;
   const PetscReal *maxCell, *L;
   const DMBoundaryType *bd;
@@ -1076,8 +1077,8 @@ static PetscErrorCode DMPlexDistributeCoordinates(DM dm, PetscSF migrationSF, DM
     ierr = VecSetBlockSize(newCoordinates, bs);CHKERRQ(ierr);
     ierr = VecDestroy(&newCoordinates);CHKERRQ(ierr);
   }
-  ierr = DMGetPeriodicity(dm, &maxCell, &L, &bd);CHKERRQ(ierr);
-  if (L) {ierr = DMSetPeriodicity(dmParallel, maxCell, L, bd);CHKERRQ(ierr);}
+  ierr = DMGetPeriodicity(dm, &isper, &maxCell, &L, &bd);CHKERRQ(ierr);
+  ierr = DMSetPeriodicity(dmParallel, isper, maxCell, L, bd);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

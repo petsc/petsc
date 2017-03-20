@@ -167,12 +167,13 @@ PetscErrorCode DMForestTemplate(DM dm, MPI_Comm comm, DM *tdm)
   ierr = DMSetDS(*tdm,ds);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(dm,&ctx);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(*tdm,&ctx);CHKERRQ(ierr);
-  if (dm->maxCell) {
+  {
+    PetscBool            isper;
     const PetscReal      *maxCell, *L;
     const DMBoundaryType *bd;
 
-    ierr = DMGetPeriodicity(dm,&maxCell,&L,&bd);CHKERRQ(ierr);
-    ierr = DMSetPeriodicity(*tdm,maxCell,L,bd);CHKERRQ(ierr);
+    ierr = DMGetPeriodicity(dm,&isper,&maxCell,&L,&bd);CHKERRQ(ierr);
+    ierr = DMSetPeriodicity(*tdm,isper,maxCell,L,bd);CHKERRQ(ierr);
   }
   ierr = DMCopyBoundary(dm,*tdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
