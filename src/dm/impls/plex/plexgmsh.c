@@ -191,7 +191,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   int            i, numVertices = 0, numCells = 0, trueNumCells = 0, numRegions = 0, snum;
   PetscMPIInt    num_proc, rank;
   char           line[PETSC_MAX_PATH_LEN];
-  PetscBool      match, binary, bswap = PETSC_FALSE, periodic = PETSC_FALSE;
+  PetscBool      match, binary, bswap = PETSC_FALSE, periodic = PETSC_FALSE, usemarker = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -202,7 +202,8 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   ierr = PetscLogEventBegin(DMPLEX_CreateGmsh,*dm,0,0,0);CHKERRQ(ierr);
   ierr = PetscViewerGetType(viewer, &vtype);CHKERRQ(ierr);
   ierr = PetscStrcmp(vtype, PETSCVIEWERBINARY, &binary);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-dm_plex_periodic_gmsh",&periodic,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-dm_plex_gmsh_periodic",&periodic,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-dm_plex_gmsh_usemarker",&usemarker,NULL);CHKERRQ(ierr);
   if (!rank || binary) {
     PetscBool match;
     int       fileType, dataSize;
@@ -412,6 +413,26 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = idm;
+  }
+  if (usemarker) {
+    PetscInt f, fStart, fEnd;
+
+    ierr = DMCreateLabel(*dm,"marker");CHKERRQ(ierr);
+    ierr = DMPlexGetHeightStratum(*dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
+    for (f = fStart; f < fEnd; ++f) {
+      PetscInt suppSize;
+
+      ierr = DMPlexGetSupportSize(*dm, f, &suppSize);CHKERRQ(ierr);
+      if (suppSize == 1) {
+        PetscInt *cone = NULL, coneSize, p;
+
+        ierr = DMPlexGetTransitiveClosure(*dm, f, PETSC_TRUE, &coneSize, &cone);CHKERRQ(ierr);
+        for (p = 0; p < coneSize; p += 2) {
+          ierr = DMSetLabelValue(*dm, "marker", cone[p], 1);CHKERRQ(ierr);
+        }
+        ierr = DMPlexRestoreTransitiveClosure(*dm, f, PETSC_TRUE, &coneSize, &cone);CHKERRQ(ierr);
+      }
+    }
   }
 
   if (!rank) {
