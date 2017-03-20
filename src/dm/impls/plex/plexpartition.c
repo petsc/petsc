@@ -760,20 +760,26 @@ static PetscErrorCode PetscPartitionerPartition_Shell(PetscPartitioner part, DM 
   PetscFunctionBegin;
   if (p->random) {
     PetscRandom r;
-    PetscInt   *sizes, *points, v;
+    PetscInt   *sizes, *points, v, p;
+    PetscMPIInt rank;
 
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
     ierr = PetscRandomCreate(PETSC_COMM_SELF, &r);CHKERRQ(ierr);
     ierr = PetscRandomSetInterval(r, 0.0, (PetscScalar) nparts);CHKERRQ(ierr);
     ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
     ierr = PetscCalloc2(nparts, &sizes, numVertices, &points);CHKERRQ(ierr);
-    for (v = 0; v < numVertices; ++v) {
+    for (v = 0; v < numVertices; ++v) {points[v] = v;}
+    for (p = 0; p < nparts; ++p) {sizes[p] = numVertices/nparts + (PetscInt) (rank < numVertices % nparts);}
+    for (v = numVertices-1; v > 0; --v) {
       PetscReal val;
-      PetscInt  part;
+      PetscInt  w, tmp;
 
+      ierr = PetscRandomSetInterval(r, 0.0, (PetscScalar) (v+1));CHKERRQ(ierr);
       ierr = PetscRandomGetValueReal(r, &val);CHKERRQ(ierr);
-      part = PetscFloorReal(val);
-      points[v] = part;
-      ++sizes[part];
+      w    = PetscFloorReal(val);
+      tmp       = points[v];
+      points[v] = points[w];
+      points[w] = tmp;
     }
     ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
     ierr = PetscPartitionerShellSetPartition(part, nparts, sizes, points);CHKERRQ(ierr);
