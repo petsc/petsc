@@ -435,13 +435,15 @@ PETSC_INTERN PetscErrorCode MatDestroy_Dummy_Submatrices(Mat);
  */
 #define MatRowMergeMax_SeqAIJ(mat,nrows,ta) {       \
     PetscInt _j,_row,_nz,*_col;                     \
-    for (_row=0; _row<nrows; _row++) {\
-      _nz = mat->i[_row+1] - mat->i[_row]; \
-      for (_j=0; _j<_nz; _j++) {                \
-        _col = _j + mat->j + mat->i[_row];       \
-        PetscTableAdd(ta,*_col+1,1,INSERT_VALUES); \
+    if (mat) { \
+      for (_row=0; _row<nrows; _row++) {   \
+        _nz = mat->i[_row+1] - mat->i[_row];    \
+        for (_j=0; _j<_nz; _j++) {               \
+          _col = _j + mat->j + mat->i[_row];       \
+          PetscTableAdd(ta,*_col+1,1,INSERT_VALUES);                    \
+        }                                                               \
       }                                                                 \
-    }                                                                   \
+    }    \
 }
 
 /*
