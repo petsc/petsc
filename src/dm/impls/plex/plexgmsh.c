@@ -541,6 +541,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   ierr = DMSetCoordinatesLocal(*dm, coordinates);CHKERRQ(ierr);
   ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
   ierr = PetscFree(periodicMap);CHKERRQ(ierr);
+  ierr = PetscFree(periodicMapI);CHKERRQ(ierr);
   /* Clean up intermediate storage */
   if (!rank || binary) ierr = PetscFree(gmsh_elem);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(DMPLEX_CreateGmsh,*dm,0,0,0);CHKERRQ(ierr);
