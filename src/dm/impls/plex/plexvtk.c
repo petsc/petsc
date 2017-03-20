@@ -454,10 +454,12 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
   Vec                      coordinates;
   PetscReal                lengthScale;
   PetscInt                 vMax, totVertices, totCells = 0;
-  PetscBool                hasPoint = PETSC_FALSE, hasCell = PETSC_FALSE, writePartition = PETSC_FALSE;
+  PetscBool                hasPoint = PETSC_FALSE, hasCell = PETSC_FALSE, writePartition = PETSC_FALSE, localized;
   PetscErrorCode           ierr;
 
   PetscFunctionBegin;
+  ierr = DMGetCoordinatesLocalized(dm,&localized);CHKERRQ(ierr);
+  if (localized) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"VTK output with localized coordinates not yet supported");
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   ierr = PetscFOpen(comm, vtk->filename, "wb", &fp);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fp, "# vtk DataFile Version 2.0\n");CHKERRQ(ierr);
