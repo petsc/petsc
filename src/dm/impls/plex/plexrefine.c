@@ -5470,13 +5470,12 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
   PetscSection          coordSection, coordSectionNew;
   Vec                   coordinates, coordinatesNew;
   PetscScalar          *coords, *coordsNew;
-  PetscBT               needcoords = NULL;
   const PetscInt        numVertices = depthSize ? depthSize[0] : 0;
   PetscInt              dim, spaceDim, depth, bs, coordSizeNew, cStart, cEnd, cMax;
   PetscInt              c, vStart, vStartNew, vEnd, v, eStart, eEnd, eMax, e, fStart, fEnd, fMax, f;
   PetscInt              cStartNew, cEndNew, vEndNew, noper, *parentId = NULL;
   VecType               vtype;
-  PetscBool             isperiodic, localize;
+  PetscBool             isperiodic, localize, needcoords = PETSC_FALSE;
   const PetscReal      *maxCell, *L;
   const DMBoundaryType *bd;
   PetscErrorCode        ierr;
@@ -5741,12 +5740,9 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
         }
         ierr = DMPlexRestoreTransitiveClosure(rdm, newv, PETSC_FALSE, &rStarSize, &rStar);CHKERRQ(ierr);
         if (!cellfound) {
-          /* Could not find a valid face for the vertex part, we will request this vertex later (final reduction) */
-          coneSize = 0;
-          if (!needcoords) {
-            ierr = PetscBTCreate(vEndNew-vStartNew,&needcoords);CHKERRQ(ierr);
-          }
-          ierr = PetscBTSet(needcoords,newv-vStartNew);CHKERRQ(ierr);
+          /* Could not find a valid face for the vertex part, we will get this vertex later (final reduction) */
+          needcoords = PETSC_TRUE;
+          coneSize   = 0;
         }
       } else {
         for (v = 0; v < coneSize; ++v) {
@@ -5754,10 +5750,12 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
         }
       }
       ierr = PetscSectionGetOffset(coordSectionNew, newv, &offnew);CHKERRQ(ierr);
-      for (d = 0; d < spaceDim; ++d) coordsNew[offnew+d] = 0.0;
       if (coneSize) {
+        for (d = 0; d < spaceDim; ++d) coordsNew[offnew+d] = 0.0;
         for (v = 0; v < coneSize; ++v) {ierr = DMLocalizeAddCoordinate_Internal(dm, spaceDim, &coords[off[0]], &coords[off[v]], &coordsNew[offnew]);CHKERRQ(ierr);}
         for (d = 0; d < spaceDim; ++d) coordsNew[offnew+d] /= coneSize;
+      } else {
+        for (d = 0; d < spaceDim; ++d) coordsNew[offnew+d] = PETSC_MIN_REAL;
       }
       ierr = DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &cone);CHKERRQ(ierr);
     }
@@ -5891,11 +5889,8 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
         ierr = DMPlexRestoreTransitiveClosure(dm, e, PETSC_FALSE, &eStarSize, &eStar);CHKERRQ(ierr);
         ierr = DMPlexRestoreTransitiveClosure(rdm, newv, PETSC_FALSE, &rStarSize, &rStar);CHKERRQ(ierr);
         if (offA == -1 || offB == -1) {
-          /* Could not find a valid edge for the vertex part, we will request this vertex later (final reduction) */
-          if (!needcoords) {
-            ierr = PetscBTCreate(vEndNew-vStartNew,&needcoords);CHKERRQ(ierr);
-          }
-          ierr = PetscBTSet(needcoords,newv-vStartNew);CHKERRQ(ierr);
+          /* Could not find a valid edge for the vertex part, we will get this vertex later (final reduction) */
+          needcoords = PETSC_TRUE;
         }
       } else {
         ierr = PetscSectionGetOffset(coordSection, cone[0], &offA);CHKERRQ(ierr);
@@ -5908,7 +5903,7 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
           coordsNew[offnew+d] = 0.5*(coords[offA+d] + coordsNew[offnew+d]);
         }
       } else {
-        for (d = 0; d < spaceDim; ++d) coordsNew[offnew+d] = 0.0;
+        for (d = 0; d < spaceDim; ++d) coordsNew[offnew+d] = PETSC_MIN_REAL;
       }
     }
     /* Old vertices have the same coordinates */
@@ -5976,49 +5971,36 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
 
   /* Final reduction (if needed) if we are localizing */
   if (localize) {
-    PetscBool lred,gred;
+    PetscBool gred;
 
-    lred = needcoords ? PETSC_TRUE : PETSC_FALSE;
-    ierr = MPIU_Allreduce(&lred, &gred, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)rdm));CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&needcoords, &gred, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)rdm));CHKERRQ(ierr);
     if (gred) {
-      DM  cdm;
-      Vec loc, sum, aux;
+      DM                 cdm;
+      Vec                aux;
+      PetscSF            sf;
+      const PetscScalar *lArray;
+      PetscScalar       *gArray, val;
 
       ierr = DMGetCoordinateDM(rdm, &cdm);CHKERRQ(ierr);
-      ierr = DMCreateLocalVector(cdm, &loc);CHKERRQ(ierr);
-      ierr = VecSet(loc, 1.0); CHKERRQ(ierr);
-      if (needcoords) {
-        PetscScalar *array;
-
-        ierr = VecGetArray(loc, &array);CHKERRQ(ierr);
-        for (v = vStartNew; v < vEndNew; ++v) {
-          if (PetscBTLookup(needcoords,v-vStartNew)) {
-            PetscInt off, d;
-
-            ierr = PetscSectionGetOffset(coordSectionNew, v, &off);CHKERRQ(ierr);
-            for (d = 0; d < spaceDim; ++d) array[off + d] = 0.0;
-          }
-        }
-        ierr = VecRestoreArray(loc, &array);CHKERRQ(ierr);
-      }
-      ierr = DMCreateGlobalVector(cdm, &sum);CHKERRQ(ierr);
       ierr = DMCreateGlobalVector(cdm, &aux);CHKERRQ(ierr);
-      ierr = DMLocalToGlobalBegin(cdm, loc, ADD_VALUES, sum);CHKERRQ(ierr);
-      ierr = DMLocalToGlobalBegin(cdm, coordinatesNew, ADD_VALUES, aux);CHKERRQ(ierr);
-      ierr = DMLocalToGlobalEnd(cdm, loc, ADD_VALUES, sum);CHKERRQ(ierr);
-      ierr = DMLocalToGlobalEnd(cdm, coordinatesNew, ADD_VALUES, aux);CHKERRQ(ierr);
-      ierr = VecPointwiseDivide(aux, aux, sum);CHKERRQ(ierr);
+      ierr = DMGetDefaultSF(cdm, &sf);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(coordinatesNew, &lArray);CHKERRQ(ierr);
+      ierr = VecSet(aux,PETSC_MIN_REAL);CHKERRQ(ierr);
+      ierr = VecGetArray(aux, &gArray);CHKERRQ(ierr);
+      ierr = PetscSFReduceBegin(sf, MPIU_SCALAR, lArray, gArray, MPIU_MAX);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(sf, MPIU_SCALAR, lArray, gArray, MPIU_MAX);CHKERRQ(ierr);
+      ierr = VecRestoreArrayRead(coordinatesNew, &lArray);CHKERRQ(ierr);
+      ierr = VecRestoreArray(aux, &gArray);CHKERRQ(ierr);
+      ierr = VecMin(aux,NULL,&val);CHKERRQ(ierr);
+      if (val == PETSC_MIN_REAL) SETERRQ(PetscObjectComm((PetscObject)rdm),PETSC_ERR_PLIB,"Invalid localize coordinates");
       ierr = DMGlobalToLocalBegin(cdm, aux, INSERT_VALUES, coordinatesNew);CHKERRQ(ierr);
       ierr = DMGlobalToLocalEnd(cdm, aux, INSERT_VALUES, coordinatesNew);CHKERRQ(ierr);
-      ierr = VecDestroy(&loc);CHKERRQ(ierr);
-      ierr = VecDestroy(&sum);CHKERRQ(ierr);
       ierr = VecDestroy(&aux);CHKERRQ(ierr);
     }
   }
   ierr = VecDestroy(&coordinatesNew);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&coordSectionNew);CHKERRQ(ierr);
   ierr = PetscFree(parentId);CHKERRQ(ierr);
-  ierr = PetscBTDestroy(&needcoords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
