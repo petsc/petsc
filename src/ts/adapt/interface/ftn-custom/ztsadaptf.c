@@ -8,7 +8,7 @@
 #define tsadaptsettype_ tsadaptsettype
 #endif
 
-PETSC_EXTERN void PETSC_STDCALL tsadaptsettype_(TSAdapt *tsadapt,CHAR type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL tsadaptsettype_(TSAdapt *tsadapt,char* type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 
