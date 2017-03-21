@@ -73,11 +73,21 @@
       <!-- This is here for the grepping between begin / end, weaksauce! -->
 
       <h3>Quick Instructions:</h3>
-
-      Invoke the following commands from the top level PETSc directory: <br>
-      <ul class="code">
-        <li>./configure --with-cc=gcc --with-cxx=g++ --with-fc=gfortran --download-fblaslapack --download-mpich</li>
-        <li>make all test</li>
+      <ul>
+        <li>
+          On systems where MPI and BLAS/LAPACK are installed.
+          <ul class="code">
+            <li>./configure</li>
+            <li>make all test</li>
+          </ul>
+        </li>
+        <li>
+          Or to specify compilers and have PETSc download and install MPI and BLAS/LAPACK (when they are not already on your machine)
+          <ul class="code">
+            <li>./configure --with-cc=gcc --with-cxx=g++ --with-fc=gfortran --download-mpich --download-fblaslapack</li>
+            <li>make all test</li>
+          </ul>
+        </li>
       </ul>
 
       <a style="color: rgb(204,102,0);" href="#windows"><b>Check here for MS Windows Installation</b></a>
@@ -86,7 +96,6 @@
 
       <ul>
         <li><b>Read the error message from ./configure!</b></li>
-        <li>If you get the message 'No such file or directory' try: <code style="color: red">python ./configure</code></li>
         <li><a href="installation.html#blas-lapack">BLAS and LAPACK problems</a></li>
         <li><a href="installation.html#mpi">MPI problems</a>. I <a href="installation.html#i-dont-want-to-use-mpi">don't want MPI</a></li>
         <li><i><b>make</i></b> problems? Just copy/paste <i><b>make</i></b> command printed by configure including PETSC_DIR and PETSC_ARCH options</li>
@@ -99,7 +108,7 @@
 
       <ul>
         <li>Please <a href="../download/index.html">download</a> the <b>latest</b> patched tarball
-        <li>For most users we recommend installing PETSc as a <b>regular/non-root user</b>, perhaps in <b>/home/username/soft</b></li>
+        <li>We highly recommend installing PETSc as a <b>regular/non-root user</b>, perhaps in <b>/home/username/soft</b></li>
         <li>To extract the sources use: <code>gunzip -c petsc-3.7.0.tar.gz | tar -xof -</code></li>
         <li>Please check: <code>./configure --help</code></li>
         <li>Please check <a href="#exampleusage">example usages</a></li>
