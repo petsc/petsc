@@ -21,8 +21,9 @@ class Configure(config.package.GNUPackage):
     self.mpi            = framework.require('config.packages.MPI',self)
     self.mathlib        = framework.require('config.packages.mathlib',self)
     self.zlib           = framework.require('config.packages.zlib',self)
+    self.szlib          = framework.require('config.packages.szlib',self)
     self.deps           = [self.mpi,self.mathlib]
-    self.odeps          = [self.zlib]
+    self.odeps          = [self.zlib,self.szlib]
     return
 
   def formGNUConfigureArgs(self):
@@ -39,6 +40,10 @@ class Configure(config.package.GNUPackage):
       args.append('--with-zlib=yes')
     else:
       args.append('--with-zlib=no')
+    if self.szlib.found:
+      args.append('--with-szlib=yes')
+    else:
+      args.append('--with-szlib=no')
 
     args.append('CPPFLAGS="'+self.headers.toStringNoDupes(self.dinclude)+'"')
     args.append('LIBS="'+self.libraries.toStringNoDupes(self.dlib)+'"')
