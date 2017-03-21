@@ -36,10 +36,13 @@ class Configure(config.package.GNUPackage):
       args.append('F9X="'+self.setCompilers.getCompiler()+'"')
       self.setCompilers.popLanguage()
     if self.zlib.found:
-      args.append('CPPFLAGS="'+self.headers.toStringNoDupes(self.zlib.include)+'"')
-      args.append('LIBS="'+self.libraries.toStringNoDupes(self.zlib.lib+self.mathlib.lib)+'"')
+      args.append('--with-zlib=yes')
     else:
       args.append('--with-zlib=no')
+
+    args.append('CPPFLAGS="'+self.headers.toStringNoDupes(self.dinclude)+'"')
+    args.append('LIBS="'+self.libraries.toStringNoDupes(self.dlib)+'"')
+
     return args
 
   def configureLibrary(self):
