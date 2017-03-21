@@ -391,35 +391,12 @@ static PetscErrorCode DMPlexInsertBoundaryValues_FVM_Internal(DM dm, PetscReal t
   PetscFunctionReturn(0);
 }
 
-/*@
-  DMPlexInsertBoundaryValues - Puts coefficients which represent boundary values into the local solution vector
-
-  Input Parameters:
-+ dm - The DM
-. insertEssential - Should I insert essential (e.g. Dirichlet) or inessential (e.g. Neumann) boundary conditions
-. time - The time
-. faceGeomFVM - Face geometry data for FV discretizations
-. cellGeomFVM - Cell geometry data for FV discretizations
-- gradFVM - Gradient reconstruction data for FV discretizations
-
-  Output Parameters:
-. locX - Solution updated with boundary values
-
-  Level: developer
-
-.seealso: DMProjectFunctionLabelLocal()
-@*/
-PetscErrorCode DMPlexInsertBoundaryValues(DM dm, PetscBool insertEssential, Vec locX, PetscReal time, Vec faceGeomFVM, Vec cellGeomFVM, Vec gradFVM)
+PetscErrorCode DMPlexInsertBoundaryValues_Plex(DM dm, PetscBool insertEssential, Vec locX, PetscReal time, Vec faceGeomFVM, Vec cellGeomFVM, Vec gradFVM)
 {
   PetscInt       numBd, b;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidHeaderSpecific(locX, VEC_CLASSID, 2);
-  if (faceGeomFVM) {PetscValidHeaderSpecific(faceGeomFVM, VEC_CLASSID, 4);}
-  if (cellGeomFVM) {PetscValidHeaderSpecific(cellGeomFVM, VEC_CLASSID, 5);}
-  if (gradFVM)     {PetscValidHeaderSpecific(gradFVM, VEC_CLASSID, 6);}
   ierr = PetscDSGetNumBoundary(dm->prob, &numBd);CHKERRQ(ierr);
   for (b = 0; b < numBd; ++b) {
     DMBoundaryConditionType type;
@@ -462,6 +439,38 @@ PetscErrorCode DMPlexInsertBoundaryValues(DM dm, PetscBool insertEssential, Vec 
                                                      field, label, numids, ids, (PetscErrorCode (*)(PetscReal,const PetscReal*,const PetscReal*,const PetscScalar*,PetscScalar*,void*)) func, ctx, locX);CHKERRQ(ierr);
     } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", field);
   }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexInsertBoundaryValues - Puts coefficients which represent boundary values into the local solution vector
+
+  Input Parameters:
++ dm - The DM
+. insertEssential - Should I insert essential (e.g. Dirichlet) or inessential (e.g. Neumann) boundary conditions
+. time - The time
+. faceGeomFVM - Face geometry data for FV discretizations
+. cellGeomFVM - Cell geometry data for FV discretizations
+- gradFVM - Gradient reconstruction data for FV discretizations
+
+  Output Parameters:
+. locX - Solution updated with boundary values
+
+  Level: developer
+
+.seealso: DMProjectFunctionLabelLocal()
+@*/
+PetscErrorCode DMPlexInsertBoundaryValues(DM dm, PetscBool insertEssential, Vec locX, PetscReal time, Vec faceGeomFVM, Vec cellGeomFVM, Vec gradFVM)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(locX, VEC_CLASSID, 2);
+  if (faceGeomFVM) {PetscValidHeaderSpecific(faceGeomFVM, VEC_CLASSID, 4);}
+  if (cellGeomFVM) {PetscValidHeaderSpecific(cellGeomFVM, VEC_CLASSID, 5);}
+  if (gradFVM)     {PetscValidHeaderSpecific(gradFVM, VEC_CLASSID, 6);}
+  ierr = PetscTryMethod(dm,"DMPlexInsertBoundaryValues_C",(DM,PetscBool,Vec,PetscReal,Vec,Vec,Vec),(dm,insertEssential,locX,time,faceGeomFVM,cellGeomFVM,gradFVM));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

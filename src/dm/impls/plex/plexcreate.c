@@ -1321,6 +1321,7 @@ static PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->computel2fielddiff              = DMComputeL2FieldDiff_Plex;
   dm->ops->getneighbors                    = DMGetNeighors_Plex;
   ierr = PetscObjectComposeFunction((PetscObject)dm,"DMAdaptLabel_C",DMAdaptLabel_Plex);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)dm,"DMPlexInsertBoundaryValues_C",DMPlexInsertBoundaryValues_Plex);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
