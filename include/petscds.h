@@ -210,6 +210,16 @@ PETSC_EXTERN PetscErrorCode PetscDSGetRiemannSolver(PetscDS, PetscInt,
                                                     void (**)(PetscInt, PetscInt, const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscScalar[], void *));
 PETSC_EXTERN PetscErrorCode PetscDSSetRiemannSolver(PetscDS, PetscInt,
                                                     void (*)(PetscInt, PetscInt, const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscScalar[], void *));
+PETSC_EXTERN PetscErrorCode PetscDSGetUpdate(PetscDS, PetscInt,
+                                             void (**)(PetscInt, PetscInt, PetscInt,
+                                                       const PetscInt [], const PetscInt [], const PetscScalar [], const PetscScalar [], const PetscScalar [],
+                                                       const PetscInt [], const PetscInt [], const PetscScalar [], const PetscScalar [], const PetscScalar [],
+                                                       PetscReal, const PetscReal [], PetscScalar []));
+PETSC_EXTERN PetscErrorCode PetscDSSetUpdate(PetscDS, PetscInt,
+                                             void (*)(PetscInt, PetscInt, PetscInt,
+                                                      const PetscInt [], const PetscInt [], const PetscScalar [], const PetscScalar [], const PetscScalar [],
+                                                      const PetscInt [], const PetscInt [], const PetscScalar [], const PetscScalar [], const PetscScalar [],
+                                                      PetscReal, const PetscReal [], PetscScalar []));
 PETSC_EXTERN PetscErrorCode PetscDSGetContext(PetscDS, PetscInt, void **);
 PETSC_EXTERN PetscErrorCode PetscDSSetContext(PetscDS, PetscInt, void *);
 PETSC_EXTERN PetscErrorCode PetscDSGetBdResidual(PetscDS, PetscInt,
