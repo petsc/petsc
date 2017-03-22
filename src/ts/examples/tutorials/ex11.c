@@ -1356,7 +1356,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
     ierr = DMGetLabel(dm,"vtk",&vtkLabel);CHKERRQ(ierr);
     for (c = cStart; c < cEndInterior; ++c) {
       const PetscFVCellGeom *cg;
-      const PetscScalar     *cx;
+      const PetscScalar     *cx    = NULL;
       PetscInt              vtkVal = 0;
 
       /* not that these two routines as currently implemented work for any dm with a
