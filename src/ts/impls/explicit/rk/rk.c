@@ -82,7 +82,7 @@ M*/
 
      Level: advanced
 
-     Notes: https://doi.org/10.1016/0893-9659(89)90079-7
+     References: https://doi.org/10.1016/0893-9659(89)90079-7
 
 .seealso: TSRK
 M*/
@@ -111,7 +111,7 @@ M*/
 
      Level: advanced
 
-     Notes: https://doi.org/10.1016/0771-050X(80)90013-3
+     References: https://doi.org/10.1016/0771-050X(80)90013-3
 
 .seealso: TSRK
 M*/
@@ -122,7 +122,7 @@ M*/
 
      Level: advanced
 
-     Notes: https://doi.org/10.1016/0898-1221(96)00141-1
+     References: https://doi.org/10.1016/0898-1221(96)00141-1
 
 .seealso: TSRK
 M*/
@@ -1000,7 +1000,7 @@ static PetscErrorCode  TSGetStages_RK(TS ts,PetscInt *ns,Vec **Y)
   using TSSetRHSFunction().
 
   Notes:
-  The default is TSRK3, it can be changed with TSRKSetType() or -ts_rk_type
+  The default is TSRK3BS, it can be changed with TSRKSetType() or -ts_rk_type
 
   Level: beginner
 
