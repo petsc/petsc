@@ -49,6 +49,28 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],Pe
 /*
      Defines the ODE passed to the ODE solver
 */
+static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec U,Vec F,void *ctx)
+{
+  PetscErrorCode    ierr;
+  PetscScalar       *f;
+  const PetscScalar *u;
+
+  PetscFunctionBegin;
+  /*  The next three lines allow us to access the entries of the vectors directly */
+  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+
+  f[0] = u[1];
+  f[1] = - 9.8;
+
+  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*
+     Defines the ODE passed to the ODE solver
+*/
 static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx)
 {
   PetscErrorCode    ierr;
@@ -116,6 +138,7 @@ int main(int argc,char **argv)
   PetscInt       direction=-1;
   PetscBool      terminate=PETSC_FALSE;
   TSAdapt        adapt;
+  TSType         tstype;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -144,10 +167,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
-  ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSROSW);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,NULL,(TSIFunction) IFunction,NULL);CHKERRQ(ierr);
-  ierr = TSSetIJacobian(ts,A,A,(TSIJacobian)IJacobian,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
@@ -171,6 +191,15 @@ int main(int argc,char **argv)
   ierr = TSAdaptSetStepLimits(adapt,0.0,0.5);CHKERRQ(ierr);
 
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+
+  ierr = TSGetType(ts,&tstype);CHKERRQ(ierr);
+  if (!strcmp(tstype,TSEULER) || !strcmp(tstype,TSRK) || !strcmp(tstype,TSSSP)) {
+    ierr = TSSetRHSFunction(ts,NULL,RHSFunction,NULL);CHKERRQ(ierr);
+  } else {
+    ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
+    ierr = TSSetIFunction(ts,NULL,IFunction,NULL);CHKERRQ(ierr);
+    ierr = TSSetIJacobian(ts,A,A,IJacobian,NULL);CHKERRQ(ierr);
+  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Run timestepping solver
