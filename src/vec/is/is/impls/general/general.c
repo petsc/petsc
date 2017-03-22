@@ -582,7 +582,7 @@ static PetscErrorCode ISCreateGeneral_Private(IS is)
 +  comm - the MPI communicator
 .  n - the length of the index set
 .  idx - the list of integers
--  mode - see PetscCopyMode for meaning of this flag.
+-  mode - PETSC_COPY_VALUES, PETSC_OWN_POINTER, or PETSC_USE_POINTER; see PetscCopyMode for meaning of this flag.
 
    Output Parameter:
 .  is - the new index set
@@ -599,7 +599,7 @@ static PetscErrorCode ISCreateGeneral_Private(IS is)
   Concepts: index sets^creating
   Concepts: IS^creating
 
-.seealso: ISCreateStride(), ISCreateBlock(), ISAllGather()
+.seealso: ISCreateStride(), ISCreateBlock(), ISAllGather(), PETSC_COPY_VALUES, PETSC_OWN_POINTER, PETSC_USE_POINTER, PetscCopyMode
 @*/
 PetscErrorCode  ISCreateGeneral(MPI_Comm comm,PetscInt n,const PetscInt idx[],PetscCopyMode mode,IS *is)
 {
