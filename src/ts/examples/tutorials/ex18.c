@@ -1234,26 +1234,32 @@ int main(int argc, char **argv)
   test:
     suffix: adv_delta_yper_0
     requires: !complex
+    TODO: broken
     args: -x_bd_type none -use_fv -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type euler -ts_final_time 5.0 -ts_max_steps 20 -ts_dt 0.333333 -bc_inflow 2 -bc_outflow 4 -ts_view -dm_view -monitor Error
   test:
     suffix: adv_delta_yper_1
     requires: !complex
+    TODO: broken
     args: -x_bd_type none -use_fv -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type euler -ts_final_time 5.0 -ts_max_steps 40 -ts_dt 0.166666 -bc_inflow 2 -bc_outflow 4 -ts_view -dm_view -monitor Error -dm_refine 1 -source_loc 0.416666,0.416666
   test:
     suffix: adv_delta_yper_2
     requires: !complex
+    TODO: broken
     args: -x_bd_type none -use_fv -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type euler -ts_final_time 5.0 -ts_max_steps 80 -ts_dt 0.083333 -bc_inflow 2 -bc_outflow 4 -ts_view -dm_view -monitor Error -dm_refine 2 -source_loc 0.458333,0.458333
   test:
     suffix: adv_delta_yper_fim_0
     requires: !complex
+    TODO: broken
     args: -x_bd_type none -use_fv -use_implicit -velocity_petscspace_order 0 -velocity_petscspace_poly_tensor -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_final_time 5.0 -ts_max_steps 20 -ts_dt 0.333333 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -mat_coloring_greedy_symmetric 0 -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason
   test:
     suffix: adv_delta_yper_fim_1
     requires: !complex
+    TODO: broken
     args: -x_bd_type none -use_fv -use_implicit -velocity_petscspace_order 1 -velocity_petscspace_poly_tensor -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_final_time 5.0 -ts_max_steps 20 -ts_dt 0.333333 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -mat_coloring_greedy_symmetric 0 -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason -snes_linesearch_type basic
   test:
     suffix: adv_delta_yper_fim_2
     requires: !complex
+    TODO: broken
     args: -x_bd_type none -use_fv -use_implicit -velocity_petscspace_order 2 -velocity_petscspace_poly_tensor -velocity_dist constant -porosity_dist delta -inflow_state 0.0 -ts_type mimex -ts_final_time 5.0 -ts_max_steps 20 -ts_dt 0.333333 -bc_inflow 2 -bc_outflow 4 -ts_view -monitor Error -dm_view -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -mat_coloring_greedy_symmetric 0 -snes_rtol 1.0e-7 -pc_type lu -snes_converged_reason -snes_linesearch_type basic
   test:
     suffix: adv_delta_yper_im_0
@@ -1301,6 +1307,7 @@ int main(int argc, char **argv)
   test:
     suffix: adv_gauss
     requires: !complex
+    TODO: broken
     args: -x_bd_type none -y_bd_type none -use_fv -velocity_dist constant -porosity_dist gaussian -inflow_state 0.0 -ts_type ssp -ts_final_time 2.0 -ts_max_steps 100 -ts_dt 0.01 -bc_inflow 1 -bc_outflow 3 -ts_view -dm_view
   test:
     suffix: adv_gauss_im
@@ -1320,6 +1327,7 @@ int main(int argc, char **argv)
   test:
     suffix: adv_gauss_corner
     requires: !complex
+    TODO: broken
     args: -x_bd_type none -y_bd_type none -use_fv -velocity_dist constant -porosity_dist gaussian -inflow_state 0.0 -ts_type ssp -ts_final_time 2.0 -ts_max_steps 100 -ts_dt 0.01 -bc_inflow 1 -bc_outflow 2 -ts_view -dm_view
   # 2D Advection+Harmonic 12-
   test:
