@@ -769,6 +769,11 @@ runex40_f:
 	   ${DIFF} output/ex40.out ex40.tmp || printf "${PWD}\nPossible problem with ex40_f, diffs above\n=========================================\n"; \
 	   ${RM} -f ex40.tmp
 
+runex40_g:
+	-@${MPIEXEC} -n 1 ./ex40 -ts_type rk -ts_rk_type 5bs > ex40.tmp 2>&1; \
+	   ${DIFF} output/ex40.out ex40.tmp || printf "${PWD}\nPossible problem with ex40_g, diffs above\n=========================================\n"; \
+	   ${RM} -f ex40.tmp
+
 runex41_a:
 	-@${MPIEXEC} -n 2 ./ex41 -snes_stol 1e-4 > ex41.tmp 2>&1; \
 	   ${DIFF} output/ex41.out ex41.tmp || printf "${PWD}\nPossible problem with ex41_a, diffs above\n=========================================\n"; \
@@ -797,6 +802,11 @@ runex41_e:
 runex41_f:
 	-@${MPIEXEC} -n 2 ./ex41 -ts_type rk -ts_rk_type 3bs > ex41.tmp 2>&1; \
 	   ${DIFF} output/ex41.out ex41.tmp || printf "${PWD}\nPossible problem with ex41_f, diffs above\n=========================================\n"; \
+	   ${RM} -f ex41.tmp
+
+runex41_g:
+	-@${MPIEXEC} -n 2 ./ex41 -ts_type rk -ts_rk_type 5bs > ex41.tmp 2>&1; \
+	   ${DIFF} output/ex41.out ex41.tmp || printf "${PWD}\nPossible problem with ex41_g, diffs above\n=========================================\n"; \
 	   ${RM} -f ex41.tmp
 
 runex42:
@@ -841,8 +851,8 @@ TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex3.PETSc runex3 runex3_2 r
                             ex22.PETSc runex22_2 runex22_3 runex22_4 ex22.rm \
                             ex25.PETSc runex25 ex25.rm \
                             ex31.PETSc runex31 runex31_2 ex31.rm \
-                            ex40.PETSc runex40_a runex40_b runex40_c runex40_d runex40_e runex40_f ex40.rm \
-                            ex41.PETSc runex41_a runex41_b runex41_c runex41_d runex41_e runex41_f ex41.rm \
+                            ex40.PETSc runex40_a runex40_b runex40_c runex40_d runex40_e runex40_f runex40_g ex40.rm \
+                            ex41.PETSc runex41_a runex41_b runex41_c runex41_d runex41_e runex41_f runex41_g ex41.rm \
                             ex43.PETSc ex43.rm \
                             ex44.PETSc runex44_a runex44_b runex44_2 ex44.rm
 
