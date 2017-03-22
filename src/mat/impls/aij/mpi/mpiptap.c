@@ -148,6 +148,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_scalable(Mat A,Mat P,Mat C)
   /* get data from symbolic products */
   p_loc = (Mat_SeqAIJ*)(ptap->P_loc)->data;
   if (ptap->P_oth) p_oth = (Mat_SeqAIJ*)(ptap->P_oth)->data;
+  else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"ptap->P_oth is NULL. Cannot proceed!");
 
   api   = ap->i;
   apj   = ap->j;
