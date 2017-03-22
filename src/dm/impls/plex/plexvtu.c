@@ -70,7 +70,7 @@ static PetscErrorCode DMPlexGetVTKConnectivity(DM dm, PetscBool localized, Piece
   countcell = 0;
   countconn = 0;
   for (c = cStart; c < cEnd; ++c) {
-    PetscInt nverts,celltype,startoffset,nC=0;
+    PetscInt nverts,dof = 0,celltype,startoffset,nC=0;
 
     if (hasLabel) {
       PetscInt value;
@@ -79,22 +79,23 @@ static PetscErrorCode DMPlexGetVTKConnectivity(DM dm, PetscBool localized, Piece
       if (value != 1) continue;
     }
     startoffset = countconn;
-    if (!localized) {
+    if (localized) {
+      ierr = PetscSectionGetDof(coordSection, c, &dof);CHKERRQ(ierr);
+    }
+    if (!dof) {
       PetscInt *closure = NULL;
       PetscInt  closureSize;
 
       ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
       for (v = 0; v < closureSize*2; v += 2) {
         if ((closure[v] >= vStart) && (closure[v] < vEnd)) {
-          conn[countconn++] = closure[v] - vStart;
+          if (!localized) conn[countconn++] = closure[v] - vStart;
+          else conn[countconn++] = startoffset + nC;
           ++nC;
         }
       }
       ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     } else {
-      PetscInt dof;
-
-      ierr = PetscSectionGetDof(coordSection, c, &dof);CHKERRQ(ierr);
       for (nC = 0; nC < dof/dim; nC++) conn[countconn++] = startoffset + nC;
     }
     ierr = DMPlexInvertCell(dim, nC, &conn[countconn-nC]);CHKERRQ(ierr);
@@ -128,7 +129,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
   FILE                     *fp;
   PetscMPIInt              rank,size,tag;
   PetscErrorCode           ierr;
-  PetscInt                 dim, dimEmbed,cellHeight,cStart,cEnd,vStart,vEnd,cMax,numLabelCells,hasLabel,c,v,r,i;
+  PetscInt                 dimEmbed,cellHeight,cStart,cEnd,vStart,vEnd,cMax,numLabelCells,hasLabel,c,v,r,i;
   PetscBool                localized;
   PieceInfo                piece,*gpiece = NULL;
   void                     *buffer = NULL;
@@ -167,13 +168,17 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
   piece.nconn     = 0;
   if (!localized) piece.nvertices = vEnd - vStart;
   for (c = cStart; c < cEnd; ++c) {
+    PetscInt dof = 0;
     if (hasLabel) {
       PetscInt value;
 
       ierr = DMGetLabelValue(dm, "vtk", c, &value);CHKERRQ(ierr);
       if (value != 1) continue;
     }
-    if (!localized) {
+    if (localized) {
+      ierr = PetscSectionGetDof(coordSection, c, &dof);CHKERRQ(ierr);
+    }
+    if (!dof) {
       PetscInt *closure = NULL;
       PetscInt closureSize;
 
@@ -181,13 +186,11 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
       for (v = 0; v < closureSize*2; v += 2) {
         if ((closure[v] >= vStart) && (closure[v] < vEnd)) {
           piece.nconn++;
+          if (localized) piece.nvertices++;
         }
       }
       ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     } else {
-      PetscInt dof;
-
-      ierr = PetscSectionGetDof(coordSection, c, &dof);CHKERRQ(ierr);
       piece.nvertices += dof/dimEmbed;
       piece.nconn     += dof/dimEmbed;
     }
@@ -336,12 +339,59 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
 
         ierr  = DMGetCoordinatesLocal(dm,&coords);CHKERRQ(ierr);
         ierr  = VecGetArrayRead(coords,&x);CHKERRQ(ierr);
-        if (dimEmbed != 3) {
+        if (dimEmbed != 3 || localized) {
           ierr = PetscMalloc1(piece.nvertices*3,&y);CHKERRQ(ierr);
-          for (i=0; i<piece.nvertices; i++) {
-            y[i*3+0] = x[i*dimEmbed+0];
-            y[i*3+1] = (dimEmbed > 1) ? x[i*dimEmbed+1] : 0;
-            y[i*3+2] = 0;
+          if (localized) {
+            PetscInt cnt;
+            for (c=cStart,cnt=0; c<cEnd; c++) {
+              PetscInt off, dof;
+
+              ierr = PetscSectionGetDof(coordSection, c, &dof);CHKERRQ(ierr);
+              if (!dof) {
+                PetscInt *closure = NULL;
+                PetscInt closureSize;
+
+                ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+                for (v = 0; v < closureSize*2; v += 2) {
+                  if ((closure[v] >= vStart) && (closure[v] < vEnd)) {
+                    ierr = PetscSectionGetOffset(coordSection, closure[v], &off);CHKERRQ(ierr);
+                    if (dimEmbed != 3) {
+                      y[cnt*3+0] = x[off+0];
+                      y[cnt*3+1] = (dimEmbed > 1) ? x[off+1] : 0.0;
+                      y[cnt*3+2] = 0.0;
+                    } else {
+                      y[cnt*3+0] = x[off+0];
+                      y[cnt*3+1] = x[off+1];
+                      y[cnt*3+2] = x[off+2];
+                    }
+                    cnt++;
+                  }
+                }
+                ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+              } else {
+                ierr = PetscSectionGetOffset(coordSection, c, &off);CHKERRQ(ierr);
+                if (dimEmbed != 3) {
+                  for (i=0; i<dof/dimEmbed; i++) {
+                    y[cnt*3+0] = x[off + i*dimEmbed + 0];
+                    y[cnt*3+1] = (dimEmbed > 1) ? x[off + i*dimEmbed + 1] : 0.0;
+                    y[cnt*3+2] = 0.0;
+                    cnt++;
+                  }
+                } else {
+                  for (i=0; i<dof; i ++) {
+		    y[cnt*3+i] = x[off + i];
+                  }
+                  cnt += dof/dimEmbed;
+                }
+              }
+            }
+            if (cnt != piece.nvertices) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Count does not match");
+          } else {
+            for (i=0; i<piece.nvertices; i++) {
+              y[i*3+0] = x[i*dimEmbed+0];
+              y[i*3+1] = (dimEmbed > 1) ? x[i*dimEmbed+1] : 0;
+              y[i*3+2] = 0.0;
+            }
           }
         }
         nsend = piece.nvertices*3;
