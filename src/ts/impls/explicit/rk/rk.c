@@ -78,9 +78,11 @@ M*/
 /*MC
      TSRK3BS - Third order RK scheme of Bogacki-Shampine with 2nd order embedded method.
 
-     This method has four stages.
+     This method has four stages with the First Same As Last (FSAL) property.
 
      Level: advanced
+
+     Notes: https://doi.org/10.1016/0893-9659(89)90079-7
 
 .seealso: TSRK
 M*/
@@ -105,9 +107,11 @@ M*/
 /*MC
      TSRK5DP - Fifth order Dormand-Prince RK scheme with the 4th order embedded method.
 
-     This method has seven stages.
+     This method has seven stages with the First Same As Last (FSAL) property.
 
      Level: advanced
+
+     Notes: https://doi.org/10.1016/0771-050X(80)90013-3
 
 .seealso: TSRK
 M*/
@@ -479,6 +483,7 @@ static PetscErrorCode TSStep_RK(TS ts)
   const PetscReal *A = tab->A,*c = tab->c;
   PetscScalar     *w = rk->work;
   Vec             *Y = rk->Y,*YdotRHS = rk->YdotRHS;
+  PetscBool        FSAL = tab->FSAL;
   TSAdapt          adapt;
   PetscInt         i,j;
   PetscInt         rejections = 0;
@@ -487,11 +492,15 @@ static PetscErrorCode TSStep_RK(TS ts)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  if (ts->steprollback || ts->steprestart) FSAL = PETSC_FALSE;
+  if (FSAL) { ierr = VecCopy(YdotRHS[s-1],YdotRHS[0]);CHKERRQ(ierr); }
+
   rk->status = TS_STEP_INCOMPLETE;
   while (!ts->reason && rk->status != TS_STEP_COMPLETE) {
     PetscReal t = ts->ptime;
     PetscReal h = ts->time_step;
     for (i=0; i<s; i++) {
+      if (FSAL && !i) continue;
       rk->stage_time = t + h*c[i];
       ierr = TSPreStage(ts,rk->stage_time); CHKERRQ(ierr);
       ierr = VecCopy(ts->vec_sol,Y[i]);CHKERRQ(ierr);
