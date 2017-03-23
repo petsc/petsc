@@ -333,6 +333,8 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
           snum = sscanf(line, "%d %d", &slaveNode, &masterNode);
           if (snum != 2) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
           periodicMapT[slaveNode - 1] = masterNode - 1;
+          ierr = PetscBTSet(periodicV, slaveNode - 1);CHKERRQ(ierr);
+          ierr = PetscBTSet(periodicV, masterNode - 1);CHKERRQ(ierr);
         }
       }
       ierr = PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING);CHKERRQ(ierr);
@@ -342,9 +344,6 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
       for (i = 0; i < numVertices; i++) {
         while (periodicMapT[periodicMapT[i]] != periodicMapT[i]) {
           periodicMapT[i] = periodicMapT[periodicMapT[i]];
-        }
-        if (periodicMapT[i] != i) {
-          ierr = PetscBTSet(periodicV,i);CHKERRQ(ierr);
         }
       }
       /* periodicMap : from old to new numbering (periodic vertices excluded)
@@ -383,20 +382,15 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   }
   ierr = DMSetUp(*dm);CHKERRQ(ierr);
   /* Add cell-vertex connections */
-  ierr = PetscBTCreate(trueNumCells, &periodicC);CHKERRQ(ierr);
   if (!rank) {
     PetscInt pcone[8], corner;
+
     for (cell = 0, c = 0; c < numCells; ++c) {
       if (gmsh_elem[c].dim == dim) {
-        PetscBool pc = PETSC_FALSE;
         for (corner = 0; corner < gmsh_elem[c].numNodes; ++corner) {
           const PetscInt cc = gmsh_elem[c].nodes[corner] - 1;
           pcone[corner] = periodicMap ? periodicMap[cc] + trueNumCells
                                       : cc + trueNumCells;
-          pc = pc || (periodicV ? PetscBTLookup(periodicV,cc) : PETSC_FALSE);
-        }
-        if (pc) {
-          ierr = PetscBTSet(periodicC,cell);CHKERRQ(ierr);
         }
         if (dim == 3) {
           /* Tetrahedra are inverted */
@@ -456,11 +450,13 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     ierr = DMPlexGetDepthStratum(*dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
     for (c = 0; c < numCells; ++c) {
       if (gmsh_elem[c].dim == dim-1) {
-        PetscInt joinSize;
         const PetscInt *join;
+        PetscInt        joinSize;
+
         for (corner = 0; corner < gmsh_elem[c].numNodes; ++corner) {
-          pcone[corner] = periodicMap ? periodicMap[gmsh_elem[c].nodes[corner] - 1] + vStart
-                                      : gmsh_elem[c].nodes[corner] - 1 + vStart;
+          const PetscInt cc = gmsh_elem[c].nodes[corner] - 1;
+          pcone[corner] = periodicMap ? periodicMap[cc] + vStart
+                                      : cc + vStart;
         }
         ierr = DMPlexGetFullJoin(*dm, gmsh_elem[c].numNodes, (const PetscInt *) pcone, &joinSize, &join);CHKERRQ(ierr);
         if (joinSize != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not determine Plex facet for element %d", gmsh_elem[c].id);
@@ -505,9 +501,16 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     ierr = PetscSectionSetFieldDof(coordSection, v, 0, dim);CHKERRQ(ierr);
   }
   if (periodicMap) {
+    ierr = PetscBTCreate(trueNumCells, &periodicC);CHKERRQ(ierr);
     for (cell = 0, c = 0; c < numCells; ++c) {
       if (gmsh_elem[c].dim == dim) {
-        if (PetscUnlikely(PetscBTLookup(periodicC,cell))) {
+        PetscBool pc = PETSC_FALSE;
+        PetscInt  corner;
+        for (corner = 0; corner < gmsh_elem[c].numNodes; ++corner) {
+          pc = pc || PetscBTLookup(periodicV, gmsh_elem[c].nodes[corner] - 1);
+        }
+        if (pc) {
+          ierr = PetscBTSet(periodicC, cell);CHKERRQ(ierr);
           ierr = PetscSectionSetDof(coordSection, cell, gmsh_elem[c].numNodes*dim);CHKERRQ(ierr);
           ierr = PetscSectionSetFieldDof(coordSection, cell, 0, gmsh_elem[c].numNodes*dim);CHKERRQ(ierr);
         }
