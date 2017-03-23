@@ -5473,9 +5473,9 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
   const PetscInt        numVertices = depthSize ? depthSize[0] : 0;
   PetscInt              dim, spaceDim, depth, bs, coordSizeNew, cStart, cEnd, cMax;
   PetscInt              c, vStart, vStartNew, vEnd, v, eStart, eEnd, eMax, e, fStart, fEnd, fMax, f;
-  PetscInt              cStartNew, cEndNew, vEndNew, noper, *parentId = NULL;
+  PetscInt              cStartNew, cEndNew, vEndNew, *parentId = NULL;
   VecType               vtype;
-  PetscBool             isperiodic, localize, needcoords = PETSC_FALSE;
+  PetscBool             isperiodic, localize = PETSC_FALSE, needcoords = PETSC_FALSE;
   const PetscReal      *maxCell, *L;
   const DMBoundaryType *bd;
   PetscErrorCode        ierr;
@@ -5497,9 +5497,11 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
   ierr = PetscSectionSetFieldComponents(coordSectionNew, 0, spaceDim);CHKERRQ(ierr);
   ierr = DMGetPeriodicity(dm, &isperiodic, &maxCell, &L, &bd);CHKERRQ(ierr);
   ierr = DMSetPeriodicity(rdm, isperiodic,  maxCell,  L,  bd);CHKERRQ(ierr);
-
   /* Determine if we need to localize coordinates when generating them */
-  localize = isperiodic && !maxCell;
+  if (isperiodic && !maxCell) {
+    ierr = DMGetCoordinatesLocalized(dm, &localize);CHKERRQ(ierr);
+    if (!localize) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Cannot refine if coordinates have not been localized");
+  }
   if (localize) {
     PetscInt p, r, newp, *pi;
 
@@ -5619,18 +5621,23 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
 
   /* All vertices have the spaceDim coordinates */
   if (localize) {
-    for (v = cStartNew; v < cEndNew; ++v) {
-      PetscInt *cone = NULL;
-      PetscInt  closureSize, coneSize = 0, p;
+    PetscInt c;
 
-      ierr = DMPlexGetTransitiveClosure(rdm, v, PETSC_TRUE, &closureSize, &cone);CHKERRQ(ierr);
-      for (p = 0; p < closureSize*2; p += 2) {
-        const PetscInt point = cone[p];
-        if ((point >= vStartNew) && (point < vEndNew)) coneSize++;
+    for (c = cStartNew; c < cEndNew; ++c) {
+      PetscInt *cone = NULL;
+      PetscInt  closureSize, coneSize = 0, p, pdof;
+
+      ierr = PetscSectionGetDof(coordSection, parentId[c], &pdof); CHKERRQ(ierr);
+      if (pdof) { /* localize on all cells that are refinement of a localized parent cell */
+        ierr = DMPlexGetTransitiveClosure(rdm, c, PETSC_TRUE, &closureSize, &cone);CHKERRQ(ierr);
+        for (p = 0; p < closureSize*2; p += 2) {
+          const PetscInt point = cone[p];
+          if ((point >= vStartNew) && (point < vEndNew)) coneSize++;
+        }
+        ierr = DMPlexRestoreTransitiveClosure(rdm, c, PETSC_TRUE, &closureSize, &cone);CHKERRQ(ierr);
+        ierr = PetscSectionSetDof(coordSectionNew, c, coneSize*spaceDim);CHKERRQ(ierr);
+        ierr = PetscSectionSetFieldDof(coordSectionNew, c, 0, coneSize*spaceDim);CHKERRQ(ierr);
       }
-      ierr = DMPlexRestoreTransitiveClosure(rdm, v, PETSC_TRUE, &closureSize, &cone);CHKERRQ(ierr);
-      ierr = PetscSectionSetDof(coordSectionNew, v, coneSize*spaceDim);CHKERRQ(ierr);
-      ierr = PetscSectionSetFieldDof(coordSectionNew, v, 0, coneSize*spaceDim);CHKERRQ(ierr);
     }
   }
   for (v = vStartNew; v < vStartNew+numVertices; ++v) {
@@ -5650,6 +5657,7 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
   ierr = VecSetType(coordinatesNew, vtype);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = VecGetArray(coordinatesNew, &coordsNew);CHKERRQ(ierr);
+
   switch (refiner) {
   case REFINER_NOOP: break;
   case REFINER_HEX_3D:
@@ -5678,57 +5686,68 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
         for (s = 0; s < supportSize; ++s) {
           PetscScalar     coordsNewAux[3] = { 0.0, 0.0, 0.0 };
           PetscInt       *cellCone = NULL;
-          PetscInt        cellClosureSize, cellConeSize = 0;
+          PetscInt        cellClosureSize, cellConeSize = 0, cdof;
           const PetscInt  cell = support[s];
           PetscBool       copyoff = PETSC_FALSE;
 
-          ierr = PetscSectionGetOffset(coordSection, cell, &coff);CHKERRQ(ierr);
           ierr = DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &cellClosureSize, &cellCone);CHKERRQ(ierr);
           for (p = 0; p < cellClosureSize*2; p += 2) {
             const PetscInt point = cellCone[p];
             if ((point >= vStart) && (point < vEnd)) cellCone[cellConeSize++] = point;
           }
-          for (p = 0; p < coneSize; ++p) {
-            const PetscInt tv = cone[p];
-            PetscInt       cv, voff;
-            PetscBool      locv = PETSC_TRUE;
+          ierr = PetscSectionGetDof(coordSection, cell, &cdof);CHKERRQ(ierr);
+          if (!cdof) { /* the parent cell does not have localized coordinates */
+            cellfound = PETSC_TRUE;
+            for (v = 0; v < coneSize; ++v) {
+              ierr = PetscSectionGetOffset(coordSection, cone[v], &off[v]);CHKERRQ(ierr);
+              for (d = 0; d < spaceDim; ++d) coordsNewAux[d] += coords[off[v]+d];
+            }
+            for (d = 0; d < spaceDim; ++d) coordsNewAux[d] /= coneSize;
+          } else {
+            ierr = PetscSectionGetOffset(coordSection, cell, &coff);CHKERRQ(ierr);
+            for (p = 0; p < coneSize; ++p) {
+              const PetscInt tv = cone[p];
+              PetscInt       cv, voff;
+              PetscBool      locv = PETSC_TRUE;
 
-            for (cv = 0; cv < cellConeSize; ++cv) {
-              if (cellCone[cv] == tv) {
-                ccoff[p] = spaceDim*cv + coff;
-                break;
+              for (cv = 0; cv < cellConeSize; ++cv) {
+                if (cellCone[cv] == tv) {
+                  ccoff[p] = spaceDim*cv + coff;
+                  break;
+                }
+              }
+              if (cv == cellConeSize) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to map vertex %D\n",tv);
+
+              ierr = PetscSectionGetOffset(coordSection, cone[p], &voff);CHKERRQ(ierr);
+              for (d = 0; d < spaceDim; ++d) {
+                coordsNewAux[d] += coords[ccoff[p]+d];
+                if (!cellfound && coords[voff+d] != coords[ccoff[p]+d]) locv = PETSC_FALSE;
+              }
+              if (locv && !cellfound) {
+                cellfound = PETSC_TRUE;
+                copyoff   = PETSC_TRUE;
               }
             }
-            if (cv == cellConeSize) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to map vertex %D\n",tv);
+            for (d = 0; d < spaceDim; ++d) coordsNewAux[d] /= coneSize;
 
-            ierr = PetscSectionGetOffset(coordSection, cone[p], &voff);CHKERRQ(ierr);
-            for (d = 0; d < spaceDim; ++d) {
-              coordsNewAux[d] += coords[ccoff[p]+d];
-              if (!cellfound && coords[voff+d] != coords[ccoff[p]+d]) locv = PETSC_FALSE;
-            }
-            if (locv && !cellfound) {
-              cellfound = PETSC_TRUE;
-              copyoff   = PETSC_TRUE;
-            }
+            /* Found a valid face for the "vertex" part of the Section (physical space)
+               i.e., a face that has at least one corner in the physical space */
+            if (copyoff) for (p = 0; p < coneSize; ++p) off[p] = ccoff[p];
           }
-          ierr = DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &cellClosureSize, &cellCone);CHKERRQ(ierr);
-          for (d = 0; d < dim; ++d) coordsNewAux[d] /= coneSize;
-
-          /* Found a valid face for the "vertex" part of the Section (physical space)
-             i.e., a face that has at least one corner in the physical space */
-          if (copyoff) for (p = 0; p < coneSize; ++p) off[p] = ccoff[p];
 
           /* Localize new coordinates on each refined cell */
           for (v = 0; v < rStarSize*2; v += 2) {
             if ((rStar[v] >= cStartNew) && (rStar[v] < cEndNew) && parentId[rStar[v]-cStartNew] == cell) {
-              PetscInt       *rcone = NULL, rclosureSize, lid;
+              PetscInt       *rcone = NULL, rclosureSize, lid, rcdof, rcoff;
               const PetscInt  rcell = rStar[v];
 
-              ierr = PetscSectionGetOffset(coordSectionNew, rcell, &coff);CHKERRQ(ierr);
+              ierr = PetscSectionGetDof(coordSectionNew, rcell, &rcdof);CHKERRQ(ierr);
+              if (!rcdof) continue;
+              ierr = PetscSectionGetOffset(coordSectionNew, rcell, &rcoff);CHKERRQ(ierr);
               ierr = DMPlexGetTransitiveClosure(rdm, rcell, PETSC_TRUE, &rclosureSize, &rcone);CHKERRQ(ierr);
               for (p = 0, lid = 0; p < rclosureSize*2; p += 2) {
                 if (rcone[p] == newv) {
-                  for (d = 0; d < spaceDim; d++) coordsNew[coff + lid*spaceDim + d] = coordsNewAux[d];
+                  for (d = 0; d < spaceDim; d++) coordsNew[rcoff + lid*spaceDim + d] = coordsNewAux[d];
                   break;
                 }
                 if (rcone[p] >= vStartNew && rcone[p] < vEndNew) lid++;
@@ -5737,6 +5756,7 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
               if (p == closureSize*2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to map new vertex %D\n",newv);
             }
           }
+          ierr = DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &cellClosureSize, &cellCone);CHKERRQ(ierr);
         }
         ierr = DMPlexRestoreTransitiveClosure(rdm, newv, PETSC_FALSE, &rStarSize, &rStar);CHKERRQ(ierr);
         if (!cellfound) {
@@ -5766,7 +5786,7 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
     for (c = cStart; c < cMax; ++c) {
       const PetscInt newv = vStartNew + (vEnd - vStart) + (dim > 1 ? (eMax - eStart) : 0) + (c - cStart) + (dim > 2 ? (fMax - fStart) : 0);
       PetscInt      *cone = NULL;
-      PetscInt       closureSize, coneSize = 0, off[8], offnew, p, d;
+      PetscInt       closureSize, coneSize = 0, off[8], offnew, p, d, cdof = 0;
 
       ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &cone);CHKERRQ(ierr);
       for (p = 0; p < closureSize*2; p += 2) {
@@ -5774,6 +5794,9 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
         if ((point >= vStart) && (point < vEnd)) cone[coneSize++] = point;
       }
       if (localize) {
+        ierr = PetscSectionGetDof(coordSection, c, &cdof);CHKERRQ(ierr);
+      }
+      if (cdof) {
         PetscInt coff;
 
         ierr = PetscSectionGetOffset(coordSection, c, &coff);CHKERRQ(ierr);
@@ -5788,16 +5811,19 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
       for (v = 0; v < coneSize; ++v) {ierr = DMLocalizeAddCoordinate_Internal(dm, spaceDim, &coords[off[0]], &coords[off[v]], &coordsNew[offnew]);CHKERRQ(ierr);}
       for (d = 0; d < spaceDim; ++d) coordsNew[offnew+d] /= coneSize;
       ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &cone);CHKERRQ(ierr);
+
       /* Localize new coordinates on each refined cell */
-      if (localize) {
+      if (cdof) {
         PetscInt *rStar = NULL, rStarSize;
 
         ierr = DMPlexGetTransitiveClosure(rdm, newv, PETSC_FALSE, &rStarSize, &rStar);CHKERRQ(ierr);
         for (v = 0; v < rStarSize*2; v += 2) {
           if ((rStar[v] >= cStartNew) && (rStar[v] < cEndNew)) {
-            PetscInt *cone = NULL, closureSize, lid, coff, rc;
+            PetscInt *cone = NULL, closureSize, lid, coff, rc, rcdof;
 
             rc   = rStar[v];
+            ierr = PetscSectionGetDof(coordSectionNew, rc, &rcdof);CHKERRQ(ierr);
+            if (!rcdof) continue;
             ierr = PetscSectionGetOffset(coordSectionNew, rc, &coff);CHKERRQ(ierr);
             ierr = DMPlexGetTransitiveClosure(rdm, rc, PETSC_TRUE, &closureSize, &cone);CHKERRQ(ierr);
             for (p = 0, lid = 0; p < closureSize*2; p += 2) {
@@ -5828,10 +5854,10 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
       if (coneSize != 2) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Edge %d cone should have two vertices, not %d", e, coneSize);
       ierr = DMPlexGetCone(dm, e, &cone);CHKERRQ(ierr);
       if (localize) {
-        const PetscInt *support = NULL;
-        PetscInt        coff, toffA, toffB, voffA, voffB;
-        PetscInt       *eStar = NULL, eStarSize;
-        PetscInt       *rStar = NULL, rStarSize;
+        PetscInt   coff, toffA, toffB, voffA, voffB;
+        PetscInt  *eStar = NULL, eStarSize;
+        PetscInt  *rStar = NULL, rStarSize;
+        PetscBool  cellfound = PETSC_FALSE;
 
         offA = offB = -1;
         ierr = PetscSectionGetOffset(coordSection, cone[0], &voffA);CHKERRQ(ierr);
@@ -5842,35 +5868,49 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
           if ((eStar[v] >= cStart) && (eStar[v] < cEnd)) {
             PetscScalar     coordsNewAux[3];
             PetscInt       *cellCone = NULL;
-            PetscInt        cellClosureSize, s, cv;
+            PetscInt        cellClosureSize, s, cv, cdof;
             PetscBool       locvA = PETSC_TRUE, locvB = PETSC_TRUE;
             const PetscInt  cell = eStar[v];
 
-            ierr = PetscSectionGetOffset(coordSection, cell, &coff);CHKERRQ(ierr);
-            ierr = DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &cellClosureSize, &cellCone);CHKERRQ(ierr);
-            for (s = 0, cv = 0; s < cellClosureSize*2; s += 2) {
-              const PetscInt point = cellCone[s];
-              if ((point >= vStart) && (point < vEnd)) {
-                if (point == cone[0]) toffA = spaceDim*cv + coff;
-                else if (point == cone[1]) toffB = spaceDim*cv + coff;
-                cv++;
+            ierr = PetscSectionGetDof(coordSection, cell, &cdof);CHKERRQ(ierr);
+            if (!cdof) {
+              /* Found a valid edge for the "vertex" part of the Section */
+              offA = voffA;
+              offB = voffB;
+              cellfound = PETSC_TRUE;
+            } else {
+              ierr = PetscSectionGetOffset(coordSection, cell, &coff);CHKERRQ(ierr);
+              ierr = DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &cellClosureSize, &cellCone);CHKERRQ(ierr);
+              for (s = 0, cv = 0; s < cellClosureSize*2; s += 2) {
+                const PetscInt point = cellCone[s];
+                if ((point >= vStart) && (point < vEnd)) {
+                  if (point == cone[0]) toffA = spaceDim*cv + coff;
+                  else if (point == cone[1]) toffB = spaceDim*cv + coff;
+                  cv++;
+                }
+              }
+              ierr = DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &cellClosureSize, &cellCone);CHKERRQ(ierr);
+              for (d = 0; d < spaceDim; ++d) {
+                coordsNewAux[d] = 0.5*(coords[toffA+d] + coords[toffB+d]);
+                if (coords[toffA+d] != coords[voffA+d]) locvA = PETSC_FALSE;
+                if (coords[toffB+d] != coords[voffB+d]) locvB = PETSC_FALSE;
+              }
+              /* Found a valid edge for the "vertex" part of the Section */
+              if (!cellfound && (locvA || locvB)) {
+                cellfound = PETSC_TRUE;
+                offA = toffA;
+                offB = toffB;
               }
             }
-            ierr = DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &cellClosureSize, &cellCone);CHKERRQ(ierr);
-            for (d = 0; d < spaceDim; ++d) {
-              coordsNewAux[d] = 0.5*(coords[toffA+d] + coords[toffB+d]);
-              if (coords[toffA+d] != coords[voffA+d]) locvA = PETSC_FALSE;
-              if (coords[toffB+d] != coords[voffB+d]) locvB = PETSC_FALSE;
-            }
-            /* Found a valid edge for the "vertex" part of the Section */
-            if (locvA || locvB) { offA = toffA; offB = toffB; }
 
             /* Localize new coordinates on each refined cell */
             for (s = 0; s < rStarSize*2; s += 2) {
               if ((rStar[s] >= cStartNew) && (rStar[s] < cEndNew) && parentId[rStar[s]-cStartNew] == cell) {
-                PetscInt       *rcone = NULL, rclosureSize, lid, p;
+                PetscInt       *rcone = NULL, rclosureSize, lid, p, rcdof;
                 const PetscInt  rcell = rStar[s];
 
+                ierr = PetscSectionGetDof(coordSectionNew, rcell, &rcdof);CHKERRQ(ierr);
+                if (!rcdof) continue;
                 ierr = PetscSectionGetOffset(coordSectionNew, rcell, &coff);CHKERRQ(ierr);
                 ierr = DMPlexGetTransitiveClosure(rdm, rcell, PETSC_TRUE, &rclosureSize, &rcone);CHKERRQ(ierr);
                 for (p = 0, lid = 0; p < rclosureSize*2; p += 2) {
@@ -5888,7 +5928,7 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
         }
         ierr = DMPlexRestoreTransitiveClosure(dm, e, PETSC_FALSE, &eStarSize, &eStar);CHKERRQ(ierr);
         ierr = DMPlexRestoreTransitiveClosure(rdm, newv, PETSC_FALSE, &rStarSize, &rStar);CHKERRQ(ierr);
-        if (offA == -1 || offB == -1) {
+        if (!cellfound) {
           /* Could not find a valid edge for the vertex part, we will get this vertex later (final reduction) */
           needcoords = PETSC_TRUE;
         }
@@ -5921,17 +5961,19 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
       if (localize) {
         PetscInt  p;
         PetscInt *rStar = NULL, rStarSize;
-        PetscInt *oStar = NULL, oStarSize;
 
         ierr = DMPlexGetTransitiveClosure(rdm, newv, PETSC_FALSE, &rStarSize, &rStar);CHKERRQ(ierr);
-        ierr = DMPlexGetTransitiveClosure(dm, v, PETSC_FALSE, &oStarSize, &oStar);CHKERRQ(ierr);
         for (p = 0; p < rStarSize*2; p += 2) {
           if ((rStar[p] >= cStartNew) && (rStar[p] < cEndNew)) {
             PetscScalar  ocoords[3];
-            PetscInt    *cone = NULL, closureSize, lid, coff, s, oc;
+            PetscInt    *cone = NULL, closureSize, lid, coff, s, oc, cdof;
 
             c    = rStar[p];
             oc   = parentId[c-cStartNew];
+            ierr = PetscSectionGetDof(coordSectionNew, c, &cdof);CHKERRQ(ierr);
+            if (!cdof) continue;
+            ierr = PetscSectionGetDof(coordSection, oc, &cdof);CHKERRQ(ierr);
+            if (!cdof) continue;
             ierr = PetscSectionGetOffset(coordSection, oc, &coff);CHKERRQ(ierr);
             ierr = DMPlexGetTransitiveClosure(dm, oc, PETSC_TRUE, &closureSize, &cone);CHKERRQ(ierr);
             for (s = 0, lid = 0; s < closureSize*2; s += 2) {
@@ -5958,7 +6000,6 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
           }
         }
         ierr = DMPlexRestoreTransitiveClosure(rdm, newv, PETSC_FALSE, &rStarSize, &rStar);CHKERRQ(ierr);
-        ierr = DMPlexRestoreTransitiveClosure(dm, v, PETSC_FALSE, &oStarSize, &oStar);CHKERRQ(ierr);
       }
     }
     break;
@@ -5979,20 +6020,18 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
       Vec                aux;
       PetscSF            sf;
       const PetscScalar *lArray;
-      PetscScalar       *gArray, val;
+      PetscScalar       *gArray;
 
       ierr = DMGetCoordinateDM(rdm, &cdm);CHKERRQ(ierr);
       ierr = DMCreateGlobalVector(cdm, &aux);CHKERRQ(ierr);
       ierr = DMGetDefaultSF(cdm, &sf);CHKERRQ(ierr);
       ierr = VecGetArrayRead(coordinatesNew, &lArray);CHKERRQ(ierr);
-      ierr = VecSet(aux,PETSC_MIN_REAL);CHKERRQ(ierr);
+      ierr = VecSet(aux, PETSC_MIN_REAL);CHKERRQ(ierr);
       ierr = VecGetArray(aux, &gArray);CHKERRQ(ierr);
       ierr = PetscSFReduceBegin(sf, MPIU_SCALAR, lArray, gArray, MPIU_MAX);CHKERRQ(ierr);
       ierr = PetscSFReduceEnd(sf, MPIU_SCALAR, lArray, gArray, MPIU_MAX);CHKERRQ(ierr);
       ierr = VecRestoreArrayRead(coordinatesNew, &lArray);CHKERRQ(ierr);
       ierr = VecRestoreArray(aux, &gArray);CHKERRQ(ierr);
-      ierr = VecMin(aux,NULL,&val);CHKERRQ(ierr);
-      if (val == PETSC_MIN_REAL) SETERRQ(PetscObjectComm((PetscObject)rdm),PETSC_ERR_PLIB,"Invalid localize coordinates");
       ierr = DMGlobalToLocalBegin(cdm, aux, INSERT_VALUES, coordinatesNew);CHKERRQ(ierr);
       ierr = DMGlobalToLocalEnd(cdm, aux, INSERT_VALUES, coordinatesNew);CHKERRQ(ierr);
       ierr = VecDestroy(&aux);CHKERRQ(ierr);
