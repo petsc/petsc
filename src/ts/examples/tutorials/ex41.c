@@ -47,7 +47,7 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],Pe
 }
 
 /*
-     Defines the ODE passed to the ODE solver
+     Defines the ODE passed to the ODE solver in explicit form: U_t = F(U)
 */
 static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec U,Vec F,void *ctx)
 {
@@ -69,7 +69,7 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec U,Vec F,void *ctx)
 }
 
 /*
-     Defines the ODE passed to the ODE solver
+     Defines the ODE passed to the ODE solver in implicit form: F(U_t,U) = 0
 */
 static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx)
 {
@@ -98,10 +98,9 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx
 static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode    ierr;
-  PetscInt          rowcol[2];
-  const PetscScalar *u,*udot;
+  PetscInt          rowcol[2],rstart;
   PetscScalar       J[2][2];
-  PetscInt          rstart;
+  const PetscScalar *u,*udot;
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
@@ -130,15 +129,14 @@ int main(int argc,char **argv)
 {
   TS             ts;            /* ODE integrator */
   Vec            U;             /* solution will be stored here */
-  Mat            A;             /* Jacobian matrix */
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscInt       n = 2;
   PetscScalar    *u;
   PetscInt       direction=-1;
   PetscBool      terminate=PETSC_FALSE;
+  PetscBool      explicit=PETSC_FALSE;
   TSAdapt        adapt;
-  TSType         tstype;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -146,60 +144,56 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    Create necessary matrix and vectors
-    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,n,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATDENSE);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
-
-  ierr = MatCreateVecs(A,&U,NULL);CHKERRQ(ierr);
-
-  ierr = VecGetArray(U,&u);CHKERRQ(ierr);
-  u[0] = 1.0*rank;
-  u[1] = 20.0;
-  ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex41 options","");CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-explicit-form","","",explicit,&explicit,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSROSW);CHKERRQ(ierr);
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Set ODE routines
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
+  if (explicit) {
+    ierr = TSSetRHSFunction(ts,NULL,RHSFunction,NULL);CHKERRQ(ierr);
+  } else {
+    ierr = TSSetIFunction(ts,NULL,IFunction,NULL);CHKERRQ(ierr);
+    ierr = TSSetIJacobian(ts,NULL,NULL,IJacobian,NULL);CHKERRQ(ierr);
+  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = VecCreate(PETSC_COMM_WORLD,&U);CHKERRQ(ierr);
+  ierr = VecSetSizes(U,n,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetUp(U);CHKERRQ(ierr);
+  ierr = VecGetArray(U,&u);CHKERRQ(ierr);
+  u[0] = 1.0*rank;
+  u[1] = 20.0;
+  ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,U);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,1000,30.0);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,0.1);CHKERRQ(ierr);
-
-  ierr = TSSetEventHandler(ts,1,&direction,&terminate,EventFunction,PostEventFunction,NULL);CHKERRQ(ierr);
-
   /* The adapative time step controller could take very large timesteps resulting in
      the same event occuring multiple times in the same interval. A maximum step size
-     limit is enforced here to avoid this issue.
-  */
+     limit is enforced here to avoid this issue. */
   ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
   ierr = TSAdaptSetStepLimits(adapt,0.0,0.5);CHKERRQ(ierr);
 
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+  /* Set direction and terminate flag for the event */
+  ierr = TSSetEventHandler(ts,1,&direction,&terminate,EventFunction,PostEventFunction,NULL);CHKERRQ(ierr);
 
-  ierr = TSGetType(ts,&tstype);CHKERRQ(ierr);
-  if (!strcmp(tstype,TSEULER) || !strcmp(tstype,TSRK) || !strcmp(tstype,TSSSP)) {
-    ierr = TSSetRHSFunction(ts,NULL,RHSFunction,NULL);CHKERRQ(ierr);
-  } else {
-    ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-    ierr = TSSetIFunction(ts,NULL,IFunction,NULL);CHKERRQ(ierr);
-    ierr = TSSetIJacobian(ts,A,A,IJacobian,NULL);CHKERRQ(ierr);
-  }
+  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Run timestepping solver
@@ -209,7 +203,6 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they are no longer needed.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = VecDestroy(&U);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
 
