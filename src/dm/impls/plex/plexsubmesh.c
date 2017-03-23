@@ -2911,20 +2911,35 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
         /* This should be replaced by a call to DMPlexReverseCell() */
 #if 0
         ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]Reorienting face %D (subface %D)\n", rank, point, subpoint);CHKERRQ(ierr);
+        for (c = 0; c < coneSizeNew; ++c) {
+          ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]  Old Cone point %d in %d: %d (%d)\n", rank, c, subpoint, coneNew[c], orntNew[c]);CHKERRQ(ierr);
+        }
 #endif
+#if 0
+        ierr = DMPlexReverseCell(subdm, subpoint);CHKERRQ(ierr);
+#else
         for (c = 0; c < coneSizeNew/2 + coneSizeNew%2; ++c) {
-          PetscInt tmp;
+          PetscInt faceSize, tmp;
 
           tmp        = coneNew[c];
           coneNew[c] = coneNew[coneSizeNew-1-c];
           coneNew[coneSizeNew-1-c] = tmp;
-          tmp        = -(orntNew[c]+1);
-          orntNew[c] = -(orntNew[coneSizeNew-1-c]+1);
+          ierr = DMPlexGetConeSize(dm, cone[c], &faceSize);CHKERRQ(ierr);
+          tmp        = orntNew[c] >= 0 ? -(faceSize-orntNew[c]) : faceSize+orntNew[c];
+          orntNew[c] = orntNew[coneSizeNew-1-c] >= 0 ? -(faceSize-orntNew[coneSizeNew-1-c]) : faceSize+orntNew[coneSizeNew-1-c];
           orntNew[coneSizeNew-1-c] = tmp;
         }
       }
       ierr = DMPlexSetCone(subdm, subpoint, coneNew);CHKERRQ(ierr);
       ierr = DMPlexSetConeOrientation(subdm, subpoint, orntNew);CHKERRQ(ierr);
+#endif
+#if 0
+      if (fornt < 0) {
+        for (c = 0; c < coneSizeNew; ++c) {
+          ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]  New Cone point %d in %d: %d (%d)\n", rank, c, subpoint, coneNew[c], orntNew[c]);CHKERRQ(ierr);
+        }
+      }
+#endif
     }
   }
   ierr = PetscFree2(coneNew,orntNew);CHKERRQ(ierr);
