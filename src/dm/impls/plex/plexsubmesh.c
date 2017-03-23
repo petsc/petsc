@@ -2912,7 +2912,7 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
 #if 0
         ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]Reorienting face %D (subface %D)\n", rank, point, subpoint);CHKERRQ(ierr);
 #endif
-        for (c = 0; c < coneSizeNew/2; ++c) {
+        for (c = 0; c < coneSizeNew/2 + coneSizeNew%2; ++c) {
           PetscInt tmp;
 
           tmp        = coneNew[c];
