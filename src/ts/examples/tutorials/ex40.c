@@ -77,6 +77,34 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec U,Vec F,void *ctx)
 }
 
 /*
+     Defines the Jacobian of the ODE passed to the ODE solver. See TSSetRHSJacobian() for the meaning of the Jacobian.
+*/
+static PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B,void *ctx)
+{
+  PetscErrorCode    ierr;
+  PetscInt          rowcol[] = {0,1};
+  PetscScalar       J[2][2];
+  const PetscScalar *u;
+
+  PetscFunctionBegin;
+  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
+
+  J[0][0] = 0.0;     J[0][1] = 1.0;
+  J[1][0] = 0.0;     J[1][1] = 0.0;
+  ierr = MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
+
+  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
+
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (A != B) {
+    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*
      Defines the ODE passed to the ODE solver in implicit form: F(U_t,U) = 0
 */
 static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx)
@@ -114,12 +142,12 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
 
-  J[0][0] = a;                       J[0][1] = -1;
-  J[1][0] = 0.0;                     J[1][1] = a;
-  ierr    = MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
+  J[0][0] = a;      J[0][1] = -1.0;
+  J[1][0] = 0.0;    J[1][1] = a;
+  ierr = MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
 
-  ierr    = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
-  ierr    = VecRestoreArrayRead(Udot,&udot);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(Udot,&udot);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -141,7 +169,7 @@ int main(int argc,char **argv)
   AppCtx         app;
   PetscInt       direction[2];
   PetscBool      terminate[2];
-  PetscBool      explicit=PETSC_FALSE;
+  PetscBool      rhs_form=PETSC_FALSE;
   TSAdapt        adapt;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -154,7 +182,6 @@ int main(int argc,char **argv)
   app.nbounces = 0;
   app.maxbounces = 10;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex40 options","");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-explicit-form","","",explicit,&explicit,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-maxbounces","","",app.maxbounces,&app.maxbounces,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -168,8 +195,15 @@ int main(int argc,char **argv)
      Set ODE routines
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  if (explicit) {
+  /* Users are advised against the following branching and code duplication.
+     For problems without a mass matrix like the one at hand, the RHSFunction
+     (and companion RHSJacobian) interface is enough to support both explicit
+     and implicit timesteppers. This tutorial example also deals with the
+     IFunction/IJacobian interface for demonstration and testing purposes. */
+  ierr = PetscOptionsGetBool(NULL,NULL,"-rhs-form",&rhs_form,NULL);CHKERRQ(ierr);
+  if (rhs_form) {
     ierr = TSSetRHSFunction(ts,NULL,RHSFunction,NULL);CHKERRQ(ierr);
+    ierr = TSSetRHSJacobian(ts,NULL,NULL,RHSJacobian,NULL);CHKERRQ(ierr);
   } else {
     Mat A; /* Jacobian matrix */
     ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);

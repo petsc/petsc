@@ -765,12 +765,12 @@ runex40_e:
 	   ${RM} -f ex40.tmp
 
 runex40_f:
-	-@${MPIEXEC} -n 1 ./ex40 -explicit-form -ts_type rk -ts_rk_type 3bs > ex40.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex40 -rhs-form -ts_type rk -ts_rk_type 3bs > ex40.tmp 2>&1; \
 	   ${DIFF} output/ex40.out ex40.tmp || printf "${PWD}\nPossible problem with ex40_f, diffs above\n=========================================\n"; \
 	   ${RM} -f ex40.tmp
 
 runex40_g:
-	-@${MPIEXEC} -n 1 ./ex40 -explicit-form -ts_type rk -ts_rk_type 5bs > ex40.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex40 -rhs-form -ts_type rk -ts_rk_type 5bs > ex40.tmp 2>&1; \
 	   ${DIFF} output/ex40.out ex40.tmp || printf "${PWD}\nPossible problem with ex40_g, diffs above\n=========================================\n"; \
 	   ${RM} -f ex40.tmp
 
@@ -800,12 +800,12 @@ runex41_e:
 	   ${RM} -f ex41.tmp
 
 runex41_f:
-	-@${MPIEXEC} -n 2 ./ex41 -explicit-form -ts_type rk -ts_rk_type 3bs > ex41.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex41 -rhs-form -ts_type rk -ts_rk_type 3bs > ex41.tmp 2>&1; \
 	   ${DIFF} output/ex41.out ex41.tmp || printf "${PWD}\nPossible problem with ex41_f, diffs above\n=========================================\n"; \
 	   ${RM} -f ex41.tmp
 
 runex41_g:
-	-@${MPIEXEC} -n 2 ./ex41 -explicit-form -ts_type rk -ts_rk_type 5bs > ex41.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex41 -rhs-form -ts_type rk -ts_rk_type 5bs > ex41.tmp 2>&1; \
 	   ${DIFF} output/ex41.out ex41.tmp || printf "${PWD}\nPossible problem with ex41_g, diffs above\n=========================================\n"; \
 	   ${RM} -f ex41.tmp
 
