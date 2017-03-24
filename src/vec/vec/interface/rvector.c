@@ -119,7 +119,7 @@ PetscErrorCode  VecDot(Vec x,Vec y,PetscScalar *val)
   PetscValidType(x,1);
   PetscValidType(y,2);
   PetscCheckSameTypeAndComm(x,1,y,2);
-  VecCheckSameSize(x,1,y,1);
+  VecCheckSameSize(x,1,y,2);
 
   ierr = PetscLogEventBarrierBegin(VEC_DotBarrier,x,y,0,0,PetscObjectComm((PetscObject)x));CHKERRQ(ierr);
   ierr = (*x->ops->dot)(x,y,val);CHKERRQ(ierr);
