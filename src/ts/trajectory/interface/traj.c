@@ -115,6 +115,58 @@ PetscErrorCode  TSTrajectoryView(TSTrajectory tj,PetscViewer viewer)
 }
 
 /*@C
+   TSTrajectorySetVariableNames - Sets the name of each component in the solution vector so that it may be saved with the trajectory
+
+   Collective on TSTrajectory
+
+   Input Parameters:
++  tr - the trajectory context
+-  names - the names of the components, final string must be NULL
+
+   Level: intermediate
+
+.keywords: TS, TSTrajectory, vector, monitor, view
+
+.seealso: TSTrajectory, TSGetTrajectory()
+@*/
+PetscErrorCode  TSTrajectorySetVariableNames(TSTrajectory ctx,const char * const *names)
+{
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscStrArrayDestroy(&ctx->names);CHKERRQ(ierr);
+  ierr = PetscStrArrayallocpy(names,&ctx->names);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   TSTrjactorySetTransform - Solution vector will be transformed by provided function before being saved to disk
+
+   Collective on TSLGCtx
+
+   Input Parameters:
++  tj - the TSTrajectory context
+.  transform - the transform function
+.  destroy - function to destroy the optional context
+-  ctx - optional context used by transform function
+
+   Level: intermediate
+
+.keywords: TSTrajectory,  vector, monitor, view
+
+.seealso:  TSTrajectorySetVariableNames(), TSTrajectory, TSMonitorLGSetTransform()
+@*/
+PetscErrorCode  TSTrajectorySetTransform(TSTrajectory tj,PetscErrorCode (*transform)(void*,Vec,Vec*),PetscErrorCode (*destroy)(void*),void *tctx)
+{
+  PetscFunctionBegin;
+  tj->transform        = transform;
+  tj->transformdestroy = destroy;
+  tj->transformctx     = tctx;
+  PetscFunctionReturn(0);
+}
+
+
+/*@C
   TSTrajectoryCreate - This function creates an empty trajectory object used to store the time dependent solution of an ODE/DAE
 
   Collective on MPI_Comm
@@ -131,7 +183,7 @@ PetscErrorCode  TSTrajectoryView(TSTrajectory tj,PetscViewer viewer)
 
 .keywords: TS, trajectory, create
 
-.seealso: TSTrajectorySetUp(), TSTrajectoryDestroy(), TSTrajectorySetType()
+.seealso: TSTrajectorySetUp(), TSTrajectoryDestroy(), TSTrajectorySetType(), TSTrajectorySetVariableNames(), TSGetTrajectory()
 @*/
 PetscErrorCode  TSTrajectoryCreate(MPI_Comm comm,TSTrajectory *tj)
 {
@@ -248,8 +300,10 @@ PetscErrorCode  TSTrajectoryDestroy(TSTrajectory *tj)
   PetscValidHeaderSpecific((*tj),TSTRAJECTORY_CLASSID,1);
   if (--((PetscObject)(*tj))->refct > 0) {*tj = 0; PetscFunctionReturn(0);}
 
+  if ((*tj)->transformdestroy) {ierr = (*(*tj)->transformdestroy)((*tj)->transformctx);}
   if ((*tj)->ops->destroy) {ierr = (*(*tj)->ops->destroy)((*tj));CHKERRQ(ierr);}
   ierr = PetscViewerDestroy(&(*tj)->monitor);CHKERRQ(ierr);
+  ierr = PetscStrArrayDestroy(&(*tj)->names);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(tj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
