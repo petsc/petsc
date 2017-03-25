@@ -113,6 +113,8 @@ PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_7(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_7_NaturalOrdering_inplace(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_7_NaturalOrdering(Mat,Vec,Vec);
 
+PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_11_NaturalOrdering(Mat,Vec,Vec);
+
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering_ver1(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering_ver2(Mat,Vec,Vec);
 

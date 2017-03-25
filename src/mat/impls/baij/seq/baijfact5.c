@@ -899,8 +899,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_11_NaturalOrdering(Mat B,Mat A,const M
   ierr = PetscFree2(rtmp,mwork);CHKERRQ(ierr);
 
   ierr = PetscFree2(v_work,v_pivots);CHKERRQ(ierr);
-  C->ops->solve = MatSolve_SeqBAIJ_N_NaturalOrdering;
-  //C->ops->solve          = MatSolve_SeqBAIJ_7_NaturalOrdering;
+  C->ops->solve          = MatSolve_SeqBAIJ_11_NaturalOrdering;
   //C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_11_NaturalOrdering;
   C->assembled           = PETSC_TRUE;
 
