@@ -32,17 +32,14 @@ PETSC_EXTERN void PETSC_STDCALL kspfgmresmodifypcksp_(KSP*,PetscInt*,PetscInt*,P
 
 PETSC_EXTERN void PETSC_STDCALL kspfgmressetmodifypc_(KSP *ksp,void (PETSC_STDCALL *fcn)(KSP*,PetscInt*,PetscInt*,PetscReal*,void*,PetscErrorCode*),void* ctx,void (PETSC_STDCALL *d)(void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
+  CHKFORTRANNULLFUNCTION(d);
   if ((PetscVoidFunction)fcn == (PetscVoidFunction)kspfgmresmodifypcksp_) {
     *ierr = KSPFGMRESSetModifyPC(*ksp,KSPFGMRESModifyPCKSP,0,0);
   } else if ((PetscVoidFunction)fcn == (PetscVoidFunction)kspfgmresmodifypcnochange_) {
     *ierr = KSPFGMRESSetModifyPC(*ksp,KSPFGMRESModifyPCNoChange,0,0);
   } else {
     *ierr = PetscObjectSetFortranCallback((PetscObject)*ksp,PETSC_FORTRAN_CALLBACK_SUBTYPE,&_cb.modify,(PetscVoidFunction)fcn,ctx); if (*ierr) return;
-    if (FORTRANNULLFUNCTION(d)) {
-      *ierr = KSPFGMRESSetModifyPC(*ksp,ourmodify,*ksp,0);
-    } else {
-      *ierr = PetscObjectSetFortranCallback((PetscObject)*ksp,PETSC_FORTRAN_CALLBACK_SUBTYPE,&_cb.destroy,(PetscVoidFunction)d,ctx); if (*ierr) return;
-      *ierr = KSPFGMRESSetModifyPC(*ksp,ourmodify,*ksp,ourmoddestroy);
-    }
+    *ierr = PetscObjectSetFortranCallback((PetscObject)*ksp,PETSC_FORTRAN_CALLBACK_SUBTYPE,&_cb.destroy,(PetscVoidFunction)d,ctx); if (*ierr) return;
+    *ierr = KSPFGMRESSetModifyPC(*ksp,ourmodify,*ksp,ourmoddestroy);
   }
 }

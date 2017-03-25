@@ -89,7 +89,7 @@ if (flg) {                                   \
 #define FORTRANNULLREAL(a)     (((void*)(PETSC_UINTPTR_T)a) == PETSC_NULL_REAL_Fortran)
 #define FORTRANNULLBOOL(a)    (((void*)(PETSC_UINTPTR_T)a) == PETSC_NULL_BOOL_Fortran)
 #define FORTRANNULLFUNCTION(a) (((void(*)(void))(PETSC_UINTPTR_T)a) == PETSC_NULL_FUNCTION_Fortran)
-
+#define FORTRANNULLOBJECT(a)   (*(void**)a == (void*)-1)
 
 #define CHKFORTRANNULLINTEGER(a)  \
   if (FORTRANNULLDOUBLE(a) || FORTRANNULLSCALAR(a) || FORTRANNULLREAL(a)  || FORTRANNULLBOOL(a) || FORTRANNULLFUNCTION(a)) { \
@@ -143,7 +143,7 @@ PETSC_EXTERN void  *PETSCNULLPOINTERADDRESS;
   else if (FORTRANNULLBOOL(a)) { a = NULL; }
 
 #define CHKFORTRANNULLFUNCTION(a)  \
-  if (FORTRANNULLSCALAR(a) || FORTRANNULLDOUBLE(a) || FORTRANNULLREAL(a) || FORTRANNULLINTEGER(a) || FORTRANNULLBOOL(a) ) { \
+  if (FORTRANNULLOBJECT(a) || FORTRANNULLSCALAR(a) || FORTRANNULLDOUBLE(a) || FORTRANNULLREAL(a) || FORTRANNULLINTEGER(a) || FORTRANNULLBOOL(a) ) { \
     PetscError(PETSC_COMM_SELF,__LINE__,"fortran_interface_unknown_file",__FILE__,PETSC_ERR_ARG_WRONG,PETSC_ERROR_INITIAL, \
     "Use PETSC_NULL_FUNCTION"); *ierr = 1; return; } \
   else if (FORTRANNULLFUNCTION(a)) { a = NULL; }
@@ -231,7 +231,7 @@ typedef PETSC_UINTPTR_T PetscFortranAddr;
     void (PETSC_STDCALL *func) types,*_ctx;                             \
     PetscFunctionBegin;                                                 \
     ierr = PetscObjectGetFortranCallback((PetscObject)(obj),(cbclass),(cid),(PetscVoidFunction*)&func,&_ctx);CHKERRQ(ierr); \
-    (*func)args;CHKERRQ(ierr);                                          \
+    if (func) {(*func)args;CHKERRQ(ierr);}                              \
     PetscFunctionReturn(0);                                             \
   }
 #define PetscObjectUseFortranCallback(obj,cid,types,args) PetscObjectUseFortranCallback_Private(obj,cid,types,args,PETSC_FORTRAN_CALLBACK_CLASS)
