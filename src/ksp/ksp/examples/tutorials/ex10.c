@@ -701,7 +701,7 @@ int main(int argc,char **args)
       suffix: mumps_cholesky
       output_file: output/ex10_mumps.out
       requires: mumps datafilespath
-      args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type cholesky -mat_type sbaij -pc_factor_mat_solver_package mumps -num_numfac 2 -num_rhs 2 -mat_ignore_lower_triangular 
+      args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type cholesky -pc_factor_mat_solver_package mumps -num_numfac 2 -num_rhs 2
       nsize: {{1 2}}
       test:
          args: -mat_type sbaij -mat_ignore_lower_triangular
@@ -804,8 +804,8 @@ int main(int argc,char **args)
       test:
          nsize: 2
          args: -ksp_ksp_type cg -ksp_pc_type bjacobi -ksp_pc_bjacobi_blocks 1
-      test:
-         nsize: 3
-         args: -ksp_ksp_converged_reason -ksp_pc_type bjacobi -ksp_sub_ksp_converged_reason
-         TODO: Need to determine if deprecated
+      #test:
+         #nsize: 3
+         #args: -ksp_ksp_converged_reason -ksp_pc_type bjacobi -ksp_sub_ksp_converged_reason
+         #TODO: Need to determine if deprecated
 TEST*/

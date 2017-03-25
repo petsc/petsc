@@ -892,16 +892,6 @@ runex10_mumps_cholesky_spd_2:
 	   else printf "${PWD}\nPossible problem with ex10_mumps_cholesky_spd_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10_mumps_cholesky_spd_2.tmp
 
-NSUBCOMM = 8 7 6 5 4 3 2 1
-runex10_mumps_redundant:
-	-@touch ex10_mumps_redundant.tmp
-	-@for nsubcomm in ${NSUBCOMM}; do \
-	${MPIEXEC} -n 8 ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -ksp_type preonly -pc_type redundant -pc_redundant_number $$nsubcomm -redundant_pc_factor_mat_solver_package mumps -num_numfac 2 -num_rhs 2 >> ex10_mumps_redundant.tmp 2>&1; \
-	done;
-	-@if (${DIFF} output/ex10_mumps_redundant.out ex10_mumps_redundant.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex10_mumps_redundant, diffs above\n=========================================\n"; fi; \
-	${RM} -f ex10_mumps_redundant.tmp;
-
 runex10_pastix_lu_1:
 	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -mat_type seqaij -pc_factor_mat_solver_package pastix -num_numfac 2 -num_rhs 2 > ex10_pastix_lu_1.tmp 2>&1; \
 	   if (${DIFF} output/ex10_mumps.out ex10_pastix_lu_1.tmp) then true; \
@@ -923,24 +913,6 @@ runex10_pastix_cholesky_2:
 	   else printf "${PWD}\nPossible problem with ex10_pastix_cholesky_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10_pastix_cholesky_2.tmp
 
-NSUBCOMM = 8 7 6 5 4 3 2 1
-runex10_pastix_redundant:
-	-@touch ex10_pastix_redundant.tmp
-	-@for nsubcomm in ${NSUBCOMM}; do \
-	${MPIEXEC} -n 8 ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -ksp_type preonly -pc_type redundant -pc_redundant_number $$nsubcomm -redundant_pc_factor_mat_solver_package pastix -num_numfac 2 -num_rhs 2 >> ex10_pastix_redundant.tmp 2>&1; \
-	done;
-	-@if (${DIFF} output/ex10_mumps_redundant.out ex10_pastix_redundant.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex10_pastix_redundant, diffs above\n=========================================\n"; fi; \
-	${RM} -f ex10_pastix_redundant.tmp;
-
-runex10_superlu_dist_redundant:
-	-@touch ex10_superlu_dist_redundant.tmp
-	-@for nsubcomm in ${NSUBCOMM}; do \
-	${MPIEXEC} -n 8 ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -ksp_type preonly -pc_type redundant -pc_redundant_number $$nsubcomm -redundant_pc_factor_mat_solver_package superlu_dist -num_numfac 2 -num_rhs 2 >> ex10_superlu_dist_redundant.tmp 2>&1; \
-	done;
-	-@if (${DIFF} output/ex10_mumps_redundant.out ex10_superlu_dist_redundant.tmp) then true; \
-	  else printf "${PWD}\nPossible problem with ex10_superlu_dist_redundant, diffs above\n=========================================\n"; fi; \
-	${RM} -f ex10_superlu_dist_redundant.tmp;
 runex10_ILU: # test ilu fill greater than zero
 	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -pc_factor_levels 1  > ex10_20.tmp 2>&1; \
 	   if (${DIFF} output/ex10_ILU.out ex10_20.tmp) then true; \
@@ -1740,17 +1712,16 @@ TESTEXAMPLES_MUMPS                      = ex53.PETSc runex53 runex53_2 ex53.rm \
                                           ex52.PETSc runex52 runex52_mumps runex52_mumps_2 runex52_mumps_3 ex52.rm ex52f.PETSc runex52f_mumps ex52f.rm
 TESTEXAMPLES_MUMPS_DATAFILESPATH        = ex10.PETSc runex10_mumps_lu_1 runex10_mumps_lu_2 runex10_mumps_lu_3 runex10_mumps_lu_4 \
                                           runex10_mumps_cholesky_1 runex10_mumps_cholesky_2 runex10_mumps_cholesky_3 runex10_mumps_cholesky_4 \
-                                          runex10_mumps_redundant runex10_mumps_cholesky_spd_1 runex10_mumps_cholesky_spd_2 \
+                                          runex10_mumps_cholesky_spd_1 runex10_mumps_cholesky_spd_2 \
                                           runex10_zeropivot runex10_zeropivot_2 ex10.rm
 TESTEXAMPLES_PASTIX_DATAFILESPATH       = ex10.PETSc runex10_pastix_lu_1 runex10_pastix_lu_2  \
-			  	          runex10_pastix_cholesky_1 runex10_pastix_cholesky_2  runex10_pastix_redundant \
-                                          ex10.rm
+					  runex10_pastix_cholesky_1 runex10_pastix_cholesky_2 ex10.rm
 TESTEXAMPLES_SUPERLU                    = ex52.PETSc runex52_superlu_ilu runex52_superlu ex52.rm
 TESTEXAMPLES_SUPERLU_DATAFILESPATH      = ex10.PETSc runex10_superlu_lu_1 ex10.rm
 TESTEXAMPLES_SUPERLU_DIST               = ex5.PETSc runex5_superlu_dist runex5_superlu_dist_2 runex5_superlu_dist_3 ex5.rm \
                                           ex52.PETSc runex52_superlu_dist ex52.rm ex64.PETSc runex64 ex64.rm \
 	 			          ex62.PETSc runex62_superlu_dist_1 runex62_superlu_dist_2 runex62_superlu_dist_3 runex62_superlu_dist_4 ex62.rm
-TESTEXAMPLES_SUPERLU_DIST_DATAFILESPATH = ex10.PETSc runex10_superlu_dist_lu_1 runex10_superlu_dist_lu_2 runex10_superlu_dist_redundant ex10.rm
+TESTEXAMPLES_SUPERLU_DIST_DATAFILESPATH = ex10.PETSc runex10_superlu_dist_lu_1 runex10_superlu_dist_lu_2 ex10.rm
 TESTEXAMPLES_STRUMPACK                  = ex52.PETSc runex52_strumpack_ilu runex52_strumpack runex52_strumpack_ilu_2 runex52_strumpack_2 ex52.rm
 TESTEXAMPLES_SUITESPARSE_DATAFILESPATH  = ex10.PETSc runex10_umfpack ex10.rm
 TESTEXAMPLES_SUITESPARSE                = ex2.PETSc runex2_umfpack ex2.rm
