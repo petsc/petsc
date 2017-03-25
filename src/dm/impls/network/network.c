@@ -134,7 +134,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
   DMNetworkRegisterComponent - Registers the network component
 
   Logically collective on DM

@@ -1489,7 +1489,7 @@ static PetscErrorCode  PCFieldSplitSetIS_FieldSplit(PC pc,const char splitname[]
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
     PCFieldSplitSetFields - Sets the fields for one particular split in the field split preconditioner
 
     Logically Collective on PC
@@ -1694,7 +1694,7 @@ PetscErrorCode  PCFieldSplitSetIS(PC pc,const char splitname[],IS is)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
     PCFieldSplitGetIS - Retrieves the elements for a field as an IS
 
     Logically Collective on PC

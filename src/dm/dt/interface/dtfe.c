@@ -6215,7 +6215,7 @@ PetscErrorCode PetscFERefine(PetscFE fe, PetscFE *feRef)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
   PetscFECreateDefault - Create a PetscFE for basic FEM computation
 
   Collective on DM
