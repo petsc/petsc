@@ -18,7 +18,7 @@ PetscLogEvent     TSTrajectory_Set, TSTrajectory_Get;
   Notes:
   TSTrajectoryRegister() may be called multiple times to add several user-defined tses.
 
-  Level: advanced
+  Level: developer
 
 .keywords: TS, trajectory, timestep, register
 
@@ -80,7 +80,7 @@ PetscErrorCode TSTrajectoryGet(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal 
     The user can open an alternative visualization context with
     PetscViewerASCIIOpen() - output to a specified file.
 
-    Level: beginner
+    Level: developer
 
 .keywords: TS, trajectory, timestep, view
 
@@ -177,7 +177,7 @@ PetscErrorCode  TSTrajectorySetTransform(TSTrajectory tj,PetscErrorCode (*transf
   Output Parameter:
 . tj   - the trajectory object
 
-  Level: advanced
+  Level: developer
 
   Notes: Usually one does not call this routine, it is called automatically when one calls TSSetSaveTrajectory().
 
@@ -214,7 +214,7 @@ PetscErrorCode  TSTrajectoryCreate(MPI_Comm comm,TSTrajectory *tj)
   Options Database Command:
 . -ts_trajectory_type <type> - Sets the method; use -help for a list of available methods (for instance, basic)
 
-   Level: intermediate
+   Level: developer
 
 .keywords: TS, trajectory, timestep, set, type
 
@@ -256,7 +256,7 @@ PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Visualization(TSTrajectory,TS);
 
   Not Collective
 
-  Level: advanced
+  Level: developer
 
 .keywords: TS, trajectory, register, all
 
@@ -285,7 +285,7 @@ PetscErrorCode  TSTrajectoryRegisterAll(void)
    Input Parameter:
 .  tj - the TSTrajectory context obtained from TSTrajectoryCreate()
 
-   Level: advanced
+   Level: developer
 
 .keywords: TS, trajectory, timestep, destroy
 
@@ -320,7 +320,7 @@ PetscErrorCode  TSTrajectoryDestroy(TSTrajectory *tj)
   Options Database Keys:
 . -ts_trajectory_type <type> - TSTRAJECTORYBASIC, TSTRAJECTORYMEMORY, TSTRAJECTORYSINGLEFILE, TSTRAJECTORYVISUALIZATION
 
-  Level: intermediate
+  Level: developer
 
 .keywords: TS, trajectory, set, options, type
 
@@ -361,7 +361,7 @@ static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptionItems *P
    Options Database Keys:
 .  -ts_trajectory_monitor - print TSTrajectory information
 
-   Level: intermediate
+   Level: developer
 
 .keywords: TS, trajectory, set, monitor
 
@@ -395,7 +395,7 @@ PetscErrorCode TSTrajectorySetMonitor(TSTrajectory tj,PetscBool flg)
 +  -ts_trajectory_type <type> - TSTRAJECTORYBASIC, TSTRAJECTORYMEMORY, TSTRAJECTORYSINGLEFILE, TSTRAJECTORYVISUALIZATION
 -  -ts_trajectory_monitor - print TSTrajectory information
 
-   Level: advanced
+   Level: developer
 
    Notes: This is not normally called directly by users
 
@@ -433,7 +433,7 @@ PetscErrorCode  TSTrajectorySetFromOptions(TSTrajectory tj,TS ts)
 +  ts - the TS context obtained from TSCreate()
 -  tj - the TS trajectory context
 
-   Level: advanced
+   Level: developer
 
 .keywords: TS, trajectory, setup
 

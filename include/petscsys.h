@@ -1390,6 +1390,12 @@ PETSC_EXTERN PetscErrorCode PetscMallocSet(PetscErrorCode (*)(size_t,int,const c
 PETSC_EXTERN PetscErrorCode PetscMallocClear(void);
 
 /*
+  Unlike PetscMallocSet and PetscMallocClear which overwrite the existing settings, these two functions save the previous choice of allocator, and should be used in pair.
+*/
+PETSC_EXTERN PetscErrorCode PetscMallocSetDRAM(void);
+PETSC_EXTERN PetscErrorCode PetscMallocResetDRAM(void);
+
+/*
     PetscLogDouble variables are used to contain double precision numbers
   that are not used in the numerical computations, but rather in logging,
   timing etc.
