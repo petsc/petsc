@@ -10,6 +10,85 @@ PetscLogEvent DMPLEX_Interpolate, PETSCPARTITIONER_Partition, DMPLEX_Distribute,
 
 PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
 
+/*@
+  DMPlexRefineSimplexToTensor - Uniformly refines simplicial cells into tensor product cells.
+  3 quadrilaterals per triangle in 2D and 4 hexahedra per tetrahedron in 3D.
+
+  Collective
+
+  Input Parameters:
+. dm - The DMPlex object
+
+  Output Parameters:
+. dmRefined - The refined DMPlex object
+
+  Note: Returns NULL if the mesh is already a tensor product mesh.
+
+  Level: intermediate
+
+.seealso: DMPlexCreate(), DMPlexSetRefinementUniform()
+@*/
+PetscErrorCode DMPlexRefineSimplexToTensor(DM dm, DM *dmRefined)
+{
+  PetscInt         dim, cMax, fMax, cStart, cEnd, coneSize;
+  CellRefiner      cellRefiner;
+  PetscBool        lop, allnoop, localized;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm,&cMax,&fMax,NULL,NULL);CHKERRQ(ierr);
+  if (cMax >= 0 || fMax >= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle hybrid meshes yet");
+  ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
+  if (!(cEnd - cStart)) cellRefiner = REFINER_NOOP;
+  else {
+    ierr = DMPlexGetConeSize(dm,cStart,&coneSize);CHKERRQ(ierr);
+    switch (dim) {
+    case 1:
+      cellRefiner = REFINER_NOOP;
+    break;
+    case 2:
+      switch (coneSize) {
+      case 3:
+        cellRefiner = REFINER_SIMPLEX_TO_HEX_2D;
+      break;
+      case 4:
+        cellRefiner = REFINER_NOOP;
+      break;
+      default: SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle coneSize %D with dimension %D",coneSize,dim);
+      }
+    break;
+    case 3:
+      switch (coneSize) {
+      case 4:
+        cellRefiner = REFINER_SIMPLEX_TO_HEX_3D;
+      break;
+      case 6:
+        cellRefiner = REFINER_NOOP;
+      break;
+      default: SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle coneSize %D with dimension %D",coneSize,dim);
+      }
+    break;
+    default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot handle dimension %D",dim);
+    }
+  }
+  /* return if we don't need to refine */
+  lop = (cellRefiner == REFINER_NOOP) ? PETSC_TRUE : PETSC_FALSE;
+  ierr = MPIU_Allreduce(&lop,&allnoop,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+  if (allnoop) {
+    *dmRefined = NULL;
+    PetscFunctionReturn(0);
+  }
+  ierr = DMPlexRefineUniform_Internal(dm, cellRefiner, dmRefined);CHKERRQ(ierr);
+  ierr = DMCopyBoundary(dm, *dmRefined);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocalized(dm, &localized);CHKERRQ(ierr);
+  if (localized) {
+    ierr = DMLocalizeCoordinates(*dmRefined);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode DMPlexGetFieldType_Internal(DM dm, PetscSection section, PetscInt field, PetscInt *sStart, PetscInt *sEnd, PetscViewerVTKFieldType *ft)
 {
   PetscInt       dim, pStart, pEnd, vStart, vEnd, cStart, cEnd, cEndInterior, vdof = 0, cdof = 0;

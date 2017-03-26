@@ -98,6 +98,17 @@ runex1_test_shape:
 	   else printf "${PWD}\nPossible problem with runex1_test_shape, diffs above\n=================================\n"; fi ;\
 	   ${RM} -f ex1_test_shape.tmp
 
+runex1_s2t2:
+	-@${MPIEXEC} -n 1 ./ex1 -dim 2 -simplex2tensor -refinement_limit 0.0625 -dm_view ascii::ascii_info_detail > ex1_s2t2.tmp 2>&1;\
+	   if (${DIFF} output/ex1_s2t2.out ex1_s2t2.tmp) then true ;  \
+	   else printf "${PWD}\nPossible problem with runex1_s2t2, diffs above\n=========================================\n"; fi ;\
+	   ${RM} -f ex1_s2t2.tmp
+
+runex1_s2t3:
+	-@${MPIEXEC} -n 1 ./ex1 -dim 3 -simplex2tensor -refinement_limit 0.0625 -dm_view ascii::ascii_info_detail > ex1_s2t3.tmp 2>&1;\
+	   if (${DIFF} output/ex1_s2t3.out ex1_s2t3.tmp) then true ;  \
+	   else printf "${PWD}\nPossible problem with runex1_s2t3, diffs above\n=========================================\n"; fi ;\
+	   ${RM} -f ex1_s2t3.tmp
 
 runex1f90:
 	-@${MPIEXEC} -n 1 ./ex1f90 > ex1f90_0.tmp 2>&1;\
