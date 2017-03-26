@@ -704,6 +704,8 @@ typedef const char* TSRKType;
 #define TSRK4     "4"
 #define TSRK5F    "5f"
 #define TSRK5DP   "5dp"
+#define TSRK5BS   "5bs"
+
 PETSC_EXTERN PetscErrorCode TSRKGetType(TS ts,TSRKType*);
 PETSC_EXTERN PetscErrorCode TSRKSetType(TS ts,TSRKType);
 PETSC_EXTERN PetscErrorCode TSRKSetFullyImplicit(TS,PetscBool);
