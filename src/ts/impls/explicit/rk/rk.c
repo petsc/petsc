@@ -525,7 +525,6 @@ static PetscErrorCode TSStep_RK(TS ts)
     PetscReal t = ts->ptime;
     PetscReal h = ts->time_step;
     for (i=0; i<s; i++) {
-      if (FSAL && !i) continue;
       rk->stage_time = t + h*c[i];
       ierr = TSPreStage(ts,rk->stage_time); CHKERRQ(ierr);
       ierr = VecCopy(ts->vec_sol,Y[i]);CHKERRQ(ierr);
@@ -535,6 +534,7 @@ static PetscErrorCode TSStep_RK(TS ts)
       ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
       ierr = TSAdaptCheckStage(adapt,ts,rk->stage_time,Y[i],&stageok);CHKERRQ(ierr);
       if (!stageok) goto reject_step;
+      if (FSAL && !i) continue;
       ierr = TSComputeRHSFunction(ts,t+h*c[i],Y[i],YdotRHS[i]);CHKERRQ(ierr);
     }
 
