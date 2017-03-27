@@ -53,6 +53,33 @@ class BaseTestPlex(object):
                 for i in support:
                     self.assertIn(i, star)
 
+    def testAdjacency(self):
+        setAdjacencyUseList = [
+            PETSc.DMPlex.setAdjacencyUseCone,
+            PETSc.DMPlex.setAdjacencyUseClosure,
+            PETSc.DMPlex.setAdjacencyUseAnchors]
+        getAdjacencyUseList = [
+            PETSc.DMPlex.getAdjacencyUseCone,
+            PETSc.DMPlex.getAdjacencyUseClosure,
+            PETSc.DMPlex.getAdjacencyUseAnchors]
+        for getAdjacencyUse, expected in \
+            zip(getAdjacencyUseList, [False, True, False]):
+            flag = getAdjacencyUse(self.plex)
+            self.assertEqual(flag, expected)
+        for setAdjacencyUse, getAdjacencyUse in \
+            zip(setAdjacencyUseList, getAdjacencyUseList):
+            setAdjacencyUse(self.plex, False)
+            flag = getAdjacencyUse(self.plex)
+            self.assertFalse(flag)
+            setAdjacencyUse(self.plex)
+            flag = getAdjacencyUse(self.plex)
+            self.assertTrue(flag)
+        pStart, pEnd = self.plex.getChart()
+        for p in range(pStart, pEnd):
+            adjacency = self.plex.getAdjacency(p)
+            self.assertTrue(p in adjacency)
+            self.assertTrue(len(adjacency) > 1)
+
     def testSectionDofs(self):
         section = self.plex.createSection([self.COMP], [self.DOFS])
         size = section.getStorageSize()

@@ -449,6 +449,17 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexGetAdjacencyUseAnchors(self.dm, &flag) )
         return <bint> flag
 
+    def getAdjacency(self, p):
+        cdef PetscInt cp = asInt(p)
+        cdef PetscInt nadj = PETSC_DETERMINE
+        cdef PetscInt *iadj = NULL
+        CHKERR( DMPlexGetAdjacency(self.dm, cp, &nadj, &iadj) )
+        try:
+            adjacency = array_i(nadj, iadj)
+        finally:
+            CHKERR( PetscFree(iadj) )
+        return adjacency
+
     def setPartitioner(self, Partitioner part not None):
         CHKERR( DMPlexSetPartitioner(self.dm, part.part) )
 
