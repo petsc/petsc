@@ -33,7 +33,7 @@ static PetscErrorCode PCApply_PBJacobi_1(PC pc,Vec x,Vec y)
   for (i=0; i<m; i++) yy[i] = diag[i]*xx[i];
   ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2.0*m);CHKERRQ(ierr);
+  ierr = PetscLogFlops(m);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -204,7 +204,7 @@ static PetscErrorCode PCApply_PBJacobi_7(PC pc,Vec x,Vec y)
   }
   ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
-  ierr = PetscLogFlops(80.0*m);CHKERRQ(ierr);
+  ierr = PetscLogFlops(91*m);CHKERRQ(ierr); /* 2*bs2 - bs */
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
