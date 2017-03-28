@@ -852,7 +852,37 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_11_NaturalOrdering(Mat B,Mat A,const M
       if (flg) {
         pv = b->a + bs2*bdiag[row];
         /* PetscKernel_A_gets_A_times_B(bs,pc,pv,mwork); */ /* *pc = *pc * (*pv); */
-        ierr = PetscKernel_A_gets_A_times_B_11(pc,pv,mwork);CHKERRQ(ierr);
+        //ierr = PetscKernel_A_gets_A_times_B_11(pc,pv,mwork);CHKERRQ(ierr);
+#if 1
+        {
+        PetscInt  col,colbs,jbs;
+        MatScalar *W=mwork,*A1=pc,*B1=pv,bv;
+        ierr = PetscMemcpy(W,A1,121*sizeof(MatScalar));CHKERRQ(ierr);
+        ierr = PetscMemzero(A1,121*sizeof(MatScalar));CHKERRQ(ierr);
+        //printf("new A=A*B\n");
+        for (col=0; col<11; col++) {
+          /* A[:,col] = W*B[:,col] = sum_k W[:,j]*B[j,col] */
+          colbs = col*11;
+          for (j=0; j<11; j++) {
+            /* A[:,col] += W[:,j]*B[j,col] */
+            bv  = B1[j+colbs];
+            jbs = j*11;
+            A1[colbs]      += W[jbs] * bv;
+            A1[1 + colbs]  += W[1 + jbs] * bv;
+            A1[2 + colbs]  += W[2 + jbs] * bv;
+            A1[3 + colbs]  += W[3 + jbs] * bv;
+            A1[4 + colbs]  += W[4 + jbs] * bv;
+            A1[5 + colbs]  += W[5 + jbs] * bv;
+            A1[6 + colbs]  += W[6 + jbs] * bv;
+            A1[7 + colbs]  += W[7 + jbs] * bv;
+            A1[8 + colbs]  += W[8 + jbs] * bv;
+            A1[9 + colbs]  += W[9 + jbs] * bv;
+            A1[10 + colbs] += W[10 + jbs] * bv;
+          }
+        }
+        }
+#endif
+        //for (j=0; j<121; j++) printf("%d %g\n",j,pc[j]);
 
         pj = b->j + bdiag[row+1]+1; /* begining of U(row,:) */
         pv = b->a + bs2*(bdiag[row+1]+1);
