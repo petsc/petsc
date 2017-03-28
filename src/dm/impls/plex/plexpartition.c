@@ -769,7 +769,7 @@ static PetscErrorCode PetscPartitionerPartition_Shell(PetscPartitioner part, DM 
     ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
     ierr = PetscCalloc2(nparts, &sizes, numVertices, &points);CHKERRQ(ierr);
     for (v = 0; v < numVertices; ++v) {points[v] = v;}
-    for (p = 0; p < nparts; ++p) {sizes[p] = numVertices/nparts + (PetscInt) (rank < numVertices % nparts);}
+    for (p = 0; p < nparts; ++p) {sizes[p] = numVertices/nparts + (PetscInt) (p < numVertices % nparts);}
     for (v = numVertices-1; v > 0; --v) {
       PetscReal val;
       PetscInt  w, tmp;
