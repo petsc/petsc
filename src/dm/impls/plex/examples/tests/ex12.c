@@ -112,13 +112,13 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = PetscLogStagePop();CHKERRQ(ierr);
   if (user->loadBalance) {
     ierr = DMPlexSetOptionsPrefix(*dm, "lb_");CHKERRQ(ierr);
+    ierr = PetscLogStagePush(user->stages[STAGE_REDISTRIBUTE]);CHKERRQ(ierr);
     if (user->testPartition) {
       PetscPartitioner part;
       PetscInt         reSizes_n2[2]  = {2, 2};
       PetscInt         rePoints_n2[4] = {2, 3, 0, 1};
       if (rank) {rePoints_n2[0] = 1; rePoints_n2[1] = 2, rePoints_n2[2] = 0, rePoints_n2[3] = 3;}
 
-      ierr = PetscLogStagePush(user->stages[STAGE_REDISTRIBUTE]);CHKERRQ(ierr);
       ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
       ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
       ierr = PetscPartitionerShellSetPartition(part, size, reSizes_n2, rePoints_n2);CHKERRQ(ierr);
