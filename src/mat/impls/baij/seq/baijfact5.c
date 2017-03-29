@@ -788,6 +788,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering(Mat B,Mat A,const Ma
   PetscFunctionReturn(0);
 }
 
+#include <petsctime.h>
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_11_NaturalOrdering(Mat B,Mat A,const MatFactorInfo *info)
 {
   Mat            C =B;
@@ -803,6 +804,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_11_NaturalOrdering(Mat B,Mat A,const M
 
   PetscInt       bs=A->rmap->bs,*v_pivots;
   MatScalar      *v_work;
+  PetscLogDouble t0,tf,t_inv=0.0,t_AB=0.0,t_AmBC=0.0;
 
   PetscFunctionBegin;
   allowzeropivot = PetscNot(A->erroriffailure);
@@ -851,9 +853,12 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_11_NaturalOrdering(Mat B,Mat A,const M
       }
       if (flg) {
         pv = b->a + bs2*bdiag[row];
-        /* PetscKernel_A_gets_A_times_B(bs,pc,pv,mwork); */ /* *pc = *pc * (*pv); */
+        ierr = PetscTime(&t0);CHKERRQ(ierr);
+        PetscKernel_A_gets_A_times_B(bs,pc,pv,mwork);  /* *pc = *pc * (*pv); */
+        ierr = PetscTime(&tf);CHKERRQ(ierr);
+        t_AB += tf-t0;
         //ierr = PetscKernel_A_gets_A_times_B_11(pc,pv,mwork);CHKERRQ(ierr);
-#if 1
+#if 0
         {
         PetscInt  col,colbs,jbs;
         MatScalar *W=mwork,*A1=pc,*B1=pv,bv;
@@ -888,7 +893,10 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_11_NaturalOrdering(Mat B,Mat A,const M
         pv = b->a + bs2*(bdiag[row+1]+1);
         nz = bdiag[row] - bdiag[row+1] - 1; /* num of entries inU(row,:), excluding diag */
         for (j=0; j<nz; j++) {
+          ierr = PetscTime(&t0);CHKERRQ(ierr);
           PetscKernel_A_gets_A_minus_B_times_C(bs,rtmp+bs2*pj[j],pc,pv+bs2*j);
+          ierr = PetscTime(&tf);CHKERRQ(ierr);
+          t_AmBC += tf-t0;
 #if 0
           /* rtmp+bs2*pj[j] = rtmp+bs2*pj[j] - (*pc)*(pv+bs2*j) */
           v    = rtmp + bs2*pj[j];
@@ -914,8 +922,12 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_11_NaturalOrdering(Mat B,Mat A,const M
     pj   = b->j + bdiag[i];
     ierr = PetscMemcpy(pv,rtmp+bs2*pj[0],bs2*sizeof(MatScalar));CHKERRQ(ierr);
 
+    ierr = PetscTime(&t0);CHKERRQ(ierr);
     ierr = PetscKernel_A_gets_inverse_A(bs,pv,v_pivots,v_work,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
     //ierr = PetscKernel_A_gets_inverse_A_11(pv,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
+    ierr = PetscTime(&tf);CHKERRQ(ierr);
+    t_inv += tf-t0;
+
     if (zeropivotdetected) C->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
 
     /* U part */
@@ -933,6 +945,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_11_NaturalOrdering(Mat B,Mat A,const M
   //C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_11_NaturalOrdering;
   C->assembled           = PETSC_TRUE;
 
+  printf("Matops t_AB %g, t_AmBC %g, t_inv %g\n",t_AB,t_AmBC,t_inv);
   ierr = PetscLogFlops(1.333333333333*343*n);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }
