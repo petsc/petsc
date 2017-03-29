@@ -894,15 +894,15 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_11_NaturalOrdering(Mat B,Mat A,const M
         nz = bdiag[row] - bdiag[row+1] - 1; /* num of entries inU(row,:), excluding diag */
         for (j=0; j<nz; j++) {
           ierr = PetscTime(&t0);CHKERRQ(ierr);
-          PetscKernel_A_gets_A_minus_B_times_C(bs,rtmp+bs2*pj[j],pc,pv+bs2*j);
-          ierr = PetscTime(&tf);CHKERRQ(ierr);
-          t_AmBC += tf-t0;
-#if 0
+          //PetscKernel_A_gets_A_minus_B_times_C(bs,rtmp+bs2*pj[j],pc,pv+bs2*j);
+#if 1
           /* rtmp+bs2*pj[j] = rtmp+bs2*pj[j] - (*pc)*(pv+bs2*j) */
           v    = rtmp + bs2*pj[j];
           ierr = PetscKernel_A_gets_A_minus_B_times_C_11(v,pc,pv);CHKERRQ(ierr);
           pv  += bs2;
 #endif
+          ierr = PetscTime(&tf);CHKERRQ(ierr);
+          t_AmBC += tf-t0;
         }
         ierr = PetscLogFlops(2662*nz+2541);CHKERRQ(ierr); /* flops = 2*bs^3*nz + 2*bs^3 - bs2) */
       }
