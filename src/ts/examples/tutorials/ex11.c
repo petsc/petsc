@@ -2018,20 +2018,20 @@ int riem1mdt( PetscScalar *gaml, PetscScalar *gamr, PetscScalar *rl, PetscScalar
     static int i0;
     static PetscScalar cl, cr, wl, zl, wr, zr, pst, durl, skpr1, skpr2;
     static int iwave;
-    static PetscScalar gascl2, gascl4, gascr2, gascr4, cstarl, dpstar, cstarr;
-    static PetscScalar csqrl, csqrr, gascl1, gascl3, gascr1, gascr3, ;
+    static PetscScalar gascl4, gascr4, cstarl, dpstar, cstarr;
+    /* static PetscScalar csqrl, csqrr, gascl1, gascl2, gascl3, gascr1, gascr2, gascr3; */
     static int iterno;
     static PetscScalar ustarl, ustarr, rarepr1, rarepr2;
 
 
 
     /* gascl1 = *gaml - 1.; */
-    gascl2 = (*gaml + 1.) * .5;
+    /* gascl2 = (*gaml + 1.) * .5; */
     /* gascl3 = gascl2 / *gaml; */
     gascl4 = 1.f / (*gaml - 1.);
 
     /* gascr1 = *gamr - 1.; */
-    gascr2 = (*gamr + 1.) * .5;
+    /* gascr2 = (*gamr + 1.) * .5; */
     /* gascr3 = gascr2 / *gamr; */
     gascr4 = 1. / (*gamr - 1.);
     iterno = 10;
@@ -2430,7 +2430,8 @@ int projecttoprim(PetscScalar v[], const PetscScalar wc[], PetscScalar rv[][3])
 int eigenvectors(PetscScalar rv[][3], PetscScalar lv[][3], const PetscScalar ueq[], PetscScalar gamma)
 {
   int j,k;
-  PetscScalar rho,csnd,p0,u;
+  PetscScalar rho,csnd,p0;
+  /* PetscScalar u; */
 
   for (k = 0; k < 3; ++k) for (j = 0; j < 3; ++j) { lv[k][j] = 0.; rv[k][j] = 0.; }
   rho = ueq[0];
