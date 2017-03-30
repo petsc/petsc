@@ -1147,35 +1147,35 @@ int main(int argc, char **argv)
   # 2D harmonic velocity, no porosity
   test:
     suffix: p1p1
-    requires: !complex
+    requires: !complex !single
     args: -x_bd_type none -y_bd_type none -velocity_petscspace_order 1 -velocity_petscspace_poly_tensor -porosity_petscspace_order 1 -porosity_petscspace_poly_tensor -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_factor_shift_type nonzero -ts_monitor -snes_monitor_short -ksp_monitor_short -dmts_check
   test:
     suffix: p1p1_xper
-    requires: !complex
+    requires: !complex !single
     args: -dm_refine 1 -y_bd_type none -velocity_petscspace_order 1 -velocity_petscspace_poly_tensor -porosity_petscspace_order 1 -porosity_petscspace_poly_tensor -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu -pc_factor_shift_type nonzero -ksp_rtol 1.0e-8 -ts_monitor -snes_monitor_short -ksp_monitor_short -dmts_check
   test:
     suffix: p1p1_xper_ref
-    requires: !complex
+    requires: !complex !single
     args: -dm_refine 3 -y_bd_type none -velocity_petscspace_order 1 -velocity_petscspace_poly_tensor -porosity_petscspace_order 1 -porosity_petscspace_poly_tensor -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu -pc_factor_shift_type nonzero -ksp_rtol 1.0e-8 -ts_monitor -snes_monitor_short -ksp_monitor_short -dmts_check
   test:
     suffix: p1p1_xyper
-    requires: !complex
+    requires: !complex !single
     args: -dm_refine 1 -velocity_petscspace_order 1 -velocity_petscspace_poly_tensor -porosity_petscspace_order 1 -porosity_petscspace_poly_tensor -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu -pc_factor_shift_type nonzero -ksp_rtol 1.0e-8 -ts_monitor -snes_monitor_short -ksp_monitor_short -dmts_check
   test:
     suffix: p1p1_xyper_ref
-    requires: !complex
+    requires: !complex !single
     args: -dm_refine 3 -velocity_petscspace_order 1 -velocity_petscspace_poly_tensor -porosity_petscspace_order 1 -porosity_petscspace_poly_tensor -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu -pc_factor_shift_type nonzero -ksp_rtol 1.0e-8 -ts_monitor -snes_monitor_short -ksp_monitor_short -dmts_check
   test:
     suffix: p2p1
-    requires: !complex
+    requires: !complex !single
     args: -x_bd_type none -y_bd_type none -velocity_petscspace_order 2 -velocity_petscspace_poly_tensor -porosity_petscspace_order 1 -porosity_petscspace_poly_tensor -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -ts_monitor -snes_monitor_short -ksp_monitor_short -dmts_check
   test:
     suffix: p2p1_xyper
-    requires: !complex
+    requires: !complex !single
     args: -dm_refine 1 -velocity_petscspace_order 2 -velocity_petscspace_poly_tensor -porosity_petscspace_order 1 -porosity_petscspace_poly_tensor -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu -pc_factor_shift_type nonzero -ksp_rtol 1.0e-8 -ts_monitor -snes_monitor_short -ksp_monitor_short -dmts_check
   test:
     suffix: p2p1_xyper_ref
-    requires: !complex
+    requires: !complex !single
     args: -dm_refine 3 -velocity_petscspace_order 2 -velocity_petscspace_poly_tensor -porosity_petscspace_order 1 -porosity_petscspace_poly_tensor -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu -pc_factor_shift_type nonzero -ksp_rtol 1.0e-8 -ts_monitor -snes_monitor_short -ksp_monitor_short -dmts_check
   #   Must check that FV BCs propagate to coarse meshes
   #   Must check that FV BC ids propagate to coarse meshes
@@ -1184,7 +1184,7 @@ int main(int argc, char **argv)
   #   NOTE implicit solves are limited by accuracy of FD Jacobian
   test:
     suffix: adv_0
-    requires: !complex exodusii
+    requires: !complex !single exodusii
     args: -f ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo -x_bd_type none -y_bd_type none -use_fv -velocity_dist zero -porosity_dist tilted -ts_type ssp -ts_final_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -ts_view -dm_view
   test:
     suffix: adv_0_im
@@ -1209,7 +1209,7 @@ int main(int argc, char **argv)
   # 2D Advection, misc
   test:
     suffix: adv_1
-    requires: !complex
+    requires: !complex !single
     args: -x_bd_type none -y_bd_type none -use_fv -velocity_dist zero -porosity_dist tilted -ts_type ssp -ts_final_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -bc_inflow 1,2,4 -bc_outflow 3 -ts_view -dm_view
   test:
     suffix: adv_2
