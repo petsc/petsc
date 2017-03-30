@@ -1,0 +1,8 @@
+[ 0]288 bytes PetscObjectListAdd() line 116 in /PETSc3/petsc/petsc-dev/src/sys/objects/olist.c
+      [0]  PetscObjectListAdd() line 116 in /PETSc3/petsc/petsc-dev/src/sys/objects/olist.c
+      [0]  PetscObjectCompose_Petsc() line 599 in /PETSc3/petsc/petsc-dev/src/sys/objects/inherit.c
+      [0]  PetscObjectCompose() line 675 in /PETSc3/petsc/petsc-dev/src/sys/objects/inherit.c
+[ 0]16 bytes PetscCommDuplicate() line 143 in /PETSc3/petsc/petsc-dev/src/sys/objects/tagm.c
+      [0]  PetscCommDuplicate() line 143 in /PETSc3/petsc/petsc-dev/src/sys/objects/tagm.c
+      [0]  PetscHeaderCreate_Private() line 34 in /PETSc3/petsc/petsc-dev/src/sys/objects/inherit.c
+      [0]  PetscViewerCreate() line 380 in /PETSc3/petsc/petsc-dev/src/sys/classes/viewer/interface/viewreg.c
