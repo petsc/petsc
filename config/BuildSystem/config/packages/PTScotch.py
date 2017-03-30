@@ -10,14 +10,14 @@ class Configure(config.package.Package):
     self.liblist         = [['libptesmumps.a','libptscotch.a','libptscotcherr.a','libscotch.a','libscotcherr.a']]
     self.functions       = ['SCOTCH_archBuild']
     self.includes        = ['ptscotch.h']
-    self.needsMath       = 1
     self.hastests        = 1
     return
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
-    self.mpi  = framework.require('config.packages.MPI',self)
-    self.deps = [self.mpi]
+    self.mpi            = framework.require('config.packages.MPI',self)
+    self.mathlib        = framework.require('config.packages.mathlib',self)
+    self.deps           = [self.mpi, self.mathlib]
     return
 
   def Install(self):

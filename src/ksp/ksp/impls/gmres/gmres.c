@@ -595,9 +595,6 @@ PetscErrorCode KSPSetFromOptions_GMRES(PetscOptionItems *PetscOptionsObject,KSP 
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP,PetscReal*,PetscReal*);
-extern PetscErrorCode KSPComputeEigenvalues_GMRES(KSP,PetscInt,PetscReal*,PetscReal*,PetscInt*);
-
 PetscErrorCode  KSPGMRESSetHapTol_GMRES(KSP ksp,PetscReal tol)
 {
   KSP_GMRES *gmres = (KSP_GMRES*)ksp->data;
@@ -875,6 +872,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GMRES(KSP ksp)
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,4);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,3);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_SYMMETRIC,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
 
   ksp->ops->buildsolution                = KSPBuildSolution_GMRES;
   ksp->ops->setup                        = KSPSetUp_GMRES;

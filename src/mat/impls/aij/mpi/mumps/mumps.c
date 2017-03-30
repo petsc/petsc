@@ -923,6 +923,7 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
      This requires an extra call to PetscMUMPS_c and the computation of the factors for S
   */
   if (mumps->id.ICNTL(26) < 0 || mumps->id.ICNTL(26) > 2) {
+    if (mumps->size > 1) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Parallel Schur complements not yet supported from PETSc\n");
     second_solve = PETSC_TRUE;
     ierr = MatMumpsHandleSchur_Private(mumps,PETSC_FALSE);CHKERRQ(ierr);
   }
@@ -1025,6 +1026,8 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
     const PetscInt *rstart;
     Vec            v_mpi,b_seq,x_seq;
     VecScatter     scat_rhs,scat_sol;
+
+    if (mumps->size > 1 && mumps->id.ICNTL(19)) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Parallel Schur complements not yet supported from PETSc\n");
 
     /* create x_seq to hold local solution */
     isol_loc_save = mumps->id.isol_loc; /* save it for MatSovle() */
@@ -1612,8 +1615,8 @@ PetscErrorCode MatView_MUMPS(Mat A,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(4) (level of printing):        %d \n",mumps->id.ICNTL(4));CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(5) (input mat struct):         %d \n",mumps->id.ICNTL(5));CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(6) (matrix prescaling):        %d \n",mumps->id.ICNTL(6));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(7) (sequentia matrix ordering):%d \n",mumps->id.ICNTL(7));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(8) (scalling strategy):        %d \n",mumps->id.ICNTL(8));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(7) (sequential matrix ordering):%d \n",mumps->id.ICNTL(7));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(8) (scaling strategy):        %d \n",mumps->id.ICNTL(8));CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(10) (max num of refinements):  %d \n",mumps->id.ICNTL(10));CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(11) (error analysis):          %d \n",mumps->id.ICNTL(11));CHKERRQ(ierr);
       if (mumps->id.ICNTL(11)>0) {
@@ -1629,7 +1632,7 @@ PetscErrorCode MatView_MUMPS(Mat A,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(14) (percentage of estimated workspace increase): %d \n",mumps->id.ICNTL(14));CHKERRQ(ierr);
       /* ICNTL(15-17) not used */
       ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(18) (input mat struct):                           %d \n",mumps->id.ICNTL(18));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(19) (Shur complement info):                       %d \n",mumps->id.ICNTL(19));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(19) (Schur complement info):                       %d \n",mumps->id.ICNTL(19));CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(20) (rhs sparse pattern):                         %d \n",mumps->id.ICNTL(20));CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(21) (solution struct):                            %d \n",mumps->id.ICNTL(21));CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(22) (in-core/out-of-core facility):               %d \n",mumps->id.ICNTL(22));CHKERRQ(ierr);
@@ -1756,7 +1759,14 @@ PetscErrorCode MatFactorSetSchurIS_MUMPS(Mat F, IS is)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (mumps->size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MUMPS parallel Schur complements not yet supported from PETSc\n");
+  if (mumps->size > 1) {
+    PetscBool ls,gs;
+
+    ierr = ISGetLocalSize(is,&size);CHKERRQ(ierr);
+    ls   = mumps->myid ? (size ? PETSC_FALSE : PETSC_TRUE) : PETSC_TRUE;
+    ierr = MPI_Allreduce(&ls,&gs,1,MPIU_BOOL,MPI_LAND,mumps->comm_mumps);CHKERRQ(ierr);
+    if (!gs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MUMPS distributed parallel Schur complements not yet supported from PETSc\n");
+  }
   ierr = ISGetLocalSize(is,&size);CHKERRQ(ierr);
   if (mumps->id.size_schur != size) {
     ierr = PetscFree2(mumps->id.listvar_schur,mumps->id.schur);CHKERRQ(ierr);
@@ -1769,15 +1779,17 @@ PetscErrorCode MatFactorSetSchurIS_MUMPS(Mat F, IS is)
   /* MUMPS expects Fortran style indices */
   for (i=0;i<size;i++) mumps->id.listvar_schur[i]++;
   ierr = ISRestoreIndices(is,&idxs);CHKERRQ(ierr);
-  if (size) { /* turn on Schur switch if we the set of indices is not empty */
+  if (mumps->size > 1) {
+    mumps->id.ICNTL(19) = 1; /* MUMPS returns Schur centralized on the host */
+  } else {
     if (F->factortype == MAT_FACTOR_LU) {
       mumps->id.ICNTL(19) = 3; /* MUMPS returns full matrix */
     } else {
       mumps->id.ICNTL(19) = 2; /* MUMPS returns lower triangular part */
     }
-    /* set a special value of ICNTL (not handled my MUMPS) to be used in the solve phase by PETSc */
-    mumps->id.ICNTL(26) = -1;
   }
+  /* set a special value of ICNTL (not handled my MUMPS) to be used in the solve phase by PETSc */
+  mumps->id.ICNTL(26) = -1;
   PetscFunctionReturn(0);
 }
 
@@ -1794,9 +1806,7 @@ PetscErrorCode MatFactorCreateSchurComplement_MUMPS(Mat F,Mat* S)
 
   PetscFunctionBegin;
   if (!mumps->id.ICNTL(19)) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur complement mode not selected! You should call MatFactorSetSchurIS to enable it");
-  else if (!mumps->id.size_schur) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur indices not set! You should call MatFactorSetSchurIS before");
-
-  ierr = MatCreate(PetscObjectComm((PetscObject)F),&St);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,&St);CHKERRQ(ierr);
   ierr = MatSetSizes(St,PETSC_DECIDE,PETSC_DECIDE,mumps->id.size_schur,mumps->id.size_schur);CHKERRQ(ierr);
   ierr = MatSetType(St,MATDENSE);CHKERRQ(ierr);
   ierr = MatSetUp(St);CHKERRQ(ierr);
@@ -1862,10 +1872,8 @@ PetscErrorCode MatFactorGetSchurComplement_MUMPS(Mat F,Mat* S)
 
   PetscFunctionBegin;
   if (!mumps->id.ICNTL(19)) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur complement mode not selected! You should call MatFactorSetSchurIS to enable it");
-  else if (!mumps->id.size_schur) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur indices not set! You should call MatFactorSetSchurIS before");
-
   /* It should be the responsibility of the user to handle different ICNTL(19) cases and factorization stages if they want to work with the raw data */
-  ierr = MatCreateSeqDense(PetscObjectComm((PetscObject)F),mumps->id.size_schur,mumps->id.size_schur,(PetscScalar*)mumps->id.schur,&St);CHKERRQ(ierr);
+  ierr = MatCreateSeqDense(PETSC_COMM_SELF,mumps->id.size_schur,mumps->id.size_schur,(PetscScalar*)mumps->id.schur,&St);CHKERRQ(ierr);
   *S = St;
   PetscFunctionReturn(0);
 }
@@ -1880,7 +1888,7 @@ PetscErrorCode MatFactorFactorizeSchurComplement_MUMPS(Mat F)
   if (!mumps->id.ICNTL(19)) { /* do nothing */
     PetscFunctionReturn(0);
   }
-  if (!mumps->id.size_schur) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur indices not set! You should call MatMumpsSetSchurIndices before");
+  if (mumps->size > 1) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_SUP,"Parallel Schur complement not yet supported from PETSc");
   ierr = MatMumpsFactorSchur_Private(mumps);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1894,7 +1902,7 @@ PetscErrorCode MatFactorInvertSchurComplement_MUMPS(Mat F)
   if (!mumps->id.ICNTL(19)) { /* do nothing */
     PetscFunctionReturn(0);
   }
-  if (!mumps->id.size_schur) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur indices not set! You should call MatFactorSetSchurIS before");
+  if (mumps->size > 1) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_SUP,"Parallel Schur complement not yet supported from PETSc");
   ierr = MatMumpsInvertSchur_Private(mumps);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1910,7 +1918,7 @@ PetscErrorCode MatFactorSolveSchurComplement_MUMPS(Mat F, Vec rhs, Vec sol)
 
   PetscFunctionBegin;
   if (!mumps->id.ICNTL(19)) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur complement mode not selected! You should call MatFactorSetSchurIS to enable it");
-  if (!mumps->id.size_schur) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur indices not set! You should call MatFactorSetSchurIS before");
+  if (mumps->size > 1) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_SUP,"Parallel Schur complement not yet supported from PETSc");
 
   /* swap pointers */
   orhs = mumps->id.redrhs;
@@ -1951,7 +1959,7 @@ PetscErrorCode MatFactorSolveSchurComplementTranspose_MUMPS(Mat F, Vec rhs, Vec 
 
   PetscFunctionBegin;
   if (!mumps->id.ICNTL(19)) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur complement mode not selected! You should call MatFactorSetSchurIS to enable it");
-  else if (!mumps->id.size_schur) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur indices not set! You should call MatFactorSetSchurIS before");
+  if (mumps->size > 1) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_SUP,"Parallel Schur complement not yet supported from PETSc");
 
   /* swap pointers */
   orhs = mumps->id.redrhs;

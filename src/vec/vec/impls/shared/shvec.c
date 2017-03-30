@@ -147,8 +147,6 @@ PetscErrorCode PetscSharedMalloc(MPI_Comm comm,PetscInt llen,PetscInt len,void *
 
 #else
 
-PETSC_EXTERN PetscErrorCode VecCreate_Seq(Vec);
-
 PETSC_EXTERN PetscErrorCode VecCreate_Shared(Vec vv)
 {
   PetscErrorCode ierr;

@@ -50,12 +50,6 @@ PETSC_EXTERN PetscLogDouble petsc_tracetime;
 
 #ifdef PETSC_USE_LOG
 
-/* Runtime functions */
-PETSC_EXTERN PetscErrorCode PetscStageLogGetClassRegLog(PetscStageLog, PetscClassRegLog *);
-PETSC_EXTERN PetscErrorCode PetscStageLogGetEventRegLog(PetscStageLog, PetscEventRegLog *);
-PETSC_EXTERN PetscErrorCode PetscStageLogGetClassPerfLog(PetscStageLog, int, PetscClassPerfLog *);
-
-
 /* Creation and destruction functions */
 PETSC_EXTERN PetscErrorCode PetscEventRegLogCreate(PetscEventRegLog *);
 PETSC_EXTERN PetscErrorCode PetscEventRegLogDestroy(PetscEventRegLog);

@@ -907,7 +907,7 @@ PetscErrorCode PetscViewerBinaryWrite(PetscViewer viewer,void *data,PetscInt cou
           VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),
           PetscViewerBinaryGetInfoPointer(), PetscFileMode, PetscViewer, PetscBinaryViewerRead()
 @*/
-PetscErrorCode PetscViewerBinaryWriteStringArray(PetscViewer viewer,char **data)
+PetscErrorCode PetscViewerBinaryWriteStringArray(PetscViewer viewer,const char * const *data)
 {
   PetscErrorCode ierr;
   PetscInt       i,n = 0,*sizes;
@@ -925,7 +925,7 @@ PetscErrorCode PetscViewerBinaryWriteStringArray(PetscViewer viewer,char **data)
   }
   ierr = PetscViewerBinaryWrite(viewer,sizes,n+1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    ierr = PetscViewerBinaryWrite(viewer,data[i],sizes[i+1],PETSC_CHAR,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,(void*)data[i],sizes[i+1],PETSC_CHAR,PETSC_FALSE);CHKERRQ(ierr);
   }
   ierr = PetscFree(sizes);CHKERRQ(ierr);
   PetscFunctionReturn(0);

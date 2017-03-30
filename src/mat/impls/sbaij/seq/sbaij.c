@@ -11,7 +11,6 @@
 #define USESHORT
 #include <../src/mat/impls/sbaij/seq/relax.h>
 
-extern PetscErrorCode MatSeqSBAIJSetNumericFactorization_inplace(Mat,PetscBool);
 #if defined(PETSC_HAVE_ELEMENTAL)
 PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_Elemental(Mat,MatType,MatReuse,Mat*);
 #endif

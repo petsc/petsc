@@ -50,7 +50,6 @@ class Configure(config.package.Package):
     self.log.write('==================================================================================\n')
     self.log.write('Checking for a functional '+self.name+'\n')
 
-    self.checkDependencies()
     for location, rootDir, lib, incDir in self.generateGuesses():
       try:
         libDir = os.path.dirname(lib[0])

@@ -15,8 +15,7 @@ class Configure(config.package.Package):
   def configureLibrary(self):
     ''' Checks for -fopenmp compiler flag'''
     ''' Needs to check if OpenMP actually exists and works '''
-    self.checkDependencies()
-    self.found = 0    
+    self.found = 0
     self.setCompilers.pushLanguage('C')
     #
     for flag in ["-fopenmp", # Gnu

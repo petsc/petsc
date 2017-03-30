@@ -19,10 +19,6 @@ static const char help[] = "Integrate chemistry using TChem.\n";
 
        curl http://combustion.berkeley.edu/gri_mech/version30/files30/grimech30.dat > chem.inp
        curl http://combustion.berkeley.edu/gri_mech/version30/files30/thermo30.dat > therm.dat
-
-       https://www-pls.llnl.gov/data/docs/science_and_technology/chemistry/combustion/n_heptane_v3.1_therm.dat
-       https://www-pls.llnl.gov/data/docs/science_and_technology/chemistry/combustion/nc7_ver3.1_mech.txt
-
        cp $PETSC_DIR/$PETSC_ARCH/externalpackages/tchem/data/periodictable.dat .
 
     Run with
@@ -40,6 +36,12 @@ static const char help[] = "Integrate chemistry using TChem.\n";
         molef[i] = massf[i]/(M[i]*(sum_j massf[j]/M[j]))
 
     FormMoleFraction(User,massf,molef) converts the mass fraction solution of each species to the mole fraction of each species.
+
+
+    These are other data sets for other possible runs
+       https://www-pls.llnl.gov/data/docs/science_and_technology/chemistry/combustion/n_heptane_v3.1_therm.dat
+       https://www-pls.llnl.gov/data/docs/science_and_technology/chemistry/combustion/nc7_ver3.1_mech.txt
+
 
 */
 typedef struct _User *User;
@@ -61,6 +63,9 @@ static PetscErrorCode MoleFractionToMassFraction(User,Vec,Vec*);
 static PetscErrorCode FormRHSFunction(TS,PetscReal,Vec,Vec,void*);
 static PetscErrorCode FormRHSJacobian(TS,PetscReal,Vec,Mat,Mat,void*);
 static PetscErrorCode FormInitialSolution(TS,Vec,void*);
+static PetscErrorCode ComputeMassConservation(Vec,PetscReal*,void*);
+static PetscErrorCode MonitorMassConservation(TS,PetscInt,PetscReal,Vec,void*);
+static PetscErrorCode MonitorTempature(TS,PetscInt,PetscReal,Vec,void*);
 
 #define TCCHKERRQ(ierr) do {if (ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in TChem library, return code %d",ierr);} while (0)
 
@@ -78,6 +83,8 @@ int main(int argc,char **argv)
   TSConvergedReason reason;
   char              **snames,*names;
   PetscInt          i;
+  TSTrajectory      tj;
+  PetscBool         flg = PETSC_FALSE,tflg = PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Chemistry solver options","");CHKERRQ(ierr);
@@ -87,6 +94,8 @@ int main(int argc,char **argv)
   ierr = PetscOptionsReal("-pressure","Pressure of reaction [Pa]","",user.pressure,&user.pressure,NULL);CHKERRQ(ierr);
   user.Tini = 1000;             /* Kelvin */
   ierr = PetscOptionsReal("-Tini","Initial temperature [K]","",user.Tini,&user.Tini,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-monitor_mass","Monitor the total mass at each timestep","",flg,&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-monitor_temp","Monitor the tempature each timestep","",tflg,&tflg,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = TC_initChem(chemfile, thermofile, 0, 1.0);TCCHKERRQ(ierr);
@@ -122,6 +131,13 @@ int main(int argc,char **argv)
   ierr = TSSetRHSFunction(ts,NULL,FormRHSFunction,&user);CHKERRQ(ierr);
   ierr = TSSetRHSJacobian(ts,J,J,FormRHSJacobian,&user);CHKERRQ(ierr);
 
+  if (flg) {
+    ierr = TSMonitorSet(ts,MonitorMassConservation,NULL,NULL);CHKERRQ(ierr);
+  }
+  if (tflg) {
+    ierr = TSMonitorSet(ts,MonitorTempature,&user,NULL);CHKERRQ(ierr);
+  }
+
   ftime    = 1.0;
   maxsteps = 10000;
   ierr     = TSSetDuration(ts,maxsteps,ftime);CHKERRQ(ierr);
@@ -152,6 +168,11 @@ int main(int argc,char **argv)
   ierr = VecAssemblyBegin(lambda);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(lambda);CHKERRQ(ierr);
 
+  ierr = TSGetTrajectory(ts,&tj);CHKERRQ(ierr);
+  if (tj) {
+    ierr = TSTrajectorySetVariableNames(tj,(const char * const *)user.snames);CHKERRQ(ierr);
+    ierr = TSTrajectorySetTransform(tj,(PetscErrorCode (*)(void*,Vec,Vec*))MassFractionToMoleFraction,NULL,&user);CHKERRQ(ierr);
+  }
 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -327,6 +348,43 @@ PetscErrorCode MoleFractionToMassFraction(User user,Vec molef,Vec *massf)
   TC_getMl2Ms((double*)mof+1,user->Nspec,maf+1);
   ierr = VecRestoreArrayRead(molef,&mof);CHKERRQ(ierr);
   ierr = VecRestoreArray(*massf,&maf);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode ComputeMassConservation(Vec x,PetscReal *mass,void* ctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecSum(x,mass);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MonitorMassConservation(TS ts,PetscInt step,PetscReal time,Vec x,void* ctx)
+{
+  const PetscScalar  *T;
+  PetscReal          mass;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = ComputeMassConservation(x,&mass,ctx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&T);CHKERRQ(ierr);
+  mass -= PetscAbsScalar(T[0]);
+  ierr = VecRestoreArrayRead(x,&T);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Timestep %D time %g percent mass lost or gained %g\n",step,(double)time,(double)100.*(1.0 - mass));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MonitorTempature(TS ts,PetscInt step,PetscReal time,Vec x,void* ctx)
+{
+  User               user = (User) ctx;
+  const PetscScalar  *T;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetArrayRead(x,&T);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Timestep %D time %g tempature %g\n",step,(double)time,(double)T[0]*user->Tini);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&T);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

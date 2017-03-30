@@ -119,7 +119,7 @@ PetscErrorCode  VecDot(Vec x,Vec y,PetscScalar *val)
   PetscValidType(x,1);
   PetscValidType(y,2);
   PetscCheckSameTypeAndComm(x,1,y,2);
-  VecCheckSameSize(x,1,y,1);
+  VecCheckSameSize(x,1,y,2);
 
   ierr = PetscLogEventBarrierBegin(VEC_DotBarrier,x,y,0,0,PetscObjectComm((PetscObject)x));CHKERRQ(ierr);
   ierr = (*x->ops->dot)(x,y,val);CHKERRQ(ierr);
@@ -1564,7 +1564,8 @@ $       call VecRestoreArray(x,x_array,i_x,ierr)
 
    Concepts: vector^accessing local values
 
-.seealso: VecRestoreArray(), VecGetArrayRead(), VecGetArrays(), VecGetArrayF90(), VecGetArrayReadF90(), VecPlaceArray(), VecGetArray2d()
+.seealso: VecRestoreArray(), VecGetArrayRead(), VecGetArrays(), VecGetArrayF90(), VecGetArrayReadF90(), VecPlaceArray(), VecGetArray2d(),
+          VecGetArrayPair(), VecRestoreArrayPair()
 @*/
 PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
 {
@@ -1622,7 +1623,7 @@ PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
    implementations may require a copy, but must such implementations should cache the contiguous representation so that
    only one copy is performed when this routine is called multiple times in sequence.
 
-.seealso: VecGetArray(), VecRestoreArray()
+.seealso: VecGetArray(), VecRestoreArray(), VecGetArrayPair(), VecRestoreArrayPair()
 @*/
 PetscErrorCode VecGetArrayRead(Vec x,const PetscScalar **a)
 {
@@ -1774,7 +1775,8 @@ $       call VecRestoreArray(x,x_array,i_x,ierr)
    petsc/src/snes/examples/tutorials/ex5f.F for details.
    For Fortran 90 see VecRestoreArrayF90()
 
-.seealso: VecGetArray(), VecRestoreArrayRead(), VecRestoreArrays(), VecRestoreArrayF90(), VecRestoreArrayReadF90(), VecPlaceArray(), VecRestoreArray2d()
+.seealso: VecGetArray(), VecRestoreArrayRead(), VecRestoreArrays(), VecRestoreArrayF90(), VecRestoreArrayReadF90(), VecPlaceArray(), VecRestoreArray2d(),
+          VecGetArrayPair(), VecRestoreArrayPair()
 @*/
 PetscErrorCode VecRestoreArray(Vec x,PetscScalar **a)
 {
@@ -1809,7 +1811,7 @@ PetscErrorCode VecRestoreArray(Vec x,PetscScalar **a)
 
    Level: beginner
 
-.seealso: VecGetArray(), VecRestoreArray()
+.seealso: VecGetArray(), VecRestoreArray(), VecGetArrayPair(), VecRestoreArrayPair()
 @*/
 PetscErrorCode VecRestoreArrayRead(Vec x,const PetscScalar **a)
 {

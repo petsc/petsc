@@ -380,7 +380,7 @@ int  PetscGlobalArgc   = 0;
 char **PetscGlobalArgs = 0;
 PetscSegBuffer PetscCitationsList;
 
-PetscErrorCode PetscCitationsInitialize()
+PetscErrorCode PetscCitationsInitialize(void)
 {
   PetscErrorCode ierr;
 

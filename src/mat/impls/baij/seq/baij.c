@@ -1349,8 +1349,6 @@ PetscErrorCode MatRestoreRow_SeqBAIJ(Mat A,PetscInt row,PetscInt *nz,PetscInt **
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatSetValues_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
-
 PetscErrorCode MatTranspose_SeqBAIJ(Mat A,MatReuse reuse,Mat *B)
 {
   Mat_SeqBAIJ    *a=(Mat_SeqBAIJ*)A->data;

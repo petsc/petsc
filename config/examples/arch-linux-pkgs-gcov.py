@@ -24,6 +24,7 @@ configure_options = [
   '--download-ctetgen',
   '--download-netcdf',
   '--download-hdf5',
+  '--with-zlib=1',
   '--download-exodusii',
   '--download-party',
   '--download-yaml',

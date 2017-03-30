@@ -18,7 +18,6 @@ PetscLogEvent VEC_ViennaCLCopyFromGPU, VEC_ViennaCLCopyToGPU;
 PetscLogEvent VEC_CUDACopyFromGPU, VEC_CUDACopyToGPU;
 PetscLogEvent VEC_CUDACopyFromGPUSome, VEC_CUDACopyToGPUSome;
 
-extern PetscErrorCode VecStashGetInfo_Private(VecStash*,PetscInt*,PetscInt*);
 /*@
    VecStashGetInfo - Gets how many values are currently in the vector stash, i.e. need
        to be communicated to other processors during the VecAssemblyBegin/End() process

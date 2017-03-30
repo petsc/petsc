@@ -5526,7 +5526,8 @@ PetscErrorCode MatZeroEntries(Mat mat)
 
    Concepts: matrices^zeroing rows
 
-.seealso: MatZeroRowsIS(), MatZeroRowsStencil(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption(), MatZeroRowsColumnsIS()
+.seealso: MatZeroRowsIS(), MatZeroRows(), MatZeroRowsLocalIS(), MatZeroRowsStencil(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption(),
+          MatZeroRowsColumnsLocal(), MatZeroRowsColumnsLocalIS(), MatZeroRowsColumnsIS(), MatZeroRowsColumnsStencil()
 @*/
 PetscErrorCode MatZeroRowsColumns(Mat mat,PetscInt numRows,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
@@ -5594,7 +5595,8 @@ PetscErrorCode MatZeroRowsColumns(Mat mat,PetscInt numRows,const PetscInt rows[]
 
    Concepts: matrices^zeroing rows
 
-.seealso: MatZeroRowsIS(), MatZeroRowsStencil(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption(), MatZeroRowsColumns()
+.seealso: MatZeroRowsIS(), MatZeroRowsColumns(), MatZeroRowsLocalIS(), MatZeroRowsStencil(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption(),
+          MatZeroRowsColumnsLocal(), MatZeroRowsColumnsLocalIS(), MatZeroRows(), MatZeroRowsColumnsStencil()
 @*/
 PetscErrorCode MatZeroRowsColumnsIS(Mat mat,IS is,PetscScalar diag,Vec x,Vec b)
 {
@@ -5656,7 +5658,8 @@ PetscErrorCode MatZeroRowsColumnsIS(Mat mat,IS is,PetscScalar diag,Vec x,Vec b)
 
    Concepts: matrices^zeroing rows
 
-.seealso: MatZeroRowsIS(), MatZeroRowsStencil(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption()
+.seealso: MatZeroRowsIS(), MatZeroRowsColumns(), MatZeroRowsLocalIS(), MatZeroRowsStencil(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption(),
+          MatZeroRowsColumnsLocal(), MatZeroRowsColumnsLocalIS(), MatZeroRowsColumnsIS(), MatZeroRowsColumnsStencil()
 @*/
 PetscErrorCode MatZeroRows(Mat mat,PetscInt numRows,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
@@ -5731,7 +5734,8 @@ PetscErrorCode MatZeroRows(Mat mat,PetscInt numRows,const PetscInt rows[],PetscS
 
    Concepts: matrices^zeroing rows
 
-.seealso: MatZeroRows(), MatZeroRowsStencil(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption()
+.seealso: MatZeroRows(), MatZeroRowsColumns(), MatZeroRowsLocalIS(), MatZeroRowsStencil(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption(),
+          MatZeroRowsColumnsLocal(), MatZeroRowsColumnsLocalIS(), MatZeroRowsColumnsIS(), MatZeroRowsColumnsStencil()
 @*/
 PetscErrorCode MatZeroRowsIS(Mat mat,IS is,PetscScalar diag,Vec x,Vec b)
 {
@@ -5808,7 +5812,8 @@ $    idxm(MatStencil_c,1) = c
 
    Concepts: matrices^zeroing rows
 
-.seealso: MatZeroRows(), MatZeroRowsIS(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption()
+.seealso: MatZeroRowsIS(), MatZeroRowsColumns(), MatZeroRowsLocalIS(), MatZeroRowsl(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption(),
+          MatZeroRowsColumnsLocal(), MatZeroRowsColumnsLocalIS(), MatZeroRowsColumnsIS(), MatZeroRowsColumnsStencil()
 @*/
 PetscErrorCode MatZeroRowsStencil(Mat mat,PetscInt numRows,const MatStencil rows[],PetscScalar diag,Vec x,Vec b)
 {
@@ -5908,7 +5913,8 @@ $    idxm(MatStencil_c,1) = c
 
    Concepts: matrices^zeroing rows
 
-.seealso: MatZeroRows(), MatZeroRowsIS(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption()
+.seealso: MatZeroRowsIS(), MatZeroRowsColumns(), MatZeroRowsLocalIS(), MatZeroRowsStencil(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption(),
+          MatZeroRowsColumnsLocal(), MatZeroRowsColumnsLocalIS(), MatZeroRowsColumnsIS(), MatZeroRows()
 @*/
 PetscErrorCode MatZeroRowsColumnsStencil(Mat mat,PetscInt numRows,const MatStencil rows[],PetscScalar diag,Vec x,Vec b)
 {
@@ -5987,7 +5993,8 @@ PetscErrorCode MatZeroRowsColumnsStencil(Mat mat,PetscInt numRows,const MatStenc
 
    Concepts: matrices^zeroing
 
-.seealso: MatZeroRows(), MatZeroRowsLocalIS(), MatZeroEntries(), MatZeroRows(), MatSetLocalToGlobalMapping
+.seealso: MatZeroRowsIS(), MatZeroRowsColumns(), MatZeroRowsLocalIS(), MatZeroRowsStencil(), MatZeroEntries(), MatZeroRows(), MatSetOption(),
+          MatZeroRowsColumnsLocal(), MatZeroRowsColumnsLocalIS(), MatZeroRowsColumnsIS(), MatZeroRowsColumnsStencil()
 @*/
 PetscErrorCode MatZeroRowsLocal(Mat mat,PetscInt numRows,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
@@ -6069,7 +6076,8 @@ PetscErrorCode MatZeroRowsLocal(Mat mat,PetscInt numRows,const PetscInt rows[],P
 
    Concepts: matrices^zeroing
 
-.seealso: MatZeroRows(), MatZeroRowsLocal(), MatZeroEntries(), MatZeroRows(), MatSetLocalToGlobalMapping
+.seealso: MatZeroRowsIS(), MatZeroRowsColumns(), MatZeroRows(), MatZeroRowsStencil(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption(),
+          MatZeroRowsColumnsLocal(), MatZeroRowsColumnsLocalIS(), MatZeroRowsColumnsIS(), MatZeroRowsColumnsStencil()
 @*/
 PetscErrorCode MatZeroRowsLocalIS(Mat mat,IS is,PetscScalar diag,Vec x,Vec b)
 {
@@ -6118,7 +6126,8 @@ PetscErrorCode MatZeroRowsLocalIS(Mat mat,IS is,PetscScalar diag,Vec x,Vec b)
 
    Concepts: matrices^zeroing
 
-.seealso: MatZeroRows(), MatZeroRowsLocalIS(), MatZeroEntries(), MatZeroRows(), MatSetLocalToGlobalMapping
+.seealso: MatZeroRowsIS(), MatZeroRowsColumns(), MatZeroRowsLocalIS(), MatZeroRowsStencil(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption(),
+          MatZeroRows(), MatZeroRowsColumnsLocalIS(), MatZeroRowsColumnsIS(), MatZeroRowsColumnsStencil()
 @*/
 PetscErrorCode MatZeroRowsColumnsLocal(Mat mat,PetscInt numRows,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
@@ -6184,7 +6193,8 @@ PetscErrorCode MatZeroRowsColumnsLocal(Mat mat,PetscInt numRows,const PetscInt r
 
    Concepts: matrices^zeroing
 
-.seealso: MatZeroRows(), MatZeroRowsLocal(), MatZeroEntries(), MatZeroRows(), MatSetLocalToGlobalMapping
+.seealso: MatZeroRowsIS(), MatZeroRowsColumns(), MatZeroRowsLocalIS(), MatZeroRowsStencil(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption(),
+          MatZeroRowsColumnsLocal(), MatZeroRows(), MatZeroRowsColumnsIS(), MatZeroRowsColumnsStencil()
 @*/
 PetscErrorCode MatZeroRowsColumnsLocalIS(Mat mat,IS is,PetscScalar diag,Vec x,Vec b)
 {
@@ -6619,7 +6629,7 @@ PetscErrorCode MatICCFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFactorInfo
    Concepts: matrices^accessing submatrices
    Concepts: submatrices
 
-.seealso: MatDestroyMatrices(), MatCreateSubMatrix(), MatGetRow(), MatGetDiagonal(), MatReuse
+.seealso: MatDestroySubMatrices(), MatCreateSubMatrix(), MatGetRow(), MatGetDiagonal(), MatReuse
 @*/
 PetscErrorCode MatCreateSubMatrices(Mat mat,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *submat[])
 {
@@ -8588,7 +8598,6 @@ PetscErrorCode MatIsStructurallySymmetric(Mat A,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatStashGetInfo_Private(MatStash*,PetscInt*,PetscInt*);
 /*@
    MatStashGetInfo - Gets how many values are currently in the matrix stash, i.e. need
        to be communicated to other processors during the MatAssemblyBegin/End() process

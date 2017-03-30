@@ -67,8 +67,6 @@ PetscErrorCode MatSeqAIJCRL_create_aijcrl(Mat A)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat,MatAssemblyType);
-
 PetscErrorCode MatAssemblyEnd_SeqAIJCRL(Mat A, MatAssemblyType mode)
 {
   PetscErrorCode ierr;

@@ -27,7 +27,7 @@ PetscErrorCode SNESDestroy_NGMRES(SNES snes)
   ierr = PetscFree5(ngmres->h,ngmres->beta,ngmres->xi,ngmres->fnorms,ngmres->q);CHKERRQ(ierr);
   ierr = PetscFree(ngmres->s);CHKERRQ(ierr);
   ierr = PetscFree(ngmres->xnorms);CHKERRQ(ierr);
-#if PETSC_USE_COMPLEX
+#if defined(PETSC_USE_COMPLEX)
   ierr = PetscFree(ngmres->rwork);CHKERRQ(ierr);
 #endif
   ierr = PetscFree(ngmres->work);CHKERRQ(ierr);
@@ -73,7 +73,7 @@ PetscErrorCode SNESSetUp_NGMRES(SNES snes)
     ierr          = PetscMemzero(ngmres->xi,  msize*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr          = PetscMemzero(ngmres->beta,msize*sizeof(PetscScalar));CHKERRQ(ierr);
     ngmres->lwork = 12*msize;
-#if PETSC_USE_COMPLEX
+#if defined(PETSC_USE_COMPLEX)
     ierr = PetscMalloc1(ngmres->lwork,&ngmres->rwork);CHKERRQ(ierr);
 #endif
     ierr = PetscMalloc1(ngmres->lwork,&ngmres->work);CHKERRQ(ierr);

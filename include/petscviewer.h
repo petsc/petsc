@@ -126,7 +126,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerGetFormat(PetscViewer,PetscViewerFormat*)
 PETSC_EXTERN PetscErrorCode PetscViewerFlush(PetscViewer);
 
 PETSC_EXTERN PetscErrorCode PetscOptionsPushGetViewerOff(PetscBool);
-PETSC_EXTERN PetscErrorCode PetscOptionsPopGetViewerOff();
+PETSC_EXTERN PetscErrorCode PetscOptionsPopGetViewerOff(void);
 PETSC_EXTERN PetscErrorCode PetscOptionsGetViewerOff(PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscOptionsGetViewer(MPI_Comm,const char[],const char[],PetscViewer*,PetscViewerFormat*,PetscBool*);
 #define PetscOptionsViewer(a,b,c,d,e,f) PetscOptionsViewer_Private(PetscOptionsObject,a,b,c,d,e,f);
@@ -180,7 +180,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerBinaryGetSkipOptions(PetscViewer,PetscBoo
 PETSC_EXTERN PetscErrorCode PetscViewerBinarySetSkipHeader(PetscViewer,PetscBool);
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryGetSkipHeader(PetscViewer,PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryReadStringArray(PetscViewer,char***);
-PETSC_EXTERN PetscErrorCode PetscViewerBinaryWriteStringArray(PetscViewer,char**);
+PETSC_EXTERN PetscErrorCode PetscViewerBinaryWriteStringArray(PetscViewer,const char *const*);
 
 PETSC_EXTERN PetscErrorCode PetscViewerFileSetName(PetscViewer,const char[]);
 PETSC_EXTERN PetscErrorCode PetscViewerFileGetName(PetscViewer,const char**);

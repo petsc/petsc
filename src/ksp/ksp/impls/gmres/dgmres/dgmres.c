@@ -569,8 +569,6 @@ static PetscErrorCode  KSPDGMRESForce_DGMRES(KSP ksp,PetscBool force)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode KSPSetFromOptions_GMRES(PetscOptionItems *PetscOptionsObject,KSP);
-
 PetscErrorCode KSPSetFromOptions_DGMRES(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;

@@ -149,7 +149,7 @@ static const double __ac_HASH_UPPER = 0.77;
                 khkey_t *keys;                                                               \
                 khval_t *vals;                                                               \
         } kh_##name##_t;                                                                     \
-        PETSC_STATIC_INLINE kh_##name##_t *kh_init_##name() {                                \
+        PETSC_STATIC_INLINE kh_##name##_t *kh_init_##name(void) {                            \
                 return (kh_##name##_t*)calloc(1, sizeof(kh_##name##_t));                     \
         }                                                                                    \
         PETSC_STATIC_INLINE void kh_destroy_##name(kh_##name##_t *h)                         \

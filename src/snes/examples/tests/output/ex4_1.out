@@ -1,2 +1,1 @@
-number of SNES iterations = 4, number of unsuccessful steps = 0
-
+      Line search: objective function at lambdas = 1. is Inf or Nan, cutting lambda

@@ -1,8 +1,6 @@
 #include <../src/snes/impls/fas/fasimpls.h> /*I  "petscsnes.h"  I*/
 
 
-extern PetscErrorCode SNESFASCycleCreateSmoother_Private(SNES, SNES*);
-
 /* -------------- functions called on the fine level -------------- */
 
 /*@

@@ -217,9 +217,8 @@ PETSC_EXTERN void tscomputerhsjacobianconstant_(TS *ts,PetscReal *t,Vec *X,Mat *
 }
 PETSC_EXTERN void PETSC_STDCALL tssetrhsjacobian_(TS *ts,Mat *A,Mat *B,void (PETSC_STDCALL*f)(TS*,PetscReal*,Vec*,Mat*,Mat*,void*,PetscErrorCode*),void *fP,PetscErrorCode *ierr)
 {
-  if (FORTRANNULLFUNCTION(f)) {
-    *ierr = TSSetRHSJacobian(*ts,*A,*B,NULL,fP);
-  } else if ((PetscVoidFunction)f == (PetscVoidFunction)tscomputerhsjacobianconstant_) {
+  CHKFORTRANNULLFUNCTION(f);
+  if ((PetscVoidFunction)f == (PetscVoidFunction)tscomputerhsjacobianconstant_) {
     *ierr = TSSetRHSJacobian(*ts,*A,*B,TSComputeRHSJacobianConstant,fP);
   } else {
     *ierr = PetscObjectSetFortranCallback((PetscObject)*ts,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.rhsjacobian,(PetscVoidFunction)f,fP);
@@ -233,9 +232,8 @@ PETSC_EXTERN void tscomputeijacobianconstant_(TS *ts,PetscReal *t,Vec *X,Vec *Xd
 }
 PETSC_EXTERN void PETSC_STDCALL tssetijacobian_(TS *ts,Mat *A,Mat *B,void (PETSC_STDCALL*f)(TS*,PetscReal*,Vec*,Mat*,Mat*,void*,PetscErrorCode*),void *fP,PetscErrorCode *ierr)
 {
-  if (FORTRANNULLFUNCTION(f)) {
-    *ierr = TSSetIJacobian(*ts,*A,*B,NULL,fP);
-  } else if ((PetscVoidFunction)f == (PetscVoidFunction)tscomputeijacobianconstant_) {
+  CHKFORTRANNULLFUNCTION(f);
+  if ((PetscVoidFunction)f == (PetscVoidFunction)tscomputeijacobianconstant_) {
     *ierr = TSSetIJacobian(*ts,*A,*B,TSComputeIJacobianConstant,fP);
   } else {
     *ierr = PetscObjectSetFortranCallback((PetscObject)*ts,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.ijacobian,(PetscVoidFunction)f,fP);
@@ -261,16 +259,13 @@ PETSC_EXTERN void tsmonitordefault_(TS *ts,PetscInt *its,PetscReal *fgnorm,Vec *
 
 PETSC_EXTERN void PETSC_STDCALL tsmonitorset_(TS *ts,void (PETSC_STDCALL*func)(TS*,PetscInt*,PetscReal*,Vec*,void*,PetscErrorCode*),void *mctx,void (PETSC_STDCALL*d)(void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
+  CHKFORTRANNULLFUNCTION(d);
   if ((PetscVoidFunction)func == (PetscVoidFunction) tsmonitordefault_) {
     *ierr = TSMonitorSet(*ts,(PetscErrorCode (*)(TS,PetscInt,PetscReal,Vec,void*))TSMonitorDefault,*(PetscViewerAndFormat**)mctx,(PetscErrorCode (*)(void **))PetscViewerAndFormatDestroy);
   } else {
     *ierr = PetscObjectSetFortranCallback((PetscObject)*ts,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.monitor,(PetscVoidFunction)func,mctx);
-    if (FORTRANNULLFUNCTION(d)) {
-      *ierr = TSMonitorSet(*ts,ourmonitor,NULL,NULL);
-    } else {
-      *ierr = PetscObjectSetFortranCallback((PetscObject)*ts,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.mondestroy,(PetscVoidFunction)d,mctx);
-      *ierr = TSMonitorSet(*ts,ourmonitor,NULL,ourmonitordestroy);
-    }
+    *ierr = PetscObjectSetFortranCallback((PetscObject)*ts,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.mondestroy,(PetscVoidFunction)d,mctx);
+    *ierr = TSMonitorSet(*ts,ourmonitor,*ts,ourmonitordestroy);
   }
 }
 

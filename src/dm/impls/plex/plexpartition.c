@@ -1417,7 +1417,9 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
     ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
     for (v = cStart; v < cEnd; ++v) {
       ierr = PetscSectionGetDof(section, v, &dof);CHKERRQ(ierr);
-      vwgt[v-cStart] = PetscMax(dof, 1);
+      /* WARNING: Assumes that meshes with overlap have the overlapped cells at the end of the stratum. */
+      /* To do this properly, we should use the cell numbering created in DMPlexCreatePartitionerGraph. */
+      if (v-cStart < numVertices) vwgt[v-cStart] = PetscMax(dof, 1);
     }
   } else {
     for (v = 0; v < nvtxs; ++v) vwgt[v] = 1;

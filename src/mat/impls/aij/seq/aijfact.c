@@ -1570,8 +1570,6 @@ PetscErrorCode MatSolveTransposeAdd_SeqAIJ(Mat A,Vec bb,Vec zz,Vec xx)
 
 /* ----------------------------------------------------------------*/
 
-extern PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat,Mat,MatDuplicateOption,PetscBool);
-
 /*
    ilu() under revised new data structure.
    Factored arrays bj and ba are stored as

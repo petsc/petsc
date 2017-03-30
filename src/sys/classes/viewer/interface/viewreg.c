@@ -139,7 +139,7 @@ PetscErrorCode  PetscOptionsPushGetViewerOff(PetscBool flg)
 
 .seealso: PetscOptionsGetViewer(), PetscOptionsPushGetViewerOff()
 @*/
-PetscErrorCode  PetscOptionsPopGetViewerOff()
+PetscErrorCode  PetscOptionsPopGetViewerOff(void)
 {
   PetscFunctionBegin;
   if (!inoviewers) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many PetscOptionsPopGetViewerOff(), perhaps you forgot PetscOptionsPushGetViewerOff()?");

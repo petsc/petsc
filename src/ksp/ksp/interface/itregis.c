@@ -18,6 +18,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GMRES(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_BCGS(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_IBCGS(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_FBCGS(KSP);
+PETSC_EXTERN PetscErrorCode KSPCreate_PIPEBCGS(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_FBCGSR(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_BCGSL(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_CGS(KSP);
@@ -43,13 +44,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_DGMRES(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_TSIRM(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_CGLS(KSP);
 PETSC_EXTERN PetscErrorCode KSPCreate_FETIDP(KSP);
-
-/*
-    This is used by KSPSetType() to make sure that at least one
-    KSPRegisterAll() is called. In general, if there is more than one
-    DLL, then KSPRegisterAll() may be called several times.
-*/
-extern PetscBool KSPRegisterAllCalled;
 
 /*@C
   KSPRegisterAll - Registers all of the Krylov subspace methods in the KSP package.
@@ -87,6 +81,7 @@ PetscErrorCode  KSPRegisterAll(void)
   ierr = KSPRegister(KSPBCGS,        KSPCreate_BCGS);CHKERRQ(ierr);
   ierr = KSPRegister(KSPIBCGS,       KSPCreate_IBCGS);CHKERRQ(ierr);
   ierr = KSPRegister(KSPFBCGS,       KSPCreate_FBCGS);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPPIPEBCGS,    KSPCreate_PIPEBCGS);CHKERRQ(ierr);
   ierr = KSPRegister(KSPFBCGSR,      KSPCreate_FBCGSR);CHKERRQ(ierr);
   ierr = KSPRegister(KSPBCGSL,       KSPCreate_BCGSL);CHKERRQ(ierr);
   ierr = KSPRegister(KSPCGS,         KSPCreate_CGS);CHKERRQ(ierr);

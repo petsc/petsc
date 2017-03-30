@@ -19,7 +19,8 @@ class Configure(config.package.GNUPackage):
     config.package.GNUPackage.setupDependencies(self, framework)
     self.mpi      = framework.require('config.packages.MPI', self)
     self.hdf5     = framework.require('config.packages.hdf5', self)
-    self.deps     = [self.mpi, self.hdf5]
+    self.deps     = [self.mpi]
+    self.odeps    = [self.hdf5]
     return
 
   # the install is delayed until postProcess() since pflotran install requires PETSc to be installed before pflotran can be built
