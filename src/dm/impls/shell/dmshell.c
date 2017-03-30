@@ -835,6 +835,32 @@ PetscErrorCode DMShellSetCreateDomainDecomposition(DM dm, PetscErrorCode (*decom
 }
 
 /*@C
+   DMShellSetCreateDomainDecompositionScatters - Set the routine used to create the scatter contexts for domain decomposition with a shell DM
+
+   Logically Collective on DM
+
+   Input Arguments
++  dm - the shell DM
+-  scatter - the routine to create the scatters
+
+   Level: advanced
+
+.seealso: DMCreateDomainDecomposition(), DMShellSetContext(), DMShellGetContext(), DMCreateDomainDecompositionScatters
+@*/
+PetscErrorCode DMShellSetCreateDomainDecompositionScatters(DM dm, PetscErrorCode (*scatter)(DM,PetscInt,DM*,VecScatter**,VecScatter**,VecScatter**))
+{
+  PetscErrorCode ierr;
+  PetscBool      isshell;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
+  if (!isshell) PetscFunctionReturn(0);
+  dm->ops->createddscatters = scatter;
+  PetscFunctionReturn(0);
+}
+
+/*@C
    DMShellSetCreateSubDM - Set the routine used to create a sub DM from the shell DM
 
    Logically Collective on DM
