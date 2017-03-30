@@ -1210,7 +1210,7 @@ runex48_2:
 	   ${DIFF} output/ex48_2.out ex48.tmp || printf "${PWD}\nPossible problem with ex48_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex48.tmp
 runex48_3:
-	-@${MPIEXEC} -n 3 ./ex48 -M 7 -P 4 -thi_hom z -da_refine 1 -snes_monitor_short -snes_converged_reason -ksp_monitor_short -ksp_converged_reason -thi_mat_type baij -ksp_type fgmres -pc_type mg -pc_mg_type full -mg_levels_pc_type asm -mg_levels_pc_asm_blocks 9 -mg_levels_ksp_type gmres -mg_levels_ksp_max_it 1 -mat_partitioning_type current > ex48.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex48 -M 7 -P 4 -thi_hom z -da_refine 1 -snes_monitor_short -snes_converged_reason -ksp_monitor_short -ksp_converged_reason -thi_mat_type baij -ksp_type fgmres -pc_type mg -pc_mg_type full -mg_levels_pc_asm_type restrict -mg_levels_pc_type asm -mg_levels_pc_asm_blocks 9 -mg_levels_ksp_type gmres -mg_levels_ksp_max_it 1 -mat_partitioning_type current > ex48.tmp 2>&1; \
 	   ${DIFF} output/ex48_3.out ex48.tmp || printf "${PWD}\nPossible problem with ex48_3, diffs above\n=========================================\n"; \
 	   ${RM} -f ex48.tmp
 runex48_4:

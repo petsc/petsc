@@ -134,6 +134,7 @@
       </ul>
       <h4>PC:</h4>
       <ul>
+        <li>The is_local argument to PCASMSetLocalSubdomains() is now ignored UNLESS the PCASMType is set to restrict</li>
         <li>Added PCMGSetNumberSmooth()</li>
         <li>PCMGSetGalerkin() and -pc_mg_galerkin now take PC_MG_GALERKIN_BOTH,PC_MG_GALERKIN_PMAT,PC_MG_GALERKIN_MAT, PC_MG_GALERKIN_NONE as arguments instead of PetscBool</li>
         <li>Added PCBDDCSetDivergenceMat to help BDDC to compute the flux across the subdomain interfaces.</li>
