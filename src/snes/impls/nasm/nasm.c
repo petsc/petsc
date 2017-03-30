@@ -110,6 +110,7 @@ static PetscErrorCode SNESSetUp_NASM(SNES snes)
       ierr = PetscMalloc1(nasm->n,&nasm->subsnes);CHKERRQ(ierr);
       for (i=0; i<nasm->n; i++) {
         ierr = SNESCreate(PETSC_COMM_SELF,&nasm->subsnes[i]);CHKERRQ(ierr);
+        ierr = PetscObjectIncrementTabLevel((PetscObject)nasm->subsnes[i], (PetscObject)snes, 1);CHKERRQ(ierr);
         ierr = SNESAppendOptionsPrefix(nasm->subsnes[i],optionsprefix);CHKERRQ(ierr);
         ierr = SNESAppendOptionsPrefix(nasm->subsnes[i],"sub_");CHKERRQ(ierr);
         ierr = SNESSetDM(nasm->subsnes[i],subdms[i]);CHKERRQ(ierr);
