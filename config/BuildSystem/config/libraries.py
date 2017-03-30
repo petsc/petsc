@@ -50,6 +50,8 @@ class Configure(config.base.Configure):
         flagName  = self.language[-1]+'SharedLinkerFlag'
         flagSubst = self.language[-1].upper()+'_LINKER_SLFLAG'
         dirname   = os.path.dirname(library).replace('\\ ',' ').replace(' ', '\\ ').replace('\\(','(').replace('(', '\\(').replace('\\)',')').replace(')', '\\)')
+        if dirname.startswith('/Applications/Xcode.app'):
+          return ['-L'+dirname,' -l'+name]
         if hasattr(self.setCompilers, flagName) and not getattr(self.setCompilers, flagName) is None:
           return [getattr(self.setCompilers, flagName)+dirname,'-L'+dirname,'-l'+name]
         if flagSubst in self.argDB:
