@@ -211,7 +211,6 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat B,Mat A,const MatFactorInfo *inf
     /* Mark diagonal and invert diagonal for simplier triangular solves */
     pv = b->a + bs2*bdiag[i];
     pj = b->j + bdiag[i];
-    /* if (*pj != i)SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"row %d != *pj %d",i,*pj); */
     ierr = PetscMemcpy(pv,rtmp+bs2*pj[0],bs2*sizeof(MatScalar));CHKERRQ(ierr);
 
     ierr = PetscKernel_A_gets_inverse_A(bs,pv,v_pivots,v_work,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
@@ -236,7 +235,23 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat B,Mat A,const MatFactorInfo *inf
 
   both_identity = (PetscBool) (row_identity && col_identity);
   if (both_identity) {
-    C->ops->solve = MatSolve_SeqBAIJ_N_NaturalOrdering;
+    switch (bs) {
+    case 11:
+      C->ops->solve = MatSolve_SeqBAIJ_11_NaturalOrdering;
+      break;
+    case 12:
+      C->ops->solve = MatSolve_SeqBAIJ_12_NaturalOrdering;
+      break;
+    case 13:
+      C->ops->solve = MatSolve_SeqBAIJ_13_NaturalOrdering;
+      break;
+    case 14:
+      C->ops->solve = MatSolve_SeqBAIJ_14_NaturalOrdering;
+      break;
+    default:
+      C->ops->solve = MatSolve_SeqBAIJ_N_NaturalOrdering;
+      break;
+    }
   } else {
     C->ops->solve = MatSolve_SeqBAIJ_N;
   }

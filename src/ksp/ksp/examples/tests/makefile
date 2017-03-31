@@ -1000,10 +1000,13 @@ runex49:
            ${MPIEXEC} -n 1 ./ex49 -bs $$bs -pc_type cholesky  ;\
          done;
 runex50:
-	@for bs in 1 2 3 4 5 6 7 ; do \
+	@for bs in 1 2 3 4 5 6 7; do \
            ${MPIEXEC} -n 1 ./ex50 -bs $$bs -pc_type pbjacobi  ;\
          done;
-
+runex50_2:
+	@for bs in 8 9 10 11 12 13 14 15; do \
+           ${MPIEXEC} -n 1 ./ex50 -bs $$bs -pc_type ilu ;\
+         done;
 
 runex51:
 	-@${MPIEXEC} -n 1 ./ex51 -reverse > ex51.tmp 2>&1;\
@@ -1038,7 +1041,7 @@ TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 runex3_noche
                                  ex38.PETSc runex38 ex38.rm ex39.PETSc runex39 runex39_2 ex39.rm ex41.PETSc runex41 runex41_2 ex41.rm \
                                  ex42.PETSc runex42 runex42_2 ex42.rm \
                                  ex44.PETSc runex44 ex44.rm ex45.PETSc runex45 ex45.rm ex47.PETSc runex47 ex47.rm ex48.PETSc runex48 ex48.rm printdot \
-                                 ex50.PETSc runex50 ex50.rm \
+                                 ex50.PETSc runex50 runex50_2 ex50.rm \
                                  ex51.PETSc runex51 runex51_2 ex51.rm
 TESTEXAMPLES_C_NOTSINGLE       = ex49.PETSc runex49 ex49.rm
 TESTEXAMPLES_C_X	       = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm
