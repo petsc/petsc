@@ -920,3 +920,58 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NASM(SNES snes)
   PetscFunctionReturn(0);
 }
 
+/*@
+   SNESNASMGetSNES - Gets a subsolver
+
+   Not collective
+
+   Input Parameters:
++  snes - the SNES context
+-  i - the number of the subsnes to get
+
+   Output Parameters:
+.  subsnes - the subsolver context
+
+   Level: intermediate
+
+.keywords: SNES, NASM
+
+.seealso: SNESNASM
+@*/
+PetscErrorCode SNESNASMGetSNES(SNES snes,PetscInt i,SNES *subsnes)
+{
+  SNES_NASM      *nasm = (SNES_NASM*)snes->data;
+
+  PetscFunctionBegin;
+  if (i < 0 || i >= nasm->n) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"No such subsolver");
+
+  *subsnes = nasm->subsnes[i];
+  PetscFunctionReturn(0);
+}
+
+/*@
+   SNESNASMGetNumber - Gets number of subsolvers
+
+   Not collective
+
+   Input Parameters:
+.  snes - the SNES context
+
+   Output Parameters:
+.  n - the number of subsolvers
+
+   Level: intermediate
+
+.keywords: SNES, NASM
+
+.seealso: SNESNASM
+@*/
+PetscErrorCode SNESNASMGetNumber(SNES snes,PetscInt *n)
+{
+  SNES_NASM      *nasm = (SNES_NASM*)snes->data;
+
+  PetscFunctionBegin;
+  *n = nasm->n;
+  PetscFunctionReturn(0);
+}
+
