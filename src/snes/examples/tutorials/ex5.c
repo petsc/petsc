@@ -217,7 +217,7 @@ int main(int argc,char **argv)
     ierr = VecNorm(e, NORM_2, &errorl2);CHKERRQ(ierr);
     ierr = VecNorm(e, NORM_INFINITY, &errorinf);CHKERRQ(ierr);
     ierr = VecGetSize(e, &N);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "N: %D error l2 %g inf %g\n", N, (double) errorl2/N, (double) errorinf);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "N: %D error L2 %g inf %g\n", N, (double) errorl2/PetscSqrtReal(N), (double) errorinf);CHKERRQ(ierr);
     ierr = VecDestroy(&e);CHKERRQ(ierr);
   }
 
