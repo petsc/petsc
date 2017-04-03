@@ -142,10 +142,10 @@ PetscErrorCode CellRefinerInCellTest_Internal(CellRefiner refiner, const PetscRe
       if (point[d] < -1.0) {*inside = PETSC_FALSE; break;}
       sum += point[d];
     }
-    if (sum > 0.0) {*inside = PETSC_FALSE; break;}
+    if (sum > 1.0e-10) {*inside = PETSC_FALSE; break;}
     break;
   case REFINER_HEX_2D:
-    for (d = 0; d < 2; ++d) if ((point[d] < -1.0) || (point[d] > 1.0)) {*inside = PETSC_FALSE; break;}
+    for (d = 0; d < 2; ++d) if ((point[d] < -1.00000000001) || (point[d] > 1.000000000001)) {*inside = PETSC_FALSE; break;}
     break;
   default:
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %d", refiner);

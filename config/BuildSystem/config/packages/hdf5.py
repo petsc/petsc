@@ -14,6 +14,7 @@ class Configure(config.package.GNUPackage):
     self.liblist   = [['libhdf5_hl.a', 'libhdf5.a']]
     self.complex          = 1
     self.hastests         = 1
+    self.precisions       = ['single','double'];
     return
 
   def setupDependencies(self, framework):

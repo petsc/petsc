@@ -253,7 +253,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
       size_t doubleSize, intSize;
       PetscInt elementSize;
       char *buffer;
-      PetscScalar *baseptr;
+      PetscReal *baseptr;
       ierr = PetscDataTypeGetSize(PETSC_ENUM, &intSize);CHKERRQ(ierr);
       ierr = PetscDataTypeGetSize(PETSC_DOUBLE, &doubleSize);CHKERRQ(ierr);
       elementSize = (intSize + 3*doubleSize);
@@ -261,7 +261,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
       ierr = PetscViewerRead(viewer, buffer, elementSize*numVertices, NULL, PETSC_CHAR);CHKERRQ(ierr);
       if (bswap) ierr = PetscByteSwap(buffer, PETSC_CHAR, elementSize*numVertices);CHKERRQ(ierr);
       for (v = 0; v < numVertices; ++v) {
-        baseptr = ((PetscScalar*)(buffer+v*elementSize+intSize));
+        baseptr = ((PetscReal*)(buffer+v*elementSize+intSize));
         coordsIn[v*3+0] = baseptr[0];
         coordsIn[v*3+1] = baseptr[1];
         coordsIn[v*3+2] = baseptr[2];
@@ -270,8 +270,8 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     } else {
       for (v = 0; v < numVertices; ++v) {
         ierr = PetscViewerRead(viewer, &i, 1, NULL, PETSC_ENUM);CHKERRQ(ierr);
-        ierr = PetscViewerRead(viewer, &(coordsIn[v*3]), 3, NULL, PETSC_DOUBLE);CHKERRQ(ierr);
-        if (i != (int)v+1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid node number %d should be %d", i, v+1);
+        ierr = PetscViewerRead(viewer, &(coordsIn[v*3]), 3, NULL, PETSC_REAL);CHKERRQ(ierr);
+        if (i != (int)v+1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid node number %D should be %D", i, v+1);
       }
     }
     ierr = PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING);CHKERRQ(ierr);;

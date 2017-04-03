@@ -38,7 +38,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsInt("-dim", "The dimension of problem used for non-file mesh", "ex2.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
-};
+}
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
@@ -99,7 +99,7 @@ static PetscErrorCode CheckMeshGeometry(DM dm)
   ierr = PetscMalloc3(dim,&v0,dim*dim,&J,dim*dim,&invJ);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr);
-    if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for cell %d", detJ, c);
+    if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for cell %D", (double)detJ, c);
   }
   ierr = PetscFree3(v0,J,invJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -121,3 +121,51 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+  # CGNS meshes 0-1
+  test:
+    suffix: 0
+    requires: CGNS broken
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/tut21.cgns -interpolate 1
+  test:
+    suffix: 1
+    requires: CGNS broken
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/grid_c.cgns -interpolate 1
+  # Gmsh meshes 2-4
+  test:
+    suffix: 2
+    requires: !quad
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh -interpolate 1
+  test:
+    suffix: 3
+    requires: !quad
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.msh -interpolate 1
+  test:
+    suffix: 4
+    requires: double
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin.msh -interpolate 1
+  # Exodus meshes 5-9
+  test:
+    suffix: 5
+    requires: exodusii
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo -interpolate 1
+  test:
+    suffix: 6
+    requires: exodusii
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -interpolate 1
+  test:
+    suffix: 7
+    requires: exodusii
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/squaremotor-30.exo -interpolate 1
+  test:
+    suffix: 8
+    requires: exodusii
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -interpolate 1
+  test:
+    suffix: 9
+    requires: exodusii
+    args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/simpleblock-100.exo -interpolate 1
+
+TEST*/

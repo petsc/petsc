@@ -7,6 +7,8 @@ class Configure(config.package.GNUPackage):
     self.functions         = ['MEDfileOpen']
     self.includes          = ['med.h']
     self.liblist           = [['libmed.a']]
+    self.needsMath         = 1
+    self.precisions        = ['double'];
     return
 
   def setupDependencies(self, framework):

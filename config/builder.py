@@ -1950,6 +1950,7 @@ class PETScMaker(script.Script):
      output                  = output.strip()
      parse, excess           = parser.parse(output)
      validOutput             = f.read().strip().replace('\r', '') # Jed is now stripping output it appears
+     validOutput             = validOutput.replace('\n\n', '\n').replace('\n\n', '\n')
      validParse, validExcess = parser.parse(validOutput)
      if not validParse == parse or not validExcess == excess:
        self.logPrint("TEST ERROR: Regression output for %s (test %s) does not match\n" % (executable, testNum), debugSection = 'screen')

@@ -72,12 +72,30 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
-  ierr = PetscLogStagePush(user->stages[STAGE_LOAD]);CHKERRQ(ierr);
-  if (len)              {ierr = DMPlexCreateFromFile(comm, filename, PETSC_TRUE, dm);CHKERRQ(ierr);}
-  else if (cellSimplex) {ierr = DMPlexCreateBoxMesh(comm, dim, dim == 2 ? 2 : 1, PETSC_TRUE, dm);CHKERRQ(ierr);}
-  else                  {ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);}
-  ierr = PetscLogStagePop();CHKERRQ(ierr);
-  ierr = PetscLogStagePush(user->stages[STAGE_DISTRIBUTE]);CHKERRQ(ierr);
+  if (len) {
+    const char *extGmsh = ".msh";
+    PetscBool   isGmsh;
+
+    ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extGmsh, 4, &isGmsh);CHKERRQ(ierr);
+    if (isGmsh) {
+      PetscViewer viewer;
+
+      ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
+      ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
+      ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
+      ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
+      ierr = DMPlexCreateGmsh(comm, viewer, PETSC_TRUE, dm);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    } else {
+      ierr = DMPlexCreateCGNSFromFile(comm, filename, PETSC_TRUE, dm);CHKERRQ(ierr);
+    }
+  } else if (cellSimplex) {
+    ierr = DMPlexCreateBoxMesh(comm, dim, dim == 2 ? 2 : 1, PETSC_TRUE, dm);CHKERRQ(ierr);
+  } else {
+    const PetscInt cells[3] = {2, 2, 2};
+
+    ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);
+  }
   if (!user->testRedundant) {
     if (user->testPartition) {
       const PetscInt  *sizes = NULL;
@@ -149,3 +167,56 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+  # Parallel, no overlap tests 0-2
+  test:
+    suffix: 0
+    requires: triangle
+    args: -dm_view ascii:mesh.tex:ascii_latex
+  test:
+    suffix: 1
+    requires: triangle
+    nsize: 3
+    args: -test_partition -dm_view ::ascii_info_detail
+  test:
+    suffix: 2
+    requires: triangle
+    nsize: 8
+    args: -test_partition -dm_view ::ascii_info_detail
+  # Parallel, level-1 overlap tests 3-4
+  test:
+    suffix: 3
+    requires: triangle
+    nsize: 3
+    args: -test_partition -overlap 1 -dm_view ::ascii_info_detail
+  test:
+    suffix: 4
+    requires: triangle
+    nsize: 8
+    args: -test_partition -overlap 1 -dm_view ::ascii_info_detail
+  # Parallel, level-2 overlap test 5
+  test:
+    suffix: 5
+    requires: triangle
+    nsize: 8
+    args: -test_partition -overlap 2 -dm_view ::ascii_info_detail
+  # Parallel load balancing, test 6-7
+  test:
+    suffix: 6
+    requires: triangle
+    nsize: 2
+    args: -test_partition -overlap 1 -dm_view ::ascii_info_detail
+  test:
+    suffix: 7
+    requires: triangle
+    nsize: 2
+    args: -test_partition -overlap 1 -load_balance -dm_view ::ascii_info_detail
+  # Parallel redundant copying, test 8
+  test:
+    suffix: 8
+    requires: triangle
+    nsize: 2
+    args: -test_redundant -dm_view ::ascii_info_detail
+
+TEST*/
