@@ -769,6 +769,15 @@ static PetscErrorCode TSGetRHSMats_Private(TS ts,Mat *Arhs,Mat *Brhs)
         ts->Arhs = A;
         ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
       }
+    } else {
+      PetscBool flg;
+      ierr = SNESGetUseMatrixFree(ts->snes,NULL,&flg);CHKERRQ(ierr);
+      /* Handle case where user provided only RHSJacobian and used -snes_mf_operator */
+      if (flg && !ijacobian && ts->Arhs == ts->Brhs){
+        ierr = PetscObjectDereference((PetscObject)ts->Arhs);CHKERRQ(ierr);
+        ts->Arhs = A;
+        ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+      }
     }
     *Arhs = ts->Arhs;
   }
@@ -880,8 +889,7 @@ PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec Y,PetscBo
 
    Output Parameters:
 +  A - Jacobian matrix
-.  B - optional preconditioning matrix
--  flag - flag indicating matrix structure
+-  B - matrix from which the preconditioner is constructed; often the same as A
 
    Notes:
    If F(t,U,Udot)=0 is the DAE, the required Jacobian is
@@ -926,11 +934,9 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
     PetscStackPush("TS user implicit Jacobian");
     ierr = (*ijacobian)(ts,t,U,Udot,shift,A,B,ctx);CHKERRQ(ierr);
     PetscStackPop;
-    if (A) {
-      ierr = MatMissingDiagonal(A,&missing,NULL);CHKERRQ(ierr);
-      if (missing) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Amat passed to TSSetIJacobian() must have all diagonal entries set, if they are zero you must still set them with a zero value");
-    }
-    if (B && B != A) {
+    ierr = MatMissingDiagonal(A,&missing,NULL);CHKERRQ(ierr);
+    if (missing) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Amat passed to TSSetIJacobian() must have all diagonal entries set, if they are zero you must still set them with a zero value");
+    if (B != A) {
       ierr = MatMissingDiagonal(B,&missing,NULL);CHKERRQ(ierr);
       if (missing) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Bmat passed to TSSetIJacobian() must have all diagonal entries set, if they are zero you must still set them with a zero value");
     }
@@ -962,10 +968,15 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
       ierr = TSComputeRHSJacobian(ts,t,U,Arhs,Brhs);CHKERRQ(ierr);
     }
     if (Arhs == A) {           /* No IJacobian, so we only have the RHS matrix */
+      PetscBool flg;
       ts->rhsjacobian.scale = -1;
       ts->rhsjacobian.shift = shift;
-      ierr = MatScale(A,-1);CHKERRQ(ierr);
-      ierr = MatShift(A,shift);CHKERRQ(ierr);
+      ierr = SNESGetUseMatrixFree(ts->snes,NULL,&flg);CHKERRQ(ierr);
+      /* since -snes_mf_operator uses the full SNES function it does not need to be shifted or scaled here */
+      if (!flg) {
+        ierr = MatScale(A,-1);CHKERRQ(ierr);
+        ierr = MatShift(A,shift);CHKERRQ(ierr);
+      }
       if (A != B) {
         ierr = MatScale(B,-1);CHKERRQ(ierr);
         ierr = MatShift(B,shift);CHKERRQ(ierr);

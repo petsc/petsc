@@ -1059,6 +1059,69 @@ PetscErrorCode  SNESGetApplicationContext(SNES snes,void *usrP)
 }
 
 /*@
+   SNESSetUseMatrixFree - indicates that SNES should use matrix free finite difference matrix vector products internally to apply
+                          the Jacobian.
+
+   Collective on SNES
+
+   Input Parameters:
++  snes - SNES context
+.  mf - use matrix-free for both the Amat and Pmat used by SNESSetJacobian(), both the Amat and Pmat set in SNESSetJacobian() will be ignored
+-  mf_operator - use matrix-free only for the Amat used by SNESSetJacobian(), this means the user provided Pmat will continue to be used
+
+   Options Database:
++ -snes_mf - use matrix free for both the mat and pmat operator
+- -snes_mf_operator - use matrix free only for the mat operator
+
+   Level: intermediate
+
+.keywords: SNES, nonlinear, get, iteration, number,
+
+.seealso:   SNESGetUseMatrixFree(), MatCreateSNESMF()
+@*/
+PetscErrorCode  SNESSetUseMatrixFree(SNES snes,PetscBool mf_operator,PetscBool mf)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  if (mf && !mf_operator) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_INCOMP,"If using mf must also use mf_operator");
+  snes->mf          = mf;
+  snes->mf_operator = mf_operator;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   SNESGetUseMatrixFree - indicates if the SNES uses matrix free finite difference matrix vector products to apply
+                          the Jacobian.
+
+   Collective on SNES
+
+   Input Parameter:
+.  snes - SNES context
+
+   Output Parameters:
++  mf - use matrix-free for both the Amat and Pmat used by SNESSetJacobian(), both the Amat and Pmat set in SNESSetJacobian() will be ignored
+-  mf_operator - use matrix-free only for the Amat used by SNESSetJacobian(), this means the user provided Pmat will continue to be used
+
+   Options Database:
++ -snes_mf - use matrix free for both the mat and pmat operator
+- -snes_mf_operator - use matrix free only for the mat operator
+
+   Level: intermediate
+
+.keywords: SNES, nonlinear, get, iteration, number,
+
+.seealso:   SNESSetUseMatrixFree(), MatCreateSNESMF()
+@*/
+PetscErrorCode  SNESGetUseMatrixFree(SNES snes,PetscBool *mf_operator,PetscBool *mf)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  if (mf)          *mf          = snes->mf;
+  if (mf_operator) *mf_operator = snes->mf_operator;
+  PetscFunctionReturn(0);
+}
+
+/*@
    SNESGetIterationNumber - Gets the number of nonlinear iterations completed
    at this time.
 
