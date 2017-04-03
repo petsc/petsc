@@ -50,7 +50,7 @@ class Configure(config.base.Configure):
         flagName  = self.language[-1]+'SharedLinkerFlag'
         flagSubst = self.language[-1].upper()+'_LINKER_SLFLAG'
         dirname   = os.path.dirname(library).replace('\\ ',' ').replace(' ', '\\ ').replace('\\(','(').replace('(', '\\(').replace('\\)',')').replace(')', '\\)')
-        if with_rpath and dirname.startswith('/Applications/Xcode.app'): with_rpath = None
+        if dirname.startswith('/Applications/Xcode.app') or dirname.startswith('/Library/Developer/CommandLineTools/usr/lib'): with_rpath = None
         if with_rpath:
           if hasattr(self.setCompilers, flagName) and not getattr(self.setCompilers, flagName) is None:
             return [getattr(self.setCompilers, flagName)+dirname,'-L'+dirname,'-l'+name]
