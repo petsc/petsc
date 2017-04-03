@@ -193,6 +193,7 @@ struct _FETIDPMat_ctx {
   PC         pc;
   PetscBool  fully_redundant;
   /* saddle point */
+  VecScatter l2g_lambda_only;
   Mat        B_BB;
   Mat        B_BI;
   Mat        Bt_BB;
@@ -204,6 +205,8 @@ struct _FETIDPMat_ctx {
   Vec        xPg;
   Vec        yPg;
   Vec        rhs_flip;
+  IS         pressure;
+  IS         lagrange;
 };
 typedef struct _FETIDPMat_ctx *FETIDPMat_ctx;
 
@@ -215,7 +218,6 @@ struct _FETIDPPC_ctx {
   VecScatter l2g_lambda;
   PC         pc;
   /* saddle point */
-  KSP        kP;
   Vec        xPg;
   Vec        yPg;
 };
