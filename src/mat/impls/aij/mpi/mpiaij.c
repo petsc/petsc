@@ -3089,8 +3089,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_Private(Mat mat,IS isrow,IS iscol,Petsc
   ierr = ISGetLocalSize(iscol,&nlocal);CHKERRQ(ierr);
   if (colflag && nlocal == mat->cmap->N) allcolumns = PETSC_TRUE;
 
-#if 1
-   //==================== new ====================
+  //==================== new ====================
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)mat->data;
   Mat            A = a->A,B = a->B;
   PetscInt       *garray = a->garray;
@@ -3101,8 +3100,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_Private(Mat mat,IS isrow,IS iscol,Petsc
   if (rank==-1) {
     ierr = ISView(iscol_local,0);CHKERRQ(ierr);
   }
-  
-  //ierr = ISGetLocalSize(iscol_local,&nlocal);CHKERRQ(ierr);
+
   //printf("[%d] cstart/end: %d - %d; nlocal %d\n",rank,cstart,cend,nlocal);
   ierr = ISGetIndices(iscol_local,&is_idx);CHKERRQ(ierr);
 
@@ -3147,26 +3145,24 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_Private(Mat mat,IS isrow,IS iscol,Petsc
     }
   }
   ierr = ISRestoreIndices(iscol_local,&is_idx);CHKERRQ(ierr);
-  printf("[%d] nlocal %d, N %d, Bn %d + An %d = %d, count %d\n",rank,nlocal,mat->cmap->N,Bn,An,Bn+An,count);
+  //printf("[%d] nlocal %d, N %d, Bn %d + An %d = %d, count %d\n",rank,nlocal,mat->cmap->N,Bn,An,Bn+An,count);
 
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject)iscol_local),count,idx,PETSC_COPY_VALUES,&iscol_loc);CHKERRQ(ierr);
+  ierr = ISSort(iscol_loc);CHKERRQ(ierr);
+  ierr = PetscSortInt(count,cmap);CHKERRQ(ierr);
   if (rank==-1) {
     ierr = ISView(iscol_loc,0);CHKERRQ(ierr);
     for (i=0; i<count; i++) printf("cmap[%d] = %d\n",i,cmap[i]);
   }
-  
+
   Mat Msub;
   ierr = MatCreateSubMatrices_MPIAIJ_SingleIS_Local(mat,1,&isrow,&iscol_loc,MAT_INITIAL_MATRIX,allcolumns,&Msub);CHKERRQ(ierr);
-  if (rank==0) {
+  if (rank==-1) {
     printf("[%d] Msub: %d %d \n",rank,Msub->rmap->N,Msub->cmap->N);
     ierr = MatView(Msub,0);CHKERRQ(ierr);
   }
- 
-  ierr = MatDestroy(&Msub);CHKERRQ(ierr);
   ierr = ISDestroy(&iscol_loc);CHKERRQ(ierr);
   //==========================================================
- 
-#endif
 
   if (call ==  MAT_REUSE_MATRIX) {
     ierr = PetscObjectQuery((PetscObject)*newmat,"SubMatrix",(PetscObject*)&Mreuse);CHKERRQ(ierr);
@@ -3243,6 +3239,13 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_Private(Mat mat,IS isrow,IS iscol,Petsc
     M->was_assembled = PETSC_TRUE;
     M->assembled     = PETSC_FALSE;
   }
+
+  //==========================
+  Mat_SeqAIJ  *aijsub = (Mat_SeqAIJ*)(Msub)->data;
+  PetscInt    *iisub  = aijsub->i,*jjsub = aijsub->j,nzsub,colsub;
+  PetscScalar *aasub = aijsub->a,vsub;
+  //===========================
+
   ierr = MatGetOwnershipRange(M,&rstart,&rend);CHKERRQ(ierr);
   aij  = (Mat_SeqAIJ*)(Mreuse)->data;
   ii   = aij->i;
@@ -3253,19 +3256,33 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_Private(Mat mat,IS isrow,IS iscol,Petsc
     nz    = ii[i+1] - ii[i];
     cwork = jj;     jj += nz;
     vwork = aa;     aa += nz;
-    ierr  = MatSetValues_MPIAIJ(M,1,&row,nz,cwork,vwork,INSERT_VALUES);CHKERRQ(ierr);
+
+    nzsub = iisub[i+1] - iisub[i];
+    if (nzsub != nz) printf(" nzsub != nz\n");
+    
+    for (j=0; j<nz; j++) {
+      colsub = cmap[jjsub[iisub[i]+j]];
+      vsub   = aasub[iisub[i]+j];
+      if (colsub != cwork[j])  printf("%d != %d\n",colsub,cwork[j]);
+      if (vwork[j] != vsub) printf(" %g != %g\n",vwork[j],vsub);
+      ierr  = MatSetValues_MPIAIJ(M,1,&row,1,&colsub,&vsub,INSERT_VALUES);CHKERRQ(ierr);
+    }
+
+    //ierr  = MatSetValues_MPIAIJ(M,1,&row,nz,cwork,vwork,INSERT_VALUES);CHKERRQ(ierr);
   }
 
   ierr    = MatAssemblyBegin(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr    = MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *newmat = M;
-  ierr = MatView(M,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  //ierr = MatView(M,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* save submatrix used in processor for next request */
   if (call ==  MAT_INITIAL_MATRIX) {
     ierr = PetscObjectCompose((PetscObject)M,"SubMatrix",(PetscObject)Mreuse);CHKERRQ(ierr);
     ierr = MatDestroy(&Mreuse);CHKERRQ(ierr);
   }
+
+  ierr = MatDestroy(&Msub);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
