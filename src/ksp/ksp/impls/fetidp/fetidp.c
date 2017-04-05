@@ -914,7 +914,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         ierr = PetscObjectQuery((PetscObject)fetidp->innerbddc,"__KSPFETIDP_C",(PetscObject*)&C);CHKERRQ(ierr);
         if (C) { /* non-zero pressure block, most likely Almost Incompressible Elasticity */
           ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_PPmat",(PetscObject)C);CHKERRQ(ierr);
-        } else { /* identity (need to be scaled properly by the user using e.g. a Richardon method */
+        } else { /* identity (need to be scaled properly by the user using e.g. a Richardson method */
           PetscInt nl;
 
           ierr = ISGetLocalSize(fetidp->pP,&nl);CHKERRQ(ierr);
@@ -947,8 +947,8 @@ static PetscErrorCode KSPSetUp_FETIDP(KSP ksp)
   PetscFunctionBegin;
   ierr = KSPFETIDPSetUpOperators(ksp);CHKERRQ(ierr);
   /* set up BDDC */
+  ierr = PCSetErrorIfFailure(fetidp->innerbddc,ksp->errorifnotconverged);CHKERRQ(ierr);
   ierr = PCSetUp(fetidp->innerbddc);CHKERRQ(ierr);
-
   /* FETI-DP as it is implemented needs an exact coarse solver */
   if (pcbddc->coarse_ksp) {
     ierr = KSPSetTolerances(pcbddc->coarse_ksp,PETSC_SMALL,PETSC_SMALL,PETSC_DEFAULT,1000);CHKERRQ(ierr);
@@ -995,6 +995,7 @@ static PetscErrorCode KSPSetUp_FETIDP(KSP ksp)
   if (ksp->res_hist) {
     ierr = KSPSetResidualHistory(fetidp->innerksp,ksp->res_hist,ksp->res_hist_max,ksp->res_hist_reset);CHKERRQ(ierr);
   }
+  ierr = KSPSetErrorIfNotConverged(fetidp->innerksp,ksp->errorifnotconverged);CHKERRQ(ierr);
   ierr = KSPSetUp(fetidp->innerksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1134,7 +1135,7 @@ static PetscErrorCode KSPSetFromOptions_FETIDP(PetscOptionItems *PetscOptionsObj
      KSPFETIDP - The FETI-DP method
 
    This class implements the FETI-DP method [1].
-   The preconditioning matrix for the KSP must be of type MATIS.
+   The matrix for the KSP must be of type MATIS.
    The FETI-DP linear system (automatically generated constructing an internal PCBDDC object) is solved using an internal KSP object.
 
    Options Database Keys:
@@ -1143,7 +1144,8 @@ static PetscErrorCode KSPSetFromOptions_FETIDP(PetscOptionItems *PetscOptionsObj
 .   -ksp_fetidp_saddlepoint_flip <false> : usually, an incompressible Stokes problem is written as
                                            | A B^T | | v | = | f |
                                            | B 0   | | p | = | g |
-                                           If -ksp_fetidp_saddlepoint_flip is true, the code assumes it is written as
+                                           with B representing -\int_\Omega \nabla \cdot u q.
+                                           If -ksp_fetidp_saddlepoint_flip is true, the code assumes that the user provides it as
                                            | A B^T | | v | = | f |
                                            |-B 0   | | p | = |-g |
 .   -ksp_fetidp_pressure_field <-1>      : activates support for saddle point problems, and identifies the pressure field id.
@@ -1205,6 +1207,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FETIDP(KSP ksp)
   ksp->ops->buildresidual                = KSPBuildResidualDefault;
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+  ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
   /* create the inner KSP for the Lagrange multipliers */
   ierr = KSPCreate(PetscObjectComm((PetscObject)ksp),&fetidp->innerksp);CHKERRQ(ierr);
   ierr = KSPGetPC(fetidp->innerksp,&pc);CHKERRQ(ierr);
