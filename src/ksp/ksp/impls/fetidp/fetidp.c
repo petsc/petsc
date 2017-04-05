@@ -823,15 +823,15 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
       nA   = A;
     }
     if (fetidp->rhs_flip) {
-      Mat lA2;
-
       ierr = MatDiagonalScale(nA,fetidp->rhs_flip,NULL);CHKERRQ(ierr);
       if (totP) {
+        Mat lA2;
+
         ierr = MatISGetLocalMat(nA,&lA);CHKERRQ(ierr);
         ierr = MatDuplicate(lA,MAT_COPY_VALUES,&lA2);CHKERRQ(ierr);
         ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_lA",(PetscObject)lA2);CHKERRQ(ierr);
+        ierr = MatDestroy(&lA2);CHKERRQ(ierr);
       }
-      ierr = MatDestroy(&lA2);CHKERRQ(ierr);
     }
     if (totP) {
       ierr = MatSetOption(nA,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
