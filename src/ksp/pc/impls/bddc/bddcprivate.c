@@ -1,6 +1,7 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/ksp/pc/impls/bddc/bddc.h>
 #include <../src/ksp/pc/impls/bddc/bddcprivate.h>
+#include <petscdm.h>
 #include <petscblaslapack.h>
 #include <petsc/private/sfimpl.h>
 
@@ -1635,8 +1636,8 @@ PetscErrorCode PCBDDCComputeLocalTopologyInfo(PC pc)
   Mat_IS         *matis = (Mat_IS*)pc->pmat->data;
 
   PetscFunctionBegin;
-  ierr = MatCreateVecs(pc->pmat,&global,NULL);CHKERRQ(ierr);
   /* need to convert from global to local topology information and remove references to information in global ordering */
+  ierr = MatCreateVecs(pc->pmat,&global,NULL);CHKERRQ(ierr);
   ierr = MatCreateVecs(matis->A,&local,NULL);CHKERRQ(ierr);
   if (pcbddc->user_provided_isfordofs) {
     if (pcbddc->n_ISForDofs) {
@@ -1651,14 +1652,42 @@ PetscErrorCode PCBDDCComputeLocalTopologyInfo(PC pc)
       ierr = PetscFree(pcbddc->ISForDofs);CHKERRQ(ierr);
     }
   } else {
-    if (!pcbddc->n_ISForDofsLocal) { /* field split not present, create it in local ordering if bs > 1 */
-      PetscInt i, n = matis->A->rmap->n;
-      ierr = MatGetBlockSize(pc->pmat,&i);CHKERRQ(ierr);
-      if (i > 1) {
-        pcbddc->n_ISForDofsLocal = i;
-        ierr = PetscMalloc1(pcbddc->n_ISForDofsLocal,&pcbddc->ISForDofsLocal);CHKERRQ(ierr);
-        for (i=0;i<pcbddc->n_ISForDofsLocal;i++) {
-          ierr = ISCreateStride(PetscObjectComm((PetscObject)pc),n/pcbddc->n_ISForDofsLocal,i,pcbddc->n_ISForDofsLocal,&pcbddc->ISForDofsLocal[i]);CHKERRQ(ierr);
+    if (!pcbddc->n_ISForDofsLocal) { /* field split not present */
+      DM       dm;
+
+      ierr = PCGetDM(pc, &dm);CHKERRQ(ierr);
+      if (!dm) {
+        ierr = MatGetDM(pc->pmat, &dm);CHKERRQ(ierr);
+      }
+      if (dm) {
+        IS      *fields;
+        PetscInt nf,i;
+        ierr = DMCreateFieldDecomposition(dm,&nf,NULL,&fields,NULL);CHKERRQ(ierr);
+        ierr = PetscMalloc1(nf,&pcbddc->ISForDofsLocal);CHKERRQ(ierr);
+        for (i=0;i<nf;i++) {
+          ierr = PCBDDCGlobalToLocal(matis->rctx,global,local,fields[i],&pcbddc->ISForDofsLocal[i]);CHKERRQ(ierr);
+          ierr = ISDestroy(&fields[i]);CHKERRQ(ierr);
+        }
+        ierr = PetscFree(fields);CHKERRQ(ierr);
+        pcbddc->n_ISForDofsLocal = nf;
+      } else { /* See if MATIS has fields attached by the conversion from MatNest */
+        PetscContainer   c;
+
+        ierr = PetscObjectQuery((PetscObject)pc->pmat,"_convert_nest_lfields",(PetscObject*)&c);CHKERRQ(ierr);
+        if (c) {
+          MatISLocalFields lf;
+          ierr = PetscContainerGetPointer(c,(void**)&lf);CHKERRQ(ierr);
+          ierr = PCBDDCSetDofsSplittingLocal(pc,lf->nr,lf->rf);CHKERRQ(ierr);
+        } else { /* fallback, create the default fields if bs > 1 */
+          PetscInt i, n = matis->A->rmap->n;
+          ierr = MatGetBlockSize(pc->pmat,&i);CHKERRQ(ierr);
+          if (i > 1) {
+            pcbddc->n_ISForDofsLocal = i;
+            ierr = PetscMalloc1(pcbddc->n_ISForDofsLocal,&pcbddc->ISForDofsLocal);CHKERRQ(ierr);
+            for (i=0;i<pcbddc->n_ISForDofsLocal;i++) {
+              ierr = ISCreateStride(PetscObjectComm((PetscObject)pc),n/pcbddc->n_ISForDofsLocal,i,pcbddc->n_ISForDofsLocal,&pcbddc->ISForDofsLocal[i]);CHKERRQ(ierr);
+            }
+          }
         }
       }
     } else {
