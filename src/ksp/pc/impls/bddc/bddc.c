@@ -2429,16 +2429,13 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
     ierr = PCFieldSplitSetIS(newpc,"lag",fetidpmat_ctx->lagrange);CHKERRQ(ierr);
     ierr = PCFieldSplitSetIS(newpc,"p",fetidpmat_ctx->pressure);CHKERRQ(ierr);
     ierr = PCFieldSplitSetType(newpc,PC_COMPOSITE_SCHUR);CHKERRQ(ierr);
+    ierr = PCFieldSplitSetSchurFactType(newpc,PC_FIELDSPLIT_SCHUR_FACT_DIAG);CHKERRQ(ierr);
     ierr = PCFieldSplitSetSchurPre(newpc,PC_FIELDSPLIT_SCHUR_PRE_USER,M);CHKERRQ(ierr);
     ierr = PCSetFromOptions(newpc);CHKERRQ(ierr);
     ierr = PCSetUp(newpc);CHKERRQ(ierr);
 
-    /* default to preonly */
-    ierr = PCFieldSplitGetSubKSP(newpc,&nn,&ksps);CHKERRQ(ierr);
-    ierr = KSPSetType(ksps[0],KSPPREONLY);CHKERRQ(ierr);
-    ierr = KSPSetType(ksps[1],KSPPREONLY);CHKERRQ(ierr);
-
     /* set the solver for the (0,0) block */
+    ierr = PCFieldSplitGetSubKSP(newpc,&nn,&ksps);CHKERRQ(ierr);
     ierr = PCCreate(comm,&lagpc);CHKERRQ(ierr);
     ierr = PCSetType(lagpc,PCSHELL);CHKERRQ(ierr);
     ierr = KSPGetOperators(ksps[0],&AM,&PM);CHKERRQ(ierr);
