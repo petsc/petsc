@@ -1495,14 +1495,6 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
 
   /* process topology information */
   if (pcbddc->recompute_topography) {
-    PetscContainer   c;
-
-    ierr = PetscObjectQuery((PetscObject)pc->pmat,"_convert_nest_lfields",(PetscObject*)&c);CHKERRQ(ierr);
-    if (c) {
-      MatISLocalFields lf;
-      ierr = PetscContainerGetPointer(c,(void**)&lf);CHKERRQ(ierr);
-      ierr = PCBDDCSetDofsSplittingLocal(pc,lf->nr,lf->rf);CHKERRQ(ierr);
-    }
     ierr = PCBDDCComputeLocalTopologyInfo(pc);CHKERRQ(ierr);
     /* detect local disconnected subdomains if requested (use matis->A) */
     if (pcbddc->detect_disconnected) {
@@ -1588,6 +1580,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     if (pcbddc->compute_nonetflux) {
       MatNullSpace nnfnnsp;
 
+      if (!pcbddc->divudotp) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Missing divudotp operator");
       ierr = PCBDDCComputeNoNetFlux(pc->pmat,pcbddc->divudotp,pcbddc->divudotp_trans,pcbddc->divudotp_vl2l,pcbddc->mat_graph,&nnfnnsp);CHKERRQ(ierr);
       /* TODO what if a nearnullspace is already attached? */
       ierr = MatSetNearNullSpace(pc->pmat,nnfnnsp);CHKERRQ(ierr);
