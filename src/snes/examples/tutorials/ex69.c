@@ -3289,7 +3289,9 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       ierr = DMGetStratumIS(*dm, "marker", ids[f],  &is);CHKERRQ(ierr);
       ierr = DMCreateLabel(*dm, names[f]);CHKERRQ(ierr);
       ierr = DMGetLabel(*dm, names[f], &label);CHKERRQ(ierr);
-      ierr = DMLabelInsertIS(label, is, 1);CHKERRQ(ierr);
+      if (is) {
+        ierr = DMLabelInsertIS(label, is, 1);CHKERRQ(ierr);
+      }
       ierr = ISDestroy(&is);CHKERRQ(ierr);
     }
   }
