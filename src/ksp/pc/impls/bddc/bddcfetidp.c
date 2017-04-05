@@ -488,8 +488,6 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
       PetscBLASInt        *pivots,B_lwork,B_N,B_ierr;
 
       if (!pcbddc->deluxe_singlemat) SETERRQ(comm,PETSC_ERR_USER,"Cannot compute B_Ddelta! rerun with -pc_bddc_deluxe_singlemat");
-      if (deluxe_ctx->change) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot compute B_Ddelta with deluxe scaling with active change context");
-
       mss  = 0;
       ierr = PetscCalloc1(pcis->n_B,&nnz);CHKERRQ(ierr);
       if (sub_schurs->is_Ej_all) {
