@@ -2424,6 +2424,7 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
     ierr = PCFieldSplitSetType(newpc,PC_COMPOSITE_SCHUR);CHKERRQ(ierr);
     ierr = PCFieldSplitSetSchurFactType(newpc,PC_FIELDSPLIT_SCHUR_FACT_DIAG);CHKERRQ(ierr);
     ierr = PCFieldSplitSetSchurPre(newpc,PC_FIELDSPLIT_SCHUR_PRE_USER,M);CHKERRQ(ierr);
+    ierr = PCFieldSplitSetSchurScale(newpc,1.0);CHKERRQ(ierr);
     ierr = PCSetFromOptions(newpc);CHKERRQ(ierr);
     ierr = PCSetUp(newpc);CHKERRQ(ierr);
 
