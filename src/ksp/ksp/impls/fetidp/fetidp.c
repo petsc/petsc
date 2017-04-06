@@ -507,8 +507,8 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
   PC_BDDC          *pcbddc = (PC_BDDC*)fetidp->innerbddc->data;
   Mat              A,Ap;
   PetscInt         fid = -1;
-  PetscBool        ismatis,pisz,allp,uspm;
-  PetscBool        flip; /* Usually, Stokes is written
+  PetscBool        ismatis,pisz,allp;
+  PetscBool        flip; /* Usually, Stokes is written (B = -\int_\Omega \nabla \cdot u q)
                            | A B'| | v | = | f |
                            | B 0 | | p | = | g |
                             If -ksp_fetidp_saddlepoint_flip is true, the code assumes it is written as
@@ -522,13 +522,11 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
   pisz = PETSC_TRUE;
   flip = PETSC_FALSE;
   allp = PETSC_FALSE;
-  uspm = PETSC_FALSE;
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)ksp),((PetscObject)ksp)->prefix,"FETI-DP options","PC");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_fetidp_pressure_field","Field id for pressures for saddle-point problems",NULL,fid,&fid,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ksp_fetidp_pressure_iszero","Zero pressure block",NULL,pisz,&pisz,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ksp_fetidp_pressure_all","Use the whole pressure set instead of just that at the interface",NULL,allp,&allp,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ksp_fetidp_saddlepoint_flip","Flip the sign of the pressure-velocity (lower-left) block",NULL,flip,&flip,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-ksp_fetidp_saddlepoint_usepmat","Use Pmat to extract the pressure preconditioner matrix",NULL,uspm,&uspm,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   fetidp->saddlepoint = (fid >= 0 ? PETSC_TRUE : fetidp->saddlepoint);
@@ -859,7 +857,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         ierr = MatScale(C,-1.);CHKERRQ(ierr);
         ierr = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_C",(PetscObject)C);CHKERRQ(ierr);
         ierr = MatDestroy(&C);CHKERRQ(ierr);
-      } else if (uspm) {
+      } else if (A != Ap) { /* user has provided a different Pmat, use it to extract the pressure preconditioner */
         Mat C;
 
         ierr = MatCreateSubMatrix(Ap,fetidp->pP,fetidp->pP,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
@@ -870,10 +868,17 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
 
       /* Preconditioned operator for the pressure block */
       if (PPmat) {
-        Mat      C;
-        IS       Pall;
-        PetscInt AM,PAM,PAN,pam,pan,am,an,pl,pIl,pAg,pIg;
+        Mat       C;
+        IS        Pall;
+        PetscInt  AM,PAM,PAN,pam,pan,am,an,pl,pIl,pAg,pIg;
+        PetscBool ismatis;
 
+        ierr = PetscObjectTypeCompare((PetscObject)PPmat,MATIS,&ismatis);CHKERRQ(ierr);
+        if (ismatis) {
+          ierr  = MatISGetMPIXAIJ(PPmat,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
+          ierr  = PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_PPmat",(PetscObject)C);CHKERRQ(ierr);
+          PPmat = C;
+        }
         ierr = PetscObjectQuery((PetscObject)fetidp->innerbddc,"__KSPFETIDP_aP",(PetscObject*)&Pall);CHKERRQ(ierr);
         ierr = MatGetSize(A,&AM,NULL);CHKERRQ(ierr);
         ierr = MatGetSize(PPmat,&PAM,&PAN);CHKERRQ(ierr);
