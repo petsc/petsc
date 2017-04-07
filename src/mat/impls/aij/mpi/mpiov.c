@@ -1277,8 +1277,6 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,c
   if (scall == MAT_INITIAL_MATRIX) {
     PetscInt *sbuf2_i,*cworkA,lwrite,ctmp;
 
-    //printf("[%d] ncol %d, Cn %d, CN %d\n",rank,ncol,C->cmap->n,C->cmap->N);
-
     /* Get some new tags to keep the communication clean */
     tag1 = ((PetscObject)C)->tag;
     ierr = PetscObjectGetNewTag((PetscObject)C,&tag2);CHKERRQ(ierr);
