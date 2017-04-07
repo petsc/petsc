@@ -852,20 +852,9 @@ cdef class Mat(Object):
         cdef LGMap cmap = LGMap()
         cdef LGMap rmap = LGMap()
         CHKERR( MatGetLocalToGlobalMapping(self.mat, &rmap.lgm, &cmap.lgm) )
-
-        if cmap.lgm != NULL:
-            PetscINCREF(cmap.obj)
-        if rmap.lgm != NULL:
-            PetscINCREF(rmap.obj)
-
-        if cmap.lgm == NULL and rmap.lgm == NULL:
-            return (None, None)
-        elif cmap.lgm == NULL and rmap.lgm != NULL:
-            return (rmap, None)
-        elif cmap.lgm != NULL and rmap.lgm == NULL:
-            return (None, cmap)
-        else:
-            return (rmap, cmap)
+        PetscINCREF(cmap.obj)
+        PetscINCREF(rmap.obj)
+        return (rmap, cmap)
 
     def setValueLocal(self, row, col, value, addv=None):
         cdef PetscInt    ival1 = asInt(row)

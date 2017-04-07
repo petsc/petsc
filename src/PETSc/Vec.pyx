@@ -681,6 +681,12 @@ cdef class Vec(Object):
     def setLGMap(self, LGMap lgmap not None):
         CHKERR( VecSetLocalToGlobalMapping(self.vec, lgmap.lgm) )
 
+    def getLGMap(self):
+        cdef LGMap cmap = LGMap()
+        CHKERR( VecGetLocalToGlobalMapping(self.vec, &cmap.lgm) )
+        PetscINCREF(cmap.obj)
+        return cmap
+
     def setValueLocal(self, index, value, addv=None):
         cdef PetscInt    ival = asInt(index)
         cdef PetscScalar sval = asScalar(value)
