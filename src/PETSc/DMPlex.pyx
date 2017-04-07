@@ -643,3 +643,11 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexConstructGhostCells(self.dm, cname, &numGhostCells, &dmGhosted))
         PetscCLEAR(self.obj); self.dm = dmGhosted
         return toInt(numGhostCells)
+
+
+    #
+
+    def adapt(self, Vec metric, label = ""):
+        cdef DMPlex newplex = <DMPlex>type(self)()
+        CHKERR( DMPlexAdapt(self.dm, metric.vec, label, &newplex.dm) )
+        return newplex

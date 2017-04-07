@@ -125,6 +125,21 @@ class BaseTestPlex(object):
         self.assertNotEqual(numInterior, pEnd - pStart)
         self.assertEqual(numBoundary + numInterior, pEnd - pStart)
 
+
+    def testAdapt(self):
+        dim = self.plex.getDimension()
+        if dim == 1: return
+        section = self.plex.createSection([self.COMP], [self.DOFS])
+        self.plex.setDefaultSection(section)
+        vStart, vEnd = self.plex.getDepthStratum(0)
+        numVertices = vEnd-vStart
+        metric_array = np.zeros(dim*dim*numVertices)
+        for d in range(dim*numVertices): metric_array[d*dim+d%dim] = 9.
+        metric = self.plex.createGlobalVec()
+        metric.createWithArray(metric_array)      
+        newplex = self.plex.adapt(metric)
+
+
 # --------------------------------------------------------------------
 
 class BaseTestPlex_2D(BaseTestPlex):
