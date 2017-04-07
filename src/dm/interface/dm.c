@@ -4371,7 +4371,7 @@ PetscErrorCode DMLocalizeCoordinate_Internal(DM dm, PetscInt dim, const PetscSca
     for (d = 0; d < dim; ++d) out[d] = in[d];
   } else {
     for (d = 0; d < dim; ++d) {
-      if (PetscAbsScalar(anchor[d] - in[d]) > dm->maxCell[d]) {
+      if ((dm->bdtype[d] != DM_BOUNDARY_NONE) && (PetscAbsScalar(anchor[d] - in[d]) > dm->maxCell[d])) {
         out[d] = PetscRealPart(anchor[d]) > PetscRealPart(in[d]) ? dm->L[d] + in[d] : in[d] - dm->L[d];
       } else {
         out[d] = in[d];
@@ -4389,7 +4389,7 @@ PetscErrorCode DMLocalizeCoordinateReal_Internal(DM dm, PetscInt dim, const Pets
     for (d = 0; d < dim; ++d) out[d] = in[d];
   } else {
     for (d = 0; d < dim; ++d) {
-      if (PetscAbsReal(anchor[d] - in[d]) > dm->maxCell[d]) {
+      if ((dm->bdtype[d] != DM_BOUNDARY_NONE) && (PetscAbsReal(anchor[d] - in[d]) > dm->maxCell[d])) {
         out[d] = anchor[d] > in[d] ? dm->L[d] + in[d] : in[d] - dm->L[d];
       } else {
         out[d] = in[d];
@@ -4427,7 +4427,7 @@ PetscErrorCode DMLocalizeAddCoordinate_Internal(DM dm, PetscInt dim, const Petsc
     for (d = 0; d < dim; ++d) out[d] += in[d];
   } else {
     for (d = 0; d < dim; ++d) {
-      if (PetscAbsScalar(anchor[d] - in[d]) > dm->maxCell[d]) {
+      if ((dm->bdtype[d] != DM_BOUNDARY_NONE) && (PetscAbsScalar(anchor[d] - in[d]) > dm->maxCell[d])) {
         out[d] += PetscRealPart(anchor[d]) > PetscRealPart(in[d]) ? dm->L[d] + in[d] : in[d] - dm->L[d];
       } else {
         out[d] += in[d];
