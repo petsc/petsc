@@ -282,7 +282,7 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
   const PetscInt maxspecies = 10;
   PetscInt       nmax = maxspecies;
   char           *names[maxspecies];
-  PetscReal      molefracs[maxspecies];
+  PetscReal      molefracs[maxspecies],sum;
   PetscBool      flg;
 
   PetscFunctionBeginUser;
@@ -291,7 +291,10 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
   x[0] = 1.0;  /* Non-dimensionalized by user->Tini */
 
   ierr = PetscOptionsGetStringArray(NULL,NULL,"-initial_species",names,&nmax,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetRealArray(NULL,NULL,"-initial_molefracs",molefracs,&nmax,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetRealArray(NULL,NULL,"-initial_mole",molefracs,&nmax,&flg);CHKERRQ(ierr);
+  sum = 0;
+  for (i=0; i<nmax; i++) sum += molefracs[i];
+  for (i=0; i<nmax; i++) molefracs[i] = molefracs[i]/sum;
   for (i=0; i<nmax; i++) {
     int ispec = TC_getSpos(names[i], strlen(names[i]));
     if (ispec < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Could not find species %s",names[i]);
