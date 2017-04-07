@@ -225,6 +225,7 @@ PetscErrorCode  TSAdaptView(TSAdapt adapt,PetscViewer viewer)
   if (iascii) {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)adapt,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  number of candidates %D\n",adapt->candidates.n);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  maximum allowed timestep %g minimum %g\n",adapt->dt_max,&adapt->dt_min);CHKERRQ(ierr);
     if (adapt->ops->view) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = (*adapt->ops->view)(adapt,viewer);CHKERRQ(ierr);

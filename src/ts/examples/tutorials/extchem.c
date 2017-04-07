@@ -301,6 +301,9 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
     ierr = PetscPrintf(PETSC_COMM_SELF,"Species %d: %s %g\n",i,names[i],molefracs[i]);CHKERRQ(ierr);
     x[1+ispec] = molefracs[i];
   }
+  for (i=0; i<nmax; i++) {
+    ierr = PetscFree(names[i]);CHKERRQ(ierr);
+  }
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   PrintSpecies((User)ctx,X);CHKERRQ(ierr);
   ierr = MoleFractionToMassFraction((User)ctx,X,&y);CHKERRQ(ierr);
