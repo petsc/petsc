@@ -3,6 +3,28 @@
 #include <petscsf.h>
 
 /*@
+  DMNetworkGetPlex - Gets the Plex DM associated with this network DM
+
+  Not collective
+  
+  Input Parameters:
++ netdm - the dm object
+- plexmdm - the plex dm object
+
+  Level: Advanced
+
+.seealso: DMNetworkCreate()
+@*/
+PetscErrorCode DMNetworkGetPlex(DM netdm, DM *plexdm)
+{
+  DM_Network     *network = (DM_Network*) netdm->data;
+
+  PetscFunctionBegin;
+  *plexdm = network->plex;
+  PetscFunctionReturn(0);
+}
+
+/*@
   DMNetworkSetSizes - Sets the local and global vertices and edges.
 
   Collective on DM
