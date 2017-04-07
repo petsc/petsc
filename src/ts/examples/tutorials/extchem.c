@@ -186,17 +186,17 @@ int main(int argc,char **argv)
 
   {
     Vec                max;
-    const char * const *names;
     PetscInt           i;
     const PetscReal    *bmax;
 
+    CHKMEMQ;
     ierr = TSMonitorEnvelopeGetBounds(ts,&max,NULL);CHKERRQ(ierr);
+    CHKMEMQ;
     if (max) {
-      ierr = TSMonitorLGGetVariableNames(ts,&names);CHKERRQ(ierr);
       ierr = VecGetArrayRead(max,&bmax);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_SELF,"Species - maximum mass fraction\n");CHKERRQ(ierr);
       for (i=1; i<user.Nspec; i++) {
-        if (bmax[i] > .01) {ierr = PetscPrintf(PETSC_COMM_SELF,"%s %g\n",names[i],bmax[i]);CHKERRQ(ierr);}
+        if (bmax[i] > .01) {ierr = PetscPrintf(PETSC_COMM_SELF,"%s %g\n",user.snames[i],(double)bmax[i]);CHKERRQ(ierr);}
       }
       ierr = VecRestoreArrayRead(max,&bmax);CHKERRQ(ierr);
     }
