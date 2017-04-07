@@ -17,6 +17,8 @@ static const char help[] = "Integrate chemistry using TChem.\n";
 /*
     See extchem.example.1 for how to run an example
 
+    See also h2_10sp.inp for another example
+
     Determine sensitivity of final tempature on each variables initial conditions
     -ts_dt 1.e-5 -ts_type cn -ts_adjoint_solve -ts_adjoint_view_solution draw
 
@@ -189,9 +191,7 @@ int main(int argc,char **argv)
     PetscInt           i;
     const PetscReal    *bmax;
 
-    CHKMEMQ;
     ierr = TSMonitorEnvelopeGetBounds(ts,&max,NULL);CHKERRQ(ierr);
-    CHKMEMQ;
     if (max) {
       ierr = VecGetArrayRead(max,&bmax);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_SELF,"Species - maximum mass fraction\n");CHKERRQ(ierr);
