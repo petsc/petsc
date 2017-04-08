@@ -384,7 +384,7 @@ PetscErrorCode DMNetworkGetVariableOffset(DM dm,PetscInt p,PetscInt *offset)
   DM_Network     *network = (DM_Network*)dm->data;
 
   PetscFunctionBegin;
-  ierr = PetscSectionGetOffset(network->DofSection,p,offset);CHKERRQ(ierr);
+  ierr = PetscSectionGetOffset(network->plex->defaultSection,p,offset);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -410,7 +410,7 @@ PetscErrorCode DMNetworkGetVariableGlobalOffset(DM dm,PetscInt p,PetscInt *offse
   DM_Network     *network = (DM_Network*)dm->data;
 
   PetscFunctionBegin;
-  ierr = PetscSectionGetOffset(network->GlobalDofSection,p,offsetg);CHKERRQ(ierr);
+  ierr = PetscSectionGetOffset(network->plex->defaultGlobalSection,p,offsetg);CHKERRQ(ierr);
   if (*offsetg < 0) *offsetg = -(*offsetg + 1); /* Convert to actual global offset for ghost node */
   PetscFunctionReturn(0);
 }
