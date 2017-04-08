@@ -1,17 +1,18 @@
 #
-#
-#
-# Obtain the three files into this directory
-#
-#       curl https://combustion.llnl.gov/content/assets/docs/combustion/h2_v1a_therm.txt> h2_v1a_therm.txt
-#       curl https://combustion.llnl.gov/content/assets/docs/combustion/h2_v1b_mech.txt > h2_v1b_mech.txt 
-#
-#       cp $PETSC_DIR/$PETSC_ARCH/externalpackages/tchem/data/periodictable.dat .
-#
 #   Run with  ./extchem -options_file h2_10sp.inp
 #
--chem h2_v1b_mech.txt 
--thermo h2_v1a_therm.txt
+# If your machine is not connected to the internet you must obtain the two files below and store
+# them in this directory (otherwise the program will automatically obtain them for you).
+#
+#       curl https://combustion.llnl.gov/content/assets/docs/combustion/h2_v1a_therm.txt > h2_v1a_therm.txt
+#       curl https://combustion.llnl.gov/content/assets/docs/combustion/h2_v1b_mech.txt > h2_v1b_mech.txt
+#
+# You may need to do
+#       cp $PETSC_DIR/$PETSC_ARCH/share/periodictable.dat .
+#
+#
+-chem https://combustion.llnl.gov/content/assets/docs/combustion/h2_v1b_mech.txt
+-thermo https://combustion.llnl.gov/content/assets/docs/combustion/h2_v1a_therm.txt
 
 -initial_species H2,O2,N2
 -initial_mole    1,0.5,1.88
@@ -22,6 +23,8 @@
 
 -monitor_temp
 
+# the following line is needed because currently the basic adapter takes large steps and steps right over the ignition
+-ts_adapt_type glee
 -ts_arkimex_fully_implicit
 -ts_max_snes_failures -1
 -ts_adapt_monitor

@@ -73,18 +73,23 @@ int main(int argc,char **argv)
   PetscInt          steps,maxsteps;
   PetscErrorCode    ierr;
   PetscReal         ftime,dt;
-  char              chemfile[PETSC_MAX_PATH_LEN] = "chem.inp",thermofile[PETSC_MAX_PATH_LEN] = "therm.dat";
+  char              chemfile[PETSC_MAX_PATH_LEN],thermofile[PETSC_MAX_PATH_LEN],lchemfile[PETSC_MAX_PATH_LEN],lthermofile[PETSC_MAX_PATH_LEN],lperiodic[PETSC_MAX_PATH_LEN];
+  const char        *periodic = "file://${PETSC_DIR}/${PETSC_ARCH}/share/periodictable.dat";
   struct _User      user;       /* user-defined work context */
   TSConvergedReason reason;
   char              **snames,*names;
   PetscInt          i;
   TSTrajectory      tj;
-  PetscBool         flg = PETSC_FALSE,tflg = PETSC_FALSE;
+  PetscBool         flg = PETSC_FALSE,tflg = PETSC_FALSE,found;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Chemistry solver options","");CHKERRQ(ierr);
   ierr = PetscOptionsString("-chem","CHEMKIN input file","",chemfile,chemfile,sizeof(chemfile),NULL);CHKERRQ(ierr);
+  ierr = PetscFileRetrieve(PETSC_COMM_WORLD,chemfile,lchemfile,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);
+  if (!found) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_FILE_OPEN,"Cannot download %s and no local version %s",chemfile,lchemfile);
   ierr = PetscOptionsString("-thermo","NASA thermo input file","",thermofile,thermofile,sizeof(thermofile),NULL);CHKERRQ(ierr);
+  ierr = PetscFileRetrieve(PETSC_COMM_WORLD,thermofile,lthermofile,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);
+  if (!found) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_FILE_OPEN,"Cannot download %s and no local version %s",thermofile,lthermofile);
   user.pressure = 1.01325e5;    /* Pascal */
   ierr = PetscOptionsReal("-pressure","Pressure of reaction [Pa]","",user.pressure,&user.pressure,NULL);CHKERRQ(ierr);
   user.Tini = 1000;             /* Kelvin */
@@ -93,7 +98,11 @@ int main(int argc,char **argv)
   ierr = PetscOptionsBool("-monitor_temp","Monitor the tempature each timestep","",tflg,&tflg,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  ierr = TC_initChem(chemfile, thermofile, 0, 1.0);TCCHKERRQ(ierr);
+  /* tchem requires periodic table in current directory */
+  ierr = PetscFileRetrieve(PETSC_COMM_WORLD,periodic,lperiodic,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);
+  if (!found) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_FILE_OPEN,"Cannot located required periodic table %s or local version %s",periodic,lperiodic);
+
+  ierr = TC_initChem(lchemfile, lthermofile, 0, 1.0);TCCHKERRQ(ierr);
   TC_setThermoPres(user.pressure);
   user.Nspec = TC_getNspec();
   user.Nreac = TC_getNreac();
