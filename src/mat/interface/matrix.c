@@ -5515,6 +5515,9 @@ PetscErrorCode MatGetOption(Mat mat,MatOption op,PetscBool *flg)
   case MAT_SYMMETRY_ETERNAL:
     *flg = mat->symmetric_eternal;
     break;
+  case MAT_SPD:
+    *flg = mat->spd;
+    break;
   default:
     break;
   }
