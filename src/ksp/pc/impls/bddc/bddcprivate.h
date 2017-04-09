@@ -58,7 +58,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC);
 PetscErrorCode PCBDDCConsistencyCheckIS(PC,MPI_Op,IS*);
 PetscErrorCode PCBDDCComputeLocalTopologyInfo(PC);
 PetscErrorCode MatCreateSubMatrixUnsorted(Mat,IS,IS,Mat*);
-PetscErrorCode MatDetectDisconnectedComponents(Mat,PetscBool,PetscInt*,IS*[]);
+PetscErrorCode PCBDDCDetectDisconnectedComponents(PC,PetscInt*,IS*[],IS*);
 PetscErrorCode MatSeqAIJCompress(Mat,Mat*);
 PetscErrorCode PCBDDCReuseSolversBenignAdapt(PCBDDCReuseSolvers,Vec,Vec,PetscBool,PetscBool);
 PetscErrorCode PCBDDCComputeNoNetFlux(Mat,Mat,PetscBool,IS,PCBDDCGraph,MatNullSpace*);

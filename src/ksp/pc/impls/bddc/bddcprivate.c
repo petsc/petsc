@@ -1,9 +1,10 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/ksp/pc/impls/bddc/bddc.h>
 #include <../src/ksp/pc/impls/bddc/bddcprivate.h>
-#include <petscdm.h>
+#include <petscdmplex.h>
 #include <petscblaslapack.h>
 #include <petsc/private/sfimpl.h>
+#include <petsc/private/dmpleximpl.h>
 
 static PetscErrorCode MatMPIAIJRestrict(Mat,MPI_Comm,Mat*);
 
@@ -1654,7 +1655,7 @@ PetscErrorCode PCBDDCComputeLocalTopologyInfo(PC pc)
     }
   } else {
     if (!pcbddc->n_ISForDofsLocal) { /* field split not present */
-      DM       dm;
+      DM dm;
 
       ierr = PCGetDM(pc, &dm);CHKERRQ(ierr);
       if (!dm) {
@@ -2045,112 +2046,251 @@ PetscErrorCode MatSeqAIJCompress(Mat A, Mat *B)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDetectDisconnectedComponents(Mat A, PetscBool filter, PetscInt *ncc, IS* cc[])
+PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscInt *ncc, IS* cc[], IS* primalv)
 {
-  Mat                    B;
+  Mat                    B = NULL;
+  DM                     dm;
   IS                     is_dummy,*cc_n;
   ISLocalToGlobalMapping l2gmap_dummy;
   PCBDDCGraph            graph;
+  PetscInt               *xadj_filtered = NULL,*adjncy_filtered = NULL;
   PetscInt               i,n;
   PetscInt               *xadj,*adjncy;
-  PetscInt               *xadj_filtered,*adjncy_filtered;
-  PetscBool              flg_row,isseqaij;
+  PetscBool              isplex = PETSC_FALSE;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
-  if (!A->rmap->N || !A->cmap->N) {
-    *ncc = 0;
-    *cc = NULL;
-    PetscFunctionReturn(0);
+  ierr = PCBDDCGraphCreate(&graph);CHKERRQ(ierr);
+  ierr = PCGetDM(pc,&dm);CHKERRQ(ierr);
+  if (!dm) {
+    ierr = MatGetDM(pc->pmat,&dm);CHKERRQ(ierr);
   }
-  ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&isseqaij);CHKERRQ(ierr);
-  if (!isseqaij && filter) {
-    PetscBool isseqdense;
+  if (dm) {
+    ierr = PetscObjectTypeCompare((PetscObject)dm,DMPLEX,&isplex);CHKERRQ(ierr);
+  }
+  if (isplex) { /* this code has been modified from plexpartition.c */
+    PetscInt       p, pStart, pEnd, a, adjSize, idx, size, nroots;
+    PetscInt      *adj = NULL;
+    IS             cellNumbering;
+    const PetscInt *cellNum;
+    PetscBool      useCone, useClosure;
+    PetscSection   section;
+    PetscSegBuffer adjBuffer;
+    PetscSF        sfPoint;
+    PetscErrorCode ierr;
 
-    ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQDENSE,&isseqdense);CHKERRQ(ierr);
-    if (!isseqdense) {
-      ierr = MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-    } else { /* TODO: rectangular case and LDA */
-      PetscScalar *array;
-      PetscReal   chop=1.e-6;
+    PetscFunctionBegin;
+    ierr = DMPlexGetHeightStratum(dm, 0, &pStart, &pEnd);CHKERRQ(ierr);
+    ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
+    ierr = PetscSFGetGraph(sfPoint, &nroots, NULL, NULL, NULL);CHKERRQ(ierr);
+    /* Build adjacency graph via a section/segbuffer */
+    ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &section);CHKERRQ(ierr);
+    ierr = PetscSectionSetChart(section, pStart, pEnd);CHKERRQ(ierr);
+    ierr = PetscSegBufferCreate(sizeof(PetscInt),1000,&adjBuffer);CHKERRQ(ierr);
+    /* Always use FVM adjacency to create partitioner graph */
+    ierr = DMPlexGetAdjacencyUseCone(dm, &useCone);CHKERRQ(ierr);
+    ierr = DMPlexGetAdjacencyUseClosure(dm, &useClosure);CHKERRQ(ierr);
+    ierr = DMPlexSetAdjacencyUseCone(dm, PETSC_TRUE);CHKERRQ(ierr);
+    ierr = DMPlexSetAdjacencyUseClosure(dm, PETSC_FALSE);CHKERRQ(ierr);
+    ierr = DMPlexCreateCellNumbering_Internal(dm, PETSC_TRUE, &cellNumbering);CHKERRQ(ierr);
+    ierr = ISGetIndices(cellNumbering, &cellNum);CHKERRQ(ierr);
+    for (n = 0, p = pStart; p < pEnd; p++) {
+      /* Skip non-owned cells in parallel (ParMetis expects no overlap) */
+      if (nroots > 0) {if (cellNum[p] < 0) continue;}
+      adjSize = PETSC_DETERMINE;
+      ierr = DMPlexGetAdjacency(dm, p, &adjSize, &adj);CHKERRQ(ierr);
+      for (a = 0; a < adjSize; ++a) {
+        const PetscInt point = adj[a];
+        if (point != p && pStart <= point && point < pEnd) {
+          PetscInt *PETSC_RESTRICT pBuf;
+          ierr = PetscSectionAddDof(section, p, 1);CHKERRQ(ierr);
+          ierr = PetscSegBufferGetInts(adjBuffer, 1, &pBuf);CHKERRQ(ierr);
+          *pBuf = point;
+        }
+      }
+      n++;
+    }
+    ierr = DMPlexSetAdjacencyUseCone(dm, useCone);CHKERRQ(ierr);
+    ierr = DMPlexSetAdjacencyUseClosure(dm, useClosure);CHKERRQ(ierr);
+    /* Derive CSR graph from section/segbuffer */
+    ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
+    ierr = PetscSectionGetStorageSize(section, &size);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n+1, &xadj);CHKERRQ(ierr);
+    for (idx = 0, p = pStart; p < pEnd; p++) {
+      if (nroots > 0) {if (cellNum[p] < 0) continue;}
+      ierr = PetscSectionGetOffset(section, p, &(xadj[idx++]));CHKERRQ(ierr);
+    }
+    xadj[n] = size;
+    ierr = PetscSegBufferExtractAlloc(adjBuffer, &adjncy);CHKERRQ(ierr);
+    /* Clean up */
+    ierr = ISDestroy(&cellNumbering);CHKERRQ(ierr);
+    ierr = PetscSegBufferDestroy(&adjBuffer);CHKERRQ(ierr);
+    ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
+    ierr = PetscFree(adj);CHKERRQ(ierr);
+    graph->xadj = xadj;
+    graph->adjncy = adjncy;
+  } else {
+    Mat       A;
+    PetscBool filter = PETSC_FALSE, isseqaij, flg_row;
 
-      ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
-      ierr = MatDenseGetArray(B,&array);CHKERRQ(ierr);
-      ierr = MatGetSize(B,&n,NULL);CHKERRQ(ierr);
+    ierr = MatISGetLocalMat(pc->pmat,&A);CHKERRQ(ierr);
+    if (!A->rmap->N || !A->cmap->N) {
+      *ncc = 0;
+      *cc = NULL;
+      PetscFunctionReturn(0);
+    }
+    ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&isseqaij);CHKERRQ(ierr);
+    if (!isseqaij && filter) {
+      PetscBool isseqdense;
+
+      ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQDENSE,&isseqdense);CHKERRQ(ierr);
+      if (!isseqdense) {
+        ierr = MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+      } else { /* TODO: rectangular case and LDA */
+        PetscScalar *array;
+        PetscReal   chop=1.e-6;
+
+        ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+        ierr = MatDenseGetArray(B,&array);CHKERRQ(ierr);
+        ierr = MatGetSize(B,&n,NULL);CHKERRQ(ierr);
+        for (i=0;i<n;i++) {
+          PetscInt j;
+          for (j=i+1;j<n;j++) {
+            PetscReal thresh = chop*(PetscAbsScalar(array[i*(n+1)])+PetscAbsScalar(array[j*(n+1)]));
+            if (PetscAbsScalar(array[i*n+j]) < thresh) array[i*n+j] = 0.;
+            if (PetscAbsScalar(array[j*n+i]) < thresh) array[j*n+i] = 0.;
+          }
+        }
+        ierr = MatDenseRestoreArray(B,&array);CHKERRQ(ierr);
+        ierr = MatConvert(B,MATSEQAIJ,MAT_INPLACE_MATRIX,&B);CHKERRQ(ierr);
+      }
+    } else {
+      ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+      B = A;
+    }
+    ierr = MatGetRowIJ(B,0,PETSC_TRUE,PETSC_FALSE,&n,(const PetscInt**)&xadj,(const PetscInt**)&adjncy,&flg_row);CHKERRQ(ierr);
+
+    /* if filter is true, then removes entries lower than PETSC_SMALL in magnitude */
+    if (filter) {
+      PetscScalar *data;
+      PetscInt    j,cum;
+
+      ierr = PetscCalloc2(n+1,&xadj_filtered,xadj[n],&adjncy_filtered);CHKERRQ(ierr);
+      ierr = MatSeqAIJGetArray(B,&data);CHKERRQ(ierr);
+      cum = 0;
       for (i=0;i<n;i++) {
-        PetscInt j;
-        for (j=i+1;j<n;j++) {
-          PetscReal thresh = chop*(PetscAbsScalar(array[i*(n+1)])+PetscAbsScalar(array[j*(n+1)]));
-          if (PetscAbsScalar(array[i*n+j]) < thresh) array[i*n+j] = 0.;
-          if (PetscAbsScalar(array[j*n+i]) < thresh) array[j*n+i] = 0.;
+        PetscInt t;
+
+        for (j=xadj[i];j<xadj[i+1];j++) {
+          if (PetscUnlikely(PetscAbsScalar(data[j]) < PETSC_SMALL)) {
+            continue;
+          }
+          adjncy_filtered[cum+xadj_filtered[i]++] = adjncy[j];
         }
+        t = xadj_filtered[i];
+        xadj_filtered[i] = cum;
+        cum += t;
       }
-      ierr = MatDenseRestoreArray(B,&array);CHKERRQ(ierr);
-      ierr = MatConvert(B,MATSEQAIJ,MAT_INPLACE_MATRIX,&B);CHKERRQ(ierr);
+      ierr = MatSeqAIJRestoreArray(B,&data);CHKERRQ(ierr);
+      graph->xadj = xadj_filtered;
+      graph->adjncy = adjncy_filtered;
+    } else {
+      graph->xadj = xadj;
+      graph->adjncy = adjncy;
     }
-  } else {
-    B = A;
   }
-  ierr = MatGetRowIJ(B,0,PETSC_TRUE,PETSC_FALSE,&n,(const PetscInt**)&xadj,(const PetscInt**)&adjncy,&flg_row);CHKERRQ(ierr);
-
-  /* if filter is true, then removes entries lower than PETSC_SMALL in magnitude */
-  if (filter) {
-    PetscScalar *data;
-    PetscInt    j,cum;
-
-    ierr = PetscCalloc2(n+1,&xadj_filtered,xadj[n],&adjncy_filtered);CHKERRQ(ierr);
-    ierr = MatSeqAIJGetArray(B,&data);CHKERRQ(ierr);
-    cum = 0;
-    for (i=0;i<n;i++) {
-      PetscInt t;
-
-      for (j=xadj[i];j<xadj[i+1];j++) {
-        if (PetscUnlikely(PetscAbsScalar(data[j]) < PETSC_SMALL)) {
-          continue;
-        }
-        adjncy_filtered[cum+xadj_filtered[i]++] = adjncy[j];
-      }
-      t = xadj_filtered[i];
-      xadj_filtered[i] = cum;
-      cum += t;
-    }
-    ierr = MatSeqAIJRestoreArray(B,&data);CHKERRQ(ierr);
-  } else {
-    xadj_filtered = NULL;
-    adjncy_filtered = NULL;
-  }
-
   /* compute local connected components using PCBDDCGraph */
   ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,&is_dummy);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreateIS(is_dummy,&l2gmap_dummy);CHKERRQ(ierr);
   ierr = ISDestroy(&is_dummy);CHKERRQ(ierr);
-  ierr = PCBDDCGraphCreate(&graph);CHKERRQ(ierr);
   ierr = PCBDDCGraphInit(graph,l2gmap_dummy,n,PETSC_MAX_INT);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&l2gmap_dummy);CHKERRQ(ierr);
-  if (xadj_filtered) {
-    graph->xadj = xadj_filtered;
-    graph->adjncy = adjncy_filtered;
-  } else {
-    graph->xadj = xadj;
-    graph->adjncy = adjncy;
-  }
   ierr = PCBDDCGraphSetUp(graph,1,NULL,NULL,0,NULL,NULL);CHKERRQ(ierr);
   ierr = PCBDDCGraphComputeConnectedComponents(graph);CHKERRQ(ierr);
+
   /* partial clean up */
   ierr = PetscFree2(xadj_filtered,adjncy_filtered);CHKERRQ(ierr);
-  ierr = MatRestoreRowIJ(B,0,PETSC_TRUE,PETSC_FALSE,&n,(const PetscInt**)&xadj,(const PetscInt**)&adjncy,&flg_row);CHKERRQ(ierr);
-  if (A != B) {
+  if (B) {
+    PetscBool flg_row;
+    ierr = MatRestoreRowIJ(B,0,PETSC_TRUE,PETSC_FALSE,&n,(const PetscInt**)&xadj,(const PetscInt**)&adjncy,&flg_row);CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
+  }
+  if (isplex) {
+    ierr = PetscFree(xadj);CHKERRQ(ierr);
+    ierr = PetscFree(adjncy);CHKERRQ(ierr);
   }
 
   /* get back data */
-  if (ncc) *ncc = graph->ncc;
-  if (cc) {
-    ierr = PetscMalloc1(graph->ncc,&cc_n);CHKERRQ(ierr);
-    for (i=0;i<graph->ncc;i++) {
-      ierr = ISCreateGeneral(PETSC_COMM_SELF,graph->cptr[i+1]-graph->cptr[i],graph->queue+graph->cptr[i],PETSC_COPY_VALUES,&cc_n[i]);CHKERRQ(ierr);
+  if (isplex) {
+    if (ncc) *ncc = graph->ncc;
+    if (cc || primalv) {
+      Mat          A;
+      PetscBT      btv,btvt;
+      PetscSection subSection;
+      PetscInt     *ids,cum,cump,*cids,*pids;
+
+      ierr = DMPlexGetSubdomainSection(dm,&subSection);CHKERRQ(ierr);
+      ierr = MatISGetLocalMat(pc->pmat,&A);CHKERRQ(ierr);
+      ierr = PetscMalloc3(A->rmap->n,&ids,graph->ncc+1,&cids,A->rmap->n,&pids);CHKERRQ(ierr);
+      ierr = PetscBTCreate(A->rmap->n,&btv);CHKERRQ(ierr);
+      ierr = PetscBTCreate(A->rmap->n,&btvt);CHKERRQ(ierr);
+
+      cids[0] = 0;
+      for (i = 0, cump = 0, cum = 0; i < graph->ncc; i++) {
+        PetscInt j;
+
+        ierr = PetscBTMemzero(A->rmap->n,btvt);CHKERRQ(ierr);
+        for (j = graph->cptr[i]; j < graph->cptr[i+1]; j++) {
+          PetscInt k, size, *closure = NULL, cell = graph->queue[j];
+
+          ierr = DMPlexGetTransitiveClosure(dm,cell,PETSC_TRUE,&size,&closure);CHKERRQ(ierr);
+          for (k = 0; k < 2*size; k += 2) {
+            PetscInt s, p = closure[k], off, dof, cdof;
+
+            ierr = PetscSectionGetConstraintDof(subSection, p, &cdof);CHKERRQ(ierr);
+            ierr = PetscSectionGetOffset(subSection,p,&off);CHKERRQ(ierr);
+            ierr = PetscSectionGetDof(subSection,p,&dof);CHKERRQ(ierr);
+            for (s = 0; s < dof-cdof; s++) {
+              if (PetscBTLookupSet(btvt,off+s)) continue;
+              if (!PetscBTLookup(btv,off+s)) {
+                ids[cum++] = off+s;
+              } else { /* cross-vertex */
+                pids[cump++] = off+s;
+              }
+            }
+          }
+          ierr = DMPlexRestoreTransitiveClosure(dm,cell,PETSC_TRUE,&size,&closure);CHKERRQ(ierr);
+        }
+        cids[i+1] = cum;
+        /* mark dofs as already assigned */
+        for (j = cids[i]; j < cids[i+1]; j++) {
+          ierr = PetscBTSet(btv,ids[j]);CHKERRQ(ierr);
+        }
+      }
+      if (cc) {
+        ierr = PetscMalloc1(graph->ncc,&cc_n);CHKERRQ(ierr);
+        for (i = 0; i < graph->ncc; i++) {
+          ierr = ISCreateGeneral(PETSC_COMM_SELF,cids[i+1]-cids[i],ids+cids[i],PETSC_COPY_VALUES,&cc_n[i]);CHKERRQ(ierr);
+        }
+        *cc = cc_n;
+      }
+      if (primalv) {
+        ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc),cump,pids,PETSC_COPY_VALUES,primalv);CHKERRQ(ierr);
+      }
+      ierr = PetscFree3(ids,cids,pids);CHKERRQ(ierr);
+      ierr = PetscBTDestroy(&btv);CHKERRQ(ierr);
+      ierr = PetscBTDestroy(&btvt);CHKERRQ(ierr);
     }
-    *cc = cc_n;
+  } else {
+    if (ncc) *ncc = graph->ncc;
+    if (cc) {
+      ierr = PetscMalloc1(graph->ncc,&cc_n);CHKERRQ(ierr);
+      for (i=0;i<graph->ncc;i++) {
+        ierr = ISCreateGeneral(PETSC_COMM_SELF,graph->cptr[i+1]-graph->cptr[i],graph->queue+graph->cptr[i],PETSC_COPY_VALUES,&cc_n[i]);CHKERRQ(ierr);
+      }
+      *cc = cc_n;
+    }
+    if (primalv) *primalv = NULL;
   }
   /* clean up graph */
   graph->xadj = 0;
