@@ -1794,7 +1794,7 @@ PetscErrorCode MatFactorSetSchurIS_MUMPS(Mat F, IS is)
 }
 
 /* -------------------------------------------------------------------------------------------*/
-PetscErrorCode MatFactorCreateSchurComplement_MUMPS(Mat F,Mat* S)
+PetscErrorCode MatFactorCreateSchurComplement_MUMPS(Mat F,Mat* S,MatFactorSchurStatus *st)
 {
   Mat            St;
   Mat_MUMPS      *mumps =(Mat_MUMPS*)F->data;
@@ -1859,12 +1859,13 @@ PetscErrorCode MatFactorCreateSchurComplement_MUMPS(Mat F,Mat* S)
     }
   }
   ierr = MatDenseRestoreArray(St,&array);CHKERRQ(ierr);
-  *S = St;
+  *S   = St;
+  *st  = F->schur_status;
   PetscFunctionReturn(0);
 }
 
 /* -------------------------------------------------------------------------------------------*/
-PetscErrorCode MatFactorGetSchurComplement_MUMPS(Mat F,Mat* S)
+PetscErrorCode MatFactorGetSchurComplement_MUMPS(Mat F,Mat* S,MatFactorSchurStatus *st)
 {
   Mat            St;
   Mat_MUMPS      *mumps =(Mat_MUMPS*)F->data;
@@ -1874,7 +1875,8 @@ PetscErrorCode MatFactorGetSchurComplement_MUMPS(Mat F,Mat* S)
   if (!mumps->id.ICNTL(19)) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur complement mode not selected! You should call MatFactorSetSchurIS to enable it");
   /* It should be the responsibility of the user to handle different ICNTL(19) cases and factorization stages if they want to work with the raw data */
   ierr = MatCreateSeqDense(PETSC_COMM_SELF,mumps->id.size_schur,mumps->id.size_schur,(PetscScalar*)mumps->id.schur,&St);CHKERRQ(ierr);
-  *S = St;
+  *S   = St;
+  *st  = F->schur_status;
   PetscFunctionReturn(0);
 }
 

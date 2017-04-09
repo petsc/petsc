@@ -8756,6 +8756,7 @@ PetscErrorCode MatFactorSetSchurIS(Mat mat,IS is)
    Input Parameters:
 +  F - the factored matrix obtained by calling MatGetFactor() from PETSc-MUMPS interface
 .  *S - location where to return the Schur complement (MATDENSE)
+-  status - the status of the Schur complement matrix (see MatFactorSchurStatus)
 
    Notes:
    The routine provides a copy of the Schur data stored within solver's data strutures. The caller must destroy the object when it is no longer needed.
@@ -8765,15 +8766,17 @@ PetscErrorCode MatFactorSetSchurIS(Mat mat,IS is)
 
    References:
 
-.seealso: MatGetFactor(), MatFactorSetSchurIS(), MatFactorGetSchurComplement()
+.seealso: MatGetFactor(), MatFactorSetSchurIS(), MatFactorGetSchurComplement(), MatFactorSchurStatus
 @*/
-PetscErrorCode MatFactorCreateSchurComplement(Mat F,Mat* S)
+PetscErrorCode MatFactorCreateSchurComplement(Mat F,Mat* S, MatFactorSchurStatus* status)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
-  ierr = PetscUseMethod(F,"MatFactorCreateSchurComplement_C",(Mat,Mat*),(F,S));CHKERRQ(ierr);
+  PetscValidPointer(S,2);
+  if (status) *status = F->schur_status;
+  ierr = PetscUseMethod(F,"MatFactorCreateSchurComplement_C",(Mat,Mat*,MatFactorSchurStatus*),(F,S,status));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -8785,6 +8788,7 @@ PetscErrorCode MatFactorCreateSchurComplement(Mat F,Mat* S)
    Input Parameters:
 +  F - the factored matrix obtained by calling MatGetFactor()
 .  *S - location where to return the Schur complement (in MATDENSE format)
+-  status - the status of the Schur complement matrix (see MatFactorSchurStatus)
 
    Notes:
    Schur complement mode is currently implemented for sequential matrices.
@@ -8795,15 +8799,17 @@ PetscErrorCode MatFactorCreateSchurComplement(Mat F,Mat* S)
 
    References:
 
-.seealso: MatGetFactor(), MatFactorSetSchurIS(), MatFactorRestoreSchurComplement(), MatFactorCreateSchurComplement()
+.seealso: MatGetFactor(), MatFactorSetSchurIS(), MatFactorRestoreSchurComplement(), MatFactorCreateSchurComplement(), MatFactorSchurStatus
 @*/
-PetscErrorCode MatFactorGetSchurComplement(Mat F,Mat* S)
+PetscErrorCode MatFactorGetSchurComplement(Mat F,Mat* S,MatFactorSchurStatus* status)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
-  ierr = PetscUseMethod(F,"MatFactorGetSchurComplement_C",(Mat,Mat*),(F,S));CHKERRQ(ierr);
+  PetscValidPointer(S,2);
+  if (status) *status = F->schur_status;
+  ierr = PetscUseMethod(F,"MatFactorGetSchurComplement_C",(Mat,Mat*,MatFactorSchurStatus*),(F,S,status));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -8815,6 +8821,7 @@ PetscErrorCode MatFactorGetSchurComplement(Mat F,Mat* S)
    Input Parameters:
 +  F - the factored matrix obtained by calling MatGetFactor()
 .  *S - location where the Schur complement is stored
+-  status - the status of the Schur complement matrix (see MatFactorSchurStatus)
 
    Notes:
 
@@ -8822,15 +8829,16 @@ PetscErrorCode MatFactorGetSchurComplement(Mat F,Mat* S)
 
    References:
 
-.seealso: MatGetFactor(), MatFactorSetSchurIS(), MatFactorRestoreSchurComplement(), MatFactorCreateSchurComplement()
+.seealso: MatGetFactor(), MatFactorSetSchurIS(), MatFactorRestoreSchurComplement(), MatFactorCreateSchurComplement(), MatFactorSchurStatus
 @*/
-PetscErrorCode MatFactorRestoreSchurComplement(Mat F,Mat* S)
+PetscErrorCode MatFactorRestoreSchurComplement(Mat F,Mat* S,MatFactorSchurStatus status)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
-  PetscValidHeaderSpecific(*S,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(*S,MAT_CLASSID,2);
+  F->schur_status = status;
   ierr = MatDestroy(S);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -8924,6 +8932,7 @@ PetscErrorCode MatFactorInvertSchurComplement(Mat F)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
   ierr = PetscUseMethod(F,"MatFactorInvertSchurComplement_C",(Mat),(F));CHKERRQ(ierr);
+  F->schur_status = MAT_FACTOR_SCHUR_INVERTED;
   PetscFunctionReturn(0);
 }
 
@@ -8951,6 +8960,7 @@ PetscErrorCode MatFactorFactorizeSchurComplement(Mat F)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
   ierr = PetscUseMethod(F,"MatFactorFactorizeSchurComplement_C",(Mat),(F));CHKERRQ(ierr);
+  F->schur_status = MAT_FACTOR_SCHUR_FACTORED;
   PetscFunctionReturn(0);
 }
 

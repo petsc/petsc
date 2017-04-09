@@ -377,7 +377,7 @@ PetscErrorCode MatFactorSetSchurIS_MKL_PARDISO(Mat F, IS is)
   ierr = PetscMemcpy(mpardiso->schur_idxs,idxs,size*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0;i<size;i++) mpardiso->perm[idxs[i]] = 1;
   ierr = ISRestoreIndices(is,&idxs);CHKERRQ(ierr);
-  if (size) { /* turn on Schur switch if we the set of indices is not empty */
+  if (size) { /* turn on Schur switch if the set of indices is not empty */
     mpardiso->iparm[36-1] = 2;
   }
   mpardiso->schur_factored = PETSC_FALSE;
@@ -385,7 +385,7 @@ PetscErrorCode MatFactorSetSchurIS_MKL_PARDISO(Mat F, IS is)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatFactorCreateSchurComplement_MKL_PARDISO(Mat F,Mat* S)
+PetscErrorCode MatFactorCreateSchurComplement_MKL_PARDISO(Mat F,Mat* S,MatFactorSchurStatus *st)
 {
   Mat             St;
   Mat_MKL_PARDISO *mpardiso =(Mat_MKL_PARDISO*)F->data;
@@ -403,11 +403,12 @@ PetscErrorCode MatFactorCreateSchurComplement_MKL_PARDISO(Mat F,Mat* S)
   ierr = MatDenseGetArray(St,&array);CHKERRQ(ierr);
   ierr = PetscMemcpy(array,mpardiso->schur,mpardiso->schur_size*mpardiso->schur_size*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = MatDenseRestoreArray(St,&array);CHKERRQ(ierr);
-  *S = St;
+  *S   = St;
+  *st  = F->schur_status;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatFactorGetSchurComplement_MKL_PARDISO(Mat F,Mat* S)
+PetscErrorCode MatFactorGetSchurComplement_MKL_PARDISO(Mat F,Mat* S,MatFactorSchurStatus *st)
 {
   Mat             St;
   Mat_MKL_PARDISO *mpardiso =(Mat_MKL_PARDISO*)F->data;
@@ -418,7 +419,8 @@ PetscErrorCode MatFactorGetSchurComplement_MKL_PARDISO(Mat F,Mat* S)
   else if (!mpardiso->schur_size) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ORDER,"Schur indices not set! You should call MatFactorSetSchurIS before");
 
   ierr = MatCreateSeqDense(PetscObjectComm((PetscObject)F),mpardiso->schur_size,mpardiso->schur_size,mpardiso->schur,&St);CHKERRQ(ierr);
-  *S = St;
+  *S   = St;
+  *st  = F->schur_status;
   PetscFunctionReturn(0);
 }
 

@@ -402,6 +402,7 @@ struct _p_Mat {
   MatSolverPackage       solvertype;
   PetscBool              checksymmetryonassembly,checknullspaceonassembly;
   PetscReal              checksymmetrytol;
+  MatFactorSchurStatus   schur_status;
   Mat_Redundant          *redundant;        /* used by MatCreateRedundantMatrix() */
   PetscBool              erroriffailure;    /* Generate an error if detected (for example a zero pivot) instead of returning */
   MatFactorError         factorerrortype;               /* type of error in factorization */

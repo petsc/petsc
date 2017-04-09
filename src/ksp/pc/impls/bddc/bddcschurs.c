@@ -952,7 +952,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       ierr = MatViewFromOptions(F,(PetscObject)A,"-mat_factor_view");CHKERRQ(ierr);
 
       /* get explicit Schur Complement computed during numeric factorization */
-      ierr = MatFactorGetSchurComplement(F,&S_all);CHKERRQ(ierr);
+      ierr = MatFactorGetSchurComplement(F,&S_all,NULL);CHKERRQ(ierr);
       /* we can reuse the solvers if we are not using the economic version */
       reuse_solvers = (PetscBool)(reuse_solvers && !economic);
       factor_workaround = (PetscBool)(reuse_solvers && factor_workaround);
@@ -1238,7 +1238,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     ierr = MatDenseRestoreArray(S_all,&S_data);CHKERRQ(ierr);
 
     if (solver_S) {
-      ierr = MatFactorRestoreSchurComplement(F,&S_all);CHKERRQ(ierr);
+      ierr = MatFactorRestoreSchurComplement(F,&S_all,MAT_FACTOR_SCHUR_UNFACTORED);CHKERRQ(ierr);
     }
 
     schur_factor = NULL;
@@ -1262,7 +1262,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
             if (!sub_schurs->is_posdef) {
               SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor update not yet implemented for non SPD matrices");
             }
-            ierr = MatFactorGetSchurComplement(F,&S_all_inv);CHKERRQ(ierr);
+            ierr = MatFactorGetSchurComplement(F,&S_all_inv,NULL);CHKERRQ(ierr);
             ierr = MatDenseGetArray(S_all_inv,&data);CHKERRQ(ierr);
             if (sub_schurs->is_dir) { /* dirichlet dofs could have different scalings */
               ierr = ISGetLocalSize(sub_schurs->is_dir,&nd);CHKERRQ(ierr);
@@ -1283,7 +1283,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
             ierr = MatDenseRestoreArray(S_all_inv,&data);CHKERRQ(ierr);
           } else {
             ierr = MatFactorInvertSchurComplement(F);CHKERRQ(ierr);
-            ierr = MatFactorGetSchurComplement(F,&S_all_inv);CHKERRQ(ierr);
+            ierr = MatFactorGetSchurComplement(F,&S_all_inv,NULL);CHKERRQ(ierr);
           }
         } else { /* we need to invert explicitly since we are not using MatFactor for S */
           ierr = PetscObjectReference((PetscObject)S_all);CHKERRQ(ierr);
@@ -1367,7 +1367,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         }
         ierr = MatDenseRestoreArray(S_all_inv,&S_data);CHKERRQ(ierr);
         if (solver_S) {
-          ierr = MatFactorRestoreSchurComplement(F,&S_all_inv);CHKERRQ(ierr);
+          ierr = MatFactorRestoreSchurComplement(F,&S_all_inv,MAT_FACTOR_SCHUR_INVERTED);CHKERRQ(ierr);
         }
         ierr = MatDestroy(&S_all_inv);CHKERRQ(ierr);
       }
@@ -1381,7 +1381,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
           SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"This should not happen");
         }
         ierr = ISGetLocalSize(sub_schurs->is_vertices,&nv);CHKERRQ(ierr);
-        ierr = MatFactorGetSchurComplement(F,&S_tmp);CHKERRQ(ierr);
+        ierr = MatFactorGetSchurComplement(F,&S_tmp,NULL);CHKERRQ(ierr);
         if (sub_schurs->is_posdef) {
           PetscScalar *data;
 
@@ -1412,7 +1412,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         } else {
           SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor update not yet implemented for non SPD matrices");
         }
-        ierr = MatFactorRestoreSchurComplement(F,&S_tmp);CHKERRQ(ierr);
+        ierr = MatFactorRestoreSchurComplement(F,&S_tmp,MAT_FACTOR_SCHUR_INVERTED);CHKERRQ(ierr);
       }
     } else if (factor_workaround) { /* we need to eliminate any unneeded coupling */
       PetscScalar *data;
@@ -1421,7 +1421,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       if (sub_schurs->is_dir) { /* dirichlet dofs could have different scalings */
         ierr = ISGetLocalSize(sub_schurs->is_dir,&nd);CHKERRQ(ierr);
       }
-      ierr = MatFactorGetSchurComplement(F,&S_all);CHKERRQ(ierr);
+      ierr = MatFactorGetSchurComplement(F,&S_all,NULL);CHKERRQ(ierr);
       ierr = MatDenseGetArray(S_all,&data);CHKERRQ(ierr);
       for (i=0;i<size_active_schur;i++) {
         ierr = PetscMemzero(data+i*size_schur+size_active_schur,(size_schur-size_active_schur)*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -1431,7 +1431,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         data[i*(size_schur+1)] = infty;
       }
       ierr = MatDenseRestoreArray(S_all,&data);CHKERRQ(ierr);
-      ierr = MatFactorRestoreSchurComplement(F,&S_all);CHKERRQ(ierr);
+      ierr = MatFactorRestoreSchurComplement(F,&S_all,MAT_FACTOR_SCHUR_INVERTED);CHKERRQ(ierr);
     }
     ierr = PetscFree2(dummy_idx,work);CHKERRQ(ierr);
     ierr = PetscFree(schur_factor);CHKERRQ(ierr);

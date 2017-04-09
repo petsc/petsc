@@ -174,7 +174,7 @@ int main(int argc,char **args)
     } else {
       ierr = MatCholeskyFactorNumeric(F,A,NULL);CHKERRQ(ierr);
     }
-    ierr = MatFactorCreateSchurComplement(F,&S);CHKERRQ(ierr);
+    ierr = MatFactorCreateSchurComplement(F,&S,NULL);CHKERRQ(ierr);
     ierr = MatCreateVecs(S,&xschur,&bschur);CHKERRQ(ierr);
     ierr = VecDuplicate(xschur,&uschur);CHKERRQ(ierr);
     if (nfact == 1) {

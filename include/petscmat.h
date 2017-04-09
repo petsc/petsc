@@ -1108,16 +1108,18 @@ PETSC_EXTERN PetscErrorCode MatSolveAdd(Mat,Vec,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatSolveTranspose(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatSolveTransposeAdd(Mat,Vec,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatSolves(Mat,Vecs,Vecs);
+PETSC_EXTERN PetscErrorCode MatSetUnfactored(Mat);
+
+typedef enum {MAT_FACTOR_SCHUR_UNFACTORED, MAT_FACTOR_SCHUR_FACTORED, MAT_FACTOR_SCHUR_INVERTED} MatFactorSchurStatus;
 PETSC_EXTERN PetscErrorCode MatFactorSetSchurIS(Mat,IS);
-PETSC_EXTERN PetscErrorCode MatFactorGetSchurComplement(Mat,Mat*);
-PETSC_EXTERN PetscErrorCode MatFactorRestoreSchurComplement(Mat,Mat*);
+PETSC_EXTERN PetscErrorCode MatFactorGetSchurComplement(Mat,Mat*,MatFactorSchurStatus*);
+PETSC_EXTERN PetscErrorCode MatFactorRestoreSchurComplement(Mat,Mat*,MatFactorSchurStatus);
 PETSC_EXTERN PetscErrorCode MatFactorInvertSchurComplement(Mat);
-PETSC_EXTERN PetscErrorCode MatFactorCreateSchurComplement(Mat,Mat*);
+PETSC_EXTERN PetscErrorCode MatFactorCreateSchurComplement(Mat,Mat*,MatFactorSchurStatus*);
 PETSC_EXTERN PetscErrorCode MatFactorSolveSchurComplement(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatFactorSolveSchurComplementTranspose(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatFactorFactorizeSchurComplement(Mat);
 PETSC_EXTERN PetscErrorCode MatFactorSetSchurComplementSolverType(Mat,PetscInt);
-PETSC_EXTERN PetscErrorCode MatSetUnfactored(Mat);
 
 /*E
     MatSORType - What type of (S)SOR to perform
