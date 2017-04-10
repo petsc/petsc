@@ -8,6 +8,84 @@
 
 #include <../src/mat/impls/aij/seq/aij.h>
 
+static PetscErrorCode MatSeqDenseSymmetrize_Private(Mat A, PetscBool hermitian)
+{
+  Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
+  PetscInt      j, k, n = A->rmap->n;
+
+  PetscFunctionBegin;
+  if (A->rmap->n != A->cmap->n) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Cannot symmetrize a rectangular matrix");
+  if (!hermitian) {
+    for (k=0;k<n;k++) {
+      for (j=k;j<n;j++) {
+        mat->v[j*mat->lda + k] = mat->v[k*mat->lda + j];
+      }
+    }
+  } else {
+    for (k=0;k<n;k++) {
+      for (j=k;j<n;j++) {
+        mat->v[j*mat->lda + k] = PetscConj(mat->v[k*mat->lda + j]);
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+PETSC_INTERN PetscErrorCode MatSeqDenseInvertFactors_Private(Mat A)
+{
+#if defined(PETSC_MISSING_LAPACK_POTRF)
+  PetscFunctionBegin;
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"POTRF - Lapack routine is unavailable.");
+#else
+  Mat_SeqDense   *mat = (Mat_SeqDense*)A->data;
+  PetscErrorCode ierr;
+  PetscBLASInt   info,n;
+
+  PetscFunctionBegin;
+  if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
+  ierr = PetscBLASIntCast(A->cmap->n,&n);CHKERRQ(ierr);
+  if (A->factortype == MAT_FACTOR_LU) {
+    if (!mat->pivots) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Pivots not present");
+    if (!mat->fwork) {
+      mat->lfwork = n;
+      ierr = PetscMalloc1(mat->lfwork,&mat->fwork);CHKERRQ(ierr);
+      ierr = PetscLogObjectMemory((PetscObject)A,mat->lfwork*sizeof(PetscBLASInt));CHKERRQ(ierr);
+    }
+    PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&n,mat->v,&mat->lda,mat->pivots,mat->fwork,&mat->lfwork,&info));
+    ierr = PetscLogFlops((1.0*A->cmap->n*A->cmap->n*A->cmap->n)/3.0);CHKERRQ(ierr); /* TODO CHECK FLOPS */
+  } else if (A->factortype == MAT_FACTOR_CHOLESKY) {
+    if (A->spd) {
+      PetscStackCallBLAS("LAPACKpotri",LAPACKpotri_("L",&n,mat->v,&mat->lda,&info));
+      ierr = MatSeqDenseSymmetrize_Private(A,PETSC_TRUE);CHKERRQ(ierr);
+#if defined (PETSC_USE_COMPLEX)
+    } else if (A->hermitian) {
+      if (!mat->pivots) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Pivots not present");
+      if (!mat->fwork) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Fwork not present");
+      PetscStackCallBLAS("LAPACKhetri",LAPACKhetri_("L",&n,mat->v,&mat->lda,mat->pivots,mat->fwork,&info));
+      ierr = MatSeqDenseSymmetrize_Private(A,PETSC_TRUE);CHKERRQ(ierr);
+#endif
+    } else { /* symmetric case */
+      if (!mat->pivots) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Pivots not present");
+      if (!mat->fwork) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Fwork not present");
+      PetscStackCallBLAS("LAPACKsytri",LAPACKsytri_("L",&n,mat->v,&mat->lda,mat->pivots,mat->fwork,&info));
+      ierr = MatSeqDenseSymmetrize_Private(A,PETSC_FALSE);CHKERRQ(ierr);
+    }
+    if (info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_CH_ZRPVT,"Bad Inversion: zero pivot in row %D",(PetscInt)info-1);
+    ierr = PetscLogFlops((1.0*A->cmap->n*A->cmap->n*A->cmap->n)/3.0);CHKERRQ(ierr); /* TODO CHECK FLOPS */
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix must be factored to solve");
+#endif
+
+  A->ops->solve             = NULL;
+  A->ops->matsolve          = NULL;
+  A->ops->solvetranspose    = NULL;
+  A->ops->matsolvetranspose = NULL;
+  A->ops->solveadd          = NULL;
+  A->ops->solvetransposeadd = NULL;
+  A->factortype             = MAT_FACTOR_NONE;
+  ierr                      = PetscFree(A->solvertype);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatZeroRowsColumns_SeqDense(Mat A,PetscInt N,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
   PetscErrorCode    ierr;

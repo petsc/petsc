@@ -36,5 +36,6 @@ PETSC_INTERN PetscErrorCode MatDestroy_SeqDense_MatTransMatMult(Mat);
 
 PETSC_INTERN PetscErrorCode MatMatMult_SeqAIJ_SeqDense(Mat,Mat,MatReuse,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatMatMult_SeqDense_SeqDense(Mat,Mat,MatReuse,PetscReal,Mat*);
+PETSC_INTERN PetscErrorCode MatSeqDenseInvertFactors_Private(Mat);
 
 #endif
