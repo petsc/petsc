@@ -13,6 +13,8 @@ typedef struct {
   PetscBool    roworiented;       /* if true, row oriented input (default) */
   PetscInt     pad;               /* padding */
   PetscBLASInt *pivots;           /* pivots in LU factorization */
+  PetscBLASInt lfwork;            /* length of work array in factorization */
+  PetscScalar  *fwork;            /* work array in factorization */
   PetscBLASInt lda;               /* Lapack leading dimension of data */
   PetscBool    changelda;         /* change lda on resize? Default unless user set lda */
   PetscBLASInt Mmax,Nmax;         /* indicates the largest dimensions of data possible */
