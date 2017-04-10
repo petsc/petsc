@@ -420,7 +420,6 @@ PETSC_INTERN PetscErrorCode MatAXPY_BasicWithPreallocation(Mat,Mat,PetscScalar,M
 PETSC_INTERN PetscErrorCode MatFactorFactorizeSchurComplement_Private(Mat);
 PETSC_INTERN PetscErrorCode MatFactorInvertSchurComplement_Private(Mat);
 PETSC_INTERN PetscErrorCode MatFactorUpdateSchurStatus_Private(Mat);
-PETSC_INTERN PetscErrorCode MatSeqDenseInvertFactors_Private(Mat);
 
 /*
     Utility for MatZeroRows
