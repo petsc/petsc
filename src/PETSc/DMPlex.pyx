@@ -644,10 +644,9 @@ cdef class DMPlex(DM):
         PetscCLEAR(self.obj); self.dm = dmGhosted
         return toInt(numGhostCells)
 
-
     #
 
-    def adapt(self, Vec metric, label = ""):
-        cdef DMPlex newplex = <DMPlex>type(self)()
-        CHKERR( DMPlexAdapt(self.dm, metric.vec, label, &newplex.dm) )
-        return newplex
+    def adapt(self, Vec metric, label=""):
+        cdef DM newdm = DMPlex()
+        CHKERR( DMPlexAdapt(self.dm, metric.vec, label, &newdm.dm) )
+        return newdm
