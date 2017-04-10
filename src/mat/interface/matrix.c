@@ -5432,12 +5432,20 @@ PetscErrorCode MatSetOption(Mat mat,MatOption op,PetscBool flg)
     if (flg) mat->structurally_symmetric = PETSC_TRUE;
     mat->symmetric_set              = PETSC_TRUE;
     mat->structurally_symmetric_set = flg;
+#if !defined(PETSC_USE_COMPLEX)
+    mat->hermitian     = flg;
+    mat->hermitian_set = PETSC_TRUE;
+#endif
     break;
   case MAT_HERMITIAN:
     mat->hermitian = flg;
     if (flg) mat->structurally_symmetric = PETSC_TRUE;
     mat->hermitian_set              = PETSC_TRUE;
     mat->structurally_symmetric_set = flg;
+#if !defined(PETSC_USE_COMPLEX)
+    mat->symmetric     = flg;
+    mat->symmetric_set = PETSC_TRUE;
+#endif
     break;
   case MAT_STRUCTURALLY_SYMMETRIC:
     mat->structurally_symmetric     = flg;
