@@ -1120,7 +1120,6 @@ PETSC_EXTERN PetscErrorCode MatFactorCreateSchurComplement(Mat,Mat*,MatFactorSch
 PETSC_EXTERN PetscErrorCode MatFactorSolveSchurComplement(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatFactorSolveSchurComplementTranspose(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatFactorFactorizeSchurComplement(Mat);
-PETSC_EXTERN PetscErrorCode MatFactorSetSchurComplementSolverType(Mat,PetscInt);
 
 /*E
     MatSORType - What type of (S)SOR to perform

@@ -1173,6 +1173,7 @@ PetscErrorCode MatDestroy(Mat *A)
   ierr = MatNullSpaceDestroy(&(*A)->nullsp);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&(*A)->transnullsp);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&(*A)->nearnullsp);CHKERRQ(ierr);
+  ierr = MatDestroy(&(*A)->schur);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&(*A)->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&(*A)->cmap);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(A);CHKERRQ(ierr);
@@ -8804,15 +8805,19 @@ PetscErrorCode MatFactorSetSchurIS(Mat mat,IS is)
   PetscErrorCode ierr,(*f)(Mat,IS);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
-  PetscValidHeaderSpecific(is,IS_CLASSID,2);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(is,2);
+  PetscValidHeaderSpecific(is,IS_CLASSID,2);
   PetscCheckSameComm(mat,1,is,2);
   if (!mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
   ierr = PetscObjectQueryFunction((PetscObject)mat,"MatFactorSetSchurIS_C",&f);CHKERRQ(ierr);
   if (!f) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"The selected MatSolverPackage does not support Schur complement computation. You should use MATSOLVERMUMPS or MATSOLVERMKL_PARDISO");
+  if (mat->schur) {
+    ierr = MatDestroy(&mat->schur);CHKERRQ(ierr);
+  }
   ierr = (*f)(mat,is);CHKERRQ(ierr);
+  if (!mat->schur) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_PLIB,"Schur complement has not been created");
   PetscFunctionReturn(0);
 }
 
@@ -8823,12 +8828,13 @@ PetscErrorCode MatFactorSetSchurIS(Mat mat,IS is)
 
    Input Parameters:
 +  F - the factored matrix obtained by calling MatGetFactor() from PETSc-MUMPS interface
-.  *S - location where to return the Schur complement (MATDENSE)
--  status - the status of the Schur complement matrix (see MatFactorSchurStatus)
+.  S - location where to return the Schur complement, can be NULL
+-  status - the status of the Schur complement matrix, can be NULL
 
    Notes:
-   The routine provides a copy of the Schur data stored within solver's data strutures. The caller must destroy the object when it is no longer needed.
-   If MatFactorInvertSchurComplement has been called, the routine gets back the inverse
+   The routine provides a copy of the Schur matrix stored within the solver data structures.
+   The caller must destroy the object when it is no longer needed.
+   If MatFactorInvertSchurComplement has been called, the routine gets back the inverse.
 
    Level: advanced
 
@@ -8836,15 +8842,27 @@ PetscErrorCode MatFactorSetSchurIS(Mat mat,IS is)
 
 .seealso: MatGetFactor(), MatFactorSetSchurIS(), MatFactorGetSchurComplement(), MatFactorSchurStatus
 @*/
-PetscErrorCode MatFactorCreateSchurComplement(Mat F,Mat* S, MatFactorSchurStatus* status)
+PetscErrorCode MatFactorCreateSchurComplement(Mat F,Mat* S,MatFactorSchurStatus* status)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
-  PetscValidPointer(S,2);
-  if (status) *status = F->schur_status;
-  ierr = PetscUseMethod(F,"MatFactorCreateSchurComplement_C",(Mat,Mat*,MatFactorSchurStatus*),(F,S,status));CHKERRQ(ierr);
+  if (S) {
+    PetscErrorCode (*f)(Mat,Mat*);
+
+    PetscValidPointer(S,2);
+    ierr = PetscObjectQueryFunction((PetscObject)F,"MatFactorCreateSchurComplement_C",&f);CHKERRQ(ierr);
+    if (f) {
+      ierr = (*f)(F,S);CHKERRQ(ierr);
+    } else {
+      ierr = MatDuplicate(F->schur,MAT_COPY_VALUES,S);CHKERRQ(ierr);
+    }
+  }
+  if (status) {
+    PetscValidPointer(status,3);
+    *status = F->schur_status;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -8855,13 +8873,14 @@ PetscErrorCode MatFactorCreateSchurComplement(Mat F,Mat* S, MatFactorSchurStatus
 
    Input Parameters:
 +  F - the factored matrix obtained by calling MatGetFactor()
-.  *S - location where to return the Schur complement (in MATDENSE format)
--  status - the status of the Schur complement matrix (see MatFactorSchurStatus)
+.  *S - location where to return the Schur complement, can be NULL
+-  status - the status of the Schur complement matrix, can be NULL
 
    Notes:
    Schur complement mode is currently implemented for sequential matrices.
-   The routine returns a dense matrix pointing to the raw data of the Schur Complement stored within the data strutures of the solver; e.g. if MatFactorInvertSchurComplement has been called, the returned matrix is actually the inverse of the Schur complement.
-   The caller should call MatFactorRestoreSchurComplement when the object is no longer needed.
+   The routine returns a the Schur Complement stored within the data strutures of the solver.
+   If MatFactorInvertSchurComplement has been called, the returned matrix is actually the inverse of the Schur complement.
+   The returned matrix should not be destroyed; the caller should call MatFactorRestoreSchurComplement when the object is no longer needed.
 
    Level: advanced
 
@@ -8871,13 +8890,16 @@ PetscErrorCode MatFactorCreateSchurComplement(Mat F,Mat* S, MatFactorSchurStatus
 @*/
 PetscErrorCode MatFactorGetSchurComplement(Mat F,Mat* S,MatFactorSchurStatus* status)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
-  PetscValidPointer(S,2);
-  if (status) *status = F->schur_status;
-  ierr = PetscUseMethod(F,"MatFactorGetSchurComplement_C",(Mat,Mat*,MatFactorSchurStatus*),(F,S,status));CHKERRQ(ierr);
+  if (S) {
+    PetscValidPointer(S,2);
+    *S = F->schur;
+  }
+  if (status) {
+    PetscValidPointer(status,3);
+    *status = F->schur_status;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -8905,9 +8927,12 @@ PetscErrorCode MatFactorRestoreSchurComplement(Mat F,Mat* S,MatFactorSchurStatus
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
-  PetscValidHeaderSpecific(*S,MAT_CLASSID,2);
+  if (S) {
+    PetscValidHeaderSpecific(*S,MAT_CLASSID,2);
+    *S = NULL;
+  }
   F->schur_status = status;
-  ierr = MatDestroy(S);CHKERRQ(ierr);
+  ierr = MatFactorUpdateSchurStatus_Private(F);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -8935,12 +8960,26 @@ PetscErrorCode MatFactorSolveSchurComplementTranspose(Mat F, Vec rhs, Vec sol)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidType(F,1);
+  PetscValidType(rhs,2);
+  PetscValidType(sol,3);
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
   PetscValidHeaderSpecific(rhs,VEC_CLASSID,2);
   PetscValidHeaderSpecific(sol,VEC_CLASSID,2);
   PetscCheckSameComm(F,1,rhs,2);
   PetscCheckSameComm(F,1,sol,3);
-  ierr = PetscUseMethod(F,"MatFactorSolveSchurComplementTranspose_C",(Mat,Vec,Vec),(F,rhs,sol));CHKERRQ(ierr);
+  ierr = MatFactorFactorizeSchurComplement(F);CHKERRQ(ierr);
+  switch (F->schur_status) {
+  case MAT_FACTOR_SCHUR_FACTORED:
+    ierr = MatSolveTranspose(F->schur,rhs,sol);CHKERRQ(ierr);
+    break;
+  case MAT_FACTOR_SCHUR_INVERTED:
+    ierr = MatMultTranspose(F->schur,rhs,sol);CHKERRQ(ierr);
+    break;
+  default:
+    SETERRQ1(PetscObjectComm((PetscObject)F),PETSC_ERR_SUP,"Unhandled MatFactorSchurStatus %D",F->schur_status);
+    break;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -8968,17 +9007,31 @@ PetscErrorCode MatFactorSolveSchurComplement(Mat F, Vec rhs, Vec sol)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidType(F,1);
+  PetscValidType(rhs,2);
+  PetscValidType(sol,3);
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
   PetscValidHeaderSpecific(rhs,VEC_CLASSID,2);
   PetscValidHeaderSpecific(sol,VEC_CLASSID,2);
   PetscCheckSameComm(F,1,rhs,2);
   PetscCheckSameComm(F,1,sol,3);
-  ierr = PetscUseMethod(F,"MatFactorSolveSchurComplement_C",(Mat,Vec,Vec),(F,rhs,sol));CHKERRQ(ierr);
+  ierr = MatFactorFactorizeSchurComplement(F);CHKERRQ(ierr);
+  switch (F->schur_status) {
+  case MAT_FACTOR_SCHUR_FACTORED:
+    ierr = MatSolve(F->schur,rhs,sol);CHKERRQ(ierr);
+    break;
+  case MAT_FACTOR_SCHUR_INVERTED:
+    ierr = MatMult(F->schur,rhs,sol);CHKERRQ(ierr);
+    break;
+  default:
+    SETERRQ1(PetscObjectComm((PetscObject)F),PETSC_ERR_SUP,"Unhandled MatFactorSchurStatus %D",F->schur_status);
+    break;
+  }
   PetscFunctionReturn(0);
 }
 
 /*@
-  MatFactorInvertSchurComplement - Invert the raw Schur data computed during the factorization step
+  MatFactorInvertSchurComplement - Invert the Schur complement matrix computed during the factorization step
 
    Logically Collective on Mat
 
@@ -8998,14 +9051,17 @@ PetscErrorCode MatFactorInvertSchurComplement(Mat F)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidType(F,1);
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
-  ierr = PetscUseMethod(F,"MatFactorInvertSchurComplement_C",(Mat),(F));CHKERRQ(ierr);
+  if (F->schur_status == MAT_FACTOR_SCHUR_INVERTED) PetscFunctionReturn(0);
+  ierr = MatFactorFactorizeSchurComplement(F);CHKERRQ(ierr);
+  ierr = MatFactorInvertSchurComplement_Private(F);CHKERRQ(ierr);
   F->schur_status = MAT_FACTOR_SCHUR_INVERTED;
   PetscFunctionReturn(0);
 }
 
 /*@
-  MatFactorFactorizeSchurComplement - Factorize the raw Schur data computed during the factorization step
+  MatFactorFactorizeSchurComplement - Factorize the Schur complement matrix computed during the factorization step
 
    Logically Collective on Mat
 
@@ -9013,7 +9069,6 @@ PetscErrorCode MatFactorInvertSchurComplement(Mat F)
 +  F - the factored matrix obtained by calling MatGetFactor()
 
    Notes:
-   The routine uses the pointer to the raw data of the Schur Complement stored within the solver.
 
    Level: advanced
 
@@ -9026,39 +9081,11 @@ PetscErrorCode MatFactorFactorizeSchurComplement(Mat F)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidType(F,1);
   PetscValidHeaderSpecific(F,MAT_CLASSID,1);
-  ierr = PetscUseMethod(F,"MatFactorFactorizeSchurComplement_C",(Mat),(F));CHKERRQ(ierr);
+  if (F->schur_status == MAT_FACTOR_SCHUR_INVERTED || F->schur_status == MAT_FACTOR_SCHUR_FACTORED) PetscFunctionReturn(0);
+  ierr = MatFactorFactorizeSchurComplement_Private(F);CHKERRQ(ierr);
   F->schur_status = MAT_FACTOR_SCHUR_FACTORED;
-  PetscFunctionReturn(0);
-}
-
-/*@
-  MatFactorSetSchurComplementSolverType - Set type of solver for Schur complement
-
-   Logically Collective on Mat
-
-   Input Parameters:
-+  F - the factored matrix obtained by calling MatGetFactor()
--  type - either 0 (non-symmetric), 1 (symmetric positive definite) or 2 (symmetric indefinite)
-
-   Notes:
-   The parameter is used to compute the correct factorization of the Schur complement matrices
-   This could be useful in case the nature of the Schur complement is different from that of the matrix to be factored
-
-   Level: advanced
-
-   References:
-
-.seealso: MatGetFactor(), MatFactorSetSchurIS()
-@*/
-PetscErrorCode MatFactorSetSchurComplementSolverType(Mat F, PetscInt type)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(F,MAT_CLASSID,1);
-  PetscValidLogicalCollectiveInt(F,type,2);
-  ierr = PetscTryMethod(F,"MatFactorSetSchurComplementSolverType_C",(Mat,PetscInt),(F,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

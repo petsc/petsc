@@ -402,7 +402,8 @@ struct _p_Mat {
   MatSolverPackage       solvertype;
   PetscBool              checksymmetryonassembly,checknullspaceonassembly;
   PetscReal              checksymmetrytol;
-  MatFactorSchurStatus   schur_status;
+  Mat                    schur;             /* Schur complement matrix */
+  MatFactorSchurStatus   schur_status;      /* status of the Schur complement matrix */
   Mat_Redundant          *redundant;        /* used by MatCreateRedundantMatrix() */
   PetscBool              erroriffailure;    /* Generate an error if detected (for example a zero pivot) instead of returning */
   MatFactorError         factorerrortype;               /* type of error in factorization */
@@ -412,6 +413,14 @@ struct _p_Mat {
 
 PETSC_INTERN PetscErrorCode MatAXPY_Basic(Mat,PetscScalar,Mat,MatStructure);
 PETSC_INTERN PetscErrorCode MatAXPY_BasicWithPreallocation(Mat,Mat,PetscScalar,Mat,MatStructure);
+
+/*
+    Utility for MatFactor (Schur complement)
+*/
+PETSC_INTERN PetscErrorCode MatFactorFactorizeSchurComplement_Private(Mat);
+PETSC_INTERN PetscErrorCode MatFactorInvertSchurComplement_Private(Mat);
+PETSC_INTERN PetscErrorCode MatFactorUpdateSchurStatus_Private(Mat);
+PETSC_INTERN PetscErrorCode MatSeqDenseInvertFactors_Private(Mat);
 
 /*
     Utility for MatZeroRows

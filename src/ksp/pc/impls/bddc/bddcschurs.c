@@ -935,11 +935,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 #if defined(PETSC_HAVE_MUMPS) /* be sure that icntl 19 is not set by command line */
         ierr = MatMumpsSetIcntl(F,19,2);CHKERRQ(ierr);
 #endif
-        if (sub_schurs->is_posdef) {
-          ierr = MatFactorSetSchurComplementSolverType(F,1);CHKERRQ(ierr);
-        } else {
-          ierr = MatFactorSetSchurComplementSolverType(F,2);CHKERRQ(ierr);
-        }
         ierr = MatCholeskyFactorNumeric(F,A,NULL);CHKERRQ(ierr);
         S_lower_triangular = PETSC_TRUE;
       } else {
@@ -953,6 +948,9 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 
       /* get explicit Schur Complement computed during numeric factorization */
       ierr = MatFactorGetSchurComplement(F,&S_all,NULL);CHKERRQ(ierr);
+      ierr = MatSetOption(S_all,MAT_SPD,sub_schurs->is_posdef);CHKERRQ(ierr);
+      ierr = MatSetOption(S_all,MAT_HERMITIAN,sub_schurs->is_hermitian);CHKERRQ(ierr);
+
       /* we can reuse the solvers if we are not using the economic version */
       reuse_solvers = (PetscBool)(reuse_solvers && !economic);
       factor_workaround = (PetscBool)(reuse_solvers && factor_workaround);
