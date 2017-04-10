@@ -30,9 +30,9 @@
          CHKERRQ(PETSC_ERR_PLIB)
       endif
 
-      call PetscBagDestroy(o1,ierr)
+      call PetscViewerDestroy(o1,ierr)
       CHKERRQ(ierr)
-      call PetscBagDestroy(o2,ierr)
+      call PetscViewerDestroy(o2,ierr)
       CHKERRQ(ierr)
       call PetscFinalize(ierr)
       end
