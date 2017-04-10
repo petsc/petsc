@@ -161,7 +161,7 @@ struct _MatOps {
   PetscErrorCode (*restorerowuppertriangular)(Mat);
   /*109*/
   PetscErrorCode (*matsolve)(Mat,Mat,Mat);
-  PetscErrorCode (*placeholder_110)(Mat);
+  PetscErrorCode (*matsolvetranspose)(Mat,Mat,Mat);
   PetscErrorCode (*getrowmin)(Mat,Vec,PetscInt[]);
   PetscErrorCode (*getcolumnvector)(Mat,Vec,PetscInt);
   PetscErrorCode (*missingdiagonal)(Mat,PetscBool *,PetscInt*);

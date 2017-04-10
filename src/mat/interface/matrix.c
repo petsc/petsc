@@ -3267,7 +3267,7 @@ PetscErrorCode MatSolve(Mat mat,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMatSolve_Basic(Mat A,Mat B,Mat X)
+static PetscErrorCode MatMatSolve_Basic(Mat A,Mat B,Mat X, PetscBool trans)
 {
   PetscErrorCode ierr;
   Vec            b,x;
@@ -3289,7 +3289,11 @@ PetscErrorCode MatMatSolve_Basic(Mat A,Mat B,Mat X)
   for (i=0; i<N; i++) {
     ierr = VecPlaceArray(b,bb + i*m);CHKERRQ(ierr);
     ierr = VecPlaceArray(x,xx + i*m);CHKERRQ(ierr);
-    ierr = MatSolve(A,b,x);CHKERRQ(ierr);
+    if (trans) {
+      ierr = MatSolveTranspose(A,b,x);CHKERRQ(ierr);
+    } else {
+      ierr = MatSolve(A,b,x);CHKERRQ(ierr);
+    }
     ierr = VecResetArray(x);CHKERRQ(ierr);
     ierr = VecResetArray(b);CHKERRQ(ierr);
   }
@@ -3331,7 +3335,7 @@ PetscErrorCode MatMatSolve_Basic(Mat A,Mat B,Mat X)
 
    Concepts: matrices^triangular solves
 
-.seealso: MatMatSolveAdd(), MatMatSolveTranspose(), MatMatSolveTransposeAdd(), MatLUFactor(), MatCholeskyFactor()
+.seealso: MatMatSolveTranspose(), MatLUFactor(), MatCholeskyFactor()
 @*/
 PetscErrorCode MatMatSolve(Mat A,Mat B,Mat X)
 {
@@ -3356,7 +3360,7 @@ PetscErrorCode MatMatSolve(Mat A,Mat B,Mat X)
   ierr = PetscLogEventBegin(MAT_MatSolve,A,B,X,0);CHKERRQ(ierr);
   if (!A->ops->matsolve) {
     ierr = PetscInfo1(A,"Mat type %s using basic MatMatSolve\n",((PetscObject)A)->type_name);CHKERRQ(ierr);
-    ierr = MatMatSolve_Basic(A,B,X);CHKERRQ(ierr);
+    ierr = MatMatSolve_Basic(A,B,X,PETSC_FALSE);CHKERRQ(ierr);
   } else {
     ierr = (*A->ops->matsolve)(A,B,X);CHKERRQ(ierr);
   }
@@ -3365,6 +3369,70 @@ PetscErrorCode MatMatSolve(Mat A,Mat B,Mat X)
   PetscFunctionReturn(0);
 }
 
+/*@
+   MatMatSolveTranspose - Solves A^T X = B, given a factored matrix.
+
+   Neighbor-wise Collective on Mat
+
+   Input Parameters:
++  A - the factored matrix
+-  B - the right-hand-side matrix  (dense matrix)
+
+   Output Parameter:
+.  X - the result matrix (dense matrix)
+
+   Notes:
+   The matrices b and x cannot be the same.  I.e., one cannot
+   call MatMatSolveTranspose(A,x,x).
+
+   Notes:
+   Most users should usually employ the simplified KSP interface for linear solvers
+   instead of working directly with matrix algebra routines such as this.
+   See, e.g., KSPCreate(). However KSP can only solve for one vector (column of X)
+   at a time.
+
+   When using SuperLU_Dist as a parallel solver PETSc will use the SuperLU_Dist functionality to solve multiple right hand sides simultaneously. For MUMPS
+   it calls a separate solve for each right hand side since MUMPS does not yet support distributed right hand sides.
+
+   Since the resulting matrix X must always be dense we do not support sparse representation of the matrix B.
+
+   Level: developer
+
+   Concepts: matrices^triangular solves
+
+.seealso: MatMatSolveTranspose(), MatLUFactor(), MatCholeskyFactor()
+@*/
+PetscErrorCode MatMatSolveTranspose(Mat A,Mat B,Mat X)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidType(A,1);
+  PetscValidHeaderSpecific(B,MAT_CLASSID,2);
+  PetscValidHeaderSpecific(X,MAT_CLASSID,3);
+  PetscCheckSameComm(A,1,B,2);
+  PetscCheckSameComm(A,1,X,3);
+  if (X == B) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_IDN,"X and B must be different matrices");
+  if (!A->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Unfactored matrix");
+  if (A->cmap->N != X->rmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Mat A,Mat X: global dim %D %D",A->cmap->N,X->rmap->N);
+  if (A->rmap->N != B->rmap->N) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_SIZ,"Mat A,Mat B: global dim %D %D",A->rmap->N,B->rmap->N);
+  if (A->rmap->n != B->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat A,Mat B: local dim %D %D",A->rmap->n,B->rmap->n);
+  if (X->cmap->N < B->cmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Solution matrix must have same number of columns as rhs matrix");
+  if (!A->rmap->N && !A->cmap->N) PetscFunctionReturn(0);
+  MatCheckPreallocated(A,1);
+
+  ierr = PetscLogEventBegin(MAT_MatSolve,A,B,X,0);CHKERRQ(ierr);
+  if (!A->ops->matsolvetranspose) {
+    ierr = PetscInfo1(A,"Mat type %s using basic MatMatSolveTranspose\n",((PetscObject)A)->type_name);CHKERRQ(ierr);
+    ierr = MatMatSolve_Basic(A,B,X,PETSC_TRUE);CHKERRQ(ierr);
+  } else {
+    ierr = (*A->ops->matsolvetranspose)(A,B,X);CHKERRQ(ierr);
+  }
+  ierr = PetscLogEventEnd(MAT_MatSolve,A,B,X,0);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)X);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /*@
    MatForwardSolve - Solves L x = b, given a factored matrix, A = LU, or

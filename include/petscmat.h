@@ -386,6 +386,7 @@ PETSC_EXTERN PetscErrorCode MatMultHermitianTransposeAdd(Mat,Vec,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatMultConstrained(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatMultTransposeConstrained(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatMatSolve(Mat,Mat,Mat);
+PETSC_EXTERN PetscErrorCode MatMatSolveTranspose(Mat,Mat,Mat);
 PETSC_EXTERN PetscErrorCode MatResidual(Mat,Vec,Vec,Vec);
 
 /*E
