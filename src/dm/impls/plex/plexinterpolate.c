@@ -1,5 +1,4 @@
 #include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
-#include <../src/sys/utils/hash.h>
 
 /*
   DMPlexGetFaces_Internal - Gets groups of vertices that correspond to faces for the given cell

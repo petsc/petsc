@@ -1,12 +1,11 @@
 
 #include <petsc/private/viewerimpl.h>  /*I "petscviewer.h" I*/
+#include <petsc/private/hash.h>
 #if defined(PETSC_HAVE_SAWS)
 #include <petscviewersaws.h>
 #endif
 
 PetscFunctionList PetscViewerList = 0;
-
-#include "../src/sys/utils/hash.h"
 
 
 PetscOptionsHelpPrinted PetscOptionsHelpPrintedSingleton = NULL;

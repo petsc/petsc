@@ -1,7 +1,7 @@
 static char help[] = "Test scalability of PetscHash.\n\n";
 
 #include <petscsys.h>
-#include <../src/sys/utils/hash.h>
+#include <petsc/private/hash.h>
 
 int main(int argc, char **argv)
 {
