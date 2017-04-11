@@ -717,15 +717,25 @@ static PetscErrorCode MatCholeskyFactorSymbolic_SeqDense(Mat fact,Mat A,IS row,c
   fact->assembled                  = PETSC_TRUE;
   fact->preallocated               = PETSC_TRUE;
   fact->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqDense;
+  fact->ops->solve                 = MatSolve_SeqDense;
+  fact->ops->matsolve              = MatMatSolve_SeqDense;
+  fact->ops->solvetranspose        = MatSolveTranspose_SeqDense;
+  fact->ops->solveadd              = MatSolveAdd_SeqDense;
+  fact->ops->solvetransposeadd     = MatSolveTransposeAdd_SeqDense;
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatLUFactorSymbolic_SeqDense(Mat fact,Mat A,IS row,IS col,const MatFactorInfo *info)
 {
   PetscFunctionBegin;
-  fact->preallocated         = PETSC_TRUE;
-  fact->assembled            = PETSC_TRUE;
-  fact->ops->lufactornumeric = MatLUFactorNumeric_SeqDense;
+  fact->preallocated           = PETSC_TRUE;
+  fact->assembled              = PETSC_TRUE;
+  fact->ops->lufactornumeric   = MatLUFactorNumeric_SeqDense;
+  fact->ops->solve             = MatSolve_SeqDense;
+  fact->ops->matsolve          = MatMatSolve_SeqDense;
+  fact->ops->solvetranspose    = MatSolveTranspose_SeqDense;
+  fact->ops->solveadd          = MatSolveAdd_SeqDense;
+  fact->ops->solvetransposeadd = MatSolveTransposeAdd_SeqDense;
   PetscFunctionReturn(0);
 }
 

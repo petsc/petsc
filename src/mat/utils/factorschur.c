@@ -1,6 +1,39 @@
 #include <petsc/private/matimpl.h>
 #include <../src/mat/impls/dense/seq/dense.h>
 
+PETSC_INTERN PetscErrorCode MatFactorSetUpInPlaceSchur_Private(Mat F)
+{
+  Mat              St, S = F->schur;
+  MatSolverPackage solvertype;
+  MatFactorInfo    info;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  if (S->solvertype) {
+    ierr = PetscStrallocpy(S->solvertype,&solvertype);CHKERRQ(ierr);
+  } else {
+    ierr = PetscStrallocpy(MATSOLVERPETSC,&solvertype);CHKERRQ(ierr);
+  }
+  ierr = MatSetUnfactored(S);CHKERRQ(ierr);
+  ierr = MatGetFactor(S,solvertype,F->factortype,&St);CHKERRQ(ierr);
+  if (St->factortype == MAT_FACTOR_CHOLESKY) { /* LDL^t regarded as Cholesky */
+    ierr = MatCholeskyFactorSymbolic(St,S,NULL,&info);CHKERRQ(ierr);
+  } else {
+    ierr = MatLUFactorSymbolic(St,S,NULL,NULL,&info);CHKERRQ(ierr);
+  }
+  S->ops->solve             = St->ops->solve;
+  S->ops->matsolve          = St->ops->matsolve;
+  S->ops->solvetranspose    = St->ops->solvetranspose;
+  S->ops->matsolvetranspose = St->ops->matsolvetranspose;
+  S->ops->solveadd          = St->ops->solveadd;
+  S->ops->solvetransposeadd = St->ops->solvetransposeadd;
+  S->factortype             = St->factortype;
+
+  ierr = MatDestroy(&St);CHKERRQ(ierr);
+  ierr = PetscFree(solvertype);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PETSC_INTERN PetscErrorCode MatFactorUpdateSchurStatus_Private(Mat F)
 {
   Mat            S = F->schur;
@@ -22,6 +55,7 @@ PETSC_INTERN PetscErrorCode MatFactorUpdateSchurStatus_Private(Mat F)
     }
     break;
   case MAT_FACTOR_SCHUR_FACTORED:
+    ierr = MatFactorSetUpInPlaceSchur_Private(F);CHKERRQ(ierr);
     break;
   default:
     SETERRQ1(PetscObjectComm((PetscObject)F),PETSC_ERR_SUP,"Unhandled MatFactorSchurStatus %D",F->schur_status);

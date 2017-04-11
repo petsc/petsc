@@ -8826,6 +8826,7 @@ PetscErrorCode MatFactorSetSchurIS(Mat mat,IS is)
   }
   ierr = (*f)(mat,is);CHKERRQ(ierr);
   if (!mat->schur) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_PLIB,"Schur complement has not been created");
+  ierr = MatFactorSetUpInPlaceSchur_Private(mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
