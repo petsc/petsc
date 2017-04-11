@@ -2939,45 +2939,116 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-/* TODO: Not scalable because of ISAllGather() unless getting all columns. */
+/* Not scalable because of ISAllGather() unless getting all columns. */
+PetscErrorCode ISGetISseq_Private(Mat mat,IS iscol,IS *isseq)
+{
+  PetscErrorCode ierr;
+  IS             iscol_local;
+  PetscBool      isstride;
+  PetscMPIInt    lisstride=0,gisstride;
+
+  PetscFunctionBegin;
+  /* check if we are grabbing all columns*/
+  ierr = PetscObjectTypeCompare((PetscObject)iscol,ISSTRIDE,&isstride);CHKERRQ(ierr);
+
+  if (isstride) {
+    PetscInt  start,len,mstart,mlen;
+    ierr = ISStrideGetInfo(iscol,&start,NULL);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(iscol,&len);CHKERRQ(ierr);
+    ierr = MatGetOwnershipRangeColumn(mat,&mstart,&mlen);CHKERRQ(ierr);
+    if (mstart == start && mlen-mstart == len) lisstride = 1;
+  }
+
+  ierr = MPIU_Allreduce(&lisstride,&gisstride,1,MPI_INT,MPI_MIN,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
+  if (gisstride) {
+    PetscInt N;
+    ierr = MatGetSize(mat,NULL,&N);CHKERRQ(ierr);
+    ierr = ISCreateStride(PetscObjectComm((PetscObject)mat),N,0,1,&iscol_local);CHKERRQ(ierr);
+    ierr = ISSetIdentity(iscol_local);CHKERRQ(ierr);
+    ierr = PetscInfo(mat,"Optimizing for obtaining all columns of the matrix; skipping ISAllGather()\n");CHKERRQ(ierr);
+  } else {
+    PetscInt cbs;
+    ierr = ISGetBlockSize(iscol,&cbs);CHKERRQ(ierr);
+    ierr = ISAllGather(iscol,&iscol_local);CHKERRQ(ierr);
+    ierr = ISSetBlockSize(iscol_local,cbs);CHKERRQ(ierr);
+  }
+
+  *isseq = iscol_local;
+  PetscFunctionReturn(0);
+}
+
+extern PetscErrorCode MatCreateSubMatrix_MPIAIJ_Private_SameDist(Mat,IS,IS,PetscInt,MatReuse,Mat*);
+
+/* isrow has same processor distribution as mat, avoid iscol_local which uses O(mat->cmap->N) ctable */
+PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameDist(Mat mat,IS isrow,IS iscol,MatReuse call,Mat *newmat)
+{
+  PetscErrorCode ierr;
+  IS             iscol_local;
+  PetscInt       csize;
+  PetscInt       n,i,j,rstart,rend;
+  PetscBool      sameDist=PETSC_FALSE,tsameDist;
+  MPI_Comm       comm;
+  PetscMPIInt    rank;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  if (!rank) printf("MatCreateSubMatrix_MPIAIJ_SameDist ...\n");
+
+  if (call == MAT_REUSE_MATRIX) {
+    ierr = PetscObjectQuery((PetscObject)*newmat,"ISAllGather",(PetscObject*)&iscol_local);CHKERRQ(ierr);
+    if (!iscol_local) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Submatrix passed in was not used before, cannot reuse");
+  } else {
+    ierr = ISGetISseq_Private(mat,iscol,&iscol_local);CHKERRQ(ierr);
+  }
+
+  ierr = ISGetLocalSize(iscol,&csize);CHKERRQ(ierr);
+  //ierr = MatCreateSubMatrix_MPIAIJ_Private(mat,isrow,iscol_local,csize,call,newmat);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix_MPIAIJ_Private_SameDist(mat,isrow,iscol_local,csize,call,newmat);CHKERRQ(ierr);
+  if (call == MAT_INITIAL_MATRIX) {
+    ierr = PetscObjectCompose((PetscObject)*newmat,"ISAllGather",(PetscObject)iscol_local);CHKERRQ(ierr);
+    ierr = ISDestroy(&iscol_local);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatCreateSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatReuse call,Mat *newmat)
 {
   PetscErrorCode ierr;
   IS             iscol_local;
   PetscInt       csize;
+  PetscInt       n,i,j,rstart,rend;
+  PetscBool      sameDist=PETSC_FALSE,tsameDist;
+  MPI_Comm       comm;
 
   PetscFunctionBegin;
-  ierr = ISGetLocalSize(iscol,&csize);CHKERRQ(ierr);
+  /* If isrow has same processor distribution as mat, then use a scalable routine */
+  ierr = ISGetLocalSize(isrow,&n);CHKERRQ(ierr);
+  if (!n) {
+    sameDist=PETSC_TRUE;
+  } else {
+    ierr = ISGetMinMax(isrow,&i,&j);CHKERRQ(ierr);
+    ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRQ(ierr);
+    if (i >= rstart && j < rend) sameDist=PETSC_TRUE;
+  }
+  ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&sameDist,&tsameDist,1,MPIU_BOOL,MPI_LAND,comm);CHKERRQ(ierr);
+
+  if (tsameDist) {
+    ierr = MatCreateSubMatrix_MPIAIJ_SameDist(mat,isrow,iscol,call,newmat);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
+  /* general case                            */
+  /* --------------------------------------- */
   if (call == MAT_REUSE_MATRIX) {
     ierr = PetscObjectQuery((PetscObject)*newmat,"ISAllGather",(PetscObject*)&iscol_local);CHKERRQ(ierr);
     if (!iscol_local) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Submatrix passed in was not used before, cannot reuse");
   } else {
-    /* check if we are grabbing all columns*/
-    PetscBool    isstride;
-    PetscMPIInt  lisstride = 0,gisstride;
-    ierr = PetscObjectTypeCompare((PetscObject)iscol,ISSTRIDE,&isstride);CHKERRQ(ierr);
-    if (isstride) {
-      PetscInt  start,len,mstart,mlen;
-      ierr = ISStrideGetInfo(iscol,&start,NULL);CHKERRQ(ierr);
-      ierr = ISGetLocalSize(iscol,&len);CHKERRQ(ierr);
-      ierr = MatGetOwnershipRangeColumn(mat,&mstart,&mlen);CHKERRQ(ierr);
-      if (mstart == start && mlen-mstart == len) lisstride = 1;
-    }
-    ierr = MPIU_Allreduce(&lisstride,&gisstride,1,MPI_INT,MPI_MIN,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
-    if (gisstride) {
-      PetscInt N;
-      ierr = MatGetSize(mat,NULL,&N);CHKERRQ(ierr);
-      ierr = ISCreateStride(PetscObjectComm((PetscObject)mat),N,0,1,&iscol_local);CHKERRQ(ierr);
-      ierr = ISSetIdentity(iscol_local);CHKERRQ(ierr);
-      ierr = PetscInfo(mat,"Optimizing for obtaining all columns of the matrix; skipping ISAllGather()\n");CHKERRQ(ierr);
-    } else {
-      PetscInt cbs;
-      ierr = ISGetBlockSize(iscol,&cbs);CHKERRQ(ierr);
-      ierr = ISAllGather(iscol,&iscol_local);CHKERRQ(ierr);
-      ierr = ISSetBlockSize(iscol_local,cbs);CHKERRQ(ierr);
-    }
+    ierr = ISGetISseq_Private(mat,iscol,&iscol_local);CHKERRQ(ierr);
   }
 
+  ierr = ISGetLocalSize(iscol,&csize);CHKERRQ(ierr);
   ierr = MatCreateSubMatrix_MPIAIJ_Private(mat,isrow,iscol_local,csize,call,newmat);CHKERRQ(ierr);
   if (call == MAT_INITIAL_MATRIX) {
     ierr = PetscObjectCompose((PetscObject)*newmat,"ISAllGather",(PetscObject)iscol_local);CHKERRQ(ierr);
@@ -3004,11 +3075,12 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_Private_SameDist(Mat mat,IS isrow,IS is
   const PetscInt *is_idx,*cmap;
 
   PetscFunctionBegin;
+  //printf("SubMatrix_MPIAIJ_Private_SameDist ...\n");
   ierr = ISGetLocalSize(iscol,&n);CHKERRQ(ierr); /* iscol should be sequential */
 
   if (call == MAT_INITIAL_MATRIX) {
     /* create scalable iscol_sub (a subset of iscol) */
-    PetscInt *idx,*cmap1; 
+    PetscInt *idx,*cmap1;
 
     ierr = PetscMalloc2(n,&idx,n,&cmap1);CHKERRQ(ierr);
     ierr = ISGetIndices(iscol,&is_idx);CHKERRQ(ierr);
@@ -3202,13 +3274,13 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_Private(Mat mat,IS isrow,IS iscol,Petsc
   MatScalar      *aa,*vwork;
   MPI_Comm       comm;
   Mat_SeqAIJ     *aij;
-  PetscBool      sameDist=PETSC_FALSE,tsameDist;
+  //PetscBool      sameDist=PETSC_FALSE,tsameDist;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-
+#if 0
   /* If isrow has same processor distribution as mat, then use a scalable routine */
   ierr = ISGetLocalSize(isrow,&n);CHKERRQ(ierr);
   if (!n) {
@@ -3223,6 +3295,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_Private(Mat mat,IS isrow,IS iscol,Petsc
     ierr = MatCreateSubMatrix_MPIAIJ_Private_SameDist(mat,isrow,iscol,csize,call,newmat);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
+#endif
 
   if (call ==  MAT_REUSE_MATRIX) {
     ierr = PetscObjectQuery((PetscObject)*newmat,"SubMatrix",(PetscObject*)&Mreuse);CHKERRQ(ierr);
