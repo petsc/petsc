@@ -2940,7 +2940,7 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
 }
 
 /* Not scalable because of ISAllGather() unless getting all columns. */
-PetscErrorCode ISGetISseq_Private(Mat mat,IS iscol,IS *isseq)
+PetscErrorCode ISGetSeqIS_Private(Mat mat,IS iscol,IS *isseq)
 {
   PetscErrorCode ierr;
   IS             iscol_local;
@@ -2985,22 +2985,144 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameDist(Mat mat,IS isrow,IS iscol,MatR
   PetscErrorCode ierr;
   IS             iscol_local;
   PetscInt       csize;
-  PetscInt       n,i,j,rstart,rend;
-  PetscBool      sameDist=PETSC_FALSE,tsameDist;
-  //MPI_Comm       comm;
-  //PetscMPIInt    rank;
+  MPI_Comm       comm;
+  PetscMPIInt    rank;
+  PetscBool      sorted,sameDist = PETSC_FALSE,tsameDist;
+  PetscInt       n,i,j,cstart,cend,N;
 
   PetscFunctionBegin;
-  //ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
-  //ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  //if (!rank) printf("MatCreateSubMatrix_MPIAIJ_SameDist ...reuse %d \n",call);
+  ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  //ierr = ISView(iscol,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+  /* If iscol has same processor distribution as mat, then use a scalable routine */
+  ierr = ISSorted(iscol,&sorted);CHKERRQ(ierr); //must be locally sorted???
+  if (!sorted) printf("[%d] iscol !sorted\n",rank);
+
+  ierr = ISGetLocalSize(iscol,&n);CHKERRQ(ierr);
+  ierr = ISGetSize(iscol,&N);CHKERRQ(ierr);
+  if (!n) {
+    sameDist = PETSC_TRUE;
+  } else {
+    ierr = ISGetMinMax(isrow,&i,&j);CHKERRQ(ierr);
+    ierr = MatGetOwnershipRangeColumn(mat,&cstart,&cend);CHKERRQ(ierr);
+    if (i >= cstart && j < cend) sameDist = PETSC_TRUE;
+  }
+  ierr = MPIU_Allreduce(&sameDist,&tsameDist,1,MPIU_BOOL,MPI_LAND,comm);CHKERRQ(ierr);
+  if (!rank) printf("..SubMatrix_MPIAIJ_SameDist ...reuse %d, sameDist for column %d \n",call,tsameDist);
+
+  if (sameDist) { /* get iscol_sub without calling ISAllGather() */
+    Vec x;
+    const PetscInt *is_idx;
+    PetscScalar    *xarray;
+
+    /* (1) iscol is a sub-vector of mat, pad it with '-1.' to form a full vector x */
+    ierr = MatCreateVecs(mat,&x,NULL);CHKERRQ(ierr);
+    ierr = VecSet(x,-1.0);CHKERRQ(ierr);
+    ierr = ISGetIndices(iscol,&is_idx);CHKERRQ(ierr);
+    ierr = VecGetArray(x,&xarray);CHKERRQ(ierr);
+    for (i=0; i<n; i++) {
+      //ierr = VecSetValues(x,1,&is_idx[i],&is_idx[i],);
+      xarray[is_idx[i]-cstart] = (PetscScalar)is_idx[i];
+    }
+    ierr = VecRestoreArray(x,&xarray);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(iscol,&is_idx);CHKERRQ(ierr);
+    //ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+    /* (2) scatter x using aij->Mvctx to get off-process portion of x (see MatMult_MPIAIJ) */
+    Mat_MPIAIJ     *a=(Mat_MPIAIJ*)mat->data;
+    Mat            B=a->B;
+    Vec            lvec = a->lvec;
+    PetscInt       Bn=B->cmap->N;
+    PetscInt       *garray = a->garray;
+
+    ierr = VecScatterBegin(a->Mvctx,x,lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(a->Mvctx,x,lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+    //printf("[%d] n(lvec) %d, Bn %d\n",rank,a->lvec->map->n,Bn);
+    if (lvec->map->n != Bn) SETERRQ2(PETSC_COMM_SELF,0,"n(lvec) %d != Bn %d",lvec->map->n,Bn);
+    if (rank == -1) {
+      printf("[%d] lvec:\n",rank);
+      ierr = VecView(lvec,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    }
+
+    /* create scalable iscol_sub (a subset of iscol) */
+    PetscInt *idx,*cmap1,count;
+
+    ierr = PetscMalloc2(n+Bn,&idx,n+Bn,&cmap1);CHKERRQ(ierr);
+    //ierr = ISGetIndices(iscol,&is_idx);CHKERRQ(ierr);
+    count = 0;
+
+    /* A part */
+    ierr = ISGetIndices(iscol,&is_idx);CHKERRQ(ierr);
+    j = cstart;
+    for (i=0; i<n; i++) {
+      if (j >= cend) break;
+      if (is_idx[i] == j) {
+        idx[count]  = j;
+        cmap1[count] = i; /* column index in submat */
+        count++; j++;
+      } else if (is_idx[i] > j) {
+        while (is_idx[i] > j && j < cend-1) j++;
+        if (is_idx[i] == j) {
+          idx[count]  = j;
+          cmap1[count] = i; /* column index in submat */
+          count++; j++;
+        }
+      }
+    }
+    ierr = ISRestoreIndices(iscol,&is_idx);CHKERRQ(ierr);
+
+    /* B part */
+    ierr = VecGetArray(lvec,&xarray);CHKERRQ(ierr);
+    j = 0;
+    for (i=0; i<Bn; i++) {
+      if (j >= Bn) break;
+      if ((PetscInt)xarray[i] == garray[j]) {
+        idx[count]  = garray[j];
+        cmap1[count] = i;  /* column index in submat */
+        count++; j++;
+      } else if ((PetscInt)xarray[i] > garray[j]) {
+        while ((PetscInt)xarray[i] > garray[j] && j < Bn-1) j++;
+        if ((PetscInt)xarray[i] == garray[j]) {
+          idx[count]  = garray[j];
+          cmap1[count] = i; /* column index in submat */
+          count++; j++;
+        }
+      }
+    }
+    ierr = VecRestoreArray(lvec,&xarray);CHKERRQ(ierr);
+    printf("[%d] n %d + Bn %d = %d; count %d, isN %d, matN %d\n",rank,n,Bn,n+Bn,count,N,mat->cmap->N);
+
+    IS iscol_sub,iscmap;
+    ierr = PetscSortInt(count,idx);CHKERRQ(ierr);
+    ierr = PetscSortInt(count,cmap1);CHKERRQ(ierr);
+
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,count,idx,PETSC_COPY_VALUES,&iscol_sub);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,count,cmap1,PETSC_COPY_VALUES,&iscmap);CHKERRQ(ierr);
+
+    if (rank == -1) {
+      printf("[%d] iscmap:\n",rank);
+      ierr = ISView(iscmap,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    }
+
+    ierr = ISDestroy(&iscol_sub);CHKERRQ(ierr);
+    ierr = ISDestroy(&iscmap);CHKERRQ(ierr);
+    ierr = PetscFree2(idx,cmap1);CHKERRQ(ierr);
+    ierr = VecDestroy(&x);CHKERRQ(ierr);
+  }
+
+  //-----------------------------------------------
 
   /* Get nonscalable iscol_local -- will replace it with iscol_sub! */
   if (call == MAT_REUSE_MATRIX) {
     ierr = PetscObjectQuery((PetscObject)*newmat,"ISAllGather",(PetscObject*)&iscol_local);CHKERRQ(ierr);
     if (!iscol_local) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Submatrix passed in was not used before, cannot reuse");
   } else {
-    ierr = ISGetISseq_Private(mat,iscol,&iscol_local);CHKERRQ(ierr);
+    ierr = ISGetSeqIS_Private(mat,iscol,&iscol_local);CHKERRQ(ierr);
+    PetscBool      sorted;
+    ierr = ISSorted(iscol_local,&sorted);CHKERRQ(ierr);
+    if (!sorted) printf("[%d] iscol_local !sorted\n",rank);
   }
 
   ierr = ISGetLocalSize(iscol,&csize);CHKERRQ(ierr);
@@ -3051,7 +3173,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatReuse call
     ierr = PetscObjectQuery((PetscObject)*newmat,"ISAllGather",(PetscObject*)&iscol_local);CHKERRQ(ierr);
     if (!iscol_local) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Submatrix passed in was not used before, cannot reuse");
   } else {
-    ierr = ISGetISseq_Private(mat,iscol,&iscol_local);CHKERRQ(ierr);
+    ierr = ISGetSeqIS_Private(mat,iscol,&iscol_local);CHKERRQ(ierr);
   }
 
   ierr = ISGetLocalSize(iscol,&csize);CHKERRQ(ierr);
@@ -3082,12 +3204,20 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_Private_SameDist(Mat mat,IS isrow,IS is
   const PetscInt *is_idx,*cmap;
 
   PetscFunctionBegin;
+  MPI_Comm       comm;
+  PetscMPIInt    rank;
+  ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   //printf("SubMatrix_MPIAIJ_Private_SameDist ...\n");
   ierr = ISGetLocalSize(iscol,&n);CHKERRQ(ierr); /* iscol should be sequential */
 
   if (call == MAT_INITIAL_MATRIX) {
     /* create scalable iscol_sub (a subset of iscol) */
     PetscInt *idx,*cmap1;
+
+    PetscBool      sorted;
+    ierr = ISSorted(iscol,&sorted);CHKERRQ(ierr);
+    if (!sorted) printf("iscol_local !sorted\n");
 
     ierr = PetscMalloc2(n,&idx,n,&cmap1);CHKERRQ(ierr);
     ierr = ISGetIndices(iscol,&is_idx);CHKERRQ(ierr);
@@ -3136,6 +3266,12 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_Private_SameDist(Mat mat,IS isrow,IS is
 
     ierr = ISCreateGeneral(PetscObjectComm((PetscObject)iscol),count,cmap1,PETSC_COPY_VALUES,&iscmap);CHKERRQ(ierr);
     ierr = PetscFree2(idx,cmap1);CHKERRQ(ierr);
+
+    printf("[%d] old count %d, isN %d, matN %d\n",rank,count,n,mat->cmap->N);
+    if (rank == -1) {
+      printf("[%d] old iscmap:\n",rank);
+      ierr = ISView(iscmap,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    }
 
     ierr = MatCreateSubMatrices_MPIAIJ_SingleIS_Local(mat,1,&isrow,&iscol_sub,MAT_INITIAL_MATRIX,PETSC_FALSE,&Msub);CHKERRQ(ierr);
 
