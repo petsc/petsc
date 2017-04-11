@@ -132,6 +132,7 @@
         <li>Renamed MatGetSubMatrixOption() to MatCreateSubMatrixOption(). </li>
         <li>MatSetOption(mat,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE) no longer applies to zero values set or added to the matrix diagonal, they are now not ignored and are included in the matrix nonzero structure. This is useful for Jacobians passed to TS. </li>
         <li>Added MatFactorSchurStatus. MatFactorGet/Restore/CreateSchurComplement now take an extra status argument. </li>
+        <li>Added MatMatSolveTranspose to solve transposed linear systems for multiple right-hand sides. </li>
       </ul>
       <h4>PC:</h4>
       <ul>
