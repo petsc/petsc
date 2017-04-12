@@ -103,7 +103,7 @@ static void stokes_momentum_kx(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                                PetscReal t, const PetscReal x[], PetscScalar f1[])
 {
-  const PetscReal nu = PetscExpReal(2.0*a[2]*x[0]);
+  const PetscReal nu = PetscExpReal(2.0*PetscRealPart(a[2])*x[0]);
   PetscInt c, d;
   for (c = 0; c < dim; ++c) {
     for (d = 0; d < dim; ++d) {
@@ -118,7 +118,7 @@ static void stokes_momentum_cx(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                                PetscReal t, const PetscReal x[], PetscScalar f1[])
 {
-  const PetscReal nu = PetscRealPart(x[0]) < PetscRealPart(a[4]) ? PetscRealPart(a[2]) : PetscRealPart(a[3]);
+  const PetscReal nu = x[0] < PetscRealPart(a[4]) ? PetscRealPart(a[2]) : PetscRealPart(a[3]);
   PetscInt c, d;
   for (c = 0; c < dim; ++c) {
     for (d = 0; d < dim; ++d) {
@@ -183,7 +183,7 @@ static void stokes_momentum_composite(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                       const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                                       PetscReal t, const PetscReal x[], PetscScalar f1[])
 {
-  const PetscReal nu = CompositeViscosity(dim, u_x, x, a[0]);
+  const PetscReal nu = CompositeViscosity(dim, u_x, x, PetscRealPart(a[0]));
   PetscInt        c, d;
 
   for (c = 0; c < dim; ++c) {
@@ -240,7 +240,7 @@ static void stokes_momentum_vel_J_kx(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                      const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                                      PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[])
 {
-  const PetscReal nu  = PetscExpReal(2.0*a[2]*x[0]);
+  const PetscReal nu  = PetscExpReal(2.0*PetscRealPart(a[2])*x[0]);
   PetscInt        cI, d;
 
   for (cI = 0; cI < dim; ++cI) {
@@ -255,7 +255,7 @@ static void stokes_momentum_vel_J_cx(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                      const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                                      PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[])
 {
-  const PetscReal nu = PetscRealPart(x[0]) < PetscRealPart(a[4]) ? PetscRealPart(a[2]) : PetscRealPart(a[3]);
+  const PetscReal nu = x[0] < PetscRealPart(a[4]) ? PetscRealPart(a[2]) : PetscRealPart(a[3]);
   PetscInt        cI, d;
 
   for (cI = 0; cI < dim; ++cI) {
@@ -271,7 +271,7 @@ static void stokes_momentum_vel_J_composite(PetscInt dim, PetscInt Nf, PetscInt 
                                      const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                                      PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[])
 {
-  const PetscReal nu  = CompositeViscosity(dim, u_x, x, a[0]);
+  const PetscReal nu  = CompositeViscosity(dim, u_x, x, PetscRealPart(a[0]));
   PetscInt        cI, d;
 
   for (cI = 0; cI < dim; ++cI) {
