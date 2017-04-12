@@ -495,10 +495,13 @@ PETSC_EXTERN PetscErrorCode MatGetOwnershipRangesColumn(Mat,const PetscInt**);
 PETSC_EXTERN PetscErrorCode MatGetOwnershipIS(Mat,IS*,IS*);
 
 PETSC_EXTERN PetscErrorCode MatCreateSubMatrices(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
+PETSC_DEPRECATED("Use MatCreateSubMatrices()") PETSC_STATIC_INLINE PetscErrorCode MatGetSubMatrices(Mat mat,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *submat[]) {return MatCreateSubMatrices(mat,n,irow,icol,scall,submat);}
 PETSC_EXTERN PetscErrorCode MatCreateSubMatricesMPI(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
+PETSC_DEPRECATED("Use MatCreateSubMatricesMPI()") PETSC_STATIC_INLINE PetscErrorCode MatGetSubMatricesMPI(Mat mat,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *submat[]) {return MatCreateSubMatricesMPI(mat,n,irow,icol,scall,submat);}
 PETSC_EXTERN PetscErrorCode MatDestroyMatrices(PetscInt,Mat *[]);
 PETSC_EXTERN PetscErrorCode MatDestroySubMatrices(PetscInt,Mat *[]);
 PETSC_EXTERN PetscErrorCode MatCreateSubMatrix(Mat,IS,IS,MatReuse,Mat *);
+PETSC_DEPRECATED("Use MatCreateSubMatrix()") PETSC_STATIC_INLINE PetscErrorCode MatGetSubMatrix(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *newmat) {return MatCreateSubMatrix(mat,isrow,iscol,cll,newmat);}
 PETSC_EXTERN PetscErrorCode MatGetLocalSubMatrix(Mat,IS,IS,Mat*);
 PETSC_EXTERN PetscErrorCode MatRestoreLocalSubMatrix(Mat,IS,IS,Mat*);
 PETSC_EXTERN PetscErrorCode MatGetSeqNonzeroStructure(Mat,Mat*);

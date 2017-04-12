@@ -15,14 +15,9 @@ static const char help[] = "Integrate chemistry using TChem.\n";
 #  error TChem is required for this example.  Reconfigure PETSc using --download-tchem.
 #endif
 /*
-    Obtain the three files into this directory
+    See extchem.example.1 for how to run an example
 
-       curl http://combustion.berkeley.edu/gri_mech/version30/files30/grimech30.dat > chem.inp
-       curl http://combustion.berkeley.edu/gri_mech/version30/files30/thermo30.dat > therm.dat
-       cp $PETSC_DIR/$PETSC_ARCH/externalpackages/tchem/data/periodictable.dat .
-
-    Run with
-   ./extchem -Tini 1500 -ts_arkimex_fully_implicit -ts_max_snes_failures -1 -ts_adapt_monitor -ts_adapt_dt_max 1e-4 -ts_arkimex_type 4 -ts_monitor_lg_solution -ts_final_time .005 -draw_pause -2 -lg_use_markers false -ts_monitor_lg_solution_variables H2,O2,H2O,CH4,CO,CO2,C2H2,N2  -ts_monitor_envelope
+    See also h2_10sp.inp for another example
 
     Determine sensitivity of final tempature on each variables initial conditions
     -ts_dt 1.e-5 -ts_type cn -ts_adjoint_solve -ts_adjoint_view_solution draw
@@ -99,6 +94,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = TC_initChem(chemfile, thermofile, 0, 1.0);TCCHKERRQ(ierr);
+  TC_setThermoPres(user.pressure);
   user.Nspec = TC_getNspec();
   user.Nreac = TC_getNreac();
   /*
@@ -192,17 +188,15 @@ int main(int argc,char **argv)
 
   {
     Vec                max;
-    const char * const *names;
     PetscInt           i;
     const PetscReal    *bmax;
 
     ierr = TSMonitorEnvelopeGetBounds(ts,&max,NULL);CHKERRQ(ierr);
     if (max) {
-      ierr = TSMonitorLGGetVariableNames(ts,&names);CHKERRQ(ierr);
       ierr = VecGetArrayRead(max,&bmax);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_SELF,"Species - maximum mass fraction\n");CHKERRQ(ierr);
       for (i=1; i<user.Nspec; i++) {
-        if (bmax[i] > .01) {ierr = PetscPrintf(PETSC_COMM_SELF,"%s %g\n",names[i],bmax[i]);CHKERRQ(ierr);}
+        if (bmax[i] > .01) {ierr = PetscPrintf(PETSC_COMM_SELF,"%s %g\n",user.snames[i],(double)bmax[i]);CHKERRQ(ierr);}
       }
       ierr = VecRestoreArrayRead(max,&bmax);CHKERRQ(ierr);
     }
@@ -283,25 +277,32 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
 {
   PetscScalar    *x;
   PetscErrorCode ierr;
-  struct {const char *name; PetscReal molefrac;} initial[] = {
-    {"CH4", 0.0948178320887},
-    {"O2", 0.189635664177},
-    {"N2", 0.706766236705},
-    {"AR", 0.00878026702874}
-  };
-  PetscInt i;
-  Vec      y;
+  PetscInt       i;
+  Vec            y;
+  const PetscInt maxspecies = 10;
+  PetscInt       nmax = maxspecies;
+  char           *names[maxspecies];
+  PetscReal      molefracs[maxspecies],sum;
+  PetscBool      flg;
 
   PetscFunctionBeginUser;
   ierr = VecZeroEntries(X);CHKERRQ(ierr);
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   x[0] = 1.0;  /* Non-dimensionalized by user->Tini */
 
-  for (i=0; i<sizeof(initial)/sizeof(initial[0]); i++) {
-    int ispec = TC_getSpos(initial[i].name, strlen(initial[i].name));
-    if (ispec < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Could not find species %s",initial[i].name);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Species %d: %s %g\n",i,initial[i].name,initial[i].molefrac);CHKERRQ(ierr);
-    x[1+ispec] = initial[i].molefrac;
+  ierr = PetscOptionsGetStringArray(NULL,NULL,"-initial_species",names,&nmax,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetRealArray(NULL,NULL,"-initial_mole",molefracs,&nmax,&flg);CHKERRQ(ierr);
+  sum = 0;
+  for (i=0; i<nmax; i++) sum += molefracs[i];
+  for (i=0; i<nmax; i++) molefracs[i] = molefracs[i]/sum;
+  for (i=0; i<nmax; i++) {
+    int ispec = TC_getSpos(names[i], strlen(names[i]));
+    if (ispec < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Could not find species %s",names[i]);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Species %d: %s %g\n",i,names[i],molefracs[i]);CHKERRQ(ierr);
+    x[1+ispec] = molefracs[i];
+  }
+  for (i=0; i<nmax; i++) {
+    ierr = PetscFree(names[i]);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   PrintSpecies((User)ctx,X);CHKERRQ(ierr);

@@ -336,6 +336,14 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
             pcone[3] = tmp;
           }
         }
+        if (dim == 2) {
+          /* Triangles are inverted */
+          if (gmsh_elem[c].numNodes == 3) {
+            PetscInt tmp = pcone[0];
+            pcone[0] = pcone[1];
+            pcone[1] = tmp;
+          }
+        }
         ierr = DMPlexSetCone(*dm, cell, pcone);CHKERRQ(ierr);
         cell++;
       }
