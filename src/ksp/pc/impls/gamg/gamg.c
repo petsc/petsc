@@ -557,6 +557,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
     ierr = MatGetSize(Parr[level1], &M, &N);CHKERRQ(ierr); /* N is next M, a loop test variables */
     if (is_last) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Is last ????????");
     if (N <= pc_gamg->coarse_eq_limit) is_last = PETSC_TRUE;
+    if (level1 == pc_gamg->Nlevels-1) is_last = PETSC_TRUE;
     ierr = pc_gamg->ops->createlevel(pc, Aarr[level], bs, &Parr[level1], &Aarr[level1], &nactivepe, NULL, is_last);CHKERRQ(ierr);
 
 #if defined PETSC_GAMG_USE_LOG
