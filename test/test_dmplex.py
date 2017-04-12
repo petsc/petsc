@@ -4,6 +4,8 @@ import numpy as np
 
 # --------------------------------------------------------------------
 
+ERR_SUP = 56
+
 class BaseTestPlex(object):
 
     COMM = PETSc.COMM_WORLD
@@ -129,15 +131,16 @@ class BaseTestPlex(object):
     def testAdapt(self):
         dim = self.plex.getDimension()
         if dim == 1: return
-        section = self.plex.createSection([self.COMP], [self.DOFS])
-        self.plex.setDefaultSection(section)
         vStart, vEnd = self.plex.getDepthStratum(0)
         numVertices = vEnd-vStart
-        metric_array = np.zeros(dim*dim*numVertices)
-        for d in range(dim*numVertices): metric_array[d*dim+d%dim] = 9.
-        metric = self.plex.createGlobalVec()
-        metric.createWithArray(metric_array)      
-        newplex = self.plex.adapt(metric)
+        metric_array = np.zeros([numVertices,dim,dim])
+        for met in metric_array:
+            met[:,:] = np.diag([9]*dim)
+        metric = PETSc.Vec().createWithArray(metric_array)
+        try:
+            newplex = self.plex.adapt(metric)
+        except PETSc.Error as exc:
+            if exc.ierr != ERR_SUP: raise
 
 
 # --------------------------------------------------------------------
