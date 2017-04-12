@@ -4,6 +4,6 @@ Simplicial Mesh in 3 dimensions:
   0-cells: 16
   1-cells: 32
   2-cells: 22
-  3-cells: 5
+  3-cells: 10
 Labels:
-  depth: 4 strata of sizes (16, 32, 22, 5)
+  depth: 4 strata of sizes (16, 32, 22, 10)
