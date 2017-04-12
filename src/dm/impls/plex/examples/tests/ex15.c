@@ -38,8 +38,11 @@ int main(int argc, char **argv)
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
   ierr = DMSetUseNatural(dm, PETSC_TRUE);CHKERRQ(ierr);
   {
-    DM dmDist;
+    PetscPartitioner part;
+    DM               dmDist;
 
+    ierr = DMPlexGetPartitioner(dm,&part);CHKERRQ(ierr);
+    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
     ierr = DMPlexDistribute(dm, 0, NULL, &dmDist);CHKERRQ(ierr);
     if (dmDist) {
       ierr = DMDestroy(&dm);CHKERRQ(ierr);

@@ -5,6 +5,7 @@
 */
 
 #include "wash.h"
+#include <petscdmplex.h>
 
 PetscErrorCode WASHIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void* ctx)
 {
@@ -621,7 +622,13 @@ int main(int argc,char ** argv)
 
   /* Network partitioning and distribution of data */
   if (size > 1) { 
-    DM distnetworkdm;
+    DM               distnetworkdm;
+    DM               plex;
+    PetscPartitioner part;
+
+    ierr = DMNetworkGetPlex(networkdm,&plex);CHKERRQ(ierr);
+    ierr = DMPlexGetPartitioner(plex,&part);CHKERRQ(ierr);
+    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
     ierr = DMNetworkDistribute(networkdm,0,&distnetworkdm);CHKERRQ(ierr);
     ierr = DMDestroy(&networkdm);CHKERRQ(ierr);
     networkdm = distnetworkdm;

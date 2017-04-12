@@ -289,7 +289,9 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   }
   ierr = PetscObjectTypeCompare((PetscObject)*dm,DMPLEX,&isPlex);CHKERRQ(ierr);
   if (isPlex) {
-    DM distributedMesh = NULL;
+    PetscPartitioner part;
+    DM               distributedMesh = NULL;
+
     if (user->tree) {
       DM refTree;
       DM ncdm = NULL;
@@ -307,6 +309,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       ierr = DMPlexSetRefinementUniform(*dm, PETSC_TRUE);CHKERRQ(ierr);
     }
     /* Distribute mesh over processes */
+    ierr = DMPlexGetPartitioner(*dm,&part);CHKERRQ(ierr);
+    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
     ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
     if (distributedMesh) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);

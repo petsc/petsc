@@ -466,6 +466,23 @@ PetscErrorCode PetscPartitionerView(PetscPartitioner part, PetscViewer v)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PetscPartitionerGetDefaultType(const char *currentType, const char **defaultType)
+{
+  PetscFunctionBegin;
+  if (!currentType) {
+#if defined(PETSC_HAVE_CHACO)
+    *defaultType = PETSCPARTITIONERCHACO;
+#elif defined(PETSC_HAVE_PARMETIS)
+    *defaultType = PETSCPARTITIONERPARMETIS;
+#else
+    *defaultType = PETSCPARTITIONERSIMPLE;
+#endif
+  } else {
+    *defaultType = currentType;
+  }
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode PetscPartitionerSetTypeFromOptions_Internal(PetscPartitioner part)
 {
   const char    *defaultType;
@@ -475,16 +492,7 @@ PetscErrorCode PetscPartitionerSetTypeFromOptions_Internal(PetscPartitioner part
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  if (!((PetscObject) part)->type_name)
-#if defined(PETSC_HAVE_CHACO)
-    defaultType = PETSCPARTITIONERCHACO;
-#elif defined(PETSC_HAVE_PARMETIS)
-    defaultType = PETSCPARTITIONERPARMETIS;
-#else
-    defaultType = PETSCPARTITIONERSIMPLE;
-#endif
-  else
-    defaultType = ((PetscObject) part)->type_name;
+  ierr = PetscPartitionerGetDefaultType(((PetscObject) part)->type_name,&defaultType);CHKERRQ(ierr);
   ierr = PetscPartitionerRegisterAll();CHKERRQ(ierr);
 
   ierr = PetscObjectOptionsBegin((PetscObject) part);CHKERRQ(ierr);
@@ -595,6 +603,7 @@ PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *part)
 PetscErrorCode PetscPartitionerCreate(MPI_Comm comm, PetscPartitioner *part)
 {
   PetscPartitioner p;
+  const char       *partitionerType = NULL;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -603,6 +612,8 @@ PetscErrorCode PetscPartitionerCreate(MPI_Comm comm, PetscPartitioner *part)
   ierr = DMInitializePackage();CHKERRQ(ierr);
 
   ierr = PetscHeaderCreate(p, PETSCPARTITIONER_CLASSID, "PetscPartitioner", "Graph Partitioner", "PetscPartitioner", comm, PetscPartitionerDestroy, PetscPartitionerView);CHKERRQ(ierr);
+  ierr = PetscPartitionerGetDefaultType(NULL,&partitionerType);CHKERRQ(ierr);
+  ierr = PetscPartitionerSetType(p,partitionerType);CHKERRQ(ierr);
 
   *part = p;
   PetscFunctionReturn(0);
@@ -651,9 +662,6 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, DM dm, PetscSect
     ierr = ISCreateGeneral(PetscObjectComm((PetscObject) part), cEnd-cStart, points, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  /* Obvious cheating, but I cannot think of a better way to do this. The DMSetFromOptions() has refinement in it,
-     so we cannot call it and have it feed down to the partitioner before partitioning */
-  ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
   if (part->height == 0) {
     PetscInt numVertices;
     PetscInt *start     = NULL;
@@ -1513,12 +1521,10 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_ParMetis(PetscPartitioner par
 PetscErrorCode DMPlexGetPartitioner(DM dm, PetscPartitioner *part)
 {
   DM_Plex       *mesh = (DM_Plex *) dm->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(part, 2);
-  ierr = PetscPartitionerSetTypeFromOptions_Internal(mesh->partitioner);CHKERRQ(ierr);
   *part = mesh->partitioner;
   PetscFunctionReturn(0);
 }

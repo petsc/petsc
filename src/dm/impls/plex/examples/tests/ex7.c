@@ -448,8 +448,11 @@ PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
     *dm  = interpolatedMesh;
   }
   {
-    DM distributedMesh = NULL;
+    DM               distributedMesh = NULL;
+    PetscPartitioner part;
 
+    ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
+    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
     /* Distribute mesh over processes */
     ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
     if (distributedMesh) {

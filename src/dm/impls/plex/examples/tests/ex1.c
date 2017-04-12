@@ -160,6 +160,11 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
       ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
       ierr = PetscPartitionerShellSetPartition(part, size, sizes, points);CHKERRQ(ierr);
+    } else {
+      PetscPartitioner part;
+
+      ierr = DMPlexGetPartitioner(*dm,&part);CHKERRQ(ierr);
+      ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
     }
     /* Distribute mesh over processes */
     ierr = PetscLogStagePush(user->stages[STAGE_DISTRIBUTE]);CHKERRQ(ierr);
