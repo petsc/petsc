@@ -42,7 +42,7 @@ PETSC_EXTERN PetscClassId PETSCSPACE_CLASSID;
 J*/
 typedef const char *PetscSpaceType;
 #define PETSCSPACEPOLYNOMIAL "poly"
-#define PETSCSPACEDG         "dg"
+#define PETSCSPACEPOINT      "point"
 
 PETSC_EXTERN PetscFunctionList PetscSpaceList;
 PETSC_EXTERN PetscErrorCode PetscSpaceCreate(MPI_Comm, PetscSpace *);
@@ -58,6 +58,8 @@ PETSC_EXTERN PetscErrorCode PetscSpaceRegister(const char [], PetscErrorCode (*)
 PETSC_EXTERN PetscErrorCode PetscSpaceRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode PetscSpaceGetDimension(PetscSpace, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscSpaceSetNumComponents(PetscSpace, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscSpaceGetNumComponents(PetscSpace, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscSpaceSetOrder(PetscSpace, PetscInt);
 PETSC_EXTERN PetscErrorCode PetscSpaceGetOrder(PetscSpace, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscSpaceEvaluate(PetscSpace, PetscInt, const PetscReal[], PetscReal[], PetscReal[], PetscReal[]);
@@ -69,8 +71,8 @@ PETSC_EXTERN PetscErrorCode PetscSpacePolynomialGetSymmetric(PetscSpace, PetscBo
 PETSC_EXTERN PetscErrorCode PetscSpacePolynomialSetTensor(PetscSpace, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscSpacePolynomialGetTensor(PetscSpace, PetscBool *);
 
-PETSC_EXTERN PetscErrorCode PetscSpaceDGSetQuadrature(PetscSpace, PetscQuadrature);
-PETSC_EXTERN PetscErrorCode PetscSpaceDGGetQuadrature(PetscSpace, PetscQuadrature *);
+PETSC_EXTERN PetscErrorCode PetscSpacePointSetQuadrature(PetscSpace, PetscQuadrature);
+PETSC_EXTERN PetscErrorCode PetscSpacePointGetQuadrature(PetscSpace, PetscQuadrature *);
 
 PETSC_EXTERN PetscClassId PETSCDUALSPACE_CLASSID;
 
@@ -101,6 +103,8 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceRegister(const char [], PetscErrorCode
 PETSC_EXTERN PetscErrorCode PetscDualSpaceRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode PetscDualSpaceGetDimension(PetscDualSpace, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscDualSpaceSetNumComponents(PetscDualSpace, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscDualSpaceGetNumComponents(PetscDualSpace, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceSetOrder(PetscDualSpace, PetscInt);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceGetOrder(PetscDualSpace, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceSetDM(PetscDualSpace, DM);
@@ -110,6 +114,7 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceCreateReferenceCell(PetscDualSpace, Pe
 PETSC_EXTERN PetscErrorCode PetscDualSpaceGetSymmetries(PetscDualSpace, const PetscInt ****, const PetscScalar ****);
 
 PETSC_EXTERN PetscErrorCode PetscDualSpaceApply(PetscDualSpace, PetscInt, PetscReal, PetscFECellGeom *, PetscInt, PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void *, PetscScalar *);
+PETSC_EXTERN PetscErrorCode PetscDualSpaceApplyDefault(PetscDualSpace, PetscInt, PetscReal, PetscFECellGeom *, PetscInt, PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *), void *, PetscScalar *);
 
 PETSC_EXTERN PetscErrorCode PetscDualSpaceLagrangeGetContinuity(PetscDualSpace, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceLagrangeSetContinuity(PetscDualSpace, PetscBool);

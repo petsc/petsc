@@ -1195,7 +1195,7 @@ PetscErrorCode DMProjectFunctionLocal_DA(DM dm, PetscReal time, PetscErrorCode (
   PetscQuadrature q;
   PetscSection    section;
   PetscScalar    *values;
-  PetscInt        numFields, numComp, numPoints, dim, dimEmbed, spDim, totDim, numValues, cStart, cEnd, f, c, v, d;
+  PetscInt        numFields, Nc, numPoints, dim, dimEmbed, spDim, totDim, numValues, cStart, cEnd, f, c, v, d;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -1211,7 +1211,7 @@ PetscErrorCode DMProjectFunctionLocal_DA(DM dm, PetscReal time, PetscErrorCode (
   ierr = DMDAVecGetClosure(dm, section, localX, cStart, &numValues, NULL);CHKERRQ(ierr);
   if (numValues != totDim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The section cell closure size %d != dual space dimension %d", numValues, totDim);
   ierr = DMGetWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
-  ierr = PetscQuadratureGetData(q, NULL, &numPoints, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(q, NULL, NULL, &numPoints, NULL, NULL);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     PetscFECellGeom geom;
 
@@ -1222,12 +1222,11 @@ PetscErrorCode DMProjectFunctionLocal_DA(DM dm, PetscReal time, PetscErrorCode (
       void * const ctx = ctxs ? ctxs[f] : NULL;
 
       ierr = PetscDSGetDiscretization(prob, f, (PetscObject *) &fe);CHKERRQ(ierr);
-      ierr = PetscFEGetNumComponents(fe, &numComp);CHKERRQ(ierr);
+      ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
       ierr = PetscFEGetDualSpace(fe, &sp);CHKERRQ(ierr);
       ierr = PetscDualSpaceGetDimension(sp, &spDim);CHKERRQ(ierr);
       for (d = 0; d < spDim; ++d) {
-        ierr = PetscDualSpaceApply(sp, d, time, &geom, numComp, funcs[f], ctx, &values[v]);CHKERRQ(ierr);
-        v += numComp;
+        ierr = PetscDualSpaceApply(sp, d, time, &geom, Nc, funcs[f], ctx, &values[v]);CHKERRQ(ierr);
       }
     }
     ierr = DMDAVecSetClosure(dm, section, localX, c, values, mode);CHKERRQ(ierr);
@@ -1276,19 +1275,20 @@ PetscErrorCode DMComputeL2Diff_DA(DM dm, PetscReal time, PetscErrorCode (**funcs
       void * const ctx = ctxs ? ctxs[field] : NULL;
       const PetscReal *quadPoints, *quadWeights;
       PetscReal       *basis;
-      PetscInt         numQuadPoints, numBasisFuncs, numBasisComps, q, d, e, fc, f;
+      PetscInt         qNc, Nq, Nb, Nc, q, d, e, fc, f;
 
       ierr = PetscDSGetDiscretization(prob, field, (PetscObject *) &fe);CHKERRQ(ierr);
-      ierr = PetscQuadratureGetData(quad, NULL, &numQuadPoints, &quadPoints, &quadWeights);CHKERRQ(ierr);
-      ierr = PetscFEGetDimension(fe, &numBasisFuncs);CHKERRQ(ierr);
-      ierr = PetscFEGetNumComponents(fe, &numBasisComps);CHKERRQ(ierr);
+      ierr = PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
+      ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
+      ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
+      if (qNc != Nc) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_SUP, "Quadrature components %D != %D field components\n", qNc, Nc);
       ierr = PetscFEGetDefaultTabulation(fe, &basis, NULL, NULL);CHKERRQ(ierr);
       if (debug) {
         char title[1024];
         ierr = PetscSNPrintf(title, 1023, "Solution for Field %d", field);CHKERRQ(ierr);
-        ierr = DMPrintCellVector(c, title, numBasisFuncs*numBasisComps, &x[fieldOffset]);CHKERRQ(ierr);
+        ierr = DMPrintCellVector(c, title, Nb, &x[fieldOffset]);CHKERRQ(ierr);
       }
-      for (q = 0; q < numQuadPoints; ++q) {
+      for (q = 0; q < Nq; ++q) {
         for (d = 0; d < dim; d++) {
           coords[d] = v0[d];
           for (e = 0; e < dim; e++) {
@@ -1296,19 +1296,18 @@ PetscErrorCode DMComputeL2Diff_DA(DM dm, PetscReal time, PetscErrorCode (**funcs
           }
         }
         ierr = (*funcs[field])(dim, time, coords, numFields, funcVal, ctx);CHKERRQ(ierr);
-        for (fc = 0; fc < numBasisComps; ++fc) {
+        for (fc = 0; fc < Nc; ++fc) {
           PetscScalar interpolant = 0.0;
 
-          for (f = 0; f < numBasisFuncs; ++f) {
-            const PetscInt fidx = f*numBasisComps+fc;
-            interpolant += x[fieldOffset+fidx]*basis[q*numBasisFuncs*numBasisComps+fidx];
+          for (f = 0; f < Nb; ++f) {
+            interpolant += x[fieldOffset+f]*basis[(q*Nb+f)*Nc+fc];
           }
-          if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "    elem %d field %d diff %g\n", c, field, PetscSqr(PetscRealPart(interpolant - funcVal[fc]))*quadWeights[q]*detJ);CHKERRQ(ierr);}
-          elemDiff += PetscSqr(PetscRealPart(interpolant - funcVal[fc]))*quadWeights[q]*detJ;
+          if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "    elem %d field %d diff %g\n", c, field, PetscSqr(PetscRealPart(interpolant - funcVal[fc]))*quadWeights[q*Nc+fc]*detJ);CHKERRQ(ierr);}
+          elemDiff += PetscSqr(PetscRealPart(interpolant - funcVal[fc]))*quadWeights[q*Nc+c]*detJ;
         }
       }
-      comp        += numBasisComps;
-      fieldOffset += numBasisFuncs*numBasisComps;
+      comp        += Nc;
+      fieldOffset += Nb;
     }
     ierr = DMDAVecRestoreClosure(dm, NULL, localX, c, NULL, &x);CHKERRQ(ierr);
     if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  elem %d diff %g\n", c, elemDiff);CHKERRQ(ierr);}
@@ -1361,12 +1360,13 @@ PetscErrorCode DMComputeL2GradientDiff_DA(DM dm, PetscReal time, PetscErrorCode 
       void * const ctx = ctxs ? ctxs[field] : NULL;
       const PetscReal *quadPoints, *quadWeights;
       PetscReal       *basisDer;
-      PetscInt         Nq, Nb, Nc, q, d, e, fc, f, g;
+      PetscInt         qNc, Nq, Nb, Nc, q, d, e, fc, f, g;
 
       ierr = PetscDSGetDiscretization(prob, field, (PetscObject *) &fe);CHKERRQ(ierr);
-      ierr = PetscQuadratureGetData(quad, NULL, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
+      ierr = PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
       ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
       ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
+      if (qNc != Nc) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_SUP, "Quadrature components %D != %D field components\n", qNc, Nc);
       ierr = PetscFEGetDefaultTabulation(fe, NULL, &basisDer, NULL);CHKERRQ(ierr);
       if (debug) {
         char title[1024];
@@ -1386,19 +1386,17 @@ PetscErrorCode DMComputeL2GradientDiff_DA(DM dm, PetscReal time, PetscErrorCode 
 
           for (d = 0; d < dim; ++d) interpolantVec[d] = 0.0;
           for (f = 0; f < Nb; ++f) {
-            const PetscInt fidx = f*Nc+fc;
-
             for (d = 0; d < dim; ++d) {
               realSpaceDer[d] = 0.0;
               for (g = 0; g < dim; ++g) {
-                realSpaceDer[d] += invJ[g*dim+d]*basisDer[(q*Nb*Nc+fidx)*dim+g];
+                realSpaceDer[d] += invJ[g*dim+d]*basisDer[(q*Nb+f)*dim+g];
               }
-              interpolantVec[d] += x[fieldOffset+fidx]*realSpaceDer[d];
+              interpolantVec[d] += x[fieldOffset+f]*realSpaceDer[d];
             }
           }
           for (d = 0; d < dim; ++d) interpolant += interpolantVec[d]*n[d];
-          if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "    elem %d fieldDer %d diff %g\n", c, field, PetscSqr(PetscRealPart(interpolant - funcVal[fc]))*quadWeights[q]*detJ);CHKERRQ(ierr);}
-          elemDiff += PetscSqr(PetscRealPart(interpolant - funcVal[fc]))*quadWeights[q]*detJ;
+          if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "    elem %d fieldDer %d diff %g\n", c, field, PetscSqr(PetscRealPart(interpolant - funcVal[fc]))*quadWeights[q*Nc+c]*detJ);CHKERRQ(ierr);}
+          elemDiff += PetscSqr(PetscRealPart(interpolant - funcVal[fc]))*quadWeights[q*Nc+c]*detJ;
         }
       }
       comp        += Nc;

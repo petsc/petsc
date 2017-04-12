@@ -64,7 +64,7 @@ SNES Object: 2 MPI processes
       total number of mallocs used during MatSetValues calls =0
         has attached null space
         using I-node (on process 0) routines: found 6 nodes, limit used is 5
-Number of SNES iterations = 1
+        Number of SNES iterations = 1
 L_2 Error: 8.87e-11 [1.67e-11, 8.72e-11]
 Solution
 Vec Object: 2 MPI processes

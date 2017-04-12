@@ -3,7 +3,7 @@ SNES Object: 5 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=66
+  total number of linear solver iterations=69
   total number of function evaluations=2
   norm schedule ALWAYS
   SNESLineSearch Object: 5 MPI processes
@@ -36,14 +36,14 @@ SNES Object: 5 MPI processes
                       Mat Object: 1 MPI processes
                         type: seqaij
                         rows=1756, cols=1756
-                        total: nonzeros=101534, allocated nonzeros=101534
+                        total: nonzeros=96690, allocated nonzeros=96690
                         total number of mallocs used during MatSetValues calls =0
                           using I-node routines: found 577 nodes, limit used is 5
                     A10
                       Mat Object: 1 MPI processes
                         type: seqaij
-                        rows=1756, cols=5901
-                        total: nonzeros=136596, allocated nonzeros=136596
+                        rows=1756, cols=7245
+                        total: nonzeros=143064, allocated nonzeros=143064
                         total number of mallocs used during MatSetValues calls =0
                           using I-node routines: found 577 nodes, limit used is 5
                     KSP of A00
@@ -63,7 +63,7 @@ SNES Object: 5 MPI processes
                             Factored matrix follows:
                               Mat Object: 1 MPI processes
                                 type: cholmod
-                                rows=5901, cols=5901
+                                rows=7245, cols=7245
                                 package used to perform factorization: cholmod
                                 total: nonzeros=0, allocated nonzeros=0
                                 total number of mallocs used during MatSetValues calls =0
@@ -88,13 +88,13 @@ SNES Object: 5 MPI processes
                                     Common.print             3
                                     Common.postorder         1
                                     Common.default_nesdis    0 (use NESDIS instead of METIS for nested dissection)
-                                    Common.fl                6.45721e+08 (flop count from most recent analysis)
-                                    Common.lnz               1.60849e+06 (fundamental nz in L)
-                                    Common.anz               393042.
+                                    Common.fl                1.22085e+09 (flop count from most recent analysis)
+                                    Common.lnz               2.42429e+06 (fundamental nz in L)
+                                    Common.anz               498870.
                                     Common.modfl             -1. (flop count from most recent update)
                                     Common.malloc_count      12. (number of live objects)
-                                    Common.memory_usage      2.41383e+07 (peak memory usage in bytes)
-                                    Common.memory_inuse      1.69338e+07 (current memory usage in bytes)
+                                    Common.memory_usage      3.47797e+07 (peak memory usage in bytes)
+                                    Common.memory_inuse      2.59699e+07 (current memory usage in bytes)
                                     Common.nrealloc_col      0. (number of column reallocations)
                                     Common.nrealloc_factor   0. (number of factor reallocations due to column reallocations)
                                     Common.ndbounds_hit      0. (number of times diagonal was modified by dbound)
@@ -103,17 +103,17 @@ SNES Object: 5 MPI processes
                         linear system matrix = precond matrix:
                         Mat Object: 1 MPI processes
                           type: seqaij
-                          rows=5901, cols=5901
-                          total: nonzeros=780183, allocated nonzeros=780183
+                          rows=7245, cols=7245
+                          total: nonzeros=990495, allocated nonzeros=990495
                           total number of mallocs used during MatSetValues calls =0
-                            using I-node routines: found 1967 nodes, limit used is 5
+                            using I-node routines: found 2415 nodes, limit used is 5
                     A01
                       Mat Object: 1 MPI processes
                         type: seqaij
-                        rows=5901, cols=1756
-                        total: nonzeros=136596, allocated nonzeros=136596
+                        rows=7245, cols=1756
+                        total: nonzeros=143064, allocated nonzeros=143064
                         total number of mallocs used during MatSetValues calls =0
-                          using I-node routines: found 1669 nodes, limit used is 5
+                          using I-node routines: found 1942 nodes, limit used is 5
               FETI-DP BDdelta: DB^t * (B D^-1 B^t)^-1 for deluxe scaling (just from rank 0)
                 KSP Object: (fetidp_bddelta_) 1 MPI processes
                   type: preonly
@@ -130,7 +130,7 @@ SNES Object: 5 MPI processes
                       Factored matrix follows:
                         Mat Object: 1 MPI processes
                           type: umfpack
-                          rows=1695, cols=1695
+                          rows=1749, cols=1749
                           package used to perform factorization: umfpack
                           total: nonzeros=0, allocated nonzeros=0
                           total number of mallocs used during MatSetValues calls =0
@@ -153,16 +153,16 @@ SNES Object: 5 MPI processes
                   linear system matrix = precond matrix:
                   Mat Object: 1 MPI processes
                     type: seqaij
-                    rows=1695, cols=1695
-                    total: nonzeros=806103, allocated nonzeros=806103
+                    rows=1749, cols=1749
+                    total: nonzeros=731043, allocated nonzeros=731043
                     total number of mallocs used during MatSetValues calls =0
-                      using I-node routines: found 375 nodes, limit used is 5
+                      using I-node routines: found 427 nodes, limit used is 5
                 Mat Object: 1 MPI processes
                   type: seqaij
-                  rows=1756, cols=1695
-                  total: nonzeros=792630, allocated nonzeros=792630
+                  rows=1756, cols=1749
+                  total: nonzeros=707229, allocated nonzeros=707229
                   total number of mallocs used during MatSetValues calls =0
-                    using I-node routines: found 505 nodes, limit used is 5
+                    using I-node routines: found 500 nodes, limit used is 5
               FETI-DP pressure preconditioner
                 KSP Object: (fetidp_p_) 5 MPI processes
                   type: richardson
@@ -176,13 +176,13 @@ SNES Object: 5 MPI processes
                   linear system matrix = precond matrix:
                   Mat Object: 5 MPI processes
                     type: is
-                    rows=441, cols=441
-                    total: nonzeros=8221, allocated nonzeros=8221
+                    rows=524, cols=524
+                    total: nonzeros=10008, allocated nonzeros=10008
                     total number of mallocs used during MatSetValues calls =0
           linear system matrix = precond matrix:
           Mat Object: (fetidp_) 5 MPI processes
             type: shell
-            rows=4986, cols=4986
+            rows=6020, cols=6020
       FETI-DP: BDDC solver details
         PC Object: (fetidp_bddc_) 5 MPI processes
           type: bddc
@@ -224,15 +224,15 @@ SNES Object: 5 MPI processes
             BDDC: Benign subspace trick is active: 0
             BDDC: Algebraic computation of no-net-flux 0
             BDDC: ********************************** STATISTICS AT LEVEL 0 **********************************
-            BDDC: Global dofs sizes: all 38698 interface 4749 coarse 13
-            BDDC: Coarsening ratios: all/coarse 2976 interface/coarse 365
+            BDDC: Global dofs sizes: all 38698 interface 5630 coarse 8
+            BDDC: Coarsening ratios: all/coarse 4837 interface/coarse 703
             BDDC: Active processes : 5
             BDDC: Total subdomains : 5
             BDDC: Dofs type        :	MIN	MAX	MEAN
-            BDDC: Interior  dofs   :	6217	7661	6789
-            BDDC: Interface dofs   :	1756	2588	1960
-            BDDC: Primal    dofs   :	6	11	9
-            BDDC: Local     dofs   :	7993	10185	8749
+            BDDC: Interior  dofs   :	5906	7661	6613
+            BDDC: Interface dofs   :	1756	2980	2344
+            BDDC: Primal    dofs   :	3	8	5
+            BDDC: Local     dofs   :	7993	10034	8958
             BDDC: Local     subs   :	1	1
             BDDC: ********************************** COARSE PROBLEM DETAILS *********************************
           KSP Object: (fetidp_bddc_pc_bddc_coarse_) 5 MPI processes
@@ -247,8 +247,8 @@ SNES Object: 5 MPI processes
             linear system matrix = precond matrix:
             Mat Object: 5 MPI processes
               type: mpiaij
-              rows=13, cols=13
-              total: nonzeros=169, allocated nonzeros=169
+              rows=8, cols=8
+              total: nonzeros=64, allocated nonzeros=64
               total number of mallocs used during MatSetValues calls =0
                 using I-node (on process 0) routines: found 1 nodes, limit used is 5
                         KSP Object:           (fetidp_bddc_pc_bddc_coarse_redundant_)           1 MPI processes
@@ -267,23 +267,23 @@ SNES Object: 5 MPI processes
                               Factored matrix follows:
                                 Mat Object:           1 MPI processes
                                   type: seqaij
-                                  rows=13, cols=13
+                                  rows=8, cols=8
                                   package used to perform factorization: petsc
-                                  total: nonzeros=169, allocated nonzeros=169
+                                  total: nonzeros=64, allocated nonzeros=64
                                   total number of mallocs used during MatSetValues calls =0
-                                    using I-node routines: found 3 nodes, limit used is 5
+                                    using I-node routines: found 2 nodes, limit used is 5
                           linear system matrix = precond matrix:
                           Mat Object:           1 MPI processes
                             type: seqaij
-                            rows=13, cols=13
-                            total: nonzeros=169, allocated nonzeros=169
+                            rows=8, cols=8
+                            total: nonzeros=64, allocated nonzeros=64
                             total number of mallocs used during MatSetValues calls =0
-                              using I-node routines: found 3 nodes, limit used is 5
+                              using I-node routines: found 2 nodes, limit used is 5
           linear system matrix = precond matrix:
           Mat Object: 5 MPI processes
             type: is
             rows=38698, cols=38698
-            total: nonzeros=7340891, allocated nonzeros=7340891
+            total: nonzeros=7389436, allocated nonzeros=7389436
             total number of mallocs used during MatSetValues calls =0
     maximum iterations=10000, initial guess is zero
     tolerances:  relative=1e-08, absolute=1e-50, divergence=10000.
@@ -295,8 +295,8 @@ SNES Object: 5 MPI processes
     Mat Object: 5 MPI processes
       type: is
       rows=38698, cols=38698
-      total: nonzeros=7340891, allocated nonzeros=8326087
+      total: nonzeros=7389436, allocated nonzeros=8575684
       total number of mallocs used during MatSetValues calls =0
         has attached null space
 Number of SNES iterations = 1
-L_2 Error: 7.31e-09 [1.99e-10, 7.31e-09]
+L_2 Error: 1.23e-08 [4.23e-10, 1.22e-08]

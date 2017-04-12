@@ -26,7 +26,7 @@ PETSC_EXTERN void PETSC_STDCALL petscdsgettabulation_(PetscDS *prob, PetscInt *f
   *ierr = PetscFEGetDimension(fe, &Nb);if (*ierr) return;
   *ierr = PetscFEGetNumComponents(fe, &Nc);if (*ierr) return;
   *ierr = PetscFEGetQuadrature(fe, &q);if (*ierr) return;
-  *ierr = PetscQuadratureGetData(q, NULL, &Nq, NULL, NULL);if (*ierr) return;
+  *ierr = PetscQuadratureGetData(q, NULL, NULL, &Nq, NULL, NULL);if (*ierr) return;
   *ierr = PetscDSGetTabulation(*prob, &basis, &basisDer);if (*ierr) return;
   *ierr = F90Array1dCreate((void *) basis[*f],    PETSC_REAL, 1, Nq*Nb*Nc, ptrB PETSC_F90_2PTR_PARAM(ptrb));if (*ierr) return;
   *ierr = F90Array1dCreate((void *) basisDer[*f], PETSC_REAL, 1, Nq*Nb*Nc*dim, ptrD PETSC_F90_2PTR_PARAM(ptrd));

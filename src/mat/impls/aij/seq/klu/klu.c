@@ -76,10 +76,6 @@
 #endif
 #endif
 
-#define SuiteSparse_long long long
-#define SuiteSparse_long_max LONG_LONG_MAX
-#define SuiteSparse_long_id "%lld"
-
 EXTERN_C_BEGIN
 #include <klu.h>
 EXTERN_C_END

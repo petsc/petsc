@@ -52,3 +52,8 @@ int main(int argc,char **argv)
   return ierr;
 }
 
+/*TEST
+  test:
+    suffix: 1
+    args: -degrees 1,2,3 -target_points -0.3,0,.2 -src_points -1,-.3,0,.2,1
+TEST*/
