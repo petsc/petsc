@@ -5854,7 +5854,7 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
       if (coneSize != 2) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Edge %d cone should have two vertices, not %d", e, coneSize);
       ierr = DMPlexGetCone(dm, e, &cone);CHKERRQ(ierr);
       if (localize) {
-        PetscInt   coff, toffA, toffB, voffA, voffB;
+        PetscInt   coff, toffA = -1, toffB = -1, voffA, voffB;
         PetscInt  *eStar = NULL, eStarSize;
         PetscInt  *rStar = NULL, rStarSize;
         PetscBool  cellfound = PETSC_FALSE;

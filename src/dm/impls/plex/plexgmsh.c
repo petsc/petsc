@@ -507,7 +507,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
         PetscBool pc = PETSC_FALSE;
         PetscInt  corner;
         for (corner = 0; corner < gmsh_elem[c].numNodes; ++corner) {
-          pc = pc || PetscBTLookup(periodicV, gmsh_elem[c].nodes[corner] - 1);
+          pc = (PetscBool)(pc || PetscBTLookup(periodicV, gmsh_elem[c].nodes[corner] - 1));
         }
         if (pc) {
           ierr = PetscBTSet(periodicC, cell);CHKERRQ(ierr);
