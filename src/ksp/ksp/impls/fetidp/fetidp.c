@@ -562,7 +562,6 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
   if (!fetidp->saddlepoint) {
     ierr = PCSetOperators(fetidp->innerbddc,A,Ap);CHKERRQ(ierr);
   } else {
-    KSP      kP;
     Mat      nA,lA;
     Mat      PPmat;
     IS       pP;
