@@ -3102,8 +3102,6 @@ PetscErrorCode ISGetSeqIS_SameDist_Private(Mat mat,IS iscol,IS *iscol_sub,IS *is
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameDist(Mat,IS,IS,MatReuse,Mat*);
-
 PetscErrorCode MatCreateSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatReuse call,Mat *newmat)
 {
   PetscErrorCode ierr;
@@ -3146,7 +3144,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatReuse call
   }
 
   ierr = ISGetLocalSize(iscol,&csize);CHKERRQ(ierr);
-  ierr = MatCreateSubMatrix_MPIAIJ_Private(mat,isrow,iscol_local,csize,call,newmat);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrix_MPIAIJ_nonscalable(mat,isrow,iscol_local,csize,call,newmat);CHKERRQ(ierr);
 
   if (call == MAT_INITIAL_MATRIX) {
     ierr = PetscObjectCompose((PetscObject)*newmat,"ISAllGather",(PetscObject)iscol_local);CHKERRQ(ierr);
@@ -3397,7 +3395,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameDist(Mat mat,IS isrow,IS iscol,MatR
 
   Note: This requires a sequential iscol with all indices.
 */
-PetscErrorCode MatCreateSubMatrix_MPIAIJ_Private(Mat mat,IS isrow,IS iscol,PetscInt csize,MatReuse call,Mat *newmat)
+PetscErrorCode MatCreateSubMatrix_MPIAIJ_nonscalable(Mat mat,IS isrow,IS iscol,PetscInt csize,MatReuse call,Mat *newmat)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
