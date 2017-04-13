@@ -6,7 +6,7 @@ import numpy as np
 OptDB = PETSc.Options()
 
 dim = OptDB.getInt('dim', 2)
-plex = PETSc.DMPlex().createBoxMesh(dim, 3)
+plex = PETSc.DMPlex().createBoxMesh(dim, 4)
 plex.view()
 
 dim = plex.getDimension()
