@@ -4,6 +4,8 @@ import numpy as np
 
 # --------------------------------------------------------------------
 
+ERR_SUP = 56
+
 class BaseTestPlex(object):
 
     COMM = PETSc.COMM_WORLD
@@ -124,6 +126,22 @@ class BaseTestPlex(object):
         self.assertNotEqual(numBoundary, pEnd - pStart)
         self.assertNotEqual(numInterior, pEnd - pStart)
         self.assertEqual(numBoundary + numInterior, pEnd - pStart)
+
+
+    def testAdapt(self):
+        dim = self.plex.getDimension()
+        if dim == 1: return
+        vStart, vEnd = self.plex.getDepthStratum(0)
+        numVertices = vEnd-vStart
+        metric_array = np.zeros([numVertices,dim,dim])
+        for met in metric_array:
+            met[:,:] = np.diag([9]*dim)
+        metric = PETSc.Vec().createWithArray(metric_array)
+        try:
+            newplex = self.plex.adapt(metric)
+        except PETSc.Error as exc:
+            if exc.ierr != ERR_SUP: raise
+
 
 # --------------------------------------------------------------------
 

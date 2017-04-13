@@ -643,3 +643,13 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexConstructGhostCells(self.dm, cname, &numGhostCells, &dmGhosted))
         PetscCLEAR(self.obj); self.dm = dmGhosted
         return toInt(numGhostCells)
+
+    #
+
+    def adapt(self, Vec metric not None, label=None):
+        cdef const_char *cval = NULL
+        label = str2bytes(label, &cval)
+        if cval == NULL: cval = b"" # XXX Should be fixed upstream
+        cdef DM newdm = DMPlex()
+        CHKERR( DMPlexAdapt(self.dm, metric.vec, cval, &newdm.dm) )
+        return newdm
