@@ -154,13 +154,13 @@ SNES Object: 5 MPI processes
                   Mat Object: 1 MPI processes
                     type: seqaij
                     rows=1749, cols=1749
-                    total: nonzeros=731043, allocated nonzeros=731043
+                    total: nonzeros=731139, allocated nonzeros=731139
                     total number of mallocs used during MatSetValues calls =0
-                      using I-node routines: found 427 nodes, limit used is 5
+                      using I-node routines: found 425 nodes, limit used is 5
                 Mat Object: 1 MPI processes
                   type: seqaij
                   rows=1756, cols=1749
-                  total: nonzeros=707229, allocated nonzeros=707229
+                  total: nonzeros=707391, allocated nonzeros=707391
                   total number of mallocs used during MatSetValues calls =0
                     using I-node routines: found 500 nodes, limit used is 5
               FETI-DP pressure preconditioner
