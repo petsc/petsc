@@ -1301,7 +1301,7 @@ int main(int argc, char **argv)
     args: -test_fe_jacobian -test_injector -petscpartitioner_type simple -tree -simplex 1 -dim 3 -dm_plex_max_projection_height 2 -petscspace_order 2 -qorder 2 -dm_view ascii::ASCII_INFO_DETAIL
   test:
     suffix: nonconforming_simplex_3_hi
-    requires: ctetgen,skip
+    requires: ctetgen skip
     nsize: 4
     args: -test_fe_jacobian -petscpartitioner_type simple -tree -simplex 1 -dim 3 -dm_plex_max_projection_height 2 -petscspace_order 4 -qorder 4
   test:
