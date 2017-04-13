@@ -830,6 +830,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         ierr = MatDestroy(&lA2);CHKERRQ(ierr);
       }
     }
+
     if (totP) {
       ierr = MatSetOption(nA,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
       ierr = MatZeroRowsColumnsIS(nA,fetidp->pP,1.,NULL,NULL);CHKERRQ(ierr);
@@ -843,7 +844,21 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
     if (totP) pcbddc->switch_static = PETSC_TRUE;
 
     /* if there are no pressures, set inner bddc flag for benign saddle point */
-    if (!totP) pcbddc->benign_saddle_point = PETSC_TRUE;
+    if (!totP) {
+      pcbddc->benign_saddle_point = PETSC_TRUE;
+      pcbddc->compute_nonetflux   = PETSC_TRUE;
+    }
+
+    /* Divergence mat */
+    if (totP) {
+      Mat B;
+      IS  P;
+
+      ierr = PetscObjectQuery((PetscObject)fetidp->innerbddc,"__KSPFETIDP_aP",(PetscObject*)&P);CHKERRQ(ierr);
+      ierr = MatCreateSubMatrix(A,P,NULL,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+      ierr = PCBDDCSetDivergenceMat(fetidp->innerbddc,B,PETSC_FALSE,NULL);CHKERRQ(ierr);
+      ierr = MatDestroy(&B);CHKERRQ(ierr);
+    }
 
     /* Operators for pressure preconditioner */
     if (totP) {
