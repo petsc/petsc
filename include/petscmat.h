@@ -318,6 +318,7 @@ PETSC_EXTERN PetscErrorCode MatAssembled(Mat,PetscBool *);
     Level: beginner
 
    Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
+   Any additions/changes here must also be made in src/mat/interface/dlregismat.c in MatOptions[]
 
    Developer Notes: Entries that are negative need not be called collectively by all processes.
 
@@ -349,7 +350,7 @@ typedef enum {MAT_OPTION_MIN = -3,
               MAT_SUBMAT_SINGLEIS = 21,
               MAT_OPTION_MAX = 22} MatOption;
 
-PETSC_EXTERN const char *MatOptions[];
+PETSC_EXTERN const char *const *MatOptions;
 PETSC_EXTERN PetscErrorCode MatSetOption(Mat,MatOption,PetscBool);
 PETSC_EXTERN PetscErrorCode MatGetOption(Mat,MatOption,PetscBool*);
 PETSC_EXTERN PetscErrorCode MatGetType(Mat,MatType*);

@@ -1,0 +1,42 @@
+#
+#   Run with  ./extchem -options_file gasoline.inp
+#
+# The two input files come from OpenFoam tutorial for their 0-D chemistry solver chemFoam
+#
+# You may need to do
+#       cp $PETSC_DIR/$PETSC_ARCH/share/periodictable.dat .
+#
+#
+-chem gasoline_874sp.inp
+-thermo thermo_sp874.inp
+
+-initial_species IC8H18,O2,N2
+#initial concentration in moles
+-initial_mole    1,12.5,47.0
+
+#Temp in kelvin
+-Tini 800
+##pressure is in N/m2
+-pressure 5.06625e+06
+
+-ts_final_time 6.5e-3
+-ts_max_steps 100000000
+
+-monitor_temp
+
+# the following line is needed because currently the basic adapter takes large steps and steps right over the ignition
+#-ts_adapt_type glee
+-ts_arkimex_fully_implicit
+-ts_max_snes_failures -1
+-ts_adapt_monitor
+-ts_adapt_dt_max 1e-3
+-ts_arkimex_type 4
+
+# use direct solver (treats Jacobian as dense)
+-pc_type lu
+
+#-ts_monitor_lg_solution
+#-draw_pause -2
+#-lg_use_markers false
+#-ts_monitor_lg_solution_variables H2,O2,H2O,CH4,CO,CO2,C2H2,N2
+#-ts_monitor_envelope
