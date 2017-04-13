@@ -331,41 +331,41 @@ int main(int argc, char **argv)
   test:
     suffix: 0
     requires: ctetgen
-    args: -dim 3 -ctetgen_verbose 4 -dm_view ::ascii_info_detail -info -info_exclude null
+    args: -dim 3 -ctetgen_verbose 4 -dm_view ascii::ascii_info_detail -info -info_exclude null
   test:
     suffix: 1
     requires: ctetgen
-    args: -dim 3 -ctetgen_verbose 4 -refinement_limit 0.0625 -dm_view ::ascii_info_detail -info -info_exclude null
+    args: -dim 3 -ctetgen_verbose 4 -refinement_limit 0.0625 -dm_view ascii::ascii_info_detail -info -info_exclude null
 
   # 2D LaTex and ASCII output 2-9
   test:
     suffix: 2
     requires: triangle
-    args: -dim 2 -dm_view ::ascii_latex
+    args: -dim 2 -dm_view ascii::ascii_latex
   test:
     suffix: 3
     requires: triangle
-    args: -dim 2 -dm_refine 1 -interpolate 1 -dm_view ::ascii_info_detail
+    args: -dim 2 -dm_refine 1 -interpolate 1 -dm_view ascii::ascii_info_detail
   test:
     suffix: 4
     requires: triangle
     nsize: 2
-    args: -dim 2 -dm_refine 1 -interpolate 1 -test_partition -dm_view ::ascii_info_detail
+    args: -dim 2 -dm_refine 1 -interpolate 1 -test_partition -dm_view ascii::ascii_info_detail
   test:
     suffix: 5
     requires: triangle
     nsize: 2
-    args: -dim 2 -dm_refine 1 -interpolate 1 -test_partition -dm_view ::ascii_latex
+    args: -dim 2 -dm_refine 1 -interpolate 1 -test_partition -dm_view ascii::ascii_latex
   test:
     suffix: 6
-    args: -dim 2 -cell_simplex 0 -dm_view ::ascii_info_detail
+    args: -dim 2 -cell_simplex 0 -dm_view ascii::ascii_info_detail
   test:
     suffix: 7
-    args: -dim 2 -cell_simplex 0 -dm_refine 1 -dm_view ::ascii_info_detail
+    args: -dim 2 -cell_simplex 0 -dm_refine 1 -dm_view ascii::ascii_info_detail
   test:
     suffix: 8
     nsize: 2
-    args: -dim 2 -cell_simplex 0 -dm_refine 1 -interpolate 1 -test_partition -dm_view ::ascii_latex
+    args: -dim 2 -cell_simplex 0 -dm_refine 1 -interpolate 1 -test_partition -dm_view ascii::ascii_latex
 
   # Parallel refinement tests with overlap
   test:
@@ -373,24 +373,24 @@ int main(int argc, char **argv)
     requires: triangle
     nsize: 2
     requires: triangle
-    args: -dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -test_partition -overlap 1 -dm_view ::ascii_info_detail
+    args: -dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -test_partition -overlap 1 -dm_view ascii::ascii_info_detail
   test:
     suffix: refine_overlap_1
     requires: triangle
     nsize: 8
-    args: -dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -test_partition -overlap 1 -dm_view ::ascii_info_detail
+    args: -dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -test_partition -overlap 1 -dm_view ascii::ascii_info_detail
 
   # Parallel simple partitioner tests
   test:
     suffix: part_simple_0
     requires: triangle
     nsize: 2
-    args: -dim 2 -cell_simplex 1 -dm_refine 0 -interpolate 0 -petscpartitioner_type simple -partition_view -dm_view ::ascii_info_detail
+    args: -dim 2 -cell_simplex 1 -dm_refine 0 -interpolate 0 -petscpartitioner_type simple -partition_view -dm_view ascii::ascii_info_detail
   test:
     suffix: part_simple_1
     requires: triangle
     nsize: 8
-    args: -dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -petscpartitioner_type simple -partition_view -dm_view ::ascii_info_detail
+    args: -dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -petscpartitioner_type simple -partition_view -dm_view ascii::ascii_info_detail
 
   # CGNS reader tests 10-11 (need to find smaller test meshes)
   test:

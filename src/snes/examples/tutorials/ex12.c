@@ -992,7 +992,7 @@ int main(int argc, char **argv)
   test:
     suffix: 3
     requires: hdf5 triangle
-    args: -run_type test -refinement_limit 0.0    -bc_type neumann   -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1 -dm_view ::ascii_info_detail
+    args: -run_type test -refinement_limit 0.0    -bc_type neumann   -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1 -dm_view ascii::ascii_info_detail
   test:
     suffix: 4
     requires: hdf5 triangle
@@ -1009,11 +1009,11 @@ int main(int argc, char **argv)
   test:
     suffix: 7
     requires: hdf5 triangle
-    args: -run_type test -refinement_limit 0.0    -bc_type neumann   -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1 -dm_view ::ascii_info_detail
+    args: -run_type test -refinement_limit 0.0    -bc_type neumann   -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1 -dm_view ascii::ascii_info_detail
   test:
     suffix: 8
     requires: hdf5 triangle
-    args: -run_type test -refinement_limit 0.0625 -bc_type neumann   -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1 -dm_view ::ascii_info_detail
+    args: -run_type test -refinement_limit 0.0625 -bc_type neumann   -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1 -dm_view ascii::ascii_info_detail
   # 3D serial P1 test 9-12
   test:
     suffix: 9
