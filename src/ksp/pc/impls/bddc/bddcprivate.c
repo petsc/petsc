@@ -1575,7 +1575,15 @@ PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, PetscBool transpose, 
     ierr = MatMult(loc_divudotp,p,v);CHKERRQ(ierr);
   }
   if (vl2l) {
-    ierr = VecGetSubVector(v,vl2l,&vins);CHKERRQ(ierr);
+    Mat        lA;
+    VecScatter sc;
+
+    ierr = MatISGetLocalMat(A,&lA);CHKERRQ(ierr);
+    ierr = MatCreateVecs(lA,&vins,NULL);CHKERRQ(ierr);
+    ierr = VecScatterCreate(v,vl2l,vins,NULL,&sc);CHKERRQ(ierr);
+    ierr = VecScatterBegin(sc,v,vins,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(sc,v,vins,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&sc);CHKERRQ(ierr);
   } else {
     vins = v;
   }
@@ -1592,7 +1600,7 @@ PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, PetscBool transpose, 
     ierr = ISGetLocalSize(faces[i],&nn);CHKERRQ(ierr);
     for (j=0;j<nn;j++) vals[j] = array[idxs[j]];
     ierr = PetscFindInt(rank,graph->count[idxs[0]],graph->neighbours_set[idxs[0]],&idx);CHKERRQ(ierr);
-    idx = -(idx+1);
+    idx  = -(idx+1);
     ierr = VecSetValuesLocal(quad_vecs[idx],nn,idxs,vals,INSERT_VALUES);CHKERRQ(ierr);
     ierr = ISRestoreIndices(faces[i],&idxs);CHKERRQ(ierr);
   }
@@ -1611,7 +1619,7 @@ PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, PetscBool transpose, 
   ierr = PCBDDCGraphRestoreCandidatesIS(graph,&nf,&faces,&ne,&edges,NULL);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(vins,&array);CHKERRQ(ierr);
   if (vl2l) {
-    ierr = VecRestoreSubVector(v,vl2l,&vins);CHKERRQ(ierr);
+    ierr = VecDestroy(&vins);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&v);CHKERRQ(ierr);
   ierr = PetscFree(vals);CHKERRQ(ierr);
