@@ -655,7 +655,13 @@ PetscErrorCode TSAdaptCheckStage(TSAdapt adapt,TS ts,PetscReal t,Vec Y,PetscBool
     ierr = TSSetTimeStep(ts,new_dt);CHKERRQ(ierr);
     if (adapt->monitor) {
       ierr = PetscViewerASCIIAddTab(adapt->monitor,((PetscObject)adapt)->tablevel);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(adapt->monitor,"    TSAdapt %s step %3D stage rejected t=%-11g+%10.3e retrying with dt=%-10.3e\n",((PetscObject)adapt)->type_name,ts->steps,(double)ts->ptime,(double)dt,(double)new_dt);CHKERRQ(ierr);
+      if(snesreason == SNES_DIVERGED_LINEAR_SOLVE) {
+        ierr = PetscViewerASCIIPrintf(adapt->monitor,"    TSAdapt %s step %3D stage rejected (linear solver failure) t=%-11g+%10.3e retrying with dt=%-10.3e\n",((PetscObject)adapt)->type_name,ts->steps,(double)ts->ptime,(double)dt,(double)new_dt);CHKERRQ(ierr);
+      } else if(snesreason == SNES_DIVERGED_LINE_SEARCH) {
+        ierr = PetscViewerASCIIPrintf(adapt->monitor,"    TSAdapt %s step %3D stage rejected (line search failure) t=%-11g+%10.3e retrying with dt=%-10.3e\n",((PetscObject)adapt)->type_name,ts->steps,(double)ts->ptime,(double)dt,(double)new_dt);CHKERRQ(ierr);
+      } else {
+         ierr = PetscViewerASCIIPrintf(adapt->monitor,"    TSAdapt %s step %3D stage rejected t=%-11g+%10.3e retrying with dt=%-10.3e\n",((PetscObject)adapt)->type_name,ts->steps,(double)ts->ptime,(double)dt,(double)new_dt);CHKERRQ(ierr);
+      }
       ierr = PetscViewerASCIISubtractTab(adapt->monitor,((PetscObject)adapt)->tablevel);CHKERRQ(ierr);
     }
   }
