@@ -2977,6 +2977,80 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatReuse call
       ierr = ISSetBlockSize(iscol_local,cbs);CHKERRQ(ierr);
     }
   }
+#if 0
+  //==================== new ====================
+  PetscMPIInt    rank;
+  MPI_Comm       comm;
+  Mat_MPIAIJ     *a = (Mat_MPIAIJ*)mat->data;
+  Mat            A = a->A,B = a->B;
+  PetscInt       i,j,nlocal,*garray = a->garray;
+  PetscInt       count = 0,An=A->cmap->N,Bn=B->cmap->N,cstart=mat->cmap->rstart,cend=mat->cmap->rend;
+  const PetscInt *is_idx;
+
+  ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+
+  if (rank==-1) {
+    ierr = ISView(iscol_local,0);CHKERRQ(ierr);
+  }
+  
+  ierr = ISGetLocalSize(iscol_local,&nlocal);CHKERRQ(ierr);
+  //printf("[%d] cstart/end: %d - %d; nlocal %d\n",rank,cstart,cend,nlocal);
+  ierr = ISGetIndices(iscol_local,&is_idx);CHKERRQ(ierr);
+
+  /* (1) create a reduced scalable iscol_loc */
+  IS       iscol_loc;
+  PetscInt idx[nlocal],cmap[nlocal];
+  count = 0;
+
+  /* A part */
+  j = cstart;
+  for (i=0; i<nlocal; i++) {
+    if (j >= cend) break;
+    if (is_idx[i] == j) {
+      idx[count]  = j;
+      cmap[count] = i; /* column index in submat */
+      count++; j++;
+    } else if (is_idx[i] > j) {
+      while (is_idx[i] > j && j < cend-1) j++;
+      if (is_idx[i] == j) {
+        idx[count]  = j;
+        cmap[count] = i; /* column index in submat */
+        count++; j++;
+      }
+    }
+  }
+
+  /* B part */
+  j = 0;
+  for (i=0; i<nlocal; i++) {
+    if (j >= Bn) break;
+    if (is_idx[i] == garray[j]) {
+      idx[count]  = garray[j];
+      cmap[count] = i; /* column index in submat */
+      count++; j++;
+    } else if (is_idx[i] > garray[j]) {
+      while (is_idx[i] > garray[j] && j < Bn-1) j++;
+      if (is_idx[i] == garray[j]) {
+        idx[count]  = garray[j];
+        cmap[count] = i; /* column index in submat */
+        count++; j++;
+      }
+    }
+  }
+  //printf("[%d] nlocal %d, N %d, Bn %d + An %d = %d, count %d\n",rank,nlocal,mat->cmap->N,Bn,An,Bn+An,count);
+
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)iscol_local),count,idx,PETSC_COPY_VALUES,&iscol_loc);CHKERRQ(ierr);
+  //ierr = ISSort(iscol_loc);CHKERRQ(ierr);
+  if (rank==-1) {
+    ierr = ISView(iscol_loc,0);CHKERRQ(ierr);
+    for (i=0; i<count; i++) printf("cmap[%d] = %d\n",i,cmap[i]);
+  }
+ 
+  ierr = ISRestoreIndices(iscol_local,&is_idx);CHKERRQ(ierr);
+  ierr = ISDestroy(&iscol_loc);CHKERRQ(ierr);
+  //==========================================================
+#endif
   ierr = MatCreateSubMatrix_MPIAIJ_Private(mat,isrow,iscol_local,csize,call,newmat);CHKERRQ(ierr);
   if (call == MAT_INITIAL_MATRIX) {
     ierr = PetscObjectCompose((PetscObject)*newmat,"ISAllGather",(PetscObject)iscol_local);CHKERRQ(ierr);
@@ -3014,6 +3088,85 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_Private(Mat mat,IS isrow,IS iscol,Petsc
   ierr = ISIdentity(iscol,&colflag);CHKERRQ(ierr);
   ierr = ISGetLocalSize(iscol,&nlocal);CHKERRQ(ierr);
   if (colflag && nlocal == mat->cmap->N) allcolumns = PETSC_TRUE;
+
+#if 1
+   //==================== new ====================
+  Mat_MPIAIJ     *a = (Mat_MPIAIJ*)mat->data;
+  Mat            A = a->A,B = a->B;
+  PetscInt       *garray = a->garray;
+  PetscInt       count = 0,An=A->cmap->N,Bn=B->cmap->N,cstart=mat->cmap->rstart,cend=mat->cmap->rend;
+  const PetscInt *is_idx;
+  IS             iscol_local = iscol;
+
+  if (rank==-1) {
+    ierr = ISView(iscol_local,0);CHKERRQ(ierr);
+  }
+  
+  //ierr = ISGetLocalSize(iscol_local,&nlocal);CHKERRQ(ierr);
+  //printf("[%d] cstart/end: %d - %d; nlocal %d\n",rank,cstart,cend,nlocal);
+  ierr = ISGetIndices(iscol_local,&is_idx);CHKERRQ(ierr);
+
+  /* (1) create a reduced scalable iscol_loc */
+  IS       iscol_loc;
+  PetscInt idx[nlocal],cmap[nlocal];
+  count = 0;
+
+  /* A part */
+  j = cstart;
+  for (i=0; i<nlocal; i++) {
+    if (j >= cend) break;
+    if (is_idx[i] == j) {
+      idx[count]  = j;
+      cmap[count] = i; /* column index in submat */
+      count++; j++;
+    } else if (is_idx[i] > j) {
+      while (is_idx[i] > j && j < cend-1) j++;
+      if (is_idx[i] == j) {
+        idx[count]  = j;
+        cmap[count] = i; /* column index in submat */
+        count++; j++;
+      }
+    }
+  }
+
+  /* B part */
+  j = 0;
+  for (i=0; i<nlocal; i++) {
+    if (j >= Bn) break;
+    if (is_idx[i] == garray[j]) {
+      idx[count]  = garray[j];
+      cmap[count] = i; /* column index in submat */
+      count++; j++;
+    } else if (is_idx[i] > garray[j]) {
+      while (is_idx[i] > garray[j] && j < Bn-1) j++;
+      if (is_idx[i] == garray[j]) {
+        idx[count]  = garray[j];
+        cmap[count] = i; /* column index in submat */
+        count++; j++;
+      }
+    }
+  }
+  ierr = ISRestoreIndices(iscol_local,&is_idx);CHKERRQ(ierr);
+  printf("[%d] nlocal %d, N %d, Bn %d + An %d = %d, count %d\n",rank,nlocal,mat->cmap->N,Bn,An,Bn+An,count);
+
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)iscol_local),count,idx,PETSC_COPY_VALUES,&iscol_loc);CHKERRQ(ierr);
+  if (rank==-1) {
+    ierr = ISView(iscol_loc,0);CHKERRQ(ierr);
+    for (i=0; i<count; i++) printf("cmap[%d] = %d\n",i,cmap[i]);
+  }
+  
+  Mat Msub;
+  ierr = MatCreateSubMatrices_MPIAIJ_SingleIS_Local(mat,1,&isrow,&iscol_loc,MAT_INITIAL_MATRIX,allcolumns,&Msub);CHKERRQ(ierr);
+  if (rank==0) {
+    printf("[%d] Msub: %d %d \n",rank,Msub->rmap->N,Msub->cmap->N);
+    ierr = MatView(Msub,0);CHKERRQ(ierr);
+  }
+ 
+  ierr = MatDestroy(&Msub);CHKERRQ(ierr);
+  ierr = ISDestroy(&iscol_loc);CHKERRQ(ierr);
+  //==========================================================
+ 
+#endif
 
   if (call ==  MAT_REUSE_MATRIX) {
     ierr = PetscObjectQuery((PetscObject)*newmat,"SubMatrix",(PetscObject*)&Mreuse);CHKERRQ(ierr);
@@ -3106,6 +3259,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_Private(Mat mat,IS isrow,IS iscol,Petsc
   ierr    = MatAssemblyBegin(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr    = MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *newmat = M;
+  ierr = MatView(M,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* save submatrix used in processor for next request */
   if (call ==  MAT_INITIAL_MATRIX) {
