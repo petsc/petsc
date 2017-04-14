@@ -228,6 +228,7 @@ struct _p_TSAdapt {
   PetscReal   scale_solve_failed; /* Scale step by this factor if solver (linear or nonlinear) fails. */
   PetscViewer monitor;
   NormType    wnormtype;
+  PetscInt    timestepjustincreased;
 };
 
 typedef struct _p_DMTS *DMTS;

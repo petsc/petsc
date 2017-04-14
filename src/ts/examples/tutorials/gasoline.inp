@@ -32,6 +32,9 @@
 -ts_adapt_dt_max 1e-3
 -ts_arkimex_type 4
 
+-snes_max_it 10
+-snes_stol 1.e-6
+
 # use direct solver (treats Jacobian as dense)
 -pc_type lu
 
