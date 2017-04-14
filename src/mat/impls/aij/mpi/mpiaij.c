@@ -3134,7 +3134,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowDist(Mat mat,IS isrow,IS iscol,M
   PetscInt       count,Bn=B->cmap->N,cstart=mat->cmap->rstart,cend=mat->cmap->rend;
   IS             iscol_sub,iscmap;
   const PetscInt *is_idx,*cmap;
-  PetscBool      sameColDist=PETSC_FALSE,tsameColDist;
+  PetscBool      sameColDist=PETSC_FALSE,tsameColDist,allcolumns=PETSC_FALSE;
   IS             iscol_local=NULL;
   MPI_Comm       comm;
 
@@ -3154,57 +3154,68 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowDist(Mat mat,IS isrow,IS iscol,M
     }
     ierr = MPIU_Allreduce(&sameColDist,&tsameColDist,1,MPIU_BOOL,MPI_LAND,comm);CHKERRQ(ierr);
 
-    /* create scalable iscol_sub (a subset of iscol_local) */
+    /* (1) Create scalable iscol_sub and iscmap */
     if (tsameColDist) {
+      /* iscol has same processor distribution as mat, use a scalable routine to generate iscol_sub and iscmap */
       ierr = ISGetSeqIS_SameColDist_Private(mat,iscol,&iscol_sub,&iscmap);CHKERRQ(ierr);
 
     } else { /* iscol -> nonscalable iscol_local, then get scalable iscol_sub and iscmap */
-      PetscInt *idx,*cmap1,k;
-      PetscBool sorted;
+      PetscBool flg;
 
-      /* (1) iscol -> nonscalable iscol_local */
+      /* iscol -> nonscalable iscol_local */
       ierr = ISGetSeqIS_Private(mat,iscol,&iscol_local);CHKERRQ(ierr);
       ierr = ISGetLocalSize(iscol_local,&n);CHKERRQ(ierr); /* local size of iscol_local = global columns of newmat */
-      if (n != Ncols) SETERRQ2(PETSC_COMM_SELF,0,"n %d != Ncols %d",n,Ncols);
+      if (n != Ncols) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"n %d != Ncols %d",n,Ncols);
 
-      /* implementation below requires scol_local be sorted, it can have duplicate indices */
-      ierr = ISSorted(iscol_local,&sorted);CHKERRQ(ierr);
-      if (!sorted) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"unsorted iscol_local is not implemented yet");
+      /* Check for special case: each processor gets entire matrix columns */
+      ierr = ISIdentity(iscol_local,&flg);CHKERRQ(ierr);
+      if (flg && n == mat->cmap->N) allcolumns = PETSC_TRUE;
+      if (allcolumns) {
+        iscol_sub = iscol_local;
+        ierr = PetscObjectReference((PetscObject)iscol_local);CHKERRQ(ierr);
+        ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,&iscmap);CHKERRQ(ierr);
 
-      ierr = PetscMalloc2(Ncols,&idx,Ncols,&cmap1);CHKERRQ(ierr);
-      ierr = ISGetIndices(iscol_local,&is_idx);CHKERRQ(ierr);
-      count = 0;
+      } else { /* iscol_local -> iscol_sub and iscmap */
+        PetscInt *idx,*cmap1,k;
 
-      k = 0;
-      for (i=0; i<Ncols; i++) {
-        j = is_idx[i];
-        if (j >= cstart && j < cend) {
-          /* diagonal part of mat */
-          idx[count]   = j;
-          cmap1[count] = i; /* column index in submat */
-          count++;
-        } else {
-          /* off-diagonal part of mat */
-          if (j == garray[k]) {
-            idx[count]   = j;
-            cmap1[count++] = i;  /* column index in submat */
-          } else if (j > garray[k]) {
-            while (j > garray[k] && k < Bn-1) k++;
+        /* implementation below requires iscol_local be sorted, it can have duplicate indices */
+        ierr = ISSorted(iscol_local,&flg);CHKERRQ(ierr);
+        if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"unsorted iscol_local is not implemented yet");
+
+        ierr = PetscMalloc2(Ncols,&idx,Ncols,&cmap1);CHKERRQ(ierr);
+        ierr = ISGetIndices(iscol_local,&is_idx);CHKERRQ(ierr);
+        count = 0;
+        k     = 0;
+        for (i=0; i<Ncols; i++) {
+          j = is_idx[i];
+          if (j >= cstart && j < cend) {
+            /* diagonal part of mat */
+            idx[count]     = j;
+            cmap1[count++] = i; /* column index in submat */
+          } else {
+            /* off-diagonal part of mat */
             if (j == garray[k]) {
-              idx[count]   = j;
-              cmap1[count++] = i; /* column index in submat */
+              idx[count]     = j;
+              cmap1[count++] = i;  /* column index in submat */
+            } else if (j > garray[k]) {
+              while (j > garray[k] && k < Bn-1) k++;
+              if (j == garray[k]) {
+                idx[count]     = j;
+                cmap1[count++] = i; /* column index in submat */
+              }
             }
           }
         }
-      }
-      ierr = ISRestoreIndices(iscol_local,&is_idx);CHKERRQ(ierr);
+        ierr = ISRestoreIndices(iscol_local,&is_idx);CHKERRQ(ierr);
 
-      ierr = ISCreateGeneral(PETSC_COMM_SELF,count,idx,PETSC_COPY_VALUES,&iscol_sub);CHKERRQ(ierr);
-      ierr = ISCreateGeneral(PetscObjectComm((PetscObject)iscol_local),count,cmap1,PETSC_COPY_VALUES,&iscmap);CHKERRQ(ierr);
-      ierr = PetscFree2(idx,cmap1);CHKERRQ(ierr);
+        ierr = ISCreateGeneral(PETSC_COMM_SELF,count,idx,PETSC_COPY_VALUES,&iscol_sub);CHKERRQ(ierr);
+        ierr = ISCreateGeneral(PetscObjectComm((PetscObject)iscol_local),count,cmap1,PETSC_COPY_VALUES,&iscmap);CHKERRQ(ierr);
+        ierr = PetscFree2(idx,cmap1);CHKERRQ(ierr);
+      }
     }
 
-    ierr = MatCreateSubMatrices_MPIAIJ_SingleIS_Local(mat,1,&isrow,&iscol_sub,MAT_INITIAL_MATRIX,PETSC_FALSE,&Msub);CHKERRQ(ierr);
+    /* (2) Create sequential Msub */
+    ierr = MatCreateSubMatrices_MPIAIJ_SingleIS_Local(mat,1,&isrow,&iscol_sub,MAT_INITIAL_MATRIX,allcolumns,&Msub);CHKERRQ(ierr);
 
   } else { /* call ==  MAT_REUSE_MATRIX */
     ierr = PetscObjectQuery((PetscObject)*newmat,"SubIScol",(PetscObject*)&iscol_sub);CHKERRQ(ierr);
@@ -3233,6 +3244,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowDist(Mat mat,IS isrow,IS iscol,M
   ierr = MatGetSize(Msub,&m,NULL);CHKERRQ(ierr);
 
   if (call == MAT_INITIAL_MATRIX) {
+    /* (3) Create parallel newmat */
     PetscMPIInt    rank,size;
     PetscInt       csize;
 
@@ -3297,7 +3309,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowDist(Mat mat,IS isrow,IS iscol,M
     M->assembled     = PETSC_FALSE;
   }
 
-  /* set values of Msub to *newmat */
+  /* (4) Set values of Msub to *newmat */
   ierr = PetscMalloc1(count,&colsub);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(M,&rstart,NULL);CHKERRQ(ierr);
 
