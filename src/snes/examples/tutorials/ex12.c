@@ -1225,7 +1225,7 @@ int main(int argc, char **argv)
   # 3D serial P2 test with field bc
   test:
     suffix: field_bc_p2_4
-    requires: hdf5 ctetgent
+    requires: hdf5 ctetgen
     args: -run_type test -dim 3              -interpolate 1 -bc_type dirichlet -field_bc -petscspace_order 2 -bc_petscspace_order 2 -show_initial -dm_plex_print_fem 1
   test:
     suffix: field_bc_p2_5
