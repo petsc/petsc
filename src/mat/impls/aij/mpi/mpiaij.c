@@ -3073,8 +3073,8 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatReuse call
   PetscErrorCode ierr;
   IS             iscol_local;
   PetscInt       csize;
-  PetscInt       n,i,j,rstart,rend;
-  PetscBool      sameRowDist=PETSC_FALSE,tsameRowDist;
+  PetscInt       n,i,j,start,end;
+  PetscBool      sameRowDist,sameDist[2],tsameDist[2];
   MPI_Comm       comm;
 
   PetscFunctionBegin;
@@ -3082,22 +3082,39 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatReuse call
      call MatCreateSubMatrix_MPIAIJ_SameRowDist() to avoid using a hash table with global size of iscol */
   if (call == MAT_REUSE_MATRIX) {
     ierr = PetscObjectQuery((PetscObject)*newmat,"SubIScol",(PetscObject*)&iscol_local);CHKERRQ(ierr);
-    if (iscol_local) tsameRowDist = PETSC_TRUE;
+    if (iscol_local) sameRowDist = PETSC_TRUE;
   } else {
+    /* check if isrow has same processor distribution as mat */
+    sameDist[0] = PETSC_FALSE;
     ierr = ISGetLocalSize(isrow,&n);CHKERRQ(ierr);
     if (!n) {
-      sameRowDist = PETSC_TRUE;
+      sameDist[0] = PETSC_TRUE;
     } else {
       ierr = ISGetMinMax(isrow,&i,&j);CHKERRQ(ierr);
-      ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRQ(ierr);
-      if (i >= rstart && j < rend) sameRowDist = PETSC_TRUE;
+      ierr = MatGetOwnershipRange(mat,&start,&end);CHKERRQ(ierr);
+      if (i >= start && j < end) {
+        sameDist[0] = PETSC_TRUE;
+      }
     }
+
+    /* check if iscol has same processor distribution as mat */
+    sameDist[1] = PETSC_FALSE;
+    ierr = ISGetLocalSize(iscol,&n);CHKERRQ(ierr);
+    if (!n) {
+      sameDist[1] = PETSC_TRUE;
+    } else {
+      ierr = ISGetMinMax(iscol,&i,&j);CHKERRQ(ierr);
+      ierr = MatGetOwnershipRangeColumn(mat,&start,&end);CHKERRQ(ierr);
+      if (i >= start && j < end) sameDist[1] = PETSC_TRUE;
+    }
+
     ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
-    ierr = MPIU_Allreduce(&sameRowDist,&tsameRowDist,1,MPIU_BOOL,MPI_LAND,comm);CHKERRQ(ierr);
+    ierr = MPIU_Allreduce(&sameDist,&tsameDist,2,MPIU_BOOL,MPI_LAND,comm);CHKERRQ(ierr);
+    sameRowDist = tsameDist[0];
   }
 
-  if (tsameRowDist) {
-    ierr = MatCreateSubMatrix_MPIAIJ_SameRowDist(mat,isrow,iscol,call,newmat);CHKERRQ(ierr);
+  if (sameRowDist) {
+    ierr = MatCreateSubMatrix_MPIAIJ_SameRowDist(mat,isrow,iscol,call,tsameDist[1],newmat);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -3121,7 +3138,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatReuse call
 
 extern PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat,PetscInt,const IS[],const IS[],MatReuse,PetscBool,Mat*);
 
-PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowDist(Mat mat,IS isrow,IS iscol,MatReuse call,Mat *newmat)
+PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowDist(Mat mat,IS isrow,IS iscol,MatReuse call,PetscBool sameColDist,Mat *newmat)
 {
   PetscErrorCode ierr;
   PetscInt       i,m,n,rstart,row,rend,nz,j,bs,cbs;
@@ -3134,7 +3151,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowDist(Mat mat,IS isrow,IS iscol,M
   PetscInt       count,Bn=B->cmap->N,cstart=mat->cmap->rstart,cend=mat->cmap->rend;
   IS             iscol_sub,iscmap;
   const PetscInt *is_idx,*cmap;
-  PetscBool      sameColDist=PETSC_FALSE,tsameColDist,allcolumns=PETSC_FALSE;
+  PetscBool      allcolumns=PETSC_FALSE;
   IS             iscol_local=NULL;
   MPI_Comm       comm;
 
@@ -3142,20 +3159,11 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowDist(Mat mat,IS isrow,IS iscol,M
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
 
   if (call == MAT_INITIAL_MATRIX) {
-    /* If iscol has same processor distribution as mat, then use a scalable routine */
     ierr = ISGetLocalSize(iscol,&n);CHKERRQ(ierr);
     ierr = ISGetSize(iscol,&Ncols);CHKERRQ(ierr);
-    if (!n) {
-      sameColDist = PETSC_TRUE;
-    } else {
-      ierr = ISGetMinMax(iscol,&i,&j);CHKERRQ(ierr);
-      ierr = MatGetOwnershipRangeColumn(mat,&cstart,&cend);CHKERRQ(ierr);
-      if (i >= cstart && j < cend) sameColDist = PETSC_TRUE;
-    }
-    ierr = MPIU_Allreduce(&sameColDist,&tsameColDist,1,MPIU_BOOL,MPI_LAND,comm);CHKERRQ(ierr);
 
     /* (1) Create scalable iscol_sub and iscmap */
-    if (tsameColDist) {
+    if (sameColDist) {
       /* iscol has same processor distribution as mat, use a scalable routine to generate iscol_sub and iscmap */
       ierr = ISGetSeqIS_SameColDist_Private(mat,iscol,&iscol_sub,&iscmap);CHKERRQ(ierr);
 
