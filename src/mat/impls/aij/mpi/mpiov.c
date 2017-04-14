@@ -1277,6 +1277,8 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,c
   if (scall == MAT_INITIAL_MATRIX) {
     PetscInt *sbuf2_i,*cworkA,lwrite,ctmp;
 
+    //printf("[%d] ncol %d, Cn %d, CN %d\n",rank,ncol,C->cmap->n,C->cmap->N);
+
     /* Get some new tags to keep the communication clean */
     tag1 = ((PetscObject)C)->tag;
     ierr = PetscObjectGetNewTag((PetscObject)C,&tag2);CHKERRQ(ierr);
@@ -2035,7 +2037,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[]
     if (pos+nmax <= ismax) max_no = nmax;
     else if (pos == ismax) max_no = 0;
     else                   max_no = ismax-pos;
- 
+
     ierr = MatCreateSubMatrices_MPIAIJ_Local(C,max_no,isrow+pos,iscol+pos,scall,*submat+pos);CHKERRQ(ierr);
     if (!max_no && scall == MAT_INITIAL_MATRIX) { /* submat[pos] is a dummy matrix */
       smat = (Mat_SubSppt*)(*submat)[pos]->data;
