@@ -409,6 +409,23 @@ PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char url[],char localname[
       ierr = PetscPClose(PETSC_COMM_SELF,fp,&rval);CHKERRQ(ierr);
 #endif
       ierr = PetscTestFile(localname,'r',found);CHKERRQ(ierr);
+      if (*found) {
+        FILE      *fd;
+        char      buf[1024],*str,*substring;
+
+        /* check if the file didn't exist so it downloaded an HTML message instead */
+        fd = fopen(localname,"r");
+        if (!fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PetscTestFile() indicates %s exists but fopen() cannot open it",localname);
+        str = fgets(buf,sizeof(buf)-1,fd);
+        while (str) {
+          ierr = PetscStrstr(buf,"<!DOCTYPE html>",&substring);CHKERRQ(ierr);
+          if (substring) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to download %s it does not appear to exist at this URL, dummy HTML file was downloaded",url);
+          ierr = PetscStrstr(buf,"Not Found",&substring);CHKERRQ(ierr);
+          if (substring) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to download %s it does not appear to exist at this URL, dummy HTML file was downloaded",url);
+          str = fgets(buf,sizeof(buf)-1,fd);
+        }
+        fclose(fd);
+      }
     }
   }
   ierr = MPI_Bcast(found,1,MPIU_BOOL,0,comm);CHKERRQ(ierr);

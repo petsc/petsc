@@ -3,12 +3,14 @@
 #
 # The two input files come from OpenFoam tutorial for their 0-D chemistry solver chemFoam
 #
+#   The file names are too generic for this example so make sure you don't have other files with these names already in the directory
+#
 # You may need to do
 #       cp $PETSC_DIR/$PETSC_ARCH/share/periodictable.dat .
 #
 #
--chem gasoline_874sp.inp
--thermo thermo_sp874.inp
+-chem https://raw.githubusercontent.com/OpenFOAM/OpenFOAM-dev/master/tutorials/combustion/chemFoam/ic8h18/chemkin/chem.inp
+-thermo https://raw.githubusercontent.com/OpenFOAM/OpenFOAM-dev/master/tutorials/combustion/chemFoam/ic8h18/chemkin/therm.dat
 
 -initial_species IC8H18,O2,N2
 #initial concentration in moles
@@ -24,7 +26,7 @@
 
 -monitor_temp
 
-# the following line is needed because currently the basic adapter takes large steps and steps right over the ignition
+# glee insists on very small timesteps so never makes any progress
 #-ts_adapt_type glee
 -ts_arkimex_fully_implicit
 -ts_max_snes_failures -1
