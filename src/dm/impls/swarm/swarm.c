@@ -15,7 +15,7 @@ const char DMSwarmPICField_cellid[] = "DMSwarm_cellid";
 
 /*@C
 
-  DMSwarmVectorDefineField - Sets the field from which to define a Vec object
+  DMSwarmVectorDefineField - Sets the field from which to define a Vec object when DMCreate{Local,Global}Vector() is called
 
   Collective on DM
 
@@ -30,7 +30,7 @@ const char DMSwarmPICField_cellid[] = "DMSwarm_cellid";
   This function must be called prior to calling DMCreateLocalVector(), DMCreateGlobalVector().
   Mutiple calls to DMSwarmVectorDefineField() are permitted.
 
-. seealso: DMSwarmRegisterPetscDatatypeField()
+. seealso: DMSwarmRegisterPetscDatatypeField(), DMCreateGlobalVector(), DMCreateLocalVector()
 
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmVectorDefineField(DM dm,const char fieldname[])
@@ -165,12 +165,15 @@ static PetscErrorCode DMSwarmCreateVectorFromField_Private(DM dm, const char fie
  . dm - a DMSwarm
  . fieldname - the textual name given to a registered field
 
- Output parameters:
+ Output parameter:
  . vec - the vector
 
   Level: beginner
 
-. seealso: DMSwarmRegisterPetscDatatypeField()
+  Notes:
+  The vector must be returned using a matching call to DMSwarmDestroyGlobalVectorFromField().
+
+. seealso: DMSwarmRegisterPetscDatatypeField(), DMSwarmDestroyGlobalVectorFromField()
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmCreateGlobalVectorFromField(DM dm,const char fieldname[],Vec *vec)
 {
@@ -191,12 +194,12 @@ PETSC_EXTERN PetscErrorCode DMSwarmCreateGlobalVectorFromField(DM dm,const char 
  . dm - a DMSwarm
  . fieldname - the textual name given to a registered field
 
-  Output parameters:
+  Output parameter:
  . vec - the vector
 
   Level: beginner
 
-. seealso: DMSwarmRegisterPetscDatatypeField()
+. seealso: DMSwarmRegisterPetscDatatypeField(), DMSwarmCreateGlobalVectorFromField()
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmDestroyGlobalVectorFromField(DM dm,const char fieldname[],Vec *vec)
 {
@@ -216,12 +219,15 @@ PETSC_EXTERN PetscErrorCode DMSwarmDestroyGlobalVectorFromField(DM dm,const char
  . dm - a DMSwarm
  . fieldname - the textual name given to a registered field
 
- Output parameters:
+ Output parameter:
  . vec - the vector
 
   Level: beginner
 
-. seealso: DMSwarmRegisterPetscDatatypeField()
+  Notes:
+  The vector must be returned using a matching call to DMSwarmDestroyLocalVectorFromField().
+
+. seealso: DMSwarmRegisterPetscDatatypeField(), DMSwarmDestroyLocalVectorFromField()
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmCreateLocalVectorFromField(DM dm,const char fieldname[],Vec *vec)
 {
@@ -242,12 +248,12 @@ PETSC_EXTERN PetscErrorCode DMSwarmCreateLocalVectorFromField(DM dm,const char f
  . dm - a DMSwarm
  . fieldname - the textual name given to a registered field
 
-  Output parameters:
+  Output parameter:
  . vec - the vector
 
   Level: beginner
 
-. seealso: DMSwarmRegisterPetscDatatypeField()
+. seealso: DMSwarmRegisterPetscDatatypeField(), DMSwarmCreateLocalVectorFromField()
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmDestroyLocalVectorFromField(DM dm,const char fieldname[],Vec *vec)
 {
@@ -282,7 +288,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmRestoreGlobalVectorFromFields(DM dm,Vec *vec)
  Level: beginner
 
  Notes:
- After all fields have been registered, users should call DMSwarmFinalizeFieldRegister()
+ After all fields have been registered, you must call DMSwarmFinalizeFieldRegister().
 
  . seealso: DMSwarmFinalizeFieldRegister(), DMSwarmRegisterPetscDatatypeField(),
  DMSwarmRegisterUserStructField(), DMSwarmRegisterUserDatatypeField()
@@ -313,7 +319,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmInitializeFieldRegister(DM dm)
  Level: beginner
 
  Notes:
- After DMSwarmFinalizeFieldRegister() has been called, no new fields can be defined
+ After DMSwarmFinalizeFieldRegister() has been called, no new fields can be defined.
  on the DMSwarm
 
  . seealso: DMSwarmInitializeFieldRegister(), DMSwarmRegisterPetscDatatypeField(),
@@ -371,10 +377,10 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetLocalSizes(DM dm,PetscInt nlocal,PetscInt 
  Level: beginner
 
  Notes:
- The attached DM (dmcell) will be queried for pointlocation and
- neighbor MPI-rank information if DMSwarmMigrate() is called
+ The attached DM (dmcell) will be queried for point location and
+ neighbor MPI-rank information if DMSwarmMigrate() is called.
 
-.seealso: DMSwarmGetCellDM(), DMSwarmMigrate()
+.seealso: DMSwarmSetType(), DMSwarmGetCellDM(), DMSwarmMigrate()
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmSetCellDM(DM dm,DM dmcell)
 {
@@ -398,10 +404,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetCellDM(DM dm,DM dmcell)
  . dmcell - the DM which was attached to the DMSwarm
 
  Level: beginner
-
- Notes:
- The attached DM (dmcell) will be queried for pointlocation and
- neighbor MPI-rank information if DMSwarmMigrate() is called
 
 .seealso: DMSwarmSetCellDM()
 @*/
@@ -428,7 +430,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmGetCellDM(DM dm,DM *dmcell)
 
  Level: beginner
 
-.seealso: DMSwarmSetLocalSizes()
+.seealso: DMSwarmGetSize(), DMSwarmSetLocalSizes()
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmGetLocalSize(DM dm,PetscInt *nlocal)
 {
@@ -457,7 +459,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmGetLocalSize(DM dm,PetscInt *nlocal)
  Note:
  This calls MPI_Allreduce upon each call (inefficient but safe)
 
-.seealso: DMSwarmGetLocalSize()
+.seealso: DMSwarmGetLocalSize(), DMSwarmSetLocalSizes()
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmGetSize(DM dm,PetscInt *n)
 {
@@ -474,7 +476,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmGetSize(DM dm,PetscInt *n)
 
 /*@C
 
- DMSwarmRegisterPetscDatatypeField - Register a field to a DMSwarm
+ DMSwarmRegisterPetscDatatypeField - Register a field to a DMSwarm with a native PETSc data type
 
  Collective on DM
 
@@ -487,7 +489,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmGetSize(DM dm,PetscInt *n)
  Level: beginner
 
  Notes:
- The textual name for each registered field must be unique
+ The textual name for each registered field must be unique.
 
 .seealso: DMSwarmRegisterUserStructField(), DMSwarmRegisterUserDatatypeField()
 @*/
@@ -534,7 +536,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmRegisterPetscDatatypeField(DM dm,const char f
  Level: beginner
 
  Notes:
- The textual name for each registered field must be unique
+ The textual name for each registered field must be unique.
 
 .seealso: DMSwarmRegisterPetscDatatypeField(), DMSwarmRegisterUserDatatypeField()
 @*/
@@ -564,7 +566,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmRegisterUserStructField(DM dm,const char fiel
  Level: beginner
 
  Notes:
- The textual name for each registered field must be unique
+ The textual name for each registered field must be unique.
 
 .seealso: DMSwarmRegisterPetscDatatypeField(), DMSwarmRegisterUserStructField(), DMSwarmRegisterUserDatatypeField()
 @*/
@@ -603,7 +605,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmRegisterUserDatatypeField(DM dm,const char fi
  Level: beginner
 
  Notes:
- The user must call DMSwarmRestoreField()
+ The array must be returned using a matching call to DMSwarmRestoreField().
 
 .seealso: DMSwarmRestoreField()
 @*/
@@ -641,7 +643,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmGetField(DM dm,const char fieldname[],PetscIn
  Level: beginner
 
  Notes:
- The user must call DMSwarmGetField() prior to calling DMSwarmRestoreField()
+ The user must call DMSwarmGetField() prior to calling DMSwarmRestoreField().
 
 .seealso: DMSwarmGetField()
 @*/
@@ -670,7 +672,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmRestoreField(DM dm,const char fieldname[],Pet
  Level: beginner
 
  Notes:
- The new point will have all fields initialized to zero
+ The new point will have all fields initialized to zero.
 
 .seealso: DMSwarmAddNPoints()
 @*/
@@ -698,7 +700,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmAddPoint(DM dm)
  Level: beginner
 
  Notes:
- The new point will have all fields initialized to zero
+ The new point will have all fields initialized to zero.
 
 .seealso: DMSwarmAddPoint()
 @*/
@@ -781,9 +783,9 @@ PetscErrorCode DMSwarmMigrate_Basic(DM dm,PetscBool remove_sent_points)
  . remove_sent_points - flag indicating if sent points should be removed from the current MPI-rank
 
  Notes:
- The DM wil be modified to accomodate received points.
- If remove_sent_points = PETSC_TRUE, send points will be removed from the DM
- Different styles of migration are supported. See DMSwarmSetMigrateType()
+ The DM will be modified to accomodate received points.
+ If remove_sent_points = PETSC_TRUE, any points that were sent will be removed from the DM.
+ Different styles of migration are supported. See DMSwarmSetMigrateType().
 
  Level: advanced
 
@@ -825,7 +827,7 @@ PetscErrorCode DMSwarmMigrate_GlobalToLocal_Basic(DM dm,PetscInt *globalsize);
  * Applies a collection method and gathers point neighbour points into dm
 
  Notes:
- - Users should call DMSwarmCollectViewDestroy() after
+ Users should call DMSwarmCollectViewDestroy() after
  they have finished computations associated with the collected points
 */
 
@@ -842,7 +844,7 @@ PetscErrorCode DMSwarmMigrate_GlobalToLocal_Basic(DM dm,PetscInt *globalsize);
  Notes:
  Users should call DMSwarmCollectViewDestroy() after
  they have finished computations associated with the collected points
- Different collect methods are supported. See DMSwarmSetCollectType()
+ Different collect methods are supported. See DMSwarmSetCollectType().
 
  Level: advanced
 
