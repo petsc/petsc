@@ -14,24 +14,23 @@ const char DMSwarmPICField_coor[] = "DMSwarmPIC_coor";
 const char DMSwarmPICField_cellid[] = "DMSwarm_cellid";
 
 /*@C
+   DMSwarmVectorDefineField - Sets the field from which to define a Vec object
+                             when DMCreateLocalVector(), or DMCreateGlobalVector() is called
 
-  DMSwarmVectorDefineField - Sets the field from which to define a Vec object when DMCreate{Local,Global}Vector() is called
+   Collective on DM
 
-  Collective on DM
+   Input parameters:
++  dm - a DMSwarm
+-  fieldname - the textual name given to a registered field
 
-  Input parameters:
-. dm - a DMSwarm
-. fieldname - The textual name given to a registered field
+   Level: beginner
 
-  Level: beginner
+   Notes:
+   The field with name fieldname must be defined as having a data type of PetscScalar.
+   This function must be called prior to calling DMCreateLocalVector(), DMCreateGlobalVector().
+   Mutiple calls to DMSwarmVectorDefineField() are permitted.
 
-  Notes:
-  The field with name fieldname must be defined as having a data type of PetscScalar
-  This function must be called prior to calling DMCreateLocalVector(), DMCreateGlobalVector().
-  Mutiple calls to DMSwarmVectorDefineField() are permitted.
-
-. seealso: DMSwarmRegisterPetscDatatypeField(), DMCreateGlobalVector(), DMCreateLocalVector()
-
+.seealso: DMSwarmRegisterPetscDatatypeField(), DMCreateGlobalVector(), DMCreateLocalVector()
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmVectorDefineField(DM dm,const char fieldname[])
 {
@@ -157,23 +156,23 @@ static PetscErrorCode DMSwarmCreateVectorFromField_Private(DM dm, const char fie
 }
 
 /*@C
-  DMSwarmCreateGlobalVectorFromField - Creates a Vec object sharing the array associated with a given field
+   DMSwarmCreateGlobalVectorFromField - Creates a Vec object sharing the array associated with a given field
 
-  Collective on DM
+   Collective on DM
 
-  Input parameters:
- . dm - a DMSwarm
- . fieldname - the textual name given to a registered field
+   Input parameters:
++  dm - a DMSwarm
+-  fieldname - the textual name given to a registered field
 
- Output parameter:
- . vec - the vector
+   Output parameter:
+.  vec - the vector
 
-  Level: beginner
+   Level: beginner
 
-  Notes:
-  The vector must be returned using a matching call to DMSwarmDestroyGlobalVectorFromField().
+   Notes:
+   The vector must be returned using a matching call to DMSwarmDestroyGlobalVectorFromField().
 
-. seealso: DMSwarmRegisterPetscDatatypeField(), DMSwarmDestroyGlobalVectorFromField()
+.seealso: DMSwarmRegisterPetscDatatypeField(), DMSwarmDestroyGlobalVectorFromField()
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmCreateGlobalVectorFromField(DM dm,const char fieldname[],Vec *vec)
 {
@@ -186,20 +185,20 @@ PETSC_EXTERN PetscErrorCode DMSwarmCreateGlobalVectorFromField(DM dm,const char 
 }
 
 /*@C
-  DMSwarmDestroyGlobalVectorFromField - Destroys the Vec object which share the array associated with a given field
+   DMSwarmDestroyGlobalVectorFromField - Destroys the Vec object which share the array associated with a given field
 
-  Collective on DM
+   Collective on DM
 
-  Input parameters:
- . dm - a DMSwarm
- . fieldname - the textual name given to a registered field
+   Input parameters:
++  dm - a DMSwarm
+-  fieldname - the textual name given to a registered field
 
-  Output parameter:
- . vec - the vector
+   Output parameter:
+.  vec - the vector
 
-  Level: beginner
+   Level: beginner
 
-. seealso: DMSwarmRegisterPetscDatatypeField(), DMSwarmCreateGlobalVectorFromField()
+.seealso: DMSwarmRegisterPetscDatatypeField(), DMSwarmCreateGlobalVectorFromField()
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmDestroyGlobalVectorFromField(DM dm,const char fieldname[],Vec *vec)
 {
@@ -211,23 +210,23 @@ PETSC_EXTERN PetscErrorCode DMSwarmDestroyGlobalVectorFromField(DM dm,const char
 }
 
 /*@C
-  DMSwarmCreateLocalVectorFromField - Creates a Vec object sharing the array associated with a given field
+   DMSwarmCreateLocalVectorFromField - Creates a Vec object sharing the array associated with a given field
 
-  Collective on DM
+   Collective on DM
 
-  Input parameters:
- . dm - a DMSwarm
- . fieldname - the textual name given to a registered field
+   Input parameters:
++  dm - a DMSwarm
+-  fieldname - the textual name given to a registered field
 
- Output parameter:
- . vec - the vector
+   Output parameter:
+.  vec - the vector
 
-  Level: beginner
+   Level: beginner
 
-  Notes:
-  The vector must be returned using a matching call to DMSwarmDestroyLocalVectorFromField().
+   Notes:
+   The vector must be returned using a matching call to DMSwarmDestroyLocalVectorFromField().
 
-. seealso: DMSwarmRegisterPetscDatatypeField(), DMSwarmDestroyLocalVectorFromField()
+.seealso: DMSwarmRegisterPetscDatatypeField(), DMSwarmDestroyLocalVectorFromField()
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmCreateLocalVectorFromField(DM dm,const char fieldname[],Vec *vec)
 {
@@ -240,20 +239,20 @@ PETSC_EXTERN PetscErrorCode DMSwarmCreateLocalVectorFromField(DM dm,const char f
 }
 
 /*@C
-  DMSwarmDestroyLocalVectorFromField - Destroys the Vec object which share the array associated with a given field
+   DMSwarmDestroyLocalVectorFromField - Destroys the Vec object which share the array associated with a given field
 
-  Collective on DM
+   Collective on DM
 
-  Input parameters:
- . dm - a DMSwarm
- . fieldname - the textual name given to a registered field
+   Input parameters:
++  dm - a DMSwarm
+-  fieldname - the textual name given to a registered field
 
-  Output parameter:
- . vec - the vector
+   Output parameter:
+.  vec - the vector
 
-  Level: beginner
+   Level: beginner
 
-. seealso: DMSwarmRegisterPetscDatatypeField(), DMSwarmCreateLocalVectorFromField()
+.seealso: DMSwarmRegisterPetscDatatypeField(), DMSwarmCreateLocalVectorFromField()
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmDestroyLocalVectorFromField(DM dm,const char fieldname[],Vec *vec)
 {
@@ -277,20 +276,19 @@ PETSC_EXTERN PetscErrorCode DMSwarmRestoreGlobalVectorFromFields(DM dm,Vec *vec)
 */
 
 /*@C
+   DMSwarmInitializeFieldRegister - Initiates the registration of fields to a DMSwarm
 
- DMSwarmInitializeFieldRegister - Initiates the registration of fields to a DMSwarm
+   Collective on DM
 
- Collective on DM
+   Input parameter:
+.  dm - a DMSwarm
 
- Input parameter:
- . dm - a DMSwarm
+   Level: beginner
 
- Level: beginner
+   Notes:
+   After all fields have been registered, you must call DMSwarmFinalizeFieldRegister().
 
- Notes:
- After all fields have been registered, you must call DMSwarmFinalizeFieldRegister().
-
- . seealso: DMSwarmFinalizeFieldRegister(), DMSwarmRegisterPetscDatatypeField(),
+.seealso: DMSwarmFinalizeFieldRegister(), DMSwarmRegisterPetscDatatypeField(),
  DMSwarmRegisterUserStructField(), DMSwarmRegisterUserDatatypeField()
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmInitializeFieldRegister(DM dm)
@@ -308,21 +306,19 @@ PETSC_EXTERN PetscErrorCode DMSwarmInitializeFieldRegister(DM dm)
 }
 
 /*@C
+   DMSwarmFinalizeFieldRegister - Finalizes the registration of fields to a DMSwarm
 
- DMSwarmFinalizeFieldRegister - Finalizes the registration of fields to a DMSwarm
+   Collective on DM
 
- Collective on DM
+   Input parameter:
+.  dm - a DMSwarm
 
- Input parameter:
- . dm - a DMSwarm
+   Level: beginner
 
- Level: beginner
+   Notes:
+   After DMSwarmFinalizeFieldRegister() has been called, no new fields can be defined on the DMSwarm.
 
- Notes:
- After DMSwarmFinalizeFieldRegister() has been called, no new fields can be defined.
- on the DMSwarm
-
- . seealso: DMSwarmInitializeFieldRegister(), DMSwarmRegisterPetscDatatypeField(),
+.seealso: DMSwarmInitializeFieldRegister(), DMSwarmRegisterPetscDatatypeField(),
  DMSwarmRegisterUserStructField(), DMSwarmRegisterUserDatatypeField()
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmFinalizeFieldRegister(DM dm)
@@ -339,20 +335,18 @@ PETSC_EXTERN PetscErrorCode DMSwarmFinalizeFieldRegister(DM dm)
 }
 
 /*@C
+   DMSwarmSetLocalSizes - Sets the length of all registered fields on the DMSwarm
 
- DMSwarmSetLocalSizes - Sets the length of all registered fields on the DMSwarm
+   Not collective
 
- Not collective
+   Input parameters:
++  dm - a DMSwarm
+.  nlocal - the length of each registered field
+-  buffer - the length of the buffer used to efficient dynamic re-sizing
 
- Input parameters:
- . dm - a DMSwarm
- . nlocal - the length of each registered field
- . buffer - the length of the buffer used to efficient dynamic re-sizing
+   Level: beginner
 
- Level: beginner
-
- . seealso: DMSwarmGetLocalSize()
-
+.seealso: DMSwarmGetLocalSize()
 @*/
 PETSC_EXTERN PetscErrorCode DMSwarmSetLocalSizes(DM dm,PetscInt nlocal,PetscInt buffer)
 {
@@ -365,20 +359,19 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetLocalSizes(DM dm,PetscInt nlocal,PetscInt 
 }
 
 /*@C
+   DMSwarmSetCellDM - Attachs a DM to a DMSwarm
 
- DMSwarmSetCellDM - Attachs a DM to a DMSwarm
+   Collective on DM
 
- Collective on DM
+   Input parameters:
++  dm - a DMSwarm
+-  dmcell - the DM to attach to the DMSwarm
 
- Input parameters:
- . dm - a DMSwarm
- . dmcell - the DM to attach to the DMSwarm
+   Level: beginner
 
- Level: beginner
-
- Notes:
- The attached DM (dmcell) will be queried for point location and
- neighbor MPI-rank information if DMSwarmMigrate() is called.
+   Notes:
+   The attached DM (dmcell) will be queried for point location and
+   neighbor MPI-rank information if DMSwarmMigrate() is called.
 
 .seealso: DMSwarmSetType(), DMSwarmGetCellDM(), DMSwarmMigrate()
 @*/
@@ -392,18 +385,17 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetCellDM(DM dm,DM dmcell)
 }
 
 /*@C
+   DMSwarmGetCellDM - Fetches the attached cell DM
 
- DMSwarmGetCellDM - Fetches the attached cell DM
+   Collective on DM
 
- Collective on DM
+   Input parameter:
+.  dm - a DMSwarm
 
- Input parameter:
- . dm - a DMSwarm
+   Output parameter:
+.  dmcell - the DM which was attached to the DMSwarm
 
- Output parameter:
- . dmcell - the DM which was attached to the DMSwarm
-
- Level: beginner
+   Level: beginner
 
 .seealso: DMSwarmSetCellDM()
 @*/
@@ -417,18 +409,17 @@ PETSC_EXTERN PetscErrorCode DMSwarmGetCellDM(DM dm,DM *dmcell)
 }
 
 /*@C
+   DMSwarmGetLocalSize - Retrives the local length of fields registered
 
- DMSwarmGetLocalSize - Retrives the local length of fields registered
+   Not collective
 
- Not collective
+   Input parameter:
+.  dm - a DMSwarm
 
- Input parameter:
- . dm - a DMSwarm
+   Output parameter:
+.  nlocal - the length of each registered field
 
- Output parameter:
- . nlocal - the length of each registered field
-
- Level: beginner
+   Level: beginner
 
 .seealso: DMSwarmGetSize(), DMSwarmSetLocalSizes()
 @*/
@@ -443,21 +434,20 @@ PETSC_EXTERN PetscErrorCode DMSwarmGetLocalSize(DM dm,PetscInt *nlocal)
 }
 
 /*@C
+   DMSwarmGetSize - Retrives the total length of fields registered
 
- DMSwarmGetSize - Retrives the total length of fields registered
+   Collective on DM
 
- Collective on DM
+   Input parameter:
+.  dm - a DMSwarm
 
- Input parameter:
- . dm - a DMSwarm
+   Output parameter:
+.  n - the total length of each registered field
 
- Output parameter:
- . n - the total length of each registered field
+   Level: beginner
 
- Level: beginner
-
- Note:
- This calls MPI_Allreduce upon each call (inefficient but safe)
+   Note:
+   This calls MPI_Allreduce upon each call (inefficient but safe)
 
 .seealso: DMSwarmGetLocalSize(), DMSwarmSetLocalSizes()
 @*/
@@ -475,21 +465,20 @@ PETSC_EXTERN PetscErrorCode DMSwarmGetSize(DM dm,PetscInt *n)
 }
 
 /*@C
+   DMSwarmRegisterPetscDatatypeField - Register a field to a DMSwarm with a native PETSc data type
 
- DMSwarmRegisterPetscDatatypeField - Register a field to a DMSwarm with a native PETSc data type
+   Collective on DM
 
- Collective on DM
+   Input parameters:
++  dm - a DMSwarm
+.  fieldname - the textual name to identify this field
+.  blocksize - the number of each data type
+-  type - a valid PETSc data type (PETSC_CHAR, PETSC_SHORT, PETSC_INT, PETSC_FLOAT, PETSC_REAL, PETSC_LONG)
 
- Input parameters:
- . dm - a DMSwarm
- . fieldname - the textual name to identify this field
- . blocksize - the number of each data type
- . type - a valid PETSc data type (PETSC_CHAR, PETSC_SHORT, PETSC_INT, PETSC_FLOAT, PETSC_REAL, PETSC_LONG)
+   Level: beginner
 
- Level: beginner
-
- Notes:
- The textual name for each registered field must be unique.
+   Notes:
+   The textual name for each registered field must be unique.
 
 .seealso: DMSwarmRegisterUserStructField(), DMSwarmRegisterUserDatatypeField()
 @*/
@@ -523,20 +512,19 @@ PETSC_EXTERN PetscErrorCode DMSwarmRegisterPetscDatatypeField(DM dm,const char f
 }
 
 /*@C
+   DMSwarmRegisterUserStructField - Register a user defined struct to a DMSwarm
 
- DMSwarmRegisterUserStructField - Register a user defined struct to a DMSwarm
+   Collective on DM
 
- Collective on DM
+   Input parameters:
++  dm - a DMSwarm
+.  fieldname - the textual name to identify this field
+-  size - the size in bytes of the user struct of each data type
 
- Input parameters:
- . dm - a DMSwarm
- . fieldname - the textual name to identify this field
- . size - the size in bytes of the user struct of each data type
+   Level: beginner
 
- Level: beginner
-
- Notes:
- The textual name for each registered field must be unique.
+   Notes:
+   The textual name for each registered field must be unique.
 
 .seealso: DMSwarmRegisterPetscDatatypeField(), DMSwarmRegisterUserDatatypeField()
 @*/
@@ -552,21 +540,20 @@ PETSC_EXTERN PetscErrorCode DMSwarmRegisterUserStructField(DM dm,const char fiel
 }
 
 /*@C
+   DMSwarmRegisterUserDatatypeField - Register a user defined data type to a DMSwarm
 
- DMSwarmRegisterUserDatatypeField - Register a user defined data type to a DMSwarm
+   Collective on DM
 
- Collective on DM
+   Input parameters:
++  dm - a DMSwarm
+.  fieldname - the textual name to identify this field
+.  size - the size in bytes of the user data type
+-  blocksize - the number of each data type
 
- Input parameters:
- . dm - a DMSwarm
- . fieldname - the textual name to identify this field
- . size - the size in bytes of the user data type
- . blocksize - the number of each data type
+   Level: beginner
 
- Level: beginner
-
- Notes:
- The textual name for each registered field must be unique.
+   Notes:
+   The textual name for each registered field must be unique.
 
 .seealso: DMSwarmRegisterPetscDatatypeField(), DMSwarmRegisterUserStructField(), DMSwarmRegisterUserDatatypeField()
 @*/
@@ -588,24 +575,23 @@ PETSC_EXTERN PetscErrorCode DMSwarmRegisterUserDatatypeField(DM dm,const char fi
 }
 
 /*@C
+   DMSwarmGetField - Get access to the underlying array storing all entries associated with a registered field
 
- DMSwarmGetField - Get access to the underlying array storing all entries associated with a registered field
+   Not collective
 
- Not collective
+   Input parameters:
++  dm - a DMSwarm
+-  fieldname - the textual name to identify this field
 
- Input parameters:
- . dm - a DMSwarm
- . fieldname - the textual name to identify this field
+   Output parameters:
++  blocksize - the number of each data type
+.  type - the data type
+-  data - pointer to raw array
 
- Output parameters:
- . blocksize - the number of each data type
- . type - the data type
- . data - pointer to raw array
+   Level: beginner
 
- Level: beginner
-
- Notes:
- The array must be returned using a matching call to DMSwarmRestoreField().
+   Notes:
+   The array must be returned using a matching call to DMSwarmRestoreField().
 
 .seealso: DMSwarmRestoreField()
 @*/
@@ -626,24 +612,23 @@ PETSC_EXTERN PetscErrorCode DMSwarmGetField(DM dm,const char fieldname[],PetscIn
 }
 
 /*@C
+   DMSwarmRestoreField - Restore access to the underlying array storing all entries associated with a registered field
 
- DMSwarmRestoreField - Restore access to the underlying array storing all entries associated with a registered field
+   Not collective
 
- Not collective
+   Input parameters:
++  dm - a DMSwarm
+-  fieldname - the textual name to identify this field
 
- Input parameters:
- . dm - a DMSwarm
- . fieldname - the textual name to identify this field
+   Output parameters:
++  blocksize - the number of each data type
+.  type - the data type
+-  data - pointer to raw array
 
- Output parameters:
- . blocksize - the number of each data type
- . type - the data type
- . data - pointer to raw array
+   Level: beginner
 
- Level: beginner
-
- Notes:
- The user must call DMSwarmGetField() prior to calling DMSwarmRestoreField().
+   Notes:
+   The user must call DMSwarmGetField() prior to calling DMSwarmRestoreField().
 
 .seealso: DMSwarmGetField()
 @*/
@@ -661,18 +646,17 @@ PETSC_EXTERN PetscErrorCode DMSwarmRestoreField(DM dm,const char fieldname[],Pet
 }
 
 /*@C
+   DMSwarmAddPoint - Add space for one new point in the DMSwarm
 
- DMSwarmAddPoint - Add space for one new point in the DMSwarm
+   Not collective
 
- Not collective
+   Input parameter:
+.  dm - a DMSwarm
 
- Input parameter:
- . dm - a DMSwarm
+   Level: beginner
 
- Level: beginner
-
- Notes:
- The new point will have all fields initialized to zero.
+   Notes:
+   The new point will have all fields initialized to zero.
 
 .seealso: DMSwarmAddNPoints()
 @*/
@@ -688,19 +672,18 @@ PETSC_EXTERN PetscErrorCode DMSwarmAddPoint(DM dm)
 }
 
 /*@C
+   DMSwarmAddNPoints - Add space for a number of new points in the DMSwarm
 
- DMSwarmAddNPoints - Add space for a number of new points in the DMSwarm
+   Not collective
 
- Not collective
+   Input parameters:
++  dm - a DMSwarm
+-  npoints - the number of new points to add
 
- Input parameters:
- . dm - a DMSwarm
- . npoints - the number of new points to add
+   Level: beginner
 
- Level: beginner
-
- Notes:
- The new point will have all fields initialized to zero.
+   Notes:
+   The new point will have all fields initialized to zero.
 
 .seealso: DMSwarmAddPoint()
 @*/
@@ -718,15 +701,14 @@ PETSC_EXTERN PetscErrorCode DMSwarmAddNPoints(DM dm,PetscInt npoints)
 }
 
 /*@C
+   DMSwarmRemovePoint - Remove the last point from the DMSwarm
 
- DMSwarmRemovePoint - Remove the last point from the DMSwarm
+   Not collective
 
- Not collective
+   Input parameter:
+.  dm - a DMSwarm
 
- Input parameter:
- . dm - a DMSwarm
-
- Level: beginner
+   Level: beginner
 
 .seealso: DMSwarmRemovePointAtIndex()
 @*/
@@ -741,15 +723,15 @@ PETSC_EXTERN PetscErrorCode DMSwarmRemovePoint(DM dm)
 }
 
 /*@C
- DMSwarmRemovePointAtIndex - Removes a specific point from the DMSwarm
+   DMSwarmRemovePointAtIndex - Removes a specific point from the DMSwarm
 
- Not collective
+   Not collective
 
- Input parameters:
- . dm - a DMSwarm
- . idx - index of point to remove
+   Input parameters:
++  dm - a DMSwarm
+-  idx - index of point to remove
 
- Level: beginner
+   Level: beginner
 
 .seealso: DMSwarmRemovePoint()
 @*/
@@ -773,21 +755,20 @@ PetscErrorCode DMSwarmMigrate_Basic(DM dm,PetscBool remove_sent_points)
 }
 
 /*@C
+   DMSwarmMigrate - Relocates points defined in the DMSwarm to other MPI-ranks
 
- DMSwarmMigrate - Relocates points defined in the DMSwarm to other MPI-ranks
+   Collective on DM
 
- Collective on DM
+   Input parameters:
++  dm - the DMSwarm
+-  remove_sent_points - flag indicating if sent points should be removed from the current MPI-rank
 
- Input parameters:
- . dm - the DMSwarm
- . remove_sent_points - flag indicating if sent points should be removed from the current MPI-rank
+   Notes:
+   The DM will be modified to accomodate received points.
+   If remove_sent_points = PETSC_TRUE, any points that were sent will be removed from the DM.
+   Different styles of migration are supported. See DMSwarmSetMigrateType().
 
- Notes:
- The DM will be modified to accomodate received points.
- If remove_sent_points = PETSC_TRUE, any points that were sent will be removed from the DM.
- Different styles of migration are supported. See DMSwarmSetMigrateType().
-
- Level: advanced
+   Level: advanced
 
 .seealso: DMSwarmSetMigrateType()
 @*/
@@ -832,21 +813,20 @@ PetscErrorCode DMSwarmMigrate_GlobalToLocal_Basic(DM dm,PetscInt *globalsize);
 */
 
 /*@C
+   DMSwarmCollectViewCreate - Applies a collection method and gathers points
+   in neighbour MPI-ranks into the DMSwarm
 
- DMSwarmCollectViewCreate - Applies a collection method and gathers points
- in neighbour MPI-ranks into the DMSwarm
+   Collective on DM
 
- Collective on DM
+   Input parameter:
+.  dm - the DMSwarm
 
- Input parameter:
- . dm - the DMSwarm
+   Notes:
+   Users should call DMSwarmCollectViewDestroy() after
+   they have finished computations associated with the collected points
+   Different collect methods are supported. See DMSwarmSetCollectType().
 
- Notes:
- Users should call DMSwarmCollectViewDestroy() after
- they have finished computations associated with the collected points
- Different collect methods are supported. See DMSwarmSetCollectType().
-
- Level: advanced
+   Level: advanced
 
 .seealso: DMSwarmCollectViewDestroy(), DMSwarmSetCollectType()
 @*/
@@ -882,18 +862,17 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollectViewCreate(DM dm)
 }
 
 /*@C
+   DMSwarmCollectViewDestroy - Resets the DMSwarm to the size prior to calling DMSwarmCollectViewCreate()
 
- DMSwarmCollectViewDestroy - Resets the DMSwarm to the size prior to calling DMSwarmCollectViewCreate()
+   Collective on DM
 
- Collective on DM
+   Input parameters:
+.  dm - the DMSwarm
 
- Input parameters:
- . dm - the DMSwarm
+   Notes:
+   Users should call DMSwarmCollectViewCreate() before this function is called.
 
- Notes:
- Users should call DMSwarmCollectViewCreate() before this function is called.
-
- Level: advanced
+   Level: advanced
 
 .seealso: DMSwarmCollectViewCreate(), DMSwarmSetCollectType()
 @*/
@@ -924,16 +903,15 @@ PetscErrorCode DMSwarmSetUpPIC(DM dm)
 }
 
 /*@C
+   DMSwarmSetType - Set particular flavor of DMSwarm
 
- DMSwarmSetType - Set particular flavor of DMSwarm
+   Collective on DM
 
- Collective on DM
+   Input parameters:
++  dm - the DMSwarm
+-  stype - the DMSwarm type (e.g. DMSWARM_PIC)
 
- Input parameters:
-. dm - the DMSwarm
-. stype - the DMSwarm type (e.g. DMSWARM_PIC)
-
- Level: advanced
+   Level: advanced
 
 .seealso: DMSwarmSetMigrateType(), DMSwarmSetCollectType()
 @*/
@@ -1080,47 +1058,50 @@ PetscErrorCode DMView_Swarm(DM dm, PetscViewer viewer)
 /*MC
 
  DMSWARM = "swarm" - A DM object used to represent arrays of data (fields) of arbitrary data type.
- This implementation was designed for particle-in-cell type methods in which the underlying
+ This implementation was designed for particle methods in which the underlying
  data required to be represented is both (i) dynamic in length, (ii) and of arbitrary data type.
 
- User data can be represented by DMSwarm through a registring "fields".
- To register a field, the user must provide:
- (a) a unique name
- (b) the data type (or size in bytes)
- (c) the block size of the data
+ User data can be represented by DMSwarm through a registering "fields".
+ To register a field, the user must provide;
+ (a) a unique name;
+ (b) the data type (or size in bytes);
+ (c) the block size of the data.
 
  For example, suppose the application requires a unique id, energy, momentum and density to be stored
- on a set of of particles. Then the following application could be used
+ on a set of of particles. Then the following code could be used
 
- DMSwarmInitializeFieldRegister(dm)
- DMSwarmRegisterPetscDatatypeField(dm,"uid",1,PETSC_LONG);
- DMSwarmRegisterPetscDatatypeField(dm,"energy",1,PETSC_REAL);
- DMSwarmRegisterPetscDatatypeField(dm,"momentum",3,PETSC_REAL);
- DMSwarmRegisterPetscDatatypeField(dm,"density",1,PETSC_FLOAT);
- DMSwarmFinalizeFieldRegister(dm)
+$    DMSwarmInitializeFieldRegister(dm)
+$    DMSwarmRegisterPetscDatatypeField(dm,"uid",1,PETSC_LONG);
+$    DMSwarmRegisterPetscDatatypeField(dm,"energy",1,PETSC_REAL);
+$    DMSwarmRegisterPetscDatatypeField(dm,"momentum",3,PETSC_REAL);
+$    DMSwarmRegisterPetscDatatypeField(dm,"density",1,PETSC_FLOAT);
+$    DMSwarmFinalizeFieldRegister(dm)
 
  The fields represented by DMSwarm are dynamic and can be re-sized at any time.
- The only restriction imposed by DMSwarm is that all fields contain the same number of points
+ The only restriction imposed by DMSwarm is that all fields contain the same number of points.
 
  To support particle methods, "migration" techniques are provided. These methods migrate data
  between MPI-ranks.
 
  DMSwarm supports the methods DMCreateGlobalVector() and DMCreateLocalVector().
  As a DMSwarm may internally define and store values of different data types,
- before calling DMCreate{Global/Local}Vector() the user must inform DMSwarm which
+ before calling DMCreateGlobalVector() or DMCreateLocalVector(), the user must inform DMSwarm which
  fields should be used to define a Vec object via
    DMSwarmVectorDefineField()
  The specified field can can changed be changed at any time - thereby permitting vectors
  compatable with different fields to be created.
 
- A dual representation of fields in the DMSwarm and a Vec object are permitted via
+ A dual representation of fields in the DMSwarm and a Vec object is permitted via
    DMSwarmCreateGlobalVectorFromField()
  Here the data defining the field in the DMSwarm is shared with a Vec.
  This is inherently unsafe if you alter the size of the field at any time between
  calls to DMSwarmCreateGlobalVectorFromField() and DMSwarmDestroyGlobalVectorFromField().
- If the local size of the DMSwarm does not match the localsize of the global vector
+ If the local size of the DMSwarm does not match the local size of the global vector
  when DMSwarmDestroyGlobalVectorFromField() is called, an error is thrown.
 
+ Additional high-level support is provided for Particle-In-Cell methods. 
+ Please refer to the man page for DMSwarmSetType().
+ 
  Level: beginner
 
 .seealso: DMType, DMCreate(), DMSetType()

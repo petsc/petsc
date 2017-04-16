@@ -199,7 +199,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm,PetscReal m
    If the user has specified redundant = PETSC_FALSE, the cell DM will attempt to locate the coordinates provided by coor[] within
    its sub-domain. If they any values within coor[] are not located in the sub-domain, they will be ignored and will not get 
    added to the DMSwarm.
-
  
 .seealso: DMSwarmSetType(), DMSwarmSetCellDM(), DMSwarmType, DMSwarmSetPointsUniformCoordinates()
 @*/
