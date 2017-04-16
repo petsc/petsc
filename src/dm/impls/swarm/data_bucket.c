@@ -220,7 +220,7 @@ PetscErrorCode DataFieldSetSize(DataField df,const PetscInt new_L)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (new_L <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot set size of DataField to be <= 0");
+  if (new_L < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot set size of DataField to be < 0");
   if (new_L == df->L) PetscFunctionReturn(0);
   if (new_L > df->L) {
     ierr = PetscRealloc(df->atomic_size * (new_L), &df->data);CHKERRQ(ierr);
