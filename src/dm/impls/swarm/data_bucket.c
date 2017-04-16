@@ -594,37 +594,49 @@ PetscErrorCode DataBucketRemovePoint(DataBucket db)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DataBucketView_SEQ(DataBucket db,const char filename[],DataBucketViewType type)
+PetscErrorCode DataBucketView_stdout(MPI_Comm comm,DataBucket db)
+{
+  PetscInt f;
+  double memory_usage_total,memory_usage_total_local = 0.0;
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  ierr = PetscPrintf(comm,"DataBucketView: \n");CHKERRQ(ierr);
+  ierr = PetscPrintf(comm,"  L                  = %D \n", db->L);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm,"  buffer             = %D \n", db->buffer);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm,"  allocated          = %D \n", db->allocated);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm,"  nfields registered = %D \n", db->nfields);CHKERRQ(ierr);
+  
+  for (f = 0; f < db->nfields; ++f) {
+    double memory_usage_f = (double)(db->field[f]->atomic_size * db->allocated) * 1.0e-6;
+    memory_usage_total_local += memory_usage_f;
+  }
+  ierr = MPI_Allreduce(&memory_usage_total_local,&memory_usage_total,1,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
+  
+  for (f = 0; f < db->nfields; ++f) {
+    double memory_usage_f = (double)(db->field[f]->atomic_size * db->allocated) * 1.0e-6;
+    ierr = PetscPrintf(comm,"    [%3D] %15s : Mem. usage       = %1.2e (MB) [rank0]\n", f, db->field[f]->name, memory_usage_f );CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"                            blocksize        = %D \n", db->field[f]->bs);CHKERRQ(ierr);
+    if (db->field[f]->bs != 1) {
+      ierr = PetscPrintf(comm,"                            atomic size      = %zu [full block, bs=%D]\n", db->field[f]->atomic_size,db->field[f]->bs);CHKERRQ(ierr);
+      ierr = PetscPrintf(comm,"                            atomic size/item = %zu \n", db->field[f]->atomic_size/db->field[f]->bs);CHKERRQ(ierr);
+    } else {
+      ierr = PetscPrintf(comm,"                            atomic size      = %zu \n", db->field[f]->atomic_size);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscPrintf(comm,"  Total mem. usage                           = %1.2e (MB) (collective)\n", memory_usage_total);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DataBucketView_SEQ(MPI_Comm comm,DataBucket db,const char filename[],DataBucketViewType type)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   switch (type) {
   case DATABUCKET_VIEW_STDOUT:
-  {
-    PetscInt f;
-    double memory_usage_total = 0.0;
-
-    ierr = PetscPrintf(PETSC_COMM_SELF,"DataBucketView(SEQ): (\"%s\")\n",filename);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"  L                  = %D \n", db->L);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"  buffer             = %D \n", db->buffer);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"  allocated          = %D \n", db->allocated);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"  nfields registered = %D \n", db->nfields);CHKERRQ(ierr);
-    for (f = 0; f < db->nfields; ++f) {
-      double memory_usage_f = (double)(db->field[f]->atomic_size * db->allocated) * 1.0e-6;
-      ierr = PetscPrintf(PETSC_COMM_SELF,"    [%3D]: field name  ==>> %30s : Mem. usage = %1.2e (MB) \n", f, db->field[f]->name, memory_usage_f );CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_SELF,"           blocksize          = %D \n", db->field[f]->bs);CHKERRQ(ierr);
-      if (db->field[f]->bs != 1) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"           atomic size        = %zu [full block, bs=%D]\n", db->field[f]->atomic_size,db->field[f]->bs);CHKERRQ(ierr);
-        ierr = PetscPrintf(PETSC_COMM_SELF,"           atomic size/item   = %zu \n", db->field[f]->atomic_size/db->field[f]->bs);CHKERRQ(ierr);
-      } else {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"           atomic size        = %zu \n", db->field[f]->atomic_size);CHKERRQ(ierr);
-      }
-      memory_usage_total += memory_usage_f;
-    }
-    ierr = PetscPrintf(PETSC_COMM_SELF,"  Total mem. usage                                                      = %1.2e (MB) \n", memory_usage_total);CHKERRQ(ierr);
-  }
-  break;
+    ierr = DataBucketView_stdout(PETSC_COMM_SELF,db);CHKERRQ(ierr);
+    break;
   case DATABUCKET_VIEW_ASCII:
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for ascii output");
     break;
@@ -646,40 +658,17 @@ PetscErrorCode DataBucketView_MPI(MPI_Comm comm,DataBucket db,const char filenam
   PetscFunctionBegin;
   switch (type) {
   case DATABUCKET_VIEW_STDOUT:
-  {
-    PetscInt f;
-    PetscInt L,buffer,allocated;
-    double memory_usage_total,memory_usage_total_local = 0.0;
-    PetscMPIInt rank;
-
-    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-    ierr = DataBucketGetGlobalSizes(comm,db,&L,&buffer,&allocated);CHKERRQ(ierr);
-    for (f = 0; f < db->nfields; ++f) {
-      double memory_usage_f = (double)(db->field[f]->atomic_size * db->allocated) * 1.0e-6;
-      memory_usage_total_local += memory_usage_f;
-    }
-    ierr = MPI_Allreduce(&memory_usage_total_local,&memory_usage_total,1,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
-    ierr = PetscPrintf(comm,"DataBucketView(MPI): (\"%s\")\n",filename);CHKERRQ(ierr);
-    ierr = PetscPrintf(comm,"  L                  = %D \n", L);CHKERRQ(ierr);
-    ierr = PetscPrintf(comm,"  buffer (max)       = %D \n", buffer);CHKERRQ(ierr);
-    ierr = PetscPrintf(comm,"  allocated          = %D \n", allocated);CHKERRQ(ierr);
-    ierr = PetscPrintf(comm,"  nfields registered = %D \n", db->nfields);CHKERRQ(ierr);
-    for (f=0; f<db->nfields; f++) {
-      double memory_usage_f = (double)(db->field[f]->atomic_size * db->allocated) * 1.0e-6;
-      ierr = PetscPrintf(PETSC_COMM_SELF,"    [%3D]: field name  ==>> %30s : Mem. usage = %1.2e (MB) : rank0\n", f, db->field[f]->name, memory_usage_f);CHKERRQ(ierr);
-    }
-    ierr = PetscPrintf(PETSC_COMM_SELF,"  Total mem. usage                                                      = %1.2e (MB) : collective\n", memory_usage_total);CHKERRQ(ierr);
-  }
-  break;
+    ierr = DataBucketView_stdout(comm,db);CHKERRQ(ierr);
+    break;
   case DATABUCKET_VIEW_ASCII:
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for ascii output");
-  break;
+    break;
   case DATABUCKET_VIEW_BINARY:
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for binary output");
-  break;
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for binary output");
+    break;
   case DATABUCKET_VIEW_HDF5:
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for HDF5 output");
-  break;
+    break;
   default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown viewer method requested");
   }
   PetscFunctionReturn(0);
@@ -693,7 +682,7 @@ PetscErrorCode DataBucketView(MPI_Comm comm,DataBucket db,const char filename[],
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&nproc);CHKERRQ(ierr);
   if (nproc == 1) {
-    ierr = DataBucketView_SEQ(db,filename,type);CHKERRQ(ierr);
+    ierr = DataBucketView_SEQ(comm,db,filename,type);CHKERRQ(ierr);
   } else {
     ierr = DataBucketView_MPI(comm,db,filename,type);CHKERRQ(ierr);
   }
