@@ -22,6 +22,22 @@ typedef enum {
   DMSWARM_COLLECT_USER
 } DMSwarmCollectType;
 
+/*J
+   DMSwarmPICLayoutType - Defines the method used to define particle coordinates within each cell. The layouts are constructured using the reference cell geometry
+ 
+   DMSWARMPIC_LAYOUT_REGULAR defines points on a regular ijk mesh.
+   When using DMSWARMPIC_LAYOUT_REGULAR, the fill_param defines the number of points in each spatial direction.
+ 
+   DMSWARMPIC_LAYOUT_GAUSS defines points using an npoint Gauss-Legendre tensor product quadrature rule.
+   When using DMSWARMPIC_LAYOUT_GAUSS, the fill_param defines the number of quadrature points in each spatial direction.
+ 
+   DMSWARMPIC_LAYOUT_SUBDIVISION defines points on the centroid of a sub-divided reference cell.
+   When using DMSWARMPIC_LAYOUT_SUBDIVISION, the fill_param defines the number times the reference cell is sub-divided.
+ 
+   Level: beginner
+ 
+.seealso DMSwarmInsertPointsUsingCellDM()
+J*/
 typedef enum {
   DMSWARMPIC_LAYOUT_REGULAR=0,
   DMSWARMPIC_LAYOUT_GAUSS,
@@ -68,6 +84,12 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetCellDM(DM,DM);
 PETSC_EXTERN PetscErrorCode DMSwarmGetCellDM(DM,DM*);
 
 PETSC_EXTERN PetscErrorCode DMSwarmSetType(DM,DMSwarmType);
+
+PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM,PetscReal*,PetscReal*,PetscInt*,InsertMode);
+PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinates(DM dm,PetscInt npoints,PetscReal coor[],PetscBool redundant,InsertMode mode);
+PETSC_EXTERN PetscErrorCode DMSwarmInsertPointsUsingCellDM(DM,DMSwarmPICLayoutType,PetscInt);
+PETSC_EXTERN PetscErrorCode DMSwarmViewFieldsXDMF(DM,const char*,PetscInt,const char**);
+PETSC_EXTERN PetscErrorCode DMSwarmViewXDMF(DM dm,const char filename[]);
 
 #endif
 
