@@ -22,6 +22,12 @@ typedef enum {
   DMSWARM_COLLECT_USER
 } DMSwarmCollectType;
 
+typedef enum {
+  DMSWARMPIC_LAYOUT_REGULAR=0,
+  DMSWARMPIC_LAYOUT_GAUSS,
+  DMSWARMPIC_LAYOUT_SUBDIVISION,
+} DMSwarmPICLayoutType;
+
 PETSC_EXTERN const char* DMSwarmTypeNames[];
 PETSC_EXTERN const char* DMSwarmMigrateTypeNames[];
 PETSC_EXTERN const char* DMSwarmCollectTypeNames[];
@@ -29,6 +35,7 @@ PETSC_EXTERN const char* DMSwarmCollectTypeNames[];
 PETSC_EXTERN const char DMSwarmField_pid[];
 PETSC_EXTERN const char DMSwarmField_rank[];
 PETSC_EXTERN const char DMSwarmPICField_coor[];
+PETSC_EXTERN const char DMSwarmPICField_cellid[];
 
 PETSC_EXTERN PetscErrorCode DMSwarmCreateGlobalVectorFromField(DM,const char[],Vec*);
 PETSC_EXTERN PetscErrorCode DMSwarmDestroyGlobalVectorFromField(DM,const char[],Vec*);

@@ -6,10 +6,12 @@
 const char* DMSwarmTypeNames[] = { "basic", "pic", 0 };
 const char* DMSwarmMigrateTypeNames[] = { "basic", "dmcellnscatter", "dmcellexact", "user", 0 };
 const char* DMSwarmCollectTypeNames[] = { "basic", "boundingbox", "general", "user", 0 };
+const char* DMSwarmPICLayoutTypeNames[] = { "regular", "gauss", "subdivision", 0 };
 
 const char DMSwarmField_pid[] = "DMSwarm_pid";
 const char DMSwarmField_rank[] = "DMSwarm_rank";
 const char DMSwarmPICField_coor[] = "DMSwarmPIC_coor";
+const char DMSwarmPICField_cellid[] = "DMSwarm_cellid";
 
 /*@C
 
@@ -915,6 +917,7 @@ PetscErrorCode DMSwarmSetUpPIC(DM dm)
   if (dim < 1) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Dimension must be 1,2,3 - found %D",dim);
   if (dim > 3) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Dimension must be 1,2,3 - found %D",dim);
   ierr = DMSwarmRegisterPetscDatatypeField(dm,DMSwarmPICField_coor,dim,PETSC_DOUBLE);CHKERRQ(ierr);
+  ierr = DMSwarmRegisterPetscDatatypeField(dm,DMSwarmPICField_cellid,1,PETSC_INT);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
