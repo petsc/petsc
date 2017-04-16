@@ -136,7 +136,7 @@ static PetscErrorCode DMDAGetElements_3D(DM dm,PetscInt *nel,PetscInt *nen,const
 .     da - the DMDA object
 
    Output Parameters:
-.     etype - the element type, currently either DMDA_ELEMENT_P1 or ELEMENT_Q1
+.     etype - the element type, currently either DMDA_ELEMENT_P1 or DMDA_ELEMENT_Q1
 
    Level: intermediate
 
@@ -169,7 +169,7 @@ PetscErrorCode  DMDASetElementType(DM da, DMDAElementType etype)
 .     da - the DMDA object
 
    Output Parameters:
-.     etype - the element type, currently either DMDA_ELEMENT_P1 or ELEMENT_Q1
+.     etype - the element type, currently either DMDA_ELEMENT_P1 or DMDA_ELEMENT_Q1
 
    Level: intermediate
 
