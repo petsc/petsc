@@ -17,6 +17,8 @@ TS Object: 1 MPI processes
   TSAdapt Object: 1 MPI processes
     type: none
     number of candidates 0
+    maximum allowed timestep 1e+50
+    minimum allowed timestep 1e-20
   SNES Object: 1 MPI processes
     type: ksponly
     maximum iterations=50, maximum function evaluations=10000
