@@ -900,13 +900,13 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   }
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-snes_mf_operator","Use a Matrix-Free Jacobian with user-provided preconditioner matrix","MatCreateSNESMF",PETSC_FALSE,&snes->mf_operator,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_mf_operator","Use a Matrix-Free Jacobian with user-provided preconditioner matrix","SNESSetUseMatrixFree",PETSC_FALSE,&snes->mf_operator,&flg);CHKERRQ(ierr);
   if (flg && snes->mf_operator) {
     snes->mf_operator = PETSC_TRUE;
     snes->mf          = PETSC_TRUE;
   }
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-snes_mf","Use a Matrix-Free Jacobian with no preconditioner matrix","MatCreateSNESMF",PETSC_FALSE,&snes->mf,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_mf","Use a Matrix-Free Jacobian with no preconditioner matrix","SNESSetUseMatrixFree",PETSC_FALSE,&snes->mf,&flg);CHKERRQ(ierr);
   if (!flg && snes->mf_operator) snes->mf = PETSC_TRUE;
   ierr = PetscOptionsInt("-snes_mf_version","Matrix-Free routines version 1 or 2","None",snes->mf_version,&snes->mf_version,0);CHKERRQ(ierr);
 
