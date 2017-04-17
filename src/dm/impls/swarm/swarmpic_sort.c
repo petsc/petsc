@@ -308,3 +308,62 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortRestoreAccess(DM dm)
   swarm->sort_context->isvalid = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
+
+/*@C
+   DMSwarmSortGetIsValid - Gets the isvalid flag associated with a DMSwarm point sorting context
+ 
+   Not collective
+ 
+   Input parameter:
+.  dm - a DMSwarm object
+
+   Output parameter:
+.  isvalid - flag indicating whether the sort context is up-to-date
+
+ Level: advanced
+ 
+.seealso: DMSwarmSetType(), DMSwarmSortGetAccess()
+@*/
+PETSC_EXTERN PetscErrorCode DMSwarmSortGetIsValid(DM dm,PetscBool *isvalid)
+{
+  DM_Swarm *swarm = (DM_Swarm*)dm->data;
+  
+  PetscFunctionBegin;
+  if (!swarm->sort_context) {
+    *isvalid = PETSC_FALSE;
+    PetscFunctionReturn(0);
+  }
+  *isvalid = swarm->sort_context->isvalid;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   DMSwarmSortGetSizes - Gets the sizes associated with a DMSwarm point sorting context
+ 
+   Not collective
+ 
+   Input parameter:
+.  dm - a DMSwarm object
+ 
+   Output parameters:
++  ncells - number of cells within the sort context (pass NULL to ignore)
+-  npoints - number of points used to create the sort context (pass NULL to ignore)
+ 
+   Level: advanced
+ 
+.seealso: DMSwarmSetType(), DMSwarmSortGetAccess()
+@*/
+PETSC_EXTERN PetscErrorCode DMSwarmSortGetSizes(DM dm,PetscInt *ncells,PetscInt *npoints)
+{
+  DM_Swarm *swarm = (DM_Swarm*)dm->data;
+  
+  PetscFunctionBegin;
+  if (!swarm->sort_context) {
+    if (ncells) { *ncells = 0; }
+    if (npoints) { *npoints = 0; }
+    PetscFunctionReturn(0);
+  }
+  if (ncells) { *ncells = swarm->sort_context->ncells; }
+  if (npoints) { *npoints = swarm->sort_context->npoints; }
+  PetscFunctionReturn(0);
+}

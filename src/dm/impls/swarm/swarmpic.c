@@ -2,6 +2,8 @@
 #define PETSCDM_DLL
 #include <petsc/private/dmswarmimpl.h>    /*I   "petscdmswarm.h"   I*/
 #include <petscsf.h>
+#include <petscdmda.h>
+#include <petscdmplex.h>
 
 /* 
  Error chceking macto to ensure the swarm type is correct and that a cell DM has been set
@@ -403,7 +405,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmProjectFields(DM dm,PetscInt project_type,Pet
 */
 
 /*@C
-   DMSwarmCreatePointPerCellCount - Count the number of points (particles) per cell
+   DMSwarmCreatePointPerCellCount - Count the number of points within all cells in the cell DM
  
    Not collective
  
@@ -412,7 +414,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmProjectFields(DM dm,PetscInt project_type,Pet
  
    Output parameters:
 +  ncells - the number of cells in the cell DM (optional argument, pass NULL to ignore)
--  count - array of length ncells containing the number of particles per cell
+-  count - array of length ncells containing the number of points per cell
  
    Level: beginner
  
@@ -421,10 +423,69 @@ PETSC_EXTERN PetscErrorCode DMSwarmProjectFields(DM dm,PetscInt project_type,Pet
 
 .seealso: DMSwarmSetType(), DMSwarmSetCellDM(), DMSwarmType
 @*/
-/*
 PETSC_EXTERN PetscErrorCode DMSwarmCreatePointPerCellCount(DM dm,PetscInt *ncells,PetscInt **count)
 {
+  PetscErrorCode ierr;
+  PetscBool      isvalid;
+  PetscInt       nel;
+  PetscInt       *sum;
+  
   PetscFunctionBegin;
+  ierr = DMSwarmSortGetIsValid(dm,&isvalid);CHKERRQ(ierr);
+  nel = 0;
+  if (isvalid) {
+    PetscInt e;
+    
+    ierr = DMSwarmSortGetSizes(dm,&nel,NULL);CHKERRQ(ierr);
+
+    ierr = PetscMalloc1(nel,&sum);CHKERRQ(ierr);
+    for (e=0; e<nel; e++) {
+      ierr = DMSwarmSortGetNumberOfPointsPerCell(dm,e,&sum[e]);CHKERRQ(ierr);
+    }
+  } else {
+    DM        celldm;
+    PetscBool isda,isplex,isshell;
+    PetscInt  p,npoints;
+    PetscInt *swarm_cellid;
+
+    /* get the number of cells */
+    ierr = DMSwarmGetCellDM(dm,&celldm);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)celldm,DMDA,&isda);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)celldm,DMPLEX,&isplex);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)celldm,DMSHELL,&isshell);CHKERRQ(ierr);
+    if (isda) {
+      PetscInt _nel,_npe;
+      const PetscInt *_element;
+      
+      ierr = DMDAGetElements(celldm,&_nel,&_npe,&_element);CHKERRQ(ierr);
+      nel = _nel;
+      ierr = DMDARestoreElements(celldm,&_nel,&_npe,&_element);CHKERRQ(ierr);
+    } else if (isplex) {
+      PetscInt ps,pe;
+      
+      ierr = DMPlexGetHeightStratum(celldm,0,&ps,&pe);CHKERRQ(ierr);
+      nel = pe - ps;
+    } else if (isshell) {
+      PetscErrorCode (*method_DMShellGetNumberOfCells)(DM,PetscInt*);
+      
+      ierr = PetscObjectQueryFunction((PetscObject)celldm,"DMGetNumberOfCells_C",&method_DMShellGetNumberOfCells);CHKERRQ(ierr);
+      if (method_DMShellGetNumberOfCells) {
+        ierr = method_DMShellGetNumberOfCells(celldm,&nel);CHKERRQ(ierr);
+      } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Cannot determine the number of cells for the DMSHELL object. User must provide a method via PetscObjectComposeFunction( (PetscObject)shelldm, \"DMGetNumberOfCells_C\", your_function_to_compute_number_of_cells );");
+    } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Cannot determine the number of cells for a DM not of type DA, PLEX or SHELL");
+    
+    ierr = PetscMalloc1(nel,&sum);CHKERRQ(ierr);
+    ierr = PetscMemzero(sum,sizeof(PetscInt)*nel);CHKERRQ(ierr);
+    ierr = DMSwarmGetLocalSize(dm,&npoints);CHKERRQ(ierr);
+    ierr = DMSwarmGetField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid);CHKERRQ(ierr);
+    for (p=0; p<npoints; p++) {
+      if (swarm_cellid[p] != DMLOCATEPOINT_POINT_NOT_FOUND) {
+        sum[ swarm_cellid[p] ]++;
+      }
+    }
+    ierr = DMSwarmRestoreField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid);CHKERRQ(ierr);
+  }
+  if (ncells) { *ncells = nel; }
+  *count  = sum;
   PetscFunctionReturn(0);
 }
-*/

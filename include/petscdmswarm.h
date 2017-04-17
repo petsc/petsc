@@ -95,6 +95,8 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortGetAccess(DM dm);
 PETSC_EXTERN PetscErrorCode DMSwarmSortRestoreAccess(DM dm);
 PETSC_EXTERN PetscErrorCode DMSwarmSortGetPointsPerCell(DM dm,PetscInt e,PetscInt *npoints,PetscInt **pidlist);
 PETSC_EXTERN PetscErrorCode DMSwarmSortGetNumberOfPointsPerCell(DM dm,PetscInt cell_idx,PetscInt *npoints);
+PETSC_EXTERN PetscErrorCode DMSwarmSortGetIsValid(DM dm,PetscBool *isvalid);
+PETSC_EXTERN PetscErrorCode DMSwarmSortGetSizes(DM dm,PetscInt *ncells,PetscInt *npoints);
 
 #endif
 
