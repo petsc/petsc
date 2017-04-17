@@ -221,7 +221,25 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
   if (commsize > 1) {
     ierr = DMSwarmMigrate_DMNeighborScatter(dm,dmcell,remove_sent_points,&npoints_prior_migration);CHKERRQ(ierr);
   } else {
+    DataField PField;
+    PetscInt npoints_curr;
+    
+    /* remove points which the domain */
+    ierr = DataBucketGetDataFieldByName(swarm->db,DMSwarmField_rank,&PField);CHKERRQ(ierr);
+    ierr = DataFieldGetEntries(PField,(void**)&rankval);CHKERRQ(ierr);
+    
+    ierr = DataBucketGetSizes(swarm->db,&npoints_curr,NULL,NULL);CHKERRQ(ierr);
+    for (p=0; p<npoints_curr; p++) {
+      if (rankval[p] == DMLOCATEPOINT_POINT_NOT_FOUND) {
+        /* kill point */
+        ierr = DataBucketRemovePointAtIndex(swarm->db,p);CHKERRQ(ierr);
+        ierr = DataBucketGetSizes(swarm->db,&npoints_curr,NULL,NULL);CHKERRQ(ierr); /* you need to update npoints as the list size decreases! */
+        ierr = DataFieldGetEntries(PField,(void**)&rankval);CHKERRQ(ierr); /* update date point increase realloc performed */
+        p--; /* check replacement point */
+      }
+    }
     ierr = DMSwarmGetSize(dm,&npoints_prior_migration);CHKERRQ(ierr);
+    
   }
 
   /* locate points newly recevied */
@@ -264,7 +282,7 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
     }
   }
 #endif
-  
+
   { // this performs two point locations: (i) on the intial points set prior to communication; and (ii) on the new (recieved) points
     PetscScalar *LA_coor;
     PetscInt npoints_from_neighbours,bs;
