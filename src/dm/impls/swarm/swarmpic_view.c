@@ -267,6 +267,24 @@ PetscErrorCode private_VecView_Swarm_XDMF(Vec x,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+/*@C
+   DMSwarmViewFieldsXDMF - Write a selection of DMSwarm fields to an XDMF3 file
+ 
+   Collective on DM
+ 
+   Input parameters:
++  dm - the DMSwarm
+.  filename - the file name of the XDMF file (must have the extension .xmf)
+.  nfields - the number of fields to write into the XDMF file
+-  field_name_list - array of length nfields containing the textual name of fields to write
+ 
+   Level: beginner
+
+   Notes:
+   Only fields registered with data type PETSC_REAL can be written into the file
+ 
+.seealso: DMSwarmViewXDMF()
+@*/
 PETSC_EXTERN PetscErrorCode DMSwarmViewFieldsXDMF(DM dm,const char filename[],PetscInt nfields,const char *field_name_list[])
 {
   PetscErrorCode ierr;
@@ -287,6 +305,22 @@ PETSC_EXTERN PetscErrorCode DMSwarmViewFieldsXDMF(DM dm,const char filename[],Pe
   PetscFunctionReturn(0);
 }
 
+/*@C
+   DMSwarmViewXDMF - Write DMSwarm fields to an XDMF3 file
+ 
+   Collective on DM
+ 
+   Input parameters:
++  dm - the DMSwarm
+-  filename - the file name of the XDMF file (must have the extension .xmf)
+ 
+   Level: beginner
+
+   Notes:
+   Only fields registered with data type PETSC_REAL will be written into the file
+
+.seealso: DMSwarmViewFieldsXDMF()
+@*/
 PETSC_EXTERN PetscErrorCode DMSwarmViewXDMF(DM dm,const char filename[])
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
