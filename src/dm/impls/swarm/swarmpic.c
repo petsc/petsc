@@ -72,7 +72,11 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm,PetscReal m
   ierr = VecRestoreArrayRead(coorlocal,&_coor);CHKERRQ(ierr);
 
   for (b=0; b<bs; b++) {
-    dx[b] = (max[b] - min[b])/((PetscReal)(npoints[b]-1));
+    if (npoints[b] > 1) {
+      dx[b] = (max[b] - min[b])/((PetscReal)(npoints[b]-1));
+    } else {
+      dx[b] = 0.0;
+    }
   }
   
   /* determine number of points living in the bounding box */
@@ -249,7 +253,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinates(DM dm,PetscInt npoints,Pe
     ierr = MPI_Bcast(&my_npoints,1,MPIU_INT,0,comm);CHKERRQ(ierr);
 
     if (rank > 0) { /* allocate space */
-      ierr = PetscMalloc1(my_npoints,&my_coor);CHKERRQ(ierr);
+      ierr = PetscMalloc1(bs*my_npoints,&my_coor);CHKERRQ(ierr);
     } else {
       my_coor = coor;
     }
