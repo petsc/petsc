@@ -58,6 +58,7 @@ PetscErrorCode DMSwarmSortSetup(DMSwarmSort ctx,DM dm,PetscInt ncells)
   if (!ctx) PetscFunctionReturn(0);
   if (ctx->isvalid) PetscFunctionReturn(0);
   
+  ierr = PetscLogEventBegin(DMSWARM_Sort,0,0,0,0);CHKERRQ(ierr);
   /* check the number of cells */
   if (ncells != ctx->ncells) {
     ierr = PetscRealloc(sizeof(PetscInt)*(ncells + 1),&ctx->pcell_offsets);CHKERRQ(ierr);
@@ -97,6 +98,7 @@ PetscErrorCode DMSwarmSortSetup(DMSwarmSort ctx,DM dm,PetscInt ncells)
   ctx->pcell_offsets[c] = count;
   
   ctx->isvalid = PETSC_TRUE;
+  ierr = PetscLogEventEnd(DMSWARM_Sort,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

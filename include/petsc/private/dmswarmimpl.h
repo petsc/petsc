@@ -8,6 +8,8 @@
 #include <petsc/private/dmimpl.h>
 
 PETSC_EXTERN PetscLogEvent DMSWARM_Migrate,
+                           DMSWARM_SetSizes, DMSWARM_AddPoints, DMSWARM_RemovePoints,
+                           DMSWARM_Sort,
                            DMSWARM_DataExchangerTopologySetup,
                            DMSWARM_DataExchangerBegin, DMSWARM_DataExchangerEnd,
                            DMSWARM_DataExchangerSendCount, DMSWARM_DataExchangerPack;

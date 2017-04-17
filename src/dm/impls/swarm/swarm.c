@@ -3,7 +3,7 @@
 #include <petsc/private/dmswarmimpl.h>    /*I   "petscdmswarm.h"   I*/
 #include "data_bucket.h"
 
-PetscLogEvent DMSWARM_Migrate;
+PetscLogEvent DMSWARM_Migrate, DMSWARM_SetSizes, DMSWARM_AddPoints, DMSWARM_RemovePoints, DMSWARM_Sort;
 PetscLogEvent DMSWARM_DataExchangerTopologySetup, DMSWARM_DataExchangerBegin, DMSWARM_DataExchangerEnd;
 PetscLogEvent DMSWARM_DataExchangerSendCount, DMSWARM_DataExchangerPack;
 
@@ -358,7 +358,9 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetLocalSizes(DM dm,PetscInt nlocal,PetscInt 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscLogEventBegin(DMSWARM_SetSizes,0,0,0,0);CHKERRQ(ierr);
   ierr = DataBucketSetSizes(swarm->db,nlocal,buffer);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(DMSWARM_SetSizes,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -671,7 +673,9 @@ PETSC_EXTERN PetscErrorCode DMSwarmAddPoint(DM dm)
 
   PetscFunctionBegin;
   if (!swarm->issetup) {ierr = DMSetUp(dm);CHKERRQ(ierr);}
+  ierr = PetscLogEventBegin(DMSWARM_AddPoints,0,0,0,0);CHKERRQ(ierr);
   ierr = DataBucketAddPoint(swarm->db);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(DMSWARM_AddPoints,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -698,9 +702,11 @@ PETSC_EXTERN PetscErrorCode DMSwarmAddNPoints(DM dm,PetscInt npoints)
   PetscInt nlocal;
 
   PetscFunctionBegin;
+  ierr = PetscLogEventBegin(DMSWARM_AddPoints,0,0,0,0);CHKERRQ(ierr);
   ierr = DataBucketGetSizes(swarm->db,&nlocal,NULL,NULL);CHKERRQ(ierr);
   nlocal = nlocal + npoints;
   ierr = DataBucketSetSizes(swarm->db,nlocal,DATA_BUCKET_BUFFER_DEFAULT);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(DMSWARM_AddPoints,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -722,7 +728,9 @@ PETSC_EXTERN PetscErrorCode DMSwarmRemovePoint(DM dm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscLogEventBegin(DMSWARM_RemovePoints,0,0,0,0);CHKERRQ(ierr);
   ierr = DataBucketRemovePoint(swarm->db);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(DMSWARM_RemovePoints,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -745,7 +753,9 @@ PETSC_EXTERN PetscErrorCode DMSwarmRemovePointAtIndex(DM dm,PetscInt idx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscLogEventBegin(DMSWARM_RemovePoints,0,0,0,0);CHKERRQ(ierr);
   ierr = DataBucketRemovePointAtIndex(swarm->db,idx);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(DMSWARM_RemovePoints,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
