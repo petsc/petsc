@@ -580,7 +580,7 @@ PetscErrorCode DataBucketAddPoint(DataBucket db)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DataBucketSetSizes(db,db->L+1,-1);CHKERRQ(ierr);
+  ierr = DataBucketSetSizes(db,db->L+1,DATA_BUCKET_BUFFER_DEFAULT);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -590,7 +590,7 @@ PetscErrorCode DataBucketRemovePoint(DataBucket db)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DataBucketSetSizes(db,db->L-1,-1);CHKERRQ(ierr);
+  ierr = DataBucketSetSizes(db,db->L-1,DATA_BUCKET_BUFFER_DEFAULT);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -728,7 +728,7 @@ PetscErrorCode DataBucketInsertValues(DataBucket db1,DataBucket db2)
   ierr = DataBucketGetSizes(db1,&n_mp_points1,0,0);CHKERRQ(ierr);
   ierr = DataBucketGetSizes(db2,&n_mp_points2,0,0);CHKERRQ(ierr);
   n_mp_points1_new = n_mp_points1 + n_mp_points2;
-  ierr = DataBucketSetSizes(db1,n_mp_points1_new,-1);CHKERRQ(ierr);
+  ierr = DataBucketSetSizes(db1,n_mp_points1_new,DATA_BUCKET_BUFFER_DEFAULT);CHKERRQ(ierr);
   for (p = 0; p < n_mp_points2; ++p) {
     /* db1 <<== db2 */
     ierr = DataBucketCopyPoint(db2,p, db1,(n_mp_points1 + p));CHKERRQ(ierr);

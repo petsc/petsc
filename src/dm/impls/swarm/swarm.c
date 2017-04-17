@@ -696,7 +696,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmAddNPoints(DM dm,PetscInt npoints)
   PetscFunctionBegin;
   ierr = DataBucketGetSizes(swarm->db,&nlocal,NULL,NULL);CHKERRQ(ierr);
   nlocal = nlocal + npoints;
-  ierr = DataBucketSetSizes(swarm->db,nlocal,-1);CHKERRQ(ierr);
+  ierr = DataBucketSetSizes(swarm->db,nlocal,DATA_BUCKET_BUFFER_DEFAULT);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -85,7 +85,7 @@ PetscErrorCode DMSwarmMigrate_Push_Basic(DM dm,PetscBool remove_sent_points)
   ierr = DataExEnd(de);CHKERRQ(ierr);
   ierr = DataExGetRecvData(de,&n_points_recv,(void**)&recv_points);CHKERRQ(ierr);
   ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
-  ierr = DataBucketSetSizes(swarm->db,npoints + n_points_recv,-1);CHKERRQ(ierr);
+  ierr = DataBucketSetSizes(swarm->db,npoints + n_points_recv,DATA_BUCKET_BUFFER_DEFAULT);CHKERRQ(ierr);
   for (p=0; p<n_points_recv; p++) {
     void *data_p = (void*)( (char*)recv_points + p*sizeof_dmswarm_point );
 
@@ -172,7 +172,7 @@ PetscErrorCode DMSwarmMigrate_DMNeighborScatter(DM dm,DM dmcell,PetscBool remove
   ierr = DataExEnd(de);CHKERRQ(ierr);
   ierr = DataExGetRecvData(de,&n_points_recv,(void**)&recv_points);CHKERRQ(ierr);
   ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
-  ierr = DataBucketSetSizes(swarm->db,npoints + n_points_recv,-1);CHKERRQ(ierr);
+  ierr = DataBucketSetSizes(swarm->db,npoints + n_points_recv,DATA_BUCKET_BUFFER_DEFAULT);CHKERRQ(ierr);
   for (p=0; p<n_points_recv; p++) {
     void *data_p = (void*)( (char*)recv_points + p*sizeof_dmswarm_point );
 
@@ -373,7 +373,7 @@ PetscErrorCode DMSwarmMigrate_GlobalToLocal_Basic(DM dm,PetscInt *globalsize)
   ierr = DataExEnd(de);CHKERRQ(ierr);
   ierr = DataExGetRecvData(de,&n_points_recv,(void**)&recv_points);CHKERRQ(ierr);
   ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
-  ierr = DataBucketSetSizes(swarm->db,npoints + n_points_recv,-1);CHKERRQ(ierr);
+  ierr = DataBucketSetSizes(swarm->db,npoints + n_points_recv,DATA_BUCKET_BUFFER_DEFAULT);CHKERRQ(ierr);
   for (p=0; p<n_points_recv; p++) {
     void *data_p = (void*)( (char*)recv_points + p*sizeof_dmswarm_point );
 
@@ -525,7 +525,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_DMDABoundingBox(DM dm,PetscInt *globa
   ierr = DataExEnd(de);CHKERRQ(ierr);
   ierr = DataExGetRecvData(de,&n_points_recv,(void**)&recv_points);CHKERRQ(ierr);
   ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
-  ierr = DataBucketSetSizes(swarm->db,npoints + n_points_recv,-1);CHKERRQ(ierr);
+  ierr = DataBucketSetSizes(swarm->db,npoints + n_points_recv,DATA_BUCKET_BUFFER_DEFAULT);CHKERRQ(ierr);
   for (p=0; p<n_points_recv; p++) {
     void *data_p = (void*)( (char*)recv_points + p*sizeof_dmswarm_point );
 
@@ -618,7 +618,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_General(DM dm,PetscErrorCode (*collec
   /* Collect data in DMSwarm container */
   ierr = DataExGetRecvData(de,&n_points_recv,(void**)&recv_points);CHKERRQ(ierr);
   ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
-  ierr = DataBucketSetSizes(swarm->db,npoints + n_points_recv,-1);CHKERRQ(ierr);
+  ierr = DataBucketSetSizes(swarm->db,npoints + n_points_recv,DATA_BUCKET_BUFFER_DEFAULT);CHKERRQ(ierr);
   for (p=0; p<n_points_recv; p++) {
     void *data_p = (void*)( (char*)recv_points + p*sizeof_dmswarm_point );
 
