@@ -96,7 +96,7 @@ PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Gauss(PetscInt dim,Pet
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA_Q1(DM dm,DM dmc,PetscInt npoints,PetscInt layout)
+PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA_Q1(DM dm,DM dmc,PetscInt npoints,DMSwarmPICLayoutType layout)
 {
   PetscErrorCode ierr;
   PetscInt dim,npoints_q;
@@ -123,6 +123,21 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA_Q1(DM dm,DM dmc,PetscIn
       break;
     case DMSWARMPIC_LAYOUT_GAUSS:
       ierr = private_DMSwarmCreateCellLocalCoords_DA_Q1_Gauss(dim,npoints,&npoints_q,&xi);CHKERRQ(ierr);
+      break;
+      
+    case DMSWARMPIC_LAYOUT_SUBDIVISION:
+    {
+      PetscInt s,nsub;
+      PetscInt np_dir[3];
+      nsub = npoints;
+      np_dir[0] = 1;
+      for (s=0; s<nsub; s++) {
+        np_dir[0] *= 2;
+      }
+      np_dir[1] = np_dir[0];
+      np_dir[2] = np_dir[0];
+      ierr = private_DMSwarmCreateCellLocalCoords_DA_Q1_Regular(dim,np_dir,&npoints_q,&xi);CHKERRQ(ierr);
+    }
       break;
     default:
       SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"A valid DMSwarmPIC layout must be provided");
