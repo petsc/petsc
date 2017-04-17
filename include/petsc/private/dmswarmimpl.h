@@ -7,6 +7,12 @@
 #include <petscdmswarm.h> /*I      "petscdmswarm.h"    I*/
 #include <petsc/private/dmimpl.h>
 
+PETSC_EXTERN PetscLogEvent DMSWARM_Migrate,
+                           DMSWARM_DataExchangerTopologySetup,
+                           DMSWARM_DataExchangerBegin, DMSWARM_DataExchangerEnd,
+                           DMSWARM_DataExchangerSendCount, DMSWARM_DataExchangerPack;
+
+
 typedef struct _p_DataField* DataField;
 typedef struct _p_DataBucket* DataBucket;
 typedef struct _p_DMSwarmSort* DMSwarmSort;

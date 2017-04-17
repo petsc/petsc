@@ -3,6 +3,10 @@
 #include <petsc/private/dmswarmimpl.h>    /*I   "petscdmswarm.h"   I*/
 #include "data_bucket.h"
 
+PetscLogEvent DMSWARM_Migrate;
+PetscLogEvent DMSWARM_DataExchangerTopologySetup, DMSWARM_DataExchangerBegin, DMSWARM_DataExchangerEnd;
+PetscLogEvent DMSWARM_DataExchangerSendCount, DMSWARM_DataExchangerPack;
+
 const char* DMSwarmTypeNames[] = { "basic", "pic", 0 };
 const char* DMSwarmMigrateTypeNames[] = { "basic", "dmcellnscatter", "dmcellexact", "user", 0 };
 const char* DMSwarmCollectTypeNames[] = { "basic", "boundingbox", "general", "user", 0 };
@@ -778,6 +782,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmMigrate(DM dm,PetscBool remove_sent_points)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscLogEventBegin(DMSWARM_Migrate,0,0,0,0);CHKERRQ(ierr);
   switch (swarm->migrate_type) {
     case DMSWARM_MIGRATE_BASIC:
       ierr = DMSwarmMigrate_Basic(dm,remove_sent_points);CHKERRQ(ierr);
@@ -797,6 +802,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmMigrate(DM dm,PetscBool remove_sent_points)
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DMSWARM_MIGRATE type unknown");
       break;
   }
+  ierr = PetscLogEventEnd(DMSWARM_Migrate,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
