@@ -153,7 +153,7 @@ int main(int argc, char **argv)
   /* Time Loop */
   user.dt = 0.1;
   for (n = 0; n < 100; ++n, t += user.dt) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Starting time %g\n", t);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Starting time %g\n", (double)t);CHKERRQ(ierr);
     ierr = VecView(u, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
     /* Solve */
     ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
