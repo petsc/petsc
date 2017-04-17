@@ -226,48 +226,9 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
 
   /* locate points newly recevied */
   ierr = DataBucketGetSizes(swarm->db,&npoints2,NULL,NULL);CHKERRQ(ierr);
+  
 #if 0
-  len = npoints2 - npoints_prior_migration;
-  if (len > 0) {
-    PetscScalar *LA_coor;
-    PetscInt bs;
-
-    ierr = DMSwarmGetField(dm,DMSwarmPICField_coor,&bs,NULL,(void**)&LA_coor);CHKERRQ(ierr);
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,bs,bs*len,(const PetscScalar*)&LA_coor[bs*npoints_prior_migration],&pos);CHKERRQ(ierr);
-
-    ierr = DMLocatePoints(dmcell,pos,&iscell);CHKERRQ(ierr);
-
-    ierr = VecDestroy(&pos);CHKERRQ(ierr);
-    ierr = DMSwarmRestoreField(dm,DMSwarmPICField_coor,&bs,NULL,(void**)&LA_coor);CHKERRQ(ierr);
-
-    ierr = ISGetIndices(iscell,&LA_iscell);CHKERRQ(ierr);
-    ierr = DMSwarmGetField(dm,DMSwarmField_rank,NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
-    for (p=0; p<len; p++) {
-      rankval[npoints_prior_migration+p] = LA_iscell[p];
-    }
-    ierr = ISRestoreIndices(iscell,&LA_iscell);CHKERRQ(ierr);
-    ierr = ISDestroy(&iscell);CHKERRQ(ierr);
-    ierr = DMSwarmRestoreField(dm,DMSwarmField_rank,NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
-
-    /* remove points which left processor */
-    ierr = DataBucketGetDataFieldByName(swarm->db,DMSwarmField_rank,&PField);CHKERRQ(ierr);
-    ierr = DataFieldGetEntries(PField,(void**)&rankval);CHKERRQ(ierr);
-
-    ierr = DataBucketGetSizes(swarm->db,&npoints,NULL,NULL);CHKERRQ(ierr);
-    for (p=npoints_prior_migration; p<npoints2; p++) {
-      if (rankval[p] == DMLOCATEPOINT_POINT_NOT_FOUND) {
-        /* kill point */
-        ierr = DataBucketRemovePointAtIndex(swarm->db,p);CHKERRQ(ierr);
-        ierr = DataBucketGetSizes(swarm->db,&npoints2,NULL,NULL);CHKERRQ(ierr); /* you need to update npoints as the list size decreases! */
-        ierr = DataFieldGetEntries(PField,(void**)&rankval);CHKERRQ(ierr); /* update date point increase realloc performed */
-        p--; /* check replacement point */
-      }
-    }
-
-  }
-#endif
-
-  {
+  { // safe alternative - however this performs two point locations on: (i) the intial points set and; (ii) the (intial + recieved) point set
     PetscScalar *LA_coor;
     PetscInt bs;
     DataField PField;
@@ -302,6 +263,47 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
       }
     }
   }
+#endif
+  
+  { // this performs two point locations: (i) on the intial points set prior to communication; and (ii) on the new (recieved) points
+    PetscScalar *LA_coor;
+    PetscInt npoints_from_neighbours,bs;
+    DataField PField;
+    
+    npoints_from_neighbours = npoints2 - npoints_prior_migration;
+    
+    ierr = DMSwarmGetField(dm,DMSwarmPICField_coor,&bs,NULL,(void**)&LA_coor);CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,bs,bs*npoints_from_neighbours,(const PetscScalar*)&LA_coor[bs*npoints_prior_migration],&pos);CHKERRQ(ierr);
+
+    ierr = DMLocatePoints(dmcell,pos,DM_POINTLOCATION_NONE,&sfcell);CHKERRQ(ierr);
+    
+    ierr = VecDestroy(&pos);CHKERRQ(ierr);
+    ierr = DMSwarmRestoreField(dm,DMSwarmPICField_coor,&bs,NULL,(void**)&LA_coor);CHKERRQ(ierr);
+    
+    ierr = PetscSFGetGraph(sfcell, NULL, NULL, NULL, &LA_sfcell);CHKERRQ(ierr);
+    ierr = DMSwarmGetField(dm,DMSwarmField_rank,NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
+    for (p=0; p<npoints_from_neighbours; p++) {
+      rankval[npoints_prior_migration + p] = LA_sfcell[p].index;
+    }
+    ierr = DMSwarmRestoreField(dm,DMSwarmField_rank,NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&sfcell);CHKERRQ(ierr);
+    
+    /* remove points which left processor */
+    ierr = DataBucketGetDataFieldByName(swarm->db,DMSwarmField_rank,&PField);CHKERRQ(ierr);
+    ierr = DataFieldGetEntries(PField,(void**)&rankval);CHKERRQ(ierr);
+    
+    ierr = DataBucketGetSizes(swarm->db,&npoints2,NULL,NULL);CHKERRQ(ierr);
+    for (p=npoints_prior_migration; p<npoints2; p++) {
+      if (rankval[p] == DMLOCATEPOINT_POINT_NOT_FOUND) {
+        /* kill point */
+        ierr = DataBucketRemovePointAtIndex(swarm->db,p);CHKERRQ(ierr);
+        ierr = DataBucketGetSizes(swarm->db,&npoints2,NULL,NULL);CHKERRQ(ierr); /* you need to update npoints as the list size decreases! */
+        ierr = DataFieldGetEntries(PField,(void**)&rankval);CHKERRQ(ierr); /* update date point increase realloc performed */
+        p--; /* check replacement point */
+      }
+    }
+  }
+  
   /* check for error on removed points */
   if (error_check) {
     ierr = DMSwarmGetSize(dm,&npoints2g);CHKERRQ(ierr);
