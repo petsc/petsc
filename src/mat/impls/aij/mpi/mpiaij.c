@@ -3050,8 +3050,8 @@ PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat,IS iscol,IS *iscol_sub,IS 
   ierr = VecGetArray(lcmap,&cmaparray);CHKERRQ(ierr);
   for (i=0; i<Bn; i++) {
     if (PetscRealPart(xarray[i]) > -1.0) {
-      idx[count]    = (PetscInt)xarray[i];
-      camp[count++] = cmaparray[i];  /* column index in submat */
+      idx[count]    = (PetscInt)PetscRealPart(xarray[i]);
+      camp[count++] = (PetscInt)PetscRealPart(cmaparray[i]);  /* column index in submat */
     }
   }
   ierr = VecRestoreArray(lvec,&xarray);CHKERRQ(ierr);
