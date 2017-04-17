@@ -406,52 +406,45 @@ int main(int argc, char **argv)
   # Gmsh mesh reader tests
   test:
     suffix: gmsh_0
-    requires: !quad
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh -interpolate 1 -dm_view
   test:
     suffix: gmsh_1
-    requires: !quad
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.msh -interpolate 1 -dm_view
   test:
     suffix: gmsh_2
-    requires: !quad
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin.msh -interpolate 1 -dm_view
   test:
     suffix: gmsh_3
-    requires: !quad
     nsize: 3
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.msh -test_partition -interpolate 1 -dm_view
   test:
     suffix: gmsh_4
-    requires: !quad
     nsize: 3
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin.msh -test_partition -interpolate 1 -dm_view
   test:
     suffix: gmsh_5
-    requires: !quad
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_quad.msh -interpolate 1 -dm_view
   test:
     suffix: gmsh_6
-    requires: !quad
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin_physnames.msh -interpolate 1 -dm_view
 
   # Fluent mesh reader tests
   test:
     suffix: fluent_0
-    requires: !complex !quad
+    requires: !complex
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.cas -interpolate 1 -dm_view
   test:
     suffix: fluent_1
     nsize: 3
-    requires: !complex !quad
+    requires: !complex
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.cas -interpolate 1 -test_partition -dm_view
   test:
     suffix: fluent_2
-    requires: !complex !quad
+    requires: !complex
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_5tets_ascii.cas -interpolate 1 -dm_view
   test:
     suffix: fluent_3
-    requires: !complex !quad
+    requires: !complex
     TODO: broken
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_5tets.cas -interpolate 1 -dm_view
 

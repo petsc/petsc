@@ -32,7 +32,7 @@ class generateExamples(Petsc):
     self.summarize=True
 
     # For help in setting the requirements
-    self.precision_types="single double quad int32".split()
+    self.precision_types="single double __float128 int32".split()
     self.integer_types="int32 int64".split()
     self.languages="fortran cuda cxx".split()    # Always requires C so do not list
 

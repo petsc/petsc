@@ -215,7 +215,7 @@ int main(int argc, char **argv)
   ierr = TSGetTime(ts, &t);CHKERRQ(ierr);
   ierr = DMComputeL2Diff(dm, t, ctx.exactFuncs, NULL, u, &L2error);CHKERRQ(ierr);
   if (L2error < 1.0e-11) {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: < 1.0e-11\n");CHKERRQ(ierr);}
-  else                   {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", L2error);CHKERRQ(ierr);}
+  else                   {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", (double)L2error);CHKERRQ(ierr);}
   ierr = VecViewFromOptions(u, NULL, "-sol_vec_view");CHKERRQ(ierr);
 
   ierr = VecDestroy(&u);CHKERRQ(ierr);
@@ -266,7 +266,6 @@ int main(int argc, char **argv)
     args: -simplex 0 -dm_refine 5 -temp_petscspace_order 1 -temp_petscspace_poly_tensor -ts_type beuler -ts_max_steps 10 -ts_dt 0.1 -pc_type lu -ksp_monitor_short -ksp_converged_reason -snes_monitor_short -snes_converged_reason -ts_monitor
   test:
     suffix: 2d_q2_r1
-    requires: !quad
     args: -simplex 0 -dm_refine 1 -temp_petscspace_order 2 -temp_petscspace_poly_tensor -ts_type beuler -ts_max_steps 10 -ts_dt 0.1 -pc_type lu -ksp_monitor_short -ksp_converged_reason -snes_monitor_short -snes_converged_reason -ts_monitor
   test:
     suffix: 2d_q2_r3
