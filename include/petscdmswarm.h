@@ -91,5 +91,10 @@ PETSC_EXTERN PetscErrorCode DMSwarmInsertPointsUsingCellDM(DM,DMSwarmPICLayoutTy
 PETSC_EXTERN PetscErrorCode DMSwarmViewFieldsXDMF(DM,const char*,PetscInt,const char**);
 PETSC_EXTERN PetscErrorCode DMSwarmViewXDMF(DM dm,const char filename[]);
 
+PETSC_EXTERN PetscErrorCode DMSwarmSortGetAccess(DM dm);
+PETSC_EXTERN PetscErrorCode DMSwarmSortRestoreAccess(DM dm);
+PETSC_EXTERN PetscErrorCode DMSwarmSortGetPointsPerCell(DM dm,PetscInt e,PetscInt *npoints,PetscInt **pidlist);
+PETSC_EXTERN PetscErrorCode DMSwarmSortGetNumberOfPointsPerCell(DM dm,PetscInt cell_idx,PetscInt *npoints);
+
 #endif
 

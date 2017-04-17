@@ -982,6 +982,8 @@ PetscErrorCode DMSetup_Swarm(DM dm)
   PetscFunctionReturn(0);
 }
 
+extern PetscErrorCode DMSwarmSortDestroy(DMSwarmSort *_ctx);
+
 PetscErrorCode DMDestroy_Swarm(DM dm)
 {
   DM_Swarm *swarm = (DM_Swarm*)dm->data;
@@ -989,6 +991,9 @@ PetscErrorCode DMDestroy_Swarm(DM dm)
 
   PetscFunctionBegin;
   ierr = DataBucketDestroy(&swarm->db);CHKERRQ(ierr);
+  if (swarm->sort_context) {
+    ierr = DMSwarmSortDestroy(&swarm->sort_context);CHKERRQ(ierr);
+  }
   ierr = PetscFree(swarm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
