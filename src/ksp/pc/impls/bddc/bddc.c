@@ -153,7 +153,7 @@ static PetscErrorCode PCView_BDDC(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Rebuild interface graph for Schur principal minors: %D\n",pcbddc->sub_schurs_rebuild);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Number of dofs' layers for the computation of principal minors: %D\n",pcbddc->sub_schurs_layers);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Use user CSR graph to compute successive layers: %D\n",pcbddc->sub_schurs_use_useradj);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Adaptive constraint selection threshold (active %D, userdefined %D): %g\n",pcbddc->adaptive_threshold,pcbddc->adaptive_selection,(double)pcbddc->adaptive_userdefined);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Adaptive constraint selection threshold (active %D, userdefined %D): %g\n",pcbddc->adaptive_selection,pcbddc->adaptive_userdefined,(double)pcbddc->adaptive_threshold);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Min constraints / connected component: %D\n",pcbddc->adaptive_nmin);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Max constraints / connected component: %D\n",pcbddc->adaptive_nmax);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  BDDC: Invert exact Schur complement for adaptive selection: %D\n",pcbddc->sub_schurs_exact_schur);CHKERRQ(ierr);
