@@ -1630,6 +1630,8 @@ static PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping
   ierr = MatSetOptionsPrefix(is->A,((PetscObject)A)->prefix);CHKERRQ(ierr);
   ierr = MatAppendOptionsPrefix(is->A,"is_");CHKERRQ(ierr);
   ierr = MatSetFromOptions(is->A);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(is->A->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(is->A->cmap);CHKERRQ(ierr);
 
   if (!is->islocalref) { /* setup scatters and local vectors for MatMult */
     /* Create the local work vectors */
