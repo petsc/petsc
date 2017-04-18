@@ -476,6 +476,9 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
   ierr = PetscGridHashCreate(comm, dim, coords, &lbox);CHKERRQ(ierr);
   for (i = 0; i < N; i += dim) {ierr = PetscGridHashEnlarge(lbox, &coords[i]);CHKERRQ(ierr);}
   ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-dm_plex_hash_box_nijk",&n[0],NULL);CHKERRQ(ierr);
+  n[1] = n[0];
+  n[2] = n[0];
   ierr = PetscGridHashSetGrid(lbox, n, NULL);CHKERRQ(ierr);
 #if 0
   /* Could define a custom reduction to merge these */
@@ -572,12 +575,14 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
   DM_Plex        *mesh = (DM_Plex *) dm->data;
   PetscBool       hash = mesh->useHashLocation, reuse = PETSC_FALSE;
   PetscInt        bs, numPoints, p, numFound, *found = NULL;
-  PetscInt        dim, cStart, cEnd, cMax, numCells, c;
+  PetscInt        dim, cStart, cEnd, cMax, numCells, c, d;
   const PetscInt *boxCells;
   PetscSFNode    *cells;
   PetscScalar    *a;
   PetscMPIInt     result;
   PetscLogDouble  t0,t1;
+  PetscReal       gmin[3],gmax[3];
+  PetscInt        terminating_query_type[] = { 0, 0, 0 };
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -612,6 +617,14 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
       }
     }
   }
+  /* define domain bounding box */
+  {
+    Vec coorglobal;
+    
+    ierr = DMGetCoordinates(dm,&coorglobal);CHKERRQ(ierr);
+    ierr = VecStrideMaxAll(coorglobal,NULL,gmax);CHKERRQ(ierr);
+    ierr = VecStrideMinAll(coorglobal,NULL,gmin);CHKERRQ(ierr);
+  }
   if (hash) {
     if (!mesh->lbox) {ierr = PetscInfo(dm, "Initializing grid hashing");CHKERRQ(ierr);ierr = DMPlexComputeGridHash_Internal(dm, &mesh->lbox);CHKERRQ(ierr);}
     /* Designate the local box for each point */
@@ -623,7 +636,20 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
   for (p = 0, numFound = 0; p < numPoints; ++p) {
     const PetscScalar *point = &a[p*bs];
     PetscInt           dbin[3], bin, cell = -1, cellOffset;
+    PetscBool          point_outside_domain = PETSC_FALSE;
 
+    /* check bounding box of domain */
+    for (d=0; d<dim; d++) {
+      if (point[d] < gmin[d]) { point_outside_domain = PETSC_TRUE; break; }
+      if (point[d] > gmax[d]) { point_outside_domain = PETSC_TRUE; break; }
+    }
+    if (point_outside_domain) {
+      cells[p].rank = 0;
+      cells[p].index = DMLOCATEPOINT_POINT_NOT_FOUND;
+      terminating_query_type[0]++;
+      continue;
+    }
+    
     /* check initial values in cells[].index - abort early if found */
     if (cells[p].index != DMLOCATEPOINT_POINT_NOT_FOUND) {
       c = cells[p].index;
@@ -635,7 +661,10 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
         numFound++;
       }
     }
-    if (cells[p].index != DMLOCATEPOINT_POINT_NOT_FOUND) { continue; }
+    if (cells[p].index != DMLOCATEPOINT_POINT_NOT_FOUND) {
+      terminating_query_type[1]++;
+      continue;
+    }
   
     if (hash) {
       PetscBool found_box;
@@ -653,6 +682,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
             cells[p].rank = 0;
             cells[p].index = cell;
             numFound++;
+            terminating_query_type[2]++;
             break;
           }
         }
@@ -664,6 +694,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
           cells[p].rank = 0;
           cells[p].index = cell;
           numFound++;
+          terminating_query_type[2]++;
           break;
         }
       }
@@ -714,6 +745,11 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
     ierr = PetscSFSetGraph(cellSF, cEnd - cStart, numFound, found, PETSC_OWN_POINTER, cells, PETSC_OWN_POINTER);CHKERRQ(ierr);
   }
   ierr = PetscTime(&t1);CHKERRQ(ierr);
+  if (hash) {
+    ierr = PetscInfo3(dm,"[DMLocatePoints_Plex] terminating_query_type : %D [outside domain] : %D [inside intial cell] : %D [hash]\n",terminating_query_type[0],terminating_query_type[1],terminating_query_type[2]);
+  } else {
+    ierr = PetscInfo3(dm,"[DMLocatePoints_Plex] terminating_query_type : %D [outside domain] : %D [inside intial cell] : %D [brute-force]\n",terminating_query_type[0],terminating_query_type[1],terminating_query_type[2]);
+  }
   ierr = PetscInfo3(dm,"[DMLocatePoints_Plex] npoints %D : time(rank0) %1.2e (sec): points/sec %1.4e\n",numPoints,t1-t0,(double)((double)numPoints/(t1-t0)));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
