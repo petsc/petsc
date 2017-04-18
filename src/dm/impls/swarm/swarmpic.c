@@ -49,6 +49,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm,PetscReal m
   const PetscScalar *_coor;
   DM celldm;
   PetscReal dx[3];
+  PetscInt _npoints[] = { 0, 0, 1 };
   Vec pos;
   PetscScalar *_pos;
   PetscReal *swarm_coor;
@@ -78,14 +79,15 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm,PetscReal m
     } else {
       dx[b] = 0.0;
     }
+    
+    _npoints[b] = npoints[b];
   }
   
   /* determine number of points living in the bounding box */
   n_estimate = 0;
-  if (bs == 2) { npoints[2] = 1; }
-  for (k=0; k<npoints[2]; k++) {
-    for (j=0; j<npoints[1]; j++) {
-      for (i=0; i<npoints[0]; i++) {
+  for (k=0; k<_npoints[2]; k++) {
+    for (j=0; j<_npoints[1]; j++) {
+      for (i=0; i<_npoints[0]; i++) {
         PetscReal xp[] = {0.0,0.0,0.0};
         PetscInt ijk[3];
         PetscBool point_inside = PETSC_TRUE;
@@ -113,9 +115,9 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm,PetscReal m
   ierr = VecGetArray(pos,&_pos);CHKERRQ(ierr);
   
   n_estimate = 0;
-  for (k=0; k<npoints[2]; k++) {
-    for (j=0; j<npoints[1]; j++) {
-      for (i=0; i<npoints[0]; i++) {
+  for (k=0; k<_npoints[2]; k++) {
+    for (j=0; j<_npoints[1]; j++) {
+      for (i=0; i<_npoints[0]; i++) {
         PetscReal xp[] = {0.0,0.0,0.0};
         PetscInt ijk[3];
         PetscBool point_inside = PETSC_TRUE;
