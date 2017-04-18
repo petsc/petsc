@@ -202,6 +202,34 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&commsize);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
 
+#if 1
+  {
+    PetscInt *p_cellid;
+    PetscInt npoints_curr,range = 0;
+    PetscSFNode *sf_cells;
+
+    
+    ierr = DataBucketGetSizes(swarm->db,&npoints_curr,NULL,NULL);CHKERRQ(ierr);
+    ierr = PetscMalloc1(npoints_curr, &sf_cells);CHKERRQ(ierr);
+
+    ierr = DMSwarmGetField(dm,DMSwarmField_rank,NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
+    ierr = DMSwarmGetField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&p_cellid);CHKERRQ(ierr);
+    for (p=0; p<npoints_curr; p++) {
+
+      sf_cells[p].rank  = 0;
+      sf_cells[p].index = p_cellid[p];
+      if (p_cellid[p] > range) {
+        range = p_cellid[p];
+      }
+    }
+    ierr = DMSwarmRestoreField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&p_cellid);CHKERRQ(ierr);
+    ierr = DMSwarmRestoreField(dm,DMSwarmField_rank,NULL,NULL,(void**)&rankval);CHKERRQ(ierr);
+
+    ierr = PetscSFCreate(PetscObjectComm((PetscObject)dm),&sfcell);CHKERRQ(ierr);
+    ierr = PetscSFSetGraph(sfcell, range, npoints_curr, NULL, PETSC_OWN_POINTER, sf_cells, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  }
+#endif
+  
   ierr = DMSwarmCreateLocalVectorFromField(dm, DMSwarmPICField_coor, &pos);CHKERRQ(ierr);
   ierr = DMLocatePoints(dmcell, pos, DM_POINTLOCATION_NONE, &sfcell);CHKERRQ(ierr);
   ierr = DMSwarmDestroyLocalVectorFromField(dm, DMSwarmPICField_coor, &pos);CHKERRQ(ierr);
