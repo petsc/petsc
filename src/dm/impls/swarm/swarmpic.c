@@ -4,6 +4,7 @@
 #include <petscsf.h>
 #include <petscdmda.h>
 #include <petscdmplex.h>
+#include "data_bucket.h"
 
 /* 
  Error chceking macto to ensure the swarm type is correct and that a cell DM has been set
@@ -400,13 +401,86 @@ PETSC_EXTERN PetscErrorCode DMSwarmAddPointCoordinatesCellWise(DM dm,PetscInt ce
 */
 
 /* Field projection API */
-/*
-PETSC_EXTERN PetscErrorCode DMSwarmProjectFields(DM dm,PetscInt project_type,PetscInt nfields,const char *fieldnames[],Vec *fields)
+extern PetscErrorCode private_DMSwarmProjectFields_DA(DM swarm,DM celldm,PetscInt project_type,PetscInt nfields,DataField dfield[],Vec vecs[]);
+extern PetscErrorCode private_DMSwarmProjectFields_PLEX(DM swarm,DM celldm,PetscInt project_type,PetscInt nfields,DataField dfield[],Vec vecs[]);
+
+/*@C
+   DMSwarmProjectFields - Project a set of swarm fields onto the cell DM
+ 
+   Collective on Vec
+ 
+   Input parameters:
++  dm - the DMSwarm
+.  nfields - the number of swarm fields to project
+.  fieldnames - the textual names of the swarm fields to project
+.  fields - an array of Vec's of length nfields
+-  reuse - flag indicating whether the array and contents of fields should be re-used or internally allocated
+ 
+   Currently, the only available projection method consists of
+     phi_i = \sum_{p=0}^{np} N_i(x_p) phi_p dJ / \sum_{p=0}^{np} N_i(x_p) dJ
+   where phi_p is the swarm field at point p,
+     N_i() is the cell DM basis function at vertex i,
+     dJ is the determinant of the cell Jacobian and
+     phi_i is the projected vertex value of the field phi.
+ 
+   Level: beginner
+ 
+   Notes:
+   - If reuse = PETSC_FALSE, this function will allocate the array of Vec's, and each individual Vec. 
+     The user is responsible for destroying both the array and the individual Vec objects.
+   - Only swarm fields registered with data type = PETSC_REAL can be projected onto the cell DM.
+   - Only swarm fields of block size = 1 can currently be projected.
+   - The only projection methods currently only support the DA (2D) and PLEX (triangles 2D).
+ 
+.seealso: DMSwarmSetType(), DMSwarmSetCellDM(), DMSwarmType
+@*/
+PETSC_EXTERN PetscErrorCode DMSwarmProjectFields(DM dm,PetscInt nfields,const char *fieldnames[],Vec **fields,PetscBool reuse)
 {
+  DM_Swarm *swarm = (DM_Swarm*)dm->data;
+  DataField *gfield;
+  DM celldm;
+  PetscBool isDA,isPLEX;
+  Vec *vecs;
+  PetscInt f,nvecs;
+  PetscInt project_type = 0;
+  PetscErrorCode ierr;
+  
   PetscFunctionBegin;
+  DMSWARMPICVALID(dm);
+  ierr = DMSwarmGetCellDM(dm,&celldm);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nfields,&gfield);CHKERRQ(ierr);
+  nvecs = 0;
+  for (f=0; f<nfields; f++) {
+    ierr = DataBucketGetDataFieldByName(swarm->db,fieldnames[f],&gfield[f]);CHKERRQ(ierr);
+    if (gfield[f]->petsc_type != PETSC_REAL) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Projection only valid for fields using a data type = PETSC_REAL");
+    if (gfield[f]->bs != 1) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Projection only valid for fields with block size = 1");
+    nvecs += gfield[f]->bs;
+  }
+  if (!reuse) {
+    ierr = PetscMalloc1(nvecs,&vecs);CHKERRQ(ierr);
+    for (f=0; f<nvecs; f++) {
+      ierr = DMCreateGlobalVector(celldm,&vecs[f]);CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject)vecs[f],gfield[f]->name);CHKERRQ(ierr);
+    }
+  } else {
+    vecs = *fields;
+  }
+  
+  ierr = PetscObjectTypeCompare((PetscObject)celldm,DMDA,&isDA);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)celldm,DMPLEX,&isPLEX);CHKERRQ(ierr);
+  if (isDA) {
+    ierr = private_DMSwarmProjectFields_DA(dm,celldm,project_type,nfields,gfield,vecs);CHKERRQ(ierr);
+  } else if (isPLEX) {
+    ierr = private_DMSwarmProjectFields_PLEX(dm,celldm,project_type,nfields,gfield,vecs);CHKERRQ(ierr);
+  } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only supported for cell DMs of type DMDA and DMPLEX");
+ 
+  ierr = PetscFree(gfield);CHKERRQ(ierr);
+  if (!reuse) {
+    *fields = vecs;
+  }
+  
   PetscFunctionReturn(0);
 }
-*/
 
 /*@C
    DMSwarmCreatePointPerCellCount - Count the number of points within all cells in the cell DM

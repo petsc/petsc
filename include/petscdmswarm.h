@@ -86,17 +86,19 @@ PETSC_EXTERN PetscErrorCode DMSwarmGetCellDM(DM,DM*);
 PETSC_EXTERN PetscErrorCode DMSwarmSetType(DM,DMSwarmType);
 
 PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM,PetscReal*,PetscReal*,PetscInt*,InsertMode);
-PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinates(DM dm,PetscInt npoints,PetscReal coor[],PetscBool redundant,InsertMode mode);
+PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinates(DM,PetscInt,PetscReal*,PetscBool,InsertMode);
 PETSC_EXTERN PetscErrorCode DMSwarmInsertPointsUsingCellDM(DM,DMSwarmPICLayoutType,PetscInt);
 PETSC_EXTERN PetscErrorCode DMSwarmViewFieldsXDMF(DM,const char*,PetscInt,const char**);
-PETSC_EXTERN PetscErrorCode DMSwarmViewXDMF(DM dm,const char filename[]);
+PETSC_EXTERN PetscErrorCode DMSwarmViewXDMF(DM,const char*);
 
-PETSC_EXTERN PetscErrorCode DMSwarmSortGetAccess(DM dm);
-PETSC_EXTERN PetscErrorCode DMSwarmSortRestoreAccess(DM dm);
-PETSC_EXTERN PetscErrorCode DMSwarmSortGetPointsPerCell(DM dm,PetscInt e,PetscInt *npoints,PetscInt **pidlist);
-PETSC_EXTERN PetscErrorCode DMSwarmSortGetNumberOfPointsPerCell(DM dm,PetscInt cell_idx,PetscInt *npoints);
-PETSC_EXTERN PetscErrorCode DMSwarmSortGetIsValid(DM dm,PetscBool *isvalid);
-PETSC_EXTERN PetscErrorCode DMSwarmSortGetSizes(DM dm,PetscInt *ncells,PetscInt *npoints);
+PETSC_EXTERN PetscErrorCode DMSwarmSortGetAccess(DM);
+PETSC_EXTERN PetscErrorCode DMSwarmSortRestoreAccess(DM);
+PETSC_EXTERN PetscErrorCode DMSwarmSortGetPointsPerCell(DM,PetscInt,PetscInt*,PetscInt**);
+PETSC_EXTERN PetscErrorCode DMSwarmSortGetNumberOfPointsPerCell(DM,PetscInt,PetscInt*);
+PETSC_EXTERN PetscErrorCode DMSwarmSortGetIsValid(DM,PetscBool*);
+PETSC_EXTERN PetscErrorCode DMSwarmSortGetSizes(DM,PetscInt*,PetscInt*);
+
+PETSC_EXTERN PetscErrorCode DMSwarmProjectFields(DM,PetscInt,const char**,Vec**,PetscBool);
 
 #endif
 
