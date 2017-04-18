@@ -447,17 +447,50 @@ static PetscErrorCode DMPlexWriteCoordinates_Vertices_HDF5_Static(DM dm, PetscVi
     ierr = PetscSectionGetOffset(cSection, v, &off);CHKERRQ(ierr);
     if (L && dof == 2) {
       /* Need to do torus */
-      if ((bd[0] == DM_BOUNDARY_PERIODIC) && (bd[1] == DM_BOUNDARY_PERIODIC)) {SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Cannot embed doubly periodic domain yet");}
-      else if ((bd[0] == DM_BOUNDARY_PERIODIC)) {
+      if ((bd[0] == DM_BOUNDARY_PERIODIC) && (bd[1] == DM_BOUNDARY_PERIODIC)) {
+        PetscReal theta, phi, r, R;
+        /* XY-periodic */
+        /* Suppose its an y-z circle, then
+             \hat r = (0, cos(th), sin(th)) \hat x = (1, 0, 0)
+           and the circle in that plane is
+             \hat r cos(phi) + \hat x sin(phi) */
+        theta = 2.0*PETSC_PI*coords[off+1]/L[1];
+        phi   = 2.0*PETSC_PI*coords[off+0]/L[0];
+        r     = L[0]/(2.0*PETSC_PI * 2.0*L[1]);
+        R     = L[1]/(2.0*PETSC_PI);
+        ncoords[coordSize++] =  PetscSinReal(phi) * r;
+        ncoords[coordSize++] = -PetscCosReal(theta) * (R + r * PetscCosReal(phi));
+        ncoords[coordSize++] =  PetscSinReal(theta) * (R + r * PetscCosReal(phi));
+      } else if ((bd[0] == DM_BOUNDARY_PERIODIC)) {
         /* X-periodic */
-        ncoords[coordSize++] = -cos(2.0*PETSC_PI*coords[off+0]/L[0])*(L[0]/(2.0*PETSC_PI));
+        ncoords[coordSize++] = -PetscCosReal(2.0*PETSC_PI*coords[off+0]/L[0])*(L[0]/(2.0*PETSC_PI));
         ncoords[coordSize++] = coords[off+1];
-        ncoords[coordSize++] = sin(2.0*PETSC_PI*coords[off+0]/L[0])*(L[0]/(2.0*PETSC_PI));
+        ncoords[coordSize++] = PetscSinReal(2.0*PETSC_PI*coords[off+0]/L[0])*(L[0]/(2.0*PETSC_PI));
       } else if ((bd[1] == DM_BOUNDARY_PERIODIC)) {
         /* Y-periodic */
         ncoords[coordSize++] = coords[off+0];
-        ncoords[coordSize++] = sin(2.0*PETSC_PI*coords[off+1]/L[1])*(L[1]/(2.0*PETSC_PI));
-        ncoords[coordSize++] = -cos(2.0*PETSC_PI*coords[off+1]/L[1])*(L[1]/(2.0*PETSC_PI));
+        ncoords[coordSize++] = PetscSinReal(2.0*PETSC_PI*coords[off+1]/L[1])*(L[1]/(2.0*PETSC_PI));
+        ncoords[coordSize++] = -PetscCosReal(2.0*PETSC_PI*coords[off+1]/L[1])*(L[1]/(2.0*PETSC_PI));
+      } else if ((bd[0] == DM_BOUNDARY_TWIST)) {
+        PetscReal phi, r, R;
+        /* Mobius strip */
+        /* Suppose its an x-z circle, then
+             \hat r = (-cos(phi), 0, sin(phi)) \hat y = (0, 1, 0)
+           and in that plane we rotate by pi as we go around the circle
+             \hat r cos(phi/2) + \hat y sin(phi/2) */
+        phi   = 2.0*PETSC_PI*coords[off+0]/L[0];
+        R     = L[0];
+        r     = coords[off+1] - L[1]/2.0;
+#if 1
+        ncoords[coordSize++] = -PetscCosReal(phi) * (R + r * PetscCosReal(phi/2.0));
+        ncoords[coordSize++] =  PetscSinReal(phi/2.0) * r;
+        ncoords[coordSize++] =  PetscSinReal(phi) * (R + r * PetscCosReal(phi/2.0));
+#else
+        ncoords[coordSize++] = PetscCosReal(phi) * (R + r * PetscCosReal(phi/2.0));
+        ncoords[coordSize++] = PetscSinReal(phi) * (R + r * PetscCosReal(phi/2.0));
+        ncoords[coordSize++] = PetscSinReal(phi/2.0) * r;
+#endif
+        ierr = PetscPrintf(PETSC_COMM_SELF, "(%g, %g) --> (%g, %g, %g)\n", coords[off+0], coords[off+1], ncoords[coordSize-3], ncoords[coordSize-2], ncoords[coordSize-1]);CHKERRQ(ierr);
       } else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Cannot handle periodicity in this domain");
     } else {
       for (d = 0; d < dof; ++d, ++coordSize) ncoords[coordSize] = coords[off+d];
