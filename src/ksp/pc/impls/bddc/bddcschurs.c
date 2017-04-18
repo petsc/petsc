@@ -1126,6 +1126,11 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
         ierr = VecRestoreArray(msolv_ctx->benign_corr_work,&array);CHKERRQ(ierr);
         msolv_ctx->benign_AIIm1ones = benign_AIIm1_ones_mat;
       }
+    } else {
+      if (sub_schurs->reuse_solver) {
+        ierr = PCBDDCReuseSolversReset(sub_schurs->reuse_solver);CHKERRQ(ierr);
+      }
+      ierr = PetscFree(sub_schurs->reuse_solver);CHKERRQ(ierr);
     }
     ierr = MatDestroy(&A);CHKERRQ(ierr);
     ierr = ISDestroy(&is_A_all);CHKERRQ(ierr);
