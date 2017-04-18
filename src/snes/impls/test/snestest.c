@@ -90,7 +90,7 @@ PetscErrorCode SNESSolve_Test(SNES snes)
     if (neP->threshold_print) {
       MPI_Comm          comm;
       PetscViewer       viewer;
-      PetscInt          Istart, Iend, *ccols, bncols, cncols, j, col;
+      PetscInt          Istart, Iend, *ccols, bncols, cncols, j, row;
       PetscScalar       *cvals;
       const PetscInt    *bcols;
       const PetscScalar *bvals;
@@ -102,8 +102,8 @@ PetscErrorCode SNESSolve_Test(SNES snes)
       ierr = MatSetOption(C,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
       ierr = MatGetOwnershipRange(B,&Istart,&Iend);CHKERRQ(ierr);
 
-      for (col = Istart; col < Iend; col++) {
-        ierr = MatGetRow(B,col,&bncols,&bcols,&bvals);CHKERRQ(ierr);
+      for (row = Istart; row < Iend; row++) {
+        ierr = MatGetRow(B,row,&bncols,&bcols,&bvals);CHKERRQ(ierr);
         ierr = PetscMalloc2(bncols,&ccols,bncols,&cvals);CHKERRQ(ierr); 
         for (j = 0, cncols = 0; j < bncols; j++) {
           if (PetscAbsScalar(bvals[j]) > PetscAbsScalar(neP->threshold)) {
@@ -112,8 +112,10 @@ PetscErrorCode SNESSolve_Test(SNES snes)
             cncols += 1;
           }
         }
-        ierr = MatSetValues(C,1,&i,cncols,ccols,cvals,INSERT_VALUES);CHKERRQ(ierr);
-        ierr = MatRestoreRow(B,i,&bncols,&bcols,&bvals);CHKERRQ(ierr);
+	if(cncols) {
+	  ierr = MatSetValues(C,1,&row,cncols,ccols,cvals,INSERT_VALUES);CHKERRQ(ierr);
+	}
+        ierr = MatRestoreRow(B,row,&bncols,&bcols,&bvals);CHKERRQ(ierr);
         ierr = PetscFree2(ccols,cvals);CHKERRQ(ierr); 
       }
       
