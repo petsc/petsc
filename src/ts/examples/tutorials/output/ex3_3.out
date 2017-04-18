@@ -29,6 +29,8 @@ TS Object: 1 MPI processes
   TSAdapt Object: 1 MPI processes
     type: basic
     number of candidates 1
+    maximum allowed timestep 1e+50
+    minimum allowed timestep 1e-20
       Basic: clip fastest decrease 0.1, fastest increase 10.
       Basic: safety factor 0.9, extra factor after step rejection 0.5
   SNES Object: 1 MPI processes

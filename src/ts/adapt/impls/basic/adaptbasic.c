@@ -1,7 +1,6 @@
 #include <petsc/private/tsimpl.h> /*I "petscts.h" I*/
 
 typedef struct {
-  PetscBool always_accept;
   PetscReal clip[2];            /* admissible decrease/increase factors */
   PetscReal safety;             /* safety factor relative to target error */
   PetscReal reject_safety;      /* extra safety factor if the last step was rejected */
@@ -19,7 +18,9 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscI
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  *next_sc = 0; /* Reuse the same order scheme */
+  *next_sc = 0;   /* Reuse the same order scheme */
+  *wltea   = -1;  /* Weighted absolute local truncation error is not used */
+  *wlter   = -1;  /* Weighted relative local truncation error is not used */
 
   if (ts->ops->evaluatewlte) {
     ierr = TSEvaluateWLTE(ts,adapt->wnormtype,&order,&enorm);CHKERRQ(ierr);
@@ -46,7 +47,7 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscI
     if (h < (1 + PETSC_SQRT_MACHINE_EPSILON)*adapt->dt_min) {
       ierr = PetscInfo2(adapt,"Estimated scaled local truncation error %g, accepting because step size %g is at minimum\n",(double)enorm,(double)h);CHKERRQ(ierr);
       *accept = PETSC_TRUE;
-    } else if (basic->always_accept) {
+    } else if (adapt->always_accept) {
       ierr = PetscInfo2(adapt,"Estimated scaled local truncation error %g, accepting step of size %g because always_accept is set\n",(double)enorm,(double)h);CHKERRQ(ierr);
       *accept = PETSC_TRUE;
     } else {
@@ -67,9 +68,6 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscI
 
   *next_h = PetscClipInterval(h_lte,adapt->dt_min,adapt->dt_max);
   *wlte   = enorm;
-  *wltea    = -1;  /* Weighted absolute local truncation error is not used */
-  *wlter    = -1;  /* Weighted relative local truncation error is not used */
-
   PetscFunctionReturn(0);
 }
 
@@ -108,7 +106,6 @@ static PetscErrorCode TSAdaptSetFromOptions_Basic(PetscOptionItems *PetscOptions
   if (set) {ierr = TSAdaptBasicSetClip(adapt,basic->clip[0],basic->clip[1]);CHKERRQ(ierr);}
   ierr = PetscOptionsReal("-ts_adapt_basic_safety","Safety factor relative to target error","",basic->safety,&basic->safety,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_adapt_basic_reject_safety","Extra safety factor to apply if the last step was rejected","",basic->reject_safety,&basic->reject_safety,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-ts_adapt_basic_always_accept","Always accept the step regardless of whether local truncation error meets goal","",basic->always_accept,&basic->always_accept,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -122,7 +119,6 @@ static PetscErrorCode TSAdaptView_Basic(TSAdapt adapt,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    if (basic->always_accept) {ierr = PetscViewerASCIIPrintf(viewer,"  Basic: always accepting steps\n");CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPrintf(viewer,"  Basic: clip fastest decrease %g, fastest increase %g\n",(double)basic->clip[0],(double)basic->clip[1]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Basic: safety factor %g, extra factor after step rejection %g\n",(double)basic->safety,(double)basic->reject_safety);CHKERRQ(ierr);
   }
@@ -153,7 +149,6 @@ PETSC_EXTERN PetscErrorCode TSAdaptCreate_Basic(TSAdapt adapt)
   a->clip[1]       = 10.;
   a->safety        = 0.9;
   a->reject_safety = 0.5;
-  a->always_accept = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 

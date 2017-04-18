@@ -605,6 +605,7 @@ PETSC_EXTERN PetscErrorCode TSAdaptSetFromOptions(PetscOptionItems*,TSAdapt);
 PETSC_EXTERN PetscErrorCode TSAdaptReset(TSAdapt);
 PETSC_EXTERN PetscErrorCode TSAdaptDestroy(TSAdapt*);
 PETSC_EXTERN PetscErrorCode TSAdaptSetMonitor(TSAdapt,PetscBool);
+PETSC_EXTERN PetscErrorCode TSAdaptSetAlwaysAccept(TSAdapt,PetscBool);
 PETSC_EXTERN PetscErrorCode TSAdaptSetStepLimits(TSAdapt,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode TSAdaptSetCheckStage(TSAdapt,PetscErrorCode(*)(TSAdapt,TS,PetscReal,Vec,PetscBool*));
 
