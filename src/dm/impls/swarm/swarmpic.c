@@ -106,7 +106,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm,PetscReal m
   }
   
   /* create candidate list */
-  ierr = VecCreate(PetscObjectComm((PetscObject)dm),&pos);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_SELF,&pos);CHKERRQ(ierr);
   ierr = VecSetSizes(pos,bs*n_estimate,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetBlockSize(pos,bs);CHKERRQ(ierr);
   ierr = VecSetFromOptions(pos);CHKERRQ(ierr);
@@ -277,7 +277,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinates(DM dm,PetscInt npoints,Pe
   }
   
   /* create candidate list */
-  ierr = VecCreate(PetscObjectComm((PetscObject)dm),&pos);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_SELF,&pos);CHKERRQ(ierr);
   ierr = VecSetSizes(pos,bs*n_estimate,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetBlockSize(pos,bs);CHKERRQ(ierr);
   ierr = VecSetFromOptions(pos);CHKERRQ(ierr);
