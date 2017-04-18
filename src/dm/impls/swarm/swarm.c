@@ -759,6 +759,31 @@ PETSC_EXTERN PetscErrorCode DMSwarmRemovePointAtIndex(DM dm,PetscInt idx)
   PetscFunctionReturn(0);
 }
 
+/*@C
+   DMSwarmCopyPoint - Copy point pj to point pi in the DMSwarm
+ 
+   Not collective
+ 
+   Input parameters:
++  dm - a DMSwarm
+.  pi - the index of the point to copy
+-  pj - the point index where the copy should be located
+ 
+ Level: beginner
+ 
+.seealso: DMSwarmRemovePoint()
+@*/
+PETSC_EXTERN PetscErrorCode DMSwarmCopyPoint(DM dm,PetscInt pi,PetscInt pj)
+{
+  DM_Swarm *swarm = (DM_Swarm*)dm->data;
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  if (!swarm->issetup) {ierr = DMSetUp(dm);CHKERRQ(ierr);}
+  ierr = DataBucketCopyPoint(swarm->db,pi,swarm->db,pj);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode DMSwarmMigrate_Basic(DM dm,PetscBool remove_sent_points)
 {
   PetscErrorCode ierr;

@@ -73,6 +73,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmAddPoint(DM);
 PETSC_EXTERN PetscErrorCode DMSwarmAddNPoints(DM,PetscInt);
 PETSC_EXTERN PetscErrorCode DMSwarmRemovePoint(DM);
 PETSC_EXTERN PetscErrorCode DMSwarmRemovePointAtIndex(DM,PetscInt);
+PETSC_EXTERN PetscErrorCode DMSwarmCopyPoint(DM dm,PetscInt,PetscInt);
 
 PETSC_EXTERN PetscErrorCode DMSwarmGetLocalSize(DM,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMSwarmGetSize(DM,PetscInt*);
