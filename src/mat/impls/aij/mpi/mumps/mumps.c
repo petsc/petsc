@@ -977,14 +977,21 @@ PetscErrorCode MatSolveTranspose_MUMPS(Mat A,Vec b,Vec x)
 PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
 {
   PetscErrorCode ierr;
-  PetscBool      flg;
+  Mat            Bt = NULL;
+  PetscBool      flg, flgT;
   Mat_MUMPS      *mumps=(Mat_MUMPS*)A->data;
   PetscInt       i,nrhs,M;
   PetscScalar    *array,*bray;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompareAny((PetscObject)B,&flg,MATSEQDENSE,MATMPIDENSE,NULL);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_ARG_WRONG,"Matrix B must be MATDENSE matrix");
+  ierr = PetscObjectTypeCompare((PetscObject)B,MATTRANSPOSEMAT,&flgT);CHKERRQ(ierr);
+  if (flgT) {
+    if (mumps->size > 1) SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_ARG_WRONG,"Matrix B must be MATDENSE matrix");
+    ierr = MatTransposeGetMat(B,&Bt);CHKERRQ(ierr);
+  } else {
+    if (!flg) SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_ARG_WRONG,"Matrix B must be MATDENSE matrix");
+  }
   ierr = PetscObjectTypeCompareAny((PetscObject)X,&flg,MATSEQDENSE,MATMPIDENSE,NULL);CHKERRQ(ierr);
   if (!flg) SETERRQ(PetscObjectComm((PetscObject)X),PETSC_ERR_ARG_WRONG,"Matrix X must be MATDENSE matrix");
   if (B->rmap->n != X->rmap->n) SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_ARG_WRONG,"Matrix B and X must have same row distribution");
@@ -994,14 +1001,29 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
   mumps->id.lrhs = M;
 
   if (mumps->size == 1) {
-    PetscBool second_solve = PETSC_FALSE;
-    /* copy B to X */
-    ierr = MatDenseGetArray(B,&bray);CHKERRQ(ierr);
-    ierr = MatDenseGetArray(X,&array);CHKERRQ(ierr);
-    ierr = PetscMemcpy(array,bray,M*nrhs*sizeof(PetscScalar));CHKERRQ(ierr);
-    ierr = MatDenseRestoreArray(B,&bray);CHKERRQ(ierr);
-    mumps->id.rhs = (MumpsScalar*)array;
+    PetscScalar *aa;
+    PetscInt    spnr,*ia,*ja;
+    PetscBool   second_solve = PETSC_FALSE;
 
+    /* copy B to X */
+    ierr = MatDenseGetArray(X,&array);CHKERRQ(ierr);
+    mumps->id.rhs = (MumpsScalar*)array;
+    if (!Bt) {
+      ierr = MatDenseGetArray(B,&bray);CHKERRQ(ierr);
+      ierr = PetscMemcpy(array,bray,M*nrhs*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = MatDenseRestoreArray(B,&bray);CHKERRQ(ierr);
+    } else {
+      PetscBool done;
+
+      ierr = MatSeqAIJGetArray(Bt,&aa);CHKERRQ(ierr);
+      ierr = MatGetRowIJ(Bt,1,PETSC_FALSE,PETSC_FALSE,&spnr,(const PetscInt**)&ia,(const PetscInt**)&ja,&done);CHKERRQ(ierr);
+      if (!done) SETERRQ(PetscObjectComm((PetscObject)Bt),PETSC_ERR_ARG_WRONG,"Cannot get IJ structure");
+      mumps->id.irhs_ptr    = ia;
+      mumps->id.irhs_sparse = ja;
+      mumps->id.nz_rhs      = ia[spnr] - 1;
+      mumps->id.rhs_sparse  = (MumpsScalar*)aa;
+      mumps->id.ICNTL(20)   = 1;
+    }
     /* handle condensation step of Schur complement (if any) */
     if (mumps->id.ICNTL(26) < 0 || mumps->id.ICNTL(26) > 2) {
       second_solve = PETSC_TRUE;
@@ -1016,6 +1038,14 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
     /* handle expansion step of Schur complement (if any) */
     if (second_solve) {
       ierr = MatMumpsHandleSchur_Private(mumps,PETSC_TRUE);CHKERRQ(ierr);
+    }
+    if (Bt) {
+      PetscBool done;
+
+      ierr = MatSeqAIJRestoreArray(Bt,&aa);CHKERRQ(ierr);
+      ierr = MatRestoreRowIJ(Bt,1,PETSC_FALSE,PETSC_FALSE,&spnr,(const PetscInt**)&ia,(const PetscInt**)&ja,&done);CHKERRQ(ierr);
+      if (!done) SETERRQ(PetscObjectComm((PetscObject)Bt),PETSC_ERR_ARG_WRONG,"Cannot restore IJ structure");
+      mumps->id.ICNTL(20) = 0;
     }
     ierr = MatDenseRestoreArray(X,&array);CHKERRQ(ierr);
   } else {  /*--------- parallel case --------*/
