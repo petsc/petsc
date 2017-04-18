@@ -12,20 +12,12 @@ Labels:
   marker: 4 strata of sizes (17, 15, 17, 15)
   depth: 3 strata of sizes (81, 208, 128)
 Integral of pressure: 0.
-  0 SNES Function norm 0.0350306 
-    0 KSP Residual norm 0.99431 
-    1 KSP Residual norm 2.12618e-05 
-    2 KSP Residual norm 6.668e-11 
-    3 KSP Residual norm < 1.e-11
-  Linear solve converged due to CONVERGED_ATOL iterations 3
-  1 SNES Function norm < 1.e-11
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=3
-  total number of function evaluations=2
+  total number of linear solver iterations=4
+  total number of function evaluations=3
   norm schedule ALWAYS
   SNESLineSearch Object: 1 MPI processes
     type: bt
@@ -39,7 +31,7 @@ SNES Object: 1 MPI processes
       GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       GMRES: happy breakdown tolerance 1e-30
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-12, absolute=1e-11, divergence=10000.
+    tolerances:  relative=1e-12, absolute=1e-10, divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
   PC Object: 1 MPI processes
@@ -192,6 +184,6 @@ SNES Object: 1 MPI processes
       total: nonzeros=15413, allocated nonzeros=15413
       total number of mallocs used during MatSetValues calls =0
         using I-node routines: found 288 nodes, limit used is 5
-Number of SNES iterations = 1
+Number of SNES iterations=4
 L_2 Error: 0.00151 [9.32e-06, 0.00151]
 Integral of pressure: 0.
