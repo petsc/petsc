@@ -3,6 +3,8 @@
 #include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdmswarm.h>
+#include <petsc/private/dmswarmimpl.h>
+#include "data_bucket.h"
 
 PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Regular(PetscInt dim,PetscInt np[],PetscInt *_npoints,PetscReal **_xi)
 {
@@ -236,6 +238,122 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA(DM dm,DM celldm,DMSwarm
     case DMDA_ELEMENT_Q1:
       if (dim == 1) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Support only available for dim = 2, 3");
       ierr = private_DMSwarmInsertPointsUsingCellDM_DA_Q1(dm,celldm,layout_param,layout);CHKERRQ(ierr);
+      break;
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMSwarmProjectField_ApproxQ1_DA_2D(DM swarm,PetscReal *swarm_field,DM dm,Vec v_field)
+{
+  PetscErrorCode ierr;
+  Vec v_field_l,denom_l,coor_l,denom;
+  PetscReal *_field_l,*_denom_l;
+  PetscInt k,p,e,npoints,nel,npe;
+  PetscInt *mpfield_cell;
+  PetscReal *mpfield_coor;
+  const PetscInt *element_list;
+  const PetscInt *element;
+  PetscReal xi_p[2],Ni[4];
+  const PetscReal *_coor;
+  
+  PetscFunctionBegin;
+  ierr = VecZeroEntries(v_field);CHKERRQ(ierr);
+  
+  ierr = DMGetLocalVector(dm,&v_field_l);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(dm,&denom);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dm,&denom_l);CHKERRQ(ierr);
+  ierr = VecZeroEntries(v_field_l);CHKERRQ(ierr);
+  ierr = VecZeroEntries(denom);CHKERRQ(ierr);
+  ierr = VecZeroEntries(denom_l);CHKERRQ(ierr);
+  
+  ierr = VecGetArray(v_field_l,&_field_l);CHKERRQ(ierr);
+  ierr = VecGetArray(denom_l,&_denom_l);CHKERRQ(ierr);
+  
+  ierr = DMGetCoordinatesLocal(dm,&coor_l);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(coor_l,&_coor);CHKERRQ(ierr);
+  
+  ierr = DMDAGetElements(dm,&nel,&npe,&element_list);CHKERRQ(ierr);
+  ierr = DMSwarmGetLocalSize(swarm,&npoints);CHKERRQ(ierr);
+  ierr = DMSwarmGetField(swarm,DMSwarmPICField_coor,NULL,NULL,(void**)&mpfield_coor);CHKERRQ(ierr);
+  ierr = DMSwarmGetField(swarm,DMSwarmPICField_cellid,NULL,NULL,(void**)&mpfield_cell);CHKERRQ(ierr);
+  
+  for (p=0; p<npoints; p++) {
+    PetscReal *coor_p;
+    const PetscReal *x0;
+    const PetscReal *x2;
+    PetscReal dx[2];
+    
+    e = mpfield_cell[p];
+    coor_p = &mpfield_coor[2*p];
+    element = &element_list[npe*e];
+    
+    /* compute local coordinates: (xp-x0)/dx = (xip+1)/2 */
+    x0 = &_coor[2*element[0]];
+    x2 = &_coor[2*element[2]];
+    
+    dx[0] = x2[0] - x0[0];
+    dx[1] = x2[1] - x0[1];
+    
+    xi_p[0] = 2.0 * (coor_p[0] - x0[0])/dx[0] - 1.0;
+    xi_p[1] = 2.0 * (coor_p[1] - x0[1])/dx[1] - 1.0;
+    
+    /* evaluate basis functions */
+    Ni[0] = 0.25*(1.0 - xi_p[0])*(1.0 - xi_p[1]);
+    Ni[1] = 0.25*(1.0 + xi_p[0])*(1.0 - xi_p[1]);
+    Ni[2] = 0.25*(1.0 + xi_p[0])*(1.0 + xi_p[1]);
+    Ni[3] = 0.25*(1.0 - xi_p[0])*(1.0 + xi_p[1]);
+    
+    for (k=0; k<npe; k++) {
+      _field_l[ element[k] ] += Ni[k] * swarm_field[p];
+      _denom_l[ element[k] ] += Ni[k];
+    }
+  }
+  
+  ierr = DMSwarmRestoreField(swarm,DMSwarmPICField_cellid,NULL,NULL,(void**)&mpfield_cell);CHKERRQ(ierr);
+  ierr = DMSwarmRestoreField(swarm,DMSwarmPICField_coor,NULL,NULL,(void**)&mpfield_coor);CHKERRQ(ierr);
+  ierr = DMDARestoreElements(dm,&nel,&npe,&element_list);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(coor_l,&_coor);CHKERRQ(ierr);
+  ierr = VecRestoreArray(v_field_l,&_field_l);CHKERRQ(ierr);
+  ierr = VecRestoreArray(denom_l,&_denom_l);CHKERRQ(ierr);
+  
+  ierr = DMLocalToGlobalBegin(dm,v_field_l,ADD_VALUES,v_field);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(dm,v_field_l,ADD_VALUES,v_field);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(dm,denom_l,ADD_VALUES,denom);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(dm,denom_l,ADD_VALUES,denom);CHKERRQ(ierr);
+  
+  ierr = VecPointwiseDivide(v_field,v_field,denom);CHKERRQ(ierr);
+  
+  ierr = DMRestoreLocalVector(dm,&v_field_l);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dm,&denom_l);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dm,&denom);CHKERRQ(ierr);
+  
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode private_DMSwarmProjectFields_DA(DM swarm,DM celldm,PetscInt project_type,PetscInt nfields,DataField dfield[],Vec vecs[])
+{
+  PetscErrorCode ierr;
+  PetscInt f,dim;
+  DMDAElementType etype;
+  
+  PetscFunctionBegin;
+  ierr = DMDAGetElementType(celldm,&etype);CHKERRQ(ierr);
+  if (etype == DMDA_ELEMENT_P1) SETERRQ(PetscObjectComm((PetscObject)swarm),PETSC_ERR_SUP,"Only Q1 DMDA supported");
+  
+  ierr = DMGetDimension(swarm,&dim);CHKERRQ(ierr);
+  switch (dim) {
+    case 2:
+      for (f=0; f<nfields; f++) {
+        PetscReal *swarm_field;
+        
+        ierr = DataFieldGetEntries(dfield[f],(void**)&swarm_field);CHKERRQ(ierr);
+        ierr = DMSwarmProjectField_ApproxQ1_DA_2D(swarm,swarm_field,celldm,vecs[f]);CHKERRQ(ierr);
+      }
+      break;
+    case 3:
+      SETERRQ(PetscObjectComm((PetscObject)swarm),PETSC_ERR_SUP,"No support for 3D");
+      break;
+    default:
       break;
   }
   PetscFunctionReturn(0);
