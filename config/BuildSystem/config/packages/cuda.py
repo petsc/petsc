@@ -33,8 +33,6 @@ class Configure(config.package.Package):
     config.package.Package.setupDependencies(self, framework)
     self.setCompilers = framework.require('config.setCompilers',self)
     self.headers      = framework.require('config.headers',self)
-    self.scalartypes  = framework.require('PETSc.options.scalarTypes', self)
-    self.languages    = framework.require('PETSc.options.languages',   self)
     return
 
   def getSearchDirectories(self):
