@@ -21,6 +21,13 @@
 
 */
 
+/* Some compilers still strange behavior with -std=c89, in that log2 is a
+   usable symbol but gives the wrong result unless the log2 prototype is given
+   again */
+#if defined(PETSC_HAVE_LOG2) && !defined(__cplusplus)
+double log2(double);
+#endif
+
 #if defined(PETSC_USE_REAL_SINGLE)
 #define MPIU_REAL   MPI_FLOAT
 typedef float PetscReal;
