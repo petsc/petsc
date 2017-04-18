@@ -3074,7 +3074,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatReuse call
   IS             iscol_local;
   PetscInt       csize;
   PetscInt       n,i,j,start,end;
-  PetscBool      sameRowDist,sameDist[2],tsameDist[2];
+  PetscBool      sameRowDist=PETSC_FALSE,sameDist[2],tsameDist[2];
   MPI_Comm       comm;
 
   PetscFunctionBegin;
@@ -3200,7 +3200,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowDist(Mat mat,IS isrow,IS iscol,M
             /* diagonal part of mat */
             idx[count]     = j;
             cmap1[count++] = i; /* column index in submat */
-          } else {
+          } else if (Bn) {
             /* off-diagonal part of mat */
             if (j == garray[k]) {
               idx[count]     = j;
