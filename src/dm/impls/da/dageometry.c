@@ -714,11 +714,11 @@ PetscErrorCode private_DMDALocatePointsIS_2D_Regular(DM dmregular,Vec pos,IS *is
   c0 = (xs-Xs) + (ys-Ys)*(Xe-Xs);
   c1 = (xe-2-Xs+1) + (ye-2-Ys+1)*(Xe-Xs);
   
-  gmin_l[0] = _coor[2*c0+0];
-  gmin_l[1] = _coor[2*c0+1];
+  gmin_l[0] = PetscRealPart(_coor[2*c0+0]);
+  gmin_l[1] = PetscRealPart(_coor[2*c0+1]);
   
-  gmax_l[0] = _coor[2*c1+0];
-  gmax_l[1] = _coor[2*c1+1];
+  gmax_l[0] = PetscRealPart(_coor[2*c1+0]);
+  gmax_l[1] = PetscRealPart(_coor[2*c1+1]);
   
   dx[0] = (gmax_l[0]-gmin_l[0])/((PetscReal)mxlocal);
   dx[1] = (gmax_l[1]-gmin_l[1])/((PetscReal)mylocal);
@@ -734,17 +734,17 @@ PetscErrorCode private_DMDALocatePointsIS_2D_Regular(DM dmregular,Vec pos,IS *is
   ierr = PetscMalloc1(npoints,&cellidx);CHKERRQ(ierr);
   ierr = VecGetArrayRead(pos,&_coor);CHKERRQ(ierr);
   for (p=0; p<npoints; p++) {
-    const PetscReal *coor_p;
-    PetscInt mi[2];
+    const PetscScalar *coor_p;
+    PetscInt          mi[2];
     
     coor_p = &_coor[2*p];
     
     cellidx[p] = DMLOCATEPOINT_POINT_NOT_FOUND;
     
-    if (coor_p[0] < gmin_l[0]) { continue; }
-    if (coor_p[0] > gmax_l[0]) { continue; }
-    if (coor_p[1] < gmin_l[1]) { continue; }
-    if (coor_p[1] > gmax_l[1]) { continue; }
+    if (PetscRealPart(coor_p[0]) < gmin_l[0]) { continue; }
+    if (PetscRealPart(coor_p[0]) > gmax_l[0]) { continue; }
+    if (PetscRealPart(coor_p[1]) < gmin_l[1]) { continue; }
+    if (PetscRealPart(coor_p[1]) > gmax_l[1]) { continue; }
     
     for (d=0; d<dim; d++) {
       mi[d] = (PetscInt)( (coor_p[d] - gmin[d])/dx[d] );
@@ -795,13 +795,13 @@ PetscErrorCode private_DMDALocatePointsIS_3D_Regular(DM dmregular,Vec pos,IS *is
   c0 = (xs-Xs)     + (ys-Ys)    *(Xe-Xs) + (zs-Zs)    *(Xe-Xs)*(Ye-Ys);
   c1 = (xe-2-Xs+1) + (ye-2-Ys+1)*(Xe-Xs) + (ze-2-Zs+1)*(Xe-Xs)*(Ye-Ys);
   
-  gmin_l[0] = _coor[3*c0+0];
-  gmin_l[1] = _coor[3*c0+1];
-  gmin_l[2] = _coor[3*c0+2];
+  gmin_l[0] = PetscRealPart(_coor[3*c0+0]);
+  gmin_l[1] = PetscRealPart(_coor[3*c0+1]);
+  gmin_l[2] = PetscRealPart(_coor[3*c0+2]);
   
-  gmax_l[0] = _coor[3*c1+0];
-  gmax_l[1] = _coor[3*c1+1];
-  gmax_l[2] = _coor[3*c1+2];
+  gmax_l[0] = PetscRealPart(_coor[3*c1+0]);
+  gmax_l[1] = PetscRealPart(_coor[3*c1+1]);
+  gmax_l[2] = PetscRealPart(_coor[3*c1+2]);
   
   dx[0] = (gmax_l[0]-gmin_l[0])/((PetscReal)mxlocal);
   dx[1] = (gmax_l[1]-gmin_l[1])/((PetscReal)mylocal);
@@ -818,19 +818,19 @@ PetscErrorCode private_DMDALocatePointsIS_3D_Regular(DM dmregular,Vec pos,IS *is
   ierr = PetscMalloc1(npoints,&cellidx);CHKERRQ(ierr);
   ierr = VecGetArrayRead(pos,&_coor);CHKERRQ(ierr);
   for (p=0; p<npoints; p++) {
-    const PetscReal *coor_p;
-    PetscInt mi[3];
+    const PetscScalar *coor_p;
+    PetscInt          mi[3];
     
     coor_p = &_coor[3*p];
     
     cellidx[p] = DMLOCATEPOINT_POINT_NOT_FOUND;
     
-    if (coor_p[0] < gmin_l[0]) { continue; }
-    if (coor_p[0] > gmax_l[0]) { continue; }
-    if (coor_p[1] < gmin_l[1]) { continue; }
-    if (coor_p[1] > gmax_l[1]) { continue; }
-    if (coor_p[2] < gmin_l[2]) { continue; }
-    if (coor_p[2] > gmax_l[2]) { continue; }
+    if (PetscRealPart(coor_p[0]) < gmin_l[0]) { continue; }
+    if (PetscRealPart(coor_p[0]) > gmax_l[0]) { continue; }
+    if (PetscRealPart(coor_p[1]) < gmin_l[1]) { continue; }
+    if (PetscRealPart(coor_p[1]) > gmax_l[1]) { continue; }
+    if (PetscRealPart(coor_p[2]) < gmin_l[2]) { continue; }
+    if (PetscRealPart(coor_p[2]) > gmax_l[2]) { continue; }
     
     for (d=0; d<dim; d++) {
       mi[d] = (PetscInt)( (coor_p[d] - gmin[d])/dx[d] );

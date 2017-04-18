@@ -247,14 +247,14 @@ PetscErrorCode DMSwarmProjectField_ApproxQ1_DA_2D(DM swarm,PetscReal *swarm_fiel
 {
   PetscErrorCode ierr;
   Vec v_field_l,denom_l,coor_l,denom;
-  PetscReal *_field_l,*_denom_l;
+  PetscScalar *_field_l,*_denom_l;
   PetscInt k,p,e,npoints,nel,npe;
   PetscInt *mpfield_cell;
   PetscReal *mpfield_coor;
   const PetscInt *element_list;
   const PetscInt *element;
-  PetscReal xi_p[2],Ni[4];
-  const PetscReal *_coor;
+  PetscScalar xi_p[2],Ni[4];
+  const PetscScalar *_coor;
   
   PetscFunctionBegin;
   ierr = VecZeroEntries(v_field);CHKERRQ(ierr);
@@ -279,9 +279,9 @@ PetscErrorCode DMSwarmProjectField_ApproxQ1_DA_2D(DM swarm,PetscReal *swarm_fiel
   
   for (p=0; p<npoints; p++) {
     PetscReal *coor_p;
-    const PetscReal *x0;
-    const PetscReal *x2;
-    PetscReal dx[2];
+    const PetscScalar *x0;
+    const PetscScalar *x2;
+    PetscScalar dx[2];
     
     e = mpfield_cell[p];
     coor_p = &mpfield_coor[2*p];

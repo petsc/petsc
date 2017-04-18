@@ -640,8 +640,8 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
 
     /* check bounding box of domain */
     for (d=0; d<dim; d++) {
-      if (point[d] < gmin[d]) { point_outside_domain = PETSC_TRUE; break; }
-      if (point[d] > gmax[d]) { point_outside_domain = PETSC_TRUE; break; }
+      if (PetscRealPart(point[d]) < gmin[d]) { point_outside_domain = PETSC_TRUE; break; }
+      if (PetscRealPart(point[d]) > gmax[d]) { point_outside_domain = PETSC_TRUE; break; }
     }
     if (point_outside_domain) {
       cells[p].rank = 0;

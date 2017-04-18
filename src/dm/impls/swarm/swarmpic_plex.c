@@ -287,19 +287,19 @@ static PetscErrorCode _ComputeLocalCoordinateAffine2d(PetscReal xp[],PetscReal c
 }
 */
 
-static PetscErrorCode ComputeLocalCoordinateAffine2d(PetscReal xp[],PetscReal coords[],PetscReal xip[],PetscReal *dJ)
+static PetscErrorCode ComputeLocalCoordinateAffine2d(PetscReal xp[],PetscScalar coords[],PetscReal xip[],PetscReal *dJ)
 {
   PetscReal x1,y1,x2,y2,x3,y3;
   PetscReal b[2],A[2][2],inv[2][2],detJ,od;
   
   PetscFunctionBegin;
-  x1 = coords[2*0+0];
-  x2 = coords[2*1+0];
-  x3 = coords[2*2+0];
+  x1 = PetscRealPart(coords[2*0+0]);
+  x2 = PetscRealPart(coords[2*1+0]);
+  x3 = PetscRealPart(coords[2*2+0]);
   
-  y1 = coords[2*0+1];
-  y2 = coords[2*1+1];
-  y3 = coords[2*2+1];
+  y1 = PetscRealPart(coords[2*0+1]);
+  y2 = PetscRealPart(coords[2*1+1]);
+  y3 = PetscRealPart(coords[2*2+1]);
   
   b[0] = xp[0] - x1;
   b[1] = xp[1] - y1;
@@ -329,7 +329,8 @@ PetscErrorCode DMSwarmProjectField_ApproxP1_PLEX_2D(DM swarm,PetscReal *swarm_fi
   PetscInt k,p,e,npoints;
   PetscInt *mpfield_cell;
   PetscReal *mpfield_coor;
-  PetscReal xi_p[2],Ni[3];
+  PetscReal xi_p[2];
+  PetscScalar Ni[3];
   PetscSection coordSection;
   PetscScalar *elcoor = NULL;
   
@@ -351,9 +352,9 @@ PetscErrorCode DMSwarmProjectField_ApproxP1_PLEX_2D(DM swarm,PetscReal *swarm_fi
   ierr = DMSwarmGetField(swarm,DMSwarmPICField_cellid,NULL,NULL,(void**)&mpfield_cell);CHKERRQ(ierr);
   
   for (p=0; p<npoints; p++) {
-    PetscReal *coor_p;
-    PetscReal elfield[3],dJ;
-    PetscBool point_located;
+    PetscReal   *coor_p,dJ;
+    PetscScalar elfield[3];
+    PetscBool   point_located;
     
     e       = mpfield_cell[p];
     coor_p  = &mpfield_coor[2*p];
@@ -426,12 +427,12 @@ PetscErrorCode DMSwarmProjectField_ApproxP1_PLEX_2D(DM swarm,PetscReal *swarm_fi
 
     point_located = PETSC_TRUE;
     for (k=0; k<3; k++) {
-      if (Ni[k] < -PLEX_C_EPS) point_located = PETSC_FALSE;
-      if (Ni[k] > (1.0+PLEX_C_EPS)) point_located = PETSC_FALSE;
+      if (PetscRealPart(Ni[k]) < -PLEX_C_EPS) point_located = PETSC_FALSE;
+      if (PetscRealPart(Ni[k]) > (1.0+PLEX_C_EPS)) point_located = PETSC_FALSE;
     }
     if (!point_located){
       PetscPrintf(PETSC_COMM_SELF,"[Error] xi,eta = %+1.8e, %+1.8e\n",xi_p[0],xi_p[1]);
-      PetscPrintf(PETSC_COMM_SELF,"[Error] Failed to locate point (%1.8e,%1.8e) in local mesh (cell %D) with triangle coords (%1.8e,%1.8e) : (%1.8e,%1.8e) : (%1.8e,%1.8e)\n",coor_p[0],coor_p[1],e,elcoor[0],elcoor[1],elcoor[2],elcoor[3],elcoor[4],elcoor[5]);
+      PetscPrintf(PETSC_COMM_SELF,"[Error] Failed to locate point (%1.8e,%1.8e) in local mesh (cell %D) with triangle coords (%1.8e,%1.8e) : (%1.8e,%1.8e) : (%1.8e,%1.8e)\n",coor_p[0],coor_p[1],e,PetscRealPart(elcoor[0]),PetscRealPart(elcoor[1]),PetscRealPart(elcoor[2]),PetscRealPart(elcoor[3]),PetscRealPart(elcoor[4]),PetscRealPart(elcoor[5]));
     }
     if (!point_located) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_SUP,"Failed to locate point (%1.8e,%1.8e) in local mesh (cell %D)\n",coor_p[0],coor_p[1],e);
     

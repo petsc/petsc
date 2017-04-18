@@ -66,8 +66,8 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm,PetscReal m
   ierr = VecGetArrayRead(coorlocal,&_coor);CHKERRQ(ierr);
   for (i=0; i<N; i++) {
     for (b=0; b<bs; b++) {
-      gmin[b] = PetscMin(gmin[b],_coor[bs*i+b]);
-      gmax[b] = PetscMax(gmax[b],_coor[bs*i+b]);
+      gmin[b] = PetscMin(gmin[b],PetscRealPart(_coor[bs*i+b]));
+      gmax[b] = PetscMax(gmax[b],PetscRealPart(_coor[bs*i+b]));
     }
   }
   ierr = VecRestoreArrayRead(coorlocal,&_coor);CHKERRQ(ierr);
@@ -242,8 +242,8 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinates(DM dm,PetscInt npoints,Pe
   ierr = VecGetArrayRead(coorlocal,&_coor);CHKERRQ(ierr);
   for (i=0; i<N; i++) {
     for (b=0; b<bs; b++) {
-      gmin[b] = PetscMin(gmin[b],_coor[bs*i+b]);
-      gmax[b] = PetscMax(gmax[b],_coor[bs*i+b]);
+      gmin[b] = PetscMin(gmin[b],PetscRealPart(_coor[bs*i+b]));
+      gmax[b] = PetscMax(gmax[b],PetscRealPart(_coor[bs*i+b]));
     }
   }
   ierr = VecRestoreArrayRead(coorlocal,&_coor);CHKERRQ(ierr);
