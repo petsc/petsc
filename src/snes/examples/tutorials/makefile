@@ -227,6 +227,9 @@ ex64: ex64.o  chkopts
 ex65: ex65.o  chkopts
 	-${CLINKER} -o ex65 ex65.o ${PETSC_SNES_LIB}
 	${RM} ex65.o
+ex69: ex69.o  chkopts
+	-${CLINKER} -o ex69 ex69.o ${PETSC_SNES_LIB}
+	${RM} ex69.o
 ex70: ex70.o  chkopts
 	-${CLINKER} -o ex70 ex70.o ${PETSC_SNES_LIB}
 	${RM} ex70.o
