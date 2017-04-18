@@ -173,7 +173,7 @@ PetscErrorCode CheckFVMGeometry(DM dm, PetscInt cell, PetscInt spaceDim, PetscRe
   PetscFunctionBegin;
   ierr = DMPlexComputeCellGeometryFVM(dm, cell, &vol, centroid, normal);CHKERRQ(ierr);
   for (d = 0; d < spaceDim; ++d) {
-    if (RelativeError(centroid[d],centroidEx[d]) > 10*PETSC_SMALL) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid centroid[%D]: %g != %g", d, (double)centroid[d], (double)centroidEx[d]);
+    if (RelativeError(centroid[d],centroidEx[d]) > 10*PETSC_SMALL) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid centroid[%D]: %g != %g diff %g", d, (double)centroid[d], (double)centroidEx[d],(double)(centroid[d]-centroidEx[d]));
     if (RelativeError(normal[d],normalEx[d]) > 10*PETSC_SMALL) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid normal[%D]: %g != %g", d, (double)normal[d], (double)normalEx[d]);
   }
   if (RelativeError(volEx,vol) > 10*PETSC_SMALL) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid volume = %g != %g diff %g", (double)vol, (double)volEx,(double)(vol - volEx));
@@ -185,7 +185,7 @@ PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool tran
   DM             dm;
   PetscRandom    r, ang, ang2;
   PetscInt       dim, t;
-  PetscReal      onethird = 1./3.;
+  PetscReal      onethird = ((PetscReal) 1.)/((PetscReal) 3.);
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -735,7 +735,7 @@ PetscErrorCode TestTetrahedron(MPI_Comm comm, PetscBool interpolate, PetscBool t
     PetscReal detJEx        = 1.0;
     PetscReal centroidEx[3] = {-0.5, -0.5, -0.5};
     PetscReal normalEx[3]   = {0.0, 0.0, 0.0};
-    PetscReal volEx         = 4.0/3.0;
+    PetscReal volEx         = (PetscReal)4.0/(PetscReal)3.0;
 
     ierr = CheckFEMGeometry(dm, 0, dim, v0Ex, JEx, invJEx, detJEx);CHKERRQ(ierr);
     if (interpolate) {ierr = CheckFVMGeometry(dm, 0, dim, centroidEx, normalEx, volEx);CHKERRQ(ierr);}

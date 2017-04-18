@@ -868,19 +868,21 @@ PETSC_STATIC_INLINE void Volume_Tetrahedron_Internal(PetscReal *vol, PetscReal c
   const PetscReal x1 = coords[3] - coords[0], y1 = coords[4]  - coords[1], z1 = coords[5]  - coords[2];
   const PetscReal x2 = coords[6] - coords[0], y2 = coords[7]  - coords[1], z2 = coords[8]  - coords[2];
   const PetscReal x3 = coords[9] - coords[0], y3 = coords[10] - coords[1], z3 = coords[11] - coords[2];
+  const PetscReal onesixth = ((PetscReal)1./(PetscReal)6.);
   PetscReal       M[9], detM;
   M[0] = x1; M[1] = x2; M[2] = x3;
   M[3] = y1; M[4] = y2; M[5] = y3;
   M[6] = z1; M[7] = z2; M[8] = z3;
   DMPlex_Det3D_Internal(&detM, M);
-  *vol = -0.16666666666666666666666*detM;
+  *vol = -onesixth*detM;
   (void)PetscLogFlops(10.0);
 }
 
 PETSC_STATIC_INLINE void Volume_Tetrahedron_Origin_Internal(PetscReal *vol, PetscReal coords[])
 {
+  const PetscReal onesixth = ((PetscReal)1./(PetscReal)6.);
   DMPlex_Det3D_Internal(vol, coords);
-  *vol *= -0.16666666666666666666666;
+  *vol *= -onesixth;
 }
 
 static PetscErrorCode DMPlexComputePointGeometry_Internal(DM dm, PetscInt e, PetscReal v0[], PetscReal J[], PetscReal invJ[], PetscReal *detJ)
