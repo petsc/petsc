@@ -195,7 +195,7 @@ int main(int argc,char **argv)
   ierr = TSGetConvergedReason(ts,&reason);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %D steps\n",TSConvergedReasons[reason],(double)ftime,steps);CHKERRQ(ierr);
 
-  {
+  /* {
     Vec                max;
     PetscInt           i;
     const PetscReal    *bmax;
@@ -212,10 +212,10 @@ int main(int argc,char **argv)
   }
 
   Vec y;
-  MassFractionToMoleFraction(&user,X,&y);CHKERRQ(ierr);
-  PrintSpecies(&user,y);CHKERRQ(ierr);
-  VecDestroy(&y);
-  
+  ierr = MassFractionToMoleFraction(&user,X,&y);CHKERRQ(ierr);
+  ierr = PrintSpecies(&user,y);CHKERRQ(ierr);
+  ierr = VecDestroy(&y);CHKERRQ(ierr); */
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -289,7 +289,7 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
   PetscInt       i;
   Vec            y;
   const PetscInt maxspecies = 10;
-  PetscInt       nmax = maxspecies;
+  PetscInt       smax = maxspecies,mmax = maxspecies;
   char           *names[maxspecies];
   PetscReal      molefracs[maxspecies],sum;
   PetscBool      flg;
@@ -299,22 +299,24 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   x[0] = 1.0;  /* Non-dimensionalized by user->Tini */
 
-  ierr = PetscOptionsGetStringArray(NULL,NULL,"-initial_species",names,&nmax,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetRealArray(NULL,NULL,"-initial_mole",molefracs,&nmax,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetStringArray(NULL,NULL,"-initial_species",names,&smax,&flg);CHKERRQ(ierr);
+  if (smax < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Must provide at least two initial species");
+  ierr = PetscOptionsGetRealArray(NULL,NULL,"-initial_mole",molefracs,&mmax,&flg);CHKERRQ(ierr);
+  if (smax != mmax) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Must provide same number of initial species %D as initial moles %D",smax,mmax);
   sum = 0;
-  for (i=0; i<nmax; i++) sum += molefracs[i];
-  for (i=0; i<nmax; i++) molefracs[i] = molefracs[i]/sum;
-  for (i=0; i<nmax; i++) {
+  for (i=0; i<smax; i++) sum += molefracs[i];
+  for (i=0; i<smax; i++) molefracs[i] = molefracs[i]/sum;
+  for (i=0; i<smax; i++) {
     int ispec = TC_getSpos(names[i], strlen(names[i]));
     if (ispec < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Could not find species %s",names[i]);
     ierr = PetscPrintf(PETSC_COMM_SELF,"Species %d: %s %g\n",i,names[i],molefracs[i]);CHKERRQ(ierr);
     x[1+ispec] = molefracs[i];
   }
-  for (i=0; i<nmax; i++) {
+  for (i=0; i<smax; i++) {
     ierr = PetscFree(names[i]);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
-  PrintSpecies((User)ctx,X);CHKERRQ(ierr);
+  /* PrintSpecies((User)ctx,X);CHKERRQ(ierr); */
   ierr = MoleFractionToMassFraction((User)ctx,X,&y);CHKERRQ(ierr);
   ierr = VecCopy(y,X);CHKERRQ(ierr);
   ierr = VecDestroy(&y);CHKERRQ(ierr);
@@ -401,7 +403,7 @@ PetscErrorCode MonitorTempature(TS ts,PetscInt step,PetscReal time,Vec x,void* c
 /*
    Prints out each species with its name
 */
-PetscErrorCode PrintSpecies(User user,Vec molef)
+PETSC_UNUSED PetscErrorCode PrintSpecies(User user,Vec molef)
 {
   PetscErrorCode    ierr;
   const PetscScalar *mof;
