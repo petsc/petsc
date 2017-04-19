@@ -1,5 +1,6 @@
 
 #include <petsc/private/isimpl.h>    /*I "petscis.h"  I*/
+#include <petsc/private/hash.h>
 #include <petscsf.h>
 #include <petscviewer.h>
 

@@ -225,7 +225,9 @@ PetscErrorCode  TSAdaptView(TSAdapt adapt,PetscViewer viewer)
   if (iascii) {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)adapt,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  number of candidates %D\n",adapt->candidates.n);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  maximum allowed timestep %g minimum %g\n",adapt->dt_max,&adapt->dt_min);CHKERRQ(ierr);
+    if (adapt->always_accept) {ierr = PetscViewerASCIIPrintf(viewer,"  always accepting steps\n");CHKERRQ(ierr);}
+    if (adapt->dt_max < PETSC_MAX_REAL) {ierr = PetscViewerASCIIPrintf(viewer,"  maximum allowed timestep %g\n",(double)adapt->dt_max);CHKERRQ(ierr);}
+    if (adapt->dt_min > 0) {ierr = PetscViewerASCIIPrintf(viewer,"  minimum allowed timestep %g\n",(double)adapt->dt_min);CHKERRQ(ierr);}
     if (adapt->ops->view) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = (*adapt->ops->view)(adapt,viewer);CHKERRQ(ierr);
@@ -291,6 +293,9 @@ PetscErrorCode  TSAdaptDestroy(TSAdapt *adapt)
 +  adapt - adaptive controller context
 -  flg - PETSC_TRUE to active a monitor, PETSC_FALSE to disable
 
+   Options Database Keys:
+.  -ts_adapt_monitor
+
    Level: intermediate
 
 .seealso: TSAdaptChoose()
@@ -311,7 +316,7 @@ PetscErrorCode TSAdaptSetMonitor(TSAdapt adapt,PetscBool flg)
 }
 
 /*@C
-   TSAdaptSetCheckStage - set a callback to check convergence for a stage
+   TSAdaptSetCheckStage - Set a callback to check convergence for a stage
 
    Logically collective on TSAdapt
 
@@ -340,6 +345,31 @@ PetscErrorCode TSAdaptSetCheckStage(TSAdapt adapt,PetscErrorCode (*func)(TSAdapt
 }
 
 /*@
+   TSAdaptSetAlwaysAccept - Set whether to always accept steps regardless of
+   any error or stability condition not meeting the prescribed goal.
+
+
+   Input Arguments:
++  adapt - time step adaptivity context, usually gotten with TSGetAdapt()
+-  flag - whether to always accept steps
+
+   Options Database Keys:
+.  -ts_adapt_always_accept
+
+   Level: intermediate
+
+.seealso: TSAdapt, TSAdaptChoose()
+@*/
+PetscErrorCode TSAdaptSetAlwaysAccept(TSAdapt adapt,PetscBool flag)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
+  PetscValidLogicalCollectiveBool(adapt,flag,2);
+  adapt->always_accept = flag;
+  PetscFunctionReturn(0);
+}
+
+/*@
    TSAdaptSetStepLimits - Set minimum and maximum step sizes to be considered by the controller
 
    Logically Collective
@@ -355,7 +385,7 @@ PetscErrorCode TSAdaptSetCheckStage(TSAdapt adapt,PetscErrorCode (*func)(TSAdapt
 
    Level: intermediate
 
-.seealso: TSAdapt
+.seealso: TSAdapt, TSAdaptChoose()
 @*/
 PetscErrorCode TSAdaptSetStepLimits(TSAdapt adapt,PetscReal hmin,PetscReal hmax)
 {
@@ -386,6 +416,7 @@ PetscErrorCode TSAdaptSetStepLimits(TSAdapt adapt,PetscReal hmin,PetscReal hmax)
 
    Options Database Keys:
 +  -ts_adapt_type <type> - basic
+.  -ts_adapt_always_accept - always accept steps regardless of error/stability goals
 .  -ts_adapt_dt_min <min> - minimum timestep to use
 .  -ts_adapt_dt_max <max> - maximum timestep to use
 .  -ts_adapt_scale_solve_failed <scale> - scale timestep by this factor if a solve fails
@@ -404,6 +435,7 @@ PetscErrorCode  TSAdaptSetFromOptions(PetscOptionItems *PetscOptionsObject,TSAda
 {
   PetscErrorCode ierr;
   char           type[256] = TSADAPTBASIC;
+  PetscReal      hmin,hmax;
   PetscBool      set,flg;
 
   PetscFunctionBegin;
@@ -415,13 +447,16 @@ PetscErrorCode  TSAdaptSetFromOptions(PetscOptionItems *PetscOptionsObject,TSAda
   if (flg || !((PetscObject)adapt)->type_name) {
     ierr = TSAdaptSetType(adapt,type);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsReal("-ts_adapt_dt_min","Minimum time step considered","TSAdaptSetStepLimits",adapt->dt_min,&adapt->dt_min,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ts_adapt_dt_max","Maximum time step considered","TSAdaptSetStepLimits",adapt->dt_max,&adapt->dt_max,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ts_adapt_always_accept","Always accept the step","TSAdaptSetAlwaysAccept",adapt->always_accept,&flg,&set);CHKERRQ(ierr);
+  if (set) {ierr = TSAdaptSetAlwaysAccept(adapt,flg);CHKERRQ(ierr);}
+  ierr = PetscOptionsReal("-ts_adapt_dt_min","Minimum time step considered","TSAdaptSetStepLimits",hmin=adapt->dt_min,&hmin,&set);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ts_adapt_dt_max","Maximum time step considered","TSAdaptSetStepLimits",hmax=adapt->dt_max,&hmax,&flg);CHKERRQ(ierr);
+  if (set || flg) {ierr = TSAdaptSetStepLimits(adapt,hmin,hmax);CHKERRQ(ierr);}
   ierr = PetscOptionsReal("-ts_adapt_scale_solve_failed","Scale step by this factor if solve fails","",adapt->scale_solve_failed,&adapt->scale_solve_failed,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ts_adapt_monitor","Print choices made by adaptive controller","TSAdaptSetMonitor",adapt->monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
+  if (set) {ierr = TSAdaptSetMonitor(adapt,flg);CHKERRQ(ierr);}
   ierr = PetscOptionsEnum("-ts_adapt_wnormtype","Type of norm computed for error estimation","",NormTypes,(PetscEnum)adapt->wnormtype,(PetscEnum*)&adapt->wnormtype,NULL);CHKERRQ(ierr);
   if (adapt->wnormtype != NORM_2 && adapt->wnormtype != NORM_INFINITY) SETERRQ(PetscObjectComm((PetscObject)adapt),PETSC_ERR_SUP,"Only 2-norm and infinite norm supported");
-  if (set) {ierr = TSAdaptSetMonitor(adapt,flg);CHKERRQ(ierr);}
   if (adapt->ops->setfromoptions) {ierr = (*adapt->ops->setfromoptions)(PetscOptionsObject,adapt);CHKERRQ(ierr);}
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -694,6 +729,7 @@ PetscErrorCode  TSAdaptCreate(MPI_Comm comm,TSAdapt *inadapt)
 
   ierr = PetscHeaderCreate(adapt,TSADAPT_CLASSID,"TSAdapt","Time stepping adaptivity","TS",comm,TSAdaptDestroy,TSAdaptView);CHKERRQ(ierr);
 
+  adapt->always_accept      = PETSC_FALSE;
   adapt->dt_min             = 1e-20;
   adapt->dt_max             = 1e50;
   adapt->scale_solve_failed = 0.25;

@@ -1,5 +1,4 @@
 #include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
-#include <../src/sys/utils/hash.h>
 #include <petsc/private/isimpl.h>
 #include <petsc/private/petscfeimpl.h>
 #include <petscsf.h>

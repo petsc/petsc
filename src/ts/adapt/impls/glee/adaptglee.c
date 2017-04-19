@@ -1,7 +1,6 @@
 #include <petsc/private/tsimpl.h> /*I "petscts.h" I*/
 
 typedef struct {
-  PetscBool always_accept;
   PetscReal clip[2];            /* admissible decrease/increase factors */
   PetscReal safety;             /* safety factor relative to target error */
   PetscReal reject_safety;      /* extra safety factor if the last step was rejected */
@@ -59,7 +58,7 @@ static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt,TS ts,PetscReal h,PetscIn
     if (h < (1 + PETSC_SQRT_MACHINE_EPSILON)*adapt->dt_min) {
       ierr    = PetscInfo4(adapt,"Estimated scaled truncation error [combined, absolute, relative]] [%g, %g, %g], accepting because step size %g is at minimum\n",(double)enorm,(double)enorma,(double)enormr,(double)h);CHKERRQ(ierr);
       *accept = PETSC_TRUE;
-    } else if (glee->always_accept) {
+    } else if (adapt->always_accept) {
       ierr    = PetscInfo4(adapt,"Estimated scaled truncation error [combined, absolute, relative]] [%g, %g, %g], accepting step of size %g because always_accept is set\n",(double)enorm,(double)enorma,(double)enormr,(double)h);CHKERRQ(ierr);
       *accept = PETSC_TRUE;
     } else {
@@ -140,7 +139,6 @@ static PetscErrorCode TSAdaptSetFromOptions_GLEE(PetscOptionItems *PetscOptionsO
   if (set && (two != 2 || glee->clip[0] > glee->clip[1])) SETERRQ(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Must give exactly two values to -ts_adapt_glee_clip");
   ierr = PetscOptionsReal("-ts_adapt_glee_safety","Safety factor relative to target error","",glee->safety,&glee->safety,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_adapt_glee_reject_safety","Extra safety factor to apply if the last step was rejected","",glee->reject_safety,&glee->reject_safety,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-ts_adapt_glee_always_accept","Always accept the step regardless of whether local truncation error meets goal","",glee->always_accept,&glee->always_accept,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -154,7 +152,6 @@ static PetscErrorCode TSAdaptView_GLEE(TSAdapt adapt,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    if (glee->always_accept) {ierr = PetscViewerASCIIPrintf(viewer,"  GLEE: always accepting steps\n");CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPrintf(viewer,"  GLEE: clip fastest decrease %g, fastest increase %g\n",(double)glee->clip[0],(double)glee->clip[1]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  GLEE: safety factor %g, extra factor after step rejection %g\n",(double)glee->safety,(double)glee->reject_safety);CHKERRQ(ierr);
   }
@@ -185,6 +182,5 @@ PETSC_EXTERN PetscErrorCode TSAdaptCreate_GLEE(TSAdapt adapt)
   a->clip[1]       = 10.;
   a->safety        = 0.9;
   a->reject_safety = 0.5;
-  a->always_accept = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

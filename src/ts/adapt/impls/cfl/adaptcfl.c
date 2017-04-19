@@ -2,7 +2,6 @@
 
 typedef struct {
   PetscReal safety;         /* safety factor relative to target CFL constraint */
-  PetscBool always_accept;
 } TSAdapt_CFL;
 
 static PetscErrorCode TSAdaptChoose_CFL(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,PetscReal *next_h,PetscBool *accept,PetscReal *wlte,PetscReal *wltea,PetscReal *wlter)
@@ -21,7 +20,7 @@ static PetscErrorCode TSAdaptChoose_CFL(TSAdapt adapt,TS ts,PetscReal h,PetscInt
   /* Determine whether the step is accepted of rejected */
   *accept = PETSC_TRUE;
   if (h > cfltimestep * ccfl) {
-    if (cfl->always_accept) {
+    if (adapt->always_accept) {
       ierr = PetscInfo3(adapt,"Step length %g with scheme of CFL coefficient %g did not satisfy user-provided CFL constraint %g, proceeding anyway\n",(double)h,(double)ccfl,(double)cfltimestep);CHKERRQ(ierr);
     } else {
       ierr = PetscInfo3(adapt,"Step length %g with scheme of CFL coefficient %g did not satisfy user-provided CFL constraint %g, step REJECTED\n",(double)h,(double)ccfl,(double)cfltimestep);CHKERRQ(ierr);
@@ -60,11 +59,10 @@ static PetscErrorCode TSAdaptSetFromOptions_CFL(PetscOptionItems *PetscOptionsOb
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"CFL adaptive controller options");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_adapt_cfl_safety","Safety factor relative to target CFL constraint","",cfl->safety,&cfl->safety,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-ts_adapt_cfl_always_accept","Always accept the step regardless of whether CFL constraint meets goal","",cfl->always_accept,&cfl->always_accept,NULL);CHKERRQ(ierr);
   /* The TS implementations do not currently communicate CFL information to the controller.  There is a placeholder, but
    * we do not believe it to provide sufficiently rich information.  That means the CFL adaptor is incomplete and
    * unusable.  Do not delete the guard below unless you have finished the implementation. */
-  if (!cfl->always_accept) SETERRQ(PetscObjectComm((PetscObject)adapt),PETSC_ERR_SUP,"Step rejection not implemented. The CFL implementation is incomplete/unusable");
+  if (!adapt->always_accept) SETERRQ(PetscObjectComm((PetscObject)adapt),PETSC_ERR_SUP,"Step rejection not implemented. The CFL implementation is incomplete/unusable");
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -89,7 +87,6 @@ PETSC_EXTERN PetscErrorCode TSAdaptCreate_CFL(TSAdapt adapt)
   adapt->ops->setfromoptions = TSAdaptSetFromOptions_CFL;
   adapt->ops->destroy        = TSAdaptDestroy_CFL;
 
-  a->safety        = 0.9;
-  a->always_accept = PETSC_FALSE;
+  a->safety = 0.9;
   PetscFunctionReturn(0);
 }
