@@ -4975,8 +4975,17 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
   if (neumann) {
     PCBDDCSubSchurs sub_schurs = pcbddc->sub_schurs;
     PetscInt        ibs,mbs;
-    PetscBool       issbaij;
+    PetscBool       issbaij, reuse_neumann_solver;
     Mat_IS*         matis = (Mat_IS*)pc->pmat->data;
+
+    reuse_neumann_solver = PETSC_FALSE;
+    if (sub_schurs && sub_schurs->reuse_solver) {
+      IS iP;
+
+      reuse_neumann_solver = PETSC_TRUE;
+      ierr = PetscObjectQuery((PetscObject)sub_schurs->A,"__KSPFETIDP_iP",(PetscObject*)&iP);CHKERRQ(ierr);
+      if (iP) reuse_neumann_solver = PETSC_FALSE;
+    }
     /* Matrix for Neumann problem is A_RR -> we need to create/reuse it at this point */
     ierr = ISGetSize(pcbddc->is_R_local,&n_R);CHKERRQ(ierr);
     if (pcbddc->ksp_R) { /* already created ksp */
@@ -5024,7 +5033,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
       }
     }
     /* extract A_RR */
-    if (sub_schurs && sub_schurs->reuse_solver) {
+    if (reuse_neumann_solver) {
       PCBDDCReuseSolvers reuse_solver = sub_schurs->reuse_solver;
 
       if (pcbddc->dbg_flag) { /* we need A_RR to test the solver later */
@@ -5069,7 +5078,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
     }
     ierr = KSPSetOperators(pcbddc->ksp_R,A_RR,A_RR);CHKERRQ(ierr);
     /* Reuse solver if it is present */
-    if (sub_schurs && sub_schurs->reuse_solver) {
+    if (reuse_neumann_solver) {
       PCBDDCReuseSolvers reuse_solver = sub_schurs->reuse_solver;
 
       ierr = KSPSetPC(pcbddc->ksp_R,reuse_solver->correction_solver);CHKERRQ(ierr);
