@@ -4,7 +4,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.download          = ['git://https://bitbucket.org/jedbrown/tchem.git']
-    self.gitcommit         = 'e1d102530f3d1165483dc1c7f9706d3802b688cd'
+    self.gitcommit         = '81601d2'
     self.functions         = ['TC_getSrc']
     self.includes          = ['TC_interface.h']
     self.liblist           = [['libtchem.a']]
