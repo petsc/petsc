@@ -59,13 +59,14 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscI
   }
 
   /* The optimal new step based purely on local truncation error for this step. */
-  if (adapt->timestepjustincreased){
-    hfac_lte = 1.0;
-    adapt->timestepjustincreased--;
-  } else if (enorm > 0)
+  if (enorm > 0)
     hfac_lte = safety * PetscPowReal(enorm,((PetscReal)-1)/order);
   else
     hfac_lte = safety * PETSC_INFINITY;
+  if (adapt->timestepjustincreased){
+    hfac_lte = PetscMin(hfac_lte,1.0);
+    adapt->timestepjustincreased--;
+  }
   h_lte = h * PetscClipInterval(hfac_lte,basic->clip[0],basic->clip[1]);
 
   *next_h = PetscClipInterval(h_lte,adapt->dt_min,adapt->dt_max);
