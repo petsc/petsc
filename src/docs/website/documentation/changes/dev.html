@@ -153,6 +153,7 @@
         <li>Changed TSGL to TSGLLE.</li>
         <li>-ts_monitor binary now saves the timestep information as a REAL entry consisting of the REAL_FILE_CLASSID followed by the real value. PetscBinaryRead.m and PetscBinaryIO.py can read these in automatically.</li>
         <li>Added TSRK5BS scheme to TSRK.</li>
+        <li>Removed TSBDFUseAdapt(), using time step adaptivity in TSBDF is now the default, use <tt>-ts_adapt_type none</tt> to turn adaptivity off. </li>
       </ul>
       <h4>DM/DA:</h4>
       <ul>
