@@ -3060,6 +3060,8 @@ PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat,IS iscol,IS *iscol_sub,IS 
   ierr = PetscSortIntWithArray(count,camp,idx);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,count,idx,PETSC_COPY_VALUES,iscol_sub);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,count,camp,PETSC_COPY_VALUES,iscmap);CHKERRQ(ierr);
+  ierr = ISGetBlockSize(iscol,&i);CHKERRQ(ierr);
+  ierr = ISSetBlockSize(*iscol_sub,i);CHKERRQ(ierr);
 
   ierr = PetscFree2(idx,camp);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
@@ -3184,7 +3186,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowDist(Mat mat,IS isrow,IS iscol,M
         ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,&iscmap);CHKERRQ(ierr);
 
       } else { /* iscol_local -> iscol_sub and iscmap */
-        PetscInt *idx,*cmap1,k;
+        PetscInt *idx,*cmap1,k,cbs;
 
         /* implementation below requires iscol_local be sorted, it can have duplicate indices */
         ierr = ISSorted(iscol_local,&flg);CHKERRQ(ierr);
@@ -3217,6 +3219,9 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowDist(Mat mat,IS isrow,IS iscol,M
         ierr = ISRestoreIndices(iscol_local,&is_idx);CHKERRQ(ierr);
 
         ierr = ISCreateGeneral(PETSC_COMM_SELF,count,idx,PETSC_COPY_VALUES,&iscol_sub);CHKERRQ(ierr);
+        ierr = ISGetBlockSize(iscol,&cbs);CHKERRQ(ierr);
+        ierr = ISSetBlockSize(iscol_sub,cbs);CHKERRQ(ierr);
+
         ierr = ISCreateGeneral(PetscObjectComm((PetscObject)iscol_local),count,cmap1,PETSC_COPY_VALUES,&iscmap);CHKERRQ(ierr);
         ierr = PetscFree2(idx,cmap1);CHKERRQ(ierr);
       }
