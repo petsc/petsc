@@ -156,14 +156,16 @@ PetscErrorCode DMPlexOrient(DM dm)
   PetscBT            seenCells, flippedCells, seenFaces;
   PetscInt          *faceFIFO, fTop, fBottom, *cellComp, *faceComp;
   PetscInt           numLeaves, numRoots, dim, h, cStart, cEnd, c, cell, fStart, fEnd, face, off, totNeighbors = 0;
-  PetscMPIInt        rank, numComponents, comp = 0;
-  PetscBool          flg;
+  PetscMPIInt        rank, size, numComponents, comp = 0;
+  PetscBool          flg, flg2;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(((PetscObject) dm)->options,((PetscObject) dm)->prefix, "-orientation_view", &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject) dm)->options,((PetscObject) dm)->prefix, "-orientation_view_synchronized", &flg2);CHKERRQ(ierr);
   ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sf, &numRoots, &numLeaves, &lpoints, &rpoints);CHKERRQ(ierr);
   /* Truth Table
@@ -304,12 +306,32 @@ PetscErrorCode DMPlexOrient(DM dm)
 
           ierr = DMPlexGetSupportSize(dm, face, &supportSize);CHKERRQ(ierr);
           if (supportSize != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Boundary faces should see one cell, not %d", supportSize);
-          if (flg) {ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]: component %d, Found representative leaf %d (face %d) connecting to face %d on (%d, %d) with orientation %d\n", rank, comp, l, face, rpoints[l].index, rrank, rcomp, lorntComp[face].rank);CHKERRQ(ierr);}
+          if (flg && !flg2) {ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]: component %d, Found representative leaf %d (face %d) connecting to face %d on (%d, %d) with orientation %d\n", rank, comp, l, face, rpoints[l].index, rrank, rcomp, lorntComp[face].rank);CHKERRQ(ierr);}
           neighbors[comp][numNeighbors[comp]++] = l;
         }
       }
     }
     totNeighbors += numNeighbors[comp];
+  }
+  if (flg2) {
+    PetscInt p;
+    for (p = 0; p < size; p++) {
+      if (p == rank) {
+        for (comp = 0; comp < numComponents; ++comp) {
+          PetscInt  n;
+
+          for (n = 0; n < numNeighbors[comp]; n++) {
+            PetscInt l    = neighbors[comp][n];
+            PetscInt face = lpoints[l];
+            PetscInt rrank = rpoints[l].rank;
+            PetscInt rcomp = lorntComp[face].index;
+
+            ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]: component %d, Found representative leaf %d (face %d) connecting to face %d on (%d, %d) with orientation %d\n", rank, comp, l, face, rpoints[l].index, rrank, rcomp, lorntComp[face].rank);CHKERRQ(ierr);
+          }
+        }
+      }
+      ierr = PetscBarrier((PetscObject)dm);CHKERRQ(ierr);
+    }
   }
   ierr = PetscMalloc2(totNeighbors, &nrankComp, totNeighbors, &match);CHKERRQ(ierr);
   for (comp = 0, off = 0; comp < numComponents; ++comp) {

@@ -166,6 +166,6 @@ int main(int argc, char **argv)
     suffix: 3
     requires: triangle
     nsize: 3
-    args: -dm_view ascii::ascii_info_detail -oriented_dm_view ascii::ascii_info_detail -orientation_view
+    args: -dm_view ascii::ascii_info_detail -oriented_dm_view ascii::ascii_info_detail -orientation_view -orientation_view_synchronized
 
 TEST*/
