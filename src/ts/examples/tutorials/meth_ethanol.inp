@@ -27,3 +27,5 @@
 -ts_adapt_dt_min 1e-9
 
 -snes_max_it 10
+
+-pc_type lu
