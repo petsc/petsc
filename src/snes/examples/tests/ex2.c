@@ -110,7 +110,7 @@ static PetscErrorCode CreatePoints_Centroid(DM dm, PetscInt *Np, PetscReal **pco
     ierr = DMPlexVecGetClosure(dm, coordSection, coordsLocal, p, &size, &coords);CHKERRQ(ierr);
     num  = size/spaceDim;
     for (n = 0; n < num; ++n) {
-      for (d = 0; d < spaceDim; ++d) (*pcoords)[p*spaceDim+d] += coords[n*spaceDim+d] / num;
+      for (d = 0; d < spaceDim; ++d) (*pcoords)[p*spaceDim+d] += PetscRealPart(coords[n*spaceDim+d]) / num;
     }
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]Point %D (", rank, p);CHKERRQ(ierr);
     for (d = 0; d < spaceDim; ++d) {
@@ -286,9 +286,17 @@ int main(int argc, char **argv)
   ierr = VecGetArrayRead(fieldVals, &ivals);CHKERRQ(ierr);
   for (p = 0; p < interpolator->n; ++p) {
     for (c = 0; c < Nc; ++c) {
-      (*funcs[c])(ctx.dim, 0.0, &vcoords[p*spaceDim], 1, vals, NULL);
+#if defined(PETSC_USE_COMPLEX)
+      PetscReal vcoordsReal[3];
+      PetscInt  i;
+
+      for (i = 0; i < spaceDim; i++) vcoordsReal[i] = PetscRealPart(vcoords[p * spaceDim + i]);
+#else
+      PetscReal *vcoordsReal = &vcoords[p*spaceDim];
+#endif
+      (*funcs[c])(ctx.dim, 0.0, vcoordsReal, 1, vals, NULL);
       if (PetscAbsScalar(ivals[p*Nc+c] - vals[c]) > PETSC_SQRT_MACHINE_EPSILON)
-        SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid interpolated value %g != %g (%D, %D)", (double) ivals[p*Nc+c], (double) vals[c], p, c);
+        SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid interpolated value %g != %g (%D, %D)", (double) PetscRealPart(ivals[p*Nc+c]), (double) PetscRealPart(vals[c]), p, c);
     }
   }
   ierr = VecRestoreArrayRead(interpolator->coords, &vcoords);CHKERRQ(ierr);

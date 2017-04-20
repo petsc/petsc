@@ -2042,7 +2042,7 @@ int riem1mdt( PetscScalar *gaml, PetscScalar *gamr, PetscScalar *rl, PetscScalar
     /* gascl1 = *gaml - 1.; */
     /* gascl2 = (*gaml + 1.) * .5; */
     /* gascl3 = gascl2 / *gaml; */
-    gascl4 = 1.f / (*gaml - 1.);
+    gascl4 = 1. / (*gaml - 1.);
 
     /* gascr1 = *gamr - 1.; */
     /* gascr2 = (*gamr + 1.) * .5; */
