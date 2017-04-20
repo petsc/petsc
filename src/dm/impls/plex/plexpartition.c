@@ -1216,6 +1216,17 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, DM 
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
+#if defined (PETSC_USE_DEBUG)
+  {
+    int ival,isum;
+    PetscBool distributed;
+
+    ival = (numVertices > 0);
+    ierr = MPI_Allreduce(&ival, &isum, 1, MPI_INT, MPI_SUM, comm);CHKERRQ(ierr);
+    distributed = (isum > 1) ? PETSC_TRUE : PETSC_FALSE;
+    if (distributed) SETERRQ(comm, PETSC_ERR_SUP, "Chaco cannot partition a distributed graph");
+  }
+#endif
   if (!numVertices) {
     ierr = PetscSectionSetChart(partSection, 0, nparts);CHKERRQ(ierr);
     ierr = PetscSectionSetUp(partSection);CHKERRQ(ierr);
@@ -1264,6 +1275,8 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, DM 
     close(fd_pipe[1]);
     if (ierr) SETERRQ1(comm, PETSC_ERR_LIB, "Error in Chaco library: %s", msgLog);
   }
+#else
+  if (ierr) SETERRQ1(comm, PETSC_ERR_LIB, "Error in Chaco library: %s", "error in stdout");
 #endif
   /* Convert to PetscSection+IS */
   ierr = PetscSectionSetChart(partSection, 0, nparts);CHKERRQ(ierr);
