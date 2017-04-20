@@ -13,13 +13,6 @@ Labels:
   Face Sets: 4 strata of sizes (3, 3, 3, 3)
   marker: 4 strata of sizes (7, 7, 7, 7)
 Integral of pressure: -0.0455228
-  0 SNES Function norm 0.0870839 
-    0 KSP Residual norm 0.4791 
-    1 KSP Residual norm 1.692e-10 
-    2 KSP Residual norm < 1.e-11
-  Linear solve converged due to CONVERGED_ATOL iterations 2
-  1 SNES Function norm 3.072e-10 
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000

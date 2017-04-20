@@ -15,12 +15,6 @@ Integral of pressure: 0.
 L_2 Error: [6.60367e-05, 0.0104876]
 L_2 Residual: 0.00859623
 Linear L_2 Residual: 0.00859623
-  0 SNES Function norm 0.0669208 
-    0 KSP Residual norm 0.634265 
-    1 KSP Residual norm 4.712e-10 
-  Linear solve converged due to CONVERGED_RTOL iterations 1
-  1 SNES Function norm < 1.e-11
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
