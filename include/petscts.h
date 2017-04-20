@@ -810,7 +810,6 @@ PETSC_EXTERN PetscErrorCode TSRosWRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode TSBDFSetOrder(TS,PetscInt);
 PETSC_EXTERN PetscErrorCode TSBDFGetOrder(TS,PetscInt*);
-PETSC_EXTERN PetscErrorCode TSBDFUseAdapt(TS,PetscBool);
 
 /*
        PETSc interface to Sundials

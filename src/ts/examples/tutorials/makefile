@@ -760,7 +760,7 @@ runex40_d:
 	   ${RM} -f ex40.tmp
 
 runex40_e:
-	-@${MPIEXEC} -n 1 ./ex40 -ts_type bdf -ts_bdf_adapt -ts_adapt_dt_max 0.025 -ts_max_steps 1500 > ex40.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex40 -ts_type bdf -ts_adapt_dt_max 0.025 -ts_max_steps 1500 > ex40.tmp 2>&1; \
 	   ${DIFF} output/ex40.out ex40.tmp || printf "${PWD}\nPossible problem with ex40_e, diffs above\n=========================================\n"; \
 	   ${RM} -f ex40.tmp
 
@@ -795,7 +795,7 @@ runex41_d:
 	   ${RM} -f ex41.tmp
 
 runex41_e:
-	-@${MPIEXEC} -n 2 ./ex41 -ts_type bdf -ts_bdf_adapt -ts_adapt_dt_max 0.015 -ts_max_steps 3000 > ex41.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex41 -ts_type bdf -ts_adapt_dt_max 0.015 -ts_max_steps 3000 > ex41.tmp 2>&1; \
 	   ${DIFF} output/ex41.out ex41.tmp || printf "${PWD}\nPossible problem with ex41_e, diffs above\n=========================================\n"; \
 	   ${RM} -f ex41.tmp
 
