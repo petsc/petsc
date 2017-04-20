@@ -759,7 +759,7 @@ PetscErrorCode TestTetrahedron(MPI_Comm comm, PetscBool interpolate, PetscBool t
       PetscReal   detJEx           = 1.0, scale, phi, theta, psi = 0.0;
       PetscReal   centroidEx[3]    = {-0.5, -0.5, -0.5};
       PetscReal   normalEx[3]      = {0.0, 0.0, 0.0};
-      PetscReal   volEx            = 4.0/3.0;
+      PetscReal   volEx            = (PetscReal)4.0/(PetscReal)3.0;
       PetscInt    d, e, f, p;
 
       ierr = PetscRandomGetValueReal(r, &scale);CHKERRQ(ierr);
