@@ -1433,10 +1433,12 @@ int main(int argc, char **argv)
   test:
     suffix: p4est_test_q2_nonconformal_serial
     requires: hdf5 p4est
+    filter: grep -v "CG or CGNE: variant"
     args: -run_type test -interpolate 1 -petscspace_order 2 -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -cells 2,2
   test:
     suffix: p4est_test_q2_nonconformal_parallel
     requires: hdf5 p4est
+    filter: grep -v "CG or CGNE: variant"
     nsize: 7
     args: -run_type test -interpolate 1 -petscspace_order 2 -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type simple -cells 2,2
   test:
@@ -1469,11 +1471,13 @@ int main(int argc, char **argv)
   test:
     suffix: p4est_full_q2_nonconformal_parallel_bddcfas
     requires: hdf5 p4est
+    filter: grep -v "CG or CGNE: variant"
     nsize: 7
     args: -run_type full -interpolate 1 -petscspace_order 2 -snes_max_it 20 -snes_type fas -snes_fas_levels 3 -dm_mat_type is -pc_type bddc -ksp_type cg -fas_coarse_pc_type bddc -fas_coarse_ksp_type cg -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason -snes_view -fas_levels_snes_type newtonls -fas_levels_pc_type bddc -fas_levels_ksp_type cg -fas_levels_snes_monitor_short -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type simple -cells 2,2
   test:
     suffix: p4est_full_q2_nonconformal_parallel_bddc
     requires: hdf5 p4est
+    filter: grep -v "CG or CGNE: variant"
     nsize: 7
     args: -run_type full -interpolate 1 -petscspace_order 2 -snes_max_it 20 -snes_type newtonls -dm_mat_type is -pc_type bddc -ksp_type cg -snes_monitor_short -snes_linesearch_type basic -snes_converged_reason -snes_view -simplex 0 -petscspace_poly_tensor -dm_plex_convert_type p4est -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash -petscpartitioner_type simple -cells 2,2
   test:
