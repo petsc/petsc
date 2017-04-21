@@ -3204,7 +3204,7 @@ PetscErrorCode MatCreateMPIAIJWithSeqAIJ(MPI_Comm comm,Mat A,Mat B,const PetscIn
   PetscErrorCode ierr;
   Mat_MPIAIJ     *maij;
   Mat_SeqAIJ     *b=(Mat_SeqAIJ*)B->data;
-  PetscInt       *oi=b->i,*oj=b->j,i,j,nz;
+  PetscInt       *oi=b->i,*oj=b->j,i,nz,col;
   PetscScalar    *oa=b->a;
   Mat            Btmp;
   PetscInt       m,n,N;
@@ -3214,6 +3214,7 @@ PetscErrorCode MatCreateMPIAIJWithSeqAIJ(MPI_Comm comm,Mat A,Mat B,const PetscIn
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
   if (m != B->rmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Am %d != Bm %d",m,B->rmap->N);
 
+  /* get global columns of mat */
   ierr = MPIU_Allreduce(&n,&N,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
 
   ierr = MatSetSizes(*mat,m,n,PETSC_DECIDE,N);CHKERRQ(ierr);
@@ -3227,21 +3228,20 @@ PetscErrorCode MatCreateMPIAIJWithSeqAIJ(MPI_Comm comm,Mat A,Mat B,const PetscIn
 
   maij->A = A;
 
-  for (i=0; i<m; i++) {
-    nz = oi[i+1] - oi[i];
-    for (j=0; j<nz; j++) {
-      oj[oi[i] + j] = garray[oj[oi[i] + j]];
-    }
+  nz = oi[m];
+  for (i=0; i<nz; i++) {
+    col   = oj[i];
+    oj[i] = garray[col];
   }
 
   ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,m,N,oi,oj,oa,&Btmp);CHKERRQ(ierr);
-  maij->B = Btmp;
+  maij->B = Btmp; /* cannot destroy B because its arrays are used by Btmp? */
+  //b->free_ij = PETSC_FALSE;
+  //b->free_a  = PETSC_FALSE;
+  //ierr = MatDestroy(&B);CHKERRQ(ierr);
+  //B = Btmp;
 
-  ierr = MatAssemblyBegin(maij->A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(maij->A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(maij->B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(maij->B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
+  /* condense columns of maij->B */
   ierr = MatSetOption(*mat,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -3517,43 +3517,6 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowDist(Mat mat,IS isrow,IS iscol,M
       ierr = MatDestroy(&Bsub);CHKERRQ(ierr);
       ierr = ISDestroy(&isgarray);CHKERRQ(ierr);
     }
-#if 0
-    a=(Mat_MPIAIJ*)M->data;
-    if (Asub) {
-      ierr = MatEqual(Asub,a->A,&equal);CHKERRQ(ierr);
-      if (!equal) SETERRQ(PETSC_COMM_SELF,0,"Asub != M->A");
-      if (rank == -1) {
-        printf("[%d] M->A\n",rank);
-        ierr = MatView(a->A,0);CHKERRQ(ierr);
-      }
-      ierr = MatDestroy(&Asub);CHKERRQ(ierr);
-    }
-
-    if (Bsub && a->B->cmap->N) {
-      ierr = MatEqual(Bsub,a->B,&equal);CHKERRQ(ierr);
-      if (!equal) SETERRQ(PETSC_COMM_SELF,0,"Bsub != M->B");
-
-      if (rank == -1) {
-        printf("[%d] M->B\n",rank);
-        ierr = MatView(a->B,0);CHKERRQ(ierr);
-      }
-      ierr = MatDestroy(&Asub);CHKERRQ(ierr);
-      ierr = MatDestroy(&Bsub);CHKERRQ(ierr);
-
-      /* check isgarray */
-      ierr = ISGetLocalSize(isgarray,&count);CHKERRQ(ierr);
-      if (count != a->B->cmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"count %d != a->B->cmap->N %d",count,a->B->cmap->N);
-      if (count) {
-        garray = a->garray;
-        ierr = ISGetIndices(isgarray,&cmap);CHKERRQ(ierr);
-        for (i=0; i<count; i++) {
-          if (garray[i] != cmap[i]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ," garray %d != cmap %d",garray[i],cmap[i]);
-        }
-        ierr = ISRestoreIndices(isgarray,&cmap);CHKERRQ(ierr);
-      }
-      ierr = ISDestroy(&isgarray);CHKERRQ(ierr);
-    }
-#endif
   }
   PetscFunctionReturn(0);
 }
