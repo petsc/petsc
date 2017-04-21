@@ -720,7 +720,7 @@ PetscErrorCode MaterialPoint_PopulateCell(DM dm_vp,DM dm_mpoint)
   }
   ierr = MPI_Allreduce(&cnt,&cnt_g,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
   if (cnt_g > 0) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,".... ....pop cont: adjusted %d cells\n",cnt_g);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,".... ....pop cont: adjusted %D cells\n",cnt_g);CHKERRQ(ierr);
   }
 
   ierr = DMSwarmSortRestoreAccess(dm_mpoint);CHKERRQ(ierr);
