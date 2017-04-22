@@ -278,24 +278,16 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMVecViewLocal(DM dm, Vec v, PetscViewer viewer)
+PetscErrorCode DMVecViewLocal(DM dm, Vec v)
 {
   Vec            lv;
-  PetscInt       p;
-  PetscMPIInt    rank, size;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &lv);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(dm, v, INSERT_VALUES, lv);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm, v, INSERT_VALUES, lv);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "Local function\n");CHKERRQ(ierr);
-  for (p = 0; p < size; ++p) {
-    if (p == rank) {ierr = VecView(lv, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
-    ierr = PetscBarrier((PetscObject) dm);CHKERRQ(ierr);
-  }
+  ierr = DMPrintLocalVec(dm, "Local function", 0.0, lv);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &lv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -512,7 +504,7 @@ int main(int argc, char **argv)
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   ierr = DMProjectFunction(dm, 0.0, user.exactFuncs, NULL, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
-  if (user.showInitial) {ierr = DMVecViewLocal(dm, u, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
+  if (user.showInitial) {ierr = DMVecViewLocal(dm, u);CHKERRQ(ierr);}
   if (user.runType == RUN_FULL) {
     PetscErrorCode (*initialGuess[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void* ctx) = {zero_vector, zero_scalar};
 

@@ -3149,27 +3149,32 @@ PetscErrorCode DMPrintCellMatrix(PetscInt c, const char name[], PetscInt rows, P
 
 PetscErrorCode DMPrintLocalVec(DM dm, const char name[], PetscReal tol, Vec X)
 {
-  PetscMPIInt    rank, size;
-  PetscInt       p;
-  PetscErrorCode ierr;
+  PetscInt          localSize, bs;
+  PetscMPIInt       size;
+  Vec               x, xglob;
+  const PetscScalar *xarray;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRQ(ierr);
-  ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "%s:\n", name);CHKERRQ(ierr);
-  for (p = 0; p < size; ++p) {
-    if (p == rank) {
-      Vec x;
-
-      ierr = VecDuplicate(X, &x);CHKERRQ(ierr);
-      ierr = VecCopy(X, x);CHKERRQ(ierr);
-      ierr = VecChop(x, tol);CHKERRQ(ierr);
-      ierr = VecView(x, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-      ierr = VecDestroy(&x);CHKERRQ(ierr);
-      ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-    }
-    ierr = PetscBarrier((PetscObject) dm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm),&size);CHKERRQ(ierr);
+  ierr = VecDuplicate(X, &x);CHKERRQ(ierr);
+  ierr = VecCopy(X, x);CHKERRQ(ierr);
+  ierr = VecChop(x, tol);CHKERRQ(ierr);
+  ierr = PetscPrintf(PetscObjectComm((PetscObject) dm),"%s:\n",name);CHKERRQ(ierr);
+  if (size > 1) {
+    ierr = VecGetLocalSize(x,&localSize);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(x,&xarray);CHKERRQ(ierr);
+    ierr = VecGetBlockSize(x,&bs);CHKERRQ(ierr);
+    ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject) dm),bs,localSize,PETSC_DETERMINE,xarray,&xglob);CHKERRQ(ierr);
+  } else {
+    xglob = x;
   }
+  ierr = VecView(xglob,PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject) dm)));CHKERRQ(ierr);
+  if (size > 1) {
+    ierr = VecDestroy(&xglob);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(x,&xarray);CHKERRQ(ierr);
+  }
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
