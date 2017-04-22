@@ -48,7 +48,7 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, DM dmAux, PetscReal ti
   PetscScalar   *coefficients_t = NULL, *coefficientsAux_t = NULL;
   PetscReal     *x;
   PetscInt      *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL, *Nb, *Nc, *NbAux = NULL, *NcAux = NULL;
-  PetscInt       dim, Nf, NfAux = 0, f, spDim, d, c, v, tp = 0;
+  PetscInt       dim, dimAux = 0, Nf, NfAux = 0, f, spDim, d, c, v, tp = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBeginHot;
@@ -64,7 +64,25 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, DM dmAux, PetscReal ti
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, section, localU, p, NULL, &coefficients);CHKERRQ(ierr);
   if (dmAux) {
+    DMLabel  spmap;
+    PetscInt subp;
+
+    ierr = DMPlexGetSubpointMap(dmAux, &spmap);CHKERRQ(ierr);
+    if (spmap) {
+      IS              subpointIS;
+      const PetscInt *subpoints;
+      PetscInt        numSubpoints;
+
+      ierr = DMPlexCreateSubpointIS(dmAux, &subpointIS);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(subpointIS, &numSubpoints);CHKERRQ(ierr);
+      ierr = ISGetIndices(subpointIS, &subpoints);CHKERRQ(ierr);
+      ierr = PetscFindInt(p, numSubpoints, subpoints, &subp);CHKERRQ(ierr);
+      if (subp < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %d not found in submesh", p);
+      ierr = ISRestoreIndices(subpointIS, &subpoints);CHKERRQ(ierr);
+      ierr = ISDestroy(&subpointIS);CHKERRQ(ierr);
+    } else subp = p;
     ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
+    ierr = PetscDSGetSpatialDimension(probAux, &dimAux);CHKERRQ(ierr);
     ierr = PetscDSGetNumFields(probAux, &NfAux);CHKERRQ(ierr);
     ierr = PetscDSGetDimensions(probAux, &NbAux);CHKERRQ(ierr);
     ierr = PetscDSGetComponents(probAux, &NcAux);CHKERRQ(ierr);
@@ -73,7 +91,7 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, DM dmAux, PetscReal ti
     ierr = PetscDSGetComponentDerivativeOffsets(probAux, &aOff_x);CHKERRQ(ierr);
     ierr = PetscDSGetEvaluationArrays(probAux, &a, NULL /*&a_t*/, &a_x);CHKERRQ(ierr);
     ierr = PetscDSGetRefCoordArrays(probAux, NULL, &refSpaceDerAux);CHKERRQ(ierr);
-    ierr = DMPlexVecGetClosure(dmAux, sectionAux, localA, p, NULL, &coefficientsAux);CHKERRQ(ierr);
+    ierr = DMPlexVecGetClosure(dmAux, sectionAux, localA, subp, NULL, &coefficientsAux);CHKERRQ(ierr);
   }
   /* Get values for closure */
   for (f = 0, v = 0; f < Nf; ++f) {
@@ -90,7 +108,7 @@ static PetscErrorCode DMProjectPoint_Field_Private(DM dm, DM dmAux, PetscReal ti
         for (q = 0; q < numPoints; ++q, ++tp) {
           CoordinatesRefToReal(dim, dim, fegeom->v0, fegeom->J, &points[q*dim], x);
           EvaluateFieldJets(dim, Nf, Nb, Nc, tp, basisTab, basisDerTab, refSpaceDer, fegeom->invJ, coefficients, coefficients_t, u, u_x, u_t);
-          if (probAux) {EvaluateFieldJets(dim, NfAux, NbAux, NcAux, tp, basisTabAux, basisDerTabAux, refSpaceDerAux, fegeom->invJ, coefficientsAux, coefficientsAux_t, a, a_x, a_t);}
+          if (probAux) {EvaluateFieldJets(dimAux, NfAux, NbAux, NcAux, tp, basisTabAux, basisDerTabAux, refSpaceDerAux, fegeom->invJ, coefficientsAux, coefficientsAux_t, a, a_x, a_t);}
           (*funcs[f])(dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, a_t, a_x, time, x, &values[v]);
         }
       } else {
