@@ -252,6 +252,7 @@ int main(int argc, char **argv)
     args: -dm_refine 5 -temp_petscspace_order 2 -ts_type beuler -ts_max_steps 10 -ts_dt 0.1 -pc_type lu -ksp_monitor_short -ksp_converged_reason -snes_monitor_short -snes_converged_reason -ts_monitor
   test:
     suffix: 2d_q1_r1
+    requires: !single
     args: -simplex 0 -dm_refine 1 -temp_petscspace_order 1 -temp_petscspace_poly_tensor -ts_type beuler -ts_max_steps 10 -ts_dt 0.1 -pc_type lu -ksp_monitor_short -ksp_converged_reason -snes_monitor_short -snes_converged_reason -ts_monitor
   test:
     suffix: 2d_q1_r3
@@ -261,12 +262,14 @@ int main(int argc, char **argv)
     args: -simplex 0 -dm_refine 5 -temp_petscspace_order 1 -temp_petscspace_poly_tensor -ts_type beuler -ts_max_steps 10 -ts_dt 0.1 -pc_type lu -ksp_monitor_short -ksp_converged_reason -snes_monitor_short -snes_converged_reason -ts_monitor
   test:
     suffix: 2d_q2_r1
+    requires: !quad
     args: -simplex 0 -dm_refine 1 -temp_petscspace_order 2 -temp_petscspace_poly_tensor -ts_type beuler -ts_max_steps 10 -ts_dt 0.1 -pc_type lu -ksp_monitor_short -ksp_converged_reason -snes_monitor_short -snes_converged_reason -ts_monitor
   test:
     suffix: 2d_q2_r3
     args: -simplex 0 -dm_refine 3 -temp_petscspace_order 2 -temp_petscspace_poly_tensor -ts_type beuler -ts_max_steps 10 -ts_dt 0.1 -pc_type lu -ksp_monitor_short -ksp_converged_reason -snes_monitor_short -snes_converged_reason -ts_monitor
   test:
     suffix: 2d_q2_r5
+    requires: !single
     args: -simplex 0 -dm_refine 5 -temp_petscspace_order 2 -temp_petscspace_poly_tensor -ts_type beuler -ts_max_steps 10 -ts_dt 0.1 -pc_type lu -ksp_monitor_short -ksp_converged_reason -snes_monitor_short -snes_converged_reason -ts_monitor
   test:
     suffix: 3d_p1_r1

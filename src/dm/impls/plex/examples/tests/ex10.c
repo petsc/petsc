@@ -51,7 +51,7 @@ PetscErrorCode ProcessOptions(AppCtx *options)
   ierr = PetscOptionsInt("-num_groups", "Group permutation by this many label values", "ex10.c", options->numGroups, &options->numGroups, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
-};
+}
 
 PetscErrorCode CleanupContext(AppCtx *user)
 {

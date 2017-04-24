@@ -651,6 +651,9 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, DM dm, PetscSect
     ierr = ISCreateGeneral(PetscObjectComm((PetscObject) part), cEnd-cStart, points, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
+  /* Obvious cheating, but I cannot think of a better way to do this. The DMSetFromOptions() has refinement in it,
+     so we cannot call it and have it feed down to the partitioner before partitioning */
+  ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
   if (part->height == 0) {
     PetscInt numVertices;
     PetscInt *start     = NULL;
@@ -757,25 +760,32 @@ static PetscErrorCode PetscPartitionerPartition_Shell(PetscPartitioner part, DM 
   PetscFunctionBegin;
   if (p->random) {
     PetscRandom r;
-    PetscInt   *sizes, *points, v;
+    PetscInt   *sizes, *points, v, p;
+    PetscMPIInt rank;
 
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
     ierr = PetscRandomCreate(PETSC_COMM_SELF, &r);CHKERRQ(ierr);
-    ierr = PetscRandomSetInterval(r, 0.0, (PetscScalar) (nparts+1));CHKERRQ(ierr);
+    ierr = PetscRandomSetInterval(r, 0.0, (PetscScalar) nparts);CHKERRQ(ierr);
     ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
     ierr = PetscCalloc2(nparts, &sizes, numVertices, &points);CHKERRQ(ierr);
-    for (v = 0; v < numVertices; ++v) {
+    for (v = 0; v < numVertices; ++v) {points[v] = v;}
+    for (p = 0; p < nparts; ++p) {sizes[p] = numVertices/nparts + (PetscInt) (p < numVertices % nparts);}
+    for (v = numVertices-1; v > 0; --v) {
       PetscReal val;
-      PetscInt  part;
+      PetscInt  w, tmp;
 
+      ierr = PetscRandomSetInterval(r, 0.0, (PetscScalar) (v+1));CHKERRQ(ierr);
       ierr = PetscRandomGetValueReal(r, &val);CHKERRQ(ierr);
-      part = PetscFloorReal(val);
-      points[v] = part;
-      ++sizes[part];
+      w    = PetscFloorReal(val);
+      tmp       = points[v];
+      points[v] = points[w];
+      points[w] = tmp;
     }
     ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
     ierr = PetscPartitionerShellSetPartition(part, nparts, sizes, points);CHKERRQ(ierr);
     ierr = PetscFree2(sizes, points);CHKERRQ(ierr);
   }
+  if (!p->section) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Shell partitioner information not provided. Please call PetscPartitionerShellSetPartition()");
   ierr = PetscSectionGetChart(p->section, NULL, &np);CHKERRQ(ierr);
   if (nparts != np) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of requested partitions %d != configured partitions %d", nparts, np);
   ierr = ISGetLocalSize(p->partition, &np);CHKERRQ(ierr);
@@ -846,8 +856,8 @@ PetscErrorCode PetscPartitionerShellSetPartition(PetscPartitioner part, PetscInt
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  if (sizes) {PetscValidPointer(sizes, 3);}
-  if (sizes) {PetscValidPointer(points, 4);}
+  if (sizes)  {PetscValidPointer(sizes, 3);}
+  if (points) {PetscValidPointer(points, 4);}
   ierr = PetscSectionDestroy(&p->section);CHKERRQ(ierr);
   ierr = ISDestroy(&p->partition);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject) part), &p->section);CHKERRQ(ierr);
@@ -1442,7 +1452,7 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
       PetscStackPush("ParMETIS_V3_PartKway");
       ierr = ParMETIS_V3_PartKway(vtxdist, xadj, adjncy, vwgt, adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgeCut, assignment, &comm);
       PetscStackPop;
-      if (ierr != METIS_OK) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in ParMETIS_V3_PartKway()");
+      if (ierr != METIS_OK) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error %d in ParMETIS_V3_PartKway()", ierr);
     }
   }
   /* Convert to PetscSection+IS */
@@ -1515,11 +1525,13 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_ParMetis(PetscPartitioner par
 @*/
 PetscErrorCode DMPlexGetPartitioner(DM dm, PetscPartitioner *part)
 {
-  DM_Plex *mesh = (DM_Plex *) dm->data;
+  DM_Plex       *mesh = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(part, 2);
+  ierr = PetscPartitionerSetTypeFromOptions_Internal(mesh->partitioner);CHKERRQ(ierr);
   *part = mesh->partitioner;
   PetscFunctionReturn(0);
 }

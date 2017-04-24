@@ -74,7 +74,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscLogStageRegister("MeshRefine",     &options->stages[STAGE_REFINE]);CHKERRQ(ierr);
   ierr = PetscLogStageRegister("MeshOverlap",    &options->stages[STAGE_OVERLAP]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-};
+}
 
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
@@ -290,7 +290,7 @@ static PetscErrorCode TestCellShape(DM dm)
     mean = globalStats.sum / globalStats.count;
     stdev = PetscSqrtReal(globalStats.squaresum / globalStats.count - mean * mean);
   }
-  ierr = PetscPrintf(comm,"Mesh with %d cells, shape condition numbers: min = %g, max = %g, mean = %g, stddev = %g\n", count, (double) min, (double) max, (double) mean, (double) stdev);
+  ierr = PetscPrintf(comm,"Mesh with %d cells, shape condition numbers: min = %g, max = %g, mean = %g, stddev = %g\n", count, (double) min, (double) max, (double) mean, (double) stdev);CHKERRQ(ierr);
 
   ierr = PetscFree2(J,invJ);CHKERRQ(ierr);
 
@@ -392,51 +392,60 @@ int main(int argc, char **argv)
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/tut21.cgns -interpolate 1 -dm_view
   test:
     suffix: cgns_1
-    requires: cgns broken
+    requires: cgns
+    TODO: broken
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/StaticMixer.cgns -interpolate 1 -dm_view
 
   # Gmsh mesh reader tests
   test:
     suffix: gmsh_0
+    requires: !quad
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh -interpolate 1 -dm_view
   test:
     suffix: gmsh_1
+    requires: !quad
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.msh -interpolate 1 -dm_view
   test:
     suffix: gmsh_2
+    requires: !quad
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin.msh -interpolate 1 -dm_view
   test:
     suffix: gmsh_3
+    requires: !quad
     nsize: 3
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.msh -test_partition -interpolate 1 -dm_view
   test:
     suffix: gmsh_4
+    requires: !quad
     nsize: 3
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin.msh -test_partition -interpolate 1 -dm_view
   test:
     suffix: gmsh_5
+    requires: !quad
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_quad.msh -interpolate 1 -dm_view
   test:
     suffix: gmsh_6
+    requires: !quad
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin_physnames.msh -interpolate 1 -dm_view
 
   # Fluent mesh reader tests
   test:
     suffix: fluent_0
-    requires: !complex
+    requires: !complex !quad
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.cas -interpolate 1 -dm_view
   test:
     suffix: fluent_1
     nsize: 3
-    requires: !complex
+    requires: !complex !quad
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.cas -interpolate 1 -test_partition -dm_view
   test:
     suffix: fluent_2
-    requires: !complex
+    requires: !complex !quad
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_5tets_ascii.cas -interpolate 1 -dm_view
   test:
     suffix: fluent_3
-    requires: broken !complex
+    requires: !complex !quad
+    TODO: broken
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_5tets.cas -interpolate 1 -dm_view
 
   # Med mesh reader tests, including parallel file reads

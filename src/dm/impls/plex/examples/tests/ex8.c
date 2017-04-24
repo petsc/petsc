@@ -92,7 +92,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
   if (options->transform) {ierr = PetscPrintf(comm, "Using random transforms");CHKERRQ(ierr);}
   PetscFunctionReturn(0);
-};
+}
 
 PetscErrorCode ChangeCoordinates(DM dm, PetscInt spaceDim, PetscScalar vertexCoords[])
 {
@@ -1012,12 +1012,14 @@ int main(int argc, char **argv)
     args: -dm_view ::ascii_info_detail
   test:
     suffix: 1
+    requires: !quad
     args: -interpolate -dm_view ::ascii_info_detail
   test:
     suffix: 2
     args: -transform
   test:
     suffix: 3
+    requires: !quad
     args: -interpolate -transform
   test:
     suffix: 4

@@ -216,7 +216,12 @@ static void PhysicsRiemann_Advect(PetscInt dim, PetscInt Nf, const PetscReal *qp
       }
     }
     break;
-    /* default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for solution type %s",AdvectSolBumpTypes[advect->soltype]); */
+  default:
+  {
+    PetscInt i;
+    for (i = 0; i < DIM; ++i) wind[i] = 0.0;
+  }
+  /* default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for solution type %s",AdvectSolBumpTypes[advect->soltype]); */
   }
   wn      = Dot2(wind, n);
   flux[0] = (wn > 0 ? xL[0] : xR[0]) * wn;
@@ -1356,7 +1361,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
     ierr = DMGetLabel(dm,"vtk",&vtkLabel);CHKERRQ(ierr);
     for (c = cStart; c < cEndInterior; ++c) {
       const PetscFVCellGeom *cg;
-      const PetscScalar     *cx;
+      const PetscScalar     *cx    = NULL;
       PetscInt              vtkVal = 0;
 
       /* not that these two routines as currently implemented work for any dm with a
@@ -2013,20 +2018,21 @@ int riem1mdt( PetscScalar *gaml, PetscScalar *gamr, PetscScalar *rl, PetscScalar
     static int i0;
     static PetscScalar cl, cr, wl, zl, wr, zr, pst, durl, skpr1, skpr2;
     static int iwave;
-    static PetscScalar csqrl, csqrr, gascl1, gascl2, gascl3, gascl4, gascr1, gascr2, gascr3, gascr4, cstarl, dpstar, cstarr;
+    static PetscScalar gascl4, gascr4, cstarl, dpstar, cstarr;
+    /* static PetscScalar csqrl, csqrr, gascl1, gascl2, gascl3, gascr1, gascr2, gascr3; */
     static int iterno;
     static PetscScalar ustarl, ustarr, rarepr1, rarepr2;
 
 
 
-    gascl1 = *gaml - 1.;
-    gascl2 = (*gaml + 1.) * .5;
-    gascl3 = gascl2 / *gaml;
+    /* gascl1 = *gaml - 1.; */
+    /* gascl2 = (*gaml + 1.) * .5; */
+    /* gascl3 = gascl2 / *gaml; */
     gascl4 = 1.f / (*gaml - 1.);
 
-    gascr1 = *gamr - 1.;
-    gascr2 = (*gamr + 1.) * .5;
-    gascr3 = gascr2 / *gamr;
+    /* gascr1 = *gamr - 1.; */
+    /* gascr2 = (*gamr + 1.) * .5; */
+    /* gascr3 = gascr2 / *gamr; */
     gascr4 = 1. / (*gamr - 1.);
     iterno = 10;
 /*        find pstar: */
@@ -2034,8 +2040,8 @@ int riem1mdt( PetscScalar *gaml, PetscScalar *gamr, PetscScalar *rl, PetscScalar
     cr = sqrt(*gamr * *pr / *rr);
     wl = *rl * cl;
     wr = *rr * cr;
-    csqrl = wl * wl;
-    csqrr = wr * wr;
+    /* csqrl = wl * wl; */
+    /* csqrr = wr * wr; */
     *pstar = (wl * *pr + wr * *pl) / (wl + wr);
     *pstar = PetscMax(*pstar,smallp);
     pst = *pl / *pr;
@@ -2268,7 +2274,7 @@ int riemannsolver(PetscScalar *xcen, PetscScalar *xp,
 	*rho1 = *rho1l;
     }
     return iwave;
-} 
+}
 int godunovflux( const PetscScalar *ul, const PetscScalar *ur,
                  PetscScalar *flux, const PetscScalar *nn, const int *ndim,
                  const PetscScalar *gamma)
@@ -2395,7 +2401,7 @@ int godunovflux( const PetscScalar *ul, const PetscScalar *ur,
 /* Subroutine to set up the initial conditions for the */
 /* Shock Interface interaction or linear wave (Ravi Samtaney,Mark Adams). */
 /* ----------------------------------------------------------------------- */
-int projecteqstate(PetscScalar wc[], const PetscScalar ueq[], const PetscScalar lv[][3])
+int projecteqstate(PetscScalar wc[], const PetscScalar ueq[], PetscScalar lv[][3])
 {
   int j,k;
 /*      Wc=matmul(lv,Ueq) 3 vars */
@@ -2424,11 +2430,12 @@ int projecttoprim(PetscScalar v[], const PetscScalar wc[], PetscScalar rv[][3])
 int eigenvectors(PetscScalar rv[][3], PetscScalar lv[][3], const PetscScalar ueq[], PetscScalar gamma)
 {
   int j,k;
-  PetscScalar rho,csnd,p0,u;
+  PetscScalar rho,csnd,p0;
+  /* PetscScalar u; */
 
   for (k = 0; k < 3; ++k) for (j = 0; j < 3; ++j) { lv[k][j] = 0.; rv[k][j] = 0.; }
   rho = ueq[0];
-  u = ueq[1];
+  /* u = ueq[1]; */
   p0 = ueq[2];
   csnd = PetscSqrtScalar(gamma * p0 / rho);
   lv[0][1] = rho * .5;
@@ -2546,7 +2553,7 @@ int initLinearWave(EulerNode *ux, const PetscScalar gamma, const PetscReal coord
   # 3D Advection
   test:
     suffix: adv_0
-    requires: broken
+    TODO: broken
     args: -ufv_vtk_interval 0 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo -bc_inflow 100,101,200 -bc_outflow 201
 
 TEST*/

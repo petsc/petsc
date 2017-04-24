@@ -140,11 +140,11 @@ int main(int argc, char **argv)
     suffix: 0
     requires: triangle hdf5
     nsize: 2
-    args: -verbose -globaltonatural_sf_view
+    args: -petscpartitioner_type simple -verbose -globaltonatural_sf_view
   test:
     suffix: 1
     requires: triangle hdf5
     nsize: 2
-    args: -verbose -global_vec_view hdf5:V.h5:native -test_read
+    args: -petscpartitioner_type simple -verbose -global_vec_view hdf5:V.h5:native -test_read
 
 TEST*/

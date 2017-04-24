@@ -21,6 +21,8 @@ typedef struct {
   PetscBool      showInitial, showSolution, restart, check, quiet, nonzInit;
   /* Domain and mesh definition */
   PetscInt       dim;               /* The topological mesh dimension */
+  DMBoundaryType periodicity[3];    /* The domain periodicity */
+  PetscInt       cells[3];          /* The initial domain division */
   char           filename[2048];    /* The optional mesh file */
   PetscBool      interpolate;       /* Generate intermediate mesh elements */
   PetscReal      refinementLimit;   /* The largest allowable cell volume */
@@ -86,45 +88,37 @@ static void quadratic_u_field_2d(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   uexact[0] = a[0];
 }
 
-void f0_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-          const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-          const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-          PetscReal t, const PetscReal x[], PetscScalar f0[])
+static void f0_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                 const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                 const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                 PetscReal t, const PetscReal x[], PetscScalar f0[])
 {
   f0[0] = 4.0;
 }
 
-void f0_bd_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-             const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-             const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-             PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f0[])
+static void f0_bd_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                    PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f0[])
 {
   PetscInt d;
   for (d = 0, f0[0] = 0.0; d < dim; ++d) f0[0] += -n[d]*2.0*x[d];
 }
 
-void f0_bd_zero(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-                const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-                const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f0[])
-{
-  f0[0] = 0.0;
-}
-
-void f1_bd_zero(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-                const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-                const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f1[])
+static void f1_bd_zero(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                       const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                       const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                       PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f1[])
 {
   PetscInt comp;
   for (comp = 0; comp < dim; ++comp) f1[comp] = 0.0;
 }
 
 /* gradU[comp*dim+d] = {u_x, u_y} or {u_x, u_y, u_z} */
-void f1_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-          const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-          const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-          PetscReal t, const PetscReal x[], PetscScalar f1[])
+static void f1_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                 const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                 const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                 PetscReal t, const PetscReal x[], PetscScalar f1[])
 {
   PetscInt d;
   for (d = 0; d < dim; ++d) f1[d] = u_x[d];
@@ -132,13 +126,61 @@ void f1_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
 /* < \nabla v, \nabla u + {\nabla u}^T >
    This just gives \nabla u, give the perdiagonal for the transpose */
-void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-           const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-           const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-           PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[])
+static void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                  const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                  const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                  PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g3[])
 {
   PetscInt d;
   for (d = 0; d < dim; ++d) g3[d*dim+d] = 1.0;
+}
+
+/*
+  In 2D for x periodicity and y Dirichlet conditions, we use exact solution:
+
+    u = sin(2 pi x)
+    f = -4 pi^2 sin(2 pi x)
+
+  so that
+
+    -\Delta u + f = 4 pi^2 sin(2 pi x) - 4 pi^2 sin(2 pi x) = 0
+*/
+static PetscErrorCode xtrig_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+{
+  *u = PetscSinReal(2.0*PETSC_PI*x[0]);
+  return 0;
+}
+
+static void f0_xtrig_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                       const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                       const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                       PetscReal t, const PetscReal x[], PetscScalar f0[])
+{
+  f0[0] = -4.0*PetscSqr(PETSC_PI)*PetscSinReal(2.0*PETSC_PI*x[0]);
+}
+
+/*
+  In 2D for x-y periodicity, we use exact solution:
+
+    u = sin(2 pi x) sin(2 pi y)
+    f = -8 pi^2 sin(2 pi x)
+
+  so that
+
+    -\Delta u + f = 4 pi^2 sin(2 pi x) sin(2 pi y) + 4 pi^2 sin(2 pi x) sin(2 pi y) - 8 pi^2 sin(2 pi x) = 0
+*/
+static PetscErrorCode xytrig_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+{
+  *u = PetscSinReal(2.0*PETSC_PI*x[0])*PetscSinReal(2.0*PETSC_PI*x[1]);
+  return 0;
+}
+
+static void f0_xytrig_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+                        const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+                        const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+                        PetscReal t, const PetscReal x[], PetscScalar f0[])
+{
+  f0[0] = -8.0*PetscSqr(PETSC_PI)*PetscSinReal(2.0*PETSC_PI*x[0]);
 }
 
 /*
@@ -302,7 +344,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   const char    *bcTypes[3]  = {"neumann", "dirichlet", "none"};
   const char    *runTypes[4] = {"full", "exact", "test", "perf"};
   const char    *coeffTypes[4] = {"none", "analytic", "field", "nonlinear"};
-  PetscInt       bc, run, coeff;
+  PetscInt       bd, bc, run, coeff, n;
   PetscBool      flg;
   PetscErrorCode ierr;
 
@@ -310,6 +352,12 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->debug               = 0;
   options->runType             = RUN_FULL;
   options->dim                 = 2;
+  options->periodicity[0]      = DM_BOUNDARY_NONE;
+  options->periodicity[1]      = DM_BOUNDARY_NONE;
+  options->periodicity[2]      = DM_BOUNDARY_NONE;
+  options->cells[0]            = 1;
+  options->cells[1]            = 1;
+  options->cells[2]            = 1;
   options->filename[0]         = '\0';
   options->interpolate         = PETSC_FALSE;
   options->refinementLimit     = 0.0;
@@ -334,6 +382,17 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->runType = (RunType) run;
 
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex12.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
+  bd = options->periodicity[0];
+  ierr = PetscOptionsEList("-x_periodicity", "The x-boundary periodicity", "ex12.c", DMBoundaryTypes, 5, DMBoundaryTypes[options->periodicity[0]], &bd, NULL);CHKERRQ(ierr);
+  options->periodicity[0] = (DMBoundaryType) bd;
+  bd = options->periodicity[1];
+  ierr = PetscOptionsEList("-y_periodicity", "The y-boundary periodicity", "ex12.c", DMBoundaryTypes, 5, DMBoundaryTypes[options->periodicity[1]], &bd, NULL);CHKERRQ(ierr);
+  options->periodicity[1] = (DMBoundaryType) bd;
+  bd = options->periodicity[2];
+  ierr = PetscOptionsEList("-z_periodicity", "The z-boundary periodicity", "ex12.c", DMBoundaryTypes, 5, DMBoundaryTypes[options->periodicity[2]], &bd, NULL);CHKERRQ(ierr);
+  options->periodicity[2] = (DMBoundaryType) bd;
+  n = 3;
+  ierr = PetscOptionsIntArray("-cells", "The initial mesh division", "ex12.c", options->cells, &n, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-f", "Mesh filename to read", "ex12.c", options->filename, options->filename, sizeof(options->filename), &flg);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex12.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex12.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
@@ -388,9 +447,10 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     if (user->simplex) {
       ierr = DMPlexCreateBoxMesh(comm, dim, dim == 2 ? 2 : 1, interpolate, dm);CHKERRQ(ierr);
     } else {
-      PetscInt cells[3] = {1, 1, 1}; /* coarse mesh is one cell; refine from there */
+      PetscInt d;
 
-      ierr = DMPlexCreateHexBoxMesh(comm, dim, cells,  DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);
+      if (user->periodicity[0] || user->periodicity[1] || user->periodicity[2]) for (d = 0; d < dim; ++d) user->cells[d] = PetscMax(user->cells[d], 3);
+      ierr = DMPlexCreateHexBoxMesh(comm, dim, user->cells, user->periodicity[0], user->periodicity[1], user->periodicity[2], dm);CHKERRQ(ierr);
     }
     ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
   } else {
@@ -402,15 +462,17 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     DM distributedMesh = NULL;
 
     /* Refine mesh using a volume constraint */
-    ierr = DMPlexSetRefinementLimit(*dm, refinementLimit);CHKERRQ(ierr);
-    ierr = DMRefine(*dm, comm, &refinedMesh);CHKERRQ(ierr);
-    if (refinedMesh) {
-      const char *name;
+    if (refinementLimit > 0.0) {
+      ierr = DMPlexSetRefinementLimit(*dm, refinementLimit);CHKERRQ(ierr);
+      ierr = DMRefine(*dm, comm, &refinedMesh);CHKERRQ(ierr);
+      if (refinedMesh) {
+        const char *name;
 
-      ierr = PetscObjectGetName((PetscObject) *dm,         &name);CHKERRQ(ierr);
-      ierr = PetscObjectSetName((PetscObject) refinedMesh,  name);CHKERRQ(ierr);
-      ierr = DMDestroy(dm);CHKERRQ(ierr);
-      *dm  = refinedMesh;
+        ierr = PetscObjectGetName((PetscObject) *dm,         &name);CHKERRQ(ierr);
+        ierr = PetscObjectSetName((PetscObject) refinedMesh,  name);CHKERRQ(ierr);
+        ierr = DMDestroy(dm);CHKERRQ(ierr);
+        *dm  = refinedMesh;
+      }
     }
     /* Distribute mesh over processes */
     ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
@@ -448,6 +510,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       }
     }
   }
+  ierr = DMLocalizeCoordinates(*dm);CHKERRQ(ierr); /* needed for periodic */
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   if (user->viewHierarchy) {
@@ -501,8 +564,18 @@ static PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
   PetscFunctionBeginUser;
   switch (user->variableCoefficient) {
   case COEFF_NONE:
-    ierr = PetscDSSetResidual(prob, 0, f0_u, f1_u);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu);CHKERRQ(ierr);
+    if (user->periodicity[0]) {
+      if (user->periodicity[1]) {
+        ierr = PetscDSSetResidual(prob, 0, f0_xytrig_u, f1_u);CHKERRQ(ierr);
+        ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu);CHKERRQ(ierr);
+      } else {
+        ierr = PetscDSSetResidual(prob, 0, f0_xtrig_u,  f1_u);CHKERRQ(ierr);
+        ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu);CHKERRQ(ierr);
+      }
+    } else {
+      ierr = PetscDSSetResidual(prob, 0, f0_u, f1_u);CHKERRQ(ierr);
+      ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu);CHKERRQ(ierr);
+    }
     break;
   case COEFF_ANALYTIC:
     ierr = PetscDSSetResidual(prob, 0, f0_analytic_u, f1_analytic_u);CHKERRQ(ierr);
@@ -520,8 +593,16 @@ static PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
   }
   switch (user->dim) {
   case 2:
-    user->exactFuncs[0]  = quadratic_u_2d;
-    user->exactFields[0] = quadratic_u_field_2d;
+    if (user->periodicity[0]) {
+      if (user->periodicity[1]) {
+        user->exactFuncs[0] = xytrig_u_2d;
+      } else {
+        user->exactFuncs[0] = xtrig_u_2d;
+      }
+    } else {
+      user->exactFuncs[0]  = quadratic_u_2d;
+      user->exactFields[0] = quadratic_u_field_2d;
+    }
     if (user->bcType == NEUMANN) {ierr = PetscDSSetBdResidual(prob, 0, f0_bd_u, f1_bd_zero);CHKERRQ(ierr);}
     break;
   case 3:
@@ -1127,15 +1208,6 @@ int main(int argc, char **argv)
     suffix: 36
     requires: hdf5 ctetgen
     args: -run_type test -dim 3 -refinement_limit 0.0125 -variable_coefficient field    -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1
-  # Using ExodusII mesh 37-38 BROKEN
-  test:
-    suffix: 37
-    requires: hdf5 exodusii broken
-    args: -run_type test -f %(meshes)s/sevenside.exo -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -show_initial -dm_plex_print_fem 1 -dm_view
-  test:
-    suffix: 38
-    requires: hdf5 exodusii broken
-    args: -run_type test -dim 3 -f /Users/knepley/Downloads/kis_modell_tet2.exo -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -show_initial -dm_plex_print_fem 1 -dm_view
   # Full solve 39-44
   test:
     suffix: 39
@@ -1165,13 +1237,14 @@ int main(int argc, char **argv)
     args: -run_type full -refinement_limit 0.0625 -variable_coefficient nonlinear -interpolate 1 -petscspace_order 1 -snes_type fas -snes_fas_levels 3 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason -dm_refine_hierarchy 2 -dm_plex_print_fem 0 -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short -fas_levels_2_snes_type newtonls -fas_levels_2_pc_type svd -fas_levels_2_ksp_rtol 1.0e-10 -fas_levels_2_snes_atol 1.0e-11 -fas_levels_2_snes_monitor_short
   # Restarting
   test:
-    suffix: restart_0
     requires: hdf5 triangle
-    args: -run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_order 1 -dm_view hdf5:sol.h5 -vec_view hdf5:sol.h5::append
-  test:
-    suffix: restart_1
-    requires: hdf5 triangle
-    args: -run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_order 1 -f sol.h5 -restart
+    args: -run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_order 1
+    test:
+      suffix: restart_0
+      args: -dm_view hdf5:sol.h5 -vec_view hdf5:sol.h5::append
+    test:
+      suffix: restart_1
+      args: -f sol.h5 -restart
   # Periodicity
   test:
     suffix: periodic_0
@@ -1271,7 +1344,7 @@ int main(int argc, char **argv)
     suffix: tri_bddc
     requires: hdf5 triangle
     nsize: 5
-    args: -run_type full -dm_refine 3 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -dm_mat_type is -pc_type bddc -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view -show_solution 0
+    args: -run_type full -petscpartitioner_type simple -dm_refine 3 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -dm_mat_type is -pc_type bddc -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view -show_solution 0
   # Full solve simplex: ASM
   test:
     suffix: tri_q2q1_asm_lu
@@ -1304,7 +1377,8 @@ int main(int argc, char **argv)
     args: -run_type full -variable_coefficient nonlinear -interpolate 1 -petscspace_order 1 -snes_type fas -snes_fas_levels 2 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason -dm_refine_hierarchy 1 -snes_view -fas_levels_1_snes_type ngs -fas_levels_1_snes_monitor_short
   test:
     suffix: fas_newton_coarse_0
-    requires: hdf5 pragmatic triangle broken
+    requires: hdf5 pragmatic triangle
+    TODO: broken
     args: -run_type full -dm_refine 2 -dm_plex_hash_location -variable_coefficient nonlinear -interpolate 1 -petscspace_order 1 -snes_type fas -snes_fas_levels 2 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason -dm_coarsen_hierarchy 1 -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short
   test:
     suffix: mg_newton_coarse_0
@@ -1340,7 +1414,7 @@ int main(int argc, char **argv)
     suffix: amr_0
     requires: hdf5 triangle
     nsize: 5
-    args: -run_type test -refinement_limit 0.0 -simplex 0 -bc_type dirichlet -petscspace_order 1 -petscspace_poly_tensor -dm_refine 1
+    args: -run_type test -petscpartitioner_type simple -refinement_limit 0.0 -simplex 0 -bc_type dirichlet -petscspace_order 1 -petscspace_poly_tensor -dm_refine 1
   test:
     suffix: amr_1
     requires: hdf5 p4est triangle
