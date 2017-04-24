@@ -3106,15 +3106,8 @@ PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat,IS isrow,IS iscol,IS *isro
 PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowColDist(Mat mat,IS isrow,IS iscol,MatReuse call,Mat *submat)
 {
   PetscErrorCode ierr;
-  PetscInt       i,m,n,rstart,row,rend,nz,j,rbs,cbs;
   Mat_MPIAIJ     *a=(Mat_MPIAIJ*)mat->data;
-  Mat            M=NULL,B=a->B;
-  PetscInt       *garray = a->garray,*colsub,Ncols;
-  PetscInt       count,Bn=B->cmap->N,cstart=mat->cmap->rstart,cend=mat->cmap->rend;
-  IS             iscol_sub,iscmap;
-  const PetscInt *is_idx,*cmap;
-  PetscBool      allcolumns=PETSC_FALSE;
-  IS             iscol_local=NULL;
+  Mat            M=NULL;
   MPI_Comm       comm;
   IS             iscol_d,isrow_d,iscol_o,isgarray;
   Mat            Asub=NULL,Bsub=NULL;
@@ -3136,6 +3129,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowColDist(Mat mat,IS isrow,IS isco
     ierr = PetscObjectQuery((PetscObject)*submat,"iscol_o",(PetscObject*)&iscol_o);CHKERRQ(ierr);
     if (!iscol_o) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"iscol_o passed in was not used before, cannot reuse");
 
+    /* Update *submat via diagonal and off-diagonal portions of submat */
     ierr = MatCreateSubMatrix_SeqAIJ(a->A,isrow_d,iscol_d,PETSC_DECIDE,call,&matsub->A);CHKERRQ(ierr);
     ierr = MatCreateSubMatrix_SeqAIJ(a->B,isrow_d,iscol_o,PETSC_DECIDE,call,&matsub->B);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(*submat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -3155,14 +3149,14 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowColDist(Mat mat,IS isrow,IS isco
     ierr = ISRestoreIndices(isgarray,&garray1);CHKERRQ(ierr);
 
     /* Check is Bsub == M->B? If not, compress iscol_o accordingly */
-
+    //========================
     a = (Mat_MPIAIJ*)M->data;
-#if 1
-    if (BsubN != a->B->cmap->N) {
+    if (BsubN > a->B->cmap->N) {
       printf("[%d] Bsub->cmap->N %d != a->B->cmap->N %d\n",rank,BsubN,a->B->cmap->N);
-    }
-#endif
+    } else if (BsubN < a->B->cmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Columns of Bsub cannot be smaller than B's",BsubN,a->B->cmap->N);
 
+
+    //======================
     ierr = ISDestroy(&isgarray);CHKERRQ(ierr);
 
     /* Save isrow_d, iscol_d and iscol_o used in processor for next request */
@@ -3370,7 +3364,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowDist(Mat mat,IS isrow,IS iscol,M
   PetscInt       i,m,n,rstart,row,rend,nz,j,bs,cbs;
   PetscInt       *ii,*jj,nlocal,*dlens,*olens,dlen,olen,jend,mglobal;
   Mat_MPIAIJ     *a=(Mat_MPIAIJ*)mat->data;
-  Mat            M,Msub,B=a->B,Mnew=NULL;
+  Mat            M,Msub,B=a->B;
   MatScalar      *aa;
   Mat_SeqAIJ     *aij;
   PetscInt       *garray = a->garray,*colsub,Ncols;
@@ -3380,8 +3374,6 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowDist(Mat mat,IS isrow,IS iscol,M
   PetscBool      allcolumns=PETSC_FALSE;
   IS             iscol_local=NULL;
   MPI_Comm       comm;
-  IS             iscol_d,isrow_d,iscol_o,isgarray;
-  Mat            Asub=NULL,Bsub=NULL;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
