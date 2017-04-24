@@ -3106,7 +3106,7 @@ PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat,IS isrow,IS iscol,IS *isro
 PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowColDist(Mat mat,IS isrow,IS iscol,MatReuse call,Mat *submat)
 {
   PetscErrorCode ierr;
-  PetscInt       i,m,n,rstart,row,rend,nz,j,bs,cbs;
+  PetscInt       i,m,n,rstart,row,rend,nz,j,rbs,cbs;
   Mat_MPIAIJ     *a=(Mat_MPIAIJ*)mat->data;
   Mat            M=NULL,B=a->B;
   PetscInt       *garray = a->garray,*colsub,Ncols;
@@ -3137,7 +3137,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowColDist(Mat mat,IS isrow,IS isco
     if (!iscol_o) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"iscol_o passed in was not used before, cannot reuse");
 
     ierr = MatCreateSubMatrix_SeqAIJ(a->A,isrow_d,iscol_d,PETSC_DECIDE,call,&matsub->A);CHKERRQ(ierr);
-    ierr = MatCreateSubMatrix_SeqAIJ(a->B,isrow_d,iscol_o,PETSC_DECIDE,call,&matsub->B);CHKERRQ(ierr); 
+    ierr = MatCreateSubMatrix_SeqAIJ(a->B,isrow_d,iscol_o,PETSC_DECIDE,call,&matsub->B);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(*submat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(*submat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
@@ -3150,40 +3150,9 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowColDist(Mat mat,IS isrow,IS isco
     ierr = MatCreateSubMatrix_SeqAIJ(a->B,isrow_d,iscol_o,PETSC_DECIDE,call,&Bsub);CHKERRQ(ierr);
 
     PetscInt BsubN = Bsub->cmap->N;
-#if 0
-    ierr = ISGetBlockSize(isrow,&bs);CHKERRQ(ierr);
-    ierr = ISGetBlockSize(iscol,&cbs);CHKERRQ(ierr);
-    ierr = MatSetBlockSizes(Asub,bs,cbs);CHKERRQ(ierr);
-    printf("[%d] bs %d cbs %d Asub rbs %d, cbs %d\n",rank,bs,cbs,Asub->rmap->bs,Asub->cmap->bs);
-#endif
-
-    if (rank == -1) {
-      printf("[%d] Asub:\n",rank);
-      ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_SELF, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
-      ierr = MatView(Asub,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-      ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-      if (!rank) printf("--------------------\n");
-
-      Mat_SeqAIJ *b = (Mat_SeqAIJ*)Bsub->data;
-      printf("[%d] Bsub: allocated nz %d\n",rank,b->maxnz);
-      ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_SELF, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
-      ierr = MatView(Bsub,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-      ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-      if (!rank) printf("--------------------\n");
-    }
-
     ierr = ISGetIndices(isgarray,&garray1);CHKERRQ(ierr);
     ierr = MatCreateMPIAIJWithSeqAIJ(comm,Asub,Bsub,garray1,&M);CHKERRQ(ierr);
     ierr = ISRestoreIndices(isgarray,&garray1);CHKERRQ(ierr);
-
-    if (rank == -1) {
-      printf("matrix M:\n");
-    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
-    ierr = MatView(M,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    if (!rank) printf("--------------------\n");
-    ierr = MPI_Barrier(comm);CHKERRQ(ierr);
-    }
 
     /* Check is Bsub == M->B? If not, compress iscol_o accordingly */
 
@@ -3196,7 +3165,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowColDist(Mat mat,IS isrow,IS isco
 
     ierr = ISDestroy(&isgarray);CHKERRQ(ierr);
 
-    /* save isrow_d, iscol_d and iscol_o used in processor for next request */
+    /* Save isrow_d, iscol_d and iscol_o used in processor for next request */
     ierr = PetscObjectCompose((PetscObject)M,"isrow_d",(PetscObject)isrow_d);CHKERRQ(ierr);
     ierr = ISDestroy(&isrow_d);CHKERRQ(ierr);
 
@@ -3236,7 +3205,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatReuse call
       }
     }
   } else {
-    /* check if isrow has same processor distribution as mat */
+    /* Check if isrow has same processor distribution as mat */
     sameDist[0] = PETSC_FALSE;
     ierr = ISGetLocalSize(isrow,&n);CHKERRQ(ierr);
     if (!n) {
@@ -3249,7 +3218,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatReuse call
       }
     }
 
-    /* check if iscol has same processor distribution as mat */
+    /* Check if iscol has same processor distribution as mat */
     sameDist[1] = PETSC_FALSE;
     ierr = ISGetLocalSize(iscol,&n);CHKERRQ(ierr);
     if (!n) {
@@ -3320,22 +3289,25 @@ PetscErrorCode MatCreateMPIAIJWithSeqAIJ(MPI_Comm comm,Mat A,Mat B,const PetscIn
 {
   PetscErrorCode ierr;
   Mat_MPIAIJ     *maij;
-  Mat_SeqAIJ     *b=(Mat_SeqAIJ*)B->data;
+  Mat_SeqAIJ     *b=(Mat_SeqAIJ*)B->data,*bnew;
   PetscInt       *oi=b->i,*oj=b->j,i,nz,col;
   PetscScalar    *oa=b->a;
-  Mat            Btmp;
+  Mat            Bnew;
   PetscInt       m,n,N;
 
   PetscFunctionBegin;
   ierr = MatCreate(comm,mat);CHKERRQ(ierr);
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
-  if (m != B->rmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Am %d != Bm %d",m,B->rmap->N);
+  if (m != B->rmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Am %D != Bm %D",m,B->rmap->N);
+  if (A->rmap->bs != B->rmap->bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"A row bs %D != B row bs %D",A->rmap->bs,B->rmap->bs);
+  if (A->cmap->bs != B->cmap->bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"A column bs %D != B column bs %D",A->cmap->bs,B->cmap->bs);
 
-  /* get global columns of mat */
+  /* Get global columns of mat */
   ierr = MPIU_Allreduce(&n,&N,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
 
   ierr = MatSetSizes(*mat,m,n,PETSC_DECIDE,N);CHKERRQ(ierr);
   ierr = MatSetType(*mat,MATMPIAIJ);CHKERRQ(ierr);
+  ierr = MatSetBlockSizes(*mat,A->rmap->bs,A->cmap->bs);CHKERRQ(ierr);
   maij = (Mat_MPIAIJ*)(*mat)->data;
 
   (*mat)->preallocated = PETSC_TRUE;
@@ -3343,6 +3315,7 @@ PetscErrorCode MatCreateMPIAIJWithSeqAIJ(MPI_Comm comm,Mat A,Mat B,const PetscIn
   ierr = PetscLayoutSetUp((*mat)->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp((*mat)->cmap);CHKERRQ(ierr);
 
+  /* Set A as diagonal portion of *mat */
   maij->A = A;
 
   nz = oi[m];
@@ -3351,34 +3324,34 @@ PetscErrorCode MatCreateMPIAIJWithSeqAIJ(MPI_Comm comm,Mat A,Mat B,const PetscIn
     oj[i] = garray[col];
   }
 
-  ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,m,N,oi,oj,oa,&Btmp);CHKERRQ(ierr);
-  Mat_SeqAIJ *btmp = (Mat_SeqAIJ*)Btmp->data;
-  btmp->maxnz     = b->maxnz; /* allocated nonzeros of B */
-  maij->B         = Btmp;
+   /* Set Bnew as off-diagonal portion of *mat */
+  ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,m,N,oi,oj,oa,&Bnew);CHKERRQ(ierr);
+  bnew        = (Mat_SeqAIJ*)Bnew->data;
+  bnew->maxnz = b->maxnz; /* allocated nonzeros of B */
+  maij->B     = Bnew;
 
   PetscMPIInt rank;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (rank == -1) {
-      printf("[%d] Btmp:\n",rank);
+      printf("[%d] Bnew:\n",rank);
       ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_SELF, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
-      ierr = MatView(Btmp,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+      ierr = MatView(Bnew,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
       ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
       if (!rank) printf("--------------------\n");
   }
 
-  // Check B == Btmp??? see src/ksp/ksp/examples/tests/runex21_2,3
+  // Check B == Bnew??? see src/ksp/ksp/examples/tests/runex21_2,3
 
-  if (B->rmap->N != Btmp->rmap->N) SETERRQ2(PETSC_COMM_SELF,0,"BN %d != BtmpN %d",B->rmap->N,Btmp->rmap->N);
+  if (B->rmap->N != Bnew->rmap->N) SETERRQ2(PETSC_COMM_SELF,0,"BN %d != BnewN %d",B->rmap->N,Bnew->rmap->N);
 
-  b->singlemalloc = PETSC_FALSE; /* these arrays are shared by Btmp */
+  b->singlemalloc = PETSC_FALSE; /* B arrays are shared by Bnew */
   b->free_a       = PETSC_FALSE;
   b->free_ij      = PETSC_FALSE;
   ierr = MatDestroy(&B);CHKERRQ(ierr);
 
-  b = (Mat_SeqAIJ*)Btmp->data;
-  b->singlemalloc = PETSC_TRUE; /* arrays will be freed by MatDestroy(&Btmp) */
-  b->free_a       = PETSC_TRUE;
-  b->free_ij      = PETSC_TRUE;
+  bnew->singlemalloc = PETSC_TRUE; /* arrays will be freed by MatDestroy(&Bnew) */
+  bnew->free_a       = PETSC_TRUE;
+  bnew->free_ij      = PETSC_TRUE;
 
   /* condense columns of maij->B */
   ierr = MatSetOption(*mat,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
@@ -3447,7 +3420,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowDist(Mat mat,IS isrow,IS iscol,M
       ierr = PetscObjectReference((PetscObject)iscol_local);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,&iscmap);CHKERRQ(ierr);
 
-    } else { 
+    } else {
       /* (2) iscol_local -> iscol_sub and iscmap */
       PetscInt *idx,*cmap1,k,cbs;
 
