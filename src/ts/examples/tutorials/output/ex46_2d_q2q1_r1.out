@@ -1,4 +1,4 @@
-Timestep: 0000 time = 0        	 L_2 Error: [1.1e-16,  0]
+Timestep: 0000 time = 0        	 L_2 Error: [1.1e-16,  0.0]
 0 TS dt 0.1 time 0.
     0 SNES Function norm 0.11345 
       0 KSP Residual norm 1.46006 
