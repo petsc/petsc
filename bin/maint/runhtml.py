@@ -333,6 +333,8 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
       for line in open(logfile_examples_full):
         if write_to_summary:
           examples_summary_file.write(line)
+        if re.search(r'not ok', line):
+          example_problem_num += 1
         if re.search(r'[Pp]ossible [Pp]roblem', line):
           example_problem_num += 1
 
