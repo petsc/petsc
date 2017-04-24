@@ -16,7 +16,25 @@ To produce nice output, use
 
   -dm_refine 3 -show_error -dm_view hdf5:sol1.h5 -error_vec_view hdf5:sol1.h5::append -sol_vec_view hdf5:sol1.h5::append -exact_vec_view hdf5:sol1.h5::append
 
-Citcom: 1250 x 850 on 900 steps (3.5h per 100 timeteps)
+Citcom:
+ 1250 x 850 on 900 steps (3.5h per 100 timeteps)
+
+ *_vects.ascii
+ Nx Ny Nz
+ <Nx values in co-latitude = 90 - degrees latitude>
+ <Ny values in degrees longitude>
+ <Nz values in non-dimensionalized by the radius of the Earth R = 6.371137 10^6 m, and these are ordered bottom to top>
+
+ *_therm.bin
+  Temperature is non-dimensionalized [0 (top), 1 (bottom)]
+  The ordering is Y, X, Z where Z is the fastest dimension
+  X is lat, counts N to S
+  Y is long, counts W to E
+  Z is depth, count bottom to top
+
+ Parallel reads:
+  - Assume vects can be read by any process
+  - Can we do T with a GlobalToNatural reordering?
 */
 
 /*T
@@ -49,6 +67,9 @@ typedef struct {
   PetscInt      dim;               /* The topological mesh dimension */
   PetscBool     simplex;           /* Use simplices or tensor product cells */
   PetscBool     testPartition;     /* Use a fixed partitioning for testing */
+  char          mantleBasename[PETSC_MAX_PATH_LEN];
+  int           verts[3];          /* The number of vertices in each dimension for mantle problems */
+  int           perm[3] ;          /* The permutation of axes for mantle problems */
   /* Problem definition */
   SolutionType  solType;           /* The type of exact solution */
   PetscBag      bag;               /* Holds problem parameters */
@@ -3139,6 +3160,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->showSolution    = PETSC_FALSE;
   options->showError       = PETSC_FALSE;
   options->solType         = SOLKX;
+  options->mantleBasename[0] = '\0';
 
   ierr = PetscOptionsBegin(comm, "", "Variable-Viscosity Stokes Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex69.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
@@ -3150,6 +3172,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   sol  = options->solType;
   ierr = PetscOptionsEList("-sol_type", "Type of exact solution", "ex69.c", solTypes, NUM_SOL_TYPES, solTypes[options->solType], &sol, NULL);CHKERRQ(ierr);
   options->solType = (SolutionType) sol;
+  ierr = PetscOptionsString("-mantle_basename", "The basename for mantle files", "ex69.c", options->mantleBasename, options->mantleBasename, sizeof(options->mantleBasename), NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -3191,12 +3214,73 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   DM             dmDist   = NULL;
   PetscInt       dim      = user->dim;
-  const PetscInt cells[3] = {3, 3, 3};
+  PetscInt       cells[3] = {3, 3, 3};
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  if (user->simplex) {ierr = DMPlexCreateBoxMesh(comm, dim, 2, PETSC_TRUE, dm);CHKERRQ(ierr);}
-  else               {ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);}
+  if (user->solType == COMPOSITE) {
+    PetscViewer viewer;
+    PetscInt    count;
+    char        filename[PETSC_MAX_PATH_LEN];
+    char        line[PETSC_MAX_PATH_LEN];
+    double     *axes[3];
+    int        *verts = user->verts;
+    int        *perm  = user->perm;
+    int         snum, d;
+
+    if (user->simplex) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Citom grids do not use simplices. Use -simplex 0");
+    ierr = PetscStrcpy(filename, user->mantleBasename);CHKERRQ(ierr);
+    ierr = PetscStrcat(filename, "_vects.ascii");CHKERRQ(ierr);
+    ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
+    ierr = PetscViewerRead(viewer, line, 3, NULL, PETSC_STRING);CHKERRQ(ierr);
+    if (dim == 2) {perm[0] = 2; perm[1] = 0; perm[2] = 1;}
+    else          {perm[0] = 0; perm[1] = 1; perm[2] = 2;}
+    snum = sscanf(line, "%d %d %d", &verts[perm[0]], &verts[perm[1]], &verts[perm[2]]);
+    if (snum != 3) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse Citcom vertex file header: %s", line);
+    for (d = 0; d < 3; ++d) {
+      ierr = PetscMalloc1(verts[perm[d]], &axes[perm[d]]);CHKERRQ(ierr);
+      ierr = PetscViewerRead(viewer, axes[perm[d]], verts[perm[d]], &count, PETSC_DOUBLE);CHKERRQ(ierr);
+      if (count != verts[perm[d]]) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse Citcom vertex file dimension %d: %D %= %d", d, count, verts[perm[d]]);
+    }
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    if (dim == 2) {verts[perm[0]] = 1;}
+    for (d = 0; d < 3; ++d) cells[d] = verts[d]-1;
+    ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);
+    /* Remap coordinates to unit ball */
+    {
+      Vec           coordinates;
+      PetscSection  coordSection;
+      PetscScalar  *coords;
+      PetscInt      vStart, vEnd, v;
+
+      ierr = DMPlexGetDepthStratum(*dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+      ierr = DMGetCoordinateSection(*dm, &coordSection);CHKERRQ(ierr);
+      ierr = DMGetCoordinatesLocal(*dm, &coordinates);CHKERRQ(ierr);
+      ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
+      for (v = vStart; v < vEnd; ++v) {
+        PetscInt  vert[3] = {0, 0, 0};
+        PetscReal theta, phi, r;
+        PetscInt  off;
+
+        ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
+        for (d = 0; d < dim; ++d) vert[d] = round(PetscRealPart(coords[off+d])*cells[d]);
+        theta = axes[perm[0]][vert[perm[0]]]*2.0*PETSC_PI/360;
+        phi   = axes[perm[1]][vert[perm[1]]]*2.0*PETSC_PI/360;
+        r     = axes[perm[2]][vert[perm[2]]];
+        coords[off+0] = r*PetscSinReal(theta)*PetscSinReal(phi);
+        coords[off+1] = r*PetscSinReal(theta)*PetscCosReal(phi);
+        if (dim > 2) {coords[off+2] = r*PetscCosReal(theta);}
+      }
+      ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
+    }
+    for (d = 0; d < 3; ++d) {ierr = PetscFree(axes[d]);CHKERRQ(ierr);}
+  } else {
+    if (user->simplex) {ierr = DMPlexCreateBoxMesh(comm, dim, 2, PETSC_TRUE, dm);CHKERRQ(ierr);}
+    else               {ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);}
+  }
   /* Make split labels so that we can have corners in multiple labels */
   {
     const char *names[4] = {"markerBottom", "markerRight", "markerTop", "markerLeft"};
@@ -3361,32 +3445,76 @@ static PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
   ierr = PetscBagGetData(user->bag, (void **) &param);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(dmAux, &paramVec);CHKERRQ(ierr);
   ierr = VecGetArray(paramVec, &p);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dmAux, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
-  cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
-  for (c = cStart; c < cEnd; ++c) {
-    ierr = DMPlexPointLocalRef(dmAux, c, p, &a);CHKERRQ(ierr);
-    switch (user->solType) {
-    case SOLKX:
-      a[0] = param->m;
-      a[1] = param->n;
-      a[2] = param->B;
-      break;
-    case SOLCX:
-      a[0] = param->m;
-      a[1] = param->n;
-      a[2] = param->etaA;
-      a[3] = param->etaB;
-      a[4] = param->xc;
-      break;
-    case COMPOSITE:
-      a[0] = param->T;
-      break;
-    default: SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "No parameter information for solution type %d", user->solType);
+  if (user->solType == COMPOSITE) {
+    PetscSection s;
+    PetscViewer  viewer;
+    PetscInt     count;
+    char         filename[PETSC_MAX_PATH_LEN];
+    float       *temp;
+    PetscInt     Nx = user->verts[user->perm[0]], Ny = user->verts[user->perm[1]], Nz = user->verts[user->perm[2]], vStart, vx, vy, vz;
+
+    ierr = DMGetDefaultSection(dmAux, &s);CHKERRQ(ierr);
+    ierr = DMPlexGetDepthStratum(dmAux, 0, &vStart, NULL);CHKERRQ(ierr);
+    ierr = PetscStrcpy(filename, user->mantleBasename);CHKERRQ(ierr);
+    ierr = PetscStrcat(filename, "_therm.bin");CHKERRQ(ierr);
+    ierr = PetscViewerCreate(PetscObjectComm((PetscObject) dm), &viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSCVIEWERBINARY);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
+    ierr = PetscMalloc1(Nz, &temp);CHKERRQ(ierr);
+    /* The ordering is Y, X, Z where Z is the fastest dimension */
+    for (vy = 0; vy < Ny; ++vy) {
+      for (vx = 0; vx < Nx; ++vx) {
+        ierr = PetscViewerRead(viewer, temp, Nz, &count, PETSC_FLOAT);CHKERRQ(ierr);
+        if (count != Nz) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Mantle temperature file %s had incorrect length", filename);
+        for (vz = 0; vz < Nz; ++vz) {
+          PetscInt off;
+
+          ierr = PetscSectionGetOffset(s, (vz*Ny + vy)*Nx + vx + vStart, &off);CHKERRQ(ierr);
+          p[off] = temp[vz];
+        }
+      }
+    }
+    ierr = PetscFree(temp);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  } else {
+    ierr = DMPlexGetHeightStratum(dmAux, 0, &cStart, &cEnd);CHKERRQ(ierr);
+    ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
+    cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
+    for (c = cStart; c < cEnd; ++c) {
+      ierr = DMPlexPointLocalRef(dmAux, c, p, &a);CHKERRQ(ierr);
+      switch (user->solType) {
+      case SOLKX:
+        a[0] = param->m;
+        a[1] = param->n;
+        a[2] = param->B;
+        break;
+      case SOLCX:
+        a[0] = param->m;
+        a[1] = param->n;
+        a[2] = param->etaA;
+        a[3] = param->etaB;
+        a[4] = param->xc;
+        break;
+      case COMPOSITE:
+        a[0] = param->T;
+        break;
+      default: SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "No parameter information for solution type %d", user->solType);
+      }
     }
   }
   ierr = VecRestoreArray(paramVec, &p);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject) dm, "A", (PetscObject) paramVec);CHKERRQ(ierr);
+  ierr = DMViewFromOptions(dmAux, NULL, "-dm_aux_view");CHKERRQ(ierr);
+  {
+    Vec gvec;
+
+    ierr = DMGetGlobalVector(dmAux, &gvec);CHKERRQ(ierr);
+    ierr = DMLocalToGlobalBegin(dmAux, paramVec, INSERT_VALUES, gvec);CHKERRQ(ierr);
+    ierr = DMLocalToGlobalEnd(dmAux, paramVec, INSERT_VALUES, gvec);CHKERRQ(ierr);
+    ierr = VecViewFromOptions(gvec, NULL, "-vec_param_view");CHKERRQ(ierr);
+    ierr = DMRestoreGlobalVector(dmAux, &gvec);CHKERRQ(ierr);
+  }
   ierr = VecDestroy(&paramVec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3421,10 +3549,21 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   ierr = PetscBagGetNames(user->bag, auxFieldNames);CHKERRQ(ierr);
   ierr = PetscDSCreate(PetscObjectComm((PetscObject)dm),&probAux);CHKERRQ(ierr);
   for (f = 0; f < numAux; ++f) {
-    ierr = PetscFECreateDefault(dm, dim, 1, PETSC_FALSE, NULL, 0, &feAux[f]);CHKERRQ(ierr);
+    char prefix[PETSC_MAX_PATH_LEN];
+
+    ierr = PetscSNPrintf(prefix, PETSC_MAX_PATH_LEN, "aux_%d_", f);CHKERRQ(ierr);
+    ierr = PetscFECreateDefault(dm, dim, 1, user->simplex, prefix, 0, &feAux[f]);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) feAux[f], auxFieldNames[f]);CHKERRQ(ierr);
     ierr = PetscFESetQuadrature(feAux[f], q);CHKERRQ(ierr);
     ierr = PetscDSSetDiscretization(probAux, f, (PetscObject) feAux[f]);CHKERRQ(ierr);
+    if (user->solType == COMPOSITE) {
+      PetscSpace sp;
+      PetscInt   order;
+
+      ierr = PetscFEGetBasisSpace(feAux[f], &sp);CHKERRQ(ierr);
+      ierr = PetscSpaceGetOrder(sp, &order);CHKERRQ(ierr);
+      if (order != 1) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Temperature element must be linear, not order %D", order);
+    }
   }
   /* Set discretization and boundary conditions for each mesh */
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
@@ -3521,6 +3660,13 @@ int main(int argc, char **argv)
   ierr = DMPlexSetSNESLocalFEM(dm,&user,&user,&user);CHKERRQ(ierr);
   ierr = CreatePressureNullSpace(dm, &user, &nullVec, &nullSpace);CHKERRQ(ierr);
 
+  { /* set tolerances */
+    KSP ksp;
+
+    ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+    ierr = KSPSetTolerances(ksp,1.e-2*PETSC_SMALL,PETSC_SMALL,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
+  }
+
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   /* There should be a way to express this using the DM */
@@ -3581,56 +3727,69 @@ int main(int argc, char **argv)
   test:
     suffix: 0
     requires: triangle
+    filter: sed  -e "s/iterations *= *[123]$/iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
     args: -dm_plex_separate_marker -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition full -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type svd -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -dm_view -dmsnes_check -show_solution
   test:
     suffix: 1
     requires: triangle
+    filter: sed  -e "s/iterations *= *[123]$/iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
     args: -dm_plex_separate_marker -dm_refine 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition full -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type svd -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -dm_view -dmsnes_check -show_solution
   test:
     suffix: 2
     requires: triangle
-    args: -dm_plex_separate_marker -dm_refine 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_use_amat -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-9 -fieldsplit_pressure_pc_type lu -snes_error_if_not_converged -ksp_error_if_not_converged -ksp_error_if_not_converged -snes_view -dm_view -dmsnes_check -show_solution
+    filter: sed  -e "s/iterations *= *[123]$/iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    args: -dm_plex_separate_marker -dm_refine 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_use_amat -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-9 -fieldsplit_pressure_pc_type lu -snes_error_if_not_converged -ksp_error_if_not_converged -snes_view -dm_view -dmsnes_check -show_solution
   # 2D serial discretization tests
   test:
     suffix: p2p1
-    requires: !single triangle
-    args: -dm_plex_separate_marker -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_rtol 1e-12 -ksp_atol 1e-12 -pc_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition selfp -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-12  -fieldsplit_pressure_ksp_atol 5e-9 -fieldsplit_pressure_ksp_gmres_restart 200 -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
+    requires: triangle
+    filter: sed  -e "s/iterations *= *[123]$/iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    args: -dm_plex_separate_marker -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_fieldsplit_diag_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type lu -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
   test:
     suffix: p2p1ref
-    requires: !single triangle
-    args: -dm_plex_separate_marker -dm_refine 2 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_rtol 1e-12 -ksp_atol 1e-12 -pc_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition selfp -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-12  -fieldsplit_pressure_ksp_atol 5e-9 -fieldsplit_pressure_ksp_gmres_restart 200 -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
+    requires: triangle
+    filter: sed  -e "s/iterations *= *[123]$/iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    args: -dm_plex_separate_marker -dm_refine 2 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_fieldsplit_diag_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type lu -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
   test:
     suffix: q2q1
-    requires: !single
-    args: -dm_plex_separate_marker -simplex 0 -vel_petscspace_order 2 -vel_petscspace_poly_tensor -pres_petscspace_order 1 -pres_petscspace_poly_tensor -ksp_rtol 1e-12 -ksp_atol 1e-12 -pc_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition selfp -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-12  -fieldsplit_pressure_ksp_atol 5e-9 -fieldsplit_pressure_ksp_gmres_restart 200 -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
+    requires:
+    filter: sed  -e "s/iterations *= *[123]$/iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    args: -dm_plex_separate_marker -simplex 0 -vel_petscspace_order 2 -vel_petscspace_poly_tensor -pres_petscspace_order 1 -pres_petscspace_poly_tensor -pc_fieldsplit_diag_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type lu -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
   test:
     suffix: q2q1ref
-    requires: !single
-    args: -dm_plex_separate_marker -simplex 0 -dm_refine 2 -vel_petscspace_order 2 -vel_petscspace_poly_tensor -pres_petscspace_order 1 -pres_petscspace_poly_tensor -ksp_rtol 1e-12 -ksp_atol 1e-12 -pc_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition selfp -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-12  -fieldsplit_pressure_ksp_atol 5e-9 -fieldsplit_pressure_ksp_gmres_restart 200 -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
+    requires:
+    filter: sed  -e "s/iterations *= *[123]$/iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    args: -dm_plex_separate_marker -simplex 0 -dm_refine 2 -vel_petscspace_order 2 -vel_petscspace_poly_tensor -pres_petscspace_order 1 -pres_petscspace_poly_tensor -pc_fieldsplit_diag_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type lu -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
   test:
     suffix: q1p0
-    requires: !single
-    args: -dm_plex_separate_marker -simplex 0 -vel_petscspace_order 1 -vel_petscspace_poly_tensor -pres_petscspace_order 0 -pres_petscspace_poly_tensor -ksp_rtol 1e-12 -ksp_atol 1e-12 -pc_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition selfp -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-12  -fieldsplit_pressure_ksp_atol 5e-9 -fieldsplit_pressure_ksp_gmres_restart 200 -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
+    requires:
+    filter: sed  -e "s/iterations *= *[123]$/iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    args: -dm_plex_separate_marker -simplex 0 -vel_petscspace_order 1 -vel_petscspace_poly_tensor -pres_petscspace_order 0 -pres_petscspace_poly_tensor -pc_fieldsplit_diag_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type lu -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
   test:
     suffix: q1p0ref
-    requires: !single
-    args: -dm_plex_separate_marker -simplex 0 -dm_refine 2 -vel_petscspace_order 1 -vel_petscspace_poly_tensor -pres_petscspace_order 0 -pres_petscspace_poly_tensor -ksp_rtol 1e-12 -ksp_atol 1e-12 -pc_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition selfp -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-12  -fieldsplit_pressure_ksp_atol 5e-9 -fieldsplit_pressure_ksp_gmres_restart 200 -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
+    requires:
+    filter: sed  -e "s/iterations *= *[123]$/iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    args: -dm_plex_separate_marker -simplex 0 -dm_refine 2 -vel_petscspace_order 1 -vel_petscspace_poly_tensor -pres_petscspace_order 0 -pres_petscspace_poly_tensor -pc_fieldsplit_diag_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type lu -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
   test:
     suffix: q2p1
-    requires: !single
-    args: -dm_plex_separate_marker -simplex 0 -vel_petscspace_order 2 -vel_petscspace_poly_tensor -pres_petscspace_order 1 -pres_petscdualspace_lagrange_continuity 0 -ksp_rtol 1e-12 -ksp_atol 1e-12 -pc_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition selfp -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-12  -fieldsplit_pressure_ksp_atol 5e-9 -fieldsplit_pressure_ksp_gmres_restart 200 -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
+    requires:
+    filter: sed  -e "s/iterations *= *[123]$/iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    args: -dm_plex_separate_marker -simplex 0 -vel_petscspace_order 2 -vel_petscspace_poly_tensor -pres_petscspace_order 1 -pres_petscdualspace_lagrange_continuity 0 -pc_fieldsplit_diag_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type lu -fieldsplit_pressure_pc_factor_shift_type -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
   test:
     suffix: q2p1ref
-    requires: !single
-    args: -dm_plex_separate_marker -simplex 0 -dm_refine 2 -vel_petscspace_order 2 -vel_petscspace_poly_tensor -pres_petscspace_order 1 -pres_petscdualspace_lagrange_continuity 0 -ksp_rtol 1e-12 -ksp_atol 1e-12 -pc_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition selfp -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-12  -fieldsplit_pressure_ksp_atol 5e-9 -fieldsplit_pressure_ksp_gmres_restart 200 -fieldsplit_pressure_pc_type jacobi -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
+    requires:
+    filter: sed  -e "s/iterations *= *[123]$/iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    args: -dm_plex_separate_marker -simplex 0 -dm_refine 2 -vel_petscspace_order 2 -vel_petscspace_poly_tensor -pres_petscspace_order 1 -pres_petscdualspace_lagrange_continuity 0 -pc_fieldsplit_diag_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type lu -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
   # 2D serial mantle tests
   test:
     suffix: mantle_q1p0
-    requires: !single broken
-    args: -sol_type composite -simplex 0 -dm_plex_separate_marker -vel_petscspace_order 1 -vel_petscspace_poly_tensor -pres_petscspace_order 0 -pres_petscspace_poly_tensor -ksp_rtol 1e-12 -ksp_atol 1e-12 -pc_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition full -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type lu -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
+    requires: broken
+    filter: sed  -e "s/iterations *= *[123]$/iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    args: -sol_type composite -simplex 0 -mantle_basename $HOME/Desktop/TwoDim_forMatt/TwoDimSlab45cg1deg -dm_plex_separate_marker -vel_petscspace_order 1 -vel_petscspace_poly_tensor -pres_petscspace_order 0 -pres_petscspace_poly_tensor -aux_0_petscspace_order 1 -aux_0_petscspace_poly_tensor -pc_fieldsplit_diag_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type lu -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
   test:
-    suffix: mantle_p2p1
-    requires: !single triangle broken
-    args: -sol_type composite -dm_plex_separate_marker -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_rtol 1e-12 -ksp_atol 1e-12 -pc_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition full -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type lu -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
+    suffix: mantle_q2q1
+    requires: broken
+    filter: sed  -e "s/iterations *= *[123]$/iterations=4/g" -e "s/evaluations=2/evaluations=3/g"
+    args: -sol_type composite -simplex 0 -mantle_basename $HOME/Desktop/TwoDim_forMatt/TwoDimSlab45cg1deg -dm_plex_separate_marker -vel_petscspace_order 2 -vel_petscspace_poly_tensor -pres_petscspace_order 1 -pres_petscspace_poly_tensor -aux_0_petscspace_order 1 -aux_0_petscspace_poly_tensor -pc_fieldsplit_diag_use_amat -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type lu -snes_error_if_not_converged -snes_view -ksp_error_if_not_converged -dm_view
 
 TEST*/

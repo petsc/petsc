@@ -19,8 +19,8 @@ SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=1
-  total number of function evaluations=2
+  total number of linear solver iterations=4
+  total number of function evaluations=3
   norm schedule ALWAYS
   SNESLineSearch Object: 1 MPI processes
     type: bt
@@ -34,7 +34,7 @@ SNES Object: 1 MPI processes
       GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       GMRES: happy breakdown tolerance 1e-30
     maximum iterations=10000, initial guess is zero
-    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    tolerances:  relative=1e-12, absolute=1e-10, divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
   PC Object: 1 MPI processes
@@ -178,7 +178,7 @@ SNES Object: 1 MPI processes
       total: nonzeros=653, allocated nonzeros=653
       total number of mallocs used during MatSetValues calls =0
         using I-node routines: found 24 nodes, limit used is 5
-Number of SNES iterations = 1
+Number of SNES iterations=4
 L_2 Error: 0.0288 [0.000564, 0.0288]
 Integral of pressure: 0.
 Solution
