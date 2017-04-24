@@ -3118,6 +3118,8 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowColDist(Mat mat,IS isrow,IS isco
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   if (call == MAT_REUSE_MATRIX) {
+    PetscInt n;
+    printf(" _SameRowColDist reuse ...\n");
     Mat_MPIAIJ *matsub=(Mat_MPIAIJ*)(*submat)->data;
 
     ierr = PetscObjectQuery((PetscObject)*submat,"isrow_d",(PetscObject*)&isrow_d);CHKERRQ(ierr);
@@ -3130,8 +3132,11 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowColDist(Mat mat,IS isrow,IS isco
     if (!iscol_o) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"iscol_o passed in was not used before, cannot reuse");
 
     /* Update *submat via diagonal and off-diagonal portions of submat */
-    ierr = MatCreateSubMatrix_SeqAIJ(a->A,isrow_d,iscol_d,PETSC_DECIDE,call,&matsub->A);CHKERRQ(ierr);
-    ierr = MatCreateSubMatrix_SeqAIJ(a->B,isrow_d,iscol_o,PETSC_DECIDE,call,&matsub->B);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix_SeqAIJ(a->A,isrow_d,iscol_d,PETSC_DECIDE,MAT_REUSE_MATRIX,&matsub->A);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(iscol_o,&n);CHKERRQ(ierr);
+    if (n) {
+      ierr = MatCreateSubMatrix_SeqAIJ(a->B,isrow_d,iscol_o,PETSC_DECIDE,MAT_REUSE_MATRIX,&matsub->B);CHKERRQ(ierr);
+    }
     ierr = MatAssemblyBegin(*submat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(*submat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
@@ -3140,22 +3145,46 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowColDist(Mat mat,IS isrow,IS isco
 
     ierr = ISGetSeqIS_SameColDist_Private(mat,isrow,iscol,&isrow_d,&iscol_d,&iscol_o,&isgarray);CHKERRQ(ierr);
 
-    ierr = MatCreateSubMatrix_SeqAIJ(a->A,isrow_d,iscol_d,PETSC_DECIDE,call,&Asub);CHKERRQ(ierr);
-    ierr = MatCreateSubMatrix_SeqAIJ(a->B,isrow_d,iscol_o,PETSC_DECIDE,call,&Bsub);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix_SeqAIJ(a->A,isrow_d,iscol_d,PETSC_DECIDE,MAT_INITIAL_MATRIX,&Asub);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix_SeqAIJ(a->B,isrow_d,iscol_o,PETSC_DECIDE,MAT_INITIAL_MATRIX,&Bsub);CHKERRQ(ierr);
+    if (rank == -1) {
+      printf("Bsub:\n");
+      ierr = MatView(Bsub,0);CHKERRQ(ierr);
+    }
 
-    PetscInt BsubN = Bsub->cmap->N;
     ierr = ISGetIndices(isgarray,&garray1);CHKERRQ(ierr);
     ierr = MatCreateMPIAIJWithSeqAIJ(comm,Asub,Bsub,garray1,&M);CHKERRQ(ierr);
     ierr = ISRestoreIndices(isgarray,&garray1);CHKERRQ(ierr);
 
-    /* Check is Bsub == M->B? If not, compress iscol_o accordingly */
+    /* Bsub may have empty columns. If so, compress iscol_o so it will retrives condensed Bsub from a->B during reuse */
     //========================
     a = (Mat_MPIAIJ*)M->data;
-    if (BsubN > a->B->cmap->N) {
-      printf("[%d] Bsub->cmap->N %d != a->B->cmap->N %d\n",rank,BsubN,a->B->cmap->N);
+    PetscInt Bn = a->B->cmap->N,BsubN;
+
+    ierr = ISGetLocalSize(isgarray,&BsubN);CHKERRQ(ierr);
+    if (BsubN > Bn) {
+      /* This case can be tested using ~petsc/src/tao/bound/examples/tutorials/runplate2_3 */
+      const PetscInt *idx;
+      PetscInt       i,j,idx_new[Bn],*garray=a->garray;
+      printf("[%d] BsubN %d != Bn %d, update iscol_o \n",rank,BsubN,Bn);
+
+      ierr = ISGetIndices(iscol_o,&idx);CHKERRQ(ierr);
+      j = 0;
+      for (i=0; i<Bn; i++) {
+        if (j >= BsubN) break;
+        while (garray[i] > garray1[j]) j++;
+
+        if (garray[i] == garray1[j]) {
+          idx_new[i] = idx[j++];
+        } else SETERRQ(PETSC_COMM_SELF,0,"wrong");
+      }
+      ierr = ISRestoreIndices(iscol_o,&idx);CHKERRQ(ierr);
+
+      ierr = ISDestroy(&iscol_o);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(PETSC_COMM_SELF,Bn,idx_new,PETSC_COPY_VALUES,&iscol_o);CHKERRQ(ierr);
+
+
     } else if (BsubN < a->B->cmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Columns of Bsub cannot be smaller than B's",BsubN,a->B->cmap->N);
-
-
     //======================
     ierr = ISDestroy(&isgarray);CHKERRQ(ierr);
 

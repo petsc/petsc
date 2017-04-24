@@ -117,6 +117,7 @@ PetscErrorCode TaoMatGetSubMat(Mat M, IS is, Vec v1, TaoSubsetType subset_type, 
   switch (subset_type) {
   case TAO_SUBSET_SUBVEC:
     ierr = MatCreateSubMatrix(M, is, is, MAT_INITIAL_MATRIX, Msub);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix(M, is, is, MAT_REUSE_MATRIX, Msub);CHKERRQ(ierr); //RM later!!!
     break;
 
   case TAO_SUBSET_MASK:
