@@ -168,12 +168,8 @@ PETSC_EXTERN void PETSC_STDCALL kspmonitorset_(KSP *ksp,void (PETSC_STDCALL *mon
     *ierr = KSPMonitorSet(*ksp,(PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*))KSPGMRESMonitorKrylov,*(PetscViewerAndFormat**)mctx,(PetscErrorCode (*)(void **))PetscViewerAndFormatDestroy);
   } else {
     *ierr = PetscObjectSetFortranCallback((PetscObject)*ksp,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.monitor,(PetscVoidFunction)monitor,mctx); if (*ierr) return;
-    if (!monitordestroy) {
-      *ierr = KSPMonitorSet(*ksp,ourmonitor,*ksp,0);
-    } else {
-      *ierr = PetscObjectSetFortranCallback((PetscObject)*ksp,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.monitordestroy,(PetscVoidFunction)monitordestroy,mctx); if (*ierr) return;
-      *ierr = KSPMonitorSet(*ksp,ourmonitor,*ksp,ourdestroy);
-    }
+    *ierr = PetscObjectSetFortranCallback((PetscObject)*ksp,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.monitordestroy,(PetscVoidFunction)monitordestroy,mctx); if (*ierr) return;
+    *ierr = KSPMonitorSet(*ksp,ourmonitor,*ksp,ourdestroy);
   }
 }
 
@@ -190,12 +186,8 @@ PETSC_EXTERN void PETSC_STDCALL kspsetconvergencetest_(KSP *ksp,
     *ierr = KSPSetConvergenceTest(*ksp,KSPConvergedSkip,0,0);
   } else {
     *ierr = PetscObjectSetFortranCallback((PetscObject)*ksp,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.test,(PetscVoidFunction)converge,cctx); if (*ierr) return;
-    if (!destroy) {
-      *ierr = KSPSetConvergenceTest(*ksp,ourtest,*ksp,0);
-    } else {
-      *ierr = PetscObjectSetFortranCallback((PetscObject)*ksp,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.testdestroy,(PetscVoidFunction)destroy,cctx); if (*ierr) return;
-      *ierr = KSPSetConvergenceTest(*ksp,ourtest,*ksp,ourtestdestroy);
-    }
+    *ierr = PetscObjectSetFortranCallback((PetscObject)*ksp,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.testdestroy,(PetscVoidFunction)destroy,cctx); if (*ierr) return;
+    *ierr = KSPSetConvergenceTest(*ksp,ourtest,*ksp,ourtestdestroy);
   }
 }
 

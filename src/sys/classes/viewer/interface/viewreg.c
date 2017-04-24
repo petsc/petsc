@@ -1,12 +1,11 @@
 
 #include <petsc/private/viewerimpl.h>  /*I "petscviewer.h" I*/
+#include <petsc/private/hash.h>
 #if defined(PETSC_HAVE_SAWS)
 #include <petscviewersaws.h>
 #endif
 
 PetscFunctionList PetscViewerList = 0;
-
-#include "../src/sys/utils/hash.h"
 
 
 PetscOptionsHelpPrinted PetscOptionsHelpPrintedSingleton = NULL;
@@ -139,7 +138,7 @@ PetscErrorCode  PetscOptionsPushGetViewerOff(PetscBool flg)
 
 .seealso: PetscOptionsGetViewer(), PetscOptionsPushGetViewerOff()
 @*/
-PetscErrorCode  PetscOptionsPopGetViewerOff()
+PetscErrorCode  PetscOptionsPopGetViewerOff(void)
 {
   PetscFunctionBegin;
   if (!inoviewers) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many PetscOptionsPopGetViewerOff(), perhaps you forgot PetscOptionsPushGetViewerOff()?");

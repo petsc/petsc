@@ -200,7 +200,7 @@ PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabel
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
   DMPlexAdapt - Generates a mesh adapted to the specified metric field using the pragmatic library.
 
   Input Parameters:

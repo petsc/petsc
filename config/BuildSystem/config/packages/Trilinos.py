@@ -38,7 +38,10 @@ class Configure(config.package.CMakePackage):
     self.chaco           = framework.require('config.packages.Chaco',self)
     self.exodusii        = framework.require('config.packages.exodusii',self)
     self.boost           = framework.require('config.packages.boost',self)
-    self.deps            = [self.mpi,self.blasLapack]
+    self.flibs           = framework.require('config.packages.flibs',self)
+    self.cxxlibs         = framework.require('config.packages.cxxlibs',self)
+    self.mathlib         = framework.require('config.packages.mathlib',self)
+    self.deps            = [self.mpi,self.blasLapack,self.flibs,self.cxxlibs,self.mathlib]
     self.odeps           = [self.hwloc,self.hypre,self.superlu,self.superlu_dist,self.parmetis,self.metis,self.ptscotch,self.boost,self.netcdf,self.hdf5]
     #
     # also requires the ./configure option --with-cxx-dialect=C++11
@@ -136,7 +139,7 @@ class Configure(config.package.CMakePackage):
     # Roscoe says I should set this so that any Trilinos parts that depend on missing external packages such as netcdf will be automatically turned off
     args.append('-DTrilinos_DISABLE_ENABLED_FORWARD_DEP_PACKAGES=ON')
 
-    args.append('-DTrilinos_EXTRA_LINK_FLAGS="'+self.toStringNoDupes(self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs)+' '+self.compilers.LIBS+'"')
+    args.append('-DTrilinos_EXTRA_LINK_FLAGS="'+self.toStringNoDupes(self.flibs.lib+self.cxxlibs.lib+self.mathlib.lib)+' '+self.compilers.LIBS+'"')
 
     # Turn off single precision and complex
     args.append('-DTeuchos_ENABLE_FLOAT=OFF')
@@ -258,14 +261,14 @@ class Configure(config.package.CMakePackage):
     if self.hdf5.found:
       args.append('-DTPL_ENABLE_HDF5:BOOL=ON')
       args.append('-DTPL_HDF5_INCLUDE_DIRS="'+';'.join(self.hdf5.include)+'"')
-      args.append('-DTPL_HDF5_LIBRARIES="'+self.toStringNoDupes(self.hdf5.lib)+'"')
+      args.append('-DTPL_HDF5_LIBRARIES="'+self.toStringNoDupes(self.hdf5.dlib)+'"')
     else:
       args.append('-DTPL_ENABLE_HDF5:BOOL=OFF')
 
     if self.netcdf.found:
       args.append('-DTPL_ENABLE_Netcdf:BOOL=ON')
       args.append('-DTPL_Netcdf_INCLUDE_DIRS="'+';'.join(self.netcdf.include)+'"')
-      args.append('-DTPL_Netcdf_LIBRARIES="'+self.toStringNoDupes(self.netcdf.lib+self.hdf5.lib)+'"')
+      args.append('-DTPL_Netcdf_LIBRARIES="'+self.toStringNoDupes(self.netcdf.dlib)+'"')
     else:
       args.append('-DTPL_ENABLE_Netcdf:BOOL=OFF')
 

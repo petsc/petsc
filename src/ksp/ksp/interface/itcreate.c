@@ -367,8 +367,6 @@ PetscErrorCode KSPNormSupportTableReset_Private(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PetscMemzero(ksp->normsupporttable,sizeof(ksp->normsupporttable));CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1);CHKERRQ(ierr);
   ksp->pc_side  = ksp->pc_side_set;
   ksp->normtype = ksp->normtype_set;
   PetscFunctionReturn(0);

@@ -17,7 +17,6 @@ PETSC_EXTERN PetscErrorCode SPARSEPACKqmdmrg(const PetscInt*,const PetscInt*,Pet
 PETSC_EXTERN PetscErrorCode SPARSEPACKqmdqt(const PetscInt*,const PetscInt*,const PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode SPARSEPACKqmdupd(const PetscInt*,const PetscInt*,const PetscInt*,const PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode SPARSEPACKfnroot(PetscInt*,const PetscInt*,const PetscInt*, PetscInt*, PetscInt*, PetscInt*, PetscInt*);
-PETSC_EXTERN PetscErrorCode SPARSEPACKrootls(const PetscInt*,const PetscInt*,const PetscInt*, PetscInt*, PetscInt*, PetscInt*, PetscInt*);
 PETSC_EXTERN PetscErrorCode SPARSEPACKfn1wd(PetscInt*,const PetscInt*,const PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode SPARSEPACKrevrse(const PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode SPARSEPACKrootls(const PetscInt*,const PetscInt*,const PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);

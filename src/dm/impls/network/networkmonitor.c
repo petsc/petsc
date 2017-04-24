@@ -93,7 +93,7 @@ PetscErrorCode DMNetworkMonitorPop(DMNetworkMonitor monitor)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
   DMNetworkMonitorAdd - Adds a new viewer to monitor
 
   Collective on DMNetworkMonitor

@@ -8,7 +8,6 @@ class Configure(config.package.CMakePackage):
     self.functions         = ['ParMETIS_V3_PartKway']
     self.includes          = ['parmetis.h']
     self.liblist           = [['libparmetis.a']]
-    self.needsMath         = 1
     self.hastests          = 1
     self.downloaddirnames  = ['petsc-pkg-parmetis']
 
@@ -18,7 +17,8 @@ class Configure(config.package.CMakePackage):
     self.compilerFlags = framework.require('config.compilerFlags', self)
     self.mpi           = framework.require('config.packages.MPI',self)
     self.metis         = framework.require('config.packages.metis', self)
-    self.deps          = [self.mpi, self.metis]
+    self.mathlib       = framework.require('config.packages.mathlib',self)
+    self.deps          = [self.mpi, self.metis, self.mathlib]
 
   def formCMakeConfigureArgs(self):
     '''Requires the same CMake options as Metis'''
@@ -41,7 +41,7 @@ class Configure(config.package.CMakePackage):
 
   def configureLibrary(self):
     config.package.Package.configureLibrary(self)
-    if self.libraries.check(self.lib, 'ParMETIS_ComputeVertexSeparator',otherLibs=self.metis.lib+self.mpi.lib+self.libraries.math):
+    if self.libraries.check(self.lib, 'ParMETIS_ComputeVertexSeparator',otherLibs=self.metis.lib+self.mpi.lib+self.mathlib.lib):
       self.ComputeVertexSeparator = 1
     else:
       self.ComputeVertexSeparator = 0

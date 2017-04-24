@@ -292,7 +292,7 @@ PetscErrorCode  PetscSetProgramName(const char name[])
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
     PetscOptionsValidKey - PETSc Options database keys must begin with one or two dashes (-) followed by a letter.
 
    Input Parameter:

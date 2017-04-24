@@ -18,7 +18,7 @@ PetscLogEvent     TSTrajectory_Set, TSTrajectory_Get;
   Notes:
   TSTrajectoryRegister() may be called multiple times to add several user-defined tses.
 
-  Level: advanced
+  Level: developer
 
 .keywords: TS, trajectory, timestep, register
 
@@ -80,7 +80,7 @@ PetscErrorCode TSTrajectoryGet(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal 
     The user can open an alternative visualization context with
     PetscViewerASCIIOpen() - output to a specified file.
 
-    Level: beginner
+    Level: developer
 
 .keywords: TS, trajectory, timestep, view
 
@@ -115,6 +115,58 @@ PetscErrorCode  TSTrajectoryView(TSTrajectory tj,PetscViewer viewer)
 }
 
 /*@C
+   TSTrajectorySetVariableNames - Sets the name of each component in the solution vector so that it may be saved with the trajectory
+
+   Collective on TSTrajectory
+
+   Input Parameters:
++  tr - the trajectory context
+-  names - the names of the components, final string must be NULL
+
+   Level: intermediate
+
+.keywords: TS, TSTrajectory, vector, monitor, view
+
+.seealso: TSTrajectory, TSGetTrajectory()
+@*/
+PetscErrorCode  TSTrajectorySetVariableNames(TSTrajectory ctx,const char * const *names)
+{
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscStrArrayDestroy(&ctx->names);CHKERRQ(ierr);
+  ierr = PetscStrArrayallocpy(names,&ctx->names);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   TSTrjactorySetTransform - Solution vector will be transformed by provided function before being saved to disk
+
+   Collective on TSLGCtx
+
+   Input Parameters:
++  tj - the TSTrajectory context
+.  transform - the transform function
+.  destroy - function to destroy the optional context
+-  ctx - optional context used by transform function
+
+   Level: intermediate
+
+.keywords: TSTrajectory,  vector, monitor, view
+
+.seealso:  TSTrajectorySetVariableNames(), TSTrajectory, TSMonitorLGSetTransform()
+@*/
+PetscErrorCode  TSTrajectorySetTransform(TSTrajectory tj,PetscErrorCode (*transform)(void*,Vec,Vec*),PetscErrorCode (*destroy)(void*),void *tctx)
+{
+  PetscFunctionBegin;
+  tj->transform        = transform;
+  tj->transformdestroy = destroy;
+  tj->transformctx     = tctx;
+  PetscFunctionReturn(0);
+}
+
+
+/*@C
   TSTrajectoryCreate - This function creates an empty trajectory object used to store the time dependent solution of an ODE/DAE
 
   Collective on MPI_Comm
@@ -125,13 +177,13 @@ PetscErrorCode  TSTrajectoryView(TSTrajectory tj,PetscViewer viewer)
   Output Parameter:
 . tj   - the trajectory object
 
-  Level: advanced
+  Level: developer
 
   Notes: Usually one does not call this routine, it is called automatically when one calls TSSetSaveTrajectory().
 
 .keywords: TS, trajectory, create
 
-.seealso: TSTrajectorySetUp(), TSTrajectoryDestroy(), TSTrajectorySetType()
+.seealso: TSTrajectorySetUp(), TSTrajectoryDestroy(), TSTrajectorySetType(), TSTrajectorySetVariableNames(), TSGetTrajectory()
 @*/
 PetscErrorCode  TSTrajectoryCreate(MPI_Comm comm,TSTrajectory *tj)
 {
@@ -162,7 +214,7 @@ PetscErrorCode  TSTrajectoryCreate(MPI_Comm comm,TSTrajectory *tj)
   Options Database Command:
 . -ts_trajectory_type <type> - Sets the method; use -help for a list of available methods (for instance, basic)
 
-   Level: intermediate
+   Level: developer
 
 .keywords: TS, trajectory, timestep, set, type
 
@@ -204,7 +256,7 @@ PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Visualization(TSTrajectory,TS);
 
   Not Collective
 
-  Level: advanced
+  Level: developer
 
 .keywords: TS, trajectory, register, all
 
@@ -233,7 +285,7 @@ PetscErrorCode  TSTrajectoryRegisterAll(void)
    Input Parameter:
 .  tj - the TSTrajectory context obtained from TSTrajectoryCreate()
 
-   Level: advanced
+   Level: developer
 
 .keywords: TS, trajectory, timestep, destroy
 
@@ -248,8 +300,10 @@ PetscErrorCode  TSTrajectoryDestroy(TSTrajectory *tj)
   PetscValidHeaderSpecific((*tj),TSTRAJECTORY_CLASSID,1);
   if (--((PetscObject)(*tj))->refct > 0) {*tj = 0; PetscFunctionReturn(0);}
 
+  if ((*tj)->transformdestroy) {ierr = (*(*tj)->transformdestroy)((*tj)->transformctx);}
   if ((*tj)->ops->destroy) {ierr = (*(*tj)->ops->destroy)((*tj));CHKERRQ(ierr);}
   ierr = PetscViewerDestroy(&(*tj)->monitor);CHKERRQ(ierr);
+  ierr = PetscStrArrayDestroy(&(*tj)->names);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(tj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -266,7 +320,7 @@ PetscErrorCode  TSTrajectoryDestroy(TSTrajectory *tj)
   Options Database Keys:
 . -ts_trajectory_type <type> - TSTRAJECTORYBASIC, TSTRAJECTORYMEMORY, TSTRAJECTORYSINGLEFILE, TSTRAJECTORYVISUALIZATION
 
-  Level: intermediate
+  Level: developer
 
 .keywords: TS, trajectory, set, options, type
 
@@ -307,7 +361,7 @@ static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptionItems *P
    Options Database Keys:
 .  -ts_trajectory_monitor - print TSTrajectory information
 
-   Level: intermediate
+   Level: developer
 
 .keywords: TS, trajectory, set, monitor
 
@@ -341,7 +395,7 @@ PetscErrorCode TSTrajectorySetMonitor(TSTrajectory tj,PetscBool flg)
 +  -ts_trajectory_type <type> - TSTRAJECTORYBASIC, TSTRAJECTORYMEMORY, TSTRAJECTORYSINGLEFILE, TSTRAJECTORYVISUALIZATION
 -  -ts_trajectory_monitor - print TSTrajectory information
 
-   Level: advanced
+   Level: developer
 
    Notes: This is not normally called directly by users
 
@@ -379,7 +433,7 @@ PetscErrorCode  TSTrajectorySetFromOptions(TSTrajectory tj,TS ts)
 +  ts - the TS context obtained from TSCreate()
 -  tj - the TS trajectory context
 
-   Level: advanced
+   Level: developer
 
 .keywords: TS, trajectory, setup
 

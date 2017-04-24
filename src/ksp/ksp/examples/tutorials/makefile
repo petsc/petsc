@@ -438,6 +438,11 @@ runex2_fbcgs:
            if (${DIFF} output/ex2_fbcgs.out ex2.tmp) then true; \
            else printf "${PWD}\nPossible problem with ex2_fbcgs, diffs above\n=========================================\n"; fi; \
            ${RM} -f ex2.tmp
+runex2_pipebcgs:
+	-@${MPIEXEC} -n 1 ./ex2 -ksp_monitor_short -ksp_type pipebcgs -m 9 -n 9 > ex2.tmp 2>&1; \
+           if (${DIFF} output/ex2_pipebcgs.out ex2.tmp) then true; \
+           else printf "${PWD}\nPossible problem with ex2_pipebcgs, diffs above\n=========================================\n"; fi; \
+           ${RM} -f ex2.tmp
 runex2_fbcgs_2:
 	-@${MPIEXEC} -n 3 ./ex2 -ksp_type fbcgsr -pc_type bjacobi > ex2.tmp 2>&1; \
            if (${DIFF} output/ex2_fbcgs_2.out ex2.tmp) then true; \
@@ -1683,7 +1688,7 @@ runex67_nonsymmetric_right:
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_changepcside runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
                                  runex2_4 runex2_bjacobi runex2_bjacobi_2 runex2_bjacobi_3  \
-                                 runex2_chebyest_1 runex2_chebyest_2 runex2_fbcgs runex2_fbcgs_2 runex2_telescope runex2_pipecg runex2_pipecr runex2_groppcg runex2_pipecgrr ex2.rm \
+                                 runex2_chebyest_1 runex2_chebyest_2 runex2_fbcgs runex2_pipebcgs runex2_fbcgs_2 runex2_telescope runex2_pipecg runex2_pipecr runex2_groppcg runex2_pipecgrr ex2.rm \
                                  ex3.PETSc runex3_1 ex3.rm \
                                  ex4.PETSc ex4.rm ex7.PETSc runex7 runex7_2 ex7.rm ex4.PETSc ex4.rm ex5.PETSc runex5 runex5_2 \
                                  runex5_redundant_0 runex5_redundant_1 runex5_redundant_2 runex5_redundant_3 runex5_redundant_4 ex5.rm \

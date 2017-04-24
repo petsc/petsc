@@ -15,8 +15,6 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <../src/mat/impls/aij/seq/crl/crl.h>
 
-extern PetscErrorCode MatDestroy_MPIAIJ(Mat);
-
 PetscErrorCode MatDestroy_MPIAIJCRL(Mat A)
 {
   PetscErrorCode ierr;

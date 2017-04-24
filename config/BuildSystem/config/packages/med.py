@@ -13,13 +13,14 @@ class Configure(config.package.GNUPackage):
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
-    self.mpi   = framework.require('config.packages.MPI', self)
-    self.hdf5  = framework.require('config.packages.hdf5', self)
-    self.deps  = [self.mpi, self.hdf5]
+    self.mpi            = framework.require('config.packages.MPI', self)
+    self.hdf5           = framework.require('config.packages.hdf5', self)
+    self.mathlib        = framework.require('config.packages.mathlib',self)
+    self.deps           = [self.mpi, self.hdf5, self.mathlib]
     return
 
   def formGNUConfigureArgs(self):
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
     args.append('--disable-python')
-    args.append('--with-hdf5-dir=%s' % self.hdf5.directory)
+    args.append('--with-hdf5=%s' % self.hdf5.directory)
     return args

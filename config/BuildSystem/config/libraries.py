@@ -24,12 +24,12 @@ class Configure(config.base.Configure):
     self.headers      = framework.require('config.headers',      self)
     return
 
-  def getLibArgumentList(self, library):
+  def getLibArgumentList(self, library, with_rpath=True):
     '''Return the proper link line argument for the given filename library as a list of options
       - If the path is empty, return it unchanged
       - If starts with - then return unchanged
       - If the path ends in ".lib" return it unchanged
-      - If the path is absolute and the filename is "lib"<name>, return -L<dir> -l<name>
+      - If the path is absolute and the filename is "lib"<name>, return -L<dir> -l<name> (optionally including rpath flag)
       - If the filename is "lib"<name>, return -l<name>
       - If the path ends in ".so" return it unchanged
       - If the path is absolute, return it unchanged
@@ -37,9 +37,9 @@ class Configure(config.base.Configure):
     if not library:
       return []
     if library.startswith('${CC_LINKER_SLFLAG}'):
-      return [library]
+      return [library] if with_rpath else []
     if library.startswith('${FC_LINKER_SLFLAG}'):
-      return [library]
+      return [library] if with_rpath else []
     if library.lstrip()[0] == '-':
       return [library]
     if len(library) > 3 and library[-4:] == '.lib':
@@ -50,12 +50,13 @@ class Configure(config.base.Configure):
         flagName  = self.language[-1]+'SharedLinkerFlag'
         flagSubst = self.language[-1].upper()+'_LINKER_SLFLAG'
         dirname   = os.path.dirname(library).replace('\\ ',' ').replace(' ', '\\ ').replace('\\(','(').replace('(', '\\(').replace('\\)',')').replace(')', '\\)')
-        if hasattr(self.setCompilers, flagName) and not getattr(self.setCompilers, flagName) is None:
-          return [getattr(self.setCompilers, flagName)+dirname,'-L'+dirname,'-l'+name]
-        if flagSubst in self.argDB:
-          return [self.argDB[flagSubst]+dirname,'-L'+dirname,'-l'+name]
-        else:
-          return ['-L'+dirname,' -l'+name]
+        if dirname.startswith('/Applications/Xcode.app') or dirname.startswith('/Library/Developer/CommandLineTools/usr/lib'): with_rpath = None
+        if with_rpath:
+          if hasattr(self.setCompilers, flagName) and not getattr(self.setCompilers, flagName) is None:
+            return [getattr(self.setCompilers, flagName)+dirname,'-L'+dirname,'-l'+name]
+          if flagSubst in self.argDB:
+            return [self.argDB[flagSubst]+dirname,'-L'+dirname,'-l'+name]
+        return ['-L'+dirname,' -l'+name]
       else:
         return ['-l'+name]
     if os.path.splitext(library)[1] == '.so':
@@ -107,7 +108,7 @@ class Configure(config.base.Configure):
         newlibs += self.getLibArgumentList(lib)
     return ' '.join(newlibs)
 
-  def toStringNoDupes(self,libs):
+  def toStringNoDupes(self,libs,with_rpath=True):
     '''Converts a list of libraries to a string suitable for a linker, removes duplicates'''
     newlibs = []
     frame = 0
@@ -119,15 +120,27 @@ class Configure(config.base.Configure):
         newlibs += [lib]
         frame = 1
       else:
-        newlibs += self.getLibArgumentList(lib)
+        newlibs += self.getLibArgumentList(lib, with_rpath)
     libs = newlibs
+    newldflags = []
     newlibs = []
+    frame = 0
     for j in libs:
       # do not remove duplicate non-consecutive -l, because there is a tiny chance that order may matter
+      if frame:
+        newlibs.append(j)
+        frame = 0
+        continue
+      if j in newldflags: continue
       if newlibs and j == newlibs[-1]: continue
-      if j in newlibs and not ( j.startswith('-l') or j == '-framework') : continue
-      newlibs.append(j)
-    return ' '.join(newlibs)
+      if j.startswith('-l'):
+        newlibs.append(j)
+      elif j == '-framework':
+        newlibs.append(j)
+        frame = 1
+      else:
+        newldflags.append(j)
+    return ' '.join(newldflags + newlibs)
 
   def getShortLibName(self,lib):
     '''returns the short name for the library. Valid names are foo -lfoo or libfoo.[a,so,lib]'''
@@ -297,27 +310,6 @@ extern "C" {
       self.addDefine('HAVE_LOG2', 1)
     else:
       self.logPrint('Warning: log2() not found')
-    return
-
-  def checkCompression(self):
-    '''Check for libz, the compression library'''
-    self.compression = None
-    funcs = ['compress', 'uncompress']
-    prototypes = ['int   compress(char *dest, unsigned long *destLen, const char *source, unsigned long sourceLen);',
-                  'int uncompress(char *dest, unsigned long *destLen, const char *source, unsigned long sourceLen);']
-    calls = ['char *dest = 0; const char *source = 0; unsigned long destLen = 0, sourceLen = 0; int ret = 0; ret =   compress(dest, &destLen, source, sourceLen);\n',
-             'char *dest = 0; const char *source = 0; unsigned long destLen = 0, sourceLen = 0; int ret = 0; ret = uncompress(dest, &destLen, source, sourceLen);\n']
-    if self.check('', funcs, prototype = prototypes, call = calls):
-      self.logPrint('Compression functions are linked in by default')
-      self.compression = []
-    elif self.check('z', funcs, prototype = prototypes, call = calls):
-      self.logPrint('Using libz for the compression library')
-      self.compression = ['libz.a']
-    elif self.check('zlib.lib', funcs, prototype = prototypes, call = calls):
-      self.logPrint('Using zlib.lib for the compression library')
-      self.compression = ['zlib.lib']
-    else:
-      self.logPrint('Warning: No compression library found')
     return
 
   def checkRealtime(self):
@@ -498,7 +490,6 @@ int checkInit(void) {
     self.executeTest(self.checkMathTgamma)
     self.executeTest(self.checkMathFenv)
     self.executeTest(self.checkMathLog2)
-    self.executeTest(self.checkCompression)
     self.executeTest(self.checkRealtime)
     self.executeTest(self.checkDynamic)
     return

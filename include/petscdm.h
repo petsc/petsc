@@ -274,9 +274,9 @@ natural conditions (type & DM_BC_NATURAL)
 .seealso: DMAddBoundary(), DMGetBoundary()
 E*/
 typedef enum {DM_BC_ESSENTIAL = 1, DM_BC_ESSENTIAL_FIELD = 5, DM_BC_NATURAL = 2, DM_BC_NATURAL_FIELD = 6, DM_BC_NATURAL_RIEMANN = 10} DMBoundaryConditionType;
-PETSC_EXTERN PetscErrorCode DMAddBoundary(DM, DMBoundaryConditionType, const char[], const char[], PetscInt, PetscInt, const PetscInt *, void (*)(), PetscInt, const PetscInt *, void *);
+PETSC_EXTERN PetscErrorCode DMAddBoundary(DM, DMBoundaryConditionType, const char[], const char[], PetscInt, PetscInt, const PetscInt *, void (*)(void), PetscInt, const PetscInt *, void *);
 PETSC_EXTERN PetscErrorCode DMGetNumBoundary(DM, PetscInt *);
-PETSC_EXTERN PetscErrorCode DMGetBoundary(DM, PetscInt, DMBoundaryConditionType *, const char **, const char **, PetscInt *, PetscInt *, const PetscInt **, void (**)(), PetscInt *, const PetscInt **, void **);
+PETSC_EXTERN PetscErrorCode DMGetBoundary(DM, PetscInt, DMBoundaryConditionType *, const char **, const char **, PetscInt *, PetscInt *, const PetscInt **, void (**)(void), PetscInt *, const PetscInt **, void **);
 PETSC_EXTERN PetscErrorCode DMIsBoundaryPoint(DM, PetscInt, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMCopyBoundary(DM, DM);
 

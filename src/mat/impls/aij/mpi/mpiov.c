@@ -1034,7 +1034,6 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Receive(Mat C,PetscInt nrqr,Pets
 }
 /* -------------------------------------------------------------------------*/
 extern PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat*);
-extern PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat,MatAssemblyType);
 /*
     Every processor gets the entire matrix
 */
@@ -2036,7 +2035,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[]
     if (pos+nmax <= ismax) max_no = nmax;
     else if (pos == ismax) max_no = 0;
     else                   max_no = ismax-pos;
- 
+
     ierr = MatCreateSubMatrices_MPIAIJ_Local(C,max_no,isrow+pos,iscol+pos,scall,*submat+pos);CHKERRQ(ierr);
     if (!max_no && scall == MAT_INITIAL_MATRIX) { /* submat[pos] is a dummy matrix */
       smat = (Mat_SubSppt*)(*submat)[pos]->data;

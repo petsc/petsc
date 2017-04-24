@@ -2423,7 +2423,7 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
  PCBDDCCreateFETIDPOperators - Create FETI-DP operators
 
    Collective

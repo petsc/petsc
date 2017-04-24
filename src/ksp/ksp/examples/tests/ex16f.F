@@ -20,7 +20,8 @@
       PetscErrorCode  ierr
       PetscInt its,ione,ifive,izero
       PetscBool flg
-      PetscScalar      norm,none,five
+      PetscScalar      none,five
+      PetscReal        norm
       Vec              x,b,u
       Mat              A
       KSP             ksp1,ksp2

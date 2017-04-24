@@ -892,7 +892,7 @@ static PetscBool KSPMatRegisterAllCalled;
 
 .seealso: MatRegisterAll(),  KSPInitializePackage()
 @*/
-PetscErrorCode KSPMatRegisterAll()
+PetscErrorCode KSPMatRegisterAll(void)
 {
   PetscErrorCode ierr;
 

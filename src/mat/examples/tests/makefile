@@ -1884,7 +1884,7 @@ runex94_matmatmult:
 	   else printf "${PWD}\nPossible problem with ex94_matmatmult, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex94_1.tmp
 runex94_matmatmult_2:
-	-@${MPIEXEC} -n 1 ./ex94 -f0 ${DATAFILESPATH}/matrices/arco1 -f1 ${DATAFILESPATH}/matrices/arco1 -viewer_binary_skip_info > ex94_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex94 -f0 ${DATAFILESPATH}/matrices/arco1 -f1 ${DATAFILESPATH}/matrices/arco1 -mat_type mpiaij -viewer_binary_skip_info > ex94_1.tmp 2>&1; \
 	   if (${DIFF} output/ex94_1.out ex94_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex94_matmatmult_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex94_1.tmp
@@ -1899,7 +1899,7 @@ runex94_scalable0:
 	   else printf "${PWD}\nPossible problem with ex94_scalable0, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex94_1.tmp
 runex94_scalable1:
-	-@${MPIEXEC} -n 1 ./ex94 -f0 ${DATAFILESPATH}/matrices/arco1 -f1 ${DATAFILESPATH}/matrices/arco1 -viewer_binary_skip_info > ex94_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex94 -f0 ${DATAFILESPATH}/matrices/arco1 -f1 ${DATAFILESPATH}/matrices/arco1 -viewer_binary_skip_info -matptap_via scalable > ex94_1.tmp 2>&1; \
 	   if (${DIFF} output/ex94_1.out ex94_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex94_scalable1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex94_1.tmp
@@ -2230,13 +2230,13 @@ runex125:
 
 runex125_mumps:
 	-@${MPIEXEC} -n 1 ./ex125 -f ${DATAFILESPATH}/matrices/small -mat_solver_package 2 > ex125.tmp 2>&1; \
-	   if (${DIFF} output/ex125_mumps.out ex125.tmp) then true; \
+	   if (${DIFF} output/ex125_mumps_seq.out ex125.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex125_mumps, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex125.tmp
 
 runex125_mumps_2:
 	-@${MPIEXEC} -n 3 ./ex125 -f ${DATAFILESPATH}/matrices/small -mat_solver_package 2 > ex125.tmp 2>&1; \
-	   if (${DIFF} output/ex125_mumps.out ex125.tmp) then true; \
+	   if (${DIFF} output/ex125_mumps_par.out ex125.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex125_mumps_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex125.tmp
 

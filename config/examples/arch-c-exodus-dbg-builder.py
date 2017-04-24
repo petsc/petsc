@@ -15,6 +15,7 @@ if __name__ == '__main__':
     '--download-fiat',
     '--download-generator',
     '--download-hdf5',
+    '--download-zlib=1',
     '--download-metis',
     '--download-ml',
     '--download-netcdf',

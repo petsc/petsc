@@ -71,7 +71,7 @@ PETSC_UNUSED static PetscErrorCode DMPlexInvertCells_Internal(PetscInt dim, Pets
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
   DMPlexTriangleSetOptions - Set the options used for the Triangle mesh generator
 
   Not Collective
@@ -98,7 +98,7 @@ PetscErrorCode DMPlexTriangleSetOptions(DM dm, const char *opts)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
   DMPlexTetgenSetOptions - Set the options used for the Tetgen mesh generator
 
   Not Collective

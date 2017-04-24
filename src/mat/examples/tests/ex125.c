@@ -166,6 +166,29 @@ int main(int argc,char **args)
           }
         }
       }
+      if (ipack == 2 && size == 1) {
+        Mat spRHS,spRHST,RHST;
+
+        ierr = MatTranspose(RHS,MAT_INITIAL_MATRIX,&RHST);CHKERRQ(ierr);
+        ierr = MatConvert(RHST,MATAIJ,MAT_INITIAL_MATRIX,&spRHST);CHKERRQ(ierr);
+        ierr = MatCreateTranspose(spRHST,&spRHS);CHKERRQ(ierr);
+        for (nsolve = 0; nsolve < 2; nsolve++) {
+          if (!rank) PetscPrintf(PETSC_COMM_SELF,"   %D-the sparse MatMatSolve \n",nsolve);
+          ierr = MatMatSolve(F,spRHS,X);CHKERRQ(ierr);
+
+          /* Check the error */
+          ierr = MatAXPY(X,-1.0,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+          ierr = MatNorm(X,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
+          if (norm > tol) {
+            if (!rank) {
+              ierr = PetscPrintf(PETSC_COMM_SELF,"%D-the sparse MatMatSolve: Norm of error %g, nsolve %D\n",nsolve,norm,nsolve);CHKERRQ(ierr);
+            }
+          }
+        }
+        ierr = MatDestroy(&spRHST);CHKERRQ(ierr);
+        ierr = MatDestroy(&spRHS);CHKERRQ(ierr);
+        ierr = MatDestroy(&RHST);CHKERRQ(ierr);
+      }
     }
 
     /* Test MatSolve() */

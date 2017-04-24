@@ -75,11 +75,15 @@ struct _TSTrajectoryOps {
 
 struct _p_TSTrajectory {
   PETSCHEADER(struct _TSTrajectoryOps);
-  PetscViewer monitor;
-  PetscInt    setupcalled;             /* true if setup has been called */
-  PetscInt    recomps;                 /* counter for recomputations in the adjoint run */
-  PetscInt    diskreads,diskwrites;    /* counters for disk checkpoint reads and writes */
-  void        *data;
+  PetscViewer    monitor;
+  PetscInt       setupcalled;             /* true if setup has been called */
+  PetscInt       recomps;                 /* counter for recomputations in the adjoint run */
+  PetscInt       diskreads,diskwrites;    /* counters for disk checkpoint reads and writes */
+  char           **names;                 /* the name of each variable; each process has only the local names */
+  PetscErrorCode (*transform)(void*,Vec,Vec*);
+  PetscErrorCode (*transformdestroy)(void*);
+  void*          transformctx;
+  void           *data;
 };
 
 struct _p_TS {
@@ -220,6 +224,7 @@ struct _p_TSAdapt {
     PetscReal  ccfl[16];         /* stability limit relative to explicit Euler */
     PetscReal  cost[16];         /* relative measure of the amount of work required for each scheme */
   } candidates;
+  PetscBool   always_accept;
   PetscReal   dt_min,dt_max;
   PetscReal   scale_solve_failed; /* Scale step by this factor if solver (linear or nonlinear) fails. */
   PetscViewer monitor;

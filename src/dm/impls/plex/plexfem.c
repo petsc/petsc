@@ -428,7 +428,7 @@ PetscErrorCode DMPlexInsertBoundaryValues(DM dm, PetscBool insertEssential, Vec 
     PetscInt                field;
     PetscObject             obj;
     PetscClassId            id;
-    void                  (*func)();
+    void                    (*func)(void);
     PetscInt                numids;
     const PetscInt         *ids;
     void                   *ctx;

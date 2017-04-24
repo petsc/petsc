@@ -353,7 +353,6 @@ PETSC_EXTERN void PETSC_STDCALL LAPACKtgsen_(PetscBLASInt*,PetscBLASInt*,PetscBL
 
 
 PETSC_EXTERN PetscScalar PETSC_STDCALL BLASdot_(const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);
-PETSC_EXTERN PetscScalar PETSC_STDCALL BLASdotu_(const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);
 PETSC_EXTERN PetscReal PETSC_STDCALL BLASnrm2_(const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);
 PETSC_EXTERN void PETSC_STDCALL BLASscal_(const PetscBLASInt*,const PetscScalar*,PetscScalar*,const PetscBLASInt*);
 PETSC_EXTERN void PETSC_STDCALL BLAScopy_(const PetscBLASInt*,const PetscScalar*,PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);

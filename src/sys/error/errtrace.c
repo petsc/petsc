@@ -55,7 +55,7 @@ static char      version[256];
    Initializes arch, hostname, username,date so that system calls do NOT need
    to be made during the error handler.
 */
-PetscErrorCode  PetscErrorPrintfInitialize()
+PetscErrorCode  PetscErrorPrintfInitialize(void)
 {
   PetscErrorCode ierr;
   PetscBool      use_stdout = PETSC_FALSE,use_none = PETSC_FALSE;

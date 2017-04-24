@@ -138,7 +138,7 @@ PetscErrorCode VecScatterView_MPI_ToAll(VecScatter in,PetscViewer viewer)
   PetscBool      isascii;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)in,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"Entire parallel vector is copied to each process\n");CHKERRQ(ierr);
   }
@@ -639,13 +639,13 @@ PetscErrorCode VecScatterBegin_SSToSG(VecScatter ctx,Vec x,Vec y,InsertMode addv
 PetscErrorCode VecScatterView_SSToSG(VecScatter in,PetscViewer viewer)
 {
   PetscErrorCode         ierr;
-  VecScatter_Seq_Stride  *in_from = (VecScatter_Seq_Stride*)in->todata;
-  VecScatter_Seq_General *in_to   = (VecScatter_Seq_General*)in->fromdata;
+  VecScatter_Seq_Stride  *in_from = (VecScatter_Seq_Stride*)in->fromdata;
+  VecScatter_Seq_General *in_to   = (VecScatter_Seq_General*)in->todata;
   PetscInt               i;
   PetscBool              isascii;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)in,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"Sequential stride to general scatter\n");CHKERRQ(ierr);
     for (i=0; i<in_to->n; i++) {
@@ -772,7 +772,7 @@ PetscErrorCode VecScatterView_SGToSG(VecScatter in,PetscViewer viewer)
   PetscBool              isascii;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)in,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"Sequential general scatter\n");CHKERRQ(ierr);
     for (i=0; i<in_to->n; i++) {
@@ -825,7 +825,7 @@ PetscErrorCode VecScatterView_SGToSS(VecScatter in,PetscViewer viewer)
   PetscBool              isascii;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)in,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"Sequential general scatter to stride\n");CHKERRQ(ierr);
     for (i=0; i<in_to->n; i++) {
@@ -876,7 +876,7 @@ PetscErrorCode VecScatterView_SSToSS(VecScatter in,PetscViewer viewer)
   PetscBool             isascii;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)in,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"Sequential stride count %D start %D step to start %D stride %D\n",in_to->n,in_to->first,in_to->step,in_from->first,in_from->step);CHKERRQ(ierr);
   }

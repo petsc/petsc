@@ -51,8 +51,6 @@ class Package(config.base.Configure):
     self.functionsCxx           = [0, '', ''] # 1 means the symbols in self.functions symbol are C++ symbol, so name-mangling with prototype/call is done
     self.cxx                    = 0    # 1 means requires C++
     self.fc                     = 0    # 1 means requires fortran
-    self.needsMath              = 0    # 1 means requires the system math library
-    self.needsCompression       = 0    # 1 means requires the system compression library
     self.noMPIUni               = 0    # 1 means requires a real MPI
     self.libdir                 = 'lib'     # location of libraries in the package directory tree
     self.altlibdir              = 'lib64'   # alternate location of libraries in the package directory tree
@@ -467,7 +465,7 @@ class Package(config.base.Configure):
       return ''
     if self.framework.batchBodies and not self.installwithbatch:
       return
-    if self.argDB['download-'+self.downloadname.lower()]:
+    if self.argDB['download-'+self.package]:
       if self.license and not os.path.isfile('.'+self.package+'_license'):
         self.logClear()
         self.logPrint("**************************************************************************************************", debugSection='screen')
@@ -476,6 +474,14 @@ class Package(config.base.Configure):
         fd = open('.'+self.package+'_license','w')
         fd.close()
       return self.getInstallDir()
+    else:
+      # check if download option is set for any of the dependent packages - if so flag an error.
+      mesg=''
+      for pkg in self.deps:
+        if 'download-'+pkg.package in self.argDB and self.argDB['download-'+pkg.package]:
+          mesg+='Error! Cannot use --download-'+pkg.package+' when not using --download-'+self.package+'. Perhaps you need to look for a version of '+pkg.PACKAGE+' that '+self.PACKAGE+' was built with!\n'
+      if mesg:
+        raise RuntimeError(mesg)
     return ''
 
   def installNeeded(self, mkfile):
@@ -682,7 +688,31 @@ class Package(config.base.Configure):
     self.compilers.LIBS = oldLibs
     return result
 
-  def checkDependencies(self, libs = None, incls = None):
+  @staticmethod
+  def sortPackageDependencies(startnode):
+    '''Create a dependency graph for all deps, and sort them'''
+    import graph
+    depGraph = graph.DirectedGraph()
+
+    def addGraph(Graph,node,nodesAdded=[]):
+      '''Recursively traverse the dependency graph - and add them as graph edges.'''
+      if not hasattr(node,'deps'): return
+      Graph.addVertex(node)
+      nodesAdded.append(node)
+      deps = list(node.deps)
+      for odep in node.odeps:
+        if odep.found: deps.append(odep)
+      if deps:
+        Graph.addEdges(node,outputs=deps)
+      for dep in deps:
+        if dep not in nodesAdded:
+          addGraph(Graph,dep,nodesAdded)
+      return
+
+    addGraph(depGraph,startnode)
+    return [sortnode for sortnode in graph.DirectedGraph.topologicalSort(depGraph,start=startnode)]
+
+  def checkDependencies(self):
     for package in self.deps:
       if not hasattr(package, 'found'):
         raise RuntimeError('Package '+package.name+' does not have found attribute!')
@@ -693,9 +723,18 @@ class Package(config.base.Configure):
           str = ''
           if package.download: str = ' or --download-'+package.package
           raise RuntimeError('Did not find package '+package.PACKAGE+' needed by '+self.name+'.\nEnable the package using --with-'+package.package+str)
-    for package in self.deps + self.odeps:
-      if hasattr(package, 'dlib')    and not libs  is None: libs  += package.dlib
-      if hasattr(package, 'include') and not incls is None: incls += package.include
+    for package in self.odeps:
+      if not hasattr(package, 'found'):
+        raise RuntimeError('Package '+package.name+' does not have found attribute!')
+      if not package.found:
+        if self.argDB['with-'+package.package] == 1:
+          raise RuntimeError('Package '+package.PACKAGE+' needed by '+self.name+' failed to configure.\nMail configure.log to petsc-maint@mcs.anl.gov.')
+
+    dpkgs = Package.sortPackageDependencies(self)
+    dpkgs.remove(self)
+    for package in dpkgs:
+      if hasattr(package, 'lib'):     self.dlib += package.lib
+      if hasattr(package, 'include'): self.dinclude += package.include
     return
 
   def configureLibrary(self):
@@ -704,19 +743,6 @@ class Package(config.base.Configure):
     self.logPrint('Checking for a functional '+self.name)
     foundLibrary = 0
     foundHeader  = 0
-
-    # get any libraries and includes we depend on
-    libs  = []
-    incls = []
-    self.checkDependencies(libs, incls)
-    if self.needsMath:
-      if self.libraries.math is None:
-        raise RuntimeError('Math library [libm.a or equivalent] is not found')
-      libs += self.libraries.math
-    if self.needsCompression:
-      if self.libraries.compression is None:
-        raise RuntimeError('Compression library [libz.a or equivalent] not found')
-      libs += self.libraries.compression
 
     for location, directory, lib, incl in self.generateGuesses():
       if directory and not os.path.isdir(directory):
@@ -737,16 +763,16 @@ class Package(config.base.Configure):
       else:
         self.logPrint('Not checking for library in '+location+': '+str(lib)+' because no functions given to check for')
       self.libraries.saveLog()
-      if self.executeTest(self.libraries.check,[lib, self.functions],{'otherLibs' : libs, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': self.cxx}):
+      if self.executeTest(self.libraries.check,[lib, self.functions],{'otherLibs' : self.dlib, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': self.cxx}):
         self.lib = lib
         self.logWrite(self.libraries.restoreLog())
         self.logPrint('Checking for headers '+location+': '+str(incl))
-        if (not self.includes) or self.checkInclude(incl, self.includes, incls, timeout = 1800.0):
+        if (not self.includes) or self.checkInclude(incl, self.includes, self.dinclude, timeout = 1800.0):
           if self.includes:
             self.include = testedincl
           self.found     = 1
-          self.dlib      = self.lib+libs
-          self.dinclude  = list(set(incl+incls))
+          self.dlib      = self.lib+self.dlib
+          self.dinclude  = list(set(incl+self.dinclude))
           if not hasattr(self.framework, 'packages'):
             self.framework.packages = []
           self.directory = directory
@@ -756,6 +782,8 @@ class Package(config.base.Configure):
         self.logWrite(self.libraries.restoreLog())
     if not self.lookforbydefault or (self.framework.clArgDB.has_key('with-'+self.package) and self.argDB['with-'+self.package]):
       raise RuntimeError('Could not find a functional '+self.name+'\n')
+    if self.lookforbydefault and not self.framework.clArgDB.has_key('with-'+self.package):
+      self.argDB['with-'+self.package] = 0
 
   def checkSharedLibrary(self):
     '''By default we don\'t care about checking if the library is shared'''
@@ -809,6 +837,7 @@ class Package(config.base.Configure):
     if self.argDB['with-'+self.package]:
       # If clanguage is c++, test external packages with the c++ compiler
       self.libraries.pushLanguage(self.defaultLanguage)
+      self.executeTest(self.checkDependencies)
       self.executeTest(self.configureLibrary)
       self.executeTest(self.checkSharedLibrary)
       self.libraries.popLanguage()
@@ -1286,14 +1315,6 @@ class GNUPackage(Package):
       raise RuntimeError('Error running make; make install on '+self.PACKAGE+': '+str(e))
     self.postInstall(output1+err1+output2+err2+output3+err3+output4+err4, conffile)
     return self.installDir
-
-  def checkDependencies(self, libs = None, incls = None):
-    Package.checkDependencies(self, libs, incls)
-    for package in self.odeps:
-      if not package.found:
-        if self.argDB['with-'+package.package] == 1:
-          raise RuntimeError('Package '+package.PACKAGE+' needed by '+self.name+' failed to configure.\nMail configure.log to petsc-maint@mcs.anl.gov.')
-    return
 
 class CMakePackage(Package):
   def __init__(self, framework):

@@ -54,6 +54,7 @@ typedef const char* KSPType;
 #define   KSPFBCGS      "fbcgs"
 #define   KSPFBCGSR     "fbcgsr"
 #define   KSPBCGSL      "bcgsl"
+#define   KSPPIPEBCGS   "pipebcgs"
 #define KSPCGS        "cgs"
 #define KSPTFQMR      "tfqmr"
 #define KSPCR         "cr"
@@ -332,6 +333,7 @@ PETSC_EXTERN PetscErrorCode KSPReasonViewFromOptions(KSP);
 
 PETSC_EXTERN PetscErrorCode KSPLSQRSetStandardErrorVec(KSP,Vec);
 PETSC_EXTERN PetscErrorCode KSPLSQRGetStandardErrorVec(KSP,Vec*);
+PETSC_EXTERN PetscErrorCode KSPLSQRGetArnorm(KSP,PetscReal*,PetscReal*,PetscReal*);
 
 PETSC_EXTERN PetscErrorCode PCRedundantGetKSP(PC,KSP*);
 PETSC_EXTERN PetscErrorCode PCRedistributeGetKSP(PC,KSP*);
