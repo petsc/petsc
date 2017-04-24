@@ -502,7 +502,7 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
   PetscInt       markerRight    = 1, faceMarkerRight    = 1;
   PetscInt       markerLeft     = 1, faceMarkerLeft     = 1;
   PetscInt       dim;
-  PetscBool      markerSeparate = PETSC_FALSE;
+  PetscBool      markerSeparate = PETSC_FALSE, cutMarker = PETSC_FALSE;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
@@ -511,6 +511,12 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
   ierr = DMCreateLabel(dm,"marker");CHKERRQ(ierr);
   ierr = DMCreateLabel(dm,"Face Sets");CHKERRQ(ierr);
+  if (bdX == DM_BOUNDARY_PERIODIC || bdX == DM_BOUNDARY_TWIST ||
+      bdY == DM_BOUNDARY_PERIODIC || bdY == DM_BOUNDARY_TWIST ||
+      bdZ == DM_BOUNDARY_PERIODIC || bdZ == DM_BOUNDARY_TWIST) {
+    ierr = PetscOptionsGetBool(((PetscObject) dm)->options,((PetscObject) dm)->prefix, "-dm_plex_perioidic_cut", &cutMarker, NULL);CHKERRQ(ierr);
+    ierr = DMCreateLabel(dm,"periodic_cut");CHKERRQ(ierr);
+  }
   switch (dim) {
   case 2:
     faceMarkerTop    = 3;
@@ -756,8 +762,7 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
                 if (ey == numYEdges-1) {
                   ierr = DMSetLabelValue(dm, "marker", cone[1], markerRight);CHKERRQ(ierr);
                 }
-              }
-              else if (vx == 0) {
+              } else if (vx == 0) {
                 ierr = DMSetLabelValue(dm, "Face Sets", edge, faceMarkerLeft);CHKERRQ(ierr);
                 ierr = DMSetLabelValue(dm, "marker", edge,    markerLeft);CHKERRQ(ierr);
                 ierr = DMSetLabelValue(dm, "marker", cone[0], markerLeft);CHKERRQ(ierr);
@@ -765,22 +770,27 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
                   ierr = DMSetLabelValue(dm, "marker", cone[1], markerLeft);CHKERRQ(ierr);
                 }
               }
+            } else {
+              if (vx == 0 && cutMarker) {
+                /* ierr = DMSetLabelValue(dm, "periodic_cut", edge,    1);CHKERRQ(ierr); */
+                ierr = DMSetLabelValue(dm, "periodic_cut", cone[0], 1);CHKERRQ(ierr);
+                if (ey == numYEdges-1) {
+                  ierr = DMSetLabelValue(dm, "periodic_cut", cone[1], 1);CHKERRQ(ierr);
+                }
+              }
             }
-          }
-          else {
+          } else {
             if (bdX != DM_BOUNDARY_PERIODIC) {
               if (vx == numXVertices-1) {
                 ierr = DMSetLabelValue(dm, "marker", edge, markerRight);CHKERRQ(ierr);
-              }
-              else if (vx == 0) {
+              } else if (vx == 0) {
                 ierr = DMSetLabelValue(dm, "marker", edge, markerLeft);CHKERRQ(ierr);
               }
             }
             if (bdZ != DM_BOUNDARY_PERIODIC) {
               if (vz == numZVertices-1) {
                 ierr = DMSetLabelValue(dm, "marker", edge, markerTop);CHKERRQ(ierr);
-              }
-              else if (vz == 0) {
+              } else if (vz == 0) {
                 ierr = DMSetLabelValue(dm, "marker", edge, markerBottom);CHKERRQ(ierr);
               }
             }
@@ -809,8 +819,7 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
                 if (ex == numXEdges-1) {
                   ierr = DMSetLabelValue(dm, "marker", cone[1], markerTop);CHKERRQ(ierr);
                 }
-              }
-              else if (vy == 0) {
+              } else if (vy == 0) {
                 ierr = DMSetLabelValue(dm, "Face Sets", edge, faceMarkerBottom);CHKERRQ(ierr);
                 ierr = DMSetLabelValue(dm, "marker", edge,    markerBottom);CHKERRQ(ierr);
                 ierr = DMSetLabelValue(dm, "marker", cone[0], markerBottom);CHKERRQ(ierr);
@@ -818,9 +827,16 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
                   ierr = DMSetLabelValue(dm, "marker", cone[1], markerBottom);CHKERRQ(ierr);
                 }
               }
+            } else {
+              if (vy == 0 && cutMarker) {
+                /* ierr = DMSetLabelValue(dm, "periodic_cut", edge,    1);CHKERRQ(ierr); */
+                ierr = DMSetLabelValue(dm, "periodic_cut", cone[0], 1);CHKERRQ(ierr);
+                if (ex == numXEdges-1) {
+                  ierr = DMSetLabelValue(dm, "periodic_cut", cone[1], 1);CHKERRQ(ierr);
+                }
+              }
             }
-          }
-          else {
+          } else {
             if (bdY != DM_BOUNDARY_PERIODIC) {
               if (vy == numYVertices-1) {
                 ierr = DMSetLabelValue(dm, "marker", edge, markerBack);CHKERRQ(ierr);
