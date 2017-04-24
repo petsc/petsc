@@ -123,7 +123,7 @@ PetscErrorCode  TSAdaptInitializePackage(void)
   Logicially Collective on TSAdapt
 
   Input Parameter:
-+ adapt - the TS error adapter, most likely obtained with TSGetAdapt()
++ adapt - the TS adapter, most likely obtained with TSGetAdapt()
 - type - either  TSADAPTBASIC or TSADAPTNONE
 
   Options Database:
@@ -150,6 +150,31 @@ PetscErrorCode  TSAdaptSetType(TSAdapt adapt,TSAdaptType type)
   ierr = PetscMemzero(adapt->ops,sizeof(struct _TSAdaptOps));CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)adapt,type);CHKERRQ(ierr);
   ierr = (*r)(adapt);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  TSAdaptGetType - gets the TS adapter method type (as a string).
+
+  Not Collective
+
+  Input Parameter:
+. adapt - The TS adapter, most likely obtained with TSGetAdapt()
+
+  Output Parameter:
+. type - The name of TS adapter method
+
+  Level: intermediate
+
+.keywords: TSAdapt, get, type
+.seealso TSAdaptSetType()
+@*/
+PetscErrorCode TSAdaptGetType(TSAdapt adapt,TSAdaptType *type)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
+  PetscValidPointer(type,2);
+  *type = ((PetscObject)adapt)->type_name;
   PetscFunctionReturn(0);
 }
 

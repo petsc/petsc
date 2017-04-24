@@ -593,6 +593,7 @@ PETSC_EXTERN PetscErrorCode TSAdaptInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSAdaptFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSAdaptCreate(MPI_Comm,TSAdapt*);
 PETSC_EXTERN PetscErrorCode TSAdaptSetType(TSAdapt,TSAdaptType);
+PETSC_EXTERN PetscErrorCode TSAdaptGetType(TSAdapt,TSAdaptType*);
 PETSC_EXTERN PetscErrorCode TSAdaptSetOptionsPrefix(TSAdapt,const char[]);
 PETSC_EXTERN PetscErrorCode TSAdaptCandidatesClear(TSAdapt);
 PETSC_EXTERN PetscErrorCode TSAdaptCandidateAdd(TSAdapt,const char[],PetscInt,PetscInt,PetscReal,PetscReal,PetscBool);
