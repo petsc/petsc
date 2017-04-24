@@ -21,7 +21,7 @@ typedef int PetscLogEvent;
 
     Level: intermediate
 
-.seealso: PetscLogStageRegister(), PetscLogStageBegin(), PetscLogStageEnd(), PetscLogEvent
+.seealso: PetscLogStageRegister(), PetscLogStagePush(), PetscLogStagePop(), PetscLogEvent
 M*/
 typedef int PetscLogStage;
 
