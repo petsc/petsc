@@ -341,9 +341,9 @@ static PetscErrorCode TSSetUp_BDF(TS ts)
   {
     PetscBool isnone;
     PetscReal low,high;
-    ierr = TSAdaptBasicGetClip(ts->adapt,&low,&high);CHKERRQ(ierr);
+    ierr = TSAdaptGetClip(ts->adapt,&low,&high);CHKERRQ(ierr);
     high = PetscMin(high,2.0);
-    ierr = TSAdaptBasicSetClip(ts->adapt,low,high);CHKERRQ(ierr);
+    ierr = TSAdaptSetClip(ts->adapt,low,high);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)ts->adapt,TSADAPTNONE,&isnone);CHKERRQ(ierr);
     if (!isnone && ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED)
       ts->exact_final_time = TS_EXACTFINALTIME_MATCHSTEP;
