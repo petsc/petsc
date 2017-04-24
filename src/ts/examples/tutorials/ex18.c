@@ -1229,7 +1229,7 @@ int main(int argc, char **argv)
   test:
     suffix: adv_3_ex
     requires: !complex
-    args: -y_bd_type none -use_fv -velocity_dist zero -porosity_dist tilted -ts_type ssp -ts_final_time 2.0 -ts_max_steps 1000 -ts_dt 0.1 -bc_inflow 3 -bc_outflow 1 -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -ksp_max_it 100 -ts_view -dm_view -snes_converged_reason
+    args: -y_bd_type none -use_fv -velocity_dist zero -porosity_dist tilted -ts_type ssp -ts_final_time 2.0 -ts_max_steps 1000 -ts_dt 0.1 -bc_inflow 3 -bc_outflow 1 -snes_fd_color -ksp_max_it 100 -ts_view -dm_view
   test:
     suffix: adv_4
     requires: !complex

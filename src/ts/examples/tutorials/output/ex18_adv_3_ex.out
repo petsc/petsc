@@ -42,8 +42,3 @@ TS Object: 1 MPI processes
   using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
     Scheme: rks2
 CONVERGED_TIME at time 2. after 20 steps
-WARNING! There are options you set that were not used!
-WARNING! could be spelling mistake, etc!
-Option left: name:-mat_coloring_type value: greedy
-Option left: name:-snes_converged_reason (no value)
-Option left: name:-snes_fd_color_use_mat (no value)
