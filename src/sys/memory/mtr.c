@@ -525,7 +525,7 @@ PetscErrorCode  PetscMemoryView(PetscViewer viewer,const char message[])
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
     PetscMallocGetCurrentUsage - gets the current amount of memory used that was PetscMalloc()ed
 
     Not Collective
