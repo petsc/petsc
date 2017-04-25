@@ -102,8 +102,10 @@ PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec v, PetscViewer viewer)
   if (format == PETSC_VIEWER_HDF5_VIZ) {
     /* Output visualization representation */
     PetscInt numFields, f;
+    DMLabel  cutLabel;
 
     ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
+    ierr = DMGetLabel(dm, "periodic_cut", &cutLabel);CHKERRQ(ierr);
     for (f = 0; f < numFields; ++f) {
       Vec         subv;
       IS          is;
@@ -118,14 +120,65 @@ PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec v, PetscViewer viewer)
       ierr = PetscSectionGetFieldName(section, f, &fname);CHKERRQ(ierr);
       if (!fname) continue;
       ierr = PetscViewerHDF5PushGroup(viewer, fgroup);CHKERRQ(ierr);
-      ierr = PetscSectionGetField_Internal(section, sectionGlobal, gv, f, pStart, pEnd, &is, &subv);CHKERRQ(ierr);
+      if (cutLabel) {
+        const PetscScalar *ga;
+        PetscScalar       *suba;
+        PetscInt           Nc, gstart, subSize = 0, extSize = 0, subOff = 0, newOff = 0, p;
+
+        ierr = PetscSectionGetFieldComponents(section, f, &Nc);CHKERRQ(ierr);
+        for (p = pStart; p < pEnd; ++p) {
+          PetscInt gdof, fdof = 0, val;
+
+          ierr = PetscSectionGetDof(sectionGlobal, p, &gdof);CHKERRQ(ierr);
+          if (gdof > 0) {ierr = PetscSectionGetFieldDof(section, p, f, &fdof);CHKERRQ(ierr);}
+          subSize += fdof;
+          ierr = DMLabelGetValue(cutLabel, p, &val);CHKERRQ(ierr);
+          if (val == 1) extSize += fdof;
+        }
+        ierr = VecCreate(PetscObjectComm((PetscObject) gv), &subv);CHKERRQ(ierr);
+        ierr = VecSetSizes(subv, subSize+extSize, PETSC_DETERMINE);CHKERRQ(ierr);
+        ierr = VecSetBlockSize(subv, Nc);CHKERRQ(ierr);
+        ierr = VecSetType(subv, VECSTANDARD);CHKERRQ(ierr);
+        ierr = VecGetOwnershipRange(gv, &gstart, NULL);CHKERRQ(ierr);
+        ierr = VecGetArrayRead(gv, &ga);CHKERRQ(ierr);
+        ierr = VecGetArray(subv, &suba);CHKERRQ(ierr);
+        for (p = pStart; p < pEnd; ++p) {
+          PetscInt gdof, goff, val;
+
+          ierr = PetscSectionGetDof(sectionGlobal, p, &gdof);CHKERRQ(ierr);
+          if (gdof > 0) {
+            PetscInt fdof, fc, f2, poff = 0;
+
+            ierr = PetscSectionGetOffset(sectionGlobal, p, &goff);CHKERRQ(ierr);
+            /* Can get rid of this loop by storing field information in the global section */
+            for (f2 = 0; f2 < f; ++f2) {
+              ierr  = PetscSectionGetFieldDof(section, p, f2, &fdof);CHKERRQ(ierr);
+              poff += fdof;
+            }
+            ierr = PetscSectionGetFieldDof(section, p, f, &fdof);CHKERRQ(ierr);
+            for (fc = 0; fc < fdof; ++fc, ++subOff) suba[subOff] = ga[goff+poff+fc - gstart];
+            ierr = DMLabelGetValue(cutLabel, p, &val);CHKERRQ(ierr);
+            if (val == 1) {
+              for (fc = 0; fc < fdof; ++fc, ++newOff) suba[subSize+newOff] = ga[goff+poff+fc - gstart];
+            }
+          }
+        }
+        ierr = VecRestoreArrayRead(gv, &ga);CHKERRQ(ierr);
+        ierr = VecRestoreArray(subv, &suba);CHKERRQ(ierr);
+      } else {
+        ierr = PetscSectionGetField_Internal(section, sectionGlobal, gv, f, pStart, pEnd, &is, &subv);CHKERRQ(ierr);
+      }
       ierr = PetscStrcpy(subname, name);CHKERRQ(ierr);
       ierr = PetscStrcat(subname, "_");CHKERRQ(ierr);
       ierr = PetscStrcat(subname, fname);CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) subv, subname);CHKERRQ(ierr);
       if (isseq) {ierr = VecView_Seq(subv, viewer);CHKERRQ(ierr);}
       else       {ierr = VecView_MPI(subv, viewer);CHKERRQ(ierr);}
-      ierr = PetscSectionRestoreField_Internal(section, sectionGlobal, gv, f, pStart, pEnd, &is, &subv);CHKERRQ(ierr);
+      if (cutLabel) {
+        ierr = VecDestroy(&subv);CHKERRQ(ierr);
+      } else {
+        ierr = PetscSectionRestoreField_Internal(section, sectionGlobal, gv, f, pStart, pEnd, &is, &subv);CHKERRQ(ierr);
+      }
       ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
       ierr = PetscSNPrintf(group, PETSC_MAX_PATH_LEN, "%s/%s", fgroup, subname);CHKERRQ(ierr);
       ierr = PetscViewerHDF5HasAttribute(viewer, group, "vector_field_type", &flag);CHKERRQ(ierr);
