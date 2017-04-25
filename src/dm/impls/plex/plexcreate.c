@@ -913,6 +913,8 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
   Input Parameters:
 + comm  - The communicator for the DM object
 . dim   - The spatial dimension
+. lower - The lower left corner, or NULL for (0, 0, 0)
+. upper - The upper right corner, or NULL for (1, 1, 1)
 . periodicX - The boundary type for the X direction
 . periodicY - The boundary type for the Y direction
 . periodicZ - The boundary type for the Z direction
@@ -937,7 +939,7 @@ $ 16--4-17--5--18
 .keywords: DM, create
 .seealso: DMPlexCreateBoxMesh(), DMSetType(), DMCreate()
 @*/
-PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const PetscInt cells[], DMBoundaryType periodicX, DMBoundaryType periodicY, DMBoundaryType periodicZ, DM *dm)
+PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const PetscInt cells[], const PetscReal lower[], const PetscReal upper[], DMBoundaryType periodicX, DMBoundaryType periodicY, DMBoundaryType periodicZ, DM *dm)
 {
   PetscInt       i;
   PetscErrorCode ierr;
@@ -951,15 +953,14 @@ PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const PetscIn
   switch (dim) {
   case 2:
   {
-    PetscReal lower[3] = {0.0, 0.0, 0.0};
-    PetscReal upper[3] = {1.0, 1.0, 0.0};
+    PetscReal low[3] = {lower ? lower[0] : 0.0, lower ? lower[1] : 0.0, 0.0};
+    PetscReal upp[3] = {upper ? upper[0] : 1.0, upper ? upper[1] : 1.0, 0.0};
     PetscInt  edges[3];
 
     edges[0] = cells[0];
     edges[1] = cells[1];
     edges[2] = 0;
-
-    ierr = DMPlexCreateCubeMesh_Internal(*dm, lower, upper, edges, periodicX, periodicY, DM_BOUNDARY_NONE);CHKERRQ(ierr);
+    ierr = DMPlexCreateCubeMesh_Internal(*dm, low, upp, edges, periodicX, periodicY, DM_BOUNDARY_NONE);CHKERRQ(ierr);
     if (periodicX == DM_BOUNDARY_PERIODIC || periodicX == DM_BOUNDARY_TWIST ||
         periodicY == DM_BOUNDARY_PERIODIC || periodicY == DM_BOUNDARY_TWIST) {
       PetscReal      L[2];
@@ -979,10 +980,10 @@ PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const PetscIn
   }
   case 3:
   {
-    PetscReal lower[3] = {0.0, 0.0, 0.0};
-    PetscReal upper[3] = {1.0, 1.0, 1.0};
+    PetscReal low[3] = {lower ? lower[0] : 0.0, lower ? lower[1] : 0.0, lower ? lower[2] : 0.0};
+    PetscReal upp[3] = {upper ? upper[0] : 1.0, upper ? upper[1] : 1.0, upper ? upper[2] : 1.0};
 
-    ierr = DMPlexCreateCubeMesh_Internal(*dm, lower, upper, cells, periodicX, periodicY, periodicZ);CHKERRQ(ierr);
+    ierr = DMPlexCreateCubeMesh_Internal(*dm, low, upp, cells, periodicX, periodicY, periodicZ);CHKERRQ(ierr);
     if (periodicX == DM_BOUNDARY_PERIODIC || periodicX == DM_BOUNDARY_TWIST ||
         periodicY == DM_BOUNDARY_PERIODIC || periodicY == DM_BOUNDARY_TWIST ||
         periodicZ == DM_BOUNDARY_PERIODIC || periodicZ == DM_BOUNDARY_TWIST) {

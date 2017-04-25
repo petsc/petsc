@@ -107,7 +107,7 @@ int main(int argc, char **argv)
   bcCtx.ctx  = NULL;
 
   /* the base mesh */
-  ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, &base);CHKERRQ(ierr);
+  ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, NULL, NULL, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, &base);CHKERRQ(ierr);
   if (useFV) {
     PetscFV      fv;
     PetscLimiter limiter;

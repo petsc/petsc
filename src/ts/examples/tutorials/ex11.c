@@ -1703,7 +1703,7 @@ int main(int argc, char **argv)
       if (simplex) {
         ierr = DMPlexCreateBoxMesh(comm, dim, cells[0], PETSC_TRUE, &dm);CHKERRQ(ierr);
       } else {
-        ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, mod->bcs[0], mod->bcs[1], mod->bcs[2], &dm);CHKERRQ(ierr);
+        ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, NULL, NULL, mod->bcs[0], mod->bcs[1], mod->bcs[2], &dm);CHKERRQ(ierr);
       }
       if (flg2) {
         PetscInt dimEmbed, i;
