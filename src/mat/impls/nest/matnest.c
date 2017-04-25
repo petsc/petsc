@@ -1108,7 +1108,7 @@ PetscErrorCode MatNestSetSubMats_Nest(Mat A,PetscInt nr,const IS is_row[],PetscI
 PetscErrorCode MatNestSetSubMats(Mat A,PetscInt nr,const IS is_row[],PetscInt nc,const IS is_col[],const Mat a[])
 {
   PetscErrorCode ierr;
-  PetscInt       i;
+  PetscInt       i,nr_nc;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
@@ -1122,7 +1122,8 @@ PetscErrorCode MatNestSetSubMats(Mat A,PetscInt nr,const IS is_row[],PetscInt nc
     PetscValidPointer(is_col,5);
     for (i=0; i<nc; i++) PetscValidHeaderSpecific(is_col[i],IS_CLASSID,5);
   }
-  if (nr*nc) PetscValidPointer(a,6);
+  nr_nc=nr*nc;
+  if (nr_nc) PetscValidPointer(a,6);
   ierr = PetscUseMethod(A,"MatNestSetSubMats_C",(Mat,PetscInt,const IS[],PetscInt,const IS[],const Mat[]),(A,nr,is_row,nc,is_col,a));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
