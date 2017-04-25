@@ -24,7 +24,7 @@
 /* Some compilers still strange behavior with -std=c89, in that log2 is a
    usable symbol but gives the wrong result unless the log2 prototype is given
    again */
-#if defined(PETSC_HAVE_LOG2) && !defined(__cplusplus)
+#if defined(PETSC_HAVE_LOG2) && !defined(__cplusplus) && !defined(__STDC_VERSION__)
 double log2(double);
 #endif
 
