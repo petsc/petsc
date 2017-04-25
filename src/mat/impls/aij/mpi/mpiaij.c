@@ -2974,23 +2974,27 @@ PetscErrorCode ISGetSeqIS_Private(Mat mat,IS iscol,IS *isseq)
 }
 
 /*
- Used for avoiding ISAllGather() and global size of iscol_local (see MatCreateSubMatrix_MPIAIJ_nonscalable)
+ Used by MatCreateSubMatrix_MPIAIJ_SameRowColDist() to avoid ISAllGather() and global size of iscol_local
+ (see MatCreateSubMatrix_MPIAIJ_nonscalable)
 
  Input Parameters:
    mat - matrix
+   isrow - parallel row index set; its local indices are a subset of local columns of mat,
+           i.e., mat->rstart <= isrow[i] < mat->rend
    iscol - parallel column index set; its local indices are a subset of local columns of mat,
            i.e., mat->cstart <= iscol[i] < mat->cend
  Output Parameter:
-   iscol_sub - sequential column index set, a subset of iscol
-   iscmap - column map; iscmap[i] indicates global location of iscol_sub[i] in iscol
+   isrow_d,iscol_d - sequential row and column index sets for retrieving mat->A
+   iscol_o - sequential column index set for retrieving mat->B
+   garray - column map; garray[i] indicates global location of iscol_o[i] in iscol
  */
-PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat,IS isrow,IS iscol,IS *isrow_d,IS *iscol_d,IS *iscol_o,IS *isgarray)
+PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat,IS isrow,IS iscol,IS *isrow_d,IS *iscol_d,IS *iscol_o,const PetscInt *garray[])
 {
   PetscErrorCode ierr;
   Vec            x,cmap;
   const PetscInt *is_idx;
   PetscScalar    *xarray,*cmaparray;
-  PetscInt       ncols,isstart,*idx,*camp,count,m,rstart;
+  PetscInt       ncols,isstart,*idx,m,rstart,*cmap1,count;
   Mat_MPIAIJ     *a=(Mat_MPIAIJ*)mat->data;
   Mat            B=a->B;
   Vec            lvec=a->lvec,lcmap;
@@ -3008,7 +3012,7 @@ PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat,IS isrow,IS iscol,IS *isro
   ierr = VecDuplicate(x,&cmap);CHKERRQ(ierr);
   ierr = VecSet(x,-1.0);CHKERRQ(ierr);
 
-  /* get start indices */
+  /* Get start indices */
   ierr = MPI_Scan(&ncols,&isstart,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
   isstart -= ncols;
   ierr = MatGetOwnershipRangeColumn(mat,&cstart,&cend);CHKERRQ(ierr);
@@ -3019,83 +3023,63 @@ PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat,IS isrow,IS iscol,IS *isro
   ierr = PetscMalloc1(ncols,&idx);CHKERRQ(ierr);
   for (i=0; i<ncols; i++) {
     xarray[is_idx[i]-cstart]    = (PetscScalar)is_idx[i];
-    cmaparray[is_idx[i]-cstart] = i + isstart; /* global index of iscol[i] */
-
-    idx[i]                      = is_idx[i]-cstart;
+    cmaparray[is_idx[i]-cstart] = i + isstart;      /* global index of iscol[i] */
+    idx[i]                      = is_idx[i]-cstart; /* local index of iscol[i]  */
   }
   ierr = VecRestoreArray(x,&xarray);CHKERRQ(ierr);
   ierr = VecRestoreArray(cmap,&cmaparray);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&is_idx);CHKERRQ(ierr);
 
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,ncols,idx,PETSC_COPY_VALUES,iscol_d);CHKERRQ(ierr);
+  /* Get iscol_d */
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,ncols,idx,PETSC_OWN_POINTER,iscol_d);CHKERRQ(ierr);
   ierr = ISGetBlockSize(iscol,&i);CHKERRQ(ierr);
   ierr = ISSetBlockSize(*iscol_d,i);CHKERRQ(ierr);
-  ierr = PetscFree(idx);CHKERRQ(ierr);
 
+  /* Get isrow_d */
   ierr = ISGetLocalSize(isrow,&m);CHKERRQ(ierr);
   rstart = mat->rmap->rstart;
   ierr = PetscMalloc1(m,&idx);CHKERRQ(ierr);
   ierr = ISGetIndices(isrow,&is_idx);CHKERRQ(ierr);
-  for (i=0; i<m; i++) {
-    idx[i] = is_idx[i]-rstart;
-  }
+  for (i=0; i<m; i++) idx[i] = is_idx[i]-rstart;
   ierr = ISRestoreIndices(isrow,&is_idx);CHKERRQ(ierr);
 
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,m,idx,PETSC_COPY_VALUES,isrow_d);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,m,idx,PETSC_OWN_POINTER,isrow_d);CHKERRQ(ierr);
   ierr = ISGetBlockSize(isrow,&i);CHKERRQ(ierr);
   ierr = ISSetBlockSize(*isrow_d,i);CHKERRQ(ierr);
-  ierr = PetscFree(idx);CHKERRQ(ierr);
 
-  /* (2) scatter x and cmap using aij->Mvctx to get their off-process portions (see MatMult_MPIAIJ) */
+  /* (2) Scatter x and cmap using aij->Mvctx to get their off-process portions (see MatMult_MPIAIJ) */
   ierr = VecScatterBegin(a->Mvctx,x,lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
   ierr = VecDuplicate(lvec,&lcmap);CHKERRQ(ierr);
 
   ierr = VecScatterEnd(a->Mvctx,x,lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterBegin(a->Mvctx,cmap,lcmap,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-
-  count = ncols + Bn;
-  ierr  = PetscMalloc2(count,&idx,count,&camp);CHKERRQ(ierr);
-
   ierr = VecScatterEnd(a->Mvctx,cmap,lcmap,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
-  /* (3) create scalable iscol_sub (a subset of iscol) and iscmap */
-  /* local column indices */
-  ierr = ISGetIndices(iscol,&is_idx);CHKERRQ(ierr);
-  for (i=0; i<ncols; i++) {
-    idx[i]  = is_idx[i];
-    camp[i] = i + isstart; /* global index of iscol = column index in submat */
-  }
-  ierr = ISRestoreIndices(iscol,&is_idx);CHKERRQ(ierr);
-  count = ncols;
-
+  /* (3) create sequential iscol_o (a subset of iscol) and isgarray */
   /* off-process column indices */
-  PetscInt *idx1,*cmap1,count1=0;
-  ierr = PetscMalloc2(Bn,&idx1,Bn,&cmap1);CHKERRQ(ierr);
+  count = 0;
+  ierr = PetscMalloc1(Bn,&idx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Bn,&cmap1);CHKERRQ(ierr);
 
   ierr = VecGetArray(lvec,&xarray);CHKERRQ(ierr);
   ierr = VecGetArray(lcmap,&cmaparray);CHKERRQ(ierr);
   for (i=0; i<Bn; i++) {
     if (PetscRealPart(xarray[i]) > -1.0) {
-      idx1[count1]    = i; /* local column index in off-diagonal part B */
-      cmap1[count1++] = (PetscInt)PetscRealPart(cmaparray[i]);  /* column index in submat */
-
-      idx[count]    = (PetscInt)PetscRealPart(xarray[i]);
-      camp[count++] = (PetscInt)PetscRealPart(cmaparray[i]);  /* column index in submat */
+      idx[count]     = i;                   /* local column index in off-diagonal part B */
+      cmap1[count++] = (PetscInt)PetscRealPart(cmaparray[i]);  /* column index in submat */
     }
   }
   ierr = VecRestoreArray(lvec,&xarray);CHKERRQ(ierr);
   ierr = VecRestoreArray(lcmap,&cmaparray);CHKERRQ(ierr);
 
-  ierr = PetscSortIntWithArray(count,camp,idx);CHKERRQ(ierr);
-
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,count1,idx1,PETSC_COPY_VALUES,iscol_o);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,count1,cmap1,PETSC_COPY_VALUES,isgarray);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,count,idx,PETSC_COPY_VALUES,iscol_o);CHKERRQ(ierr);
   ierr = ISGetBlockSize(iscol,&i);CHKERRQ(ierr);
   ierr = ISSetBlockSize(*iscol_o,i);CHKERRQ(ierr);
-  ierr = PetscFree2(idx1,cmap1);CHKERRQ(ierr);
+  ierr = PetscFree(idx);CHKERRQ(ierr);
 
-  ierr = PetscFree2(idx,camp);CHKERRQ(ierr);
+  *garray = cmap1;
+
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&cmap);CHKERRQ(ierr);
   ierr = VecDestroy(&lcmap);CHKERRQ(ierr);
@@ -3142,42 +3126,40 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowColDist(Mat mat,IS isrow,IS isco
     ierr = MatAssemblyEnd(*submat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   } else { /* call == MAT_INITIAL_MATRIX) */
-    IS             isgarray;
-    const PetscInt *garray1;
+    const PetscInt *garray;
     PetscInt        BsubN;
 
     /* Create isrow_d, iscol_d, iscol_o and isgarray (replace isgarray with array?) */
-    ierr = ISGetSeqIS_SameColDist_Private(mat,isrow,iscol,&isrow_d,&iscol_d,&iscol_o,&isgarray);CHKERRQ(ierr);
+    ierr = ISGetSeqIS_SameColDist_Private(mat,isrow,iscol,&isrow_d,&iscol_d,&iscol_o,&garray);CHKERRQ(ierr);
 
     /* Create local submatrices Asub and Bsub */
     ierr = MatCreateSubMatrix_SeqAIJ(a->A,isrow_d,iscol_d,PETSC_DECIDE,MAT_INITIAL_MATRIX,&Asub);CHKERRQ(ierr);
     ierr = MatCreateSubMatrix_SeqAIJ(a->B,isrow_d,iscol_o,PETSC_DECIDE,MAT_INITIAL_MATRIX,&Bsub);CHKERRQ(ierr);
 
-    ierr = ISGetIndices(isgarray,&garray1);CHKERRQ(ierr);
-    ierr = MatCreateMPIAIJWithSeqAIJ(comm,Asub,Bsub,garray1,&M);CHKERRQ(ierr);
-    ierr = ISRestoreIndices(isgarray,&garray1);CHKERRQ(ierr);
+    /* Create submatrix M */
+    ierr = MatCreateMPIAIJWithSeqAIJ(comm,Asub,Bsub,garray,&M);CHKERRQ(ierr);
 
     /* If Bsub has empty columns, compress iscol_o such that it will retrieve condensed Bsub from a->B during reuse */
     asub = (Mat_MPIAIJ*)M->data;
 
-    ierr = ISGetLocalSize(isgarray,&BsubN);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(iscol_o,&BsubN);CHKERRQ(ierr);
     n = asub->B->cmap->N;
     if (BsubN > n) {
       /* This case can be tested using ~petsc/src/tao/bound/examples/tutorials/runplate2_3 */
       const PetscInt *idx;
-      PetscInt       i,j,*idx_new,*garray = asub->garray; //idx_new[n],
-      printf("[%d] BsubN %d != Bn %d, update iscol_o \n",rank,BsubN,n);
+      PetscInt       i,j,*idx_new,*subgarray = asub->garray;
+      ierr = PetscInfo2(M,"submatrix Bn %D != BsubN %D, update iscol_o\n",n,BsubN);CHKERRQ(ierr);
 
       ierr = PetscMalloc1(n,&idx_new);CHKERRQ(ierr);
       j = 0;
       ierr = ISGetIndices(iscol_o,&idx);CHKERRQ(ierr);
       for (i=0; i<n; i++) {
         if (j >= BsubN) break;
-        while (garray[i] > garray1[j]) j++;
+        while (subgarray[i] > garray[j]) j++;
 
-        if (garray[i] == garray1[j]) {
+        if (subgarray[i] == garray[j]) {
           idx_new[i] = idx[j++];
-        } else SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"garray[%D]=%D cannot < garray1[%D]=%D",i,garray[i],j,garray1[j]);
+        } else SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"subgarray[%D]=%D cannot < garray[%D]=%D",i,subgarray[i],j,garray[j]);
       }
       ierr = ISRestoreIndices(iscol_o,&idx);CHKERRQ(ierr);
 
@@ -3188,7 +3170,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowColDist(Mat mat,IS isrow,IS isco
       SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Columns of Bsub cannot be smaller than B's",BsubN,asub->B->cmap->N);
     }
 
-    ierr = ISDestroy(&isgarray);CHKERRQ(ierr);
+    ierr = PetscFree(garray);CHKERRQ(ierr);
     *submat = M;
 
     /* Save isrow_d, iscol_d and iscol_o used in processor for next request */
