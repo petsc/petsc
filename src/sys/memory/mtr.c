@@ -409,7 +409,7 @@ PetscErrorCode  PetscMemoryView(PetscViewer viewer,const char message[])
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscMallocGetCurrentUsage"
-/*@C
+/*@
     PetscMallocGetCurrentUsage - gets the current amount of memory used that was PetscMalloc()ed
 
     Not Collective
