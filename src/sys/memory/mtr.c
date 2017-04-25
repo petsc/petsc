@@ -547,7 +547,7 @@ PetscErrorCode  PetscMallocGetCurrentUsage(PetscLogDouble *space)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
     PetscMallocGetMaximumUsage - gets the maximum amount of memory used that was PetscMalloc()ed at any time
         during this run.
 
@@ -670,7 +670,7 @@ PetscErrorCode  PetscMallocDump(FILE *fp)
 
 /* ---------------------------------------------------------------------------- */
 
-/*@C
+/*@
     PetscMallocSetDumpLog - Activates logging of all calls to PetscMalloc().
 
     Not Collective
@@ -694,7 +694,7 @@ PetscErrorCode PetscMallocSetDumpLog(void)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
     PetscMallocSetDumpLogThreshold - Activates logging of all calls to PetscMalloc().
 
     Not Collective
@@ -721,7 +721,7 @@ PetscErrorCode PetscMallocSetDumpLogThreshold(PetscLogDouble logmin)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
     PetscMallocGetDumpLog - Determine whether all calls to PetscMalloc() are being logged
 
     Not Collective
@@ -840,7 +840,7 @@ foundit:;
 
 /* ---------------------------------------------------------------------------- */
 
-/*@C
+/*@
     PetscMallocDebug - Turns on/off debugging for the memory management routines.
 
     Not Collective
@@ -859,7 +859,7 @@ PetscErrorCode  PetscMallocDebug(PetscBool level)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
     PetscMallocGetDebug - Indicates if any PETSc is doing ANY memory debugging.
 
     Not Collective

@@ -151,7 +151,7 @@ PetscErrorCode  PetscMemoryGetMaximumUsage(PetscLogDouble *mem)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    PetscMemorySetGetMaximumUsage - Tells PETSc to monitor the maximum memory usage so that
        PetscMemoryGetMaximumUsage() will work.
 
