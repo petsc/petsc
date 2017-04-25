@@ -396,11 +396,17 @@ static PetscErrorCode DMPlexWriteTopology_Vertices_HDF5_Static(DM dm, DMLabel la
   for (cell = cStart, v = 0; cell < cEnd; ++cell) {
     PetscInt *closure = NULL;
     PetscInt  closureSize, Nc = 0, p;
+    PetscBool replace = PETSC_FALSE;
 
     if (label) {
       PetscInt value;
       ierr = DMLabelGetValue(label, cell, &value);CHKERRQ(ierr);
       if (value == labelId) continue;
+    }
+    if (cutLabel) {
+      PetscInt value;
+      ierr = DMLabelGetValue(cutLabel, cell, &value);CHKERRQ(ierr);
+      if (value == 2) replace = PETSC_TRUE;
     }
     ierr = DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     for (p = 0; p < closureSize*2; p += 2) {
@@ -412,13 +418,9 @@ static PetscErrorCode DMPlexWriteTopology_Vertices_HDF5_Static(DM dm, DMLabel la
     for (p = 0; p < Nc; ++p) {
       const PetscInt gv = gvertex[closure[p] - vStart];
       vertices[v++] = gv < 0 ? -(gv+1) : gv;
-      if (cutLabel) {
-        PetscInt newv, dof;
-
-        ierr = PetscSectionGetDof(cSection, cell, &dof);CHKERRQ(ierr);
-        if (dof <= 0) continue;
+      if (replace) {
+        PetscInt newv;
         ierr = PetscFindInt(closure[p], vExtra, cutverts, &newv);CHKERRQ(ierr);
-        /* TODO: Will not work with edges in the label */
         if (newv >= 0) vertices[v-1] = vEnd - vStart + newv;
       }
     }
