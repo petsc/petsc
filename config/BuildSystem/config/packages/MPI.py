@@ -428,18 +428,22 @@ class Configure(config.package.Package):
     '''Determine if MPICH_NUMVERSION or OMPI_MAJOR_VERSION exist in mpi.h
        Used for consistency checking of MPI installation at compile time'''
     import re
-    mpich_test = '#include <mpi.h>\nint mpich_ver = MPICH_NUMVERSION;\n'
-    openmpi_test = '#include <mpi.h>\nint ompi_major = OMPI_MAJOR_VERSION;\nint ompi_minor = OMPI_MINOR_VERSION;\nint ompi_release = OMPI_RELEASE_VERSION;\n'
     oldFlags = self.compilers.CPPFLAGS
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
-    if self.checkCompile(mpich_test):
-      buf = self.outputPreprocess(mpich_test)
-      try:
-        mpich_numversion = re.compile('\nint mpich_ver = *([0-9]*) *;').search(buf).group(1)
-        self.addDefine('HAVE_MPICH_NUMVERSION',mpich_numversion)
-      except:
-        self.logPrint('Unable to parse MPICH version from header. Probably a buggy preprocessor')
-    elif self.checkCompile(openmpi_test):
+    for mpichpkg in ['i_mpi','mvapich2','mpich']:
+      MPICHPKG = mpichpkg.upper()
+      mpich_test = '#include <mpi.h>\nint mpich_ver = '+MPICHPKG+'_NUMVERSION;\n'
+      if self.checkCompile(mpich_test):
+        buf = self.outputPreprocess(mpich_test)
+        try:
+          mpich_numversion = re.compile('\nint mpich_ver = *([0-9]*) *;').search(buf).group(1)
+          self.addDefine('HAVE_'+MPICHPKG+'_NUMVERSION',mpich_numversion)
+        except:
+          self.logPrint('Unable to parse '+MPICHPKG+' version from header. Probably a buggy preprocessor')
+        self.compilers.CPPFLAGS = oldFlags
+        return
+    openmpi_test = '#include <mpi.h>\nint ompi_major = OMPI_MAJOR_VERSION;\nint ompi_minor = OMPI_MINOR_VERSION;\nint ompi_release = OMPI_RELEASE_VERSION;\n'
+    if self.checkCompile(openmpi_test):
       buf = self.outputPreprocess(openmpi_test)
       ompi_major_version = ompi_minor_version = ompi_release_version = 'unknown'
       try:
