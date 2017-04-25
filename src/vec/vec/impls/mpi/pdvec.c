@@ -745,6 +745,17 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   PetscStackCallHDF5(H5Fflush,(file_id, H5F_SCOPE_GLOBAL));
   ierr   = VecRestoreArrayRead(xin, &x);CHKERRQ(ierr);
 
+#if defined(PETSC_USE_COMPLEX)
+  {
+    PetscInt   one = 1;
+    const char *groupname;
+    char       vecgroup[PETSC_MAX_PATH_LEN];
+
+    ierr = PetscViewerHDF5GetGroup(viewer,&groupname);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(vecgroup,PETSC_MAX_PATH_LEN,"%s/%s",groupname,vecname);CHKERRQ(ierr);
+    ierr = PetscViewerHDF5WriteAttribute(viewer,vecgroup,"complex",PETSC_INT,&one);CHKERRQ(ierr);
+  }
+#endif
   /* Close/release resources */
   if (group != file_id) {
     PetscStackCallHDF5(H5Gclose,(group));
