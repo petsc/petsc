@@ -4308,13 +4308,11 @@ PetscErrorCode DMGetPeriodicity(DM dm, PetscBool *per, const PetscReal **maxCell
 PetscErrorCode DMSetPeriodicity(DM dm, PetscBool per, const PetscReal maxCell[], const PetscReal L[], const DMBoundaryType bd[])
 {
   PetscInt       dim, d;
-  PetscBool      useMaxCell = maxCell ? PETSC_TRUE : PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidLogicalCollectiveBool(dm,per,2);
-  PetscValidLogicalCollectiveBool(dm,useMaxCell,3);
   if (maxCell) {
     PetscValidPointer(maxCell,3);
     PetscValidPointer(L,4);
