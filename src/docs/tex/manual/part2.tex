@@ -5297,11 +5297,11 @@ The next step size is based on this error estimate, and determined by
  \max(\alpha_{\min}, \beta (1/\SErr)^\frac{1}{\widehat{p}+1}))\,,
 \end{eqnarray}
 %%%
-where $\alpha_{\min}=$\trl{-ts_adapt_basic_clip}[0] and
-$\alpha_{\max}$=\trl{-ts_adapt_basic_clip}[1] keep the change in
+where $\alpha_{\min}=$\trl{-ts_adapt_clip}[0] and
+$\alpha_{\max}$=\trl{-ts_adapt_clip}[1] keep the change in
 $\Delta t$
 to within a certain factor, and $\beta<1$ is chosen
-through \trl{-ts_adapt_basic_safety} so that there is 
+through \trl{-ts_adapt_safety} so that there is
 some margin to which the tolerances are satisfied and so that the
 probability of rejection is decreased.
 
