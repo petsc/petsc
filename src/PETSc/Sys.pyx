@@ -52,11 +52,11 @@ cdef class Sys:
 
     @classmethod
     def isInitialized(cls):
-        return <bint>PetscInitializeCalled
+        return toBool(PetscInitializeCalled)
 
     @classmethod
     def isFinalized(cls):
-        return <bint>PetscFinalizeCalled
+        return toBool(PetscFinalizeCalled)
 
     # --- xxx ---
 
@@ -175,9 +175,9 @@ cdef class Sys:
         if not citation: raise ValueError("empty citation")
         cdef const_char *cit = NULL
         citation = str2bytes(citation, &cit)
-        cdef PetscBool set = get_citation(citation)
-        CHKERR( PetscCitationsRegister(cit, &set) )
-        set_citation(citation, <bint>set)
+        cdef PetscBool flag = get_citation(citation)
+        CHKERR( PetscCitationsRegister(cit, &flag) )
+        set_citation(citation, toBool(flag))
 
 cdef dict citations_registry = { }
 
