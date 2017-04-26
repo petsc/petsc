@@ -450,7 +450,7 @@ cdef class Vec(Object):
     def equal(self, Vec vec not None):
         cdef PetscBool flag = PETSC_FALSE
         CHKERR( VecEqual(self.vec, vec.vec, &flag) )
-        return <bint> flag
+        return toBool(flag)
 
     def dot(self, Vec vec not None):
         cdef PetscScalar sval = 0

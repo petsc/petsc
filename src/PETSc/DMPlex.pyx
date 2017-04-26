@@ -430,7 +430,7 @@ cdef class DMPlex(DM):
     def getAdjacencyUseCone(self):
         cdef PetscBool flag = PETSC_FALSE
         CHKERR( DMPlexGetAdjacencyUseCone(self.dm, &flag) )
-        return <bint> flag
+        return toBool(flag)
 
     def setAdjacencyUseClosure(self, useClosure=True):
         cdef PetscBool flag = useClosure
@@ -439,7 +439,7 @@ cdef class DMPlex(DM):
     def getAdjacencyUseClosure(self):
         cdef PetscBool flag = PETSC_FALSE
         CHKERR( DMPlexGetAdjacencyUseClosure(self.dm, &flag) )
-        return <bint> flag
+        return toBool(flag)
 
     def setAdjacencyUseAnchors(self, useAnchors=True):
         cdef PetscBool flag = useAnchors
@@ -448,7 +448,7 @@ cdef class DMPlex(DM):
     def getAdjacencyUseAnchors(self):
         cdef PetscBool flag = PETSC_FALSE
         CHKERR( DMPlexGetAdjacencyUseAnchors(self.dm, &flag) )
-        return <bint> flag
+        return toBool(flag)
 
     def getAdjacency(self, p):
         cdef PetscInt cp = asInt(p)
@@ -601,7 +601,7 @@ cdef class DMPlex(DM):
     def getRefinementUniform(self):
         cdef PetscBool flag = PETSC_FALSE
         CHKERR( DMPlexGetRefinementUniform(self.dm, &flag) )
-        return <bint> flag
+        return toBool(flag)
 
     def setRefinementLimit(self, refinementLimit):
         cdef PetscReal rval = asReal(refinementLimit)

@@ -64,7 +64,7 @@ cdef getopt_Bool(PetscOptions opt, const_char *pre, const_char *name, object def
     cdef PetscBool value = PETSC_FALSE
     cdef PetscBool flag  = PETSC_FALSE
     CHKERR( PetscOptionsGetBool(opt, pre, name, &value, &flag) )
-    if flag==PETSC_TRUE: return <bint>value
+    if flag==PETSC_TRUE: return toBool(value)
     if deft is not None: return deft
     raise KeyError(opt2str(pre, name))
 

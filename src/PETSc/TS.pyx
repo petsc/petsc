@@ -682,9 +682,9 @@ cdef class TS(Object):
         CHKERR( TSThetaSetEndpoint(self.ts, bval) )
 
     def getThetaEndpoint(self):
-        cdef PetscBool bval = PETSC_FALSE
-        CHKERR( TSThetaGetEndpoint(self.ts, &bval) )
-        return <bint> bval
+        cdef PetscBool flag = PETSC_FALSE
+        CHKERR( TSThetaGetEndpoint(self.ts, &flag) )
+        return toBool(flag)
 
     # --- Alpha ---
 

@@ -169,7 +169,7 @@ cdef class IS(Object):
     def isSorted(self):
         cdef PetscBool flag = PETSC_FALSE
         CHKERR( ISSorted(self.iset, &flag) )
-        return <bint> flag
+        return toBool(flag)
 
     def setPermutation(self):
         CHKERR( ISSetPermutation(self.iset) )
@@ -178,7 +178,7 @@ cdef class IS(Object):
     def isPermutation(self):
         cdef PetscBool flag = PETSC_FALSE
         CHKERR( ISPermutation(self.iset, &flag) )
-        return <bint> flag
+        return toBool(flag)
 
     def setIdentity(self):
         CHKERR( ISSetIdentity(self.iset) )
@@ -187,12 +187,12 @@ cdef class IS(Object):
     def isIdentity(self):
         cdef PetscBool flag = PETSC_FALSE
         CHKERR( ISIdentity(self.iset, &flag) )
-        return <bint> flag
+        return toBool(flag)
 
     def equal(self, IS iset not None):
         cdef PetscBool flag = PETSC_FALSE
         CHKERR( ISEqual(self.iset, iset.iset, &flag) )
-        return <bint> flag
+        return toBool(flag)
 
     def sum(self, IS iset not None):
         cdef IS out = IS()

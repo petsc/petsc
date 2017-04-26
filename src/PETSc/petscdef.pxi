@@ -8,8 +8,8 @@ cdef extern from * nogil:
     PetscReal PETSC_NINFINITY
 
     ctypedef enum PetscBool:
-        PETSC_TRUE,  PETSC_YES,
-        PETSC_FALSE, PETSC_NO,
+        PETSC_FALSE
+        PETSC_TRUE
 
     ctypedef enum PetscInsertMode "InsertMode":
         PETSC_NOT_SET_VALUES    "NOT_SET_VALUES"
