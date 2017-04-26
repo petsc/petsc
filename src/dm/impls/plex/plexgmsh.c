@@ -330,7 +330,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
           PetscInt slaveNode, masterNode;
 
           ierr = PetscViewerRead(viewer, line, 2, NULL, PETSC_STRING);CHKERRQ(ierr);
-          snum = sscanf(line, "%d %d", &slaveNode, &masterNode);
+          snum = sscanf(line, "%" PetscInt_FMT " %" PetscInt_FMT, &slaveNode, &masterNode);
           if (snum != 2) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
           periodicMapT[slaveNode - 1] = masterNode - 1;
           ierr = PetscBTSet(periodicV, slaveNode - 1);CHKERRQ(ierr);
