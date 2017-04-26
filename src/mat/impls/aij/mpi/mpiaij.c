@@ -3003,8 +3003,6 @@ PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat,IS isrow,IS iscol,IS *isro
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
-  PetscMPIInt rank;
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = ISGetLocalSize(iscol,&ncols);CHKERRQ(ierr);
 
   /* (1) iscol is a sub-column vector of mat, pad it with '-1.' to form a full vector x */
@@ -3099,12 +3097,8 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowColDist(Mat mat,IS isrow,IS isco
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
-  PetscMPIInt rank;
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   if (call == MAT_REUSE_MATRIX) {
-    if (!rank) printf(" _SameRowColDist reuse ...\n");
-
     /* Retrieve isrow_d, iscol_d and iscol_o from submat */
     ierr = PetscObjectQuery((PetscObject)*submat,"isrow_d",(PetscObject*)&isrow_d);CHKERRQ(ierr);
     if (!isrow_d) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"isrow_d passed in was not used before, cannot reuse");
