@@ -31,7 +31,7 @@ static PetscErrorCode MatSeqDenseSymmetrize_Private(Mat A, PetscBool hermitian)
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode MatSeqDenseInvertFactors_Private(Mat A)
+PETSC_EXTERN PetscErrorCode MatSeqDenseInvertFactors_Private(Mat A)
 {
 #if defined(PETSC_MISSING_LAPACK_POTRF)
   PetscFunctionBegin;

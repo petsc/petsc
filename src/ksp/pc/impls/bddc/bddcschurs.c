@@ -1,9 +1,8 @@
 #include <../src/ksp/pc/impls/bddc/bddc.h>
 #include <../src/ksp/pc/impls/bddc/bddcprivate.h>
+#include <../src/mat/impls/dense/seq/dense.h>
 #include <petscblaslapack.h>
 
-/* this is declared in dense.h */
-PETSC_INTERN PetscErrorCode MatSeqDenseInvertFactors_Private(Mat);
 PETSC_STATIC_INLINE PetscErrorCode PCBDDCAdjGetNextLayer_Private(PetscInt*,PetscInt,PetscBT,PetscInt*,PetscInt*,PetscInt*);
 static PetscErrorCode PCBDDCComputeExplicitSchur(Mat,PetscBool,MatReuse,Mat*);
 static PetscErrorCode PCBDDCReuseSolvers_Interior(PC,Vec,Vec);
