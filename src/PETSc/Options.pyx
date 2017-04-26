@@ -74,7 +74,7 @@ cdef class Options:
         tmp = getpair(self.prefix, name, &pr, &nm)
         cdef PetscBool flag = PETSC_FALSE
         CHKERR( PetscOptionsHasName(self.opt, pr, nm, &flag) )
-        return <bint> flag
+        return toBool(flag)
 
     def setValue(self, name, value):
         cdef const_char *pr = NULL

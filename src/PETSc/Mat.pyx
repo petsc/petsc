@@ -692,43 +692,43 @@ cdef class Mat(Object):
     def equal(self, Mat mat not None):
         cdef PetscBool flag = PETSC_FALSE
         CHKERR( MatEqual(self.mat, mat.mat, &flag) )
-        return <bint> mat
+        return toBool(flag)
 
     def isTranspose(self, Mat mat=None, tol=0):
         if mat is None: mat = self
         cdef PetscReal rval = asReal(tol)
         cdef PetscBool flag = PETSC_FALSE
         CHKERR( MatIsTranspose(self.mat, mat.mat, rval, &flag) )
-        return <bint>flag
+        return toBool(flag)
 
     def isSymmetric(self, tol=0):
         cdef PetscReal rval = asReal(tol)
         cdef PetscBool flag = PETSC_FALSE
         CHKERR( MatIsSymmetric(self.mat, rval, &flag) )
-        return <bint>flag
+        return toBool(flag)
 
     def isSymmetricKnown(self):
         cdef PetscBool flag1 = PETSC_FALSE
         cdef PetscBool flag2 = PETSC_FALSE
         CHKERR( MatIsSymmetricKnown(self.mat, &flag1, &flag2) )
-        return (<bint>flag1, <bint>flag2)
+        return (toBool(flag1), toBool(flag2))
 
     def isHermitian(self, tol=0):
         cdef PetscReal rval = asReal(tol)
-        cdef PetscBool bval = PETSC_FALSE
-        CHKERR( MatIsHermitian(self.mat, rval, &bval) )
-        return <bint>bval
+        cdef PetscBool flag = PETSC_FALSE
+        CHKERR( MatIsHermitian(self.mat, rval, &flag) )
+        return toBool(flag)
 
     def isHermitianKnown(self):
-        cdef PetscBool bval1 = PETSC_FALSE
-        cdef PetscBool bval2 = PETSC_FALSE
-        CHKERR( MatIsHermitianKnown(self.mat, &bval1, &bval2) )
-        return (<bint>bval1, <bint>bval2)
+        cdef PetscBool flag1 = PETSC_FALSE
+        cdef PetscBool flag2 = PETSC_FALSE
+        CHKERR( MatIsHermitianKnown(self.mat, &flag1, &flag2) )
+        return (toBool(flag1), toBool(flag2))
 
     def isStructurallySymmetric(self):
-        cdef PetscBool bval = PETSC_FALSE
-        CHKERR( MatIsStructurallySymmetric(self.mat, &bval) )
-        return <bint>bval
+        cdef PetscBool flag = PETSC_FALSE
+        CHKERR( MatIsStructurallySymmetric(self.mat, &flag) )
+        return toBool(flag)
 
     def zeroEntries(self):
         CHKERR( MatZeroEntries(self.mat) )
@@ -962,9 +962,9 @@ cdef class Mat(Object):
         CHKERR( MatAssemblyEnd(self.mat, flag) )
 
     def isAssembled(self):
-        cdef PetscBool assembled = PETSC_FALSE
-        CHKERR( MatAssembled(self.mat, &assembled) )
-        return <bint> assembled
+        cdef PetscBool flag = PETSC_FALSE
+        CHKERR( MatAssembled(self.mat, &flag) )
+        return toBool(flag)
     #
 
     def createVecs(self, side=None):
@@ -1525,7 +1525,7 @@ cdef class NullSpace(Object):
     def hasConstant(self):
         cdef PetscBool flag = PETSC_FALSE
         CHKERR( MatNullSpaceGetVecs(self.nsp, &flag, NULL, NULL) )
-        return <bint> flag
+        return toBool(flag)
 
     def getVecs(self):
         cdef PetscInt i = 0, nv = 0
@@ -1551,7 +1551,7 @@ cdef class NullSpace(Object):
     def test(self, Mat mat not None):
         cdef PetscBool flag = PETSC_FALSE
         CHKERR( MatNullSpaceTest(self.nsp, mat.mat, &flag) )
-        return <bint> flag
+        return toBool(flag)
 
 # --------------------------------------------------------------------
 

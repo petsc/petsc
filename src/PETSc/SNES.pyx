@@ -234,9 +234,9 @@ cdef class SNES(Object):
         return snes
 
     def hasNPC(self):
-        cdef PetscBool has_npc = PETSC_FALSE
-        CHKERR( SNESHasNPC(self.snes, &has_npc) )
-        return <bint> has_npc
+        cdef PetscBool flag = PETSC_FALSE
+        CHKERR( SNESHasNPC(self.snes, &flag) )
+        return toBool(flag)
 
     def setNPC(self, SNES snes not None):
         CHKERR( SNESSetNPC(self.snes, snes.snes) )
@@ -599,7 +599,7 @@ cdef class SNES(Object):
     def getUseEW(self):
         cdef PetscBool flag = PETSC_FALSE
         CHKERR( SNESKSPGetUseEW(self.snes, &flag) )
-        return <bint> flag
+        return toBool(flag)
 
     def setParamsEW(self, version=None,
                     rtol_0=None, rtol_max=None,
@@ -646,18 +646,18 @@ cdef class SNES(Object):
         CHKERR( SNESSetUseMFFD(self.snes, bval) )
 
     def getUseMF(self):
-        cdef PetscBool bval = PETSC_FALSE
-        CHKERR( SNESGetUseMFFD(self.snes, &bval) )
-        return <bint> bval
+        cdef PetscBool flag = PETSC_FALSE
+        CHKERR( SNESGetUseMFFD(self.snes, &flag) )
+        return toBool(flag)
 
     def setUseFD(self, flag=True):
         cdef PetscBool bval = flag
         CHKERR( SNESSetUseFDColoring(self.snes, bval) )
 
     def getUseFD(self):
-        cdef PetscBool bval = PETSC_FALSE
-        CHKERR( SNESGetUseFDColoring(self.snes, &bval) )
-        return <bint> bval
+        cdef PetscBool flag = PETSC_FALSE
+        CHKERR( SNESGetUseFDColoring(self.snes, &flag) )
+        return toBool(flag)
 
     # --- VI ---
 

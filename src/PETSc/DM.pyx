@@ -327,7 +327,7 @@ cdef class DM(Object):
         cdef const_char *cname = NULL
         name = str2bytes(name, &cname)
         CHKERR( DMHasLabel(self.dm, cname, &flag) )
-        return <bint> flag
+        return toBool(flag)
 
     def createLabel(self, name):
         cdef const_char *cname = NULL

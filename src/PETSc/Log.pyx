@@ -141,9 +141,9 @@ cdef class LogStage:
         CHKERR( PetscLogStageSetActive(self.id, PETSC_FALSE) )
 
     def getActive(self):
-        cdef PetscBool tval = PETSC_FALSE
-        CHKERR( PetscLogStageGetActive(self.id, &tval) )
-        return <bint> tval
+        cdef PetscBool flag = PETSC_FALSE
+        CHKERR( PetscLogStageGetActive(self.id, &flag) )
+        return toBool(flag)
 
     def setActive(self, flag):
         cdef PetscBool tval = PETSC_FALSE
@@ -159,9 +159,9 @@ cdef class LogStage:
     #
 
     def getVisible(self):
-        cdef PetscBool tval = PETSC_FALSE
-        CHKERR( PetscLogStageGetVisible(self.id, &tval) )
-        return <bint> tval
+        cdef PetscBool flag = PETSC_FALSE
+        CHKERR( PetscLogStageGetVisible(self.id, &flag) )
+        return toBool(flag)
 
     def setVisible(self, flag):
         cdef PetscBool tval = PETSC_FALSE

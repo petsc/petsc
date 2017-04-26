@@ -328,9 +328,9 @@ cdef class KSP(Object):
         CHKERR( KSPSetComputeEigenvalues(self.ksp, compute) )
 
     def getComputeEigenvalues(self):
-        cdef PetscBool compute = PETSC_FALSE
-        CHKERR( KSPGetComputeEigenvalues(self.ksp, &compute) )
-        return <bint>compute
+        cdef PetscBool flag = PETSC_FALSE
+        CHKERR( KSPGetComputeEigenvalues(self.ksp, &flag) )
+        return toBool(flag)
 
     def setComputeSingularValues(self, bint flag):
         cdef PetscBool compute = PETSC_FALSE
@@ -338,9 +338,9 @@ cdef class KSP(Object):
         CHKERR( KSPSetComputeSingularValues(self.ksp, compute) )
 
     def getComputeSingularValues(self):
-        cdef PetscBool compute = PETSC_FALSE
-        CHKERR( KSPGetComputeSingularValues(self.ksp, &compute) )
-        return <bint>compute
+        cdef PetscBool flag = PETSC_FALSE
+        CHKERR( KSPGetComputeSingularValues(self.ksp, &flag) )
+        return toBool(flag)
 
     # --- initial guess ---
 
@@ -350,9 +350,9 @@ cdef class KSP(Object):
         CHKERR( KSPSetInitialGuessNonzero(self.ksp, guess_nonzero) )
 
     def getInitialGuessNonzero(self):
-        cdef PetscBool guess_nonzero = PETSC_FALSE
-        CHKERR( KSPGetInitialGuessNonzero(self.ksp, &guess_nonzero) )
-        return <bint>guess_nonzero
+        cdef PetscBool flag = PETSC_FALSE
+        CHKERR( KSPGetInitialGuessNonzero(self.ksp, &flag) )
+        return toBool(flag)
 
     def setInitialGuessKnoll(self, bint flag):
         cdef PetscBool guess_knoll = PETSC_FALSE
@@ -360,9 +360,9 @@ cdef class KSP(Object):
         CHKERR( KSPSetInitialGuessKnoll(self.ksp, guess_knoll) )
 
     def getInitialGuessKnoll(self):
-        cdef PetscBool guess_knoll = PETSC_FALSE
-        CHKERR( KSPGetInitialGuessKnoll(self.ksp, &guess_knoll) )
-        return <bint>guess_knoll
+        cdef PetscBool flag = PETSC_FALSE
+        CHKERR( KSPGetInitialGuessKnoll(self.ksp, &flag) )
+        return toBool(flag)
 
     def setUseFischerGuess(self, model, size):
         cdef PetscInt ival1 = asInt(model)
