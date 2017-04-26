@@ -89,7 +89,7 @@ if (flg) {                                   \
 #define FORTRANNULLREAL(a)     (((void*)(PETSC_UINTPTR_T)a) == PETSC_NULL_REAL_Fortran)
 #define FORTRANNULLBOOL(a)    (((void*)(PETSC_UINTPTR_T)a) == PETSC_NULL_BOOL_Fortran)
 #define FORTRANNULLFUNCTION(a) (((void(*)(void))(PETSC_UINTPTR_T)a) == PETSC_NULL_FUNCTION_Fortran)
-#define FORTRANNULLOBJECT(a)   (*(void**)a == (void*)-1)
+#define FORTRANNULLOBJECT(a)   (*(void**)(PETSC_UINTPTR_T)a == (void*)-1)
 
 #define CHKFORTRANNULLINTEGER(a)  \
   if (FORTRANNULLDOUBLE(a) || FORTRANNULLSCALAR(a) || FORTRANNULLREAL(a)  || FORTRANNULLBOOL(a) || FORTRANNULLFUNCTION(a)) { \
