@@ -148,6 +148,16 @@ cdef class DMShell(DM):
         else:
             CHKERR( DMShellSetCreateInjection(self.dm, NULL) )
 
+    def setCreateRestriction(self, create_restriction, args=None, kargs=None):
+        if create_restriction is not None:
+            if args  is None: args  = ()
+            if kargs is None: kargs = {}
+            context = (create_restriction, args, kargs)
+            self.set_attr('__create_restriction__', context)
+            CHKERR( DMShellSetCreateRestriction(self.dm, DMSHELL_CreateRestriction) )
+        else:
+            CHKERR( DMShellSetCreateRestriction(self.dm, NULL) )
+
     def setCreateFieldDecomposition(self, decomp, args=None, kargs=None):
         if decomp is not None:
             if args  is None: args = ()
