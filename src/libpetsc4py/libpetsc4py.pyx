@@ -725,7 +725,7 @@ cdef PetscErrorCode MatSetOption_Python(
     FunctionBegin(b"MatSetOption_Python")
     cdef setOption = PyMat(mat).setOption
     if setOption is not None:
-        setOption(Mat_(mat), <long>op, <bint>flag)
+        setOption(Mat_(mat), <long>op, <bint>(<int>flag))
     return FunctionEnd()
 
 cdef PetscErrorCode MatSetUp_Python(
