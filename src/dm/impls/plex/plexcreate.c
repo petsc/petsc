@@ -610,9 +610,9 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
           cone[0] = faceB; cone[1] = faceT; cone[2] = faceF; cone[3] = faceK; cone[4] = faceR; cone[5] = faceL;
           ierr    = DMPlexSetCone(dm, cell, cone);CHKERRQ(ierr);
           ierr    = DMPlexSetConeOrientation(dm, cell, ornt);CHKERRQ(ierr);
-          if (bdX != DM_BOUNDARY_NONE && fx == numXEdges-1) {ierr = DMLabelSetValue(cutLabel, cell, 2);CHKERRQ(ierr);}
-          if (bdY != DM_BOUNDARY_NONE && fy == numYEdges-1) {ierr = DMLabelSetValue(cutLabel, cell, 2);CHKERRQ(ierr);}
-          if (bdZ != DM_BOUNDARY_NONE && fz == numZEdges-1) {ierr = DMLabelSetValue(cutLabel, cell, 2);CHKERRQ(ierr);}
+          if (bdX != DM_BOUNDARY_NONE && fx == numXEdges-1 && cutLabel) {ierr = DMLabelSetValue(cutLabel, cell, 2);CHKERRQ(ierr);}
+          if (bdY != DM_BOUNDARY_NONE && fy == numYEdges-1 && cutLabel) {ierr = DMLabelSetValue(cutLabel, cell, 2);CHKERRQ(ierr);}
+          if (bdZ != DM_BOUNDARY_NONE && fz == numZEdges-1 && cutLabel) {ierr = DMLabelSetValue(cutLabel, cell, 2);CHKERRQ(ierr);}
         }
       }
     }
@@ -693,8 +693,8 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
           if (dim == 2) {
             if (bdX == DM_BOUNDARY_TWIST && fx == numXEdges-1) {edgeR += numYEdges-1-2*fy; ornt[1] = -2;}
             if (bdY == DM_BOUNDARY_TWIST && fy == numYEdges-1) {edgeT += numXEdges-1-2*fx; ornt[2] =  0;}
-            if (bdX != DM_BOUNDARY_NONE && fx == numXEdges-1) {ierr = DMLabelSetValue(cutLabel, face, 2);CHKERRQ(ierr);}
-            if (bdY != DM_BOUNDARY_NONE && fy == numYEdges-1) {ierr = DMLabelSetValue(cutLabel, face, 2);CHKERRQ(ierr);}
+            if (bdX != DM_BOUNDARY_NONE && fx == numXEdges-1 && cutLabel) {ierr = DMLabelSetValue(cutLabel, face, 2);CHKERRQ(ierr);}
+            if (bdY != DM_BOUNDARY_NONE && fy == numYEdges-1 && cutLabel) {ierr = DMLabelSetValue(cutLabel, face, 2);CHKERRQ(ierr);}
           } else {
             /* markers */
             if (bdZ != DM_BOUNDARY_PERIODIC) {
