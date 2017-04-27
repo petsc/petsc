@@ -816,13 +816,11 @@ PetscErrorCode AlgFunction (SNES snes, Vec X, Vec F, void *ctx)
         }
       } else if (key == 2){
         if (!ghostvtex) {
-          PetscScalar    Eqp,Edp,delta,w; /* Generator variables */
-          PetscScalar    Efd,RF,VR; /* Exciter variables */
-          PetscScalar    Id,Iq;  /* Generator dq axis currents */
-          PetscScalar    Vd,Vq,SE,IGr,IGi,Zdq_inv[4],det;
+          PetscScalar    Eqp,Edp,delta;   /* Generator variables */
+          PetscScalar    Id,Iq;           /* Generator dq axis currents */
+          PetscScalar    Vd,Vq,IGr,IGi,Zdq_inv[4],det;
           PetscInt       idx;
-          PetscScalar    Xd,Xdp,Td0p,Xq,Xqp,Tq0p,TM,D,M,Rs; /* Generator parameters */
-          PetscScalar    k1,k2,KE,TE,TF,KA,KF,Vref,TA; /* Generator parameters */
+          PetscScalar    Xdp,Xqp,Rs;      /* Generator parameters */
 
           gen = (Gen*)(arr+offsetd);
           idx = offset + 2;
@@ -831,33 +829,14 @@ PetscErrorCode AlgFunction (SNES snes, Vec X, Vec F, void *ctx)
           Eqp   = xarr[idx];
           Edp   = xarr[idx+1];
           delta = xarr[idx+2];
-          w     = xarr[idx+3];
+          /* w     = xarr[idx+3]; not being used */
           Id    = xarr[idx+4];
           Iq    = xarr[idx+5];
-          Efd   = xarr[idx+6];
-          RF    = xarr[idx+7];
-          VR    = xarr[idx+8];
 
           /* Generator parameters */
-          Xd   = gen->Xd;
           Xdp  = gen->Xdp;
-          Td0p = gen->Td0p;
-          Xq   = gen->Xq;
           Xqp  = gen->Xqp;
-          Tq0p = gen->Tq0p;
-          TM   = gen->TM;
-          D    = gen->D;
-          M    = gen->M;
           Rs   = gen->Rs;
-          k1   = gen->k1;
-          k2   = gen->k2;
-          KE   = gen->KE;
-          TE   = gen->TE;
-          TF   = gen->TF;
-          KA   = gen->KA;
-          KF   = gen->KF;
-          Vref = gen->Vref;
-          TA   = gen->TA;
 
           /* Set generator differential equation residual functions to zero */
           farr[idx]   = 0;
@@ -888,8 +867,6 @@ PetscErrorCode AlgFunction (SNES snes, Vec X, Vec F, void *ctx)
           farr[offset+1] -= IGr;
 
           Vm = PetscSqrtScalar(Vd*Vd + Vq*Vq);
-
-          SE = k1*PetscExpScalar(k2*Efd);
 
           /* Set exciter differential equation residual functions equal to zero*/
           farr[idx+6] = 0;

@@ -69,7 +69,7 @@ runex9busdmnetwork:
 	   ${RM} -f ex9bus.tmp
 
 runex9busdmnetwork_2:
-	-@${MPIEXEC} -n 3 ./ex9busdmnetwork -ts_monitor -snes_converged_reason -ksp_converged_reason -alg_snes_converged_reason -alg_ksp_converged_reason > ex9bus.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 3 ./ex9busdmnetwork -ts_monitor -snes_converged_reason -alg_snes_converged_reason > ex9bus.tmp 2>&1;	  \
 	   ${DIFF} output/ex9busdmnetwork_2.out ex9bus.tmp || printf "${PWD}\nPossible problem with ex9busdmnetwork_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex9bus.tmp
 
