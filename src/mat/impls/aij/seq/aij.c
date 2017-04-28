@@ -1105,6 +1105,7 @@ PetscErrorCode MatSetOption_SeqAIJ(Mat A,MatOption op,PetscBool flg)
   case MAT_STRUCTURALLY_SYMMETRIC:
   case MAT_HERMITIAN:
   case MAT_SYMMETRY_ETERNAL:
+  case MAT_STRUCTURE_ONLY:
     /* These options are handled directly by MatSetOption() */
     break;
   case MAT_NEW_DIAGONALS:
