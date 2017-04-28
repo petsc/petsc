@@ -1,4 +1,4 @@
-mport config.package
+import config.package
 
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
