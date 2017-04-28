@@ -1,7 +1,7 @@
 
 
 !/*T
-!   requires: define(PETSC_USING_F2003) define(PETSC_USING_FREEFORM)
+!   requires: define(PETSC_USING_F2003) define(PETSC_USING_F90FREEFORM)
 !T*/
 
 #include "petsc/finclude/petsc.h"
