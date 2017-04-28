@@ -625,7 +625,8 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
    if different subcommunicators of the job are doing different things with PETSc.
 
    Options Database Keys:
-+  -start_in_debugger [noxterm,dbx,xdb,gdb,...] - Starts program in debugger
++  -help [intro] - prints help method for each option; if intro is given the program stops after printing the introductory help message
+.  -start_in_debugger [noxterm,dbx,xdb,gdb,...] - Starts program in debugger
 .  -on_error_attach_debugger [noxterm,dbx,xdb,gdb,...] - Starts debugger when error detected
 .  -on_error_emacs <machinename> causes emacsclient to jump to error file
 .  -on_error_abort calls abort() when error detected (no traceback)
