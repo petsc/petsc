@@ -107,7 +107,8 @@ static PetscErrorCode LoadData3D(DM dm, PetscInt Ni, PetscInt Nj, PetscInt Nk, P
 static PetscErrorCode CheckPoint(DM dm, Vec u, PetscInt point, AppCtx *user)
 {
   PetscSection       s;
-  const PetscScalar *array, *a;
+  PetscScalar        *a;
+  const PetscScalar  *array;
   PetscInt           dof, d;
   PetscErrorCode     ierr;
 
