@@ -1,6 +1,6 @@
 #define PETSC_USE_FORTRAN_MODULES 1
 !/*T
-!   requires: define(PETSC_USING_F2003) define(PETSC_USING_FREEFORM)
+!   requires: define(PETSC_USING_F2003) define(PETSC_USING_F90FREEFORM)
 !T*/
 
 #include <petsc/finclude/petscsys.h>

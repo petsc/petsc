@@ -57,7 +57,7 @@
 !
 !/*TEST
 !
-!     test:
+!   test:
 !     filter: egrep  "(PETSC ERROR|My error handler)" | sort -b
 !     filter_output:   sort -b
 !
