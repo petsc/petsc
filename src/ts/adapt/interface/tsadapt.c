@@ -226,8 +226,8 @@ PetscErrorCode  TSAdaptView(TSAdapt adapt,PetscViewer viewer)
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)adapt,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  number of candidates %D\n",adapt->candidates.n);CHKERRQ(ierr);
     if (adapt->always_accept) {ierr = PetscViewerASCIIPrintf(viewer,"  always accepting steps\n");CHKERRQ(ierr);}
-    if (adapt->dt_max < PETSC_MAX_REAL) {ierr = PetscViewerASCIIPrintf(viewer,"  maximum allowed timestep %g\n",(double)adapt->dt_max);CHKERRQ(ierr);}
-    if (adapt->dt_min > 0) {ierr = PetscViewerASCIIPrintf(viewer,"  minimum allowed timestep %g\n",(double)adapt->dt_min);CHKERRQ(ierr);}
+    ierr = PetscViewerASCIIPrintf(viewer,"  maximum allowed timestep %g\n",(double)adapt->dt_max);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  minimum allowed timestep %g\n",(double)adapt->dt_min);CHKERRQ(ierr);
     if (adapt->ops->view) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = (*adapt->ops->view)(adapt,viewer);CHKERRQ(ierr);
@@ -730,7 +730,11 @@ PetscErrorCode  TSAdaptCreate(MPI_Comm comm,TSAdapt *inadapt)
 
   adapt->always_accept      = PETSC_FALSE;
   adapt->dt_min             = 1e-20;
+#if defined(PETSC_USE_REAL_SINGLE)
+  adapt->dt_max             = 1e35;
+#else
   adapt->dt_max             = 1e50;
+#endif
   adapt->scale_solve_failed = 0.25;
   adapt->wnormtype          = NORM_2;
   ierr = TSAdaptSetType(adapt,TSADAPTBASIC);CHKERRQ(ierr);
