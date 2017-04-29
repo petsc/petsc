@@ -188,6 +188,7 @@ PETSC_EXTERN PetscErrorCode DMPlexSetRefinementFunction(DM, PetscErrorCode (*)(c
 PETSC_EXTERN PetscErrorCode DMPlexCreateCoarsePointIS(DM, IS *);
 PETSC_EXTERN PetscErrorCode DMPlexGetRegularRefinement(DM, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMPlexSetRegularRefinement(DM, PetscBool);
+PETSC_EXTERN PetscErrorCode DMPlexRefineSimplexToTensor(DM, DM*);
 
 /* Support for cell-vertex meshes */
 PETSC_EXTERN PetscErrorCode DMPlexGetNumFaceVertices(DM, PetscInt, PetscInt, PetscInt *);
