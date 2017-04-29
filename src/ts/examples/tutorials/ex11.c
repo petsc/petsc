@@ -365,10 +365,13 @@ typedef struct {
   } functional;
 } Physics_SW;
 typedef struct {
-  PetscScalar vals[1];
   PetscScalar h;
   PetscScalar uh[DIM];
 } SWNode;
+typedef union {
+  SWNode      swnode;
+  PetscScalar vals[DIM+1];
+} SWNodeUnion;
 
 static const struct FieldDescription PhysicsFields_SW[] = {{"Height",1},{"Momentum",DIM},{NULL,0}};
 
@@ -406,19 +409,19 @@ static void PhysicsRiemann_SW(PetscInt dim, PetscInt Nf, const PetscReal *qp, co
   PetscReal    cL,cR,speed;
   PetscScalar  nn[DIM];
   const SWNode *uL = (const SWNode*)xL,*uR = (const SWNode*)xR;
-  SWNode       fL,fR;
+  SWNodeUnion  fL,fR;
   PetscInt     i;
 
   if (PetscRealPart(uL->h) < 0 || PetscRealPart(uR->h) < 0) {for (i=0; i<1+dim; i++) flux[i] = 0./0.; return;} /* SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reconstructed thickness is negative"); */
   nn[0] = n[0];
   nn[1] = n[1];
   Normalize2(nn);
-  SWFlux(phys,nn,uL,&fL);
-  SWFlux(phys,nn,uR,&fR);
+  SWFlux(phys,nn,uL,&(fL.swnode));
+  SWFlux(phys,nn,uR,&(fR.swnode));
   cL    = PetscSqrtReal(sw->gravity*PetscRealPart(uL->h));
   cR    = PetscSqrtReal(sw->gravity*PetscRealPart(uR->h)); /* gravity wave speed */
   speed = PetscMax(PetscAbsScalar(Dot2(uL->uh,nn)/uL->h) + cL,PetscAbsScalar(Dot2(uR->uh,nn)/uR->h) + cR);
-  for (i=1; i<2+dim; i++) flux[i] = (0.5*(fL.vals[i] + fR.vals[i]) + 0.5*speed*(xL[i] - xR[i])) * Norm2Real(n);
+  for (i=0; i<1+dim; i++) flux[i] = (0.5*(fL.vals[i] + fR.vals[i]) + 0.5*speed*(xL[i] - xR[i])) * Norm2Real(n);
 }
 
 static PetscErrorCode PhysicsSolution_SW(Model mod,PetscReal time,const PetscReal *x,PetscScalar *u,void *ctx)
@@ -500,11 +503,14 @@ static PetscErrorCode PhysicsCreate_SW(Model mod,Physics phys,PetscOptionItems *
 typedef enum {EULER_PAR_GAMMA,EULER_PAR_RHOR,EULER_PAR_AMACH,EULER_PAR_ITANA,EULER_PAR_SIZE} EulerParamIdx;
 typedef enum {EULER_IV_SHOCK,EULER_SS_SHOCK,EULER_SHOCK_TUBE,EULER_LINEAR_WAVE} EulerType;
 typedef struct {
-  PetscScalar vals[1];
   PetscScalar r;
   PetscScalar ru[DIM];
   PetscScalar E;
 } EulerNode;
+typedef union {
+  EulerNode   eulernode;
+  PetscScalar vals[DIM+2];
+} EulerNodeUnion;
 typedef PetscErrorCode (*EquationOfState)(const PetscReal*, const EulerNode*, PetscReal*);
 typedef struct {
   EulerType       type;
@@ -680,15 +686,15 @@ static void PhysicsRiemann_Euler_Godunov( PetscInt dim, PetscInt Nf, const Petsc
   for (i=0.; i<DIM; i++) nn[i] /= s2;
   if (0) { /* Rusanov */
     const EulerNode *uL = (const EulerNode*)xL,*uR = (const EulerNode*)xR;
-    EulerNode       fL,fR;
-    EulerFlux(phys,nn,uL,&fL);
-    EulerFlux(phys,nn,uR,&fR);
+    EulerNodeUnion  fL,fR;
+    EulerFlux(phys,nn,uL,&(fL.eulernode));
+    EulerFlux(phys,nn,uR,&(fR.eulernode));
     ierr = eu->sound(&eu->pars[EULER_PAR_GAMMA],uL,&cL);if (ierr) exit(13);
     ierr = eu->sound(&eu->pars[EULER_PAR_GAMMA],uR,&cR);if (ierr) exit(14);
     velL = PetscRealPart(DotDIMScalReal(uL->ru,nn)/uL->r);
     velR = PetscRealPart(DotDIMScalReal(uR->ru,nn)/uR->r);
     speed = PetscMax(PetscAbsScalar(velR) + cR,PetscAbsScalar(velL) + cL);
-    for (i=1; i<3+dim; i++) flux[i] = 0.5*((fL.vals[i]+fR.vals[i]) + speed*(xL[i] - xR[i]))*s2;
+    for (i=0; i<2+dim; i++) flux[i] = 0.5*((fL.vals[i]+fR.vals[i]) + speed*(xL[i] - xR[i]))*s2;
   }
   else {
     int dim = DIM;
