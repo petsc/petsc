@@ -212,7 +212,7 @@ static void f0_constant_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
   PetscInt    comp;
 
   constant_u_2d(dim, t, x, Nf, wind, NULL);
-  for (comp = 0; comp < dim; ++comp) f0[comp] = u[comp] - wind[comp];
+  for (comp = 0; comp < dim && comp < 3; ++comp) f0[comp] = u[comp] - wind[comp];
 }
 
 static void f1_constant_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
@@ -511,9 +511,11 @@ static PetscErrorCode constant_phi(PetscInt dim, PetscReal time, const PetscReal
 
 static PetscErrorCode delta_phi_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
-  const PetscReal x0[2] = {globalUser->source[0], globalUser->source[1]};
-  PetscReal       xn[2];
+  PetscReal x0[2];
+  PetscReal xn[2];
 
+  x0[0] = globalUser->source[0];
+  x0[1] = globalUser->source[1];
   constant_x_2d(dim, time, x0, Nf, xn, ctx);
   {
     const PetscReal xi  = x[0] - xn[0];
@@ -546,8 +548,8 @@ static PetscErrorCode gaussian_phi_2d(PetscInt dim, PetscReal time, const PetscR
 
   constant_x_2d(dim, time, x0, Nf, xn, ctx);
   {
-    //const PetscReal xi  = x[0] + (sin(2.0*PETSC_PI*x[0])/(4.0*PETSC_PI*PETSC_PI))*t - x0[0];
-    //const PetscReal eta = x[1] + (-x[1]*cos(2.0*PETSC_PI*x[0])/(2.0*PETSC_PI))*t - x0[1];
+    /* const PetscReal xi  = x[0] + (sin(2.0*PETSC_PI*x[0])/(4.0*PETSC_PI*PETSC_PI))*t - x0[0]; */
+    /* const PetscReal eta = x[1] + (-x[1]*cos(2.0*PETSC_PI*x[0])/(2.0*PETSC_PI))*t - x0[1]; */
     const PetscReal xi  = x[0] - xn[0];
     const PetscReal eta = x[1] - xn[1];
     const PetscReal r2  = xi*xi + eta*eta;
@@ -804,7 +806,7 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscQuadrature q;
   PetscFE         fe[2];
   PetscFV         fv;
-  PetscDS         prob;
+  PetscDS         prob = NULL;
   PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
@@ -1078,9 +1080,11 @@ int main(int argc, char **argv)
   Vec            u;
   AppCtx         user;
   PetscReal      t0, t = 0.0;
-  void          *ctxs[2] = {&t, &t};
+  void          *ctxs[2];
   PetscErrorCode ierr;
 
+  ctxs[0] = &t;
+  ctxs[1] = &t;
   ierr = PetscInitialize(&argc, &argv, (char*) 0, help);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
   user.functionalRegistry = NULL;

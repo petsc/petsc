@@ -836,7 +836,7 @@ static PetscErrorCode SNESMonitorError(SNES snes, PetscInt its, PetscReal rnorm,
   AppCtx        *user = (AppCtx *) ctx;
   DM             dm;
   Vec            u, r;
-  PetscInt       level;
+  PetscInt       level = -1;
   PetscBool      hasLevel;
   PetscViewer    viewer;
   char           buf[256];

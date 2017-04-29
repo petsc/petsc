@@ -185,7 +185,6 @@ PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool tran
   DM             dm;
   PetscRandom    r, ang, ang2;
   PetscInt       dim, t;
-  PetscReal      onethird = ((PetscReal) 1.)/((PetscReal) 3.);
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -220,7 +219,7 @@ PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool tran
     PetscReal JEx[4]        = {1.0, 0.0, 0.0, 1.0};
     PetscReal invJEx[4]     = {1.0, 0.0, 0.0, 1.0};
     PetscReal detJEx        = 1.0;
-    PetscReal centroidEx[2] = {-onethird, -onethird};
+    PetscReal centroidEx[2] = {-((PetscReal)1.)/((PetscReal)3.), -((PetscReal)1.)/((PetscReal)3.)};
     PetscReal normalEx[2]   = {0.0, 0.0};
     PetscReal volEx         = 2.0;
 
@@ -241,7 +240,7 @@ PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool tran
       PetscReal   JEx[4]          = {1.0, 0.0, 0.0, 1.0}, R[4], rot[2], rotM[4];
       PetscReal   invJEx[4]       = {1.0, 0.0, 0.0, 1.0};
       PetscReal   detJEx          = 1.0, scale, phi;
-      PetscReal   centroidEx[2]   = {-onethird, -onethird};
+      PetscReal   centroidEx[2]   = {-((PetscReal)1.)/((PetscReal)3.), -((PetscReal)1.)/((PetscReal)3.)};
       PetscReal   normalEx[2]     = {0.0, 0.0};
       PetscReal   volEx           = 2.0;
       PetscInt    d, e, f, p;
@@ -319,7 +318,7 @@ PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool tran
     PetscReal JEx[9]        = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
     PetscReal invJEx[9]     = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
     PetscReal detJEx        = 1.0;
-    PetscReal centroidEx[3] = {-onethird, -onethird, 0.0};
+    PetscReal centroidEx[3] = {-((PetscReal)1.)/((PetscReal)3.), -((PetscReal)1.)/((PetscReal)3.), 0.0};
     PetscReal normalEx[3]   = {0.0, 0.0, 1.0};
     PetscReal volEx         = 2.0;
 
@@ -334,7 +333,7 @@ PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool tran
     PetscReal   JEx[9]          = {0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0};
     PetscReal   invJEx[9]       = {0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0};
     PetscReal   detJEx          = 1.0;
-    PetscReal   centroidEx[3]   = {0.0, -onethird, -onethird};
+    PetscReal   centroidEx[3]   = {0.0, -((PetscReal)1.)/((PetscReal)3.), -((PetscReal)1.)/((PetscReal)3.)};
     PetscReal   normalEx[3]     = {1.0, 0.0, 0.0};
     PetscReal   volEx           = 2.0;
 
@@ -359,7 +358,7 @@ PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool tran
       PetscReal   JEx[9]          = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0}, R[9], rot[3], rotM[9];
       PetscReal   invJEx[9]       = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
       PetscReal   detJEx          = 1.0, scale, phi, theta, psi = 0.0;
-      PetscReal   centroidEx[3]   = {-onethird, -onethird, 0.0};
+      PetscReal   centroidEx[3]   = {-((PetscReal)1.)/((PetscReal)3.), -((PetscReal)1.)/((PetscReal)3.), 0.0};
       PetscReal   normalEx[3]     = {0.0, 0.0, 1.0};
       PetscReal   volEx           = 2.0;
       PetscInt    d, e, f, p;

@@ -134,7 +134,6 @@ PETSC_STATIC_INLINE PetscReal Dot2Real(const PetscReal *x,const PetscReal *y) { 
 PETSC_STATIC_INLINE PetscReal Norm2(const PetscScalar *x) { return PetscSqrtReal(PetscAbsScalar(Dot2(x,x)));}
 PETSC_STATIC_INLINE PetscReal Norm2Real(const PetscReal *x) { return PetscSqrtReal(PetscAbsReal(Dot2Real(x,x)));}
 PETSC_STATIC_INLINE void Normalize2(PetscScalar *x) { PetscReal a = 1./Norm2(x); x[0] *= a; x[1] *= a; }
-PETSC_STATIC_INLINE void Waxpy2(PetscScalar a,const PetscScalar *x,const PetscScalar *y,PetscScalar *w) { w[0] = a*x[0] + y[0]; w[1] = a*x[1] + y[1]; }
 PETSC_STATIC_INLINE void Waxpy2Real(PetscReal a,const PetscReal *x,const PetscReal *y,PetscReal *w) { w[0] = a*x[0] + y[0]; w[1] = a*x[1] + y[1]; }
 PETSC_STATIC_INLINE void Scale2(PetscScalar a,const PetscScalar *x,PetscScalar *y) { y[0] = a*x[0]; y[1] = a*x[1]; }
 
@@ -203,7 +202,7 @@ static void PhysicsRiemann_Advect(PetscInt dim, PetscInt Nf, const PetscReal *qp
   case ADVECT_SOL_BUMP_CAVITY:
     {
       PetscInt  i;
-      PetscReal comp2[3], rad2;
+      PetscReal comp2[3] = {0.,0.,0.}, rad2;
 
       rad2 = 0.;
       for (i = 0; i < dim; i++) {
@@ -410,7 +409,7 @@ static void PhysicsRiemann_SW(PetscInt dim, PetscInt Nf, const PetscReal *qp, co
   SWNode       fL,fR;
   PetscInt     i;
 
-  if (PetscRealPart(uL->h) < 0 || PetscRealPart(uR->h) < 0) {for (i=0; i<1+dim; i++) flux[i] = NAN; return;} /* SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reconstructed thickness is negative"); */
+  if (PetscRealPart(uL->h) < 0 || PetscRealPart(uR->h) < 0) {for (i=0; i<1+dim; i++) flux[i] = 0./0.; return;} /* SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reconstructed thickness is negative"); */
   nn[0] = n[0];
   nn[1] = n[1];
   Normalize2(nn);
@@ -583,7 +582,7 @@ static PetscErrorCode PhysicsSolution_Euler(Model mod, PetscReal time, const Pet
   }
   else SETERRQ1(mod->comm,PETSC_ERR_SUP,"Unknown type %d",eu->type);
 
-  // set phys->maxspeed: (mod->maxspeed = phys->maxspeed) in main;
+  /* set phys->maxspeed: (mod->maxspeed = phys->maxspeed) in main; */
   eu->sound(&gamma,uu,&c);
   c = PetscAbsScalar(uu->ru[0]/uu->r) + c;
   if (c > phys->maxspeed) phys->maxspeed = c;
@@ -655,8 +654,10 @@ static PetscErrorCode PhysicsBoundary_Euler_Wall(PetscReal time, const PetscReal
   else { /* sides */
     for (i=0; i<DIM; i++) xG->ru[i] = xI->ru[i]; /* copy */
   }
-  if (eu->type == EULER_LINEAR_WAVE) { // debug
-    // PetscPrintf(PETSC_COMM_WORLD,"%s coord=%g,%g\n",PETSC_FUNCTION_NAME,c[0],c[1]);
+  if (eu->type == EULER_LINEAR_WAVE) { /* debug */
+#if 0
+    PetscPrintf(PETSC_COMM_WORLD,"%s coord=%g,%g\n",PETSC_FUNCTION_NAME,c[0],c[1]);
+#endif
   }
   PetscFunctionReturn(0);
 }
@@ -757,7 +758,7 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod,Physics phys,PetscOptionItem
     alpha = 60.;
     ierr = PetscOptionsReal("-eu_alpha","Angle of discontinuity","",alpha,&alpha,NULL);CHKERRQ(ierr);
     if (alpha<=0. || alpha>90.) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Alpha bust be > 0 and <= 90 (%g)",alpha);
-    eu->pars[EULER_PAR_ITANA] = 1./tan ( alpha * M_PI / 180.0 );
+    eu->pars[EULER_PAR_ITANA] = 1./tan ( alpha * PETSC_PI / 180.0 );
     ierr = PetscOptionsString("-eu_type","Type of Euler test","",type,type,sizeof(type),NULL);CHKERRQ(ierr);
     ierr = PetscStrcmp(type,"linear_wave", &is);CHKERRQ(ierr);
     if (is) {
@@ -1057,36 +1058,38 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
     ierr = ISRestoreIndices(idIS, &ids);CHKERRQ(ierr);
     ierr = ISDestroy(&idIS);CHKERRQ(ierr);
   }
-  /* Convert pointSF */
-  const PetscSFNode *remotePoints;
-  PetscSFNode       *gremotePoints;
-  const PetscInt    *localPoints;
-  PetscInt          *glocalPoints,*newLocation,*newRemoteLocation;
-  PetscInt          numRoots, numLeaves;
-  PetscMPIInt       size;
+  {
+    /* Convert pointSF */
+    const PetscSFNode *remotePoints;
+    PetscSFNode       *gremotePoints;
+    const PetscInt    *localPoints;
+    PetscInt          *glocalPoints,*newLocation,*newRemoteLocation;
+    PetscInt          numRoots, numLeaves;
+    PetscMPIInt       size;
 
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size);CHKERRQ(ierr);
-  ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
-  ierr = DMGetPointSF(sdm, &gsfPoint);CHKERRQ(ierr);
-  ierr = DMPlexGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);
-  ierr = PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
-  if (numRoots >= 0) {
-    ierr = PetscMalloc2(numRoots,&newLocation,pEnd-pStart,&newRemoteLocation);CHKERRQ(ierr);
-    for (l=0; l<numRoots; l++) newLocation[l] = l; /* + (l >= cEnd ? numGhostCells : 0); */
-    ierr = PetscSFBcastBegin(sfPoint, MPIU_INT, newLocation, newRemoteLocation);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(sfPoint, MPIU_INT, newLocation, newRemoteLocation);CHKERRQ(ierr);
-    ierr = PetscMalloc1(numLeaves,    &glocalPoints);CHKERRQ(ierr);
-    ierr = PetscMalloc1(numLeaves, &gremotePoints);CHKERRQ(ierr);
-    for (l = 0; l < numLeaves; ++l) {
-      glocalPoints[l]        = localPoints[l]; /* localPoints[l] >= cEnd ? localPoints[l] + numGhostCells : localPoints[l]; */
-      gremotePoints[l].rank  = remotePoints[l].rank;
-      gremotePoints[l].index = newRemoteLocation[localPoints[l]];
+    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size);CHKERRQ(ierr);
+    ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
+    ierr = DMGetPointSF(sdm, &gsfPoint);CHKERRQ(ierr);
+    ierr = DMPlexGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);
+    ierr = PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
+    if (numRoots >= 0) {
+      ierr = PetscMalloc2(numRoots,&newLocation,pEnd-pStart,&newRemoteLocation);CHKERRQ(ierr);
+      for (l=0; l<numRoots; l++) newLocation[l] = l; /* + (l >= cEnd ? numGhostCells : 0); */
+      ierr = PetscSFBcastBegin(sfPoint, MPIU_INT, newLocation, newRemoteLocation);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(sfPoint, MPIU_INT, newLocation, newRemoteLocation);CHKERRQ(ierr);
+      ierr = PetscMalloc1(numLeaves,    &glocalPoints);CHKERRQ(ierr);
+      ierr = PetscMalloc1(numLeaves, &gremotePoints);CHKERRQ(ierr);
+      for (l = 0; l < numLeaves; ++l) {
+        glocalPoints[l]        = localPoints[l]; /* localPoints[l] >= cEnd ? localPoints[l] + numGhostCells : localPoints[l]; */
+        gremotePoints[l].rank  = remotePoints[l].rank;
+        gremotePoints[l].index = newRemoteLocation[localPoints[l]];
+      }
+      ierr = PetscFree2(newLocation,newRemoteLocation);CHKERRQ(ierr);
+      ierr = PetscSFSetGraph(gsfPoint, numRoots+numGhostCells, numLeaves, glocalPoints, PETSC_OWN_POINTER, gremotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
     }
-    ierr = PetscFree2(newLocation,newRemoteLocation);CHKERRQ(ierr);
-    ierr = PetscSFSetGraph(gsfPoint, numRoots+numGhostCells, numLeaves, glocalPoints, PETSC_OWN_POINTER, gremotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
+    ierr     = DMDestroy(dmSplit);CHKERRQ(ierr);
+    *dmSplit = sdm;
   }
-  ierr     = DMDestroy(dmSplit);CHKERRQ(ierr);
-  *dmSplit = sdm;
   PetscFunctionReturn(0);
 }
 
@@ -1183,7 +1186,7 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
       sides[0] = faces[f];
       ierr = DMPlexPointLocalRead(dmFace, faces[f], fgeom, &fgA);CHKERRQ(ierr);
       for (g = 0; g < numFaces; ++g) {
-        const PetscInt *cells = NULL;;
+        const PetscInt *cells = NULL;
         PetscReal      area   = 0.0;
         PetscInt       numCells;
 
@@ -2105,7 +2108,9 @@ int riem1mdt( PetscScalar *gaml, PetscScalar *gamr, PetscScalar *rl, PetscScalar
 	    *pstar -= dpstar;
 	    *pstar = PetscMax(PetscRealPart(*pstar),PetscRealPart(smallp));
 	    if (PetscAbsScalar(dpstar) / PetscRealPart(*pstar) <= 1e-8) {
-              //break;
+#if 0
+        break;
+#endif
 	    }
 	}
 /*     1-wave: shock wave, 3-wave: rarefaction wave */
@@ -2126,7 +2131,9 @@ int riem1mdt( PetscScalar *gaml, PetscScalar *gamr, PetscScalar *rl, PetscScalar
 	    *pstar -= dpstar;
 	    *pstar = PetscMax(PetscRealPart(*pstar),PetscRealPart(smallp));
 	    if (PetscAbsScalar(dpstar) / PetscRealPart(*pstar) <= 1e-8) {
-              //break;
+#if 0
+        break;
+#endif
 	    }
 	}
 /*     1-wave: shock wave, 3-wave: shock */
@@ -2144,7 +2151,9 @@ int riem1mdt( PetscScalar *gaml, PetscScalar *gamr, PetscScalar *rl, PetscScalar
 	    *pstar -= dpstar;
 	    *pstar = PetscMax(PetscRealPart(*pstar),PetscRealPart(smallp));
 	    if (PetscAbsScalar(dpstar) / PetscRealPart(*pstar) <= 1e-8) {
-              //break;
+#if 0
+        break;
+#endif
 	    }
 	}
 /*     1-wave: rarefaction wave, 3-wave: shock */
@@ -2165,7 +2174,9 @@ int riem1mdt( PetscScalar *gaml, PetscScalar *gamr, PetscScalar *rl, PetscScalar
 	    *pstar -= dpstar;
 	    *pstar = PetscMax(PetscRealPart(*pstar),PetscRealPart(smallp));
 	    if (PetscAbsScalar(dpstar) / PetscRealPart(*pstar) <= 1e-8) {
-	      //break;
+#if 0
+	      break;
+#endif
 	    }
 	}
     }
@@ -2206,6 +2217,7 @@ int riemannsolver(PetscScalar *xcen, PetscScalar *xp,
     /* Local variables */
     static PetscScalar s, c0, p0, r0, u0, w0, x0, x2, ri, cx, sgn0, wsp0, gasc1, gasc2, gasc3, gasc4;
     static PetscScalar cstar, pstar, rstar, ustar, xstar, wspst, ushock, streng, rstarl, rstarr, rstars;
+    int iwave;
 
     if (*rl == *rr && *pr == *pl && *uxl == *uxr && *gaml == *gamr) {
 	*rx = *rl;
@@ -2225,7 +2237,7 @@ int riemannsolver(PetscScalar *xcen, PetscScalar *xp,
 	}
 	return 0;
     }
-    int iwave = riem1mdt(gaml, gamr, rl, pl, uxl, rr, pr, uxr, &rstarl, &rstarr, &pstar, &ustar);
+    iwave = riem1mdt(gaml, gamr, rl, pl, uxl, rr, pr, uxr, &rstarl, &rstarr, &pstar, &ustar);
 
     x2 = *xcen + ustar * *dtt;
     d__1 = *xp - x2;
