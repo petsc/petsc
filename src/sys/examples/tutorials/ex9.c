@@ -1,5 +1,11 @@
 static char help[] = "Example for PetscOptionsInsertFileYAML\n";
 
+
+/*T
+   requires: yaml
+T*/
+
+
 #include <petscsys.h>
 #include <petscviewer.h>
 

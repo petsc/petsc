@@ -478,7 +478,6 @@ class generateExamples(Petsc):
      All tests are *always* run, but some may be SKIP'd per the TAP standard
     """
     debug=False
-    fileIsTested=False
     execname=self.getExecname(exfile,root)
     isBuilt=self._isBuilt(exfile,srcDict)
     for test in srcDict:
@@ -488,12 +487,10 @@ class generateExamples(Petsc):
       isRun=self._isRun(srcDict[test])
       self.genRunScript(test,root,isRun,srcDict)
       srcDict[test]['isrun']=isRun
-      if isRun: fileIsTested=True
       self.addToTests(test,root,exfile,execname,srcDict[test])
 
     # This adds to datastructure for building deps
-    if fileIsTested and isBuilt: self.addToSources(exfile,root,srcDict)
-    #print self.nameSpace(exfile,root), fileIsTested
+    if isBuilt: self.addToSources(exfile,root,srcDict)
     return
 
   def _isBuilt(self,exfile,srcDict):

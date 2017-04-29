@@ -1,5 +1,10 @@
       program ex10f90
 
+!/*T
+!   requires: yaml
+!T*/
+
+
 #include "petsc/finclude/petsc.h"
       use petsc
       implicit none
