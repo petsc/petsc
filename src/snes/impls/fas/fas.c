@@ -47,7 +47,7 @@ static PetscErrorCode SNESSetUp_FAS(SNES snes)
   PetscInt       dm_levels;
   Vec            vec_sol, vec_func, vec_sol_update, vec_rhs; /* preserve these if they're set through the reset */
   SNES           next;
-  PetscBool      isFine;
+  PetscBool      isFine, hasCreateRestriction;
   SNESLineSearch linesearch;
   SNESLineSearch slinesearch;
   void           *lsprectx,*lspostctx;
@@ -105,8 +105,14 @@ static PetscErrorCode SNESSetUp_FAS(SNES snes)
       if (!fas->interpolate) {
         ierr = DMCreateInterpolation(next->dm, snes->dm, &fas->interpolate, &fas->rscale);CHKERRQ(ierr);
         if (!fas->restrct) {
-          ierr         = PetscObjectReference((PetscObject)fas->interpolate);CHKERRQ(ierr);
-          fas->restrct = fas->interpolate;
+          ierr = DMHasCreateRestriction(next->dm, &hasCreateRestriction);CHKERRQ(ierr);
+          /* DM can create restrictions, use that */
+          if (hasCreateRestriction) {
+            ierr = DMCreateRestriction(next->dm, snes->dm, &fas->restrct);CHKERRQ(ierr);
+          } else {
+            ierr         = PetscObjectReference((PetscObject)fas->interpolate);CHKERRQ(ierr);
+            fas->restrct = fas->interpolate;
+          }
         }
       }
       /* set the injection from the DM */
