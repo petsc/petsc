@@ -17,6 +17,9 @@ cdef extern from * nogil:
     ctypedef int (*PetscDMShellCreateInjectionFunction)(PetscDM,
                                                         PetscDM,
                                                         PetscMat*) except PETSC_ERR_PYTHON
+    ctypedef int (*PetscDMShellCreateRestrictionFunction)(PetscDM,
+                                                          PetscDM,
+                                                          PetscMat*) except PETSC_ERR_PYTHON
     ctypedef int (*PetscDMShellCreateFieldDecompositionFunction)(PetscDM,
                                                                  PetscInt*,
                                                                  char***,
@@ -44,6 +47,7 @@ cdef extern from * nogil:
     int DMShellSetRefine(PetscDM,PetscDMShellTransferFunction)
     int DMShellSetCreateInterpolation(PetscDM,PetscDMShellCreateInterpolationFunction)
     int DMShellSetCreateInjection(PetscDM,PetscDMShellCreateInjectionFunction)
+    int DMShellSetCreateRestriction(PetscDM,PetscDMShellCreateRestrictionFunction)
     int DMShellSetCreateFieldDecomposition(PetscDM,PetscDMShellCreateFieldDecompositionFunction)
     int DMShellSetCreateSubDM(PetscDM,PetscDMShellCreateSubDM)
 
@@ -264,6 +268,25 @@ cdef int DMSHELL_CreateInjection(
     assert context is not None and type(context) is tuple
     (injection, args, kargs) = context
     mat = injection(Dmc, Dmf, *args, **kargs)
+    PetscINCREF(mat.obj)
+    cmat[0] = mat.mat
+    return 0
+
+cdef int DMSHELL_CreateRestriction(
+    PetscDM dmf,
+    PetscDM dmc,
+    PetscMat *cmat) except PETSC_ERR_PYTHON with gil:
+    cdef DM Dmf = subtype_DM(dmf)()
+    cdef DM Dmc = subtype_DM(dmc)()
+    cdef Mat mat
+    Dmf.dm = dmf
+    PetscINCREF(Dmf.obj)
+    Dmc.dm = dmc
+    PetscINCREF(Dmc.obj)
+    context = Dmf.get_attr('__create_restriction__')
+    assert context is not None and type(context) is tuple
+    (restriction, args, kargs) = context
+    mat = restriction(Dmf, Dmc, *args, **kargs)
     PetscINCREF(mat.obj)
     cmat[0] = mat.mat
     return 0
