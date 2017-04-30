@@ -1,3 +1,4 @@
+
 static char help[] = "Power grid stability analysis of a large power system.\n\
 The base case is the WECC 9 bus system based on the example given in the book Power\n\
 Systems Dynamics and Stability (Chapter 7) by P. Sauer and M. A. Pai.\n\
