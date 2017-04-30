@@ -43,15 +43,15 @@ SNES Object: 1 MPI processes
     maximum iterations=40
   KSP Object: 1 MPI processes
     type: gmres
-      GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-      GMRES: happy breakdown tolerance 1e-30
+      restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      happy breakdown tolerance 1e-30
     maximum iterations=10000, initial guess is zero
     tolerances:  relative=1e-05, absolute=-1., divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
   PC Object: 1 MPI processes
     type: mg
-      MG: type is FULL, levels=4 cycles=v
+      type is FULL, levels=4 cycles=v
         Using Galerkin computed coarse grid matrices for pmat
     Coarse grid solver -- level -------------------------------
       KSP Object: (mg_coarse_) 1 MPI processes
@@ -85,26 +85,25 @@ SNES Object: 1 MPI processes
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object: (mg_levels_1_) 1 MPI processes
         type: chebyshev
-          Chebyshev: eigenvalue estimates used:  min = 0.499903, max = 1.09979
-          Chebyshev: eigenvalues estimate via gmres min 0.27295, max 0.999806
-          Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.5; 0. 1.1]
+          eigenvalue estimates used:  min = 0.499903, max = 1.09979
+          eigenvalues estimate via gmres min 0.27295, max 0.999806
+          eigenvalues estimated using gmres with translations  [0. 0.5; 0. 1.1]
           KSP Object: (mg_levels_1_esteig_) 1 MPI processes
             type: gmres
-              GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-              GMRES: happy breakdown tolerance 1e-30
+              restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+              happy breakdown tolerance 1e-30
             maximum iterations=10, initial guess is zero
             tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
             left preconditioning
             using PRECONDITIONED norm type for convergence test
-          Chebyshev: estimating eigenvalues using noisy right hand side
-        maximum iterations=2
+          estimating eigenvalues using noisy right hand side
+        maximum iterations=2, nonzero initial guess
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using nonzero initial guess
         using UNPRECONDITIONED norm type for convergence test
       PC Object: (mg_levels_1_) 1 MPI processes
         type: sor
-          SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
+          type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
@@ -116,26 +115,25 @@ SNES Object: 1 MPI processes
     Down solver (pre-smoother) on level 2 -------------------------------
       KSP Object: (mg_levels_2_) 1 MPI processes
         type: chebyshev
-          Chebyshev: eigenvalue estimates used:  min = 0.498174, max = 1.09598
-          Chebyshev: eigenvalues estimate via gmres min 0.0750615, max 0.996348
-          Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.5; 0. 1.1]
+          eigenvalue estimates used:  min = 0.498174, max = 1.09598
+          eigenvalues estimate via gmres min 0.0750615, max 0.996348
+          eigenvalues estimated using gmres with translations  [0. 0.5; 0. 1.1]
           KSP Object: (mg_levels_2_esteig_) 1 MPI processes
             type: gmres
-              GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-              GMRES: happy breakdown tolerance 1e-30
+              restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+              happy breakdown tolerance 1e-30
             maximum iterations=10, initial guess is zero
             tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
             left preconditioning
             using PRECONDITIONED norm type for convergence test
-          Chebyshev: estimating eigenvalues using noisy right hand side
-        maximum iterations=2
+          estimating eigenvalues using noisy right hand side
+        maximum iterations=2, nonzero initial guess
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using nonzero initial guess
         using UNPRECONDITIONED norm type for convergence test
       PC Object: (mg_levels_2_) 1 MPI processes
         type: sor
-          SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
+          type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
@@ -147,26 +145,25 @@ SNES Object: 1 MPI processes
     Down solver (pre-smoother) on level 3 -------------------------------
       KSP Object: (mg_levels_3_) 1 MPI processes
         type: chebyshev
-          Chebyshev: eigenvalue estimates used:  min = 0.498857, max = 1.09748
-          Chebyshev: eigenvalues estimate via gmres min 0.0185696, max 0.997713
-          Chebyshev: eigenvalues estimated using gmres with translations  [0. 0.5; 0. 1.1]
+          eigenvalue estimates used:  min = 0.498857, max = 1.09748
+          eigenvalues estimate via gmres min 0.0185696, max 0.997713
+          eigenvalues estimated using gmres with translations  [0. 0.5; 0. 1.1]
           KSP Object: (mg_levels_3_esteig_) 1 MPI processes
             type: gmres
-              GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-              GMRES: happy breakdown tolerance 1e-30
+              restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+              happy breakdown tolerance 1e-30
             maximum iterations=10, initial guess is zero
             tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
             left preconditioning
             using PRECONDITIONED norm type for convergence test
-          Chebyshev: estimating eigenvalues using noisy right hand side
-        maximum iterations=2
+          estimating eigenvalues using noisy right hand side
+        maximum iterations=2, nonzero initial guess
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using nonzero initial guess
         using UNPRECONDITIONED norm type for convergence test
       PC Object: (mg_levels_3_) 1 MPI processes
         type: sor
-          SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
+          type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij

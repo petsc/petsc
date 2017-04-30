@@ -61,16 +61,16 @@ SNES Object: 2 MPI processes
     maximum iterations=40
   KSP Object: 2 MPI processes
     type: richardson
-      Richardson: damping factor=1.
+      damping factor=1.
     maximum iterations=10000, initial guess is zero
     tolerances:  relative=1e-09, absolute=1e-50, divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
   PC Object: 2 MPI processes
     type: asm
-      Additive Schwarz: total subdomain blocks = 2, amount of overlap = 0
-      Additive Schwarz: restriction/interpolation type - RESTRICT
-      Additive Schwarz: local solve composition type - MULTIPLICATIVE
+      total subdomain blocks = 2, amount of overlap = 0
+      restriction/interpolation type - RESTRICT
+      local solve composition type - MULTIPLICATIVE
       Local solve is same for all blocks, in the following KSP and PC objects:
     KSP Object: (sub_) 1 MPI processes
       type: preonly

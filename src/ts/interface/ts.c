@@ -1913,13 +1913,22 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
 #endif
   if (iascii) {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)ts,viewer);CHKERRQ(ierr);
+    if (ts->ops->view) {
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = (*ts->ops->view)(ts,viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    }
     ierr = PetscViewerASCIIPrintf(viewer,"  maximum steps=%D\n",ts->max_steps);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  maximum time=%g\n",(double)ts->max_time);CHKERRQ(ierr);
-    if (ts->problem_type == TS_NONLINEAR) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  total number of nonlinear solver iterations=%D\n",ts->snes_its);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  total number of nonlinear solve failures=%D\n",ts->num_snes_failures);CHKERRQ(ierr);
+    if (ts->usessnes) {
+      PetscBool lin;
+      if (ts->problem_type == TS_NONLINEAR) {
+        ierr = PetscViewerASCIIPrintf(viewer,"  total number of nonlinear solver iterations=%D\n",ts->snes_its);CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIIPrintf(viewer,"  total number of linear solver iterations=%D\n",ts->ksp_its);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare((PetscObject)ts->snes,SNESKSPONLY,&lin);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  total number of %slinear solve failures=%D\n",lin ? "" : "non",ts->num_snes_failures);CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"  total number of linear solver iterations=%D\n",ts->ksp_its);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  total number of rejected steps=%D\n",ts->reject);CHKERRQ(ierr);
     if (ts->vrtol) {
       ierr = PetscViewerASCIIPrintf(viewer,"  using vector of relative error tolerances, ");CHKERRQ(ierr);
@@ -1931,13 +1940,10 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"  using absolute error tolerance of %g\n",(double)ts->atol);CHKERRQ(ierr);
     }
+    ierr = TSAdaptView(ts->adapt,viewer);CHKERRQ(ierr);
+    if (ts->snes && ts->usessnes)  {ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);}
     ierr = DMGetDMTS(ts->dm,&sdm);CHKERRQ(ierr);
     ierr = DMTSView(sdm,viewer);CHKERRQ(ierr);
-    if (ts->ops->view) {
-      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = (*ts->ops->view)(ts,viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-    }
   } else if (isstring) {
     ierr = TSGetType(ts,&type);CHKERRQ(ierr);
     ierr = PetscViewerStringSPrintf(viewer," %-7.7s",type);CHKERRQ(ierr);
@@ -1957,6 +1963,7 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
     if (ts->ops->view) {
       ierr = (*ts->ops->view)(ts,viewer);CHKERRQ(ierr);
     }
+    if (ts->adapt) {ierr = TSAdaptView(ts->adapt,viewer);CHKERRQ(ierr);}
     ierr = DMView(ts->dm,viewer);CHKERRQ(ierr);
     ierr = VecView(ts->vec_sol,viewer);CHKERRQ(ierr);
     ierr = DMGetDMTS(ts->dm,&sdm);CHKERRQ(ierr);
@@ -1976,6 +1983,8 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
     if (ts->ops->view) {
       ierr = (*ts->ops->view)(ts,viewer);CHKERRQ(ierr);
     }
+    if (ts->adapt) {ierr = TSAdaptView(ts->adapt,viewer);CHKERRQ(ierr);}
+    if (ts->snes)  {ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);}
     ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SAWS)
   } else if (issaws) {

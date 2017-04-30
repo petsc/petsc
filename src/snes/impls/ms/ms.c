@@ -507,7 +507,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_MS(SNES snes)
   snes->ops->view           = SNESView_MS;
   snes->ops->reset          = SNESReset_MS;
 
-  snes->usespc  = PETSC_FALSE;
+  snes->usesnpc = PETSC_FALSE;
   snes->usesksp = PETSC_TRUE;
 
   snes->alwayscomputesfinalresidual = PETSC_FALSE;

@@ -1114,15 +1114,15 @@ static PetscErrorCode KSPView_FETIDP(KSP ksp,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  FETI-DP: fully redundant: %D\n",fetidp->fully_redundant);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  FETI-DP: saddle point:    %D\n",fetidp->saddlepoint);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  FETI-DP: inner solver details\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  fully redundant: %D\n",fetidp->fully_redundant);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  saddle point:    %D\n",fetidp->saddlepoint);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  inner solver details\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIAddTab(viewer,2);CHKERRQ(ierr);
   }
   ierr = KSPView(fetidp->innerksp,viewer);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIISubtractTab(viewer,2);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  FETI-DP: BDDC solver details\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  BDDC solver details\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIAddTab(viewer,2);CHKERRQ(ierr);
   }
   ierr = PCView(fetidp->innerbddc,viewer);CHKERRQ(ierr);

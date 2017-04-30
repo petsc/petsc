@@ -1,14 +1,14 @@
 KSP Object: 2 MPI processes
   type: gmres
-    GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-    GMRES: happy breakdown tolerance 1e-30
+    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+    happy breakdown tolerance 1e-30
   maximum iterations=10000, initial guess is zero
   tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
   left preconditioning
   using PRECONDITIONED norm type for convergence test
 PC Object: 2 MPI processes
   type: bjacobi
-    block Jacobi: number of blocks = 4
+    number of blocks = 4
     Local solve info for each block is in the following KSP and PC objects:
   [0] number of local blocks = 2, first local block number = 0
     [0] local block number 0
@@ -62,8 +62,8 @@ PC Object: 2 MPI processes
     [1] local block number 0
     KSP Object: (sub_) 1 MPI processes
       type: gmres
-        GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-        GMRES: happy breakdown tolerance 1e-30
+        restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+        happy breakdown tolerance 1e-30
       maximum iterations=10000, initial guess is zero
       tolerances:  relative=1e-06, absolute=1e-50, divergence=10000.
       left preconditioning
@@ -81,8 +81,8 @@ PC Object: 2 MPI processes
     [1] local block number 1
     KSP Object: (sub_) 1 MPI processes
       type: gmres
-        GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-        GMRES: happy breakdown tolerance 1e-30
+        restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+        happy breakdown tolerance 1e-30
       maximum iterations=10000, initial guess is zero
       tolerances:  relative=1e-06, absolute=1e-50, divergence=10000.
       left preconditioning

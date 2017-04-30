@@ -161,10 +161,13 @@ SNES Object: 5 MPI processes
                         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
                         left preconditioning
                         using NONE norm type for convergence test
-                      PC Object: 5 MPI processes
-                        type: shell
-                          Shell: no name
-                            FETI-DP multipliers Dirichlet preconditioner (just from rank 0)
+                      PC Object: (fetidp_harmonic_) 1 MPI processes
+                        type: cholesky
+                          out-of-place factorization
+                          tolerance for zero pivot 2.22045e-14
+                          matrix ordering: natural
+                          factor fill ratio given 0., needed 0.
+                            Factored matrix follows:
                               Mat Object: 1 MPI processes
                                 type: schurcomplement
                                 rows=412, cols=412
@@ -264,7 +267,23 @@ SNES Object: 5 MPI processes
                   rows=142, cols=142
                   total: nonzeros=142, allocated nonzeros=142
                   total number of mallocs used during MatSetValues calls =0
-                    not using I-node (on process 0) routines
+                    using I-node routines: found 500 nodes, limit used is 5
+              FETI-DP pressure preconditioner
+                KSP Object: (fetidp_p_) 5 MPI processes
+                  type: richardson
+                    damping factor=20000.
+                  maximum iterations=1, initial guess is zero
+                  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                  left preconditioning
+                  using PRECONDITIONED norm type for convergence test
+                PC Object: (fetidp_p_) 5 MPI processes
+                  type: none
+                  linear system matrix = precond matrix:
+                  Mat Object: 5 MPI processes
+                    type: is
+                    rows=524, cols=524
+                    total: nonzeros=10008, allocated nonzeros=10008
+                    total number of mallocs used during MatSetValues calls =0
           linear system matrix = precond matrix:
           Mat Object: (fetidp_) 5 MPI processes
             type: shell
@@ -272,6 +291,7 @@ SNES Object: 5 MPI processes
       FETI-DP: BDDC solver details
         PC Object: (fetidp_bddc_) 5 MPI processes
           type: bddc
+<<<<<<< HEAD
             BDDC: Use verbose output: 0
             BDDC: Use user-defined CSR: 0
             BDDC: Use local mat graph: 1
@@ -321,6 +341,57 @@ SNES Object: 5 MPI processes
             BDDC: Local     dofs   :	1005	1314	1165
             BDDC: Local     subs   :	1	1
             BDDC: ********************************** COARSE PROBLEM DETAILS *********************************
+=======
+            Use verbose output: 0
+            Use user-defined CSR: 0
+            Use local mat graph: 1
+            Connectivity graph topological dimension: 3
+            Graph max count: 2147483647
+            Use vertices: 1 (vertex size 3)
+            Use edges: 1
+            Use faces: 0
+            Use true near null space: 0
+            Use QR for single constraints on cc: 0
+            Use change of basis on local edge nodes: 0
+            Use change of basis on local face nodes: 0
+            User defined change of basis matrix: 0
+            Has change of basis matrix: 0
+            Eliminate dirichlet boundary dofs: 1
+            Switch on static condensation ops around the interface preconditioner: 1
+            Use exact dirichlet trick: 0
+            Multilevel max levels: 0
+            Multilevel coarsening ratio: 8
+            Use estimated eigs for coarse problem: 0
+            Use deluxe scaling: 1
+            Use deluxe zerorows: 0
+            Use deluxe singlemat: 1
+            Rebuild interface graph for Schur principal minors: 0
+            Number of dofs' layers for the computation of principal minors: -1
+            Use user CSR graph to compute successive layers: 0
+            Adaptive constraint selection threshold (active 0, userdefined 0): 0.
+            Min constraints / connected component: 0
+            Max constraints / connected component: 0
+            Invert exact Schur complement for adaptive selection: 0
+            Symmetric computation of primal basis functions: 0
+            Num. Procs. to map coarse adjacency list: 0
+            Coarse eqs per proc (significant at the coarsest level): 1
+            Detect disconnected: 0
+            Benign subspace trick: 1 (change explicit 0)
+            Benign subspace trick is active: 0
+            Algebraic computation of no-net-flux 0
+            ********************************** STATISTICS AT LEVEL 0 **********************************
+            Global dofs sizes: all 38698 interface 4749 coarse 13
+            Coarsening ratios: all/coarse 2976 interface/coarse 365
+            Active processes : 5
+            Total subdomains : 5
+            Dofs type        :	MIN	MAX	MEAN
+            Interior  dofs   :	6217	7661	6789
+            Interface dofs   :	1756	2588	1960
+            Primal    dofs   :	6	11	9
+            Local     dofs   :	7993	10185	8749
+            Local     subs   :	1	1
+            ********************************** COARSE PROBLEM DETAILS *********************************
+>>>>>>> Make ASCII PC/KSP/SNES/TSView() code and output in a standard style
           KSP Object: (fetidp_bddc_pc_bddc_coarse_) 5 MPI processes
             type: preonly
             maximum iterations=1000, initial guess is zero
@@ -329,7 +400,7 @@ SNES Object: 5 MPI processes
             using NONE norm type for convergence test
           PC Object: (fetidp_bddc_pc_bddc_coarse_) 5 MPI processes
             type: redundant
-              Redundant preconditioner: First (color=0) of 5 PCs follows
+              First (color=0) of 5 PCs follows
             linear system matrix = precond matrix:
             Mat Object: 5 MPI processes
               type: mpiaij

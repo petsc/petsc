@@ -238,6 +238,7 @@ SNES Object: 5 MPI processes
       FETI-DP: BDDC solver details
         PC Object: (fetidp_bddc_) 5 MPI processes
           type: bddc
+<<<<<<< HEAD
             BDDC: Use verbose output: 0
             BDDC: Use user-defined CSR: 0
             BDDC: Use local mat graph: 1
@@ -287,6 +288,57 @@ SNES Object: 5 MPI processes
             BDDC: Local     dofs   :	153	333	282
             BDDC: Local     subs   :	1	1
             BDDC: ********************************** COARSE PROBLEM DETAILS *********************************
+=======
+            Use verbose output: 0
+            Use user-defined CSR: 0
+            Use local mat graph: 1
+            Connectivity graph topological dimension: 2
+            Graph max count: 2147483647
+            Use vertices: 1 (vertex size 2)
+            Use edges: 1
+            Use faces: 0
+            Use true near null space: 0
+            Use QR for single constraints on cc: 0
+            Use change of basis on local edge nodes: 0
+            Use change of basis on local face nodes: 0
+            User defined change of basis matrix: 0
+            Has change of basis matrix: 0
+            Eliminate dirichlet boundary dofs: 1
+            Switch on static condensation ops around the interface preconditioner: 1
+            Use exact dirichlet trick: 0
+            Multilevel max levels: 0
+            Multilevel coarsening ratio: 8
+            Use estimated eigs for coarse problem: 0
+            Use deluxe scaling: 0
+            Use deluxe zerorows: 0
+            Use deluxe singlemat: 0
+            Rebuild interface graph for Schur principal minors: 0
+            Number of dofs' layers for the computation of principal minors: -1
+            Use user CSR graph to compute successive layers: 0
+            Adaptive constraint selection threshold (active 0, userdefined 0): 0.
+            Min constraints / connected component: 0
+            Max constraints / connected component: 0
+            Invert exact Schur complement for adaptive selection: 0
+            Symmetric computation of primal basis functions: 0
+            Num. Procs. to map coarse adjacency list: 0
+            Coarse eqs per proc (significant at the coarsest level): 1
+            Detect disconnected: 0
+            Benign subspace trick: 0 (change explicit 0)
+            Benign subspace trick is active: 0
+            Algebraic computation of no-net-flux 0
+            ********************************** STATISTICS AT LEVEL 0 **********************************
+            Global dofs sizes: all 1227 interface 153 coarse 13
+            Coarsening ratios: all/coarse 94 interface/coarse 11
+            Active processes : 5
+            Total subdomains : 5
+            Dofs type        :	MIN	MAX	MEAN
+            Interior  dofs   :	114	242	214
+            Interface dofs   :	39	99	63
+            Primal    dofs   :	4	10	6
+            Local     dofs   :	153	333	277
+            Local     subs   :	1	1
+            ********************************** COARSE PROBLEM DETAILS *********************************
+>>>>>>> Make ASCII PC/KSP/SNES/TSView() code and output in a standard style
           KSP Object: (fetidp_bddc_pc_bddc_coarse_) 5 MPI processes
             type: preonly
             maximum iterations=1000, initial guess is zero
@@ -295,7 +347,7 @@ SNES Object: 5 MPI processes
             using NONE norm type for convergence test
           PC Object: (fetidp_bddc_pc_bddc_coarse_) 5 MPI processes
             type: redundant
-              Redundant preconditioner: First (color=0) of 5 PCs follows
+              First (color=0) of 5 PCs follows
             linear system matrix = precond matrix:
             Mat Object: 5 MPI processes
               type: mpiaij
