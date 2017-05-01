@@ -365,6 +365,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     ierr = PetscStrcmp(helpoptions,"intro",&flg2);CHKERRQ(ierr);
     if (flg2) {
       ierr = PetscOptionsDestroyDefault();CHKERRQ(ierr);
+      ierr = PetscFreeMPIResources();CHKERRQ(ierr);
       ierr = MPI_Finalize();CHKERRQ(ierr);
       exit(0);
     }

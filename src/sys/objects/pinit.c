@@ -942,6 +942,46 @@ extern PetscInt    PetscObjectsCounts, PetscObjectsMaxCounts;
 extern PetscBool   PetscObjectsLog;
 #endif
 
+/*
+    Frees all the MPI types and operations that PETSc may have created
+*/
+PetscErrorCode  PetscFreeMPIResources(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+#if defined(PETSC_USE_REAL___FLOAT128)
+  ierr = MPI_Type_free(&MPIU___FLOAT128);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_COMPLEX)
+  ierr = MPI_Type_free(&MPIU___COMPLEX128);CHKERRQ(ierr);
+#endif
+  ierr = MPI_Op_free(&MPIU_MAX);CHKERRQ(ierr);
+  ierr = MPI_Op_free(&MPIU_MIN);CHKERRQ(ierr);
+#elif defined(PETSC_USE_REAL___FP16)
+  ierr = MPI_Type_free(&MPIU___FP16);CHKERRQ(ierr);
+  ierr = MPI_Op_free(&MPIU_MAX);CHKERRQ(ierr);
+  ierr = MPI_Op_free(&MPIU_MIN);CHKERRQ(ierr);
+#endif
+
+#if defined(PETSC_HAVE_COMPLEX)
+#if !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
+  ierr = MPI_Type_free(&MPIU_C_DOUBLE_COMPLEX);CHKERRQ(ierr);
+  ierr = MPI_Type_free(&MPIU_C_COMPLEX);CHKERRQ(ierr);
+#endif
+#endif
+
+#if (defined(PETSC_HAVE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128) || defined(PETSC_USE_REAL___FP16)
+  ierr = MPI_Op_free(&MPIU_SUM);CHKERRQ(ierr);
+#endif
+
+  ierr = MPI_Type_free(&MPIU_2SCALAR);CHKERRQ(ierr);
+#if defined(PETSC_USE_64BIT_INDICES) || !defined(MPI_2INT)
+  ierr = MPI_Type_free(&MPIU_2INT);CHKERRQ(ierr);
+#endif
+  ierr = MPI_Op_free(&MPIU_MAXSUM_OP);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@C
    PetscFinalize - Checks for options to be called at the conclusion
    of the program. MPI_Finalize() is called only if the user had not
@@ -1346,35 +1386,7 @@ PetscErrorCode  PetscFinalize(void)
   PetscGlobalArgc = 0;
   PetscGlobalArgs = 0;
 
-#if defined(PETSC_USE_REAL___FLOAT128)
-  ierr = MPI_Type_free(&MPIU___FLOAT128);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_COMPLEX)
-  ierr = MPI_Type_free(&MPIU___COMPLEX128);CHKERRQ(ierr);
-#endif
-  ierr = MPI_Op_free(&MPIU_MAX);CHKERRQ(ierr);
-  ierr = MPI_Op_free(&MPIU_MIN);CHKERRQ(ierr);
-#elif defined(PETSC_USE_REAL___FP16)
-  ierr = MPI_Type_free(&MPIU___FP16);CHKERRQ(ierr);
-  ierr = MPI_Op_free(&MPIU_MAX);CHKERRQ(ierr);
-  ierr = MPI_Op_free(&MPIU_MIN);CHKERRQ(ierr);
-#endif
-
-#if defined(PETSC_HAVE_COMPLEX)
-#if !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
-  ierr = MPI_Type_free(&MPIU_C_DOUBLE_COMPLEX);CHKERRQ(ierr);
-  ierr = MPI_Type_free(&MPIU_C_COMPLEX);CHKERRQ(ierr);
-#endif
-#endif
-
-#if (defined(PETSC_HAVE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128) || defined(PETSC_USE_REAL___FP16)
-  ierr = MPI_Op_free(&MPIU_SUM);CHKERRQ(ierr);
-#endif
-
-  ierr = MPI_Type_free(&MPIU_2SCALAR);CHKERRQ(ierr);
-#if defined(PETSC_USE_64BIT_INDICES) || !defined(MPI_2INT)
-  ierr = MPI_Type_free(&MPIU_2INT);CHKERRQ(ierr);
-#endif
-  ierr = MPI_Op_free(&MPIU_MAXSUM_OP);CHKERRQ(ierr);
+  ierr = PetscFreeMPIResources();CHKERRQ(ierr);
 
   /*
      Destroy any known inner MPI_Comm's and attributes pointing to them
