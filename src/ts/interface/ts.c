@@ -107,6 +107,18 @@ PetscErrorCode  TSAdjointMonitorSetFromOptions(TS ts,const char name[],const cha
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt,TSAdaptType default_type)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!((PetscObject)adapt)->type_name) {
+    if (!default_type) default_type = TSADAPTBASIC;
+    ierr = TSAdaptSetType(adapt,default_type);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /*@
    TSSetFromOptions - Sets various TS parameters from user options.
 
@@ -407,9 +419,10 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = PetscInfo(ts, "Setting default finite difference coloring Jacobian matrix\n");CHKERRQ(ierr);
   }
 
-  if (ts->adapt) {
-    ierr = TSAdaptSetFromOptions(PetscOptionsObject,ts->adapt);CHKERRQ(ierr);
-  }
+  /* Handle TSAdapt options */
+  ierr = TSGetAdapt(ts,&ts->adapt);CHKERRQ(ierr);
+  ierr = TSAdaptSetDefaultType(ts->adapt,ts->default_adapt_type);CHKERRQ(ierr);
+  ierr = TSAdaptSetFromOptions(PetscOptionsObject,ts->adapt);CHKERRQ(ierr);
 
   /* Handle specific TS options */
   if (ts->ops->setfromoptions) {
@@ -2472,6 +2485,7 @@ PetscErrorCode  TSSetUp(TS ts)
   TSIJacobian    ijac;
   TSI2Jacobian   i2jac;
   TSRHSJacobian  rhsjac;
+  PetscBool      isnone;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -2502,9 +2516,18 @@ PetscErrorCode  TSSetUp(TS ts)
       ierr = MatDestroy(&Pmat);CHKERRQ(ierr);
     }
   }
+
+  ierr = TSGetAdapt(ts,&ts->adapt);CHKERRQ(ierr);
+  ierr = TSAdaptSetDefaultType(ts->adapt,ts->default_adapt_type);CHKERRQ(ierr);
+
   if (ts->ops->setup) {
     ierr = (*ts->ops->setup)(ts);CHKERRQ(ierr);
   }
+
+  /* Attempt to check/preset a default value for the exact final time option */
+  ierr = PetscObjectTypeCompare((PetscObject)ts->adapt,TSADAPTNONE,&isnone);CHKERRQ(ierr);
+  if (!isnone && ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED)
+    ts->exact_final_time = TS_EXACTFINALTIME_MATCHSTEP;
 
   /* In the case where we've set a DMTSFunction or what have you, we need the default SNESFunction
      to be set right but can't do it elsewhere due to the overreliance on ctx=ts.

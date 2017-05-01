@@ -1569,6 +1569,7 @@ static PetscErrorCode  TSRosWSetType_RosW(TS ts,TSRosWType rostype)
       if (ts->setupcalled) {ierr = TSRosWTableauReset(ts);CHKERRQ(ierr);}
       ros->tableau = &link->tab;
       if (ts->setupcalled) {ierr = TSRosWTableauSetUp(ts);CHKERRQ(ierr);}
+      ts->default_adapt_type = ros->tableau->bembed ? TSADAPTBASIC : TSADAPTNONE;
       PetscFunctionReturn(0);
     }
   }

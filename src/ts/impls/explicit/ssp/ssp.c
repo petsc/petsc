@@ -363,6 +363,7 @@ static PetscErrorCode TSSSPSetType_SSP(TS ts,TSSSPType type)
   ssp->onestep = r;
   ierr = PetscFree(ssp->type_name);CHKERRQ(ierr);
   ierr = PetscStrallocpy(type,&ssp->type_name);CHKERRQ(ierr);
+  ts->default_adapt_type = TSADAPTNONE;
   PetscFunctionReturn(0);
 }
 static PetscErrorCode TSSSPGetType_SSP(TS ts,TSSSPType *type)

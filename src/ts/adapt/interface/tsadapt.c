@@ -936,8 +936,6 @@ PetscErrorCode  TSAdaptCreate(MPI_Comm comm,TSAdapt *inadapt)
   adapt->scale_solve_failed = 0.25;
   adapt->wnormtype          = NORM_2;
 
-  ierr = TSAdaptSetType(adapt,TSADAPTBASIC);CHKERRQ(ierr);
-
   *inadapt = adapt;
   PetscFunctionReturn(0);
 }

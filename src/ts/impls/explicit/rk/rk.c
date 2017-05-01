@@ -974,6 +974,7 @@ static PetscErrorCode TSRKSetType_RK(TS ts,TSRKType rktype)
       if (ts->setupcalled) {ierr = TSRKTableauReset(ts);CHKERRQ(ierr);}
       rk->tableau = &link->tab;
       if (ts->setupcalled) {ierr = TSRKTableauSetUp(ts);CHKERRQ(ierr);}
+      ts->default_adapt_type = rk->tableau->bembed ? TSADAPTBASIC : TSADAPTNONE;
       PetscFunctionReturn(0);
     }
   }

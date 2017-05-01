@@ -1318,6 +1318,7 @@ static PetscErrorCode  TSARKIMEXSetType_ARKIMEX(TS ts,TSARKIMEXType arktype)
       if (ts->setupcalled) {ierr = TSARKIMEXTableauReset(ts);CHKERRQ(ierr);}
       ark->tableau = &link->tab;
       if (ts->setupcalled) {ierr = TSARKIMEXTableauSetUp(ts);CHKERRQ(ierr);}
+      ts->default_adapt_type = ark->tableau->bembed ? TSADAPTBASIC : TSADAPTNONE;
       PetscFunctionReturn(0);
     }
   }

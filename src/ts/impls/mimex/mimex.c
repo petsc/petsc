@@ -361,6 +361,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Mimex(TS ts)
   ts->ops->linearstability = TSComputeLinearStability_Mimex;
   ts->ops->snesfunction    = SNESTSFormFunction_Mimex;
   ts->ops->snesjacobian    = SNESTSFormJacobian_Mimex;
+  ts->default_adapt_type   = TSADAPTNONE;
 
   ierr = PetscNewLog(ts,&mimex);CHKERRQ(ierr);
   ts->data = (void*)mimex;
