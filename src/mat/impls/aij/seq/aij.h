@@ -178,18 +178,14 @@ PETSC_STATIC_INLINE PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscI
     Ain->reallocs++; \
   } \
 
-#define MatSeqXAIJReallocateAIJ_structure_only(Amat,AM,BS2,NROW,ROW,COL,RMAX,AA,AI,AJ,RP,AIMAX,NONEW,datatype) \
-  /* printf("MatSeqXAIJReallocateAIJ A->structure_only %d\n",A->structure_only); */ \
+#define MatSeqXAIJReallocateAIJ_structure_only(Amat,AM,BS2,NROW,ROW,COL,RMAX,AI,AJ,RP,AIMAX,NONEW,datatype) \
   if (NROW >= RMAX) { \
     Mat_SeqAIJ *Ain = (Mat_SeqAIJ*)Amat->data; \
     /* there is no extra room in row, therefore enlarge */ \
     PetscInt CHUNKSIZE = 15,new_nz = AI[AM] + CHUNKSIZE,len,*new_i=0,*new_j=0; \
-    datatype *new_a; \
  \
     if (NONEW == -2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"New nonzero at (%D,%D) caused a malloc\nUse MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check",ROW,COL); \
     /* malloc new storage space */ \
-    /* ierr = PetscMalloc3(BS2*new_nz,&new_a,new_nz,&new_j,AM+1,&new_i);CHKERRQ(ierr); */ \
-    ierr = PetscMalloc1(BS2*new_nz,&new_a);CHKERRQ(ierr);          \
     ierr = PetscMalloc1(new_nz,&new_j);CHKERRQ(ierr); \
     ierr = PetscMalloc1(AM+1,&new_i);CHKERRQ(ierr);\
  \
@@ -199,18 +195,15 @@ PETSC_STATIC_INLINE PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscI
     ierr = PetscMemcpy(new_j,AJ,(AI[ROW]+NROW)*sizeof(PetscInt));CHKERRQ(ierr); \
     len  = (new_nz - CHUNKSIZE - AI[ROW] - NROW); \
     ierr = PetscMemcpy(new_j+AI[ROW]+NROW+CHUNKSIZE,AJ+AI[ROW]+NROW,len*sizeof(PetscInt));CHKERRQ(ierr); \
-    /* ierr = PetscMemcpy(new_a,AA,BS2*(AI[ROW]+NROW)*sizeof(datatype));CHKERRQ(ierr); */ \
-    /* ierr = PetscMemzero(new_a+BS2*(AI[ROW]+NROW),BS2*CHUNKSIZE*sizeof(datatype));CHKERRQ(ierr); */ \
-    /* ierr = PetscMemcpy(new_a+BS2*(AI[ROW]+NROW+CHUNKSIZE),AA+BS2*(AI[ROW]+NROW),BS2*len*sizeof(datatype));CHKERRQ(ierr); */ \
+ \
     /* free up old matrix storage */ \
     ierr              = MatSeqXAIJFreeAIJ(A,&Ain->a,&Ain->j,&Ain->i);CHKERRQ(ierr); \
-    AA                = new_a; \
-    Ain->a            = (MatScalar*) new_a;                   \
+    Ain->a            = NULL;                   \
     AI                = Ain->i = new_i; AJ = Ain->j = new_j;  \
     Ain->singlemalloc = PETSC_FALSE; \
-    /* Ain->free_a       = PETSC_FALSE;          */     \
+    Ain->free_a       = PETSC_FALSE;             \
  \
-    RP          = AJ + AI[ROW]; /* AP = AA + BS2*AI[ROW]; */    \
+    RP          = AJ + AI[ROW];    \
     RMAX        = AIMAX[ROW] = AIMAX[ROW] + CHUNKSIZE; \
     Ain->maxnz += BS2*CHUNKSIZE; \
     Ain->reallocs++; \

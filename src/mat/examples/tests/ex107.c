@@ -10,10 +10,12 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
   PetscScalar    v;
+  PetscBool      struct_only=PETSC_TRUE;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-struct_only",&struct_only,NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   n    = m;
@@ -22,8 +24,9 @@ int main(int argc,char **argv)
   ierr = MatCreate(PETSC_COMM_WORLD,&mat);CHKERRQ(ierr);
   ierr = MatSetSizes(mat,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(mat);CHKERRQ(ierr);
-  ierr = MatSetOption(mat,MAT_STRUCTURE_ONLY,PETSC_TRUE);CHKERRQ(ierr);
-
+  if (struct_only) {
+    ierr = MatSetOption(mat,MAT_STRUCTURE_ONLY,PETSC_TRUE);CHKERRQ(ierr);
+  }
   ierr = MatSetUp(mat);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
