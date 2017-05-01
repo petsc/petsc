@@ -34,6 +34,7 @@ int main(int argc,char **argv)
   }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatView(mat,0);CHKERRQ(ierr);
 
   /* Free data structures */
   ierr = MatDestroy(&mat);CHKERRQ(ierr);
