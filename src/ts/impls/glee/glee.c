@@ -658,7 +658,7 @@ static PetscErrorCode TSStep_GLEE(TS ts)
     /* Register only the current method as a candidate because we're not supporting multiple candidates yet. */
     ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
     ierr = TSAdaptCandidatesClear(adapt);CHKERRQ(ierr);
-    ierr = TSAdaptCandidateAdd(adapt,tab->name,tab->order,1,tab->ccfl,1.*tab->s,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = TSAdaptCandidateAdd(adapt,tab->name,tab->order,1,tab->ccfl,(PetscReal)tab->s,PETSC_TRUE);CHKERRQ(ierr);
     ierr = TSAdaptChoose(adapt,ts,ts->time_step,&next_scheme,&next_time_step,&accept);CHKERRQ(ierr);
     if (accept) {
       /* ignore next_scheme for now */

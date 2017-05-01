@@ -225,10 +225,13 @@ struct _p_TSAdapt {
     PetscReal  cost[16];         /* relative measure of the amount of work required for each scheme */
   } candidates;
   PetscBool   always_accept;
-  PetscReal   dt_min,dt_max;
-  PetscReal   scale_solve_failed; /* Scale step by this factor if solver (linear or nonlinear) fails. */
-  PetscViewer monitor;
+  PetscReal   safety;             /* safety factor relative to target error/stability goal */
+  PetscReal   reject_safety;      /* extra safety factor if the last step was rejected */
+  PetscReal   clip[2];            /* admissible time step decrease/increase factors */
+  PetscReal   dt_min,dt_max;      /* admissible minimum and maximum time step */
+  PetscReal   scale_solve_failed; /* scale step by this factor if solver (linear or nonlinear) fails. */
   NormType    wnormtype;
+  PetscViewer monitor;
 };
 
 typedef struct _p_DMTS *DMTS;
