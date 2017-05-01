@@ -10,7 +10,7 @@ Nonlinear alg_ solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 
 ... (3) Disturbance period ... 
 2 TS dt 0.01 time 0.02
-  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
 3 TS dt 0.01 time 0.03
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 4 TS dt 0.01 time 0.04

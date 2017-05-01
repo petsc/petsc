@@ -7,13 +7,15 @@ The base power grid in this example consists of 9 buses (nodes), 3 generators,\n
 in current balance form using rectangular coordiantes. \n\
 DMNetwork is used to manage the variables and equations of the entire system.\n\
 Input parameters include:\n\
- -nc : number of copies of the base case\n\n";
+  -nc : number of copies of the base case\n\n";
 
 /* T
    Concepts: DMNetwork
    Concepts: PETSc TS solver
 
    This example was contributed by Bikiran Guha and Jianqiao Huang, Illinois Institute of Technology, 2017.
+   Note: This code works well for np=1 and 2.
+         For np=3, some compilers give error, e.g., ~petsc/config/examplesarch-linux-c89.
 */
 
 #include <petscts.h>
@@ -101,8 +103,6 @@ typedef struct {
 } Userctx;
 
 /* Used to read data into the DMNetwork components */
-#undef __FUNCT__
-#define __FUNCT__ "read_data"
 PetscErrorCode read_data(PetscInt nc, PetscInt ngen, PetscInt nload, PetscInt nbus, PetscInt nbranch, Mat Ybus,Vec V0,Gen **pgen,Load **pload,Bus **pbus, Branch **pbranch, PetscInt **pedgelist)
 {
   PetscErrorCode    ierr;
@@ -184,7 +184,7 @@ PetscErrorCode read_data(PetscInt nc, PetscInt ngen, PetscInt nload, PetscInt nb
    for (i = 0; i<nc; i++){
      for (j = 0; j < ngen; j++) {
        gen[i*3+j].id   = i*3+j;
-       gen[i*3+j].PG   = PG[j];
+       gen[i*3+j].PG   = PG[j]; /* warning: Assigned value is garbage or undefined */
        gen[i*3+j].QG   = QG[j];
        gen[i*3+j].H    = H[j];
        gen[i*3+j].Rs   = Rs[j];
@@ -213,7 +213,7 @@ PetscErrorCode read_data(PetscInt nc, PetscInt ngen, PetscInt nload, PetscInt nb
    for (i = 0; i<nc; i++){
      for (j = 0; j < nload; j++) {
        load[i*3+j].id        = i*3+j;
-       load[i*3+j].PD0       = PD0[j];
+       load[i*3+j].PD0       = PD0[j]; /* warning: Assigned value is garbage or undefined */
        load[i*3+j].QD0       = QD0[j];
        load[i*3+j].ld_nsegsp = ld_nsegsp[j];
 
@@ -323,8 +323,6 @@ PetscErrorCode read_data(PetscInt nc, PetscInt ngen, PetscInt nload, PetscInt nb
    PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetInitialGuess"
 PetscErrorCode SetInitialGuess(DM networkdm, Vec X)
 {
   PetscErrorCode ierr;
@@ -434,8 +432,6 @@ PetscErrorCode SetInitialGuess(DM networkdm, Vec X)
  }
 
  /* Converts from machine frame (dq) to network (phase a real,imag) reference frame */
-#undef __FUNCT__
-#define __FUNCT__ "dq2ri"
 PetscErrorCode dq2ri(PetscScalar Fd,PetscScalar Fq,PetscScalar delta,PetscScalar *Fr,PetscScalar *Fi)
 {
   PetscFunctionBegin;
@@ -445,8 +441,6 @@ PetscErrorCode dq2ri(PetscScalar Fd,PetscScalar Fq,PetscScalar delta,PetscScalar
 }
 
 /* Converts from network frame ([phase a real,imag) to machine (dq) reference frame */
-#undef __FUNCT__
-#define __FUNCT__ "ri2dq"
 PetscErrorCode ri2dq(PetscScalar Fr,PetscScalar Fi,PetscScalar delta,PetscScalar *Fd,PetscScalar *Fq)
 {
   PetscFunctionBegin;
@@ -456,8 +450,6 @@ PetscErrorCode ri2dq(PetscScalar Fr,PetscScalar Fi,PetscScalar delta,PetscScalar
 }
 
 /* Computes F(t,U,U_t) where F() = 0 is the DAE to be solved. */
-#undef __FUNCT__
-#define __FUNCT__ "FormIFunction"
 PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,Userctx *user)
 {
   PetscErrorCode                     ierr;
@@ -713,8 +705,6 @@ PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,Userctx *use
    differential equations
  F = [0;g(y)];
 */
-#undef __FUNCT__
-#define __FUNCT__ "AlgFunction"
 PetscErrorCode AlgFunction (SNES snes, Vec X, Vec F, void *ctx)
 {
   PetscErrorCode ierr;
@@ -894,7 +884,7 @@ PetscErrorCode AlgFunction (SNES snes, Vec X, Vec F, void *ctx)
 
           Vr  = xarr[offset]; /* Real part of generator terminal voltage */
           Vi  = xarr[offset+1]; /* Imaginary part of the generator terminal voltage */
-          Vm  = PetscSqrtScalar(Vr*Vr + Vi*Vi);
+          Vm  = PetscSqrtScalar(Vr*Vr + Vi*Vi); /* warning: Value stored to 'Vm' is never read */
           Vm2 = Vm*Vm;
           Vm0 = PetscSqrtScalar(Vr0*Vr0 + Vi0*Vi0);
           PD  = QD = 0.0;
@@ -922,8 +912,6 @@ PetscErrorCode AlgFunction (SNES snes, Vec X, Vec F, void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char ** argv)
 {
   PetscErrorCode ierr;
