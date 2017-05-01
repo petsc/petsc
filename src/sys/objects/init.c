@@ -360,6 +360,15 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     ierr = (*PetscHelpPrintf)(comm,"--------------------------------------------------------------------------\n");CHKERRQ(ierr);
   }
 
+  /*
+       Print "higher-level" package help message
+  */
+  if (flg3) {
+    if (PetscExternalHelpFunction) {
+      ierr = (*PetscExternalHelpFunction)(comm);CHKERRQ(ierr);
+    }
+  }
+
   ierr = PetscOptionsGetString(NULL,NULL,"-help",helpoptions,sizeof(helpoptions),&flg1);CHKERRQ(ierr);
   if (flg1) {
     ierr = PetscStrcmp(helpoptions,"intro",&flg2);CHKERRQ(ierr);
@@ -368,15 +377,6 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
       ierr = PetscFreeMPIResources();CHKERRQ(ierr);
       ierr = MPI_Finalize();CHKERRQ(ierr);
       exit(0);
-    }
-  }
-
-  /*
-       Print "higher-level" package help message
-  */
-  if (flg3) {
-    if (PetscExternalHelpFunction) {
-      ierr = (*PetscExternalHelpFunction)(comm);CHKERRQ(ierr);
     }
   }
 
