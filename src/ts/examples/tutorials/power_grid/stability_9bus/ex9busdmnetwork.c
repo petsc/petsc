@@ -21,8 +21,10 @@ Input parameters include:\n\
 #include <petscts.h>
 #include <petscdmnetwork.h>
 
-#define freq 60
-#define w_s (2*PETSC_PI*freq)
+#define FREQ 60
+#define W_S (2*PETSC_PI*FREQ)
+#define NGEN 3
+#define NLOAD 3
 
 typedef struct {
   PetscInt    id;    /* Bus Number or extended bus name*/
@@ -39,7 +41,7 @@ typedef struct {
   PetscScalar Xqp;  /* q-axis transient reactance */
   PetscScalar Td0p; /* d-axis open circuit time constant */
   PetscScalar Tq0p; /* q-axis open circuit time constant */
-  PetscScalar M;    /* M = 2*H/w_s */
+  PetscScalar M;    /* M = 2*H/W_S */
   PetscScalar D;    /* D = 0.1*M */
   PetscScalar TM;   /* Mechanical Torque */
 
@@ -103,7 +105,7 @@ typedef struct {
 } Userctx;
 
 /* Used to read data into the DMNetwork components */
-PetscErrorCode read_data(PetscInt nc, PetscInt ngen, PetscInt nload, PetscInt nbus, PetscInt nbranch, Mat Ybus,Vec V0,Gen **pgen,Load **pload,Bus **pbus, Branch **pbranch, PetscInt **pedgelist)
+PetscErrorCode read_data(PetscInt nc, PetscInt nbus, PetscInt nbranch, Mat Ybus,Vec V0,Gen **pgen,Load **pload,Bus **pbus, Branch **pbranch, PetscInt **pedgelist)
 {
   PetscErrorCode    ierr;
   PetscInt          i,j,row[1],col[2];
@@ -115,6 +117,7 @@ PetscErrorCode read_data(PetscInt nc, PetscInt ngen, PetscInt nload, PetscInt nb
   Branch            *branch;
   Gen               *gen;
   Load              *load;
+  PetscInt          ngen=NGEN,nload=NLOAD;
 
   /*10 parameters*/
   /* Generator real and reactive powers (found via loadflow) */
@@ -152,9 +155,9 @@ PetscErrorCode read_data(PetscInt nc, PetscInt ngen, PetscInt nload, PetscInt nb
    PetscInt          ld_nsegsq[3] = {3,3,3};
 
    PetscFunctionBeginUser;
-   M[0] = 2*H[0]/w_s;
-   M[1] = 2*H[1]/w_s;
-   M[2] = 2*H[2]/w_s;
+   M[0] = 2*H[0]/W_S;
+   M[1] = 2*H[1]/W_S;
+   M[2] = 2*H[2]/W_S;
    D[0] = 0.1*M[0];
    D[1] = 0.1*M[1];
    D[2] = 0.1*M[2];
@@ -406,7 +409,7 @@ PetscErrorCode SetInitialGuess(DM networkdm, Vec X)
         xarr[idx]   = Eqp;
         xarr[idx+1] = Edp;
         xarr[idx+2] = delta;
-        xarr[idx+3] = w_s;
+        xarr[idx+3] = W_S;
         xarr[idx+4] = Id;
         xarr[idx+5] = Iq;
 
@@ -615,8 +618,8 @@ PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,Userctx *use
           /* Generator differential equations */
           farr[idx]   = (Eqp + (Xd - Xdp)*Id - Efd)/Td0p + xdotarr[idx];
           farr[idx+1] = (Edp - (Xq - Xqp)*Iq)/Tq0p  + xdotarr[idx+1];
-          farr[idx+2] = -w + w_s + xdotarr[idx+2];
-          farr[idx+3] = (-TM + Edp*Id + Eqp*Iq + (Xqp - Xdp)*Id*Iq + D*(w - w_s))/M  + xdotarr[idx+3];
+          farr[idx+2] = -w + W_S + xdotarr[idx+2];
+          farr[idx+3] = (-TM + Edp*Id + Eqp*Iq + (Xqp - Xdp)*Id*Iq + D*(w - W_S))/M  + xdotarr[idx+3];
 
           Vr = xarr[offset]; /* Real part of generator terminal voltage */
           Vi = xarr[offset+1]; /* Imaginary part of the generator terminal voltage */
@@ -946,10 +949,10 @@ int main(int argc,char ** argv)
 
   /* Read initial voltage vector and Ybus */
   if (!rank) {
-    ngen     = 3;
+    ngen     = NGEN;
     nbus     = 9;
     nbranch  = 9;
-    nload    = 3;
+    nload    = NLOAD;
     neqs_net = 2*nbus; /* # eqs. for network subsystem   */
 
     ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"X.bin",FILE_MODE_READ,&Xview);CHKERRQ(ierr);
@@ -965,7 +968,7 @@ int main(int argc,char ** argv)
     ierr = MatLoad(Ybus,Ybusview);CHKERRQ(ierr);
 
     /*read data */
-    ierr = read_data(nc,ngen,nload,nbus,nbranch,Ybus,V0,&gen,&load,&bus,&branch,&edgelist);CHKERRQ(ierr);
+    ierr = read_data(nc,nbus,nbranch,Ybus,V0,&gen,&load,&bus,&branch,&edgelist);CHKERRQ(ierr);
 
     /* Destroy unnecessary stuff */
     ierr = PetscViewerDestroy(&Xview);CHKERRQ(ierr);
