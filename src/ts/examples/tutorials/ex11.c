@@ -2494,7 +2494,7 @@ int initLinearWave(EulerNode *ux, const PetscScalar gamma, const PetscReal coord
   PetscScalar eps, ueq[3], rho0, twopi;
 
   /* Function Body */
-  twopi = 2.*M_PI;
+  twopi = 2.*PETSC_PI;
   eps = 1e-4; /* perturbation */
   rho0 = 1e3;   /* density of water */
   p0 = 101325.; /* init pressure of 1 atm (?) */
