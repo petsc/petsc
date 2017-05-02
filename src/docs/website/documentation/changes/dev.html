@@ -153,6 +153,8 @@
         <li>Changed TSGL to TSGLLE.</li>
         <li>-ts_monitor binary now saves the timestep information as a REAL entry consisting of the REAL_FILE_CLASSID followed by the real value. PetscBinaryRead.m and PetscBinaryIO.py can read these in automatically.</li>
         <li>Added TSRK5BS scheme to TSRK.</li>
+        <li>Removed command line option <tt>-ts_theta_adapt</tt>, use <tt>-ts_adapt_type basic</tt> to turn on adaptivity in TSTHETA.</li>
+        <li>Remove command line option <tt>-ts_alpha_adapt</tt> and routines TSAlphaUseAdapt()/TSAlpha2UseAdapt(), use <tt>-ts_adapt_type basic</tt> to turn on adaptivity in TSALPHA/TSALPHA2.</li>
         <li>Removed TSBDFUseAdapt(), using time step adaptivity in TSBDF is now the default, use <tt>-ts_adapt_type none</tt> to turn adaptivity off. </li>
         <li>Added TSAdaptSetAlwaysAccept() to set whether to always accept steps.</li>
         <li>Added TSAdapt{Set|Get}Safety() to set safety factors and renamed option <tt>-ts_adapt_basic_[reject_]safety</tt> to <tt>-ts_adapt_[reject_]safety</tt>.</li>
