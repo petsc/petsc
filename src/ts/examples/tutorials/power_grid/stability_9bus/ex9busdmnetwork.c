@@ -184,7 +184,7 @@ PetscErrorCode read_data(PetscInt nc, PetscInt ngen, PetscInt nload, PetscInt nb
    for (i = 0; i<nc; i++){
      for (j = 0; j < ngen; j++) {
        gen[i*3+j].id   = i*3+j;
-       gen[i*3+j].PG   = PG[j]; /* warning: Assigned value is garbage or undefined */
+       gen[i*3+j].PG   = PG[j]; /* a compiler warning: "Assigned value is garbage or undefined" */
        gen[i*3+j].QG   = QG[j];
        gen[i*3+j].H    = H[j];
        gen[i*3+j].Rs   = Rs[j];
@@ -213,7 +213,7 @@ PetscErrorCode read_data(PetscInt nc, PetscInt ngen, PetscInt nload, PetscInt nb
    for (i = 0; i<nc; i++){
      for (j = 0; j < nload; j++) {
        load[i*3+j].id        = i*3+j;
-       load[i*3+j].PD0       = PD0[j]; /* warning: Assigned value is garbage or undefined */
+       load[i*3+j].PD0       = PD0[j];  /* a compiler warning: "Assigned value is garbage or undefined" */
        load[i*3+j].QD0       = QD0[j];
        load[i*3+j].ld_nsegsp = ld_nsegsp[j];
 
@@ -857,7 +857,7 @@ PetscErrorCode AlgFunction (SNES snes, Vec X, Vec F, void *ctx)
           farr[offset]   -= IGi;
           farr[offset+1] -= IGr;
 
-          Vm = PetscSqrtScalar(Vd*Vd + Vq*Vq);
+          /* Vm = PetscSqrtScalar(Vd*Vd + Vq*Vq);*/ /* a compiler warning: "Value stored to 'Vm' is never read" - comment out by Hong Zhang */
 
           /* Set exciter differential equation residual functions equal to zero*/
           farr[idx+6] = 0;
@@ -884,7 +884,7 @@ PetscErrorCode AlgFunction (SNES snes, Vec X, Vec F, void *ctx)
 
           Vr  = xarr[offset]; /* Real part of generator terminal voltage */
           Vi  = xarr[offset+1]; /* Imaginary part of the generator terminal voltage */
-          Vm  = PetscSqrtScalar(Vr*Vr + Vi*Vi); /* warning: Value stored to 'Vm' is never read */
+          Vm  = PetscSqrtScalar(Vr*Vr + Vi*Vi);
           Vm2 = Vm*Vm;
           Vm0 = PetscSqrtScalar(Vr0*Vr0 + Vi0*Vi0);
           PD  = QD = 0.0;
