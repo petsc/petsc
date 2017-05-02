@@ -3019,7 +3019,7 @@ static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, DMLabel vertexLabe
 @*/
 PetscErrorCode DMPlexCreateSubmesh(DM dm, DMLabel vertexLabel, PetscInt value, DM *subdm)
 {
-  PetscInt       dim, depth;
+  PetscInt       dim, cdim, depth;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -3030,6 +3030,8 @@ PetscErrorCode DMPlexCreateSubmesh(DM dm, DMLabel vertexLabel, PetscInt value, D
   ierr = DMCreate(PetscObjectComm((PetscObject)dm), subdm);CHKERRQ(ierr);
   ierr = DMSetType(*subdm, DMPLEX);CHKERRQ(ierr);
   ierr = DMSetDimension(*subdm, dim-1);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
+  ierr = DMSetCoordinateDim(*subdm, cdim);CHKERRQ(ierr);
   if (depth == dim) {
     ierr = DMPlexCreateSubmesh_Interpolated(dm, vertexLabel, value, *subdm);CHKERRQ(ierr);
   } else {
