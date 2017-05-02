@@ -182,8 +182,8 @@
       PetscInt         i1
 
       i1 = 1
-      hx = 1.0/(mx + 1)
-      hy = 1.0/(my + 1)
+      hx = 1.0/real(mx + 1)
+      hy = 1.0/real(my + 1)
 
 !  Get corner information
       call DMDAGetCorners(dm,xs,ys,PETSC_NULL_INTEGER,xm,ym,               &
@@ -267,8 +267,8 @@
       cdiv3 = param/3.0
       zero = 0.0
       p5   = 0.5
-      hx = 1.0/(mx + 1)
-      hy = 1.0/(my + 1)
+      hx = 1.0/real(mx + 1)
+      hy = 1.0/real(my + 1)
       fquad = zero
       flin = zero
 

@@ -768,7 +768,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
             for (kk=0;kk<nrank;kk++) istart+=user->ns*(subranges[kk+1]-subranges[kk]);
             istart += (subranges[nrank+1]-subranges[nrank])*subvec;
             l = istart+offset;
-            v = 100*PetscSinScalar(2*PETSC_PI*(vx+0.25*is))*sin(2*PETSC_PI*(vy+0.25*js))*sin(2*PETSC_PI*(vz+0.25*ks));
+            v = 100*PetscSinScalar(2*PETSC_PI*(vx+0.25*is))*PetscSinScalar(2*PETSC_PI*(vy+0.25*js))*PetscSinScalar(2*PETSC_PI*(vz+0.25*ks));
             ierr = VecSetValues(user->q,1,&l,&v,INSERT_VALUES);CHKERRQ(ierr);
           }
         }

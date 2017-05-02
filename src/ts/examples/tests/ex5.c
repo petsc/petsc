@@ -439,7 +439,7 @@ extern PetscScalar emission(PetscScalar pwat)
 {
   PetscScalar emma;
 
-  emma = 0.725 + 0.17*log10(pwat);
+  emma = 0.725 + 0.17*PetscLog10Real(PetscRealPart(pwat));
 
   return emma;
 }

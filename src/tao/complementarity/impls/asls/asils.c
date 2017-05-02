@@ -253,7 +253,7 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
     ierr = VecNorm(tao->stepdirection, NORM_2, &normd);CHKERRQ(ierr);
     ierr = VecDot(tao->stepdirection, asls->dpsi, &innerd);CHKERRQ(ierr);
 
-    if (innerd <= asls->delta*pow(normd, asls->rho)) {
+    if (innerd <= asls->delta*PetscPowReal(normd, asls->rho)) {
       ierr = PetscInfo1(tao,"Gradient direction: %5.4e.\n", (double)innerd);CHKERRQ(ierr);
       ierr = PetscInfo1(tao, "Iteration %D: newton direction not descent\n", tao->niter);CHKERRQ(ierr);
       ierr = VecCopy(asls->dpsi, tao->stepdirection);CHKERRQ(ierr);
