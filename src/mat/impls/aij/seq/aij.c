@@ -975,9 +975,13 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
 
   /* reset ilen and imax for each row */
   a->nonzerorowcnt = 0;
-  for (i=0; i<m; i++) {
-    ailen[i] = imax[i] = ai[i+1] - ai[i];
-    a->nonzerorowcnt += ((ai[i+1] - ai[i]) > 0);
+  if (A->structure_only) {
+    ierr = PetscFree2(a->imax,a->ilen);CHKERRQ(ierr);
+  } else { /* !A->structure_only */
+    for (i=0; i<m; i++) {
+      ailen[i] = imax[i] = ai[i+1] - ai[i];
+      a->nonzerorowcnt += ((ai[i+1] - ai[i]) > 0);
+    }
   }
   a->nz = ai[m];
   if (fshift && a->nounused == -1) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Unused space detected in matrix: %D X %D, %D unneeded", m, A->cmap->n, fshift);
@@ -992,7 +996,9 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   A->info.nz_unneeded = (PetscReal)fshift;
   a->rmax             = rmax;
 
-  ierr = MatCheckCompressedRow(A,a->nonzerorowcnt,&a->compressedrow,a->i,m,ratio);CHKERRQ(ierr);
+  if (!A->structure_only) {
+    ierr = MatCheckCompressedRow(A,a->nonzerorowcnt,&a->compressedrow,a->i,m,ratio);CHKERRQ(ierr);
+  }
   ierr = MatAssemblyEnd_SeqAIJ_Inode(A,mode);CHKERRQ(ierr);
   ierr = MatSeqAIJInvalidateDiagonal(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -3511,7 +3517,6 @@ PetscErrorCode  MatSeqAIJSetPreallocation_SeqAIJ(Mat B,PetscInt nz,const PetscIn
     skipallocation = PETSC_TRUE;
     nz             = 0;
   }
-
   ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
 
@@ -3548,14 +3553,24 @@ PetscErrorCode  MatSeqAIJSetPreallocation_SeqAIJ(Mat B,PetscInt nz,const PetscIn
     /* allocate the matrix space */
     /* FIXME: should B's old memory be unlogged? */
     ierr    = MatSeqXAIJFreeAIJ(B,&b->a,&b->j,&b->i);CHKERRQ(ierr);
-    ierr    = PetscMalloc3(nz,&b->a,nz,&b->j,B->rmap->n+1,&b->i);CHKERRQ(ierr);
-    ierr    = PetscLogObjectMemory((PetscObject)B,(B->rmap->n+1)*sizeof(PetscInt)+nz*(sizeof(PetscScalar)+sizeof(PetscInt)));CHKERRQ(ierr);
+    if (B->structure_only) {
+      ierr    = PetscMalloc2(nz,&b->j,B->rmap->n+1,&b->i);CHKERRQ(ierr);
+      ierr    = PetscLogObjectMemory((PetscObject)B,(B->rmap->n+1)*sizeof(PetscInt)+nz*sizeof(PetscInt));CHKERRQ(ierr);
+    } else {
+      ierr    = PetscMalloc3(nz,&b->a,nz,&b->j,B->rmap->n+1,&b->i);CHKERRQ(ierr);
+      ierr    = PetscLogObjectMemory((PetscObject)B,(B->rmap->n+1)*sizeof(PetscInt)+nz*(sizeof(PetscScalar)+sizeof(PetscInt)));CHKERRQ(ierr);
+    }
     b->i[0] = 0;
     for (i=1; i<B->rmap->n+1; i++) {
       b->i[i] = b->i[i-1] + b->imax[i-1];
     }
-    b->singlemalloc = PETSC_TRUE;
-    b->free_a       = PETSC_TRUE;
+    if (B->structure_only) {
+      b->singlemalloc = PETSC_FALSE;
+      b->free_a       = PETSC_FALSE;
+    } else {
+      b->singlemalloc = PETSC_TRUE;
+      b->free_a       = PETSC_TRUE;
+    }
     b->free_ij      = PETSC_TRUE;
   } else {
     b->free_a  = PETSC_FALSE;
