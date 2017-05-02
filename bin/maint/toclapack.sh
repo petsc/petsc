@@ -47,7 +47,7 @@ SED=sed
 TAR=tar
 
 # Some vars
-FBLASLAPACK=f2cblaslapack-3.4.2.q1
+FBLASLAPACK=f2cblaslapack-3.4.2.q3
 BIN=${TMP}/bin
 PAC=${TMP}/${FBLASLAPACK}
 BLASDIR=${PAC}/blas
@@ -494,6 +494,8 @@ EOF
 		echo "${f}.o: ${f}.c ; \$(CC) \$(CNOOPT) -c \$< -o \$@" >> ${DES}/makefile
 	done
 done
+        # remove duplicate xerbla.o xerbla_array.o from lapack makefile
+        $SED -i -e 's/xerbla.o//; s/xerbla_array.o//' ${LAPACKDIR}/makefile
 
 	# Take care some special source files
 	cat << EOF > ${TMP}/xerbla.c
@@ -506,7 +508,7 @@ int xerbla_(char *srname, integer *info) {
 }
 EOF
 	cp ${TMP}/xerbla.c ${BLASDIR}
-	cp ${TMP}/xerbla.c ${LAPACKDIR}
+#	cp ${TMP}/xerbla.c ${LAPACKDIR}
 
 	cat << EOF > ${TMP}/xerbla_array.c
 #include "f2c.h"
@@ -523,7 +525,7 @@ int xerbla_array_(char *srname, integer *info, int len) {
 }
 EOF
 	cp ${TMP}/xerbla_array.c ${BLASDIR}
-	cp ${TMP}/xerbla_array.c ${LAPACKDIR}
+#	cp ${TMP}/xerbla_array.c ${LAPACKDIR}
 
 	cat << EOF > ${LAPACKDIR}/slamch.c
 /*  -- translated by f2c (version 20100827).
