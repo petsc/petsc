@@ -23,8 +23,10 @@ Input parameters include:\n\
 
 #define FREQ 60
 #define W_S (2*PETSC_PI*FREQ)
-#define NGEN 3
-#define NLOAD 3
+#define NGEN    3   /* No. of generators in the 9 bus system */
+#define NLOAD   3   /* No. of loads in the 9 bus system */
+#define NBUS    9   /* No. of buses in the 9 bus system */
+#define NBRANCH 9   /* No. of branches in the 9 bus system */
 
 typedef struct {
   PetscInt    id;    /* Bus Number or extended bus name*/
@@ -105,7 +107,7 @@ typedef struct {
 } Userctx;
 
 /* Used to read data into the DMNetwork components */
-PetscErrorCode read_data(PetscInt nc, PetscInt nbus, PetscInt nbranch, Mat Ybus,Vec V0,Gen **pgen,Load **pload,Bus **pbus, Branch **pbranch, PetscInt **pedgelist)
+PetscErrorCode read_data(PetscInt nc, Mat Ybus,Vec V0,Gen **pgen,Load **pload,Bus **pbus, Branch **pbranch, PetscInt **pedgelist)
 {
   PetscErrorCode    ierr;
   PetscInt          i,j,row[1],col[2];
@@ -117,7 +119,6 @@ PetscErrorCode read_data(PetscInt nc, PetscInt nbus, PetscInt nbranch, Mat Ybus,
   Branch            *branch;
   Gen               *gen;
   Load              *load;
-  PetscInt          ngen=NGEN,nload=NLOAD;
 
   /*10 parameters*/
   /* Generator real and reactive powers (found via loadflow) */
@@ -163,13 +164,13 @@ PetscErrorCode read_data(PetscInt nc, PetscInt nbus, PetscInt nbranch, Mat Ybus,
    D[2] = 0.1*M[2];
 
    /* Alocate memory for total number of buses, generators, loads and branches */
-   ierr = PetscCalloc4(nbus*nc,&bus,ngen*nc,&gen,nload*nc,&load,nbranch*nc+(nc-1),&branch);CHKERRQ(ierr);
+   ierr = PetscCalloc4(NBUS*nc,&bus,NGEN*nc,&gen,NLOAD*nc,&load,NBRANCH*nc+(nc-1),&branch);CHKERRQ(ierr);
 
    ierr = VecGetArray(V0,&varr);CHKERRQ(ierr);
 
    /* read bus data */
    for (i = 0; i < nc; i++) {
-     for (j = 0; j < nbus; j++) {
+     for (j = 0; j < NBUS; j++) {
        bus[i*9+j].id      = i*9+j;
        bus[i*9+j].nofgen  = nofgen[j];
        bus[i*9+j].nofload = nofload[j];
@@ -185,7 +186,7 @@ PetscErrorCode read_data(PetscInt nc, PetscInt nbus, PetscInt nbranch, Mat Ybus,
 
    /* read generator data */
    for (i = 0; i<nc; i++){
-     for (j = 0; j < ngen; j++) {
+     for (j = 0; j < NGEN; j++) {
        gen[i*3+j].id   = i*3+j;
        gen[i*3+j].PG   = PG[j]; /* a compiler warning: "Assigned value is garbage or undefined" */
        gen[i*3+j].QG   = QG[j];
@@ -214,7 +215,7 @@ PetscErrorCode read_data(PetscInt nc, PetscInt nbus, PetscInt nbranch, Mat Ybus,
 
    /* read load data */
    for (i = 0; i<nc; i++){
-     for (j = 0; j < nload; j++) {
+     for (j = 0; j < NLOAD; j++) {
        load[i*3+j].id        = i*3+j;
        load[i*3+j].PD0       = PD0[j];  /* a compiler warning: "Assigned value is garbage or undefined" */
        load[i*3+j].QD0       = QD0[j];
@@ -238,11 +239,11 @@ PetscErrorCode read_data(PetscInt nc, PetscInt nbus, PetscInt nbranch, Mat Ybus,
        load[i*3+j].ld_betaq[2] = ld_betaq[2];
      }
    }
-   ierr = PetscCalloc1(2*nbranch*nc+2*(nc-1),&edgelist);CHKERRQ(ierr);
+   ierr = PetscCalloc1(2*NBRANCH*nc+2*(nc-1),&edgelist);CHKERRQ(ierr);
 
    /* read edgelist */
    for (i = 0; i<nc; i++){
-     for (j = 0; j < nbranch; j++) {
+     for (j = 0; j < NBRANCH; j++) {
        switch (j) {
        case 0:
          edgelist[i*18+2*j]    = 0+9*i;
@@ -306,7 +307,7 @@ PetscErrorCode read_data(PetscInt nc, PetscInt nbus, PetscInt nbranch, Mat Ybus,
 
     /* read branch data */
     for (i = 0; i<nc; i++){
-      for (j = 0; j < nbranch; j++) {
+      for (j = 0; j < NBRANCH; j++) {
         branch[i*9+j].id  = i*9+j;
 
         row[0] = edgelist[2*j]*2;
@@ -921,10 +922,6 @@ int main(int argc,char ** argv)
   PetscInt       i,j,*edgelist= NULL,eStart,eEnd,vStart,vEnd;
   PetscInt       genj,loadj,m=0,n=0,componentkey[4];
   PetscInt       nc = 1;    /* No. of copies (default = 1) */
-  PetscInt       ngen=0;    /* No. of generators in the 9 bus system */
-  PetscInt       nbus=0;    /* No. of buses in the 9 bus system */
-  PetscInt       nbranch=0; /* No. of branches in the 9 bus system */
-  PetscInt       nload=0;   /* No. of loads in the 9 bus system */
   PetscInt       neqs_net=0;/* No. of algebraic equations in the 9 bus system */
   PetscMPIInt    size,rank;
   Vec            X,F,F_alg,Xdot,V0;
@@ -949,11 +946,7 @@ int main(int argc,char ** argv)
 
   /* Read initial voltage vector and Ybus */
   if (!rank) {
-    ngen     = NGEN;
-    nbus     = 9;
-    nbranch  = 9;
-    nload    = NLOAD;
-    neqs_net = 2*nbus; /* # eqs. for network subsystem   */
+    neqs_net = 2*NBUS; /* # eqs. for network subsystem   */
 
     ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"X.bin",FILE_MODE_READ,&Xview);CHKERRQ(ierr);
     ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"Ybus.bin",FILE_MODE_READ,&Ybusview);CHKERRQ(ierr);
@@ -968,7 +961,7 @@ int main(int argc,char ** argv)
     ierr = MatLoad(Ybus,Ybusview);CHKERRQ(ierr);
 
     /*read data */
-    ierr = read_data(nc,nbus,nbranch,Ybus,V0,&gen,&load,&bus,&branch,&edgelist);CHKERRQ(ierr);
+    ierr = read_data(nc,Ybus,V0,&gen,&load,&bus,&branch,&edgelist);CHKERRQ(ierr);
 
     /* Destroy unnecessary stuff */
     ierr = PetscViewerDestroy(&Xview);CHKERRQ(ierr);
@@ -986,7 +979,7 @@ int main(int argc,char ** argv)
 
   /* Set local number of nodes and edges */
   if (!rank){
-    ierr = DMNetworkSetSizes(networkdm,nbus*nc,nbranch*nc+(nc-1),PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+    ierr = DMNetworkSetSizes(networkdm,NBUS*nc,NBRANCH*nc+(nc-1),PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   } else {
     ierr = DMNetworkSetSizes(networkdm,0,0,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   }
