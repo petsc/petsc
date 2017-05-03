@@ -265,16 +265,19 @@ extern "C" {
     '''Check for sin() in libm, the math library'''
     self.math = None
     funcs = ['sin', 'floor', 'log10', 'pow']
-    prototypes = ['double sin(double);', 'double floor(double);', 'double log10(double);', 'double pow(double, double);']
-    calls = ['double x = 0,y; y = sin(x);\n', 'double x = 0,y; y = floor(x);\n', 'double x = 0,y; y = log10(x);\n', 'double x = 0,y ; y = pow(x, x);\n']
+    prototypes = ['#include <stdio.h>\ndouble sin(double);',
+                  '#include <stdio.h>\ndouble floor(double);',
+                  '#include <stdio.h>\ndouble log10(double);',
+                  '#include <stdio.h>\ndouble pow(double, double);']
+    calls = ['double x,y; scanf("%lf",&x); y = sin(x); printf("%f",y);\n',
+             'double x,y; scanf("%lf",&x); y = floor(x); printf("%f",y);\n',
+             'double x,y; scanf("%lf",&x); y = log10(x); printf("%f",y);\n',
+             'double x,y; scanf("%lf",&x); y = pow(x,x); printf("%f",y);\n']
     if self.check('', funcs, prototype = prototypes, call = calls):
-      self.logPrint('Math functions are linked in by default')
       self.math = []
     elif self.check('m', funcs, prototype = prototypes, call = calls):
-      self.logPrint('Using libm for the math library')
       self.math = ['libm.a']
-    else:
-      self.logPrint('Warning: No math library found')
+    self.logPrint('CheckMath: using math library '+str(self.math))
     return
 
   def checkMathErf(self):
