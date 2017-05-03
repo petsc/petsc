@@ -33,7 +33,7 @@ PetscErrorCode DMCreateGlobalVector_Section_Private(DM dm,Vec *vec)
 
   in[0] = -blockSize;
   in[1] = blockSize;
-  ierr = MPIU_Allreduce(&in,&out,2,MPIU_INT,MPIU_MAX,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(&in,&out,2,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
   /* -out[0] = min(blockSize), out[1] = max(blockSize) */
   if (-out[0] == out[1]) {
     bs = out[1];
