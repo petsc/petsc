@@ -44,7 +44,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscLogStageRegister("MeshRefine",       &options->stages[STAGE_REFINE]);CHKERRQ(ierr);
   ierr = PetscLogStageRegister("MeshRedistribute", &options->stages[STAGE_REDISTRIBUTE]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-};
+}
 
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
@@ -111,16 +111,18 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   }
   ierr = PetscLogStagePop();CHKERRQ(ierr);
   if (user->loadBalance) {
-    PetscPartitioner part;
-    PetscInt         reSizes_n2[2]  = {2, 2};
-    PetscInt         rePoints_n2[4] = {2, 3, 0, 1};
-    if (rank) {rePoints_n2[0] = 1; rePoints_n2[1] = 2, rePoints_n2[2] = 0, rePoints_n2[3] = 3;}
-
+    ierr = DMPlexSetOptionsPrefix(*dm, "lb_");CHKERRQ(ierr);
     ierr = PetscLogStagePush(user->stages[STAGE_REDISTRIBUTE]);CHKERRQ(ierr);
-    ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
-    ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
-    ierr = PetscPartitionerShellSetPartition(part, size, reSizes_n2, rePoints_n2);CHKERRQ(ierr);
+    if (user->testPartition) {
+      PetscPartitioner part;
+      PetscInt         reSizes_n2[2]  = {2, 2};
+      PetscInt         rePoints_n2[4] = {2, 3, 0, 1};
+      if (rank) {rePoints_n2[0] = 1; rePoints_n2[1] = 2, rePoints_n2[2] = 0, rePoints_n2[3] = 3;}
 
+      ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
+      ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
+      ierr = PetscPartitionerShellSetPartition(part, size, reSizes_n2, rePoints_n2);CHKERRQ(ierr);
+    }
     ierr = DMPlexDistribute(*dm, overlap, NULL, &distMesh);CHKERRQ(ierr);
     if (distMesh) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
@@ -149,3 +151,56 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+  # Parallel, no overlap tests 0-2
+  test:
+    suffix: 0
+    requires: triangle
+    args: -dm_view ascii:mesh.tex:ascii_latex
+  test:
+    suffix: 1
+    requires: triangle
+    nsize: 3
+    args: -test_partition -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 2
+    requires: triangle
+    nsize: 8
+    args: -test_partition -dm_view ascii::ascii_info_detail
+  # Parallel, level-1 overlap tests 3-4
+  test:
+    suffix: 3
+    requires: triangle
+    nsize: 3
+    args: -test_partition -overlap 1 -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 4
+    requires: triangle
+    nsize: 8
+    args: -test_partition -overlap 1 -dm_view ascii::ascii_info_detail
+  # Parallel, level-2 overlap test 5
+  test:
+    suffix: 5
+    requires: triangle
+    nsize: 8
+    args: -test_partition -overlap 2 -dm_view ascii::ascii_info_detail
+  # Parallel load balancing, test 6-7
+  test:
+    suffix: 6
+    requires: triangle
+    nsize: 2
+    args: -test_partition -overlap 1 -dm_view ascii::ascii_info_detail
+  test:
+    suffix: 7
+    requires: triangle
+    nsize: 2
+    args: -test_partition -overlap 1 -load_balance -dm_view ascii::ascii_info_detail
+  # Parallel redundant copying, test 8
+  test:
+    suffix: 8
+    requires: triangle
+    nsize: 2
+    args: -test_redundant -dm_view ascii::ascii_info_detail
+
+TEST*/

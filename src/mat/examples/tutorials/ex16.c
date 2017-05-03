@@ -3,7 +3,7 @@ static char help[] = "Reads a matrix from PETSc binary file. Use for view or inv
 /*
  Example:
       ./ex16 -f <matrix file> -a_mat_view draw -draw_pause -1
-      ./ex16 -f <matrix file> -a_mat_view ::ascii_info
+      ./ex16 -f <matrix file> -a_mat_view ascii::ascii_info
  */
 
 #include <petscmat.h>

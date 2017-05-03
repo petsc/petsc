@@ -3108,38 +3108,7 @@ static PetscErrorCode DMPlexCreateSectionInitial(DM dm, PetscInt dim, PetscInt n
               if (flips) flips0 = flips[0];
               if (!(perms0 || flips0)) continue;
               ierr = DMPlexGetConeSize(K,kStart,&kConeSize);CHKERRQ(ierr);
-              if (numComp[f] == 1) {
-                ierr = PetscSectionSymLabelSetStratum(sym,depth - h,numDof[depth - h],-kConeSize,kConeSize,PETSC_USE_POINTER,perms0 ? &perms0[-kConeSize] : NULL,flips0 ? &flips0[-kConeSize] : NULL);CHKERRQ(ierr);
-              } else {
-                PetscInt    **fieldPerms = NULL, o;
-                PetscScalar **fieldFlips = NULL;
-
-                ierr = PetscCalloc1(2 * kConeSize,&fieldPerms);CHKERRQ(ierr);
-                ierr = PetscCalloc1(2 * kConeSize,&fieldFlips);CHKERRQ(ierr);
-                for (o = -kConeSize; o < kConeSize; o++) {
-                  if (perms0 && perms0[o]) {
-                    PetscInt r, s;
-
-                    ierr = PetscMalloc1(numComp[f] * numDof[depth - h],&fieldPerms[o+kConeSize]);CHKERRQ(ierr);
-                    for (r = 0; r < numDof[depth - h]; r++) {
-                      for (s = 0; s < numComp[f]; s++) {
-                        fieldPerms[o+kConeSize][r * numComp[f] + s] = numComp[f] * perms0[o][r] + s;
-                      }
-                    }
-                  }
-                  if (flips0 && flips0[o]) {
-                    PetscInt r, s;
-
-                    ierr = PetscMalloc1(numComp[f] * numDof[depth - h],&fieldFlips[o+kConeSize]);CHKERRQ(ierr);
-                    for (r = 0; r < numDof[depth - h]; r++) {
-                      for (s = 0; s < numComp[f]; s++) {
-                        fieldFlips[o+kConeSize][r * numComp[f] + s] = flips0[o][r];
-                      }
-                    }
-                  }
-                }
-                ierr = PetscSectionSymLabelSetStratum(sym,depth - h,numComp[f] * numDof[depth - h],-kConeSize,kConeSize,PETSC_OWN_POINTER,(const PetscInt **) fieldPerms,(const PetscScalar **)fieldFlips);CHKERRQ(ierr);
-              }
+              ierr = PetscSectionSymLabelSetStratum(sym,depth - h,numDof[depth - h],-kConeSize,kConeSize,PETSC_USE_POINTER,perms0 ? &perms0[-kConeSize] : NULL,flips0 ? &flips0[-kConeSize] : NULL);CHKERRQ(ierr);
             }
             ierr = PetscSectionSetFieldSym(*section,f,sym);CHKERRQ(ierr);
             ierr = PetscSectionSymDestroy(&sym);CHKERRQ(ierr);
@@ -6648,12 +6617,12 @@ PetscErrorCode DMPlexSetAnchors(DM dm, PetscSection anchorSection, IS anchorIS)
   if (anchorSection) {
     PetscValidHeaderSpecific(anchorSection,PETSC_SECTION_CLASSID,2);
     ierr = MPI_Comm_compare(PETSC_COMM_SELF,PetscObjectComm((PetscObject)anchorSection),&result);CHKERRQ(ierr);
-    if (result != MPI_CONGRUENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"anchor section must have local communicator");
+    if (result != MPI_CONGRUENT && result != MPI_IDENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"anchor section must have local communicator");
   }
   if (anchorIS) {
     PetscValidHeaderSpecific(anchorIS,IS_CLASSID,3);
     ierr = MPI_Comm_compare(PETSC_COMM_SELF,PetscObjectComm((PetscObject)anchorIS),&result);CHKERRQ(ierr);
-    if (result != MPI_CONGRUENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"anchor IS must have local communicator");
+    if (result != MPI_CONGRUENT && result != MPI_IDENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"anchor IS must have local communicator");
   }
 
   ierr = PetscObjectReference((PetscObject)anchorSection);CHKERRQ(ierr);

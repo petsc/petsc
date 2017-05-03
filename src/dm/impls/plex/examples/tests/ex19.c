@@ -101,7 +101,7 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
       lambda[0] = lambda[1] = lambda[2] = lbd;
       break;
     case 1:
-      h = user->hmax - (user->hmax-user->hmin)*pcoords[0];
+      h = user->hmax - (user->hmax-user->hmin)*PetscRealPart(pcoords[0]);
       h = h*h;
       lmax = 1/(user->hmax*user->hmax);
       lambda[0] = 1/h;
@@ -109,7 +109,7 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
       lambda[2] = lmax;
       break;
     case 2:
-      h = user->hmax*fabs(1-exp(-fabs(pcoords[0]-0.5))) + user->hmin;
+      h = user->hmax*fabs(1-exp(-PetscAbsScalar(pcoords[0]-0.5))) + user->hmin;
       lbd = 1/(h*h);
       lmax = 1/(user->hmax*user->hmax);
       lambda[0] = lbd;
@@ -134,7 +134,6 @@ int main (int argc, char * argv[]) {
   MPI_Comm       comm;
   DM             dma;
   Vec            metric;
-  PetscViewer    viewer;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
@@ -156,3 +155,24 @@ int main (int argc, char * argv[]) {
   PetscFinalize();
   return 0;
 }
+
+/*TEST
+
+  test:
+    suffix: 0
+    requires: pragmatic
+    args: -dim 2 -nbrVerEdge 5 -dm_plex_separate_marker 0 -met 2 -init_dm_view -adapt_dm_view
+  test:
+    suffix: 1
+    requires: pragmatic
+    args: -dim 2 -nbrVerEdge 5 -dm_plex_separate_marker 1 -bdLabel marker -met 2 -init_dm_view -adapt_dm_view
+  test:
+    suffix: 2
+    requires: pragmatic
+    args: -dim 3 -nbrVerEdge 5 -met 2 -init_dm_view -adapt_dm_view
+  test:
+    suffix: 3
+    requires: pragmatic
+    args: -dim 3 -nbrVerEdge 5 -bdLabel marker -met 2 -init_dm_view -adapt_dm_view
+
+TEST*/

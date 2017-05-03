@@ -106,6 +106,10 @@ ex17: ex17.o  chkopts
 	-${CLINKER} -o ex17 ex17.o  ${PETSC_TS_LIB}
 	${RM} ex17.o
 
+ex18: ex18.o  chkopts
+	-${CLINKER} -o ex18 ex18.o  ${PETSC_TS_LIB}
+	${RM} ex18.o
+
 ex19: ex19.o  chkopts
 	-${CLINKER} -o ex19 ex19.o  ${PETSC_TS_LIB}
 	${RM} ex19.o

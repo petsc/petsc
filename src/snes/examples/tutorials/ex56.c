@@ -351,7 +351,12 @@ int main(int argc,char **args)
       dm   = newdm;
     } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER, "Convert failed?");
   } else {
+    PetscPartitioner part;
     /* Plex Distribute mesh over processes */
+#if 1
+    ierr = DMPlexGetPartitioner(dm,&part);CHKERRQ(ierr);
+    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
+#endif
     ierr = DMPlexDistribute(dm, 0, NULL, &distdm);CHKERRQ(ierr);
     if (distdm) {
       const char *prefix;

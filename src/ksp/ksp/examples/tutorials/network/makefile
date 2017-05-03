@@ -52,7 +52,7 @@ runex2_3:
 	   ${RM} -f ex2.tmp
 
 runex2_graphindex:
-	-@${MPIEXEC} -n 1 ./ex2 -petscpartitioner_type simple -n 20 -vertex_global_section_view -edge_global_section_view > ex2_graphindex.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex2 -n 20 -vertex_global_section_view -edge_global_section_view > ex2_graphindex.tmp 2>&1;   \
 	   if (${DIFF} output/ex2_graphindex.out ex2_graphindex.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex2_graphindex, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex2_graphindex.tmp

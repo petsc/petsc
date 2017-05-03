@@ -1,0 +1,52 @@
+DM Object: Mesh 1 MPI processes
+  type: plex
+Mesh in 2 dimensions:
+  0-cells: 16
+  1-cells: 24
+  2-cells: 9
+Labels:
+  markerLeft: 1 strata of sizes (7)
+  markerTop: 1 strata of sizes (7)
+  markerRight: 1 strata of sizes (7)
+  markerBottom: 1 strata of sizes (7)
+  depth: 3 strata of sizes (16, 24, 9)
+  Face Sets: 4 strata of sizes (3, 3, 3, 3)
+  marker: 4 strata of sizes (7, 7, 7, 7)
+Integral of pressure: 0.
+Nonlinear solve did not converge due to DIVERGED_FNORM_NAN iterations 0
+SNES Object: 1 MPI processes
+  type: newtonls
+  maximum iterations=50, maximum function evaluations=10000
+  tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+  total number of linear solver iterations=0
+  total number of function evaluations=1
+  norm schedule ALWAYS
+  SNESLineSearch Object: 1 MPI processes
+    type: bt
+      interpolation: cubic
+      alpha=1.000000e-04
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40
+  KSP Object: 1 MPI processes
+    type: gmres
+      GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      GMRES: happy breakdown tolerance 1e-30
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-12, absolute=1e-12, divergence=10000.
+    left preconditioning
+    using DEFAULT norm type for convergence test
+  PC Object: 1 MPI processes
+    type: fieldsplit
+    PC has not been set up so information may be incomplete
+      FieldSplit with Schur preconditioner, factorization FULL
+      using Amat (not Pmat) as operator for blocks
+      Preconditioner for the Schur complement formed from the exact Schur complement
+      Split info:
+      KSP solver for A00 block
+          not yet available
+      KSP solver for S = A11 - A10 inv(A00) A01 
+          not yet available
+Number of SNES iterations = 0
+L_2 Error: 0.0972 [0.00597, 0.097]
+Integral of pressure: 0.

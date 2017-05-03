@@ -1,4 +1,4 @@
-0 SNES Function norm < 1.e-11
+  0 SNES Function norm < 1.e-11
     0 SNES Function norm < 1.e-11
     1 SNES Function norm < 1.e-11
       0 SNES Function norm < 1.e-11
@@ -68,8 +68,8 @@ SNES Object: 1 MPI processes
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
-          rows=511, cols=511
-          total: nonzeros=7423, allocated nonzeros=7423
+          rows=513, cols=513
+          total: nonzeros=7409, allocated nonzeros=7409
           total number of mallocs used during MatSetValues calls =0
             not using I-node routines
   Up solver (post-smoother) same as down solver (pre-smoother)
@@ -99,8 +99,8 @@ SNES Object: 1 MPI processes
         linear system matrix = precond matrix:
         Mat Object: 1 MPI processes
           type: seqaij
-          rows=1471, cols=1471
-          total: nonzeros=22505, allocated nonzeros=22505
+          rows=1485, cols=1485
+          total: nonzeros=22683, allocated nonzeros=22683
           total number of mallocs used during MatSetValues calls =0
             not using I-node routines
   Up solver (post-smoother) same as down solver (pre-smoother)
