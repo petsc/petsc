@@ -1478,19 +1478,20 @@ static PetscErrorCode TSLoad_RosW(TS ts,PetscViewer viewer)
 
   Input Parameter:
 +  ts - timestepping context
--  rostype - type of Rosenbrock-W scheme
+-  roswtype - type of Rosenbrock-W scheme
 
   Level: beginner
 
 .seealso: TSRosWGetType(), TSROSW, TSROSW2M, TSROSW2P, TSROSWRA3PW, TSROSWRA34PW2, TSROSWRODAS3, TSROSWSANDU3, TSROSWASSP3P3S1C, TSROSWLASSP3P4S2C, TSROSWLLSSP3P4S2C, TSROSWARK3
 @*/
-PetscErrorCode TSRosWSetType(TS ts,TSRosWType rostype)
+PetscErrorCode TSRosWSetType(TS ts,TSRosWType roswtype)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ierr = PetscTryMethod(ts,"TSRosWSetType_C",(TS,TSRosWType),(ts,rostype));CHKERRQ(ierr);
+  PetscValidCharPointer(roswtype,2);
+  ierr = PetscTryMethod(ts,"TSRosWSetType_C",(TS,TSRosWType),(ts,roswtype));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -112,8 +112,9 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt,TSAdaptType default_ty
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
+  PetscValidCharPointer(default_type,2);
   if (!((PetscObject)adapt)->type_name) {
-    if (!default_type) default_type = TSADAPTBASIC;
     ierr = TSAdaptSetType(adapt,default_type);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

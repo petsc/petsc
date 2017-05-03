@@ -49,6 +49,7 @@ PetscErrorCode  TSSetType(TS ts,TSType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
+  PetscValidCharPointer(type,2);
   ierr = PetscObjectTypeCompare((PetscObject) ts, type, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
@@ -58,7 +59,7 @@ PetscErrorCode  TSSetType(TS ts,TSType type)
     ierr = (*(ts)->ops->destroy)(ts);CHKERRQ(ierr);
   }
   ierr = PetscMemzero(ts->ops,sizeof(*ts->ops));CHKERRQ(ierr);
-  ts->default_adapt_type = NULL;
+  ts->default_adapt_type = TSADAPTNONE;
 
   ts->setupcalled = PETSC_FALSE;
 

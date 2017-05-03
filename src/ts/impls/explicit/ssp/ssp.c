@@ -255,7 +255,7 @@ static PetscErrorCode TSDestroy_SSP(TS ts)
 
    Input Arguments:
    ts - time stepping object
-   type - type of scheme to use
+   ssptype - type of scheme to use
 
    Options Database Keys:
    -ts_ssp_type <rks2>: Type of SSP method (one of) rks2 rks3 rk104
@@ -265,13 +265,14 @@ static PetscErrorCode TSDestroy_SSP(TS ts)
 
 .seealso: TSSSP, TSSSPGetType(), TSSSPSetNumStages(), TSSSPRKS2, TSSSPRKS3, TSSSPRK104
 @*/
-PetscErrorCode TSSSPSetType(TS ts,TSSSPType type)
+PetscErrorCode TSSSPSetType(TS ts,TSSSPType ssptype)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ierr = PetscTryMethod(ts,"TSSSPSetType_C",(TS,TSSSPType),(ts,type));CHKERRQ(ierr);
+  PetscValidCharPointer(ssptype,2);
+  ierr = PetscTryMethod(ts,"TSSSPSetType_C",(TS,TSSSPType),(ts,ssptype));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

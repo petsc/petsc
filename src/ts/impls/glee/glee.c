@@ -1010,6 +1010,7 @@ PetscErrorCode TSGLEESetType(TS ts,TSGLEEType gleetype)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidCharPointer(gleetype,2);
   ierr = PetscTryMethod(ts,"TSGLEESetType_C",(TS,TSGLEEType),(ts,gleetype));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

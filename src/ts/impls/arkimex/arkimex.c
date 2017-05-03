@@ -1240,6 +1240,7 @@ PetscErrorCode TSARKIMEXSetType(TS ts,TSARKIMEXType arktype)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidCharPointer(arktype,2);
   ierr = PetscTryMethod(ts,"TSARKIMEXSetType_C",(TS,TSARKIMEXType),(ts,arktype));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

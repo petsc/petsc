@@ -142,6 +142,7 @@ PetscErrorCode  TSAdaptSetType(TSAdapt adapt,TSAdaptType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
+  PetscValidCharPointer(type,2);
   ierr = PetscObjectTypeCompare((PetscObject)adapt,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
   ierr = PetscFunctionListFind(TSAdaptList,type,&r);CHKERRQ(ierr);
