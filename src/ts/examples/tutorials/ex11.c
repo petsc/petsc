@@ -111,14 +111,6 @@ struct _n_User {
   Model    model;
 };
 
-PETSC_STATIC_INLINE PetscScalar DotDIM(const PetscScalar *x,const PetscScalar *y)
-{
-  PetscInt    i;
-  PetscScalar prod=0.0;
-
-  for (i=0; i<DIM; i++) prod += x[i]*y[i];
-  return prod;
-}
 PETSC_STATIC_INLINE PetscReal DotDIMReal(const PetscReal *x,const PetscReal *y)
 {
   PetscInt  i;
@@ -133,10 +125,8 @@ PETSC_STATIC_INLINE PetscScalar Dot2(const PetscScalar *x,const PetscScalar *y) 
 PETSC_STATIC_INLINE PetscReal Dot2Real(const PetscReal *x,const PetscReal *y) { return x[0]*y[0] + x[1]*y[1];}
 PETSC_STATIC_INLINE PetscReal Norm2(const PetscScalar *x) { return PetscSqrtReal(PetscAbsScalar(Dot2(x,x)));}
 PETSC_STATIC_INLINE PetscReal Norm2Real(const PetscReal *x) { return PetscSqrtReal(PetscAbsReal(Dot2Real(x,x)));}
-PETSC_STATIC_INLINE void Normalize2(PetscScalar *x) { PetscReal a = 1./Norm2(x); x[0] *= a; x[1] *= a; }
 PETSC_STATIC_INLINE void Normalize2Real(PetscReal *x) { PetscReal a = 1./Norm2Real(x); x[0] *= a; x[1] *= a; }
 PETSC_STATIC_INLINE void Waxpy2Real(PetscReal a,const PetscReal *x,const PetscReal *y,PetscReal *w) { w[0] = a*x[0] + y[0]; w[1] = a*x[1] + y[1]; }
-PETSC_STATIC_INLINE void Scale2(PetscScalar a,const PetscScalar *x,PetscScalar *y) { y[0] = a*x[0]; y[1] = a*x[1]; }
 PETSC_STATIC_INLINE void Scale2Real(PetscReal a,const PetscReal *x,PetscReal *y) { y[0] = a*x[0]; y[1] = a*x[1]; }
 
 /******************* Advect ********************/
