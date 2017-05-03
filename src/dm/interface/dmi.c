@@ -18,10 +18,16 @@ PetscErrorCode DMCreateGlobalVector_Section_Private(DM dm,Vec *vec)
 
     ierr = PetscSectionGetDof(gSection, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetConstraintDof(gSection, p, &cdof);CHKERRQ(ierr);
-    if ((blockSize < 0) && (dof > 0) && (dof-cdof > 0)) blockSize = dof-cdof;
-    if ((dof > 0) && (dof-cdof != blockSize)) {
-      blockSize = 1;
-      break;
+
+    if (dof > 0) {
+      if (blockSize < 0 && dof-cdof > 0) {
+        /* set blockSize */
+        blockSize = dof-cdof;
+      } else if (dof-cdof != blockSize) {
+        /* non-identical blockSize, set it as 1 */
+        blockSize = 1;
+        break;
+      }
     }
   }
 
