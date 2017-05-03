@@ -14,8 +14,6 @@ Input parameters include:\n\
    Concepts: PETSc TS solver
 
    This example was contributed by Bikiran Guha and Jianqiao Huang, Illinois Institute of Technology, 2017.
-   Note: This code works well for np=1 and 2.
-         For np=3, some compilers give error, e.g., ~petsc/config/examplesarch-linux-c89.
 */
 
 #include <petscts.h>
