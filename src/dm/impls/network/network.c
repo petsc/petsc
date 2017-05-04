@@ -714,39 +714,42 @@ PetscErrorCode DMNetworkAssembleGraphStructures(DM dm)
   Collective
 
   Input Parameter:
-+ oldDM - the original DMNetwork object
++ DM - the DMNetwork object
 - overlap - The overlap of partitions, 0 is the default
 
-  Output Parameter:
-. distDM - the distributed DMNetwork object
-
   Notes:
-  This routine should be called only when using multiple processors.
-
   Distributes the network with <overlap>-overlapping partitioning of the edges.
 
   Level: intermediate
 
 .seealso: DMNetworkCreate
 @*/
-PetscErrorCode DMNetworkDistribute(DM oldDM, PetscInt overlap,DM *distDM)
+PetscErrorCode DMNetworkDistribute(DM *dm, PetscInt overlap)
 {
+  MPI_Comm       comm;
   PetscErrorCode ierr;
-  DM_Network     *oldDMnetwork = (DM_Network*)oldDM->data;
+  PetscMPIInt    size;
+  DM_Network     *oldDMnetwork = (DM_Network*)((*dm)->data);
+  DM_Network     *newDMnetwork;
   PetscSF        pointsf;
   DM             newDM;
-  DM_Network     *newDMnetwork;
 
   PetscFunctionBegin;
-  ierr = DMNetworkCreate(PetscObjectComm((PetscObject)oldDM),&newDM);CHKERRQ(ierr);
+
+  ierr = PetscObjectGetComm((PetscObject)*dm,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+
+  if (size == 1) PetscFunctionReturn(0);
+
+  ierr = DMNetworkCreate(PetscObjectComm((PetscObject)*dm),&newDM);CHKERRQ(ierr);
   newDMnetwork = (DM_Network*)newDM->data;
   newDMnetwork->dataheadersize = sizeof(struct _p_DMNetworkComponentHeader)/sizeof(DMNetworkComponentGenericDataType);
   /* Distribute plex dm and dof section */
   ierr = DMPlexDistribute(oldDMnetwork->plex,overlap,&pointsf,&newDMnetwork->plex);CHKERRQ(ierr);
   /* Distribute dof section */
-  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)oldDM),&newDMnetwork->DofSection);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)*dm),&newDMnetwork->DofSection);CHKERRQ(ierr);
   ierr = PetscSFDistributeSection(pointsf,oldDMnetwork->DofSection,NULL,newDMnetwork->DofSection);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)oldDM),&newDMnetwork->DataSection);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)*dm),&newDMnetwork->DataSection);CHKERRQ(ierr);
   /* Distribute data and associated section */
   ierr = DMPlexDistributeData(newDMnetwork->plex,pointsf,oldDMnetwork->DataSection,MPIU_INT,(void*)oldDMnetwork->componentdataarray,newDMnetwork->DataSection,(void**)&newDMnetwork->componentdataarray);CHKERRQ(ierr);
 
@@ -766,7 +769,9 @@ PetscErrorCode DMNetworkDistribute(DM oldDM, PetscInt overlap,DM *distDM)
   /* Destroy point SF */
   ierr = PetscSFDestroy(&pointsf);CHKERRQ(ierr);
   
-  *distDM = newDM;
+  ierr = DMDestroy(dm);CHKERRQ(ierr);
+  *dm  = newDM;
+
   PetscFunctionReturn(0);
 }
 
