@@ -1398,17 +1398,6 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
         ierr = DMLabelGetValue(mlabel, newp, &val);CHKERRQ(ierr);
         if (val >= 0) {
           ierr = DMLabelSetValue(mlabel, splitp, val);CHKERRQ(ierr);
-#if 0
-          /* Do not put cohesive edges into the label */
-          if (dep == 0) {
-            const PetscInt cedge = p + pMaxNew[dep+1] + numSplitPoints[dep+1];
-            ierr = DMLabelSetValue(mlabel, cedge, val);CHKERRQ(ierr);
-          } else if (dep == dim-2) {
-            const PetscInt cface = p + pMaxNew[dep+1] + numSplitPoints[dep+1];
-            ierr = DMLabelSetValue(mlabel, cface, val);CHKERRQ(ierr);
-          }
-          /* Do not put cohesive faces into the label */
-#endif
         }
       }
     }
@@ -2816,36 +2805,6 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
       const PetscInt *cone;
       PetscInt        coneSize, coneSizeNew, c, val;
 
-#if 0
-      if ((point >= cMax) && (point < cEnd)) {
-        ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]Cohesive cell %D (%D) is hanging off of our submesh\n", rank, point, subpoint);CHKERRQ(ierr);
-      }
-      if (d == dim-1) {
-        const PetscInt *support, *cone, *ornt;
-        PetscInt        supportSize, coneSize, s, subc;
-
-        ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]Face %D (%D) in submesh\n", rank, point, subpoint);CHKERRQ(ierr);
-        ierr = DMPlexGetSupport(dm, point, &support);CHKERRQ(ierr);
-        ierr = DMPlexGetSupportSize(dm, point, &supportSize);CHKERRQ(ierr);
-        for (s = 0; s < supportSize; ++s) {
-          if ((support[s] < cMax) || (support[s] >= cEnd)) continue;
-          ierr = PetscFindInt(support[s], numSubPoints[d+1], subpoints[d+1], &subc);CHKERRQ(ierr);
-          if (subc >= 0) {
-            const PetscInt ccell = subpoints[d+1][subc];
-
-            ierr = DMPlexGetCone(dm, ccell, &cone);
-            ierr = DMPlexGetConeSize(dm, ccell, &coneSize);
-            ierr = DMPlexGetConeOrientation(dm, ccell, &ornt);
-            for (c = 0; c < coneSize; ++c) {
-              if (cone[c] == point) {
-                ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]  has orientation %D in cohesive cell %D\n", rank, ornt[c], ccell);CHKERRQ(ierr);
-                break;
-              }
-            }
-          }
-        }
-      }
-#endif
       ierr = DMPlexGetConeSize(dm, point, &coneSize);CHKERRQ(ierr);
       ierr = DMPlexSetConeSize(subdm, subpoint, coneSize);CHKERRQ(ierr);
       if (cellHeight && (d == dim)) {
@@ -2910,12 +2869,6 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
       if (fornt < 0) {
         /* This should be replaced by a call to DMPlexReverseCell() */
 #if 0
-        ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]Reorienting face %D (subface %D)\n", rank, point, subpoint);CHKERRQ(ierr);
-        for (c = 0; c < coneSizeNew; ++c) {
-          ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]  Old Cone point %d in %d: %d (%d)\n", rank, c, subpoint, coneNew[c], orntNew[c]);CHKERRQ(ierr);
-        }
-#endif
-#if 0
         ierr = DMPlexReverseCell(subdm, subpoint);CHKERRQ(ierr);
 #else
         for (c = 0; c < coneSizeNew/2 + coneSizeNew%2; ++c) {
@@ -2932,13 +2885,6 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
       }
       ierr = DMPlexSetCone(subdm, subpoint, coneNew);CHKERRQ(ierr);
       ierr = DMPlexSetConeOrientation(subdm, subpoint, orntNew);CHKERRQ(ierr);
-#endif
-#if 0
-      if (fornt < 0) {
-        for (c = 0; c < coneSizeNew; ++c) {
-          ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]  New Cone point %d in %d: %d (%d)\n", rank, c, subpoint, coneNew[c], orntNew[c]);CHKERRQ(ierr);
-        }
-      }
 #endif
     }
   }
