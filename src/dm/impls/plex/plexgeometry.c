@@ -1498,10 +1498,10 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_FE(DM dm, PetscFE fe, PetscIn
   ierr = PetscFEGetDimension(fe, &pdim);CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fe, &feQuad);CHKERRQ(ierr);
   if (feQuad == quad) {
-    ierr = PetscFEGetDefaultTabulation(fe, &basis, &basisDer, NULL);CHKERRQ(ierr);
+    ierr = PetscFEGetDefaultTabulation(fe, &basis, J ? &basisDer : NULL, NULL);CHKERRQ(ierr);
     if (numCoords != pdim*cdim) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "There are %d coordinates for point %d != %d*%d", numCoords, point, pdim, cdim);
   } else {
-    ierr = PetscFEGetTabulation(fe, Nq, quadPoints, &basis, &basisDer, NULL);CHKERRQ(ierr);
+    ierr = PetscFEGetTabulation(fe, Nq, quadPoints, &basis, J ? &basisDer : NULL, NULL);CHKERRQ(ierr);
   }
   if (qdim != dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Point dimension %d != quadrature dimension %d", dim, qdim);
   if (v) {
@@ -1551,7 +1551,7 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_FE(DM dm, PetscFE fe, PetscIn
   }
   else if (detJ || invJ) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Need J to compute invJ or detJ");
   if (feQuad != quad) {
-    ierr = PetscFERestoreTabulation(fe, Nq, quadPoints, &basis, &basisDer, NULL);CHKERRQ(ierr);
+    ierr = PetscFERestoreTabulation(fe, Nq, quadPoints, &basis, J ? &basisDer : NULL, NULL);CHKERRQ(ierr);
   }
   ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, point, &numCoords, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);

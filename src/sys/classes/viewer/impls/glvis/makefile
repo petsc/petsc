@@ -1,10 +1,15 @@
-
 ALL: lib
 
-DIRS      = socket ascii binary string draw vu mathematica hdf5 matlab ams vtk glvis
-LOCDIR    = src/sys/classes/viewer/impls/
+CFLAGS    =
+FFLAGS    =
+SOURCEC   = glvis.c
+SOURCEF   =
+SOURCEH   =
 MANSEC    = Sys
 SUBMANSEC = Viewer
+LIBBASE   = libpetscsys
+DIRS      =
+LOCDIR    = src/sys/classes/viewer/impls/glvis/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

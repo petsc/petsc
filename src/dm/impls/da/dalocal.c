@@ -100,11 +100,11 @@ PetscErrorCode DMDAGetNumCells(DM dm, PetscInt *numCellsX, PetscInt *numCellsY, 
     *numCellsX = mx;
   }
   if (numCellsY) {
-    PetscValidIntPointer(numCellsX,3);
+    PetscValidIntPointer(numCellsY,3);
     *numCellsY = my;
   }
   if (numCellsZ) {
-    PetscValidIntPointer(numCellsX,4);
+    PetscValidIntPointer(numCellsZ,4);
     *numCellsZ = mz;
   }
   if (numCells) {

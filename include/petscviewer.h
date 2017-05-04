@@ -28,7 +28,8 @@ typedef const char* PetscViewerType;
 #define PETSCVIEWERHDF5         "hdf5"
 #define PETSCVIEWERVTK          "vtk"
 #define PETSCVIEWERMATLAB       "matlab"
-#define PETSCVIEWERSAWS          "saws"
+#define PETSCVIEWERSAWS         "saws"
+#define PETSCVIEWERGLVIS        "glvis"
 
 PETSC_EXTERN PetscFunctionList PetscViewerList;
 PETSC_EXTERN PetscErrorCode PetscViewerInitializePackage(void);
@@ -60,6 +61,18 @@ PETSC_EXTERN PetscErrorCode PetscViewerDrawSetDrawType(PetscViewer,PetscDrawType
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaOpen(MPI_Comm, int, const char[], const char[], PetscViewer *);
 PETSC_EXTERN PetscErrorCode PetscViewerSiloOpen(MPI_Comm, const char[], PetscViewer *);
 PETSC_EXTERN PetscErrorCode PetscViewerMatlabOpen(MPI_Comm,const char[],PetscFileMode,PetscViewer*);
+
+/*E
+    PetscViewerGLVisType - indicates what type of GLVis viewer to use
+
+    Level: beginner
+
+.seealso: PetscViewerGLVisOpen()
+E*/
+typedef enum {PETSC_VIEWER_GLVIS_DUMP, PETSC_VIEWER_GLVIS_SOCKET} PetscViewerGLVisType;
+PETSC_EXTERN PetscErrorCode PetscViewerGLVisOpen(MPI_Comm,PetscViewerGLVisType,const char*,PetscInt,PetscViewer*);
+PETSC_EXTERN PetscErrorCode PetscViewerGLVisSetSnapId(PetscViewer,PetscInt);
+PETSC_EXTERN PetscErrorCode PetscViewerGLVisSetFields(PetscViewer,PetscInt,const char*[],const char*[],PetscInt[],PetscInt[],PetscErrorCode(*)(PetscObject,PetscInt,PetscObject[],void*),void*,PetscErrorCode(*)(void*));
 
 PETSC_EXTERN PetscErrorCode PetscViewerGetType(PetscViewer,PetscViewerType*);
 PETSC_EXTERN PetscErrorCode PetscViewerSetType(PetscViewer,PetscViewerType);
@@ -105,6 +118,7 @@ typedef enum {
   PETSC_VIEWER_ASCII_FACTOR_INFO,
   PETSC_VIEWER_ASCII_LATEX,
   PETSC_VIEWER_ASCII_XML,
+  PETSC_VIEWER_ASCII_GLVIS,
   PETSC_VIEWER_DRAW_BASIC,
   PETSC_VIEWER_DRAW_LG,
   PETSC_VIEWER_DRAW_CONTOUR,
@@ -221,7 +235,8 @@ PETSC_EXTERN PetscViewer    PETSC_VIEWER_SOCKET_(MPI_Comm);
 PETSC_EXTERN PetscViewer    PETSC_VIEWER_BINARY_(MPI_Comm);
 PETSC_EXTERN PetscViewer    PETSC_VIEWER_MATLAB_(MPI_Comm);
 PETSC_EXTERN PetscViewer    PETSC_VIEWER_HDF5_(MPI_Comm);
-PETSC_EXTERN PetscViewer   PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE;
+PETSC_EXTERN PetscViewer    PETSC_VIEWER_GLVIS_(MPI_Comm);
+PETSC_EXTERN PetscViewer    PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE;
 
 #define PETSC_VIEWER_STDERR_SELF  PETSC_VIEWER_STDERR_(PETSC_COMM_SELF)
 #define PETSC_VIEWER_STDERR_WORLD PETSC_VIEWER_STDERR_(PETSC_COMM_WORLD)

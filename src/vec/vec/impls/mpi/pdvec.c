@@ -3,6 +3,8 @@
      Code for some of the parallel vector primatives.
 */
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>   /*I  "petscvec.h"   I*/
+#include <petsc/private/glvisviewerimpl.h>
+#include <petsc/private/glvisvecimpl.h>
 #include <petscviewerhdf5.h>
 
 PetscErrorCode VecDestroy_MPI(Vec v)
@@ -48,8 +50,8 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)xin),&rank);CHKERRQ(ierr);
   ierr = MPI_Reduce(&work,&len,1,MPIU_INT,MPI_MAX,0,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)xin),&size);CHKERRQ(ierr);
-
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+  if (format == PETSC_VIEWER_ASCII_GLVIS) { rank = 0, len = 0; } /* no parallel distributed write support from GLVis */
   if (!rank) {
     ierr = PetscMalloc1(len,&values);CHKERRQ(ierr);
     /*
@@ -272,6 +274,37 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
           }
           ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
         }
+      }
+    } else if (format == PETSC_VIEWER_ASCII_GLVIS) {
+      /* GLVis ASCII visualization/dump: this function mimicks mfem::GridFunction::Save() */
+      const PetscScalar       *array;
+      PetscInt                i,n,vdim, ordering = 1; /* mfem::FiniteElementSpace::Ordering::byVDIM */
+      PetscContainer          glvis_container;
+      PetscViewerGLVisVecInfo glvis_vec_info;
+      PetscViewerGLVisInfo    glvis_info;
+      PetscErrorCode          ierr;
+
+      /* mfem::FiniteElementSpace::Save() */
+      ierr = VecGetBlockSize(xin,&vdim);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"FiniteElementSpace\n");CHKERRQ(ierr);
+      ierr = PetscObjectQuery((PetscObject)xin,"_glvis_info_container",(PetscObject*)&glvis_container);CHKERRQ(ierr);
+      if (!glvis_container) SETERRQ(PetscObjectComm((PetscObject)xin),PETSC_ERR_PLIB,"Missing GLVis container");
+      ierr = PetscContainerGetPointer(glvis_container,(void**)&glvis_vec_info);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"%s\n",glvis_vec_info->fec_type);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"VDim: %d\n",vdim);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"Ordering: %d\n",ordering);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+      /* mfem::Vector::Print() */
+      ierr = PetscObjectQuery((PetscObject)viewer,"_glvis_info_container",(PetscObject*)&glvis_container);CHKERRQ(ierr);
+      if (!glvis_container) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_PLIB,"Missing GLVis container");
+      ierr = PetscContainerGetPointer(glvis_container,(void**)&glvis_info);CHKERRQ(ierr);
+      if (glvis_info->enabled) {
+        ierr = VecGetLocalSize(xin,&n);CHKERRQ(ierr);
+        ierr = VecGetArrayRead(xin,&array);CHKERRQ(ierr);
+        for (i=0;i<n;i++) {
+          ierr = PetscViewerASCIIPrintf(viewer,"%g\n",(double)PetscRealPart(array[i]));CHKERRQ(ierr);
+        }
+        ierr = VecRestoreArrayRead(xin,&array);CHKERRQ(ierr);
       }
     } else if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       /* No info */
@@ -771,6 +804,7 @@ PETSC_EXTERN PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   PetscBool      ismatlab;
 #endif
+  PetscBool      isglvis;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -785,6 +819,7 @@ PETSC_EXTERN PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERMATLAB,&ismatlab);CHKERRQ(ierr);
 #endif
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERGLVIS,&isglvis);CHKERRQ(ierr);
   if (iascii) {
     ierr = VecView_MPI_ASCII(xin,viewer);CHKERRQ(ierr);
   } else if (isbinary) {
@@ -809,6 +844,8 @@ PETSC_EXTERN PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
   } else if (ismatlab) {
     ierr = VecView_MPI_Matlab(xin,viewer);CHKERRQ(ierr);
 #endif
+  } else if (isglvis) {
+    ierr = VecView_GLVis(xin,viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

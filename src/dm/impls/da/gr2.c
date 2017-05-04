@@ -4,6 +4,7 @@
 */
 
 #include <petsc/private/dmdaimpl.h>      /*I  "petscdmda.h"   I*/
+#include <petsc/private/glvisvecimpl.h>
 #include <petscdraw.h>
 #include <petscviewerhdf5.h>
 
@@ -654,7 +655,7 @@ PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
   PetscErrorCode    ierr;
   PetscInt          dim;
   Vec               natural;
-  PetscBool         isdraw,isvtk;
+  PetscBool         isdraw,isvtk,isglvis;
 #if defined(PETSC_HAVE_HDF5)
   PetscBool         ishdf5;
 #endif
@@ -669,6 +670,7 @@ PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_HDF5)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5);CHKERRQ(ierr);
 #endif
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERGLVIS,&isglvis);CHKERRQ(ierr);
   if (isdraw) {
     ierr = DMDAGetInfo(da,&dim,0,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
     if (dim == 1) {
@@ -689,6 +691,8 @@ PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
   } else if (ishdf5) {
     ierr = VecView_MPI_HDF5_DA(xin,viewer);CHKERRQ(ierr);
 #endif
+  } else if (isglvis) {
+    ierr = VecView_GLVis(xin,viewer);CHKERRQ(ierr);
   } else {
 #if defined(PETSC_HAVE_MPIIO)
     PetscBool isbinary,isMPIIO;

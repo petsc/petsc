@@ -25,7 +25,7 @@ static PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
     PetscViewerFormat format;
 
     ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
-    if (format != PETSC_VIEWER_ASCII_VTK && format != PETSC_VIEWER_ASCII_VTK_CELL) {
+    if (format != PETSC_VIEWER_ASCII_VTK && format != PETSC_VIEWER_ASCII_VTK_CELL && format != PETSC_VIEWER_ASCII_GLVIS) {
       DMDALocalInfo info;
       ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
@@ -33,6 +33,8 @@ static PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"X range of indices: %D %D, Y range of indices: %D %D\n",info.xs,info.xs+info.xm,info.ys,info.ys+info.ym);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
+    } else if (format == PETSC_VIEWER_ASCII_GLVIS) {
+      ierr = DMView_DA_GLVis(da,viewer);CHKERRQ(ierr);
     } else {
       ierr = DMView_DA_VTK(da,viewer);CHKERRQ(ierr);
     }

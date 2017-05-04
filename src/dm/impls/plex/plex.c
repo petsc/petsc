@@ -1,6 +1,7 @@
 #include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 #include <petsc/private/isimpl.h>
 #include <petsc/private/vecimpl.h>
+#include <petsc/private/glvisvecimpl.h>
 #include <petscsf.h>
 #include <petscds.h>
 #include <petscdraw.h>
@@ -147,7 +148,7 @@ static PetscErrorCode VecView_Plex_Local_Draw(Vec v, PetscViewer viewer)
 
   ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &dim);CHKERRQ(ierr);
-  if (dim != 2) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Cannot draw meshes of dimension %D", dim);
+  if (dim != 2) SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Cannot draw meshes of dimension %D. Use PETSCVIEWERGLVIS", dim);
   ierr = DMGetDefaultSection(dm, &s);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(s, &Nf);CHKERRQ(ierr);
   ierr = DMGetCoarsenLevel(dm, &level);CHKERRQ(ierr);
@@ -265,17 +266,18 @@ static PetscErrorCode VecView_Plex_Local_Draw(Vec v, PetscViewer viewer)
 PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
 {
   DM             dm;
-  PetscBool      isvtk, ishdf5, isdraw, isseq;
+  PetscBool      isvtk, ishdf5, isdraw, isseq, isglvis;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
   if (!dm) SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
-  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK,  &isvtk);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERDRAW, &isdraw);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK,   &isvtk);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5,  &ishdf5);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERDRAW,  &isdraw);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERGLVIS, &isglvis);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) v, VECSEQ, &isseq);CHKERRQ(ierr);
-  if (isvtk || ishdf5) {
+  if (isvtk || ishdf5 || isglvis) {
     PetscInt  numFields;
     PetscBool fem = PETSC_FALSE;
 
@@ -303,6 +305,8 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
 #else
     SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
 #endif
+  } else if (isglvis) {
+    ierr = VecView_GLVis(v, viewer);CHKERRQ(ierr);
   } else if (isdraw) {
     ierr = VecView_Plex_Local_Draw(v, viewer);CHKERRQ(ierr);
   } else {
@@ -316,17 +320,20 @@ PetscErrorCode VecView_Plex(Vec v, PetscViewer viewer)
 {
   DM             dm;
   PetscReal      time = 0.0;
-  PetscBool      isvtk, ishdf5, isdraw, isseq;
+  PetscBool      isvtk, ishdf5, isdraw, isseq, isglvis;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
   if (!dm) SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
-  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK,  &isvtk);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERDRAW, &isdraw);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK,   &isvtk);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5,  &ishdf5);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERDRAW,  &isdraw);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERDRAW,  &isdraw);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERGLVIS, &isglvis);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) v, VECSEQ, &isseq);CHKERRQ(ierr);
-  if (isvtk) {
+  if (isvtk || isglvis) {
+    PetscInt    num;
     Vec         locv;
     const char *name;
 
@@ -335,8 +342,9 @@ PetscErrorCode VecView_Plex(Vec v, PetscViewer viewer)
     ierr = PetscObjectSetName((PetscObject) locv, name);CHKERRQ(ierr);
     ierr = DMGlobalToLocalBegin(dm, v, INSERT_VALUES, locv);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(dm, v, INSERT_VALUES, locv);CHKERRQ(ierr);
-    ierr = DMGetOutputSequenceNumber(dm, NULL, &time);CHKERRQ(ierr);
+    ierr = DMGetOutputSequenceNumber(dm, &num, &time);CHKERRQ(ierr);
     ierr = DMPlexInsertBoundaryValues(dm, PETSC_TRUE, locv, time, NULL, NULL, NULL);CHKERRQ(ierr);
+    ierr = PetscViewerGLVisSetSnapId(viewer, num);CHKERRQ(ierr);
     ierr = VecView_Plex_Local(locv, viewer);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(dm, &locv);CHKERRQ(ierr);
   } else if (ishdf5) {
@@ -951,8 +959,8 @@ static PetscErrorCode DMPlexView_Draw(DM dm, PetscViewer viewer)
 
 PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
 {
-  PetscBool      iascii, ishdf5, isvtk, isdraw;
-  PetscErrorCode ierr;
+  PetscBool         iascii, ishdf5, isvtk, isdraw, isglvis;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -961,8 +969,15 @@ PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK,   &isvtk);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5,  &ishdf5);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERDRAW,  &isdraw);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERGLVIS, &isglvis);CHKERRQ(ierr);
   if (iascii) {
-    ierr = DMPlexView_Ascii(dm, viewer);CHKERRQ(ierr);
+    PetscViewerFormat format;
+    ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_ASCII_GLVIS) {
+      ierr = DMPlexView_GLVis(dm, viewer);CHKERRQ(ierr);
+    } else {
+      ierr = DMPlexView_Ascii(dm, viewer);CHKERRQ(ierr);
+    }
   } else if (ishdf5) {
 #if defined(PETSC_HAVE_HDF5)
     ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_HDF5_VIZ);CHKERRQ(ierr);
@@ -975,6 +990,8 @@ PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
     ierr = DMPlexVTKWriteAll((PetscObject) dm,viewer);CHKERRQ(ierr);
   } else if (isdraw) {
     ierr = DMPlexView_Draw(dm, viewer);CHKERRQ(ierr);
+  } else if (isglvis) {
+    ierr = DMPlexView_GLVis(dm, viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1006,6 +1023,9 @@ PetscErrorCode DMDestroy_Plex(DM dm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectComposeFunction((PetscObject)dm,"DMAdaptLabel_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)dm,"DMSetUpGLVisViewer_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)dm,"DMPlexInsertBoundaryValues_C", NULL);CHKERRQ(ierr);
   if (--mesh->refct > 0) PetscFunctionReturn(0);
   ierr = PetscSectionDestroy(&mesh->coneSection);CHKERRQ(ierr);
   ierr = PetscFree(mesh->cones);CHKERRQ(ierr);
@@ -1031,8 +1051,6 @@ PetscErrorCode DMDestroy_Plex(DM dm)
   ierr = PetscGridHashDestroy(&mesh->lbox);CHKERRQ(ierr);
   /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */
   ierr = PetscFree(mesh);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)dm,"DMAdaptLabel_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)dm,"DMPlexInsertBoundaryValues_C", NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

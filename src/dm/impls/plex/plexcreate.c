@@ -1843,12 +1843,12 @@ static PetscErrorCode DMInitialize_Plex(DM dm);
 */
 static PetscErrorCode DMPlexReplace_Static(DM dm, DM dmNew)
 {
-  PetscSF          sf;
-  DM               coordDM, coarseDM;
-  Vec              coords;
-  const PetscReal *maxCell, *L;
+  PetscSF               sf;
+  DM                    coordDM, coarseDM;
+  Vec                   coords;
+  const PetscReal      *maxCell, *L;
   const DMBoundaryType *bd;
-  PetscErrorCode   ierr;
+  PetscErrorCode        ierr;
 
   PetscFunctionBegin;
   ierr = DMGetPointSF(dmNew, &sf);CHKERRQ(ierr);
@@ -2136,6 +2136,7 @@ static PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->getneighbors                    = DMGetNeighors_Plex;
   ierr = PetscObjectComposeFunction((PetscObject)dm,"DMAdaptLabel_C",DMAdaptLabel_Plex);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)dm,"DMPlexInsertBoundaryValues_C",DMPlexInsertBoundaryValues_Plex);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)dm,"DMSetUpGLVisViewer_C",DMSetUpGLVisViewer_Plex);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
