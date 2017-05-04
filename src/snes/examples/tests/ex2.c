@@ -233,6 +233,7 @@ int main(int argc, char **argv)
   PetscBool           pointsAllProcs;
   PetscInt            spaceDim, c, Np, p;
   PetscMPIInt         rank, size;
+  PetscViewer         selfviewer;
   PetscErrorCode      ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);CHKERRQ(ierr);
@@ -264,13 +265,13 @@ int main(int argc, char **argv)
   for (c = 0; c < Nc; ++c) funcs[c] = linear;
   ierr = DMGetLocalVector(dm, &lu);CHKERRQ(ierr);
   ierr = DMProjectFunctionLocal(dm, 0.0, funcs, NULL, INSERT_ALL_VALUES, lu);CHKERRQ(ierr);
-  for (p = 0; p < size; ++p) {
-    if (p == rank) {
-      ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]solution\n", rank);CHKERRQ(ierr);
-      ierr = VecView(lu, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-    }
-    ierr = PetscBarrier((PetscObject) dm);CHKERRQ(ierr);
-  }
+  ierr = PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&selfviewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(selfviewer, "[%d]solution\n", rank);CHKERRQ(ierr);
+  ierr = VecView(lu,selfviewer);CHKERRQ(ierr);
+  ierr = PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&selfviewer);CHKERRQ(ierr);
+  ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   /* Check interpolant */
   ierr = VecCreateSeq(PETSC_COMM_SELF, interpolator->n * Nc, &fieldVals);CHKERRQ(ierr);
   ierr = DMInterpolationSetDof(interpolator, Nc);CHKERRQ(ierr);
