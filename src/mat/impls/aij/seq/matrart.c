@@ -319,7 +319,7 @@ PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ(Mat A,Mat R,Mat C)
   Mat             Rt = rart->Rt;
 
   PetscFunctionBegin;
-  ierr = MatTranspose_SeqAIJ(R,MAT_REUSE_MATRIX,&Rt);CHKERRQ(ierr); 
+  ierr = MatTranspose_SeqAIJ(R,MAT_REUSE_MATRIX,&Rt);CHKERRQ(ierr);
   ierr = MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqAIJ(R,A,Rt,C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -329,12 +329,13 @@ PetscErrorCode MatRARt_SeqAIJ_SeqAIJ(Mat A,Mat R,MatReuse scall,PetscReal fill,M
   PetscErrorCode ierr;
   const char     *algTypes[3] = {"matmatmatmult","matmattransposemult","coloring_rart"};
   PetscInt       alg=0; /* set default algorithm */
-  
+
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
-    ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr); 
+    ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
+    PetscOptionsObject->alreadyprinted = PETSC_FALSE; /* a hack to ensure the option shows in '-help' */
     ierr = PetscOptionsEList("-matrart_via","Algorithmic approach","MatRARt",algTypes,3,algTypes[0],&alg,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsEnd();CHKERRQ(ierr); 
+    ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
     ierr = PetscLogEventBegin(MAT_RARtSymbolic,A,R,0,0);CHKERRQ(ierr);
     switch (alg) {
