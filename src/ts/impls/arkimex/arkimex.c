@@ -1240,6 +1240,7 @@ PetscErrorCode TSARKIMEXSetType(TS ts,TSARKIMEXType arktype)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidCharPointer(arktype,2);
   ierr = PetscTryMethod(ts,"TSARKIMEXSetType_C",(TS,TSARKIMEXType),(ts,arktype));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1318,6 +1319,7 @@ static PetscErrorCode  TSARKIMEXSetType_ARKIMEX(TS ts,TSARKIMEXType arktype)
       if (ts->setupcalled) {ierr = TSARKIMEXTableauReset(ts);CHKERRQ(ierr);}
       ark->tableau = &link->tab;
       if (ts->setupcalled) {ierr = TSARKIMEXTableauSetUp(ts);CHKERRQ(ierr);}
+      ts->default_adapt_type = ark->tableau->bembed ? TSADAPTBASIC : TSADAPTNONE;
       PetscFunctionReturn(0);
     }
   }

@@ -95,6 +95,7 @@ struct _p_TS {
   Vec            vec_sol; /* solution vector in first and second order equations */
   Vec            vec_dot; /* time derivative vector in second order equations */
   TSAdapt        adapt;
+  TSAdaptType    default_adapt_type;
   TSEvent        event;
 
   /* ---------------- User (or PETSc) Provided stuff ---------------------*/

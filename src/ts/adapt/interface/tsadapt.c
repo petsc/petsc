@@ -142,6 +142,7 @@ PetscErrorCode  TSAdaptSetType(TSAdapt adapt,TSAdaptType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
+  PetscValidCharPointer(type,2);
   ierr = PetscObjectTypeCompare((PetscObject)adapt,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
   ierr = PetscFunctionListFind(TSAdaptList,type,&r);CHKERRQ(ierr);
@@ -935,8 +936,6 @@ PetscErrorCode  TSAdaptCreate(MPI_Comm comm,TSAdapt *inadapt)
   adapt->dt_max             = 1e+20;
   adapt->scale_solve_failed = 0.25;
   adapt->wnormtype          = NORM_2;
-
-  ierr = TSAdaptSetType(adapt,TSADAPTBASIC);CHKERRQ(ierr);
 
   *inadapt = adapt;
   PetscFunctionReturn(0);

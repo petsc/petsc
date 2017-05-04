@@ -919,6 +919,7 @@ PetscErrorCode TSRKSetType(TS ts,TSRKType rktype)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidCharPointer(rktype,2);
   ierr = PetscTryMethod(ts,"TSRKSetType_C",(TS,TSRKType),(ts,rktype));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -974,6 +975,7 @@ static PetscErrorCode TSRKSetType_RK(TS ts,TSRKType rktype)
       if (ts->setupcalled) {ierr = TSRKTableauReset(ts);CHKERRQ(ierr);}
       rk->tableau = &link->tab;
       if (ts->setupcalled) {ierr = TSRKTableauSetUp(ts);CHKERRQ(ierr);}
+      ts->default_adapt_type = rk->tableau->bembed ? TSADAPTBASIC : TSADAPTNONE;
       PetscFunctionReturn(0);
     }
   }
