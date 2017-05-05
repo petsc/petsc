@@ -72,7 +72,7 @@ typedef struct {
      Level: advanced
 
 .seealso: TSGLEE
-*/
+M*/
 /*MC
      TSGLEE24 - Second order four stage GLEE method
 
@@ -82,7 +82,7 @@ typedef struct {
      Level: advanced
 
 .seealso: TSGLEE
-*/
+M*/
 /*MC
      TSGLEE25i - Second order five stage GLEE method
 
@@ -92,7 +92,7 @@ typedef struct {
      Level: advanced
 
 .seealso: TSGLEE
-*/
+M*/
 /*MC
      TSGLEE35  - Third order five stage GLEE method
 
@@ -102,7 +102,7 @@ typedef struct {
      Level: advanced
 
 .seealso: TSGLEE
-*/
+M*/
 /*MC
      TSGLEEEXRK2A  - Second order six stage GLEE method
 
@@ -112,7 +112,7 @@ typedef struct {
      Level: advanced
 
 .seealso: TSGLEE
-*/
+M*/
 /*MC
      TSGLEERK32G1  - Third order eight stage GLEE method
 
@@ -122,7 +122,7 @@ typedef struct {
      Level: advanced
 
 .seealso: TSGLEE
-*/
+M*/
 /*MC
      TSGLEERK285EX  - Second order nine stage GLEE method
 
@@ -132,7 +132,7 @@ typedef struct {
      Level: advanced
 
 .seealso: TSGLEE
-*/
+M*/
 
 /*@C
   TSGLEERegisterAll - Registers all of the General Linear with Error Estimation methods in TSGLEE
