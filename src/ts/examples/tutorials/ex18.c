@@ -391,7 +391,7 @@ static PetscErrorCode constant_x_2d(PetscInt dim, PetscReal time, const PetscRea
   PetscErrorCode  ierr;
   u[0] = x[0];
   u[1] = x[1] + t;
-  ierr = DMLocalizeCoordinate(globalUser->dm, u, u);CHKERRQ(ierr);
+  ierr = DMLocalizeCoordinate(globalUser->dm, u, PETSC_FALSE, u);CHKERRQ(ierr);
   return 0;
 }
 
