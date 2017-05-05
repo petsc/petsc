@@ -575,7 +575,7 @@ static PetscErrorCode DMPlexWriteCoordinates_Vertices_HDF5_Static(DM dm, PetscVi
       } else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Cannot handle periodicity in this domain");
     } else {
       if (cutLabel) {
-        ierr = DMLocalizeCoordinate(dm, &coords[off+d], PETSC_TRUE, &ncoords[coordSize]);CHKERRQ(ierr);
+        ierr = DMLocalizeCoordinate(dm, &coords[off], PETSC_TRUE, &ncoords[coordSize]);CHKERRQ(ierr);
         coordSize += dof;
       } else {
         for (d = 0; d < dof; ++d, ++coordSize) ncoords[coordSize] = coords[off+d];
