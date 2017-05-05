@@ -379,12 +379,19 @@ PetscErrorCode SetInitialGuess(DM networkdm, Vec X)
         Vm  = PetscSqrtScalar(Vr*Vr + Vi*Vi);
         Vm2 = Vm*Vm;
         /* Real part of gen current */
-        IGr = (Vr*gen->PG + Vi*gen->QG)/Vm2;
+        IGr = (Vr*gen->PG + Vi*gen->QG)/Vm2;  //gen->QG = 0 on n-gage???
         /* Imaginary part of gen current */
         IGi = (Vi*gen->PG - Vr*gen->QG)/Vm2;
+#if 0
+        if (v==11) {
+          printf("IGr %g = (%g * %g + %g * %g)/%g \n",IGr,Vr,gen->PG,Vi,gen->QG,Vm2);
+          printf("IGi %g = (%g * %g + %g * %g)/%g \n",IGi,Vi,gen->PG, Vr,gen->QG,Vm2);
+        }
+#endif
 
         /* Machine angle */
         delta = atan2(Vi+gen->Xq*IGr,Vr-gen->Xq*IGi);
+        //printf("v %d, j %d, delta =atan2(%g + %g*%g, %g - %g*%g) = %g\n",v,j,Vi,gen->Xq,IGr,Vr,gen->Xq,IGi,delta);
         theta = PETSC_PI/2.0 - delta;
 
         /* d-axis stator current */
@@ -430,6 +437,7 @@ PetscErrorCode SetInitialGuess(DM networkdm, Vec X)
   ierr = DMLocalToGlobalBegin(networkdm,localX,ADD_VALUES,X);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(networkdm,localX,ADD_VALUES,X);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(networkdm,&localX);CHKERRQ(ierr);
+  //ierr = VecView(X,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
  }
 
@@ -471,6 +479,8 @@ PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,Userctx *use
   ierr = DMGetLocalVector(networkdm,&localF);CHKERRQ(ierr);
   ierr = DMGetLocalVector(networkdm,&localX);CHKERRQ(ierr);
   ierr = DMGetLocalVector(networkdm,&localXdot);CHKERRQ(ierr);
+  ierr = VecSet(localX,0.0);CHKERRQ(ierr);
+  ierr = VecSet(localXdot,0.0);CHKERRQ(ierr);
   ierr = VecSet(localF,0.0);CHKERRQ(ierr);
 
   /* update ghost values of localX and localXdot */
@@ -922,7 +932,7 @@ int main(int argc,char ** argv)
   PetscInt       nc = 1;    /* No. of copies (default = 1) */
   PetscInt       neqs_net=0;/* No. of algebraic equations in the 9 bus system */
   PetscMPIInt    size,rank;
-  Vec            X,F,F_alg,Xdot,V0;
+  Vec            X,F_alg,V0;
   TS             ts;
   SNES           snes_alg,snes;
   PetscViewer    Xview,Ybusview;
@@ -950,13 +960,14 @@ int main(int argc,char ** argv)
     ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"Ybus.bin",FILE_MODE_READ,&Ybusview);CHKERRQ(ierr);
 
     ierr = VecCreate(PETSC_COMM_SELF,&V0);CHKERRQ(ierr);
-    ierr = VecSetSizes(V0,PETSC_DECIDE,neqs_net);CHKERRQ(ierr);
     ierr = VecLoad(V0,Xview);CHKERRQ(ierr);
+
     ierr = MatCreate(PETSC_COMM_SELF,&Ybus);CHKERRQ(ierr);
-    ierr = MatSetSizes(Ybus,PETSC_DECIDE,PETSC_DECIDE,neqs_net,neqs_net);CHKERRQ(ierr);
-    ierr = MatGetLocalSize(Ybus,&m,&n);CHKERRQ(ierr);
     ierr = MatSetType(Ybus,MATBAIJ);CHKERRQ(ierr);
     ierr = MatLoad(Ybus,Ybusview);CHKERRQ(ierr);
+
+    ierr = MatGetLocalSize(Ybus,&m,&n);CHKERRQ(ierr);
+    if (m != neqs_net || n != neqs_net) SETERRQ(PETSC_COMM_SELF,0,"matrix Ybus is in wrong sizes");
 
     /*read data */
     ierr = read_data(nc,Ybus,V0,&gen,&load,&bus,&branch,&edgelist);CHKERRQ(ierr);
@@ -1036,8 +1047,6 @@ int main(int argc,char ** argv)
   ierr = PetscLogStagePop();CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(networkdm,&X);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(networkdm,&Xdot);CHKERRQ(ierr);
-  ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
 
   ierr = SetInitialGuess(networkdm,X);CHKERRQ(ierr);
 
@@ -1066,6 +1075,7 @@ int main(int argc,char ** argv)
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetDM(ts,(DM)networkdm);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSCN);CHKERRQ(ierr);
+
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
@@ -1085,10 +1095,14 @@ int main(int argc,char ** argv)
   if (!rank) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"... (1) Prefault period ... \n");CHKERRQ(ierr);
   }
-  ierr = TSSolve(ts,X);CHKERRQ(ierr);
 
+  ierr = TSSetSolution(ts,X);CHKERRQ(ierr);
+  ierr = TSSetUp(ts);CHKERRQ(ierr);
+  ierr = TSSolve(ts,X);CHKERRQ(ierr);
+#if 1
   /* Create the nonlinear solver for solving the algebraic system */
   ierr = VecDuplicate(X,&F_alg);CHKERRQ(ierr);
+
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes_alg);CHKERRQ(ierr);
   ierr = SNESSetDM(snes_alg,(DM)networkdm);CHKERRQ(ierr);
   ierr = SNESSetFunction(snes_alg,F_alg,AlgFunction,&user);CHKERRQ(ierr);
@@ -1142,9 +1156,8 @@ int main(int argc,char ** argv)
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
 
   ierr = VecDestroy(&F_alg);CHKERRQ(ierr);
+#endif
   ierr = VecDestroy(&X);CHKERRQ(ierr);
-  ierr = VecDestroy(&Xdot);CHKERRQ(ierr);
-  ierr = VecDestroy(&F);CHKERRQ(ierr);
 
   if (rank == 0){
     ierr = MatDestroy(&Ybus);CHKERRQ(ierr);
