@@ -105,7 +105,7 @@ typedef struct {
 } Userctx;
 
 /* Used to read data into the DMNetwork components */
-PetscErrorCode read_data(PetscInt nc, Mat Ybus,Vec V0,Gen **pgen,Load **pload,Bus **pbus, Branch **pbranch, PetscInt **pedgelist)
+PetscErrorCode read_data(PetscInt nc, Gen **pgen,Load **pload,Bus **pbus, Branch **pbranch, PetscInt **pedgelist)
 {
   PetscErrorCode    ierr;
   PetscInt          i,j,row[1],col[2];
@@ -117,6 +117,8 @@ PetscErrorCode read_data(PetscInt nc, Mat Ybus,Vec V0,Gen **pgen,Load **pload,Bu
   Branch            *branch;
   Gen               *gen;
   Load              *load;
+  Mat               Ybus;
+  Vec               V0;
 
   /*10 parameters*/
   /* Generator real and reactive powers (found via loadflow) */
@@ -152,8 +154,28 @@ PetscErrorCode read_data(PetscInt nc, Mat Ybus,Vec V0,Gen **pgen,Load **pload,Bu
    static const PetscScalar       ld_alphap[3] = {1,0,0};
    PetscInt                       ld_nsegsp[3] = {3,3,3};
    PetscInt                       ld_nsegsq[3] = {3,3,3};
+   PetscViewer                    Xview,Ybusview;
+   PetscInt                       neqs_net,m,n;
 
    PetscFunctionBeginUser;
+   /* Read V0 and Ybus from files */
+   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"X.bin",FILE_MODE_READ,&Xview);CHKERRQ(ierr);
+   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"Ybus.bin",FILE_MODE_READ,&Ybusview);CHKERRQ(ierr);
+   ierr = VecCreate(PETSC_COMM_SELF,&V0);CHKERRQ(ierr);
+   ierr = VecLoad(V0,Xview);CHKERRQ(ierr);
+
+   ierr = MatCreate(PETSC_COMM_SELF,&Ybus);CHKERRQ(ierr);
+   ierr = MatSetType(Ybus,MATBAIJ);CHKERRQ(ierr);
+   ierr = MatLoad(Ybus,Ybusview);CHKERRQ(ierr);
+
+   /* Destroy unnecessary stuff */
+   ierr = PetscViewerDestroy(&Xview);CHKERRQ(ierr);
+   ierr = PetscViewerDestroy(&Ybusview);CHKERRQ(ierr);
+
+   ierr = MatGetLocalSize(Ybus,&m,&n);CHKERRQ(ierr);
+   neqs_net = 2*NBUS; /* # eqs. for network subsystem   */
+   if (m != neqs_net || n != neqs_net) SETERRQ(PETSC_COMM_SELF,0,"matrix Ybus is in wrong sizes");
+
    M[0] = 2*H[0]/W_S;
    M[1] = 2*H[1]/W_S;
    M[2] = 2*H[2]/W_S;
@@ -322,6 +344,10 @@ PetscErrorCode read_data(PetscInt nc, Mat Ybus,Vec V0,Gen **pgen,Load **pload,Bu
    *pedgelist = edgelist;
 
    ierr = VecRestoreArray(V0,&varr);CHKERRQ(ierr);
+
+   /* Destroy unnecessary stuff */
+   ierr = MatDestroy(&Ybus);CHKERRQ(ierr);
+   ierr = VecDestroy(&V0);CHKERRQ(ierr);
    PetscFunctionReturn(0);
 }
 
@@ -479,8 +505,6 @@ PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,Userctx *use
   ierr = DMGetLocalVector(networkdm,&localF);CHKERRQ(ierr);
   ierr = DMGetLocalVector(networkdm,&localX);CHKERRQ(ierr);
   ierr = DMGetLocalVector(networkdm,&localXdot);CHKERRQ(ierr);
-  ierr = VecSet(localX,0.0);CHKERRQ(ierr);
-  ierr = VecSet(localXdot,0.0);CHKERRQ(ierr);
   ierr = VecSet(localF,0.0);CHKERRQ(ierr);
 
   /* update ghost values of localX and localXdot */
@@ -932,11 +956,9 @@ int main(int argc,char ** argv)
   PetscInt       nc = 1;    /* No. of copies (default = 1) */
   PetscInt       neqs_net=0;/* No. of algebraic equations in the 9 bus system */
   PetscMPIInt    size,rank;
-  Vec            X,F_alg,V0;
+  Vec            X,F_alg;
   TS             ts;
   SNES           snes_alg,snes;
-  PetscViewer    Xview,Ybusview;
-  Mat            Ybus; /* Network admittance matrix */
   Bus            *bus;
   Branch         *branch;
   Gen            *gen;
@@ -954,27 +976,7 @@ int main(int argc,char ** argv)
 
   /* Read initial voltage vector and Ybus */
   if (!rank) {
-    neqs_net = 2*NBUS; /* # eqs. for network subsystem   */
-
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"X.bin",FILE_MODE_READ,&Xview);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"Ybus.bin",FILE_MODE_READ,&Ybusview);CHKERRQ(ierr);
-
-    ierr = VecCreate(PETSC_COMM_SELF,&V0);CHKERRQ(ierr);
-    ierr = VecLoad(V0,Xview);CHKERRQ(ierr);
-
-    ierr = MatCreate(PETSC_COMM_SELF,&Ybus);CHKERRQ(ierr);
-    ierr = MatSetType(Ybus,MATBAIJ);CHKERRQ(ierr);
-    ierr = MatLoad(Ybus,Ybusview);CHKERRQ(ierr);
-
-    ierr = MatGetLocalSize(Ybus,&m,&n);CHKERRQ(ierr);
-    if (m != neqs_net || n != neqs_net) SETERRQ(PETSC_COMM_SELF,0,"matrix Ybus is in wrong sizes");
-
-    /*read data */
-    ierr = read_data(nc,Ybus,V0,&gen,&load,&bus,&branch,&edgelist);CHKERRQ(ierr);
-
-    /* Destroy unnecessary stuff */
-    ierr = PetscViewerDestroy(&Xview);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&Ybusview);CHKERRQ(ierr);
+    ierr = read_data(nc,&gen,&load,&bus,&branch,&edgelist);CHKERRQ(ierr);
   }
 
   ierr = DMNetworkCreate(PETSC_COMM_WORLD,&networkdm);CHKERRQ(ierr);
@@ -1099,7 +1101,7 @@ int main(int argc,char ** argv)
   ierr = TSSetSolution(ts,X);CHKERRQ(ierr);
   ierr = TSSetUp(ts);CHKERRQ(ierr);
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
-#if 1
+
   /* Create the nonlinear solver for solving the algebraic system */
   ierr = VecDuplicate(X,&F_alg);CHKERRQ(ierr);
 
@@ -1156,13 +1158,7 @@ int main(int argc,char ** argv)
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
 
   ierr = VecDestroy(&F_alg);CHKERRQ(ierr);
-#endif
   ierr = VecDestroy(&X);CHKERRQ(ierr);
-
-  if (rank == 0){
-    ierr = MatDestroy(&Ybus);CHKERRQ(ierr);
-    ierr = VecDestroy(&V0);CHKERRQ(ierr);
-  }
   ierr = DMDestroy(&networkdm);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   PetscFinalize();
