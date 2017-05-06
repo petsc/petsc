@@ -84,6 +84,9 @@ else				# Show the full command line
   TESTFLAGS += -v
 endif
 
+ifeq ($(FORCE),1)
+  TESTFLAGS += -f    # force test execution
+endif
 ifeq ($(VALGRIND),1)
   TESTFLAGS += -V    # Add valgrind to the flags
 endif
