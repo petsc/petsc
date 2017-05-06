@@ -120,38 +120,38 @@ PetscErrorCode read_data(PetscInt nc, Mat Ybus,Vec V0,Gen **pgen,Load **pload,Bu
 
   /*10 parameters*/
   /* Generator real and reactive powers (found via loadflow) */
-  PetscScalar PG[3] = {0.716786142395021,1.630000000000000,0.850000000000000};
-  PetscScalar QG[3] = {0.270702180178785,0.066120127797275,-0.108402221791588};
+  static const PetscScalar PG[3] = {0.716786142395021,1.630000000000000,0.850000000000000};
+  static const PetscScalar QG[3] = {0.270702180178785,0.066120127797275,-0.108402221791588};
 
   /* Generator constants */
-  PetscScalar H[3]    = {23.64,6.4,3.01};   /* Inertia constant */
-  PetscScalar Rs[3]   = {0.0,0.0,0.0}; /* Stator Resistance */
-  PetscScalar Xd[3]   = {0.146,0.8958,1.3125};  /* d-axis reactance */
-  PetscScalar Xdp[3]  = {0.0608,0.1198,0.1813}; /* d-axis transient reactance */
-  PetscScalar Xq[3]   = {0.4360,0.8645,1.2578}; /* q-axis reactance Xq(1) set to 0.4360, value given in text 0.0969 */
-  PetscScalar Xqp[3]  = {0.0969,0.1969,0.25}; /* q-axis transient reactance */
-  PetscScalar Td0p[3] = {8.96,6.0,5.89}; /* d-axis open circuit time constant */
-  PetscScalar Tq0p[3] = {0.31,0.535,0.6}; /* q-axis open circuit time constant */
+  static const PetscScalar H[3]    = {23.64,6.4,3.01};   /* Inertia constant */
+  static const PetscScalar Rs[3]   = {0.0,0.0,0.0}; /* Stator Resistance */
+  static const PetscScalar Xd[3]   = {0.146,0.8958,1.3125};  /* d-axis reactance */
+  static const PetscScalar Xdp[3]  = {0.0608,0.1198,0.1813}; /* d-axis transient reactance */
+  static const PetscScalar Xq[3]   = {0.4360,0.8645,1.2578}; /* q-axis reactance Xq(1) set to 0.4360, value given in text 0.0969 */
+  static const PetscScalar Xqp[3]  = {0.0969,0.1969,0.25}; /* q-axis transient reactance */
+  static const PetscScalar Td0p[3] = {8.96,6.0,5.89}; /* d-axis open circuit time constant */
+  static const PetscScalar Tq0p[3] = {0.31,0.535,0.6}; /* q-axis open circuit time constant */
 
   /* Exciter system constants (8 parameters)*/
-  PetscScalar KA[3] = {20.0,20.0,20.0};  /* Voltage regulartor gain constant */
-  PetscScalar TA[3] = {0.2,0.2,0.2};     /* Voltage regulator time constant */
-  PetscScalar KE[3] = {1.0,1.0,1.0};     /* Exciter gain constant */
-  PetscScalar TE[3] = {0.314,0.314,0.314}; /* Exciter time constant */
-  PetscScalar KF[3] = {0.063,0.063,0.063};  /* Feedback stabilizer gain constant */
-  PetscScalar TF[3] = {0.35,0.35,0.35};    /* Feedback stabilizer time constant */
-  PetscScalar k1[3] = {0.0039,0.0039,0.0039};
-  PetscScalar k2[3] = {1.555,1.555,1.555};  /* k1 and k2 for calculating the saturation function SE = k1*exp(k2*Efd) */
+  static const PetscScalar KA[3] = {20.0,20.0,20.0};  /* Voltage regulartor gain constant */
+  static const PetscScalar TA[3] = {0.2,0.2,0.2};     /* Voltage regulator time constant */
+  static const PetscScalar KE[3] = {1.0,1.0,1.0};     /* Exciter gain constant */
+  static const PetscScalar TE[3] = {0.314,0.314,0.314}; /* Exciter time constant */
+  static const PetscScalar KF[3] = {0.063,0.063,0.063};  /* Feedback stabilizer gain constant */
+  static const PetscScalar TF[3] = {0.35,0.35,0.35};    /* Feedback stabilizer time constant */
+  static const PetscScalar k1[3] = {0.0039,0.0039,0.0039};
+  static const PetscScalar k2[3] = {1.555,1.555,1.555};  /* k1 and k2 for calculating the saturation function SE = k1*exp(k2*Efd) */
 
   /* Load constants */
-   PetscScalar       PD0[3]       = {1.25,0.9,1.0};
-   PetscScalar       QD0[3]       = {0.5,0.3,0.35};
-   PetscScalar       ld_alphaq[3] = {1,0,0};
-   PetscScalar       ld_betaq[3]  = {2,1,0};
-   PetscScalar       ld_betap[3]  = {2,1,0};
-   const PetscScalar ld_alphap[3] = {1,0,0};
-   PetscInt          ld_nsegsp[3] = {3,3,3};
-   PetscInt          ld_nsegsq[3] = {3,3,3};
+   static const PetscScalar       PD0[3]       = {1.25,0.9,1.0};
+   static const PetscScalar       QD0[3]       = {0.5,0.3,0.35};
+   static const PetscScalar       ld_alphaq[3] = {1,0,0};
+   static const PetscScalar       ld_betaq[3]  = {2,1,0};
+   static const PetscScalar       ld_betap[3]  = {2,1,0};
+   static const PetscScalar       ld_alphap[3] = {1,0,0};
+   PetscInt                       ld_nsegsp[3] = {3,3,3};
+   PetscInt                       ld_nsegsq[3] = {3,3,3};
 
    PetscFunctionBeginUser;
    M[0] = 2*H[0]/W_S;
@@ -186,7 +186,7 @@ PetscErrorCode read_data(PetscInt nc, Mat Ybus,Vec V0,Gen **pgen,Load **pload,Bu
    for (i = 0; i<nc; i++){
      for (j = 0; j < NGEN; j++) {
        gen[i*3+j].id   = i*3+j;
-       gen[i*3+j].PG   = PG[j]; /* a compiler warning: "Assigned value is garbage or undefined" */
+       gen[i*3+j].PG   = PG[j];
        gen[i*3+j].QG   = QG[j];
        gen[i*3+j].H    = H[j];
        gen[i*3+j].Rs   = Rs[j];
@@ -215,7 +215,7 @@ PetscErrorCode read_data(PetscInt nc, Mat Ybus,Vec V0,Gen **pgen,Load **pload,Bu
    for (i = 0; i<nc; i++){
      for (j = 0; j < NLOAD; j++) {
        load[i*3+j].id        = i*3+j;
-       load[i*3+j].PD0       = PD0[j];  /* a compiler warning: "Assigned value is garbage or undefined" */
+       load[i*3+j].PD0       = PD0[j];
        load[i*3+j].QD0       = QD0[j];
        load[i*3+j].ld_nsegsp = ld_nsegsp[j];
 
