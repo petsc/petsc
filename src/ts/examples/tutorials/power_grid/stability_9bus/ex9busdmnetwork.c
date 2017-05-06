@@ -405,19 +405,12 @@ PetscErrorCode SetInitialGuess(DM networkdm, Vec X)
         Vm  = PetscSqrtScalar(Vr*Vr + Vi*Vi);
         Vm2 = Vm*Vm;
         /* Real part of gen current */
-        IGr = (Vr*gen->PG + Vi*gen->QG)/Vm2;  //gen->QG = 0 on n-gage???
+        IGr = (Vr*gen->PG + Vi*gen->QG)/Vm2;
         /* Imaginary part of gen current */
         IGi = (Vi*gen->PG - Vr*gen->QG)/Vm2;
-#if 0
-        if (v==11) {
-          printf("IGr %g = (%g * %g + %g * %g)/%g \n",IGr,Vr,gen->PG,Vi,gen->QG,Vm2);
-          printf("IGi %g = (%g * %g + %g * %g)/%g \n",IGi,Vi,gen->PG, Vr,gen->QG,Vm2);
-        }
-#endif
 
         /* Machine angle */
         delta = atan2(Vi+gen->Xq*IGr,Vr-gen->Xq*IGi);
-        //printf("v %d, j %d, delta =atan2(%g + %g*%g, %g - %g*%g) = %g\n",v,j,Vi,gen->Xq,IGr,Vr,gen->Xq,IGi,delta);
         theta = PETSC_PI/2.0 - delta;
 
         /* d-axis stator current */
@@ -463,7 +456,6 @@ PetscErrorCode SetInitialGuess(DM networkdm, Vec X)
   ierr = DMLocalToGlobalBegin(networkdm,localX,ADD_VALUES,X);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(networkdm,localX,ADD_VALUES,X);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(networkdm,&localX);CHKERRQ(ierr);
-  //ierr = VecView(X,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
  }
 
