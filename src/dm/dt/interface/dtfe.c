@@ -1134,14 +1134,38 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Point(PetscSpace sp)
   ierr     = PetscNewLog(sp,&pt);CHKERRQ(ierr);
   sp->data = pt;
 
-  pt->numVariables    = 0;
-  pt->quad->dim       = 0;
-  pt->quad->Nc        = 1;
-  pt->quad->numPoints = 0;
-  pt->quad->points    = NULL;
-  pt->quad->weights   = NULL;
+  pt->numVariables = 0;
+  ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &pt->quad);CHKERRQ(ierr);
+  ierr = PetscQuadratureSetData(pt->quad, 0, 1, 0, NULL, NULL);CHKERRQ(ierr);
 
   ierr = PetscSpaceInitialize_Point(sp);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscSpacePointSetPoints - Sets the evaluation points for the space to coincide with the points of a quadrature rule
+
+  Logically collective
+
+  Input Parameters:
++ sp - The PetscSpace
+- q  - The PetscQuadrature defining the points
+
+  Level: intermediate
+
+.keywords: PetscSpacePoint
+.seealso: PetscSpaceCreate(), PetscSpaceSetType()
+@*/
+PetscErrorCode PetscSpacePointSetPoints(PetscSpace sp, PetscQuadrature q)
+{
+  PetscSpace_Point *pt = (PetscSpace_Point *) sp->data;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
+  PetscValidHeaderSpecific(q, PETSC_OBJECT_CLASSID, 2);
+  ierr = PetscQuadratureDestroy(&pt->quad);CHKERRQ(ierr);
+  ierr = PetscQuadratureDuplicate(q, &pt->quad);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
