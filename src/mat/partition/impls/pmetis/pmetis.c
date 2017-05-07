@@ -348,8 +348,11 @@ PetscErrorCode MatMeshToVertexGraph(Mat mesh,PetscInt ncommonnodes,Mat *dual)
    Notes:
      Currently requires ParMetis to be installed and uses ParMETIS_V3_Mesh2Dual()
 
-     The columns of each row of the Mat mesh are the global vertex numbers of the vertices of that rows cell. The number of rows in mesh is
-     number of cells, the number of columns is the number of vertices.
+$     Each row of the mesh object represents a single cell in the mesh. For triangles it has 3 entries, quadralaterials 4 entries,
+$         tetrahedrals 4 entries and hexahedrals 8 entries. You can mix triangles and quadrilaterals in the same mesh, but cannot
+$         mix  tetrahedrals and hexahedrals
+$     The columns of each row of the Mat mesh are the global vertex numbers of the vertices of that row's cell.
+$     The number of rows in mesh is number of cells, the number of columns is the number of vertices.
 
 
    Level: advanced

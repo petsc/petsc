@@ -8,6 +8,7 @@ static char help[] = "This example demonstrates the use of DMNetwork interface f
 */
 
 #include <petscdmnetwork.h>
+#include <petscdmplex.h>
 #include <petscksp.h>
 
 /* The topology looks like:
@@ -301,7 +302,13 @@ int main(int argc,char ** argv)
   ierr = DMSetUp(networkdm);CHKERRQ(ierr);
 
   if (size > 1) {
-    DM distnetworkdm;
+    DM               distnetworkdm;
+    DM               plex;
+    PetscPartitioner part;
+
+    ierr = DMNetworkGetPlex(networkdm,&plex);CHKERRQ(ierr);
+    ierr = DMPlexGetPartitioner(plex,&part);CHKERRQ(ierr);
+    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
     /* Network partitioning and distribution of data */
     ierr = DMNetworkDistribute(networkdm,0,&distnetworkdm);CHKERRQ(ierr);
     ierr = DMDestroy(&networkdm);CHKERRQ(ierr);

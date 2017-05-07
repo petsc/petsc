@@ -425,9 +425,25 @@ PETSC_EXTERN PetscErrorCode VecGetLocalVector(Vec,Vec);
 PETSC_EXTERN PetscErrorCode VecRestoreLocalVector(Vec,Vec);
 PETSC_EXTERN PetscErrorCode VecGetLocalVectorRead(Vec,Vec);
 PETSC_EXTERN PetscErrorCode VecRestoreLocalVectorRead(Vec,Vec);
-/*
-   Accesses a pair of pointers for two vectors that may be common. When not common the first is read only
-*/
+
+/*@C
+   VecGetArrayPair - Accesses a pair of pointers for two vectors that may be common. When not common the first is read only
+
+   Logically Collective on Vec
+
+   Input Parameter:
++  x - the vector
+-  y - the second vector
+
+   Output Parameter:
++  xv - location to put pointer to the first array
+-  yv - location to put pointer to the second array
+
+   Level: developer
+
+.seealso: VecGetArray(), VecGetArrayRead(), VecRestoreArrayPair()
+
+@*/
 PETSC_STATIC_INLINE PetscErrorCode VecGetArrayPair(Vec x,Vec y,PetscScalar **xv,PetscScalar **yv)
 {
   PetscErrorCode ierr;
@@ -441,6 +457,25 @@ PETSC_STATIC_INLINE PetscErrorCode VecGetArrayPair(Vec x,Vec y,PetscScalar **xv,
   }
   PetscFunctionReturn(0);
 }
+
+/*@C
+   VecRestoreArrayPair - Returns a pair of pointers for two vectors that may be common. When not common the first is read only
+
+   Logically Collective on Vec
+
+   Input Parameter:
++  x - the vector
+-  y - the second vector
+
+   Output Parameter:
++  xv - location to put pointer to the first array
+-  yv - location to put pointer to the second array
+
+   Level: developer
+
+.seealso: VecGetArray(), VecGetArrayRead(), VecGetArrayPair()
+
+@*/
 PETSC_STATIC_INLINE PetscErrorCode VecRestoreArrayPair(Vec x,Vec y,PetscScalar **xv,PetscScalar **yv)
 {
   PetscErrorCode ierr;

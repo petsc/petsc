@@ -29,6 +29,6 @@
 !/*TEST
 !
 !   test:
-!   filter: sed "s/ ${PETSC_ARCH}//g"
+!     filter: sed "s/ ${PETSC_ARCH}//g"
 !
 !TEST*/

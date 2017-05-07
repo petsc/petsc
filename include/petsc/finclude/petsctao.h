@@ -6,6 +6,8 @@
 #define Tao PetscFortranAddr
 #define TaoLineSearch PetscFortranAddr
 #define TaoConvergedReason integer
+#define TaoType character*(80)
+#define TaoLineSearchType character*(80)
 
 #define TAOLMVM     "lmvm"
 #define TAONLS      "nls"

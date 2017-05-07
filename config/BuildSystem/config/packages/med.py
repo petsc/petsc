@@ -7,6 +7,8 @@ class Configure(config.package.GNUPackage):
     self.functions         = ['MEDfileOpen']
     self.includes          = ['med.h']
     self.liblist           = [['libmed.a']]
+    self.needsMath         = 1
+    self.precisions        = ['double'];
     return
 
   def setupDependencies(self, framework):
@@ -20,5 +22,5 @@ class Configure(config.package.GNUPackage):
   def formGNUConfigureArgs(self):
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
     args.append('--disable-python')
-    args.append('--with-hdf5-dir=%s' % self.hdf5.directory)
+    args.append('--with-hdf5=%s' % self.hdf5.directory)
     return args

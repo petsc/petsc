@@ -23,7 +23,7 @@ static PetscErrorCode ProcessOptions(AppCtx *options)
   ierr = PetscOptionsInt("-n", "The number of faces per dimension", "ex21.c", options->n, &options->n, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
-};
+}
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
@@ -89,3 +89,16 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+  test:
+    suffix: 0
+    requires: triangle
+    args: -dim 2 -n 100
+  test:
+    suffix: 1
+    requires: ctetgen
+    args: -dim 3 -n 20
+
+TEST*/

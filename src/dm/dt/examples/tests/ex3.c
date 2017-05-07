@@ -169,3 +169,8 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+  test:
+    suffix: 0
+TEST*/

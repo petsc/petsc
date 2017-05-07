@@ -358,7 +358,7 @@ PetscErrorCode  PetscDrawGetPopup(PetscDraw draw,PetscDraw *popup)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
   PetscDrawSetDisplay - Sets the display where a PetscDraw object will be displayed
 
   Input Parameter:

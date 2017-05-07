@@ -311,8 +311,8 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
       PetscFV fv = (PetscFV) obj;
 
       ierr = PetscFVGetQuadrature(fv, &q);CHKERRQ(ierr);
-      Nb   = 1;
       ierr = PetscFVGetNumComponents(fv, &Nc);CHKERRQ(ierr);
+      Nb   = Nc;
       ierr = PetscFVGetDefaultTabulation(fv, &prob->basis[f], &prob->basisDer[f], NULL);CHKERRQ(ierr);
       /* TODO: should PetscFV also have face tabulation? Otherwise there will be a null pointer in prob->basisFace */
     } else SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", f);
@@ -320,10 +320,10 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
     prob->Nb[f]       = Nb;
     prob->off[f+1]    = Nc     + prob->off[f];
     prob->offDer[f+1] = Nc*dim + prob->offDer[f];
-    if (q) {ierr = PetscQuadratureGetData(q, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);}
+    if (q) {ierr = PetscQuadratureGetData(q, NULL, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);}
     NqMax          = PetscMax(NqMax, Nq);
     NcMax          = PetscMax(NcMax, Nc);
-    prob->totDim  += Nb*Nc;
+    prob->totDim  += Nb;
     prob->totComp += Nc;
   }
   work = PetscMax(prob->totComp*dim, PetscSqr(NcMax*dim));
@@ -2084,7 +2084,7 @@ PetscErrorCode PetscDSGetFieldSize(PetscDS prob, PetscInt f, PetscInt *size)
   PetscValidPointer(size, 3);
   if ((f < 0) || (f >= prob->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
   ierr = PetscDSSetUp(prob);CHKERRQ(ierr);
-  *size = prob->Nc[f] * prob->Nb[f];
+  *size = prob->Nb[f];
   PetscFunctionReturn(0);
 }
 

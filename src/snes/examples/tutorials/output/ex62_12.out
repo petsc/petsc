@@ -28,8 +28,9 @@ Process [1]
 0.
 L_2 Error: 0.0655506
 Residual:
-Vec Object: 1 MPI processes
-  type: seq
+Vec Object: 2 MPI processes
+  type: mpi
+Process [0]
 0.
 0.
 -0.0104167
@@ -54,8 +55,7 @@ Vec Object: 1 MPI processes
 -0.166667
 -0.166667
 0.
-Vec Object: 1 MPI processes
-  type: seq
+Process [1]
 0.
 0.
 -0.0104167
@@ -136,8 +136,9 @@ row 20: (10, -0.0833333)  (11, 0.0833333)  (13, -1.)  (14, 0.)  (15, -0.0833333)
 row 21: (10, -0.0833333)  (11, -0.0833333)  (13, 0.)  (14, -1.)  (15, 0.0833333)  (16, 0.0833333)  (20, 0.)  (21, 4.)  (22, 0.) 
 row 22: (10, 0.)  (11, 0.)  (13, -0.0833333)  (14, 0.0833333)  (15, 0.)  (16, 0.)  (20, 0.)  (21, 0.)  (22, 0.) 
 Residual:
-Vec Object: 1 MPI processes
-  type: seq
+Vec Object: 2 MPI processes
+  type: mpi
+Process [0]
 0.
 0.
 -0.0625
@@ -162,8 +163,7 @@ Vec Object: 1 MPI processes
 -4.25
 -0.25
 0.0416667
-Vec Object: 1 MPI processes
-  type: seq
+Process [1]
 0.
 0.
 -0.0208333

@@ -491,7 +491,7 @@ class Configure(config.base.Configure):
         # Check for full dylib library name
         m = re.match(r'^/.*\.dylib$', arg)
         if m:
-          if not arg in lflags:
+          if not arg in lflags and not arg.endswith('LTO.dylib'):
             lflags.append(arg)
             self.logPrint('Found full library spec: '+arg, 4, 'compilers')
             cxxlibs.append(arg)
@@ -509,10 +509,12 @@ class Configure(config.base.Configure):
           if not arg in lflags:
             if arg == '-lkernel32':
               continue
+            elif arg == '-lLTO' and self.setCompilers.isDarwin(self.log):
+              self.logPrint('Skipping -lTO')
             else:
               lflags.append(arg)
             self.logPrint('Found library: '+arg, 4, 'compilers')
-            if arg in self.clibs:
+            if (arg == '-lLTO' and self.setCompilers.isDarwin(self.log)) or arg in self.clibs:
               self.logPrint('Library already in C list so skipping in C++')
             else:
               cxxlibs.append(arg)
@@ -850,7 +852,7 @@ class Configure(config.base.Configure):
         # Check for full dylib library name
         m = re.match(r'^/.*\.dylib$', arg)
         if m:
-          if not arg in lflags:
+          if not arg.endwith('LTO.dylib') and not arg in lflags:
             lflags.append(arg)
             self.logPrint('Found full library spec: '+arg, 4, 'compilers')
             flibs.append(arg)
@@ -889,7 +891,8 @@ class Configure(config.base.Configure):
         if m:
           lib = arg+argIter.next()
           self.logPrint('Found canonical library: '+lib, 4, 'compilers')
-          flibs.append(lib)
+          if not lib == '-LLTO' or not self.setCompilers.isDarwin(self.log):
+            flibs.append(lib)
           continue
         # intel windows compilers can use -libpath argument
         if arg.find('-libpath:')>=0:
@@ -911,12 +914,12 @@ class Configure(config.base.Configure):
             elif arg == '-lfrtbegin' and not config.setCompilers.Configure.isCygwin(self.log):
               fmainlibs.append(arg)
               continue
-            else:
+            elif not arg == '-lLTO' or not config.setCompilers.Configure.isDarwin(self.log):
               lflags.append(arg)
             self.logPrint('Found library: '+arg, 4, 'compilers')
             if arg in self.clibs:
               self.logPrint('Library already in C list so skipping in Fortran')
-            else:
+            elif not arg == '-lLTO' or not config.setCompilers.Configure.isDarwin(self.log):
               flibs.append(arg)
           else:
             self.logPrint('Already in lflags: '+arg, 4, 'compilers')

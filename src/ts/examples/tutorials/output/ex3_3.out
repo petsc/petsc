@@ -28,9 +28,12 @@ TS Object: 1 MPI processes
     Abscissa of A+Gamma =  0.435867  0.871733  0.731580  1.000000 
   TSAdapt Object: 1 MPI processes
     type: basic
-    number of candidates 1
-      Basic: clip fastest decrease 0.1, fastest increase 10.
-      Basic: safety factor 0.9, extra factor after step rejection 0.5
+    safety factor 0.9
+    extra safety factor after step rejection 0.5
+    clip fastest increase 10.
+    clip fastest decrease 0.1
+    maximum allowed timestep 1e+20
+    minimum allowed timestep 1e-20
   SNES Object: 1 MPI processes
     type: ksponly
     maximum iterations=50, maximum function evaluations=10000

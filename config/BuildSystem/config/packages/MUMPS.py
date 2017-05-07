@@ -3,9 +3,10 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit        = 'MUMPS_5.0.2-p2.tar.gz'
+    self.gitcommit        = 'v5.1.1-p3'
     self.download         = ['git://https://bitbucket.org/petsc/pkg-mumps.git',
-                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/MUMPS_5.0.2-p2.tar.gz']
+                             'https://bitbucket.org/petsc/pkg-mumps/get/'+self.gitcommit+'.tar.gz']
+    self.downloaddirnames = ['petsc-pkg-mumps']
     self.liblist          = [['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a'],
                             ['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a','libpthread.a'],
                             ['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a','libmpiseq.a'],

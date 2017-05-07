@@ -10,6 +10,7 @@ static char help[] = "This example demonstrates the use of DMNetwork interface f
 */
 
 #include "pf.h"
+#include <petscdmplex.h>
 
 PetscErrorCode GetListofEdges(PetscInt nbranches, EDGEDATA branch,int edges[])
 {
@@ -509,7 +510,13 @@ int main(int argc,char ** argv)
     
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
     if (size > 1) {
-      DM distnetworkdm;
+      DM               distnetworkdm;
+      DM               plex;
+      PetscPartitioner part;
+
+      ierr = DMNetworkGetPlex(networkdm,&plex);CHKERRQ(ierr);
+      ierr = DMPlexGetPartitioner(plex,&part);CHKERRQ(ierr);
+      ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
       /* Network partitioning and distribution of data */
       ierr = DMNetworkDistribute(networkdm,0,&distnetworkdm);CHKERRQ(ierr);
       ierr = DMDestroy(&networkdm);CHKERRQ(ierr);

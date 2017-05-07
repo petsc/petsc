@@ -9,7 +9,6 @@ and matrices.
 
 #include <petscis.h>
 #include <petsc/private/petscimpl.h>
-#include <../src/sys/utils/hash.h>
 
 PETSC_EXTERN PetscBool ISRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode ISRegisterAll(void);

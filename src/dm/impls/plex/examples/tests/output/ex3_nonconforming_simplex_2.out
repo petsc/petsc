@@ -346,8 +346,8 @@ PetscSF Object: 4 MPI processes
 Symmetric gradient null space: PASS
 Mat Object: Reference Tree Injector 1 MPI processes
   type: seqaij
-row 0: (0, 1.11022e-16)  (2, 0.)  (10, 1.) 
-row 1: (1, 1.11022e-16)  (3, 0.)  (11, 1.) 
+row 0: (0, 1.11022e-16)  (1, 0.)  (2, 0.)  (3, 0.)  (10, 1.)  (11, 0.) 
+row 1: (0, 0.)  (1, 1.11022e-16)  (2, 0.)  (3, 0.)  (10, 0.)  (11, 1.) 
 row 2:
 row 3:
 row 4:

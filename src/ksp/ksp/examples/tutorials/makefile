@@ -438,6 +438,11 @@ runex2_fbcgs:
            if (${DIFF} output/ex2_fbcgs.out ex2.tmp) then true; \
            else printf "${PWD}\nPossible problem with ex2_fbcgs, diffs above\n=========================================\n"; fi; \
            ${RM} -f ex2.tmp
+runex2_pipebcgs:
+	-@${MPIEXEC} -n 1 ./ex2 -ksp_monitor_short -ksp_type pipebcgs -m 9 -n 9 > ex2.tmp 2>&1; \
+           if (${DIFF} output/ex2_pipebcgs.out ex2.tmp) then true; \
+           else printf "${PWD}\nPossible problem with ex2_pipebcgs, diffs above\n=========================================\n"; fi; \
+           ${RM} -f ex2.tmp
 runex2_fbcgs_2:
 	-@${MPIEXEC} -n 3 ./ex2 -ksp_type fbcgsr -pc_type bjacobi > ex2.tmp 2>&1; \
            if (${DIFF} output/ex2_fbcgs_2.out ex2.tmp) then true; \
@@ -670,27 +675,6 @@ runex10_6:
 	   else printf "${PWD}\nPossible problem with ex10_6, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10_6.tmp
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
-BS = 2 3 4 5 6 7 8
-runex10_7:
-	-@touch ex10_7.tmp
-	-@for bs in ${BS}; do \
-	 ${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info \
-                    -mat_type seqbaij -matload_block_size $$bs -ksp_max_it 100 -ksp_gmres_cgs_refinement_type refine_always -ksp_rtol \
-                    1.0e-15 -ksp_monitor_short >> ex10_7.tmp 2>&1 ; \
-	 ${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info \
-                    -mat_type seqbaij -matload_block_size $$bs -ksp_max_it 100 -ksp_gmres_cgs_refinement_type refine_always -ksp_rtol \
-                    1.0e-15 -ksp_monitor_short -pc_factor_mat_ordering_type nd >> ex10_7.tmp 2>&1 ; \
-	 ${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info \
-                    -mat_type seqbaij -matload_block_size $$bs -ksp_max_it 100 -ksp_gmres_cgs_refinement_type refine_always -ksp_rtol \
-                    1.0e-15 -ksp_monitor_short -pc_factor_levels 1 >> ex10_7.tmp 2>&1 ; \
-	 ${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info \
-                    -mat_type seqbaij -matload_block_size $$bs -ksp_type preonly \
-                    -pc_type lu  >> ex10_7.tmp 2>&1 ; \
-         done;
-	-@if (${DIFF} output/ex10_7.out ex10_7.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex10_7, diffs above\n=========================================\n"; fi;
-	-@${RM} -f ex10_7.tmp
-# See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex10_8:
 	-@${MPIEXEC} -n 1 ./ex10 -ksp_diagonal_scale -pc_type eisenstat -ksp_monitor_short -ksp_diagonal_scale_fix \
 	   -f0 ${DATAFILESPATH}/matrices/medium -ksp_gmres_cgs_refinement_type refine_always  -mat_no_inode > ex10_8.tmp 2>&1; \
@@ -892,16 +876,6 @@ runex10_mumps_cholesky_spd_2:
 	   else printf "${PWD}\nPossible problem with ex10_mumps_cholesky_spd_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10_mumps_cholesky_spd_2.tmp
 
-NSUBCOMM = 8 7 6 5 4 3 2 1
-runex10_mumps_redundant:
-	-@touch ex10_mumps_redundant.tmp
-	-@for nsubcomm in ${NSUBCOMM}; do \
-	${MPIEXEC} -n 8 ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -ksp_type preonly -pc_type redundant -pc_redundant_number $$nsubcomm -redundant_pc_factor_mat_solver_package mumps -num_numfac 2 -num_rhs 2 >> ex10_mumps_redundant.tmp 2>&1; \
-	done;
-	-@if (${DIFF} output/ex10_mumps_redundant.out ex10_mumps_redundant.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex10_mumps_redundant, diffs above\n=========================================\n"; fi; \
-	${RM} -f ex10_mumps_redundant.tmp;
-
 runex10_pastix_lu_1:
 	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -mat_type seqaij -pc_factor_mat_solver_package pastix -num_numfac 2 -num_rhs 2 > ex10_pastix_lu_1.tmp 2>&1; \
 	   if (${DIFF} output/ex10_mumps.out ex10_pastix_lu_1.tmp) then true; \
@@ -923,24 +897,6 @@ runex10_pastix_cholesky_2:
 	   else printf "${PWD}\nPossible problem with ex10_pastix_cholesky_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10_pastix_cholesky_2.tmp
 
-NSUBCOMM = 8 7 6 5 4 3 2 1
-runex10_pastix_redundant:
-	-@touch ex10_pastix_redundant.tmp
-	-@for nsubcomm in ${NSUBCOMM}; do \
-	${MPIEXEC} -n 8 ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -ksp_type preonly -pc_type redundant -pc_redundant_number $$nsubcomm -redundant_pc_factor_mat_solver_package pastix -num_numfac 2 -num_rhs 2 >> ex10_pastix_redundant.tmp 2>&1; \
-	done;
-	-@if (${DIFF} output/ex10_mumps_redundant.out ex10_pastix_redundant.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex10_pastix_redundant, diffs above\n=========================================\n"; fi; \
-	${RM} -f ex10_pastix_redundant.tmp;
-
-runex10_superlu_dist_redundant:
-	-@touch ex10_superlu_dist_redundant.tmp
-	-@for nsubcomm in ${NSUBCOMM}; do \
-	${MPIEXEC} -n 8 ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -ksp_type preonly -pc_type redundant -pc_redundant_number $$nsubcomm -redundant_pc_factor_mat_solver_package superlu_dist -num_numfac 2 -num_rhs 2 >> ex10_superlu_dist_redundant.tmp 2>&1; \
-	done;
-	-@if (${DIFF} output/ex10_mumps_redundant.out ex10_superlu_dist_redundant.tmp) then true; \
-	  else printf "${PWD}\nPossible problem with ex10_superlu_dist_redundant, diffs above\n=========================================\n"; fi; \
-	${RM} -f ex10_superlu_dist_redundant.tmp;
 runex10_ILU: # test ilu fill greater than zero
 	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -pc_factor_levels 1  > ex10_20.tmp 2>&1; \
 	   if (${DIFF} output/ex10_ILU.out ex10_20.tmp) then true; \
@@ -961,26 +917,6 @@ runex10_cg_singlereduction:
 	   if (${DIFF} output/ex10_cg_singlereduction.out ex10_20.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex10_cg_singlereduction, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10_20.tmp
-runex10_seqaijcrl:
-	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_monitor_short -ksp_view -mat_view ascii::ascii_info -mat_type seqaijcrl > ex10_seqaijcrl.tmp 2>&1; \
-	   if (${DIFF} output/ex10_seqcrl.out ex10_seqaijcrl.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex10_seqaijcrl, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex10_seqaijcrl.tmp
-runex10_mpiaijcrl:
-	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_monitor_short -ksp_view  -mat_type mpiaijcrl > ex10_mpiaijcrl.tmp 2>&1; \
-	   if (${DIFF} output/ex10_mpiaij.out ex10_mpiaijcrl.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex10_mpiaijcrl, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex10_mpiaijcrl.tmp
-runex10_seqaijperm:
-	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_monitor_short -ksp_view -mat_view ascii::ascii_info -mat_type seqaijperm > ex10_seqaijperm.tmp 2>&1; \
-	   if (${DIFF} output/ex10_seqcsrperm.out ex10_seqaijperm.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex10_seqaijperm, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex10_seqaijperm.tmp
-runex10_mpiaijperm:
-	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_monitor_short -ksp_view  -mat_type mpiaijperm > ex10_mpiaijperm.tmp 2>&1; \
-	   if (${DIFF} output/ex10_mpicsrperm.out ex10_mpiaijperm.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex10_mpiaijperm, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex10_mpiaijperm.tmp
 runex10_aijcusparse:
 	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -ksp_monitor_short -ksp_view -mat_view ascii::ascii_info -mat_type aijcusparse -pc_factor_mat_solver_package cusparse -pc_type ilu > ex10_aijcusparse.tmp 2>&1; \
 	   if (${DIFF} output/ex10_aijcusparse.out ex10_aijcusparse.tmp) then true; \
@@ -1683,7 +1619,7 @@ runex67_nonsymmetric_right:
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_changepcside runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
                                  runex2_4 runex2_bjacobi runex2_bjacobi_2 runex2_bjacobi_3  \
-                                 runex2_chebyest_1 runex2_chebyest_2 runex2_fbcgs runex2_fbcgs_2 runex2_telescope runex2_pipecg runex2_pipecr runex2_groppcg runex2_pipecgrr ex2.rm \
+                                 runex2_chebyest_1 runex2_chebyest_2 runex2_fbcgs runex2_pipebcgs runex2_fbcgs_2 runex2_telescope runex2_pipecg runex2_pipecr runex2_groppcg runex2_pipecgrr ex2.rm \
                                  ex3.PETSc runex3_1 ex3.rm \
                                  ex4.PETSc ex4.rm ex7.PETSc runex7 runex7_2 ex7.rm ex4.PETSc ex4.rm ex5.PETSc runex5 runex5_2 \
                                  runex5_redundant_0 runex5_redundant_1 runex5_redundant_2 runex5_redundant_3 runex5_redundant_4 ex5.rm \
@@ -1723,9 +1659,9 @@ TESTEXAMPLES_C_X_MPIUNI      = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PET
                                  ex7.PETSc ex7.rm ex5.PETSc ex5.rm  ex9.PETSc runex9 ex9.rm \
                                  ex23.PETSc runex23 ex23.rm
 TESTEXAMPLES_C_COMPLEX	       = ex10.PETSc ex10.rm ex11.PETSc runex11 ex11.rm
-TESTEXAMPLES_DATAFILESPATH     = ex10.PETSc runex10_xxt runex10_xyt runex10_2 runex10_3 runex10_4 runex10_5 runex10_6 runex10_7 runex10_8 \
+TESTEXAMPLES_DATAFILESPATH     = ex10.PETSc runex10_xxt runex10_xyt runex10_2 runex10_3 runex10_4 runex10_5 runex10_6 runex10_8 \
                                  runex10_9 runex10_10 runex10_19  runex10_ILU runex10_ILUBAIJ runex10_cg runex10_cr runex10_lcd \
-                                 runex10_cg_singlereduction runex10_seqaijcrl runex10_mpiaijcrl runex10_seqaijperm runex10_mpiaijperm ex10.rm \
+                                 runex10_cg_singlereduction ex10.rm \
                                  ex27.PETSc runex27 ex27.rm
 # even though ex10.c is -pc_mg_smoothdown na C example to run with -mat_type lusol requires a Fortran compiler, hence
 # we list it with the fortran examples
@@ -1745,17 +1681,16 @@ TESTEXAMPLES_MUMPS                      = ex53.PETSc runex53 runex53_2 ex53.rm \
                                           ex52.PETSc runex52 runex52_mumps runex52_mumps_2 runex52_mumps_3 ex52.rm ex52f.PETSc runex52f_mumps ex52f.rm
 TESTEXAMPLES_MUMPS_DATAFILESPATH        = ex10.PETSc runex10_mumps_lu_1 runex10_mumps_lu_2 runex10_mumps_lu_3 runex10_mumps_lu_4 \
                                           runex10_mumps_cholesky_1 runex10_mumps_cholesky_2 runex10_mumps_cholesky_3 runex10_mumps_cholesky_4 \
-                                          runex10_mumps_redundant runex10_mumps_cholesky_spd_1 runex10_mumps_cholesky_spd_2 \
+                                          runex10_mumps_cholesky_spd_1 runex10_mumps_cholesky_spd_2 \
                                           runex10_zeropivot runex10_zeropivot_2 ex10.rm
 TESTEXAMPLES_PASTIX_DATAFILESPATH       = ex10.PETSc runex10_pastix_lu_1 runex10_pastix_lu_2  \
-			  	          runex10_pastix_cholesky_1 runex10_pastix_cholesky_2  runex10_pastix_redundant \
-                                          ex10.rm
+					  runex10_pastix_cholesky_1 runex10_pastix_cholesky_2 ex10.rm
 TESTEXAMPLES_SUPERLU                    = ex52.PETSc runex52_superlu_ilu runex52_superlu ex52.rm
 TESTEXAMPLES_SUPERLU_DATAFILESPATH      = ex10.PETSc runex10_superlu_lu_1 ex10.rm
 TESTEXAMPLES_SUPERLU_DIST               = ex5.PETSc runex5_superlu_dist runex5_superlu_dist_2 runex5_superlu_dist_3 ex5.rm \
                                           ex52.PETSc runex52_superlu_dist ex52.rm ex64.PETSc runex64 ex64.rm \
 	 			          ex62.PETSc runex62_superlu_dist_1 runex62_superlu_dist_2 runex62_superlu_dist_3 runex62_superlu_dist_4 ex62.rm
-TESTEXAMPLES_SUPERLU_DIST_DATAFILESPATH = ex10.PETSc runex10_superlu_dist_lu_1 runex10_superlu_dist_lu_2 runex10_superlu_dist_redundant ex10.rm
+TESTEXAMPLES_SUPERLU_DIST_DATAFILESPATH = ex10.PETSc runex10_superlu_dist_lu_1 runex10_superlu_dist_lu_2 ex10.rm
 TESTEXAMPLES_STRUMPACK                  = ex52.PETSc runex52_strumpack_ilu runex52_strumpack runex52_strumpack_ilu_2 runex52_strumpack_2 ex52.rm
 TESTEXAMPLES_SUITESPARSE_DATAFILESPATH  = ex10.PETSc runex10_umfpack ex10.rm
 TESTEXAMPLES_SUITESPARSE                = ex2.PETSc runex2_umfpack ex2.rm

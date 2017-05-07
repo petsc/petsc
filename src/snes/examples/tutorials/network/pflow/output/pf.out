@@ -3,3 +3,6 @@ nb = 9, ngen = 3, nload = 3, nbranch = 9
   1 SNES Function norm 0.203366 
   2 SNES Function norm 0.00294166 
   3 SNES Function norm 8.853e-07
+WARNING! There are options you set that were not used!
+WARNING! could be spelling mistake, etc!
+Option left: name:-petscpartitioner_type value: simple

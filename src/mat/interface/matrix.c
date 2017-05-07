@@ -6629,7 +6629,7 @@ PetscErrorCode MatICCFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFactorInfo
    Concepts: matrices^accessing submatrices
    Concepts: submatrices
 
-.seealso: MatDestroyMatrices(), MatCreateSubMatrix(), MatGetRow(), MatGetDiagonal(), MatReuse
+.seealso: MatDestroySubMatrices(), MatCreateSubMatrix(), MatGetRow(), MatGetDiagonal(), MatReuse
 @*/
 PetscErrorCode MatCreateSubMatrices(Mat mat,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *submat[])
 {
@@ -7025,7 +7025,7 @@ PetscErrorCode MatGetBlockSize(Mat mat,PetscInt *bs)
 
    Output Parameter:
 .  rbs - row block size
-.  cbs - coumn block size
+.  cbs - column block size
 
    Notes:
     Block row formats are MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ. These formats ALWAYS have square block storage in the matrix.

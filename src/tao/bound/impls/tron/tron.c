@@ -210,9 +210,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
           delta=PetscMin(xdiff,delta)*tron->sigma2;
         }
         ierr = VecBoundGradientProjection(tron->G_New,tron->X_New, tao->XL, tao->XU, tao->gradient);CHKERRQ(ierr);
-        if (tron->Free_Local) {
-          ierr = ISDestroy(&tron->Free_Local);CHKERRQ(ierr);
-        }
+        ierr = ISDestroy(&tron->Free_Local);CHKERRQ(ierr);
         ierr = VecWhichBetween(tao->XL, tron->X_New, tao->XU, &tron->Free_Local);CHKERRQ(ierr);
         f=f_new;
         ierr = VecNorm(tao->gradient,NORM_2,&tron->gnorm);CHKERRQ(ierr);
@@ -251,9 +249,7 @@ static PetscErrorCode TronGradientProjections(Tao tao,TAO_TRON *tron)
      The free, active, and binding variables should be already identified
   */
   PetscFunctionBegin;
-  if (tron->Free_Local) {
-    ierr = ISDestroy(&tron->Free_Local);CHKERRQ(ierr);
-  }
+  ierr = ISDestroy(&tron->Free_Local);CHKERRQ(ierr);
   ierr = VecWhichBetween(tao->XL,tao->solution,tao->XU,&tron->Free_Local);CHKERRQ(ierr);
 
   for (i=0;i<tron->maxgpits;i++){
@@ -275,9 +271,7 @@ static PetscErrorCode TronGradientProjections(Tao tao,TAO_TRON *tron)
     actred = f_new - tron->f;
     actred_max = PetscMax(actred_max,-(f_new - tron->f));
     tron->f = f_new;
-    if (tron->Free_Local) {
-      ierr = ISDestroy(&tron->Free_Local);CHKERRQ(ierr);
-    }
+    ierr = ISDestroy(&tron->Free_Local);CHKERRQ(ierr);
     ierr = VecWhichBetween(tao->XL,tao->solution,tao->XU,&tron->Free_Local);CHKERRQ(ierr);
   }
 
@@ -326,12 +320,12 @@ PETSC_EXTERN PetscErrorCode TaoCreate_TRON(Tao tao)
   const char     *morethuente_type = TAOLINESEARCHMT;
 
   PetscFunctionBegin;
-  tao->ops->setup = TaoSetup_TRON;
-  tao->ops->solve = TaoSolve_TRON;
-  tao->ops->view = TaoView_TRON;
+  tao->ops->setup          = TaoSetup_TRON;
+  tao->ops->solve          = TaoSolve_TRON;
+  tao->ops->view           = TaoView_TRON;
   tao->ops->setfromoptions = TaoSetFromOptions_TRON;
-  tao->ops->destroy = TaoDestroy_TRON;
-  tao->ops->computedual = TaoComputeDual_TRON;
+  tao->ops->destroy        = TaoDestroy_TRON;
+  tao->ops->computedual    = TaoComputeDual_TRON;
 
   ierr = PetscNewLog(tao,&tron);CHKERRQ(ierr);
   tao->data = (void*)tron;

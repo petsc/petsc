@@ -107,6 +107,19 @@ PetscErrorCode  TSAdjointMonitorSetFromOptions(TS ts,const char name[],const cha
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt,TSAdaptType default_type)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
+  PetscValidCharPointer(default_type,2);
+  if (!((PetscObject)adapt)->type_name) {
+    ierr = TSAdaptSetType(adapt,default_type);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /*@
    TSSetFromOptions - Sets various TS parameters from user options.
 
@@ -407,9 +420,10 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = PetscInfo(ts, "Setting default finite difference coloring Jacobian matrix\n");CHKERRQ(ierr);
   }
 
-  if (ts->adapt) {
-    ierr = TSAdaptSetFromOptions(PetscOptionsObject,ts->adapt);CHKERRQ(ierr);
-  }
+  /* Handle TSAdapt options */
+  ierr = TSGetAdapt(ts,&ts->adapt);CHKERRQ(ierr);
+  ierr = TSAdaptSetDefaultType(ts->adapt,ts->default_adapt_type);CHKERRQ(ierr);
+  ierr = TSAdaptSetFromOptions(PetscOptionsObject,ts->adapt);CHKERRQ(ierr);
 
   /* Handle specific TS options */
   if (ts->ops->setfromoptions) {
@@ -444,6 +458,33 @@ PetscErrorCode  TSSetFromOptions(TS ts)
 }
 
 /*@
+   TSGetTrajectory - Gets the trajectory from a TS if it exists
+
+   Collective on TS
+
+   Input Parameters:
+.  ts - the TS context obtained from TSCreate()
+
+   Output Parameters;
+.  tr - the TSTrajectory object, if it exists
+
+   Note: This routine should be called after all TS options have been set
+
+   Level: advanced
+
+.seealso: TSGetTrajectory(), TSAdjointSolve(), TSTrajectory, TSTrajectoryCreate()
+
+.keywords: TS, set, checkpoint,
+@*/
+PetscErrorCode  TSGetTrajectory(TS ts,TSTrajectory *tr)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  *tr = ts->trajectory;
+  PetscFunctionReturn(0);
+}
+
+/*@
    TSSetSaveTrajectory - Causes the TS to save its solutions as it iterates forward in time in a TSTrajectory object
 
    Collective on TS
@@ -451,11 +492,18 @@ PetscErrorCode  TSSetFromOptions(TS ts)
    Input Parameters:
 .  ts - the TS context obtained from TSCreate()
 
+   Options Database:
++  -ts_save_trajectory - saves the trajectory to a file
+-  -ts_trajectory_type type
+
 Note: This routine should be called after all TS options have been set
+
+    The TSTRAJECTORYVISUALIZATION files can be loaded into Python with $PETSC_DIR/bin/PetscBinaryIOTrajectory.py and 
+   MATLAB with $PETSC_DIR/share/petsc/matlab/PetscReadBinaryTrajectory.m
 
    Level: intermediate
 
-.seealso: TSGetTrajectory(), TSAdjointSolve()
+.seealso: TSGetTrajectory(), TSAdjointSolve(), TSTrajectoryType, TSSetTrajectoryType()
 
 .keywords: TS, set, checkpoint,
 @*/
@@ -2438,6 +2486,7 @@ PetscErrorCode  TSSetUp(TS ts)
   TSIJacobian    ijac;
   TSI2Jacobian   i2jac;
   TSRHSJacobian  rhsjac;
+  PetscBool      isnone;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -2468,9 +2517,18 @@ PetscErrorCode  TSSetUp(TS ts)
       ierr = MatDestroy(&Pmat);CHKERRQ(ierr);
     }
   }
+
+  ierr = TSGetAdapt(ts,&ts->adapt);CHKERRQ(ierr);
+  ierr = TSAdaptSetDefaultType(ts->adapt,ts->default_adapt_type);CHKERRQ(ierr);
+
   if (ts->ops->setup) {
     ierr = (*ts->ops->setup)(ts);CHKERRQ(ierr);
   }
+
+  /* Attempt to check/preset a default value for the exact final time option */
+  ierr = PetscObjectTypeCompare((PetscObject)ts->adapt,TSADAPTNONE,&isnone);CHKERRQ(ierr);
+  if (!isnone && ts->exact_final_time == TS_EXACTFINALTIME_UNSPECIFIED)
+    ts->exact_final_time = TS_EXACTFINALTIME_MATCHSTEP;
 
   /* In the case where we've set a DMTSFunction or what have you, we need the default SNESFunction
      to be set right but can't do it elsewhere due to the overreliance on ctx=ts.

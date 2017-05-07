@@ -36,3 +36,20 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+  test:
+    suffix: 2d
+    requires: triangle
+    args: -dim 2 -pre_adapt_dm_view ascii::ascii_info_detail -post_adapt_dm_view ascii::ascii_info_detail
+  test:
+    suffix: 3d_tetgen
+    requires: tetgen complex
+    args: -dim 3 -pre_adapt_dm_view ascii::ascii_info_detail -post_adapt_dm_view ascii::ascii_info_detail
+  test:
+    suffix: 3d_ctetgen
+    requires: ctetgen !complex
+    args: -dim 3 -pre_adapt_dm_view ascii::ascii_info_detail -post_adapt_dm_view ascii::ascii_info_detail
+
+TEST*/

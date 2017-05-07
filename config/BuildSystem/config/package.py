@@ -351,6 +351,8 @@ class Package(config.base.Configure):
   def generateGuesses(self):
     d = self.checkDownload()
     if d:
+      if not self.liblist:
+        yield('Download '+self.PACKAGE, d, [], self.getIncludeDirs(d, self.includedir))
       for libdir in [self.libdir, self.altlibdir]:
         libdirpath = os.path.join(d, libdir)
         if not os.path.isdir(libdirpath):
@@ -465,7 +467,7 @@ class Package(config.base.Configure):
       return ''
     if self.framework.batchBodies and not self.installwithbatch:
       return
-    if self.argDB['download-'+self.downloadname.lower()]:
+    if self.argDB['download-'+self.package]:
       if self.license and not os.path.isfile('.'+self.package+'_license'):
         self.logClear()
         self.logPrint("**************************************************************************************************", debugSection='screen')
@@ -474,6 +476,14 @@ class Package(config.base.Configure):
         fd = open('.'+self.package+'_license','w')
         fd.close()
       return self.getInstallDir()
+    else:
+      # check if download option is set for any of the dependent packages - if so flag an error.
+      mesg=''
+      for pkg in self.deps:
+        if 'download-'+pkg.package in self.argDB and self.argDB['download-'+pkg.package]:
+          mesg+='Error! Cannot use --download-'+pkg.package+' when not using --download-'+self.package+'. Perhaps you need to look for a version of '+pkg.PACKAGE+' that '+self.PACKAGE+' was built with!\n'
+      if mesg:
+        raise RuntimeError(mesg)
     return ''
 
   def installNeeded(self, mkfile):

@@ -61,6 +61,7 @@
 #define TSRK4     '4'
 #define TSRK5F    '5f'
 #define TSRK5DP   '5dp'
+#define TSRK5BS   '5bs'
 
 #define TSARKIMEXType character*(80)
 #define TSARKIMEX1BEE   '1bee'

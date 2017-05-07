@@ -10,7 +10,6 @@ TS Object: 1 MPI processes
     Alpha_m=0.5, Alpha_f=0.5, Gamma=0.5, Beta=0.25
   TSAdapt Object: 1 MPI processes
     type: none
-    number of candidates 0
   SNES Object: 1 MPI processes
     type: newtonls
     maximum iterations=50, maximum function evaluations=10000

@@ -14,6 +14,7 @@ class Configure(config.package.GNUPackage):
     self.liblist   = [['libhdf5_hl.a', 'libhdf5.a']]
     self.complex          = 1
     self.hastests         = 1
+    self.precisions       = ['single','double'];
     return
 
   def setupDependencies(self, framework):
@@ -21,7 +22,9 @@ class Configure(config.package.GNUPackage):
     self.mpi            = framework.require('config.packages.MPI',self)
     self.mathlib        = framework.require('config.packages.mathlib',self)
     self.zlib           = framework.require('config.packages.zlib',self)
-    self.deps           = [self.mpi,self.mathlib,self.zlib]
+    self.szlib          = framework.require('config.packages.szlib',self)
+    self.deps           = [self.mpi,self.mathlib]
+    self.odeps          = [self.zlib,self.szlib]
     return
 
   def formGNUConfigureArgs(self):
@@ -34,8 +37,18 @@ class Configure(config.package.GNUPackage):
       args.append('--enable-fortran')
       args.append('F9X="'+self.setCompilers.getCompiler()+'"')
       self.setCompilers.popLanguage()
-    args.append('CPPFLAGS="'+self.headers.toStringNoDupes(self.zlib.include)+'"')
-    args.append('LIBS="'+self.libraries.toStringNoDupes(self.zlib.lib+self.mathlib.lib)+'"')
+    if self.zlib.found:
+      args.append('--with-zlib=yes')
+    else:
+      args.append('--with-zlib=no')
+    if self.szlib.found:
+      args.append('--with-szlib=yes')
+    else:
+      args.append('--with-szlib=no')
+
+    args.append('CPPFLAGS="'+self.headers.toStringNoDupes(self.dinclude)+'"')
+    args.append('LIBS="'+self.libraries.toStringNoDupes(self.dlib)+'"')
+
     return args
 
   def configureLibrary(self):
