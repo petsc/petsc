@@ -1262,8 +1262,6 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,c
   rank = c->rank;
 
   ierr = ISSorted(isrow[0],&isrowsorted);CHKERRQ(ierr);
-  if (!isrowsorted) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"isrow[0] must be sorted");
-
   ierr = ISGetIndices(isrow[0],&irow);CHKERRQ(ierr);
   ierr = ISGetLocalSize(isrow[0],&nrow);CHKERRQ(ierr);
   if (allcolumns) {
@@ -1291,7 +1289,8 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C,PetscInt ismax,c
     proc = 0;
     nrqs = 0; /* num of outgoing messages */
     for (j=0; j<nrow; j++) {
-      row  = irow[j]; /* sorted! */
+      row  = irow[j];
+      if (!isrowsorted) proc = 0;
       while (row >= C->rmap->range[proc+1]) proc++;
       w1[proc]++;
       row2proc[j] = proc; /* map row index to proc */
