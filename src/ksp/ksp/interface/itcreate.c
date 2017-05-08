@@ -7,6 +7,7 @@
 /* Logging support */
 PetscClassId  KSP_CLASSID;
 PetscClassId  DMKSP_CLASSID;
+PetscClassId  KSPGUESS_CLASSID;
 PetscLogEvent KSP_GMRESOrthogonalization, KSP_SetUp, KSP_Solve;
 
 /*
@@ -143,7 +144,11 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"  left preconditioning\n");CHKERRQ(ierr);
     }
-    if (ksp->guess) {ierr = PetscViewerASCIIPrintf(viewer,"  using Fischers initial guess method %D with size %D\n",ksp->guess->method,ksp->guess->maxl);CHKERRQ(ierr);}
+    if (ksp->guess) {
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = KSPGuessView(ksp->guess,viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    }
     if (ksp->dscale) {ierr = PetscViewerASCIIPrintf(viewer,"  diagonally scaled system\n");CHKERRQ(ierr);}
     if (!ksp->guess_zero) {ierr = PetscViewerASCIIPrintf(viewer,"  using nonzero initial guess\n");CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPrintf(viewer,"  using %s norm type for convergence test\n",KSPNormTypes[ksp->normtype]);CHKERRQ(ierr);
@@ -511,9 +516,6 @@ PetscErrorCode  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat)
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   ierr = PCSetOperators(ksp->pc,Amat,Pmat);CHKERRQ(ierr);
   if (ksp->setupstage == KSP_SETUP_NEWRHS) ksp->setupstage = KSP_SETUP_NEWMATRIX;  /* so that next solve call will call PCSetUp() on new matrix */
-  if (ksp->guess) {
-    ierr = KSPFischerGuessReset(ksp->guess);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 

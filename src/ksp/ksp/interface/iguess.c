@@ -1,346 +1,340 @@
+#include <petsc/private/kspimpl.h> /*I "petscksp.h"  I*/
 
-#include <petsc/private/kspimpl.h>
-
-/* ---------------------------------------Method 1------------------------------------------------------------*/
-typedef struct {
-  PetscInt    method;   /* 1 or 2 */
-  PetscInt    curl;     /* Current number of basis vectors */
-  PetscInt    maxl;     /* Maximum number of basis vectors */
-  PetscInt    refcnt;
-  PetscBool   monitor;
-  Mat         mat;
-  KSP         ksp;
-  PetscScalar *alpha;   /* */
-  Vec         *xtilde;  /* Saved x vectors */
-  Vec         *btilde;  /* Saved b vectors */
-  Vec         guess;
-} KSPFischerGuess_Method1;
-
-
-PetscErrorCode  KSPFischerGuessCreate_Method1(KSP ksp,int maxl,KSPFischerGuess_Method1 **ITG)
-{
-  KSPFischerGuess_Method1 *itg;
-  PetscErrorCode          ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  ierr = PetscNew(&itg);CHKERRQ(ierr);
-  ierr = PetscMalloc1(maxl,&itg->alpha);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory((PetscObject)ksp,sizeof(KSPFischerGuess_Method1) + maxl*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = KSPCreateVecs(ksp,maxl,&itg->xtilde,0,NULL);CHKERRQ(ierr);
-  ierr = PetscLogObjectParents(ksp,maxl,itg->xtilde);CHKERRQ(ierr);
-  ierr = KSPCreateVecs(ksp,maxl,&itg->btilde,0,NULL);CHKERRQ(ierr);
-  ierr = PetscLogObjectParents(ksp,maxl,itg->btilde);CHKERRQ(ierr);
-  ierr = VecDuplicate(itg->xtilde[0],&itg->guess);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)ksp,(PetscObject)itg->guess);CHKERRQ(ierr);
-  *ITG = itg;
-  PetscFunctionReturn(0);
-}
-
-
-PetscErrorCode  KSPFischerGuessDestroy_Method1(KSPFischerGuess_Method1 *itg)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFree(itg->alpha);CHKERRQ(ierr);
-  ierr = VecDestroyVecs(itg->maxl,&itg->btilde);CHKERRQ(ierr);
-  ierr = VecDestroyVecs(itg->maxl,&itg->xtilde);CHKERRQ(ierr);
-  ierr = VecDestroy(&itg->guess);CHKERRQ(ierr);
-  ierr = PetscFree(itg);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
+PetscFunctionList KSPGuessList = 0;
+static PetscBool KSPGuessRegisterAllCalled;
 
 /*
-        Given a basis generated already this computes a new guess x from the new right hand side b
-     Figures out the components of b in each btilde direction and adds them to x
-*/
-PetscErrorCode  KSPFischerGuessFormGuess_Method1(KSPFischerGuess_Method1 *itg,Vec b,Vec x)
-{
-  PetscErrorCode ierr;
-  PetscInt       i;
+  KSPGuessRegister -  Adds a method for initial guess computation in Krylov subspace solver package.
 
-  PetscFunctionBegin;
-  PetscValidPointer(itg,2);
-  PetscValidHeaderSpecific(x,VEC_CLASSID,3);
-  ierr = VecSet(x,0.0);CHKERRQ(ierr);
-  ierr = VecMDot(b,itg->curl,itg->btilde,itg->alpha);CHKERRQ(ierr);
-  if (itg->monitor) {
-    ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"KSPFischerGuess alphas = ");CHKERRQ(ierr);
-    for (i=0; i<itg->curl; i++) {
-      ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"%g ",(double)PetscAbsScalar(itg->alpha[i]));CHKERRQ(ierr);
-    }
-    ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"\n");CHKERRQ(ierr);
-  }
-  ierr = VecMAXPY(x,itg->curl,itg->alpha,itg->xtilde);CHKERRQ(ierr);
-  ierr = VecCopy(x,itg->guess);CHKERRQ(ierr);
-  /* Note: do not change the b right hand side as is done in the publication */
-  PetscFunctionReturn(0);
-}
+   Not Collective
 
-PetscErrorCode  KSPFischerGuessUpdate_Method1(KSPFischerGuess_Method1 *itg,Vec x)
-{
-  PetscReal      norm;
-  PetscErrorCode ierr;
-  int            curl = itg->curl,i;
+   Input Parameters:
++  name_solver - name of a new user-defined solver
+-  routine_create - routine to create method context
 
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_CLASSID,2);
-  PetscValidPointer(itg,3);
-  if (curl == itg->maxl) {
-    ierr      = KSP_MatMult(itg->ksp,itg->mat,x,itg->btilde[0]);CHKERRQ(ierr);
-    ierr      = VecNormalize(itg->btilde[0],&norm);CHKERRQ(ierr);
-    ierr      = VecCopy(x,itg->xtilde[0]);CHKERRQ(ierr);
-    ierr      = VecScale(itg->xtilde[0],1.0/norm);CHKERRQ(ierr);
-    itg->curl = 1;
-  } else {
-    if (!curl) {
-      ierr = VecCopy(x,itg->xtilde[curl]);CHKERRQ(ierr);
-    } else {
-      ierr = VecWAXPY(itg->xtilde[curl],-1.0,itg->guess,x);CHKERRQ(ierr);
-    }
+   Notes:
+   KSPGuessRegister() may be called multiple times to add several user-defined solvers.
 
-    ierr = KSP_MatMult(itg->ksp,itg->mat,itg->xtilde[curl],itg->btilde[curl]);CHKERRQ(ierr);
-    ierr = VecMDot(itg->btilde[curl],curl,itg->btilde,itg->alpha);CHKERRQ(ierr);
-    for (i=0; i<curl; i++) itg->alpha[i] = -itg->alpha[i];
-    ierr = VecMAXPY(itg->btilde[curl],curl,itg->alpha,itg->btilde);CHKERRQ(ierr);
-    ierr = VecMAXPY(itg->xtilde[curl],curl,itg->alpha,itg->xtilde);CHKERRQ(ierr);
+   Sample usage:
+.vb
+   KSPGuessRegister("my_initial_guess",MyInitialGuessCreate);
+.ve
 
-    ierr = VecNormalize(itg->btilde[curl],&norm);CHKERRQ(ierr);
-    if (norm) {
-      ierr = VecScale(itg->xtilde[curl],1.0/norm);CHKERRQ(ierr);
-      itg->curl++;
-    } else {
-      ierr = PetscInfo(itg->ksp,"Not increasing dimension of Fischer space because new direction is identical to previous\n");CHKERRQ(ierr);
-    }
-  }
-  PetscFunctionReturn(0);
-}
+   Then, it can be chosen with the procedural interface via
+$     KSPSetGuessType(ksp,"my_initial_guess")
+   or at runtime via the option
+$     -ksp_guess_type my_initial_guess
 
-/* ---------------------------------------Method 2------------------------------------------------------------*/
-typedef struct {
-  PetscInt    method;   /* 1 or 2 */
-  PetscInt    curl;     /* Current number of basis vectors */
-  PetscInt    maxl;     /* Maximum number of basis vectors */
-  PetscInt    refcnt;
-  PetscBool   monitor;
-  Mat         mat;
-  KSP         ksp;
-  PetscScalar *alpha;   /* */
-  Vec         *xtilde;  /* Saved x vectors */
-  Vec         Ax,guess;
-} KSPFischerGuess_Method2;
+   Level: advanced
 
-PetscErrorCode  KSPFischerGuessCreate_Method2(KSP ksp,int maxl,KSPFischerGuess_Method2 **ITG)
-{
-  KSPFischerGuess_Method2 *itg;
-  PetscErrorCode          ierr;
+.keywords: KSP, register, KSPGuess
 
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  ierr = PetscNew(&itg);CHKERRQ(ierr);
-  ierr = PetscMalloc1(maxl,&itg->alpha);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory((PetscObject)ksp,sizeof(KSPFischerGuess_Method2) + maxl*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = KSPCreateVecs(ksp,maxl,&itg->xtilde,0,NULL);CHKERRQ(ierr);
-  ierr = PetscLogObjectParents(ksp,maxl,itg->xtilde);CHKERRQ(ierr);
-  ierr = VecDuplicate(itg->xtilde[0],&itg->Ax);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)ksp,(PetscObject)itg->Ax);CHKERRQ(ierr);
-  ierr = VecDuplicate(itg->xtilde[0],&itg->guess);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)ksp,(PetscObject)itg->guess);CHKERRQ(ierr);
-  *ITG = itg;
-  PetscFunctionReturn(0);
-}
-
-
-PetscErrorCode  KSPFischerGuessDestroy_Method2(KSPFischerGuess_Method2 *itg)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFree(itg->alpha);CHKERRQ(ierr);
-  ierr = VecDestroyVecs(itg->maxl,&itg->xtilde);CHKERRQ(ierr);
-  ierr = VecDestroy(&itg->Ax);CHKERRQ(ierr);
-  ierr = VecDestroy(&itg->guess);CHKERRQ(ierr);
-  ierr = PetscFree(itg);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-
-/*
-        Given a basis generated already this computes a new guess x from the new right hand side b
-     Figures out the components of b in each btilde direction and adds them to x
-*/
-PetscErrorCode  KSPFischerGuessFormGuess_Method2(KSPFischerGuess_Method2 *itg,Vec b,Vec x)
-{
-  PetscErrorCode ierr;
-  PetscInt       i;
-
-  PetscFunctionBegin;
-  PetscValidPointer(itg,2);
-  PetscValidHeaderSpecific(x,VEC_CLASSID,3);
-  ierr = VecSet(x,0.0);CHKERRQ(ierr);
-  ierr = VecMDot(b,itg->curl,itg->xtilde,itg->alpha);CHKERRQ(ierr);
-  if (itg->monitor) {
-    ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"KSPFischerGuess alphas = ");CHKERRQ(ierr);
-    for (i=0; i<itg->curl; i++) {
-      ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"%g ",(double)PetscAbsScalar(itg->alpha[i]));CHKERRQ(ierr);
-    }
-    ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"\n");CHKERRQ(ierr);
-  }
-  ierr = VecMAXPY(x,itg->curl,itg->alpha,itg->xtilde);CHKERRQ(ierr);
-  ierr = VecCopy(x,itg->guess);CHKERRQ(ierr);
-  /* Note: do not change the b right hand side as is done in the publication */
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode  KSPFischerGuessUpdate_Method2(KSPFischerGuess_Method2 *itg,Vec x)
-{
-  PetscScalar    norm;
-  PetscErrorCode ierr;
-  int            curl = itg->curl,i;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_CLASSID,2);
-  PetscValidPointer(itg,3);
-  if (curl == itg->maxl) {
-    ierr      = KSP_MatMult(itg->ksp,itg->mat,x,itg->Ax);CHKERRQ(ierr); /* norm = sqrt(x'Ax) */
-    ierr      = VecDot(x,itg->Ax,&norm);CHKERRQ(ierr);
-    ierr      = VecCopy(x,itg->xtilde[0]);CHKERRQ(ierr);
-    ierr      = VecScale(itg->xtilde[0],1.0/PetscSqrtScalar(norm));CHKERRQ(ierr);
-    itg->curl = 1;
-  } else {
-    if (!curl) {
-      ierr = VecCopy(x,itg->xtilde[curl]);CHKERRQ(ierr);
-    } else {
-      ierr = VecWAXPY(itg->xtilde[curl],-1.0,itg->guess,x);CHKERRQ(ierr);
-    }
-    ierr = KSP_MatMult(itg->ksp,itg->mat,itg->xtilde[curl],itg->Ax);CHKERRQ(ierr);
-    ierr = VecMDot(itg->Ax,curl,itg->xtilde,itg->alpha);CHKERRQ(ierr);
-    for (i=0; i<curl; i++) itg->alpha[i] = -itg->alpha[i];
-    ierr = VecMAXPY(itg->xtilde[curl],curl,itg->alpha,itg->xtilde);CHKERRQ(ierr);
-
-    ierr = KSP_MatMult(itg->ksp,itg->mat,itg->xtilde[curl],itg->Ax);CHKERRQ(ierr); /* norm = sqrt(xtilde[curl]'Axtilde[curl]) */
-    ierr = VecDot(itg->xtilde[curl],itg->Ax,&norm);CHKERRQ(ierr);
-    if (PetscAbsScalar(norm) != 0.0) {
-      ierr = VecScale(itg->xtilde[curl],1.0/PetscSqrtScalar(norm));CHKERRQ(ierr);
-      itg->curl++;
-    } else {
-      ierr = PetscInfo(itg->ksp,"Not increasing dimension of Fischer space because new direction is identical to previous\n");CHKERRQ(ierr);
-    }
-  }
-  PetscFunctionReturn(0);
-}
-
-/* ---------------------------------------------------------------------------------------------------------*/
-/*@C
-    KSPFischerGuessCreate - Implements Paul Fischer's initial guess algorithm Method 1 and 2 for situations where
-    a linear system is solved repeatedly
-
-  References:
-.   1. -   http://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19940020363_1994020363.pdf
-
-   Notes: the algorithm is different from the paper because we do not CHANGE the right hand side of the new
-    problem and solve the problem with an initial guess of zero, rather we solve the original new problem
-    with a nonzero initial guess (this is done so that the linear solver convergence tests are based on
-    the original RHS.) But we use the xtilde = x - xguess as the new direction so that it is not
-    mostly orthogonal to the previous solutions.
-
-    These are not intended to be used directly, they are called by KSP automatically when the
-    KSP option KSPSetFischerGuess(KSP,PetscInt,PetscInt) or -ksp_guess_fischer <int,int>
-
-    Method 2 is only for positive definite matrices, since it uses the A norm.
-
-    This is not currently programmed as a PETSc class because there are only two methods; if more methods
-    are introduced it should be changed. For example the Knoll guess should be included
-
-    Level: advanced
+.seealso: KSPGuess, KSPGuessRegisterAll()
 
 @*/
-PetscErrorCode  KSPFischerGuessCreate(KSP ksp,PetscInt method,PetscInt maxl,KSPFischerGuess *itg)
+PetscErrorCode  KSPGuessRegister(const char sname[],PetscErrorCode (*function)(KSPGuess))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (method == 1) {
-    ierr = KSPFischerGuessCreate_Method1(ksp,maxl,(KSPFischerGuess_Method1**)itg);CHKERRQ(ierr);
-  } else if (method == 2) {
-    ierr = KSPFischerGuessCreate_Method2(ksp,maxl,(KSPFischerGuess_Method2**)itg);CHKERRQ(ierr);
-  } else SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Method can only be 1 or 2");
-  (*itg)->method = method;
-  (*itg)->curl   = 0;
-  (*itg)->maxl   = maxl;
-  (*itg)->ksp    = ksp;
-  (*itg)->refcnt = 1;
-
-  ierr = KSPGetOperators(ksp,&(*itg)->mat,NULL);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode  KSPFischerGuessSetFromOptions(KSPFischerGuess ITG)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscOptionsGetBool(((PetscObject)ITG->ksp)->options,((PetscObject)ITG->ksp)->prefix,"-ksp_fischer_guess_monitor",&ITG->monitor,NULL);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode  KSPFischerGuessDestroy(KSPFischerGuess *ITG)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (!*ITG) PetscFunctionReturn(0);
-  if (--(*ITG)->refcnt) {*ITG = 0; PetscFunctionReturn(0);}
-
-  if ((*ITG)->method == 1) {
-    ierr = KSPFischerGuessDestroy_Method1((KSPFischerGuess_Method1*)*ITG);CHKERRQ(ierr);
-  } else if ((*ITG)->method == 2) {
-    ierr = KSPFischerGuessDestroy_Method2((KSPFischerGuess_Method2*)*ITG);CHKERRQ(ierr);
-  } else SETERRQ(((PetscObject)(*ITG)->ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Method can only be 1 or 2");
-  *ITG = NULL;
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode  KSPFischerGuessUpdate(KSPFischerGuess itg,Vec x)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (itg->method == 1) {
-    ierr = KSPFischerGuessUpdate_Method1((KSPFischerGuess_Method1*)itg,x);CHKERRQ(ierr);
-  } else if (itg->method == 2) {
-    ierr = KSPFischerGuessUpdate_Method2((KSPFischerGuess_Method2*)itg,x);CHKERRQ(ierr);
-  } else SETERRQ(((PetscObject)itg->ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Method can only be 1 or 2");
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode  KSPFischerGuessFormGuess(KSPFischerGuess itg,Vec b,Vec x)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (itg->method == 1) {
-    ierr = KSPFischerGuessFormGuess_Method1((KSPFischerGuess_Method1*)itg,b,x);CHKERRQ(ierr);
-  } else if (itg->method == 2) {
-    ierr = KSPFischerGuessFormGuess_Method2((KSPFischerGuess_Method2*)itg,b,x);CHKERRQ(ierr);
-  } else SETERRQ(((PetscObject)itg->ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Method can only be 1 or 2");
+  ierr = PetscFunctionListAdd(&KSPGuessList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*
-    KSPFischerGuessReset - This is called whenever KSPSetOperators() is called to tell the
-      initial guess object that the matrix is changed and so the initial guess object
-      must restart from scratch building the subspace where the guess is computed from.
+  KSPGuessRegisterAll - Registers all KSPGuess implementations in the KSP package.
+
+  Not Collective
+
+  Level: advanced
+
+.keywords: KSPGuess, register, all
+
+.seealso: KSPRegisterAll(),  KSPInitializePackage()
 */
-PetscErrorCode  KSPFischerGuessReset(KSPFischerGuess itg)
+PetscErrorCode KSPGuessRegisterAll(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  itg->curl = 0;
-  ierr      = KSPGetOperators(itg->ksp,&itg->mat,NULL);CHKERRQ(ierr);
+  if (KSPGuessRegisterAllCalled) PetscFunctionReturn(0);
+  KSPGuessRegisterAllCalled = PETSC_TRUE;
+  ierr = KSPGuessRegister(KSPGUESSFISCHER,KSPGuessCreate_Fischer);CHKERRQ(ierr);
+  ierr = KSPGuessRegister(KSPGUESSPOD,KSPGuessCreate_POD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
+/*@
+    KSPGuessSetFromOptions
+@*/
+PetscErrorCode KSPGuessSetFromOptions(KSPGuess guess)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(guess,KSPGUESS_CLASSID,1);
+  if (*guess->ops->setfromoptions) { ierr = (*guess->ops->setfromoptions)(guess);CHKERRQ(ierr); }
+  PetscFunctionReturn(0);
+}
+
+/*@
+   KSPGuessDestroy - Destroys KSPGuess context.
+
+   Collective on KSPGuess
+
+   Input Parameter:
+.  guess - initial guess object
+
+   Level: beginner
+
+.keywords: KSP, destroy
+
+.seealso: KSPGuessCreate(), KSPGuess, KSPGuessType
+@*/
+PetscErrorCode  KSPGuessDestroy(KSPGuess *guess)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!*guess) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific((*guess),KSPGUESS_CLASSID,1);
+  if (--((PetscObject)(*guess))->refct > 0) {*guess = 0; PetscFunctionReturn(0);}
+  if ((*guess)->ops->destroy) { ierr = (*(*guess)->ops->destroy)(*guess);CHKERRQ(ierr); }
+  ierr = PetscHeaderDestroy(guess);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   KSPGuessView - View the KSPGuess object
+
+   Logically Collective on KSPGuess
+
+   Input Parameters:
++  guess  - the initial guess object for the Krylov method
+-  viewer - the viewer object
+
+   Notes:
+
+  Level: intermediate
+
+.seealso: KSP, KSPGuess, KSPGuessType, KSPGuessRegister(), KSPGuessCreate(), PetscViewer
+@*/
+PetscErrorCode  KSPGuessView(KSPGuess guess, PetscViewer view)
+{
+  PetscErrorCode ierr;
+  PetscBool      ascii;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(guess,KSPGUESS_CLASSID,1);
+  if (!view) {
+    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)guess),&view);CHKERRQ(ierr);
+  }
+  PetscValidHeaderSpecific(view,PETSC_VIEWER_CLASSID,2);
+  PetscCheckSameComm(guess,1,view,2);
+  ierr = PetscObjectTypeCompare((PetscObject)view,PETSCVIEWERASCII,&ascii);CHKERRQ(ierr);
+  if (ascii) {
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)guess,view);CHKERRQ(ierr);
+    if (guess->ops->view) {
+      ierr = PetscViewerASCIIPushTab(view);CHKERRQ(ierr);
+      ierr = (*guess->ops->view)(guess,view);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(view);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+   KSPGuessCreate - Creates the default KSPGuess context.
+
+   Collective on MPI_Comm
+
+   Input Parameter:
+.  comm - MPI communicator
+
+   Output Parameter:
+.  guess - location to put the KSPGuess context
+
+   Notes:
+   The default KSPGuess type is XXX
+
+   Level: beginner
+
+.keywords: KSP, create, context
+
+.seealso: KSPSolve(), KSPGuessDestroy(), KSPGuess, KSPGuessType, KSP
+@*/
+PetscErrorCode  KSPGuessCreate(MPI_Comm comm,KSPGuess *guess)
+{
+  KSPGuess       tguess;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidPointer(guess,2);
+  *guess = 0;
+  ierr = KSPInitializePackage();CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(tguess,KSPGUESS_CLASSID,"KSPGuess","Initial guess for Krylov Method","KSPGuess",comm,KSPGuessDestroy,KSPGuessView);CHKERRQ(ierr);
+  *guess = tguess;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   KSPGuessSetType - Sets the type of a KSPGuess
+
+   Logically Collective on KSPGuess
+
+   Input Parameters:
++  guess - the initial guess object for the Krylov method
+-  type  - a known KSPGuess method
+
+   Options Database Key:
+.  -ksp_guess_type  <method> - Sets the method; use -help for a list
+    of available methods
+
+   Notes:
+
+  Level: intermediate
+
+.seealso: KSP, KSPGuess, KSPGuessType, KSPGuessRegister(), KSPGuessCreate()
+
+@*/
+PetscErrorCode  KSPGuessSetType(KSPGuess guess, KSPGuessType type)
+{
+  PetscErrorCode ierr,(*r)(KSPGuess);
+  PetscBool      match;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(guess,KSPGUESS_CLASSID,1);
+  PetscValidCharPointer(type,2);
+
+  ierr = PetscObjectTypeCompare((PetscObject)guess,type,&match);CHKERRQ(ierr);
+  if (match) PetscFunctionReturn(0);
+
+  ierr =  PetscFunctionListFind(KSPGuessList,type,&r);CHKERRQ(ierr);
+  if (!r) SETERRQ1(PetscObjectComm((PetscObject)guess),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested KSPGuess type %s",type);
+  if (guess->ops->destroy) {
+    ierr                = (*guess->ops->destroy)(guess);CHKERRQ(ierr);
+    guess->ops->destroy = NULL;
+  }
+  ierr = PetscMemzero(guess->ops,sizeof(struct _KSPGuessOps));CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)guess,type);CHKERRQ(ierr);
+  ierr = (*r)(guess);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   KSPGuessGetType - Gets the KSPGuess type as a string from the KSPGuess object.
+
+   Not Collective
+
+   Input Parameter:
+.  guess - the initial guess context
+
+   Output Parameter:
+.  name - name of KSPGuess method
+
+   Level: intermediate
+
+.keywords: KSP, get, method, name
+
+.seealso: KSPGuessSetType()
+@*/
+PetscErrorCode  KSPGuessGetType(KSPGuess guess,KSPGuessType *type)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(guess,KSPGUESS_CLASSID,1);
+  PetscValidPointer(type,2);
+  *type = ((PetscObject)guess)->type_name;
+  PetscFunctionReturn(0);
+}
+
+/*@
+    KSPGuessUpdate - Updates the guess object with the current solution and rhs vector
+
+   Collective on KSPGuess
+
+   Input Parameter:
++  guess - the initial guess context
+.  rhs   - the corresponding rhs
+-  sol   - the computed solution
+
+   Level: intermediate
+
+.keywords: KSP, get, method, name
+
+.seealso: KSPGuessCreate(), KSPGuess
+@*/
+PetscErrorCode  KSPGuessUpdate(KSPGuess guess, Vec rhs, Vec sol)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(guess,KSPGUESS_CLASSID,1);
+  PetscValidHeaderSpecific(rhs,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(sol,VEC_CLASSID,3);
+  if (*guess->ops->update) { ierr = (*guess->ops->update)(guess,rhs,sol);CHKERRQ(ierr); }
+  PetscFunctionReturn(0);
+}
+
+/*@
+    KSPGuessFormGuess - Form the initial guess
+
+   Collective on KSPGuess
+
+   Input Parameter:
++  guess - the initial guess context
+.  rhs   - the current rhs vector
+-  sol   - the initial guess vector
+
+   Level: intermediate
+
+.keywords: KSP, get, method, name
+
+.seealso: KSPGuessCreate(), KSPGuess
+@*/
+PetscErrorCode  KSPGuessFormGuess(KSPGuess guess, Vec rhs, Vec sol)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(guess,KSPGUESS_CLASSID,1);
+  PetscValidHeaderSpecific(rhs,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(sol,VEC_CLASSID,3);
+  if (*guess->ops->formguess) { ierr = (*guess->ops->formguess)(guess,rhs,sol);CHKERRQ(ierr); }
+  PetscFunctionReturn(0);
+}
+
+/*@
+    KSPGuessSetUp - Setup the initial guess object
+
+   Collective on KSPGuess
+
+   Input Parameter:
+-  guess - the initial guess context
+
+   Level: intermediate
+
+.keywords: KSP, get, method, name
+
+.seealso: KSPGuessCreate(), KSPGuess
+@*/
+PetscErrorCode  KSPGuessSetUp(KSPGuess guess)
+{
+  PetscErrorCode   ierr;
+  PetscObjectState omatstate = -1, matstate;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(guess,KSPGUESS_CLASSID,1);
+  if (guess->A) {
+    ierr = PetscObjectStateGet((PetscObject)guess->A,&omatstate);CHKERRQ(ierr);
+  }
+  ierr = KSPGetOperators(guess->ksp,&guess->A,NULL);CHKERRQ(ierr);
+  ierr = PetscObjectStateGet((PetscObject)guess->A,&matstate);CHKERRQ(ierr);
+  if (omatstate != matstate) {
+    ierr = PetscInfo2(guess,"Resetting KSPGuess since mat state changed %D != %D\n",omatstate,matstate);CHKERRQ(ierr);
+    if (guess->ops->reset) { ierr = (*guess->ops->reset)(guess);CHKERRQ(ierr); }
+  } else {
+    ierr = PetscInfo(guess,"KSPGuess status unchanged\n");CHKERRQ(ierr);
+  }
+  if (*guess->ops->setup) { ierr = (*guess->ops->setup)(guess);CHKERRQ(ierr); }
+  PetscFunctionReturn(0);
+}

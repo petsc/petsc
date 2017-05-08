@@ -591,9 +591,20 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
   ksp->transpose_solve = PETSC_FALSE;
 
   if (ksp->guess) {
-    ierr            = KSPFischerGuessFormGuess(ksp->guess,ksp->vec_rhs,ksp->vec_sol);CHKERRQ(ierr);
-    ksp->guess_zero = PETSC_FALSE;
+    PetscObjectState ostate,state;
+
+    ierr = KSPGuessSetUp(ksp->guess);CHKERRQ(ierr);
+    ierr = PetscObjectStateGet((PetscObject)ksp->vec_sol,&ostate);CHKERRQ(ierr);
+    ierr = KSPGuessFormGuess(ksp->guess,ksp->vec_rhs,ksp->vec_sol);CHKERRQ(ierr);
+    ierr = PetscObjectStateGet((PetscObject)ksp->vec_sol,&state);CHKERRQ(ierr);
+    if (state != ostate) {
+      ksp->guess_zero = PETSC_FALSE;
+    } else {
+      PetscInfo(ksp,"Using zero initial guess since the KSPGuess object did not change the vector\n");
+      ksp->guess_zero = PETSC_TRUE;
+    }
   }
+
   /* KSPSetUp() scales the matrix if needed */
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
@@ -613,7 +624,7 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
       if (mat != pmat) {ierr = MatDiagonalScale(mat,ksp->diagonal,ksp->diagonal);CHKERRQ(ierr);}
     }
 
-    /*  scale initial guess */
+    /* scale initial guess */
     if (!ksp->guess_zero) {
       if (!ksp->truediagonal) {
         ierr = VecDuplicate(ksp->diagonal,&ksp->truediagonal);CHKERRQ(ierr);
@@ -626,7 +637,7 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
   ierr = PCPreSolve(ksp->pc,ksp);CHKERRQ(ierr);
 
   if (ksp->guess_zero) { ierr = VecSet(ksp->vec_sol,0.0);CHKERRQ(ierr);}
-  if (ksp->guess_knoll) {
+  if (ksp->guess_knoll) { /* The Knoll trick is independent on the KSPGuess specified */
     ierr            = PCApply(ksp->pc,ksp->vec_rhs,ksp->vec_sol);CHKERRQ(ierr);
     ierr            = KSP_RemoveNullSpace(ksp,ksp->vec_sol);CHKERRQ(ierr);
     ksp->guess_zero = PETSC_FALSE;
@@ -689,11 +700,9 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
   if (ksp->postsolve) {
     ierr = (*ksp->postsolve)(ksp,ksp->vec_rhs,ksp->vec_sol,ksp->postctx);CHKERRQ(ierr);
   }
-
   if (ksp->guess) {
-    ierr = KSPFischerGuessUpdate(ksp->guess,ksp->vec_sol);CHKERRQ(ierr);
+    ierr = KSPGuessUpdate(ksp->guess,ksp->vec_rhs,ksp->vec_sol);CHKERRQ(ierr);
   }
-
 
   ierr = PCGetOperators(ksp->pc,&mat,&pmat);CHKERRQ(ierr);
   ierr = MatViewFromOptions(mat,(PetscObject)ksp,"-ksp_view_mat");CHKERRQ(ierr);
@@ -950,7 +959,7 @@ PetscErrorCode  KSPReset(KSP ksp)
     ierr = (*ksp->ops->reset)(ksp);CHKERRQ(ierr);
   }
   if (ksp->pc) {ierr = PCReset(ksp->pc);CHKERRQ(ierr);}
-  ierr = KSPFischerGuessDestroy(&ksp->guess);CHKERRQ(ierr);
+  ierr = KSPGuessDestroy(&ksp->guess);CHKERRQ(ierr);
   ierr = VecDestroyVecs(ksp->nwork,&ksp->work);CHKERRQ(ierr);
   ierr = VecDestroy(&ksp->vec_rhs);CHKERRQ(ierr);
   ierr = VecDestroy(&ksp->vec_sol);CHKERRQ(ierr);
@@ -1205,7 +1214,7 @@ PetscErrorCode  KSPSetTolerances(KSP ksp,PetscReal rtol,PetscReal abstol,PetscRe
 
 .keywords: KSP, set, initial guess, nonzero
 
-.seealso: KSPGetInitialGuessNonzero(), KSPSetInitialGuessKnoll(), KSPGetInitialGuessKnoll()
+.seealso: KSPGetInitialGuessNonzero(), KSPSetGuessType(), KSPGuessType
 @*/
 PetscErrorCode  KSPSetInitialGuessNonzero(KSP ksp,PetscBool flg)
 {
@@ -1232,7 +1241,7 @@ PetscErrorCode  KSPSetInitialGuessNonzero(KSP ksp,PetscBool flg)
 
 .keywords: KSP, set, initial guess, nonzero
 
-.seealso: KSPSetInitialGuessNonzero(), KSPSetInitialGuessKnoll(), KSPGetInitialGuessKnoll()
+.seealso: KSPSetInitialGuessNonzero()
 @*/
 PetscErrorCode  KSPGetInitialGuessNonzero(KSP ksp,PetscBool  *flag)
 {
@@ -1262,9 +1271,9 @@ PetscErrorCode  KSPGetInitialGuessNonzero(KSP ksp,PetscBool  *flag)
     Normally PETSc continues if a linear solver fails to converge, you can call KSPGetConvergedReason() after a KSPSolve()
     to determine if it has converged.
 
-.keywords: KSP, set, initial guess, nonzero
+.keywords: KSP
 
-.seealso: KSPGetInitialGuessNonzero(), KSPSetInitialGuessKnoll(), KSPGetInitialGuessKnoll(), KSPGetErrorIfNotConverged()
+.seealso: KSPGetErrorIfNotConverged()
 @*/
 PetscErrorCode  KSPSetErrorIfNotConverged(KSP ksp,PetscBool flg)
 {
@@ -1288,9 +1297,9 @@ PetscErrorCode  KSPSetErrorIfNotConverged(KSP ksp,PetscBool flg)
 
    Level: intermediate
 
-.keywords: KSP, set, initial guess, nonzero
+.keywords: KSP
 
-.seealso: KSPSetInitialGuessNonzero(), KSPSetInitialGuessKnoll(), KSPGetInitialGuessKnoll(), KSPSetErrorIfNotConverged()
+.seealso: KSPSetErrorIfNotConverged()
 @*/
 PetscErrorCode  KSPGetErrorIfNotConverged(KSP ksp,PetscBool  *flag)
 {
@@ -1312,6 +1321,7 @@ PetscErrorCode  KSPGetErrorIfNotConverged(KSP ksp,PetscBool  *flag)
 
    Level: advanced
 
+   Developer Note: the Knoll trick is not currently implemented using the KSPGuess class
 
 .keywords: KSP, set, initial guess, nonzero
 
