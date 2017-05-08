@@ -944,9 +944,8 @@ int main(int argc,char ** argv)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,*edgelist= NULL,eStart,eEnd,vStart,vEnd;
-  PetscInt       genj,loadj,m=0,n=0,componentkey[4];
+  PetscInt       genj,loadj,componentkey[4];
   PetscInt       nc = 1;    /* No. of copies (default = 1) */
-  PetscInt       neqs_net=0;/* No. of algebraic equations in the 9 bus system */
   PetscMPIInt    size,rank;
   Vec            X,F_alg;
   TS             ts;
