@@ -1310,7 +1310,8 @@ static PetscErrorCode MatMissingDiagonal_HYPRE(Mat A, PetscBool *missing, PetscI
   if (dd) *dd = -1;
   ha = hypre_ParCSRMatrixDiag(parcsr);
   if (ha) {
-    PetscInt size,i,*ii,*jj;
+    PetscInt  size,i;
+    HYPRE_Int *ii,*jj;
 
     size = hypre_CSRMatrixNumRows(ha);
     ii   = hypre_CSRMatrixI(ha);
@@ -1353,7 +1354,8 @@ static PetscErrorCode MatScale_HYPRE(Mat A, PetscScalar s)
   /* diagonal part */
   ha = hypre_ParCSRMatrixDiag(parcsr);
   if (ha) {
-    PetscInt    size,i,*ii;
+    PetscInt    size,i;
+    HYPRE_Int   *ii;
     PetscScalar *a;
 
     size = hypre_CSRMatrixNumRows(ha);
@@ -1364,7 +1366,8 @@ static PetscErrorCode MatScale_HYPRE(Mat A, PetscScalar s)
   /* offdiagonal part */
   ha = hypre_ParCSRMatrixOffd(parcsr);
   if (ha) {
-    PetscInt    size,i,*ii;
+    PetscInt    size,i;
+    HYPRE_Int   *ii;
     PetscScalar *a;
 
     size = hypre_CSRMatrixNumRows(ha);
@@ -1378,7 +1381,8 @@ static PetscErrorCode MatScale_HYPRE(Mat A, PetscScalar s)
 static PetscErrorCode MatZeroRowsColumns_HYPRE(Mat A, PetscInt numRows, const PetscInt rows[], PetscScalar diag, Vec x, Vec b)
 {
   hypre_ParCSRMatrix *parcsr;
-  PetscInt           *lrows,rst,ren,i;
+  HYPRE_Int          *lrows;
+  PetscInt           rst,ren,i;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
