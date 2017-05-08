@@ -495,7 +495,7 @@ PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt numFace
 
 static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt edges[], DMBoundaryType bdX, DMBoundaryType bdY, DMBoundaryType bdZ)
 {
-  DMLabel        cutLabel;
+  DMLabel        cutLabel = NULL;
   PetscInt       markerTop      = 1, faceMarkerTop      = 1;
   PetscInt       markerBottom   = 1, faceMarkerBottom   = 1;
   PetscInt       markerFront    = 1, faceMarkerFront    = 1;
