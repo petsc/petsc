@@ -4340,15 +4340,15 @@ PetscErrorCode DMLocalizeCoordinate(DM dm, const PetscScalar in[], PetscBool end
   } else {
     if (endpoint) {
       for (d = 0; d < dim; ++d) {
-        if ((PetscAbsReal(PetscRealPart(in[d])/dm->L[d] - floor(PetscRealPart(in[d])/dm->L[d])) < PETSC_SMALL) && (PetscRealPart(in[d])/dm->L[d] > PETSC_SMALL)) {
-          out[d] = in[d] - dm->L[d]*(floor(PetscRealPart(in[d])/dm->L[d]) - 1);
+        if ((PetscAbsReal(PetscRealPart(in[d])/dm->L[d] - PetscFloorReal(PetscRealPart(in[d])/dm->L[d])) < PETSC_SMALL) && (PetscRealPart(in[d])/dm->L[d] > PETSC_SMALL)) {
+          out[d] = in[d] - dm->L[d]*(PetscFloorReal(PetscRealPart(in[d])/dm->L[d]) - 1);
         } else {
-          out[d] = in[d] - dm->L[d]*floor(PetscRealPart(in[d])/dm->L[d]);
+          out[d] = in[d] - dm->L[d]*PetscFloorReal(PetscRealPart(in[d])/dm->L[d]);
         }
       }
     } else {
       for (d = 0; d < dim; ++d) {
-        out[d] = in[d] - dm->L[d]*floor(PetscRealPart(in[d])/dm->L[d]);
+        out[d] = in[d] - dm->L[d]*PetscFloorReal(PetscRealPart(in[d])/dm->L[d]);
       }
     }
   }
