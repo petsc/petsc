@@ -4343,7 +4343,7 @@ PetscErrorCode DMLocalizeCoordinate(DM dm, const PetscScalar in[], PetscScalar o
     for (d = 0; d < dim; ++d) out[d] = in[d];
   } else {
     for (d = 0; d < dim; ++d) {
-      out[d] = in[d] - dm->L[d]*floor(PetscRealPart(in[d])/dm->L[d]);
+      out[d] = in[d] - dm->L[d]*PetscFloorReal(PetscRealPart(in[d])/dm->L[d]);
     }
   }
   PetscFunctionReturn(0);

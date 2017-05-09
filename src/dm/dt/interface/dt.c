@@ -865,7 +865,7 @@ PetscErrorCode PetscDTTanhSinhTensorQuadrature(PetscInt dim, PetscInt level, Pet
   w[0] = 0.5*alpha*PETSC_PI;
   for (k = 1; k < K; ++k) {
     wk = 0.5*alpha*h*PETSC_PI*PetscCoshReal(k*h)/PetscSqr(PetscCoshReal(0.5*PETSC_PI*PetscSinhReal(k*h)));
-    xk = tanh(0.5*PETSC_PI*PetscSinhReal(k*h));
+    xk = PetscTanhReal(0.5*PETSC_PI*PetscSinhReal(k*h));
     x[2*k-1] = -alpha*xk+beta;
     w[2*k-1] = wk;
     x[2*k+0] =  alpha*xk+beta;

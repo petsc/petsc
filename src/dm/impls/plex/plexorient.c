@@ -484,7 +484,6 @@ PetscErrorCode DMPlexOrient(DM dm)
   /* Reverse flipped cells in the mesh */
   for (c = cStart; c < cEnd; ++c) {
     if (PetscBTLookup(flippedCells, c-cStart)) {
-      if (flg) {ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]Reversing cell %D:\n", rank, c);CHKERRQ(ierr);}
       ierr = DMPlexReverseCell(dm, c);CHKERRQ(ierr);
     }
   }

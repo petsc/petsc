@@ -266,8 +266,8 @@ PetscErrorCode UpdateSolution(SNES snes, AppCtx *user, PetscInt *nits)
 
       if (reason<0) {
         /* NOT converged */
-        cont_incr = -fabs(cont_incr)/2.0;
-        if (fabs(cont_incr)<0.01) goto done;
+        cont_incr = -PetscAbsReal(cont_incr)/2.0;
+        if (PetscAbsReal(cont_incr)<0.01) goto done;
 
       } else {
         /* converged */
@@ -335,7 +335,7 @@ PETSC_STATIC_INLINE PetscScalar HorizVelocity(PetscInt i, PetscInt j, AppCtx *us
   r  = PetscSqrtReal(x*x+z*z);
   st = z/r;
   ct = x/r;
-  th = atan(z/x);
+  th = PetscAtanReal(z/x);
   return ct*(c*th*st+d*(st+th*ct)) + st*(c*(st-th*ct)+d*th*st);
 }
 
@@ -350,7 +350,7 @@ PETSC_STATIC_INLINE PetscScalar VertVelocity(PetscInt i, PetscInt j, AppCtx *use
   PetscReal   x, z, r;
 
   x = (i - grid->jlid - 0.5)*grid->dx;  z = (j - grid->jlid)*grid->dz;
-  r = PetscSqrtReal(x*x+z*z); st = z/r;  ct = x/r;  th = atan(z/x);
+  r = PetscSqrtReal(x*x+z*z); st = z/r;  ct = x/r;  th = PetscAtanReal(z/x);
   return st*(c*th*st+d*(st+th*ct)) - ct*(c*(st-th*ct)+d*th*st);
 }
 
@@ -801,7 +801,7 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
   ierr     = PetscOptionsGetInt(NULL,NULL, "-ni",&(grid->ni),NULL);CHKERRQ(ierr);
 
   grid->dx            = param->width/((PetscReal)(grid->ni-2));               /* km */
-  grid->dz            = grid->dx*tan(param->slab_dip);                     /* km */
+  grid->dz            = grid->dx*PetscTanReal(param->slab_dip);               /* km */
   grid->nj            = (PetscInt)(param->depth/grid->dz + 3.0);         /* gridpoints*/
   param->depth        = grid->dz*(grid->nj-2);                             /* km */
   grid->inose         = 0;                                          /* gridpoints*/
@@ -1248,7 +1248,7 @@ PETSC_STATIC_INLINE PetscScalar PlateModel(PetscInt j, PetscInt plate, AppCtx *u
   if (plate==PLATE_LID) z = (j-0.5)*user->grid->dz;
   else z = (j-0.5)*user->grid->dz*param->cb;  /* PLATE_SLAB */
 #if defined(PETSC_HAVE_ERF)
-  return (erf(PetscRealPart(z*param->L/2.0/param->skt)));
+  return (PetscReal)(erf((double)PetscRealPart(z*param->L/2.0/param->skt)));
 #else
   SETERRQ(PETSC_COMM_SELF,1,"erf() not available on this machine");
 #endif

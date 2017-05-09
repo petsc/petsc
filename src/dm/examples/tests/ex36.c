@@ -15,7 +15,7 @@ CCmplx CCmplxPow(CCmplx a,PetscReal n)
   CCmplx b;
   PetscReal r,theta;
   r      = PetscSqrtReal(a.real*a.real + a.imag*a.imag);
-  theta  = atan2(a.imag,a.real);
+  theta  = PetscAtan2Real(a.imag,a.real);
   b.real = PetscPowReal(r,n) * PetscCosReal(n*theta);
   b.imag = PetscPowReal(r,n) * PetscSinReal(n*theta);
   return b;
@@ -32,7 +32,7 @@ CCmplx CCmplxSqrt(CCmplx a)
   CCmplx b;
   PetscReal r,theta;
   r      = PetscSqrtReal(a.real*a.real + a.imag*a.imag);
-  theta  = atan2(a.imag,a.real);
+  theta  = PetscAtan2Real(a.imag,a.real);
   b.real = PetscSqrtReal(r) * PetscCosReal(0.5*theta);
   b.imag = PetscSqrtReal(r) * PetscSinReal(0.5*theta);
   return b;

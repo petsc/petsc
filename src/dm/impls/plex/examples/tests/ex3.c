@@ -115,14 +115,14 @@ PetscErrorCode trig(PetscInt dim, PetscReal time, const PetscReal coords[], Pets
 {
   AppCtx   *user = (AppCtx *) ctx;
   PetscInt d;
-  for (d = 0; d < user->dim; ++d) u[d] = tanh(coords[d] - 0.5);
+  for (d = 0; d < user->dim; ++d) u[d] = PetscTanhReal(coords[d] - 0.5);
   return 0;
 }
 PetscErrorCode trigDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   AppCtx   *user = (AppCtx *) ctx;
   PetscInt d;
-  for (d = 0; d < user->dim; ++d) u[d] = 1.0/PetscSqr(cosh(coords[d] - 0.5)) * n[d];
+  for (d = 0; d < user->dim; ++d) u[d] = 1.0/PetscSqr(PetscCoshReal(coords[d] - 0.5)) * n[d];
   return 0;
 }
 

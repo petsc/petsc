@@ -375,7 +375,7 @@ PetscErrorCode femBg(PetscScalar btri[][3],PetscScalar *f,PetscInt nz,PetscScala
     zquad[il][0] = zip;
     zquad[il][1] = (0.5)*(zip+zipq);
     zquad[il][2] = zipq;
-    dlen[il]     = fabs(dl);
+    dlen[il]     = PetscAbsScalar(dl);
     nli[il][0]   = ip;
     nli[il][1]   = ipq;
   }
@@ -457,7 +457,7 @@ PetscErrorCode femA(AppCtx *obj,PetscInt nz,PetscScalar *z)
     rquad[il][0] = zip;
     rquad[il][1] = (0.5)*(zip+zipq);
     rquad[il][2] = zipq;
-    dlen[il]     = fabs(dl);
+    dlen[il]     = PetscAbsScalar(dl);
     nli[il][0]   = ip;
     nli[il][1]   = ipq;
   } /*end for (il)*/
