@@ -547,7 +547,15 @@ M*/
 .seealso: PetscMax(), PetscMin(), PetscAbsInt(), PetscSqr()
 
 M*/
-#define PetscAbsReal(a) (((a)<0)   ? -(a) : (a))
+#if defined(PETSC_USE_REAL_SINGLE)
+#define PetscAbsReal(a) fabsf(a)
+#elif defined(PETSC_USE_REAL_DOUBLE)
+#define PetscAbsReal(a) fabs(a)
+#elif defined(PETSC_USE_REAL___FLOAT128)
+#define PetscAbsReal(a) fabsq(a)
+#elif defined(PETSC_USE_REAL___FP16)
+#define PetscAbsReal(a) fabsf(a)
+#endif
 
 /*MC
    PetscSqr - Returns the square of a number

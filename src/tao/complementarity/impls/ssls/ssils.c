@@ -75,7 +75,7 @@ static PetscErrorCode TaoSolve_SSILS(Tao tao)
     ierr = VecDot(tao->stepdirection,ssls->dpsi,&innerd);CHKERRQ(ierr);
 
     /* Make sure that we have a descent direction */
-    if (innerd <= delta*pow(normd, rho)) {
+    if (innerd <= delta*PetscPowReal(normd, rho)) {
       ierr = PetscInfo(tao, "newton direction not descent\n");CHKERRQ(ierr);
       ierr = VecCopy(ssls->dpsi,tao->stepdirection);CHKERRQ(ierr);
       ierr = VecDot(tao->stepdirection,ssls->dpsi,&innerd);CHKERRQ(ierr);

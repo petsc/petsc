@@ -561,7 +561,7 @@ PetscErrorCode FormFunctionLocalMMS1(DMDALocalInfo *info,PetscScalar **vx,PetscS
 
         uxx     = (2.0*u - uw - ue)*hydhx;
         uyy     = (2.0*u - un - us)*hxdhy;
-        f[j][i] = uxx + uyy - hx*hy*(lambda*PetscExpScalar(u) + 2*x*(1 - x) + 2*y*(1 - y) - lambda*exp(x*(1 - x)*y*(1 - y)));
+        f[j][i] = uxx + uyy - hx*hy*(lambda*PetscExpScalar(u) + 2*x*(1 - x) + 2*y*(1 - y) - lambda*PetscExpReal(x*(1 - x)*y*(1 - y)));
       }
     }
   }
@@ -627,7 +627,7 @@ PetscErrorCode FormFunctionLocalMMS2(DMDALocalInfo *info,PetscScalar **vx,PetscS
 
         uxx     = (2.0*u - uw - ue)*hydhx;
         uyy     = (2.0*u - un - us)*hxdhy;
-        f[j][i] = uxx + uyy - hx*hy*(lambda*PetscExpScalar(u) + 2*PetscSqr(PETSC_PI)*PetscSinReal(PETSC_PI*x)*PetscSinReal(PETSC_PI*y) - lambda*exp(PetscSinReal(PETSC_PI*x)*PetscSinReal(PETSC_PI*y)));
+        f[j][i] = uxx + uyy - hx*hy*(lambda*PetscExpScalar(u) + 2*PetscSqr(PETSC_PI)*PetscSinReal(PETSC_PI*x)*PetscSinReal(PETSC_PI*y) - lambda*PetscExpReal(PetscSinReal(PETSC_PI*x)*PetscSinReal(PETSC_PI*y)));
       }
     }
   }

@@ -1684,7 +1684,7 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj,TS ts)
 
   PetscFunctionBegin;
   PetscStrcmp(((PetscObject)ts->adapt)->type_name,TSADAPTNONE,&flg);
-  if (flg) tjsch->total_steps = PetscMin(ts->max_steps,(PetscInt)(ceil(ts->max_time/ts->time_step))); /* fixed time step */
+  if (flg) tjsch->total_steps = PetscMin(ts->max_steps,(PetscInt)(PetscCeilReal(ts->max_time/ts->time_step))); /* fixed time step */
   if (tjsch->max_cps_ram > 0) stack->stacksize = tjsch->max_cps_ram;
 
   if (tjsch->stride > 1) { /* two level mode */

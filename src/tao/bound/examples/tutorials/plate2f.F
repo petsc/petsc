@@ -260,13 +260,13 @@
 
       ft = 0.0
       zero = 0.0
-      hx = 1.0/(mx + 1)
-      hy = 1.0/(my + 1)
+      hx = 1.0/real(mx + 1)
+      hy = 1.0/real(my + 1)
       hydhx = hy/hx
       hxdhy = hx/hy
       area = 0.5 * hx * hy
-      rhx = mx + 1.0
-      rhy = my + 1.0
+      rhx = real(mx) + 1.0
+      rhy = real(my) + 1.0
 
 
 ! Get local mesh boundaries
@@ -549,8 +549,8 @@
       if (assembled .eqv. PETSC_TRUE) call MatZeroEntries(Hessian,ierr)
 
 
-      rhx = mx + 1.0
-      rhy = my + 1.0
+      rhx = real(mx + 1.0)
+      rhy = real(my + 1.0)
       hx = 1.0/rhx
       hy = 1.0/rhy
       hydhx = hy/hx
