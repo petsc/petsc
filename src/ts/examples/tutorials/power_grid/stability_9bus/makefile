@@ -79,7 +79,6 @@ clean_files:
 
 TESTEXAMPLES_DOUBLEINT32 = ex9bus.PETSc runex9bus_implicit runex9bus_semiexplicit runex9bus_steprestart ex9bus.rm \
                            ex9busadj.PETSc runex9busadj ex9busadj.rm ex9busopt.PETSc runex9busopt ex9busopt.rm \
-                           ex9busopt_fd.PETSc runex9busopt_fd ex9busopt_fd.rm \
-                           ex9busdmnetwork.PETSc runex9busdmnetwork runex9busdmnetwork_2 ex9busdmnetwork.rm
+                           ex9busopt_fd.PETSc runex9busopt_fd ex9busopt_fd.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test
