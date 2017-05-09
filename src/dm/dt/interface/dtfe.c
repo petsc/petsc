@@ -1169,6 +1169,34 @@ PetscErrorCode PetscSpacePointSetPoints(PetscSpace sp, PetscQuadrature q)
   PetscFunctionReturn(0);
 }
 
+/*@
+  PetscSpacePointGetPoints - Gets the evaluation points for the space as the points of a quadrature rule
+
+  Logically collective
+
+  Input Parameter:
+. sp - The PetscSpace
+
+  Output Parameter:
+. q  - The PetscQuadrature defining the points
+
+  Level: intermediate
+
+.keywords: PetscSpacePoint
+.seealso: PetscSpaceCreate(), PetscSpaceSetType()
+@*/
+PetscErrorCode PetscSpacePointGetPoints(PetscSpace sp, PetscQuadrature *q)
+{
+  PetscSpace_Point *pt = (PetscSpace_Point *) sp->data;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
+  PetscValidPointer(q, 2);
+  *q = pt->quad;
+  PetscFunctionReturn(0);
+}
+
 
 PetscClassId PETSCDUALSPACE_CLASSID = 0;
 
