@@ -11,6 +11,7 @@
 #include <HYPRE.h>
 #include <HYPRE_utilities.h>
 #include <_hypre_parcsr_ls.h>
+#include <_hypre_sstruct_ls.h>
 
 static PetscErrorCode MatHYPRE_CreateFromMat(Mat,Mat_HYPRE*);
 static PetscErrorCode MatHYPRE_IJMatrixPreallocate(Mat,Mat,HYPRE_IJMatrix);
@@ -1254,7 +1255,7 @@ PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(hypre_ParCSRMatrix *vparcsr, Mat
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatHYPREGetParCSR_HYPRE(Mat A, hypre_ParCSRMatrix **parcsr)
+static PetscErrorCode MatHYPREGetParCSR_HYPRE(Mat A, hypre_ParCSRMatrix **parcsr)
 {
   Mat_HYPRE*            hA = (Mat_HYPRE*)A->data;
   HYPRE_Int             type;
@@ -1294,6 +1295,111 @@ PetscErrorCode MatHYPREGetParCSR(Mat A, hypre_ParCSRMatrix **parcsr)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatMissingDiagonal_HYPRE(Mat A, PetscBool *missing, PetscInt *dd)
+{
+  hypre_ParCSRMatrix *parcsr;
+  hypre_CSRMatrix    *ha;
+  PetscInt           rst;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  if (A->rmap->n != A->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not implemented with non-square diagonal blocks");
+  ierr = MatGetOwnershipRange(A,&rst,NULL);CHKERRQ(ierr);
+  ierr = MatHYPREGetParCSR_HYPRE(A,&parcsr);CHKERRQ(ierr);
+  if (missing) *missing = PETSC_FALSE;
+  if (dd) *dd = -1;
+  ha = hypre_ParCSRMatrixDiag(parcsr);
+  if (ha) {
+    PetscInt  size,i;
+    HYPRE_Int *ii,*jj;
+
+    size = hypre_CSRMatrixNumRows(ha);
+    ii   = hypre_CSRMatrixI(ha);
+    jj   = hypre_CSRMatrixJ(ha);
+    for (i = 0; i < size; i++) {
+      PetscInt  j;
+      PetscBool found = PETSC_FALSE;
+
+      for (j = ii[i]; j < ii[i+1] && !found; j++)
+        found = (jj[j] == i) ? PETSC_TRUE : PETSC_FALSE;
+
+      if (!found) {
+        PetscInfo1(A,"Matrix is missing local diagonal entry %D\n",i);
+        if (missing) *missing = PETSC_TRUE;
+        if (dd) *dd = i+rst;
+        PetscFunctionReturn(0);
+      }
+    }
+    if (!size) {
+      PetscInfo(A,"Matrix has no diagonal entries therefore is missing diagonal\n");
+      if (missing) *missing = PETSC_TRUE;
+      if (dd) *dd = rst;
+    }
+  } else {
+    PetscInfo(A,"Matrix has no diagonal entries therefore is missing diagonal\n");
+    if (missing) *missing = PETSC_TRUE;
+    if (dd) *dd = rst;
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatScale_HYPRE(Mat A, PetscScalar s)
+{
+  hypre_ParCSRMatrix *parcsr;
+  hypre_CSRMatrix    *ha;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr  = MatHYPREGetParCSR_HYPRE(A,&parcsr);CHKERRQ(ierr);
+  /* diagonal part */
+  ha = hypre_ParCSRMatrixDiag(parcsr);
+  if (ha) {
+    PetscInt    size,i;
+    HYPRE_Int   *ii;
+    PetscScalar *a;
+
+    size = hypre_CSRMatrixNumRows(ha);
+    a    = hypre_CSRMatrixData(ha);
+    ii   = hypre_CSRMatrixI(ha);
+    for (i = 0; i < ii[size]; i++) a[i] *= s;
+  }
+  /* offdiagonal part */
+  ha = hypre_ParCSRMatrixOffd(parcsr);
+  if (ha) {
+    PetscInt    size,i;
+    HYPRE_Int   *ii;
+    PetscScalar *a;
+
+    size = hypre_CSRMatrixNumRows(ha);
+    a    = hypre_CSRMatrixData(ha);
+    ii   = hypre_CSRMatrixI(ha);
+    for (i = 0; i < ii[size]; i++) a[i] *= s;
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatZeroRowsColumns_HYPRE(Mat A, PetscInt numRows, const PetscInt rows[], PetscScalar diag, Vec x, Vec b)
+{
+  hypre_ParCSRMatrix *parcsr;
+  HYPRE_Int          *lrows;
+  PetscInt           rst,ren,i;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  if (x || b) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"To be implemented");
+  ierr = MatHYPREGetParCSR_HYPRE(A,&parcsr);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numRows,&lrows);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(A,&rst,&ren);CHKERRQ(ierr);
+  for (i=0;i<numRows;i++) {
+    if (rows[i] < rst || rows[i] >= ren)
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Non-local rows not yet supported");
+    lrows[i] = rows[i] - rst;
+  }
+  PetscStackCallStandard(hypre_ParCSRMatrixEliminateRowsCols,(parcsr,numRows,lrows));
+  ierr = PetscFree(lrows);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*MC
    MATHYPRE - MATHYPRE = "hypre" - A matrix type to be used for sequential and parallel sparse matrices
           based on the hypre IJ interface.
@@ -1316,14 +1422,17 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
   B->rmap->bs   = 1;
   B->assembled  = PETSC_FALSE;
 
-  B->ops->mult          = MatMult_HYPRE;
-  B->ops->multtranspose = MatMultTranspose_HYPRE;
-  B->ops->setup         = MatSetUp_HYPRE;
-  B->ops->destroy       = MatDestroy_HYPRE;
-  B->ops->assemblyend   = MatAssemblyEnd_HYPRE;
-  B->ops->ptap          = MatPtAP_HYPRE_HYPRE;
-  B->ops->matmult       = MatMatMult_HYPRE_HYPRE;
-  B->ops->setvalues     = MatSetValues_HYPRE;
+  B->ops->mult            = MatMult_HYPRE;
+  B->ops->multtranspose   = MatMultTranspose_HYPRE;
+  B->ops->setup           = MatSetUp_HYPRE;
+  B->ops->destroy         = MatDestroy_HYPRE;
+  B->ops->assemblyend     = MatAssemblyEnd_HYPRE;
+  B->ops->ptap            = MatPtAP_HYPRE_HYPRE;
+  B->ops->matmult         = MatMatMult_HYPRE_HYPRE;
+  B->ops->setvalues       = MatSetValues_HYPRE;
+  B->ops->missingdiagonal = MatMissingDiagonal_HYPRE;
+  B->ops->scale           = MatScale_HYPRE;
+  B->ops->zerorowscolumns = MatZeroRowsColumns_HYPRE;
 
   ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)B),&hB->comm);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATHYPRE);CHKERRQ(ierr);
