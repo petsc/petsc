@@ -1188,7 +1188,6 @@ PetscErrorCode PetscSpacePointSetPoints(PetscSpace sp, PetscQuadrature q)
 PetscErrorCode PetscSpacePointGetPoints(PetscSpace sp, PetscQuadrature *q)
 {
   PetscSpace_Point *pt = (PetscSpace_Point *) sp->data;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
