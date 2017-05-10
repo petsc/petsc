@@ -26,7 +26,7 @@ runpf:
 	   ${RM} -f pf.tmp
 
 runpf_2:
-	-@${MPIEXEC} -n 3 ./pf -snes_rtol 1.e-3 > pf.tmp 2>&1;   \
+	-@${MPIEXEC} -n 3 ./pf -snes_rtol 1.e-3 -petscpartitioner_type simple > pf.tmp 2>&1;   \
 	   if (${DIFF} output/pf_2.out pf.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with pf_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f pf.tmp
