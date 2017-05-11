@@ -4250,7 +4250,7 @@ PetscErrorCode DMSetCoordinateSection(DM dm, PetscInt dim, PetscSection section)
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(cdm, section);CHKERRQ(ierr);
   if (dim == PETSC_DETERMINE) {
-    PetscInt d = dim;
+    PetscInt d = PETSC_DEFAULT;
     PetscInt pStart, pEnd, vStart, vEnd, v, dd;
 
     ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
