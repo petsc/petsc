@@ -1211,16 +1211,13 @@ compilation of that file.  The general skeleton of the file is:
 \begin{lstlisting}
       static char help[] = "A simple MOAB example\n\
 
-      /*T
-         Concepts: Demonstrate MOAB bindings for DM
-         requires: moab
-      T*/
-      
       ...
       <source code>
       ...
 
-      /*TESTS
+      /*TEST
+         build:
+           requires: moab
          testset:
            suffix: 1
            requires: !complex
@@ -1230,7 +1227,7 @@ compilation of that file.  The general skeleton of the file is:
            test:
            test:
              args: -foo bar
-      TESTS*/
+      TEST*/
 
 \end{lstlisting}
 
@@ -1405,7 +1402,7 @@ With this background, these keywords are are:
     \item[]  \textbf{requires}: (\emph{Optional}; \emph{Default:} \lstinline{""})
       \begin{itemize}
 
-        \item A space-delimited list of requirements of run requirements (not
+        \item A space-delimited list of run requirements (not
         build requirements. See Build requirements below)
 
         \item In general, the language supports \lstinline{and} and \lstinline{not} constructs
@@ -1617,7 +1614,7 @@ Each shell script would invoke mpiexec twice.
 }
 
 It is possible to specify issues related to the compilation of the
-source file.  The language is:
+source file with the \lstinline{build:} block.  The language is:
 %
 \begin{quote}
 %
@@ -1637,6 +1634,8 @@ but also requirements related to types:
 A. Precision types: single, double, quad, int32
 B. Scalar types: complex  (and !complex)
 \end{list}
+In addition, \lstinline{TODO}  is available to allow one to skip the
+build of this file but still maintain it in the source tree.
 
 \end{description}
 

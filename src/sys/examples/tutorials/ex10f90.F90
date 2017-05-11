@@ -1,10 +1,5 @@
       program ex10f90
 
-!/*T
-!   requires: yaml
-!T*/
-
-
 #include "petsc/finclude/petsc.h"
       use petsc
       implicit none
@@ -31,16 +26,17 @@
 !
 !/*TEST
 !
+!   build:
+!     requires: yaml
+!
 !   test:
 !      suffix: 1
-!      requires: yaml
 !      args: -f petsc.yml
 !      filter:   grep -v saws_port_auto_select |grep -v malloc_dump | grep -v display
 !      localrunfiles: petsc.yml
 !
 !   test:
 !      suffix: 2
-!      requires: yaml
 !      args: -options_file_yaml petsc.yml
 !      filter:   grep -v saws_port_auto_select |grep -v malloc_dump | grep -v display
 !      localrunfiles: petsc.yml
