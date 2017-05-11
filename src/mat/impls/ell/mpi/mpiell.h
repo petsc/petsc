@@ -56,8 +56,6 @@ PETSC_INTERN PetscErrorCode MatGetSeqNonzeroStructure_MPIELL(Mat,Mat*);
 PETSC_INTERN PetscErrorCode MatSetFromOptions_MPIELL(PetscOptionItems*,Mat);
 PETSC_INTERN PetscErrorCode MatMPIELLSetPreallocation_MPIELL(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
 
-extern PetscErrorCode MatGetDiagonalBlock_MPIELL(Mat,Mat*);
-
 PETSC_INTERN PetscErrorCode MatConvert_MPIELL_MPIAIJ(Mat,MatType,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIELL(Mat,MatType,MatReuse,Mat*);
 

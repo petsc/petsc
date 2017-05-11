@@ -462,7 +462,7 @@ PetscErrorCode  MatIsTranspose_MPIELL(Mat Amat,Mat Bmat,PetscReal tol,PetscBool 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size == 1) PetscFunctionReturn(0);
 
-  /* Hard test: off-diagonal block. This takes a MatGetSubMatrix. */
+  /* Hard test: off-diagonal block. This takes a MatCreateSubMatrix. */
   ierr = MatGetSize(Amat,&M,&N);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Amat,&first,&last);CHKERRQ(ierr);
   ierr = PetscMalloc1(N-last+first,&notme);CHKERRQ(ierr);
@@ -470,9 +470,9 @@ PetscErrorCode  MatIsTranspose_MPIELL(Mat Amat,Mat Bmat,PetscReal tol,PetscBool 
   for (i=last; i<M; i++) notme[i-last+first] = i;
   ierr = ISCreateGeneral(MPI_COMM_SELF,N-last+first,notme,PETSC_COPY_VALUES,&Notme);CHKERRQ(ierr);
   ierr = ISCreateStride(MPI_COMM_SELF,last-first,first,1,&Me);CHKERRQ(ierr);
-  ierr = MatGetSubMatrices(Amat,1,&Me,&Notme,MAT_INITIAL_MATRIX,&Aoffs);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(Amat,1,&Me,&Notme,MAT_INITIAL_MATRIX,&Aoffs);CHKERRQ(ierr);
   Aoff = Aoffs[0];
-  ierr = MatGetSubMatrices(Bmat,1,&Notme,&Me,MAT_INITIAL_MATRIX,&Boffs);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(Bmat,1,&Notme,&Me,MAT_INITIAL_MATRIX,&Boffs);CHKERRQ(ierr);
   Boff = Boffs[0];
   ierr = MatIsTranspose(Aoff,Boff,tol,f);CHKERRQ(ierr);
   ierr = MatDestroyMatrices(1,&Aoffs);CHKERRQ(ierr);
@@ -1035,6 +1035,12 @@ PetscErrorCode MatMissingDiagonal_MPIELL(Mat A,PetscBool  *missing,PetscInt *d)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatGetDiagonalBlock_MPIELL(Mat A,Mat *a)
+{
+  PetscFunctionBegin;
+  *a = ((Mat_MPIELL*)A->data)->A;
+  PetscFunctionReturn(0);
+}
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPIELL,
@@ -1069,7 +1075,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIELL,
                                 /*29*/ MatSetUp_MPIELL,
                                        0,
                                        0,
-                                       0,
+                                       MatGetDiagonalBlock_MPIELL,
                                        0,
                                 /*34*/ MatDuplicate_MPIELL,
                                        0,
@@ -1701,7 +1707,7 @@ PetscErrorCode  MatMPIELLGetLocalMatCondensed(Mat A,MatReuse scall,IS *row,IS *c
     ierr    = PetscMalloc1(1,&aloc);CHKERRQ(ierr);
     aloc[0] = *A_loc;
   }
-  ierr   = MatGetSubMatrices(A,1,&isrowa,&iscola,scall,&aloc);CHKERRQ(ierr);
+  ierr   = MatCreateSubMatrices(A,1,&isrowa,&iscola,scall,&aloc);CHKERRQ(ierr);
   *A_loc = aloc[0];
   ierr   = PetscFree(aloc);CHKERRQ(ierr);
   if (!row) {
