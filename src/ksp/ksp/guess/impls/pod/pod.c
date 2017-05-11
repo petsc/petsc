@@ -252,10 +252,9 @@ static PetscErrorCode KSPGuessUpdate_POD(KSPGuess guess, Vec b, Vec x)
   }
  
   if (pod->monitor) {
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)guess),"  KSPGuessPOD %D energies = ",pod->nen);CHKERRQ(ierr);
-    for (i=pod->n-1,parten=0;i>=0;i--) {
-      parten += pod->eigs[i];
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)guess),"%1.12e (%d) ",parten/toten,i >= pod->st ? 1 : 0);CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)guess),"  KSPGuessPOD: basis %D, energy fractions = ",pod->nen);CHKERRQ(ierr);
+    for (i=pod->n-1;i>=0;i--) {
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)guess),"%1.6e (%d) ",pod->eigs[i]/toten,i >= pod->st ? 1 : 0);CHKERRQ(ierr);
     }
     ierr = PetscPrintf(PetscObjectComm((PetscObject)guess),"\n");CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
