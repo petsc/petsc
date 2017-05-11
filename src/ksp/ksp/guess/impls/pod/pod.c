@@ -147,6 +147,17 @@ static PetscErrorCode KSPGuessFormGuess_POD(KSPGuess guess,Vec b,Vec x)
   }
   /* x = X * V * S * x_low */
   PetscStackCallBLAS("BLASgemv",BLASgemv_("N",&bN,&bNen,&one,pod->eigv+pod->st*pod->n,&bN,pod->swork,&ione,&zero,pod->swork+pod->n,&ione));
+  if (pod->monitor) {
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)guess),"  KSPGuessPOD sol = ");CHKERRQ(ierr);
+    for (i=0; i<pod->nen; i++) {
+#if defined(PETSC_USE_COMPLEX)
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)guess),"%g + %g i",(double)PetscRealPart(pod->swork[i+pod->n]),(double)PetscImaginaryPart(pod->swork[i+pod->n]));CHKERRQ(ierr);
+#else
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)guess),"%g ",(double)pod->swork[i+pod->n]);CHKERRQ(ierr);
+#endif
+    }
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)guess),"\n");CHKERRQ(ierr);
+  }
   ierr = VecGetArray(x,&array);CHKERRQ(ierr);
   ierr = VecPlaceArray(pod->bsnap[pod->curr],array);CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&array);CHKERRQ(ierr);
@@ -160,7 +171,7 @@ static PetscErrorCode KSPGuessFormGuess_POD(KSPGuess guess,Vec b,Vec x)
 static PetscErrorCode KSPGuessUpdate_POD(KSPGuess guess, Vec b, Vec x)
 {
   KSPGuessPOD    *pod = (KSPGuessPOD*)guess->data;
-  PetscScalar    one = 1, zero = 0;
+  PetscScalar    one = 1, zero = 0,*array;
   PetscReal      toten, parten, reps = 0; /* dlamch? */
   PetscBLASInt   bN,lierr,idummy;
   PetscInt       i;
@@ -169,7 +180,12 @@ static PetscErrorCode KSPGuessUpdate_POD(KSPGuess guess, Vec b, Vec x)
   PetscFunctionBegin;
   pod->n = pod->n < pod->maxn ? pod->n+1 : pod->maxn;
   ierr = VecCopy(x,pod->xsnap[pod->curr]);CHKERRQ(ierr);
-  ierr = VecCopy(b,pod->bsnap[pod->curr]);CHKERRQ(ierr);
+  ierr = VecGetArray(pod->bsnap[pod->curr],&array);CHKERRQ(ierr);
+  ierr = VecPlaceArray(b,array);CHKERRQ(ierr);
+  ierr = VecRestoreArray(pod->bsnap[pod->curr],&array);CHKERRQ(ierr);
+  ierr = KSP_MatMult(guess->ksp,guess->A,x,b);CHKERRQ(ierr);
+  ierr = VecResetArray(b);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)pod->bsnap[pod->curr]);CHKERRQ(ierr);
   if (pod->Aspd) {
     ierr = VecMDot(pod->xsnap[pod->curr],pod->n,pod->bsnap,pod->swork);CHKERRQ(ierr);
     ierr = MPIU_Allreduce(pod->swork,pod->swork + 3*pod->n,pod->n,MPIU_SCALAR,MPI_SUM,PetscObjectComm((PetscObject)guess));CHKERRQ(ierr);
@@ -250,7 +266,7 @@ static PetscErrorCode KSPGuessUpdate_POD(KSPGuess guess, Vec b, Vec x)
     PetscStackCallBLAS("BLASgemm",BLASgemm_("T","N",&bNen,&bN,&bN,&one,pod->eigv+st,&bN,pod->yhay,&bMaxN,&zero,pod->swork,&bNen));
     PetscStackCallBLAS("BLASgemm",BLASgemm_("N","N",&bNen,&bNen,&bN,&one,pod->swork,&bNen,pod->eigv+st,&bN,&zero,pod->low,&bNen));
   }
- 
+
   if (pod->monitor) {
     ierr = PetscPrintf(PetscObjectComm((PetscObject)guess),"  KSPGuessPOD: basis %D, energy fractions = ",pod->nen);CHKERRQ(ierr);
     for (i=pod->n-1;i>=0;i--) {
