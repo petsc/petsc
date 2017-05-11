@@ -479,7 +479,7 @@ PetscErrorCode  ISGetLocalSize(IS is,PetscInt *size)
 .  ptr - the location to put the pointer to the indices
 
    Fortran Note:
-   This routine is used differently from Fortran
+   This routine has two different interfaces from Fortran; the first is not recommend, it does not require Fortran 90
 $    IS          is
 $    integer     is_array(1)
 $    PetscOffset i_is
@@ -491,6 +491,14 @@ $      value = is_array(i_is + 1)
 $
 $      ...... other code
 $       call ISRestoreIndices(is,is_array,i_is,ierr)
+   The second Fortran interface is recommended.
+$          use petscisdef
+$          PetscInt, pointer :: array(:)
+$          PetscErrorCode  ierr
+$          IS       i
+$          call ISGetIndicesF90(i,array,ierr)
+
+
 
    See the Fortran chapter of the users manual and
    petsc/src/is/examples/[tutorials,tests] for details.
