@@ -3,21 +3,24 @@
 #include <petscblaslapack.h>
 
 typedef struct {
-  PetscInt     maxn;   /* maximum number of snapshots */
-  PetscInt     n;      /* number of active snapshots */
-  PetscInt     curr;   /* current tip of snapshots set */
-  Vec          *xsnap; /* snapshots */
-  Vec          *bsnap; /* rhs snapshots */
-  PetscReal    tol;    /* relative tolerance to retain eigenvalues */
-  PetscBool    Aspd;   /* if true, uses the SPD operator as inner product */
-  PetscScalar  *corr;  /* correlation matrix */
-  PetscReal    *eigs;  /* eigenvalues */
-  PetscScalar  *eigv;  /* eigenvectors */
-  PetscBLASInt nen;    /* dimension of lower dimensional system */
-  PetscInt     st;     /* first eigenvector of correlation matrix to be retained */ 
-  PetscBLASInt *iwork; /* integer work vector */
-  PetscScalar  *yhay;  /* Y^H * A * Y */
-  PetscScalar  *low;   /* lower dimensional linear system */
+  PetscInt     maxn;             /* maximum number of snapshots */
+  PetscInt     n;                /* number of active snapshots */
+  PetscInt     curr;             /* current tip of snapshots set */
+  Vec          *xsnap;           /* snapshots */
+  Vec          *bsnap;           /* rhs snapshots */
+  PetscScalar  *dots_iallreduce;
+  MPI_Request  req_iallreduce;
+  PetscInt     ndots_iallreduce; /* if we have iallreduce we can hide the VecMDot communications */
+  PetscReal    tol;              /* relative tolerance to retain eigenvalues */
+  PetscBool    Aspd;             /* if true, uses the SPD operator as inner product */
+  PetscScalar  *corr;            /* correlation matrix */
+  PetscReal    *eigs;            /* eigenvalues */
+  PetscScalar  *eigv;            /* eigenvectors */
+  PetscBLASInt nen;              /* dimension of lower dimensional system */
+  PetscInt     st;               /* first eigenvector of correlation matrix to be retained */
+  PetscBLASInt *iwork;           /* integer work vector */
+  PetscScalar  *yhay;            /* Y^H * A * Y */
+  PetscScalar  *low;             /* lower dimensional linear system */
 #if defined(PETSC_USE_COMPLEX)
   PetscReal    *rwork;
 #endif
@@ -51,6 +54,9 @@ static PetscErrorCode KSPGuessSetUp_POD(KSPGuess guess)
                         6*pod->maxn,&pod->iwork,pod->maxn*pod->maxn,&pod->yhay,pod->maxn*pod->maxn,&pod->low);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
     ierr = PetscMalloc1(7*pod->maxn,&pod->rwork);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_MPI_IALLREDUCE)
+    ierr = PetscMalloc1(3*pod->maxn,&pod->dots_iallreduce);CHKERRQ(ierr);
 #endif
     pod->lwork = -1;
     ierr = PetscBLASIntCast(pod->maxn,&bN);CHKERRQ(ierr);
@@ -100,12 +106,15 @@ static PetscErrorCode KSPGuessDestroy_POD(KSPGuess guess)
 #if defined(PETSC_USE_COMPLEX)
   ierr = PetscFree(pod->rwork);CHKERRQ(ierr);
 #endif
+  ierr = PetscFree(pod->dots_iallreduce);CHKERRQ(ierr);
   ierr = PetscFree(pod->swork);CHKERRQ(ierr);
   ierr = VecDestroyVecs(pod->maxn,&pod->bsnap);CHKERRQ(ierr);
   ierr = VecDestroyVecs(pod->maxn,&pod->xsnap);CHKERRQ(ierr);
   ierr = PetscFree(pod);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+static PetscErrorCode KSPGuessUpdate_POD(KSPGuess,Vec,Vec);
 
 static PetscErrorCode KSPGuessFormGuess_POD(KSPGuess guess,Vec b,Vec x)
 {
@@ -116,6 +125,9 @@ static PetscErrorCode KSPGuessFormGuess_POD(KSPGuess guess,Vec b,Vec x)
   PetscInt       i;
 
   PetscFunctionBegin;
+  if (pod->ndots_iallreduce) { /* complete communication and project the linear system */
+    ierr = KSPGuessUpdate_POD(guess,NULL,NULL);CHKERRQ(ierr);
+  }
   if (!pod->nen) PetscFunctionReturn(0);
   /* b_low = S * V^T * X^T * b */
   ierr = VecGetArrayRead(b,(const PetscScalar**)&array);CHKERRQ(ierr);
@@ -178,6 +190,7 @@ static PetscErrorCode KSPGuessUpdate_POD(KSPGuess guess, Vec b, Vec x)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (pod->ndots_iallreduce) goto complete_request;
   pod->n = pod->n < pod->maxn ? pod->n+1 : pod->maxn;
   ierr = VecCopy(x,pod->xsnap[pod->curr]);CHKERRQ(ierr);
   ierr = VecGetArray(pod->bsnap[pod->curr],&array);CHKERRQ(ierr);
@@ -188,10 +201,16 @@ static PetscErrorCode KSPGuessUpdate_POD(KSPGuess guess, Vec b, Vec x)
   ierr = PetscObjectStateIncrease((PetscObject)pod->bsnap[pod->curr]);CHKERRQ(ierr);
   if (pod->Aspd) {
     ierr = VecMDot(pod->xsnap[pod->curr],pod->n,pod->bsnap,pod->swork);CHKERRQ(ierr);
+#if !defined(PETSC_HAVE_MPI_IALLREDUCE)
     ierr = MPIU_Allreduce(pod->swork,pod->swork + 3*pod->n,pod->n,MPIU_SCALAR,MPI_SUM,PetscObjectComm((PetscObject)guess));CHKERRQ(ierr);
+#else
+    ierr = MPI_Iallreduce(pod->swork,pod->dots_iallreduce,pod->n,MPIU_SCALAR,MPI_SUM,PetscObjectComm((PetscObject)guess),&pod->req_iallreduce);CHKERRQ(ierr);
+    pod->ndots_iallreduce = 1;
+#endif
   } else {
     PetscBool herm;
-    /* ierr = VecMDot(pod->xsnap[pod->curr],pod->n,pod->bsnap,pod->swork);CHKERRQ(ierr); */
+
+    /* TODO: we may want to use a user-defined dot for the correlation matrix */
     ierr = VecMDot(pod->xsnap[pod->curr],pod->n,pod->xsnap,pod->swork);CHKERRQ(ierr);
     ierr = VecMDot(pod->bsnap[pod->curr],pod->n,pod->xsnap,pod->swork + pod->n);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
@@ -201,12 +220,49 @@ static PetscErrorCode KSPGuessUpdate_POD(KSPGuess guess, Vec b, Vec x)
 #endif
     if (!herm) {
       ierr = VecMDot(pod->xsnap[pod->curr],pod->n,pod->bsnap,pod->swork + 2*pod->n);CHKERRQ(ierr);
+#if !defined(PETSC_HAVE_MPI_IALLREDUCE)
       ierr = MPIU_Allreduce(pod->swork,pod->swork + 3*pod->n,3*pod->n,MPIU_SCALAR,MPI_SUM,PetscObjectComm((PetscObject)guess));CHKERRQ(ierr);
+#else
+      ierr = MPI_Iallreduce(pod->swork,pod->dots_iallreduce,3*pod->n,MPIU_SCALAR,MPI_SUM,PetscObjectComm((PetscObject)guess),&pod->req_iallreduce);CHKERRQ(ierr);
+      pod->ndots_iallreduce = 3;
+#endif
     } else {
+#if !defined(PETSC_HAVE_MPI_IALLREDUCE)
       ierr = MPIU_Allreduce(pod->swork,pod->swork + 3*pod->n,2*pod->n,MPIU_SCALAR,MPI_SUM,PetscObjectComm((PetscObject)guess));CHKERRQ(ierr);
       for (i=0;i<pod->n;i++) pod->swork[5*pod->n + i] = pod->swork[4*pod->n + i];
+#else
+      ierr = MPI_Iallreduce(pod->swork,pod->dots_iallreduce,2*pod->n,MPIU_SCALAR,MPI_SUM,PetscObjectComm((PetscObject)guess),&pod->req_iallreduce);CHKERRQ(ierr);
+      pod->ndots_iallreduce = 2;
+#endif
     }
   }
+  if (pod->ndots_iallreduce) PetscFunctionReturn(0);
+
+complete_request:
+  if (pod->ndots_iallreduce) {
+    ierr = MPI_Wait(&pod->req_iallreduce,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+    switch (pod->ndots_iallreduce) {
+    case 3:
+      for (i=0;i<pod->n;i++) pod->swork[3*pod->n + i] = pod->dots_iallreduce[         i];
+      for (i=0;i<pod->n;i++) pod->swork[4*pod->n + i] = pod->dots_iallreduce[  pod->n+i];
+      for (i=0;i<pod->n;i++) pod->swork[5*pod->n + i] = pod->dots_iallreduce[2*pod->n+i];
+      break;
+    case 2:
+      for (i=0;i<pod->n;i++) pod->swork[3*pod->n + i] = pod->dots_iallreduce[       i];
+      for (i=0;i<pod->n;i++) pod->swork[4*pod->n + i] = pod->dots_iallreduce[pod->n+i];
+      for (i=0;i<pod->n;i++) pod->swork[5*pod->n + i] = pod->dots_iallreduce[pod->n+i];
+      break;
+    case 1:
+      for (i=0;i<pod->n;i++) pod->swork[3*pod->n + i] = pod->dots_iallreduce[i];
+      break;
+    default:
+      SETERRQ1(PetscObjectComm((PetscObject)guess),PETSC_ERR_PLIB,"Invalid number of outstanding dots operations: %D",pod->ndots_iallreduce);
+      break;
+    }
+  }
+  pod->ndots_iallreduce = 0;
+
+  /* correlation matrix and Y^H A Y (Galerkin) */
   for (i=0;i<pod->n;i++) {
     pod->corr[pod->curr*pod->maxn+i] = pod->swork[3*pod->n + i];
     pod->corr[i*pod->maxn+pod->curr] = PetscConj(pod->swork[3*pod->n + i]);
@@ -218,9 +274,7 @@ static PetscErrorCode KSPGuessUpdate_POD(KSPGuess guess, Vec b, Vec x)
   /* syevx change the input matrix */
   for (i=0;i<pod->n;i++) {
     PetscInt j;
-    for (j=i;j<pod->n;j++) {
-      pod->swork[i*pod->n+j] = pod->corr[i*pod->maxn+j];
-    }
+    for (j=i;j<pod->n;j++) pod->swork[i*pod->n+j] = pod->corr[i*pod->maxn+j];
   }
   ierr = PetscBLASIntCast(pod->n,&bN);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
@@ -236,6 +290,7 @@ static PetscErrorCode KSPGuessUpdate_POD(KSPGuess guess, Vec b, Vec x)
 #endif
   if (lierr<0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYEV Lapack routine: illegal argument %d",-(int)lierr);
   else if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYEV Lapack routine: %d eigenvectors failed to converge",(int)lierr);
+
   /* dimension of lower dimensional system */ 
   for (i=0,toten=0;i<pod->n;i++) {
     pod->eigs[i] = PetscAbsReal(pod->eigs[i]);
@@ -248,6 +303,7 @@ static PetscErrorCode KSPGuessUpdate_POD(KSPGuess guess, Vec b, Vec x)
     if (parten/toten > 1.0 - pod->tol) break;
   }
   pod->st = pod->n - pod->nen;
+
   /* Compute eigv = V * S */
   for (i=pod->st;i<pod->n;i++) {
     const PetscReal v = 1.0/PetscSqrtReal(pod->eigs[i]);
@@ -328,7 +384,7 @@ static PetscErrorCode KSPGuessView_POD(KSPGuess guess,PetscViewer viewer)
 }
 
 /*
-    KSPGUESSPOD - Implements a proper orthogonal decomposition based galerkin scheme for repeated linear system solves.
+    KSPGUESSPOD - Implements a proper orthogonal decomposition based Galerkin scheme for repeated linear system solves.
 
   The initial guess is obtained by solving a small and dense linear system, obtained by Galerkin projection on a lower dimensional space generated by the previous solutions.
   The number of solutions to be retained and the energy tolerance to construct the lower dimensional basis can be specified at command line by -ksp_guess_pod_tol <real> and -ksp_guess_pod_size <int>.
