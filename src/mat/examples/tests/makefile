@@ -2230,13 +2230,13 @@ runex125:
 
 runex125_mumps:
 	-@${MPIEXEC} -n 1 ./ex125 -f ${DATAFILESPATH}/matrices/small -mat_solver_package 2 > ex125.tmp 2>&1; \
-	   if (${DIFF} output/ex125_mumps.out ex125.tmp) then true; \
+	   if (${DIFF} output/ex125_mumps_seq.out ex125.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex125_mumps, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex125.tmp
 
 runex125_mumps_2:
 	-@${MPIEXEC} -n 3 ./ex125 -f ${DATAFILESPATH}/matrices/small -mat_solver_package 2 > ex125.tmp 2>&1; \
-	   if (${DIFF} output/ex125_mumps.out ex125.tmp) then true; \
+	   if (${DIFF} output/ex125_mumps_par.out ex125.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex125_mumps_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex125.tmp
 

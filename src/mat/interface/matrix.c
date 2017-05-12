@@ -7028,7 +7028,7 @@ PetscErrorCode MatGetBlockSize(Mat mat,PetscInt *bs)
 
    Output Parameter:
 .  rbs - row block size
-.  cbs - coumn block size
+.  cbs - column block size
 
    Notes:
     Block row formats are MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ. These formats ALWAYS have square block storage in the matrix.

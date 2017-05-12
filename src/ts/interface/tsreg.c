@@ -49,6 +49,7 @@ PetscErrorCode  TSSetType(TS ts,TSType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
+  PetscValidCharPointer(type,2);
   ierr = PetscObjectTypeCompare((PetscObject) ts, type, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
@@ -56,10 +57,9 @@ PetscErrorCode  TSSetType(TS ts,TSType type)
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TS type: %s", type);
   if (ts->ops->destroy) {
     ierr = (*(ts)->ops->destroy)(ts);CHKERRQ(ierr);
-
-    ts->ops->destroy = NULL;
   }
   ierr = PetscMemzero(ts->ops,sizeof(*ts->ops));CHKERRQ(ierr);
+  ts->default_adapt_type = TSADAPTNONE;
 
   ts->setupcalled = PETSC_FALSE;
 

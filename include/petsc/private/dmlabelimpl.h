@@ -4,7 +4,7 @@
 #include <petscdmlabel.h>
 #include <petscbt.h>
 #include <petscistypes.h>
-#include <../src/sys/utils/hash.h>
+#include <petsc/private/hash.h>
 
 /* This is an integer map, in addition it is also a container class
    Design points:

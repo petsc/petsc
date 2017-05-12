@@ -338,7 +338,7 @@ static PetscErrorCode PetscSectionCheckConstraints_Static(PetscSection s)
 }
 
 /*@
-  PetscSectionGetChart - Returns the range [pStart, pEnd) in which points in the lie.
+  PetscSectionGetChart - Returns the range [pStart, pEnd) in which points lie.
 
   Not collective
 
@@ -363,7 +363,7 @@ PetscErrorCode PetscSectionGetChart(PetscSection s, PetscInt *pStart, PetscInt *
 }
 
 /*@
-  PetscSectionSetChart - Sets the range [pStart, pEnd) in which points in the lie.
+  PetscSectionSetChart - Sets the range [pStart, pEnd) in which points lie.
 
   Not collective
 

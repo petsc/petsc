@@ -412,7 +412,7 @@ class Configure(config.package.Package):
   def checkESSL(self):
     '''Check for the IBM ESSL library'''
     self.libraries.saveLog()
-    if self.libraries.check(self.lapackLibrary, 'iessl'):
+    if self.libraries.check(self.dlib, 'iessl'):
       self.addDefine('HAVE_ESSL',1)
     self.logWrite(self.libraries.restoreLog())
     return
@@ -420,7 +420,7 @@ class Configure(config.package.Package):
   def checkMKL(self):
     '''Check for Intel MKL library'''
     self.libraries.saveLog()
-    if self.libraries.check(self.lapackLibrary, 'mkl_set_num_threads'):
+    if self.libraries.check(self.dlib, 'mkl_set_num_threads'):
       self.mkl = 1
     self.logWrite(self.libraries.restoreLog())
     return
@@ -428,7 +428,7 @@ class Configure(config.package.Package):
   def checkPESSL(self):
     '''Check for the IBM PESSL library - and error out - if used instead of ESSL'''
     self.libraries.saveLog()
-    if self.libraries.check(self.lapackLibrary, 'ipessl'):
+    if self.libraries.check(self.dlib, 'ipessl'):
       self.logWrite(self.libraries.restoreLog())
       raise RuntimeError('Cannot use PESSL instead of ESSL!')
     self.logWrite(self.libraries.restoreLog())

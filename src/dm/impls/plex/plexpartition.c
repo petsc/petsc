@@ -466,6 +466,23 @@ PetscErrorCode PetscPartitionerView(PetscPartitioner part, PetscViewer v)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PetscPartitionerGetDefaultType(const char *currentType, const char **defaultType)
+{
+  PetscFunctionBegin;
+  if (!currentType) {
+#if defined(PETSC_HAVE_CHACO)
+    *defaultType = PETSCPARTITIONERCHACO;
+#elif defined(PETSC_HAVE_PARMETIS)
+    *defaultType = PETSCPARTITIONERPARMETIS;
+#else
+    *defaultType = PETSCPARTITIONERSIMPLE;
+#endif
+  } else {
+    *defaultType = currentType;
+  }
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode PetscPartitionerSetTypeFromOptions_Internal(PetscPartitioner part)
 {
   const char    *defaultType;
@@ -475,16 +492,7 @@ PetscErrorCode PetscPartitionerSetTypeFromOptions_Internal(PetscPartitioner part
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  if (!((PetscObject) part)->type_name)
-#if defined(PETSC_HAVE_CHACO)
-    defaultType = PETSCPARTITIONERCHACO;
-#elif defined(PETSC_HAVE_PARMETIS)
-    defaultType = PETSCPARTITIONERPARMETIS;
-#else
-    defaultType = PETSCPARTITIONERSIMPLE;
-#endif
-  else
-    defaultType = ((PetscObject) part)->type_name;
+  ierr = PetscPartitionerGetDefaultType(((PetscObject) part)->type_name,&defaultType);CHKERRQ(ierr);
   ierr = PetscPartitionerRegisterAll();CHKERRQ(ierr);
 
   ierr = PetscObjectOptionsBegin((PetscObject) part);CHKERRQ(ierr);
@@ -595,6 +603,7 @@ PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *part)
 PetscErrorCode PetscPartitionerCreate(MPI_Comm comm, PetscPartitioner *part)
 {
   PetscPartitioner p;
+  const char       *partitionerType = NULL;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -603,6 +612,8 @@ PetscErrorCode PetscPartitionerCreate(MPI_Comm comm, PetscPartitioner *part)
   ierr = DMInitializePackage();CHKERRQ(ierr);
 
   ierr = PetscHeaderCreate(p, PETSCPARTITIONER_CLASSID, "PetscPartitioner", "Graph Partitioner", "PetscPartitioner", comm, PetscPartitionerDestroy, PetscPartitionerView);CHKERRQ(ierr);
+  ierr = PetscPartitionerGetDefaultType(NULL,&partitionerType);CHKERRQ(ierr);
+  ierr = PetscPartitionerSetType(p,partitionerType);CHKERRQ(ierr);
 
   *part = p;
   PetscFunctionReturn(0);
@@ -757,25 +768,32 @@ static PetscErrorCode PetscPartitionerPartition_Shell(PetscPartitioner part, DM 
   PetscFunctionBegin;
   if (p->random) {
     PetscRandom r;
-    PetscInt   *sizes, *points, v;
+    PetscInt   *sizes, *points, v, p;
+    PetscMPIInt rank;
 
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
     ierr = PetscRandomCreate(PETSC_COMM_SELF, &r);CHKERRQ(ierr);
-    ierr = PetscRandomSetInterval(r, 0.0, (PetscScalar) (nparts+1));CHKERRQ(ierr);
+    ierr = PetscRandomSetInterval(r, 0.0, (PetscScalar) nparts);CHKERRQ(ierr);
     ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
     ierr = PetscCalloc2(nparts, &sizes, numVertices, &points);CHKERRQ(ierr);
-    for (v = 0; v < numVertices; ++v) {
+    for (v = 0; v < numVertices; ++v) {points[v] = v;}
+    for (p = 0; p < nparts; ++p) {sizes[p] = numVertices/nparts + (PetscInt) (p < numVertices % nparts);}
+    for (v = numVertices-1; v > 0; --v) {
       PetscReal val;
-      PetscInt  part;
+      PetscInt  w, tmp;
 
+      ierr = PetscRandomSetInterval(r, 0.0, (PetscScalar) (v+1));CHKERRQ(ierr);
       ierr = PetscRandomGetValueReal(r, &val);CHKERRQ(ierr);
-      part = PetscFloorReal(val);
-      points[v] = part;
-      ++sizes[part];
+      w    = PetscFloorReal(val);
+      tmp       = points[v];
+      points[v] = points[w];
+      points[w] = tmp;
     }
     ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
     ierr = PetscPartitionerShellSetPartition(part, nparts, sizes, points);CHKERRQ(ierr);
     ierr = PetscFree2(sizes, points);CHKERRQ(ierr);
   }
+  if (!p->section) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Shell partitioner information not provided. Please call PetscPartitionerShellSetPartition()");
   ierr = PetscSectionGetChart(p->section, NULL, &np);CHKERRQ(ierr);
   if (nparts != np) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of requested partitions %d != configured partitions %d", nparts, np);
   ierr = ISGetLocalSize(p->partition, &np);CHKERRQ(ierr);
@@ -846,8 +864,8 @@ PetscErrorCode PetscPartitionerShellSetPartition(PetscPartitioner part, PetscInt
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  if (sizes) {PetscValidPointer(sizes, 3);}
-  if (sizes) {PetscValidPointer(points, 4);}
+  if (sizes)  {PetscValidPointer(sizes, 3);}
+  if (points) {PetscValidPointer(points, 4);}
   ierr = PetscSectionDestroy(&p->section);CHKERRQ(ierr);
   ierr = ISDestroy(&p->partition);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject) part), &p->section);CHKERRQ(ierr);
@@ -1216,6 +1234,17 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, DM 
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
+#if defined (PETSC_USE_DEBUG)
+  {
+    int ival,isum;
+    PetscBool distributed;
+
+    ival = (numVertices > 0);
+    ierr = MPI_Allreduce(&ival, &isum, 1, MPI_INT, MPI_SUM, comm);CHKERRQ(ierr);
+    distributed = (isum > 1) ? PETSC_TRUE : PETSC_FALSE;
+    if (distributed) SETERRQ(comm, PETSC_ERR_SUP, "Chaco cannot partition a distributed graph");
+  }
+#endif
   if (!numVertices) {
     ierr = PetscSectionSetChart(partSection, 0, nparts);CHKERRQ(ierr);
     ierr = PetscSectionSetUp(partSection);CHKERRQ(ierr);
@@ -1264,6 +1293,8 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, DM 
     close(fd_pipe[1]);
     if (ierr) SETERRQ1(comm, PETSC_ERR_LIB, "Error in Chaco library: %s", msgLog);
   }
+#else
+  if (ierr) SETERRQ1(comm, PETSC_ERR_LIB, "Error in Chaco library: %s", "error in stdout");
 #endif
   /* Convert to PetscSection+IS */
   ierr = PetscSectionSetChart(partSection, 0, nparts);CHKERRQ(ierr);
@@ -1429,7 +1460,7 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
       PetscStackPush("ParMETIS_V3_PartKway");
       ierr = ParMETIS_V3_PartKway(vtxdist, xadj, adjncy, vwgt, adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgeCut, assignment, &comm);
       PetscStackPop;
-      if (ierr != METIS_OK) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in ParMETIS_V3_PartKway()");
+      if (ierr != METIS_OK) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error %d in ParMETIS_V3_PartKway()", ierr);
     }
   }
   /* Convert to PetscSection+IS */
@@ -1502,7 +1533,7 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_ParMetis(PetscPartitioner par
 @*/
 PetscErrorCode DMPlexGetPartitioner(DM dm, PetscPartitioner *part)
 {
-  DM_Plex *mesh = (DM_Plex *) dm->data;
+  DM_Plex       *mesh = (DM_Plex *) dm->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);

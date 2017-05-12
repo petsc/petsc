@@ -32,7 +32,7 @@ class generateExamples(Petsc):
     self.summarize=True
 
     # For help in setting the requirements
-    self.precision_types="single double quad int32".split()
+    self.precision_types="single double __float128 int32".split()
     self.integer_types="int32 int64".split()
     self.languages="fortran cuda cxx".split()    # Always requires C so do not list
 
@@ -56,6 +56,8 @@ class generateExamples(Petsc):
     # Do some initialization
     self.testroot_dir=os.path.join(self.arch_dir,"tests")
     if not os.path.isdir(self.testroot_dir): os.makedirs(self.testroot_dir)
+
+    self.indent="   "
     return
 
   def nameSpace(self,srcfile,srcdir):
@@ -87,6 +89,62 @@ class generateExamples(Petsc):
     #if not langReq: print "ERROR: ", srcext, srcfile
     return langReq
 
+  def _getLoopVars(self,inDict,testname, isSubtest=False):
+    """
+    Given: 'args: -bs {{1 2 3 4 5}} -pc_type {{cholesky sor}} -ksp_monitor'
+    Return: 
+      inDict['args']: -ksp_monitor
+      inDict['subargs']: -bs ${bs} -pc_type ${pc_type}
+      loopVars['subargs']['varlist']=['bs' 'pc_type']   # Don't worry about OrderedDict
+      loopVars['subargs']['bs']=[["bs"],["1 2 3 4 5"]]
+      loopVars['subargs']['pc_type']=[["pc_type"],["cholesky sor"]]
+    subst should be passed in instead of inDict
+    """
+    loopVars={}; newargs=""
+    lkeys=inDict.keys()
+    lsuffix='_'
+    from testparse import parseLoopArgs
+    for key in lkeys:
+      if type(inDict[key])!=types.StringType: continue
+      keystr = str(inDict[key])
+      akey=('subargs' if key=='args' else key)  # what to assign
+      if akey not in inDict: inDict[akey]=''
+      varlist=[]
+      for varset in re.split('-(?=[a-zA-Z])',keystr):
+        if not varset.strip(): continue
+        if '{{' in varset:
+          keyvar,lvars,ftype=parseLoopArgs(varset)
+          if akey not in loopVars: loopVars[akey]={}
+          varlist.append(keyvar)
+          loopVars[akey][keyvar]=[keyvar,lvars]
+          if akey=='nsize':
+            inDict[akey] = '${' + keyvar + '}'
+            lsuffix+=akey+'-'+inDict[akey]+'_'
+          else:
+            inDict[akey] += ' -'+keyvar+' ${' + keyvar + '}'
+            lsuffix+=keyvar+'-${' + keyvar + '}_'
+        else:
+          if key=='args': newargs+=" -"+varset.strip()
+        if len(varlist)>0: loopVars[akey]['varlist']=varlist
+
+      
+    # For subtests, args are always substituted in (not top level)
+    if isSubtest:
+      inDict['subargs']+=" "+newargs.strip()
+      inDict['args']=''
+      if 'label_suffix' in inDict:
+        inDict['label_suffix']+=lsuffix.rstrip('_')
+      else:
+        inDict['label_suffix']=lsuffix.rstrip('_')
+    else:
+      if len(loopVars.keys())>0: 
+        inDict['args']=newargs.strip()
+        inDict['label_suffix']=lsuffix.rstrip('_')
+    if len(loopVars.keys())>0:
+      return loopVars
+    else:
+      return None
+
   def getArgLabel(self,testDict):
     """
     In all of the arguments in the test dictionary, create a simple
@@ -96,11 +154,11 @@ class generateExamples(Petsc):
     For now, ignore nsize -- seems hard to search for anyway
     """
     # Collect all of the args associated with a test
-    argStr=("" if not testDict.has_key('args') else testDict['args'])
-    if testDict.has_key('subtests'):
+    argStr=("" if 'args' not in testDict else testDict['args'])
+    if 'subtests' in testDict:
       for stest in testDict["subtests"]:
          sd=testDict[stest]
-         argStr=argStr+("" if not sd.has_key('args') else sd['args'])
+         argStr=argStr+("" if 'args' not in sd else sd['args'])
 
     # Now go through and cleanup
     argStr=re.sub('{{(.*?)}}',"",argStr)
@@ -122,7 +180,7 @@ class generateExamples(Petsc):
     lang=self.getLanguage(exfile)
     if not lang: return
     self.sources[pkg][lang]['srcs'].append(relpfile)
-    if srcDict.has_key('depends'):
+    if 'depends' in srcDict:
       depSrc=srcDict['depends']
       depObj=os.path.splitext(depSrc)[0]+".o"
       self.sources[pkg][lang][exfile]=depObj
@@ -150,44 +208,6 @@ class generateExamples(Petsc):
     self.tests[pkg][lang][nmtest]['argLabel']=self.getArgLabel(testDict)
     return
 
-  def getFor(self,subst,i,j):
-    """
-      Get the for and done lines
-    """
-    forlines=""
-    donlines=""
-    indent="   "
-    nsizeStr=subst['nsize']
-    for loop in re.findall('{{(.*?)}}',subst['nsize']):
-      lindex=string.ascii_lowercase[i]
-      forline=indent*j+"for "+lindex+" in '"+loop+"'; do"
-      nsizeStr=re.sub("{{"+loop+"}}","${"+lindex+"}",nsizeStr)
-      donline=indent*j+"done"
-      forlines=forlines+forline+"\n"
-      donlines=donlines+donline+"\n"
-      i=i+1
-      j=j+1
-    subst['nsize']=nsizeStr
-    argStr=subst['args']
-    for loop in re.findall('{{(.*?)}}',subst['args']):
-      lindex=string.ascii_lowercase[i]
-      forline=indent*j+"for "+lindex+" in '"+loop+"'; do"
-      argStr=re.sub("{{"+loop+"}}","${"+lindex+"}",argStr)
-      donline=indent*j+"done"
-      forlines=forlines+forline+"\n"
-      donlines=donlines+donline+"\n"
-      i=i+1
-      j=j+1
-    subst['args']=argStr
-
-    # The do lines have reverse order with respect to indentation
-    dl=donlines.rstrip("\n").split("\n")
-    dl.reverse()
-    donlines="\n".join(dl)+"\n"
-
-    return forlines,donlines,i,j
-
-
   def getExecname(self,exfile,root):
     """
       Generate bash script using template found next to this file.  
@@ -204,38 +224,38 @@ class generateExamples(Petsc):
     """
       Create a dictionary with all of the variables that get substituted
       into the template commands found in example_template.py
-      TODO: Cleanup
     """
     subst={}
-    # Handle defaults
-    if not testDict.has_key('nsize'): testDict['nsize']=1
-    if not testDict.has_key('filter'): testDict['filter']=""
-    if not testDict.has_key('filter_output'): testDict['filter_output']=""
-    if not testDict.has_key('localrunfiles'): testDict['localrunfiles']=""
-    if not testDict.has_key('args'): testDict['args']=""
-    defroot=(re.sub("run","",testname) if testname.startswith("run") else testname)
-    if not "_" in defroot: defroot=defroot+"_1"
-    if not testDict.has_key('redirect_file'): testDict['redirect_file']=defroot+".tmp"
-    if not testDict.has_key('output_file'): testDict['output_file']="output/"+defroot+".out"
 
-    # Setup the variables in template_string that need to be substituted
+    # Handle defaults of testparse.acceptedkeys (e.g., ignores subtests)
+    if 'nsize' not in testDict: testDict['nsize']=1
+    for ak in testparse.acceptedkeys: 
+      if ak=='test': continue
+      subst[ak]=(testDict[ak] if ak in testDict else '')
+
+    # Now do other variables
+    subst['execname']=testDict['execname']
+    if 'filter' in testDict:
+      subst['filter']="'"+testDict['filter']+"'"   # Quotes are tricky - overwrite
+
+    # Others
+    subst['subargs']=''  # Default.  For variables override
     subst['srcdir']=os.path.join(self.petsc_dir,rpath)
-    subst['label']=self.nameSpace(defroot,subst['srcdir'])
-    subst['redirect_file']=testDict['redirect_file']
-    subst['output_file']=os.path.join(subst['srcdir'],testDict['output_file'])
-    subst['exec']="../"+testDict['execname']
-    subst['filter']="'"+testDict['filter']+"'"   # Quotes are tricky
-    subst['filter_output']=testDict['filter_output']
-    subst['localrunfiles']=testDict['localrunfiles']
+    subst['label_suffix']=''
+    subst['comments']="\n#".join(subst['comments'].split("\n"))
+    if subst['comments']: subst['comments']="#"+subst['comments']
+    subst['exec']="../"+subst['execname']
     subst['testroot']=self.testroot_dir
     subst['testname']=testname
+    dp = self.conf.get('DATAFILESPATH','')
+    subst['datafilespath_line'] = 'DATAFILESPATH=${DATAFILESPATH:-"'+dp+'"}'
 
-    # Be careful with this
-    if testDict.has_key('command'): subst['command']=testDict['command']
+    # This is used to label some matrices
+    subst['petsc_index_size']=str(self.conf['PETSC_INDEX_SIZE'])
+    subst['petsc_scalar_size']=str(self.conf['PETSC_SCALAR_SIZE'])
 
     # These can have for loops and are treated separately later
-    if testDict.has_key('nsize'): subst['nsize']=str(testDict['nsize'])
-    if testDict.has_key('args'):  subst['args']=testDict['args']
+    subst['nsize']=str(subst['nsize'])
 
     #Conf vars
     if self.petsc_arch.find('valgrind')>=0:
@@ -249,6 +269,32 @@ class generateExamples(Petsc):
     subst['petsc_lib_dir']=self.conf['PETSC_LIB_DIR']
     subst['wpetsc_dir']=self.conf['wPETSC_DIR']
 
+    # Output file is special because of subtests override
+    defroot=(re.sub("run","",testname) if testname.startswith("run") else testname)
+    if not "_" in defroot: defroot=defroot+"_1"
+    subst['defroot']=defroot
+    subst['label']=self.nameSpace(defroot,subst['srcdir'])
+    subst['redirect_file']=defroot+".tmp"
+    if 'output_file' not in testDict: 
+      subst['output_file']="output/"+defroot+".out"
+    # Add in the full path here.
+    subst['output_file']=os.path.join(subst['srcdir'],subst['output_file'])
+    if not os.path.isfile(os.path.join(self.petsc_dir,subst['output_file'])):
+      if not subst['TODO']:
+        print "Warning: "+subst['output_file']+" not found."
+    # Worry about alt files here -- see
+    #   src/snes/examples/tutorials/output/ex22*.out
+    altlist=[subst['output_file']]
+    for i in range(1,3):
+      altroot=defroot+"_alt"
+      if i==2: altroot=altroot+"_2"
+      af="output/"+altroot+".out"
+      srcaf=os.path.join(subst['srcdir'],af)
+      fullaf=os.path.join(self.petsc_dir,srcaf)
+      if os.path.isfile(fullaf): altlist.append(srcaf)
+    if len(altlist)>1: subst['altfiles']=altlist
+    #if len(altlist)>1: print "Found alt files: ",altlist
+
     return subst
 
   def getCmds(self,subst,i):
@@ -256,26 +302,40 @@ class generateExamples(Petsc):
       Generate bash script using template found next to this file.  
       This file is read in at constructor time to avoid file I/O
     """
-    indent="   "
-    nindent=i # the start and has to be consistent with below
+    indnt=self.indent
+    nindnt=i # the start and has to be consistent with below
     cmdLines=""
+
     # MPI is the default -- but we have a few odd commands
-    if not subst.has_key('command'):
-      cmd=indent*nindent+self._substVars(subst,example_template.mpitest)
+    if not subst['command']:
+      cmd=indnt*nindnt+self._substVars(subst,example_template.mpitest)
     else:
-      cmd=indent*nindent+self._substVars(subst,example_template.commandtest)
-    cmdLines=cmdLines+cmd+"\n\n"
+      cmd=indnt*nindnt+self._substVars(subst,example_template.commandtest)
+    cmdLines+=cmd+"\n\n"
 
     if not subst['filter_output']:
-      cmd=indent*nindent+self._substVars(subst,example_template.difftest)
+      if 'altfiles' not in subst:
+        cmd=indnt*nindnt+self._substVars(subst,example_template.difftest)
+      else:
+        # Have to do it by hand a bit because of variable number of alt files
+        rf=subst['redirect_file']
+        cmd=indnt*nindnt+example_template.difftest.split('@')[0]
+        for i in range(len(subst['altfiles'])):
+          af=subst['altfiles'][i]
+          cmd+=af+' '+rf+' > diff-${testname}-'+str(i)+'.out 2> diff-${testname}-'+str(i)+'.out'
+          if i!=len(subst['altfiles'])-1:
+            cmd+=' || ${diff_exe} '
+          else:
+            cmd+='" diff-${testname}.out diff-${testname}.out diff-${label}'
+            cmd+=subst['label_suffix']+' ""'  # Quotes are painful
     else:
-      cmd=indent*nindent+self._substVars(subst,example_template.filterdifftest)
-    cmdLines=cmdLines+cmd+"\n"
+      cmd=indnt*nindnt+self._substVars(subst,example_template.filterdifftest)
+    cmdLines+=cmd+"\n"
     return cmdLines
 
   def _substVars(self,subst,origStr):
     """
-      Substitute varial
+      Substitute variables
     """
     Str=origStr
     for subkey in subst:
@@ -283,6 +343,52 @@ class generateExamples(Petsc):
       patt="@"+subkey.upper()+"@"
       Str=re.sub(patt,subst[subkey],Str)
     return Str
+
+  def _writeTodoSkip(self,fh,tors,reasons,footer):
+    """
+    Write out the TODO and SKIP lines in the file
+    The TODO or SKIP variable, tors, should be lower case
+    """
+    TORS=tors.upper()
+    template=eval("example_template."+tors+"line")
+    tsStr=re.sub("@"+TORS+"COMMENT@",', '.join(reasons),template)
+    tab = ''
+    if reasons == ["Requires DATAFILESPATH"]:
+      # The only reason not to run is DATAFILESPATH, which we check at run-time
+      tab = '    '
+      fh.write('if test -z "${DATAFILESPATH}"; then\n')
+    if reasons:
+      fh.write(tab+tsStr+"\ntotal=1; "+tors+"=1\n")
+      fh.write(tab+footer+"\n")
+      fh.write(tab+"exit\n")
+    if reasons == ["Requires DATAFILESPATH"]:
+      fh.write('fi\n')
+    fh.write('\n\n')
+    return
+
+  def getLoopVarsHead(self,loopVars,i):
+    """
+    Generate a nicely indented string with the format loops
+    Here is what the data structure looks like
+      loopVars['subargs']['varlist']=['bs' 'pc_type']   # Don't worry about OrderedDict
+      loopVars['subargs']['bs']=["i","1 2 3 4 5"]
+      loopVars['subargs']['pc_type']=["j","cholesky sor"]
+    """
+    outstr=''; indnt=self.indent
+    for key in loopVars:
+      for var in loopVars[key]['varlist']:
+        varval=loopVars[key][var]
+        outstr += indnt * i + "for "+varval[0]+" in "+varval[1]+"; do\n"
+        i = i + 1
+    return (outstr,i)
+
+  def getLoopVarsFoot(self,loopVars,i):
+    outstr=''; indnt=self.indent
+    for key in loopVars:
+      for var in loopVars[key]['varlist']:
+        i = i - 1
+        outstr += indnt * i + "done\n"
+    return (outstr,i)
 
   def genRunScript(self,testname,root,isRun,srcDict):
     """
@@ -296,24 +402,26 @@ class generateExamples(Petsc):
     if not os.path.isdir(runscript_dir): os.makedirs(runscript_dir)
     fh=open(os.path.join(runscript_dir,testname+".sh"),"w")
     petscvarfile=os.path.join(self.arch_dir,'lib','petsc','conf','petscvariables')
-    
+
+    # Get variables to go into shell scripts.  last time testDict used
     subst=self.getSubstVars(testDict,rpath,testname)
+    loopVars = self._getLoopVars(subst,testname)  # Alters subst as well
+    #if '33_' in testname: print subst['subargs']
 
     #Handle runfiles
-    if subst['localrunfiles']: 
-      for lfile in subst['localrunfiles'].split():
-        fullfile=os.path.join(self.petsc_dir,rpath,lfile)
-        shutil.copy(fullfile,runscript_dir)
+    for lfile in subst.get('localrunfiles','').split():
+      fullfile=os.path.join(self.petsc_dir,rpath,lfile)
+      shutil.copy(fullfile,runscript_dir)
     # Check subtests for local runfiles
-    if testDict.has_key("subtests"):
-      for stest in testDict["subtests"]:
-        if testDict[stest].has_key('localrunfiles'):
-          for lfile in testDict[stest]['localrunfiles'].split():
-            fullfile=os.path.join(self.petsc_dir,rpath,lfile)
-            shutil.copy(fullfile,self.runscript_dir)
+    for stest in subst.get("subtests",[]):
+      for lfile in testDict[stest].get('localrunfiles','').split():
+        fullfile=os.path.join(self.petsc_dir,rpath,lfile)
+        shutil.copy(fullfile,self.runscript_dir)
 
     # Now substitute the key variables into the header and footer
     header=self._substVars(subst,example_template.header)
+    # The header is done twice to enable @...@ in header
+    header=self._substVars(subst,header)
     footer=re.sub('@TESTROOT@',subst['testroot'],example_template.footer)
 
     # Start writing the file
@@ -322,63 +430,41 @@ class generateExamples(Petsc):
     # If there is a TODO or a SKIP then we do it before writing out the
     # rest of the command (which is useful for working on the test)
     # SKIP and TODO can be for the source file or for the runs
-    if srcDict.has_key("SKIP") or srcDict.has_key("TODO"):
-      if srcDict.has_key("TODO"):
-        todo=re.sub("@TODOCOMMENT@",srcDict['TODO'],example_template.todoline)
-        fh.write(todo+"\ntotal=1; todo=1\n")
-        fh.write(footer+"\n")
-        fh.write("exit\n\n\n")
-      elif srcDict.has_key("SKIP") or srcDict.has_key("TODO"):
-        skip=re.sub("@SKIPCOMMENT@",srcDict['SKIP'],example_template.skipline)
-        fh.write(skip+"\ntotal=1; skip=1\n")
-        fh.write(footer+"\n")
-        fh.write("exit\n\n\n")
-    elif not isRun:
-      skip=re.sub("@SKIPCOMMENT@",testDict['SKIP'],example_template.skipline)
-      fh.write(skip+"\ntotal=1; skip=1\n")
-      fh.write(footer+"\n")
-      fh.write("exit\n\n\n")
-    elif testDict.has_key('TODO'):
-      todo=re.sub("@TODOCOMMENT@",testDict['TODO'],example_template.todoline)
-      fh.write(todo+"\ntotal=1; todo=1\n")
-      fh.write(footer+"\n")
-      fh.write("exit\n\n\n")
+    self._writeTodoSkip(fh,'todo',[s for s in [srcDict.get('TODO',''), testDict.get('TODO','')] if s],footer)
+    self._writeTodoSkip(fh,'skip',srcDict.get('SKIP',[]) + testDict.get('SKIP',[]),footer)
 
-    # Need to handle loops
-    i=8  # for loop counters
     j=0  # for indentation 
 
-    doForP=False
-    if "{{" in subst['args']+subst['nsize']:
-      doForP=True
-      flinesP,dlinesP,i,j=self.getFor(subst,i,j)
-      fh.write(flinesP+"\n")
+    if loopVars:
+      (loopHead,j) = self.getLoopVarsHead(loopVars,j)
+      if (loopHead): fh.write(loopHead+"\n")
 
     # Subtests are special
-    if testDict.has_key("subtests"):
+    if 'subtests' in testDict:
       substP=subst   # Subtests can inherit args but be careful
-      if not substP.has_key("arg"): substP["arg"]=""
-      jorig=j
       for stest in testDict["subtests"]:
-        j=jorig
-        subst=substP
+        subst=substP.copy()
         subst.update(testDict[stest])
         subst['nsize']=str(subst['nsize'])
-        if not testDict[stest].has_key('args'): testDict[stest]['args']=""
-        subst['args']=substP['args']+testDict[stest]['args']
-        doFor=False
-        if "{{" in subst['args']+subst['nsize']:
-          doFor=True
-          flines,dlines,i,j=self.getFor(subst,i,j)
-          fh.write(flines+"\n")
+        sLoopVars = self._getLoopVars(subst,testname,isSubtest=True)
+        #if '10_9' in testname: print sLoopVars
+        if sLoopVars: 
+          (sLoopHead,j) = self.getLoopVarsHead(sLoopVars,j)
+          fh.write(sLoopHead+"\n")
         fh.write(self.getCmds(subst,j)+"\n")
-        if doFor: fh.write(dlines+"\n")
+        if sLoopVars: 
+          (sLoopFoot,j) = self.getLoopVarsFoot(sLoopVars,j)
+          fh.write(sLoopFoot+"\n")
     else:
       fh.write(self.getCmds(subst,j)+"\n")
-      if doForP: fh.write(dlinesP+"\n")
+
+    if loopVars: 
+      (loopFoot,j) = self.getLoopVarsFoot(loopVars,j)
+      fh.write(loopFoot+"\n")
 
     fh.write(footer+"\n")
     os.chmod(os.path.join(runscript_dir,testname+".sh"),0755)
+    #if '10_9' in testname: sys.exit()
     return
 
   def  genScriptsAndInfo(self,exfile,root,srcDict):
@@ -415,26 +501,25 @@ class generateExamples(Petsc):
     Determine if this file should be built. 
     """
     # Get the language based on file extension
+    srcDict['SKIP'] = []
     lang=self.getLanguage(exfile)
     if (lang=="F" or lang=="F90") and not self.have_fortran: 
-      srcDict["SKIP"]="Fortran required for this test"
-      return False
-    if lang=="cu" and not self.conf.has_key('PETSC_HAVE_CUDA'): 
-      srcDict["SKIP"]="CUDA required for this test"
-      return False
-    if lang=="cxx" and not self.conf.has_key('PETSC_HAVE_CXX'): 
-      srcDict["SKIP"]="C++ required for this test"
-      return False
+      srcDict["SKIP"].append("Fortran required for this test")
+    if lang=="cu" and 'PETSC_HAVE_CUDA' not in self.conf: 
+      srcDict["SKIP"].append("CUDA required for this test")
+    if lang=="cxx" and 'PETSC_HAVE_CXX' not in self.conf: 
+      srcDict["SKIP"].append("C++ required for this test")
 
     # Deprecated source files
-    if srcDict.has_key("TODO"): return False
+    if srcDict.get("TODO"):
+      return False
 
     # isRun can work with srcDict to handle the requires
-    if srcDict.has_key("requires"): 
+    if "requires" in srcDict: 
       if len(srcDict["requires"])>0: 
         return self._isRun(srcDict)
 
-    return True
+    return srcDict['SKIP'] == []
 
 
   def _isRun(self,testDict):
@@ -445,23 +530,23 @@ class generateExamples(Petsc):
     indent="  "
     debug=False
 
+    if 'SKIP' not in testDict:
+      testDict['SKIP'] = []
     # MPI requirements
-    if testDict.has_key('nsize'):
-      if testDict['nsize']>1 and self.conf.has_key('MPI_IS_MPIUNI'): 
-        if debug: print indent+"Cannot run parallel tests"
-        testDict['SKIP']="Parallel test with serial build"
-        return False
+    if testDict.get('nsize',1)>1 and 'MPI_IS_MPIUNI' in self.conf:
+      if debug: print indent+"Cannot run parallel tests"
+      testDict['SKIP'].append("Parallel test with serial build")
  
     # The requirements for the test are the sum of all the run subtests
-    if testDict.has_key('subtests'):
-      if not testDict.has_key('requires'): testDict['requires']=""
+    if 'subtests' in testDict:
+      if 'requires' not in testDict: testDict['requires']=""
       for stest in testDict['subtests']:
-        if testDict[stest].has_key('requires'):
-          testDict['requires']=testDict['requires']+" "+testDict[stest]['requires']
+        if 'requires' in testDict[stest]:
+          testDict['requires']+=" "+testDict[stest]['requires']
 
 
     # Now go through all requirements
-    if testDict.has_key('requires'):
+    if 'requires' in testDict:
       for requirement in testDict['requires'].split():
         requirement=requirement.strip()
         if not requirement: continue
@@ -472,67 +557,65 @@ class generateExamples(Petsc):
         # Precision requirement for reals
         if requirement in self.precision_types:
           if self.conf['PETSC_PRECISION']==requirement:
-            testDict['SKIP']="not "+requirement+" required"
-            if isNull: return False
-          else:
-            testDict['SKIP']=requirement+" required"
-            return False
+            if isNull:
+              testDict['SKIP'].append("not "+requirement+" required")
+              continue
+            continue  # Success
+          elif not isNull:
+            testDict['SKIP'].append(requirement+" required")
+            continue
         # Precision requirement for ints
         if requirement in self.integer_types:
           if requirement=="int32":
             if self.conf['PETSC_SIZEOF_INT']==4:
-              testDict['SKIP']="not int32 required"
-              if isNull: return False
-            else:
-              testDict['SKIP']="int32 required"
-              return False
+              if isNull:
+                testDict['SKIP'].append("not int32 required")
+                continue
+              continue  # Success
+            elif not isNull:
+              testDict['SKIP'].append("int32 required")
+              continue
           if requirement=="int64":
             if self.conf['PETSC_SIZEOF_INT']==8:
-              testDict['SKIP']="NOT int64 required"
-              if isNull: return False
-            else:
-              testDict['SKIP']="int64 required"
-              return False
+              if isNull:
+                testDict['SKIP'].append("NOT int64 required")
+                continue
+              continue  # Success
+            elif not isNull:
+              testDict['SKIP'].append("int64 required")
+              continue
         # Datafilespath
-        if requirement=="datafilespath": 
-          testDict['SKIP']="Requires DATAFILESPATH"
-          return False
+        if requirement=="datafilespath" and not isNull:
+          testDict['SKIP'].append("Requires DATAFILESPATH")
+          continue
         # Defines -- not sure I have comments matching
         if "define(" in requirement.lower():
           reqdef=requirement.split("(")[1].split(")")[0]
-          val=(reqdef.split()[1] if " " in reqdef else "")
-          if self.conf.has_key(reqdef):
-            if val:
-              if self.conf[reqdef]==val:
-                if isNull: 
-                  testDict['SKIP']="Null requirement not met: "+requirement
-                  return False
-              else:
-                testDict['SKIP']="Required: "+requirement
-                return False
-            else:
-              if isNull: 
-                testDict['SKIP']="Null requirement not met: "+requirement
-                return False
-              else:
-                return True
-          else:
-            testDict['SKIP']="Requirement not met: "+requirement
-            return False
+          if reqdef in self.conf:
+            if isNull:
+              testDict['SKIP'].append("Null requirement not met: "+requirement)
+              continue
+            continue  # Success
+          elif not isNull:
+            testDict['SKIP'].append("Required: "+requirement)
+            continue
 
         # Rest should be packages that we can just get from conf
-        if requirement == "complex":  petscconfvar="PETSC_USE_COMPLEX"
-        else:   petscconfvar="PETSC_HAVE_"+requirement.upper()
+        if requirement == "complex":
+          petscconfvar="PETSC_USE_COMPLEX"
+        else:
+          petscconfvar="PETSC_HAVE_"+requirement.upper()
         if self.conf.get(petscconfvar):
           if isNull:
-            testDict['SKIP']="Not "+petscconfvar+" requirement not met"
-            return False
+            testDict['SKIP'].append("Not "+petscconfvar+" requirement not met")
+            continue
+          continue  # Success
         elif not isNull:
           if debug: print "requirement not found: ", requirement
-          testDict['SKIP']=petscconfvar+" requirement not met"
-          return False
+          testDict['SKIP'].append(petscconfvar+" requirement not met")
+          continue
 
-    return True
+    return testDict['SKIP'] == []
 
   def genPetscTests_summarize(self,dataDict):
     """
@@ -563,7 +646,7 @@ class generateExamples(Petsc):
           # Looks nice to have the keys in order
           #for key in dataDict[root][exfile][test]:
           for key in "isrun abstracted nsize args requires script".split():
-            if not dataDict[root][exfile][test].has_key(key): continue
+            if key not in dataDict[root][exfile][test]: continue
             line=indent*3+key+": "+str(dataDict[root][exfile][test][key])
             fh.write(line+"\n")
           fh.write("\n")
@@ -594,10 +677,10 @@ class generateExamples(Petsc):
       fullex=os.path.join(root,exfile)
       relpfile=self.relpath(self.petsc_dir,fullex)
       if debug: print relpfile
-      dataDict[root].update(testparse.parseTestFile(fullex))
+      dataDict[root].update(testparse.parseTestFile(fullex,0))
       # Need to check and make sure tests are in the file
       # if verbosity>=1: print relpfile
-      if dataDict[root].has_key(exfile):
+      if exfile in dataDict[root]:
         self.genScriptsAndInfo(exfile,root,dataDict[root][exfile])
 
     return
@@ -642,9 +725,6 @@ class generateExamples(Petsc):
   def write_gnumake(self,dataDict):
     """
      Write out something similar to files from gmakegen.py
-
-     There is not a lot of has_key type checking because
-     should just work and need to know if there are bugs
 
      Test depends on script which also depends on source
      file, but since I don't have a good way generating

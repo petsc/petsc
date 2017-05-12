@@ -85,7 +85,6 @@ ex22: ex22.o  chkopts
 
 
 #--------------------------------------------------------------------------
-
 runex3_nonconforming_simplex_2_view:
 	-@${MPIEXEC} -n 4 ./ex3 -petscpartitioner_type simple -tree -num_comp 2 -simplex 1 -dim 2 -dm_view vtk:nonconformal_simplex_2.vtu:vtk_vtu
 runex3_nonconforming_tensor_2_view:

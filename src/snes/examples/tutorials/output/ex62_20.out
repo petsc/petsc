@@ -1,20 +1,3 @@
-  0 SNES Function norm 6.3332 
-    0 KSP Residual norm 1.61536 
-    1 KSP Residual norm 0.553251 
-    2 KSP Residual norm 0.208201 
-    3 KSP Residual norm 0.0459176 
-    4 KSP Residual norm 0.0400899 
-    5 KSP Residual norm 0.0154086 
-    6 KSP Residual norm 0.0122113 
-    7 KSP Residual norm 0.0046995 
-    8 KSP Residual norm 0.00183816 
-    9 KSP Residual norm 6.80095e-06 
-   10 KSP Residual norm 4.66929e-06 
-   11 KSP Residual norm 4.10883e-09 
-   12 KSP Residual norm 5.522e-11 
-  Linear solve converged due to CONVERGED_RTOL iterations 12
-  1 SNES Function norm 2.152e-10 
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 3 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000

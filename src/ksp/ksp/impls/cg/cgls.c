@@ -105,7 +105,7 @@ static PetscErrorCode KSPDestroy_CGLS(KSP ksp)
 }
 
 /*MC
-     KSCGLS - Conjugate Gradient method for Least-Squares problems
+     KSPCGLS - Conjugate Gradient method for Least-Squares problems
 
    Level: beginner
 

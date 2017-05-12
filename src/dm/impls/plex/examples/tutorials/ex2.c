@@ -2,6 +2,7 @@ static char help[] = "Read in a mesh and test whether it is valid\n\n";
 
 #include <petscdmplex.h>
 #if defined(PETSC_HAVE_CGNS)
+#undef I /* Very old CGNS stupidly uses I as a variable, which fails when using complex. Curse you idiot package managers */
 #include <cgnslib.h>
 #endif
 #if defined(PETSC_HAVE_EXODUSII)
@@ -59,7 +60,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMPlexLabelComplete(*dm, label);CHKERRQ(ierr);
     ierr = PetscMalloc1(1, &user->bcFuncs);CHKERRQ(ierr);
     user->bcFuncs[0] = zero;
-    ierr = DMAddBoundary(*dm, DM_BC_ESSENTIAL, "wall", "boundary", 0, 0, NULL, (void (*)()) user->bcFuncs[0], 1, &id, user);CHKERRQ(ierr);
+    ierr = DMAddBoundary(*dm, DM_BC_ESSENTIAL, "wall", "boundary", 0, 0, NULL, (void (*)(void)) user->bcFuncs[0], 1, &id, user);CHKERRQ(ierr);
   } else {
     ierr = DMPlexCreateFromFile(comm, user->filename, user->interpolate, dm);CHKERRQ(ierr);
   }
@@ -127,20 +128,20 @@ int main(int argc, char **argv)
   # CGNS meshes 0-1
   test:
     suffix: 0
-    requires: CGNS broken
+    requires: cgns
+    TODO: broken
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/tut21.cgns -interpolate 1
   test:
     suffix: 1
-    requires: CGNS broken
+    requires: cgns
+    TODO: broken
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/grid_c.cgns -interpolate 1
   # Gmsh meshes 2-4
   test:
     suffix: 2
-    requires: !quad
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh -interpolate 1
   test:
     suffix: 3
-    requires: !quad
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.msh -interpolate 1
   test:
     suffix: 4

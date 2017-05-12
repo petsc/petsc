@@ -662,7 +662,7 @@ PetscErrorCode DMDAComputeCellGeometryFEM(DM dm, PetscInt cell, PetscQuadrature 
   Vec              coordinates;
   const PetscReal *quadPoints;
   PetscScalar     *vertices = NULL;
-  PetscInt         numQuadPoints, csize, dim, d, q;
+  PetscInt         Nq, csize, dim, d, q;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -674,8 +674,8 @@ PetscErrorCode DMDAComputeCellGeometryFEM(DM dm, PetscInt cell, PetscQuadrature 
   for (d = 0; d < dim; ++d) v0[d] = PetscRealPart(vertices[d]);
   switch (dim) {
   case 2:
-    ierr = PetscQuadratureGetData(quad, NULL, &numQuadPoints, &quadPoints, NULL);CHKERRQ(ierr);
-    for (q = 0; q < numQuadPoints; ++q) {
+    ierr = PetscQuadratureGetData(quad, NULL, NULL, &Nq, &quadPoints, NULL);CHKERRQ(ierr);
+    for (q = 0; q < Nq; ++q) {
       ierr = DMDAComputeCellGeometry_2D(dm, vertices, &quadPoints[q*dim], J, invJ, detJ);CHKERRQ(ierr);
     }
     break;

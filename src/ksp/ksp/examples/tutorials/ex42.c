@@ -1891,9 +1891,9 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
             cell->fz[p]  = 0.0;
             cell->hc[p]  = 0.0;
 
-            if ((fabs(xp-0.5) < 0.2) &&
-                (fabs(yp-0.5) < 0.2) &&
-                (fabs(zp-0.5) < 0.2)) {
+            if ((PetscAbsReal(xp-0.5) < 0.2) &&
+                (PetscAbsReal(yp-0.5) < 0.2) &&
+                (PetscAbsReal(zp-0.5) < 0.2)) {
               cell->eta[p] = 1.0;
               cell->fz[p]  = 1.0;
             }

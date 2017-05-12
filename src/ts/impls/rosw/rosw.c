@@ -1048,7 +1048,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
     ros->status = TS_STEP_PENDING;
     ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
     ierr = TSAdaptCandidatesClear(adapt);CHKERRQ(ierr);
-    ierr = TSAdaptCandidateAdd(adapt,tab->name,tab->order,1,tab->ccfl,1.*tab->s,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = TSAdaptCandidateAdd(adapt,tab->name,tab->order,1,tab->ccfl,(PetscReal)tab->s,PETSC_TRUE);CHKERRQ(ierr);
     ierr = TSAdaptChoose(adapt,ts,ts->time_step,NULL,&next_time_step,&accept);CHKERRQ(ierr);
     ros->status = accept ? TS_STEP_COMPLETE : TS_STEP_INCOMPLETE;
     if (!accept) { /* Roll back the current step */
@@ -1478,19 +1478,20 @@ static PetscErrorCode TSLoad_RosW(TS ts,PetscViewer viewer)
 
   Input Parameter:
 +  ts - timestepping context
--  rostype - type of Rosenbrock-W scheme
+-  roswtype - type of Rosenbrock-W scheme
 
   Level: beginner
 
 .seealso: TSRosWGetType(), TSROSW, TSROSW2M, TSROSW2P, TSROSWRA3PW, TSROSWRA34PW2, TSROSWRODAS3, TSROSWSANDU3, TSROSWASSP3P3S1C, TSROSWLASSP3P4S2C, TSROSWLLSSP3P4S2C, TSROSWARK3
 @*/
-PetscErrorCode TSRosWSetType(TS ts,TSRosWType rostype)
+PetscErrorCode TSRosWSetType(TS ts,TSRosWType roswtype)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ierr = PetscTryMethod(ts,"TSRosWSetType_C",(TS,TSRosWType),(ts,rostype));CHKERRQ(ierr);
+  PetscValidCharPointer(roswtype,2);
+  ierr = PetscTryMethod(ts,"TSRosWSetType_C",(TS,TSRosWType),(ts,roswtype));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1569,6 +1570,7 @@ static PetscErrorCode  TSRosWSetType_RosW(TS ts,TSRosWType rostype)
       if (ts->setupcalled) {ierr = TSRosWTableauReset(ts);CHKERRQ(ierr);}
       ros->tableau = &link->tab;
       if (ts->setupcalled) {ierr = TSRosWTableauSetUp(ts);CHKERRQ(ierr);}
+      ts->default_adapt_type = ros->tableau->bembed ? TSADAPTBASIC : TSADAPTNONE;
       PetscFunctionReturn(0);
     }
   }

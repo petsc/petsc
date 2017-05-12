@@ -1,0 +1,30 @@
+#
+#
+#
+# Obtain the three files into this directory
+#
+#       curl http://combustion.berkeley.edu/gri_mech/version30/files30/grimech30.dat > grimech30.dat
+#       curl http://combustion.berkeley.edu/gri_mech/version30/files30/thermo30.dat > thermo30.dat
+#       cp $PETSC_DIR/$PETSC_ARCH/externalpackages/tchem/data/periodictable.dat .
+#
+#   Run with  ./extchem -options_file extchem.example.1
+#
+-chem grimech30.dat
+-thermo thermo30.dat
+
+-initial_species CH4,O2,N2,AR
+-initial_mole    0.0948178320887,0.189635664177,0.706766236705,0.00878026702874
+
+-Tini 1500
+-ts_arkimex_fully_implicit
+-ts_max_snes_failures -1
+-ts_adapt_monitor
+-ts_adapt_dt_max 1e-4
+-ts_arkimex_type 4
+-ts_final_time .005
+
+-ts_monitor_lg_solution
+-draw_pause -2
+-lg_use_markers false
+-ts_monitor_lg_solution_variables H2,O2,H2O,CH4,CO,CO2,C2H2,N2
+-ts_monitor_envelope

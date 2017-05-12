@@ -30,7 +30,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsInt("-test_num", "The test partition number", "ex13.c", options->testNum, &options->testNum, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
-};
+}
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
@@ -166,6 +166,6 @@ int main(int argc, char **argv)
     suffix: 3
     requires: triangle
     nsize: 3
-    args: -dm_view ascii::ascii_info_detail -oriented_dm_view ascii::ascii_info_detail -orientation_view
+    args: -dm_view ascii::ascii_info_detail -oriented_dm_view ascii::ascii_info_detail -orientation_view -orientation_view_synchronized
 
 TEST*/

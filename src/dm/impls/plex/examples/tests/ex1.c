@@ -1,7 +1,12 @@
 static char help[] = "Run C version of TetGen to construct and refine a mesh\n\n";
 
+/*T
+  requires: !mpiuni
+T*/
+
 #include <petscdmplex.h>
 
+typedef enum {BOX, CYLINDER} DomainShape;
 enum {STAGE_LOAD, STAGE_DISTRIBUTE, STAGE_REFINE, STAGE_OVERLAP};
 
 typedef struct {
@@ -14,6 +19,9 @@ typedef struct {
   PetscBool     interpolate;                  /* Generate intermediate mesh elements */
   PetscReal     refinementLimit;              /* The largest allowable cell volume */
   PetscBool     cellSimplex;                  /* Use simplices or hexes */
+  PetscBool     simplex2tensor;               /* Refine simplicials in hexes */
+  DomainShape   domainShape;                  /* Shep of the region to be meshed */
+  DMBoundaryType periodicity[3];              /* The domain periodicity */
   char          filename[PETSC_MAX_PATH_LEN]; /* Import mesh from file */
   PetscBool     testPartition;                /* Use a fixed partitioning for testing */
   PetscInt      overlap;                      /* The cell overlap to use during partitioning */
@@ -22,6 +30,8 @@ typedef struct {
 
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
+  const char    *dShapes[2] = {"box", "cylinder"};
+  PetscInt       shape, bd;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -30,10 +40,15 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->interpolate       = PETSC_FALSE;
   options->refinementLimit   = 0.0;
   options->cellSimplex       = PETSC_TRUE;
+  options->domainShape       = BOX;
+  options->periodicity[0]    = DM_BOUNDARY_NONE;
+  options->periodicity[1]    = DM_BOUNDARY_NONE;
+  options->periodicity[2]    = DM_BOUNDARY_NONE;
   options->filename[0]       = '\0';
   options->testPartition     = PETSC_FALSE;
   options->overlap           = PETSC_FALSE;
   options->testShape         = PETSC_FALSE;
+  options->simplex2tensor    = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex1.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
@@ -41,6 +56,20 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex1.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex1.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-cell_simplex", "Use simplices if true, otherwise hexes", "ex1.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-simplex2tensor", "Refine simplicial cells in tensor product cells", "ex1.c", options->simplex2tensor, &options->simplex2tensor, NULL);CHKERRQ(ierr);
+  if (options->simplex2tensor) options->interpolate = PETSC_TRUE;
+  shape = options->domainShape;
+  ierr = PetscOptionsEList("-domain_shape","The shape of the domain","ex1.c", dShapes, 2, dShapes[options->domainShape], &shape, NULL);CHKERRQ(ierr);
+  options->domainShape = (DomainShape) shape;
+  bd = options->periodicity[0];
+  ierr = PetscOptionsEList("-x_periodicity", "The x-boundary periodicity", "ex1.c", DMBoundaryTypes, 5, DMBoundaryTypes[options->periodicity[0]], &bd, NULL);CHKERRQ(ierr);
+  options->periodicity[0] = (DMBoundaryType) bd;
+  bd = options->periodicity[1];
+  ierr = PetscOptionsEList("-y_periodicity", "The y-boundary periodicity", "ex1.c", DMBoundaryTypes, 5, DMBoundaryTypes[options->periodicity[1]], &bd, NULL);CHKERRQ(ierr);
+  options->periodicity[1] = (DMBoundaryType) bd;
+  bd = options->periodicity[2];
+  ierr = PetscOptionsEList("-z_periodicity", "The z-boundary periodicity", "ex1.c", DMBoundaryTypes, 5, DMBoundaryTypes[options->periodicity[2]], &bd, NULL);CHKERRQ(ierr);
+  options->periodicity[2] = (DMBoundaryType) bd;
   ierr = PetscOptionsString("-filename", "The mesh file", "ex1.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex1.c", options->testPartition, &options->testPartition, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-overlap", "The cell overlap for partitioning", "ex1.c", options->overlap, &options->overlap, NULL);CHKERRQ(ierr);
@@ -61,6 +90,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscBool      interpolate          = user->interpolate;
   PetscReal      refinementLimit      = user->refinementLimit;
   PetscBool      cellSimplex          = user->cellSimplex;
+  PetscBool      simplex2tensor       = user->simplex2tensor;
   const char    *filename             = user->filename;
   PetscInt       triSizes_n2[2]       = {4, 4};
   PetscInt       triPoints_n2[8]      = {3, 5, 6, 7, 0, 1, 2, 4};
@@ -90,9 +120,23 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
   ierr = PetscLogStagePush(user->stages[STAGE_LOAD]);CHKERRQ(ierr);
-  if (len)              {ierr = DMPlexCreateFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);}
-  else if (cellSimplex) {ierr = DMPlexCreateBoxMesh(comm, dim, dim == 2 ? 2 : 1, interpolate, dm);CHKERRQ(ierr);}
-  else                  {ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);}
+  if (len)              {
+    ierr = DMPlexCreateFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
+  } else {
+    switch (user->domainShape) {
+    case BOX:
+      if (cellSimplex) {ierr = DMPlexCreateBoxMesh(comm, dim, dim == 2 ? 2 : 1, interpolate, dm);CHKERRQ(ierr);}
+      else             {ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, user->periodicity[0], user->periodicity[1], user->periodicity[2], dm);CHKERRQ(ierr);}
+      break;
+    case CYLINDER:
+      if (cellSimplex) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Cannot mesh a cylinder with simplices");
+      if (dim != 3)    SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Dimension must be 3 for a cylinder mesh, not %D", dim);
+      ierr = DMPlexCreateHexCylinderMesh(comm, 3, user->periodicity[2], dm);CHKERRQ(ierr);
+      ierr = DMLocalizeCoordinates(*dm);CHKERRQ(ierr);
+      break;
+    default: SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Unknown domain shape %D", user->domainShape);
+    }
+  }
   ierr = PetscLogStagePop();CHKERRQ(ierr);
   {
     DM refinedMesh     = NULL;
@@ -126,6 +170,11 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
       ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
       ierr = PetscPartitionerShellSetPartition(part, size, sizes, points);CHKERRQ(ierr);
+    } else {
+      PetscPartitioner part;
+
+      ierr = DMPlexGetPartitioner(*dm,&part);CHKERRQ(ierr);
+      ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
     }
     /* Distribute mesh over processes */
     ierr = PetscLogStagePush(user->stages[STAGE_DISTRIBUTE]);CHKERRQ(ierr);
@@ -160,6 +209,15 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       *dm = overlapMesh;
     }
     ierr = PetscLogStagePop();CHKERRQ(ierr);
+  }
+  if (simplex2tensor) {
+    DM rdm = NULL;
+    ierr = DMPlexSetRefinementUniform(*dm, PETSC_TRUE);CHKERRQ(ierr);
+    ierr = DMPlexRefineSimplexToTensor(*dm, &rdm);CHKERRQ(ierr);
+    if (rdm) {
+      ierr = DMDestroy(dm);CHKERRQ(ierr);
+      *dm  = rdm;
+    }
   }
   ierr = PetscObjectSetName((PetscObject) *dm, "Simplicial Mesh");CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
@@ -217,6 +275,7 @@ static PetscErrorCode TestCellShape(DM dm)
     PetscReal frobJ = 0., frobInvJ = 0., cond2, cond, detJ;
 
     ierr = DMPlexComputeCellGeometryAffineFEM(dm,c,NULL,J,invJ,&detJ);CHKERRQ(ierr);
+    if (detJ < 0.0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %D is inverted", c);
 
     for (i = 0; i < dim * dim; i++) {
       frobJ += J[i] * J[i];
@@ -288,41 +347,41 @@ int main(int argc, char **argv)
   test:
     suffix: 0
     requires: ctetgen
-    args: -dim 3 -ctetgen_verbose 4 -dm_view ::ascii_info_detail -info -info_exclude null
+    args: -dim 3 -ctetgen_verbose 4 -dm_view ascii::ascii_info_detail -info -info_exclude null
   test:
     suffix: 1
     requires: ctetgen
-    args: -dim 3 -ctetgen_verbose 4 -refinement_limit 0.0625 -dm_view ::ascii_info_detail -info -info_exclude null
+    args: -dim 3 -ctetgen_verbose 4 -refinement_limit 0.0625 -dm_view ascii::ascii_info_detail -info -info_exclude null
 
   # 2D LaTex and ASCII output 2-9
   test:
     suffix: 2
     requires: triangle
-    args: -dim 2 -dm_view ::ascii_latex
+    args: -dim 2 -dm_view ascii::ascii_latex
   test:
     suffix: 3
     requires: triangle
-    args: -dim 2 -dm_refine 1 -interpolate 1 -dm_view ::ascii_info_detail
+    args: -dim 2 -dm_refine 1 -interpolate 1 -dm_view ascii::ascii_info_detail
   test:
     suffix: 4
     requires: triangle
     nsize: 2
-    args: -dim 2 -dm_refine 1 -interpolate 1 -test_partition -dm_view ::ascii_info_detail
+    args: -dim 2 -dm_refine 1 -interpolate 1 -test_partition -dm_view ascii::ascii_info_detail
   test:
     suffix: 5
     requires: triangle
     nsize: 2
-    args: -dim 2 -dm_refine 1 -interpolate 1 -test_partition -dm_view ::ascii_latex
+    args: -dim 2 -dm_refine 1 -interpolate 1 -test_partition -dm_view ascii::ascii_latex
   test:
     suffix: 6
-    args: -dim 2 -cell_simplex 0 -dm_view ::ascii_info_detail
+    args: -dim 2 -cell_simplex 0 -dm_view ascii::ascii_info_detail
   test:
     suffix: 7
-    args: -dim 2 -cell_simplex 0 -dm_refine 1 -dm_view ::ascii_info_detail
+    args: -dim 2 -cell_simplex 0 -dm_refine 1 -dm_view ascii::ascii_info_detail
   test:
     suffix: 8
     nsize: 2
-    args: -dim 2 -cell_simplex 0 -dm_refine 1 -interpolate 1 -test_partition -dm_view ::ascii_latex
+    args: -dim 2 -cell_simplex 0 -dm_refine 1 -interpolate 1 -test_partition -dm_view ascii::ascii_latex
 
   # Parallel refinement tests with overlap
   test:
@@ -330,24 +389,24 @@ int main(int argc, char **argv)
     requires: triangle
     nsize: 2
     requires: triangle
-    args: -dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -test_partition -overlap 1 -dm_view ::ascii_info_detail
+    args: -dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -test_partition -overlap 1 -dm_view ascii::ascii_info_detail
   test:
     suffix: refine_overlap_1
     requires: triangle
     nsize: 8
-    args: -dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -test_partition -overlap 1 -dm_view ::ascii_info_detail
+    args: -dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -test_partition -overlap 1 -dm_view ascii::ascii_info_detail
 
   # Parallel simple partitioner tests
   test:
     suffix: part_simple_0
     requires: triangle
     nsize: 2
-    args: -dim 2 -cell_simplex 1 -dm_refine 0 -interpolate 0 -petscpartitioner_type simple -partition_view -dm_view ::ascii_info_detail
+    args: -dim 2 -cell_simplex 1 -dm_refine 0 -interpolate 0 -petscpartitioner_type simple -partition_view -dm_view ascii::ascii_info_detail
   test:
     suffix: part_simple_1
     requires: triangle
     nsize: 8
-    args: -dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -petscpartitioner_type simple -partition_view -dm_view ::ascii_info_detail
+    args: -dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -petscpartitioner_type simple -partition_view -dm_view ascii::ascii_info_detail
 
   # CGNS reader tests 10-11 (need to find smaller test meshes)
   test:
@@ -356,58 +415,53 @@ int main(int argc, char **argv)
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/tut21.cgns -interpolate 1 -dm_view
   test:
     suffix: cgns_1
-    requires: cgns broken
+    requires: cgns
+    TODO: broken
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/StaticMixer.cgns -interpolate 1 -dm_view
 
   # Gmsh mesh reader tests
   test:
     suffix: gmsh_0
-    requires: !quad
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh -interpolate 1 -dm_view
   test:
     suffix: gmsh_1
-    requires: !quad
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.msh -interpolate 1 -dm_view
   test:
     suffix: gmsh_2
-    requires: !quad
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin.msh -interpolate 1 -dm_view
   test:
     suffix: gmsh_3
-    requires: !quad
     nsize: 3
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.msh -test_partition -interpolate 1 -dm_view
   test:
     suffix: gmsh_4
-    requires: !quad
     nsize: 3
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin.msh -test_partition -interpolate 1 -dm_view
   test:
     suffix: gmsh_5
-    requires: !quad
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_quad.msh -interpolate 1 -dm_view
   test:
     suffix: gmsh_6
-    requires: !quad
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin_physnames.msh -interpolate 1 -dm_view
 
   # Fluent mesh reader tests
   test:
     suffix: fluent_0
-    requires: !complex !quad
+    requires: !complex
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.cas -interpolate 1 -dm_view
   test:
     suffix: fluent_1
     nsize: 3
-    requires: !complex !quad
+    requires: !complex
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.cas -interpolate 1 -test_partition -dm_view
   test:
     suffix: fluent_2
-    requires: !complex !quad
+    requires: !complex
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_5tets_ascii.cas -interpolate 1 -dm_view
   test:
     suffix: fluent_3
-    requires: broken !complex !quad
+    requires: !complex
+    TODO: broken
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube_5tets.cas -interpolate 1 -dm_view
 
   # Med mesh reader tests, including parallel file reads
@@ -435,5 +489,37 @@ int main(int argc, char **argv)
     suffix: test_shape
     requires: ctetgen
     args: -dim 3 -interpolate -dm_refine_hierarchy 3 -test_shape
+
+  # Test simplex to tensor conversion
+  test:
+    suffix: s2t2
+    requires: triangle
+    args: -dim 2 -simplex2tensor -refinement_limit 0.0625 -dm_view ascii::ascii_info_detail
+
+  test:
+    suffix: s2t3
+    requires: ctetgen
+    args: -dim 3 -simplex2tensor -refinement_limit 0.0625 -dm_view ascii::ascii_info_detail
+
+  # Test domain shapes
+  test:
+    suffix: cylinder
+    args: -dim 3 -cell_simplex 0 -domain_shape cylinder -test_shape -dm_view
+
+  test:
+    suffix: cylinder_per
+    args: -dim 3 -cell_simplex 0 -domain_shape cylinder -z_periodicity periodic -test_shape -dm_view
+
+  test:
+    suffix: box_2d
+    args: -dim 2 -cell_simplex 0 -domain_shape box -dm_refine 2 -test_shape -dm_view
+
+  test:
+    suffix: box_2d_per
+    args: -dim 2 -cell_simplex 0 -domain_shape box -dm_refine 2 -test_shape -dm_view
+
+  test:
+    suffix: box_3d
+    args: -dim 3 -cell_simplex 0 -domain_shape box -dm_refine 2 -test_shape -dm_view
 
 TEST*/

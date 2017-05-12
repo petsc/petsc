@@ -173,7 +173,7 @@ PetscErrorCode CheckFVMGeometry(DM dm, PetscInt cell, PetscInt spaceDim, PetscRe
   PetscFunctionBegin;
   ierr = DMPlexComputeCellGeometryFVM(dm, cell, &vol, centroid, normal);CHKERRQ(ierr);
   for (d = 0; d < spaceDim; ++d) {
-    if (RelativeError(centroid[d],centroidEx[d]) > 10*PETSC_SMALL) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid centroid[%D]: %g != %g", d, (double)centroid[d], (double)centroidEx[d]);
+    if (RelativeError(centroid[d],centroidEx[d]) > 10*PETSC_SMALL) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid centroid[%D]: %g != %g diff %g", d, (double)centroid[d], (double)centroidEx[d],(double)(centroid[d]-centroidEx[d]));
     if (RelativeError(normal[d],normalEx[d]) > 10*PETSC_SMALL) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid normal[%D]: %g != %g", d, (double)normal[d], (double)normalEx[d]);
   }
   if (RelativeError(volEx,vol) > 10*PETSC_SMALL) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid volume = %g != %g diff %g", (double)vol, (double)volEx,(double)(vol - volEx));
@@ -219,7 +219,7 @@ PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool tran
     PetscReal JEx[4]        = {1.0, 0.0, 0.0, 1.0};
     PetscReal invJEx[4]     = {1.0, 0.0, 0.0, 1.0};
     PetscReal detJEx        = 1.0;
-    PetscReal centroidEx[2] = {-0.333333333333, -0.333333333333};
+    PetscReal centroidEx[2] = {-((PetscReal)1.)/((PetscReal)3.), -((PetscReal)1.)/((PetscReal)3.)};
     PetscReal normalEx[2]   = {0.0, 0.0};
     PetscReal volEx         = 2.0;
 
@@ -240,7 +240,7 @@ PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool tran
       PetscReal   JEx[4]          = {1.0, 0.0, 0.0, 1.0}, R[4], rot[2], rotM[4];
       PetscReal   invJEx[4]       = {1.0, 0.0, 0.0, 1.0};
       PetscReal   detJEx          = 1.0, scale, phi;
-      PetscReal   centroidEx[2]   = {-0.333333333333, -0.333333333333};
+      PetscReal   centroidEx[2]   = {-((PetscReal)1.)/((PetscReal)3.), -((PetscReal)1.)/((PetscReal)3.)};
       PetscReal   normalEx[2]     = {0.0, 0.0};
       PetscReal   volEx           = 2.0;
       PetscInt    d, e, f, p;
@@ -252,7 +252,7 @@ PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool tran
       for (p = 0; p < 3; ++p) {
         for (d = 0; d < dim; ++d) {
           for (e = 0, rot[d] = 0.0; e < dim; ++e) {
-            rot[d] += R[d*dim+e] * vertexCoords[p*dim+e];
+            rot[d] += R[d*dim+e] * PetscRealPart(vertexCoords[p*dim+e]);
           }
         }
         for (d = 0; d < dim; ++d) vertexCoords[p*dim+d] = rot[d];
@@ -293,14 +293,14 @@ PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool tran
           vertexCoords[p*dim+d] *= scale;
           vertexCoords[p*dim+d] += trans[d];
         }
-        v0Ex[d] = vertexCoords[d];
+        v0Ex[d] = PetscRealPart(vertexCoords[d]);
         for (e = 0; e < dim; ++e) {
           JEx[d*dim+e]    *= scale;
           invJEx[d*dim+e] /= scale;
         }
         detJEx *= scale;
         centroidEx[d] *= scale;
-        centroidEx[d] += trans[d];
+        centroidEx[d] += PetscRealPart(trans[d]);
         volEx *= scale;
       }
       ierr = ChangeCoordinates(dm, dim, vertexCoords);CHKERRQ(ierr);
@@ -318,7 +318,7 @@ PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool tran
     PetscReal JEx[9]        = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
     PetscReal invJEx[9]     = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
     PetscReal detJEx        = 1.0;
-    PetscReal centroidEx[3] = {-0.333333333333, -0.333333333333, 0.0};
+    PetscReal centroidEx[3] = {-((PetscReal)1.)/((PetscReal)3.), -((PetscReal)1.)/((PetscReal)3.), 0.0};
     PetscReal normalEx[3]   = {0.0, 0.0, 1.0};
     PetscReal volEx         = 2.0;
 
@@ -333,7 +333,7 @@ PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool tran
     PetscReal   JEx[9]          = {0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0};
     PetscReal   invJEx[9]       = {0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0};
     PetscReal   detJEx          = 1.0;
-    PetscReal   centroidEx[3]   = {0.0, -0.333333333333, -0.333333333333};
+    PetscReal   centroidEx[3]   = {0.0, -((PetscReal)1.)/((PetscReal)3.), -((PetscReal)1.)/((PetscReal)3.)};
     PetscReal   normalEx[3]     = {1.0, 0.0, 0.0};
     PetscReal   volEx           = 2.0;
 
@@ -358,7 +358,7 @@ PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool tran
       PetscReal   JEx[9]          = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0}, R[9], rot[3], rotM[9];
       PetscReal   invJEx[9]       = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
       PetscReal   detJEx          = 1.0, scale, phi, theta, psi = 0.0;
-      PetscReal   centroidEx[3]   = {-0.333333333333, -0.333333333333, 0.0};
+      PetscReal   centroidEx[3]   = {-((PetscReal)1.)/((PetscReal)3.), -((PetscReal)1.)/((PetscReal)3.), 0.0};
       PetscReal   normalEx[3]     = {0.0, 0.0, 1.0};
       PetscReal   volEx           = 2.0;
       PetscInt    d, e, f, p;
@@ -373,7 +373,7 @@ PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool tran
           vertexCoords[p*dim+d] += trans[d];
         }
         centroidEx[d] *= scale;
-        centroidEx[d] += trans[d];
+        centroidEx[d] += PetscRealPart(trans[d]);
         for (e = 0; e < dim-1; ++e) {
           JEx[d*dim+e]    *= scale;
           invJEx[d*dim+e] /= scale;
@@ -389,7 +389,7 @@ PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool tran
       for (p = 0; p < 3; ++p) {
         for (d = 0; d < dim; ++d) {
           for (e = 0, rot[d] = 0.0; e < dim; ++e) {
-            rot[d] += R[d*dim+e] * vertexCoords[p*dim+e];
+            rot[d] += R[d*dim+e] * PetscRealPart(vertexCoords[p*dim+e]);
           }
         }
         for (d = 0; d < dim; ++d) vertexCoords[p*dim+d] = rot[d];
@@ -407,7 +407,7 @@ PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool tran
       }
       for (d = 0; d < dim; ++d) normalEx[d] = rot[d];
       for (d = 0; d < dim; ++d) {
-        v0Ex[d] = vertexCoords[d];
+        v0Ex[d] = PetscRealPart(vertexCoords[d]);
         for (e = 0; e < dim; ++e) {
           for (f = 0, rotM[d*dim+e] = 0.0; f < dim; ++f) {
             rotM[d*dim+e] += R[d*dim+f] * JEx[f*dim+e];
@@ -516,7 +516,7 @@ PetscErrorCode TestQuadrilateral(MPI_Comm comm, PetscBool interpolate, PetscBool
       for (p = 0; p < 4; ++p) {
         for (d = 0; d < dim; ++d) {
           for (e = 0, rot[d] = 0.0; e < dim; ++e) {
-            rot[d] += R[d*dim+e] * vertexCoords[p*dim+e];
+            rot[d] += R[d*dim+e] * PetscRealPart(vertexCoords[p*dim+e]);
           }
         }
         for (d = 0; d < dim; ++d) vertexCoords[p*dim+d] = rot[d];
@@ -557,14 +557,14 @@ PetscErrorCode TestQuadrilateral(MPI_Comm comm, PetscBool interpolate, PetscBool
           vertexCoords[p*dim+d] *= scale;
           vertexCoords[p*dim+d] += trans[d];
         }
-        v0Ex[d] = vertexCoords[d];
+        v0Ex[d] = PetscRealPart(vertexCoords[d]);
         for (e = 0; e < dim; ++e) {
           JEx[d*dim+e]    *= scale;
           invJEx[d*dim+e] /= scale;
         }
         detJEx *= scale;
         centroidEx[d] *= scale;
-        centroidEx[d] += trans[d];
+        centroidEx[d] += PetscRealPart(trans[d]);
         volEx *= scale;
       }
       ierr = ChangeCoordinates(dm, dim, vertexCoords);CHKERRQ(ierr);
@@ -622,7 +622,7 @@ PetscErrorCode TestQuadrilateral(MPI_Comm comm, PetscBool interpolate, PetscBool
           vertexCoords[p*dim+d] += trans[d];
         }
         centroidEx[d] *= scale;
-        centroidEx[d] += trans[d];
+        centroidEx[d] += PetscRealPart(trans[d]);
         for (e = 0; e < dim-1; ++e) {
           JEx[d*dim+e]    *= scale;
           invJEx[d*dim+e] /= scale;
@@ -638,7 +638,7 @@ PetscErrorCode TestQuadrilateral(MPI_Comm comm, PetscBool interpolate, PetscBool
       for (p = 0; p < 4; ++p) {
         for (d = 0; d < dim; ++d) {
           for (e = 0, rot[d] = 0.0; e < dim; ++e) {
-            rot[d] += R[d*dim+e] * vertexCoords[p*dim+e];
+            rot[d] += R[d*dim+e] * PetscRealPart(vertexCoords[p*dim+e]);
           }
         }
         for (d = 0; d < dim; ++d) vertexCoords[p*dim+d] = rot[d];
@@ -656,7 +656,7 @@ PetscErrorCode TestQuadrilateral(MPI_Comm comm, PetscBool interpolate, PetscBool
       }
       for (d = 0; d < dim; ++d) normalEx[d] = rot[d];
       for (d = 0; d < dim; ++d) {
-        v0Ex[d] = vertexCoords[d];
+        v0Ex[d] = PetscRealPart(vertexCoords[d]);
         for (e = 0; e < dim; ++e) {
           for (f = 0, rotM[d*dim+e] = 0.0; f < dim; ++f) {
             rotM[d*dim+e] += R[d*dim+f] * JEx[f*dim+e];
@@ -734,7 +734,7 @@ PetscErrorCode TestTetrahedron(MPI_Comm comm, PetscBool interpolate, PetscBool t
     PetscReal detJEx        = 1.0;
     PetscReal centroidEx[3] = {-0.5, -0.5, -0.5};
     PetscReal normalEx[3]   = {0.0, 0.0, 0.0};
-    PetscReal volEx         = 4.0/3.0;
+    PetscReal volEx         = (PetscReal)4.0/(PetscReal)3.0;
 
     ierr = CheckFEMGeometry(dm, 0, dim, v0Ex, JEx, invJEx, detJEx);CHKERRQ(ierr);
     if (interpolate) {ierr = CheckFVMGeometry(dm, 0, dim, centroidEx, normalEx, volEx);CHKERRQ(ierr);}
@@ -758,7 +758,7 @@ PetscErrorCode TestTetrahedron(MPI_Comm comm, PetscBool interpolate, PetscBool t
       PetscReal   detJEx           = 1.0, scale, phi, theta, psi = 0.0;
       PetscReal   centroidEx[3]    = {-0.5, -0.5, -0.5};
       PetscReal   normalEx[3]      = {0.0, 0.0, 0.0};
-      PetscReal   volEx            = 4.0/3.0;
+      PetscReal   volEx            = (PetscReal)4.0/(PetscReal)3.0;
       PetscInt    d, e, f, p;
 
       ierr = PetscRandomGetValueReal(r, &scale);CHKERRQ(ierr);
@@ -771,7 +771,7 @@ PetscErrorCode TestTetrahedron(MPI_Comm comm, PetscBool interpolate, PetscBool t
           vertexCoords[p*dim+d] += trans[d];
         }
         centroidEx[d] *= scale;
-        centroidEx[d] += trans[d];
+        centroidEx[d] += PetscRealPart(trans[d]);
         for (e = 0; e < dim; ++e) {
           JEx[d*dim+e]    *= scale;
           invJEx[d*dim+e] /= scale;
@@ -785,7 +785,7 @@ PetscErrorCode TestTetrahedron(MPI_Comm comm, PetscBool interpolate, PetscBool t
       for (p = 0; p < 4; ++p) {
         for (d = 0; d < dim; ++d) {
           for (e = 0, rot[d] = 0.0; e < dim; ++e) {
-            rot[d] += R[d*dim+e] * vertexCoords[p*dim+e];
+            rot[d] += R[d*dim+e] * PetscRealPart(vertexCoords[p*dim+e]);
           }
         }
         for (d = 0; d < dim; ++d) vertexCoords[p*dim+d] = rot[d];
@@ -797,7 +797,7 @@ PetscErrorCode TestTetrahedron(MPI_Comm comm, PetscBool interpolate, PetscBool t
       }
       for (d = 0; d < dim; ++d) centroidEx[d] = rot[d];
       for (d = 0; d < dim; ++d) {
-        v0Ex[d] = vertexCoords[d];
+        v0Ex[d] = PetscRealPart(vertexCoords[d]);
         for (e = 0; e < dim; ++e) {
           for (f = 0, rotM[d*dim+e] = 0.0; f < dim; ++f) {
             rotM[d*dim+e] += R[d*dim+f] * JEx[f*dim+e];
@@ -914,7 +914,7 @@ PetscErrorCode TestHexahedron(MPI_Comm comm, PetscBool interpolate, PetscBool tr
           vertexCoords[p*dim+d] += trans[d];
         }
         centroidEx[d] *= scale;
-        centroidEx[d] += trans[d];
+        centroidEx[d] += PetscRealPart(trans[d]);
         for (e = 0; e < dim; ++e) {
           JEx[d*dim+e]    *= scale;
           invJEx[d*dim+e] /= scale;
@@ -928,7 +928,7 @@ PetscErrorCode TestHexahedron(MPI_Comm comm, PetscBool interpolate, PetscBool tr
       for (p = 0; p < 8; ++p) {
         for (d = 0; d < dim; ++d) {
           for (e = 0, rot[d] = 0.0; e < dim; ++e) {
-            rot[d] += R[d*dim+e] * vertexCoords[p*dim+e];
+            rot[d] += R[d*dim+e] * PetscRealPart(vertexCoords[p*dim+e]);
           }
         }
         for (d = 0; d < dim; ++d) vertexCoords[p*dim+d] = rot[d];
@@ -940,7 +940,7 @@ PetscErrorCode TestHexahedron(MPI_Comm comm, PetscBool interpolate, PetscBool tr
       }
       for (d = 0; d < dim; ++d) centroidEx[d] = rot[d];
       for (d = 0; d < dim; ++d) {
-        v0Ex[d] = vertexCoords[d];
+        v0Ex[d] = PetscRealPart(vertexCoords[d]);
         for (e = 0; e < dim; ++e) {
           for (f = 0, rotM[d*dim+e] = 0.0; f < dim; ++f) {
             rotM[d*dim+e] += R[d*dim+f] * JEx[f*dim+e];
@@ -1009,25 +1009,23 @@ int main(int argc, char **argv)
 
   test:
     suffix: 0
-    args: -dm_view ::ascii_info_detail
+    args: -dm_view ascii::ascii_info_detail
   test:
     suffix: 1
-    requires: !quad
-    args: -interpolate -dm_view ::ascii_info_detail
+    args: -interpolate -dm_view ascii::ascii_info_detail
   test:
     suffix: 2
     args: -transform
   test:
     suffix: 3
-    requires: !quad
     args: -interpolate -transform
   test:
     suffix: 4
     requires: exodusii
-    args: -run_type file -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/simpleblock-100.exo -dm_view ::ascii_info_detail -v0 -1.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5 -J 0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0,0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0,0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0 -invJ 0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0,0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0,0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0 -detJ 0.125,0.125,0.125
+    args: -run_type file -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/simpleblock-100.exo -dm_view ascii::ascii_info_detail -v0 -1.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5 -J 0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0,0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0,0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0 -invJ 0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0,0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0,0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0 -detJ 0.125,0.125,0.125
   test:
     suffix: 5
     requires: exodusii
-    args: -interpolate -run_type file -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/simpleblock-100.exo -dm_view ::ascii_info_detail -v0 -1.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5 -J 0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0,0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0,0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0 -invJ 0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0,0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0,0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0 -detJ 0.125,0.125,0.125 -centroid -1.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0 -normal 0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0 -vol 1.0,1.0,1.0
+    args: -interpolate -run_type file -filename ${PETSC_DIR}/share/petsc/datafiles/meshes/simpleblock-100.exo -dm_view ascii::ascii_info_detail -v0 -1.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5 -J 0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0,0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0,0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0 -invJ 0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0,0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0,0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0 -detJ 0.125,0.125,0.125 -centroid -1.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0 -normal 0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0 -vol 1.0,1.0,1.0
 
 TEST*/

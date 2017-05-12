@@ -42,12 +42,12 @@ PetscErrorCode ProcessOptions(AppCtx *options)
     len  = options->numFields;
     ierr = PetscMalloc1(len, &options->numComponents);CHKERRQ(ierr);
     ierr = PetscOptionsIntArray("-num_components", "The number of components per field", "ex10.c", options->numComponents, &len, &flg);CHKERRQ(ierr);
-    if (flg && (len != options->numFields)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of components array is %d should be %d", len, options->numFields);
+    if (flg && (len != options->numFields)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of components array is %D should be %D", len, options->numFields);
   }
   len  = (options->dim+1) * PetscMax(1, options->numFields);
   ierr = PetscMalloc1(len, &options->numDof);CHKERRQ(ierr);
   ierr = PetscOptionsIntArray("-num_dof", "The dof signature for the section", "ex10.c", options->numDof, &len, &flg);CHKERRQ(ierr);
-  if (flg && (len != (options->dim+1) * PetscMax(1, options->numFields))) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of dof array is %d should be %d", len, (options->dim+1) * PetscMax(1, options->numFields));
+  if (flg && (len != (options->dim+1) * PetscMax(1, options->numFields))) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of dof array is %D should be %D", len, (options->dim+1) * PetscMax(1, options->numFields));
   ierr = PetscOptionsInt("-num_groups", "Group permutation by this many label values", "ex10.c", options->numGroups, &options->numGroups, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -66,7 +66,7 @@ PetscErrorCode CleanupContext(AppCtx *user)
 /* This mesh comes from~\cite{saad2003}, Fig. 2.10, p. 70. */
 PetscErrorCode CreateTestMesh(MPI_Comm comm, DM *dm, AppCtx *options)
 {
-  const PetscInt    cells[16*3]  = {6, 7, 8,   7, 9, 10,  10, 11, 12,  11, 13, 14,   0,  6, 8,  6,  2,  7,   1, 8,  7,   1,  7, 10,
+  const int         cells[16*3]  = {6, 7, 8,   7, 9, 10,  10, 11, 12,  11, 13, 14,   0,  6, 8,  6,  2,  7,   1, 8,  7,   1,  7, 10,
                                     2, 9, 7,  10, 9,  4,   1, 10, 12,  10,  4, 11,  12, 11, 3,  3, 11, 14,  11, 4, 13,  14, 13,  5};
   const double      coords[15*2] = {0, -3,  0, -1,  2, -1,  0,  1,  2, 1,
                                     0,  3,  1, -2,  1, -1,  0, -2,  2, 0,
@@ -100,9 +100,9 @@ PetscErrorCode TestReordering(DM dm, AppCtx *user)
   ierr = MatDestroy(&pA);CHKERRQ(ierr);
   ierr = DMDestroy(&pdm);CHKERRQ(ierr);
   if (pbw > bw) {
-    ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Ordering method %s increased bandwidth from %d to %d\n", order, bw, pbw);CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Ordering method %s increased bandwidth from %D to %D\n", order, bw, pbw);CHKERRQ(ierr);
   } else {
-    ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Ordering method %s reduced bandwidth from %d to %d\n", order, bw, pbw);CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Ordering method %s reduced bandwidth from %D to %D\n", order, bw, pbw);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -23,7 +23,7 @@ static PetscErrorCode ProcessOptions(AppCtx *options)
   ierr = PetscOptionsInt("-n", "The number of faces per dimension", "ex21.c", options->n, &options->n, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
-};
+}
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
