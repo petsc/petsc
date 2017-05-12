@@ -1082,7 +1082,6 @@ PetscErrorCode PetscSpaceEvaluate_Point(PetscSpace sp, PetscInt npoints, const P
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (D || H) SETERRQ(PetscObjectComm((PetscObject) sp), PETSC_ERR_SUP, "Cannot calculate derivatives for a Point space");
   if (npoints != pt->quad->numPoints) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot evaluate Point space on %d points != %d size", npoints, pt->quad->numPoints);
   ierr = PetscMemzero(B, npoints*pdim * sizeof(PetscReal));CHKERRQ(ierr);
   for (p = 0; p < npoints; ++p) {
@@ -1101,6 +1100,8 @@ PetscErrorCode PetscSpaceEvaluate_Point(PetscSpace sp, PetscInt npoints, const P
       }
     }
   }
+  if (D) {ierr = PetscMemzero(D, npoints*pdim*dim * sizeof(PetscReal));CHKERRQ(ierr);}
+  if (H) {ierr = PetscMemzero(H, npoints*pdim*dim*dim * sizeof(PetscReal));CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
