@@ -191,11 +191,13 @@ static PetscErrorCode KSPGuessUpdate_Fischer_2(KSPGuess guess, Vec b, Vec x)
 static PetscErrorCode KSPGuessSetFromOptions_Fischer(KSPGuess guess)
 {
   KSPGuessFischer *ITG = (KSPGuessFischer *)guess->data;
-  PetscInt        nmax = 2, model[2] = {ITG->method, ITG->maxl};
+  PetscInt        nmax = 2, model[2];
   PetscBool       flg;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  model[0] = ITG->method;
+  model[1] = ITG->maxl;
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)guess),((PetscObject)guess)->prefix,"Fischer guess options","KSPGuess");CHKERRQ(ierr);
   ierr = PetscOptionsIntArray("-ksp_guess_fischer_model","Model type and dimension of basis","KSPGuessFischerSetModel",model,&nmax,&flg);CHKERRQ(ierr);
   if (flg) {
