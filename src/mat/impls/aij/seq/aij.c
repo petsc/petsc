@@ -3554,7 +3554,8 @@ PetscErrorCode  MatSeqAIJSetPreallocation_SeqAIJ(Mat B,PetscInt nz,const PetscIn
     /* FIXME: should B's old memory be unlogged? */
     ierr    = MatSeqXAIJFreeAIJ(B,&b->a,&b->j,&b->i);CHKERRQ(ierr);
     if (B->structure_only) {
-      ierr    = PetscMalloc2(nz,&b->j,B->rmap->n+1,&b->i);CHKERRQ(ierr);
+      ierr    = PetscMalloc1(nz,&b->j);CHKERRQ(ierr);
+      ierr    = PetscMalloc1(B->rmap->n+1,&b->i);CHKERRQ(ierr);
       ierr    = PetscLogObjectMemory((PetscObject)B,(B->rmap->n+1)*sizeof(PetscInt)+nz*sizeof(PetscInt));CHKERRQ(ierr);
     } else {
       ierr    = PetscMalloc3(nz,&b->a,nz,&b->j,B->rmap->n+1,&b->i);CHKERRQ(ierr);
