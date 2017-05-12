@@ -170,12 +170,21 @@ PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec localU,
   PetscReal     **basisTab = NULL, **basisDerTab = NULL, **basisTabAux = NULL, **basisDerTabAux = NULL;
   PetscInt       *Nc;
   PetscInt        dim, dimEmbed, minHeight, maxHeight, h, Nf, NfAux = 0, f;
-  PetscBool      *isFE, hasFE = PETSC_FALSE, hasFV = PETSC_FALSE;
+  PetscBool      *isFE, hasFE = PETSC_FALSE, hasFV = PETSC_FALSE, auxBd = PETSC_FALSE;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject) dm, "dmAux", (PetscObject *) &dmAux);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject) dm, "A", (PetscObject *) &localA);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetVTKCellHeight(dm, &minHeight);CHKERRQ(ierr);
+  if (!minHeight && dmAux) {
+    DMLabel spmap;
+
+    /* If dmAux is a surface, then force the projection to take place over a surface */
+    ierr = DMPlexGetSubpointMap(dmAux, &spmap);CHKERRQ(ierr);
+    if (spmap) {minHeight = 1; auxBd = PETSC_TRUE;}
+  }
   ierr = DMPlexGetMaxProjectionHeight(dm, &maxHeight);CHKERRQ(ierr);
   maxHeight = PetscMax(maxHeight, minHeight);
   if (maxHeight < 0 || maxHeight > dim) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Maximum projection height %d not in [0, %d)\n", maxHeight, dim);}
@@ -183,8 +192,6 @@ PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec localU,
   ierr = DMGetCoordinateDim(dm, &dimEmbed);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &Nf);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject) dm, "dmAux", (PetscObject *) &dmAux);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject) dm, "A", (PetscObject *) &localA);CHKERRQ(ierr);
   if (dmAux) {
     ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
     ierr = PetscDSGetNumFields(probAux, &NfAux);CHKERRQ(ierr);
@@ -266,7 +273,7 @@ PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec localU,
   }
   /* Note: We make no attempt to optimize for height. Higher height things just overwrite the lower height results. */
   for (h = minHeight; h <= maxHeight; h++) {
-    PetscInt     effectiveHeight = h - minHeight;
+    PetscInt     effectiveHeight = h - (auxBd ? 0 : minHeight);
     PetscScalar *values;
     PetscBool   *fieldActive;
     PetscInt     pStart, pEnd, p, spDim, totDim, numValues;
