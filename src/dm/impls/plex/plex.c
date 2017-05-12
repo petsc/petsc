@@ -5232,7 +5232,7 @@ PetscErrorCode DMPlexAnchorsModifyMat(DM dm, PetscSection section, PetscInt numP
 }
 
 /*@C
-  DMPlexGetClosureIndices - Get the indices in a vector v for all points in the closure of the given point
+  DMPlexGetClosureIndices - Get the global indices in a vector v for all points in the closure of the given point
 
   Not collective
 
