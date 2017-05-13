@@ -24,94 +24,213 @@ SNES Object: 5 MPI processes
           left preconditioning
           using PRECONDITIONED norm type for convergence test
         PC Object: (fetidp_) 5 MPI processes
-          type: shell
-            Shell: no name
-              FETI-DP multipliers Dirichlet preconditioner (just from rank 0)
-                Mat Object: 1 MPI processes
+          type: fieldsplit
+            FieldSplit with Schur preconditioner, factorization DIAG
+            Preconditioner for the Schur complement formed from user provided matrix
+            Split info:
+            Split number 0 Defined by IS
+            Split number 1 Defined by IS
+            KSP solver for A00 block
+              KSP Object: (fetidp_fieldsplit_lag_) 5 MPI processes
+                type: preonly
+                maximum iterations=10000, initial guess is zero
+                tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                left preconditioning
+                using NONE norm type for convergence test
+              PC Object: 5 MPI processes
+                type: shell
+                  Shell: no name
+                    FETI-DP multipliers Dirichlet preconditioner (just from rank 0)
+                      Mat Object: 1 MPI processes
+                        type: schurcomplement
+                        rows=59, cols=59
+                          Schur complement A11 - A10 inv(A00) A01
+                          A11
+                            Mat Object: 1 MPI processes
+                              type: seqaij
+                              rows=59, cols=59
+                              total: nonzeros=663, allocated nonzeros=663
+                              total number of mallocs used during MatSetValues calls =0
+                                using I-node routines: found 25 nodes, limit used is 5
+                          A10
+                            Mat Object: 1 MPI processes
+                              type: seqaij
+                              rows=59, cols=242
+                              total: nonzeros=983, allocated nonzeros=983
+                              total number of mallocs used during MatSetValues calls =0
+                                using I-node routines: found 25 nodes, limit used is 5
+                          KSP of A00
+                            KSP Object: (fetidp_bddc_pc_bddc_dirichlet_) 1 MPI processes
+                              type: preonly
+                              maximum iterations=10000, initial guess is zero
+                              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                              left preconditioning
+                              using NONE norm type for convergence test
+                            PC Object: (fetidp_bddc_pc_bddc_dirichlet_) 1 MPI processes
+                              type: lu
+                                out-of-place factorization
+                                Reusing fill from past factorization
+                                tolerance for zero pivot 2.22045e-14
+                                matrix ordering: nd
+                                factor fill ratio given 0., needed 0.
+                                  Factored matrix follows:
+                                    Mat Object: 1 MPI processes
+                                      type: umfpack
+                                      rows=242, cols=242
+                                      package used to perform factorization: umfpack
+                                      total: nonzeros=0, allocated nonzeros=0
+                                      total number of mallocs used during MatSetValues calls =0
+                                        UMFPACK run parameters:
+                                          Control[UMFPACK_PRL]: 1.
+                                          Control[UMFPACK_STRATEGY]: 0.
+                                          Control[UMFPACK_DENSE_COL]: 0.2
+                                          Control[UMFPACK_DENSE_ROW]: 0.2
+                                          Control[UMFPACK_AMD_DENSE]: 10.
+                                          Control[UMFPACK_BLOCK_SIZE]: 32.
+                                          Control[UMFPACK_FIXQ]: 0.
+                                          Control[UMFPACK_AGGRESSIVE]: 1.
+                                          Control[UMFPACK_PIVOT_TOLERANCE]: 0.1
+                                          Control[UMFPACK_SYM_PIVOT_TOLERANCE]: 0.001
+                                          Control[UMFPACK_SCALE]: 1.
+                                          Control[UMFPACK_ALLOC_INIT]: 0.7
+                                          Control[UMFPACK_DROPTOL]: 0.
+                                          Control[UMFPACK_IRSTEP]: 0.
+                                          Control[UMFPACK_ORDERING]: AMD (not using the PETSc ordering)
+                              linear system matrix = precond matrix:
+                              Mat Object: 1 MPI processes
+                                type: seqaij
+                                rows=242, cols=242
+                                total: nonzeros=7380, allocated nonzeros=7380
+                                total number of mallocs used during MatSetValues calls =0
+                                  using I-node routines: found 116 nodes, limit used is 5
+                          A01
+                            Mat Object: 1 MPI processes
+                              type: seqaij
+                              rows=242, cols=59
+                              total: nonzeros=983, allocated nonzeros=983
+                              total number of mallocs used during MatSetValues calls =0
+                                using I-node routines: found 81 nodes, limit used is 5
+                linear system matrix = precond matrix:
+                Mat Object: (fetidp_fieldsplit_lag_) 5 MPI processes
+                  type: submatrix
+                  rows=126, cols=126
+            KSP solver for S = A11 - A10 inv(A00) A01 
+              KSP Object: (fetidp_fieldsplit_p_) 5 MPI processes
+                type: richardson
+                  Richardson: damping factor=200.
+                maximum iterations=1, initial guess is zero
+                tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                left preconditioning
+                using PRECONDITIONED norm type for convergence test
+              PC Object: (fetidp_fieldsplit_p_) 5 MPI processes
+                type: none
+                linear system matrix followed by preconditioner matrix:
+                Mat Object: (fetidp_fieldsplit_p_) 5 MPI processes
                   type: schurcomplement
-                  rows=59, cols=59
+                  rows=37, cols=37
                     Schur complement A11 - A10 inv(A00) A01
                     A11
-                      Mat Object: 1 MPI processes
-                        type: seqaij
-                        rows=59, cols=59
-                        total: nonzeros=663, allocated nonzeros=663
-                        total number of mallocs used during MatSetValues calls =0
-                          using I-node routines: found 25 nodes, limit used is 5
+                      Mat Object: (fetidp_fieldsplit_p_) 5 MPI processes
+                        type: submatrix
+                        rows=37, cols=37
                     A10
-                      Mat Object: 1 MPI processes
-                        type: seqaij
-                        rows=59, cols=242
-                        total: nonzeros=983, allocated nonzeros=983
-                        total number of mallocs used during MatSetValues calls =0
-                          using I-node routines: found 25 nodes, limit used is 5
+                      Mat Object: 5 MPI processes
+                        type: submatrix
+                        rows=37, cols=126
                     KSP of A00
-                      KSP Object: (fetidp_bddc_pc_bddc_dirichlet_) 1 MPI processes
+                      KSP Object: (fetidp_fieldsplit_lag_) 5 MPI processes
                         type: preonly
                         maximum iterations=10000, initial guess is zero
                         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
                         left preconditioning
                         using NONE norm type for convergence test
-                      PC Object: (fetidp_bddc_pc_bddc_dirichlet_) 1 MPI processes
-                        type: lu
-                          out-of-place factorization
-                          Reusing fill from past factorization
-                          tolerance for zero pivot 2.22045e-14
-                          matrix ordering: nd
-                          factor fill ratio given 0., needed 0.
-                            Factored matrix follows:
+                      PC Object: 5 MPI processes
+                        type: shell
+                          Shell: no name
+                            FETI-DP multipliers Dirichlet preconditioner (just from rank 0)
                               Mat Object: 1 MPI processes
-                                type: umfpack
-                                rows=242, cols=242
-                                package used to perform factorization: umfpack
-                                total: nonzeros=0, allocated nonzeros=0
-                                total number of mallocs used during MatSetValues calls =0
-                                  UMFPACK run parameters:
-                                    Control[UMFPACK_PRL]: 1.
-                                    Control[UMFPACK_STRATEGY]: 0.
-                                    Control[UMFPACK_DENSE_COL]: 0.2
-                                    Control[UMFPACK_DENSE_ROW]: 0.2
-                                    Control[UMFPACK_AMD_DENSE]: 10.
-                                    Control[UMFPACK_BLOCK_SIZE]: 32.
-                                    Control[UMFPACK_FIXQ]: 0.
-                                    Control[UMFPACK_AGGRESSIVE]: 1.
-                                    Control[UMFPACK_PIVOT_TOLERANCE]: 0.1
-                                    Control[UMFPACK_SYM_PIVOT_TOLERANCE]: 0.001
-                                    Control[UMFPACK_SCALE]: 1.
-                                    Control[UMFPACK_ALLOC_INIT]: 0.7
-                                    Control[UMFPACK_DROPTOL]: 0.
-                                    Control[UMFPACK_IRSTEP]: 0.
-                                    Control[UMFPACK_ORDERING]: AMD (not using the PETSc ordering)
+                                type: schurcomplement
+                                rows=59, cols=59
+                                  Schur complement A11 - A10 inv(A00) A01
+                                  A11
+                                    Mat Object: 1 MPI processes
+                                      type: seqaij
+                                      rows=59, cols=59
+                                      total: nonzeros=663, allocated nonzeros=663
+                                      total number of mallocs used during MatSetValues calls =0
+                                        using I-node routines: found 25 nodes, limit used is 5
+                                  A10
+                                    Mat Object: 1 MPI processes
+                                      type: seqaij
+                                      rows=59, cols=242
+                                      total: nonzeros=983, allocated nonzeros=983
+                                      total number of mallocs used during MatSetValues calls =0
+                                        using I-node routines: found 25 nodes, limit used is 5
+                                  KSP of A00
+                                    KSP Object: (fetidp_bddc_pc_bddc_dirichlet_) 1 MPI processes
+                                      type: preonly
+                                      maximum iterations=10000, initial guess is zero
+                                      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                                      left preconditioning
+                                      using NONE norm type for convergence test
+                                    PC Object: (fetidp_bddc_pc_bddc_dirichlet_) 1 MPI processes
+                                      type: lu
+                                        out-of-place factorization
+                                        Reusing fill from past factorization
+                                        tolerance for zero pivot 2.22045e-14
+                                        matrix ordering: nd
+                                        factor fill ratio given 0., needed 0.
+                                          Factored matrix follows:
+                                            Mat Object: 1 MPI processes
+                                              type: umfpack
+                                              rows=242, cols=242
+                                              package used to perform factorization: umfpack
+                                              total: nonzeros=0, allocated nonzeros=0
+                                              total number of mallocs used during MatSetValues calls =0
+                                                UMFPACK run parameters:
+                                                  Control[UMFPACK_PRL]: 1.
+                                                  Control[UMFPACK_STRATEGY]: 0.
+                                                  Control[UMFPACK_DENSE_COL]: 0.2
+                                                  Control[UMFPACK_DENSE_ROW]: 0.2
+                                                  Control[UMFPACK_AMD_DENSE]: 10.
+                                                  Control[UMFPACK_BLOCK_SIZE]: 32.
+                                                  Control[UMFPACK_FIXQ]: 0.
+                                                  Control[UMFPACK_AGGRESSIVE]: 1.
+                                                  Control[UMFPACK_PIVOT_TOLERANCE]: 0.1
+                                                  Control[UMFPACK_SYM_PIVOT_TOLERANCE]: 0.001
+                                                  Control[UMFPACK_SCALE]: 1.
+                                                  Control[UMFPACK_ALLOC_INIT]: 0.7
+                                                  Control[UMFPACK_DROPTOL]: 0.
+                                                  Control[UMFPACK_IRSTEP]: 0.
+                                                  Control[UMFPACK_ORDERING]: AMD (not using the PETSc ordering)
+                                      linear system matrix = precond matrix:
+                                      Mat Object: 1 MPI processes
+                                        type: seqaij
+                                        rows=242, cols=242
+                                        total: nonzeros=7380, allocated nonzeros=7380
+                                        total number of mallocs used during MatSetValues calls =0
+                                          using I-node routines: found 116 nodes, limit used is 5
+                                  A01
+                                    Mat Object: 1 MPI processes
+                                      type: seqaij
+                                      rows=242, cols=59
+                                      total: nonzeros=983, allocated nonzeros=983
+                                      total number of mallocs used during MatSetValues calls =0
+                                        using I-node routines: found 81 nodes, limit used is 5
                         linear system matrix = precond matrix:
-                        Mat Object: 1 MPI processes
-                          type: seqaij
-                          rows=242, cols=242
-                          total: nonzeros=7380, allocated nonzeros=7380
-                          total number of mallocs used during MatSetValues calls =0
-                            using I-node routines: found 116 nodes, limit used is 5
+                        Mat Object: (fetidp_fieldsplit_lag_) 5 MPI processes
+                          type: submatrix
+                          rows=126, cols=126
                     A01
-                      Mat Object: 1 MPI processes
-                        type: seqaij
-                        rows=242, cols=59
-                        total: nonzeros=983, allocated nonzeros=983
-                        total number of mallocs used during MatSetValues calls =0
-                          using I-node routines: found 81 nodes, limit used is 5
-              FETI-DP pressure preconditioner
-                KSP Object: (fetidp_p_) 5 MPI processes
-                  type: richardson
-                    Richardson: damping factor=200.
-                  maximum iterations=1, initial guess is zero
-                  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
-                  left preconditioning
-                  using PRECONDITIONED norm type for convergence test
-                PC Object: (fetidp_p_) 5 MPI processes
-                  type: none
-                  linear system matrix = precond matrix:
-                  Mat Object: 5 MPI processes
-                    type: is
-                    rows=37, cols=37
-                    total: nonzeros=238, allocated nonzeros=238
-                    total number of mallocs used during MatSetValues calls =0
+                      Mat Object: 5 MPI processes
+                        type: submatrix
+                        rows=126, cols=37
+                Mat Object: 5 MPI processes
+                  type: mpiaij
+                  rows=37, cols=37
+                  total: nonzeros=37, allocated nonzeros=37
+                  total number of mallocs used during MatSetValues calls =0
+                    not using I-node (on process 0) routines
           linear system matrix = precond matrix:
           Mat Object: (fetidp_) 5 MPI processes
             type: shell
@@ -232,4 +351,4 @@ SNES Object: 5 MPI processes
       total number of mallocs used during MatSetValues calls =0
         has attached null space
 Number of SNES iterations = 1
-L_2 Error: 6.5e-09 [2.8e-10, 6.5e-09]
+L_2 Error: 6.4e-09 [2.63e-10, 6.4e-09]
