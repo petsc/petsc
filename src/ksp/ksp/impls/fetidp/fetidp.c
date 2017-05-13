@@ -851,12 +851,15 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
 
     /* Divergence mat */
     if (totP) {
-      Mat B;
-      IS  P;
+      Mat       B;
+      IS        P;
+      PetscBool save;
 
       ierr = PetscObjectQuery((PetscObject)fetidp->innerbddc,"__KSPFETIDP_aP",(PetscObject*)&P);CHKERRQ(ierr);
       ierr = MatCreateSubMatrix(A,P,NULL,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+      save = pcbddc->compute_nonetflux; /* SetDivergenceMat activates nonetflux computation */
       ierr = PCBDDCSetDivergenceMat(fetidp->innerbddc,B,PETSC_FALSE,NULL);CHKERRQ(ierr);
+      pcbddc->compute_nonetflux = save;
       ierr = MatDestroy(&B);CHKERRQ(ierr);
     }
 
