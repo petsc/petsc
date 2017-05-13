@@ -54,7 +54,7 @@ typedef struct {
      This method has one stage.
 
      Options database:
-.     -ts_tk_type 1fe
+.     -ts_rk_type 1fe
 
      Level: advanced
 
@@ -66,7 +66,7 @@ M*/
      This method has two stages.
 
      Options database:
-.     -ts_tk_type 2a
+.     -ts_rk_type 2a
 
      Level: advanced
 
@@ -78,7 +78,7 @@ M*/
      This method has three stages.
 
      Options database:
-.     -ts_tk_type 3
+.     -ts_rk_type 3
 
      Level: advanced
 
@@ -90,7 +90,7 @@ M*/
      This method has four stages with the First Same As Last (FSAL) property.
 
      Options database:
-.     -ts_tk_type 3bs
+.     -ts_rk_type 3bs
 
      Level: advanced
 
@@ -104,7 +104,7 @@ M*/
      This is the classical Runge-Kutta method with four stages.
 
      Options database:
-.     -ts_tk_type 4
+.     -ts_rk_type 4
 
      Level: advanced
 
@@ -116,7 +116,7 @@ M*/
      This method has six stages.
 
      Options database:
-.     -ts_tk_type 5f
+.     -ts_rk_type 5f
 
      Level: advanced
 
@@ -128,7 +128,7 @@ M*/
      This method has seven stages with the First Same As Last (FSAL) property.
 
      Options database:
-.     -ts_tk_type 5dp
+.     -ts_rk_type 5dp
 
      Level: advanced
 
@@ -142,7 +142,7 @@ M*/
      This method has eight stages with the First Same As Last (FSAL) property.
 
      Options database:
-.     -ts_tk_type 5bs
+.     -ts_rk_type 5bs
 
      Level: advanced
 
@@ -989,7 +989,7 @@ static PetscErrorCode TSLoad_RK(TS ts,PetscViewer viewer)
 -  rktype - type of RK-scheme
 
   Options Database:
-.   -ts_tk_type - <1fe,2a,3,3bs,4,5f,5dp,5bs>
+.   -ts_rk_type - <1fe,2a,3,3bs,4,5f,5dp,5bs>
 
   Level: intermediate
 
