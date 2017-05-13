@@ -551,14 +551,15 @@ PetscErrorCode  TSSetSaveTrajectory(TS ts)
 @*/
 PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode   ierr;
   PetscObjectState Ustate;
-  DM             dm;
-  DMTS           tsdm;
-  TSRHSJacobian  rhsjacobianfunc;
-  void           *ctx;
-  TSIJacobian    ijacobianfunc;
-  TSRHSFunction  rhsfunction;
+  PetscObjectId    Uid;
+  DM               dm;
+  DMTS             tsdm;
+  TSRHSJacobian    rhsjacobianfunc;
+  void             *ctx;
+  TSIJacobian      ijacobianfunc;
+  TSRHSFunction    rhsfunction;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -570,7 +571,8 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B)
   ierr = DMTSGetIJacobian(dm,&ijacobianfunc,NULL);CHKERRQ(ierr);
   ierr = DMTSGetRHSFunction(dm,&rhsfunction,&ctx);CHKERRQ(ierr);
   ierr = PetscObjectStateGet((PetscObject)U,&Ustate);CHKERRQ(ierr);
-  if (ts->rhsjacobian.time == t && (ts->problem_type == TS_LINEAR || (ts->rhsjacobian.X == U && ts->rhsjacobian.Xstate == Ustate)) && (rhsfunction != TSComputeRHSFunctionLinear)) {
+  ierr = PetscObjectGetId((PetscObject)U,&Uid);CHKERRQ(ierr);
+  if (ts->rhsjacobian.time == t && (ts->problem_type == TS_LINEAR || (ts->rhsjacobian.Xid == Uid && ts->rhsjacobian.Xstate == Ustate)) && (rhsfunction != TSComputeRHSFunctionLinear)) {
     PetscFunctionReturn(0);
   }
 
@@ -607,7 +609,7 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B)
     if (A != B) {ierr = MatZeroEntries(B);CHKERRQ(ierr);}
   }
   ts->rhsjacobian.time       = t;
-  ts->rhsjacobian.X          = U;
+  ierr                       = PetscObjectGetId((PetscObject)U,&ts->rhsjacobian.Xid);
   ierr                       = PetscObjectStateGet((PetscObject)U,&ts->rhsjacobian.Xstate);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
