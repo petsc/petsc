@@ -109,6 +109,3 @@ TS Object: 1 MPI processes
   using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
 TSAdapt Object: 1 MPI processes
   type: none
-  number of candidates 0
-  maximum allowed timestep 1e+50
-  minimum allowed timestep 1e-20
