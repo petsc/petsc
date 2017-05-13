@@ -64,6 +64,28 @@ PetscErrorCode  TSMonitorSetFromOptions(TS ts,const char name[],const char help[
 }
 
 /*@C
+   TSAdjointMonitorGradient - monitors the first lambda gradient
+
+   Level: intermediate
+
+.keywords: TS, set, monitor
+
+.seealso: TSAdjointMonitorSet()
+@*/
+PetscErrorCode TSAdjointMonitorGradient(TS ts,PetscInt step,PetscReal ptime,Vec v,PetscInt numcost,Vec *lambda,Vec *mu,PetscViewerAndFormat *vf)
+{
+  PetscErrorCode ierr;
+  PetscViewer    viewer = vf->viewer;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,4);
+  ierr = PetscViewerPushFormat(viewer,vf->format);CHKERRQ(ierr);
+  ierr = VecView(lambda[0],viewer);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
    TSAdjointMonitorSetFromOptions - Sets a monitor function and viewer appropriate for the type indicated by the user
 
    Collective on TS
@@ -225,6 +247,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   ierr = TSMonitorSetFromOptions(ts,"-ts_monitor","Monitor time and timestep size","TSMonitorDefault",TSMonitorDefault,NULL);CHKERRQ(ierr);
   ierr = TSMonitorSetFromOptions(ts,"-ts_monitor_solution","View the solution at each timestep","TSMonitorSolution",TSMonitorSolution,NULL);CHKERRQ(ierr);
   ierr = TSAdjointMonitorSetFromOptions(ts,"-ts_adjoint_monitor","Monitor adjoint timestep size","TSAdjointMonitorDefault",TSAdjointMonitorDefault,NULL);CHKERRQ(ierr);
+  ierr = TSAdjointMonitorSetFromOptions(ts,"-ts_adjoint_monitor_gradient","Monitor gradient in the adjoint computation","TSAdjointMonitorGradient",TSAdjointMonitorGradient,NULL);CHKERRQ(ierr);  
 
   ierr = PetscOptionsString("-ts_monitor_python","Use Python function","TSMonitorSet",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (flg) {ierr = PetscPythonMonitorSet((PetscObject)ts,monfilename);CHKERRQ(ierr);}
