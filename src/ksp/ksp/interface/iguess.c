@@ -321,16 +321,19 @@ PetscErrorCode  KSPGuessSetUp(KSPGuess guess)
 {
   PetscErrorCode   ierr;
   PetscObjectState omatstate = -1, matstate;
+  PetscInt         oM = 0, oN = 0, M, N;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(guess,KSPGUESS_CLASSID,1);
   if (guess->A) {
     ierr = PetscObjectStateGet((PetscObject)guess->A,&omatstate);CHKERRQ(ierr);
+    ierr = MatGetSize(guess->A,&oM,&oN);CHKERRQ(ierr);
   }
   ierr = KSPGetOperators(guess->ksp,&guess->A,NULL);CHKERRQ(ierr);
+  ierr = MatGetSize(guess->A,&M,&N);CHKERRQ(ierr);
   ierr = PetscObjectStateGet((PetscObject)guess->A,&matstate);CHKERRQ(ierr);
-  if (omatstate != matstate) {
-    ierr = PetscInfo2(guess,"Resetting KSPGuess since mat state changed %D != %D\n",omatstate,matstate);CHKERRQ(ierr);
+  if (omatstate != matstate || M != oM || N != oN) {
+    ierr = PetscInfo6(guess,"Resetting KSPGuess since mat state or sizes have changed (%D != %D, %D != %D, %D != %D)\n",omatstate,matstate,oM,M,oN,N);CHKERRQ(ierr);
     if (guess->ops->reset) { ierr = (*guess->ops->reset)(guess);CHKERRQ(ierr); }
   } else {
     ierr = PetscInfo(guess,"KSPGuess status unchanged\n");CHKERRQ(ierr);

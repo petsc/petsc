@@ -31,18 +31,36 @@ typedef struct {
 
 static PetscErrorCode KSPGuessReset_POD(KSPGuess guess)
 {
-  KSPGuessPOD *pod = (KSPGuessPOD*)guess->data;
+  KSPGuessPOD    *pod = (KSPGuessPOD*)guess->data;
+  PetscErrorCode ierr;
+  PetscInt       M = 0,vM = 0;
 
   PetscFunctionBegin;
   pod->n    = 0;
   pod->curr = 0;
+  /* need to wait for completion of outstanding requests */
+  if (pod->ndots_iallreduce) {
+    ierr = MPI_Wait(&pod->req_iallreduce,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+  }
+  pod->ndots_iallreduce = 0;
+  /* destroy vectors if the size of the linear system has changed */
+  if (guess->A) {
+    ierr = MatGetSize(guess->A,&M,NULL);CHKERRQ(ierr);
+  }
+  if (pod->xsnap) {
+    ierr = VecGetSize(pod->xsnap[0],&vM);CHKERRQ(ierr);
+  }
+  if (M != vM) {
+    ierr = VecDestroyVecs(pod->maxn,&pod->xsnap);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(pod->maxn,&pod->bsnap);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode KSPGuessSetUp_POD(KSPGuess guess)
 {
-  KSPGuessPOD *pod = (KSPGuessPOD*)guess->data;
-  PetscErrorCode  ierr;
+  KSPGuessPOD    *pod = (KSPGuessPOD*)guess->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!pod->corr) {
@@ -129,6 +147,7 @@ static PetscErrorCode KSPGuessFormGuess_POD(KSPGuess guess,Vec b,Vec x)
   PetscInt       i;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister(citation,&cited);CHKERRQ(ierr);
   if (pod->ndots_iallreduce) { /* complete communication and project the linear system */
     ierr = KSPGuessUpdate_POD(guess,NULL,NULL);CHKERRQ(ierr);
   }

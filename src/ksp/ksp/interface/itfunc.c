@@ -959,7 +959,10 @@ PetscErrorCode  KSPReset(KSP ksp)
     ierr = (*ksp->ops->reset)(ksp);CHKERRQ(ierr);
   }
   if (ksp->pc) {ierr = PCReset(ksp->pc);CHKERRQ(ierr);}
-  ierr = KSPGuessDestroy(&ksp->guess);CHKERRQ(ierr);
+  if (ksp->guess) {
+    KSPGuess guess = ksp->guess;
+    if (guess->ops->reset) { ierr = (*guess->ops->reset)(guess);CHKERRQ(ierr); }
+  }
   ierr = VecDestroyVecs(ksp->nwork,&ksp->work);CHKERRQ(ierr);
   ierr = VecDestroy(&ksp->vec_rhs);CHKERRQ(ierr);
   ierr = VecDestroy(&ksp->vec_sol);CHKERRQ(ierr);
