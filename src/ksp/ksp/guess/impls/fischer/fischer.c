@@ -15,19 +15,24 @@ typedef struct {
 static PetscErrorCode KSPGuessReset_Fischer(KSPGuess guess)
 {
   KSPGuessFischer *itg = (KSPGuessFischer*)guess->data;
-  PetscInt        vM = 0, M = 0;
+  PetscLayout     Alay = NULL,vlay = NULL;
+  PetscBool       cong;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   itg->curl = 0;
   /* destroy vectors if the size of the linear system has changed */
   if (guess->A) {
-    ierr = MatGetSize(guess->A,&M,NULL);CHKERRQ(ierr);
+    ierr = MatGetLayouts(guess->A,&Alay,NULL);CHKERRQ(ierr);
   }
   if (itg->xtilde) {
-    ierr = VecGetSize(itg->xtilde[0],&vM);CHKERRQ(ierr);
+    ierr = VecGetLayout(itg->xtilde[0],&vlay);CHKERRQ(ierr);
   }
-  if (M != vM) {
+  cong = PETSC_FALSE;
+  if (vlay && Alay) {
+    ierr = PetscLayoutCompare(Alay,vlay,&cong);CHKERRQ(ierr);
+  }
+  if (!cong) {
     ierr = VecDestroyVecs(itg->maxl,&itg->btilde);CHKERRQ(ierr);
     ierr = VecDestroyVecs(itg->maxl,&itg->xtilde);CHKERRQ(ierr);
     ierr = VecDestroy(&itg->guess);CHKERRQ(ierr);

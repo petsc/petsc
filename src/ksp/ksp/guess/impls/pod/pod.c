@@ -41,7 +41,8 @@ static PetscErrorCode KSPGuessReset_POD(KSPGuess guess)
 {
   KSPGuessPOD    *pod = (KSPGuessPOD*)guess->data;
   PetscErrorCode ierr;
-  PetscInt       M = 0,vM = 0;
+  PetscLayout    Alay = NULL,vlay = NULL;
+  PetscBool      cong;
 
   PetscFunctionBegin;
   pod->n    = 0;
@@ -53,12 +54,16 @@ static PetscErrorCode KSPGuessReset_POD(KSPGuess guess)
   pod->ndots_iallreduce = 0;
   /* destroy vectors if the size of the linear system has changed */
   if (guess->A) {
-    ierr = MatGetSize(guess->A,&M,NULL);CHKERRQ(ierr);
+    ierr = MatGetLayouts(guess->A,&Alay,NULL);CHKERRQ(ierr);
   }
   if (pod->xsnap) {
-    ierr = VecGetSize(pod->xsnap[0],&vM);CHKERRQ(ierr);
+    ierr = VecGetLayout(pod->xsnap[0],&vlay);CHKERRQ(ierr);
   }
-  if (M != vM) {
+  cong = PETSC_FALSE;
+  if (vlay && Alay) {
+    ierr = PetscLayoutCompare(Alay,vlay,&cong);CHKERRQ(ierr);
+  }
+  if (!cong) {
     ierr = VecDestroyVecs(pod->maxn,&pod->xsnap);CHKERRQ(ierr);
     ierr = VecDestroyVecs(pod->maxn,&pod->bsnap);CHKERRQ(ierr);
   }
