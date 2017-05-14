@@ -1508,8 +1508,10 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
       ierr = PCBDDCDetectDisconnectedComponents(pc,&pcbddc->n_local_subs,&pcbddc->local_subs,&primalv);CHKERRQ(ierr);
       if (primalv) {
         if (pcbddc->user_primal_vertices_local) {
-          IS list[2] = {primalv, pcbddc->user_primal_vertices_local}, newp;
+          IS list[2], newp;
 
+          list[0] = primalv;
+          list[1] = pcbddc->user_primal_vertices_local;
           ierr = ISConcatenate(PetscObjectComm((PetscObject)pc),2,list,&newp);CHKERRQ(ierr);
           ierr = ISDestroy(&list[0]);CHKERRQ(ierr);
           ierr = ISDestroy(&list[1]);CHKERRQ(ierr);

@@ -2103,7 +2103,7 @@ PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscInt *ncc, IS* cc[]
     ierr = DMPlexGetAdjacencyUseClosure(dm, &useClosure);CHKERRQ(ierr);
     ierr = DMPlexSetAdjacencyUseCone(dm, PETSC_TRUE);CHKERRQ(ierr);
     ierr = DMPlexSetAdjacencyUseClosure(dm, PETSC_FALSE);CHKERRQ(ierr);
-    ierr = DMPlexCreateCellNumbering_Internal(dm, PETSC_TRUE, &cellNumbering);CHKERRQ(ierr);
+    ierr = DMPlexGetCellNumbering(dm, &cellNumbering);CHKERRQ(ierr);
     ierr = ISGetIndices(cellNumbering, &cellNum);CHKERRQ(ierr);
     for (n = 0, p = pStart; p < pEnd; p++) {
       /* Skip non-owned cells in parallel (ParMetis expects no overlap) */
@@ -2134,7 +2134,6 @@ PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscInt *ncc, IS* cc[]
     xadj[n] = size;
     ierr = PetscSegBufferExtractAlloc(adjBuffer, &adjncy);CHKERRQ(ierr);
     /* Clean up */
-    ierr = ISDestroy(&cellNumbering);CHKERRQ(ierr);
     ierr = PetscSegBufferDestroy(&adjBuffer);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
     ierr = PetscFree(adj);CHKERRQ(ierr);
