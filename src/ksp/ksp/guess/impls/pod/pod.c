@@ -106,6 +106,10 @@ static PetscErrorCode KSPGuessDestroy_POD(KSPGuess guess)
 #if defined(PETSC_USE_COMPLEX)
   ierr = PetscFree(pod->rwork);CHKERRQ(ierr);
 #endif
+  /* need to wait for completion before destroying dots_iallreduce */
+  if (pod->ndots_iallreduce) {
+    ierr = MPI_Wait(&pod->req_iallreduce,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+  }
   ierr = PetscFree(pod->dots_iallreduce);CHKERRQ(ierr);
   ierr = PetscFree(pod->swork);CHKERRQ(ierr);
   ierr = VecDestroyVecs(pod->maxn,&pod->bsnap);CHKERRQ(ierr);
