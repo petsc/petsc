@@ -1,6 +1,14 @@
 #include <petsc/private/kspimpl.h> /*I "petscksp.h" I*/
 #include <petsc/private/matimpl.h>
 #include <petscblaslapack.h>
+static PetscBool  cited = PETSC_FALSE;
+static const char citation[] =
+"@phdthesis{zampini2010non,\n"
+"  title={Non-overlapping Domain Decomposition Methods for Cardiac Reaction-Diffusion Models and Applications},\n"
+"  author={Zampini, S},\n"
+"  year={2010},\n"
+"  school={PhD thesis, Universita degli Studi di Milano}\n"
+"}\n";
 
 typedef struct {
   PetscInt     maxn;             /* maximum number of snapshots */
