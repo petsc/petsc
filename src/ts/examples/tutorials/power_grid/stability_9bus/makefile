@@ -64,12 +64,12 @@ runex9busopt_fd:
 	   ${RM} -f ex9busopt_fd_1.tmp
 
 runex9busdmnetwork:
-	-@${MPIEXEC} -n 1 ./ex9busdmnetwork -ts_monitor -snes_converged_reason -ksp_converged_reason -alg_snes_converged_reason -alg_ksp_converged_reason > ex9bus.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex9busdmnetwork -ts_monitor -snes_converged_reason -alg_snes_converged_reason > ex9bus.tmp 2>&1;	  \
 	   ${DIFF} output/ex9busdmnetwork_1.out ex9bus.tmp || printf "${PWD}\nPossible problem with ex9busdmnetwork, diffs above\n=========================================\n"; \
 	   ${RM} -f ex9bus.tmp
 
 runex9busdmnetwork_2:
-	-@${MPIEXEC} -n 3 ./ex9busdmnetwork -ts_monitor -snes_converged_reason -alg_snes_converged_reason > ex9bus.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 2 ./ex9busdmnetwork -ts_monitor -snes_converged_reason -alg_snes_converged_reason > ex9bus.tmp 2>&1;	  \
 	   ${DIFF} output/ex9busdmnetwork_2.out ex9bus.tmp || printf "${PWD}\nPossible problem with ex9busdmnetwork_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex9bus.tmp
 
@@ -79,7 +79,6 @@ clean_files:
 
 TESTEXAMPLES_DOUBLEINT32 = ex9bus.PETSc runex9bus_implicit runex9bus_semiexplicit runex9bus_steprestart ex9bus.rm \
                            ex9busadj.PETSc runex9busadj ex9busadj.rm ex9busopt.PETSc runex9busopt ex9busopt.rm \
-                           ex9busopt_fd.PETSc runex9busopt_fd ex9busopt_fd.rm \
-                           ex9busdmnetwork.PETSc runex9busdmnetwork runex9busdmnetwork_2 ex9busdmnetwork.rm
+                           ex9busopt_fd.PETSc runex9busopt_fd ex9busopt_fd.rm
 
 include ${PETSC_DIR}/lib/petsc/conf/test
