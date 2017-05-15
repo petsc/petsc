@@ -936,7 +936,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NASM(SNES snes)
 
 .keywords: SNES, NASM
 
-.seealso: SNESNASM
+.seealso: SNESNASM, SNESNASMGetNumber()
 @*/
 PetscErrorCode SNESNASMGetSNES(SNES snes,PetscInt i,SNES *subsnes)
 {
@@ -944,7 +944,6 @@ PetscErrorCode SNESNASMGetSNES(SNES snes,PetscInt i,SNES *subsnes)
 
   PetscFunctionBegin;
   if (i < 0 || i >= nasm->n) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"No such subsolver");
-
   *subsnes = nasm->subsnes[i];
   PetscFunctionReturn(0);
 }
@@ -964,7 +963,7 @@ PetscErrorCode SNESNASMGetSNES(SNES snes,PetscInt i,SNES *subsnes)
 
 .keywords: SNES, NASM
 
-.seealso: SNESNASM
+.seealso: SNESNASM, SNESNASMGetSNES()
 @*/
 PetscErrorCode SNESNASMGetNumber(SNES snes,PetscInt *n)
 {

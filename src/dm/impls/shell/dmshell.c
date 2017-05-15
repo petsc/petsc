@@ -845,7 +845,7 @@ PetscErrorCode DMShellSetCreateDomainDecomposition(DM dm, PetscErrorCode (*decom
 
    Level: advanced
 
-.seealso: DMCreateDomainDecomposition(), DMShellSetContext(), DMShellGetContext(), DMCreateDomainDecompositionScatters
+.seealso: DMCreateDomainDecompositionScatters(), DMShellSetContext(), DMShellGetContext()
 @*/
 PetscErrorCode DMShellSetCreateDomainDecompositionScatters(DM dm, PetscErrorCode (*scatter)(DM,PetscInt,DM*,VecScatter**,VecScatter**,VecScatter**))
 {
