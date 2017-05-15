@@ -1,4 +1,4 @@
-0 SNES Function norm 1.371870931195e-01 
+  0 SNES Function norm 1.371870931195e-01 
     0 KSP Residual norm 1.203078463485e-01 
     1 KSP Residual norm 3.276805972501e-02 
     2 KSP Residual norm 3.457719939057e-03 
@@ -37,7 +37,7 @@ SNES Object: 1 MPI processes
     type: asm
       total subdomain blocks = 2, amount of overlap = 0
       restriction/interpolation type - RESTRICT
-      local solve composition type - MULTIPLICATIVE
+      Additive Schwarz: local solve composition type - MULTIPLICATIVE
       Local solve is same for all blocks, in the following KSP and PC objects:
       KSP Object: (sub_) 1 MPI processes
         type: preonly
