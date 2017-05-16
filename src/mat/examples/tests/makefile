@@ -2064,6 +2064,12 @@ runex104_elemental_2:
 runex105f:
 	-@${MPIEXEC} -n 2 ./ex105f
 
+runex107:
+	-@${MPIEXEC} -n 1 ./ex107 > ex107.tmp 2>&1; \
+	   if (${DIFF} output/ex107.out ex107.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex107, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex107.tmp
+
 runex109:
 	-@${MPIEXEC} -n 1 ./ex109 > ex109.tmp 2>&1; \
 	   if (${DIFF} output/ex109.out ex109.tmp) then true; \
