@@ -65,6 +65,16 @@ cdef class DMPlex(DM):
         PetscCLEAR(self.obj); self.dm = newdm
         return self
 
+    def createFromFile(self, filename, interpolate=True, comm=None):
+        cdef MPI_Comm  ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef PetscBool interp = interpolate
+        cdef PetscDM   newdm = NULL
+        cdef const_char *cfile = NULL
+        filename = str2bytes(filename, &cfile)
+        CHKERR( DMPlexCreateFromFile(ccomm, cfile, interp, &newdm) )
+        PetscCLEAR(self.obj); self.dm = newdm
+        return self
+
     def createCGNS(self, cgid, interpolate=True, comm=None):
         cdef MPI_Comm  ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscBool interp = interpolate
