@@ -2112,7 +2112,7 @@ PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscInt *ncc, IS* cc[]
       ierr = DMPlexGetAdjacency(dm, p, &adjSize, &adj);CHKERRQ(ierr);
       for (a = 0; a < adjSize; ++a) {
         const PetscInt point = adj[a];
-        if (point != p && pStart <= point && point < pEnd) {
+        if (pStart <= point && point < pEnd) {
           PetscInt *PETSC_RESTRICT pBuf;
           ierr = PetscSectionAddDof(section, p, 1);CHKERRQ(ierr);
           ierr = PetscSegBufferGetInts(adjBuffer, 1, &pBuf);CHKERRQ(ierr);
