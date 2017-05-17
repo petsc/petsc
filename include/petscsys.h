@@ -2518,7 +2518,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscIntSumError(PetscInt a,PetscInt b,PetscI
 
 $
 $#include "petsc/finclude/petscXXX.h"
-$         use petscXXXX
+$         use petscXXX
 
      You can declare PETSc variables using either of the following.
 
