@@ -2518,20 +2518,20 @@ PETSC_STATIC_INLINE PetscErrorCode PetscIntSumError(PetscInt a,PetscInt b,PetscI
 
 $
 $#include "petsc/finclude/petscXXX.h"
-$         use petscXXXX
+$         use petscXXX
 
-     You can delcare PETSc variables using either 
+     You can declare PETSc variables using either of the following.
 
 $    XXX variablename
 $    type(tXXX) variablename
 
-    for example
+    For example,
 
 $#include "petsc/finclude/petscvec.h"
 $         use petscvec
 $
-$    Vec  A
-$    type(tVec) A
+$    Vec b
+$    type(tVec) x
 
     Level: beginner
 
