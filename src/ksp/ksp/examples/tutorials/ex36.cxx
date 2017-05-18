@@ -301,7 +301,7 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp, Vec b, void *ptr)
 {
   UserContext*      user = (UserContext*)ptr;
   DM                dm;
-  PetscInt          dof_indices[8], npoints;
+  PetscInt          dof_indices[8], nc, npoints;
   PetscBool         dbdry[8];
   PetscReal         vpos[8 * 3];
   PetscInt          i, q, nconn;
@@ -321,7 +321,7 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp, Vec b, void *ptr)
   ierr = VecSet(b, 0.0);CHKERRQ(ierr);
 
   ierr = DMMoabFEMCreateQuadratureDefault (user->dim, user->VPERE, &quadratureObj);CHKERRQ(ierr);
-  ierr = PetscQuadratureGetData(quadratureObj, NULL, &npoints, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(quadratureObj, NULL, &nc, &npoints, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscMalloc3(user->VPERE * npoints, &phi, npoints * 3, &phypts, npoints, &jxw);CHKERRQ(ierr);
 
   /* get the essential MOAB mesh related quantities needed for FEM assembly */
@@ -403,7 +403,7 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp, Mat J, Mat jac, void *ctx)
 {
   UserContext       *user = (UserContext*)ctx;
   DM                dm;
-  PetscInt          i, j, q, nconn, nglobale, nglobalv, npoints, hlevel;
+  PetscInt          i, j, q, nconn, nglobale, nglobalv, nc, npoints, hlevel;
   PetscInt          dof_indices[8];
   PetscReal         vpos[8 * 3], rho, alpha;
   PetscBool         dbdry[8];
@@ -427,7 +427,7 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp, Mat J, Mat jac, void *ctx)
   PetscPrintf(PETSC_COMM_WORLD, "ComputeMatrix: Level = %d, N(elements) = %d, N(vertices) = %d \n", hlevel, nglobale, nglobalv);
 
   ierr = DMMoabFEMCreateQuadratureDefault ( user->dim, user->VPERE, &quadratureObj );CHKERRQ(ierr);
-  ierr = PetscQuadratureGetData(quadratureObj, NULL, &npoints, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(quadratureObj, NULL, &nc, &npoints, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscMalloc6(user->VPERE * npoints, &phi, user->VPERE * npoints, &dphi[0], user->VPERE * npoints, &dphi[1], user->VPERE * npoints, &dphi[2], npoints * 3, &phypts, npoints, &jxw);CHKERRQ(ierr);
 
   /* loop over local elements */

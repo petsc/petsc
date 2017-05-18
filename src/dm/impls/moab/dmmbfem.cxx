@@ -711,7 +711,7 @@ PetscErrorCode DMMoabFEMComputeBasis ( const PetscInt dim, const PetscInt nverts
                                        PetscReal *fe_basis, PetscReal **fe_basis_derivatives)
 {
   PetscErrorCode  ierr;
-  PetscInt        npoints;
+  PetscInt        npoints,idim;
   bool            compute_der;
   const PetscReal *quadpts, *quadwts;
   PetscReal       jacobian[9], ijacobian[9], volume;
@@ -723,7 +723,8 @@ PetscErrorCode DMMoabFEMComputeBasis ( const PetscInt dim, const PetscInt nverts
   compute_der = (fe_basis_derivatives != NULL);
 
   /* Get the quadrature points and weights for the given quadrature rule */
-  ierr = PetscQuadratureGetData(quadrature, NULL, &npoints, &quadpts, &quadwts);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(quadrature, &idim, NULL, &npoints, &quadpts, &quadwts);CHKERRQ(ierr);
+  if (idim != dim) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Dimension mismatch: provided (%D) vs quadrature (%D)\n",idim,dim);
   if (jacobian_quadrature_weight_product) {
     ierr = PetscMemcpy(jacobian_quadrature_weight_product, quadwts, npoints * sizeof(PetscReal));CHKERRQ(ierr);
   }
@@ -777,6 +778,7 @@ PetscErrorCode DMMoabFEMComputeBasis ( const PetscInt dim, const PetscInt nverts
 PetscErrorCode DMMoabFEMCreateQuadratureDefault ( const PetscInt dim, const PetscInt nverts, PetscQuadrature *quadrature )
 {
   PetscReal *w, *x;
+  PetscInt nc=1;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -785,7 +787,7 @@ PetscErrorCode DMMoabFEMCreateQuadratureDefault ( const PetscInt dim, const Pets
   {
   case 1:
     /* Create Gauss quadrature rules with <order = nverts> in the span [-1, 1] */
-    ierr = PetscDTGaussJacobiQuadrature(1, nverts, 0, 1.0, quadrature);CHKERRQ(ierr);
+    ierr = PetscDTGaussJacobiQuadrature(1, nc, nverts, 0, 1.0, quadrature);CHKERRQ(ierr);
     break;
   case 2:
     /* Create Gauss quadrature rules with <order = nverts> in the span [-1, 1] */
@@ -813,11 +815,11 @@ PetscErrorCode DMMoabFEMCreateQuadratureDefault ( const PetscInt dim, const Pets
       }
       ierr = PetscQuadratureCreate(PETSC_COMM_SELF, quadrature);CHKERRQ(ierr);
       ierr = PetscQuadratureSetOrder(*quadrature, order);CHKERRQ(ierr);
-      ierr = PetscQuadratureSetData(*quadrature, dim, npoints, x, w);CHKERRQ(ierr);
+      ierr = PetscQuadratureSetData(*quadrature, dim, nc, npoints, x, w);CHKERRQ(ierr);
       /* ierr = PetscDTGaussJacobiQuadrature(dim, nverts, 0.0, 1.0, quadrature);CHKERRQ(ierr); */
     }
     else {
-      ierr = PetscDTGaussTensorQuadrature(dim, nverts, 0.0, 1.0, quadrature);CHKERRQ(ierr);
+      ierr = PetscDTGaussTensorQuadrature(dim, nc, nverts, 0.0, 1.0, quadrature);CHKERRQ(ierr);
     }
     break;
   case 3:
@@ -860,11 +862,11 @@ PetscErrorCode DMMoabFEMCreateQuadratureDefault ( const PetscInt dim, const Pets
       }
       ierr = PetscQuadratureCreate(PETSC_COMM_SELF, quadrature);CHKERRQ(ierr);
       ierr = PetscQuadratureSetOrder(*quadrature, order);CHKERRQ(ierr);
-      ierr = PetscQuadratureSetData(*quadrature, dim, npoints, x, w);CHKERRQ(ierr);
+      ierr = PetscQuadratureSetData(*quadrature, dim, nc, npoints, x, w);CHKERRQ(ierr);
       /* ierr = PetscDTGaussJacobiQuadrature(dim, nverts, 0.0, 1.0, quadrature);CHKERRQ(ierr); */
     }
     else {
-      ierr = PetscDTGaussTensorQuadrature(dim, nverts, 0.0, 1.0, quadrature);CHKERRQ(ierr);
+      ierr = PetscDTGaussTensorQuadrature(dim, nc, nverts, 0.0, 1.0, quadrature);CHKERRQ(ierr);
     }
     break;
   default:

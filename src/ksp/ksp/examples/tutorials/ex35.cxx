@@ -315,7 +315,7 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ptr)
   PetscBool         dbdry[4];
   PetscReal         vpos[4 * 3];
   PetscScalar       ff;
-  PetscInt          i, q, nconn, npoints;
+  PetscInt          i, q, nconn, nc, npoints;
   const moab::EntityHandle *connect;
   const moab::Range *elocal;
   moab::Interface*  mbImpl;
@@ -332,7 +332,7 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ptr)
   ierr = VecSet(b, 0.0);CHKERRQ(ierr);
 
   ierr = DMMoabFEMCreateQuadratureDefault (2, user->VPERE, &quadratureObj);CHKERRQ(ierr);
-  ierr = PetscQuadratureGetData(quadratureObj, NULL, &npoints, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(quadratureObj, NULL, &nc, &npoints, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscMalloc3(user->VPERE * npoints, &phi, npoints * 3, &phypts, npoints, &jxw);CHKERRQ(ierr);
 
   /* get the essential MOAB mesh related quantities needed for FEM assembly */
@@ -420,7 +420,7 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
 {
   UserContext       *user = (UserContext*)ctx;
   DM                dm;
-  PetscInt          i, j, q, nconn, nglobale, nglobalv, npoints, hlevel;
+  PetscInt          i, j, q, nconn, nglobale, nglobalv, nc, npoints, hlevel;
   PetscInt          dof_indices[4];
   PetscReal         vpos[4 * 3], rho;
   PetscBool         dbdry[4];
@@ -444,7 +444,7 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
   PetscPrintf(PETSC_COMM_WORLD, "ComputeMatrix: Level = %d, N(elements) = %d, N(vertices) = %d \n", hlevel, nglobale, nglobalv);
 
   ierr = DMMoabFEMCreateQuadratureDefault ( 2, user->VPERE, &quadratureObj );CHKERRQ(ierr);
-  ierr = PetscQuadratureGetData(quadratureObj, NULL, &npoints, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(quadratureObj, NULL, &nc, &npoints, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscMalloc5(user->VPERE * npoints, &phi, user->VPERE * npoints, &dphi[0], user->VPERE * npoints, &dphi[1], npoints * 3, &phypts, npoints, &jxw);CHKERRQ(ierr);
 
   /* loop over local elements */
