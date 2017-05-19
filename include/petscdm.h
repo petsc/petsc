@@ -70,6 +70,7 @@ PETSC_EXTERN PetscErrorCode DMGetBlockSize(DM,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMCreateColoring(DM,ISColoringType,ISColoring*);
 PETSC_EXTERN PetscErrorCode DMCreateMatrix(DM,Mat*);
 PETSC_EXTERN PetscErrorCode DMSetMatrixPreallocateOnly(DM,PetscBool);
+PETSC_EXTERN PetscErrorCode DMSetMatrixStructureOnly(DM,PetscBool);
 PETSC_EXTERN PetscErrorCode DMCreateInterpolation(DM,DM,Mat*,Vec*);
 PETSC_EXTERN PetscErrorCode DMCreateRestriction(DM,DM,Mat*);
 PETSC_EXTERN PetscErrorCode DMCreateInjection(DM,DM,Mat*);

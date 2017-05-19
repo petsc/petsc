@@ -2069,6 +2069,12 @@ runex107:
 	   if (${DIFF} output/ex107.out ex107.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex107, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex107.tmp
+runex107_2:
+	-@${MPIEXEC} -n 1 ./ex107 -mat_type baij -mat_block_size 2 -m 10 > ex107.tmp 2>&1; \
+	   if (${DIFF} output/ex107.out ex107.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex107_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex107.tmp
+
 
 runex109:
 	-@${MPIEXEC} -n 1 ./ex109 > ex109.tmp 2>&1; \
