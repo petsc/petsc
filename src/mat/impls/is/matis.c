@@ -837,6 +837,9 @@ PetscErrorCode MatISGetLocalMat_IS(Mat mat,Mat *local)
   matrix and want to provide it to the inner matrix object to improve the performance
   of the MatSetValues() operation.
 
+  This function does not increase the reference count for the local Mat.  Do not destroy it and do not attempt to use
+  your reference after destroying the parent mat.
+
 .seealso: MATIS
 @*/
 PetscErrorCode MatISGetLocalMat(Mat mat,Mat *local)
