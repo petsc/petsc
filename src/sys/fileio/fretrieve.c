@@ -368,7 +368,7 @@ PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char url[],char localname[
     ierr = PetscStrncmp(url,"http://",7,&flg2);CHKERRQ(ierr);
     ierr = PetscStrncmp(url,"file://",7,&flg3);CHKERRQ(ierr);
     ierr = PetscStrncmp(url,"https://",8,&flg4);CHKERRQ(ierr);
-    download = flg1 || flg2 || flg3 || flg4;
+    download = (PetscBool) (flg1 || flg2 || flg3 || flg4);
 
     if (!download && !compressed) {
       ierr = PetscStrncpy(localname,url,llen);CHKERRQ(ierr);
