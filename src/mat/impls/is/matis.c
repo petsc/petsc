@@ -1924,6 +1924,13 @@ static PetscErrorCode MatISGetLocalMat_IS(Mat mat,Mat *local)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatISRestoreLocalMat_IS(Mat mat,Mat *local)
+{
+  PetscFunctionBegin;
+  *local = NULL;
+  PetscFunctionReturn(0);
+}
+
 /*@
     MatISGetLocalMat - Gets the local matrix stored inside a MATIS matrix.
 
@@ -1940,8 +1947,7 @@ static PetscErrorCode MatISGetLocalMat_IS(Mat mat,Mat *local)
   matrix and want to provide it to the inner matrix object to improve the performance
   of the MatSetValues() operation.
 
-  This function does not increase the reference count for the local Mat.  Do not destroy it and do not attempt to use
-  your reference after destroying the parent mat.
+  Call MatISRestoreLocalMat() when finished with the local matrix.
 
 .seealso: MATIS
 @*/
@@ -1953,6 +1959,30 @@ PetscErrorCode MatISGetLocalMat(Mat mat,Mat *local)
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidPointer(local,2);
   ierr = PetscUseMethod(mat,"MatISGetLocalMat_C",(Mat,Mat*),(mat,local));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+    MatISRestoreLocalMat - Restores the local matrix obtained with MatISGetLocalMat()
+
+  Input Parameter:
+.  mat - the matrix
+
+  Output Parameter:
+.  local - the local matrix
+
+  Level: advanced
+
+.seealso: MATIS
+@*/
+PetscErrorCode MatISRestoreLocalMat(Mat mat,Mat *local)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidPointer(local,2);
+  ierr = PetscUseMethod(mat,"MatISRestoreLocalMat_C",(Mat,Mat*),(mat,local));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2305,6 +2335,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
 
   /* special MATIS functions */
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISGetLocalMat_C",MatISGetLocalMat_IS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatISRestoreLocalMat_C",MatISRestoreLocalMat_IS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISSetLocalMat_C",MatISSetLocalMat_IS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISGetMPIXAIJ_C",MatISGetMPIXAIJ_IS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISSetPreallocation_C",MatISSetPreallocation_IS);CHKERRQ(ierr);
