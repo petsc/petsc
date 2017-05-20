@@ -759,7 +759,7 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
   PetscInt         dim     = poly->numVariables;
   PetscReal       *lpoints, *tmp, *LB, *LD, *LH;
   PetscInt        *ind, *tup;
-  PetscInt         c, pdim, d, der, i, p, deg, o;
+  PetscInt         c, pdim, d, e, der, der2, i, p, deg, o;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -882,7 +882,85 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
       }
     }
   }
-  if (H) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to code second derivatives");
+  if (H) {
+    /* H (npoints x pdim x Nc x Nc x dim x dim) */
+    ierr = PetscMemzero(H, npoints*pdim*Nc*Nc*dim*dim * sizeof(PetscReal));CHKERRQ(ierr);
+    if (poly->tensor) {
+      i = 0;
+      ierr = PetscMemzero(ind, dim * sizeof(PetscInt));CHKERRQ(ierr);
+      while (ind[0] >= 0) {
+        ierr = TensorPoint_Internal(dim, sp->order+1, ind, tup);CHKERRQ(ierr);
+        for (p = 0; p < npoints; ++p) {
+          for (der = 0; der < dim; ++der) {
+            H[((p*pdim + i)*Nc*Nc*dim + der) * dim + der] = 1.0;
+            for (d = 0; d < dim; ++d) {
+              if (d == der) {
+                H[((p*pdim + i)*Nc*Nc*dim + der) * dim + der] *= LH[(tup[d]*dim + d)*npoints + p];
+              } else {
+                H[((p*pdim + i)*Nc*Nc*dim + der) * dim + der] *= LB[(tup[d]*dim + d)*npoints + p];
+              }
+            }
+            for (der2 = der + 1; der2 < dim; ++der2) {
+              H[((p*pdim + i)*Nc*Nc*dim + der) * dim + der2] = 1.0;
+              for (d = 0; d < dim; ++d) {
+                if (d == der || d == der2) {
+                  H[((p*pdim + i)*Nc*Nc*dim + der) * dim + der2] *= LD[(tup[d]*dim + d)*npoints + p];
+                } else {
+                  H[((p*pdim + i)*Nc*Nc*dim + der) * dim + der2] *= LB[(tup[d]*dim + d)*npoints + p];
+                }
+              }
+              H[((p*pdim + i)*Nc*Nc*dim + der2) * dim + der] = H[((p*pdim + i)*Nc*Nc*dim + der) * dim + der2];
+            }
+          }
+        }
+        ++i;
+      }
+    } else {
+      i = 0;
+      for (o = 0; o <= sp->order; ++o) {
+        ierr = PetscMemzero(ind, dim * sizeof(PetscInt));CHKERRQ(ierr);
+        while (ind[0] >= 0) {
+          ierr = LatticePoint_Internal(dim, o, ind, tup);CHKERRQ(ierr);
+          for (p = 0; p < npoints; ++p) {
+            for (der = 0; der < dim; ++der) {
+              H[((p*pdim + i)*Nc*Nc*dim + der)*dim + der] = 1.0;
+              for (d = 0; d < dim; ++d) {
+                if (d == der) {
+                  H[((p*pdim + i)*Nc*Nc*dim + der)*dim + der] *= LH[(tup[d]*dim + d)*npoints + p];
+                } else {
+                  H[((p*pdim + i)*Nc*Nc*dim + der)*dim + der] *= LB[(tup[d]*dim + d)*npoints + p];
+                }
+              }
+              for (der2 = der + 1; der2 < dim; ++der2) {
+                H[((p*pdim + i)*Nc*Nc*dim + der) * dim + der2] = 1.0;
+                for (d = 0; d < dim; ++d) {
+                  if (d == der || d == der2) {
+                    H[((p*pdim + i)*Nc*Nc*dim + der) * dim + der2] *= LD[(tup[d]*dim + d)*npoints + p];
+                  } else {
+                    H[((p*pdim + i)*Nc*Nc*dim + der) * dim + der2] *= LB[(tup[d]*dim + d)*npoints + p];
+                  }
+                }
+                H[((p*pdim + i)*Nc*Nc*dim + der2) * dim + der] = H[((p*pdim + i)*Nc*Nc*dim + der) * dim + der2];
+              }
+            }
+          }
+          ++i;
+        }
+      }
+    }
+    /* Make direct sum basis for multicomponent space */
+    for (p = 0; p < npoints; ++p) {
+      for (i = 0; i < pdim; ++i) {
+        for (c = 1; c < Nc; ++c) {
+          for (d = 0; d < dim; ++d) {
+            for (e = 0; e < dim; ++e) {
+              H[(((p*pdim*Nc + i*Nc + c)*Nc + c)*dim + d)*dim + e] = H[((p*pdim + i)*Nc*Nc*dim + d)*dim + e];
+            }
+          }
+        }
+      }
+    }
+  }
   ierr = PetscFree2(ind,tup);CHKERRQ(ierr);
   if (B) {ierr = DMRestoreWorkArray(dm, npoints*dim*ndegree, MPIU_REAL, &LB);CHKERRQ(ierr);}
   if (D) {ierr = DMRestoreWorkArray(dm, npoints*dim*ndegree, MPIU_REAL, &LD);CHKERRQ(ierr);}
