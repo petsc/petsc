@@ -380,7 +380,7 @@ complete_request:
       ierr = VecMAXPY(v,pod->n,pod->swork,pod->xsnap);CHKERRQ(ierr);
       ierr = VecDot(v,v,pod->swork);CHKERRQ(ierr);
       ierr = MPIU_Allreduce(pod->swork,pod->swork + 1,1,MPIU_SCALAR,MPI_SUM,PetscObjectComm((PetscObject)guess));CHKERRQ(ierr);
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)guess),"  Error projection %d: %g (expected lower than %g)\n",i,pod->swork[1],(double)(toten-parten));CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)guess),"  Error projection %D: %g (expected lower than %g)\n",i,(double)PetscRealPart(pod->swork[1]),(double)(toten-parten));CHKERRQ(ierr);
       ierr = VecDestroy(&v);CHKERRQ(ierr);
     }
 #endif
