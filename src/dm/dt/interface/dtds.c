@@ -1956,8 +1956,7 @@ PetscErrorCode PetscDSSetBdJacobian(PetscDS prob, PetscInt f, PetscInt g,
   PetscFunctionReturn(0);
 }
 
-
-/*@
+/*@C
   PetscDSGetConstants - Returns the array of constants passed to point functions
 
   Not collective
@@ -1982,7 +1981,7 @@ PetscErrorCode PetscDSGetConstants(PetscDS prob, PetscInt *numConstants, const P
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
   PetscDSSetConstants - Set the array of constants passed to point functions
 
   Not collective
