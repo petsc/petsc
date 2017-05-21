@@ -1802,11 +1802,12 @@ PetscErrorCode PetscFVSetUp_Upwind(PetscFV fvm)
 PetscErrorCode PetscFVIntegrateRHSFunction_Upwind(PetscFV fvm, PetscDS prob, PetscInt field, PetscInt Nf, PetscFVFaceGeom *fgeom, PetscReal *neighborVol,
                                                   PetscScalar uL[], PetscScalar uR[], PetscScalar fluxL[], PetscScalar fluxR[])
 {
-  void         (*riemann)(PetscInt, PetscInt, const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx);
-  void          *rctx;
-  PetscScalar   *flux = fvm->fluxWork;
-  PetscInt       dim, pdim, totDim, Nc, off, f, d;
-  PetscErrorCode ierr;
+  void             (*riemann)(PetscInt, PetscInt, const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscInt, const PetscScalar[], PetscScalar[], void *);
+  void              *rctx;
+  PetscScalar       *flux = fvm->fluxWork;
+  const PetscScalar *constants;
+  PetscInt           dim, numConstants, pdim, totDim, Nc, off, f, d;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   ierr = PetscDSGetTotalComponents(prob, &Nc);CHKERRQ(ierr);
@@ -1814,10 +1815,11 @@ PetscErrorCode PetscFVIntegrateRHSFunction_Upwind(PetscFV fvm, PetscDS prob, Pet
   ierr = PetscDSGetFieldOffset(prob, field, &off);CHKERRQ(ierr);
   ierr = PetscDSGetRiemannSolver(prob, field, &riemann);CHKERRQ(ierr);
   ierr = PetscDSGetContext(prob, field, &rctx);CHKERRQ(ierr);
+  ierr = PetscDSGetConstants(prob, &numConstants, &constants);CHKERRQ(ierr);
   ierr = PetscFVGetSpatialDimension(fvm, &dim);CHKERRQ(ierr);
   ierr = PetscFVGetNumComponents(fvm, &pdim);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {
-    (*riemann)(dim, pdim, fgeom[f].centroid, fgeom[f].normal, &uL[f*Nc], &uR[f*Nc], flux, rctx);
+    (*riemann)(dim, pdim, fgeom[f].centroid, fgeom[f].normal, &uL[f*Nc], &uR[f*Nc], numConstants, constants, flux, rctx);
     for (d = 0; d < pdim; ++d) {
       fluxL[f*totDim+off+d] = flux[d] / neighborVol[f*2+0];
       fluxR[f*totDim+off+d] = flux[d] / neighborVol[f*2+1];
@@ -2099,11 +2101,12 @@ PetscErrorCode PetscFVComputeGradient_LeastSquares(PetscFV fvm, PetscInt numFace
 PetscErrorCode PetscFVIntegrateRHSFunction_LeastSquares(PetscFV fvm, PetscDS prob, PetscInt field, PetscInt Nf, PetscFVFaceGeom *fgeom, PetscReal *neighborVol,
                                                         PetscScalar uL[], PetscScalar uR[], PetscScalar fluxL[], PetscScalar fluxR[])
 {
-  void         (*riemann)(PetscInt, PetscInt, const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx);
-  void          *rctx;
-  PetscScalar   *flux = fvm->fluxWork;
-  PetscInt       dim, pdim, Nc, totDim, off, f, d;
-  PetscErrorCode ierr;
+  void             (*riemann)(PetscInt, PetscInt, const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscInt, const PetscScalar[], PetscScalar[], void *);
+  void              *rctx;
+  PetscScalar       *flux = fvm->fluxWork;
+  const PetscScalar *constants;
+  PetscInt           dim, numConstants, pdim, Nc, totDim, off, f, d;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   ierr = PetscDSGetTotalComponents(prob, &Nc);CHKERRQ(ierr);
@@ -2111,10 +2114,11 @@ PetscErrorCode PetscFVIntegrateRHSFunction_LeastSquares(PetscFV fvm, PetscDS pro
   ierr = PetscDSGetFieldOffset(prob, field, &off);CHKERRQ(ierr);
   ierr = PetscDSGetRiemannSolver(prob, field, &riemann);CHKERRQ(ierr);
   ierr = PetscDSGetContext(prob, field, &rctx);CHKERRQ(ierr);
+  ierr = PetscDSGetConstants(prob, &numConstants, &constants);CHKERRQ(ierr);
   ierr = PetscFVGetSpatialDimension(fvm, &dim);CHKERRQ(ierr);
   ierr = PetscFVGetNumComponents(fvm, &pdim);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {
-    (*riemann)(dim, pdim, fgeom[f].centroid, fgeom[f].normal, &uL[f*Nc], &uR[f*Nc], flux, rctx);
+    (*riemann)(dim, pdim, fgeom[f].centroid, fgeom[f].normal, &uL[f*Nc], &uR[f*Nc], numConstants, constants, flux, rctx);
     for (d = 0; d < pdim; ++d) {
       fluxL[f*totDim+off+d] = flux[d] / neighborVol[f*2+0];
       fluxR[f*totDim+off+d] = flux[d] / neighborVol[f*2+1];
