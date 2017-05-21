@@ -446,6 +446,8 @@ PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char url[],char localname[
       ierr = PetscTestFile(localname,'r',found);CHKERRQ(ierr);
     }
   }
-  done:  ierr = MPI_Bcast(found,1,MPIU_BOOL,0,comm);CHKERRQ(ierr);
+  done:
+  ierr = MPI_Bcast(found,1,MPIU_BOOL,0,comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast(localname, llen, MPI_CHAR, 0, comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
