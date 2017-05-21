@@ -1656,7 +1656,7 @@ PetscErrorCode PetscDSGetUpdate(PetscDS prob, PetscInt f,
                                   void (**update)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                   const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                   const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                                  PetscReal t, const PetscReal x[], PetscScalar uNew[]))
+                                                  PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar uNew[]))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
@@ -1666,7 +1666,7 @@ PetscErrorCode PetscDSGetUpdate(PetscDS prob, PetscInt f,
 }
 
 /*@C
-  PetscDSSetResidual - Set the pointwise update function for a given field
+  PetscDSSetUpdate - Set the pointwise update function for a given field
 
   Not collective
 
@@ -1706,7 +1706,7 @@ PetscErrorCode PetscDSSetUpdate(PetscDS prob, PetscInt f,
                                 void (*update)(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                                const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                                const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                               PetscReal t, const PetscReal x[], PetscScalar uNew[]))
+                                               PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar uNew[]))
 {
   PetscErrorCode ierr;
 
