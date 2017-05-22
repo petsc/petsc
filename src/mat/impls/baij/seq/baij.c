@@ -1478,6 +1478,25 @@ static PetscErrorCode MatView_SeqBAIJ_Binary(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatView_SeqBAIJ_ASCII_structonly(Mat A,PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
+  PetscInt       i,bs = A->rmap->bs,k;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
+  for (i=0; i<a->mbs; i++) {
+    ierr = PetscViewerASCIIPrintf(viewer,"row %D-%D:",i*bs,i*bs+bs-1);CHKERRQ(ierr);
+    for (k=a->i[i]; k<a->i[i+1]; k++) {
+      ierr = PetscViewerASCIIPrintf(viewer," (%D-%D) ",bs*a->j[k],bs*a->j[k]+bs-1);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+  }
+  ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode MatView_SeqBAIJ_ASCII(Mat A,PetscViewer viewer)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
@@ -1486,6 +1505,11 @@ static PetscErrorCode MatView_SeqBAIJ_ASCII(Mat A,PetscViewer viewer)
   PetscViewerFormat format;
 
   PetscFunctionBegin;
+  if (A->structure_only) {
+    ierr = MatView_SeqBAIJ_ASCII_structonly(A,viewer);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
     ierr = PetscViewerASCIIPrintf(viewer,"  block size is %D\n",bs);CHKERRQ(ierr);
@@ -1770,7 +1794,7 @@ PetscErrorCode MatSetValuesBlocked_SeqBAIJ(Mat A,PetscInt m,const PetscInt im[],
     if (row >= a->mbs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Block row index too large %D max %D",row,a->mbs-1);
 #endif
     rp   = aj + ai[row];
-    ap   = aa + bs2*ai[row];
+    if (!A->structure_only) ap = aa + bs2*ai[row];
     rmax = imax[row];
     nrow = ailen[row];
     low  = 0;
@@ -1781,10 +1805,12 @@ PetscErrorCode MatSetValuesBlocked_SeqBAIJ(Mat A,PetscInt m,const PetscInt im[],
       if (in[l] >= a->nbs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Block column index too large %D max %D",in[l],a->nbs-1);
 #endif
       col = in[l];
-      if (roworiented) {
-        value = v + (k*(stepval+bs) + l)*bs;
-      } else {
-        value = v + (l*(stepval+bs) + k)*bs;
+      if (!A->structure_only) {
+        if (roworiented) {
+          value = v + (k*(stepval+bs) + l)*bs;
+        } else {
+          value = v + (l*(stepval+bs) + k)*bs;
+        }
       }
       if (col <= lastcol) low = 0;
       else high = nrow;
@@ -1797,6 +1823,7 @@ PetscErrorCode MatSetValuesBlocked_SeqBAIJ(Mat A,PetscInt m,const PetscInt im[],
       for (i=low; i<high; i++) {
         if (rp[i] > col) break;
         if (rp[i] == col) {
+          if (A->structure_only) goto noinsert2;
           bap = ap +  bs2*i;
           if (roworiented) {
             if (is == ADD_VALUES) {
@@ -1834,28 +1861,37 @@ PetscErrorCode MatSetValuesBlocked_SeqBAIJ(Mat A,PetscInt m,const PetscInt im[],
       }
       if (nonew == 1) goto noinsert2;
       if (nonew == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new blocked index new nonzero block (%D, %D) in the matrix", row, col);
-      MatSeqXAIJReallocateAIJ(A,a->mbs,bs2,nrow,row,col,rmax,aa,ai,aj,rp,ap,imax,nonew,MatScalar);
+      if (A->structure_only) {
+        MatSeqXAIJReallocateAIJ_structure_only(A,a->mbs,bs2,nrow,row,col,rmax,ai,aj,rp,imax,nonew,MatScalar);
+      } else {
+        MatSeqXAIJReallocateAIJ(A,a->mbs,bs2,nrow,row,col,rmax,aa,ai,aj,rp,ap,imax,nonew,MatScalar);
+      }
       N = nrow++ - 1; high++;
       /* shift up all the later entries in this row */
       for (ii=N; ii>=i; ii--) {
         rp[ii+1] = rp[ii];
-        ierr     = PetscMemcpy(ap+bs2*(ii+1),ap+bs2*(ii),bs2*sizeof(MatScalar));CHKERRQ(ierr);
+        if (!A->structure_only) {
+          ierr     = PetscMemcpy(ap+bs2*(ii+1),ap+bs2*(ii),bs2*sizeof(MatScalar));CHKERRQ(ierr);
+        }
       }
-      if (N >= i) {
+      if (N >= i && !A->structure_only) {
         ierr = PetscMemzero(ap+bs2*i,bs2*sizeof(MatScalar));CHKERRQ(ierr);
       }
+
       rp[i] = col;
-      bap   = ap +  bs2*i;
-      if (roworiented) {
-        for (ii=0; ii<bs; ii++,value+=stepval) {
-          for (jj=ii; jj<bs2; jj+=bs) {
-            bap[jj] = *value++;
+      if (!A->structure_only) {
+        bap   = ap +  bs2*i;
+        if (roworiented) {
+          for (ii=0; ii<bs; ii++,value+=stepval) {
+            for (jj=ii; jj<bs2; jj+=bs) {
+              bap[jj] = *value++;
+            }
           }
-        }
-      } else {
-        for (ii=0; ii<bs; ii++,value+=stepval) {
-          for (jj=0; jj<bs; jj++) {
-            *bap++ = *value++;
+        } else {
+          for (ii=0; ii<bs; ii++,value+=stepval) {
+            for (jj=0; jj<bs; jj++) {
+              *bap++ = *value++;
+            }
           }
         }
       }

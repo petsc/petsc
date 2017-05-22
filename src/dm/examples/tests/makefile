@@ -211,7 +211,15 @@ runex4_2:
 	-@${MPIEXEC} -n 1 ./ex4 -testorder -nox
 
 runex5:
-	-@${MPIEXEC} -n 1 ./ex5
+	-@${MPIEXEC} -n 1 ./ex5 > ex5.tmp 2>&1;	  \
+	   if (${DIFF} output/ex5_1.out ex5.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex5, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex5.tmp
+runex5_baij:
+	-@${MPIEXEC} -n 1 ./ex5 -dm_mat_type baij -dim 2 > ex5.tmp 2>&1;	  \
+	   if (${DIFF} output/ex5_2.out ex5.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex5_baij, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex5.tmp
 
 runex6:
 	-@${MPIEXEC} -n 6 ./ex6 -testorder -nox
@@ -426,7 +434,8 @@ runex45:
 	  ${DIFF} output/ex45_1.out ex45.tmp || printf "${PWD}\nPossible problem with ex45, diffs above\n=========================================\n" ; \
 	  ${RM} -f ex45.tmp
 
-TESTEXAMPLES_C		  = ex2.PETSc runex2_2 runex2_3 ex2.rm ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 runex4_2 ex4.rm ex15.PETSc ex15.rm ex16.PETSc ex16.rm \
+TESTEXAMPLES_C		  = ex2.PETSc runex2_2 runex2_3 ex2.rm ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 runex4_2 ex4.rm \
+                            ex5.PETSc runex5 runex5_baij ex5.rm ex15.PETSc ex15.rm ex16.PETSc ex16.rm \
                             ex21.PETSc runex21 ex21.rm ex24.PETSc runex24 ex24.rm ex25.PETSc \
                             runex25 ex25.rm ex30.PETSc runex30 runex30_2 runex30_3 ex30.rm ex31.PETSc runex31 ex31.rm ex32.PETSc runex32 ex32.rm \
                             ex34.PETSc runex34 ex34.rm ex36.PETSc runex36_1d runex36_2d runex36_2dp1 runex36_2dp2 runex36_3d runex36_3dp1 ex36.rm \

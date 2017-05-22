@@ -558,6 +558,25 @@ PetscErrorCode MatView_SeqAIJ_Binary(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatView_SeqAIJ_ASCII_structonly(Mat A,PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
+  PetscInt       i,k,m=A->rmap->N;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
+  for (i=0; i<m; i++) {
+    ierr = PetscViewerASCIIPrintf(viewer,"row %D:",i);CHKERRQ(ierr);
+    for (k=a->i[i]; k<a->i[i+1]; k++) {
+      ierr = PetscViewerASCIIPrintf(viewer," (%D) ",a->j[k]);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+  }
+  ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 extern PetscErrorCode MatSeqAIJFactorInfo_Matlab(Mat,PetscViewer);
 
 PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
@@ -569,7 +588,10 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  if (!a->a) PetscFunctionReturn(0);
+  if (A->structure_only) {
+    ierr = MatView_SeqAIJ_ASCII_structonly(A,viewer);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
 
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   if (format == PETSC_VIEWER_ASCII_MATLAB) {
