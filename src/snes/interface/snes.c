@@ -3,6 +3,7 @@
 #include <petscdmshell.h>
 #include <petscdraw.h>
 #include <petscds.h>
+#include <petscconvest.h>
 
 PetscBool         SNESRegisterAllCalled = PETSC_FALSE;
 PetscFunctionList SNESList              = NULL;
@@ -3854,7 +3855,7 @@ PetscErrorCode  SNESReasonView(SNES snes,PetscViewer viewer)
 }
 
 /*@C
-  SNESReasonViewFromOptions - Processes command line options to determine if/how a SNESReason is to be viewed. 
+  SNESReasonViewFromOptions - Processes command line options to determine if/how a SNESReason is to be viewed.
 
   Collective on SNES
 
@@ -3924,6 +3925,33 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
   if (b) PetscValidHeaderSpecific(b,VEC_CLASSID,2);
   if (b) PetscCheckSameComm(snes,1,b,2);
 
+  {
+    PetscViewer       viewer;
+    PetscViewerFormat format;
+    PetscBool         flg;
+    static PetscBool  incall = PETSC_FALSE;
+
+    if (!incall) {
+      ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject) snes), ((PetscObject) snes)->prefix, "-snes_convergence_estimate", &viewer, &format, &flg);CHKERRQ(ierr);
+      if (flg) {
+        PetscConvEst conv;
+        PetscReal    alpha; /* Convergence rate of the solution error in the L_2 norm */
+
+        incall = PETSC_TRUE;
+        ierr = PetscConvEstCreate(PetscObjectComm((PetscObject) snes), &conv);CHKERRQ(ierr);
+        ierr = PetscConvEstSetSolver(conv, snes);CHKERRQ(ierr);
+        ierr = PetscConvEstSetFromOptions(conv);CHKERRQ(ierr);
+        ierr = PetscConvEstSetup(conv);CHKERRQ(ierr);
+        ierr = PetscConvEstGetConvRate(conv, &alpha);CHKERRQ(ierr);
+        ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
+        ierr = PetscConvEstRateView(conv, alpha, viewer);CHKERRQ(ierr);
+        ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+        ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+        ierr = PetscConvEstDestroy(&conv);CHKERRQ(ierr);
+        incall = PETSC_FALSE;
+      }
+    }
+  }
   if (!x) {
     ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
     ierr = DMCreateGlobalVector(dm,&xcreated);CHKERRQ(ierr);
