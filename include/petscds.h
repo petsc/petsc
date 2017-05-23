@@ -38,7 +38,7 @@ typedef void (*PetscBdPointJac)(PetscInt, PetscInt, PetscInt,
                                 const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                 PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscScalar[]);
 typedef void (*PetscRiemannFunc)(PetscInt, PetscInt, const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscScalar[], void *);
-
+typedef PetscErrorCode (*PetscSimplePointFunc)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *);
 
 PETSC_EXTERN PetscFunctionList PetscDSList;
 PETSC_EXTERN PetscErrorCode PetscDSCreate(MPI_Comm, PetscDS *);
@@ -264,6 +264,8 @@ PETSC_EXTERN PetscErrorCode PetscDSSetBdJacobian(PetscDS, PetscInt, PetscInt,
                                                           const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                           const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                           PetscReal, PetscReal, const PetscReal[], const PetscReal[], PetscScalar[]));
+PETSC_EXTERN PetscErrorCode PetscDSGetExactSolution(PetscDS, PetscInt, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *));
+PETSC_EXTERN PetscErrorCode PetscDSSetExactSolution(PetscDS, PetscInt, PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *));
 PETSC_EXTERN PetscErrorCode PetscDSGetTabulation(PetscDS, PetscReal ***, PetscReal ***);
 PETSC_EXTERN PetscErrorCode PetscDSGetFaceTabulation(PetscDS, PetscReal ***, PetscReal ***);
 PETSC_EXTERN PetscErrorCode PetscDSGetEvaluationArrays(PetscDS, PetscScalar **, PetscScalar **, PetscScalar **);
