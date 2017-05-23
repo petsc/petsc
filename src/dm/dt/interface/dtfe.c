@@ -464,6 +464,7 @@ PetscErrorCode PetscSpaceEvaluate(PetscSpace sp, PetscInt npoints, const PetscRe
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!npoints) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscValidPointer(points, 3);
   if (B) PetscValidPointer(B, 4);
@@ -3783,6 +3784,10 @@ PetscErrorCode PetscFEGetTabulation(PetscFE fem, PetscInt npoints, const PetscRe
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  if (!npoints) {
+    if (B) *B = NULL; if (D) *D = NULL; if (H) *H = NULL;
+    PetscFunctionReturn(0);
+  }
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
   PetscValidPointer(points, 3);
   if (B) PetscValidPointer(B, 4);
