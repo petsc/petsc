@@ -31,7 +31,7 @@ typedef struct {
   /* Problem definition */
   BCType         bcType;
   CoeffType      variableCoefficient;
-  PetscErrorCode (**exactFuncs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
+  PetscErrorCode (**exactFuncs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx);
   PetscBool      fieldBC;
   void           (**exactFields)(PetscInt, PetscInt, PetscInt,
                                  const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
@@ -41,13 +41,13 @@ typedef struct {
   PC            pcmg;              /* This is needed for error monitoring */
 } AppCtx;
 
-static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   u[0] = 0.0;
   return 0;
 }
 
-static PetscErrorCode ecks(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode ecks(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   u[0] = x[0];
   return 0;
@@ -74,7 +74,7 @@ static PetscErrorCode ecks(PetscInt dim, PetscReal time, const PetscReal x[], Pe
 
     \nabla u \cdot  \hat n|_\Gamma = {2 x, 2 y} \cdot \hat n = 2 (x + y)
 */
-static PetscErrorCode quadratic_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode quadratic_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   *u = x[0]*x[0] + x[1]*x[1];
   return 0;
@@ -145,7 +145,7 @@ static void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
     -\Delta u + f = 4 pi^2 sin(2 pi x) - 4 pi^2 sin(2 pi x) = 0
 */
-static PetscErrorCode xtrig_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode xtrig_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   *u = PetscSinReal(2.0*PETSC_PI*x[0]);
   return 0;
@@ -169,7 +169,7 @@ static void f0_xtrig_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
     -\Delta u + f = 4 pi^2 sin(2 pi x) sin(2 pi y) + 4 pi^2 sin(2 pi x) sin(2 pi y) - 8 pi^2 sin(2 pi x) = 0
 */
-static PetscErrorCode xytrig_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode xytrig_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   *u = PetscSinReal(2.0*PETSC_PI*x[0])*PetscSinReal(2.0*PETSC_PI*x[1]);
   return 0;
@@ -194,7 +194,7 @@ static void f0_xytrig_u(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
     -\div \nu \grad u + f = -6 (x + y) + 6 (x + y) = 0
 */
-static PetscErrorCode nu_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode nu_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   *u = x[0] + x[1];
   return 0;
@@ -325,7 +325,7 @@ void g3_analytic_nonlinear_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
     \nabla u \cdot  \hat n|_\Gamma = {2 x, 2 y, 2z} \cdot \hat n = 2 (x + y + z)
 */
-static PetscErrorCode quadratic_u_3d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+static PetscErrorCode quadratic_u_3d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   *u = 2.0*(x[0]*x[0] + x[1]*x[1] + x[2]*x[2])/3.0;
   return 0;
@@ -624,7 +624,7 @@ static PetscErrorCode SetupProblem(PetscDS prob, AppCtx *user)
 
 static PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
 {
-  PetscErrorCode (*matFuncs[1])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx) = {nu_2d};
+  PetscErrorCode (*matFuncs[1])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx) = {nu_2d};
   Vec            nu;
   PetscErrorCode ierr;
 
@@ -638,7 +638,7 @@ static PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
 
 static PetscErrorCode SetupBC(DM dm, DM dmAux, AppCtx *user)
 {
-  PetscErrorCode (*bcFuncs[1])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx);
+  PetscErrorCode (*bcFuncs[1])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx);
   Vec            uexact;
   PetscInt       dim;
   PetscErrorCode ierr;
@@ -977,7 +977,7 @@ int main(int argc, char **argv)
     }
   }
   if (user.runType == RUN_FULL || user.runType == RUN_EXACT) {
-    PetscErrorCode (*initialGuess[1])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx) = {zero};
+    PetscErrorCode (*initialGuess[1])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx) = {zero};
 
     if (user.nonzInit) initialGuess[0] = ecks;
     if (user.runType == RUN_FULL) {
