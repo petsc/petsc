@@ -331,7 +331,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 static void simple_mass(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                         const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                         const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                        PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar g0[])
+                        PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
 {
   PetscInt d, e;
   for (d = 0, e = 0; d < dim; d++, e+=dim+1) {
@@ -343,7 +343,7 @@ static void simple_mass(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 static void symmetric_gradient_inner_product(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                              const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                                              const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-                                             PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscScalar C[])
+                                             PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar C[])
 {
   PetscInt compI, compJ, d, e;
 
