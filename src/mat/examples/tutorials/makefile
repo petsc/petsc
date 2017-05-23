@@ -19,6 +19,10 @@ ex2: ex2.o  chkopts
 	-${CLINKER}  -o ex2 ex2.o ${PETSC_MAT_LIB}
 	${RM} ex2.o
 
+ex3: ex3.o  chkopts
+	-${CLINKER}  -o ex3 ex3.o ${PETSC_MAT_LIB}
+	${RM} ex3.o
+
 ex2_kds: ex2_kds.o  chkopts
 	-${CLINKER}  -o ex2_kds ex2_kds.o ${PETSC_MAT_LIB}
 	${RM} ex2_kds.o
