@@ -303,7 +303,7 @@ PetscErrorCode PetscQuadratureSetData(PetscQuadrature q, PetscInt dim, PetscInt 
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
   PetscQuadratureView - Views a PetscQuadrature object
 
   Collective on PetscQuadrature
