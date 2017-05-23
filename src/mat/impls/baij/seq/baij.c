@@ -2165,7 +2165,7 @@ PetscErrorCode MatSetValues_SeqBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscIn
   PetscErrorCode ierr;
   PetscInt       ridx,cidx,bs2=a->bs2;
   PetscBool      roworiented=a->roworiented;
-  MatScalar      *ap,value,*aa=a->a,*bap;
+  MatScalar      *ap=NULL,value=0.0,*aa=a->a,*bap;
 
   PetscFunctionBegin;
   for (k=0; k<m; k++) { /* loop over added rows */

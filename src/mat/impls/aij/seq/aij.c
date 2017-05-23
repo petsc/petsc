@@ -404,7 +404,7 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
   PetscInt       *imax = a->imax,*ai = a->i,*ailen = a->ilen;
   PetscErrorCode ierr;
   PetscInt       *aj = a->j,nonew = a->nonew,lastcol = -1;
-  MatScalar      *ap,value,*aa = a->a;
+  MatScalar      *ap=NULL,value=0.0,*aa = a->a;
   PetscBool      ignorezeroentries = a->ignorezeroentries;
   PetscBool      roworiented       = a->roworiented;
 
