@@ -107,6 +107,7 @@ struct _n_Model {
 struct _n_User {
   PetscInt numSplitFaces;
   PetscInt vtkInterval;   /* For monitor */
+  char outputBasename[PETSC_MAX_PATH_LEN]; /* Basename for output files */
   PetscInt monitorStepOffset;
   Model    model;
 };
@@ -121,7 +122,6 @@ PETSC_STATIC_INLINE PetscReal DotDIMReal(const PetscReal *x,const PetscReal *y)
 }
 PETSC_STATIC_INLINE PetscReal NormDIM(const PetscReal *x) { return PetscSqrtReal(PetscAbsReal(DotDIMReal(x,x))); }
 
-PETSC_STATIC_INLINE PetscScalar Dot2(const PetscScalar *x,const PetscScalar *y) { return x[0]*y[0] + x[1]*y[1];}
 PETSC_STATIC_INLINE PetscReal Dot2Real(const PetscReal *x,const PetscReal *y) { return x[0]*y[0] + x[1]*y[1];}
 PETSC_STATIC_INLINE PetscReal Norm2Real(const PetscReal *x) { return PetscSqrtReal(PetscAbsReal(Dot2Real(x,x)));}
 PETSC_STATIC_INLINE void Normalize2Real(PetscReal *x) { PetscReal a = 1./Norm2Real(x); x[0] *= a; x[1] *= a; }
@@ -1451,7 +1451,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
     if (stepnum == -1) {        /* Final time is not multiple of normal time interval, write it anyway */
       ierr = TSGetTimeStepNumber(ts,&stepnum);CHKERRQ(ierr);
     }
-    ierr = PetscSNPrintf(filename,sizeof filename,"ex11-%03D.vtu",stepnum);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(filename,sizeof filename,"%s-%03D.vtu",user->outputBasename,stepnum);CHKERRQ(ierr);
     ierr = OutputVTK(dm,filename,&viewer);CHKERRQ(ierr);
     ierr = VecView(X,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -1636,6 +1636,8 @@ int main(int argc, char **argv)
     user->vtkInterval = 1;
     ierr = PetscOptionsInt("-ufv_vtk_interval","VTK output interval (0 to disable)","",user->vtkInterval,&user->vtkInterval,NULL);CHKERRQ(ierr);
     vtkCellGeom = PETSC_FALSE;
+    ierr = PetscStrcpy(user->outputBasename, "ex11");CHKERRQ(ierr);
+    ierr = PetscOptionsString("-ufv_vtk_basename","VTK output basename","",user->outputBasename,user->outputBasename,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-ufv_vtk_cellgeom","Write cell geometry (for debugging)","",vtkCellGeom,&vtkCellGeom,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-ufv_use_amr","use local adaptive mesh refinement","",useAMR,&useAMR,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-ufv_view_initial_refinement","View initial conditions refinement history","",viewInitial,&viewInitial,NULL);CHKERRQ(ierr);
