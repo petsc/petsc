@@ -189,9 +189,10 @@ static PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool interpolate
   const PetscBool      createConvexHull = PETSC_FALSE;
   const PetscBool      constrained      = PETSC_FALSE;
   const char          *labelName        = "marker";
+  const char          *labelName2       = "Face Sets";
   struct triangulateio in;
   struct triangulateio out;
-  DMLabel              label;
+  DMLabel              label, label2;
   PetscInt             vStart, vEnd, v, eStart, eEnd, e;
   PetscMPIInt          rank;
   PetscErrorCode       ierr;
@@ -202,7 +203,8 @@ static PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool interpolate
   ierr = InitInput_Triangle(&in);CHKERRQ(ierr);
   ierr = InitOutput_Triangle(&out);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(boundary, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMGetLabel(boundary, labelName, &label);CHKERRQ(ierr);
+  ierr = DMGetLabel(boundary, labelName,  &label);CHKERRQ(ierr);
+  ierr = DMGetLabel(boundary, labelName2, &label2);CHKERRQ(ierr);
 
   in.numberofpoints = vEnd - vStart;
   if (in.numberofpoints > 0) {
@@ -276,6 +278,7 @@ static PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool interpolate
 
   {
     DMLabel        glabel      = NULL;
+    DMLabel        glabel2     = NULL;
     const PetscInt numCorners  = 3;
     const PetscInt numCells    = out.numberoftriangles;
     const PetscInt numVertices = out.numberofpoints;
@@ -283,7 +286,8 @@ static PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool interpolate
     const double  *meshCoords = out.pointlist;
 
     ierr = DMPlexCreateFromCellList(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dm);CHKERRQ(ierr);
-    if (label) {ierr = DMCreateLabel(*dm, labelName); ierr = DMGetLabel(*dm, labelName, &glabel);}
+    if (label)  {ierr = DMCreateLabel(*dm, labelName);  ierr = DMGetLabel(*dm, labelName,  &glabel);}
+    if (label2) {ierr = DMCreateLabel(*dm, labelName2); ierr = DMGetLabel(*dm, labelName2, &glabel2);}
     /* Set labels */
     for (v = 0; v < numVertices; ++v) {
       if (out.pointmarkerlist[v]) {
@@ -299,7 +303,8 @@ static PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool interpolate
 
           ierr = DMPlexGetJoin(*dm, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
           if (numEdges != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Two vertices must cover only one edge, not %D", numEdges);
-          if (glabel) {ierr = DMLabelSetValue(glabel, edges[0], out.edgemarkerlist[e]);CHKERRQ(ierr);}
+          if (glabel)  {ierr = DMLabelSetValue(glabel,  edges[0], out.edgemarkerlist[e]);CHKERRQ(ierr);}
+          if (glabel2) {ierr = DMLabelSetValue(glabel2, edges[0], out.edgemarkerlist[e]);CHKERRQ(ierr);}
           ierr = DMPlexRestoreJoin(*dm, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
         }
       }
