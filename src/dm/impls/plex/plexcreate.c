@@ -225,12 +225,14 @@ PetscErrorCode DMPlexCreateSquareBoundary(DM dm, const PetscReal lower[], const 
           ierr = DMSetLabelValue(dm, "marker", cone[0], markerRight);CHKERRQ(ierr);
           if (ey == edges[1]-1) {
             ierr = DMSetLabelValue(dm, "marker", cone[1], markerRight);CHKERRQ(ierr);
+            ierr = DMSetLabelValue(dm, "Face Sets", cone[1], markerRight);CHKERRQ(ierr);
           }
         } else if (vx == 0) {
           ierr = DMSetLabelValue(dm, "marker", edge,    markerLeft);CHKERRQ(ierr);
           ierr = DMSetLabelValue(dm, "marker", cone[0], markerLeft);CHKERRQ(ierr);
           if (ey == edges[1]-1) {
             ierr = DMSetLabelValue(dm, "marker", cone[1], markerLeft);CHKERRQ(ierr);
+            ierr = DMSetLabelValue(dm, "Face Sets", cone[1], markerLeft);CHKERRQ(ierr);
           }
         }
       }
@@ -248,12 +250,14 @@ PetscErrorCode DMPlexCreateSquareBoundary(DM dm, const PetscReal lower[], const 
           ierr = DMSetLabelValue(dm, "marker", cone[0], markerTop);CHKERRQ(ierr);
           if (ex == edges[0]-1) {
             ierr = DMSetLabelValue(dm, "marker", cone[1], markerTop);CHKERRQ(ierr);
+            ierr = DMSetLabelValue(dm, "Face Sets", cone[1], markerTop);CHKERRQ(ierr);
           }
         } else if (vy == 0) {
           ierr = DMSetLabelValue(dm, "marker", edge,    markerBottom);CHKERRQ(ierr);
           ierr = DMSetLabelValue(dm, "marker", cone[0], markerBottom);CHKERRQ(ierr);
           if (ex == edges[0]-1) {
             ierr = DMSetLabelValue(dm, "marker", cone[1], markerBottom);CHKERRQ(ierr);
+            ierr = DMSetLabelValue(dm, "Face Sets", cone[1], markerBottom);CHKERRQ(ierr);
           }
         }
       }
