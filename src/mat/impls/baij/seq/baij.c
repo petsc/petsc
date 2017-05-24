@@ -1779,7 +1779,7 @@ PetscErrorCode MatSetValuesBlocked_SeqBAIJ(Mat A,PetscInt m,const PetscInt im[],
   PetscInt          *aj        =a->j,nonew=a->nonew,bs2=a->bs2,bs=A->rmap->bs,stepval;
   PetscBool         roworiented=a->roworiented;
   const PetscScalar *value     = v;
-  MatScalar         *ap,*aa = a->a,*bap;
+  MatScalar         *ap=NULL,*aa = a->a,*bap;
 
   PetscFunctionBegin;
   if (roworiented) {
