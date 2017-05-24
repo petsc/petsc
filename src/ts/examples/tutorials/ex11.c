@@ -1601,7 +1601,7 @@ int main(int argc, char **argv)
   PetscViewer       viewer;
   PetscBool         vtkCellGeom, splitFaces, useAMR, viewInitial;
   PetscInt          overlap, adaptInterval;
-  char              filename[PETSC_MAX_PATH_LEN] = "sevenside.exo";
+  char              filename[PETSC_MAX_PATH_LEN];
   char              physname[256]  = "advect";
   VecTagger         refineTag = NULL, coarsenTag = NULL;
   PetscErrorCode    ierr;
@@ -1734,12 +1734,11 @@ int main(int argc, char **argv)
         ierr = VecRestoreArray(coordinates,&coords);CHKERRQ(ierr);
         ierr = DMSetCoordinatesLocal(dm,coordinates);CHKERRQ(ierr);
       }
-    }
-    else {
+    } else {
       ierr = DMPlexCreateFromFile(comm, filename, PETSC_TRUE, &dm);CHKERRQ(ierr);
     }
   }
-  ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
+  ierr = DMViewFromOptions(dm, NULL, "-orig_dm_view");CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
 
   /* set up BCs, functions, tags */
