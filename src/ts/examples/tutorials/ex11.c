@@ -1599,7 +1599,7 @@ int main(int argc, char **argv)
   TSConvergedReason reason;
   Vec               X;
   PetscViewer       viewer;
-  PetscBool         vtkCellGeom, splitFaces, useAMR, viewInitial;
+  PetscBool         simplex = PETSC_FALSE, vtkCellGeom, splitFaces, useAMR, viewInitial;
   PetscInt          overlap, adaptInterval;
   char              filename[PETSC_MAX_PATH_LEN];
   char              physname[256]  = "advect";
@@ -1629,6 +1629,7 @@ int main(int argc, char **argv)
     cfl  = 0.9 * 4; /* default SSPRKS2 with s=5 stages is stable for CFL number s-1 */
     ierr = PetscOptionsReal("-ufv_cfl","CFL number per step","",cfl,&cfl,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsString("-f","Exodus.II filename to read","",filename,filename,sizeof(filename),NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-simplex","Flag to use a simplex mesh","",simplex,&simplex,NULL);CHKERRQ(ierr);
     splitFaces = PETSC_FALSE;
     ierr = PetscOptionsBool("-ufv_split_faces","Split faces between cell sets","",splitFaces,&splitFaces,NULL);CHKERRQ(ierr);
     overlap = 1;
@@ -1701,7 +1702,11 @@ int main(int argc, char **argv)
         dim = nret1;
         if (dim != DIM) SETERRQ1(comm,PETSC_ERR_ARG_SIZ,"Dim wrong size %D in -grid_size",dim);CHKERRQ(ierr);
       }
-      ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, mod->bcs[0], mod->bcs[1], mod->bcs[2], &dm);CHKERRQ(ierr);
+      if (simplex) {
+        ierr = DMPlexCreateBoxMesh(comm, dim, cells[0], PETSC_TRUE, &dm);CHKERRQ(ierr);
+      } else {
+        ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, mod->bcs[0], mod->bcs[1], mod->bcs[2], &dm);CHKERRQ(ierr);
+      }
       if (flg2) {
         PetscInt dimEmbed, i;
         PetscInt nCoords;
