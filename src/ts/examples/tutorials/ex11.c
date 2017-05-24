@@ -2589,7 +2589,23 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
     suffix: p4est_advec_2d
     requires: p4est
     args: -ufv_vtk_interval 0 -f -dm_type p4est -dm_forest_minimum_refinement 1 -dm_forest_initial_refinement 2 -dm_p4est_refine_pattern hash -dm_forest_maximum_refinement 5
-  # 3D Advection
+  # Advection in a box
+  test:
+    suffix: adv_2d_quad_0
+    requires:
+    args: -ufv_vtk_interval 0 -dm_refine 5 -dm_plex_separate_marker -bc_inflow 1,2,4 -bc_outflow 3
+  test:
+    suffix: adv_2d_quad_1
+    requires:
+    args: -ufv_vtk_interval 0 -dm_refine 5 -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow 3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1
+  test:
+    suffix: adv_2d_tri_0
+    requires:
+    args: -ufv_vtk_interval 0 -simplex -dm_refine 3 -dm_plex_separate_marker -bc_inflow 1,2,4 -bc_outflow 3
+  test:
+    suffix: adv_2d_tri_1
+    requires:
+    args: -ufv_vtk_interval 0 -simplex -dm_refine 5 -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow 3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1
   test:
     suffix: adv_0
     TODO: broken
