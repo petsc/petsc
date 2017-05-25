@@ -1599,7 +1599,7 @@ int main(int argc, char **argv)
   TSConvergedReason reason;
   Vec               X;
   PetscViewer       viewer;
-  PetscBool         simplex = PETSC_FALSE, vtkCellGeom, splitFaces, useAMR, viewInitial;
+  PetscBool         simplex = PETSC_FALSE, vtkCellGeom, splitFaces, useAMR;
   PetscInt          overlap, adaptInterval;
   char              filename[PETSC_MAX_PATH_LEN];
   char              physname[256]  = "advect";
@@ -1616,7 +1616,6 @@ int main(int argc, char **argv)
   phys          = mod->physics;
   mod->comm     = comm;
   useAMR        = PETSC_FALSE;
-  viewInitial   = PETSC_FALSE;
   adaptInterval = 1;
 
   /* Register physical models to be available on the command line */
@@ -1641,7 +1640,6 @@ int main(int argc, char **argv)
     ierr = PetscOptionsString("-ufv_vtk_basename","VTK output basename","",user->outputBasename,user->outputBasename,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-ufv_vtk_cellgeom","Write cell geometry (for debugging)","",vtkCellGeom,&vtkCellGeom,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-ufv_use_amr","use local adaptive mesh refinement","",useAMR,&useAMR,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-ufv_view_initial_refinement","View initial conditions refinement history","",viewInitial,&viewInitial,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-ufv_adapt_interval","time steps between AMR","",adaptInterval,&adaptInterval,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -1683,6 +1681,7 @@ int main(int argc, char **argv)
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
+  /* Create mesh */
   {
     size_t len,i;
     for (i = 0; i < DIM; i++) { mod->bounds[2*i] = 0.; mod->bounds[2*i+1] = 1.;};
@@ -1837,69 +1836,69 @@ int main(int argc, char **argv)
   ierr = PetscObjectSetName((PetscObject) X, "solution");CHKERRQ(ierr);
   ierr = SetInitialCondition(dm, X, user);CHKERRQ(ierr);
   if (useAMR) {
+    PetscInt adaptIter;
 
     /* use no limiting when reconstructing gradients for adaptivity */
     ierr = PetscFVGetLimiter(fvm, &limiter);CHKERRQ(ierr);
-    ierr = PetscObjectReference((PetscObject)limiter);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject) limiter);CHKERRQ(ierr);
+    ierr = PetscLimiterCreate(PetscObjectComm((PetscObject) fvm), &noneLimiter);CHKERRQ(ierr);
+    ierr = PetscLimiterSetType(noneLimiter, PETSCLIMITERNONE);CHKERRQ(ierr);
 
-    ierr = PetscLimiterCreate(PetscObjectComm((PetscObject)fvm),&noneLimiter);CHKERRQ(ierr);
-    ierr = PetscLimiterSetType(noneLimiter,PETSCLIMITERNONE);CHKERRQ(ierr);
+    ierr = PetscFVSetLimiter(fvm, noneLimiter);CHKERRQ(ierr);
+    for (adaptIter = 0; ; ++adaptIter) {
+      PetscLogDouble bytes;
+      TS             tsNew = NULL;
 
-    ierr = PetscFVSetLimiter(fvm,noneLimiter);CHKERRQ(ierr);
-    {
-      PetscInt adaptIter;
+      ierr = PetscMemoryGetCurrentUsage(&bytes);CHKERRQ(ierr);
+      ierr = PetscInfo2(ts, "refinement loop %D: memory used %g\n", adaptIter, bytes);CHKERRQ(ierr);
+      ierr = DMViewFromOptions(dm, NULL, "-initial_dm_view");CHKERRQ(ierr);
+      ierr = VecViewFromOptions(X, NULL, "-initial_vec_view");CHKERRQ(ierr);
+#if 0
+      if (viewInitial) {
+        PetscViewer viewer;
+        char        buf[256];
+        PetscBool   isHDF5, isVTK;
 
-      for (adaptIter = 0;;adaptIter++) {
-        PetscLogDouble bytes;
-        TS             tsNew = NULL;
-
-        if (viewInitial) {
-          PetscViewer viewer;
-          char        buf[256];
-          PetscBool   isHDF5, isVTK;
-
-          ierr = PetscViewerCreate(comm,&viewer);CHKERRQ(ierr);
-          ierr = PetscViewerSetType(viewer,PETSCVIEWERVTK);CHKERRQ(ierr);
-          ierr = PetscViewerSetOptionsPrefix(viewer,"initial_");CHKERRQ(ierr);
-          ierr = PetscViewerSetFromOptions(viewer);CHKERRQ(ierr);
-          ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&isHDF5);CHKERRQ(ierr);
-          ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERVTK,&isVTK);CHKERRQ(ierr);
-          if (isHDF5) {
-            ierr = PetscSNPrintf(buf, 256, "ex11-initial-%d.h5", adaptIter);CHKERRQ(ierr);
-          } else if (isVTK) {
-            ierr = PetscSNPrintf(buf, 256, "ex11-initial-%d.vtu", adaptIter);CHKERRQ(ierr);
-            ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_VTK_VTU);CHKERRQ(ierr);
-          }
-          ierr = PetscViewerFileSetMode(viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
-          ierr = PetscViewerFileSetName(viewer,buf);CHKERRQ(ierr);
-          if (isHDF5) {
-            ierr = DMView(dm,viewer);CHKERRQ(ierr);
-            ierr = PetscViewerFileSetMode(viewer,FILE_MODE_UPDATE);CHKERRQ(ierr);
-          }
-          ierr = VecView(X,viewer);CHKERRQ(ierr);
-          ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+        ierr = PetscViewerCreate(comm,&viewer);CHKERRQ(ierr);
+        ierr = PetscViewerSetType(viewer,PETSCVIEWERVTK);CHKERRQ(ierr);
+        ierr = PetscViewerSetOptionsPrefix(viewer,"initial_");CHKERRQ(ierr);
+        ierr = PetscViewerSetFromOptions(viewer);CHKERRQ(ierr);
+        ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&isHDF5);CHKERRQ(ierr);
+        ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERVTK,&isVTK);CHKERRQ(ierr);
+        if (isHDF5) {
+          ierr = PetscSNPrintf(buf, 256, "ex11-initial-%d.h5", adaptIter);CHKERRQ(ierr);
+        } else if (isVTK) {
+          ierr = PetscSNPrintf(buf, 256, "ex11-initial-%d.vtu", adaptIter);CHKERRQ(ierr);
+          ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_VTK_VTU);CHKERRQ(ierr);
         }
-
-        ierr = PetscMemoryGetCurrentUsage(&bytes);CHKERRQ(ierr);
-        ierr = PetscInfo2(ts, "refinement loop %D: memory used %g\n", adaptIter, bytes);CHKERRQ(ierr);
-        ierr = adaptToleranceFVM(fvm, ts, X, refineTag, coarsenTag, user, &tsNew, NULL);CHKERRQ(ierr);
-        if (!tsNew) {
-          break;
-        } else {
-          ierr = DMDestroy(&dm);CHKERRQ(ierr);
-          ierr = VecDestroy(&X);CHKERRQ(ierr);
-          ierr = TSDestroy(&ts);CHKERRQ(ierr);
-          ts   = tsNew;
-          ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-          ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
-          ierr = DMCreateGlobalVector(dm,&X);CHKERRQ(ierr);
-          ierr = PetscObjectSetName((PetscObject) X, "solution");CHKERRQ(ierr);
-          ierr = SetInitialCondition(dm, X, user);CHKERRQ(ierr);
+        ierr = PetscViewerFileSetMode(viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
+        ierr = PetscViewerFileSetName(viewer,buf);CHKERRQ(ierr);
+        if (isHDF5) {
+          ierr = DMView(dm,viewer);CHKERRQ(ierr);
+          ierr = PetscViewerFileSetMode(viewer,FILE_MODE_UPDATE);CHKERRQ(ierr);
         }
+        ierr = VecView(X,viewer);CHKERRQ(ierr);
+        ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+      }
+#endif
+
+      ierr = adaptToleranceFVM(fvm, ts, X, refineTag, coarsenTag, user, &tsNew, NULL);CHKERRQ(ierr);
+      if (!tsNew) {
+        break;
+      } else {
+        ierr = DMDestroy(&dm);CHKERRQ(ierr);
+        ierr = VecDestroy(&X);CHKERRQ(ierr);
+        ierr = TSDestroy(&ts);CHKERRQ(ierr);
+        ts   = tsNew;
+        ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+        ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
+        ierr = DMCreateGlobalVector(dm,&X);CHKERRQ(ierr);
+        ierr = PetscObjectSetName((PetscObject) X, "solution");CHKERRQ(ierr);
+        ierr = SetInitialCondition(dm, X, user);CHKERRQ(ierr);
       }
     }
     /* restore original limiter */
-    ierr = PetscFVSetLimiter(fvm,limiter);CHKERRQ(ierr);
+    ierr = PetscFVSetLimiter(fvm, limiter);CHKERRQ(ierr);
   }
 
   if (vtkCellGeom) {
@@ -2598,6 +2597,18 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
     suffix: adv_2d_quad_1
     requires:
     args: -ufv_vtk_interval 0 -dm_refine 5 -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow 3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1
+  test:
+    suffix: adv_2d_quad_p4est_0
+    requires:
+    args: -ufv_vtk_interval 0 -dm_refine 5 -dm_type p4est -dm_plex_separate_marker -bc_inflow 1,2,4 -bc_outflow 3
+  test:
+    suffix: adv_2d_quad_p4est_1
+    requires:
+    args: -ufv_vtk_interval 0 -dm_refine 5 -dm_type p4est -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow 3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1
+  test:
+    suffix: adv_2d_quad_p4est_adapt_0
+    requires:
+    args: -ufv_vtk_interval 0 -dm_refine 3 -dm_type p4est -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow 3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1 -ufv_use_amr -refine_vec_tagger_box 0.01,inf -coarsen_vec_tagger_box 0,1.e-4
   test:
     suffix: adv_2d_tri_0
     requires:
