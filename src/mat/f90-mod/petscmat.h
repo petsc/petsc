@@ -71,8 +71,9 @@
       PetscEnum MAT_NEW_NONZERO_LOCATIONS
       PetscEnum MAT_NEW_NONZERO_ALLOCATION_ERR
       PetscEnum MAT_SUBSET_OFF_PROC_ENTRIES
-      PetscEnum MAT_OPTION_MAX
       PetscEnum MAT_SUBMAT_SINGLEIS
+      PetscEnum MAT_STRUCTURE_ONLY
+      PetscEnum MAT_OPTION_MAX
 
       parameter(MAT_OPTION_MIN = -3)
       parameter(MAT_UNUSED_NONZERO_LOCATION_ERR = -2)
@@ -98,7 +99,8 @@
       parameter(MAT_NEW_NONZERO_ALLOCATION_ERR = 19)
       parameter(MAT_SUBSET_OFF_PROC_ENTRIES = 20)
       parameter(MAT_SUBMAT_SINGLEIS = 21)
-      parameter(MAT_OPTION_MAX = 22)
+      parameter(MAT_STRUCTURE_ONLY = 22)
+      parameter(MAT_OPTION_MAX = 23)
 !
 !  MatFactorShiftType
 !
