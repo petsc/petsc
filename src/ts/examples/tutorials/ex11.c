@@ -1565,9 +1565,8 @@ static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, VecTagger r
   }
   ierr = DMLabelDestroy(&adaptLabel);CHKERRQ(ierr);
   if (adaptedDM) {
-    if (tsNew) {
-      ierr = initializeTS(adaptedDM,user,tsNew);CHKERRQ(ierr);
-    }
+    ierr = PetscInfo2(ts, "Adapted mesh, marking %D cells for refinement, and %D cells for coarsening\n", nRefine, nCoarsen);CHKERRQ(ierr);
+    if (tsNew) {ierr = initializeTS(adaptedDM, user, tsNew);CHKERRQ(ierr);}
     if (solNew) {
       ierr = DMCreateGlobalVector(adaptedDM, solNew);CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) *solNew, "solution");CHKERRQ(ierr);
@@ -1575,9 +1574,8 @@ static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, VecTagger r
     }
     if (isForest) {ierr = DMForestSetAdaptivityForest(adaptedDM,NULL);CHKERRQ(ierr);} /* clear internal references to the previous dm */
     ierr = DMDestroy(&adaptedDM);CHKERRQ(ierr);
-  }
-  else {
-    if (tsNew) *tsNew = NULL;
+  } else {
+    if (tsNew)  *tsNew  = NULL;
     if (solNew) *solNew = NULL;
   }
   PetscFunctionReturn(0);
@@ -1963,8 +1961,7 @@ int main(int argc, char **argv)
         if (mod->maxspeed <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
         dt   = cfl * minRadius / mod->maxspeed;
         ierr = TSSetInitialTimeStep(ts,ftime,dt);CHKERRQ(ierr);
-      }
-      else {
+      } else {
         ierr = PetscInfo(ts, "AMR not used\n");CHKERRQ(ierr);
       }
       user->monitorStepOffset = nsteps;
@@ -2608,7 +2605,7 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
   test:
     suffix: adv_2d_quad_p4est_adapt_0
     requires:
-    args: -ufv_vtk_interval 0 -dm_refine 3 -dm_type p4est -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow 3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1 -ufv_use_amr -refine_vec_tagger_box 0.01,inf -coarsen_vec_tagger_box 0,1.e-4
+    args: -ufv_vtk_interval 0 -dm_refine 3 -dm_type p4est -dm_plex_separate_marker -grid_bounds -0.5,0.5,-0.5,0.5 -bc_inflow 1,2,4 -bc_outflow 3 -advect_sol_type bump -advect_bump_center 0.25,0 -advect_bump_radius 0.1 -ufv_use_amr -refine_vec_tagger_box 0.001,inf -coarsen_vec_tagger_box 0,1.e-5 -petscfv_type leastsquares
   test:
     suffix: adv_2d_tri_0
     requires:
