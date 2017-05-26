@@ -186,7 +186,7 @@ PetscErrorCode PetscConvEstSetSolver(PetscConvEst ce, SNES snes)
 .keywords: PetscConvEst, convergence, setup
 .seealso: PetscConvEstCreate(), PetscConvEstGetConvRate()
 @*/
-PetscErrorCode PetscConvEstSetup(PetscConvEst ce)
+PetscErrorCode PetscConvEstSetUp(PetscConvEst ce)
 {
   PetscDS        prob;
   PetscInt       f;
@@ -231,7 +231,7 @@ static PetscErrorCode PetscConvEstLinearRegression_Private(PetscConvEst ce, Pets
   /* H = (X^T X)^{-1} */
   {
     PetscBLASInt two = 2, ipiv[2], info;
-    PetscReal    work[2];
+    PetscScalar  work[2];
 
     ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
     PetscStackCallBLAS("LAPACKgetrf", LAPACKgetrf_(&two, &two, H, &two, ipiv, &info));
