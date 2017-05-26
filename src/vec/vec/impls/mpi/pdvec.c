@@ -656,13 +656,31 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   chunksize      *= chunkDims[dim];
   /* hdf5 chunks must be less than the max of 32 bit int */
   if (chunksize > 33554431) {
-    chunkDims[dim-1] = 16777215;
+    if (bs > 1 || dim2) {
+      if (chunkDims[dim-2] > 4095) {
+        chunkDims[dim-2] = 4095;
+      } if (chunkDims[dim-1] > 4095) {
+        chunkDims[dim-1] = 4095;
+      }
+    }
+    else {
+      chunkDims[dim-1] = 16777215;
+    }
   }
   ++dim;
 #else 
   /* hdf5 chunks must be less than the max of 32 bit int */
-  if (chunksize >= 33554431) {
-    chunkDims[dim] = 33554430;
+  if (chunksize > 33554431) {
+    if (bs > 1 || dim2) {
+      if (chunkDims[dim-2] > 5792) {
+        chunkDims[dim-2] = 5792;
+      } if (chunkDims[dim-1] > 5792) {
+        chunkDims[dim-1] = 5792;
+      }
+    }
+    else {
+      chunkDims[dim-1] = 33554431;
+    }
   }
 #endif
 
