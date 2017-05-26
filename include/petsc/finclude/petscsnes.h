@@ -8,7 +8,7 @@
 
 #define SNES type(tSNES)
 
-#define ConvEst type(tConvEst)
+#define PetscConvEst type(tPetscConvEst)
 
 #define SNESType character*(80)
 #define SNESMSType character*(80)
