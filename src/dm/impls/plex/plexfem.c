@@ -310,14 +310,14 @@ PetscErrorCode DMPlexInsertBoundaryValuesEssentialField(DM dm, PetscReal time, V
                                                         void (*func)(PetscInt, PetscInt, PetscInt,
                                                                      const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                      const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
-                                                                     PetscReal, const PetscReal[],
+                                                                     PetscReal, const PetscReal[], PetscInt, const PetscScalar[],
                                                                      PetscScalar[]),
                                                         void *ctx, Vec locX)
 {
   void (**funcs)(PetscInt, PetscInt, PetscInt,
                  const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                  const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
-                 PetscReal, const PetscReal[], PetscScalar[]);
+                 PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]);
   void            **ctxs;
   PetscInt          numFields;
   PetscErrorCode    ierr;
@@ -518,7 +518,7 @@ PetscErrorCode DMPlexInsertBoundaryValues(DM dm, PetscBool insertEssential, Vec 
         ierr = DMPlexInsertBoundaryValuesEssentialField(dm, time, locX, field, label, numids, ids,
                                                         (void (*)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
                                                                   const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[],
-                                                                  PetscReal, const PetscReal[], PetscScalar[])) func, ctx, locX);CHKERRQ(ierr);
+                                                                  PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[])) func, ctx, locX);CHKERRQ(ierr);
         ierr = DMPlexLabelClearCells(dm,label);CHKERRQ(ierr);
         break;
       default: break;
@@ -975,10 +975,10 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscReal *integral, void 
   PetscFVFaceGeom   *fgeomFVM;
   PetscFVCellGeom   *cgeomFVM;
   PetscScalar       *u, *a = NULL;
-  const PetscScalar *lgrad;
+  const PetscScalar *constants, *lgrad;
   PetscReal         *lintegral;
   PetscInt          *uOff, *uOff_x, *aOff = NULL;
-  PetscInt           dim, Nf, NfAux = 0, f, numCells, cStart, cEnd, cEndInterior, c;
+  PetscInt           dim, numConstants, Nf, NfAux = 0, f, numCells, cStart, cEnd, cEndInterior, c;
   PetscInt           totDim, totDimAux;
   PetscBool          useFVM = PETSC_FALSE;
   PetscErrorCode     ierr;
@@ -995,6 +995,7 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscReal *integral, void 
   ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
   ierr = PetscDSGetComponentOffsets(prob, &uOff);CHKERRQ(ierr);
   ierr = PetscDSGetComponentDerivativeOffsets(prob, &uOff_x);CHKERRQ(ierr);
+  ierr = PetscDSGetConstants(prob, &numConstants, &constants);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &Nf);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
@@ -1099,7 +1100,7 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscReal *integral, void 
           PetscScalar *u_x;
 
           ierr = DMPlexPointLocalRead(dmGrad, c, lgrad, &u_x);CHKERRQ(ierr);
-          obj_func(dim, Nf, NfAux, uOff, uOff_x, &u[totDim*c+foff], NULL, u_x, aOff, NULL, a, NULL, NULL, 0.0, cgeomFVM[c].centroid, &lint);
+          obj_func(dim, Nf, NfAux, uOff, uOff_x, &u[totDim*c+foff], NULL, u_x, aOff, NULL, a, NULL, NULL, 0.0, cgeomFVM[c].centroid, numConstants, constants, &lint);
           lintegral[f] += PetscRealPart(lint)*cgeomFVM[c].volume;
         }
       }
