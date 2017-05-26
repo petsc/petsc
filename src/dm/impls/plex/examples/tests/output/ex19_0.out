@@ -5,8 +5,9 @@ DMinit in 2 dimensions:
   1-cells: 56
   2-cells: 32
 Labels:
-  marker: 1 strata of sizes (32)
-  depth: 3 strata of sizes (25, 56, 32)
+  Face Sets: 1 strata with value/size (1 (16))
+  marker: 1 strata with value/size (1 (32))
+  depth: 3 strata with value/size (0 (25), 1 (56), 2 (32))
 DM Object: DMadapt 1 MPI processes
   type: plex
 DMadapt in 2 dimensions:
@@ -14,5 +15,5 @@ DMadapt in 2 dimensions:
   1-cells: 258
   2-cells: 164
 Labels:
-  _boundary_: 1 strata of sizes (24)
-  depth: 3 strata of sizes (95, 258, 164)
+  _boundary_: 1 strata with value/size (1 (24))
+  depth: 3 strata with value/size (0 (95), 1 (258), 2 (164))
