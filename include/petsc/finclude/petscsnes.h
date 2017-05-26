@@ -8,6 +8,8 @@
 
 #define SNES type(tSNES)
 
+#define ConvEst type(tConvEst)
+
 #define SNESType character*(80)
 #define SNESMSType character*(80)
 #define SNESConvergedReason PetscEnum
