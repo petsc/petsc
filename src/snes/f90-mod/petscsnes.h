@@ -7,7 +7,12 @@
         PetscFortranAddr:: v
       end type tSNES
 
+      type tPetscConvEst
+        PetscFortranAddr:: v
+      end type tPetscConvEst
+
       SNES, parameter :: PETSC_NULL_SNES = tSNES(-1)
+      PetscConvEst, parameter :: PETSC_NULL_CONVEST = tPetscConvEst(-1)
 !
 !  Convergence flags
 !
