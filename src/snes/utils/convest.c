@@ -207,8 +207,9 @@ PetscErrorCode PetscConvEstSetup(PetscConvEst ce)
 
 static PetscErrorCode PetscConvEstLinearRegression_Private(PetscConvEst ce, PetscInt n, const PetscReal x[], const PetscReal y[], PetscReal *slope, PetscReal *intercept)
 {
-  PetscReal *X, *Y, H[4], beta[2];
-  PetscInt   i, j, k;
+  PetscScalar    H[4];
+  PetscReal     *X, *Y, beta[2];
+  PetscInt       i, j, k;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -242,7 +243,7 @@ static PetscErrorCode PetscConvEstLinearRegression_Private(PetscConvEst ce, Pets
     for (k = 0; k < n; ++k) {
       Y[i*n+k] = 0.0;
       for (j = 0; j < 2; ++j) {
-        Y[i*n+k] += H[i*2+j] * X[k*2+j];
+        Y[i*n+k] += PetscRealPart(H[i*2+j]) * X[k*2+j];
       }
     }
   }
