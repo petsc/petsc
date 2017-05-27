@@ -23,7 +23,10 @@ PetscErrorCode DMPlexRemesh_Internal(DM dm, Vec vertexMetric, const char bdLabel
 {
   MPI_Comm           comm;
   const char        *bdName = "_boundary_";
-  DM                 odm = dm, udm, cdm;
+#if 0
+  DM                 odm = dm;
+#endif
+  DM                 udm, cdm;
   DMLabel            bdLabel = NULL, bdLabelFull;
   IS                 bdIS, globalVertexNum;
   PetscSection       coordSection;
