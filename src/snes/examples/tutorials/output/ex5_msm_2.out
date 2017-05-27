@@ -1,26 +1,26 @@
-  0 SNES Function norm 1.371870931195e-01 
-    0 KSP Residual norm 1.052470258455e-01 
-    1 KSP Residual norm 3.599272788790e-02 
-    2 KSP Residual norm 1.226008664579e-02 
-    3 KSP Residual norm 4.198986753190e-03 
-    4 KSP Residual norm 1.435239012924e-03 
-    5 KSP Residual norm 4.895825472590e-04 
-    6 KSP Residual norm 1.667300145089e-04 
-    7 KSP Residual norm 5.670991429654e-05 
-    8 KSP Residual norm 1.927106877514e-05 
-    9 KSP Residual norm 6.544342192307e-06 
-   10 KSP Residual norm 2.221378490445e-06 
-   11 KSP Residual norm 7.537643507129e-07 
-   12 KSP Residual norm 2.557101615709e-07 
-   13 KSP Residual norm 8.673413708391e-08 
-   14 KSP Residual norm 2.941596646067e-08 
-   15 KSP Residual norm 9.975669852468e-09 
-   16 KSP Residual norm 3.382807634291e-09 
-   17 KSP Residual norm 1.147086236564e-09 
-   18 KSP Residual norm 3.889585713217e-10 
-   19 KSP Residual norm 1.318872446481e-10 
-   20 KSP Residual norm 4.471947100180e-11 
-  1 SNES Function norm 1.400618040804e-10 
+  0 SNES Function norm 0.137187 
+    0 KSP Residual norm 0.105247 
+    1 KSP Residual norm 0.0359927 
+    2 KSP Residual norm 0.0122601 
+    3 KSP Residual norm 0.00419899 
+    4 KSP Residual norm 0.00143524 
+    5 KSP Residual norm 0.000489583 
+    6 KSP Residual norm 0.00016673 
+    7 KSP Residual norm 5.67099e-05 
+    8 KSP Residual norm 1.92711e-05 
+    9 KSP Residual norm 6.54434e-06 
+   10 KSP Residual norm 2.22138e-06 
+   11 KSP Residual norm 7.53764e-07 
+   12 KSP Residual norm 2.5571e-07 
+   13 KSP Residual norm 8.67341e-08 
+   14 KSP Residual norm 2.9416e-08 
+   15 KSP Residual norm 9.97567e-09 
+   16 KSP Residual norm 3.38281e-09 
+   17 KSP Residual norm 1.14709e-09 
+   18 KSP Residual norm 3.890e-10 
+   19 KSP Residual norm 1.319e-10 
+   20 KSP Residual norm 4.472e-11 
+  1 SNES Function norm 1.401e-10 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
@@ -83,4 +83,4 @@ SNES Object: 1 MPI processes
       total: nonzeros=136, allocated nonzeros=136
       total number of mallocs used during MatSetValues calls =0
         not using I-node routines
-N: 32 error l2 2.11442e-12 inf 4.63191e-11
+N: 32 error L2 1.19609e-11 inf 4.63191e-11
