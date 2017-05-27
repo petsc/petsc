@@ -12,7 +12,8 @@
       end type tPetscConvEst
 
       SNES, parameter :: PETSC_NULL_SNES = tSNES(-1)
-      PetscConvEst, parameter :: PETSC_NULL_CONVEST = tPetscConvEst(-1)
+      PetscConvEst, parameter :: PETSC_NULL_CONVEST =                   &
+     & tPetscConvEst(-1)
 !
 !  Convergence flags
 !
