@@ -213,6 +213,7 @@ static PetscErrorCode PetscConvEstLinearRegression_Private(PetscConvEst ce, Pets
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  *slope = *intercept = 0.0;
   ierr = PetscMalloc2(n*2, &X, n*2, &Y);CHKERRQ(ierr);
   for (k = 0; k < n; ++k) {
     /* X[n,2] = [1, x] */
