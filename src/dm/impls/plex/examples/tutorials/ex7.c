@@ -1,10 +1,28 @@
-static char help[] = "Create a Plex sphere from quads and use a DMDA ordering in each quad\n\n";
+static char help[] = "Create a Plex sphere from quads and create a P1 section\n\n";
 
 #include <petscdmplex.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "ProjectToSphere"
-static PetscErrorCode ProjectToSphere(DM dm)
+typedef struct {
+  PetscInt  dim;     /* Topological problem dimension */
+  PetscBool simplex; /* Mesh with simplices */
+} AppCtx;
+
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  options->dim     = 2;
+  options->simplex = PETSC_FALSE;
+
+  ierr = PetscOptionsBegin(comm, "", "Sphere Mesh Options", "DMPLEX");CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dim", "Problem dimension", "ex7.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-simplex", "Use simplices, or tensor product cells", "ex7.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode ProjectToUnitSphere(DM dm)
 {
   Vec            coordinates;
   PetscScalar   *coords;
@@ -28,12 +46,10 @@ static PetscErrorCode ProjectToSphere(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SetupSection"
 static PetscErrorCode SetupSection(DM dm)
 {
   PetscSection   s;
-  PetscInt       vStart, vEnd, v, dim, d;
+  PetscInt       vStart, vEnd, v;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
@@ -48,21 +64,22 @@ static PetscErrorCode SetupSection(DM dm)
   }
   ierr = PetscSectionSetUp(s);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(dm, s);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&s);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   DM             dm;
   Vec            u;
+  AppCtx         ctx;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
-  ierr = DMPlexCreateQuadSphereMesh(PETSC_COMM_WORLD, &dm);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, NULL,help);CHKERRQ(ierr);
+  ierr = ProcessOptions(PETSC_COMM_WORLD, &ctx);CHKERRQ(ierr);
+  ierr = DMPlexCreateSphereMesh(PETSC_COMM_WORLD, ctx.dim, ctx.simplex, &dm);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
-  ierr = ProjectToSphere(dm);CHKERRQ(ierr);
+  ierr = ProjectToUnitSphere(dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
   ierr = SetupSection(dm);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dm, &u);CHKERRQ(ierr);
@@ -73,3 +90,15 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
   return ierr;
 }
+
+/*TEST
+
+  test:
+    suffix: 2d_quad
+    args: -dm_view
+
+  test:
+    suffix: 2d_tri
+    args: -simplex -dm_view
+
+TEST*/
